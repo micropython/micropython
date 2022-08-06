@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-05 14:18+0000\n"
+"PO-Revision-Date: 2022-08-07 15:16+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -879,7 +879,7 @@ msgstr "Displayens rotation måste vara i steg om 90 grader"
 
 #: main.c
 msgid "Done"
-msgstr ""
+msgstr "Klar"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
@@ -1564,11 +1564,11 @@ msgstr "Udda paritet stöds inte"
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Off"
-msgstr ""
+msgstr "Av"
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Ok"
-msgstr ""
+msgstr "OK"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
@@ -1834,7 +1834,7 @@ msgstr "Mottaget svar var ogiltigt"
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Reconnecting"
-msgstr ""
+msgstr "Återansluter"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
