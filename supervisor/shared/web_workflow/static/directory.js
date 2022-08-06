@@ -1,7 +1,3 @@
-// var sort_column = undefined;
-// (document.querySelectorAll("th")).forEach((element, indx) => { if (element.textContent == "Path") {sort_column = indx} } );
-var sort_column = 2;
-
 let new_directory_name = document.getElementById("name");
 let files = document.getElementById("files");
 
@@ -122,7 +118,7 @@ async function refresh_list() {
             edit_link.href = edit_url
         }
 
-        var dataCell = td[sort_column];
+        var dataCell = td[2];
 
         var sortdata = {};
         sortdata.value = dataCell.textContent.toLowerCase().trim();
