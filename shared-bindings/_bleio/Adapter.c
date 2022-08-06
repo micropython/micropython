@@ -158,10 +158,10 @@ MP_PROPERTY_GETSET(bleio_adapter_address_obj,
 //|     The name is "CIRCUITPY" + the last four hex digits of ``adapter.address``,
 //|     to make it easy to distinguish multiple CircuitPython boards."""
 //|
-STATIC mp_obj_t bleio_adapter_get_name(mp_obj_t self) {
+STATIC mp_obj_t _bleio_adapter_get_name(mp_obj_t self) {
     return MP_OBJ_FROM_PTR(common_hal_bleio_adapter_get_name(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_name_obj, bleio_adapter_get_name);
+MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_name_obj, _bleio_adapter_get_name);
 
 
 STATIC mp_obj_t bleio_adapter_set_name(mp_obj_t self, mp_obj_t new_name) {
