@@ -228,8 +228,6 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
     return MP_STATE_VM(last_pool)->total_prev_len + at;
 }
 
-#define MP_QSTR_SEARCH_THRESHOLD 10
-
 qstr qstr_find_strn(const char *str, size_t str_len) {
     // work out hash of str
     size_t str_hash = qstr_compute_hash((const byte *)str, str_len);
@@ -241,8 +239,8 @@ qstr qstr_find_strn(const char *str, size_t str_len) {
 
         // binary search inside the pool
         if (pool->sorted) {
-            while (high - low > MP_QSTR_SEARCH_THRESHOLD) {
-                size_t mid = (low + high + 1) / 2;
+            while (high - low > 1) {
+                size_t mid = (low + high) / 2;
                 int cmp = pool->hashes[mid] - str_hash;
                 if (cmp > 0) {
                     high = mid;
