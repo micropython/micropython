@@ -34,10 +34,46 @@
 #if CIRCUITPY_WEB_WORKFLOW
 #include "supervisor/shared/web_workflow/web_workflow.h"
 #endif
+
+#if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+#include "supervisor/shared/bluetooth/bluetooth.h"
+#endif
+
 static background_callback_t title_bar_background_cb;
 
 static bool _forced_dirty = false;
 static bool _suspended = false;
+
+
+void supervisor_title_bar_update(void) {
+    #if !CIRCUITPY_STATUS_BAR
+    return;
+    #endif
+    if (_suspended) {
+        supervisor_title_bar_request_update(true);
+        return;
+    }
+    _forced_dirty = false;
+    // Neighboring "" "" are concatenated by the compiler. Without this separation, the hex code
+    // doesn't get terminated after two following characters and the value is invalid.
+    // This is the OSC command to set the title and the icon text. It can be up to 255 characters
+    // but some may be cut off.
+    serial_write("\x1b" "]0;");
+    serial_write("🐍");
+    #if CIRCUITPY_WEB_WORKFLOW
+    supervisor_web_workflow_status();
+    serial_write(" | ");
+    #endif
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+    supervisor_bluetooth_status();
+    serial_write(" | ");
+    #endif
+    supervisor_execution_status();
+    serial_write(" | ");
+    serial_write(MICROPY_GIT_TAG);
+    // Send string terminator
+    serial_write("\x1b" "\\");
+}
 
 static void title_bar_background(void *data) {
     #if !CIRCUITPY_STATUS_BAR
@@ -52,23 +88,14 @@ static void title_bar_background(void *data) {
     dirty = dirty || supervisor_web_workflow_status_dirty();
     #endif
 
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+    dirty = dirty || supervisor_bluetooth_status_dirty();
+    #endif
+
     if (!dirty) {
         return;
     }
-    _forced_dirty = false;
-    // Neighboring "" "" are concatenated by the compiler. Without this separation, the hex code
-    // doesn't get terminated after two following characters and the value is invalid.
-    // This is the OSC command to set the title and the icon text. It can be up to 255 characters
-    // but some may be cut off.
-    serial_write("\x1b" "]0;");
-    serial_write("🐍 ");
-    #if CIRCUITPY_WEB_WORKFLOW
-    supervisor_web_workflow_status();
-    #endif
-    serial_write("|");
-    serial_write(MICROPY_GIT_TAG);
-    // Send string terminator
-    serial_write("\x1b" "\\");
+    supervisor_title_bar_update();
 }
 
 void supervisor_title_bar_start(void) {

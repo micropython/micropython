@@ -36,6 +36,7 @@
 #include "shared-module/storage/__init__.h"
 #include "shared/timeutils/timeutils.h"
 #include "supervisor/fatfs_port.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
@@ -195,10 +196,20 @@ bool supervisor_web_workflow_status_dirty(void) {
 }
 
 void supervisor_web_workflow_status(void) {
-    serial_write_compressed(translate("Wi-Fi: "));
     _last_enabled = common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj);
     if (_last_enabled) {
         uint32_t ipv4_address = wifi_radio_get_ipv4_address(&common_hal_wifi_radio_obj);
+        if (ipv4_address != 0) {
+            _update_encoded_ip();
+            _last_ip = _encoded_ip;
+            mp_printf(&mp_plat_print, "%s", _our_ip_encoded);
+            if (web_api_port != 80) {
+                mp_printf(&mp_plat_print, ":%d", web_api_port);
+            }
+            // TODO: Use these unicode to show signal strength: ▂▄▆█
+            return;
+        }
+        serial_write_compressed(translate("Wi-Fi: "));
         _last_wifi_status = _wifi_status;
         if (_wifi_status == WIFI_RADIO_ERROR_AUTH_EXPIRE ||
             _wifi_status == WIFI_RADIO_ERROR_AUTH_FAIL) {
@@ -209,15 +220,10 @@ void supervisor_web_workflow_status(void) {
             _last_ip = 0;
             serial_write_compressed(translate("No IP"));
         } else {
-            _update_encoded_ip();
-            _last_ip = _encoded_ip;
-            mp_printf(&mp_plat_print, "%s", _our_ip_encoded);
-            if (web_api_port != 80) {
-                mp_printf(&mp_plat_print, ":%d", web_api_port);
-            }
-            // TODO: Use these unicode to show signal strength: ▂▄▆█
         }
     } else {
+        // Keep Wi-Fi print separate so its data can be matched with the one above.
+        serial_write_compressed(translate("Wi-Fi: "));
         serial_write_compressed(translate("off"));
     }
 }
@@ -575,7 +581,7 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, 
     lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
     const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
     _send_strs(socket,
-        "HTTP/1.1 301 Moved Permanently\r\n",
+        "HTTP/1.1 307 Temporary Redirect\r\n",
         "Connection: close\r\n",
         "Content-Length: 0\r\n",
         "Location: ", NULL);
@@ -979,7 +985,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         } else {
             char *path = request->path + 3;
             size_t pathlen = strlen(path);
-            FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+            FATFS *fs = filesystem_circuitpy();
             // Trailing / is a directory.
             bool directory = false;
             if (path[pathlen - 1] == '/') {

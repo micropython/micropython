@@ -31,6 +31,7 @@
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
 #include "py/mpstate.h"
+#include "supervisor/filesystem.h"
 
 void board_init(void) {
     // Debug UART
@@ -41,7 +42,7 @@ void board_init(void) {
 
     mp_import_stat_t stat_b = mp_import_stat("boot.py");
     if (stat_b != MP_IMPORT_STAT_FILE) {
-        FATFS *fatfs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+        FATFS *fatfs = filesystem_circuitpy();
         FIL fs;
         UINT char_written = 0;
         const byte buffer[] = "#Serial port upload mode\nimport storage\nstorage.remount(\"/\", False)\nstorage.disable_usb_drive()\n";
