@@ -1,68 +1,6 @@
-/*
- *   This content is licensed according to the W3C Software License at
- *   https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document
- *
- *   File:   sortable-table.js
- *
- *   Desc:   Adds sorting to a HTML data table that implements ARIA Authoring Practices
- */
-
-// 'use strict';
-
-var columnIndex = 2;
-const sortEvent = new Event('sort');
-
-class SortableTable {
-  constructor(tableNode) {
-    this.tableNode = tableNode;
-  }
-
-  setColumnHeaderSort(columnIndex) {
-    function compareValues(a, b) {
-        if (a.value === b.value) {
-          return 0;
-        } else {
-          return a.value < b.value ? -1 : 1;
-        }
-    }
-
-    var tbodyNode = this.tableNode.querySelector('tbody');
-    var rowNodes = [];
-    var dataCells = [];
-
-    var rowNode = tbodyNode.firstElementChild;
-
-    var index = 0;
-    while (rowNode) {
-      rowNodes.push(rowNode);
-      var rowCells = rowNode.querySelectorAll('th, td');
-      var dataCell = rowCells[columnIndex];
-
-      var data = {};
-      data.index = index;
-      data.value = dataCell.textContent.toLowerCase().trim();
-      dataCells.push(data);
-      rowNode = rowNode.nextElementSibling;
-      index += 1;
-    }
-
-    dataCells.sort(compareValues);
-
-    // remove rows
-    while (tbodyNode.firstChild) {
-      tbodyNode.removeChild(tbodyNode.lastChild);
-    }
-
-    // add sorted rows
-    for (var i = 0; i < dataCells.length; i += 1) {
-      tbodyNode.appendChild(rowNodes[dataCells[i].index]);
-    }
-  }
-}
-
-var sortable_directory = document.querySelector('table.sortable');
-const sd_class = {sortable_dir: new SortableTable(sortable_directory)};
-sortable_directory.addEventListener('sort', function () { sd_class["sortable_dir"].setColumnHeaderSort(columnIndex); } );
+// var sort_column = undefined;
+// (document.querySelectorAll("th")).forEach((element, indx) => { if (element.textContent == "Path") {sort_column = indx} } );
+var sort_column = 2;
 
 let new_directory_name = document.getElementById("name");
 let files = document.getElementById("files");
@@ -72,6 +10,15 @@ var current_path;
 var editable = undefined;
 
 async function refresh_list() {
+
+    function compareValues(a, b) {
+        if (a.value === b.value) {
+          return 0;
+        } else {
+          return a.value < b.value ? -1 : 1;
+        }
+    }
+
     current_path = window.location.hash.substr(1);
     if (current_path == "") {
         current_path = "/";
@@ -109,6 +56,10 @@ async function refresh_list() {
         }
     }
 
+    var dirCells = [];
+    var dataCells = [];
+    var index = 0;
+
     if (window.location.path != "/fs/") {
         var clone = template.content.cloneNode(true);
         var td = clone.querySelectorAll("td");
@@ -119,6 +70,15 @@ async function refresh_list() {
         path.textContent = "..";
         // Remove the delete button
         td[4].replaceChildren();
+
+        var dataCell = td[sort_column];
+
+        var sortdata = {};
+        sortdata.value = dataCell.textContent.toLowerCase().trim();
+        sortdata.index = index;
+        dirCells.push(sortdata);
+        index += 1;
+
         new_children.push(clone);
     }
 
@@ -126,6 +86,8 @@ async function refresh_list() {
         // Clone the new row and insert it into the table
         var clone = template.content.cloneNode(true);
         var td = clone.querySelectorAll("td");
+        var dataCell = td[sort_column];
+
         var icon = "⬇";
         var file_path = current_path + f.name;
         let api_url = new URL("/fs" + file_path, url_base);
@@ -158,18 +120,45 @@ async function refresh_list() {
         delete_button.disabled = !editable;
         delete_button.onclick = del;
 
-        if (editable) {
+        if (editable && !f.directory) {
             edit_url = new URL(edit_url, url_base);
             let edit_link = clone.querySelector(".edit_link");
             edit_link.href = edit_url
         }
 
+        var dataCell = td[sort_column];
+
+        var sortdata = {};
+        sortdata.value = dataCell.textContent.toLowerCase().trim();
+        sortdata.index = index;
+        if (!f.directory) {
+            dataCells.push(sortdata);
+            index += 1;
+        } else {
+            dirCells.push(sortdata);
+            index += 1;
+        }
+
         new_children.push(clone);
     }
-    var tbody = document.querySelector("tbody");
-    tbody.replaceChildren(...new_children);
 
-    sortable_directory.dispatchEvent(sortEvent);
+    dirCells.sort(compareValues);
+    dataCells.sort(compareValues);
+
+    var tbody = document.querySelector("tbody");
+
+    // remove rows
+    while (tbody.firstChild) {
+      tbody.removeChild(tbody.lastChild);
+    }
+
+    // add sorted rows
+    for (var i = 0; i < dirCells.length; i += 1) {
+      tbody.appendChild(new_children[dirCells[i].index]);
+    }
+    for (var i = 0; i < dataCells.length; i += 1) {
+      tbody.appendChild(new_children[dataCells[i].index]);
+    }
 }
 
 async function find_devices() {
