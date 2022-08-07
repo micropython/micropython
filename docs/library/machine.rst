@@ -196,6 +196,7 @@ Constants
 .. data:: machine.PWRON_RESET
           machine.HARD_RESET
           machine.WDT_RESET
+          machine.SOFT_WDT_RESET
           machine.DEEPSLEEP_RESET
           machine.SOFT_RESET
 
