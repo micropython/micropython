@@ -1,4 +1,6 @@
+#include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
+#include "shared-module/displayio/__init__.h"
 
 // Pin names from: https://wiki.odroid.com/odroid_go/odroid_go
 
