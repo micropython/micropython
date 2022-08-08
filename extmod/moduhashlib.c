@@ -153,6 +153,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_sha256_digest_obj, uhashlib_sha256_dig
 STATIC const mp_rom_map_elem_t uhashlib_sha256_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&uhashlib_sha256_update_obj) },
     { MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&uhashlib_sha256_digest_obj) },
+    { MP_ROM_QSTR(MP_QSTR_block_size), MP_ROM_INT(64) },
+    { MP_ROM_QSTR(MP_QSTR_digest_size), MP_ROM_INT(32) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(uhashlib_sha256_locals_dict, uhashlib_sha256_locals_dict_table);
@@ -247,6 +249,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_sha1_digest_obj, uhashlib_sha1_digest)
 STATIC const mp_rom_map_elem_t uhashlib_sha1_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&uhashlib_sha1_update_obj) },
     { MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&uhashlib_sha1_digest_obj) },
+    { MP_ROM_QSTR(MP_QSTR_block_size), MP_ROM_INT(64) },
+    { MP_ROM_QSTR(MP_QSTR_digest_size), MP_ROM_INT(20) },
 };
 STATIC MP_DEFINE_CONST_DICT(uhashlib_sha1_locals_dict, uhashlib_sha1_locals_dict_table);
 
@@ -340,6 +344,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_md5_digest_obj, uhashlib_md5_digest);
 STATIC const mp_rom_map_elem_t uhashlib_md5_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&uhashlib_md5_update_obj) },
     { MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&uhashlib_md5_digest_obj) },
+    { MP_ROM_QSTR(MP_QSTR_block_size), MP_ROM_INT(64) },
+    { MP_ROM_QSTR(MP_QSTR_digest_size), MP_ROM_INT(16) },
 };
 STATIC MP_DEFINE_CONST_DICT(uhashlib_md5_locals_dict, uhashlib_md5_locals_dict_table);
 
