@@ -24,6 +24,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_I2S_SDO), MP_ROM_PTR(&pin_GPIO32) },
 
     { MP_ROM_QSTR(MP_QSTR_BOOT), MP_ROM_PTR(&pin_GPIO0) },
+    { MP_ROM_QSTR(MP_QSTR_BUTTON), MP_ROM_PTR(&pin_GPIO15) },
 
     { MP_ROM_QSTR(MP_QSTR_LED_RED), MP_ROM_PTR(&pin_GPIO21) },
     { MP_ROM_QSTR(MP_QSTR_LED_WHITE), MP_ROM_PTR(&pin_GPIO22) },
