@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-07-19 23:15+0000\n"
+"PO-Revision-Date: 2022-08-08 04:20+0000\n"
 "Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -221,7 +221,7 @@ msgstr "%q, %q, et %q doivent tous être de la même longueur"
 msgid "%q=%q"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s erreur 0x%x"
@@ -663,7 +663,7 @@ msgstr "Les blocs CBC doivent être des multiples de 16 octets"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr "L’appareil CIRCUITPY ne peut pas être trouvé ou créé."
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC ou somme de contrôle invalide"
 
@@ -896,6 +896,10 @@ msgstr "L'affichage doit avoir un espace colorimétrique de 16 bits."
 msgid "Display rotation must be in 90 degree increments"
 msgstr "La rotation d'affichage doit se faire par incréments de 90 degrés"
 
+#: main.c
+msgid "Done"
+msgstr "OK"
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr ""
@@ -1060,7 +1064,7 @@ msgstr "La fonction nécessite un verrou ('lock')"
 msgid "GNSS init"
 msgstr "Initialisation GNSS"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
 msgstr "Échec génerique"
 
@@ -1242,7 +1246,7 @@ msgstr "BSSID invalide"
 msgid "Invalid MAC address"
 msgstr "Adresse MAC invalide"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #: py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Paramètre invalide"
@@ -1272,7 +1276,7 @@ msgstr "Adresse MAC multicast invalide"
 msgid "Invalid pins"
 msgstr "Broches invalides"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "Taille invalide"
 
@@ -1280,7 +1284,7 @@ msgstr "Taille invalide"
 msgid "Invalid socket for TLS"
 msgstr "Socket non valide pour TLS"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid state"
 msgstr "État invalide"
 
@@ -1304,7 +1308,7 @@ msgstr "Ce calque est déjà dans un groupe"
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr "Le calque doit être une sous-classe de Group ou TileGrid"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
 msgstr "Adresse physique (MAC) invalide"
 
@@ -1595,6 +1599,14 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "Parité impaire non supportée"
 
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Off"
+msgstr "Inactif"
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Ok"
+msgstr "OK"
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
@@ -1664,15 +1676,15 @@ msgstr "Une seule couleur peut être transparente à la fois"
 msgid "Operation not permitted"
 msgstr "Cette opération n'est pas permise"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
 msgstr "Opération ou fonction non supportée"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
 msgstr "Timeout de l'opération"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "Hors de mémoire"
 
@@ -1856,9 +1868,13 @@ msgstr "Système de fichier en lecture seule"
 msgid "Read-only object"
 msgstr "Objet en lecture seule"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
 msgstr "Réponse reçue invalide"
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Reconnecting"
+msgstr "Reconnexion"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -1872,7 +1888,7 @@ msgstr "RemoteTransmissionRequests limité à 8 octets"
 msgid "Requested AES mode is unsupported"
 msgstr "Le mode AES demandé n'est pas supporté"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Requested resource not found"
 msgstr "Resource demandée non trouvée"
 
@@ -2311,7 +2327,7 @@ msgstr "Longueur de valeur != Longueur fixe requise"
 msgid "Value length > max_length"
 msgstr "Longueur de la valeur > max_length"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Version was invalid"
 msgstr "Version est invalide"
 
@@ -3883,7 +3899,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 
 #: ports/espressif/boards/adafruit_qtpy_esp32_pico/mpconfigboard.h
 msgid "pressing BOOT button at start up.\n"
-msgstr ""
+msgstr "presser le bouton BOOT au démarrage.\n"
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "pressing SW38 button at start up.\n"
@@ -3891,7 +3907,7 @@ msgstr "presser le bouton SW38 au démarrage.\n"
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "pressing VOLUME button at start up.\n"
-msgstr ""
+msgstr "presser le bouton VOLUME au démarrage.\n"
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
 #: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
