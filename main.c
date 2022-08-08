@@ -213,8 +213,9 @@ void supervisor_execution_status(void) {
     if (_current_executing_filename != NULL) {
         serial_write(_current_executing_filename);
     } else if ((_exec_result.return_code & PYEXEC_EXCEPTION) != 0 &&
+               _exec_result.exception_line > 0 &&
                exception != NULL) {
-        mp_printf(&mp_plat_print, "@%d %q", _exec_result.exception_line, exception->base.type->name);
+        mp_printf(&mp_plat_print, "@%d %s %q", _exec_result.exception_line, _exec_result.exception_filename, exception->base.type->name);
     } else {
         serial_write_compressed(translate("Done"));
     }
