@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-07-19 23:15+0000\n"
+"PO-Revision-Date: 2022-08-08 04:20+0000\n"
 "Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -898,7 +898,7 @@ msgstr "La rotation d'affichage doit se faire par incréments de 90 degrés"
 
 #: main.c
 msgid "Done"
-msgstr ""
+msgstr "OK"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
@@ -1601,11 +1601,11 @@ msgstr "Parité impaire non supportée"
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Off"
-msgstr ""
+msgstr "Inactif"
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Ok"
-msgstr ""
+msgstr "OK"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
@@ -1874,7 +1874,7 @@ msgstr "Réponse reçue invalide"
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Reconnecting"
-msgstr ""
+msgstr "Reconnexion"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -3899,7 +3899,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 
 #: ports/espressif/boards/adafruit_qtpy_esp32_pico/mpconfigboard.h
 msgid "pressing BOOT button at start up.\n"
-msgstr ""
+msgstr "presser le bouton BOOT au démarrage.\n"
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "pressing SW38 button at start up.\n"
@@ -3907,7 +3907,7 @@ msgstr "presser le bouton SW38 au démarrage.\n"
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "pressing VOLUME button at start up.\n"
-msgstr ""
+msgstr "presser le bouton VOLUME au démarrage.\n"
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
 #: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
