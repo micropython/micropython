@@ -1101,7 +1101,7 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
             // conn_handle, start_handle, end_handle, uuid
             ringbuf_extract(&o->ringbuf, data_tuple, 3, 0, NULL, 0, &o->irq_data_uuid, NULL);
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_RESULT) {
-            // conn_handle, def_handle, value_handle, properties, uuid
+            // conn_handle, end_handle, value_handle, properties, uuid
             ringbuf_extract(&o->ringbuf, data_tuple, 3, 1, NULL, 0, &o->irq_data_uuid, NULL);
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_RESULT) {
             // conn_handle, handle, uuid
@@ -1375,8 +1375,9 @@ void mp_bluetooth_gattc_on_primary_service_result(uint16_t conn_handle, uint16_t
     invoke_irq_handler(MP_BLUETOOTH_IRQ_GATTC_SERVICE_RESULT, args, 3, 0, NULL_ADDR, service_uuid, NULL_DATA, NULL_DATA_LEN, 0);
 }
 
-void mp_bluetooth_gattc_on_characteristic_result(uint16_t conn_handle, uint16_t def_handle, uint16_t value_handle, uint8_t properties, mp_obj_bluetooth_uuid_t *characteristic_uuid) {
-    mp_int_t args[] = {conn_handle, def_handle, value_handle, properties};
+void mp_bluetooth_gattc_on_characteristic_result(uint16_t conn_handle, uint16_t value_handle, uint16_t end_handle, uint8_t properties, mp_obj_bluetooth_uuid_t *characteristic_uuid) {
+    // Note: "end_handle" replaces "def_handle" from the original version of this event.
+    mp_int_t args[] = {conn_handle, end_handle, value_handle, properties};
     invoke_irq_handler(MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_RESULT, args, 4, 0, NULL_ADDR, characteristic_uuid, NULL_DATA, NULL_DATA_LEN, 0);
 }
 
@@ -1588,12 +1589,13 @@ void mp_bluetooth_gattc_on_primary_service_result(uint16_t conn_handle, uint16_t
     schedule_ringbuf(atomic_state);
 }
 
-void mp_bluetooth_gattc_on_characteristic_result(uint16_t conn_handle, uint16_t def_handle, uint16_t value_handle, uint8_t properties, mp_obj_bluetooth_uuid_t *characteristic_uuid) {
+void mp_bluetooth_gattc_on_characteristic_result(uint16_t conn_handle, uint16_t value_handle, uint16_t end_handle, uint8_t properties, mp_obj_bluetooth_uuid_t *characteristic_uuid) {
     MICROPY_PY_BLUETOOTH_ENTER
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     if (enqueue_irq(o, 2 + 2 + 2 + 1 + characteristic_uuid->type, MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_RESULT)) {
         ringbuf_put16(&o->ringbuf, conn_handle);
-        ringbuf_put16(&o->ringbuf, def_handle);
+        // Note: "end_handle" replaces "def_handle" from the original version of this event.
+        ringbuf_put16(&o->ringbuf, end_handle);
         ringbuf_put16(&o->ringbuf, value_handle);
         ringbuf_put(&o->ringbuf, properties);
         ringbuf_put_uuid(&o->ringbuf, characteristic_uuid);
