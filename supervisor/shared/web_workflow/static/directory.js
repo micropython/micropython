@@ -149,10 +149,10 @@ async function upload(e) {
         )
         if (response.ok) {
             refresh_list();
-            files.value = "";
-            upload_button.disabled = true;
         }
     }
+    files.value = "";
+    upload_button.disabled = true;
 }
 
 async function del(e) {
