@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-08 04:20+0000\n"
+"PO-Revision-Date: 2022-08-09 04:22+0000\n"
 "Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -219,7 +219,7 @@ msgstr "%q, %q, et %q doivent tous être de la même longueur"
 
 #: py/objint.c
 msgid "%q=%q"
-msgstr ""
+msgstr "%q=%q"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
