@@ -31,7 +31,6 @@
 #include <stdint.h>
 
 #include "py/binary.h"
-#include "py/enum.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,14 @@
 
 // Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "Kaluga 1"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+#define MICROPY_HW_BOARD_NAME       "Espressif ESP32-EYE"
+#define MICROPY_HW_MCU_NAME         "ESP32"
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO45)
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO23, .sda = &pin_GPIO18}}
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO7)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+// UART pins attached to the USB-serial converter chip
+#define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)
+#define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO3)
+
+#define DEFAULT_RESERVED_PSRAM      (1048576)

@@ -8,6 +8,13 @@ set(ENV{IDF_PATH} ${CMAKE_SOURCE_DIR}/esp-idf)
 # can build.
 set(COMPONENTS esptool_py soc driver log main esp-tls mbedtls mdns esp_event esp_adc_cal esp_netif esp_wifi lwip wpa_supplicant freertos bt usb)
 
+if("${CIRCUITPY_ESP32_CAMERA}")
+message("Including esp32-camera")
+set(EXTRA_COMPONENT_DIRS "esp32-camera")
+list(APPEND COMPONENTS "esp32-camera")
+message("COMPONENTS = ${COMPONENTS}")
+endif()
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(circuitpython)
 
