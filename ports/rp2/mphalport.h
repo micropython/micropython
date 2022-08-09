@@ -148,6 +148,8 @@ enum mp_hal_pin_interrupt_trigger {
 
 void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trigger, bool hard);
 
+mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t spi_in);
+
 enum {
     MP_HAL_MAC_WLAN0 = 0,
     MP_HAL_MAC_BDADDR,
