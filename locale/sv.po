@@ -3312,6 +3312,10 @@ msgstr "Ogiltigt värdnamn"
 msgid "invalid micropython decorator"
 msgstr "ogiltig mikropython-dekorator"
 
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid "invalid setting"
+msgstr ""
+
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
 msgstr "ogiltigt steg"
@@ -3570,7 +3574,7 @@ msgstr "ingen reset-pinne tillgänglig"
 msgid "no response from SD card"
 msgstr "inget svar från SD-kort"
 
-#: py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "inget sådant attribut"
 

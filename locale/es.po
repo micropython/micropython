@@ -3328,6 +3328,10 @@ msgstr "hostname inválido"
 msgid "invalid micropython decorator"
 msgstr "decorador de micropython inválido"
 
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid "invalid setting"
+msgstr ""
+
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
 msgstr "paso inválido"
@@ -3587,7 +3591,7 @@ msgstr "no hay pin de reinicio disponible"
 msgid "no response from SD card"
 msgstr "no hay respuesta de la tarjeta SD"
 
-#: py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "no hay tal atributo"
 

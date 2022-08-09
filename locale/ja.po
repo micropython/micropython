@@ -3273,6 +3273,10 @@ msgstr "不正なホスト名"
 msgid "invalid micropython decorator"
 msgstr "不正なmicropythonデコレータ"
 
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid "invalid setting"
+msgstr ""
+
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
 msgstr "不正なステップ"
@@ -3528,7 +3532,7 @@ msgstr "利用可能なリセットピンがありません"
 msgid "no response from SD card"
 msgstr "SDカードからの応答がありません"
 
-#: py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "指定の属性はありません"
 

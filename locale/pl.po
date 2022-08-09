@@ -3266,6 +3266,10 @@ msgstr ""
 msgid "invalid micropython decorator"
 msgstr "zły dekorator micropythona"
 
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid "invalid setting"
+msgstr ""
+
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
 msgstr "zły krok"
@@ -3521,7 +3525,7 @@ msgstr ""
 msgid "no response from SD card"
 msgstr ""
 
-#: py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "nie ma takiego atrybutu"
 
