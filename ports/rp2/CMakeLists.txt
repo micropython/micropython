@@ -412,9 +412,11 @@ endif()
 
 pico_add_extra_outputs(${MICROPY_TARGET})
 
+pico_find_compiler(PICO_COMPILER_SIZE ${PICO_GCC_TRIPLE}-size)
+
 add_custom_command(TARGET ${MICROPY_TARGET}
     POST_BUILD
-    COMMAND arm-none-eabi-size --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
+    COMMAND ${PICO_COMPILER_SIZE} --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
     VERBATIM
 )
 
