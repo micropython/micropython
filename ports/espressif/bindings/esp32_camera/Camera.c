@@ -65,6 +65,18 @@
 //|
 //|         This driver requires that the ``CIRCUITPY_RESERVED_PSRAM`` in ``/.env`` be large enough to hold the camera frambuffer(s). Generally, boards with built-in cameras will have a default setting that is large enough. If the constructor raises a MemoryError, this probably indicates the setting is too small and should be increased.
 //|
+//|
+//|         ..  IMPORTANT:
+//|             Not all supported sensors have all
+//|             of the properties listed below. For instance, the
+//|             OV5640 supports `denoise`, but the
+//|             OV2640 does not. The underlying esp32-camera
+//|             library does not provide a reliable API to check
+//|             which settings are supported. CircuitPython makes
+//|             a best effort to determine when an unsupported
+//|             property is set and will raise an exception in
+//|             that case.
+//|
 //|         :param data_pins: The 8 data data_pins used for image data transfer from the camera module, least significant bit first
 //|         :param pixel_clock: The pixel clock output from the camera module
 //|         :param vsync: The vertical sync pulse output from the camera module
@@ -230,7 +242,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_camera_camera_take_obj, 1, 2, e
 //|         grab_mode: Optional[GrabMode] = None,
 //|         framebuffer_count: Optional[int] = None,
 //|     ) -> None:
-//|         """Set the frame size and pixel format
+//|         """Change multiple related camera settings simultaneously
 //|
 //|         Because these settings interact in complex ways, and take longer than
 //|         the other properties to set, they are set together in a single function call.
@@ -304,7 +316,7 @@ MP_PROPERTY_GETTER(esp32_camera_camera_frame_size_obj,
     (mp_obj_t)&esp32_camera_camera_get_frame_size_obj);
 
 //|     contrast: int
-//|     """Access the contrast property of the camera sensor"""
+//|     """The sensor contrast.  Positive values increase contrast, negative values lower it. The total range is device-specific but is often from -2 to +2 inclusive."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_contrast(const mp_obj_t self_in) {
@@ -326,7 +338,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_contrast_obj,
     (mp_obj_t)&esp32_camera_camera_set_contrast_obj);
 
 //|     brightness: int
-//|     """Access the brightness property of the camera sensor"""
+//|     """The sensor brightness.  Positive values increase brightness, negative values lower it. The total range is device-specific but is often from -2 to +2 inclusive."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_brightness(const mp_obj_t self_in) {
@@ -348,7 +360,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_brightness_obj,
     (mp_obj_t)&esp32_camera_camera_set_brightness_obj);
 
 //|     saturation: int
-//|     """Access the saturation property of the camera sensor"""
+//|     """The sensor saturation.  Positive values increase saturation (more vibrant colors), negative values lower it (more muted colors).  The total range is device-specific but the value is often from -2 to +2 inclusive."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_saturation(const mp_obj_t self_in) {
@@ -370,7 +382,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_saturation_obj,
     (mp_obj_t)&esp32_camera_camera_set_saturation_obj);
 
 //|     sharpness: int
-//|     """Access the sharpness property of the camera sensor"""
+//|     """The sensor sharpness.  Positive values increase sharpness (more defined edges), negative values lower it (softer edges).  The total range is device-specific but the value is often from -2 to +2 inclusive."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_sharpness(const mp_obj_t self_in) {
@@ -392,7 +404,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_sharpness_obj,
     (mp_obj_t)&esp32_camera_camera_set_sharpness_obj);
 
 //|     denoise: int
-//|     """Access the denoise property of the camera sensor"""
+//|     """The sensor 'denoise' setting.  Any camera sensor has inherent 'noise', especially in low brightness environments. Software algorithms can decrease noise at the expense of fine detail.  A larger value increases the amount of software noise removal.  The total range is device-specific but the value is often from 0 to 10."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_denoise(const mp_obj_t self_in) {
@@ -414,7 +426,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_denoise_obj,
     (mp_obj_t)&esp32_camera_camera_set_denoise_obj);
 
 //|     gain_ceiling: GainCeiling
-//|     """Access the gain ceiling property of the camera sensor"""
+//|     """The sensor 'gain ceiling' setting. "Gain" is an analog multiplier applied to the raw sensor data.  The 'ceiling' is the maximum gain value that the sensor will use. A higher gain means that the sensor has a greater response to light, but also makes sensor noise more visible."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_gain_ceiling(const mp_obj_t self_in) {
@@ -436,7 +448,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_gain_ceiling_obj,
     (mp_obj_t)&esp32_camera_camera_set_gain_ceiling_obj);
 
 //|     quality: int
-//|     """Access the quality property of the camera sensor"""
+//|     """The 'quality' setting when capturing JPEG images.  This is similar to the quality setting when exporting a jpeg image from photo editing software.  Typical values range from 5 to 40, with higher numbers leading to larger image sizes and better overall image quality. However, when the quality is set to a high number, the total size of the JPEG data can exceed the size of an internal buffer, causing image capture to fail."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_quality(const mp_obj_t self_in) {
@@ -458,7 +470,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_quality_obj,
     (mp_obj_t)&esp32_camera_camera_set_quality_obj);
 
 //|     colorbar: bool
-//|     """Access the colorbar property of the camera sensor"""
+//|     """When `True`, a test pattern image is captured and the real sensor data is not used."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_colorbar(const mp_obj_t self_in) {
@@ -480,7 +492,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_colorbar_obj,
     (mp_obj_t)&esp32_camera_camera_set_colorbar_obj);
 
 //|     whitebal: bool
-//|     """Access the whitebal property of the camera sensor"""
+//|     """When `True`, the camera attempts to automatically control white balance.  When `False`, the `wb_mode` setting is used instead."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_whitebal(const mp_obj_t self_in) {
@@ -502,7 +514,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_whitebal_obj,
     (mp_obj_t)&esp32_camera_camera_set_whitebal_obj);
 
 //|     gain_ctrl: bool
-//|     """Access the gain_ctrl property of the camera sensor"""
+//|     """When `True`, the camera attempts to automatically control the sensor gain, up to the value in the `gain_ceiling` property.  When `False`, the `agc_gain` setting is used instead."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_gain_ctrl(const mp_obj_t self_in) {
@@ -524,7 +536,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_gain_ctrl_obj,
     (mp_obj_t)&esp32_camera_camera_set_gain_ctrl_obj);
 
 //|     exposure_ctrl: bool
-//|     """Access the exposure_ctrl property of the camera sensor"""
+//|     """When `True` the camera attempts to automatically control the exposure. When `False`, the `aec_value` setting is used instead."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_exposure_ctrl(const mp_obj_t self_in) {
@@ -546,7 +558,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_exposure_ctrl_obj,
     (mp_obj_t)&esp32_camera_camera_set_exposure_ctrl_obj);
 
 //|     hmirror: bool
-//|     """Access the hmirror property of the camera sensor"""
+//|     """When `true` the camera image is mirrored left-to-right"""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_hmirror(const mp_obj_t self_in) {
@@ -568,7 +580,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_hmirror_obj,
     (mp_obj_t)&esp32_camera_camera_set_hmirror_obj);
 
 //|     vflip: bool
-//|     """Access the vflip property of the camera sensor"""
+//|     """When `True` the camera image is flipped top-to-bottom"""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_vflip(const mp_obj_t self_in) {
@@ -590,7 +602,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_vflip_obj,
     (mp_obj_t)&esp32_camera_camera_set_vflip_obj);
 
 //|     aec2: bool
-//|     """Access the aec2 property of the camera sensor"""
+//|     """When `True` the sensor's "night mode" is enabled, extending the range of automatic gain control."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_aec2(const mp_obj_t self_in) {
@@ -634,7 +646,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_awb_gain_obj,
     (mp_obj_t)&esp32_camera_camera_set_awb_gain_obj);
 
 //|     agc_gain: int
-//|     """Access the agc_gain property of the camera sensor"""
+//|     """Access the gain level of the sensor. Higher values produce brighter images.  Typical settings range from 0 to 30. """
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_agc_gain(const mp_obj_t self_in) {
@@ -656,7 +668,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_agc_gain_obj,
     (mp_obj_t)&esp32_camera_camera_set_agc_gain_obj);
 
 //|     aec_value: int
-//|     """Access the aec_value property of the camera sensor"""
+//|     """Access the exposure value of the camera.  Higher values produce brighter images.  Typical settings range from 0 to 1200."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_aec_value(const mp_obj_t self_in) {
@@ -678,7 +690,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_aec_value_obj,
     (mp_obj_t)&esp32_camera_camera_set_aec_value_obj);
 
 //|     special_effect: int
-//|     """Access the special_effect property of the camera sensor"""
+//|     """Enable a "special effect". Zero is no special effect.  On OV5640, special effects range from 0 to 6 inclusive and select various color modes."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_special_effect(const mp_obj_t self_in) {
@@ -700,7 +712,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_special_effect_obj,
     (mp_obj_t)&esp32_camera_camera_set_special_effect_obj);
 
 //|     wb_mode: int
-//|     """Access the wb_mode property of the camera sensor"""
+//|     """The white balance mode.  0 is automatic white balance.  Typical values range from 0 to 4 inclusive."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_wb_mode(const mp_obj_t self_in) {
@@ -722,7 +734,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_wb_mode_obj,
     (mp_obj_t)&esp32_camera_camera_set_wb_mode_obj);
 
 //|     ae_level: int
-//|     """Access the ae_level property of the camera sensor"""
+//|     """The exposure offset for automatic exposure.  Typical values range from -2 to +2."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_ae_level(const mp_obj_t self_in) {
@@ -744,7 +756,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_ae_level_obj,
     (mp_obj_t)&esp32_camera_camera_set_ae_level_obj);
 
 //|     dcw: bool
-//|     """Access the dcw property of the camera sensor"""
+//|     """When `True` an advanced white balance mode is selected."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_dcw(const mp_obj_t self_in) {
@@ -766,7 +778,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_dcw_obj,
     (mp_obj_t)&esp32_camera_camera_set_dcw_obj);
 
 //|     bpc: bool
-//|     """Access the bpc property of the camera sensor"""
+//|     """When `True`, "black point compensation" is enabled. This can make black parts of the image darker."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_bpc(const mp_obj_t self_in) {
@@ -788,7 +800,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_bpc_obj,
     (mp_obj_t)&esp32_camera_camera_set_bpc_obj);
 
 //|     wpc: bool
-//|     """Access the wpc property of the camera sensor"""
+//|     """When `True`, "white point compensation" is enabled.  This can make white parts of the image whiter."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_wpc(const mp_obj_t self_in) {
@@ -810,7 +822,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_wpc_obj,
     (mp_obj_t)&esp32_camera_camera_set_wpc_obj);
 
 //|     raw_gma: bool
-//|     """Access the raw_gma property of the camera sensor"""
+//|     """When `True`, raw gamma mode is enabled."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_raw_gma(const mp_obj_t self_in) {
@@ -832,7 +844,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_raw_gma_obj,
     (mp_obj_t)&esp32_camera_camera_set_raw_gma_obj);
 
 //|     lenc: bool
-//|     """Access the lenc property of the camera sensor"""
+//|     """Enable "lens correction". This can help compensate for light fall-off at the edge of the sensor area."""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_lenc(const mp_obj_t self_in) {
