@@ -33,7 +33,7 @@ void board_init(void) {
     #ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
-    #endif
+    #endif /* DEBUG */
 }
 
 bool board_requests_safe_mode(void) {
