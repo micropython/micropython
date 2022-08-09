@@ -8,10 +8,11 @@ var editable = undefined;
 async function refresh_list() {
 
     function compareValues(a, b) {
-        if (a.value === b.value) {
+        if (a.directory == b.directory && a.name.toLowerCase() === b.name.toLowerCase()) {
           return 0;
         } else {
-          return a.value < b.value ? -1 : 1;
+          return a.directory.toString().substring(3,4)+a.name.toLowerCase() < 
+            b.directory.toString().substring(3,4)+b.name.toLowerCase() ? -1 : 1;
         }
     }
 
@@ -52,10 +53,6 @@ async function refresh_list() {
         }
     }
 
-    var dirCells = [];
-    var dataCells = [];
-    var index = 0;
-
     if (window.location.path != "/fs/") {
         var clone = template.content.cloneNode(true);
         var td = clone.querySelectorAll("td");
@@ -66,15 +63,10 @@ async function refresh_list() {
         path.textContent = "..";
         // Remove the delete button
         td[4].replaceChildren();
-
-        var sortdata = {};
-        sortdata.value = "..";
-        sortdata.index = index;
-        dirCells.push(sortdata);
-        index += 1;
-
         new_children.push(clone);
     }
+
+    data.sort(compareValues);
 
     for (const f of data) {
         // Clone the new row and insert it into the table
@@ -118,39 +110,10 @@ async function refresh_list() {
             edit_link.href = edit_url
         }
 
-        var dataCell = td[2];
-
-        var sortdata = {};
-        sortdata.value = dataCell.textContent.toLowerCase().trim();
-        sortdata.index = index;
-        if (!f.directory) {
-            dataCells.push(sortdata);
-            index += 1;
-        } else {
-            dirCells.push(sortdata);
-            index += 1;
-        }
-
         new_children.push(clone);
     }
-
-    dirCells.sort(compareValues);
-    dataCells.sort(compareValues);
-
     var tbody = document.querySelector("tbody");
-
-    // remove rows
-    while (tbody.firstChild) {
-      tbody.removeChild(tbody.lastChild);
-    }
-
-    // add sorted rows
-    for (var i = 0; i < dirCells.length; i += 1) {
-      tbody.appendChild(new_children[dirCells[i].index]);
-    }
-    for (var i = 0; i < dataCells.length; i += 1) {
-      tbody.appendChild(new_children[dataCells[i].index]);
-    }
+    tbody.replaceChildren(...new_children);
 }
 
 async function find_devices() {
