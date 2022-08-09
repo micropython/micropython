@@ -31,6 +31,7 @@
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
 #include "supervisor/usb.h"
+#include "supervisor/shared/title_bar.h"
 #include "supervisor/shared/workflow.h"
 #include "shared/runtime/interrupt_char.h"
 #include "shared/readline/readline.h"
@@ -242,6 +243,9 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
         if (coding.bit_rate == 1200) {
             reset_to_bootloader();
         }
+    } else {
+        // We are connected, let's request a title bar update.
+        supervisor_title_bar_request_update(true);
     }
 }
 

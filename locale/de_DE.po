@@ -218,7 +218,7 @@ msgstr "%q, %q und %q müssen alle die gleiche Länge haben"
 msgid "%q=%q"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s Fehler 0x%x"
@@ -656,7 +656,7 @@ msgstr "CBC-Blöcke müssen ein Vielfaches von 16 Bytes sein"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr "CIRCUITPY-Laufwerk konnte nicht gefunden oder erzeugt werden."
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC oder Checksumme ungültig"
 
@@ -880,6 +880,10 @@ msgstr "Display muss einen 16 Bit Farbraum haben."
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Die Rotation der Anzeige muss in 90-Grad-Schritten erfolgen"
 
+#: main.c
+msgid "Done"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "Drive mode wird nicht verwendet, wenn die Richtung input ist."
@@ -1041,7 +1045,7 @@ msgstr "Die Funktion erwartet, dass der 'lock'-Befehl zuvor ausgeführt wurde"
 msgid "GNSS init"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
 msgstr "Generischer Fehler"
 
@@ -1216,7 +1220,7 @@ msgstr "Ungültige BSSID"
 msgid "Invalid MAC address"
 msgstr "Ungültige MAC-Adresse"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #: py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Ungültiges Argument"
@@ -1246,7 +1250,7 @@ msgstr "Ungültige Multicast-MAC-Adresse"
 msgid "Invalid pins"
 msgstr "Ungültige Pins"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "Ungültige Größe"
 
@@ -1254,7 +1258,7 @@ msgstr "Ungültige Größe"
 msgid "Invalid socket for TLS"
 msgstr "Ungültiges Socket für TLS"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid state"
 msgstr "Ungültiger Zustand"
 
@@ -1278,7 +1282,7 @@ msgstr ""
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
 msgstr "MAC Adresse war ungültig"
 
@@ -1566,6 +1570,14 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "Eine ungerade Parität wird nicht unterstützt"
 
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Off"
+msgstr ""
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Ok"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
@@ -1635,15 +1647,15 @@ msgstr "Nur eine Farbe kann transparent sein zu einer Zeit"
 msgid "Operation not permitted"
 msgstr "Operation nicht erlaubt"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
 msgstr "Vorgang oder Funktion wird nicht unterstützt"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
 msgstr "Zeit für Vorgang abgelaufen"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "Kein Speicher mehr verfügbar"
 
@@ -1824,9 +1836,13 @@ msgstr "Schreibgeschützte Dateisystem"
 msgid "Read-only object"
 msgstr "Schreibgeschützte Objekt"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
 msgstr "Erhaltene Antwort ist ungültig"
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Reconnecting"
+msgstr ""
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -1840,7 +1856,7 @@ msgstr "RemoteTransmissionRequests limitiert auf 8 Bytes"
 msgid "Requested AES mode is unsupported"
 msgstr "Der angeforderte AES-Modus wird nicht unterstützt"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Requested resource not found"
 msgstr "Angefragte Ressource nicht gefunden"
 
@@ -2279,7 +2295,7 @@ msgstr "Wert Länge != Erforderliche feste Länge"
 msgid "Value length > max_length"
 msgstr "Länge des Wertes > max_length"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Version was invalid"
 msgstr "Version ist ungültig"
 
