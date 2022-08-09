@@ -529,43 +529,41 @@ STATIC int bluetooth_gatts_register_service(mp_obj_t uuid_in, mp_obj_t character
 
         // Optional third element, iterable of descriptors.
         if (characteristic_len >= 3) {
-            mp_obj_t descriptors_len_in = mp_obj_len(characteristic_items[2]);
-            num_descriptors[characteristic_index] = mp_obj_get_int(descriptors_len_in);
+            mp_int_t n = mp_obj_get_int(mp_obj_len(characteristic_items[2]));
+            if (n) {
+                num_descriptors[characteristic_index] = n;
 
-            if (num_descriptors[characteristic_index] == 0) {
-                continue;
-            }
+                // Grow the flattened uuids and flags arrays with this many more descriptors.
+                descriptor_uuids = m_renew(mp_obj_bluetooth_uuid_t *, descriptor_uuids, descriptor_index, descriptor_index + num_descriptors[characteristic_index]);
+                descriptor_flags = m_renew(uint16_t, descriptor_flags, descriptor_index, descriptor_index + num_descriptors[characteristic_index]);
 
-            // Grow the flattened uuids and flags arrays with this many more descriptors.
-            descriptor_uuids = m_renew(mp_obj_bluetooth_uuid_t *, descriptor_uuids, descriptor_index, descriptor_index + num_descriptors[characteristic_index]);
-            descriptor_flags = m_renew(uint16_t, descriptor_flags, descriptor_index, descriptor_index + num_descriptors[characteristic_index]);
+                // Also grow the handles array.
+                *handles = m_renew(uint16_t, *handles, *num_handles, *num_handles + num_descriptors[characteristic_index]);
 
-            // Also grow the handles array.
-            *handles = m_renew(uint16_t, *handles, *num_handles, *num_handles + num_descriptors[characteristic_index]);
+                mp_obj_iter_buf_t iter_buf_desc;
+                mp_obj_t iterable_desc = mp_getiter(characteristic_items[2], &iter_buf_desc);
+                mp_obj_t descriptor_obj;
 
-            mp_obj_iter_buf_t iter_buf_desc;
-            mp_obj_t iterable_desc = mp_getiter(characteristic_items[2], &iter_buf_desc);
-            mp_obj_t descriptor_obj;
+                // Extract out descriptors for this characteristic.
+                while ((descriptor_obj = mp_iternext(iterable_desc)) != MP_OBJ_STOP_ITERATION) {
+                    // (uuid, flags,)
+                    mp_obj_t *descriptor_items;
+                    mp_obj_get_array_fixed_n(descriptor_obj, 2, &descriptor_items);
+                    mp_obj_t desc_uuid_obj = descriptor_items[0];
+                    if (!mp_obj_is_type(desc_uuid_obj, &mp_type_bluetooth_uuid)) {
+                        mp_raise_ValueError(MP_ERROR_TEXT("invalid descriptor UUID"));
+                    }
 
-            // Extract out descriptors for this characteristic.
-            while ((descriptor_obj = mp_iternext(iterable_desc)) != MP_OBJ_STOP_ITERATION) {
-                // (uuid, flags,)
-                mp_obj_t *descriptor_items;
-                mp_obj_get_array_fixed_n(descriptor_obj, 2, &descriptor_items);
-                mp_obj_t desc_uuid_obj = descriptor_items[0];
-                if (!mp_obj_is_type(desc_uuid_obj, &mp_type_bluetooth_uuid)) {
-                    mp_raise_ValueError(MP_ERROR_TEXT("invalid descriptor UUID"));
+                    descriptor_uuids[descriptor_index] = MP_OBJ_TO_PTR(desc_uuid_obj);
+                    descriptor_flags[descriptor_index] = mp_obj_get_int(descriptor_items[1]);
+                    ++descriptor_index;
+
+                    (*handles)[handle_index++] = 0xffff;
                 }
 
-                descriptor_uuids[descriptor_index] = MP_OBJ_TO_PTR(desc_uuid_obj);
-                descriptor_flags[descriptor_index] = mp_obj_get_int(descriptor_items[1]);
-                ++descriptor_index;
-
-                (*handles)[handle_index++] = 0xffff;
+                // Reflect that we've grown the handles array.
+                *num_handles += num_descriptors[characteristic_index];
             }
-
-            // Reflect that we've grown the handles array.
-            *num_handles += num_descriptors[characteristic_index];
         }
 
         characteristic_uuids[characteristic_index] = MP_OBJ_TO_PTR(uuid_obj);
