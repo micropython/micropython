@@ -66,7 +66,8 @@
 //|         This driver requires that the ``CIRCUITPY_RESERVED_PSRAM`` in ``/.env`` be large enough to hold the camera frambuffer(s). Generally, boards with built-in cameras will have a default setting that is large enough. If the constructor raises a MemoryError, this probably indicates the setting is too small and should be increased.
 //|
 //|
-//|         ..  IMPORTANT:
+//|         .. important::
+//|
 //|             Not all supported sensors have all
 //|             of the properties listed below. For instance, the
 //|             OV5640 supports `denoise`, but the
@@ -558,7 +559,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_exposure_ctrl_obj,
     (mp_obj_t)&esp32_camera_camera_set_exposure_ctrl_obj);
 
 //|     hmirror: bool
-//|     """When `true` the camera image is mirrored left-to-right"""
+//|     """When `True` the camera image is mirrored left-to-right"""
 //|
 
 STATIC mp_obj_t esp32_camera_camera_get_hmirror(const mp_obj_t self_in) {

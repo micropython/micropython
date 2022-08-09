@@ -39,6 +39,11 @@
 //|
 //| This library enables access to any camera sensor supported by the library,
 //| including OV5640 and OV2640.
+//|
+//| .. seealso::
+//|
+//|     Non-Espressif microcontrollers use the `imagecapture` module together with wrapper libraries such as `adafruit_ov5640 <https://circuitpython.readthedocs.io/projects/ov5640/en/latest/>`_.
+//|
 //| """
 
 //| class GrabMode:
