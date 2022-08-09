@@ -199,7 +199,9 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
                 size_t n, *values;
                 mp_obj_exception_get_traceback(return_value, &n, &values);
                 if (values != NULL) {
-                    result->exception_line = values[n - 2];
+                    result->exception_line = values[1];
+                    result->exception_filename[sizeof(result->exception_filename) - 1] = '\0';
+                    strncpy(result->exception_filename, qstr_str(values[0]), sizeof(result->exception_filename) - 1);
                 }
             }
         }
