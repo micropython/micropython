@@ -1350,6 +1350,8 @@ void supervisor_web_workflow_background(void) {
         // Close the active socket if it is no longer connected.
         common_hal_socketpool_socket_close(&active);
     }
+
+    websocket_background();
 }
 
 void supervisor_stop_web_workflow(void) {
