@@ -450,7 +450,7 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         gatt_client_characteristic_t characteristic;
         gatt_event_characteristic_query_result_get_characteristic(packet, &characteristic);
         mp_obj_bluetooth_uuid_t characteristic_uuid = create_mp_uuid(characteristic.uuid16, characteristic.uuid128);
-        mp_bluetooth_gattc_on_characteristic_result(conn_handle, characteristic.start_handle, characteristic.value_handle, characteristic.properties, &characteristic_uuid);
+        mp_bluetooth_gattc_on_characteristic_result(conn_handle, characteristic.value_handle, characteristic.end_handle, characteristic.properties, &characteristic_uuid);
     } else if (event_type == GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT) {
         DEBUG_printf("  --> gatt descriptor query result\n");
         uint16_t conn_handle = gatt_event_all_characteristic_descriptors_query_result_get_handle(packet);

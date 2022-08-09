@@ -1310,15 +1310,51 @@ int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle, const mp_
     return ble_hs_err_to_errno(err);
 }
 
+STATIC bool match_char_uuid(const mp_obj_bluetooth_uuid_t *filter_uuid, const ble_uuid_any_t *result_uuid) {
+    if (!filter_uuid) {
+        return true;
+    }
+    ble_uuid_any_t filter_uuid_nimble;
+    create_nimble_uuid(filter_uuid, &filter_uuid_nimble);
+    return ble_uuid_cmp(&result_uuid->u, &filter_uuid_nimble.u) == 0;
+}
+
 STATIC int ble_gattc_characteristic_cb(uint16_t conn_handle, const struct ble_gatt_error *error, const struct ble_gatt_chr *characteristic, void *arg) {
     DEBUG_printf("ble_gattc_characteristic_cb: conn_handle=%d status=%d def_handle=%d val_handle=%d\n", conn_handle, error->status, characteristic ? characteristic->def_handle : -1, characteristic ? characteristic->val_handle : -1);
     if (!mp_bluetooth_is_active()) {
         return 0;
     }
+
+    mp_bluetooth_nimble_pending_characteristic_t *pending = &MP_STATE_PORT(bluetooth_nimble_root_pointers)->pending_char_result;
+    if (pending->ready) {
+        // If there's a pending characteristic, we now know what it's end handle is, report it up to modbluetooth.
+        pending->ready = 0;
+
+        // The end handle will either be the end of the query range (there are
+        // no more results), or one before the current result's definition
+        // handle.
+        uint16_t end_handle = MP_STATE_PORT(bluetooth_nimble_root_pointers)->char_disc_end_handle;
+        if (error->status == 0) {
+            end_handle = characteristic->def_handle - 1;
+        }
+
+        // Assume same conn_handle because we're limiting to a single active discovery.
+        mp_bluetooth_gattc_on_characteristic_result(conn_handle, pending->value_handle, end_handle, pending->properties, &pending->uuid);
+    }
+
     if (error->status == 0) {
-        mp_obj_bluetooth_uuid_t characteristic_uuid = create_mp_uuid(&characteristic->uuid);
-        mp_bluetooth_gattc_on_characteristic_result(conn_handle, characteristic->def_handle, characteristic->val_handle, characteristic->properties, &characteristic_uuid);
+        // If there's no filter, or the filter matches, then save this result.
+        if (match_char_uuid(MP_STATE_PORT(bluetooth_nimble_root_pointers)->char_filter_uuid, &characteristic->uuid)) {
+            pending->value_handle = characteristic->val_handle;
+            pending->properties = characteristic->properties;
+            pending->uuid = create_mp_uuid(&characteristic->uuid);
+            pending->ready = 1;
+        }
     } else {
+        // Finished (or failed). Allow another characteristic discovery to start.
+        MP_STATE_PORT(bluetooth_nimble_root_pointers)->char_disc_end_handle = 0;
+
+        // Report completion.
         mp_bluetooth_gattc_on_discover_complete(MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_DONE, conn_handle, error->status == BLE_HS_EDONE ? 0 : error->status);
     }
     return 0;
@@ -1328,13 +1364,29 @@ int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t s
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
-    int err;
-    if (uuid) {
-        ble_uuid_any_t nimble_uuid;
-        create_nimble_uuid(uuid, &nimble_uuid);
-        err = ble_gattc_disc_chrs_by_uuid(conn_handle, start_handle, end_handle, &nimble_uuid.u, &ble_gattc_characteristic_cb, NULL);
-    } else {
-        err = ble_gattc_disc_all_chrs(conn_handle, start_handle, end_handle, &ble_gattc_characteristic_cb, NULL);
+
+    // The implementation of characteristic discovery queries for all
+    // characteristics, and then UUID filtering is applied by NimBLE on each
+    // characteristic. Unfortunately, each characteristic result does not
+    // include its end handle, so you need to know the next characteristic
+    // before you can raise the previous one to modbluetooth. But if we let
+    // NimBLE do the filtering, then we don't necessarily see the next one.
+    // So we make NimBLE return all results and do the filtering here instead.
+
+    if (MP_STATE_PORT(bluetooth_nimble_root_pointers)->char_disc_end_handle) {
+        // Only allow a single discovery (otherwise we'd need to track a
+        // pending characteristic per conn handle).
+        return MP_EBUSY;
+    }
+
+    // Set the uuid filter (if any). This needs to be a root pointer,
+    // otherwise we'd use ble_gattc_disc_all_chrs's arg param.
+    MP_STATE_PORT(bluetooth_nimble_root_pointers)->char_filter_uuid = uuid;
+
+    int err = ble_gattc_disc_all_chrs(conn_handle, start_handle, end_handle, &ble_gattc_characteristic_cb, NULL);
+    if (!err) {
+        // Lock out concurrent characteristic discovery.
+        MP_STATE_PORT(bluetooth_nimble_root_pointers)->char_disc_end_handle = end_handle;
     }
     return ble_hs_err_to_errno(err);
 }

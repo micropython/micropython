@@ -31,6 +31,13 @@
 
 #define MP_BLUETOOTH_NIMBLE_MAX_SERVICES (8)
 
+typedef struct _mp_bluetooth_nimble_pending_characteristic_t {
+    uint16_t value_handle;
+    uint8_t properties;
+    mp_obj_bluetooth_uuid_t uuid;
+    uint8_t ready;
+} mp_bluetooth_nimble_pending_characteristic_t;
+
 typedef struct _mp_bluetooth_nimble_root_pointers_t {
     // Characteristic (and descriptor) value storage.
     mp_gatts_db_t gatts_db;
@@ -43,6 +50,14 @@ typedef struct _mp_bluetooth_nimble_root_pointers_t {
     // L2CAP channels.
     struct _mp_bluetooth_nimble_l2cap_channel_t *l2cap_chan;
     bool l2cap_listening;
+    #endif
+
+    #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
+    // Workaround to allow us to get the end_handle of each characteristic
+    // during discovery. See mp_bluetooth_gattc_discover_characteristics().
+    uint16_t char_disc_end_handle;
+    const mp_obj_bluetooth_uuid_t *char_filter_uuid;
+    mp_bluetooth_nimble_pending_characteristic_t pending_char_result;
     #endif
 } mp_bluetooth_nimble_root_pointers_t;
 
