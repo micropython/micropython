@@ -52,7 +52,7 @@ codepoint2name[ord("^")] = "caret"
 codepoint2name[ord("|")] = "pipe"
 codepoint2name[ord("~")] = "tilde"
 
-# static qstrs, should be sorted
+# static qstrs, unsorted.
 
 static_qstr_list = [
     "",
@@ -89,6 +89,64 @@ static_qstr_list = [
     "__repr__",
     "__setitem__",
     "__str__",
+    "__bool__",
+    "__pos__",
+    "__neg__",
+    "__invert__",
+    "__abs__",
+    "__float__",
+    "__complex__",
+    "__sizeof__",
+    "__lt__",
+    "__gt__",
+    "__eq__",
+    "__le__",
+    "__ge__",
+    "__ne__",
+    "__contains__",
+    "__iadd__",
+    "__isub__",
+    "__imul__",
+    "__imatmul__",
+    "__ifloordiv__",
+    "__itruediv__",
+    "__imod__",
+    "__ipow__",
+    "__ior__",
+    "__ixor__",
+    "__iand__",
+    "__ilshift__",
+    "__irshift__",
+    "__add__",
+    "__sub__",
+    "__mul__",
+    "__matmul__",
+    "__floordiv__",
+    "__truediv__",
+    "__mod__",
+    "__divmod__",
+    "__pow__",
+    "__or__",
+    "__xor__",
+    "__and__",
+    "__lshift__",
+    "__rshift__",
+    "__radd__",
+    "__rsub__",
+    "__rmul__",
+    "__rmatmul__",
+    "__rfloordiv__",
+    "__rtruediv__",
+    "__rmod__",
+    "__rpow__",
+    "__ror__",
+    "__rxor__",
+    "__rand__",
+    "__rlshift__",
+    "__rrshift__",
+    "__get__",
+    "__set__",
+    "__delete__",
     "ArithmeticError",
     "AssertionError",
     "AttributeError",
@@ -228,8 +286,6 @@ static_qstr_list = [
 ]
 
 # this must match the equivalent function in qstr.c
-
-
 def compute_hash(qstr, bytes_hash):
     hash = 5381
     for b in qstr:
@@ -305,16 +361,6 @@ def parse_input_headers(infiles):
 
                 # add the qstr to the list, with order number to retain original order in file
                 order = len(qstrs)
-                # but put special method names like __add__ at the top of list, so
-                # that their id's fit into a byte
-                if ident == "":
-                    # Sort empty qstr above all still
-                    order = -200000
-                elif ident == "__dir__":
-                    # Put __dir__ after empty qstr for builtin dir() to work
-                    order = -190000
-                elif ident.startswith("__"):
-                    order -= 100000
                 qstrs[ident] = Qstr(order, ident, qstr)
 
     if not qcfgs:
@@ -374,11 +420,11 @@ def print_qstr_data(qstrs):
     q1_values = [q for q in qstrs.values() if q.order >= 0]
 
     # go through each qstr in pool 0 and print it out. pool0 has special sort.
-    for q in sorted(q0_values, key=lambda x: x.order):
+    for q in sorted(q0_values, key=lambda x: x.qhash):
         print('QDEF0(MP_QSTR_%s, %d, %d, "%s")' % (q.ident, q.qhash, q.qlen, q.qdata))
 
     # go through each qstr in pool 1 and print it out. pool1 is regularly sorted.
-    for q in sorted(q1_values, key=lambda x: (x.qhash, x.qlen)):
+    for q in sorted(q1_values, key=lambda x: x.qhash):
         print('QDEF1(MP_QSTR_%s, %d, %d, "%s")' % (q.ident, q.qhash, q.qlen, q.qdata))
 
 

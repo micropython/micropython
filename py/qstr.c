@@ -121,7 +121,7 @@ const qstr_pool_t mp_qstr_special_const_pool = {
     MP_QSTRspecial_const_number_of + 1, // corresponds to number of strings in array just below
     (qstr_hash_t *)mp_qstr_const_hashes0,
     (qstr_len_t *)mp_qstr_const_lengths0,
-    false,                       // special constant qstrs are not sorted
+    true,
     {
         #ifndef NO_QSTR
 #define QDEF0(id, hash, len, str) str,
@@ -246,7 +246,7 @@ qstr qstr_find_strn(const char *str, size_t str_len) {
                     high = mid;
                 } else {
                     low = mid;
-                    if (cmp == 0) {
+                    if (MP_UNLIKELY(cmp == 0)) {
                         while (low > 0 && pool->hashes[low - 1] == str_hash) {
                             low--;
                         }

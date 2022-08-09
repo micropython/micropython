@@ -1793,7 +1793,6 @@ def main():
     except MPYReadError as er:
         print(er, file=sys.stderr)
         sys.exit(1)
-        base_qstrs = {}
 
     if args.hexdump:
         hexdump_mpy(compiled_modules)
