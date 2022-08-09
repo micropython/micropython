@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,23 @@
  * THE SOFTWARE.
  */
 
-// Micropython setup
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "components/driver/include/driver/gpio.h"
+#include "components/hal/include/hal/gpio_hal.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#define MICROPY_HW_BOARD_NAME       "Kaluga 1"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+void board_init(void) {
+    reset_board();
+}
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO45)
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO7)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+void reset_board(void) {
+}
+
+void board_deinit(void) {
+}
