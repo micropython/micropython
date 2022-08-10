@@ -24,37 +24,37 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_SLAVE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_SLAVE_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_TARGET_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_TARGET_H
 
 #include "py/obj.h"
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/i2cperipheral/I2CPeripheral.h"
+#include "common-hal/i2ctarget/I2CTarget.h"
 
 typedef struct {
     mp_obj_base_t base;
-    i2cperipheral_i2c_peripheral_obj_t *peripheral;
+    i2ctarget_i2c_target_obj_t *target;
     uint16_t address;
     bool is_read;
     bool is_restart;
-} i2cperipheral_i2c_peripheral_request_obj_t;
+} i2ctarget_i2c_target_request_obj_t;
 
-extern const mp_obj_type_t i2cperipheral_i2c_peripheral_request_type;
+extern const mp_obj_type_t i2ctarget_i2c_target_request_type;
 
-extern const mp_obj_type_t i2cperipheral_i2c_peripheral_type;
+extern const mp_obj_type_t i2ctarget_i2c_target_type;
 
-extern void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_peripheral_obj_t *self,
+extern void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self,
     const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
     uint8_t *addresses, unsigned int num_addresses, bool smbus);
-extern void common_hal_i2cperipheral_i2c_peripheral_deinit(i2cperipheral_i2c_peripheral_obj_t *self);
-extern bool common_hal_i2cperipheral_i2c_peripheral_deinited(i2cperipheral_i2c_peripheral_obj_t *self);
+extern void common_hal_i2ctarget_i2c_target_deinit(i2ctarget_i2c_target_obj_t *self);
+extern bool common_hal_i2ctarget_i2c_target_deinited(i2ctarget_i2c_target_obj_t *self);
 
-extern int common_hal_i2cperipheral_i2c_peripheral_is_addressed(i2cperipheral_i2c_peripheral_obj_t *self,
+extern int common_hal_i2ctarget_i2c_target_is_addressed(i2ctarget_i2c_target_obj_t *self,
     uint8_t *address, bool *is_read, bool *is_restart);
-extern int common_hal_i2cperipheral_i2c_peripheral_read_byte(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t *data);
-extern int common_hal_i2cperipheral_i2c_peripheral_write_byte(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t data);
-extern void common_hal_i2cperipheral_i2c_peripheral_ack(i2cperipheral_i2c_peripheral_obj_t *self, bool ack);
-extern void common_hal_i2cperipheral_i2c_peripheral_close(i2cperipheral_i2c_peripheral_obj_t *self);
+extern int common_hal_i2ctarget_i2c_target_read_byte(i2ctarget_i2c_target_obj_t *self, uint8_t *data);
+extern int common_hal_i2ctarget_i2c_target_write_byte(i2ctarget_i2c_target_obj_t *self, uint8_t data);
+extern void common_hal_i2ctarget_i2c_target_ack(i2ctarget_i2c_target_obj_t *self, bool ack);
+extern void common_hal_i2ctarget_i2c_target_close(i2ctarget_i2c_target_obj_t *self);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_SLAVE_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_TARGET_H

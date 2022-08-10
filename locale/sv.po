@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-05 14:18+0000\n"
+"PO-Revision-Date: 2022-08-07 15:16+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -217,7 +217,7 @@ msgstr "%q, %q och %q måste vara lika långa"
 msgid "%q=%q"
 msgstr "%q=%q"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s fel 0x%x"
@@ -406,11 +406,13 @@ msgstr "Adressen måste vara %d byte lång"
 msgid "All CAN peripherals are in use"
 msgstr "All I2C-kringutrustning används"
 
-#: ports/espressif/common-hal/busio/I2C.c
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "All I2C-kringutrustning används"
+
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+msgid "All I2C targets are in use"
+msgstr ""
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
@@ -655,7 +657,7 @@ msgstr "CBC-block måste vara multiplar om 16 byte"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr "CIRCUITPY-enheten kunde inte hittas eller skapas."
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC eller checksumma var ogiltig"
 
@@ -877,6 +879,10 @@ msgstr "Displayen måste ha en 16-bitars färgrymd."
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Displayens rotation måste vara i steg om 90 grader"
 
+#: main.c
+msgid "Done"
+msgstr "Klar"
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "Drivläge används inte när riktning är input."
@@ -1035,7 +1041,7 @@ msgstr "Funktionen kräver lås"
 msgid "GNSS init"
 msgstr "GNSS start"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
 msgstr "Allmänt fel"
 
@@ -1208,7 +1214,7 @@ msgstr "Ogiltig BSSID"
 msgid "Invalid MAC address"
 msgstr "Ogiltig MAC-adress"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #: py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Ogiltigt argument"
@@ -1238,7 +1244,7 @@ msgstr "Ogiltig MAC-adress för multicast"
 msgid "Invalid pins"
 msgstr "Ogiltiga pinnar"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "Ogiltig storlek"
 
@@ -1246,7 +1252,7 @@ msgstr "Ogiltig storlek"
 msgid "Invalid socket for TLS"
 msgstr "Ogiltig socket för TLS"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid state"
 msgstr "Ogiltigt tillstånd"
 
@@ -1270,7 +1276,7 @@ msgstr "Layer är redan med i en grupp"
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr "Layer måste vara en underklass av Group eller TileGrid"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
 msgstr "MAC-adressen var ogiltig"
 
@@ -1558,6 +1564,14 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "Udda paritet stöds inte"
 
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Off"
+msgstr "Av"
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Ok"
+msgstr "OK"
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
@@ -1603,7 +1617,7 @@ msgstr ""
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "Endast ett TouchAlarm kan ställas in för djupsömn."
 
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 msgid "Only one address is allowed"
 msgstr "Endast en adress är tillåten"
 
@@ -1626,15 +1640,15 @@ msgstr "Bara en färg kan vara genomskinlig i taget"
 msgid "Operation not permitted"
 msgstr "Åtgärden inte tillåten"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
 msgstr "Operation eller funktion stöds inte"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
 msgstr "Åtgärden orsakade timeout"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "Slut på minne"
 
@@ -1816,9 +1830,13 @@ msgstr "Skrivskyddat filsystem"
 msgid "Read-only object"
 msgstr "Skrivskyddat objekt"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
 msgstr "Mottaget svar var ogiltigt"
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Reconnecting"
+msgstr "Återansluter"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -1832,7 +1850,7 @@ msgstr "RemoteTransmissionRequests begränsad till 8 byte"
 msgid "Requested AES mode is unsupported"
 msgstr "Det begärda AES-läget stöds inte"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Requested resource not found"
 msgstr "Begärd resurs hittades inte"
 
@@ -2266,7 +2284,7 @@ msgstr "Värdets längde ! = krävd fast längd"
 msgid "Value length > max_length"
 msgstr "Värdets längd > max_length"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Version was invalid"
 msgstr "Versionen var ogiltig"
 
@@ -2356,11 +2374,11 @@ msgstr "__new__ arg måste vara en användartyp"
 msgid "a bytes-like object is required"
 msgstr "ett bytesliknande objekt krävs"
 
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-bindings/i2ctarget/I2CTarget.c
 msgid "address out of bounds"
 msgstr "adress utanför gränsen"
 
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-bindings/i2ctarget/I2CTarget.c
 msgid "addresses is empty"
 msgstr "adresserna är tomma"
 
@@ -2552,7 +2570,7 @@ msgstr "kan inte tilldela uttryck"
 msgid "can't cancel self"
 msgstr "kan inte avbryta sig själv"
 
-#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
 #: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kan inte konvertera %q till %q"
@@ -3294,6 +3312,10 @@ msgstr "Ogiltigt värdnamn"
 msgid "invalid micropython decorator"
 msgstr "ogiltig mikropython-dekorator"
 
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid "invalid setting"
+msgstr ""
+
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
 msgstr "ogiltigt steg"
@@ -3552,7 +3574,7 @@ msgstr "ingen reset-pinne tillgänglig"
 msgid "no response from SD card"
 msgstr "inget svar från SD-kort"
 
-#: py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "inget sådant attribut"
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Noralf Trønnes
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include "common-hal/microcontroller/Pin.h"
-#include "py/obj.h"
+void board_init(void) {
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif /* DEBUG */
+}
 
-typedef struct {
-    mp_obj_base_t base;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-    uint8_t *addresses;
-    unsigned int num_addresses;
+void reset_board(void) {
 
-    Sercom *sercom;
-    uint8_t scl_pin;
-    uint8_t sda_pin;
-    bool writing;
-} i2cperipheral_i2c_peripheral_obj_t;
+}
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H
+void board_deinit(void) {
+}

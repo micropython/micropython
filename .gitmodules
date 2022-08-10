@@ -307,3 +307,6 @@
 [submodule "frozen/circuitpython_picoed"]
 	path = frozen/circuitpython_picoed
 	url = https://github.com/elecfreaks/circuitpython_picoed.git
+[submodule "ports/espressif/esp32-camera"]
+	path = ports/espressif/esp32-camera
+	url = https://github.com/adafruit/esp32-camera/

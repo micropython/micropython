@@ -220,7 +220,7 @@ msgstr "%q, %q, hé %q bì xū cháng dù xiāng tóng"
 msgid "%q=%q"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s cuò wù 0x%x"
@@ -409,11 +409,13 @@ msgstr "dìzhǐ chángdù bìxū shì %d zìjié"
 msgid "All CAN peripherals are in use"
 msgstr "suǒyǒu CAN wàishè dōu zài shǐyòng zhōng"
 
-#: ports/espressif/common-hal/busio/I2C.c
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "suǒyǒu I2C wàishè dōu zài shǐyòng zhōng"
+
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+msgid "All I2C targets are in use"
+msgstr ""
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
@@ -662,7 +664,7 @@ msgstr "CBC kuài bìxū shì 16 zìjié de bèishù"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr "zhǎo bú dào huò chuàng jiàn CIRCUITPY qū dòng qì."
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC huò jiàoyàn hé wúxiào"
 
@@ -742,7 +744,8 @@ msgstr "tōng guò USB kě jiàn shí wú fǎ chóng xīn ān zhuāng '/'."
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr "wúfǎ chóngxīn qǐdòng dào yǐdǎo chéngxù, yīnwéi yǐdǎo chéngxù bù cúnzài."
+msgstr ""
+"wúfǎ chóngxīn qǐdòng dào yǐdǎo chéngxù, yīnwéi yǐdǎo chéngxù bù cúnzài."
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
@@ -885,6 +888,10 @@ msgstr "Xiǎnshì bìxū jùyǒu 16 wèi yánsè kōngjiān."
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Xiǎnshì xuánzhuǎn bìxū 90 dù jiā xīn"
+
+#: main.c
+msgid "Done"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
@@ -1046,7 +1053,7 @@ msgstr "Hánshù xūyào suǒdìng"
 msgid "GNSS init"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
 msgstr "tōng yòng gù zhàng"
 
@@ -1222,7 +1229,7 @@ msgstr "Wúxiào de BSSID"
 msgid "Invalid MAC address"
 msgstr "wú xiào de MAC dì zhǐ"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #: py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Wúxiào de cānshù"
@@ -1252,7 +1259,7 @@ msgstr "wú xiào de duō bō MAC dì zhǐ"
 msgid "Invalid pins"
 msgstr "Wúxiào de yǐn jiǎo"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "dà xiǎo wú xiào"
 
@@ -1260,7 +1267,7 @@ msgstr "dà xiǎo wú xiào"
 msgid "Invalid socket for TLS"
 msgstr "TLS de chā zuò wú xiào"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid state"
 msgstr "wú xiào zhuàng tài"
 
@@ -1284,7 +1291,7 @@ msgstr ""
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
 msgstr "MAC dì zhǐ wú xiào"
 
@@ -1571,6 +1578,14 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "Bù zhīchí jīshù"
 
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Off"
+msgstr ""
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Ok"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
@@ -1617,7 +1632,7 @@ msgstr ""
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mián."
 
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 msgid "Only one address is allowed"
 msgstr "zhǐ yǔn xǔ yí gè dì zhǐ"
 
@@ -1640,15 +1655,15 @@ msgstr "Yīcì zhǐ néng yǒuyī zhǒng yánsè shì tòumíng de"
 msgid "Operation not permitted"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
 msgstr "bù zhī chí cāo zuò huò gōng néng"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
 msgstr "cāo zuò yǐ fēn shí"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "nèi cún bù zú"
 
@@ -1828,9 +1843,13 @@ msgstr "Zhǐ dú wénjiàn xìtǒng"
 msgid "Read-only object"
 msgstr "Zhǐ dú duìxiàng"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
 msgstr "shōu dào de xiǎng yìng wú xiào"
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Reconnecting"
+msgstr ""
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -1844,7 +1863,7 @@ msgstr "RemoteTransmissionRequests xiànzhì wèi 8 gè zì jié"
 msgid "Requested AES mode is unsupported"
 msgstr "Qǐngqiú de AES móshì bù shòu zhīchí"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Requested resource not found"
 msgstr "wèi zhǎo dào qǐng qiú de zī yuán"
 
@@ -2277,7 +2296,7 @@ msgstr "Zhí chángdù != Suǒ xū de gùdìng chángdù"
 msgid "Value length > max_length"
 msgstr "Zhí chángdù > zuìdà chángdù"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Version was invalid"
 msgstr "bǎn běn wú xiào"
 
@@ -2367,11 +2386,11 @@ msgstr "__new__ cānshù bìxū shì yònghù lèixíng"
 msgid "a bytes-like object is required"
 msgstr "xūyào yīgè zì jié lèi duìxiàng"
 
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-bindings/i2ctarget/I2CTarget.c
 msgid "address out of bounds"
 msgstr "dìzhǐ chāochū biānjiè"
 
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-bindings/i2ctarget/I2CTarget.c
 msgid "addresses is empty"
 msgstr "dìzhǐ wèi kōng"
 
@@ -2563,7 +2582,7 @@ msgstr "bùnéng fēnpèi dào biǎodá shì"
 msgid "can't cancel self"
 msgstr "bù néng qǔ xiāo zì wǒ"
 
-#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
 #: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "Wúfǎ jiāng %q zhuǎnhuàn wèi %q"
@@ -3306,6 +3325,10 @@ msgstr "wú xiào zhǔ jī míng"
 msgid "invalid micropython decorator"
 msgstr "wúxiào de MicroPython zhuāngshì qì"
 
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid "invalid setting"
+msgstr ""
+
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
 msgstr "wúxiào bùzhòu"
@@ -3562,7 +3585,7 @@ msgstr "Méiyǒu kěyòng de fùwèi yǐn jiǎo"
 msgid "no response from SD card"
 msgstr "SD kǎ wú huíyīng"
 
-#: py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "méiyǒu cǐ shǔxìng"
 
