@@ -57,7 +57,7 @@
 //|         pixel_format: PixelFormat=PixelFormat.RGB565,
 //|         frame_size: FrameSize=FrameSize.QQVGA,
 //|         jpeg_quality: int=15,
-//|         double_buffered: bool = True,
+//|         framebuffer_count: int = 1,
 //|         grab_mode: GrabMode = GrabMode.WHEN_EMPTY,
 //|     ) -> None:
 //|         """
