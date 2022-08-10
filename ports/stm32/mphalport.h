@@ -110,6 +110,8 @@ bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, u
 void mp_hal_pin_config_speed(mp_hal_pin_obj_t pin_obj, uint32_t speed);
 void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_obj_t callback_obj);
 
+mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t spi_in);
+
 enum {
     MP_HAL_MAC_WLAN0 = 0,
     MP_HAL_MAC_WLAN1,
