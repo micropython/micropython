@@ -123,3 +123,5 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
 
 #define mp_hal_pin_interrupt(pin, handler, trigger, hard) \
     extint_register_pin(pin, trigger, hard, handler)
+
+mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t spi_in);
