@@ -48,7 +48,6 @@
 //|       import time
 //|       import pulseio
 //|
-//|       board.DISPLAY.auto_brightness = False
 //|       board.DISPLAY.brightness = 0
 //|       splash = displayio.Group()
 //|       board.DISPLAY.show(splash)

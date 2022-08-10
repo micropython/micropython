@@ -95,7 +95,7 @@ void board_init(void) {
     display->base.type = &displayio_display_type;
 
     // workaround as board_init() is called before reset_port() in main.c
-    pwmout_reset();
+///    pwmout_reset();
 
     common_hal_displayio_display_construct(
         display,
@@ -118,8 +118,7 @@ void board_init(void) {
         sizeof(display_init_sequence),
         &pin_GPIO45,    // backlight pin
         NO_BRIGHTNESS_COMMAND,
-        1.0f,           // brightness (ignored)
-        false,          // auto_brightness
+        1.0f,           // brightness
         false,          // single_byte_bounds
         false,          // data_as_commands
         true,           // auto_refresh
@@ -128,8 +127,6 @@ void board_init(void) {
         false,          // SH1107_addressing
         50000           // backlight pwm frequency
         );
-
-    common_hal_never_reset_pin(&pin_GPIO45); // backlight pin
 }
 
 bool board_requests_safe_mode(void) {

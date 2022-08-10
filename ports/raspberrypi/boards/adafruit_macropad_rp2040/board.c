@@ -97,7 +97,6 @@ void board_init(void) {
         NULL,
         0x81,
         1.0f, // brightness
-        false, // auto_brightness
         true, // single_byte_bounds
         true, // data as commands
         true, // auto_refresh
