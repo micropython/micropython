@@ -118,6 +118,7 @@ class SDCard:
 
     def init_card_v1(self):
         for i in range(_CMD_TIMEOUT):
+            time.sleep_ms(50)
             self.cmd(55, 0, 0)
             if self.cmd(41, 0, 0) == 0:
                 # SDSC card, uses byte addressing in read/write/erase commands
