@@ -390,6 +390,7 @@ SRC_COMMON_HAL_ALL = \
 	alarm/time/TimeAlarm.c \
 	alarm/touch/TouchAlarm.c \
 	analogio/AnalogIn.c \
+	analogio/AnalogFastIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
 	audiobusio/I2SOut.c \

@@ -32,6 +32,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/analogio/__init__.h"
 #include "shared-bindings/analogio/AnalogIn.h"
+#include "shared-bindings/analogio/AnalogFastIn.h"
 #include "shared-bindings/analogio/AnalogOut.h"
 
 //| """Analog hardware support
@@ -70,6 +71,7 @@
 STATIC const mp_rom_map_elem_t analogio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_analogio) },
     { MP_ROM_QSTR(MP_QSTR_AnalogIn),   MP_ROM_PTR(&analogio_analogin_type) },
+    { MP_ROM_QSTR(MP_QSTR_AnalogFastIn),   MP_ROM_PTR(&analogio_analogfastin_type) },
     { MP_ROM_QSTR(MP_QSTR_AnalogOut),   MP_ROM_PTR(&analogio_analogout_type) },
 };
 
