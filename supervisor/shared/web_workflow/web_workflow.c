@@ -37,6 +37,7 @@
 #include "shared/timeutils/timeutils.h"
 #include "supervisor/fatfs_port.h"
 #include "supervisor/filesystem.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
@@ -323,22 +324,31 @@ void supervisor_start_web_workflow(void) {
     #endif
 }
 
-static void _send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
+void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
+    int total_sent = 0;
     int sent = -EAGAIN;
-    while (sent == -EAGAIN && common_hal_socketpool_socket_get_connected(socket)) {
-        sent = socketpool_socket_send(socket, buf, len);
+    while ((sent == -EAGAIN || (sent > 0 && total_sent < len)) &&
+           common_hal_socketpool_socket_get_connected(socket)) {
+        sent = socketpool_socket_send(socket, buf + total_sent, len - total_sent);
+        if (sent > 0) {
+            total_sent += sent;
+            if (total_sent < len) {
+                // Yield so that network code can run.
+                port_idle_until_interrupt();
+            }
+        }
     }
-    if (sent < len) {
+    if (total_sent < len) {
         ESP_LOGE(TAG, "short send %d %d", sent, len);
     }
 }
 
 STATIC void _print_raw(void *env, const char *str, size_t len) {
-    _send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)str, (size_t)len);
+    web_workflow_send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)str, (size_t)len);
 }
 
 static void _send_str(socketpool_socket_obj_t *socket, const char *str) {
-    _send_raw(socket, (const uint8_t *)str, strlen(str));
+    web_workflow_send_raw(socket, (const uint8_t *)str, strlen(str));
 }
 
 // The last argument must be NULL! Otherwise, it won't stop.
@@ -357,15 +367,15 @@ static void _send_strs(socketpool_socket_obj_t *socket, ...) {
 static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
     mp_print_t _socket_print = {socket, _print_raw};
     mp_printf(&_socket_print, "%X\r\n", strlen(chunk));
-    _send_raw(socket, (const uint8_t *)chunk, strlen(chunk));
-    _send_raw(socket, (const uint8_t *)"\r\n", 2);
+    web_workflow_send_raw(socket, (const uint8_t *)chunk, strlen(chunk));
+    web_workflow_send_raw(socket, (const uint8_t *)"\r\n", 2);
 }
 
 STATIC void _print_chunk(void *env, const char *str, size_t len) {
     mp_print_t _socket_print = {env, _print_raw};
     mp_printf(&_socket_print, "%X\r\n", len);
-    _send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)str, len);
-    _send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)"\r\n", 2);
+    web_workflow_send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)str, len);
+    web_workflow_send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)"\r\n", 2);
 }
 
 // A bit of a misnomer because it sends all arguments as one chunk.
@@ -938,7 +948,7 @@ static void _reply_static(socketpool_socket_obj_t *socket, _request *request, co
         "Content-Length: ", encoded_len, "\r\n",
         "Content-Type: ", content_type, "\r\n",
         "\r\n", NULL);
-    _send_raw(socket, response, response_len);
+    web_workflow_send_raw(socket, response, response_len);
 }
 
 #define _REPLY_STATIC(socket, request, filename) _reply_static(socket, request, filename, filename##_length, filename##_content_type)
