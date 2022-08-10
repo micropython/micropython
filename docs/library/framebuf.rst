@@ -84,6 +84,13 @@ The following methods draw shapes onto the FrameBuffer.
     method draws only a 1 pixel outline whereas the `fill_rect` method
     draws both the outline and interior.
 
+.. method:: FrameBuffer.ellipse(x, y, xr, yr, f, c)
+
+    Draw an ellipse at the given location. Radii *xr* and *yr* define the
+    geometry; equal values cause a circle to be drawn. Boolean parameter *f*
+    determines whether the ellipse is filled or is drawn as a one pixel
+    outline. The *c* parameter defines the color.
+
 Drawing text
 ------------
 

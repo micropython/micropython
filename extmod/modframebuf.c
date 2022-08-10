@@ -404,16 +404,7 @@ STATIC mp_obj_t framebuf_rect(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_rect_obj, 6, 6, framebuf_rect);
 
-STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
-
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t x1 = mp_obj_get_int(args[1]);
-    mp_int_t y1 = mp_obj_get_int(args[2]);
-    mp_int_t x2 = mp_obj_get_int(args[3]);
-    mp_int_t y2 = mp_obj_get_int(args[4]);
-    mp_int_t col = mp_obj_get_int(args[5]);
-
+STATIC void line(const mp_obj_framebuf_t *fb, mp_int_t x1, mp_int_t y1, mp_int_t x2, mp_int_t y2, mp_int_t col) {
     mp_int_t dx = x2 - x1;
     mp_int_t sx;
     if (dx > 0) {
@@ -452,12 +443,12 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
     mp_int_t e = 2 * dy - dx;
     for (mp_int_t i = 0; i < dx; ++i) {
         if (steep) {
-            if (0 <= y1 && y1 < self->width && 0 <= x1 && x1 < self->height) {
-                setpixel(self, y1, x1, col);
+            if (0 <= y1 && y1 < fb->width && 0 <= x1 && x1 < fb->height) {
+                setpixel(fb, y1, x1, col);
             }
         } else {
-            if (0 <= x1 && x1 < self->width && 0 <= y1 && y1 < self->height) {
-                setpixel(self, x1, y1, col);
+            if (0 <= x1 && x1 < fb->width && 0 <= y1 && y1 < fb->height) {
+                setpixel(fb, x1, y1, col);
             }
         }
         while (e >= 0) {
@@ -468,13 +459,99 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
         e += 2 * dy;
     }
 
-    if (0 <= x2 && x2 < self->width && 0 <= y2 && y2 < self->height) {
-        setpixel(self, x2, y2, col);
+    if (0 <= x2 && x2 < fb->width && 0 <= y2 && y2 < fb->height) {
+        setpixel(fb, x2, y2, col);
     }
+}
+
+STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t x1 = mp_obj_get_int(args[1]);
+    mp_int_t y1 = mp_obj_get_int(args[2]);
+    mp_int_t x2 = mp_obj_get_int(args[3]);
+    mp_int_t y2 = mp_obj_get_int(args[4]);
+    mp_int_t col = mp_obj_get_int(args[5]);
+
+    line(self, x1, y1, x2, y2, col);
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_line_obj, 6, 6, framebuf_line);
+
+STATIC mp_obj_t draw_points(const mp_obj_framebuf_t *fb, mp_int_t cx, mp_int_t cy, mp_int_t x, mp_int_t y, bool fill, mp_int_t col) {
+    if (fill) {
+        line(fb, cx - x, cy + y, cx + x, cy + y, col);
+        line(fb, cx - x, cy - y, cx + x, cy - y, col);
+    }
+    else {
+        setpixel(fb, cx + x, cy + y, col);  // point in quadrant
+        setpixel(fb, cx - x, cy + y, col);
+        setpixel(fb, cx - x, cy - y, col);
+        setpixel(fb, cx + x, cy - y, col);
+    }
+    return mp_const_none;
+}
+
+STATIC mp_obj_t framebuf_ellipse(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t cx = mp_obj_get_int(args[1]);
+    mp_int_t cy = mp_obj_get_int(args[2]);
+    mp_int_t xradius = mp_obj_get_int(args[3]);
+    mp_int_t yradius = mp_obj_get_int(args[4]);
+    bool fill = mp_obj_get_int(args[5]);
+    mp_int_t col = mp_obj_get_int(args[6]);
+    mp_int_t two_asquare = 2 * xradius * xradius;
+    mp_int_t two_bsquare = 2 * yradius * yradius;
+    mp_int_t x = xradius;
+    mp_int_t y = 0;
+    mp_int_t xchange = yradius * yradius * (1 - 2 * xradius);
+    mp_int_t ychange = xradius * xradius;
+    mp_int_t ellipse_error = 0;
+    mp_int_t stoppingx = two_bsquare * xradius;
+    mp_int_t stoppingy = 0;
+    while (stoppingx >= stoppingy ) {  // 1st set of points,  y' > -1
+        draw_points(self, cx, cy, x,y, fill, col);
+        y += 1;
+        stoppingy += two_asquare;
+        ellipse_error += ychange;
+        ychange += two_asquare;
+        if ((2 * ellipse_error + xchange) > 0) {
+            x -= 1;
+            stoppingx -= two_bsquare;
+            ellipse_error += xchange;
+            xchange += two_bsquare;
+        }
+    }
+    // 1st point set is done start the 2nd set of points
+    x = 0;
+    y = yradius;
+    xchange = yradius * yradius;
+    ychange = xradius * xradius * (1 - 2 * yradius);
+    ellipse_error = 0;
+    stoppingx = 0;
+    stoppingy = two_asquare * yradius;
+    while (stoppingx <= stoppingy) {  // 2nd set of points, y' < -1
+        draw_points(self, cx, cy, x,y, fill, col);
+        x += 1;
+        stoppingx += two_bsquare;
+        ellipse_error += xchange;
+        xchange += two_bsquare;
+        if ((2 * ellipse_error + ychange) > 0) {
+            y -= 1;
+            stoppingy -= two_asquare;
+            ellipse_error += ychange;
+            ychange += two_asquare;
+        }
+    }
+    return mp_const_none;
+}
+
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_ellipse_obj, 7, 7, framebuf_ellipse);
 
 STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -610,6 +687,7 @@ STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_vline), MP_ROM_PTR(&framebuf_vline_obj) },
     { MP_ROM_QSTR(MP_QSTR_rect), MP_ROM_PTR(&framebuf_rect_obj) },
     { MP_ROM_QSTR(MP_QSTR_line), MP_ROM_PTR(&framebuf_line_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ellipse), MP_ROM_PTR(&framebuf_ellipse_obj) },
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&framebuf_blit_obj) },
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf_text_obj) },
