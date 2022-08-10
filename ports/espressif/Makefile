@@ -261,7 +261,6 @@ SRC_C += \
 	peripherals/touch.c
 ifeq ($(IDF_TARGET),esp32s2)
 SRC_C += \
-	cam.c \
 	i2s_lcd_esp32s2_driver.c
 endif
 endif
@@ -282,6 +281,15 @@ SRC_C += common-hal/_bleio/ble_events.c
 endif
 
 SRC_C += $(wildcard common-hal/espidf/*.c)
+
+ifneq ($(CIRCUITPY_ESP32_CAMERA),0)
+SRC_CAMERA := \
+	$(wildcard common-hal/esp32_camera/*.c) \
+	$(wildcard bindings/esp32_camera/*.c)
+SRC_C += $(SRC_CAMERA)
+CFLAGS += -isystem esp32-camera/driver/include
+CFLAGS += -isystem esp32-camera/conversions/include
+endif
 
 SRC_COMMON_HAL_EXPANDED = \
 	$(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
@@ -341,8 +349,10 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 	SDKCONFIGS := esp-idf-config/sdkconfig-ble.defaults;$(SDKCONFIGS)
 endif
 # create the config headers
-$(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig | $(BUILD)/esp-idf
-	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja
+.PHONY: do-sdkconfig
+do-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
+$(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig CMakeLists.txt | $(BUILD)/esp-idf
+	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja -DCIRCUITPY_ESP32_CAMERA=$(CIRCUITPY_ESP32_CAMERA)
 
 # build a lib
 # Adding -d explain -j 1 -v to the ninja line will output debug info
@@ -389,6 +399,11 @@ MBEDTLS_COMPONENTS_LINK_EXPANDED = $(foreach component, $(MBEDTLS_COMPONENTS_LIN
 ifeq ($(IDF_TARGET_ARCH),xtensa)
 BINARY_BLOBS += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 ESP_IDF_COMPONENTS_EXPANDED += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
+endif
+
+ifneq ($(CIRCUITPY_ESP32_CAMERA),0)
+ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/esp32-camera/libesp32-camera.a
+#$(error $(ESP_IDF_COMPONENTS_EXPANDED))
 endif
 
 # BOOTLOADER_OFFSET is determined by chip type, based on the ROM bootloader, and is not changeable.

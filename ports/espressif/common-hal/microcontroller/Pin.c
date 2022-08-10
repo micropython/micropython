@@ -100,7 +100,9 @@ static const uint64_t pin_mask_reset_forbidden =
 
 
 void never_reset_pin_number(gpio_num_t pin_number) {
-    if (pin_number == NO_PIN) {
+    // Some CircuitPython APIs deal in uint8_t pin numbers, but NO_PIN is -1.
+    // Also allow pin 255 to be treated as NO_PIN to avoid crashes
+    if (pin_number == NO_PIN || pin_number == (uint8_t)NO_PIN) {
         return;
     }
     never_reset_pins |= PIN_BIT(pin_number);
@@ -141,7 +143,9 @@ STATIC void _reset_pin(gpio_num_t pin_number) {
 
 // Mark pin as free and return it to a quiescent state.
 void reset_pin_number(gpio_num_t pin_number) {
-    if (pin_number == NO_PIN) {
+    // Some CircuitPython APIs deal in uint8_t pin numbers, but NO_PIN is -1.
+    // Also allow pin 255 to be treated as NO_PIN to avoid crashes
+    if (pin_number == NO_PIN || pin_number == (uint8_t)NO_PIN) {
         return;
     }
     never_reset_pins &= ~PIN_BIT(pin_number);
@@ -174,7 +178,9 @@ void reset_all_pins(void) {
 }
 
 void claim_pin_number(gpio_num_t pin_number) {
-    if (pin_number == NO_PIN) {
+    // Some CircuitPython APIs deal in uint8_t pin numbers, but NO_PIN is -1.
+    // Also allow pin 255 to be treated as NO_PIN to avoid crashes
+    if (pin_number == NO_PIN || pin_number == (uint8_t)NO_PIN) {
         return;
     }
     in_use |= PIN_BIT(pin_number);
