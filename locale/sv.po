@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-07 15:16+0000\n"
+"PO-Revision-Date: 2022-08-11 17:18+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -412,7 +412,7 @@ msgstr "All I2C-kringutrustning används"
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 msgid "All I2C targets are in use"
-msgstr ""
+msgstr "Alla I2C-mål används"
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
@@ -3314,7 +3314,7 @@ msgstr "ogiltig mikropython-dekorator"
 
 #: ports/espressif/common-hal/esp32_camera/Camera.c
 msgid "invalid setting"
-msgstr ""
+msgstr "ogiltig inställning"
 
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
