@@ -11,8 +11,8 @@ class FrameBuffer
 -----------------
 
 The FrameBuffer class provides a pixel buffer which can be drawn upon with
-pixels, lines, rectangles, text and even other FrameBuffer's. It is useful
-when generating output for displays.
+pixels, lines, rectangles, ellipses, text and even other FrameBuffers. It is
+useful when generating output for displays.
 
 For example::
 
@@ -83,6 +83,20 @@ The following methods draw shapes onto the FrameBuffer.
 
     The optional *f* parameter can be set to ``True`` to fill the rectangle.
     Otherwise just a one pixel outline is drawn.
+
+.. method:: FrameBuffer.ellipse(x, y, xr, yr, c[, f, m])
+
+    Draw an ellipse at the given location. Radii *xr* and *yr* define the
+    geometry; equal values cause a circle to be drawn. The *c* parameter
+    defines the color.
+
+    The optional *f* parameter can be set to ``True`` to fill the ellipse.
+    Otherwise just a one pixel outline is drawn.
+
+    The optional *m* parameter enables drawing to be restricted to certain
+    quadrants of the ellipse. The LS four bits determine which quadrants are
+    to be drawn, with bit 0 specifying Q1, b1 Q2, b2 Q3 and b3 Q4. Quadrants
+    are numbered counterclockwise with Q1 being top right.
 
 Drawing text
 ------------

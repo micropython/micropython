@@ -469,6 +469,100 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_line_obj, 6, 6, framebuf_line);
 
+STATIC void ellipse_pixel(const mp_obj_framebuf_t *fb, mp_int_t x, mp_int_t y, mp_int_t col, mp_int_t mask) {
+    if (mask && 0 <= x && x < fb->width && 0 <= y && y < fb->height) {
+        setpixel(fb, x, y, col);
+    }
+}
+
+// Q2 Q1
+// Q3 Q4
+#define ELLIPSE_MASK_FILL (0x10)
+#define ELLIPSE_MASK_ALL (0x0f)
+#define ELLIPSE_MASK_Q1 (0x01)
+#define ELLIPSE_MASK_Q2 (0x02)
+#define ELLIPSE_MASK_Q3 (0x04)
+#define ELLIPSE_MASK_Q4 (0x08)
+
+STATIC void draw_ellipse_points(const mp_obj_framebuf_t *fb, mp_int_t cx, mp_int_t cy, mp_int_t x, mp_int_t y, mp_int_t col, mp_int_t mask) {
+    if (mask & ELLIPSE_MASK_FILL) {
+        if (mask & ELLIPSE_MASK_Q1) {
+            fill_rect(fb, cx, cy - y, x + 1, 1, col);
+        }
+        if (mask & ELLIPSE_MASK_Q2) {
+            fill_rect(fb, cx - x, cy - y, x + 1, 1, col);
+        }
+        if (mask & ELLIPSE_MASK_Q3) {
+            fill_rect(fb, cx - x, cy + y, x + 1, 1, col);
+        }
+        if (mask & ELLIPSE_MASK_Q4) {
+            fill_rect(fb, cx, cy + y, x + 1, 1, col);
+        }
+    } else {
+        ellipse_pixel(fb, cx + x, cy - y, col, mask & ELLIPSE_MASK_Q1);
+        ellipse_pixel(fb, cx - x, cy - y, col, mask & ELLIPSE_MASK_Q2);
+        ellipse_pixel(fb, cx - x, cy + y, col, mask & ELLIPSE_MASK_Q3);
+        ellipse_pixel(fb, cx + x, cy + y, col, mask & ELLIPSE_MASK_Q4);
+    }
+}
+
+STATIC mp_obj_t framebuf_ellipse(size_t n_args, const mp_obj_t *args_in) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    mp_int_t args[5];
+    framebuf_args(args_in, args, 5); // cx, cy, xradius, yradius, col
+    mp_int_t mask = (n_args > 6 && mp_obj_is_true(args_in[6])) ? ELLIPSE_MASK_FILL : 0;
+    if (n_args > 7) {
+        mask |= mp_obj_get_int(args_in[7]) & ELLIPSE_MASK_ALL;
+    } else {
+        mask |= ELLIPSE_MASK_ALL;
+    }
+    mp_int_t two_asquare = 2 * args[2] * args[2];
+    mp_int_t two_bsquare = 2 * args[3] * args[3];
+    mp_int_t x = args[2];
+    mp_int_t y = 0;
+    mp_int_t xchange = args[3] * args[3] * (1 - 2 * args[2]);
+    mp_int_t ychange = args[2] * args[2];
+    mp_int_t ellipse_error = 0;
+    mp_int_t stoppingx = two_bsquare * args[2];
+    mp_int_t stoppingy = 0;
+    while (stoppingx >= stoppingy) {   // 1st set of points,  y' > -1
+        draw_ellipse_points(self, args[0], args[1], x, y, args[4], mask);
+        y += 1;
+        stoppingy += two_asquare;
+        ellipse_error += ychange;
+        ychange += two_asquare;
+        if ((2 * ellipse_error + xchange) > 0) {
+            x -= 1;
+            stoppingx -= two_bsquare;
+            ellipse_error += xchange;
+            xchange += two_bsquare;
+        }
+    }
+    // 1st point set is done start the 2nd set of points
+    x = 0;
+    y = args[3];
+    xchange = args[3] * args[3];
+    ychange = args[2] * args[2] * (1 - 2 * args[3]);
+    ellipse_error = 0;
+    stoppingx = 0;
+    stoppingy = two_asquare * args[3];
+    while (stoppingx <= stoppingy) {  // 2nd set of points, y' < -1
+        draw_ellipse_points(self, args[0], args[1], x, y, args[4], mask);
+        x += 1;
+        stoppingx += two_bsquare;
+        ellipse_error += xchange;
+        xchange += two_bsquare;
+        if ((2 * ellipse_error + ychange) > 0) {
+            y -= 1;
+            stoppingy -= two_asquare;
+            ellipse_error += ychange;
+            ychange += two_asquare;
+        }
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_ellipse_obj, 6, 8, framebuf_ellipse);
+
 STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
     mp_obj_t source_in = mp_obj_cast_to_native_base(args_in[1], MP_OBJ_FROM_PTR(&mp_type_framebuf));
@@ -603,6 +697,7 @@ STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_vline), MP_ROM_PTR(&framebuf_vline_obj) },
     { MP_ROM_QSTR(MP_QSTR_rect), MP_ROM_PTR(&framebuf_rect_obj) },
     { MP_ROM_QSTR(MP_QSTR_line), MP_ROM_PTR(&framebuf_line_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ellipse), MP_ROM_PTR(&framebuf_ellipse_obj) },
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&framebuf_blit_obj) },
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf_text_obj) },
