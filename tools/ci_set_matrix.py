@@ -96,8 +96,8 @@ def set_boards_to_build(build_all):
             if p in IGNORE:
                 continue
 
-            # Boards don't run tests so ignore those as well.
-            if p.startswith("tests"):
+            # Boards don't run tests or docs so ignore those as well.
+            if p.startswith("tests") or p.startswith("docs"):
                 continue
 
             # As a (nearly) last resort, for some certain files, we compute the settings from the
