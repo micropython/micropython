@@ -42,7 +42,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word,
     uint8_t set_column_command, uint8_t set_row_command, uint8_t write_ram_command,
     uint8_t *init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t *backlight_pin, uint16_t brightness_command,
-    mp_float_t brightness, bool auto_brightness,
+    mp_float_t brightness,
     bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second,
     bool backlight_on_high, bool SH1107_addressing, uint16_t backlight_pwm_frequency);
 
@@ -58,9 +58,6 @@ uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t *self);
 uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t *self);
 uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t *self);
 void common_hal_displayio_display_set_rotation(displayio_display_obj_t *self, int rotation);
-
-bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t *self);
-void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t *self, bool auto_brightness);
 
 bool common_hal_displayio_display_get_dither(displayio_display_obj_t *self);
 void common_hal_displayio_display_set_dither(displayio_display_obj_t *self, bool dither);

@@ -118,8 +118,7 @@ void board_init(void) {
         sizeof(display_init_sequence),
         &pin_GPIO45,    // backlight pin
         NO_BRIGHTNESS_COMMAND,
-        1.0f,           // brightness (ignored)
-        false,          // auto_brightness
+        1.0f,           // brightness
         false,          // single_byte_bounds
         false,          // data_as_commands
         true,           // auto_refresh

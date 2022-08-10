@@ -51,7 +51,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word, uint8_t set_column_command,
     uint8_t set_row_command, uint8_t write_ram_command,
     uint8_t *init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t *backlight_pin,
-    uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
+    uint16_t brightness_command, mp_float_t brightness,
     bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second,
     bool backlight_on_high, bool SH1107_addressing, uint16_t backlight_pwm_frequency) {
 
@@ -70,7 +70,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     self->set_row_command = set_row_command;
     self->write_ram_command = write_ram_command;
     self->brightness_command = brightness_command;
-    self->auto_brightness = auto_brightness;
     self->first_manual_refresh = !auto_refresh;
     self->data_as_commands = data_as_commands;
     self->backlight_on_high = backlight_on_high;
@@ -132,12 +131,8 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
         common_hal_never_reset_pin(backlight_pin);
         #endif
     }
-    if (!self->auto_brightness && (self->backlight_inout.base.type != &mp_type_NoneType ||
-                                   brightness_command != NO_BRIGHTNESS_COMMAND)) {
-        common_hal_displayio_display_set_brightness(self, brightness);
-    } else {
-        self->current_brightness = -1.0;
-    }
+
+    common_hal_displayio_display_set_brightness(self, brightness);
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
@@ -157,20 +152,11 @@ uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t *self) 
     return displayio_display_core_get_height(&self->core);
 }
 
-bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t *self) {
-    return self->auto_brightness;
-}
-
-void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t *self, bool auto_brightness) {
-    self->auto_brightness = auto_brightness;
-}
-
 mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t *self) {
     return self->current_brightness;
 }
 
 bool common_hal_displayio_display_set_brightness(displayio_display_obj_t *self, mp_float_t brightness) {
-    self->updating_backlight = true;
     if (!self->backlight_on_high) {
         brightness = 1.0 - brightness;
     }
@@ -209,7 +195,6 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t *self, 
         }
 
     }
-    self->updating_backlight = false;
     if (ok) {
         self->current_brightness = brightness;
     }
@@ -413,23 +398,8 @@ void common_hal_displayio_display_set_auto_refresh(displayio_display_obj_t *self
     self->auto_refresh = auto_refresh;
 }
 
-STATIC void _update_backlight(displayio_display_obj_t *self) {
-    if (!self->auto_brightness || self->updating_backlight) {
-        return;
-    }
-    if (supervisor_ticks_ms64() - self->last_backlight_refresh < 100) {
-        return;
-    }
-    // TODO(tannewt): Fade the backlight based on its existing value and a target value. The target
-    // should account for ambient light when possible.
-    common_hal_displayio_display_set_brightness(self, 1.0);
-
-    self->last_backlight_refresh = supervisor_ticks_ms64();
-}
-
 void displayio_display_background(displayio_display_obj_t *self) {
-    _update_backlight(self);
-
+    common_hal_displayio_display_set_brightness(self, 1.0);
     if (self->auto_refresh && (supervisor_ticks_ms64() - self->core.last_refresh) > self->native_ms_per_frame) {
         _refresh_display(self);
     }
@@ -452,7 +422,6 @@ void release_display(displayio_display_obj_t *self) {
 
 void reset_display(displayio_display_obj_t *self) {
     common_hal_displayio_display_set_auto_refresh(self, true);
-    self->auto_brightness = true;
     common_hal_displayio_display_show(self, NULL);
 }
 
