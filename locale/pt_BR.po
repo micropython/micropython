@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-07 15:16+0000\n"
+"PO-Revision-Date: 2022-08-10 07:18+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -417,7 +417,7 @@ msgstr "Todos os periféricos I2C estão em uso"
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 msgid "All I2C targets are in use"
-msgstr ""
+msgstr "Todos os alvos I2C já estão em uso"
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
@@ -3349,7 +3349,7 @@ msgstr "o decorador micropython é inválido"
 
 #: ports/espressif/common-hal/esp32_camera/Camera.c
 msgid "invalid setting"
-msgstr ""
+msgstr "configuração inválida"
 
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
