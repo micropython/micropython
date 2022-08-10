@@ -158,6 +158,8 @@ pop all: 1 2 4 5
 1 1
 0 0
 1 1
+# str/array consistency
+0
 # end coverage.c
 0123456789 b'0123456789'
 7300

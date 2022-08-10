@@ -4,6 +4,7 @@
 #include "py/obj.h"
 #include "py/objfun.h"
 #include "py/objstr.h"
+#include "py/objarray.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/repl.h"
@@ -684,6 +685,12 @@ STATIC mp_obj_t extra_coverage(void) {
 
         // mp_obj_is_int accepts small int and object ints
         mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_int(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_int(mp_obj_new_int_from_ll(1)));
+    }
+
+    // Enforce layout consistency between mp_obj_str_t and mp_obj_array_t.
+    {
+        mp_printf(&mp_plat_print, "# str/array consistency\n");
+        mp_printf(&mp_plat_print, "%d\n", offsetof(mp_obj_str_t, len) - offsetof(mp_obj_array_t, len)); // should be the same
     }
 
     mp_printf(&mp_plat_print, "# end coverage.c\n");

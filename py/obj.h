@@ -394,18 +394,20 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
         .table = (mp_map_elem_t *)(mp_rom_map_elem_t *)table_name, \
     }
 
-#define MP_DEFINE_CONST_DICT(dict_name, table_name) \
+#define MP_DEFINE_CONST_DICT_WITH_SIZE(dict_name, table_name, n) \
     const mp_obj_dict_t dict_name = { \
         .base = {&mp_type_dict}, \
         .map = { \
             .all_keys_are_qstrs = 1, \
             .is_fixed = 1, \
             .is_ordered = 1, \
-            .used = MP_ARRAY_SIZE(table_name), \
-            .alloc = MP_ARRAY_SIZE(table_name), \
+            .used = n, \
+            .alloc = n, \
             .table = (mp_map_elem_t *)(mp_rom_map_elem_t *)table_name, \
         }, \
     }
+
+#define MP_DEFINE_CONST_DICT(dict_name, table_name) MP_DEFINE_CONST_DICT_WITH_SIZE(dict_name, table_name, MP_ARRAY_SIZE(table_name))
 
 // These macros are used to declare and define constant staticmethond and classmethod objects
 // You can put "static" in front of the definitions to make them local
@@ -789,7 +791,7 @@ mp_obj_t mp_obj_new_str(const char *data, size_t len);
 mp_obj_t mp_obj_new_str_via_qstr(const char *data, size_t len);
 mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr);
 mp_obj_t mp_obj_new_bytes(const byte *data, size_t len);
-mp_obj_t mp_obj_new_bytearray(size_t n, void *items);
+mp_obj_t mp_obj_new_bytearray(size_t n, const void *items);
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val);

@@ -30,7 +30,7 @@
 
 typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
-    mp_uint_t hash;
+    size_t hash;
     // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
     size_t len;
     const byte *data;
@@ -103,5 +103,15 @@ MP_DECLARE_CONST_FUN_OBJ_1(str_isdigit_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(str_isupper_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(str_islower_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj);
+
+#if MICROPY_PY_ARRAY
+extern const mp_obj_dict_t array_locals_dict;
+#endif
+
+#if MICROPY_PY_BUILTINS_BYTEARRAY
+extern const mp_obj_dict_t bytearray_locals_dict;
+#endif
+
+extern const mp_obj_dict_t str_locals_dict;
 
 #endif // MICROPY_INCLUDED_PY_OBJSTR_H
