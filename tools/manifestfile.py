@@ -248,19 +248,28 @@ class ManifestFile:
                     )
                 os.chdir(prev_cwd)
 
-    def require(self, name, version=None, **kwargs):
+    def require(self, name, version=None, unix_ffi=False, **kwargs):
         """
         Require a module by name from micropython-lib.
 
-        This is a shortcut for
+        Optionally specify unix_ffi=True to use a module from the unix-ffi directory.
         """
         if self._path_vars["MPY_LIB_DIR"]:
-            for manifest_path in glob.glob(
-                os.path.join(self._path_vars["MPY_LIB_DIR"], "**", name, "manifest.py"),
-                recursive=True,
-            ):
-                self.include(manifest_path, **kwargs)
-                return
+            lib_dirs = ["micropython", "python-stdlib", "python-ecosys"]
+            if unix_ffi:
+                # Search unix-ffi only if unix_ffi=True, and make unix-ffi modules
+                # take precedence.
+                lib_dirs = ["unix-ffi"] + lib_dirs
+
+            for lib_dir in lib_dirs:
+                for manifest_path in glob.glob(
+                    os.path.join(
+                        self._path_vars["MPY_LIB_DIR"], lib_dir, "**", name, "manifest.py"
+                    ),
+                    recursive=True,
+                ):
+                    self.include(manifest_path, **kwargs)
+                    return
             raise ValueError("Library not found in local micropython-lib: {}".format(name))
         else:
             # TODO: HTTP request to obtain URLs from manifest.json.
