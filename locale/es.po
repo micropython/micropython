@@ -407,11 +407,13 @@ msgstr "La dirección debe tener %d bytes de largo"
 msgid "All CAN peripherals are in use"
 msgstr "Todos los periféricos CAN están en uso"
 
-#: ports/espressif/common-hal/busio/I2C.c
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Todos los periféricos I2C están siendo usados"
+
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+msgid "All I2C targets are in use"
+msgstr ""
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
@@ -1630,7 +1632,7 @@ msgstr ""
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "Solamente una TouchAlarm puede ser configurada durante deep sleep."
 
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 msgid "Only one address is allowed"
 msgstr ""
 
@@ -2386,11 +2388,11 @@ msgstr "__new__ arg debe ser un user-type"
 msgid "a bytes-like object is required"
 msgstr "se requiere un objeto bytes-like"
 
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-bindings/i2ctarget/I2CTarget.c
 msgid "address out of bounds"
 msgstr "address fuera de límites"
 
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-bindings/i2ctarget/I2CTarget.c
 msgid "addresses is empty"
 msgstr "addresses esta vacío"
 
@@ -2582,7 +2584,7 @@ msgstr "no se puede asignar a la expresión"
 msgid "can't cancel self"
 msgstr "no se puede cancelar a si mismo"
 
-#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
 #: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "no puede convertir %q a %q"
@@ -3326,6 +3328,10 @@ msgstr "hostname inválido"
 msgid "invalid micropython decorator"
 msgstr "decorador de micropython inválido"
 
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid "invalid setting"
+msgstr ""
+
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
 msgstr "paso inválido"
@@ -3585,7 +3591,7 @@ msgstr "no hay pin de reinicio disponible"
 msgid "no response from SD card"
 msgstr "no hay respuesta de la tarjeta SD"
 
-#: py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "no hay tal atributo"
 
