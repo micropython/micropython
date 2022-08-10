@@ -54,7 +54,7 @@
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the initialization sequence at minimum."""
 //|
-//|     def __init__(self, display_bus: _DisplayBus, init_sequence: ReadableBuffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: Optional[int] = None, brightness: float = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False,  auto_refresh: bool = True, native_frames_per_second: int = 60, backlight_on_high: bool = True, SH1107_addressing: bool = False) -> None:
+//|     def __init__(self, display_bus: _DisplayBus, init_sequence: ReadableBuffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: Optional[int] = None, brightness: float = 1.0, single_byte_bounds: bool = False, data_as_commands: bool = False,  auto_refresh: bool = True, native_frames_per_second: int = 60, backlight_on_high: bool = True, SH1107_addressing: bool = False) -> None:
 //|         r"""Create a Display object on the given display bus (`FourWire`, `ParallelBus` or `I2CDisplay`).
 //|
 //|         The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
@@ -102,8 +102,7 @@
 //|         :param int write_ram_command: Command used to write pixels values into the update region. Ignored if data_as_commands is set.
 //|         :param microcontroller.Pin backlight_pin: Pin connected to the display's backlight
 //|         :param int brightness_command: Command to set display brightness. Usually available in OLED controllers.
-//|         :param float brightness: Initial display brightness. This value is ignored if auto_brightness is True.
-//|         :param bool auto_brightness: If True, brightness is controlled via an ambient light sensor or other mechanism.
+//|         :param float brightness: Initial display brightness.
 //|         :param bool single_byte_bounds: Display column and row commands use single bytes
 //|         :param bool data_as_commands: Treat all init and boundary data as SPI commands. Certain displays require this.
 //|         :param bool auto_refresh: Automatically refresh the screen
@@ -122,7 +121,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
            ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word,
            ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command,
            ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command,
-           ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands,
+           ARG_brightness, ARG_single_byte_bounds, ARG_data_as_commands,
            ARG_auto_refresh, ARG_native_frames_per_second, ARG_backlight_on_high,
            ARG_SH1107_addressing, ARG_backlight_pwm_frequency };
     static const mp_arg_t allowed_args[] = {
@@ -146,7 +145,6 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_backlight_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_brightness_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = NO_BRIGHTNESS_COMMAND} },
         { MP_QSTR_brightness, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
-        { MP_QSTR_auto_brightness, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_single_byte_bounds, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_data_as_commands, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_auto_refresh, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
@@ -196,7 +194,6 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         MP_OBJ_TO_PTR(backlight_pin),
         args[ARG_brightness_command].u_int,
         brightness,
-        args[ARG_auto_brightness].u_bool,
         args[ARG_single_byte_bounds].u_bool,
         args[ARG_data_as_commands].u_bool,
         args[ARG_auto_refresh].u_bool,
@@ -311,9 +308,7 @@ MP_PROPERTY_GETSET(displayio_display_auto_refresh_obj,
     (mp_obj_t)&displayio_display_set_auto_refresh_obj);
 
 //|     brightness: float
-//|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness. When
-//|     `auto_brightness` is True, the value of `brightness` will change automatically.
-//|     If `brightness` is set, `auto_brightness` will be disabled and will be set to False."""
+//|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness."""
 //|
 STATIC mp_obj_t displayio_display_obj_get_brightness(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
@@ -327,7 +322,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_brightness_obj, displayio_displa
 
 STATIC mp_obj_t displayio_display_obj_set_brightness(mp_obj_t self_in, mp_obj_t brightness_obj) {
     displayio_display_obj_t *self = native_display(self_in);
-    common_hal_displayio_display_set_auto_brightness(self, false);
     mp_float_t brightness = mp_obj_get_float(brightness_obj);
     if (brightness < 0 || brightness > 1.0) {
         mp_raise_ValueError(translate("Brightness must be 0-1.0"));
@@ -343,34 +337,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_set_brightness_obj, displayio_displa
 MP_PROPERTY_GETSET(displayio_display_brightness_obj,
     (mp_obj_t)&displayio_display_get_brightness_obj,
     (mp_obj_t)&displayio_display_set_brightness_obj);
-
-//|     auto_brightness: bool
-//|     """True when the display brightness is adjusted automatically, based on an ambient
-//|     light sensor or other method. Note that some displays may have this set to True by default,
-//|     but not actually implement automatic brightness adjustment. `auto_brightness` is set to False
-//|     if `brightness` is set manually."""
-//|
-STATIC mp_obj_t displayio_display_obj_get_auto_brightness(mp_obj_t self_in) {
-    displayio_display_obj_t *self = native_display(self_in);
-    return mp_obj_new_bool(common_hal_displayio_display_get_auto_brightness(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_auto_brightness_obj, displayio_display_obj_get_auto_brightness);
-
-STATIC mp_obj_t displayio_display_obj_set_auto_brightness(mp_obj_t self_in, mp_obj_t auto_brightness) {
-    displayio_display_obj_t *self = native_display(self_in);
-
-    common_hal_displayio_display_set_auto_brightness(self, mp_obj_is_true(auto_brightness));
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_set_auto_brightness_obj, displayio_display_obj_set_auto_brightness);
-
-MP_PROPERTY_GETSET(displayio_display_auto_brightness_obj,
-    (mp_obj_t)&displayio_display_get_auto_brightness_obj,
-    (mp_obj_t)&displayio_display_set_auto_brightness_obj);
-
-
-
 
 //|     width: int
 //|     """Gets the width of the board"""
@@ -509,7 +475,6 @@ STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_auto_refresh), MP_ROM_PTR(&displayio_display_auto_refresh_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&displayio_display_brightness_obj) },
-    { MP_ROM_QSTR(MP_QSTR_auto_brightness), MP_ROM_PTR(&displayio_display_auto_brightness_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_display_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_display_height_obj) },

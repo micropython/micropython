@@ -6,6 +6,15 @@ var current_path;
 var editable = undefined;
 
 async function refresh_list() {
+
+    function compareValues(a, b) {
+        if (a.directory == b.directory && a.name.toLowerCase() === b.name.toLowerCase()) {
+          return 0;
+        } else {
+          return a.directory.toString().substring(3,4)+a.name.toLowerCase() < b.directory.toString().substring(3,4)+b.name.toLowerCase() ? -1 : 1;
+        }
+    }
+
     current_path = window.location.hash.substr(1);
     if (current_path == "") {
         current_path = "/";
@@ -46,7 +55,7 @@ async function refresh_list() {
     if (window.location.path != "/fs/") {
         var clone = template.content.cloneNode(true);
         var td = clone.querySelectorAll("td");
-        td[0].textContent = "🗀";
+        td[0].textContent = "📁";
         var path = clone.querySelector("a");
         let parent = new URL("..", "file://" + current_path);
         path.href = "#" + parent.pathname;
@@ -56,11 +65,13 @@ async function refresh_list() {
         new_children.push(clone);
     }
 
+    data.sort(compareValues);
+
     for (const f of data) {
         // Clone the new row and insert it into the table
         var clone = template.content.cloneNode(true);
         var td = clone.querySelectorAll("td");
-        var icon = "⬇";
+        var icon = "⬇️";
         var file_path = current_path + f.name;
         let api_url = new URL("/fs" + file_path, url_base);
         let edit_url = "/edit/#" + file_path;
@@ -72,12 +83,12 @@ async function refresh_list() {
         }
 
         if (f.directory) {
-            icon = "🗀";
+            icon = "📁";
         } else if(f.name.endsWith(".txt") ||
                   f.name.endsWith(".py") ||
                   f.name.endsWith(".js") ||
                   f.name.endsWith(".json")) {
-            icon = "🖹";
+            icon = "📄";
         } else if (f.name.endsWith(".html")) {
             icon = "🌐";
         }
@@ -92,9 +103,11 @@ async function refresh_list() {
         delete_button.disabled = !editable;
         delete_button.onclick = del;
 
-        edit_url = new URL(edit_url, url_base);
-        let edit_link = clone.querySelector(".edit_link");
-        edit_link.href = edit_url
+        if (editable && !f.directory) {
+            edit_url = new URL(edit_url, url_base);
+            let edit_link = clone.querySelector(".edit_link");
+            edit_link.href = edit_url
+        }
 
         new_children.push(clone);
     }
@@ -149,10 +162,10 @@ async function upload(e) {
         )
         if (response.ok) {
             refresh_list();
-            files.value = "";
-            upload_button.disabled = true;
         }
     }
+    files.value = "";
+    upload_button.disabled = true;
 }
 
 async function del(e) {

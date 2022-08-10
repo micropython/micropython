@@ -84,7 +84,6 @@ void board_init(void) {
         NULL, // &pin_PA17, // brightness pin
         NO_BRIGHTNESS_COMMAND,
         0.0f, // brightness
-        false, // auto_brightness
         false, // single_byte_bounds
         true, // data as commands
         true, // auto_refresh
