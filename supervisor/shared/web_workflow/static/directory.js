@@ -11,8 +11,7 @@ async function refresh_list() {
         if (a.directory == b.directory && a.name.toLowerCase() === b.name.toLowerCase()) {
           return 0;
         } else {
-          return a.directory.toString().substring(3,4)+a.name.toLowerCase() < 
-            b.directory.toString().substring(3,4)+b.name.toLowerCase() ? -1 : 1;
+          return a.directory.toString().substring(3,4)+a.name.toLowerCase() < b.directory.toString().substring(3,4)+b.name.toLowerCase() ? -1 : 1;
         }
     }
 
