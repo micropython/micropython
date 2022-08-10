@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_PY_OBJSTR_H
 
 #include "py/obj.h"
+#include "py/objarray.h"
 
 typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
@@ -35,6 +36,13 @@ typedef struct _mp_obj_str_t {
     size_t len;
     const byte *data;
 } mp_obj_str_t;
+
+// This static assert is used to ensure that mp_obj_str_t and mp_obj_array_t are compatible,
+// meaning that their len and data/items entries are at the same offsets in the struct.
+// This allows the same code to be used for str/bytes and bytearray.
+#define MP_STATIC_ASSERT_STR_ARRAY_COMPATIBLE \
+    MP_STATIC_ASSERT(offsetof(mp_obj_str_t, len) == offsetof(mp_obj_array_t, len) \
+    && offsetof(mp_obj_str_t, data) == offsetof(mp_obj_array_t, items))
 
 #define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, (const byte *)str}
 
@@ -70,6 +78,7 @@ const byte *mp_obj_str_get_data_no_check(mp_obj_t self_in, size_t *len);
     if (mp_obj_is_qstr(str_obj_in)) { \
         str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); \
     } else { \
+        MP_STATIC_ASSERT_STR_ARRAY_COMPATIBLE; \
         str_len = ((mp_obj_str_t *)MP_OBJ_TO_PTR(str_obj_in))->len; \
         str_data = ((mp_obj_str_t *)MP_OBJ_TO_PTR(str_obj_in))->data; \
     }
@@ -117,5 +126,15 @@ MP_DECLARE_CONST_FUN_OBJ_1(str_isdigit_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(str_isupper_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(str_islower_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj);
+
+extern const mp_obj_dict_t mp_obj_str_locals_dict;
+
+#if MICROPY_PY_BUILTINS_BYTEARRAY
+extern const mp_obj_dict_t mp_obj_bytearray_locals_dict;
+#endif
+
+#if MICROPY_PY_ARRAY
+extern const mp_obj_dict_t mp_obj_array_locals_dict;
+#endif
 
 #endif // MICROPY_INCLUDED_PY_OBJSTR_H
