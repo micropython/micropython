@@ -497,10 +497,16 @@ backticks  ``:class:`~adafruit_motor.servo.Servo```. You must also add the refer
 Use ``adafruit_register`` when possible
 --------------------------------------------------------------------------------
 `Register <https://github.com/adafruit/Adafruit_CircuitPython_Register>`_ is
-a foundational library that manages packing and unpacking data from device
-registers. When possible, use it for unpacking and packing registers. This
-ensures the packing code is shared amongst all registers. Furthermore, it
-simplifies device definitions by making them declarative (only data.)
+a foundational library that manages packing and unpacking data from I2C device
+registers. There is also `Register SPI <https://github.com/adafruit/Adafruit_CircuitPython_Register_SPI>`_
+for SPI devices. When possible, use one of these libraries for unpacking and
+packing registers. This ensures the packing code is shared amongst all
+registers (even across drivers). Furthermore, it simplifies device definitions
+by making them declarative (only data.)
+
+Values with non-consecutive bits in a register or that represent FIFO endpoints
+may not map well to existing register classes. In unique cases like these, it is
+ok to read and write the register directly.
 
 *Do not* add all registers from a datasheet upfront. Instead, only add the ones
 necessary for the functionality the driver exposes. Adding them all will lead to
