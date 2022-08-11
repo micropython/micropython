@@ -68,8 +68,8 @@ After you've cloned and checked out the IDF to the correct version, run the
 
 ```bash
 $ cd esp-idf
-$ ./install.sh       # or (install.bat on Windows)
-$ source export.sh   # or (export.bat on Windows) or (call export.bat on Windows)
+$ ./install.sh       # (or install.bat on Windows)
+$ source export.sh   # (or call export.bat on Windows)
 ```
 
 The `install.sh` step only needs to be done once. You will need to source
