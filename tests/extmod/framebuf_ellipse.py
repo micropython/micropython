@@ -25,4 +25,3 @@ printbuf()
 fbuf.fill(0)
 fbuf.ellipse(15, 15, 6, 12, True, 0xAA)
 printbuf()
-
