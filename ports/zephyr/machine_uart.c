@@ -75,10 +75,9 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-    GET_STR_DATA_LEN(args[0], name, name_len);
 
     machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
-    self->dev = device_get_binding(name);
+    self->dev = device_get_binding(mp_obj_str_get_str(args[0]));
     if (!self->dev) {
         mp_raise_ValueError(MP_ERROR_TEXT("Bad device name"));
     }
