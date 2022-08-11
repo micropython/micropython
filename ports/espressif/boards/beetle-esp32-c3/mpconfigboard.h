@@ -30,7 +30,7 @@
 #define MICROPY_HW_MCU_NAME         "ESP32-C3FN4"
 
 // Status LED
-#define MICROPY_HW_NEOPIXEL         (&pin_GPIO10)
+#define MICROPY_HW_LED_STATUS (&pin_GPIO10)
 
 #define CIRCUITPY_BOARD_I2C         (1)
 #define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO9, .sda = &pin_GPIO8}}

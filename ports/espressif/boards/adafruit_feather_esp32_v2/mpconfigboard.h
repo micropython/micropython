@@ -32,6 +32,8 @@
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO0)
 #define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO2)
 
+#define MICROPY_HW_LED_STATUS (&pin_GPIO13)
+
 #define CIRCUITPY_BOARD_I2C         (1)
 #define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO20, .sda = &pin_GPIO22}}
 

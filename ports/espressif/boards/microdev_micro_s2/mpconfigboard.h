@@ -28,8 +28,10 @@
 #define MICROPY_HW_BOARD_NAME       "MicroDev microS2"
 #define MICROPY_HW_MCU_NAME         "ESP32-S2"
 
-// Status LED
+// Status LEDs
 #define MICROPY_HW_NEOPIXEL         (&pin_GPIO33)
+
+#define MICROPY_HW_LED_STATUS (&pin_GPIO21)
 
 // Default bus pins
 #define DEFAULT_I2C_BUS_SCL         (&pin_GPIO1)
