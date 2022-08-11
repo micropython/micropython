@@ -32,7 +32,7 @@
 
 extern const mp_obj_type_t analogio_analogfastin_type;
 
-void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, uint32_t sample_rate);
+void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, mp_float_t sample_rate);
 void common_hal_analogio_analogfastin_deinit(analogio_analogfastin_obj_t *self);
 bool common_hal_analogio_analogfastin_deinited(analogio_analogfastin_obj_t *self);
 bool common_hal_analogio_analogfastin_capture(analogio_analogfastin_obj_t *self);

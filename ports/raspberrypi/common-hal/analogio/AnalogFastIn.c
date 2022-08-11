@@ -29,15 +29,11 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate/translate.h"
-
 #include "src/rp2_common/hardware_adc/include/hardware/adc.h"
 #include "src/rp2_common/hardware_dma/include/hardware/dma.h"
-
 //     /sdk/src/rp2_common/hardware_dma/include/hardware/dma.h
-
-// ports/raspberrypi/
+//     ports/raspberrypi/
 #include "sdk/src/common/pico_stdlib/include/pico/stdlib.h"
-
 
 #define ADC_FIRST_PIN_NUMBER 26
 #define ADC_PIN_COUNT 4
@@ -46,30 +42,7 @@
 #define CAPTURE_DEPTH 1000
 uint8_t capture_buf[CAPTURE_DEPTH];
 
-// ADC unit8 or int8 ??? ---> unint16
-//
-// uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
-//    adc_select_input(self->pin->number - ADC_FIRST_PIN_NUMBER);
-//    uint16_t value = adc_read();
-//
-//    // Stretch 12-bit ADC reading to 16-bit range
-//    return (value << 4) | (value >> 8);
-// }
-/*
-typedef struct {
-    mp_obj_base_t base;
-    uint8_t number;
-} mcu_pin_obj_t;
-*/
-
-//    self->pin = pin;
-//    self->buffer = buffer;
-//    self->len = len;
-//    //self->bits_per_sample = bytes_per_sample * 8;
-//    self->samples_signed = samples_signed;
-//    self->sample_rate = sample_rate;
-
-void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, uint32_t sample_rate) {
+void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, mp_float_t sample_rate) {
 
     // Set pin and channel
     self->pin = pin;
@@ -82,7 +55,6 @@ void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *sel
     self->len = len;
 
     // checks on length here
-
 
     // uint8_t bytes_per_sample
     // Set sample rate
@@ -102,7 +74,7 @@ void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *sel
         true,    // Enable DMA data request (DREQ)
         1,       // DREQ (and IRQ) asserted when at least 1 sample present
         false,   // We won't see the ERR bit because of 8 bit reads; disable. // ??
-        true     // Shift each sample to 8 bits when pushing to FIFO // ??
+        false    // Shift each sample to 8 bits when pushing to FIFO // ??
         );
 
     // Divisor of 0 -> full speed. Free-running capture with the divider is
@@ -112,28 +84,28 @@ void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *sel
     // continuously) or > 95 (take samples less frequently than 96 cycle
     // intervals). This is all timed by the 48 MHz ADC clock.
     // sample rate determines divisor, not zero.
-    adc_set_clkdiv(0);
+
+    adc_set_clkdiv(48000000.0 / self->sample_rate);
 
     // sleep_ms(1000);
     // Set up the DMA to start transferring data as soon as it appears in FIFO
     uint dma_chan = dma_claim_unused_channel(true);
     self->dma_chan = dma_chan;
-    dma_channel_config cfg = dma_channel_get_default_config(dma_chan);
+
+    // Set Config
+    self->cfg = dma_channel_get_default_config(dma_chan);
 
     // Reading from constant address, writing to incrementing byte addresses
-    channel_config_set_transfer_data_size(&cfg, DMA_SIZE_8);
-    channel_config_set_read_increment(&cfg, false);
-    channel_config_set_write_increment(&cfg, true);
+    channel_config_set_transfer_data_size(&(self->cfg), DMA_SIZE_16);
+    channel_config_set_read_increment(&(self->cfg), false);
+    channel_config_set_write_increment(&(self->cfg), true);
 
     // Pace transfers based on availability of ADC samples
-    channel_config_set_dreq(&cfg, DREQ_ADC);
+    channel_config_set_dreq(&(self->cfg), DREQ_ADC);
 
-    dma_channel_configure(dma_chan, &cfg,
-        capture_buf,    // dst
-        &adc_hw->fifo,  // src
-        self->len,      // CAPTURE_DEPTH,  // transfer count
-        true            // start immediately
-        );
+    // clear any previous activity
+    adc_fifo_drain();
+    adc_run(false);
 }
 
 
@@ -146,8 +118,12 @@ void common_hal_analogio_analogfastin_deinit(analogio_analogfastin_obj_t *self) 
         return;
     }
 
+    // Release ADC Pin
     reset_pin_number(self->pin->number);
     self->pin = NULL;
+
+    // Release DMA Channel
+    dma_channel_unclaim(self->dma_chan);
 }
 
 // ================================================================
@@ -155,15 +131,31 @@ void common_hal_analogio_analogfastin_deinit(analogio_analogfastin_obj_t *self) 
 // make this a bool so that later we can perform integrity checking
 // ================================================================
 bool common_hal_analogio_analogfastin_capture(analogio_analogfastin_obj_t *self) {
+
+
+    // CONSIDER THESE ISSUES
     // uint16_t value = adc_read();
     // Stretch 12-bit ADC reading to 16-bit range
     // return (value << 4) | (value >> 8);
+
+    uint32_t cdl = self->len / 2 - 1;
+    dma_channel_configure(self->dma_chan, &(self->cfg),
+        self->buffer,   // dst
+        &adc_hw->fifo,  // src
+        cdl,            // CAPTURE_DEPTH,  // transfer count
+        true            // start immediately
+        );
+
+    // Start the ADC
     adc_run(true);
+
     // Once DMA finishes, stop any new conversions from starting, and clean up
     // the FIFO in case the ADC was still mid-conversion.
     dma_channel_wait_for_finish_blocking(self->dma_chan);
-    // printf("Capture finished\n");
+
+    //  Clean up
     adc_run(false);
     adc_fifo_drain();
+
     return true;
 }

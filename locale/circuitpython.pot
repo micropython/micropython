@@ -3863,6 +3863,11 @@ msgstr ""
 msgid "rsplit(None,n)"
 msgstr ""
 
+#: shared-bindings/analogio/AnalogFastIn.c
+msgid "sample rate must be 1.0-500000.0 per second"
+msgstr ""
+
+#: shared-bindings/analogio/AnalogFastIn.c
 #: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "

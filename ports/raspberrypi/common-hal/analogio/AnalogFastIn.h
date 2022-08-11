@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ANALOGIO_ANALOGFASTIN_H
 
 #include "common-hal/microcontroller/Pin.h"
+#include "src/rp2_common/hardware_dma/include/hardware/dma.h"
 
 #include "py/obj.h"
 
@@ -39,9 +40,10 @@ typedef struct {
     uint32_t len;
     uint8_t bytes_per_sample;
     bool samples_signed;
-    uint32_t sample_rate;
+    mp_float_t sample_rate;
     uint8_t chan;
     uint dma_chan;
+    dma_channel_config cfg;
     // data_size       = DMA_SIZE_8;  //                                  - default DMA_SIZE_8
     // data_size       = DMA_SIZE_16;  //                                 - default DMA_SIZE_16
     // Either 12 bits in 16 or 12 over 2 bytes or truncate 12 to 8 in 8

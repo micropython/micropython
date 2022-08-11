@@ -37,15 +37,18 @@
 #include "shared-bindings/util.h"
 
 // pin, buffer, rate
-
-
+STATIC void validate_rate(mp_float_t rate) {
+    if (rate < (mp_float_t)1.0f || rate > (mp_float_t)500000.0f) {
+        mp_raise_ValueError(translate("sample rate must be 1.0-500000.0 per second"));
+    }
+}
 
 STATIC mp_obj_t analogio_analogfastin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin, ARG_buffer, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_pin,    MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 8000} },
+        { MP_QSTR_sample_rate, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -69,7 +72,8 @@ STATIC mp_obj_t analogio_analogfastin_make_new(const mp_obj_type_t *type, size_t
     }
 
     // Validate sample rate here
-    uint32_t sample_rate = args[ARG_sample_rate].u_int;
+    mp_float_t sample_rate = mp_obj_get_float(args[ARG_sample_rate].u_obj);
+    validate_rate(sample_rate);
 
     // Create local object
     analogio_analogfastin_obj_t *self = m_new_obj(analogio_analogfastin_obj_t);
