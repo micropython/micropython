@@ -283,6 +283,8 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C ports/rp2 USER_C_MODULES=../../examples/usercmodule/micropython.cmake
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO submodules
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO
+    make ${MAKEOPTS} -C ports/rp2 BOARD=W5500_EVB_PICO submodules
+    make ${MAKEOPTS} -C ports/rp2 BOARD=W5500_EVB_PICO
 }
 
 ########################################################################################
