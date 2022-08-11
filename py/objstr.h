@@ -30,7 +30,7 @@
 
 typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
-    mp_uint_t hash;
+    size_t hash;
     // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
     size_t len;
     const byte *data;
@@ -41,7 +41,7 @@ typedef struct _mp_obj_str_t {
 // use this macro to extract the string hash
 // warning: the hash can be 0, meaning invalid, and must then be explicitly computed from the data
 #define GET_STR_HASH(str_obj_in, str_hash) \
-    mp_uint_t str_hash; \
+    size_t str_hash; \
     if (mp_obj_is_qstr(str_obj_in)) { \
         str_hash = qstr_hash(MP_OBJ_QSTR_VALUE(str_obj_in)); \
     } else { \
