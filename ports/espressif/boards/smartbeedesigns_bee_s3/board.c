@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 microDev
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include "py/obj.h"
-#include "peripherals/i2c.h"
-#include "common-hal/microcontroller/Pin.h"
+void board_init(void) {
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif /* DEBUG */
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    i2c_port_t i2c_num;
-    uint8_t *addresses;
-    uint8_t num_addresses;
-    const mcu_pin_obj_t *scl_pin;
-    const mcu_pin_obj_t *sda_pin;
-} i2cperipheral_i2c_peripheral_obj_t;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H
+void reset_board(void) {
+
+}
+
+void board_deinit(void) {
+}

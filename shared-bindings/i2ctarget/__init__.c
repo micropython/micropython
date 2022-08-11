@@ -30,24 +30,24 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
-// #include "shared-bindings/i2cperipheral/__init__.h"
-#include "shared-bindings/i2cperipheral/I2CPeripheral.h"
+// #include "shared-bindings/i2ctarget/__init__.h"
+#include "shared-bindings/i2ctarget/I2CTarget.h"
 
 #include "py/runtime.h"
 
-//| """Two wire serial protocol peripheral
+//| """Two wire serial protocol target
 //|
-//| The `i2cperipheral` module contains classes to support an I2C peripheral.
+//| The `i2ctarget` module contains classes to support an I2C target.
 //|
-//| Example emulating a peripheral with 2 addresses (read and write)::
+//| Example emulating a target with 2 addresses (read and write)::
 //|
 //|   import board
-//|   from i2cperipheral import I2CPeripheral
+//|   from i2ctarget import I2CTarget
 //|
 //|   regs = [0] * 16
 //|   index = 0
 //|
-//|   with I2CPeripheral(board.SCL, board.SDA, (0x40, 0x41)) as device:
+//|   with I2CTarget(board.SCL, board.SDA, (0x40, 0x41)) as device:
 //|       while True:
 //|           r = device.request()
 //|           if not r:
@@ -84,7 +84,7 @@
 //|   0xaa
 //|
 //| .. warning::
-//|    I2CPeripheral makes use of clock stretching in order to slow down
+//|    I2CTarget makes use of clock stretching in order to slow down
 //|    the host.
 //|    Make sure the I2C host supports this.
 //|
@@ -93,16 +93,21 @@
 //|    Since the RPi firmware uses the hw i2c, it's not possible to emulate a HAT eeprom."""
 //|
 
-STATIC const mp_rom_map_elem_t i2cperipheral_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_i2cperipheral) },
-    { MP_ROM_QSTR(MP_QSTR_I2CPeripheral), MP_ROM_PTR(&i2cperipheral_i2c_peripheral_type) },
+STATIC const mp_rom_map_elem_t i2ctarget_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_i2ctarget) },
+    { MP_ROM_QSTR(MP_QSTR_I2CTarget), MP_ROM_PTR(&i2ctarget_i2c_target_type) },
+    // TODO: Remove for CircuitPython 9.0.0
+    { MP_ROM_QSTR(MP_QSTR_I2CPeripheral), MP_ROM_PTR(&i2ctarget_i2c_target_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(i2cperipheral_module_globals, i2cperipheral_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(i2ctarget_module_globals, i2ctarget_module_globals_table);
 
-const mp_obj_module_t i2cperipheral_module = {
+const mp_obj_module_t i2ctarget_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&i2cperipheral_module_globals,
+    .globals = (mp_obj_dict_t *)&i2ctarget_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_i2cperipheral, i2cperipheral_module, CIRCUITPY_I2CPERIPHERAL);
+MP_REGISTER_MODULE(MP_QSTR_i2ctarget, i2ctarget_module, CIRCUITPY_I2CTARGET);
+
+// TODO: Remove for CircuitPython 9.0.0
+MP_REGISTER_MODULE(MP_QSTR_i2cperipheral, i2ctarget_module, CIRCUITPY_I2CTARGET);
