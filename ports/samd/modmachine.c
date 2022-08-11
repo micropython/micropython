@@ -41,21 +41,26 @@
 #include "hpl_pm_base.h"
 
 #if MICROPY_PY_MACHINE
-
 #if defined(MCU_SAMD21)
-#define DBL_TAP_ADDR ((volatile uint32_t *)(0x20000000 + 32 * 1024 - 4))
+#define DBL_TAP_ADDR    ((volatile uint32_t *)(HMCRAMC0_ADDR + HMCRAMC0_SIZE - 4))
 #elif defined(MCU_SAMD51)
-#define DBL_TAP_ADDR ((volatile uint32_t *)(0x20000000 + 192 * 1024 - 4))
+#define DBL_TAP_ADDR    ((volatile uint32_t *)(HSRAM_ADDR + HSRAM_SIZE - 4))
 #endif
+// A board may define a DPL_TAP_ADDR_ALT, which will be set as well
+// Needed at the moment for Sparkfun SAMD51 Thing Plus
 #define DBL_TAP_MAGIC_LOADER 0xf01669ef
 #define DBL_TAP_MAGIC_RESET 0xf02669ef
 
 #define LIGHTSLEEP_CPU_FREQ 200000
 
 extern bool EIC_occured;
+extern uint32_t _dbl_tap_addr;
 
 STATIC mp_obj_t machine_reset(void) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_RESET;
+    #ifdef DBL_TAP_ADDR_ALT
+    *DBL_TAP_ADDR_ALT = DBL_TAP_MAGIC_RESET;
+    #endif
     NVIC_SystemReset();
     return mp_const_none;
 }
@@ -63,6 +68,9 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 STATIC mp_obj_t machine_bootloader(void) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_LOADER;
+    #ifdef DBL_TAP_ADDR_ALT
+    *DBL_TAP_ADDR_ALT = DBL_TAP_MAGIC_LOADER;
+    #endif
     NVIC_SystemReset();
     return mp_const_none;
 }
@@ -177,7 +185,7 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         }
     } else {
         while (EIC_occured == false) {
-            __WFI();        
+            __WFI();
         }
     }
     GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | EIC_GCLK_ID;
@@ -196,7 +204,7 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         }
     } else {
         while (EIC_occured == false) {
-            __WFI();        
+            __WFI();
         }
     }
     GCLK->PCHCTRL[EIC_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK2;
