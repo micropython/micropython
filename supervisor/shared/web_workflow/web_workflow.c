@@ -334,7 +334,7 @@ void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, 
             total_sent += sent;
             if (total_sent < len) {
                 // Yield so that network code can run.
-                port_idle_until_interrupt();
+                port_yield();
             }
         }
     }

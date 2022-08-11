@@ -345,9 +345,6 @@ void reset_port(void) {
 
     reset_all_pins();
 
-    // A larger delay so the idle task can run and do any IDF cleanup needed.
-    vTaskDelay(4);
-
     #if CIRCUITPY_ANALOGIO
     analogout_reset();
     #endif
@@ -402,6 +399,9 @@ void reset_port(void) {
     #if CIRCUITPY_WATCHDOG
     watchdog_reset();
     #endif
+
+    // Yield so the idle task can run and do any IDF cleanup needed.
+    port_yield();
 }
 
 void reset_to_bootloader(void) {
@@ -490,6 +490,10 @@ void port_wake_main_task_from_isr() {
     if (xHigherPriorityTaskWoken == pdTRUE) {
         portYIELD_FROM_ISR();
     }
+}
+
+void port_yield() {
+    vTaskDelay(4);
 }
 
 void sleep_timer_cb(void *arg) {
