@@ -48,9 +48,6 @@
 //|         :param int frequency: Carrier signal frequency in Hertz
 //|         :param int duty_cycle: 16-bit duty cycle of carrier frequency (0 - 65536)
 //|
-//|         For backwards compatibility, ``pin`` may be a PWMOut object used as the carrier. This
-//|         compatibility will be removed in CircuitPython 8.0.0.
-//|
 //|         Send a short series of pulses::
 //|
 //|           import array
@@ -82,14 +79,6 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
     const mcu_pin_obj_t *pin = args[ARG_pin].u_obj;
     mp_int_t frequency = args[ARG_frequency].u_int;
     mp_int_t duty_cycle = args[ARG_duty_cycle].u_int;
-    if (mp_obj_is_type(args[ARG_pin].u_obj, &pwmio_pwmout_type)) {
-        pwmio_pwmout_obj_t *pwmout = args[ARG_pin].u_obj;
-        duty_cycle = common_hal_pwmio_pwmout_get_duty_cycle(pwmout);
-        frequency = common_hal_pwmio_pwmout_get_frequency(pwmout);
-        pin = common_hal_pwmio_pwmout_get_pin(pwmout);
-        // Deinit the pin so we can use it.
-        common_hal_pwmio_pwmout_deinit(pwmout);
-    }
     validate_obj_is_free_pin(MP_OBJ_FROM_PTR(pin));
     pulseio_pulseout_obj_t *self = m_new_obj(pulseio_pulseout_obj_t);
     self->base.type = &pulseio_pulseout_type;
