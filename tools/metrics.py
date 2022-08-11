@@ -60,8 +60,8 @@ class PortData:
 port_data = {
     "b": PortData("bare-arm", "bare-arm", "build/firmware.elf"),
     "m": PortData("minimal x86", "minimal", "build/firmware.elf"),
-    "u": PortData("unix x64", "unix", "micropython"),
-    "n": PortData("unix nanbox", "unix", "micropython-nanbox", "VARIANT=nanbox"),
+    "u": PortData("unix x64", "unix", "build-standard/micropython"),
+    "n": PortData("unix nanbox", "unix", "build-nanbox/micropython", "VARIANT=nanbox"),
     "s": PortData("stm32", "stm32", "build-PYBV10/firmware.elf", "BOARD=PYBV10"),
     "c": PortData("cc3200", "cc3200", "build/WIPY/release/application.axf", "BTARGET=application"),
     "8": PortData("esp8266", "esp8266", "build-GENERIC/firmware.elf"),

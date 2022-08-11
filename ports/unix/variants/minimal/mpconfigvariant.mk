@@ -1,5 +1,4 @@
 # build a minimal interpreter
-PROG = micropython-minimal
 
 FROZEN_MANIFEST =
 

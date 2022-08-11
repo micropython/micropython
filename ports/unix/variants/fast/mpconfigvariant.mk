@@ -2,6 +2,4 @@
 
 COPT += -fno-crossjumping -O2
 
-PROG = micropython-fast
-
 FROZEN_MANIFEST =
