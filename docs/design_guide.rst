@@ -494,6 +494,45 @@ backticks  ``:class:`~adafruit_motor.servo.Servo```. You must also add the refer
 
     "adafruit_motor": ("https://circuitpython.readthedocs.io/projects/motor/en/latest/", None,),
 
+Use ``adafruit_register`` when possible
+--------------------------------------------------------------------------------
+`Register <https://github.com/adafruit/Adafruit_CircuitPython_Register>`_ is
+a foundational library that manages packing and unpacking data from I2C device
+registers. There is also `Register SPI <https://github.com/adafruit/Adafruit_CircuitPython_Register_SPI>`_
+for SPI devices. When possible, use one of these libraries for unpacking and
+packing registers. This ensures the packing code is shared amongst all
+registers (even across drivers). Furthermore, it simplifies device definitions
+by making them declarative (only data.)
+
+Values with non-consecutive bits in a register or that represent FIFO endpoints
+may not map well to existing register classes. In unique cases like these, it is
+ok to read and write the register directly.
+
+*Do not* add all registers from a datasheet upfront. Instead, only add the ones
+necessary for the functionality the driver exposes. Adding them all will lead to
+unnecessary file size and API clutter. See `this video about outside-in design
+from @tannewt <https://www.youtube.com/watch?v=3QewiyfBQh8>`_.
+
+I2C Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+  from adafruit_register import i2c_bit
+  from adafruit_bus_device import i2c_device
+
+  class HelloWorldDevice:
+      """Device with two bits to control when the words 'hello' and 'world' are lit."""
+
+      hello = i2c_bit.RWBit(0x0, 0x0)
+      """Bit to indicate if hello is lit."""
+
+      world = i2c_bit.RWBit(0x1, 0x0)
+      """Bit to indicate if world is lit."""
+
+      def __init__(self, i2c, device_address=0x0):
+          self.i2c_device = i2c_device.I2CDevice(i2c, device_address)
+
 Use BusDevice
 --------------------------------------------------------------------------------
 
@@ -668,8 +707,24 @@ when using ``const()``, keep in mind these general guide lines:
 
 - Always use via an import, ex: ``from micropython import const``
 - Limit use to global (module level) variables only.
-- If user will not need access to variable, prefix name with a leading
-  underscore, ex: ``_SOME_CONST``.
+- Only used when the user will not need access to variable and prefix name with
+  a leading underscore, ex: ``_SOME_CONST``.
+
+Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+  from adafruit_bus_device import i2c_device
+  from micropython import const
+
+  _DEFAULT_I2C_ADDR = const(0x42)
+
+  class Widget:
+      """A generic widget."""
+
+      def __init__(self, i2c, address=_DEFAULT_I2C_ADDR):
+          self.i2c_device = i2c_device.I2CDevice(i2c, address)
 
 Libraries Examples
 ------------------
@@ -750,6 +805,16 @@ properties.
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``sound_level``       | float                 | non-unit-specific sound level (monotonic but not actual decibels)       |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
+
+Driver constant naming
+--------------------------------------------------------------------------------
+
+When adding variables for constant values for a driver. Do not include the
+device's name in the variable name. For example, in ``adafruit_fancy123.py``,
+variables should not start with ``FANCY123_``. Adding this prefix increases RAM
+usage and .mpy file size because variable names are preserved. User code should
+refer to these constants as ``adafruit_fancy123.HELLO_WORLD`` for clarity.
+``adafruit_fancy123.FANCY123_HELLO_WORLD`` would be overly verbose.
 
 Adding native modules
 --------------------------------------------------------------------------------

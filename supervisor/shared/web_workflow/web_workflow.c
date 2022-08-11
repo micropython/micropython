@@ -659,13 +659,13 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
     mp_printf(&_socket_print, "Content-Length: %d\r\n", total_length);
     // TODO: Make this a table to save space.
     if (_endswith(filename, ".txt") || _endswith(filename, ".py")) {
-        _send_str(socket, "Content-Type: text/plain\r\n");
+        _send_strs(socket, "Content-Type: text/plain", ";charset=UTF-8\r\n", NULL);
     } else if (_endswith(filename, ".js")) {
-        _send_str(socket, "Content-Type: text/javascript\r\n");
+        _send_strs(socket, "Content-Type: text/javascript", ";charset=UTF-8\r\n", NULL);
     } else if (_endswith(filename, ".html")) {
-        _send_str(socket, "Content-Type: text/html\r\n");
+        _send_strs(socket, "Content-Type: text/html", ";charset=UTF-8\r\n", NULL);
     } else if (_endswith(filename, ".json")) {
-        _send_str(socket, "Content-Type: application/json\r\n");
+        _send_strs(socket, "Content-Type: application/json", ";charset=UTF-8\r\n", NULL);
     } else {
         _send_str(socket, "Content-Type: application/octet-stream\r\n");
     }
@@ -966,6 +966,16 @@ static void _reply_websocket_upgrade(socketpool_socket_obj_t *socket, _request *
     // socket is now closed and "disconnected".
 }
 
+static uint8_t _hex2nibble(char h) {
+    if ('0' <= h && h <= '9') {
+        return h - '0';
+    } else if ('A' <= h && h <= 'F') {
+        return h - 'A' + 0xa;
+    }
+    // Shouldn't usually use lower case.
+    return h - 'a' + 0xa;
+}
+
 static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
     if (request->redirect) {
         _reply_redirect(socket, request, request->path);
@@ -983,6 +993,26 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 _reply_forbidden(socket, request);
             }
         } else {
+            // Decode any percent encoded bytes so that we're left with UTF-8.
+            // We only do this on /fs/ paths and after redirect so that any
+            // path echoing we do stays encoded.
+            size_t o = 0;
+            size_t i = 0;
+            while (i < strlen(request->path)) {
+                if (request->path[i] == '%') {
+                    request->path[o] = _hex2nibble(request->path[i + 1]) << 4 | _hex2nibble(request->path[i + 2]);
+                    i += 3;
+                } else {
+                    if (i != o) {
+                        request->path[o] = request->path[i];
+                    }
+                    i += 1;
+                }
+                o += 1;
+            }
+            if (o < i) {
+                request->path[o] = '\0';
+            }
             char *path = request->path + 3;
             size_t pathlen = strlen(path);
             FATFS *fs = filesystem_circuitpy();
@@ -1350,6 +1380,8 @@ void supervisor_web_workflow_background(void) {
         // Close the active socket if it is no longer connected.
         common_hal_socketpool_socket_close(&active);
     }
+
+    websocket_background();
 }
 
 void supervisor_stop_web_workflow(void) {

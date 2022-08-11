@@ -26,6 +26,9 @@
 
 #include "supervisor/shared/web_workflow/websocket.h"
 
+#include "py/ringbuf.h"
+#include "py/runtime.h"
+#include "shared/runtime/interrupt_char.h"
 #include "supervisor/shared/title_bar.h"
 
 // TODO: Remove ESP specific stuff. For now, it is useful as we refine the server.
@@ -43,6 +46,11 @@ typedef struct {
     size_t payload_remaining;
 } _websocket;
 
+// Buffer the incoming serial data in the background so that we can look for the
+// interrupt character.
+STATIC ringbuf_t _incoming_ringbuf;
+STATIC uint8_t _buf[16];
+
 static _websocket cp_serial;
 
 static const char *TAG = "CP websocket";
@@ -50,6 +58,8 @@ static const char *TAG = "CP websocket";
 void websocket_init(void) {
     cp_serial.socket.num = -1;
     cp_serial.socket.connected = false;
+
+    ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf) - 1);
 }
 
 void websocket_handoff(socketpool_socket_obj_t *socket) {
@@ -193,16 +203,16 @@ bool websocket_available(void) {
     if (!websocket_connected()) {
         return false;
     }
-    _read_next_frame_header();
-    return cp_serial.payload_remaining > 0 && cp_serial.frame_index >= cp_serial.frame_len;
+    websocket_background();
+    return ringbuf_num_filled(&_incoming_ringbuf) > 0;
 }
 
 char websocket_read_char(void) {
-    uint8_t c;
-    if (!_read_next_payload_byte(&c)) {
-        c = -1;
+    websocket_background();
+    if (ringbuf_num_filled(&_incoming_ringbuf) > 0) {
+        return ringbuf_get(&_incoming_ringbuf);
     }
-    return c;
+    return -1;
 }
 
 static void _websocket_send(_websocket *ws, const char *text, size_t len) {
@@ -238,11 +248,20 @@ static void _websocket_send(_websocket *ws, const char *text, size_t len) {
         _send_raw(&ws->socket, extended_len, 4);
     }
     _send_raw(&ws->socket, (const uint8_t *)text, len);
-    char copy[len];
-    memcpy(copy, text, len);
-    copy[len] = '\0';
 }
 
 void websocket_write(const char *text, size_t len) {
     _websocket_send(&cp_serial, text, len);
+}
+
+void websocket_background(void) {
+    uint8_t c;
+    while (ringbuf_num_empty(&_incoming_ringbuf) > 0 &&
+           _read_next_payload_byte(&c)) {
+        if (c == mp_interrupt_char) {
+            mp_sched_keyboard_interrupt();
+            continue;
+        }
+        ringbuf_put(&_incoming_ringbuf, c);
+    }
 }
