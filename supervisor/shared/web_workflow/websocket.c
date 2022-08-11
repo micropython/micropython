@@ -239,9 +239,6 @@ static void _websocket_send(_websocket *ws, const char *text, size_t len) {
         web_workflow_send_raw(&ws->socket, extended_len, 4);
     }
     web_workflow_send_raw(&ws->socket, (const uint8_t *)text, len);
-    char copy[len];
-    memcpy(copy, text, len);
-    copy[len] = '\0';
 }
 
 void websocket_write(const char *text, size_t len) {

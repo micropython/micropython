@@ -336,6 +336,9 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             return WIFI_RADIO_ERROR_NO_AP_FOUND;
         }
         return self->last_disconnect_reason;
+    } else {
+        // We're connected, allow us to retry if we get disconnected.
+        self->retries_left = self->starting_retries;
     }
     return WIFI_RADIO_ERROR_NONE;
 }
