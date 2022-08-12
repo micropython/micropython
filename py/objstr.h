@@ -98,35 +98,6 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     mp_obj_t index, bool is_slice);
 const byte *find_subbytes(const byte *haystack, size_t hlen, const byte *needle, size_t nlen, int direction);
 
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rfind_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_index_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(str_join_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(str_splitlines_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(str_format_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(str_partition_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(str_rpartition_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(str_center_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_lower_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_upper_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_isspace_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_isalpha_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_isdigit_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_isupper_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_islower_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj);
-
 mp_obj_t mp_obj_bytes_hex(size_t n_args, const mp_obj_t *args, const mp_obj_type_t *type);
 mp_obj_t mp_obj_bytes_fromhex(mp_obj_t type_in, mp_obj_t data);
 
