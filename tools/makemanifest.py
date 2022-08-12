@@ -176,34 +176,36 @@ def main():
     str_paths = []
     mpy_files = []
     ts_newest = 0
-    for _file_type, full_path, target_path, timestamp, kind, version, opt in manifest.files():
-        if kind == manifestfile.KIND_FREEZE_AS_STR:
+    for result in manifest.files():
+        if result.kind == manifestfile.KIND_FREEZE_AS_STR:
             str_paths.append(
                 (
-                    full_path,
-                    target_path,
+                    result.full_path,
+                    result.target_path,
                 )
             )
-            ts_outfile = timestamp
-        elif kind == manifestfile.KIND_FREEZE_AS_MPY:
-            outfile = "{}/frozen_mpy/{}.mpy".format(args.build_dir, target_path[:-3])
+            ts_outfile = result.timestamp
+        elif result.kind == manifestfile.KIND_FREEZE_AS_MPY:
+            outfile = "{}/frozen_mpy/{}.mpy".format(args.build_dir, result.target_path[:-3])
             ts_outfile = get_timestamp(outfile, 0)
-            if timestamp >= ts_outfile:
-                print("MPY", target_path)
+            if result.timestamp >= ts_outfile:
+                print("MPY", result.target_path)
                 mkdir(outfile)
-                try:
-                    mpy_cross.compile(
-                        full_path,
-                        dest=outfile,
-                        src_path=target_path,
-                        opt=opt,
-                        mpy_cross=MPY_CROSS,
-                        extra_args=args.mpy_cross_flags.split(),
-                    )
-                except mpy_cross.CrossCompileError as ex:
-                    print("error compiling {}:".format(target_path))
-                    print(ex.args[0])
-                    raise SystemExit(1)
+                # Add __version__ to the end of the file before compiling.
+                with manifestfile.tagged_py_file(result.full_path, result.metadata) as tagged_path:
+                    try:
+                        mpy_cross.compile(
+                            tagged_path,
+                            dest=outfile,
+                            src_path=result.target_path,
+                            opt=result.opt,
+                            mpy_cross=MPY_CROSS,
+                            extra_args=args.mpy_cross_flags.split(),
+                        )
+                    except mpy_cross.CrossCompileError as ex:
+                        print("error compiling {}:".format(target_path))
+                        print(ex.args[0])
+                        raise SystemExit(1)
                 ts_outfile = get_timestamp(outfile)
             mpy_files.append(outfile)
         else:

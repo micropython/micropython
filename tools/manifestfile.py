@@ -26,9 +26,12 @@
 # THE SOFTWARE.
 
 from __future__ import print_function
+import contextlib
 import os
 import sys
 import glob
+import tempfile
+from collections import namedtuple
 
 __all__ = ["ManifestFileError", "ManifestFile"]
 
@@ -63,6 +66,37 @@ class ManifestFileError(Exception):
     pass
 
 
+# The set of files that this manifest references.
+ManifestOutput = namedtuple(
+    "ManifestOutput",
+    [
+        "file_type",  # FILE_TYPE_*.
+        "full_path",  # The input file full path.
+        "target_path",  # The target path on the device.
+        "timestamp",  # Last modified date of the input file.
+        "kind",  # KIND_*.
+        "metadata",  # Metadata for the containing package.
+        "opt",  # Optimisation level (or None).
+    ],
+)
+
+
+# Represent the metadata for a package.
+class ManifestMetadata:
+    def __init__(self):
+        self.version = None
+        self.description = None
+        self.license = None
+
+    def update(self, description=None, version=None, license=None):
+        if description:
+            self.description = description
+        if version:
+            self.version = version
+        if license:
+            self.license = version
+
+
 # Turns a dict of options into a object with attributes used to turn the
 # kwargs passed to include() and require into the "options" global in the
 # included manifest.
@@ -87,11 +121,12 @@ class ManifestFile:
         self._mode = mode
         # Path substition variables.
         self._path_vars = path_vars or {}
-        # List of files references by this manifest.
-        # Tuple of (file_type, full_path, target_path, timestamp, kind, version, opt)
+        # List of files (as ManifestFileResult) references by this manifest.
         self._manifest_files = []
         # Don't allow including the same file twice.
         self._visited = set()
+        # Stack of metadata for each level.
+        self._metadata = [ManifestMetadata()]
 
     def _resolve_path(self, path):
         # Convert path to an absolute path, applying variable substitutions.
@@ -121,7 +156,7 @@ class ManifestFile:
     def execute(self, manifest_file):
         if manifest_file.endswith(".py"):
             # Execute file from filesystem.
-            self.include(manifest_file)
+            self.include(manifest_file, top_level=True)
         else:
             # Execute manifest code snippet.
             try:
@@ -129,7 +164,7 @@ class ManifestFile:
             except Exception as er:
                 raise ManifestFileError("Error in manifest: {}".format(er))
 
-    def _add_file(self, full_path, target_path, kind=KIND_AUTO, version=None, opt=None):
+    def _add_file(self, full_path, target_path, kind=KIND_AUTO, opt=None):
         # Check file exists and get timestamp.
         try:
             stat = os.stat(full_path)
@@ -156,7 +191,9 @@ class ManifestFile:
             kind = KIND_COMPILE_AS_MPY
 
         self._manifest_files.append(
-            (FILE_TYPE_LOCAL, full_path, target_path, timestamp, kind, version, opt)
+            ManifestOutput(
+                FILE_TYPE_LOCAL, full_path, target_path, timestamp, kind, self._metadata[-1], opt
+            )
         )
 
     def _search(self, base_path, package_path, files, exts, kind, opt=None, strict=False):
@@ -167,9 +204,7 @@ class ManifestFile:
             for file in files:
                 if package_path:
                     file = os.path.join(package_path, file)
-                self._add_file(
-                    os.path.join(base_path, file), file, kind=kind, version=None, opt=opt
-                )
+                self._add_file(os.path.join(base_path, file), file, kind=kind, opt=opt)
         else:
             if base_path:
                 prev_cwd = os.getcwd()
@@ -185,7 +220,6 @@ class ManifestFile:
                             os.path.join(base_path, file),
                             file,
                             kind=kind,
-                            version=None,
                             opt=opt,
                         )
                     elif strict:
@@ -194,11 +228,19 @@ class ManifestFile:
             if base_path:
                 os.chdir(prev_cwd)
 
-    def metadata(self, description=None, version=None):
-        # TODO
-        pass
+    def metadata(self, description=None, version=None, license=None):
+        """
+        From within a manifest file, use this to set the metadata for the
+        package described by current manifest.
 
-    def include(self, manifest_path, **kwargs):
+        After executing a manifest file (via execute()), call this
+        to obtain the metadata for the top-level manifest file.
+        """
+
+        self._metadata[-1].update(description, version, license)
+        return self._metadata[-1]
+
+    def include(self, manifest_path, top_level=False, **kwargs):
         """
         Include another manifest.
 
@@ -235,6 +277,8 @@ class ManifestFile:
             if manifest_path in self._visited:
                 return
             self._visited.add(manifest_path)
+            if not top_level:
+                self._metadata.append(ManifestMetadata())
             with open(manifest_path) as f:
                 # Make paths relative to this manifest file while processing it.
                 # Applies to includes and input files.
@@ -247,6 +291,8 @@ class ManifestFile:
                         "Error in manifest file: {}: {}".format(manifest_path, er)
                     )
                 os.chdir(prev_cwd)
+            if not top_level:
+                self._metadata.pop()
 
     def require(self, name, version=None, unix_ffi=False, **kwargs):
         """
@@ -308,7 +354,7 @@ class ManifestFile:
         if ext.lower() != ".py":
             raise ManifestFileError("module must be .py file")
         # TODO: version None
-        self._add_file(os.path.join(base_path, module_path), module_path, version=None, opt=opt)
+        self._add_file(os.path.join(base_path, module_path), module_path, opt=opt)
 
     def _freeze_internal(self, path, script, exts, kind, opt):
         if script is None:
@@ -370,6 +416,24 @@ class ManifestFile:
         frozen directly.
         """
         self._freeze_internal(path, script, exts=(".mpy"), kind=KIND_FREEZE_MPY, opt=opt)
+
+
+# Generate a temporary file with a line appended to the end that adds __version__.
+@contextlib.contextmanager
+def tagged_py_file(path, metadata):
+    dest_fd, dest_path = tempfile.mkstemp(suffix=".py", text=True)
+    try:
+        with os.fdopen(dest_fd, "w") as dest:
+            with open(path, "r") as src:
+                contents = src.read()
+                dest.write(contents)
+
+                # Don't overwrite a version definition if the file already has one in it.
+                if metadata.version and "__version__ =" not in contents:
+                    dest.write("\n\n__version__ = {}\n".format(repr(metadata.version)))
+        yield dest_path
+    finally:
+        os.unlink(dest_path)
 
 
 def main():
