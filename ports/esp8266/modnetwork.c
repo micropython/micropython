@@ -406,6 +406,10 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         }
                         break;
                     }
+                    case MP_QSTR_protocol: {
+                        wifi_set_phy_mode(mp_obj_get_int(kwargs->table[i].value));
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
@@ -471,6 +475,10 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             } else {
                 val = mp_obj_new_str(s, strlen(s));
             }
+            break;
+        }
+        case MP_QSTR_protocol: {
+            val = mp_obj_new_int(wifi_get_phy_mode());
             break;
         }
         default:
