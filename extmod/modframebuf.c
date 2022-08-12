@@ -384,13 +384,17 @@ STATIC mp_obj_t framebuf_rect(size_t n_args, const mp_obj_t *args_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
     mp_int_t args[5]; // x, y, w, h, col
     framebuf_args(args_in, args, 5);
-    fill_rect(self, args[0], args[1], args[2], 1, args[4]);
-    fill_rect(self, args[0], args[1] + args[3] - 1, args[2], 1, args[4]);
-    fill_rect(self, args[0], args[1], 1, args[3], args[4]);
-    fill_rect(self, args[0] + args[2] - 1, args[1], 1, args[3], args[4]);
+    if (n_args > 6 && mp_obj_is_true(args_in[6])) {
+        fill_rect(self, args[0], args[1], args[2], args[3], args[4]);
+    } else {
+        fill_rect(self, args[0], args[1], args[2], 1, args[4]);
+        fill_rect(self, args[0], args[1] + args[3] - 1, args[2], 1, args[4]);
+        fill_rect(self, args[0], args[1], 1, args[3], args[4]);
+        fill_rect(self, args[0] + args[2] - 1, args[1], 1, args[3], args[4]);
+    }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_rect_obj, 6, 6, framebuf_rect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_rect_obj, 6, 7, framebuf_rect);
 
 STATIC void line(const mp_obj_framebuf_t *fb, mp_int_t x1, mp_int_t y1, mp_int_t x2, mp_int_t y2, mp_int_t col) {
     mp_int_t dx = x2 - x1;
