@@ -77,12 +77,12 @@ The following methods draw shapes onto the FrameBuffer.
     methods draw horizontal and vertical lines respectively up to
     a given length.
 
-.. method:: FrameBuffer.rect(x, y, w, h, c)
-.. method:: FrameBuffer.fill_rect(x, y, w, h, c)
+.. method:: FrameBuffer.rect(x, y, w, h, c[, f])
 
-    Draw a rectangle at the given location, size and color. The `rect`
-    method draws only a 1 pixel outline whereas the `fill_rect` method
-    draws both the outline and interior.
+    Draw a rectangle at the given location, size and color.
+
+    The optional *f* parameter can be set to ``True`` to fill the rectangle.
+    Otherwise just a one pixel outline is drawn.
 
 Drawing text
 ------------
