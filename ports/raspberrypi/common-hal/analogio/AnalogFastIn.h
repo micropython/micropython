@@ -3,7 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * SPDX-FileCopyrightText: Copyright (c) 2022 Lee A. Atkinson
+ * Taken from AnalogIn by Scott Shawcroft for Adafruit Industries
+ * Also from DMA_Capture by Luke Wren of Raspberry Pi (Trading) Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,29 +46,7 @@ typedef struct {
     uint8_t chan;
     uint dma_chan;
     dma_channel_config cfg;
-    // data_size       = DMA_SIZE_8;  //                                  - default DMA_SIZE_8
-    // data_size       = DMA_SIZE_16;  //                                 - default DMA_SIZE_16
-    // Either 12 bits in 16 or 12 over 2 bytes or truncate 12 to 8 in 8
-    // Either B or H, default array.array("h", [0]*length) "h"==short (16 bits signed)
 } analogio_analogfastin_obj_t;
-
-// void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, uint32_t sample_rate)
-/*
-void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *self,
-    const mcu_pin_obj_t *pin,
-    uint8_t *buffer,
-    uint32_t len,
-    uint8_t bytes_per_sample,
-    bool samples_signed,
-    uint32_t sample_rate) {
-    self->pin = pin;
-    self->buffer = buffer;
-    self->len = len;
-    //self->bits_per_sample = bytes_per_sample * 8;
-    self->samples_signed = samples_signed;
-    self->sample_rate = sample_rate;
-}
-*/
 
 void analogfastin_init(void);
 

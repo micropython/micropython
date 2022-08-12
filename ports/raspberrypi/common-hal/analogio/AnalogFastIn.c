@@ -3,7 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * SPDX-FileCopyrightText: Copyright (c) 2022 Lee A. Atkinson
+ * Taken from AnalogIn by Scott Shawcroft for Adafruit Industries
+ * Also from DMA_Capture by Luke Wren of Raspberry Pi (Trading) Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
