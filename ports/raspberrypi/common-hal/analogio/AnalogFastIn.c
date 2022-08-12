@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2022 Lee A. Atkinson
+ * SPDX-FileCopyrightText: Copyright (c) 2022 Lee Atkinson, MeanStride Technology, Inc.
  * Taken from AnalogIn by Scott Shawcroft for Adafruit Industries
  * Also from DMA_Capture by Luke Wren of Raspberry Pi (Trading) Ltd.
  *

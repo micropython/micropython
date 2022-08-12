@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2022 Lee A. Atkinson
+ * SPDX-FileCopyrightText: Copyright (c) 2022 Lee Atkinson, MeanStride Technology, Inc.
  * Taken from AnalogIn by Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
