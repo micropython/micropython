@@ -263,21 +263,21 @@ STATIC void fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, u
     formats[fb->format].fill_rect(fb, x, y, xend - x, yend - y, col);
 }
 
-STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
     mp_arg_check_num(n_args, n_kw, 4, 5, false);
 
     mp_obj_framebuf_t *o = mp_obj_malloc(mp_obj_framebuf_t, type);
-    o->buf_obj = args[0];
+    o->buf_obj = args_in[0];
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
+    mp_get_buffer_raise(args_in[0], &bufinfo, MP_BUFFER_WRITE);
     o->buf = bufinfo.buf;
 
-    o->width = mp_obj_get_int(args[1]);
-    o->height = mp_obj_get_int(args[2]);
-    o->format = mp_obj_get_int(args[3]);
+    o->width = mp_obj_get_int(args_in[1]);
+    o->height = mp_obj_get_int(args_in[2]);
+    o->format = mp_obj_get_int(args_in[3]);
     if (n_args >= 5) {
-        o->stride = mp_obj_get_int(args[4]);
+        o->stride = mp_obj_get_int(args_in[4]);
     } else {
         o->stride = o->width;
     }
@@ -305,6 +305,12 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
     return MP_OBJ_FROM_PTR(o);
 }
 
+STATIC void framebuf_args(const mp_obj_t *args_in, mp_int_t *args_out, int n) {
+    for (int i = 0; i < n; ++i) {
+        args_out[i] = mp_obj_get_int(args_in[i + 1]);
+    }
+}
+
 STATIC mp_int_t framebuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     (void)flags;
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
@@ -322,98 +328,71 @@ STATIC mp_obj_t framebuf_fill(mp_obj_t self_in, mp_obj_t col_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(framebuf_fill_obj, framebuf_fill);
 
-STATIC mp_obj_t framebuf_fill_rect(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
-
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t x = mp_obj_get_int(args[1]);
-    mp_int_t y = mp_obj_get_int(args[2]);
-    mp_int_t width = mp_obj_get_int(args[3]);
-    mp_int_t height = mp_obj_get_int(args[4]);
-    mp_int_t col = mp_obj_get_int(args[5]);
-
-    fill_rect(self, x, y, width, height, col);
-
+STATIC mp_obj_t framebuf_fill_rect(size_t n_args, const mp_obj_t *args_in) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    mp_int_t args[5]; // x, y, w, h, col
+    framebuf_args(args_in, args, 5);
+    fill_rect(self, args[0], args[1], args[2], args[3], args[4]);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_fill_rect_obj, 6, 6, framebuf_fill_rect);
 
-STATIC mp_obj_t framebuf_pixel(size_t n_args, const mp_obj_t *args) {
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t x = mp_obj_get_int(args[1]);
-    mp_int_t y = mp_obj_get_int(args[2]);
+STATIC mp_obj_t framebuf_pixel(size_t n_args, const mp_obj_t *args_in) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    mp_int_t x = mp_obj_get_int(args_in[1]);
+    mp_int_t y = mp_obj_get_int(args_in[2]);
     if (0 <= x && x < self->width && 0 <= y && y < self->height) {
         if (n_args == 3) {
             // get
             return MP_OBJ_NEW_SMALL_INT(getpixel(self, x, y));
         } else {
             // set
-            setpixel(self, x, y, mp_obj_get_int(args[3]));
+            setpixel(self, x, y, mp_obj_get_int(args_in[3]));
         }
     }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_pixel_obj, 3, 4, framebuf_pixel);
 
-STATIC mp_obj_t framebuf_hline(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t framebuf_hline(size_t n_args, const mp_obj_t *args_in) {
     (void)n_args;
 
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t x = mp_obj_get_int(args[1]);
-    mp_int_t y = mp_obj_get_int(args[2]);
-    mp_int_t w = mp_obj_get_int(args[3]);
-    mp_int_t col = mp_obj_get_int(args[4]);
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    mp_int_t args[4]; // x, y, w, col
+    framebuf_args(args_in, args, 4);
 
-    fill_rect(self, x, y, w, 1, col);
+    fill_rect(self, args[0], args[1], args[2], 1, args[3]);
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_hline_obj, 5, 5, framebuf_hline);
 
-STATIC mp_obj_t framebuf_vline(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t framebuf_vline(size_t n_args, const mp_obj_t *args_in) {
     (void)n_args;
 
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t x = mp_obj_get_int(args[1]);
-    mp_int_t y = mp_obj_get_int(args[2]);
-    mp_int_t h = mp_obj_get_int(args[3]);
-    mp_int_t col = mp_obj_get_int(args[4]);
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    mp_int_t args[4]; // x, y, h, col
+    framebuf_args(args_in, args, 4);
 
-    fill_rect(self, x, y, 1, h, col);
+    fill_rect(self, args[0], args[1], 1, args[2], args[3]);
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_vline_obj, 5, 5, framebuf_vline);
 
-STATIC mp_obj_t framebuf_rect(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
-
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t x = mp_obj_get_int(args[1]);
-    mp_int_t y = mp_obj_get_int(args[2]);
-    mp_int_t w = mp_obj_get_int(args[3]);
-    mp_int_t h = mp_obj_get_int(args[4]);
-    mp_int_t col = mp_obj_get_int(args[5]);
-
-    fill_rect(self, x, y, w, 1, col);
-    fill_rect(self, x, y + h - 1, w, 1, col);
-    fill_rect(self, x, y, 1, h, col);
-    fill_rect(self, x + w - 1, y, 1, h, col);
-
+STATIC mp_obj_t framebuf_rect(size_t n_args, const mp_obj_t *args_in) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    mp_int_t args[5]; // x, y, w, h, col
+    framebuf_args(args_in, args, 5);
+    fill_rect(self, args[0], args[1], args[2], 1, args[4]);
+    fill_rect(self, args[0], args[1] + args[3] - 1, args[2], 1, args[4]);
+    fill_rect(self, args[0], args[1], 1, args[3], args[4]);
+    fill_rect(self, args[0] + args[2] - 1, args[1], 1, args[3], args[4]);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_rect_obj, 6, 6, framebuf_rect);
 
-STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
-
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t x1 = mp_obj_get_int(args[1]);
-    mp_int_t y1 = mp_obj_get_int(args[2]);
-    mp_int_t x2 = mp_obj_get_int(args[3]);
-    mp_int_t y2 = mp_obj_get_int(args[4]);
-    mp_int_t col = mp_obj_get_int(args[5]);
-
+STATIC void line(const mp_obj_framebuf_t *fb, mp_int_t x1, mp_int_t y1, mp_int_t x2, mp_int_t y2, mp_int_t col) {
     mp_int_t dx = x2 - x1;
     mp_int_t sx;
     if (dx > 0) {
@@ -452,12 +431,12 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
     mp_int_t e = 2 * dy - dx;
     for (mp_int_t i = 0; i < dx; ++i) {
         if (steep) {
-            if (0 <= y1 && y1 < self->width && 0 <= x1 && x1 < self->height) {
-                setpixel(self, y1, x1, col);
+            if (0 <= y1 && y1 < fb->width && 0 <= x1 && x1 < fb->height) {
+                setpixel(fb, y1, x1, col);
             }
         } else {
-            if (0 <= x1 && x1 < self->width && 0 <= y1 && y1 < self->height) {
-                setpixel(self, x1, y1, col);
+            if (0 <= x1 && x1 < fb->width && 0 <= y1 && y1 < fb->height) {
+                setpixel(fb, x1, y1, col);
             }
         }
         while (e >= 0) {
@@ -468,31 +447,41 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
         e += 2 * dy;
     }
 
-    if (0 <= x2 && x2 < self->width && 0 <= y2 && y2 < self->height) {
-        setpixel(self, x2, y2, col);
+    if (0 <= x2 && x2 < fb->width && 0 <= y2 && y2 < fb->height) {
+        setpixel(fb, x2, y2, col);
     }
+}
+
+STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args_in) {
+    (void)n_args;
+
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    mp_int_t args[5]; // x1, y1, x2, y2, col
+    framebuf_args(args_in, args, 5);
+
+    line(self, args[0], args[1], args[2], args[3], args[4]);
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_line_obj, 6, 6, framebuf_line);
 
-STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_obj_t source_in = mp_obj_cast_to_native_base(args[1], MP_OBJ_FROM_PTR(&mp_type_framebuf));
+STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args_in) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    mp_obj_t source_in = mp_obj_cast_to_native_base(args_in[1], MP_OBJ_FROM_PTR(&mp_type_framebuf));
     if (source_in == MP_OBJ_NULL) {
         mp_raise_TypeError(NULL);
     }
     mp_obj_framebuf_t *source = MP_OBJ_TO_PTR(source_in);
 
-    mp_int_t x = mp_obj_get_int(args[2]);
-    mp_int_t y = mp_obj_get_int(args[3]);
+    mp_int_t x = mp_obj_get_int(args_in[2]);
+    mp_int_t y = mp_obj_get_int(args_in[3]);
     mp_int_t key = -1;
     if (n_args > 4) {
-        key = mp_obj_get_int(args[4]);
+        key = mp_obj_get_int(args_in[4]);
     }
     mp_obj_framebuf_t *palette = NULL;
-    if (n_args > 5 && args[5] != mp_const_none) {
-        palette = MP_OBJ_TO_PTR(mp_obj_cast_to_native_base(args[5], MP_OBJ_FROM_PTR(&mp_type_framebuf)));
+    if (n_args > 5 && args_in[5] != mp_const_none) {
+        palette = MP_OBJ_TO_PTR(mp_obj_cast_to_native_base(args_in[5], MP_OBJ_FROM_PTR(&mp_type_framebuf)));
     }
 
     if (
@@ -563,15 +552,15 @@ STATIC mp_obj_t framebuf_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t ys
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(framebuf_scroll_obj, framebuf_scroll);
 
-STATIC mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args_in) {
     // extract arguments
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    const char *str = mp_obj_str_get_str(args[1]);
-    mp_int_t x0 = mp_obj_get_int(args[2]);
-    mp_int_t y0 = mp_obj_get_int(args[3]);
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
+    const char *str = mp_obj_str_get_str(args_in[1]);
+    mp_int_t x0 = mp_obj_get_int(args_in[2]);
+    mp_int_t y0 = mp_obj_get_int(args_in[3]);
     mp_int_t col = 1;
     if (n_args >= 5) {
-        col = mp_obj_get_int(args[4]);
+        col = mp_obj_get_int(args_in[4]);
     }
 
     // loop over chars
@@ -626,18 +615,18 @@ STATIC const mp_obj_type_t mp_type_framebuf = {
 #endif
 
 // this factory function is provided for backwards compatibility with old FrameBuffer1 class
-STATIC mp_obj_t legacy_framebuffer1(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t legacy_framebuffer1(size_t n_args, const mp_obj_t *args_in) {
     mp_obj_framebuf_t *o = mp_obj_malloc(mp_obj_framebuf_t, &mp_type_framebuf);
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
+    mp_get_buffer_raise(args_in[0], &bufinfo, MP_BUFFER_WRITE);
     o->buf = bufinfo.buf;
 
-    o->width = mp_obj_get_int(args[1]);
-    o->height = mp_obj_get_int(args[2]);
+    o->width = mp_obj_get_int(args_in[1]);
+    o->height = mp_obj_get_int(args_in[2]);
     o->format = FRAMEBUF_MVLSB;
     if (n_args >= 4) {
-        o->stride = mp_obj_get_int(args[3]);
+        o->stride = mp_obj_get_int(args_in[3]);
     } else {
         o->stride = o->width;
     }
