@@ -532,7 +532,7 @@ STATIC mp_obj_t framebuf_ellipse(size_t n_args, const mp_obj_t *args) {
     mp_int_t ellipse_error = 0;
     mp_int_t stoppingx = two_bsquare * xradius;
     mp_int_t stoppingy = 0;
-    while (stoppingx >= stoppingy ) {  // 1st set of points,  y' > -1
+    while (stoppingx >= stoppingy) {  // 1st set of points,  y' > -1
         draw_points(self, cx, cy, x, y, mask, col);
         y += 1;
         stoppingy += two_asquare;
