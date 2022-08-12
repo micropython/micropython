@@ -42,23 +42,23 @@ try:
 
     class ThreadSafeFlag(uio.IOBase):
         def __init__(self):
-            self._flag = 0
+            self.state = 0
 
         def ioctl(self, req, flags):
             if req == 3:  # MP_STREAM_POLL
-                return self._flag * flags
+                return self.state * flags
             return None
 
         def set(self):
-            self._flag = 1
+            self.state = 1
 
         def clear(self):
-            self._flag = 0
+            self.state = 0
 
         async def wait(self):
-            if not self._flag:
+            if not self.state:
                 yield core._io_queue.queue_read(self)
-            self._flag = 0
+            self.state = 0
 
 except ImportError:
     pass
