@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 #include "shared/runtime/interrupt_char.h"
 #include "supervisor/shared/title_bar.h"
+#include "supervisor/shared/web_workflow/web_workflow.h"
 
 // TODO: Remove ESP specific stuff. For now, it is useful as we refine the server.
 #include "esp_log.h"
@@ -91,16 +92,6 @@ static bool _read_byte(uint8_t *c) {
     return true;
 }
 
-static void _send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
-    int sent = -EAGAIN;
-    while (sent == -EAGAIN) {
-        sent = socketpool_socket_send(socket, buf, len);
-    }
-    if (sent < len) {
-        ESP_LOGE(TAG, "short send on %d err %d len %d", socket->num, sent, len);
-    }
-}
-
 static void _read_next_frame_header(void) {
     uint8_t h;
     if (cp_serial.frame_index == 0 && _read_byte(&h)) {
@@ -159,14 +150,14 @@ static void _read_next_frame_header(void) {
                 ESP_LOGE(TAG, "CLOSE or PING has long payload");
             }
             frame_header[1] = cp_serial.payload_remaining;
-            _send_raw(&cp_serial.socket, (const uint8_t *)frame_header, 2);
+            web_workflow_send_raw(&cp_serial.socket, (const uint8_t *)frame_header, 2);
         }
 
         if (cp_serial.payload_remaining > 0 && _read_byte(&h)) {
             // Send the payload back to the client.
             cp_serial.frame_index++;
             cp_serial.payload_remaining--;
-            _send_raw(&cp_serial.socket, &h, 1);
+            web_workflow_send_raw(&cp_serial.socket, &h, 1);
         }
 
         if (cp_serial.payload_remaining == 0) {
@@ -231,23 +222,23 @@ static void _websocket_send(_websocket *ws, const char *text, size_t len) {
         payload_len = 127;
     }
     frame_header[1] = payload_len;
-    _send_raw(&ws->socket, (const uint8_t *)frame_header, 2);
+    web_workflow_send_raw(&ws->socket, (const uint8_t *)frame_header, 2);
     uint8_t extended_len[4];
     if (payload_len == 126) {
         extended_len[0] = (len >> 8) & 0xff;
         extended_len[1] = len & 0xff;
-        _send_raw(&ws->socket, extended_len, 2);
+        web_workflow_send_raw(&ws->socket, extended_len, 2);
     } else if (payload_len == 127) {
         uint32_t zero = 0;
         // 64 bits where top four bytes are zero.
-        _send_raw(&ws->socket, (const uint8_t *)&zero, 4);
+        web_workflow_send_raw(&ws->socket, (const uint8_t *)&zero, 4);
         extended_len[0] = (len >> 24) & 0xff;
         extended_len[1] = (len >> 16) & 0xff;
         extended_len[2] = (len >> 8) & 0xff;
         extended_len[3] = len & 0xff;
-        _send_raw(&ws->socket, extended_len, 4);
+        web_workflow_send_raw(&ws->socket, extended_len, 4);
     }
-    _send_raw(&ws->socket, (const uint8_t *)text, len);
+    web_workflow_send_raw(&ws->socket, (const uint8_t *)text, len);
 }
 
 void websocket_write(const char *text, size_t len) {
@@ -255,6 +246,9 @@ void websocket_write(const char *text, size_t len) {
 }
 
 void websocket_background(void) {
+    if (!websocket_connected()) {
+        return;
+    }
     uint8_t c;
     while (ringbuf_num_empty(&_incoming_ringbuf) > 0 &&
            _read_next_payload_byte(&c)) {

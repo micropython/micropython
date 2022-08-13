@@ -109,6 +109,11 @@ void port_wake_main_task(void);
 // default weak implementation is provided that does nothing.
 void port_wake_main_task_from_isr(void);
 
+// Some ports may use real RTOS tasks besides the background task framework of
+// CircuitPython. Calling this will yield to other tasks and then return to the
+// CircuitPython task when others are done.
+void port_yield(void);
+
 // Some ports need special handling just after completing boot.py execution.
 // This function is called once while boot.py's VM is still valid, and
 // then a second time after the VM is finalized.

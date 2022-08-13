@@ -31,3 +31,6 @@ MP_WEAK void port_wake_main_task(void) {
 
 MP_WEAK void port_wake_main_task_from_isr(void) {
 }
+
+MP_WEAK void port_yield(void) {
+}
