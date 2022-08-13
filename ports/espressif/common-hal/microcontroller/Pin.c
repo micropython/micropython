@@ -130,15 +130,26 @@ STATIC void _reset_pin(gpio_num_t pin_number) {
         return;
     }
 
-    gpio_reset_pin(pin_number);
+    bool pull_down = false;
+
+    // Special case the status LED pin.
+    #if defined(MICROPY_HW_LED_STATUS) && (!defined(MICROPY_HW_LED_STATUS_INVERTED) || !MICROPY_HW_LED_STATUS_INVERTED)
+    pull_down = pull_down || pin_number == MICROPY_HW_LED_STATUS->number;
+    #endif
 
     #ifdef DOUBLE_TAP_PIN
     // Pull the double tap pin down so that resets come back to CircuitPython.
-    if (pin_number == DOUBLE_TAP_PIN->number) {
+    pull_down = pull_down || pin_number == DOUBLE_TAP_PIN->number;
+    #endif
+
+    // This will pull the pin up. For pins needing pull down it shouldn't be a
+    // problem for a moment.
+    gpio_reset_pin(pin_number);
+
+    if (pull_down) {
         gpio_pullup_dis(pin_number);
         gpio_pulldown_en(pin_number);
     }
-    #endif
 }
 
 // Mark pin as free and return it to a quiescent state.
