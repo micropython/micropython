@@ -31,6 +31,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "shared-bindings/busio/I2C.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
