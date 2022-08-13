@@ -96,6 +96,40 @@ void check_usb_recovery_mode(void) {
     #endif // MICROPY_HW_XOSC32K
 }
 
+// Purpose of the #defines for the clock configuration.
+//
+// Both CPU and periperal devices are clocked by the DFLL48M clock.
+// DFLL48M is either free running, or controlled by the 32kHz crystal, or
+// Synchronized with the USB clock.
+//
+// #define MICROPY_HW_XOSC32K (0 | 1)
+//
+// If MICROPY_HW_XOSC32K = 1, the 32kHz crystal is used as input for GCLK 1, which
+// serves as refernce clock source for the DFLL48M oscillator,
+// The crystal is used, unless MICROPY_HW_MCU_OSC32KULP is set.
+// In that case GCLK1 (and the CPU clock) is driven by the 32K Low power oscillator.
+// The reason for offering this option is a design flaw of the Adafruit
+// Feather boards, where the RGB Led and Debug signals interfere with the
+// crystal, causing the CPU to fail if it is driven by the crystal.
+//
+// If MICROPY_HW_XOSC32K = 0, the 32kHz signal for GCLK1 (and the CPU) is
+// created by dividing the 48MHz clock of DFLL48M, but not used otherwise.
+//
+// If MICROPY_HW_DFLL_USB_SYNC = 0, the DFLL48M oscillator is free running using
+// the pre-configured trim values. In that mode, the peripheral clock is
+// not exactly 48Mhz and has a substantional temperature drift.
+//
+// If MICROPY_HW_DFLL_USB_SYNC = 1, the DFLL48 is synchronized with the 1 kHz USB sync
+// signal. If after boot there is no USB sync withing 500ms, the configuratuion falls
+// back to a free running 48Mhz oscillator.
+//
+// In all modes, the 48MHz signal has a substantial jitter, largest when
+// MICROPY_HW_DFLL_USB_SYNC is active. That is caused by the repective
+// reference frequencies of 32kHz or 1 kHz being low. That affects most
+// PWM. Std Dev at 1kHz 0.156Hz (w. Crystal) up to 0.4 Hz (with USB sync).
+//
+// If none of the mentioned defines is set, the device uses the internal oscillators.
+
 void init_clocks(uint32_t cpu_freq) {
 
     dfll48m_calibration = 0; // please the compiler
