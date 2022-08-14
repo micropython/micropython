@@ -37,7 +37,37 @@
 #include "shared-bindings/analogio/AnalogFastIn.h"
 #include "shared-bindings/util.h"
 
-// pin, buffer, rate
+
+
+//| class AnalogFastIn:
+//|     """Read analog voltage levels quickly using DMA Capture"""
+//|
+//|     def __init__(self, pin: microcontroller.Pin, buffer: ReadableBuffer, *, sample_rate: int = 500000) -> None:
+//|         """Use the AnalogFastIn on the given pin. Fill the given buffer from ADC read values at the supplied
+///         sample_rate.
+///
+//|         :param ~microcontroller.Pin pin: the pin to read from"""
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: A buffer for samples
+//|         :param int sample_rate: The desired playback sample rate
+///
+//|     Usage::
+///
+//|       import board
+//|       import analogio
+//|       import array
+///
+//|       length = 1000
+//|       mybuffer = array.array("H", [0] * length)
+//|       fadc = analogio.AnalogFastIn(board.GP26, mybuffer)
+//|       fadc.capture()
+//|       fadc.deinit()
+//|       for i in range(length):
+//|           print(i, mybuffer[i])
+///
+///       (Future) The reference voltage varies by platform so use ``reference_voltage`` to read the configured setting.
+///       """
+//|         ...
+///
 STATIC void validate_rate(mp_float_t rate) {
     if (rate < (mp_float_t)1.0f || rate > (mp_float_t)500000.0f) {
         mp_raise_ValueError(translate("sample rate must be 1.0-500000.0 per second"));

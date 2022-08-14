@@ -39,15 +39,12 @@
 
 #define ADC_FIRST_PIN_NUMBER 26
 #define ADC_PIN_COUNT 4
-// Channel 0 is GPIO26
-#define CAPTURE_CHANNEL 0
-#define CAPTURE_DEPTH 1000
-uint8_t capture_buf[CAPTURE_DEPTH];
 
 void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, mp_float_t sample_rate) {
 
     // Set pin and channel
     self->pin = pin;
+    claim_pin(pin);
     self->chan = pin->number - ADC_FIRST_PIN_NUMBER;
 
     // Checks on chan value here
@@ -70,6 +67,7 @@ void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *sel
     adc_init();
     adc_gpio_init(pin->number);
     adc_select_input(self->chan); // chan = pin - 26 ??
+
     // adc_select_input(self->pin->number - ADC_FIRST_PIN_NUMBER);
     adc_fifo_setup(
         true,    // Write each completed conversion to the sample FIFO
@@ -108,6 +106,7 @@ void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *sel
     // clear any previous activity
     adc_fifo_drain();
     adc_run(false);
+
 }
 
 
