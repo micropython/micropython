@@ -564,7 +564,6 @@ STATIC mp_obj_t mod_socket_inet_ntop(mp_obj_t family_in, mp_obj_t binaddr_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_socket_inet_ntop_obj, mod_socket_inet_ntop);
 
 STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
-    // TODO: Implement 5th and 6th args
 
     const char *host = mp_obj_str_get_str(args[0]);
     const char *serv = NULL;
@@ -600,6 +599,12 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         hints.ai_family = MP_OBJ_SMALL_INT_VALUE(args[2]);
         if (n_args > 3) {
             hints.ai_socktype = MP_OBJ_SMALL_INT_VALUE(args[3]);
+            if (n_args > 4) {
+                hints.ai_protocol = MP_OBJ_SMALL_INT_VALUE(args[4]);
+                if (n_args > 5) {
+                    hints.ai_flags = MP_OBJ_SMALL_INT_VALUE(args[5]);
+                }
+            }
         }
     }
 
@@ -633,7 +638,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     freeaddrinfo(addr_list);
     return list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 4, mod_socket_getaddrinfo);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 6, mod_socket_getaddrinfo);
 
 STATIC mp_obj_t mod_socket_sockaddr(mp_obj_t sockaddr_in) {
     mp_buffer_info_t bufinfo;
