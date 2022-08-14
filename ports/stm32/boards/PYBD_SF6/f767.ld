@@ -41,15 +41,12 @@ _heap_end = _sstack;
 
 ENTRY(Reset_Handler)
 
+REGION_ALIAS("FLASH_COMMON", FLASH_APP);
+
 /* Define output sections */
 SECTIONS
 {
-    .isr_vector :
-    {
-        . = ALIGN(4);
-        KEEP(*(.isr_vector))
-        . = ALIGN(4);
-    } >FLASH_APP
+    INCLUDE common_isr.ld
 
     .text :
     {
@@ -62,6 +59,6 @@ SECTIONS
         _etext = .;
     } >FLASH_APP
 
-    INCLUDE common_extratext_data_in_flash_app.ld
+    INCLUDE common_extratext_data_in_flash.ld
     INCLUDE common_bss_heap_stack.ld
 }

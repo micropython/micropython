@@ -44,15 +44,12 @@ _micropy_hw_internal_flash_storage_ram_cache_end = ORIGIN(DTCM) + LENGTH(DTCM);
 _micropy_hw_internal_flash_storage_start = ORIGIN(FLASH_FS);
 _micropy_hw_internal_flash_storage_end = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
 
+REGION_ALIAS("FLASH_COMMON", FLASH_TEXT);
+
 /* define output sections */
 SECTIONS
 {
-    .isr_vector :
-    {
-        . = ALIGN(4);
-        KEEP(*(.isr_vector))
-        . = ALIGN(4);
-    } >FLASH_TEXT
+    INCLUDE common_isr.ld
 
     .text :
     {
@@ -65,6 +62,6 @@ SECTIONS
         _etext = .;
     } >FLASH_TEXT
 
-    INCLUDE common_extratext_data_in_flash_text.ld
+    INCLUDE common_extratext_data_in_flash.ld
     INCLUDE common_bss_heap_stack.ld
 }

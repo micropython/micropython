@@ -12,31 +12,13 @@
 
 ENTRY(Reset_Handler)
 
+REGION_ALIAS("FLASH_COMMON", FLASH);
+
 /* define output sections */
 SECTIONS
 {
-    /* The startup code goes first into FLASH */
-    .isr_vector :
-    {
-        . = ALIGN(4);
-        KEEP(*(.isr_vector)) /* Startup code */
-
-        . = ALIGN(4);
-    } >FLASH
-
-    /* The program code and other data goes into FLASH */
-    .text :
-    {
-        . = ALIGN(4);
-        *(.text*)          /* .text* sections (code) */
-        *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-    /*  *(.glue_7)   */    /* glue arm to thumb code */
-    /*  *(.glue_7t)  */    /* glue thumb to arm code */
-
-        . = ALIGN(4);
-        _etext = .;        /* define a global symbol at end of code */
-    } >FLASH
-
+    INCLUDE common_isr.ld
+    INCLUDE common_text.ld
     INCLUDE common_extratext_data_in_flash.ld
     INCLUDE common_bss_heap_stack.ld
 }

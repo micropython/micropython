@@ -6,7 +6,7 @@
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
-} >FLASH
+} >FLASH_COMMON
 
 /* Used by the start-up code to initialise data */
 _sidata = LOADADDR(.data);
@@ -19,4 +19,4 @@ _sidata = LOADADDR(.data);
     *(.data*)
     . = ALIGN(4);
     _edata = .;
-} >RAM AT> FLASH
+} >RAM AT> FLASH_COMMON
