@@ -241,11 +241,17 @@ STATIC mp_framebuf_p_t formats[] = {
     [FRAMEBUF_MHMSB] = {mono_horiz_setpixel, mono_horiz_getpixel, mono_horiz_fill_rect},
 };
 
-static inline void setpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, uint32_t col) {
+STATIC inline void setpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, uint32_t col) {
     formats[fb->format].setpixel(fb, x, y, col);
 }
 
-static inline uint32_t getpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y) {
+STATIC void setpixel_checked(const mp_obj_framebuf_t *fb, mp_int_t x, mp_int_t y, mp_int_t col, mp_int_t mask) {
+    if (mask && 0 <= x && x < fb->width && 0 <= y && y < fb->height) {
+        setpixel(fb, x, y, col);
+    }
+}
+
+STATIC inline uint32_t getpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y) {
     return formats[fb->format].getpixel(fb, x, y);
 }
 
@@ -470,12 +476,6 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_line_obj, 6, 6, framebuf_line);
 
-STATIC void ellipse_pixel(const mp_obj_framebuf_t *fb, mp_int_t x, mp_int_t y, mp_int_t col, mp_int_t mask) {
-    if (mask && 0 <= x && x < fb->width && 0 <= y && y < fb->height) {
-        setpixel(fb, x, y, col);
-    }
-}
-
 // Q2 Q1
 // Q3 Q4
 #define ELLIPSE_MASK_FILL (0x10)
@@ -500,10 +500,10 @@ STATIC void draw_ellipse_points(const mp_obj_framebuf_t *fb, mp_int_t cx, mp_int
             fill_rect(fb, cx, cy + y, x + 1, 1, col);
         }
     } else {
-        ellipse_pixel(fb, cx + x, cy - y, col, mask & ELLIPSE_MASK_Q1);
-        ellipse_pixel(fb, cx - x, cy - y, col, mask & ELLIPSE_MASK_Q2);
-        ellipse_pixel(fb, cx - x, cy + y, col, mask & ELLIPSE_MASK_Q3);
-        ellipse_pixel(fb, cx + x, cy + y, col, mask & ELLIPSE_MASK_Q4);
+        setpixel_checked(fb, cx + x, cy - y, col, mask & ELLIPSE_MASK_Q1);
+        setpixel_checked(fb, cx - x, cy - y, col, mask & ELLIPSE_MASK_Q2);
+        setpixel_checked(fb, cx - x, cy + y, col, mask & ELLIPSE_MASK_Q3);
+        setpixel_checked(fb, cx + x, cy + y, col, mask & ELLIPSE_MASK_Q4);
     }
 }
 
@@ -619,11 +619,23 @@ STATIC mp_obj_t framebuf_poly(size_t n_args, const mp_obj_t *args_in) {
 
                 // Don't include the bottom pixel of a given edge to avoid
                 // duplicating the node with the start of the next edge. This
-                // will miss some pixels on the boundary, but we get them at
-                // the end when we unconditionally draw the outline.
+                // will miss some pixels on the boundary, and in particular
+                // at a local minima or inflection point.
                 if (py1 != py2 && ((py1 > row && py2 <= row) || (py1 <= row && py2 > row))) {
                     mp_int_t node = (32 * px1 + 32 * (px2 - px1) * (row - py1) / (py2 - py1) + 16) / 32;
                     nodes[n_nodes++] = node;
+                } else if (row == MAX(py1, py2)) {
+                    // At local-minima, try and manually fill in the pixels that get missed above.
+                    if (py1 < py2) {
+                        setpixel_checked(self, x + px2, y + py2, col, 1);
+                    } else if (py2 < py1) {
+                        setpixel_checked(self, x + px1, y + py1, col, 1);
+                    } else {
+                        // Even though this is a hline and would be faster to
+                        // use fill_rect, use line() because it handles x2 <
+                        // x1.
+                        line(self, x + px1, y + py1, x + px2, y + py2, col);
+                    }
                 }
 
                 px1 = px2;
@@ -654,20 +666,19 @@ STATIC mp_obj_t framebuf_poly(size_t n_args, const mp_obj_t *args_in) {
                 fill_rect(self, x + nodes[i], y + row, (nodes[i + 1] - nodes[i]) + 1, 1, col);
             }
         }
+    } else {
+        // Outline only.
+        mp_int_t px1 = poly_int(&bufinfo, 0);
+        mp_int_t py1 = poly_int(&bufinfo, 1);
+        int i = n_poly * 2 - 1;
+        do {
+            mp_int_t py2 = poly_int(&bufinfo, i--);
+            mp_int_t px2 = poly_int(&bufinfo, i--);
+            line(self, x + px1, y + py1, x + px2, y + py2, col);
+            px1 = px2;
+            py1 = py2;
+        } while (i >= 0);
     }
-
-    // Always draw the outline (either because fill=False, or to fix the
-    // boundary pixels for a fill, see above).
-    mp_int_t px1 = poly_int(&bufinfo, 0);
-    mp_int_t py1 = poly_int(&bufinfo, 1);
-    int i = n_poly * 2 - 1;
-    do {
-        mp_int_t py2 = poly_int(&bufinfo, i--);
-        mp_int_t px2 = poly_int(&bufinfo, i--);
-        line(self, x + px1, y + py1, x + px2, y + py2, col);
-        px1 = px2;
-        py1 = py2;
-    } while (i >= 0);
 
     return mp_const_none;
 }
