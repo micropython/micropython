@@ -390,9 +390,6 @@ SRC_COMMON_HAL_ALL = \
 	alarm/time/TimeAlarm.c \
 	alarm/touch/TouchAlarm.c \
 	analogio/AnalogIn.c \
-#ifdef CIRCUITPYTHON_ANALOGFASTIN
-	analogio/AnalogFastIn.c \
-#endif
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
 	audiobusio/I2SOut.c \
@@ -479,6 +476,13 @@ ifeq ($(CIRCUITPY_BLEIO_HCI),1)
 SRC_C += \
 	common-hal/_bleio/att.c \
 	common-hal/_bleio/hci.c \
+
+endif
+
+ifeq ($(CIRCUITPYTHON_ANALOGFASTIN),1)
+# Needed for AnalogFastIn
+SRC_COMMON_HAL_ALL += \
+	analogio/AnalogFastIn.c \
 
 endif
 
