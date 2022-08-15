@@ -30,6 +30,9 @@
 // Set base feature level.
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EVERYTHING)
 
+// Enable extra Unix features.
+#include "../mpconfigvariant_common.h"
+
 // Enable additional features.
 #define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
 #define MICROPY_GC_SPLIT_HEAP          (1)
@@ -45,11 +48,9 @@
 #define MICROPY_PY_BUILTINS_RANGE_BINOP (1)
 #define MICROPY_PY_SYS_GETSIZEOF       (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER (1)
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (mp_urandom_seed_init())
 #define MICROPY_PY_URE_DEBUG           (1)
 #define MICROPY_PY_URE_MATCH_GROUPS    (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END (1)
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (1)
-#define MICROPY_PY_UCRYPTOLIB          (1)
 #define MICROPY_PY_UCRYPTOLIB_CTR      (1)
 #define MICROPY_PY_MICROPYTHON_HEAP_LOCKED (1)

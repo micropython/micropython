@@ -63,6 +63,11 @@ STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 #endif
 
+// Number of heaps to assign by default if MICROPY_GC_SPLIT_HEAP=1
+#ifndef MICROPY_GC_SPLIT_HEAP_N_HEAPS
+#define MICROPY_GC_SPLIT_HEAP_N_HEAPS (1)
+#endif
+
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t ret;
