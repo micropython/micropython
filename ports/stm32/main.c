@@ -303,10 +303,21 @@ void stm32_main(uint32_t reset_mode) {
     // Low-level MCU initialisation.
     stm32_system_init();
 
-    #if !defined(STM32F0) && defined(MICROPY_HW_VTOR)
+    #if !defined(STM32F0)
+    #if MICROPY_HW_ENABLE_ISR_UART_FLASH_FUNCS_IN_RAM
+    // Copy IRQ vector table to RAM and point VTOR there
+    extern uint32_t __isr_vector_flash_addr, __isr_vector_ram_start, __isr_vector_ram_end;
+    size_t __isr_vector_size = (&__isr_vector_ram_end - &__isr_vector_ram_start) * sizeof(uint32_t);
+    memcpy(&__isr_vector_ram_start, &__isr_vector_flash_addr, __isr_vector_size);
+    SCB->VTOR = (uint32_t)&__isr_vector_ram_start;
+    #else
+    #if defined(MICROPY_HW_VTOR)
     // Change IRQ vector table if configured differently
     SCB->VTOR = MICROPY_HW_VTOR;
     #endif
+    #endif
+    #endif
+
 
     #if __CORTEX_M != 33
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI

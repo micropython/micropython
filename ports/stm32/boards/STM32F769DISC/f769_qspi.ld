@@ -40,6 +40,7 @@ _heap_end = _sstack;
 
 ENTRY(Reset_Handler)
 
+REGION_ALIAS("FLASH_ISR", FLASH_APP);
 REGION_ALIAS("FLASH_COMMON", FLASH_APP);
 
 SECTIONS
