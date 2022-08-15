@@ -7,12 +7,15 @@ function do_build() {
     board=$2
     shift
     shift
-    echo "building $descr $board"
-    build_dir=/tmp/stm-build-$board
-    $MICROPY_AUTOBUILD_MAKE $@ BOARD=$board BUILD=$build_dir || exit 1
-    mv $build_dir/firmware.dfu $dest_dir/$descr$fw_tag.dfu
-    mv $build_dir/firmware.hex $dest_dir/$descr$fw_tag.hex
-    rm -rf $build_dir
+    for variant in `$MICROPY_AUTOBUILD_MAKE BOARD=$board query-variants | grep VARIANTS: | cut -d' ' -f2-`; do
+        target=$descr-$variant
+        echo "building $target $board"
+        build_dir=/tmp/stm-build-$board
+        $MICROPY_AUTOBUILD_MAKE $@ BOARD=$board BOARD_VARIANT=$variant BUILD=$build_dir || exit 1
+        mv $build_dir/firmware.dfu $dest_dir/$target$fw_tag.dfu
+        mv $build_dir/firmware.hex $dest_dir/$target$fw_tag.hex
+        rm -rf $build_dir
+    done
 }
 
 # check/get parameters
@@ -30,18 +33,7 @@ if [ ! -r modpyb.c ]; then
     exit 1
 fi
 
-# build the versions
-do_build pybv3 PYBV3
-do_build pybv3-network PYBV3 MICROPY_PY_NETWORK_WIZNET5K=5200 MICROPY_PY_CC3K=1
-do_build pybv10-dp PYBV10 MICROPY_FLOAT_IMPL=double
-do_build pybv10-thread PYBV10 CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
-do_build pybv10-dp-thread PYBV10 MICROPY_FLOAT_IMPL=double CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
-do_build pybv10-network PYBV10 MICROPY_PY_NETWORK_WIZNET5K=5200 MICROPY_PY_CC3K=1
-do_build pybv11-dp PYBV11 MICROPY_FLOAT_IMPL=double
-do_build pybv11-thread PYBV11 CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
-do_build pybv11-dp-thread PYBV11 MICROPY_FLOAT_IMPL=double CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
-do_build pybv11-network PYBV11 MICROPY_PY_NETWORK_WIZNET5K=5200 MICROPY_PY_CC3K=1
-do_build pyblitev10-dp PYBLITEV10 MICROPY_FLOAT_IMPL=double
-do_build pyblitev10-thread PYBLITEV10 CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
-do_build pyblitev10-dp-thread PYBLITEV10 MICROPY_FLOAT_IMPL=double CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
-do_build pyblitev10-network PYBLITEV10 MICROPY_PY_NETWORK_WIZNET5K=5200 MICROPY_PY_CC3K=1
+# build the variants for each board
+do_build pybv10 PYBV10
+do_build pybv11 PYBV11
+do_build pyblitev10 PYBLITEV10

@@ -37,6 +37,9 @@ include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES += lib/libhydrogen lib/lwip lib/mbedtls lib/stm32lib
 
+query-variants:
+	$(ECHO) "VARIANTS:" $(BOARD_VARIANTS)
+
 LD_DIR=boards
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
