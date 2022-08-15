@@ -454,14 +454,6 @@ function ci_unix_standard_run_tests {
     ci_unix_run_tests_full_helper standard
 }
 
-function ci_unix_dev_build {
-    ci_unix_build_helper VARIANT=dev
-}
-
-function ci_unix_dev_run_tests {
-    ci_unix_run_tests_helper VARIANT=dev
-}
-
 function ci_unix_coverage_setup {
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
@@ -602,8 +594,6 @@ function ci_unix_macos_build {
     #make ${MAKEOPTS} -C ports/unix deplibs
     make ${MAKEOPTS} -C ports/unix
     # check for additional compiler errors/warnings
-    make ${MAKEOPTS} -C ports/unix VARIANT=dev submodules
-    make ${MAKEOPTS} -C ports/unix VARIANT=dev
     make ${MAKEOPTS} -C ports/unix VARIANT=coverage submodules
     make ${MAKEOPTS} -C ports/unix VARIANT=coverage
 }

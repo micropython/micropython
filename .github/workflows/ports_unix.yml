@@ -49,18 +49,6 @@ jobs:
       if: failure()
       run: tests/run-tests.py --print-failures
 
-  dev:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: source tools/ci.sh && ci_unix_dev_build
-    - name: Run main test suite
-      run: source tools/ci.sh && ci_unix_dev_run_tests
-    - name: Print failures
-      if: failure()
-      run: tests/run-tests.py --print-failures
-
   coverage:
     runs-on: ubuntu-latest
     steps:
