@@ -33,24 +33,12 @@
 // Enable extra Unix features.
 #include "../mpconfigvariant_common.h"
 
-// Enable additional features.
-#define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
+// Enable testing of split heap.
 #define MICROPY_GC_SPLIT_HEAP          (1)
 #define MICROPY_GC_SPLIT_HEAP_N_HEAPS  (4)
+
+// Enable additional features.
+#define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
 #define MICROPY_TRACKED_ALLOC           (1)
-#define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
-#define MICROPY_REPL_EMACS_WORDS_MOVE  (1)
-#define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE (1)
 #define MICROPY_WARNINGS_CATEGORY      (1)
-#define MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS (1)
-#define MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE (1)
-#define MICROPY_PY_BUILTINS_NEXT2      (1)
-#define MICROPY_PY_BUILTINS_RANGE_BINOP (1)
-#define MICROPY_PY_SYS_GETSIZEOF       (1)
-#define MICROPY_PY_IO_BUFFEREDWRITER (1)
-#define MICROPY_PY_URE_DEBUG           (1)
-#define MICROPY_PY_URE_MATCH_GROUPS    (1)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END (1)
-#define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (1)
 #define MICROPY_PY_UCRYPTOLIB_CTR      (1)
-#define MICROPY_PY_MICROPYTHON_HEAP_LOCKED (1)
