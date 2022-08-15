@@ -305,6 +305,10 @@ def run_micropython(pyb, args, test_file, is_special=False):
     if had_crash or output_mupy in (b"SKIP\n", b"CRASH"):
         return output_mupy
 
+    # skipped special tests will output "SKIP" surrounded by other interpreter debug output
+    if is_special and not had_crash and b"\nSKIP\n" in output_mupy:
+        return b"SKIP\n"
+
     if is_special or test_file in special_tests:
         # convert parts of the output that are not stable across runs
         with open(test_file + ".exp", "rb") as f:
