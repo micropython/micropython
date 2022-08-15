@@ -56,12 +56,6 @@
 // release vs debug configs, etc. Note that if you switch from one config
 // to another, you must rebuild from scratch using "-B" switch to make.
 
-#ifdef MP_CONFIGFILE
-#include MP_CONFIGFILE
-#else
-#include <mpconfigport.h>
-#endif
-
 // Disable all optional features (i.e. minimal port).
 #define MICROPY_CONFIG_ROM_LEVEL_MINIMUM (0)
 // Only enable core features (constrained flash, e.g. STM32L072)
@@ -74,6 +68,12 @@
 #define MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES (40)
 // Enable everything (e.g. coverage)
 #define MICROPY_CONFIG_ROM_LEVEL_EVERYTHING (50)
+
+#ifdef MP_CONFIGFILE
+#include MP_CONFIGFILE
+#else
+#include <mpconfigport.h>
+#endif
 
 // Ports/boards should set this, but default to level=core.
 #ifndef MICROPY_CONFIG_ROM_LEVEL
