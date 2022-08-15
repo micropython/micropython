@@ -1,8 +1,8 @@
 {
   "deploy": ["../deploy.md"],
   "docs": "",
-  "features": ["BLE", "WiFi", "USB-C", "RGB LED"],
-  "images": ["bees3.jpg"],
+  "features": ["BLE", "WiFi", "USB-C", "RGB LED", "PIR MOTION"],
+  "images": ["beemotions3.jpg"],
   "mcu": "esp32s3",
   "product": "Bee Motion S3",
   "thumbnail": "",

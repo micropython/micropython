@@ -5,7 +5,7 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.usb
     boards/sdkconfig.ble
     boards/sdkconfig.240mhz
-    boards/SBD_BEES3/sdkconfig.board
+    boards/SBD_BMS3/sdkconfig.board
 )
 
 set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)

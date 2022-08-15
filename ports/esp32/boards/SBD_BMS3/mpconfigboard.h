@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME               "Bee S3"
+#define MICROPY_HW_BOARD_NAME               "Bee Motion S3"
 #define MICROPY_HW_MCU_NAME                 "ESP32S3"
 
 #define MICROPY_PY_MACHINE_DAC              (0)
