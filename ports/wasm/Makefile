@@ -51,6 +51,6 @@ min: $(BUILD)/micropython.js
 
 test: $(BUILD)/micropython.js $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests.py -j1
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../ports/wasm/node_run.sh ./run-tests.py -j1
 
 include $(TOP)/py/mkrules.mk

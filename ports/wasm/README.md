@@ -1,13 +1,17 @@
-MicroPython.js
-==============
+MicroPython WASM
+================
 
-MicroPython transmuted into Javascript by Emscripten.
+MicroPython compiled to WASM by Emscripten.
 
 Dependencies
 ------------
 
-Building micropython.js bears the same requirements as the standard MicroPython
+Building the WASM port bears the same requirements as the standard MicroPython
 ports with the addition of Emscripten (and uglify-js for the minified file).
+
+The output includes ``micropython.js`` (a JavaScript wrapper for the
+MicroPython runtime) and ``firmware.wasm`` (actual MicroPython compiled to
+WASM).
 
 Build instructions
 ------------------
@@ -37,8 +41,8 @@ MicroPython scripts may be executed using:
 
     $ node build/micropython.js hello.py
 
-Alternatively micropython.js may by accessed by other javascript programs in node
-using the require command and the general API outlined below. For example:
+Alternatively micropython.js may by accessed by other javascript programs in
+node using the require command and the general API outlined below. For example:
 
 ```javascript
 var mp_js = require('./build/micropython.js');
@@ -75,8 +79,8 @@ demonstrates basic functionality:
 ```
 
 MicroPython code execution will suspend the browser so be sure to atomize usage
-within this environment. Unfortunately interrupts have not been implemented for the
-browser.
+within this environment. Unfortunately interrupts have not been implemented for
+the browser.
 
 Testing
 -------

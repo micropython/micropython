@@ -105,7 +105,7 @@
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
-#define MICROPY_PY_SYS_PLATFORM     "javascript"
+#define MICROPY_PY_SYS_PLATFORM     "wasm"
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UZLIB            (1)
