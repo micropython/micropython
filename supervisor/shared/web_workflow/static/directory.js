@@ -5,15 +5,19 @@ var url_base = window.location;
 var current_path;
 var editable = undefined;
 
+function compareValues(a, b) {
+    if (a.directory == b.directory && a.name.toLowerCase() === b.name.toLowerCase()) {
+      return 0;
+    } else if (a.directory != b.directory) {
+      return a.directory < b.directory ? 1 : -1;
+    } else {
+      return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
+    }
+}
+
 async function refresh_list() {
 
-    function compareValues(a, b) {
-        if (a.directory == b.directory && a.name.toLowerCase() === b.name.toLowerCase()) {
-          return 0;
-        } else {
-          return a.directory.toString().substring(3,4)+a.name.toLowerCase() < b.directory.toString().substring(3,4)+b.name.toLowerCase() ? -1 : 1;
-        }
-    }
+
 
     current_path = window.location.hash.substr(1);
     if (current_path == "") {
@@ -52,7 +56,7 @@ async function refresh_list() {
         }
     }
 
-    if (window.location.path != "/fs/") {
+    if (current_path != "/") {
         var clone = template.content.cloneNode(true);
         var td = clone.querySelectorAll("td");
         td[0].textContent = "📁";
@@ -62,6 +66,8 @@ async function refresh_list() {
         path.textContent = "..";
         // Remove the delete button
         td[4].replaceChildren();
+        td[5].replaceChildren();
+        td[6].replaceChildren();
         new_children.push(clone);
     }
 
@@ -82,6 +88,7 @@ async function refresh_list() {
             file_path = api_url;
         }
 
+        var text_file = false;
         if (f.directory) {
             icon = "📁";
         } else if(f.name.endsWith(".txt") ||
@@ -89,24 +96,37 @@ async function refresh_list() {
                   f.name.endsWith(".js") ||
                   f.name.endsWith(".json")) {
             icon = "📄";
+            text_file = true;
         } else if (f.name.endsWith(".html")) {
             icon = "🌐";
+            text_file = true;
         }
         td[0].textContent = icon;
         td[1].textContent = f.file_size;
-        var path = clone.querySelector("a");
+        var path = clone.querySelector("a.path");
         path.href = file_path;
         path.textContent = f.name;
-        td[3].textContent = (new Date(f.modified_ns / 1000000)).toLocaleString();
+        let modtime = clone.querySelector("td.modtime");
+        modtime.textContent = (new Date(f.modified_ns / 1000000)).toLocaleString();
         var delete_button = clone.querySelector("button.delete");
         delete_button.value = api_url;
         delete_button.disabled = !editable;
         delete_button.onclick = del;
 
-        if (editable && !f.directory) {
+
+        var rename_button = clone.querySelector("button.rename");
+        rename_button.value = api_url;
+        rename_button.disabled = !editable;
+        rename_button.onclick = rename;
+
+        let edit_link = clone.querySelector(".edit_link");
+        if (text_file && editable && !f.directory) {
             edit_url = new URL(edit_url, url_base);
-            let edit_link = clone.querySelector(".edit_link");
             edit_link.href = edit_url
+        } else if (f.directory) {
+            edit_link.style = "display: none;";
+        } else {
+            edit_link.querySelector("button").disabled = true;
         }
 
         new_children.push(clone);
@@ -185,6 +205,23 @@ async function del(e) {
         if (response.ok) {
             refresh_list();
         }
+    }
+}
+
+async function rename(e) {
+    let fn = new URL(e.target.value);
+    var new_fn = prompt("Rename to ", fn.pathname.substr(3));
+    let new_uri = new URL("/fs" + new_fn, fn);
+    const response = await fetch(e.target.value,
+        {
+            method: "MOVE",
+            headers: {
+                'X-Destination': new_uri.pathname,
+            },
+        }
+    )
+    if (response.ok) {
+        refresh_list();
     }
 }
 

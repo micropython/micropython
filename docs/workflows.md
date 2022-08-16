@@ -202,6 +202,24 @@ Example:
 curl -v -u :passw0rd -X PUT -L --location-trusted http://circuitpython.local/fs/lib/hello/world/
 ```
 
+##### Move
+Moves the directory at the given path to ``X-Destination``. Also known as rename.
+
+The custom `X-Destination` header stores the destination path of the directory.
+
+* `201 Created` - Directory renamed
+* `401 Unauthorized` - Incorrect password
+* `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
+* `404 Not Found` - Source directory not found or destination path is missing
+* `409 Conflict` - USB is active and preventing file system modification
+* `412 Precondition Failed` - The destination path is already in use
+
+Example:
+
+```sh
+curl -v -u :passw0rd -X MOVE -H "X-Destination: /fs/lib/hello2/" -L --location-trusted http://circuitpython.local/fs/lib/hello/
+```
+
 ##### DELETE
 Deletes the directory and all of its contents.
 
@@ -214,7 +232,7 @@ Deletes the directory and all of its contents.
 Example:
 
 ```sh
-curl -v -u :passw0rd -X DELETE -L --location-trusted http://circuitpython.local/fs/lib/hello/world/
+curl -v -u :passw0rd -X DELETE -L --location-trusted http://circuitpython.local/fs/lib/hello2/world/
 ```
 
 
@@ -270,6 +288,25 @@ curl -v -u :passw0rd -L --location-trusted http://circuitpython.local/fs/lib/hel
 ```
 
 
+##### Move
+Moves the file at the given path to the ``X-Destination``. Also known as rename.
+
+The custom `X-Destination` header stores the destination path of the file.
+
+* `201 Created` - File renamed
+* `401 Unauthorized` - Incorrect password
+* `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
+* `404 Not Found` - Source file not found or destination path is missing
+* `409 Conflict` - USB is active and preventing file system modification
+* `412 Precondition Failed` - The destination path is already in use
+
+Example:
+
+```sh
+curl -v -u :passw0rd -X MOVE -H "X-Destination: /fs/lib/hello/world2.txt" -L --location-trusted http://circuitpython.local/fs/lib/hello/world.txt
+```
+
+
 ##### DELETE
 Deletes the file.
 
@@ -283,7 +320,7 @@ Deletes the file.
 Example:
 
 ```sh
-curl -v -u :passw0rd -X DELETE -L --location-trusted http://circuitpython.local/fs/lib/hello/world.txt
+curl -v -u :passw0rd -X DELETE -L --location-trusted http://circuitpython.local/fs/lib/hello/world2.txt
 ```
 
 ### `/cp/`
