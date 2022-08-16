@@ -503,7 +503,7 @@ static ssize_t tl_sys_hci_cmd_resp(uint16_t opcode, const uint8_t *buf, size_t l
     return tl_sys_wait_ack(ipcc_membuf_sys_cmd_buf, timeout_ms);
 }
 
-static int tl_ble_wait_resp(void) {
+static size_t tl_ble_wait_resp(parse_hci_info_t *parse) {
     uint32_t t0 = mp_hal_ticks_ms();
     while (!LL_C2_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_BLE)) {
         if (mp_hal_ticks_ms() - t0 > BLE_ACK_TIMEOUT_MS) {
@@ -513,8 +513,7 @@ static int tl_ble_wait_resp(void) {
     }
 
     // C2 set IPCC flag -- process the data, clear the flag, and re-enable IRQs.
-    tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, NULL);
-    return 0;
+    return tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, parse);
 }
 
 // Synchronously send a BLE command.
@@ -522,7 +521,7 @@ static void tl_ble_hci_cmd_resp(uint16_t opcode, const uint8_t *buf, size_t len)
     // Poll for completion rather than wait for IRQ->scheduler.
     LL_C1_IPCC_DisableReceiveChannel(IPCC, IPCC_CH_BLE);
     tl_hci_cmd(ipcc_membuf_ble_cmd_buf, IPCC_CH_BLE, HCI_KIND_BT_CMD, opcode, buf, len);
-    tl_ble_wait_resp();
+    tl_ble_wait_resp(NULL);
 }
 
 /******************************************************************************/
@@ -796,5 +795,50 @@ static mp_obj_t rfcore_sys_hci(size_t n_args, const mp_obj_t *args) {
     return mp_obj_new_bytes(ipcc_membuf_sys_cmd_buf, len);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rfcore_sys_hci_obj, 3, 4, rfcore_sys_hci);
+
+static void rfcore_ble_hci_response_to_buffer(void *env, const uint8_t *buf, size_t len) {
+    DEBUG_printf("rfcore_ble_hci_response_to_buffer len 0x%x\n", len);
+    mp_obj_t *rsp = (mp_obj_t *)env;
+    if (*rsp == mp_const_none) {
+        *rsp = mp_obj_new_bytes(buf, len);
+    } else {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(*rsp, &bufinfo, MP_BUFFER_WRITE);
+        if (bufinfo.len < len) {
+            mp_raise_OSError(-len);
+        }
+        memcpy(bufinfo.buf, buf, len);
+    }
+}
+
+static mp_obj_t rfcore_ble_hci(size_t n_args, const mp_obj_t *args) {
+    if (ipcc_mem_dev_info_tab.fus.table_state == MAGIC_IPCC_MEM_INCORRECT) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+    mp_obj_t cmd = args[0];
+    mp_obj_t rsp = mp_const_none;
+    bool return_len = false;
+    if (n_args == 2) {
+        rsp = args[1];
+        // response buffer passed in, so return rsp length.
+        return_len = true;
+    }
+
+    mp_buffer_info_t bufinfo = {0};
+    mp_get_buffer_raise(cmd, &bufinfo, MP_BUFFER_READ);
+
+    // Poll for completion rather than wait for IRQ->scheduler. Is re-enabled in tl_check_msg.
+    LL_C1_IPCC_DisableReceiveChannel(IPCC, IPCC_CH_BLE);
+
+    rfcore_ble_hci_cmd(bufinfo.len, bufinfo.buf);
+
+    parse_hci_info_t parse = { rfcore_ble_hci_response_to_buffer, &rsp, false };
+    size_t ret_len = tl_ble_wait_resp(&parse);
+    if (return_len) {
+        return MP_OBJ_NEW_SMALL_INT(ret_len);
+    }
+    return rsp;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rfcore_ble_hci_obj, 1, 2, rfcore_ble_hci);
 
 #endif // defined(STM32WB)
