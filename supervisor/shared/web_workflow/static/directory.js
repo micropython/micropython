@@ -1,5 +1,6 @@
 let new_directory_name = document.getElementById("name");
 let files = document.getElementById("files");
+let dirs = document.getElementById("dirs");
 
 var url_base = window.location;
 var current_path;
@@ -148,8 +149,21 @@ async function mkdir(e) {
 }
 
 async function upload(e) {
-    for (const file of files.files) {
-        let file_path = new URL("/fs" + current_path + file.name, url_base);
+    let made_dirs = new Set();
+    for (const file of [...files.files, ...dirs.files]) {
+        let file_name = file.name;
+        if (file.webkitRelativePath) {
+            file_name = file.webkitRelativePath;
+            let components = file_name.split("/");
+            components.pop();
+            let parent_dir = components.join("/");
+            if (!made_dirs.has(parent_dir)) {
+                new_directory_name.value = parent_dir;
+                await mkdir(null);
+                made_dirs.add(parent_dir);
+            }
+        }
+        let file_path = new URL("/fs" + current_path + file_name, url_base);
         const response = await fetch(file_path,
             {
                 method: "PUT",
@@ -165,6 +179,7 @@ async function upload(e) {
         }
     }
     files.value = "";
+    dirs.value = "";
     upload_button.disabled = true;
 }
 
@@ -196,10 +211,14 @@ mkdir_button.onclick = mkdir;
 let upload_button = document.getElementById("upload");
 upload_button.onclick = upload;
 
-upload_button.disabled = files.files.length == 0;
+upload_button.disabled = files.files.length == 0 && dirs.files.length == 0;
 
 files.onchange = () => {
-    upload_button.disabled = files.files.length == 0;
+    upload_button.disabled = files.files.length == 0 && dirs.files.length == 0;
+}
+
+dirs.onchange = () => {
+    upload_button.disabled = files.files.length == 0 && dirs.files.length == 0;
 }
 
 mkdir_button.disabled = new_directory_name.value.length == 0;
