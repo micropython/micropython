@@ -92,6 +92,7 @@ async function refresh_list() {
         if (f.directory) {
             icon = "📁";
         } else if(f.name.endsWith(".txt") ||
+                  f.name.endsWith(".env") ||
                   f.name.endsWith(".py") ||
                   f.name.endsWith(".js") ||
                   f.name.endsWith(".json")) {
@@ -211,6 +212,9 @@ async function del(e) {
 async function rename(e) {
     let fn = new URL(e.target.value);
     var new_fn = prompt("Rename to ", fn.pathname.substr(3));
+    if (new_fn === null) {
+        return;
+    }
     let new_uri = new URL("/fs" + new_fn, fn);
     const response = await fetch(e.target.value,
         {
