@@ -156,7 +156,7 @@ The STM32 version
 The "stm32" port requires an ARM compiler, arm-none-eabi-gcc, and associated
 bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils,
 arm-none-eabi-gcc and arm-none-eabi-newlib packages.  Otherwise, try here:
-https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm
+https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
 
 To build:
 

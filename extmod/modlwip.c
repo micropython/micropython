@@ -66,6 +66,7 @@
 // All socket options should be globally distinct,
 // because we ignore option levels for efficiency.
 #define IP_ADD_MEMBERSHIP 0x400
+#define IP_DROP_MEMBERSHIP 0x401
 
 // For compatibilily with older lwIP versions.
 #ifndef ip_set_option
@@ -1376,7 +1377,8 @@ STATIC mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
         }
 
         // level: IPPROTO_IP
-        case IP_ADD_MEMBERSHIP: {
+        case IP_ADD_MEMBERSHIP:
+        case IP_DROP_MEMBERSHIP: {
             mp_buffer_info_t bufinfo;
             mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
             if (bufinfo.len != sizeof(ip_addr_t) * 2) {
@@ -1384,7 +1386,12 @@ STATIC mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
             }
 
             // POSIX setsockopt has order: group addr, if addr, lwIP has it vice-versa
-            err_t err = igmp_joingroup((ip_addr_t *)bufinfo.buf + 1, bufinfo.buf);
+            err_t err;
+            if (opt == IP_ADD_MEMBERSHIP) {
+                err = igmp_joingroup((ip_addr_t *)bufinfo.buf + 1, bufinfo.buf);
+            } else {
+                err = igmp_leavegroup((ip_addr_t *)bufinfo.buf + 1, bufinfo.buf);
+            }
             if (err != ERR_OK) {
                 mp_raise_OSError(error_lookup_table[-err]);
             }
@@ -1769,6 +1776,7 @@ STATIC const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(0) },
     { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
+    { MP_ROM_QSTR(MP_QSTR_IP_DROP_MEMBERSHIP), MP_ROM_INT(IP_DROP_MEMBERSHIP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_lwip_globals, mp_module_lwip_globals_table);

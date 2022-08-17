@@ -27,38 +27,61 @@
 #define MICROPY_INCLUDED_PY_OBJSTR_H
 
 #include "py/obj.h"
+#include "py/objarray.h"
 
 typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
-    mp_uint_t hash;
+    size_t hash;
     // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
     size_t len;
     const byte *data;
 } mp_obj_str_t;
+
+// This static assert is used to ensure that mp_obj_str_t and mp_obj_array_t are compatible,
+// meaning that their len and data/items entries are at the same offsets in the struct.
+// This allows the same code to be used for str/bytes and bytearray.
+#define MP_STATIC_ASSERT_STR_ARRAY_COMPATIBLE \
+    MP_STATIC_ASSERT(offsetof(mp_obj_str_t, len) == offsetof(mp_obj_array_t, len) \
+    && offsetof(mp_obj_str_t, data) == offsetof(mp_obj_array_t, items))
 
 #define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, (const byte *)str}
 
 // use this macro to extract the string hash
 // warning: the hash can be 0, meaning invalid, and must then be explicitly computed from the data
 #define GET_STR_HASH(str_obj_in, str_hash) \
-    mp_uint_t str_hash; if (mp_obj_is_qstr(str_obj_in)) \
-    { str_hash = qstr_hash(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_hash = ((mp_obj_str_t *)MP_OBJ_TO_PTR(str_obj_in))->hash; }
+    size_t str_hash; \
+    if (mp_obj_is_qstr(str_obj_in)) { \
+        str_hash = qstr_hash(MP_OBJ_QSTR_VALUE(str_obj_in)); \
+    } else { \
+        str_hash = ((mp_obj_str_t *)MP_OBJ_TO_PTR(str_obj_in))->hash; \
+    }
 
 // use this macro to extract the string length
 #define GET_STR_LEN(str_obj_in, str_len) \
-    size_t str_len; if (mp_obj_is_qstr(str_obj_in)) \
-    { str_len = qstr_len(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t *)MP_OBJ_TO_PTR(str_obj_in))->len; }
+    size_t str_len; \
+    if (mp_obj_is_qstr(str_obj_in)) { \
+        str_len = qstr_len(MP_OBJ_QSTR_VALUE(str_obj_in)); \
+    } else { \
+        str_len = ((mp_obj_str_t *)MP_OBJ_TO_PTR(str_obj_in))->len; \
+    }
 
 // use this macro to extract the string data and length
 #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
 const byte *mp_obj_str_get_data_no_check(mp_obj_t self_in, size_t *len);
 #define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) \
-    size_t str_len; const byte *str_data = mp_obj_str_get_data_no_check(str_obj_in, &str_len);
+    size_t str_len; \
+    const byte *str_data = mp_obj_str_get_data_no_check(str_obj_in, &str_len);
 #else
 #define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) \
-    const byte *str_data; size_t str_len; if (mp_obj_is_qstr(str_obj_in)) \
-    { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); } \
-    else { str_len = ((mp_obj_str_t *)MP_OBJ_TO_PTR(str_obj_in))->len; str_data = ((mp_obj_str_t *)MP_OBJ_TO_PTR(str_obj_in))->data; }
+    const byte *str_data; \
+    size_t str_len; \
+    if (mp_obj_is_qstr(str_obj_in)) { \
+        str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); \
+    } else { \
+        MP_STATIC_ASSERT_STR_ARRAY_COMPATIBLE; \
+        str_len = ((mp_obj_str_t *)MP_OBJ_TO_PTR(str_obj_in))->len; \
+        str_data = ((mp_obj_str_t *)MP_OBJ_TO_PTR(str_obj_in))->data; \
+    }
 #endif
 
 mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
@@ -75,33 +98,21 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     mp_obj_t index, bool is_slice);
 const byte *find_subbytes(const byte *haystack, size_t hlen, const byte *needle, size_t nlen, int direction);
 
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rfind_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_index_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(str_join_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(str_splitlines_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(str_format_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(str_partition_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(str_rpartition_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(str_center_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_lower_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_upper_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_isspace_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_isalpha_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_isdigit_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_isupper_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(str_islower_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj);
+mp_obj_t mp_obj_bytes_hex(size_t n_args, const mp_obj_t *args, const mp_obj_type_t *type);
+mp_obj_t mp_obj_bytes_fromhex(mp_obj_t type_in, mp_obj_t data);
+
+extern const mp_obj_dict_t mp_obj_str_locals_dict;
+
+#if MICROPY_PY_BUILTINS_MEMORYVIEW && MICROPY_PY_BUILTINS_BYTES_HEX
+extern const mp_obj_dict_t mp_obj_memoryview_locals_dict;
+#endif
+
+#if MICROPY_PY_BUILTINS_BYTEARRAY
+extern const mp_obj_dict_t mp_obj_bytearray_locals_dict;
+#endif
+
+#if MICROPY_PY_ARRAY
+extern const mp_obj_dict_t mp_obj_array_locals_dict;
+#endif
 
 #endif // MICROPY_INCLUDED_PY_OBJSTR_H

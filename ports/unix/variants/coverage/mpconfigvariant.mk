@@ -1,5 +1,3 @@
-PROG ?= micropython-coverage
-
 # Disable optimisations and enable assert() on coverage builds.
 DEBUG ?= 1
 

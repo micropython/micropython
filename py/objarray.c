@@ -245,6 +245,12 @@ STATIC void memoryview_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
         dest[0] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
     }
+    #if MICROPY_PY_BUILTINS_BYTES_HEX
+    else {
+        // Need to forward to locals dict.
+        dest[1] = MP_OBJ_SENTINEL;
+    }
+    #endif
 }
 #endif
 
@@ -381,7 +387,7 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     self->free--;
     return mp_const_none; // return None, as per CPython
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
+MP_DEFINE_CONST_FUN_OBJ_2(mp_obj_array_append_obj, array_append);
 
 STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     // self is not a memoryview, so we don't need to use (& TYPECODE_MASK)
@@ -413,7 +419,7 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_extend_obj, array_extend);
+MP_DEFINE_CONST_FUN_OBJ_2(mp_obj_array_extend_obj, array_extend);
 #endif
 
 STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
@@ -564,18 +570,6 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
     return 0;
 }
 
-#if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
-STATIC const mp_rom_map_elem_t array_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj) },
-    { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
-    #if MICROPY_CPYTHON_COMPAT
-    { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&bytes_decode_obj) },
-    #endif
-};
-
-STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
-#endif
-
 #if MICROPY_PY_ARRAY
 const mp_obj_type_t mp_type_array = {
     { &mp_type_type },
@@ -587,7 +581,7 @@ const mp_obj_type_t mp_type_array = {
     .binary_op = array_binary_op,
     .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
-    .locals_dict = (mp_obj_dict_t *)&array_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_obj_array_locals_dict,
 };
 #endif
 
@@ -603,7 +597,7 @@ const mp_obj_type_t mp_type_bytearray = {
     .binary_op = array_binary_op,
     .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
-    .locals_dict = (mp_obj_dict_t *)&array_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_obj_bytearray_locals_dict,
 };
 #endif
 
@@ -619,6 +613,9 @@ const mp_obj_type_t mp_type_memoryview = {
     #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
     .attr = memoryview_attr,
     #endif
+    #if MICROPY_PY_BUILTINS_BYTES_HEX
+    .locals_dict = (mp_obj_dict_t *)&mp_obj_memoryview_locals_dict,
+    #endif
     .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
 };
@@ -631,7 +628,7 @@ size_t mp_obj_array_len(mp_obj_t self_in) {
 */
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
-mp_obj_t mp_obj_new_bytearray(size_t n, void *items) {
+mp_obj_t mp_obj_new_bytearray(size_t n, const void *items) {
     mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, n);
     memcpy(o->items, items, n);
     return MP_OBJ_FROM_PTR(o);

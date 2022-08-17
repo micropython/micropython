@@ -381,6 +381,11 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                 cyw43_ioctl(self->cyw, CYW43_IOCTL_GET_VAR, 13, buf, self->itf);
                 return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf) / 4);
             }
+            #if !MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
+            case MP_QSTR_hostname: {
+                return mp_obj_new_str(self->cyw->hostname, strlen(self->cyw->hostname));
+            }
+            #endif
             default:
                 mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
         }
@@ -453,6 +458,14 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                         cyw43_ioctl(self->cyw, CYW43_IOCTL_SET_VAR, 9 + 4, buf, self->itf);
                         break;
                     }
+                    #if !MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
+                    case MP_QSTR_hostname: {
+                        const char *hostname = mp_obj_str_get_str(e->value);
+                        strncpy(self->cyw->hostname, hostname, MICROPY_BOARD_HOSTNAME_LENGTH);
+                        self->cyw->hostname[MICROPY_BOARD_HOSTNAME_LENGTH - 1] = 0;
+                        break;
+                    }
+                    #endif
                     default:
                         mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }

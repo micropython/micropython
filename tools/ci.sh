@@ -245,8 +245,10 @@ function ci_qemu_arm_setup {
 
 function ci_qemu_arm_build {
     make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/qemu-arm submodules
     make ${MAKEOPTS} -C ports/qemu-arm CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
     make ${MAKEOPTS} -C ports/qemu-arm clean
+    make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test submodules
     make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
     make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test clean
     make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test BOARD=sabrelite test
@@ -291,6 +293,7 @@ function ci_samd_setup {
 }
 
 function ci_samd_build {
+    make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/samd submodules
     make ${MAKEOPTS} -C ports/samd
 }
@@ -354,6 +357,8 @@ function ci_teensy_setup {
 }
 
 function ci_teensy_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/teensy submodules
     make ${MAKEOPTS} -C ports/teensy
 }
 
@@ -405,14 +410,10 @@ function ci_unix_run_tests_helper {
 function ci_unix_run_tests_full_helper {
     variant=$1
     shift
-    if [ $variant = standard ]; then
-        micropython=micropython
-    else
-        micropython=micropython-$variant
-    fi
+    micropython=../ports/unix/build-$variant/micropython
     make -C ports/unix VARIANT=$variant "$@" test_full
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/$micropython ./run-multitests.py multi_net/*.py)
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/$micropython ./run-perfbench.py 1000 1000)
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-multitests.py multi_net/*.py)
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=$micropython ./run-perfbench.py 1000 1000)
 }
 
 function ci_native_mpy_modules_build {
@@ -441,7 +442,7 @@ function ci_unix_minimal_build {
 }
 
 function ci_unix_minimal_run_tests {
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-minimal ./run-tests.py -e exception_chain -e self_type_check -e subclass_native_init -d basics)
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/build-minimal/micropython ./run-tests.py -e exception_chain -e self_type_check -e subclass_native_init -d basics)
 }
 
 function ci_unix_standard_build {
@@ -488,21 +489,21 @@ function ci_unix_coverage_run_mpy_merge_tests {
         test=$(basename $inpy .py)
         echo $test
         outmpy=$outdir/$test.mpy
-        $mptop/mpy-cross/mpy-cross -o $outmpy $inpy
-        (cd $outdir && $mptop/ports/unix/micropython-coverage -m $test >> out-individual)
+        $mptop/mpy-cross/build/mpy-cross -o $outmpy $inpy
+        (cd $outdir && $mptop/ports/unix/build-coverage/micropython -m $test >> out-individual)
         allmpy+=($outmpy)
     done
 
     # Merge all the tests into one .mpy file, and then execute it.
     python3 $mptop/tools/mpy-tool.py --merge -o $outdir/merged.mpy ${allmpy[@]}
-    (cd $outdir && $mptop/ports/unix/micropython-coverage -m merged > out-merged)
+    (cd $outdir && $mptop/ports/unix/build-coverage/micropython -m merged > out-merged)
 
     # Make sure the outputs match.
     diff $outdir/out-individual $outdir/out-merged && /bin/rm -rf $outdir
 }
 
 function ci_unix_coverage_run_native_mpy_tests {
-    MICROPYPATH=examples/natmod/features2 ./ports/unix/micropython-coverage -m features2
+    MICROPYPATH=examples/natmod/features2 ./ports/unix/build-coverage/micropython -m features2
     (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,uheapq*,urandom*,ure*,uzlib*}.py)
 }
 
@@ -577,6 +578,7 @@ function ci_unix_float_clang_run_tests {
 
 function ci_unix_settrace_build {
     make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/unix submodules
     make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SYS_SETTRACE[@]}"
 }
 
@@ -586,6 +588,7 @@ function ci_unix_settrace_run_tests {
 
 function ci_unix_settrace_stackless_build {
     make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/unix submodules
     make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SYS_SETTRACE_STACKLESS[@]}"
 }
 
@@ -609,7 +612,7 @@ function ci_unix_macos_run_tests {
     # Issues with macOS tests:
     # - import_pkg7 has a problem with relative imports
     # - urandom_basic has a problem with getrandbits(0)
-    (cd tests && ./run-tests.py --exclude 'import_pkg7.py' --exclude 'urandom_basic.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude 'import_pkg7.py' --exclude 'urandom_basic.py')
 }
 
 function ci_unix_qemu_mips_setup {
@@ -628,8 +631,8 @@ function ci_unix_qemu_mips_run_tests {
     # Issues with MIPS tests:
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     # - ffi tests do not work
-    file ./ports/unix/micropython-coverage
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py --exclude 'vfs_posix.py' --exclude 'ffi_(callback|float|float2).py')
+    file ./ports/unix/build-coverage/micropython
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.py' --exclude 'ffi_(callback|float|float2).py')
 }
 
 function ci_unix_qemu_arm_setup {
@@ -648,8 +651,8 @@ function ci_unix_qemu_arm_run_tests {
     # Issues with ARM tests:
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     export QEMU_LD_PREFIX=/usr/arm-linux-gnueabi
-    file ./ports/unix/micropython-coverage
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py --exclude 'vfs_posix.py')
+    file ./ports/unix/build-coverage/micropython
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.py')
 }
 
 ########################################################################################
@@ -661,6 +664,7 @@ function ci_windows_setup {
 
 function ci_windows_build {
     make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/windows submodules
     make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 }
 

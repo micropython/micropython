@@ -814,7 +814,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
                     mp_obj_t iterable = mp_getiter(arg, &iter_buf);
                     mp_obj_t item;
                     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-                        if (args2_len >= args2_alloc) {
+                        if (args2_len + (n_args - i) >= args2_alloc) {
                             args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t),
                                 args2_alloc * 2 * sizeof(mp_obj_t));
                             args2_alloc *= 2;

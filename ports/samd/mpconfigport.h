@@ -56,6 +56,7 @@
 #define MICROPY_MODULE_WEAK_LINKS           (1)
 // Control over Python builtins
 #define MICROPY_PY_ASYNC_AWAIT              (0)
+#define MICROPY_PY_BUILTINS_BYTES_HEX       (1)
 #define MICROPY_PY_BUILTINS_STR_COUNT       (0)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW      (1)
 #define MICROPY_PY_BUILTINS_SET             (0)

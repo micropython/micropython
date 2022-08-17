@@ -16,7 +16,7 @@ The purposes of this port are to enable:
       process in terms of plugging things together, pressing buttons, etc.
 
 This port will only work with the [GNU ARM Embedded Toolchain](
-https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm)
+https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
  and not with CodeSourcery toolchain. You will need to modify
 `LDFLAGS` if you want to use CodeSourcery's version of `arm-none-eabi`.
 The difference is that CodeSourcery needs `-T generic-m-hosted.ld` while

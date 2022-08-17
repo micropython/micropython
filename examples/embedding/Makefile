@@ -1,6 +1,6 @@
 MPTOP = ../..
 CFLAGS = -std=c99 -I. -I$(MPTOP) -DNO_QSTR
-LDFLAGS = -L.
+LDFLAGS = -L./build
 
 hello-embed: hello-embed.o -lmicropython
 

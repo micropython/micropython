@@ -35,7 +35,7 @@ jobs:
       env:
         SOURCE_DATE_EPOCH: 1234567890
     - name: Check reproducible build date
-      run: echo | ports/unix/micropython-minimal -i | grep 'on 2009-02-13;'
+      run: echo | ports/unix/build-minimal/micropython -i | grep 'on 2009-02-13;'
 
   standard:
     runs-on: ubuntu-latest

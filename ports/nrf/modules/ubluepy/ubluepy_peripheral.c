@@ -193,9 +193,8 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
     memset(&adv_data, 0, sizeof(ubluepy_advertise_data_t));
 
     if (device_name_obj != mp_const_none && mp_obj_is_str(device_name_obj)) {
-        GET_STR_DATA_LEN(device_name_obj, str_data, str_len);
-
-        adv_data.p_device_name = (uint8_t *)str_data;
+        size_t str_len;
+        adv_data.p_device_name = (uint8_t *)mp_obj_str_get_data(device_name_obj, &str_len);
         adv_data.device_name_len = str_len;
     }
 
@@ -357,7 +356,8 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
     ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
 
     if (mp_obj_is_str(dev_addr)) {
-        GET_STR_DATA_LEN(dev_addr, str_data, str_len);
+        size_t str_len;
+        const byte *str_data = (const byte *)mp_obj_str_get_data(dev_addr, &str_len);
         if (str_len == 17) { // Example "11:22:33:aa:bb:cc"
 
             uint8_t * p_addr = m_new(uint8_t, 6);

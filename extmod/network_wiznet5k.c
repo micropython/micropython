@@ -91,12 +91,11 @@
 #endif
 #endif
 
-extern struct _machine_spi_obj_t *spi_from_mp_obj(mp_obj_t o);
-
 typedef struct _wiznet5k_obj_t {
     mp_obj_base_t base;
     mp_uint_t cris_state;
-    struct _machine_spi_obj_t *spi;
+    mp_obj_base_t *spi;
+    void (*spi_transfer)(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest);
     mp_hal_pin_obj_t cs;
     mp_hal_pin_obj_t rst;
     #if WIZNET5K_WITH_LWIP_STACK
@@ -148,21 +147,21 @@ void mpy_wiznet_yield(void) {
 }
 
 STATIC void wiz_spi_read(uint8_t *buf, uint16_t len) {
-    ((mp_machine_spi_p_t *)machine_spi_type.protocol)->transfer((mp_obj_base_t *)wiznet5k_obj.spi, len, buf, buf);
+    wiznet5k_obj.spi_transfer(wiznet5k_obj.spi, len, buf, buf);
 }
 
 STATIC void wiz_spi_write(const uint8_t *buf, uint16_t len) {
-    ((mp_machine_spi_p_t *)machine_spi_type.protocol)->transfer((mp_obj_base_t *)wiznet5k_obj.spi, len, buf, NULL);
+    wiznet5k_obj.spi_transfer(wiznet5k_obj.spi, len, buf, NULL);
 }
 
 STATIC uint8_t wiz_spi_readbyte() {
     uint8_t buf = 0;
-    ((mp_machine_spi_p_t *)machine_spi_type.protocol)->transfer((mp_obj_base_t *)wiznet5k_obj.spi, 1, &buf, &buf);
+    wiznet5k_obj.spi_transfer(wiznet5k_obj.spi, 1, &buf, &buf);
     return buf;
 }
 
 STATIC void wiz_spi_writebyte(const uint8_t buf) {
-    ((mp_machine_spi_p_t *)machine_spi_type.protocol)->transfer((mp_obj_base_t *)wiznet5k_obj.spi, 1, &buf, NULL);
+    wiznet5k_obj.spi_transfer(wiznet5k_obj.spi, 1, &buf, NULL);
 }
 
 STATIC void wiznet5k_get_mac_address(wiznet5k_obj_t *self, uint8_t mac[6]) {
@@ -177,11 +176,10 @@ STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self);
 
 STATIC mp_obj_t mpy_wiznet_read_int(mp_obj_t none_in) {
     (void)none_in;
-    wizchip_clrinterrupt(IK_SOCK_0);
-    setSn_IR(0, Sn_IR_RECV);
-
-    // Handle incoming data
-    wiznet5k_try_poll();
+    // Handle incoming data, unless the SPI bus is busy
+    if (mp_hal_pin_read(wiznet5k_obj.cs)) {
+        wiznet5k_try_poll();
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpy_wiznet_read_int_obj, mpy_wiznet_read_int);
@@ -196,6 +194,16 @@ STATIC void wiznet5k_config_interrupt(bool enabled) {
         (enabled)? MP_HAL_PIN_TRIGGER_FALL : MP_HAL_PIN_TRIGGER_NONE,
         true
         );
+}
+
+void wiznet5k_deinit(void) {
+    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
+        if (netif == &wiznet5k_obj.netif) {
+            netif_remove(netif);
+            netif->flags = 0;
+            break;
+        }
+    }
 }
 
 STATIC void wiznet5k_init(void) {
@@ -219,21 +227,17 @@ STATIC void wiznet5k_init(void) {
         wiznet5k_config_interrupt(true);
     }
 
+    // Deinit before a new init to clear the state from a previous activation
+    wiznet5k_deinit();
+
     // Hook the Wiznet into lwIP
     wiznet5k_lwip_init(&wiznet5k_obj);
 
     netif_set_link_up(&wiznet5k_obj.netif);
     netif_set_up(&wiznet5k_obj.netif);
-}
 
-void wiznet5k_deinit(void) {
-    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
-        if (netif == &wiznet5k_obj.netif) {
-            netif_remove(netif);
-            netif->flags = 0;
-            break;
-        }
-    }
+    // register with network module
+    mod_network_register_nic(&wiznet5k_obj);
 }
 
 STATIC void wiznet5k_send_ethernet(wiznet5k_obj_t *self, size_t len, const uint8_t *buf) {
@@ -320,23 +324,25 @@ STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
 
 void wiznet5k_poll(void) {
     wiznet5k_obj_t *self = &wiznet5k_obj;
-    if (!(self->netif.flags & NETIF_FLAG_UP) ||
-        !(self->netif.flags & NETIF_FLAG_LINK_UP)) {
-        return;
-    }
-    uint16_t len;
-    while ((len = wiznet5k_recv_ethernet(self)) > 0) {
-        if (self->trace_flags & TRACE_ETH_RX) {
-            netutils_ethernet_trace(MP_PYTHON_PRINTER, len, self->eth_frame, NETUTILS_TRACE_NEWLINE);
-        }
-        struct pbuf *p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
-        if (p != NULL) {
-            pbuf_take(p, self->eth_frame, len);
-            if (self->netif.input(p, &self->netif) != ERR_OK) {
-                pbuf_free(p);
+    if ((self->netif.flags & (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) == (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) {
+        uint16_t len;
+        while ((len = wiznet5k_recv_ethernet(self)) > 0) {
+            if (self->trace_flags & TRACE_ETH_RX) {
+                netutils_ethernet_trace(MP_PYTHON_PRINTER, len, self->eth_frame, NETUTILS_TRACE_NEWLINE);
+            }
+            struct pbuf *p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
+            if (p != NULL) {
+                pbuf_take(p, self->eth_frame, len);
+                if (self->netif.input(p, &self->netif) != ERR_OK) {
+                    pbuf_free(p);
+                }
             }
         }
     }
+    wizchip_clrinterrupt(IK_SOCK_0);
+    #if _WIZCHIP_ == W5100S
+    setSn_IR(0, Sn_IR_RECV); // W5100S driver bug: must write to the Sn_IR register to reset the IRQ signal
+    #endif
 }
 
 #endif // MICROPY_PY_LWIP
@@ -673,7 +679,7 @@ STATIC void wiznet5k_dhcp_init(wiznet5k_obj_t *self) {
 // WIZNET5K(spi, pin_cs, pin_rst[, pin_intn])
 // Create and return a WIZNET5K object.
 STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    struct _machine_spi_obj_t *spi;
+    mp_obj_base_t *spi;
     mp_hal_pin_obj_t cs;
     mp_hal_pin_obj_t rst;
 
@@ -686,10 +692,8 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     #endif
 
     #ifdef MICROPY_HW_WIZNET_SPI_ID
-    // check arguments
-    mp_arg_check_num(n_args, n_kw, 0, 3, false);
     // Allow auto-configuration of SPI if defined for board and no args passed
-    if (n_args == 0) {
+    if (n_args == 0 && n_kw == 0) {
         // Initialize SPI.
         mp_obj_t spi_obj = MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_SPI_SCK);
         mp_obj_t miso_obj = MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_SPI_MISO);
@@ -701,7 +705,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
             MP_ROM_QSTR(MP_QSTR_miso), mp_pin_make_new(NULL, 1, 0, &miso_obj),
             MP_ROM_QSTR(MP_QSTR_mosi), mp_pin_make_new(NULL, 1, 0, &mosi_obj),
         };
-        spi = machine_spi_type.make_new((mp_obj_t)&machine_spi_type, 2, 3, args);
+        spi = MP_OBJ_TO_PTR(machine_spi_type.make_new((mp_obj_t)&machine_spi_type, 2, 3, args));
 
         cs = mp_hal_get_pin_obj(mp_pin_make_new(NULL, 1, 0, (mp_obj_t[]) {MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_PIN_CS)}));
         rst = mp_hal_get_pin_obj(mp_pin_make_new(NULL, 1, 0, (mp_obj_t[]) {MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_PIN_RST)}));
@@ -719,7 +723,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
         #else
         mp_arg_check_num(n_args, n_kw, 3, 3, false);
         #endif
-        spi = spi_from_mp_obj(args[0]);
+        spi = mp_hal_get_spi_obj(args[0]);
         cs = mp_hal_get_pin_obj(args[1]);
         rst = mp_hal_get_pin_obj(args[2]);
         #if WIZNET5K_WITH_LWIP_STACK
@@ -737,6 +741,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     wiznet5k_obj.base.type = (mp_obj_type_t *)&mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
     wiznet5k_obj.spi = spi;
+    wiznet5k_obj.spi_transfer = ((mp_machine_spi_p_t *)spi->type->protocol)->transfer;
     wiznet5k_obj.cs = cs;
     wiznet5k_obj.rst = rst;
     #if WIZNET5K_WITH_LWIP_STACK

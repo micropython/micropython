@@ -16,7 +16,6 @@ include $(VARIANT_DIR)/mpconfigvariant.mk
 FROZEN_MANIFEST ?= variants/manifest.py
 
 # Define main target
-# This should be configured by the mpconfigvariant.mk
 PROG ?= micropython
 
 # qstr definitions (must come before including py.mk)
@@ -98,10 +97,10 @@ include $(TOP)/py/mkrules.mk
 
 RUN_TESTS_SKIP += -e math_fun -e float2int_double -e float_parse -e math_domain_special
 
-test: $(PROG) $(TOP)/tests/run-tests.py
+test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) $(PYTHON) ./run-tests.py $(RUN_TESTS_SKIP)
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) $(PYTHON) ./run-tests.py $(RUN_TESTS_SKIP)
 
 test_full: test
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) $(PYTHON) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) $(RUN_TESTS_SKIP) -d basics float micropython
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) $(PYTHON) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) $(RUN_TESTS_SKIP) -d basics float micropython

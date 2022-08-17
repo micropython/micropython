@@ -162,7 +162,7 @@ $(HEADER_BUILD):
 ifneq ($(MICROPY_MPYCROSS_DEPENDENCY),)
 # to automatically build mpy-cross, if needed
 $(MICROPY_MPYCROSS_DEPENDENCY):
-	$(MAKE) -C $(dir $@)
+	$(MAKE) -C $(abspath $(dir $@)..)
 endif
 
 ifneq ($(FROZEN_DIR),)
@@ -174,8 +174,15 @@ $(error Support for FROZEN_MPY_DIR was removed. Please use manifest.py instead, 
 endif
 
 ifneq ($(FROZEN_MANIFEST),)
+# If we're using the default submodule path for micropython-lib, then make
+# sure it's included in "make submodules".
+ifeq ($(MPY_LIB_DIR),$(MPY_LIB_SUBMODULE_DIR))
+GIT_SUBMODULES += lib/micropython-lib
+endif
+
 # to build frozen_content.c from a manifest
 $(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h $(BUILD)/genhdr/root_pointers.h | $(MICROPY_MPYCROSS_DEPENDENCY)
+	$(Q)test -e "$(MPY_LIB_DIR)/README.md" || (echo "Error: micropython-lib not initialized. Run 'make submodules'"; false)
 	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
 endif
 
@@ -189,9 +196,9 @@ ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
 PROG := $(PROG).exe
 endif
 
-all: $(PROG)
+all: $(BUILD)/$(PROG)
 
-$(PROG): $(OBJ)
+$(BUILD)/$(PROG): $(OBJ)
 	$(ECHO) "LINK $@"
 # Do not pass COPT here - it's *C* compiler optimizations. For example,
 # we may want to compile using Thumb, but link with non-Thumb libc.
@@ -203,8 +210,8 @@ endif
 
 clean: clean-prog
 clean-prog:
-	$(RM) -f $(PROG)
-	$(RM) -f $(PROG).map
+	$(RM) -f $(BUILD)/$(PROG)
+	$(RM) -f $(BUILD)/$(PROG).map
 
 .PHONY: clean-prog
 endif
@@ -224,8 +231,8 @@ LIBMICROPYTHON = libmicropython.a
 # with 3rd-party projects which don't have proper dependency
 # tracking. Then LIBMICROPYTHON_EXTRA_CMD can e.g. touch some
 # other file to cause needed effect, e.g. relinking with new lib.
-lib $(LIBMICROPYTHON): $(OBJ)
-	$(Q)$(AR) rcs $(LIBMICROPYTHON) $^
+lib $(BUILD)/$(LIBMICROPYTHON): $(OBJ)
+	$(Q)$(AR) rcs $(BUILD)/$(LIBMICROPYTHON) $^
 	$(LIBMICROPYTHON_EXTRA_CMD)
 
 clean:

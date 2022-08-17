@@ -74,6 +74,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_DESCRIPTORS              (1)
 #define MICROPY_PY_DELATTR_SETATTR          (1)
 #define MICROPY_PY_FSTRINGS                 (1)
+#define MICROPY_PY_BUILTINS_BYTES_HEX       (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE     (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER      (1)
 #define MICROPY_PY_BUILTINS_STR_PARTITION   (1)

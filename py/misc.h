@@ -243,10 +243,12 @@ extern mp_uint_t mp_verbose_flag;
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define MP_FLOAT_EXP_BITS (11)
+#define MP_FLOAT_EXP_OFFSET (1023)
 #define MP_FLOAT_FRAC_BITS (52)
 typedef uint64_t mp_float_uint_t;
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define MP_FLOAT_EXP_BITS (8)
+#define MP_FLOAT_EXP_OFFSET (127)
 #define MP_FLOAT_FRAC_BITS (23)
 typedef uint32_t mp_float_uint_t;
 #endif

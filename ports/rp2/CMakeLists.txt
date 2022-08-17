@@ -54,6 +54,10 @@ if (MICROPY_PY_NETWORK_CYW43)
     set(PICO_CYW43_DRIVER_PATH ${MICROPY_DIR}/lib/cyw43-driver)
 endif()
 
+# Necessary submodules for all boards.
+string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/mbedtls)
+string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/tinyusb)
+
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
@@ -278,6 +282,11 @@ if (MICROPY_PY_NETWORK_NINAW10)
 endif()
 
 if (MICROPY_PY_NETWORK_WIZNET5K)
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/wiznet5k)
+    if((NOT (${ECHO_SUBMODULES})) AND NOT EXISTS ${MICROPY_DIR}/lib/wiznet5k/README.md)
+        message(FATAL_ERROR " wiznet5k not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
+    endif()
+
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_PY_NETWORK_WIZNET5K=1
         WIZCHIP_PREFIXED_EXPORTS=1
@@ -312,8 +321,6 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
     list(APPEND MICROPY_SOURCE_EXTMOD
         ${MICROPY_DIR}/extmod/network_wiznet5k.c
     )
-
-    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/wiznet5k)
 endif()
 
 # Add qstr sources for extmod and usermod, in case they are modified by components above.
@@ -405,9 +412,11 @@ endif()
 
 pico_add_extra_outputs(${MICROPY_TARGET})
 
+pico_find_compiler(PICO_COMPILER_SIZE ${PICO_GCC_TRIPLE}-size)
+
 add_custom_command(TARGET ${MICROPY_TARGET}
     POST_BUILD
-    COMMAND arm-none-eabi-size --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
+    COMMAND ${PICO_COMPILER_SIZE} --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
     VERBATIM
 )
 

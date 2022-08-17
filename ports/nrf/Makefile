@@ -58,7 +58,7 @@ FROZEN_MANIFEST ?= modules/manifest.py
 include ../../py/py.mk
 include ../../extmod/extmod.mk
 
-GIT_SUBMODULES = lib/nrfx lib/tinyusb
+GIT_SUBMODULES += lib/nrfx lib/tinyusb
 
 MICROPY_VFS_FAT ?= 0
 
@@ -138,12 +138,14 @@ LDFLAGS += -Wl,'--defsym=_fs_size=$(FS_SIZE)'
 endif
 
 #Debugging/Optimization
-CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG), 1)
 #ASMFLAGS += -g -gtabs+
-CFLAGS += -O0
+CFLAGS += -g -O0
 LDFLAGS += -O0
 else
+ifneq ($(LTO), 1)
+CFLAGS += -g  # always include debug info in the ELF, unless LTO is on
+endif
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += -Os
 endif

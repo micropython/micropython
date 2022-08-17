@@ -56,7 +56,7 @@ typedef struct _mp_print_ext_t {
     mp_print_t base;
     const char *item_separator;
     const char *key_separator;
-}mp_print_ext_t;
+} mp_print_ext_t;
 
 #define MP_PRINT_GET_EXT(print) ((mp_print_ext_t *)print)
 
