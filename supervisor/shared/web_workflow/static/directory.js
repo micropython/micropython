@@ -149,7 +149,10 @@ async function mkdir(e) {
 }
 
 async function upload(e) {
+    let progress = document.querySelector("progress");
     let made_dirs = new Set();
+    progress.max = files.files.length + dirs.files.length;
+    progress.value = 0;
     for (const file of [...files.files, ...dirs.files]) {
         let file_name = file.name;
         if (file.webkitRelativePath) {
@@ -177,9 +180,11 @@ async function upload(e) {
         if (response.ok) {
             refresh_list();
         }
+        progress.value += 1;
     }
     files.value = "";
     dirs.value = "";
+    progress.value = 0;
     upload_button.disabled = true;
 }
 

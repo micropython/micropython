@@ -16,9 +16,10 @@
         <tbody></tbody>
     </table>
     <hr>
-    <input type="file" id="files" multiple>
-    <input type="file" id="dirs" multiple webkitdirectory>
+    <label>📄 <input type="file" id="files" multiple></label>
+    <label for="dirs">📁 <input type="file" id="dirs" multiple webkitdirectory></label>
     <button type="submit" id="upload">Upload</button>
+    <label>Upload progress:<progress value="0"></progress></label>
     <hr>
     +📁&nbsp;<input type="text" id="name"><button type="submit" id="mkdir">Create Directory</button>
 </body></html>

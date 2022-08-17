@@ -766,14 +766,21 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
 // Copied from ble file_transfer.c. We should share it.
 STATIC FRESULT _delete_directory_contents(FATFS *fs, const TCHAR *path) {
     FF_DIR dir;
-    FRESULT res = f_opendir(fs, &dir, path);
     FILINFO file_info;
     // Check the stack since we're putting paths on it.
     if (mp_stack_usage() >= MP_STATE_THREAD(stack_limit)) {
         return FR_INT_ERR;
     }
+    FRESULT res = FR_OK;
     while (res == FR_OK) {
+        res = f_opendir(fs, &dir, path);
+        if (res != FR_OK) {
+            break;
+        }
         res = f_readdir(&dir, &file_info);
+        // We close and reopen the directory every time since we're deleting
+        // entries and it may invalidate the directory handle.
+        f_closedir(&dir);
         if (res != FR_OK || file_info.fname[0] == '\0') {
             break;
         }
