@@ -300,7 +300,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 STATIC const mp_rom_map_elem_t uwebsocket_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uwebsocket) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_websocket) },
     { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&websocket_type) },
 };
 
@@ -311,6 +311,6 @@ const mp_obj_module_t mp_module_uwebsocket = {
     .globals = (mp_obj_dict_t *)&uwebsocket_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_uwebsocket, mp_module_uwebsocket);
+MP_REGISTER_MODULE(MP_QSTR_websocket, mp_module_uwebsocket);
 
 #endif // MICROPY_PY_UWEBSOCKET

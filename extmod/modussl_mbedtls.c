@@ -461,9 +461,9 @@ STATIC const mp_stream_p_t ussl_socket_stream_p = {
 
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     ussl_socket_type,
-    MP_QSTR_ussl,
-    MP_TYPE_FLAG_NONE,
     // Save on qstr's, reuse same as for module
+    MP_QSTR_ssl,
+    MP_TYPE_FLAG_NONE,
     print, socket_print,
     protocol, &ussl_socket_stream_p,
     locals_dict, &ussl_socket_locals_dict
@@ -493,7 +493,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
 
 STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ussl) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ssl) },
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&mod_ssl_wrap_socket_obj) },
     { MP_ROM_QSTR(MP_QSTR_CERT_NONE), MP_ROM_INT(MBEDTLS_SSL_VERIFY_NONE) },
     { MP_ROM_QSTR(MP_QSTR_CERT_OPTIONAL), MP_ROM_INT(MBEDTLS_SSL_VERIFY_OPTIONAL) },
@@ -507,6 +507,6 @@ const mp_obj_module_t mp_module_ussl = {
     .globals = (mp_obj_dict_t *)&mp_module_ssl_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ussl, mp_module_ussl);
+MP_REGISTER_MODULE(MP_QSTR_ssl, mp_module_ussl);
 
 #endif // MICROPY_PY_USSL && MICROPY_SSL_MBEDTLS

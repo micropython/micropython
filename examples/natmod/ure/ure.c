@@ -63,7 +63,7 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     MP_OBJ_TYPE_SET_SLOT(&match_type, locals_dict, (void*)&match_locals_dict, 1);
 
     re_type.base.type = (void*)&mp_fun_table.type_type;
-    re_type.name = MP_QSTR_ure;
+    re_type.name = MP_QSTR_re;
     MP_OBJ_TYPE_SET_SLOT(&re_type, print, re_print, 0);
     re_locals_dict_table[0] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_match), MP_OBJ_FROM_PTR(&re_match_obj) };
     re_locals_dict_table[1] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_search), MP_OBJ_FROM_PTR(&re_search_obj) };

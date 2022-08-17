@@ -251,7 +251,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_into_obj, 3, MP_OBJ_FUN_ARGS_MAX, struct_pack_into);
 
 STATIC const mp_rom_map_elem_t mp_module_struct_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ustruct) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_struct) },
     { MP_ROM_QSTR(MP_QSTR_calcsize), MP_ROM_PTR(&struct_calcsize_obj) },
     { MP_ROM_QSTR(MP_QSTR_pack), MP_ROM_PTR(&struct_pack_obj) },
     { MP_ROM_QSTR(MP_QSTR_pack_into), MP_ROM_PTR(&struct_pack_into_obj) },
@@ -266,6 +266,6 @@ const mp_obj_module_t mp_module_ustruct = {
     .globals = (mp_obj_dict_t *)&mp_module_struct_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ustruct, mp_module_ustruct);
+MP_REGISTER_MODULE(MP_QSTR_struct, mp_module_ustruct);
 
 #endif

@@ -211,7 +211,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_u
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t mp_module_uzlib_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uzlib) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zlib) },
     { MP_ROM_QSTR(MP_QSTR_decompress), MP_ROM_PTR(&mod_uzlib_decompress_obj) },
     { MP_ROM_QSTR(MP_QSTR_DecompIO), MP_ROM_PTR(&decompio_type) },
 };
@@ -224,7 +224,7 @@ const mp_obj_module_t mp_module_uzlib = {
 };
 
 
-MP_REGISTER_MODULE(MP_QSTR_uzlib, mp_module_uzlib);
+MP_REGISTER_MODULE(MP_QSTR_zlib, mp_module_uzlib);
 #endif
 
 // Source files #include'd here to make sure they're compiled in

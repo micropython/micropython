@@ -231,7 +231,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_urandom___init___obj, mod_urandom___init__)
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t mp_module_urandom_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_urandom) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_random) },
     #if SEED_ON_IMPORT
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&mod_urandom___init___obj) },
     #endif
@@ -255,7 +255,7 @@ const mp_obj_module_t mp_module_urandom = {
     .globals = (mp_obj_dict_t *)&mp_module_urandom_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_urandom, mp_module_urandom);
+MP_REGISTER_MODULE(MP_QSTR_random, mp_module_urandom);
 #endif
 
 #endif // MICROPY_PY_URANDOM

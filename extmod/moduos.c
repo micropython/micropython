@@ -122,7 +122,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_uos_uname_obj, mp_uos_uname);
 #endif
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_os) },
 
     #if MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mp_uos_getenv_obj) },
@@ -141,7 +141,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     #if MICROPY_PY_UOS_UNAME
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&mp_uos_uname_obj) },
     #endif
-    #if MICROPY_PY_UOS_URANDOM
+    #if MICROPY_PY_OS_URANDOM
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&mp_uos_urandom_obj) },
     #endif
 
@@ -195,6 +195,6 @@ const mp_obj_module_t mp_module_uos = {
     .globals = (mp_obj_dict_t *)&os_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_uos, mp_module_uos);
+MP_REGISTER_MODULE(MP_QSTR_os, mp_module_uos);
 
 #endif // MICROPY_PY_UOS

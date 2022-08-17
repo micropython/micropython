@@ -985,7 +985,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 STATIC const mp_rom_map_elem_t mp_module_bluetooth_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ubluetooth) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bluetooth) },
     { MP_ROM_QSTR(MP_QSTR_BLE), MP_ROM_PTR(&mp_type_bluetooth_ble) },
     { MP_ROM_QSTR(MP_QSTR_UUID), MP_ROM_PTR(&mp_type_bluetooth_uuid) },
 
@@ -1004,7 +1004,7 @@ const mp_obj_module_t mp_module_ubluetooth = {
     .globals = (mp_obj_dict_t *)&mp_module_bluetooth_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ubluetooth, mp_module_ubluetooth);
+MP_REGISTER_MODULE(MP_QSTR_bluetooth, mp_module_ubluetooth);
 
 // Helpers
 

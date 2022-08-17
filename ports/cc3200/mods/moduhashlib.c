@@ -194,7 +194,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_uhashlib) },
+    { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_hashlib) },
     //{ MP_ROM_QSTR(MP_QSTR_md5),         MP_ROM_PTR(&md5_type) },
     { MP_ROM_QSTR(MP_QSTR_sha1),        MP_ROM_PTR(&sha1_type) },
     { MP_ROM_QSTR(MP_QSTR_sha256),      MP_ROM_PTR(&sha256_type) },

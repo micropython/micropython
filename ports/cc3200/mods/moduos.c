@@ -146,7 +146,7 @@ STATIC mp_obj_t os_dupterm(uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_dupterm_obj, 0, 1, os_dupterm);
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_uos) },
+    { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_os) },
 
     { MP_ROM_QSTR(MP_QSTR_uname),           MP_ROM_PTR(&os_uname_obj) },
 
@@ -180,4 +180,4 @@ const mp_obj_module_t mp_module_uos = {
     .globals = (mp_obj_dict_t*)&os_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_uos, mp_module_uos);
+MP_REGISTER_MODULE(MP_QSTR_os, mp_module_uos);

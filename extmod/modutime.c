@@ -197,7 +197,7 @@ STATIC mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_add_obj, time_ticks_add);
 
 STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
 
     #if MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME
     { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&mp_utime_localtime_obj) },
@@ -231,6 +231,6 @@ const mp_obj_module_t mp_module_utime = {
     .globals = (mp_obj_dict_t *)&mp_module_time_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_utime, mp_module_utime);
+MP_REGISTER_MODULE(MP_QSTR_time, mp_module_utime);
 
 #endif // MICROPY_PY_UTIME

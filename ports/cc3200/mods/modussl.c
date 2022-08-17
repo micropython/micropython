@@ -62,7 +62,7 @@ STATIC const mp_obj_type_t ssl_socket_type;
 // locals and stream methods
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     ssl_socket_type,
-    MP_QSTR_ussl,
+    MP_QSTR_ssl,
     MP_TYPE_FLAG_NONE,
     protocol, &socket_stream_p,
     locals_dict, &socket_locals_dict
@@ -136,7 +136,7 @@ arg_error:
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 0, mod_ssl_wrap_socket);
 
 STATIC const mp_rom_map_elem_t mp_module_ussl_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_ussl) },
+    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_ssl) },
     { MP_ROM_QSTR(MP_QSTR_wrap_socket),         MP_ROM_PTR(&mod_ssl_wrap_socket_obj) },
 
     // class exceptions
@@ -160,4 +160,4 @@ const mp_obj_module_t mp_module_ussl = {
     .globals = (mp_obj_dict_t*)&mp_module_ussl_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ussl, mp_module_ussl);
+MP_REGISTER_MODULE(MP_QSTR_ssl, mp_module_ussl);

@@ -27,7 +27,7 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     decompio_locals_dict_table[2] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_readline), MP_OBJ_FROM_PTR(&mp_stream_unbuffered_readline_obj) };
     MP_OBJ_TYPE_SET_SLOT(&decompio_type, locals_dict, (void*)&decompio_locals_dict, 2);
 
-    mp_store_global(MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR_uzlib));
+    mp_store_global(MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR_zlib));
     mp_store_global(MP_QSTR_decompress, MP_OBJ_FROM_PTR(&mod_uzlib_decompress_obj));
     mp_store_global(MP_QSTR_DecompIO, MP_OBJ_FROM_PTR(&decompio_type));
 

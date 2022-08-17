@@ -62,7 +62,7 @@ STATIC mp_obj_t platform_libc_ver(size_t n_args, const mp_obj_t *pos_args, mp_ma
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(platform_libc_ver_obj, 0, platform_libc_ver);
 
 STATIC const mp_rom_map_elem_t modplatform_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uplatform) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_platform) },
     { MP_ROM_QSTR(MP_QSTR_platform), MP_ROM_PTR(&platform_platform_obj) },
     { MP_ROM_QSTR(MP_QSTR_python_compiler), MP_ROM_PTR(&platform_python_compiler_obj) },
     { MP_ROM_QSTR(MP_QSTR_libc_ver), MP_ROM_PTR(&platform_libc_ver_obj) },
@@ -75,6 +75,6 @@ const mp_obj_module_t mp_module_uplatform = {
     .globals = (mp_obj_dict_t *)&modplatform_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_uplatform, mp_module_uplatform);
+MP_REGISTER_MODULE(MP_QSTR_platform, mp_module_uplatform);
 
 #endif // MICROPY_PY_UPLATFORM

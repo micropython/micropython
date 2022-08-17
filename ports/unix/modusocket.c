@@ -674,7 +674,7 @@ STATIC mp_obj_t mod_socket_sockaddr(mp_obj_t sockaddr_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_sockaddr_obj, mod_socket_sockaddr);
 
 STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usocket) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_socket) },
     { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_type_socket) },
     { MP_ROM_QSTR(MP_QSTR_getaddrinfo), MP_ROM_PTR(&mod_socket_getaddrinfo_obj) },
     { MP_ROM_QSTR(MP_QSTR_inet_pton), MP_ROM_PTR(&mod_socket_inet_pton_obj) },
@@ -708,6 +708,6 @@ const mp_obj_module_t mp_module_socket = {
     .globals = (mp_obj_dict_t *)&mp_module_socket_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_socket);
+MP_REGISTER_MODULE(MP_QSTR_socket, mp_module_socket);
 
 #endif // MICROPY_PY_SOCKET

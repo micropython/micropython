@@ -294,7 +294,7 @@ const mp_obj_module_t mp_module_sys = {
     .globals = (mp_obj_dict_t *)&mp_module_sys_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usys, mp_module_sys);
+MP_REGISTER_MODULE(MP_QSTR_sys, mp_module_sys);
 
 // If MICROPY_PY_SYS_PATH_ARGV_DEFAULTS is not enabled then these two lists
 // must be initialised after the call to mp_init.

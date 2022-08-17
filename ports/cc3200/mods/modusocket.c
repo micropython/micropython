@@ -795,7 +795,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_usocket_getaddrinfo_obj, mod_usocket_getaddrinfo);
 
 STATIC const mp_rom_map_elem_t mp_module_usocket_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_usocket) },
+    { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_socket) },
 
     { MP_ROM_QSTR(MP_QSTR_socket),          MP_ROM_PTR(&socket_type) },
     { MP_ROM_QSTR(MP_QSTR_getaddrinfo),     MP_ROM_PTR(&mod_usocket_getaddrinfo_obj) },
@@ -818,4 +818,4 @@ const mp_obj_module_t mp_module_usocket = {
     .globals = (mp_obj_dict_t*)&mp_module_usocket_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_usocket);
+MP_REGISTER_MODULE(MP_QSTR_socket, mp_module_usocket);

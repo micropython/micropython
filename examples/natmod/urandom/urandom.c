@@ -16,7 +16,7 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     yasmarang_n = 69;
     yasmarang_d = 233;
 
-    mp_store_global(MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR_urandom));
+    mp_store_global(MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR_random));
     mp_store_global(MP_QSTR_getrandbits, MP_OBJ_FROM_PTR(&mod_urandom_getrandbits_obj));
     mp_store_global(MP_QSTR_seed, MP_OBJ_FROM_PTR(&mod_urandom_seed_obj));
     #if MICROPY_PY_URANDOM_EXTRA_FUNCS

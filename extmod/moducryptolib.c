@@ -357,7 +357,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 STATIC const mp_rom_map_elem_t mp_module_ucryptolib_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ucryptolib) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cryptolib) },
     { MP_ROM_QSTR(MP_QSTR_aes), MP_ROM_PTR(&ucryptolib_aes_type) },
     #if MICROPY_PY_UCRYPTOLIB_CONSTS
     { MP_ROM_QSTR(MP_QSTR_MODE_ECB), MP_ROM_INT(UCRYPTOLIB_MODE_ECB) },
@@ -375,6 +375,6 @@ const mp_obj_module_t mp_module_ucryptolib = {
     .globals = (mp_obj_dict_t *)&mp_module_ucryptolib_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ucryptolib, mp_module_ucryptolib);
+MP_REGISTER_MODULE(MP_QSTR_cryptolib, mp_module_ucryptolib);
 
 #endif // MICROPY_PY_UCRYPTOLIB

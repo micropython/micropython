@@ -355,7 +355,7 @@ STATIC mp_obj_t select_poll(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(mp_select_poll_obj, select_poll);
 
 STATIC const mp_rom_map_elem_t mp_module_select_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uselect) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_select) },
     #if MICROPY_PY_USELECT_SELECT
     { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_select_select_obj) },
     #endif
@@ -373,6 +373,6 @@ const mp_obj_module_t mp_module_uselect = {
     .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_uselect, mp_module_uselect);
+MP_REGISTER_MODULE(MP_QSTR_select, mp_module_uselect);
 
 #endif // MICROPY_PY_USELECT
