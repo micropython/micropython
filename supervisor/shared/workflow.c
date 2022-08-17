@@ -26,6 +26,8 @@
 
 #include <stdbool.h>
 #include "py/mpconfig.h"
+#include "py/mpstate.h"
+#include "py/stackctrl.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/workflow.h"
 #include "supervisor/serial.h"
@@ -114,4 +116,61 @@ void supervisor_workflow_start(void) {
     #if CIRCUITPY_WEB_WORKFLOW
     supervisor_start_web_workflow();
     #endif
+}
+
+FRESULT supervisor_workflow_mkdir_parents(FATFS *fs, char *path) {
+    FRESULT result = FR_OK;
+    // Make parent directories.
+    for (size_t j = 1; j < strlen(path); j++) {
+        if (path[j] == '/') {
+            path[j] = '\0';
+            result = f_mkdir(fs, path);
+            path[j] = '/';
+            if (result != FR_OK && result != FR_EXIST) {
+                return result;
+            }
+        }
+    }
+    // Make the target directory.
+    return f_mkdir(fs, path);
+}
+
+FRESULT supervisor_workflow_delete_directory_contents(FATFS *fs, const TCHAR *path) {
+    FF_DIR dir;
+    FILINFO file_info;
+    // Check the stack since we're putting paths on it.
+    if (mp_stack_usage() >= MP_STATE_THREAD(stack_limit)) {
+        return FR_INT_ERR;
+    }
+    FRESULT res = FR_OK;
+    while (res == FR_OK) {
+        res = f_opendir(fs, &dir, path);
+        if (res != FR_OK) {
+            break;
+        }
+        res = f_readdir(&dir, &file_info);
+        // We close and reopen the directory every time since we're deleting
+        // entries and it may invalidate the directory handle.
+        f_closedir(&dir);
+        if (res != FR_OK || file_info.fname[0] == '\0') {
+            break;
+        }
+        size_t pathlen = strlen(path);
+        size_t fnlen = strlen(file_info.fname);
+        TCHAR full_path[pathlen + 1 + fnlen];
+        memcpy(full_path, path, pathlen);
+        full_path[pathlen] = '/';
+        size_t full_pathlen = pathlen + 1 + fnlen;
+        memcpy(full_path + pathlen + 1, file_info.fname, fnlen);
+        full_path[full_pathlen] = '\0';
+        if ((file_info.fattrib & AM_DIR) != 0) {
+            res = supervisor_workflow_delete_directory_contents(fs, full_path);
+        }
+        if (res != FR_OK) {
+            break;
+        }
+        res = f_unlink(fs, full_path);
+    }
+    f_closedir(&dir);
+    return res;
 }

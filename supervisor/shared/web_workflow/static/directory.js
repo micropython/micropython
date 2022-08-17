@@ -1,5 +1,6 @@
 let new_directory_name = document.getElementById("name");
 let files = document.getElementById("files");
+let dirs = document.getElementById("dirs");
 
 var url_base = window.location;
 var current_path;
@@ -15,10 +16,12 @@ function compareValues(a, b) {
     }
 }
 
+function set_upload_enabled(enabled) {
+    files.disabled = !enabled;
+    dirs.disabled = !enabled;
+}
+
 async function refresh_list() {
-
-
-
     current_path = window.location.hash.substr(1);
     if (current_path == "") {
         current_path = "/";
@@ -49,7 +52,7 @@ async function refresh_list() {
         );
         editable = status.headers.get("Access-Control-Allow-Methods").includes("DELETE");
         new_directory_name.disabled = !editable;
-        files.disabled = !editable;
+        set_upload_enabled(editable);
         if (!editable) {
             let usbwarning = document.querySelector("#usbwarning");
             usbwarning.style.display = "block";
@@ -169,8 +172,25 @@ async function mkdir(e) {
 }
 
 async function upload(e) {
-    for (const file of files.files) {
-        let file_path = new URL("/fs" + current_path + file.name, url_base);
+    set_upload_enabled(false);
+    let progress = document.querySelector("progress");
+    let made_dirs = new Set();
+    progress.max = files.files.length + dirs.files.length;
+    progress.value = 0;
+    for (const file of [...files.files, ...dirs.files]) {
+        let file_name = file.name;
+        if (file.webkitRelativePath) {
+            file_name = file.webkitRelativePath;
+            let components = file_name.split("/");
+            components.pop();
+            let parent_dir = components.join("/");
+            if (!made_dirs.has(parent_dir)) {
+                new_directory_name.value = parent_dir;
+                await mkdir(null);
+                made_dirs.add(parent_dir);
+            }
+        }
+        let file_path = new URL("/fs" + current_path + file_name, url_base);
         const response = await fetch(file_path,
             {
                 method: "PUT",
@@ -184,9 +204,12 @@ async function upload(e) {
         if (response.ok) {
             refresh_list();
         }
+        progress.value += 1;
     }
     files.value = "";
-    upload_button.disabled = true;
+    dirs.value = "";
+    progress.value = 0;
+    set_upload_enabled(true);
 }
 
 async function del(e) {
@@ -234,14 +257,8 @@ find_devices();
 let mkdir_button = document.getElementById("mkdir");
 mkdir_button.onclick = mkdir;
 
-let upload_button = document.getElementById("upload");
-upload_button.onclick = upload;
-
-upload_button.disabled = files.files.length == 0;
-
-files.onchange = () => {
-    upload_button.disabled = files.files.length == 0;
-}
+files.onchange = upload;
+dirs.onchange = upload;
 
 mkdir_button.disabled = new_directory_name.value.length == 0;
 
