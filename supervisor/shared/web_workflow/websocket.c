@@ -78,7 +78,7 @@ void websocket_handoff(socketpool_socket_obj_t *socket) {
 }
 
 bool websocket_connected(void) {
-    return !cp_serial.closed && common_hal_socketpool_socket_get_connected(&cp_serial.socket);
+    return _incoming_ringbuf.size > 0 && !cp_serial.closed && common_hal_socketpool_socket_get_connected(&cp_serial.socket);
 }
 
 static bool _read_byte(uint8_t *c) {
