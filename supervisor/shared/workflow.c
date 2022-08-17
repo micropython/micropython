@@ -26,6 +26,7 @@
 
 #include <stdbool.h>
 #include "py/mpconfig.h"
+#include "py/mpstate.h"
 #include "py/stackctrl.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/workflow.h"
