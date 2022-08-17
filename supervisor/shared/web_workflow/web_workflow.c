@@ -926,6 +926,7 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
 
 #define STATIC_FILE(filename) extern uint32_t filename##_length; extern uint8_t filename[]; extern const char *filename##_content_type;
 
+STATIC_FILE(code_html);
 STATIC_FILE(directory_html);
 STATIC_FILE(directory_js);
 STATIC_FILE(welcome_html);
@@ -1143,6 +1144,8 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         } else {
             _REPLY_STATIC(socket, request, edit_html);
         }
+    } else if (strcmp(request->path, "/code/") == 0) {
+        _REPLY_STATIC(socket, request, code_html);
     } else if (strncmp(request->path, "/cp/", 4) == 0) {
         const char *path = request->path + 3;
         if (strcasecmp(request->method, "OPTIONS") == 0) {
