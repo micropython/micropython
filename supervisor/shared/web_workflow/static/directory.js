@@ -6,6 +6,11 @@ var url_base = window.location;
 var current_path;
 var editable = undefined;
 
+function set_upload_enabled(enabled) {
+    files.disabled = !enabled;
+    dirs.disabled = !enabled;
+}
+
 async function refresh_list() {
 
     function compareValues(a, b) {
@@ -46,7 +51,7 @@ async function refresh_list() {
         );
         editable = status.headers.get("Access-Control-Allow-Methods").includes("DELETE");
         new_directory_name.disabled = !editable;
-        files.disabled = !editable;
+        set_upload_enabled(editable);
         if (!editable) {
             let usbwarning = document.querySelector("#usbwarning");
             usbwarning.style.display = "block";
@@ -149,6 +154,7 @@ async function mkdir(e) {
 }
 
 async function upload(e) {
+    set_upload_enabled(false);
     let progress = document.querySelector("progress");
     let made_dirs = new Set();
     progress.max = files.files.length + dirs.files.length;
@@ -185,7 +191,7 @@ async function upload(e) {
     files.value = "";
     dirs.value = "";
     progress.value = 0;
-    upload_button.disabled = true;
+    set_upload_enabled(true);
 }
 
 async function del(e) {
@@ -213,18 +219,8 @@ find_devices();
 let mkdir_button = document.getElementById("mkdir");
 mkdir_button.onclick = mkdir;
 
-let upload_button = document.getElementById("upload");
-upload_button.onclick = upload;
-
-upload_button.disabled = files.files.length == 0 && dirs.files.length == 0;
-
-files.onchange = () => {
-    upload_button.disabled = files.files.length == 0 && dirs.files.length == 0;
-}
-
-dirs.onchange = () => {
-    upload_button.disabled = files.files.length == 0 && dirs.files.length == 0;
-}
+files.onchange = upload;
+dirs.onchange = upload;
 
 mkdir_button.disabled = new_directory_name.value.length == 0;
 

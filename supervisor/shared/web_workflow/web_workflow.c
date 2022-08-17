@@ -42,6 +42,7 @@
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
 #include "supervisor/shared/web_workflow/websocket.h"
+#include "supervisor/shared/workflow.h"
 #include "supervisor/usb.h"
 
 #include "shared-bindings/hashlib/__init__.h"
@@ -763,47 +764,6 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _send_chunk(socket, "");
 }
 
-// Copied from ble file_transfer.c. We should share it.
-STATIC FRESULT _delete_directory_contents(FATFS *fs, const TCHAR *path) {
-    FF_DIR dir;
-    FILINFO file_info;
-    // Check the stack since we're putting paths on it.
-    if (mp_stack_usage() >= MP_STATE_THREAD(stack_limit)) {
-        return FR_INT_ERR;
-    }
-    FRESULT res = FR_OK;
-    while (res == FR_OK) {
-        res = f_opendir(fs, &dir, path);
-        if (res != FR_OK) {
-            break;
-        }
-        res = f_readdir(&dir, &file_info);
-        // We close and reopen the directory every time since we're deleting
-        // entries and it may invalidate the directory handle.
-        f_closedir(&dir);
-        if (res != FR_OK || file_info.fname[0] == '\0') {
-            break;
-        }
-        size_t pathlen = strlen(path);
-        size_t fnlen = strlen(file_info.fname);
-        TCHAR full_path[pathlen + 1 + fnlen];
-        memcpy(full_path, path, pathlen);
-        full_path[pathlen] = '/';
-        size_t full_pathlen = pathlen + 1 + fnlen;
-        memcpy(full_path + pathlen + 1, file_info.fname, fnlen);
-        full_path[full_pathlen] = '\0';
-        if ((file_info.fattrib & AM_DIR) != 0) {
-            res = _delete_directory_contents(fs, full_path);
-        }
-        if (res != FR_OK) {
-            break;
-        }
-        res = f_unlink(fs, full_path);
-    }
-    f_closedir(&dir);
-    return res;
-}
-
 // FATFS has a two second timestamp resolution but the BLE API allows for nanosecond resolution.
 // This function truncates the time the time to a resolution storable by FATFS and fills in the
 // FATFS encoded version into fattime.
@@ -1054,7 +1014,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 FRESULT result = f_stat(fs, path, &file);
                 if (result == FR_OK) {
                     if ((file.fattrib & AM_DIR) != 0) {
-                        result = _delete_directory_contents(fs, path);
+                        result = supervisor_workflow_delete_directory_contents(fs, path);
                     }
                     if (result == FR_OK) {
                         result = f_unlink(fs, path);
@@ -1105,7 +1065,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                         truncate_time(request->timestamp_ms * 1000000, &fattime);
                         override_fattime(fattime);
                     }
-                    FRESULT result = f_mkdir(fs, path);
+                    FRESULT result = supervisor_workflow_mkdir_parents(fs, path);
                     override_fattime(0);
                     #if CIRCUITPY_USB_MSC
                     usb_msc_unlock();
