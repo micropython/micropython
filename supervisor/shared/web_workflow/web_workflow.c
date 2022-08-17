@@ -78,8 +78,9 @@ typedef struct {
     enum request_state state;
     char method[8];
     char path[256];
+    char destination[256];
     char header_key[64];
-    char header_value[64];
+    char header_value[256];
     // We store the origin so we can reply back with it.
     char origin[64];
     size_t content_length;
@@ -553,6 +554,15 @@ static void _reply_conflict(socketpool_socket_obj_t *socket, _request *request) 
     _send_str(socket, "\r\nUSB storage active.");
 }
 
+
+static void _reply_precondition_failed(socketpool_socket_obj_t *socket, _request *request) {
+    _send_strs(socket,
+        "HTTP/1.1 412 Precondition Failed\r\n",
+        "Content-Length: 0\r\n", NULL);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
+}
+
 static void _reply_payload_too_large(socketpool_socket_obj_t *socket, _request *request) {
     _send_strs(socket,
         "HTTP/1.1 413 Payload Too Large\r\n",
@@ -987,6 +997,28 @@ static uint8_t _hex2nibble(char h) {
     return h - 'a' + 0xa;
 }
 
+// Decode percent encoding in place. Only do this once on a string!
+static void _decode_percents(char *str) {
+    size_t o = 0;
+    size_t i = 0;
+    size_t startlen = strlen(str);
+    while (i < startlen) {
+        if (str[i] == '%') {
+            str[o] = _hex2nibble(str[i + 1]) << 4 | _hex2nibble(str[i + 2]);
+            i += 3;
+        } else {
+            if (i != o) {
+                str[o] = str[i];
+            }
+            i += 1;
+        }
+        o += 1;
+    }
+    if (o < i) {
+        str[o] = '\0';
+    }
+}
+
 static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
     if (request->redirect) {
         _reply_redirect(socket, request, request->path);
@@ -1007,23 +1039,8 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             // Decode any percent encoded bytes so that we're left with UTF-8.
             // We only do this on /fs/ paths and after redirect so that any
             // path echoing we do stays encoded.
-            size_t o = 0;
-            size_t i = 0;
-            while (i < strlen(request->path)) {
-                if (request->path[i] == '%') {
-                    request->path[o] = _hex2nibble(request->path[i + 1]) << 4 | _hex2nibble(request->path[i + 2]);
-                    i += 3;
-                } else {
-                    if (i != o) {
-                        request->path[o] = request->path[i];
-                    }
-                    i += 1;
-                }
-                o += 1;
-            }
-            if (o < i) {
-                request->path[o] = '\0';
-            }
+            _decode_percents(request->path);
+
             char *path = request->path + 3;
             size_t pathlen = strlen(path);
             FATFS *fs = filesystem_circuitpy();
@@ -1065,6 +1082,34 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     _reply_server_error(socket, request);
                 } else {
                     _reply_no_content(socket, request);
+                    return true;
+                }
+            } else if (strcasecmp(request->method, "MOVE") == 0) {
+                if (_usb_active()) {
+                    _reply_conflict(socket, request);
+                    return false;
+                }
+
+                _decode_percents(request->destination);
+                char *destination = request->destination + 3;
+                size_t destinationlen = strlen(destination);
+                if (destination[destinationlen - 1] == '/' && destinationlen > 1) {
+                    destination[destinationlen - 1] = '\0';
+                }
+
+                FRESULT result = f_rename(fs, path, destination);
+                #if CIRCUITPY_USB_MSC
+                usb_msc_unlock();
+                #endif
+                if (result == FR_EXIST) { // File exists and won't be overwritten.
+                    _reply_precondition_failed(socket, request);
+                } else if (result == FR_NO_PATH || result == FR_NO_FILE) { // Missing higher directories or target file.
+                    _reply_missing(socket, request);
+                } else if (result != FR_OK) {
+                    ESP_LOGE(TAG, "move error %d %s", result, path);
+                    _reply_server_error(socket, request);
+                } else {
+                    _reply_created(socket, request);
                     return true;
                 }
             } else if (directory) {
@@ -1321,6 +1366,8 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                     } else if (strcasecmp(request->header_key, "Sec-WebSocket-Key") == 0 &&
                                strlen(request->header_value) == 24) {
                         strcpy(request->websocket_key, request->header_value);
+                    } else if (strcasecmp(request->header_key, "X-Destination") == 0) {
+                        strcpy(request->destination, request->header_value);
                     }
                     ESP_LOGI(TAG, "Header %s %s", request->header_key, request->header_value);
                 } else if (request->offset > sizeof(request->header_value) - 1) {
