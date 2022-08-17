@@ -169,7 +169,6 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     // builtin modules declared with MP_REGISTER_MODULE()
     MICROPY_REGISTERED_MODULES
 };
-
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
 // Attempts to find (and initialise) a builtin, otherwise returns

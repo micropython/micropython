@@ -151,9 +151,6 @@ The following is an example of an ``mpconfigport.h`` file:
    #define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_TERSE)
    #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
 
-   // Enable u-modules to be imported with their standard name, like sys.
-   #define MICROPY_MODULE_WEAK_LINKS               (1)
-
    // Fine control over Python builtins, classes, modules, etc.
    #define MICROPY_PY_ASYNC_AWAIT                  (0)
    #define MICROPY_PY_BUILTINS_SET                 (0)

@@ -871,11 +871,6 @@ typedef double mp_float_t;
 #define MICROPY_MODULE_GETATTR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
-// Whether module weak links are supported
-#ifndef MICROPY_MODULE_WEAK_LINKS
-#define MICROPY_MODULE_WEAK_LINKS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
-#endif
-
 // Whether to enable importing foo.py with __name__ set to '__main__'
 // Used by the unix port for the -m flag.
 #ifndef MICROPY_MODULE_OVERRIDE_MAIN_IMPORT

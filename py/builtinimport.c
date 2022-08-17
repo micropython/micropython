@@ -45,15 +45,6 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-#if MICROPY_MODULE_WEAK_LINKS
-STATIC qstr make_weak_link_name(vstr_t *buffer, qstr name) {
-    vstr_reset(buffer);
-    vstr_add_char(buffer, 'u');
-    vstr_add_str(buffer, qstr_str(name));
-    return qstr_from_strn(buffer->buf, buffer->len);
-}
-#endif
-
 #if MICROPY_ENABLE_EXTERNAL_IMPORT
 
 // Must be a string of one byte.
@@ -391,13 +382,8 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     if (outer_module_obj == MP_OBJ_NULL) {
         DEBUG_printf("Searching for top-level module\n");
 
-        // An exact match of a built-in will always bypass the filesystem.
-        // Note that CPython-compatible built-ins are named e.g. utime, so this
-        // means that an exact match is only for `import utime`, so `import
-        // time` will search the filesystem and failing that hit the weak
-        // link handling below. Whereas micropython-specific built-ins like
-        // `micropython`, `pyb`, `network`, etc will match exactly and cannot
-        // be overridden by the filesystem.
+        // An import of a non-extensible built-in will always bypass the
+        // filesystem. e.g. `import micropython` or `import pyb`.
         module_obj = mp_module_get_builtin(level_mod_name);
         if (module_obj != MP_OBJ_NULL) {
             return module_obj;
@@ -417,20 +403,9 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         // relative to all the locations in sys.path.
         stat = stat_top_level(level_mod_name, &path);
 
-        #if MICROPY_MODULE_WEAK_LINKS
-        if (stat == MP_IMPORT_STAT_NO_EXIST) {
-            // No match on the filesystem. (And not a built-in either).
-            // If "foo" was requested, then try "ufoo" as a built-in. This
-            // allows `import time` to use built-in `utime`, unless `time`
-            // exists on the filesystem. This feature was formerly known
-            // as "weak links".
-            qstr umodule_name = make_weak_link_name(&path, level_mod_name);
-            module_obj = mp_module_get_builtin(umodule_name);
-            if (module_obj != MP_OBJ_NULL) {
-                return module_obj;
-            }
-        }
-        #endif
+        // TODO: If stat failed, now try extensible built-in modules.
+
+        // TODO: If importing `ufoo`, try `foo`.
     } else {
         DEBUG_printf("Searching for sub-module\n");
 
@@ -666,21 +641,6 @@ mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;
     }
-
-    #if MICROPY_MODULE_WEAK_LINKS
-    // Check if the u-prefixed name is a built-in.
-    VSTR_FIXED(umodule_path, MICROPY_ALLOC_PATH_MAX);
-    qstr umodule_name_qstr = make_weak_link_name(&umodule_path, module_name_qstr);
-    module_obj = mp_module_get_builtin(umodule_name_qstr);
-    if (module_obj != MP_OBJ_NULL) {
-        return module_obj;
-    }
-    #elif MICROPY_PY_SYS
-    // Special handling to make `import sys` work even if weak links aren't enabled.
-    if (module_name_qstr == MP_QSTR_sys) {
-        return MP_OBJ_FROM_PTR(&mp_module_sys);
-    }
-    #endif
 
     // Couldn't find the module, so fail
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
