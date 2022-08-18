@@ -1,11 +1,11 @@
 # Location of top-level MicroPython directory
 MPY_DIR = ../../..
 
-# Name of module (different to built-in uzlib so it can coexist)
-MOD = uzlib_$(ARCH)
+# Name of module (different to built-in heapq so it can coexist)
+MOD = heapq_$(ARCH)
 
 # Source files (.c or .py)
-SRC = uzlib.c
+SRC = heapq.c
 
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
 ARCH = x64

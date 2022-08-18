@@ -1,11 +1,11 @@
 # Location of top-level MicroPython directory
 MPY_DIR = ../../..
 
-# Name of module (different to built-in uheapq so it can coexist)
-MOD = uheapq_$(ARCH)
+# Name of module (different to built-in random so it can coexist)
+MOD = random_$(ARCH)
 
 # Source files (.c or .py)
-SRC = uheapq.c
+SRC = random.c
 
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
 ARCH = x64
