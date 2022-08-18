@@ -63,7 +63,7 @@ static inline void esp_exceptions(esp_err_t e) {
     }
 }
 
-void usocket_events_deinit(void);
+void socket_events_deinit(void);
 void network_wlan_event_handler(system_event_t *event);
 void esp_initialise_wifi(void);
 

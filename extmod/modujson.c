@@ -41,7 +41,7 @@ enum {
     DUMP_MODE_TO_STREAM = 2,
 };
 
-STATIC mp_obj_t mod_ujson_dump_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, unsigned int mode) {
+STATIC mp_obj_t mod_json_dump_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, unsigned int mode) {
     enum { ARG_separators };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_separators, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -78,34 +78,34 @@ STATIC mp_obj_t mod_ujson_dump_helper(size_t n_args, const mp_obj_t *pos_args, m
     }
 }
 
-STATIC mp_obj_t mod_ujson_dump(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    return mod_ujson_dump_helper(n_args, pos_args, kw_args, DUMP_MODE_TO_STREAM);
+STATIC mp_obj_t mod_json_dump(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return mod_json_dump_helper(n_args, pos_args, kw_args, DUMP_MODE_TO_STREAM);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ujson_dump_obj, 2, mod_ujson_dump);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_json_dump_obj, 2, mod_json_dump);
 
-STATIC mp_obj_t mod_ujson_dumps(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    return mod_ujson_dump_helper(n_args, pos_args, kw_args, DUMP_MODE_TO_STRING);
+STATIC mp_obj_t mod_json_dumps(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return mod_json_dump_helper(n_args, pos_args, kw_args, DUMP_MODE_TO_STRING);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ujson_dumps_obj, 1, mod_ujson_dumps);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_json_dumps_obj, 1, mod_json_dumps);
 
 #else
 
-STATIC mp_obj_t mod_ujson_dump(mp_obj_t obj, mp_obj_t stream) {
+STATIC mp_obj_t mod_json_dump(mp_obj_t obj, mp_obj_t stream) {
     mp_get_stream_raise(stream, MP_STREAM_OP_WRITE);
     mp_print_t print = {MP_OBJ_TO_PTR(stream), mp_stream_write_adaptor};
     mp_obj_print_helper(&print, obj, PRINT_JSON);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ujson_dump_obj, mod_ujson_dump);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_json_dump_obj, mod_json_dump);
 
-STATIC mp_obj_t mod_ujson_dumps(mp_obj_t obj) {
+STATIC mp_obj_t mod_json_dumps(mp_obj_t obj) {
     vstr_t vstr;
     mp_print_t print;
     vstr_init_print(&vstr, 8, &print);
     mp_obj_print_helper(&print, obj, PRINT_JSON);
     return mp_obj_new_str_from_utf8_vstr(&vstr);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_dumps_obj, mod_ujson_dumps);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_json_dumps_obj, mod_json_dumps);
 
 #endif
 
@@ -122,19 +122,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_dumps_obj, mod_ujson_dumps);
 // strings).  It does 1 pass over the input stream.  It tries to be fast and
 // small in code size, while not using more RAM than necessary.
 
-typedef struct _ujson_stream_t {
+typedef struct _json_stream_t {
     mp_obj_t stream_obj;
     mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     int errcode;
     byte cur;
-} ujson_stream_t;
+} json_stream_t;
 
 #define S_EOF (0) // null is not allowed in json stream so is ok as EOF marker
 #define S_END(s) ((s).cur == S_EOF)
 #define S_CUR(s) ((s).cur)
-#define S_NEXT(s) (ujson_stream_next(&(s)))
+#define S_NEXT(s) (json_stream_next(&(s)))
 
-STATIC byte ujson_stream_next(ujson_stream_t *s) {
+STATIC byte json_stream_next(json_stream_t *s) {
     mp_uint_t ret = s->read(s->stream_obj, &s->cur, 1, &s->errcode);
     if (s->errcode != 0) {
         mp_raise_OSError(s->errcode);
@@ -145,9 +145,9 @@ STATIC byte ujson_stream_next(ujson_stream_t *s) {
     return s->cur;
 }
 
-STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
+STATIC mp_obj_t mod_json_load(mp_obj_t stream_obj) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(stream_obj, MP_STREAM_OP_READ);
-    ujson_stream_t s = {stream_obj, stream_p->read, 0, 0};
+    json_stream_t s = {stream_obj, stream_p->read, 0, 0};
     vstr_t vstr;
     vstr_init(&vstr, 8);
     mp_obj_list_t stack; // we use a list as a simple stack for nested JSON
@@ -355,23 +355,23 @@ success:
 fail:
     mp_raise_ValueError(MP_ERROR_TEXT("syntax error in JSON"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_load_obj, mod_ujson_load);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_json_load_obj, mod_json_load);
 
-STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
+STATIC mp_obj_t mod_json_loads(mp_obj_t obj) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(obj, &bufinfo, MP_BUFFER_READ);
     vstr_t vstr = {bufinfo.len, bufinfo.len, (char *)bufinfo.buf, true};
     mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
-    return mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
+    return mod_json_load(MP_OBJ_FROM_PTR(&sio));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_loads_obj, mod_ujson_loads);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_json_loads_obj, mod_json_loads);
 
 STATIC const mp_rom_map_elem_t mp_module_json_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_json) },
-    { MP_ROM_QSTR(MP_QSTR_dump), MP_ROM_PTR(&mod_ujson_dump_obj) },
-    { MP_ROM_QSTR(MP_QSTR_dumps), MP_ROM_PTR(&mod_ujson_dumps_obj) },
-    { MP_ROM_QSTR(MP_QSTR_load), MP_ROM_PTR(&mod_ujson_load_obj) },
-    { MP_ROM_QSTR(MP_QSTR_loads), MP_ROM_PTR(&mod_ujson_loads_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dump), MP_ROM_PTR(&mod_json_dump_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dumps), MP_ROM_PTR(&mod_json_dumps_obj) },
+    { MP_ROM_QSTR(MP_QSTR_load), MP_ROM_PTR(&mod_json_load_obj) },
+    { MP_ROM_QSTR(MP_QSTR_loads), MP_ROM_PTR(&mod_json_loads_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_json_globals, mp_module_json_globals_table);

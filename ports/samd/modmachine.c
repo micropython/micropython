@@ -116,7 +116,7 @@ STATIC mp_obj_t machine_unique_id(void) {
     // 0x0080a040: 50534b54 332e3120 ff091645
     //
     // MicroPython (this code and same order as shown in Arduino IDE)
-    // >>> ubinascii.hexlify(machine.unique_id())
+    // >>> binascii.hexlify(machine.unique_id())
     // b'6e27f15f50534b54332e3120ff091645'
 
     #if defined(MCU_SAMD21)

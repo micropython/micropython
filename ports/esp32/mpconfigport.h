@@ -170,7 +170,7 @@ void *esp_native_code_commit(void *, size_t, void *);
 #define MICROPY_END_ATOMIC_SECTION(state) portEXIT_CRITICAL_NESTED(state)
 
 #if MICROPY_PY_USOCKET_EVENTS
-#define MICROPY_PY_USOCKET_EVENTS_HANDLER extern void usocket_events_handler(void); usocket_events_handler();
+#define MICROPY_PY_USOCKET_EVENTS_HANDLER extern void socket_events_handler(void); socket_events_handler();
 #else
 #define MICROPY_PY_USOCKET_EVENTS_HANDLER
 #endif

@@ -255,7 +255,7 @@ void mp_hal_get_random(size_t n, void *buf) {
     #ifdef _HAVE_GETRANDOM
     RAISE_ERRNO(getrandom(buf, n, 0), errno);
     #else
-    int fd = open("/dev/urandom", O_RDONLY);
+    int fd = open("/dev/random", O_RDONLY);
     RAISE_ERRNO(fd, errno);
     RAISE_ERRNO(read(fd, buf, n), errno);
     close(fd);

@@ -53,7 +53,7 @@ struct ssl_args {
     mp_arg_val_t do_handshake;
 };
 
-STATIC const mp_obj_type_t ussl_socket_type;
+STATIC const mp_obj_type_t ssl_socket_type;
 
 // Table of error strings corresponding to SSL_xxx error codes.
 STATIC const char *const ssl_error_tab1[] = {
@@ -84,7 +84,7 @@ STATIC const char *const ssl_error_tab2[] = {
     "NOT_SUPPORTED",
 };
 
-STATIC NORETURN void ussl_raise_error(int err) {
+STATIC NORETURN void ssl_raise_error(int err) {
     MP_STATIC_ASSERT(SSL_NOT_OK - 3 == SSL_EAGAIN);
     MP_STATIC_ASSERT(SSL_ERROR_CONN_LOST - 18 == SSL_ERROR_NOT_SUPPORTED);
 
@@ -117,13 +117,13 @@ STATIC NORETURN void ussl_raise_error(int err) {
 }
 
 
-STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args) {
+STATIC mp_obj_ssl_socket_t *ssl_socket_new(mp_obj_t sock, struct ssl_args *args) {
     #if MICROPY_PY_USSL_FINALISER
     mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
     #else
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
     #endif
-    o->base.type = &ussl_socket_type;
+    o->base.type = &ssl_socket_type;
     o->buf = NULL;
     o->bytes_left = 0;
     o->sock = sock;
@@ -175,7 +175,7 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
                 } else if (r == SSL_EAGAIN) {
                     r = MP_EAGAIN;
                 }
-                ussl_raise_error(r);
+                ssl_raise_error(r);
             }
         }
 
@@ -184,13 +184,13 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
     return o;
 }
 
-STATIC void ussl_socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void ssl_socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<_SSLSocket %p>", self->ssl_sock);
 }
 
-STATIC mp_uint_t ussl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t ssl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 
     if (o->ssl_sock == NULL) {
@@ -239,7 +239,7 @@ STATIC mp_uint_t ussl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int 
     return size;
 }
 
-STATIC mp_uint_t ussl_socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t ssl_socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 
     if (o->ssl_sock == NULL) {
@@ -251,7 +251,7 @@ STATIC mp_uint_t ussl_socket_write(mp_obj_t o_in, const void *buf, mp_uint_t siz
 eagain:
     r = ssl_write(o->ssl_sock, buf, size);
     if (r == 0) {
-        // see comment in ussl_socket_read above
+        // see comment in ssl_socket_read above
         if (o->blocking) {
             goto eagain;
         } else {
@@ -271,7 +271,7 @@ eagain:
     return r;
 }
 
-STATIC mp_uint_t ussl_socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+STATIC mp_uint_t ssl_socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(o_in);
     if (request == MP_STREAM_CLOSE && self->ssl_sock != NULL) {
         ssl_free(self->ssl_sock);
@@ -282,7 +282,7 @@ STATIC mp_uint_t ussl_socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t a
     return mp_get_stream(self->sock)->ioctl(self->sock, request, arg, errcode);
 }
 
-STATIC mp_obj_t ussl_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
+STATIC mp_obj_t ssl_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(self_in);
     mp_obj_t sock = o->sock;
     mp_obj_t dest[3];
@@ -292,36 +292,36 @@ STATIC mp_obj_t ussl_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     o->blocking = mp_obj_is_true(flag_in);
     return res;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ussl_socket_setblocking_obj, ussl_socket_setblocking);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_socket_setblocking_obj, ssl_socket_setblocking);
 
-STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t ssl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&ussl_socket_setblocking_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&ssl_socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     #if MICROPY_PY_USSL_FINALISER
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(ussl_socket_locals_dict, ussl_socket_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(ssl_socket_locals_dict, ssl_socket_locals_dict_table);
 
-STATIC const mp_stream_p_t ussl_socket_stream_p = {
-    .read = ussl_socket_read,
-    .write = ussl_socket_write,
-    .ioctl = ussl_socket_ioctl,
+STATIC const mp_stream_p_t ssl_socket_stream_p = {
+    .read = ssl_socket_read,
+    .write = ssl_socket_write,
+    .ioctl = ssl_socket_ioctl,
 };
 
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
-    ussl_socket_type,
+    ssl_socket_type,
     // Save on qstr's, reuse same as for module
     MP_QSTR_ssl,
     MP_TYPE_FLAG_NONE,
-    print, ussl_socket_print,
-    protocol, &ussl_socket_stream_p,
-    locals_dict, &ussl_socket_locals_dict
+    print, ssl_socket_print,
+    protocol, &ssl_socket_stream_p,
+    locals_dict, &ssl_socket_locals_dict
     );
 
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -341,7 +341,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
 
-    return MP_OBJ_FROM_PTR(ussl_socket_new(sock, &args));
+    return MP_OBJ_FROM_PTR(ssl_socket_new(sock, &args));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
 

@@ -150,7 +150,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 #endif
 
-STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_zlib_decompress(size_t n_args, const mp_obj_t *args) {
     mp_obj_t data = args[0];
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
@@ -164,7 +164,7 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
 
     decomp->dest = dest_buf;
     decomp->dest_limit = dest_buf + dest_buf_size;
-    DEBUG_printf("uzlib: Initial out buffer: " UINT_FMT " bytes\n", dest_buf_size);
+    DEBUG_printf("zlib: Initial out buffer: " UINT_FMT " bytes\n", dest_buf_size);
     decomp->source = bufinfo.buf;
     decomp->source_limit = (byte *)bufinfo.buf + bufinfo.len;
 
@@ -198,7 +198,7 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_uint_t final_sz = decomp->dest - dest_buf;
-    DEBUG_printf("uzlib: Resizing from " UINT_FMT " to final size: " UINT_FMT " bytes\n", dest_buf_size, final_sz);
+    DEBUG_printf("zlib: Resizing from " UINT_FMT " to final size: " UINT_FMT " bytes\n", dest_buf_size, final_sz);
     dest_buf = (byte *)m_renew(byte, dest_buf, dest_buf_size, final_sz);
     mp_obj_t res = mp_obj_new_bytearray_by_ref(final_sz, dest_buf);
     m_del_obj(TINF_DATA, decomp);
@@ -207,12 +207,12 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
 error:
     mp_raise_type_arg(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_uzlib_decompress);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_zlib_decompress_obj, 1, 3, mod_zlib_decompress);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t mp_module_zlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zlib) },
-    { MP_ROM_QSTR(MP_QSTR_decompress), MP_ROM_PTR(&mod_uzlib_decompress_obj) },
+    { MP_ROM_QSTR(MP_QSTR_decompress), MP_ROM_PTR(&mod_zlib_decompress_obj) },
     { MP_ROM_QSTR(MP_QSTR_DecompIO), MP_ROM_PTR(&decompio_type) },
 };
 

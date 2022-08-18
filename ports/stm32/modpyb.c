@@ -89,7 +89,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_micros_obj, pyb_elapsed_micros);
 MP_DECLARE_CONST_FUN_OBJ_KW(pyb_main_obj); // defined in main.c
 
 // Get or set the UART object that the REPL is repeated on.
-// This is a legacy function, use of uos.dupterm is preferred.
+// This is a legacy function, use of os.dupterm is preferred.
 STATIC mp_obj_t pyb_repl_uart(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         if (MP_STATE_PORT(pyb_stdio_uart) == NULL) {

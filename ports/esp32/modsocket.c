@@ -87,22 +87,22 @@ void _socket_settimeout(socket_obj_t *sock, uint64_t timeout_ms);
 // This divisor is used to reduce the load on the system, so it doesn't poll sockets too often
 #define USOCKET_EVENTS_DIVISOR (8)
 
-STATIC uint8_t usocket_events_divisor;
-STATIC socket_obj_t *usocket_events_head;
+STATIC uint8_t socket_events_divisor;
+STATIC socket_obj_t *socket_events_head;
 
-void usocket_events_deinit(void) {
-    usocket_events_head = NULL;
+void socket_events_deinit(void) {
+    socket_events_head = NULL;
 }
 
 // Assumes the socket is not already in the linked list, and adds it
-STATIC void usocket_events_add(socket_obj_t *sock) {
-    sock->events_next = usocket_events_head;
-    usocket_events_head = sock;
+STATIC void socket_events_add(socket_obj_t *sock) {
+    sock->events_next = socket_events_head;
+    socket_events_head = sock;
 }
 
 // Assumes the socket is already in the linked list, and removes it
-STATIC void usocket_events_remove(socket_obj_t *sock) {
-    for (socket_obj_t **s = &usocket_events_head;; s = &(*s)->events_next) {
+STATIC void socket_events_remove(socket_obj_t *sock) {
+    for (socket_obj_t **s = &socket_events_head;; s = &(*s)->events_next) {
         if (*s == sock) {
             *s = (*s)->events_next;
             return;
@@ -111,20 +111,20 @@ STATIC void usocket_events_remove(socket_obj_t *sock) {
 }
 
 // Polls all registered sockets for readability and calls their callback if they are readable
-void usocket_events_handler(void) {
-    if (usocket_events_head == NULL) {
+void socket_events_handler(void) {
+    if (socket_events_head == NULL) {
         return;
     }
-    if (--usocket_events_divisor) {
+    if (--socket_events_divisor) {
         return;
     }
-    usocket_events_divisor = USOCKET_EVENTS_DIVISOR;
+    socket_events_divisor = USOCKET_EVENTS_DIVISOR;
 
     fd_set rfds;
     FD_ZERO(&rfds);
     int max_fd = 0;
 
-    for (socket_obj_t *s = usocket_events_head; s != NULL; s = s->events_next) {
+    for (socket_obj_t *s = socket_events_head; s != NULL; s = s->events_next) {
         FD_SET(s->fd, &rfds);
         max_fd = MAX(max_fd, s->fd);
     }
@@ -137,7 +137,7 @@ void usocket_events_handler(void) {
     }
 
     // Call the callbacks
-    for (socket_obj_t *s = usocket_events_head; s != NULL; s = s->events_next) {
+    for (socket_obj_t *s = socket_events_head; s != NULL; s = s->events_next) {
         if (FD_ISSET(s->fd, &rfds)) {
             mp_call_function_1_protected(s->events_callback, s);
         }
@@ -402,12 +402,12 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
         case 20: {
             if (args[3] == mp_const_none) {
                 if (self->events_callback != MP_OBJ_NULL) {
-                    usocket_events_remove(self);
+                    socket_events_remove(self);
                     self->events_callback = MP_OBJ_NULL;
                 }
             } else {
                 if (self->events_callback == MP_OBJ_NULL) {
-                    usocket_events_add(self);
+                    socket_events_add(self);
                 }
                 self->events_callback = args[3];
             }
@@ -736,7 +736,7 @@ STATIC mp_uint_t socket_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintpt
         if (socket->fd >= 0) {
             #if MICROPY_PY_USOCKET_EVENTS
             if (socket->events_callback != MP_OBJ_NULL) {
-                usocket_events_remove(socket);
+                socket_events_remove(socket);
                 socket->events_callback = MP_OBJ_NULL;
             }
             #endif
@@ -871,5 +871,5 @@ const mp_obj_module_t mp_module_socket = {
 
 // Note: This port doesn't define MICROPY_PY_USOCKET or MICROPY_PY_LWIP so
 // this will not conflict with the common implementation provided by
-// extmod/mod{lwip,usocket}.c.
+// extmod/mod{lwip,socket}.c.
 MP_REGISTER_MODULE(MP_QSTR_socket, mp_module_socket);

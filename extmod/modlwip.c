@@ -1801,7 +1801,7 @@ const mp_obj_module_t mp_module_lwip = {
 
 MP_REGISTER_MODULE(MP_QSTR_lwip, mp_module_lwip);
 
-// On LWIP-ports, this is the usocket module (replaces extmod/modusocket.c).
+// On LWIP-ports, this is the socket module (replaces extmod/modusocket.c).
 MP_REGISTER_MODULE(MP_QSTR_socket, mp_module_lwip);
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t lwip_slip_stream);

@@ -299,16 +299,16 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &websocket_locals_dict
     );
 
-STATIC const mp_rom_map_elem_t uwebsocket_module_globals_table[] = {
+STATIC const mp_rom_map_elem_t websocket_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_websocket) },
     { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&websocket_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(uwebsocket_module_globals, uwebsocket_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(websocket_module_globals, websocket_module_globals_table);
 
 const mp_obj_module_t mp_module_websocket = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&uwebsocket_module_globals,
+    .globals = (mp_obj_dict_t *)&websocket_module_globals,
 };
 
 MP_REGISTER_MODULE(MP_QSTR_websocket, mp_module_websocket);

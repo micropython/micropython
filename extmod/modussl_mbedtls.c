@@ -73,7 +73,7 @@ struct ssl_args {
     mp_arg_val_t do_handshake;
 };
 
-STATIC const mp_obj_type_t ussl_socket_type;
+STATIC const mp_obj_type_t ssl_socket_type;
 
 #ifdef MBEDTLS_DEBUG_C
 STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
@@ -168,7 +168,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     #else
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
     #endif
-    o->base.type = &ussl_socket_type;
+    o->base.type = &ssl_socket_type;
     o->sock = sock;
     o->poll_mask = 0;
     o->last_error = 0;
@@ -435,7 +435,7 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
     return ret;
 }
 
-STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t ssl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
@@ -451,22 +451,22 @@ STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getpeercert), MP_ROM_PTR(&mod_ssl_getpeercert_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(ussl_socket_locals_dict, ussl_socket_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(ssl_socket_locals_dict, ssl_socket_locals_dict_table);
 
-STATIC const mp_stream_p_t ussl_socket_stream_p = {
+STATIC const mp_stream_p_t ssl_socket_stream_p = {
     .read = socket_read,
     .write = socket_write,
     .ioctl = socket_ioctl,
 };
 
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
-    ussl_socket_type,
+    ssl_socket_type,
     // Save on qstr's, reuse same as for module
     MP_QSTR_ssl,
     MP_TYPE_FLAG_NONE,
     print, socket_print,
-    protocol, &ussl_socket_stream_p,
-    locals_dict, &ussl_socket_locals_dict
+    protocol, &ssl_socket_stream_p,
+    locals_dict, &ssl_socket_locals_dict
     );
 
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

@@ -133,7 +133,7 @@
     #define MICROPY_FATFS_MAX_SS       (4096)
 #endif
 
-// Use port specific uos module rather than extmod variant.
+// Use port specific os module rather than extmod variant.
 #define MICROPY_PY_UOS              (0)
 
 #define MICROPY_STREAMS_NON_BLOCK   (1)

@@ -1273,7 +1273,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_COLLECTIONS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
-// Whether to provide "ucollections.deque" type
+// Whether to provide "collections.deque" type
 #ifndef MICROPY_PY_COLLECTIONS_DEQUE
 #define MICROPY_PY_COLLECTIONS_DEQUE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
@@ -1458,44 +1458,44 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_ATTR_DELEGATION (MICROPY_PY_SYS_PS1_PS2 || MICROPY_PY_SYS_TRACEBACKLIMIT)
 #endif
 
-// Whether to provide "uerrno" module
+// Whether to provide "errno" module
 #ifndef MICROPY_PY_UERRNO
 #define MICROPY_PY_UERRNO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Whether to provide the uerrno.errorcode dict
+// Whether to provide the errno.errorcode dict
 #ifndef MICROPY_PY_UERRNO_ERRORCODE
 #define MICROPY_PY_UERRNO_ERRORCODE (1)
 #endif
 
-// Whether to provide "uselect" module (baremetal implementation)
+// Whether to provide "select" module (baremetal implementation)
 #ifndef MICROPY_PY_USELECT
 #define MICROPY_PY_USELECT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Whether to enable the select() function in the "uselect" module (baremetal
+// Whether to enable the select() function in the "select" module (baremetal
 // implementation). This is present for compatibility but can be disabled to
 // save space.
 #ifndef MICROPY_PY_USELECT_SELECT
 #define MICROPY_PY_USELECT_SELECT (1)
 #endif
 
-// Whether to provide the "utime" module
+// Whether to provide the "time" module
 #ifndef MICROPY_PY_UTIME
 #define MICROPY_PY_UTIME (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
 #endif
 
-// Whether to provide utime.gmtime/localtime/mktime functions
+// Whether to provide time.gmtime/localtime/mktime functions
 #ifndef MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME
 #define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME (0)
 #endif
 
-// Whether to provide utime.time/time_ns functions
+// Whether to provide time.time/time_ns functions
 #ifndef MICROPY_PY_UTIME_TIME_TIME_NS
 #define MICROPY_PY_UTIME_TIME_TIME_NS (0)
 #endif
 
-// Period of values returned by utime.ticks_ms(), ticks_us(), ticks_cpu()
+// Period of values returned by time.ticks_ms(), ticks_us(), ticks_cpu()
 // functions. Should be power of two. All functions above use the same
 // period, so if underlying hardware/API has different periods, the
 // minimum of them should be used. The value below is the maximum value
@@ -1686,7 +1686,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_USSL (0)
 #endif
 
-// Whether to add finaliser code to ussl objects
+// Whether to add finaliser code to ssl objects
 #ifndef MICROPY_PY_USSL_FINALISER
 #define MICROPY_PY_USSL_FINALISER (0)
 #endif

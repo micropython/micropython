@@ -41,14 +41,14 @@
 
 /******************************************************************************/
 // The following set of macros and functions provide a glue between the CC3100
-// simplelink layer and the functions/methods provided by the usocket module.
-// They were historically in a separate file because usocket was designed to
+// simplelink layer and the functions/methods provided by the socket module.
+// They were historically in a separate file because socket was designed to
 // work with multiple NICs, and the wlan_XXX functions just provided one
 // particular NIC implementation (that of the CC3100).  But the CC3200 port only
 // supports a single NIC (being the CC3100) so it's unnecessary and inefficient
 // to provide an intermediate wrapper layer.  Hence the wlan_XXX functions
 // are provided below as static functions so they can be inlined directly by
-// the corresponding usocket calls.
+// the corresponding socket calls.
 
 #define WLAN_MAX_RX_SIZE                16000
 #define WLAN_MAX_TX_SIZE                1476
@@ -769,11 +769,11 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 /******************************************************************************/
-// usocket module
+// socket module
 
-// function usocket.getaddrinfo(host, port)
+// function socket.getaddrinfo(host, port)
 /// \function getaddrinfo(host, port)
-STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
+STATIC mp_obj_t mod_socket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     size_t hlen;
     const char *host = mp_obj_str_get_data(host_in, &hlen);
     mp_int_t port = mp_obj_get_int(port_in);
@@ -792,13 +792,13 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     tuple->items[4] = netutils_format_inet_addr(out_ip, port, NETUTILS_LITTLE);
     return mp_obj_new_list(1, (mp_obj_t*)&tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_usocket_getaddrinfo_obj, mod_usocket_getaddrinfo);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_socket_getaddrinfo_obj, mod_socket_getaddrinfo);
 
 STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_socket) },
 
     { MP_ROM_QSTR(MP_QSTR_socket),          MP_ROM_PTR(&socket_type) },
-    { MP_ROM_QSTR(MP_QSTR_getaddrinfo),     MP_ROM_PTR(&mod_usocket_getaddrinfo_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getaddrinfo),     MP_ROM_PTR(&mod_socket_getaddrinfo_obj) },
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_AF_INET),         MP_ROM_INT(SL_AF_INET) },

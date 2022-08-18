@@ -54,11 +54,10 @@
 /*
   The idea of this module is to implement reasonable minimum of
   socket-related functions to write typical clients and servers.
-  The module named "usocket" on purpose, to allow to make
-  Python-level module more (or fully) compatible with CPython
-  "socket", e.g.:
+  It's then possible to make a Python-level module more (or fully)
+  compatible with CPython "socket", e.g.:
   ---- socket.py ----
-  from usocket import *
+  from socket import *
   from socket_more_funcs import *
   from socket_more_funcs2 import *
   -------------------
@@ -487,7 +486,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, siz
     return MP_OBJ_FROM_PTR(socket_new(fd));
 }
 
-STATIC const mp_rom_map_elem_t usocket_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fileno), MP_ROM_PTR(&socket_fileno_obj) },
     { MP_ROM_QSTR(MP_QSTR_makefile), MP_ROM_PTR(&socket_makefile_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
@@ -508,9 +507,9 @@ STATIC const mp_rom_map_elem_t usocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(usocket_locals_dict, usocket_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
-STATIC const mp_stream_p_t usocket_stream_p = {
+STATIC const mp_stream_p_t socket_stream_p = {
     .read = socket_read,
     .write = socket_write,
     .ioctl = socket_ioctl,
@@ -522,8 +521,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     make_new, socket_make_new,
     print, socket_print,
-    protocol, &usocket_stream_p,
-    locals_dict, &usocket_locals_dict
+    protocol, &socket_stream_p,
+    locals_dict, &socket_locals_dict
     );
 
 #define BINADDR_MAX_LEN sizeof(struct in6_addr)
