@@ -19,6 +19,7 @@ MicroPython device over a serial connection.  Commands supported are:
 
 import os, sys
 from collections.abc import Mapping
+import tempfile
 from textwrap import dedent
 
 import serial.tools.list_ports
@@ -28,6 +29,7 @@ from .console import Console, ConsolePosix
 
 _PROG = "mpremote"
 
+# (need_raw_repl, is_action, num_args_min, help_text)
 _COMMANDS = {
     "connect": (
         False,
@@ -39,6 +41,7 @@ _COMMANDS = {
         or any valid device name/path""",
     ),
     "disconnect": (False, False, 0, "disconnect current device"),
+    "edit": (True, True, 1, "edit files on the device"),
     "resume": (False, False, 0, "resume a previous mpremote session (will not auto soft-reset)"),
     "soft-reset": (False, True, 0, "perform a soft-reset of the device"),
     "mount": (
@@ -82,6 +85,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
     "ls": "fs ls",
     "cp": "fs cp",
     "rm": "fs rm",
+    "touch": "fs touch",
     "mkdir": "fs mkdir",
     "rmdir": "fs rmdir",
     "df": [
@@ -355,6 +359,23 @@ def do_filesystem(pyb, args):
         )
 
 
+def do_edit(pyb, args):
+    if not os.getenv("EDITOR"):
+        raise pyboard.PyboardError("edit: $EDITOR not set")
+    for src in get_fs_args(args):
+        src = src.lstrip(":")
+        dest_fd, dest = tempfile.mkstemp(suffix=os.path.basename(src))
+        try:
+            print("edit :%s" % (src,))
+            os.close(dest_fd)
+            pyb.fs_touch(src)
+            pyb.fs_get(src, dest, progress_callback=show_progress_bar)
+            if os.system("$EDITOR '%s'" % (dest,)) == 0:
+                pyb.fs_put(dest, src, progress_callback=show_progress_bar)
+        finally:
+            os.unlink(dest)
+
+
 def do_repl_main_loop(pyb, console_in, console_out_write, *, code_to_inject, file_to_inject):
     while True:
         console_in.waitchar(pyb.serial)
@@ -587,6 +608,8 @@ def main():
                     return ret
             elif cmd == "fs":
                 do_filesystem(pyb, args)
+            elif cmd == "edit":
+                do_edit(pyb, args)
             elif cmd == "repl":
                 do_repl(pyb, args)
 

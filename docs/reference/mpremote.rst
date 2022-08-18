@@ -133,6 +133,17 @@ The full list of supported commands are:
   - ``rmdir <dirs...>`` to remove directories on the device
   - ``touch <file..>`` to create the files (if they don't already exist)
 
+- edit a file on the device:
+
+  .. code-block:: bash
+
+      $ mpremote edit <files...>
+
+  The ``edit`` command will copy each file from the device to a local temporary
+  directory and then launch your editor for each file (defined by the environment
+  variable ``$EDITOR``). If the editor exits successfully, the updated file will
+  be copied back to the device.
+
 - mount the local directory on the remote device:
 
   .. code-block:: bash
