@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_ADCBUFFER_BUFFEREDINPUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/adcbuffer/Bufferedinput.h"
+#include "common-hal/adcbuffer/BufferedInput.h"
 
 // #ifdef CIRCUITPY_BUFFEREDINPUT #endif
 

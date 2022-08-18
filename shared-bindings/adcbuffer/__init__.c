@@ -30,47 +30,47 @@
 #include "shared-bindings/adcbuffer/__init__.h"
 #include "shared-bindings/adcbuffer/BufferedInput.h"
 
-// #ifdef CIRCUITPY_BUFFEREDINPUT#endif
+/// #ifdef CIRCUITPY_BUFFEREDINPUT#endif
 
-//| """Analog buffered hardware support
-//|
-//| The `adcbuffer` module contains classes to provide access to analog-to-digital
-//| conversion and digital-to-analog (DAC) for multiple value transfer.
-//|
-//| All classes change hardware state and should be deinitialized when they
-//| are no longer needed if the program continues after use. To do so, either
-//| call :py:meth:`!deinit` or use a context manager. See
-//| :ref:`lifetime-and-contextmanagers` for more info.
-//|
-//| For example::
-//|
-//|   import adcbuffer
+/// """Analog buffered hardware support
+///
+/// The `adcbuffer` module contains classes to provide access to analog-to-digital
+/// conversion and digital-to-analog (DAC) for multiple value transfer.
+///
+/// All classes change hardware state and should be deinitialized when they
+/// are no longer needed if the program continues after use. To do so, either
+/// call :py:meth:`!deinit` or use a context manager. See
+/// :ref:`lifetime-and-contextmanagers` for more info.
+///
+/// For example::
+///
+///   import adcbuffer
 ///   import array
-//|   from board import *
-//|
+///   from board import *
+///
 ///   length = 5000000
 ///   mybuffer = array.array("H", [0] * length)
-//|   adcbuf_obj = adcbuffer.BufferdInPut(GP26, mybuffer, length)
-//|   adcbuffer.readmultiple()
-//|   print(*mybuffer)
-//|   adcbuf_obj.deinit()
-//|
-//| This example will initialize the the device, read and fill
-//| :py:data:`~adcbuffer.BufferdInPut` to mybuffer and then
-//| :py:meth:`~adcbuffer.BufferedInPut.deinit` the hardware. The last step is optional
-//| because CircuitPython will do it automatically after the program finishes.
-//|
-//| TODO: For the essentials of `adcbuffer`, see the `CircuitPython Essentials
-//| Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-adcbuffer>`_
-//|
-//| TODO: For more information on using `adcbuffer`, see `this additional Learn guide
-//| <https://learn.adafruit.com/circuitpython-advanced-analog-inputs-and-outputs>`_
-//| """
-//|
+///   adcbuf_obj = adcbuffer.BufferedInPut(GP26, mybuffer, length)
+///   adcbuffer.readmultiple()
+///   print(*mybuffer)
+///   adcbuf_obj.deinit()
+///
+/// This example will initialize the the device, read and fill
+/// :py:data:`~adcbuffer.BufferedInPut` to mybuffer and then
+/// :py:meth:`~adcbuffer.BufferedInPut.deinit` the hardware. The last step is optional
+/// because CircuitPython will do it automatically after the program finishes.
+///
+/// TODO: For the essentials of `adcbuffer`, see the `CircuitPython Essentials
+/// Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-adcbuffer>`_
+///
+/// TODO: For more information on using `adcbuffer`, see `this additional Learn guide
+/// <https://learn.adafruit.com/circuitpython-advanced-analog-inputs-and-outputs>`_
+/// """
+///
 
 STATIC const mp_rom_map_elem_t adcbuffer_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_adcbuffer) },
-    { MP_ROM_QSTR(MP_QSTR_Bufferedinput),   MP_ROM_PTR(&adcbuffer_bufferedinput_type) },
+    { MP_ROM_QSTR(MP_QSTR_BufferedInput),   MP_ROM_PTR(&adcbuffer_bufferedinput_type) },
     // #ifdef CIRCUITPY_BUFFEREDINPUT    #endif
 };
 

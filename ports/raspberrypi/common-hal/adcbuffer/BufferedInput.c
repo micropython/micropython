@@ -31,8 +31,8 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/adcbuffer/Bufferedinput.h"
-#include "shared-bindings/adcbuffer/Bufferedinput.h"
+#include "common-hal/adcbuffer/BufferedInput.h"
+#include "shared-bindings/adcbuffer/BufferedInput.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate/translate.h"

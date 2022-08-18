@@ -1,1 +1,1 @@
-// No analogio module functions.
+// No adcbuffer module functions.

@@ -387,6 +387,7 @@ SRC_COMMON_HAL_ALL = \
 	_bleio/__init__.c \
 	_pew/PewPew.c \
 	_pew/__init__.c \
+	adcbuffer/BufferedInput.c \
 	alarm/SleepMemory.c \
 	alarm/__init__.c \
 	alarm/pin/PinAlarm.c \
@@ -482,12 +483,12 @@ SRC_C += \
 
 endif
 
-ifeq ($(CIRCUITPYTHON_ADCBUFFER),1)
+#ifeq ($(CIRCUITPYTHON_ADCBUFFER),1)
 # Needed for ADCBUFFER
-SRC_COMMON_HAL_ALL += \
-		adcbuffer/BufferedInput.c \
-
-endif
+#SRC_COMMON_HAL_ALL += \
+#		adcbuffer/BufferedInput.c \
+#
+#endif
 
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
