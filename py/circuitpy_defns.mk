@@ -102,6 +102,9 @@ endif
 ###
 # Select which builtin modules to compile and include.
 
+ifeq ($(CIRCUITPY_ADCBUFFER),1)
+SRC_PATTERNS += adcbuffer/%
+endif
 ifeq ($(CIRCUITPY_AESIO),1)
 SRC_PATTERNS += aesio/%
 endif
@@ -479,10 +482,10 @@ SRC_C += \
 
 endif
 
-ifeq ($(CIRCUITPYTHON_ANALOGFASTIN),1)
-# Needed for AnalogFastIn
+ifeq ($(CIRCUITPYTHON_ADCBUFFER),1)
+# Needed for ADCBUFFER
 SRC_COMMON_HAL_ALL += \
-	analogio/AnalogFastIn.c \
+		adcbuffer/BufferedInput.c \
 
 endif
 

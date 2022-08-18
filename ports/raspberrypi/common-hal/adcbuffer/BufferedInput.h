@@ -4,8 +4,13 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2022 Lee Atkinson, MeanStride Technology, Inc.
- * Taken from AnalogIn by Scott Shawcroft for Adafruit Industries
- * Also from DMA_Capture by Luke Wren of Raspberry Pi (Trading) Ltd.
+ *                         Copyright (c) 2013, 2014 Damien P. George
+ *                         Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Copyright (c) 2021 Raspberry Pi (Trading) Ltd.
+ * https://github.com/raspberrypi/pico-examples/blob/master/adc/dma_capture/dma_capture.c
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +31,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ANALOGIO_ANALOGFASTIN_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ANALOGIO_ANALOGFASTIN_H
+#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ADCBUFFER_BUFFEREDINPUT_H
+#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ADCBUFFER_BUFFEREDINPUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "src/rp2_common/hardware_dma/include/hardware/dma.h"
 
 #include "py/obj.h"
 
-// We can extend the struct without impact to existing code
+//  This is the adcbuffer object
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
@@ -46,8 +51,8 @@ typedef struct {
     uint8_t chan;
     uint dma_chan;
     dma_channel_config cfg;
-} analogio_analogfastin_obj_t;
+} adcbuffer_bufferedinput_obj_t;
 
-void analogfastin_init(void);
+void bufferedinput_init(void);
 
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ANALOGIO_ANALOGFASTIN_H
+#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ADCBUFFER_BUFFEREDINPUT_H

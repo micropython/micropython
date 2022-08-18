@@ -4,7 +4,6 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2022 Lee Atkinson, MeanStride Technology, Inc.
- * Taken from AnalogIn by Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,18 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGFASTIN_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGFASTIN_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ADCBUFFER_BUFFEREDINPUT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ADCBUFFER_BUFFEREDINPUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-#ifdef CIRCUITPY_ANALOGFASTIN
-#include "common-hal/analogio/AnalogFastIn.h"
+#include "common-hal/adcbuffer/Bufferedinput.h"
 
-extern const mp_obj_type_t analogio_analogfastin_type;
+// #ifdef CIRCUITPY_BUFFEREDINPUT #endif
 
-void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, mp_float_t sample_rate);
-void common_hal_analogio_analogfastin_deinit(analogio_analogfastin_obj_t *self);
-bool common_hal_analogio_analogfastin_deinited(analogio_analogfastin_obj_t *self);
-bool common_hal_analogio_analogfastin_capture(analogio_analogfastin_obj_t *self);
-#endif
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGFASTIN_H__
+extern const mp_obj_type_t adcbuffer_bufferedinput_type;
+
+void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, mp_float_t sample_rate);
+void common_hal_adcbuffer_bufferedinput_deinit(adcbuffer_bufferedinput_obj_t *self);
+bool common_hal_adcbuffer_bufferedinput_deinited(adcbuffer_bufferedinput_obj_t *self);
+bool common_hal_adcbuffer_bufferedinput_readmultiple(adcbuffer_bufferedinput_obj_t *self);
+
+#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_ADCBUFFER_BUFFEREDINPUT_H__

@@ -398,12 +398,10 @@ msgstr ""
 msgid "All CAN peripherals are in use"
 msgstr ""
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
-msgid "All I2C peripherals are in use"
-msgstr ""
-
+#: ports/espressif/common-hal/busio/I2C.c
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
-msgid "All I2C targets are in use"
+#: ports/nrf/common-hal/busio/I2C.c
+msgid "All I2C peripherals are in use"
 msgstr ""
 
 #: ports/espressif/common-hal/countio/Counter.c
@@ -1061,6 +1059,7 @@ msgid "I2C init error"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "I2C peripheral in use"
 msgstr ""
 
@@ -1592,6 +1591,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr ""
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "Only one address is allowed"
 msgstr ""
 
@@ -3863,11 +3863,11 @@ msgstr ""
 msgid "rsplit(None,n)"
 msgstr ""
 
-#: shared-bindings/analogio/AnalogFastIn.c
+#: shared-bindings/adcbuffer/BufferdInput.c
 msgid "sample rate must be 1.0-500000.0 per second"
 msgstr ""
 
-#: shared-bindings/analogio/AnalogFastIn.c
+#: shared-bindings/adcbuffer/BufferdInput.c
 #: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "

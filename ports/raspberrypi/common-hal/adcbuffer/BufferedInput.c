@@ -4,8 +4,13 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2022 Lee Atkinson, MeanStride Technology, Inc.
- * Taken from AnalogIn by Scott Shawcroft for Adafruit Industries
- * Also from DMA_Capture by Luke Wren of Raspberry Pi (Trading) Ltd.
+ *                         Copyright (c) 2013, 2014 Damien P. George
+ *                         Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Copyright (c) 2021 Raspberry Pi (Trading) Ltd.
+ * https://github.com/raspberrypi/pico-examples/blob/master/adc/dma_capture/dma_capture.c
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,38 +31,47 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/analogio/AnalogFastIn.h"
-#include "shared-bindings/analogio/AnalogFastIn.h"
+#include "common-hal/adcbuffer/Bufferedinput.h"
+#include "shared-bindings/adcbuffer/Bufferedinput.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate/translate.h"
 #include "src/rp2_common/hardware_adc/include/hardware/adc.h"
 #include "src/rp2_common/hardware_dma/include/hardware/dma.h"
-//     /sdk/src/rp2_common/hardware_dma/include/hardware/dma.h
-//     ports/raspberrypi/
-#include "sdk/src/common/pico_stdlib/include/pico/stdlib.h"
+#include "src/common/pico_stdlib/include/pico/stdlib.h"
 
 #define ADC_FIRST_PIN_NUMBER 26
 #define ADC_PIN_COUNT 4
 
-void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, mp_float_t sample_rate) {
+void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, mp_float_t sample_rate) {
 
     // Set pin and channel
     self->pin = pin;
     claim_pin(pin);
+
+    // validate pin number
+    if (pin->number < ADC_FIRST_PIN_NUMBER) {
+        and(pin->number >= ADC_FIRST_PIN_NUMBER + ADC_PIN_COUNT) {
+            raise_ValueError_invalid_pins();
+        }
+    }
+    // TODO: find a wat to accept ADC4 for temperature
     self->chan = pin->number - ADC_FIRST_PIN_NUMBER;
 
-    // Checks on chan value here
+    // TODO: Checks on chan value here
 
     // Set buffer and length
     self->buffer = buffer;
     self->len = len;
 
-    // checks on length here
+    // TODO: checks on length here
 
     // uint8_t bytes_per_sample
     // Set sample rate
     // self->bits_per_sample = bytes_per_sample * 8;
+    // TODO: Possibly check Rate values here, already u_int
+    // NOTE: Anything over 500000 for RP2040 will not
+    // exceed DMA conversion sampling rate.
     self->sample_rate = sample_rate;
 
     // Standard IO Init
@@ -110,12 +124,12 @@ void common_hal_analogio_analogfastin_construct(analogio_analogfastin_obj_t *sel
 }
 
 
-bool common_hal_analogio_analogfastin_deinited(analogio_analogfastin_obj_t *self) {
+bool common_hal_adcbuffer_bufferedinput_deinited(adcbuffer_bufferedinput_obj_t *self) {
     return self->pin == NULL;
 }
 
-void common_hal_analogio_analogfastin_deinit(analogio_analogfastin_obj_t *self) {
-    if (common_hal_analogio_analogfastin_deinited(self)) {
+void common_hal_adcbuffer_bufferedinput_deinit(adcbuffer_bufferedinput_obj_t *self) {
+    if (common_hal_adcbuffer_bufferedinput_deinited(self)) {
         return;
     }
 
@@ -127,19 +141,10 @@ void common_hal_analogio_analogfastin_deinit(analogio_analogfastin_obj_t *self) 
     dma_channel_unclaim(self->dma_chan);
 }
 
-// ================================================================
-// capture()
-// make this a bool so that later we can perform integrity checking
-// ================================================================
-bool common_hal_analogio_analogfastin_capture(analogio_analogfastin_obj_t *self) {
+bool common_hal_adcbuffer_bufferedinput_readmultiple(adcbuffer_bufferedinput_obj_t *self) {
 
+    // uint32_t cdl = self->len / 2 - 1;
 
-    // CONSIDER THESE ISSUES
-    // uint16_t value = adc_read();
-    // Stretch 12-bit ADC reading to 16-bit range
-    // return (value << 4) | (value >> 8);
-
-    uint32_t cdl = self->len / 2 - 1;
     dma_channel_configure(self->dma_chan, &(self->cfg),
         self->buffer,   // dst
         &adc_hw->fifo,  // src
