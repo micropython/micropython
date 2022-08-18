@@ -88,7 +88,7 @@
 #define MICROPY_PY_HASHLIB_SHA256           (1)
 #define MICROPY_PY_CRYPTOLIB                (1)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (esp_random())
-#define MICROPY_PY_OS_INCLUDEFILE           "ports/esp32/moduos.c"
+#define MICROPY_PY_OS_INCLUDEFILE           "ports/esp32/modos.c"
 #define MICROPY_PY_OS_DUPTERM               (1)
 #define MICROPY_PY_OS_DUPTERM_NOTIFY        (1)
 #define MICROPY_PY_OS_SYNC                  (1)

@@ -131,7 +131,7 @@
 #endif
 
 #define MICROPY_PY_OS               (1)
-#define MICROPY_PY_OS_INCLUDEFILE   "ports/unix/moduos.c"
+#define MICROPY_PY_OS_INCLUDEFILE   "ports/unix/modos.c"
 #define MICROPY_PY_OS_ERRNO         (1)
 #define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV (1)
 #define MICROPY_PY_OS_SEP           (1)
@@ -141,7 +141,7 @@
 #define MICROPY_PY_TIME             (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
 #define MICROPY_PY_TIME_CUSTOM_SLEEP (1)
-#define MICROPY_PY_TIME_INCLUDEFILE "ports/unix/modutime.c"
+#define MICROPY_PY_TIME_INCLUDEFILE "ports/unix/modtime.c"
 #define MICROPY_PY_ERRNO            (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_ZLIB             (1)

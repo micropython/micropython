@@ -87,7 +87,7 @@
 #define MICROPY_PY_OS               (1)
 #define MICROPY_PY_TIME             (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
-#define MICROPY_PY_TIME_INCLUDEFILE "ports/zephyr/modutime.c"
+#define MICROPY_PY_TIME_INCLUDEFILE "ports/zephyr/modtime.c"
 #define MICROPY_PY_ZEPHYR           (1)
 #define MICROPY_PY_ZSENSOR          (1)
 #define MICROPY_PY_SYS_MODULES      (0)

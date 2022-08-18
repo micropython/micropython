@@ -72,8 +72,8 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_SSL_FINALISER            (MICROPY_PY_SSL)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS        (1)
-#define MICROPY_PY_TIME_INCLUDEFILE         "ports/mimxrt/modutime.c"
-#define MICROPY_PY_OS_INCLUDEFILE           "ports/mimxrt/moduos.c"
+#define MICROPY_PY_TIME_INCLUDEFILE         "ports/mimxrt/modtime.c"
+#define MICROPY_PY_OS_INCLUDEFILE           "ports/mimxrt/modos.c"
 #define MICROPY_PY_OS_DUPTERM               (3)
 #define MICROPY_PY_OS_DUPTERM_NOTIFY        (1)
 #define MICROPY_PY_OS_SYNC                  (1)

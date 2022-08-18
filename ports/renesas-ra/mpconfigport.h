@@ -91,7 +91,7 @@
 #endif
 
 // extended modules
-#define MICROPY_PY_OS_INCLUDEFILE   "ports/renesas-ra/moduos.c"
+#define MICROPY_PY_OS_INCLUDEFILE   "ports/renesas-ra/modos.c"
 #define MICROPY_PY_OS_DUPTERM       (3)
 #define MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM (1)
 #define MICROPY_PY_OS_DUPTERM_STREAM_DETACHED_ATTACHED (1)

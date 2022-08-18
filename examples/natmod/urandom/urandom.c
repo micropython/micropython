@@ -7,7 +7,7 @@
 uint32_t yasmarang_pad, yasmarang_n, yasmarang_d;
 uint8_t yasmarang_dat;
 
-#include "extmod/modurandom.c"
+#include "extmod/modrandom.c"
 
 mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
     MP_DYNRUNTIME_INIT_ENTRY

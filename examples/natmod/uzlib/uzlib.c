@@ -10,7 +10,7 @@ void *memset(void *s, int c, size_t n) {
 
 mp_obj_full_type_t decompio_type;
 
-#include "extmod/moduzlib.c"
+#include "extmod/modzlib.c"
 
 mp_map_elem_t decompio_locals_dict_table[3];
 STATIC MP_DEFINE_CONST_DICT(decompio_locals_dict, decompio_locals_dict_table);

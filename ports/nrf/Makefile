@@ -329,8 +329,8 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/timer.c \
 	machine/rtcounter.c \
 	machine/temp.c \
-	uos/moduos.c \
-	uos/microbitfs.c \
+	os/modos.c \
+	os/microbitfs.c \
 	board/modboard.c \
 	board/led.c \
 	ubluepy/modubluepy.c \

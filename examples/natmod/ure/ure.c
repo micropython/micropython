@@ -35,7 +35,7 @@ void *memmove(void *dest, const void *src, size_t n) {
 mp_obj_full_type_t match_type;
 mp_obj_full_type_t re_type;
 
-#include "extmod/modure.c"
+#include "extmod/modre.c"
 
 mp_map_elem_t match_locals_dict_table[5];
 STATIC MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);

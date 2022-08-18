@@ -201,7 +201,7 @@ SRC_C += \
 	mpthreadport.c \
 	input.c \
 	modmachine.c \
-	moduselect.c \
+	modselect.c \
 	alloc.c \
 	fatfs_port.c \
 	mpbthciport.c \
@@ -210,7 +210,7 @@ SRC_C += \
 	mpbtstackport_usb.c \
 	mpnimbleport.c \
 	modtermios.c \
-	modusocket.c \
+	modsocket.c \
 	modffi.c \
 	modjni.c \
 	$(wildcard $(VARIANT_DIR)/*.c)
