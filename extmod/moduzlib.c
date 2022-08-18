@@ -210,21 +210,21 @@ error:
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_uzlib_decompress);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_rom_map_elem_t mp_module_uzlib_globals_table[] = {
+STATIC const mp_rom_map_elem_t mp_module_zlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zlib) },
     { MP_ROM_QSTR(MP_QSTR_decompress), MP_ROM_PTR(&mod_uzlib_decompress_obj) },
     { MP_ROM_QSTR(MP_QSTR_DecompIO), MP_ROM_PTR(&decompio_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_uzlib_globals, mp_module_uzlib_globals_table);
+STATIC MP_DEFINE_CONST_DICT(mp_module_zlib_globals, mp_module_zlib_globals_table);
 
-const mp_obj_module_t mp_module_uzlib = {
+const mp_obj_module_t mp_module_zlib = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_uzlib_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_zlib_globals,
 };
 
 
-MP_REGISTER_MODULE(MP_QSTR_zlib, mp_module_uzlib);
+MP_REGISTER_MODULE(MP_QSTR_zlib, mp_module_zlib);
 #endif
 
 // Source files #include'd here to make sure they're compiled in

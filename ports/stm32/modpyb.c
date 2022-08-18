@@ -178,13 +178,13 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     #endif
 
     #if MICROPY_PY_PYB_LEGACY
-    { MP_ROM_QSTR(MP_QSTR_millis), MP_ROM_PTR(&mp_utime_ticks_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_millis), MP_ROM_PTR(&mp_time_ticks_ms_obj) },
     { MP_ROM_QSTR(MP_QSTR_elapsed_millis), MP_ROM_PTR(&pyb_elapsed_millis_obj) },
-    { MP_ROM_QSTR(MP_QSTR_micros), MP_ROM_PTR(&mp_utime_ticks_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_micros), MP_ROM_PTR(&mp_time_ticks_us_obj) },
     { MP_ROM_QSTR(MP_QSTR_elapsed_micros), MP_ROM_PTR(&pyb_elapsed_micros_obj) },
-    { MP_ROM_QSTR(MP_QSTR_delay), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_udelay), MP_ROM_PTR(&mp_utime_sleep_us_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&mp_uos_sync_obj) },
+    { MP_ROM_QSTR(MP_QSTR_delay), MP_ROM_PTR(&mp_time_sleep_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_udelay), MP_ROM_PTR(&mp_time_sleep_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&mp_os_sync_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     #endif
 

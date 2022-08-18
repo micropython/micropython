@@ -502,11 +502,11 @@ STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ssl_globals, mp_module_ssl_globals_table);
 
-const mp_obj_module_t mp_module_ussl = {
+const mp_obj_module_t mp_module_ssl = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_ssl_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ssl, mp_module_ussl);
+MP_REGISTER_MODULE(MP_QSTR_ssl, mp_module_ssl);
 
 #endif // MICROPY_PY_USSL && MICROPY_SSL_MBEDTLS

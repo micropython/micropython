@@ -38,7 +38,7 @@
 
 #include "shared/runtime/interrupt_char.h"
 
-void mp_uos_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
+void mp_os_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     mp_obj_t term = MP_STATE_VM(dupterm_objs[dupterm_idx]);
     MP_STATE_VM(dupterm_objs[dupterm_idx]) = MP_OBJ_NULL;
     mp_printf(&mp_plat_print, msg);
@@ -54,7 +54,7 @@ void mp_uos_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     }
 }
 
-uintptr_t mp_uos_dupterm_poll(uintptr_t poll_flags) {
+uintptr_t mp_os_dupterm_poll(uintptr_t poll_flags) {
     uintptr_t poll_flags_out = 0;
 
     for (size_t idx = 0; idx < MICROPY_PY_OS_DUPTERM; ++idx) {
@@ -67,7 +67,7 @@ uintptr_t mp_uos_dupterm_poll(uintptr_t poll_flags) {
         mp_uint_t ret = 0;
         const mp_stream_p_t *stream_p = mp_get_stream(s);
         #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
-        if (mp_uos_dupterm_is_builtin_stream(s)) {
+        if (mp_os_dupterm_is_builtin_stream(s)) {
             ret = stream_p->ioctl(s, MP_STREAM_POLL, poll_flags, &errcode);
         } else
         #endif
@@ -93,14 +93,14 @@ uintptr_t mp_uos_dupterm_poll(uintptr_t poll_flags) {
     return poll_flags_out;
 }
 
-int mp_uos_dupterm_rx_chr(void) {
+int mp_os_dupterm_rx_chr(void) {
     for (size_t idx = 0; idx < MICROPY_PY_OS_DUPTERM; ++idx) {
         if (MP_STATE_VM(dupterm_objs[idx]) == MP_OBJ_NULL) {
             continue;
         }
 
         #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
-        if (mp_uos_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
+        if (mp_os_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
             byte buf[1];
             int errcode = 0;
             const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
@@ -121,7 +121,7 @@ int mp_uos_dupterm_rx_chr(void) {
             mp_uint_t out_sz = stream_p->read(MP_STATE_VM(dupterm_objs[idx]), buf, 1, &errcode);
             if (out_sz == 0) {
                 nlr_pop();
-                mp_uos_deactivate(idx, "dupterm: EOF received, deactivating\n", MP_OBJ_NULL);
+                mp_os_deactivate(idx, "dupterm: EOF received, deactivating\n", MP_OBJ_NULL);
             } else if (out_sz == MP_STREAM_ERROR) {
                 // errcode is valid
                 if (mp_is_nonblocking_error(errcode)) {
@@ -140,7 +140,7 @@ int mp_uos_dupterm_rx_chr(void) {
                 return buf[0];
             }
         } else {
-            mp_uos_deactivate(idx, "dupterm: Exception in read() method, deactivating: ", MP_OBJ_FROM_PTR(nlr.ret_val));
+            mp_os_deactivate(idx, "dupterm: Exception in read() method, deactivating: ", MP_OBJ_FROM_PTR(nlr.ret_val));
         }
     }
 
@@ -148,14 +148,14 @@ int mp_uos_dupterm_rx_chr(void) {
     return -1;
 }
 
-void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
+void mp_os_dupterm_tx_strn(const char *str, size_t len) {
     for (size_t idx = 0; idx < MICROPY_PY_OS_DUPTERM; ++idx) {
         if (MP_STATE_VM(dupterm_objs[idx]) == MP_OBJ_NULL) {
             continue;
         }
 
         #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
-        if (mp_uos_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
+        if (mp_os_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
             int errcode = 0;
             const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
             stream_p->write(MP_STATE_VM(dupterm_objs[idx]), str, len, &errcode);
@@ -168,12 +168,12 @@ void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
             mp_stream_write(MP_STATE_VM(dupterm_objs[idx]), str, len, MP_STREAM_RW_WRITE);
             nlr_pop();
         } else {
-            mp_uos_deactivate(idx, "dupterm: Exception in write() method, deactivating: ", MP_OBJ_FROM_PTR(nlr.ret_val));
+            mp_os_deactivate(idx, "dupterm: Exception in write() method, deactivating: ", MP_OBJ_FROM_PTR(nlr.ret_val));
         }
     }
 }
 
-STATIC mp_obj_t mp_uos_dupterm(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_os_dupterm(size_t n_args, const mp_obj_t *args) {
     mp_int_t idx = 0;
     if (n_args == 2) {
         idx = mp_obj_get_int(args[1]);
@@ -195,12 +195,12 @@ STATIC mp_obj_t mp_uos_dupterm(size_t n_args, const mp_obj_t *args) {
     }
 
     #if MICROPY_PY_UOS_DUPTERM_STREAM_DETACHED_ATTACHED
-    mp_uos_dupterm_stream_detached_attached(previous_obj, args[0]);
+    mp_os_dupterm_stream_detached_attached(previous_obj, args[0]);
     #endif
 
     return previous_obj;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_uos_dupterm_obj, 1, 2, mp_uos_dupterm);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_os_dupterm_obj, 1, 2, mp_os_dupterm);
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t dupterm_objs[MICROPY_PY_OS_DUPTERM]);
 

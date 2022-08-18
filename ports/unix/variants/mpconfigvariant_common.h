@@ -58,7 +58,7 @@
 #endif
 
 // Seed random on import.
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (mp_urandom_seed_init())
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (mp_random_seed_init())
 
 // Allow exception details in low-memory conditions.
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)

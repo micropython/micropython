@@ -104,21 +104,21 @@ STATIC mp_obj_t mod_uheapq_heapify(mp_obj_t heap_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_uheapq_heapify_obj, mod_uheapq_heapify);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_rom_map_elem_t mp_module_uheapq_globals_table[] = {
+STATIC const mp_rom_map_elem_t mp_module_heapq_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_heapq) },
     { MP_ROM_QSTR(MP_QSTR_heappush), MP_ROM_PTR(&mod_uheapq_heappush_obj) },
     { MP_ROM_QSTR(MP_QSTR_heappop), MP_ROM_PTR(&mod_uheapq_heappop_obj) },
     { MP_ROM_QSTR(MP_QSTR_heapify), MP_ROM_PTR(&mod_uheapq_heapify_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_uheapq_globals, mp_module_uheapq_globals_table);
+STATIC MP_DEFINE_CONST_DICT(mp_module_heapq_globals, mp_module_heapq_globals_table);
 
-const mp_obj_module_t mp_module_uheapq = {
+const mp_obj_module_t mp_module_heapq = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_uheapq_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_heapq_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_heapq, mp_module_uheapq);
+MP_REGISTER_MODULE(MP_QSTR_heapq, mp_module_heapq);
 #endif
 
 #endif // MICROPY_PY_UHEAPQ

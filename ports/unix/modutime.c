@@ -61,7 +61,7 @@ static inline int msec_sleep_tv(struct timeval *tv) {
 #error Unsupported clock() implementation
 #endif
 
-STATIC mp_obj_t mp_utime_time_get(void) {
+STATIC mp_obj_t mp_time_time_get(void) {
     #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -85,7 +85,7 @@ STATIC mp_obj_t mod_time_clock(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
-STATIC mp_obj_t mp_utime_sleep(mp_obj_t arg) {
+STATIC mp_obj_t mp_time_sleep(mp_obj_t arg) {
     #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);

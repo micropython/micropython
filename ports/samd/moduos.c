@@ -70,7 +70,7 @@ uint32_t trng_random_u32(int delay) {
 #endif
 
 #if MICROPY_PY_UOS_URANDOM
-STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
+STATIC mp_obj_t mp_os_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
     vstr_t vstr;
     vstr_init_len(&vstr, n);
@@ -86,22 +86,22 @@ STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     }
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_urandom_obj, mp_uos_urandom);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_urandom_obj, mp_os_urandom);
 
 #endif // MICROPY_PY_UOS_URANDOM
 
 #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
-bool mp_uos_dupterm_is_builtin_stream(mp_const_obj_t stream) {
+bool mp_os_dupterm_is_builtin_stream(mp_const_obj_t stream) {
     const mp_obj_type_t *type = mp_obj_get_type(stream);
     return type == &machine_uart_type;
 }
 #endif
 
 #if MICROPY_PY_UOS_DUPTERM_NOTIFY
-STATIC mp_obj_t mp_uos_dupterm_notify(mp_obj_t obj_in) {
+STATIC mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
     (void)obj_in;
     for (;;) {
-        int c = mp_uos_dupterm_rx_chr();
+        int c = mp_os_dupterm_rx_chr();
         if (c < 0) {
             break;
         }
@@ -109,5 +109,5 @@ STATIC mp_obj_t mp_uos_dupterm_notify(mp_obj_t obj_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_dupterm_notify_obj, mp_uos_dupterm_notify);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_dupterm_notify_obj, mp_os_dupterm_notify);
 #endif

@@ -121,7 +121,7 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (release_gil) {
         MP_THREAD_GIL_ENTER();
     }
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
 }
 
 uint32_t mp_hal_ticks_ms(void) {

@@ -73,7 +73,7 @@ STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDERR_FILENO, str, len), {});
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
 }
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};

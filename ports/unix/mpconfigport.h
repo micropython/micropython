@@ -184,7 +184,7 @@ void mp_unix_mark_exec(void);
 #ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
 #include <stddef.h>
 void mp_hal_get_random(size_t n, void *buf);
-static inline unsigned long mp_urandom_seed_init(void) {
+static inline unsigned long mp_random_seed_init(void) {
     unsigned long r;
     mp_hal_get_random(sizeof(r), &r);
     return r;

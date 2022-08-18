@@ -448,7 +448,7 @@ STATIC mp_obj_t pkt_get_info(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pkt_get_info_obj, pkt_get_info);
 
-STATIC const mp_rom_map_elem_t mp_module_usocket_globals_table[] = {
+STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_socket) },
     // objects
     { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&socket_type) },
@@ -466,13 +466,13 @@ STATIC const mp_rom_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_pkt_get_info), MP_ROM_PTR(&pkt_get_info_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals_table);
+STATIC MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_table);
 
-const mp_obj_module_t mp_module_usocket = {
+const mp_obj_module_t mp_module_socket = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_usocket_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_socket_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_socket, mp_module_usocket);
+MP_REGISTER_MODULE(MP_QSTR_socket, mp_module_socket);
 
 #endif // MICROPY_PY_USOCKET

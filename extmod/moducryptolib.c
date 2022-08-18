@@ -356,7 +356,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &ucryptolib_aes_locals_dict
     );
 
-STATIC const mp_rom_map_elem_t mp_module_ucryptolib_globals_table[] = {
+STATIC const mp_rom_map_elem_t mp_module_cryptolib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cryptolib) },
     { MP_ROM_QSTR(MP_QSTR_aes), MP_ROM_PTR(&ucryptolib_aes_type) },
     #if MICROPY_PY_UCRYPTOLIB_CONSTS
@@ -368,13 +368,13 @@ STATIC const mp_rom_map_elem_t mp_module_ucryptolib_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_ucryptolib_globals, mp_module_ucryptolib_globals_table);
+STATIC MP_DEFINE_CONST_DICT(mp_module_cryptolib_globals, mp_module_cryptolib_globals_table);
 
-const mp_obj_module_t mp_module_ucryptolib = {
+const mp_obj_module_t mp_module_cryptolib = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_ucryptolib_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_cryptolib_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_cryptolib, mp_module_ucryptolib);
+MP_REGISTER_MODULE(MP_QSTR_cryptolib, mp_module_cryptolib);
 
 #endif // MICROPY_PY_UCRYPTOLIB

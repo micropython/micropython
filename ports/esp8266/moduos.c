@@ -37,11 +37,11 @@
 #include "esp_mphal.h"
 #include "user_interface.h"
 
-STATIC const char *mp_uos_uname_release(void) {
+STATIC const char *mp_os_uname_release(void) {
     return system_get_sdk_version();
 }
 
-STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
+STATIC mp_obj_t mp_os_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
     vstr_t vstr;
     vstr_init_len(&vstr, n);
@@ -50,9 +50,9 @@ STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     }
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_urandom_obj, mp_uos_urandom);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_urandom_obj, mp_os_urandom);
 
-void mp_uos_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t stream_attached) {
+void mp_os_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t stream_attached) {
     if (mp_obj_get_type(stream_attached) == &pyb_uart_type) {
         ++uart_attached_to_dupterm;
     }
@@ -61,9 +61,9 @@ void mp_uos_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t 
     }
 }
 
-STATIC mp_obj_t mp_uos_dupterm_notify(mp_obj_t obj_in) {
+STATIC mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
     (void)obj_in;
     mp_hal_signal_dupterm_input();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_dupterm_notify_obj, mp_uos_dupterm_notify);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_dupterm_notify_obj, mp_os_dupterm_notify);

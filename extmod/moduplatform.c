@@ -70,11 +70,11 @@ STATIC const mp_rom_map_elem_t modplatform_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(modplatform_globals, modplatform_globals_table);
 
-const mp_obj_module_t mp_module_uplatform = {
+const mp_obj_module_t mp_module_platform = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&modplatform_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_platform, mp_module_uplatform);
+MP_REGISTER_MODULE(MP_QSTR_platform, mp_module_platform);
 
 #endif // MICROPY_PY_UPLATFORM

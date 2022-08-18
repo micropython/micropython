@@ -135,7 +135,7 @@ arg_error:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 0, mod_ssl_wrap_socket);
 
-STATIC const mp_rom_map_elem_t mp_module_ussl_globals_table[] = {
+STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_ssl) },
     { MP_ROM_QSTR(MP_QSTR_wrap_socket),         MP_ROM_PTR(&mod_ssl_wrap_socket_obj) },
 
@@ -153,11 +153,11 @@ STATIC const mp_rom_map_elem_t mp_module_ussl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLSv1_2),    MP_ROM_INT(SL_SO_SEC_METHOD_TLSV1_2) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_ussl_globals, mp_module_ussl_globals_table);
+STATIC MP_DEFINE_CONST_DICT(mp_module_ssl_globals, mp_module_ssl_globals_table);
 
-const mp_obj_module_t mp_module_ussl = {
+const mp_obj_module_t mp_module_ssl = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ussl_globals,
+    .globals = (mp_obj_dict_t*)&mp_module_ssl_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ssl, mp_module_ussl);
+MP_REGISTER_MODULE(MP_QSTR_ssl, mp_module_ssl);

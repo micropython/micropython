@@ -306,11 +306,11 @@ STATIC const mp_rom_map_elem_t uwebsocket_module_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(uwebsocket_module_globals, uwebsocket_module_globals_table);
 
-const mp_obj_module_t mp_module_uwebsocket = {
+const mp_obj_module_t mp_module_websocket = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&uwebsocket_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_websocket, mp_module_uwebsocket);
+MP_REGISTER_MODULE(MP_QSTR_websocket, mp_module_websocket);
 
 #endif // MICROPY_PY_UWEBSOCKET
