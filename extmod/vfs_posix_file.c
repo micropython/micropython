@@ -30,7 +30,7 @@
 #include "py/stream.h"
 #include "extmod/vfs_posix.h"
 
-#if MICROPY_VFS_POSIX || MICROPY_VFS_POSIX_FILE
+#if MICROPY_VFS_POSIX
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -285,4 +285,4 @@ const mp_obj_vfs_posix_file_t mp_sys_stdin_obj = {{&mp_type_vfs_posix_textio}, S
 const mp_obj_vfs_posix_file_t mp_sys_stdout_obj = {{&mp_type_vfs_posix_textio}, STDOUT_FILENO};
 const mp_obj_vfs_posix_file_t mp_sys_stderr_obj = {{&mp_type_vfs_posix_textio}, STDERR_FILENO};
 
-#endif // MICROPY_VFS_POSIX || MICROPY_VFS_POSIX_FILE
+#endif // MICROPY_VFS_POSIX
