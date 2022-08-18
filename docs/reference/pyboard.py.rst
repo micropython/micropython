@@ -92,12 +92,13 @@ Filesystem access
 
 Using the ``-f`` flag, the following filesystem operations are supported:
 
-* ``cp src [src...] dest`` Copy files to/from the device.
 * ``cat path`` Print the contents of a file on the device.
+* ``cp src [src...] dest`` Copy files to/from the device.
 * ``ls [path]`` List contents of a directory (defaults to current working directory).
-* ``rm path`` Remove a file.
 * ``mkdir path`` Create a directory.
+* ``rm path`` Remove a file.
 * ``rmdir path`` Remove a directory.
+* ``touch path`` Create a file if it doesn't already exist.
 
 The ``cp`` command uses a ``ssh``-like convention for referring to local and
 remote files. Any path starting with a ``:`` will be interpreted as on the
