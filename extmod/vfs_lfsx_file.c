@@ -68,11 +68,9 @@ mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mod
             case '+':
                 flags |= LFSx_MACRO(_O_RDWR);
                 break;
-            #if MICROPY_PY_IO_FILEIO
             case 'b':
                 type = &MP_TYPE_VFS_LFSx_(_fileio);
                 break;
-            #endif
             case 't':
                 type = &MP_TYPE_VFS_LFSx_(_textio);
                 break;
@@ -216,7 +214,6 @@ STATIC const mp_rom_map_elem_t MP_VFS_LFSx(file_locals_dict_table)[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(MP_VFS_LFSx(file_locals_dict), MP_VFS_LFSx(file_locals_dict_table));
 
-#if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t MP_VFS_LFSx(fileio_stream_p) = {
     .read = MP_VFS_LFSx(file_read),
     .write = MP_VFS_LFSx(file_write),
@@ -232,7 +229,6 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx_(_fileio) = {
     .protocol = &MP_VFS_LFSx(fileio_stream_p),
     .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
 };
-#endif
 
 STATIC const mp_stream_p_t MP_VFS_LFSx(textio_stream_p) = {
     .read = MP_VFS_LFSx(file_read),

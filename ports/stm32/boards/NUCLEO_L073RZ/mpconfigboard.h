@@ -11,7 +11,6 @@
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_GENERATOR_PEND_THROW (0)
 #define MICROPY_PY_MATH             (0)
-#define MICROPY_PY_IO_FILEIO        (0)
 #define MICROPY_PY_FRAMEBUF         (0)
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)

@@ -1321,11 +1321,6 @@ typedef double mp_float_t;
 #define MICROPY_PY_IO_IOBASE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Whether to provide "io.FileIO" class
-#ifndef MICROPY_PY_IO_FILEIO
-#define MICROPY_PY_IO_FILEIO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
-#endif
-
 // Whether to provide "io.BytesIO" class
 #ifndef MICROPY_PY_IO_BYTESIO
 #define MICROPY_PY_IO_BYTESIO (1)

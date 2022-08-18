@@ -77,7 +77,6 @@
 #define MICROPY_PY_SYS_EXIT                 (1)
 #define MICROPY_PY_SYS_STDFILES             (1)
 #define MICROPY_PY_SYS_MAXSIZE              (1)
-#define MICROPY_PY_IO_FILEIO                (1)
 #define MICROPY_PY_IO                       (1)
 #define MICROPY_PY_IO_IOBASE                (1)
 

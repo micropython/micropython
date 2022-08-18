@@ -83,15 +83,12 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
             case '+':
                 mode_rw = O_RDWR;
                 break;
-                #if MICROPY_PY_IO_FILEIO
-            // If we don't have io.FileIO, then files are in text mode implicitly
             case 'b':
                 type = &mp_type_vfs_posix_fileio;
                 break;
             case 't':
                 type = &mp_type_vfs_posix_textio;
                 break;
-                #endif
         }
     }
 
@@ -246,7 +243,6 @@ STATIC const mp_rom_map_elem_t vfs_posix_rawfile_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(vfs_posix_rawfile_locals_dict, vfs_posix_rawfile_locals_dict_table);
 
-#if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t vfs_posix_fileio_stream_p = {
     .read = vfs_posix_file_read,
     .write = vfs_posix_file_write,
@@ -262,7 +258,6 @@ const mp_obj_type_t mp_type_vfs_posix_fileio = {
     .protocol = &vfs_posix_fileio_stream_p,
     .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
 };
-#endif
 
 STATIC const mp_stream_p_t vfs_posix_textio_stream_p = {
     .read = vfs_posix_file_read,
