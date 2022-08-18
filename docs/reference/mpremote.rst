@@ -131,6 +131,7 @@ The full list of supported commands are:
   - ``rm <src...>`` to remove files on the device
   - ``mkdir <dirs...>`` to create directories on the device
   - ``rmdir <dirs...>`` to remove directories on the device
+  - ``touch <file..>`` to create the files (if they don't already exist)
 
 - mount the local directory on the remote device:
 
@@ -192,8 +193,8 @@ Shortcuts can be defined using the macro system.  Built-in shortcuts are::
 
 - ``c0``, ``c1``, ``c2``, ``c3``: connect to COM?
 
-- ``cat``, ``ls``, ``cp``, ``rm``, ``mkdir``, ``rmdir``, ``df``: filesystem
-  commands
+- ``cat``, ``ls``, ``cp``, ``rm``, ``mkdir``, ``rmdir``, ``touch``, ``df``:
+  filesystem commands
 
 - ``reset``: reset the device
 

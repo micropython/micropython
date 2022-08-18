@@ -543,6 +543,9 @@ class Pyboard:
     def fs_rm(self, src):
         self.exec_("import uos\nuos.remove('%s')" % src)
 
+    def fs_touch(self, src):
+        self.exec_("f=open('%s','a')\nf.close()" % src)
+
 
 # in Python2 exec is a keyword so one must use "exec_"
 # but for Python3 we want to provide the nicer version "exec"
@@ -595,11 +598,12 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
                 op(src, dest2, progress_callback=progress_callback)
         else:
             op = {
-                "ls": pyb.fs_ls,
                 "cat": pyb.fs_cat,
+                "ls": pyb.fs_ls,
                 "mkdir": pyb.fs_mkdir,
-                "rmdir": pyb.fs_rmdir,
                 "rm": pyb.fs_rm,
+                "rmdir": pyb.fs_rmdir,
+                "touch": pyb.fs_touch,
             }[cmd]
             if cmd == "ls" and not args:
                 args = [""]
