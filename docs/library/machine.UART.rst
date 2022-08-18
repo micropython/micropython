@@ -87,9 +87,21 @@ Methods
        When no pins are given, then the default set of TX and RX pins is taken, and hardware
        flow control will be disabled. If *pins* is ``None``, no pin assignment will be made.
 
+   .. note::
+     It is possible to call ``init()`` multiple times on the same object in
+     order to reconfigure  UART on the fly. That allows using single UART
+     peripheral to serve different devices attached to different GPIO pins.
+     Only one device can be served at a time in that case.
+     Also do not call ``deinit()`` as it will prevent calling ``init()``
+     again.
+
 .. method:: UART.deinit()
 
    Turn off the UART bus.
+
+   .. note::
+     You will not be able to call ``init()`` on the object after ``deinit()``.
+     A new instance needs to be created in that case.
 
 .. method:: UART.any()
 
