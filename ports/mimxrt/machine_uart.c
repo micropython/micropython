@@ -438,7 +438,7 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
                 ret |= MP_STREAM_POLL_RD;
             }
         }
-        if ((flags & MP_STREAM_POLL_WR)) {
+        if ((flags & MP_STREAM_POLL_WR) && (self->tx_status == kStatus_LPUART_TxIdle)) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else if (request == MP_STREAM_FLUSH) {
