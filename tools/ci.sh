@@ -630,8 +630,8 @@ function ci_unix_macos_build {
 function ci_unix_macos_run_tests {
     # Issues with macOS tests:
     # - import_pkg7 has a problem with relative imports
-    # - urandom_basic has a problem with getrandbits(0)
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude 'import_pkg7.py' --exclude 'urandom_basic.py')
+    # - random_basic has a problem with getrandbits(0)
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude 'import_pkg7.py' --exclude 'random_basic.py')
 }
 
 function ci_unix_qemu_mips_setup {

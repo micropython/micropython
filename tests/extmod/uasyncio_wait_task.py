@@ -10,14 +10,12 @@ except ImportError:
         raise SystemExit
 
 
-try:
-    import utime
+import time
 
-    ticks = utime.ticks_ms
-    ticks_diff = utime.ticks_diff
-except:
-    import time
-
+if hasattr(time, "ticks_ms"):
+    ticks = time.ticks_ms
+    ticks_diff = time.ticks_diff
+else:
     ticks = lambda: int(time.time() * 1000)
     ticks_diff = lambda t1, t0: t1 - t0
 

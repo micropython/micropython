@@ -1,3 +1,4 @@
+# Verify that sys is a builtin.
 import sys
 
 print(sys, hasattr(sys, "__file__"))
@@ -7,6 +8,8 @@ sys.path.append("ext")
 
 # All three should only get builtins, despite sys.py, usys.py, and
 # micropython.py being in the path.
+# usys isn't extensible, but has a special-cased alias for backwards
+# compatibility.
 import micropython
 
 print(micropython, hasattr(micropython, "__file__"))
@@ -31,6 +34,7 @@ print(time, hasattr(time, "__file__"), time.sleep, time.extra)
 import uos
 
 print(uos, hasattr(uos, "__file__"), hasattr(uos, "extra"))
+
 import utime
 
 print(utime, hasattr(utime, "__file__"), hasattr(utime, "extra"))

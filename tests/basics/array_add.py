@@ -1,12 +1,9 @@
 # test array + array
 try:
-    import uarray as array
+    import array
 except ImportError:
-    try:
-        import array
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 a1 = array.array('I', [1])
 a2 = array.array('I', [2])

@@ -10,13 +10,10 @@ except ImportError:
         raise SystemExit
 
 try:
-    import uarray as array
+    import array
 except ImportError:
-    try:
-        import array
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 PORT = 8000
 

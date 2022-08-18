@@ -1,7 +1,7 @@
 # This test is exactly like uctypes_le.py, but uses native structure layout.
 # Codepaths for packed vs native structures are different. This test only works
 # on little-endian machine (no matter if 32 or 64 bit).
-import usys
+import sys
 
 try:
     import uctypes
@@ -9,7 +9,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-if usys.byteorder != "little":
+if sys.byteorder != "little":
     print("SKIP")
     raise SystemExit
 

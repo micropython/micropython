@@ -4,10 +4,7 @@
 # and is callable (has call).  The only one available is machine.Signal, which
 # in turns needs PinBase.
 try:
-    try:
-        import umachine as machine
-    except ImportError:
-        import machine
+    import machine
     machine.PinBase
     machine.Signal
 except:

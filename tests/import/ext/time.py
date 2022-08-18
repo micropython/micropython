@@ -4,11 +4,11 @@ print("time from filesystem")
 # import.
 import sys
 
-_path = sys.path[:]
-sys.path.clear()
+_path = sys.path
+sys.path = ()
 from time import *
 
-sys.path.extend(_path)
+sys.path = _path
 del _path
 
 extra = 1

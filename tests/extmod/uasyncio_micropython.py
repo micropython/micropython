@@ -3,7 +3,7 @@
 # - wait_for_ms
 
 try:
-    import utime, uasyncio
+    import time, uasyncio
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -18,13 +18,13 @@ async def task(id, t):
 
 async def main():
     # Simple sleep_ms
-    t0 = utime.ticks_ms()
+    t0 = time.ticks_ms()
     await uasyncio.sleep_ms(1)
-    print(utime.ticks_diff(utime.ticks_ms(), t0) < 100)
+    print(time.ticks_diff(time.ticks_ms(), t0) < 100)
 
     try:
         # Sleep 1ms beyond maximum allowed sleep value
-        await uasyncio.sleep_ms(utime.ticks_add(0, -1) // 2 + 1)
+        await uasyncio.sleep_ms(time.ticks_add(0, -1) // 2 + 1)
     except OverflowError:
         print("OverflowError")
 

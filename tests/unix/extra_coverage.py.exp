@@ -48,21 +48,21 @@ RuntimeError:
 RuntimeError: 
 # repl
 ame__
-mport 
+port 
 
 builtins        micropython     _thread         _uasyncio
-btree           cexample        cmath           cppexample
-example_package                 ffi             framebuf
-gc              math            termios         uarray
-ubinascii       ucollections    ucryptolib      uctypes
-uerrno          uhashlib        uheapq          uio
-ujson           umachine        uos             urandom
-ure             uselect         usocket         ussl
-ustruct         usys            utime           utimeq
-uwebsocket      uzlib
-ime
+array           binascii        btree           cexample
+cmath           collections     cppexample      cryptolib
+errno           example_package                 ffi
+framebuf        gc              hashlib         heapq
+io              json            machine         math
+os              random          re              select
+socket          ssl             struct          sys
+termios         time            timeq           uctypes
+websocket       zlib
+me
 
-utime           utimeq
+time            timeq
 
 argv            atexit          byteorder       exc_info
 executable      exit            getsizeof       implementation

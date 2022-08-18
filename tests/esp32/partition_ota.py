@@ -22,10 +22,10 @@ def log(*args):
 
 
 # replace boot.py with the test code that will run on each reboot
-import uos
+import os
 
 try:
-    uos.rename("boot.py", "boot-orig.py")
+    os.rename("boot.py", "boot-orig.py")
 except:
     pass
 with open("boot.py", "w") as f:
@@ -74,10 +74,10 @@ elif STEP == 3:
 elif STEP == 4:
     log("Confirming boot ok and DONE!")
     Partition.mark_app_valid_cancel_rollback()
-    import uos
-    uos.remove("step.py")
-    uos.remove("boot.py")
-    uos.rename("boot-orig.py", "boot.py")
+    import os
+    os.remove("step.py")
+    os.remove("boot.py")
+    os.rename("boot-orig.py", "boot.py")
     print("\\nSUCCESS!\\n\\x04\\x04")
 
 """

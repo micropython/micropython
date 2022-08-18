@@ -1,11 +1,7 @@
 # check cases converting float to int, relying only on single precision float
 
-try:
-    import ustruct as struct
-    import usys as sys
-except:
-    import struct
-    import sys
+import struct
+import sys
 
 maxsize_bits = 0
 maxsize = sys.maxsize
