@@ -31,9 +31,9 @@
 #include "py/runtime.h"
 #include "py/smallint.h"
 
-#if MICROPY_PY_UTIMEQ
+#if MICROPY_PY_TIMEQ
 
-#define MODULO MICROPY_PY_UTIME_TICKS_PERIOD
+#define MODULO MICROPY_PY_TIME_TICKS_PERIOD
 
 #define DEBUG 0
 
@@ -232,4 +232,4 @@ const mp_obj_module_t mp_module_timeq = {
 
 MP_REGISTER_MODULE(MP_QSTR_timeq, mp_module_timeq);
 
-#endif // MICROPY_PY_UTIMEQ
+#endif // MICROPY_PY_TIMEQ

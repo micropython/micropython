@@ -27,7 +27,7 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 
-#if MICROPY_PY_UHEAPQ
+#if MICROPY_PY_HEAPQ
 
 // the algorithm here is modelled on CPython's heapq.py
 
@@ -121,4 +121,4 @@ const mp_obj_module_t mp_module_heapq = {
 MP_REGISTER_MODULE(MP_QSTR_heapq, mp_module_heapq);
 #endif
 
-#endif // MICROPY_PY_UHEAPQ
+#endif // MICROPY_PY_HEAPQ

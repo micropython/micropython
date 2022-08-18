@@ -32,7 +32,7 @@
 #include "py/stream.h"
 #include "extmod/moduwebsocket.h"
 
-#if MICROPY_PY_UWEBSOCKET
+#if MICROPY_PY_WEBSOCKET
 
 enum { FRAME_HEADER, FRAME_OPT, PAYLOAD, CONTROL };
 
@@ -313,4 +313,4 @@ const mp_obj_module_t mp_module_websocket = {
 
 MP_REGISTER_MODULE(MP_QSTR_websocket, mp_module_websocket);
 
-#endif // MICROPY_PY_UWEBSOCKET
+#endif // MICROPY_PY_WEBSOCKET

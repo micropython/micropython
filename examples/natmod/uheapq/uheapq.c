@@ -1,4 +1,4 @@
-#define MICROPY_PY_UHEAPQ (1)
+#define MICROPY_PY_HEAPQ (1)
 
 #include "py/dynruntime.h"
 

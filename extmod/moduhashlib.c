@@ -29,13 +29,13 @@
 
 #include "py/runtime.h"
 
-#if MICROPY_PY_UHASHLIB
+#if MICROPY_PY_HASHLIB
 
 #if MICROPY_SSL_MBEDTLS
 #include "mbedtls/version.h"
 #endif
 
-#if MICROPY_PY_UHASHLIB_SHA256
+#if MICROPY_PY_HASHLIB_SHA256
 
 #if MICROPY_SSL_MBEDTLS
 #include "mbedtls/sha256.h"
@@ -45,7 +45,7 @@
 
 #endif
 
-#if MICROPY_PY_UHASHLIB_SHA1 || MICROPY_PY_UHASHLIB_MD5
+#if MICROPY_PY_HASHLIB_SHA1 || MICROPY_PY_HASHLIB_MD5
 
 #if MICROPY_SSL_AXTLS
 #include "lib/axtls/crypto/crypto.h"
@@ -70,7 +70,7 @@ static void hashlib_ensure_not_final(mp_obj_hash_t *self) {
     }
 }
 
-#if MICROPY_PY_UHASHLIB_SHA256
+#if MICROPY_PY_HASHLIB_SHA256
 STATIC mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
 
 #if MICROPY_SSL_MBEDTLS
@@ -161,12 +161,12 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     hashlib_sha256_type,
     MP_QSTR_sha256,
     MP_TYPE_FLAG_NONE,
-    make_new, uhashlib_sha256_make_new,
+    make_new, hashlib_sha256_make_new,
     locals_dict, &hashlib_sha256_locals_dict
     );
 #endif
 
-#if MICROPY_PY_UHASHLIB_SHA1
+#if MICROPY_PY_HASHLIB_SHA1
 STATIC mp_obj_t hashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg);
 
 #if MICROPY_SSL_AXTLS
@@ -260,7 +260,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 #endif
 
-#if MICROPY_PY_UHASHLIB_MD5
+#if MICROPY_PY_HASHLIB_MD5
 STATIC mp_obj_t hashlib_md5_update(mp_obj_t self_in, mp_obj_t arg);
 
 #if MICROPY_SSL_AXTLS
@@ -352,17 +352,17 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     make_new, hashlib_md5_make_new,
     locals_dict, &hashlib_md5_locals_dict
     );
-#endif // MICROPY_PY_UHASHLIB_MD5
+#endif // MICROPY_PY_HASHLIB_MD5
 
 STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_hashlib) },
-    #if MICROPY_PY_UHASHLIB_SHA256
+    #if MICROPY_PY_HASHLIB_SHA256
     { MP_ROM_QSTR(MP_QSTR_sha256), MP_ROM_PTR(&hashlib_sha256_type) },
     #endif
-    #if MICROPY_PY_UHASHLIB_SHA1
+    #if MICROPY_PY_HASHLIB_SHA1
     { MP_ROM_QSTR(MP_QSTR_sha1), MP_ROM_PTR(&hashlib_sha1_type) },
     #endif
-    #if MICROPY_PY_UHASHLIB_MD5
+    #if MICROPY_PY_HASHLIB_MD5
     { MP_ROM_QSTR(MP_QSTR_md5), MP_ROM_PTR(&hashlib_md5_type) },
     #endif
 };
@@ -376,4 +376,4 @@ const mp_obj_module_t mp_module_hashlib = {
 
 MP_REGISTER_MODULE(MP_QSTR_hashlib, mp_module_hashlib);
 
-#endif // MICROPY_PY_UHASHLIB
+#endif // MICROPY_PY_HASHLIB

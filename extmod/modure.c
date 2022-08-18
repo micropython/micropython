@@ -37,7 +37,7 @@
 #include "py/unicode.h"
 #endif
 
-#if MICROPY_PY_URE
+#if MICROPY_PY_RE
 
 #define re1_5_stack_chk() MP_STACK_CHECK()
 
@@ -85,7 +85,7 @@ STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(match_group_obj, match_group);
 
-#if MICROPY_PY_URE_MATCH_GROUPS
+#if MICROPY_PY_RE_MATCH_GROUPS
 
 STATIC mp_obj_t match_groups(mp_obj_t self_in) {
     mp_obj_match_t *self = MP_OBJ_TO_PTR(self_in);
@@ -102,7 +102,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(match_groups_obj, match_groups);
 
 #endif
 
-#if MICROPY_PY_URE_MATCH_SPAN_START_END
+#if MICROPY_PY_RE_MATCH_SPAN_START_END
 
 STATIC void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span[2]) {
     mp_obj_match_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -167,10 +167,10 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(match_end_obj, 1, 2, match_end);
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t match_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_group), MP_ROM_PTR(&match_group_obj) },
-    #if MICROPY_PY_URE_MATCH_GROUPS
+    #if MICROPY_PY_RE_MATCH_GROUPS
     { MP_ROM_QSTR(MP_QSTR_groups), MP_ROM_PTR(&match_groups_obj) },
     #endif
-    #if MICROPY_PY_URE_MATCH_SPAN_START_END
+    #if MICROPY_PY_RE_MATCH_SPAN_START_END
     { MP_ROM_QSTR(MP_QSTR_span), MP_ROM_PTR(&match_span_obj) },
     { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&match_start_obj) },
     { MP_ROM_QSTR(MP_QSTR_end), MP_ROM_PTR(&match_end_obj) },
@@ -277,7 +277,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
-#if MICROPY_PY_URE_SUB
+#if MICROPY_PY_RE_SUB
 
 STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
     mp_obj_re_t *self;
@@ -405,7 +405,7 @@ STATIC const mp_rom_map_elem_t re_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
     { MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&re_split_obj) },
-    #if MICROPY_PY_URE_SUB
+    #if MICROPY_PY_RE_SUB
     { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&re_sub_obj) },
     #endif
 };
@@ -429,7 +429,7 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
         goto error;
     }
     mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, char, size, (mp_obj_type_t *)&re_type);
-    #if MICROPY_PY_URE_DEBUG
+    #if MICROPY_PY_RE_DEBUG
     int flags = 0;
     if (n_args > 1) {
         flags = mp_obj_get_int(args[1]);
@@ -440,7 +440,7 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     error:
         mp_raise_ValueError(MP_ERROR_TEXT("error in regex"));
     }
-    #if MICROPY_PY_URE_DEBUG
+    #if MICROPY_PY_RE_DEBUG
     if (flags & FLAG_DEBUG) {
         re1_5_dumpcode(&o->re);
     }
@@ -455,10 +455,10 @@ STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj) },
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
-    #if MICROPY_PY_URE_SUB
+    #if MICROPY_PY_RE_SUB
     { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&re_sub_obj) },
     #endif
-    #if MICROPY_PY_URE_DEBUG
+    #if MICROPY_PY_RE_DEBUG
     { MP_ROM_QSTR(MP_QSTR_DEBUG), MP_ROM_INT(FLAG_DEBUG) },
     #endif
 };
@@ -482,11 +482,11 @@ MP_REGISTER_MODULE(MP_QSTR_re, mp_module_re);
 #include "lib/re1.5/recursiveloop.c"
 #include "lib/re1.5/charclass.c"
 
-#if MICROPY_PY_URE_DEBUG
+#if MICROPY_PY_RE_DEBUG
 // Make sure the output print statements go to the same output as other Python output.
 #define printf(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 #include "lib/re1.5/dumpcode.c"
 #undef printf
 #endif
 
-#endif // MICROPY_PY_URE
+#endif // MICROPY_PY_RE

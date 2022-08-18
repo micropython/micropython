@@ -69,17 +69,17 @@ uint32_t trng_random_u32(void);
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970               (1)
-#define MICROPY_PY_USSL_FINALISER           (MICROPY_PY_USSL)
-#define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME (1)
-#define MICROPY_PY_UTIME_TIME_TIME_NS       (1)
-#define MICROPY_PY_UTIME_INCLUDEFILE        "ports/mimxrt/modutime.c"
-#define MICROPY_PY_UOS_INCLUDEFILE          "ports/mimxrt/moduos.c"
+#define MICROPY_PY_SSL_FINALISER            (MICROPY_PY_SSL)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS        (1)
+#define MICROPY_PY_TIME_INCLUDEFILE         "ports/mimxrt/modutime.c"
+#define MICROPY_PY_OS_INCLUDEFILE           "ports/mimxrt/moduos.c"
 #define MICROPY_PY_OS_DUPTERM               (3)
-#define MICROPY_PY_UOS_DUPTERM_NOTIFY       (1)
-#define MICROPY_PY_UOS_SYNC                 (1)
-#define MICROPY_PY_UOS_UNAME                (1)
-#define MICROPY_PY_UOS_URANDOM              (1)
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (trng_random_u32())
+#define MICROPY_PY_OS_DUPTERM_NOTIFY        (1)
+#define MICROPY_PY_OS_SYNC                  (1)
+#define MICROPY_PY_OS_UNAME                 (1)
+#define MICROPY_PY_OS_URANDOM               (1)
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (trng_random_u32())
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
@@ -96,7 +96,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_TIMER            (1)
 #define MICROPY_SOFT_TIMER_TICKS_MS         systick_ms
 #define MICROPY_PY_ONEWIRE                  (1)
-#define MICROPY_PY_UPLATFORM                (1)
+#define MICROPY_PY_PLATFORM                 (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -107,16 +107,16 @@ uint32_t trng_random_u32(void);
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK                  (1)
 #endif
-#ifndef MICROPY_PY_USOCKET
-#define MICROPY_PY_USOCKET                  (1)
+#ifndef MICROPY_PY_SOCKET
+#define MICROPY_PY_SOCKET                   (1)
 #endif
-#define MICROPY_PY_UWEBSOCKET               (MICROPY_PY_LWIP)
+#define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
 #define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
-#define MICROPY_PY_USSL_FINALISER           (MICROPY_PY_USSL)
-// #define MICROPY_PY_UHASHLIB_MD5             (MICROPY_PY_USSL)
-#define MICROPY_PY_UHASHLIB_SHA1            (MICROPY_PY_USSL)
-// #define MICROPY_PY_UCRYPTOLIB               (MICROPY_PY_USSL)
+#define MICROPY_PY_SSL_FINALISER            (MICROPY_PY_SSL)
+// #define MICROPY_PY_HASHLIB_MD5              (MICROPY_PY_SSL)
+#define MICROPY_PY_HASHLIB_SHA1             (MICROPY_PY_SSL)
+// #define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
 
 // Prevent the "LWIP task" from running.
 #define MICROPY_PY_LWIP_ENTER   MICROPY_PY_PENDSV_ENTER

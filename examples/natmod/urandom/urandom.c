@@ -1,5 +1,5 @@
-#define MICROPY_PY_URANDOM (1)
-#define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
+#define MICROPY_PY_RANDOM (1)
+#define MICROPY_PY_RANDOM_EXTRA_FUNCS (1)
 
 #include "py/dynruntime.h"
 
@@ -19,7 +19,7 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     mp_store_global(MP_QSTR___name__, MP_OBJ_NEW_QSTR(MP_QSTR_random));
     mp_store_global(MP_QSTR_getrandbits, MP_OBJ_FROM_PTR(&mod_random_getrandbits_obj));
     mp_store_global(MP_QSTR_seed, MP_OBJ_FROM_PTR(&mod_random_seed_obj));
-    #if MICROPY_PY_URANDOM_EXTRA_FUNCS
+    #if MICROPY_PY_RANDOM_EXTRA_FUNCS
     mp_store_global(MP_QSTR_randrange, MP_OBJ_FROM_PTR(&mod_random_randrange_obj));
     mp_store_global(MP_QSTR_randint, MP_OBJ_FROM_PTR(&mod_random_randint_obj));
     mp_store_global(MP_QSTR_choice, MP_OBJ_FROM_PTR(&mod_random_choice_obj));

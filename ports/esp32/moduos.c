@@ -49,7 +49,7 @@ STATIC mp_obj_t mp_os_urandom(mp_obj_t num) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_urandom_obj, mp_os_urandom);
 
-#if MICROPY_PY_UOS_DUPTERM_NOTIFY
+#if MICROPY_PY_OS_DUPTERM_NOTIFY
 STATIC mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
     (void)obj_in;
     for (;;) {

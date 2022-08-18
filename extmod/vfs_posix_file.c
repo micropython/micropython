@@ -194,7 +194,7 @@ STATIC mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
             return 0;
         case MP_STREAM_GET_FILENO:
             return o->fd;
-        #if MICROPY_PY_USELECT
+        #if MICROPY_PY_SELECT
         case MP_STREAM_POLL: {
             #ifdef _WIN32
             mp_raise_NotImplementedError(MP_ERROR_TEXT("poll on file not available on win32"));

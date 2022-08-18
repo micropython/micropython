@@ -32,9 +32,9 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
-#if MICROPY_PY_UJSON
+#if MICROPY_PY_JSON
 
-#if MICROPY_PY_UJSON_SEPARATORS
+#if MICROPY_PY_JSON_SEPARATORS
 
 enum {
     DUMP_MODE_TO_STRING = 1,
@@ -383,4 +383,4 @@ const mp_obj_module_t mp_module_json = {
 
 MP_REGISTER_MODULE(MP_QSTR_json, mp_module_json);
 
-#endif // MICROPY_PY_UJSON
+#endif // MICROPY_PY_JSON

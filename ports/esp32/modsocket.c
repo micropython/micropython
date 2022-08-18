@@ -73,7 +73,7 @@ typedef struct _socket_obj_t {
     uint8_t proto;
     uint8_t state;
     unsigned int retries;
-    #if MICROPY_PY_USOCKET_EVENTS
+    #if MICROPY_PY_SOCKET_EVENTS
     mp_obj_t events_callback;
     struct _socket_obj_t *events_next;
     #endif
@@ -81,7 +81,7 @@ typedef struct _socket_obj_t {
 
 void _socket_settimeout(socket_obj_t *sock, uint64_t timeout_ms);
 
-#if MICROPY_PY_USOCKET_EVENTS
+#if MICROPY_PY_SOCKET_EVENTS
 // Support for callbacks on asynchronous socket events (when socket becomes readable)
 
 // This divisor is used to reduce the load on the system, so it doesn't poll sockets too often
@@ -144,7 +144,7 @@ void socket_events_handler(void) {
     }
 }
 
-#endif // MICROPY_PY_USOCKET_EVENTS
+#endif // MICROPY_PY_SOCKET_EVENTS
 
 static inline void check_for_exceptions(void) {
     mp_handle_pending(true);
@@ -299,7 +299,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
     socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    int backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    int backlog = MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT;
     if (n_args > 1) {
         backlog = mp_obj_get_int(args[1]);
         backlog = (backlog < 0) ? 0 : backlog;
@@ -396,7 +396,7 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
             break;
         }
 
-            #if MICROPY_PY_USOCKET_EVENTS
+            #if MICROPY_PY_SOCKET_EVENTS
         // level: SOL_SOCKET
         // special "register callback" option
         case 20: {
@@ -734,7 +734,7 @@ STATIC mp_uint_t socket_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintpt
         return ret;
     } else if (request == MP_STREAM_CLOSE) {
         if (socket->fd >= 0) {
-            #if MICROPY_PY_USOCKET_EVENTS
+            #if MICROPY_PY_SOCKET_EVENTS
             if (socket->events_callback != MP_OBJ_NULL) {
                 socket_events_remove(socket);
                 socket->events_callback = MP_OBJ_NULL;
@@ -869,7 +869,7 @@ const mp_obj_module_t mp_module_socket = {
     .globals = (mp_obj_dict_t *)&mp_module_socket_globals,
 };
 
-// Note: This port doesn't define MICROPY_PY_USOCKET or MICROPY_PY_LWIP so
+// Note: This port doesn't define MICROPY_PY_SOCKET or MICROPY_PY_LWIP so
 // this will not conflict with the common implementation provided by
 // extmod/mod{lwip,socket}.c.
 MP_REGISTER_MODULE(MP_QSTR_socket, mp_module_socket);

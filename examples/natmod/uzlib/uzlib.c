@@ -1,4 +1,4 @@
-#define MICROPY_PY_UZLIB (1)
+#define MICROPY_PY_ZLIB (1)
 
 #include "py/dynruntime.h"
 

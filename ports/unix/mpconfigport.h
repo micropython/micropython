@@ -160,7 +160,7 @@ typedef long mp_off_t;
 // Enable sys.executable.
 #define MICROPY_PY_SYS_EXECUTABLE (1)
 
-#define MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT (SOMAXCONN < 128 ? SOMAXCONN : 128)
+#define MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT (SOMAXCONN < 128 ? SOMAXCONN : 128)
 
 // Bare-metal ports don't have stderr. Printing debug to stderr may give tests
 // which check stdout a chance to pass, etc.
@@ -181,7 +181,7 @@ void mp_unix_mark_exec(void);
 #endif
 
 // If enabled, configure how to seed random on init.
-#ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+#ifdef MICROPY_PY_RANDOM_SEED_INIT_FUNC
 #include <stddef.h>
 void mp_hal_get_random(size_t n, void *buf);
 static inline unsigned long mp_random_seed_init(void) {

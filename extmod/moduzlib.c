@@ -31,7 +31,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 
-#if MICROPY_PY_UZLIB
+#if MICROPY_PY_ZLIB
 
 #include "lib/uzlib/tinf.h"
 
@@ -236,4 +236,4 @@ MP_REGISTER_MODULE(MP_QSTR_zlib, mp_module_zlib);
 #include "lib/uzlib/adler32.c"
 #include "lib/uzlib/crc32.c"
 
-#endif // MICROPY_PY_UZLIB
+#endif // MICROPY_PY_ZLIB

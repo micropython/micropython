@@ -108,8 +108,8 @@ endif
 ################################################################################
 # ussl
 
-ifeq ($(MICROPY_PY_USSL),1)
-CFLAGS_EXTMOD += -DMICROPY_PY_USSL=1
+ifeq ($(MICROPY_PY_SSL),1)
+CFLAGS_EXTMOD += -DMICROPY_PY_SSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
 AXTLS_DIR = lib/axtls
 GIT_SUBMODULES += $(AXTLS_DIR)

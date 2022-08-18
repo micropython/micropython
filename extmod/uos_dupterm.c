@@ -66,7 +66,7 @@ uintptr_t mp_os_dupterm_poll(uintptr_t poll_flags) {
         int errcode = 0;
         mp_uint_t ret = 0;
         const mp_stream_p_t *stream_p = mp_get_stream(s);
-        #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
+        #if MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM
         if (mp_os_dupterm_is_builtin_stream(s)) {
             ret = stream_p->ioctl(s, MP_STREAM_POLL, poll_flags, &errcode);
         } else
@@ -99,7 +99,7 @@ int mp_os_dupterm_rx_chr(void) {
             continue;
         }
 
-        #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
+        #if MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM
         if (mp_os_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
             byte buf[1];
             int errcode = 0;
@@ -154,7 +154,7 @@ void mp_os_dupterm_tx_strn(const char *str, size_t len) {
             continue;
         }
 
-        #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
+        #if MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM
         if (mp_os_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
             int errcode = 0;
             const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
@@ -194,7 +194,7 @@ STATIC mp_obj_t mp_os_dupterm(size_t n_args, const mp_obj_t *args) {
         MP_STATE_VM(dupterm_objs[idx]) = args[0];
     }
 
-    #if MICROPY_PY_UOS_DUPTERM_STREAM_DETACHED_ATTACHED
+    #if MICROPY_PY_OS_DUPTERM_STREAM_DETACHED_ATTACHED
     mp_os_dupterm_stream_detached_attached(previous_obj, args[0]);
     #endif
 

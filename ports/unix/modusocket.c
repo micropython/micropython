@@ -146,7 +146,7 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
         case MP_STREAM_GET_FILENO:
             return self->fd;
 
-        #if MICROPY_PY_USELECT
+        #if MICROPY_PY_SELECT
         case MP_STREAM_POLL: {
             mp_uint_t ret = 0;
             uint8_t pollevents = 0;
@@ -227,7 +227,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    int backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    int backlog = MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT;
     if (n_args > 1) {
         backlog = (int)mp_obj_get_int(args[1]);
         backlog = (backlog < 0) ? 0 : backlog;

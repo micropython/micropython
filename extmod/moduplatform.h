@@ -30,7 +30,7 @@
 #include "py/mpconfig.h"
 
 // Preprocessor directives identifying the platform.
-// The (u)platform module itself is guarded by MICROPY_PY_UPLATFORM, see the
+// The platform module itself is guarded by MICROPY_PY_PLATFORM, see the
 // .c file, but these are made available because they're generally usable.
 // TODO: Add more architectures, compilers and libraries.
 // See: https://sourceforge.net/p/predef/wiki/Home/

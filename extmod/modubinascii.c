@@ -32,7 +32,7 @@
 #include "py/binary.h"
 #include "py/objstr.h"
 
-#if MICROPY_PY_UBINASCII
+#if MICROPY_PY_BINASCII
 
 #if MICROPY_PY_BUILTINS_BYTES_HEX
 STATIC mp_obj_t bytes_hex_as_bytes(size_t n_args, const mp_obj_t *args) {
@@ -170,7 +170,7 @@ STATIC mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *pos_args,
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_binascii_b2a_base64_obj, 1, mod_binascii_b2a_base64);
 
-#if MICROPY_PY_UBINASCII_CRC32
+#if MICROPY_PY_BINASCII_CRC32
 #include "lib/uzlib/tinf.h"
 
 STATIC mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
@@ -191,7 +191,7 @@ STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_a2b_base64), MP_ROM_PTR(&mod_binascii_a2b_base64_obj) },
     { MP_ROM_QSTR(MP_QSTR_b2a_base64), MP_ROM_PTR(&mod_binascii_b2a_base64_obj) },
-    #if MICROPY_PY_UBINASCII_CRC32
+    #if MICROPY_PY_BINASCII_CRC32
     { MP_ROM_QSTR(MP_QSTR_crc32), MP_ROM_PTR(&mod_binascii_crc32_obj) },
     #endif
 };
@@ -205,4 +205,4 @@ const mp_obj_module_t mp_module_binascii = {
 
 MP_REGISTER_MODULE(MP_QSTR_binascii, mp_module_binascii);
 
-#endif // MICROPY_PY_UBINASCII
+#endif // MICROPY_PY_BINASCII

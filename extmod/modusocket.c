@@ -33,7 +33,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 
-#if MICROPY_PY_NETWORK && MICROPY_PY_USOCKET && !MICROPY_PY_LWIP
+#if MICROPY_PY_NETWORK && MICROPY_PY_SOCKET && !MICROPY_PY_LWIP
 
 #include "shared/netutils/netutils.h"
 #include "modnetwork.h"
@@ -75,7 +75,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     s->timeout = -1;
     s->callback = MP_OBJ_NULL;
     s->state = MOD_NETWORK_SS_NEW;
-    #if MICROPY_PY_USOCKET_EXTENDED_STATE
+    #if MICROPY_PY_SOCKET_EXTENDED_STATE
     s->_private = NULL;
     #endif
 
@@ -94,7 +94,7 @@ STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
             mp_raise_OSError(_errno);
         }
 
-        #if MICROPY_PY_USOCKET_EXTENDED_STATE
+        #if MICROPY_PY_SOCKET_EXTENDED_STATE
         // if a timeout was set before binding a NIC, call settimeout to reset it
         if (self->timeout != -1 && self->nic_protocol->settimeout(self, self->timeout, &_errno) != 0) {
             mp_raise_OSError(_errno);
@@ -134,7 +134,7 @@ STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
         mp_raise_OSError(MP_ENOTCONN);
     }
 
-    mp_int_t backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    mp_int_t backlog = MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT;
     if (n_args > 1) {
         backlog = mp_obj_get_int(args[1]);
         backlog = (backlog < 0) ? 0 : backlog;
@@ -177,7 +177,7 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket2->timeout = -1;
     socket2->callback = MP_OBJ_NULL;
     socket2->state = MOD_NETWORK_SS_NEW;
-    #if MICROPY_PY_USOCKET_EXTENDED_STATE
+    #if MICROPY_PY_SOCKET_EXTENDED_STATE
     socket2->_private = NULL;
     #endif
 
@@ -420,7 +420,7 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
         #endif
     }
     if (self->nic == MP_OBJ_NULL) {
-        #if MICROPY_PY_USOCKET_EXTENDED_STATE
+        #if MICROPY_PY_SOCKET_EXTENDED_STATE
         // store the timeout in the socket state until a NIC is bound
         self->timeout = timeout;
         #else
@@ -655,4 +655,4 @@ const mp_obj_module_t mp_module_socket = {
 
 MP_REGISTER_MODULE(MP_QSTR_socket, mp_module_socket);
 
-#endif // MICROPY_PY_NETWORK && MICROPY_PY_USOCKET && !MICROPY_PY_LWIP
+#endif // MICROPY_PY_NETWORK && MICROPY_PY_SOCKET && !MICROPY_PY_LWIP

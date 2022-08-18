@@ -27,9 +27,9 @@
 
 #define MICROPY_PY_MACHINE_DHT_READINTO (1)
 #define MICROPY_PY_ONEWIRE              (1)
-#define MICROPY_PY_UOS_SYNC             (1)
-#define MICROPY_PY_UOS_URANDOM          (1)
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (trng_random_u32())
+#define MICROPY_PY_OS_SYNC              (1)
+#define MICROPY_PY_OS_URANDOM           (1)
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC (trng_random_u32())
 unsigned long trng_random_u32(void);
 
 #ifndef MICROPY_PY_MACHINE_PIN_BOARD_CPU

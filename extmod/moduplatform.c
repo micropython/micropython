@@ -32,7 +32,7 @@
 #include "extmod/moduplatform.h"
 #include "genhdr/mpversion.h"
 
-#if MICROPY_PY_UPLATFORM
+#if MICROPY_PY_PLATFORM
 
 // platform - Access to underlying platform's identifying data
 
@@ -77,4 +77,4 @@ const mp_obj_module_t mp_module_platform = {
 
 MP_REGISTER_MODULE(MP_QSTR_platform, mp_module_platform);
 
-#endif // MICROPY_PY_UPLATFORM
+#endif // MICROPY_PY_PLATFORM

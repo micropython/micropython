@@ -30,13 +30,13 @@
 #include "py/smallint.h"
 #include "extmod/modutime.h"
 
-#if MICROPY_PY_UTIME
+#if MICROPY_PY_TIME
 
-#ifdef MICROPY_PY_UTIME_INCLUDEFILE
-#include MICROPY_PY_UTIME_INCLUDEFILE
+#ifdef MICROPY_PY_TIME_INCLUDEFILE
+#include MICROPY_PY_TIME_INCLUDEFILE
 #endif
 
-#if MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME
+#if MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME
 
 #include "shared/timeutils/timeutils.h"
 
@@ -96,9 +96,9 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_time_mktime_obj, time_mktime);
 
-#endif // MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME
+#endif // MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME
 
-#if MICROPY_PY_UTIME_TIME_TIME_NS
+#if MICROPY_PY_TIME_TIME_TIME_NS
 
 // time()
 // Return the number of seconds since the Epoch.
@@ -114,10 +114,10 @@ STATIC mp_obj_t time_time_ns(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_time_time_ns_obj, time_time_ns);
 
-#endif // MICROPY_PY_UTIME_TIME_TIME_NS
+#endif // MICROPY_PY_TIME_TIME_TIME_NS
 
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
-    #ifdef MICROPY_PY_UTIME_CUSTOM_SLEEP
+    #ifdef MICROPY_PY_TIME_CUSTOM_SLEEP
     mp_time_sleep(seconds_o);
     #else
     #if MICROPY_PY_BUILTINS_FLOAT
@@ -149,17 +149,17 @@ STATIC mp_obj_t time_sleep_us(mp_obj_t arg) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_time_sleep_us_obj, time_sleep_us);
 
 STATIC mp_obj_t time_ticks_ms(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & (MICROPY_PY_TIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_time_ticks_ms_obj, time_ticks_ms);
 
 STATIC mp_obj_t time_ticks_us(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_us() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_us() & (MICROPY_PY_TIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_time_ticks_us_obj, time_ticks_us);
 
 STATIC mp_obj_t time_ticks_cpu(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_cpu() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_cpu() & (MICROPY_PY_TIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_time_ticks_cpu_obj, time_ticks_cpu);
 
@@ -169,8 +169,8 @@ STATIC mp_obj_t time_ticks_diff(mp_obj_t end_in, mp_obj_t start_in) {
     mp_uint_t end = MP_OBJ_SMALL_INT_VALUE(end_in);
     // Optimized formula avoiding if conditions. We adjust difference "forward",
     // wrap it around and adjust back.
-    mp_int_t diff = ((end - start + MICROPY_PY_UTIME_TICKS_PERIOD / 2) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1))
-        - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
+    mp_int_t diff = ((end - start + MICROPY_PY_TIME_TICKS_PERIOD / 2) & (MICROPY_PY_TIME_TICKS_PERIOD - 1))
+        - MICROPY_PY_TIME_TICKS_PERIOD / 2;
     return MP_OBJ_NEW_SMALL_INT(diff);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_time_ticks_diff_obj, time_ticks_diff);
@@ -188,24 +188,24 @@ STATIC mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
     //
     // This unsigned comparison is equivalent to a signed comparison of:
     //   delta <= -TICKS_PERIOD/2 || delta >= TICKS_PERIOD/2
-    if (delta + MICROPY_PY_UTIME_TICKS_PERIOD / 2 - 1 >= MICROPY_PY_UTIME_TICKS_PERIOD - 1) {
+    if (delta + MICROPY_PY_TIME_TICKS_PERIOD / 2 - 1 >= MICROPY_PY_TIME_TICKS_PERIOD - 1) {
         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("ticks interval overflow"));
     }
 
-    return MP_OBJ_NEW_SMALL_INT((ticks + delta) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
+    return MP_OBJ_NEW_SMALL_INT((ticks + delta) & (MICROPY_PY_TIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_time_ticks_add_obj, time_ticks_add);
 
 STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
 
-    #if MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME
+    #if MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME
     { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&mp_time_localtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&mp_time_localtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&mp_time_mktime_obj) },
     #endif
 
-    #if MICROPY_PY_UTIME_TIME_TIME_NS
+    #if MICROPY_PY_TIME_TIME_TIME_NS
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_time_time_obj) },
     { MP_ROM_QSTR(MP_QSTR_time_ns), MP_ROM_PTR(&mp_time_time_ns_obj) },
     #endif
@@ -220,8 +220,8 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_time_ticks_add_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_time_ticks_diff_obj) },
 
-    #ifdef MICROPY_PY_UTIME_EXTRA_GLOBALS
-    MICROPY_PY_UTIME_EXTRA_GLOBALS
+    #ifdef MICROPY_PY_TIME_EXTRA_GLOBALS
+    MICROPY_PY_TIME_EXTRA_GLOBALS
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
@@ -233,4 +233,4 @@ const mp_obj_module_t mp_module_time = {
 
 MP_REGISTER_MODULE(MP_QSTR_time, mp_module_time);
 
-#endif // MICROPY_PY_UTIME
+#endif // MICROPY_PY_TIME

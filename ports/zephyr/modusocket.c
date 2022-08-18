@@ -25,7 +25,7 @@
  */
 
 #include "py/mpconfig.h"
-#ifdef MICROPY_PY_USOCKET
+#ifdef MICROPY_PY_SOCKET
 
 #include "py/runtime.h"
 #include "py/stream.h"
@@ -190,7 +190,7 @@ STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
     socket_obj_t *socket = args[0];
     socket_check_closed(socket);
 
-    mp_int_t backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    mp_int_t backlog = MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT;
     if (n_args > 1) {
         backlog = mp_obj_get_int(args[1]);
         backlog = (backlog < 0) ? 0 : backlog;
@@ -475,4 +475,4 @@ const mp_obj_module_t mp_module_socket = {
 
 MP_REGISTER_MODULE(MP_QSTR_socket, mp_module_socket);
 
-#endif // MICROPY_PY_USOCKET
+#endif // MICROPY_PY_SOCKET

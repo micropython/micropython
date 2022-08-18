@@ -1,8 +1,8 @@
 #define MICROPY_STACK_CHECK (1)
-#define MICROPY_PY_URE (1)
-#define MICROPY_PY_URE_MATCH_GROUPS (1)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END (1)
-#define MICROPY_PY_URE_SUB (0) // requires vstr interface
+#define MICROPY_PY_RE (1)
+#define MICROPY_PY_RE_MATCH_GROUPS (1)
+#define MICROPY_PY_RE_MATCH_SPAN_START_END (1)
+#define MICROPY_PY_RE_SUB (0) // requires vstr interface
 
 #include <alloca.h>
 #include "py/dynruntime.h"

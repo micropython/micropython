@@ -72,8 +72,8 @@
 #define MICROPY_PY_STRUCT           (0)
 #ifdef CONFIG_NETWORKING
 // If we have networking, we likely want errno comfort
-#define MICROPY_PY_UERRNO           (1)
-#define MICROPY_PY_USOCKET          (1)
+#define MICROPY_PY_ERRNO            (1)
+#define MICROPY_PY_SOCKET           (1)
 #endif
 #ifdef CONFIG_BT
 #define MICROPY_PY_BLUETOOTH        (1)
@@ -82,12 +82,12 @@
 #endif
 #define MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT (0)
 #endif
-#define MICROPY_PY_UBINASCII        (1)
-#define MICROPY_PY_UHASHLIB         (1)
-#define MICROPY_PY_UOS              (1)
-#define MICROPY_PY_UTIME            (1)
-#define MICROPY_PY_UTIME_TIME_TIME_NS (1)
-#define MICROPY_PY_UTIME_INCLUDEFILE "ports/zephyr/modutime.c"
+#define MICROPY_PY_BINASCII         (1)
+#define MICROPY_PY_HASHLIB          (1)
+#define MICROPY_PY_OS               (1)
+#define MICROPY_PY_TIME             (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS (1)
+#define MICROPY_PY_TIME_INCLUDEFILE "ports/zephyr/modutime.c"
 #define MICROPY_PY_ZEPHYR           (1)
 #define MICROPY_PY_ZSENSOR          (1)
 #define MICROPY_PY_SYS_MODULES      (0)

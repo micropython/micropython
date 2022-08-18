@@ -27,14 +27,14 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 
-#if MICROPY_PY_UOS
+#if MICROPY_PY_OS
 
 #include "extmod/misc.h"
 #include "extmod/vfs.h"
 
 #if MICROPY_VFS_FAT
 #include "extmod/vfs_fat.h"
-#if MICROPY_PY_UOS_SYNC
+#if MICROPY_PY_OS_SYNC
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #endif
@@ -48,12 +48,12 @@
 #include "extmod/vfs_posix.h"
 #endif
 
-#if MICROPY_PY_UOS_UNAME
+#if MICROPY_PY_OS_UNAME
 #include "genhdr/mpversion.h"
 #endif
 
-#ifdef MICROPY_PY_UOS_INCLUDEFILE
-#include MICROPY_PY_UOS_INCLUDEFILE
+#ifdef MICROPY_PY_OS_INCLUDEFILE
+#include MICROPY_PY_OS_INCLUDEFILE
 #endif
 
 #ifdef MICROPY_BUILD_TYPE
@@ -62,7 +62,7 @@
 #define MICROPY_BUILD_TYPE_PAREN
 #endif
 
-#if MICROPY_PY_UOS_SYNC
+#if MICROPY_PY_OS_SYNC
 // sync()
 // Sync all filesystems.
 STATIC mp_obj_t mp_os_sync(void) {
@@ -77,9 +77,9 @@ STATIC mp_obj_t mp_os_sync(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(mp_os_sync_obj, mp_os_sync);
 #endif
 
-#if MICROPY_PY_UOS_UNAME
+#if MICROPY_PY_OS_UNAME
 
-#if MICROPY_PY_UOS_UNAME_RELEASE_DYNAMIC
+#if MICROPY_PY_OS_UNAME_RELEASE_DYNAMIC
 #define CONST_RELEASE
 #else
 #define CONST_RELEASE const
@@ -110,7 +110,7 @@ STATIC MP_DEFINE_ATTRTUPLE(
     );
 
 STATIC mp_obj_t mp_os_uname(void) {
-    #if MICROPY_PY_UOS_UNAME_RELEASE_DYNAMIC
+    #if MICROPY_PY_OS_UNAME_RELEASE_DYNAMIC
     const char *release = mp_os_uname_release();
     mp_os_uname_info_release_obj.len = strlen(release);
     mp_os_uname_info_release_obj.data = (const byte *)release;
@@ -124,21 +124,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_os_uname_obj, mp_os_uname);
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_os) },
 
-    #if MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV
+    #if MICROPY_PY_OS_GETENV_PUTENV_UNSETENV
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mp_os_getenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_putenv), MP_ROM_PTR(&mp_os_putenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_unsetenv), MP_ROM_PTR(&mp_os_unsetenv_obj) },
     #endif
-    #if MICROPY_PY_UOS_SEP
+    #if MICROPY_PY_OS_SEP
     { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
     #endif
-    #if MICROPY_PY_UOS_SYNC
+    #if MICROPY_PY_OS_SYNC
     { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&mp_os_sync_obj) },
     #endif
-    #if MICROPY_PY_UOS_SYSTEM
+    #if MICROPY_PY_OS_SYSTEM
     { MP_ROM_QSTR(MP_QSTR_system), MP_ROM_PTR(&mp_os_system_obj) },
     #endif
-    #if MICROPY_PY_UOS_UNAME
+    #if MICROPY_PY_OS_UNAME
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&mp_os_uname_obj) },
     #endif
     #if MICROPY_PY_OS_URANDOM
@@ -163,10 +163,10 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     #if MICROPY_PY_OS_DUPTERM
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_os_dupterm_obj) },
     #endif
-    #if MICROPY_PY_UOS_DUPTERM_NOTIFY
+    #if MICROPY_PY_OS_DUPTERM_NOTIFY
     { MP_ROM_QSTR(MP_QSTR_dupterm_notify), MP_ROM_PTR(&mp_os_dupterm_notify_obj) },
     #endif
-    #if MICROPY_PY_UOS_ERRNO
+    #if MICROPY_PY_OS_ERRNO
     { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_os_errno_obj) },
     #endif
 
@@ -197,4 +197,4 @@ const mp_obj_module_t mp_module_os = {
 
 MP_REGISTER_MODULE(MP_QSTR_os, mp_module_os);
 
-#endif // MICROPY_PY_UOS
+#endif // MICROPY_PY_OS

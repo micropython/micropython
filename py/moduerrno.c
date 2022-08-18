@@ -30,12 +30,12 @@
 #include "py/obj.h"
 #include "py/mperrno.h"
 
-#if MICROPY_PY_UERRNO
+#if MICROPY_PY_ERRNO
 
 // This list can be defined per port in mpconfigport.h to tailor it to a
 // specific port's needs.  If it's not defined then we provide a default.
-#ifndef MICROPY_PY_UERRNO_LIST
-#define MICROPY_PY_UERRNO_LIST \
+#ifndef MICROPY_PY_ERRNO_LIST
+#define MICROPY_PY_ERRNO_LIST \
     X(EPERM) \
     X(ENOENT) \
     X(EIO) \
@@ -61,10 +61,10 @@
 
 #endif
 
-#if MICROPY_PY_UERRNO_ERRORCODE
+#if MICROPY_PY_ERRNO_ERRORCODE
 STATIC const mp_rom_map_elem_t errorcode_table[] = {
     #define X(e) { MP_ROM_INT(MP_##e), MP_ROM_QSTR(MP_QSTR_##e) },
-    MICROPY_PY_UERRNO_LIST
+    MICROPY_PY_ERRNO_LIST
 #undef X
 };
 
@@ -83,12 +83,12 @@ STATIC const mp_obj_dict_t errorcode_dict = {
 
 STATIC const mp_rom_map_elem_t mp_module_errno_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_errno) },
-    #if MICROPY_PY_UERRNO_ERRORCODE
+    #if MICROPY_PY_ERRNO_ERRORCODE
     { MP_ROM_QSTR(MP_QSTR_errorcode), MP_ROM_PTR(&errorcode_dict) },
     #endif
 
     #define X(e) { MP_ROM_QSTR(MP_QSTR_##e), MP_ROM_INT(MP_##e) },
-    MICROPY_PY_UERRNO_LIST
+    MICROPY_PY_ERRNO_LIST
 #undef X
 };
 
@@ -102,7 +102,7 @@ const mp_obj_module_t mp_module_errno = {
 MP_REGISTER_MODULE(MP_QSTR_errno, mp_module_errno);
 
 qstr mp_errno_to_str(mp_obj_t errno_val) {
-    #if MICROPY_PY_UERRNO_ERRORCODE
+    #if MICROPY_PY_ERRNO_ERRORCODE
     // We have the errorcode dict so can do a lookup using the hash map
     mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)&errorcode_dict.map, errno_val, MP_MAP_LOOKUP);
     if (elem == NULL) {
@@ -121,4 +121,4 @@ qstr mp_errno_to_str(mp_obj_t errno_val) {
     #endif
 }
 
-#endif // MICROPY_PY_UERRNO
+#endif // MICROPY_PY_ERRNO

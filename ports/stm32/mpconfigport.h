@@ -92,24 +92,24 @@
 #endif
 
 // extended modules
-#define MICROPY_PY_USSL_FINALISER   (MICROPY_PY_USSL)
-#define MICROPY_PY_UHASHLIB_MD5     (MICROPY_PY_USSL)
-#define MICROPY_PY_UHASHLIB_SHA1    (MICROPY_PY_USSL)
-#define MICROPY_PY_UCRYPTOLIB       (MICROPY_PY_USSL)
-#define MICROPY_PY_UOS_INCLUDEFILE  "ports/stm32/moduos.c"
+#define MICROPY_PY_SSL_FINALISER    (MICROPY_PY_SSL)
+#define MICROPY_PY_HASHLIB_MD5      (MICROPY_PY_SSL)
+#define MICROPY_PY_HASHLIB_SHA1     (MICROPY_PY_SSL)
+#define MICROPY_PY_CRYPTOLIB        (MICROPY_PY_SSL)
+#define MICROPY_PY_OS_INCLUDEFILE   "ports/stm32/moduos.c"
 #define MICROPY_PY_OS_DUPTERM       (3)
-#define MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM (1)
-#define MICROPY_PY_UOS_DUPTERM_STREAM_DETACHED_ATTACHED (1)
-#define MICROPY_PY_UOS_SEP          (1)
-#define MICROPY_PY_UOS_SYNC         (1)
-#define MICROPY_PY_UOS_UNAME        (1)
-#define MICROPY_PY_UOS_URANDOM      (MICROPY_HW_ENABLE_RNG)
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (rng_get())
-#define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME (1)
-#define MICROPY_PY_UTIME_TIME_TIME_NS (1)
-#define MICROPY_PY_UTIME_INCLUDEFILE "ports/stm32/modutime.c"
-#ifndef MICROPY_PY_UTIMEQ
-#define MICROPY_PY_UTIMEQ           (1)
+#define MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM (1)
+#define MICROPY_PY_OS_DUPTERM_STREAM_DETACHED_ATTACHED (1)
+#define MICROPY_PY_OS_SEP           (1)
+#define MICROPY_PY_OS_SYNC          (1)
+#define MICROPY_PY_OS_UNAME         (1)
+#define MICROPY_PY_OS_URANDOM       (MICROPY_HW_ENABLE_RNG)
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC (rng_get())
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS (1)
+#define MICROPY_PY_TIME_INCLUDEFILE "ports/stm32/modutime.c"
+#ifndef MICROPY_PY_TIMEQ
+#define MICROPY_PY_TIMEQ            (1)
 #endif
 #define MICROPY_PY_LWIP_SOCK_RAW    (MICROPY_PY_LWIP)
 #ifndef MICROPY_PY_MACHINE
@@ -130,10 +130,10 @@
 #endif
 #define MICROPY_HW_SOFTSPI_MIN_DELAY (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
-#define MICROPY_PY_UWEBSOCKET       (MICROPY_PY_LWIP)
+#define MICROPY_PY_WEBSOCKET        (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL          (MICROPY_PY_LWIP)
-#ifndef MICROPY_PY_USOCKET
-#define MICROPY_PY_USOCKET          (1)
+#ifndef MICROPY_PY_SOCKET
+#define MICROPY_PY_SOCKET           (1)
 #endif
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK          (1)
@@ -141,8 +141,8 @@
 #ifndef MICROPY_PY_ONEWIRE
 #define MICROPY_PY_ONEWIRE          (1)
 #endif
-#ifndef MICROPY_PY_UPLATFORM
-#define MICROPY_PY_UPLATFORM        (1)
+#ifndef MICROPY_PY_PLATFORM
+#define MICROPY_PY_PLATFORM         (1)
 #endif
 
 // fatfs configuration used in ffconf.h
@@ -324,5 +324,5 @@ static inline mp_uint_t disable_irq(void) {
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-// Needed for MICROPY_PY_URANDOM_SEED_INIT_FUNC.
+// Needed for MICROPY_PY_RANDOM_SEED_INIT_FUNC.
 uint32_t rng_get(void);

@@ -138,7 +138,7 @@ void mp_hal_delay_ms(uint32_t ms) {
     uint64_t t0 = esp_timer_get_time();
     for (;;) {
         mp_handle_pending(true);
-        MICROPY_PY_USOCKET_EVENTS_HANDLER
+        MICROPY_PY_SOCKET_EVENTS_HANDLER
         MP_THREAD_GIL_EXIT();
         uint64_t t1 = esp_timer_get_time();
         dt = t1 - t0;

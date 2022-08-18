@@ -27,10 +27,10 @@
 
 #include "py/mpconfig.h"
 
-#if MICROPY_PY_USELECT_POSIX
+#if MICROPY_PY_SELECT_POSIX
 
-#if MICROPY_PY_USELECT
-#error "Can't have both MICROPY_PY_USELECT and MICROPY_PY_USELECT_POSIX."
+#if MICROPY_PY_SELECT
+#error "Can't have both MICROPY_PY_SELECT and MICROPY_PY_SELECT_POSIX."
 #endif
 
 #include <stdio.h>
@@ -353,4 +353,4 @@ const mp_obj_module_t mp_module_select = {
 
 MP_REGISTER_MODULE(MP_QSTR_select, mp_module_select);
 
-#endif // MICROPY_PY_USELECT_POSIX
+#endif // MICROPY_PY_SELECT_POSIX

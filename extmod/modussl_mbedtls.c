@@ -26,7 +26,7 @@
  */
 
 #include "py/mpconfig.h"
-#if MICROPY_PY_USSL && MICROPY_SSL_MBEDTLS
+#if MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS
 
 #include <stdio.h>
 #include <string.h>
@@ -163,7 +163,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     // Verify the socket object has the full stream protocol
     mp_get_stream_raise(sock, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
 
-    #if MICROPY_PY_USSL_FINALISER
+    #if MICROPY_PY_SSL_FINALISER
     mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
     #else
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
@@ -442,7 +442,7 @@ STATIC const mp_rom_map_elem_t ssl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
-    #if MICROPY_PY_USSL_FINALISER
+    #if MICROPY_PY_SSL_FINALISER
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
     #endif
     #if MICROPY_UNIX_COVERAGE
@@ -509,4 +509,4 @@ const mp_obj_module_t mp_module_ssl = {
 
 MP_REGISTER_MODULE(MP_QSTR_ssl, mp_module_ssl);
 
-#endif // MICROPY_PY_USSL && MICROPY_SSL_MBEDTLS
+#endif // MICROPY_PY_SSL && MICROPY_SSL_MBEDTLS

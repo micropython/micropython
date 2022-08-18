@@ -29,10 +29,10 @@
 
 #include "py/runtime.h"
 
-#if MICROPY_PY_URANDOM
+#if MICROPY_PY_RANDOM
 
 // Work out if the seed will be set on import or not.
-#if MICROPY_MODULE_BUILTIN_INIT && defined(MICROPY_PY_URANDOM_SEED_INIT_FUNC)
+#if MICROPY_MODULE_BUILTIN_INIT && defined(MICROPY_PY_RANDOM_SEED_INIT_FUNC)
 #define SEED_ON_IMPORT (1)
 #else
 #define SEED_ON_IMPORT (0)
@@ -67,7 +67,7 @@ STATIC uint32_t yasmarang(void) {
 
 // End of Yasmarang
 
-#if MICROPY_PY_URANDOM_EXTRA_FUNCS
+#if MICROPY_PY_RANDOM_EXTRA_FUNCS
 
 // returns an unsigned integer below the given argument
 // n must not be zero
@@ -103,8 +103,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_random_getrandbits_obj, mod_random_getrandb
 STATIC mp_obj_t mod_random_seed(size_t n_args, const mp_obj_t *args) {
     mp_uint_t seed;
     if (n_args == 0 || args[0] == mp_const_none) {
-        #ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
-        seed = MICROPY_PY_URANDOM_SEED_INIT_FUNC;
+        #ifdef MICROPY_PY_RANDOM_SEED_INIT_FUNC
+        seed = MICROPY_PY_RANDOM_SEED_INIT_FUNC;
         #else
         mp_raise_ValueError(MP_ERROR_TEXT("no default seed"));
         #endif
@@ -119,7 +119,7 @@ STATIC mp_obj_t mod_random_seed(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_random_seed_obj, 0, 1, mod_random_seed);
 
-#if MICROPY_PY_URANDOM_EXTRA_FUNCS
+#if MICROPY_PY_RANDOM_EXTRA_FUNCS
 
 STATIC mp_obj_t mod_random_randrange(size_t n_args, const mp_obj_t *args) {
     mp_int_t start = mp_obj_get_int(args[0]);
@@ -213,7 +213,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_random_uniform_obj, mod_random_uniform);
 
 #endif
 
-#endif // MICROPY_PY_URANDOM_EXTRA_FUNCS
+#endif // MICROPY_PY_RANDOM_EXTRA_FUNCS
 
 #if SEED_ON_IMPORT
 STATIC mp_obj_t mod_random___init__(void) {
@@ -237,7 +237,7 @@ STATIC const mp_rom_map_elem_t mp_module_random_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_getrandbits), MP_ROM_PTR(&mod_random_getrandbits_obj) },
     { MP_ROM_QSTR(MP_QSTR_seed), MP_ROM_PTR(&mod_random_seed_obj) },
-    #if MICROPY_PY_URANDOM_EXTRA_FUNCS
+    #if MICROPY_PY_RANDOM_EXTRA_FUNCS
     { MP_ROM_QSTR(MP_QSTR_randrange), MP_ROM_PTR(&mod_random_randrange_obj) },
     { MP_ROM_QSTR(MP_QSTR_randint), MP_ROM_PTR(&mod_random_randint_obj) },
     { MP_ROM_QSTR(MP_QSTR_choice), MP_ROM_PTR(&mod_random_choice_obj) },
@@ -258,4 +258,4 @@ const mp_obj_module_t mp_module_random = {
 MP_REGISTER_MODULE(MP_QSTR_random, mp_module_random);
 #endif
 
-#endif // MICROPY_PY_URANDOM
+#endif // MICROPY_PY_RANDOM
