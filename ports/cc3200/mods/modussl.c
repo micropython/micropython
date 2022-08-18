@@ -32,7 +32,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "modnetwork.h"
-#include "modusocket.h"
+#include "modsocket.h"
 
 /******************************************************************************
  DEFINE CONSTANTS

@@ -54,7 +54,7 @@
 #include "modmachine.h"
 #include "extmod/modnetwork.h"
 #include "extmod/vfs.h"
-#include "extmod/modutime.h"
+#include "extmod/modtime.h"
 
 #if MICROPY_PY_PYB
 

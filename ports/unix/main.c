@@ -48,7 +48,7 @@
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "extmod/misc.h"
-#include "extmod/moduplatform.h"
+#include "extmod/modplatform.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"

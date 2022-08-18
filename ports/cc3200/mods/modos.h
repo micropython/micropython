@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Daniel Campora
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,18 +24,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_CC3200_MODS_MODUSOCKET_H
-#define MICROPY_INCLUDED_CC3200_MODS_MODUSOCKET_H
+#ifndef MICROPY_INCLUDED_CC3200_MODS_MODOS_H
+#define MICROPY_INCLUDED_CC3200_MODS_MODOS_H
 
-#include "py/stream.h"
+#include "py/obj.h"
 
-extern const mp_obj_dict_t socket_locals_dict;
-extern const mp_stream_p_t socket_stream_p;
+/******************************************************************************
+ DEFINE PUBLIC TYPES
+ ******************************************************************************/
 
-extern void modusocket_pre_init (void);
-extern void modusocket_socket_add (int16_t sd, bool user);
-extern void modusocket_socket_delete (int16_t sd);
-extern void modusocket_enter_sleep (void);
-extern void modusocket_close_all_user_sockets (void);
+typedef struct _os_term_dup_obj_t {
+    mp_obj_t stream_o;
+    mp_obj_t read[3];
+    mp_obj_t write[3];
+} os_term_dup_obj_t;
 
-#endif // MICROPY_INCLUDED_CC3200_MODS_MODUSOCKET_H
+/******************************************************************************
+ DECLARE PUBLIC FUNCTIONS
+ ******************************************************************************/
+void osmount_unmount_all (void);
+
+#endif // MICROPY_INCLUDED_CC3200_MODS_MODOS_H

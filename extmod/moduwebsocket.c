@@ -30,7 +30,7 @@
 
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "extmod/moduwebsocket.h"
+#include "extmod/modwebsocket.h"
 
 #if MICROPY_PY_WEBSOCKET
 

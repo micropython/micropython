@@ -29,7 +29,7 @@
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "py/mphal.h"
-#include "extmod/moduplatform.h"
+#include "extmod/modplatform.h"
 #include "genhdr/mpversion.h"
 
 #if MICROPY_PY_PLATFORM

@@ -43,7 +43,7 @@
 #include "simplelink.h"
 #include "modnetwork.h"
 #include "modwlan.h"
-#include "moduos.h"
+#include "modos.h"
 #include "FreeRTOS.h"
 #include "portable.h"
 #include "task.h"

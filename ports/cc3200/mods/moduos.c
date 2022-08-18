@@ -35,7 +35,7 @@
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "genhdr/mpversion.h"
-#include "moduos.h"
+#include "modos.h"
 #include "sflash_diskio.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"

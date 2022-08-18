@@ -36,7 +36,7 @@
 #include "py/smallint.h"
 #include "py/runtime.h"
 #include "py/persistentcode.h"
-#include "extmod/moduplatform.h"
+#include "extmod/modplatform.h"
 #include "genhdr/mpversion.h"
 
 #if MICROPY_PY_SYS_SETTRACE

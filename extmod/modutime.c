@@ -28,7 +28,7 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/smallint.h"
-#include "extmod/modutime.h"
+#include "extmod/modtime.h"
 
 #if MICROPY_PY_TIME
 
