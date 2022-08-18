@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2022-04-19 17:07+0000\n"
-"Last-Translator: Siyabend Ürün <urunsiyabend@gmail.com>\n"
+"PO-Revision-Date: 2022-08-14 12:14+0000\n"
+"Last-Translator: Can Kocyigit <cank3698@googlemail.com>\n"
 "Language-Team: none\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: main.c
 msgid ""
@@ -86,7 +86,7 @@ msgstr ""
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/rtc/RTC.c
 msgid "%q"
-msgstr ""
+msgstr "%q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -94,7 +94,7 @@ msgstr "%q ve %q yinelenen pinler içeriyor"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "%q and %q must be different"
-msgstr ""
+msgstr "%q ve %q farklı olmalılar"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"

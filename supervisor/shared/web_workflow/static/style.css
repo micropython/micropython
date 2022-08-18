@@ -17,3 +17,7 @@ body {
     margin: 0;
     font-size: 0.7em;
 }
+
+:disabled {
+    filter: saturate(0%);
+}

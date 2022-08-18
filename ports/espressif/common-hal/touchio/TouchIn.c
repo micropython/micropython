@@ -30,22 +30,9 @@
 #include "peripherals/touch.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
-    #if defined(CONFIG_IDF_TARGET_ESP32)
-    uint16_t touch_value;
-    #else
-    uint32_t touch_value;
-    #endif;
-    touch_pad_read_raw_data(self->pin->touch_channel, &touch_value);
-    if (touch_value > UINT16_MAX) {
-        return UINT16_MAX;
-    }
-    return (uint16_t)touch_value;
-}
-
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
     const mcu_pin_obj_t *pin) {
-    if (pin->touch_channel == TOUCH_PAD_MAX) {
+    if (pin->touch_channel == NO_TOUCH_CHANNEL) {
         raise_ValueError_invalid_pin();
     }
     claim_pin(pin);
@@ -53,15 +40,12 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
     // initialize touchpad
     peripherals_touch_init(pin->touch_channel);
 
-    // wait for touch data to reset
-    mp_hal_delay_ms(10);
-
     // Set a "touched" threshold not too far above the initial value.
     // For simple finger touch, the values may vary as much as a factor of two,
     // but for touches using fruit or other objects, the difference is much less.
 
     self->pin = pin;
-    self->threshold = get_raw_reading(self) + 100;
+    self->threshold = common_hal_touchio_touchin_get_raw_value(self) + 100;
 }
 
 bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t *self) {
@@ -77,11 +61,11 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t *self) {
 }
 
 bool common_hal_touchio_touchin_get_value(touchio_touchin_obj_t *self) {
-    return get_raw_reading(self) > self->threshold;
+    return common_hal_touchio_touchin_get_raw_value(self) > self->threshold;
 }
 
 uint16_t common_hal_touchio_touchin_get_raw_value(touchio_touchin_obj_t *self) {
-    return get_raw_reading(self);
+    return peripherals_touch_read(self->pin->touch_channel);
 }
 
 uint16_t common_hal_touchio_touchin_get_threshold(touchio_touchin_obj_t *self) {

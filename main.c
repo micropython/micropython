@@ -543,7 +543,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         }
 
         // If interrupted by keyboard, return
-        if (serial_connected() && serial_bytes_available()) {
+        if (serial_connected() && serial_bytes_available() && !autoreload_pending()) {
             // Skip REPL if reload was requested.
             skip_repl = serial_read() == CHAR_CTRL_D;
             if (skip_repl) {

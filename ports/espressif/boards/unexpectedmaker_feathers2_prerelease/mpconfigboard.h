@@ -32,6 +32,8 @@
 // #define MICROPY_HW_APA102_MOSI   (&pin_GPIO40)
 // #define MICROPY_HW_APA102_SCK    (&pin_GPIO45)
 
+#define MICROPY_HW_LED_STATUS (&pin_GPIO13)
+
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO38)
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO33)
 
