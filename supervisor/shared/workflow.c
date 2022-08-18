@@ -48,6 +48,8 @@
 #endif
 static background_callback_t workflow_background_cb;
 
+static bool workflow_started = false;
+
 static void workflow_background(void *data) {
     #if CIRCUITPY_WEB_WORKFLOW
     supervisor_web_workflow_background();
@@ -70,6 +72,9 @@ void supervisor_workflow_reset(void) {
 }
 
 void supervisor_workflow_request_background(void) {
+    if (!workflow_started) {
+        return;
+    }
     background_callback_add_core(&workflow_background_cb);
 }
 
@@ -116,6 +121,8 @@ void supervisor_workflow_start(void) {
     #if CIRCUITPY_WEB_WORKFLOW
     supervisor_start_web_workflow();
     #endif
+
+    workflow_started = true;
 }
 
 FRESULT supervisor_workflow_mkdir_parents(FATFS *fs, char *path) {
