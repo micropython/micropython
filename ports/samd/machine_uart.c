@@ -116,9 +116,17 @@ void sercom_enable(Sercom *uart, int state) {
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
-        "timeout=%u, timeout_char=%u, rxbuf=%d)",
+        "timeout=%u, timeout_char=%u, rxbuf=%d"
+        #if MICROPY_HW_UART_TXBUF
+        ", txbuf=%d"
+        #endif
+        ")",
         self->id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop + 1, self->timeout, self->timeout_char, self->read_buffer.size - 1);
+        self->stop + 1, self->timeout, self->timeout_char, self->read_buffer.size - 1
+        #if MICROPY_HW_UART_TXBUF
+        , self->write_buffer.size - 1
+        #endif
+        );
 }
 
 STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -385,6 +393,22 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
 
+STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    Sercom *uart = sercom_instance[self->id];
+
+    if (uart->USART.INTFLAG.bit.DRE
+        #if MICROPY_HW_UART_TXBUF
+        && ringbuf_avail(&self->write_buffer) == 0
+        #endif
+        && uart->USART.INTFLAG.bit.TXC) {
+        return mp_const_true;
+    } else {
+        return mp_const_false;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
+
 void uart_deinit_all(void) {
     for (int i = 0; i < SERCOM_INST_NUM; i++) {
         if (uart_table[i] != NULL) {
@@ -399,7 +423,9 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
+    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
@@ -414,7 +440,6 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     uint8_t *dest = buf_in;
     Sercom *uart = sercom_instance[self->id];
 
-    // t.b.d. Cater timeout for timer wrap after 50 days.
     for (size_t i = 0; i < size; i++) {
         // Wait for the first/next character
         while (ringbuf_avail(&self->read_buffer) == 0) {
@@ -488,9 +513,29 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
         if ((flags & MP_STREAM_POLL_RD) && (uart->USART.INTFLAG.bit.RXC != 0 || ringbuf_avail(&self->read_buffer) > 0)) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && (uart->USART.INTFLAG.bit.DRE != 0)) {
+        if ((flags & MP_STREAM_POLL_WR) && (uart->USART.INTFLAG.bit.DRE != 0
+                                            #if MICROPY_HW_UART_TXBUF
+                                            || ringbuf_avail(&self->write_buffer) > 0
+                                            #endif
+                                            )) {
             ret |= MP_STREAM_POLL_WR;
         }
+    } else if (request == MP_STREAM_FLUSH) {
+        // The timeout is defined by the buffer size and the baudrate.
+        // Take the worst case assumtions at 13 bit symbol size times 2.
+        uint64_t timeout = mp_hal_ticks_ms_64() + (3
+            #if MICROPY_HW_UART_TXBUF
+            + self->write_buffer.size
+            #endif
+            ) * 13000 * 2 / self->baudrate;
+        do {
+            if (machine_uart_txdone((mp_obj_t)self) == mp_const_true) {
+                return 0;
+            }
+            MICROPY_EVENT_POLL_HOOK
+        } while (mp_hal_ticks_ms_64() < timeout);
+        *errcode = MP_ETIMEDOUT;
+        ret = MP_STREAM_ERROR;
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
