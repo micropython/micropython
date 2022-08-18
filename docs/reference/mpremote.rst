@@ -30,6 +30,9 @@ For REPL access, running ``mpremote`` without any arguments is usually all that
 is needed.  ``mpremote`` also supports a set of commands given at the command
 line which will perform various actions on remote MicroPython devices.
 
+For commands that support multiple arguments (e.g. a list of files), the
+argument list can be terminated with ``+``.
+
 The full list of supported commands are:
 
 - connect to a specified device via a device-name shortcut:
@@ -248,3 +251,5 @@ Examples
   mpremote cp main.py :
 
   mpremote cp -r dir/ :
+
+  mpremote cp a.py b.py : + repl

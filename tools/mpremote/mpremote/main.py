@@ -300,6 +300,19 @@ def show_progress_bar(size, total_size):
         )
 
 
+# Get all args up to the terminator ("+").
+# The passed args will be updated with these ones removed.
+def get_fs_args(args):
+    n = 0
+    for src in args:
+        if src == "+":
+            break
+        n += 1
+    fs_args = args[:n]
+    args[:] = args[n + 1 :]
+    return fs_args
+
+
 def do_filesystem(pyb, args):
     def _list_recursive(files, path):
         if os.path.isdir(path):
@@ -308,16 +321,18 @@ def do_filesystem(pyb, args):
         else:
             files.append(os.path.split(path))
 
-    # Don't be verbose when using cat, so output can be redirected to something.
-    verbose = args[0] != "cat"
+    fs_args = get_fs_args(args)
 
-    if args[0] == "cp" and args[1] == "-r":
-        args.pop(0)
-        args.pop(0)
-        assert args[-1] == ":"
-        args.pop()
+    # Don't be verbose when using cat, so output can be redirected to something.
+    verbose = fs_args[0] != "cat"
+
+    if fs_args[0] == "cp" and fs_args[1] == "-r":
+        fs_args.pop(0)
+        fs_args.pop(0)
+        assert fs_args[-1] == ":"
+        fs_args.pop()
         src_files = []
-        for path in args:
+        for path in fs_args:
             _list_recursive(src_files, path)
         known_dirs = {""}
         pyb.exec_("import uos")
@@ -335,8 +350,9 @@ def do_filesystem(pyb, args):
                 verbose=verbose,
             )
     else:
-        pyboard.filesystem_command(pyb, args, progress_callback=show_progress_bar, verbose=verbose)
-    args.clear()
+        pyboard.filesystem_command(
+            pyb, fs_args, progress_callback=show_progress_bar, verbose=verbose
+        )
 
 
 def do_repl_main_loop(pyb, console_in, console_out_write, *, code_to_inject, file_to_inject):
