@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2022-08-19 23:08+0000\n"
-"Last-Translator: hexthat <hexthat@gmail.com>\n"
+"Last-Translator: River Wang <urfdvw@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
 "MIME-Version: 1.0\n"
@@ -758,6 +758,7 @@ msgid "Cannot specify RTS or CTS in RS485 mode"
 msgstr "wú fǎ zài RS485 mó shì xià zhǐ dìng RTS huò CTS"
 
 #: py/objslice.c
+#, fuzzy
 msgid "Cannot subclass slice"
 msgstr "Wúfǎ zi fēnlèi"
 
@@ -804,10 +805,12 @@ msgid ""
 msgstr "Liánjiē yǐ duàn kāi, wúfǎ zài shǐyòng. Chuàngjiàn yīgè xīn de liánjiē."
 
 #: py/persistentcode.c
+#, fuzzy
 msgid "Corrupt .mpy file"
 msgstr "Fǔbài de .mpy wénjiàn"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
+#, fuzzy
 msgid "Could not retrieve clock"
 msgstr "Wúfǎ huòqǔ shízhōng"
 
