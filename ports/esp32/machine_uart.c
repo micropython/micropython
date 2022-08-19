@@ -426,10 +426,26 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
 
+#define UART_FLUSH_TIMEOUT      (3600000)   // 1 hour
+
+STATIC mp_obj_t machine_uart_flush(size_t n_args, const mp_obj_t *args) {
+    machine_uart_obj_t *self = args[0];
+
+    uint32_t timeout = UART_FLUSH_TIMEOUT;
+    if (n_args > 1) {
+        timeout = mp_obj_get_int(args[1]);
+    }
+    int rc = uart_wait_tx_done(self->uart_num, timeout);
+
+    return (rc == ESP_OK) ? mp_const_true : mp_const_false;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_uart_flush_obj, 1, 2, machine_uart_flush);
+
 STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&machine_uart_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
