@@ -1,4 +1,4 @@
-import uos
+import os
 from flashbdev import bdev
 
 
@@ -33,9 +33,9 @@ by firmware programming).
 def setup():
     check_bootsec()
     print("Performing initial setup")
-    uos.VfsLfs2.mkfs(bdev)
-    vfs = uos.VfsLfs2(bdev)
-    uos.mount(vfs, "/")
+    os.VfsLfs2.mkfs(bdev)
+    vfs = os.VfsLfs2(bdev)
+    os.mount(vfs, "/")
     with open("boot.py", "w") as f:
         f.write(
             """\

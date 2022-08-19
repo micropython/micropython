@@ -137,14 +137,14 @@ def do_filesystem(state, args):
                 raise CommandError("'cp -r' source files must be local")
             _list_recursive(src_files, path)
         known_dirs = {""}
-        state.transport.exec_("import uos")
+        state.transport.exec_("import os")
         for dir, file in src_files:
             dir_parts = dir.split("/")
             for i in range(len(dir_parts)):
                 d = "/".join(dir_parts[: i + 1])
                 if d not in known_dirs:
                     state.transport.exec_(
-                        "try:\n uos.mkdir('%s')\nexcept OSError as e:\n print(e)" % d
+                        "try:\n os.mkdir('%s')\nexcept OSError as e:\n print(e)" % d
                     )
                     known_dirs.add(d)
             state.transport.filesystem_command(

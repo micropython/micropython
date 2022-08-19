@@ -292,14 +292,14 @@ class SerialTransport(Transport):
 
     def fs_exists(self, src):
         try:
-            self.exec("import uos\nuos.stat(%s)" % (("'%s'" % src) if src else ""))
+            self.exec("import os\nos.stat(%s)" % (("'%s'" % src) if src else ""))
             return True
         except TransportError:
             return False
 
     def fs_ls(self, src):
         cmd = (
-            "import uos\nfor f in uos.ilistdir(%s):\n"
+            "import os\nfor f in os.ilistdir(%s):\n"
             " print('{:12} {}{}'.format(f[3]if len(f)>3 else 0,f[0],'/'if f[1]&0x4000 else ''))"
             % (("'%s'" % src) if src else "")
         )
@@ -311,7 +311,7 @@ class SerialTransport(Transport):
         def repr_consumer(b):
             buf.extend(b.replace(b"\x04", b""))
 
-        cmd = "import uos\nfor f in uos.ilistdir(%s):\n" " print(repr(f), end=',')" % (
+        cmd = "import os\nfor f in os.ilistdir(%s):\n" " print(repr(f), end=',')" % (
             ("'%s'" % src) if src else ""
         )
         try:
@@ -328,8 +328,8 @@ class SerialTransport(Transport):
 
     def fs_stat(self, src):
         try:
-            self.exec("import uos")
-            return os.stat_result(self.eval("uos.stat(%s)" % (("'%s'" % src)), parse=True))
+            self.exec("import os")
+            return os.stat_result(self.eval("os.stat(%s)" % (("'%s'" % src)), parse=True))
         except TransportError as e:
             reraise_filesystem_error(e, src)
 
@@ -422,13 +422,13 @@ class SerialTransport(Transport):
         self.exec("f.close()")
 
     def fs_mkdir(self, dir):
-        self.exec("import uos\nuos.mkdir('%s')" % dir)
+        self.exec("import os\nos.mkdir('%s')" % dir)
 
     def fs_rmdir(self, dir):
-        self.exec("import uos\nuos.rmdir('%s')" % dir)
+        self.exec("import os\nos.rmdir('%s')" % dir)
 
     def fs_rm(self, src):
-        self.exec("import uos\nuos.remove('%s')" % src)
+        self.exec("import os\nos.remove('%s')" % src)
 
     def fs_touch(self, src):
         self.exec("f=open('%s','a')\nf.close()" % src)
@@ -595,7 +595,7 @@ class SerialTransport(Transport):
 
     def umount_local(self):
         if self.mounted:
-            self.exec('uos.umount("/remote")')
+            self.exec('os.umount("/remote")')
             self.mounted = False
             self.serial = self.serial.orig_serial
 
@@ -616,18 +616,18 @@ fs_hook_cmds = {
 }
 
 fs_hook_code = """\
-import uos, uio, ustruct, micropython
+import os, io, struct, micropython
 
 SEEK_SET = 0
 
 class RemoteCommand:
     def __init__(self):
-        import uselect, usys
+        import select, sys
         self.buf4 = bytearray(4)
-        self.fout = usys.stdout.buffer
-        self.fin = usys.stdin.buffer
-        self.poller = uselect.poll()
-        self.poller.register(self.fin, uselect.POLLIN)
+        self.fout = sys.stdout.buffer
+        self.fin = sys.stdin.buffer
+        self.poller = select.poll()
+        self.poller.register(self.fin, select.POLLIN)
 
     def poll_in(self):
         for _ in self.poller.ipoll(1000):
@@ -710,7 +710,7 @@ class RemoteCommand:
         self.fout.write(self.buf4, 1)
 
     def wr_s32(self, i):
-        ustruct.pack_into('<i', self.buf4, 0, i)
+        struct.pack_into('<i', self.buf4, 0, i)
         self.fout.write(self.buf4)
 
     def wr_bytes(self, b):
@@ -721,7 +721,7 @@ class RemoteCommand:
     wr_str = wr_bytes
 
 
-class RemoteFile(uio.IOBase):
+class RemoteFile(io.IOBase):
     def __init__(self, cmd, fd, is_text):
         self.cmd = cmd
         self.fd = fd
@@ -934,8 +934,8 @@ class RemoteFS:
 
 
 def __mount():
-    uos.mount(RemoteFS(RemoteCommand()), '/remote')
-    uos.chdir('/remote')
+    os.mount(RemoteFS(RemoteCommand()), '/remote')
+    os.chdir('/remote')
 """
 
 # Apply basic compression on hook code.
