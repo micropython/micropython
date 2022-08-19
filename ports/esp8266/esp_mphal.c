@@ -87,7 +87,7 @@ void mp_hal_debug_str(const char *str) {
     while (*str) {
         uart_tx_one_char(UART0, *str++);
     }
-    uart_flush(UART0);
+    uart_flush(UART0, 3600000);
 }
 #endif
 

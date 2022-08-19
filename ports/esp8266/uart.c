@@ -111,13 +111,17 @@ void uart_tx_one_char(uint8 uart, uint8 TxChar) {
     WRITE_PERI_REG(UART_FIFO(uart), TxChar);
 }
 
-void uart_flush(uint8 uart) {
-    while (true) {
+int uart_flush(uint8 uart, uint32_t timeout) {
+    uint64_t t = system_get_time() + timeout * 1000;
+    do {
         uint32 fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT << UART_TXFIFO_CNT_S);
         if ((fifo_cnt >> UART_TXFIFO_CNT_S & UART_TXFIFO_CNT) == 0) {
-            break;
+            return true;
         }
-    }
+        ets_event_poll();
+    } while (system_get_time() < t);
+
+    return false;
 }
 
 /******************************************************************************
