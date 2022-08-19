@@ -67,7 +67,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     bool reset_tiles = false;
     uint16_t width_in_tiles = width_px / scroll_area->tile_width;
     // determine scale based on width
-    if (width_in_tiles < 80) {
+    if (width_in_tiles <= 80) {
         scale = 1;
     }
 
@@ -133,7 +133,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         #else
         scroll_area->y = title_bar->tile_height;
         #endif
-        int16_t extra_height = (scroll_area->pixel_height + scroll_area->y) - height_px;
+        int16_t extra_height = (scroll_area->pixel_height + scroll_area->y) - (height_px / scale);
         // Subtract extra height so that the bottom line fully shows. The top line will be under the
         // title bar and Blinka logo.
         scroll_area->y -= extra_height;
