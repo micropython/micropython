@@ -50,11 +50,10 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
     claim_pin(pin);
 
     // validate pin number
-    if (pin->number < ADC_FIRST_PIN_NUMBER) {
-        and(pin->number >= ADC_FIRST_PIN_NUMBER + ADC_PIN_COUNT) {
-            raise_ValueError_invalid_pins();
-        }
+    if (pin->number < ADC_FIRST_PIN_NUMBER && pin->number >= (ADC_FIRST_PIN_NUMBER + ADC_PIN_COUNT)) {
+        raise_ValueError_invalid_pins();
     }
+
     // TODO: find a wat to accept ADC4 for temperature
     self->chan = pin->number - ADC_FIRST_PIN_NUMBER;
 
@@ -123,7 +122,6 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
 
 }
 
-
 bool common_hal_adcbuffer_bufferedinput_deinited(adcbuffer_bufferedinput_obj_t *self) {
     return self->pin == NULL;
 }
@@ -144,6 +142,7 @@ void common_hal_adcbuffer_bufferedinput_deinit(adcbuffer_bufferedinput_obj_t *se
 bool common_hal_adcbuffer_bufferedinput_readmultiple(adcbuffer_bufferedinput_obj_t *self) {
 
     // uint32_t cdl = self->len / 2 - 1;
+    uint32_t cdl = self->len;
 
     dma_channel_configure(self->dma_chan, &(self->cfg),
         self->buffer,   // dst
