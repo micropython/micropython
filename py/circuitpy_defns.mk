@@ -388,6 +388,7 @@ SRC_COMMON_HAL_ALL = \
 	_pew/PewPew.c \
 	_pew/__init__.c \
 	adcbuffer/BufferedInput.c \
+	adcbuffer/__init__.c \
 	alarm/SleepMemory.c \
 	alarm/__init__.c \
 	alarm/pin/PinAlarm.c \
