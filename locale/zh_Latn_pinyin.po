@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-19 23:08+0000\n"
-"Last-Translator: River Wang <urfdvw@gmail.com>\n"
+"PO-Revision-Date: 2022-08-20 14:09+0000\n"
+"Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
 "MIME-Version: 1.0\n"
@@ -484,9 +484,8 @@ msgid "Already advertising."
 msgstr "Mùqián zhèngzài guǎngbō."
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
-#, fuzzy
 msgid "Already have all-matches listener"
-msgstr "yǐjīng yǒu all-matches jiāntīngqì"
+msgstr "yǐjīng yǒu all-matches jiāntīng qì"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -674,21 +673,19 @@ msgid "Camera init"
 msgstr "xiàngjī chūshǐhuà"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
-#, fuzzy
 msgid "Can only alarm on RTC IO from deep sleep."
-msgstr "zhǐ néng zài RTC IO shàng cóng shēndù shuìmián zhōng bào jǐng."
+msgstr "Zhǐ néng cóng shēndù shuìmián zhōng duì RTC IO jìnxíng bàojǐng."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
-#, fuzzy
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
 msgstr ""
-"Zhǐ néng zài yīgè dī diàn píng yǐn jiǎo shàng fāchū jǐngbào, ér qítā yǐn "
-"jiǎo cóng shēndù shuìmián zhōng fāchū gāo diàn píng jǐngbào."
+"Zhǐ néng zài yīgè dī yǐn jiǎo shàng bàojǐng, ér qítā yǐn jiǎo cóng shēndù "
+"shuìmián zhōng fāchū gāo diàn píng bàojǐng."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
-#, fuzzy
 msgid "Can only alarm on two low pins from deep sleep."
-msgstr "zhǐ néng cóng shēn dù shuì mián zhōng bào jǐng liǎng gè dī yǐn jiǎo."
+msgstr ""
+"Zhǐ néng cóng shēndù shuìmián zhōng de liǎng gè dī yǐn jiǎo shàng bàojǐng."
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -741,8 +738,7 @@ msgstr "tōng guò USB kě jiàn shí wú fǎ chóng xīn ān zhuāng '/'."
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr ""
-"wúfǎ chóngxīn qǐdòng dào yǐdǎo chéngxù, yīnwéi yǐdǎo chéngxù bù cúnzài."
+msgstr "wúfǎ chóngxīn qǐdòng dào yǐdǎo chéngxù, yīnwéi yǐdǎo chéngxù bù cúnzài"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
@@ -758,9 +754,8 @@ msgid "Cannot specify RTS or CTS in RS485 mode"
 msgstr "wú fǎ zài RS485 mó shì xià zhǐ dìng RTS huò CTS"
 
 #: py/objslice.c
-#, fuzzy
 msgid "Cannot subclass slice"
-msgstr "Wúfǎ zi fēnlèi"
+msgstr "bùnéng zi lèi huà qiēpiàn"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins"
@@ -805,14 +800,12 @@ msgid ""
 msgstr "Liánjiē yǐ duàn kāi, wúfǎ zài shǐyòng. Chuàngjiàn yīgè xīn de liánjiē."
 
 #: py/persistentcode.c
-#, fuzzy
 msgid "Corrupt .mpy file"
-msgstr "Fǔbài de .mpy wénjiàn"
+msgstr "sǔnhuài de .mpy wénjiàn"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
-#, fuzzy
 msgid "Could not retrieve clock"
-msgstr "Wúfǎ huòqǔ shízhōng"
+msgstr "wúfǎ jiǎnsuǒ shízhōng"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -1815,7 +1808,7 @@ msgstr "RNG chūshǐhuà cuòwù"
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "RS485"
-msgstr ""
+msgstr "RS485"
 
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
@@ -2344,7 +2337,7 @@ msgstr ""
 
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
-msgstr ""
+msgstr "Wi-Fi: "
 
 #: main.c
 msgid "Woken up by alarm.\n"
@@ -3448,7 +3441,7 @@ msgstr "jǔzhèn bùshì zhèngdìng de"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
-msgstr "dāng fixed_length de zhí wéi %s shí, max_length bì xū wéi 0-%d"
+msgstr "max_length bìxū shì 0-%d, dāng fixed_length shì %s"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is "
