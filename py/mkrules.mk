@@ -25,6 +25,14 @@ QSTR_GEN_CFLAGS += $(QSTR_GEN_FLAGS)
 QSTR_GEN_CXXFLAGS := $(CXXFLAGS)
 QSTR_GEN_CXXFLAGS += $(QSTR_GEN_FLAGS)
 
+# depend_var is a function that can be used to add a virtual dependency
+# to a target based on the given make variable.
+# eg. $(OBJ): $(call depend_var, MY_VAR)
+$(BUILD)/dependvar/%:
+	@mkdir -p $(BUILD)/dependvar
+	@rm -f $(BUILD)/dependvar/$(firstword $(subst +, ,$*))+*
+	$(Q)echo $($(firstword $(subst +, ,$*))) > $@
+
 # This file expects that OBJ contains a list of all of the object files.
 # The directory portion of each object file is used to locate the source
 # and should not contain any ..'s but rather be relative to the top of the
