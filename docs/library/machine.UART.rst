@@ -165,6 +165,20 @@ Methods
 
    Availability: WiPy.
 
+.. method:: UART.flush([timeout_ms])
+
+   Waits up to timeout_ms until all data has been sent. It returns True, if all data
+   has been sent, and False in case of a timeout. The default value for timeout_ms
+   is 1 hour. Using a timeout_ms value of 0 the method can be used to test without waiting,
+   whether all data has been sent.
+
+   Restrictions: At the esp8266 port the call returns, while the last byte is sent. At the RP2040
+   port the call returns, while the last byte is sent, if the message is shorted than 6 bytes. If
+   required, a one character wait time has to be added in the script.
+
+   Availability: STM32, RP2040, ESP32, ESP8266, MIMXRT
+
+
 Constants
 ---------
 
