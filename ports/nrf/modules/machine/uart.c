@@ -292,6 +292,13 @@ STATIC mp_obj_t machine_hard_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hard_uart_sendbreak_obj, machine_hard_uart_sendbreak);
 
+// uart.flush()
+// Added for compatibility as an empty function
+STATIC mp_obj_t machine_uart_flush(size_t n_args, const mp_obj_t *args) {
+    return mp_const_true;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_uart_flush_obj, 1, 2, machine_uart_flush);
+
 STATIC const mp_rom_map_elem_t machine_hard_uart_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
@@ -302,6 +309,7 @@ STATIC const mp_rom_map_elem_t machine_hard_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_writechar), MP_ROM_PTR(&machine_hard_uart_writechar_obj) },
     { MP_ROM_QSTR(MP_QSTR_readchar), MP_ROM_PTR(&machine_hard_uart_readchar_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_hard_uart_sendbreak_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&machine_uart_flush_obj) },
 
     // class constants
 /*
