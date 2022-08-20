@@ -558,6 +558,30 @@ invalid_args:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_irq_obj, 1, pyb_uart_irq);
 
+// uart.flush()
+
+#define UART_FLUSH_TIMEOUT      (3600000)   // 1 hour
+
+STATIC mp_obj_t pyb_uart_flush(size_t n_args, const mp_obj_t *args) {
+    pyb_uart_obj_t *self = args[0];
+    uint32_t timeout = UART_FLUSH_TIMEOUT;
+
+    if (n_args > 1) {
+        timeout = mp_obj_get_int(args[1]);
+    }
+    timeout += mp_hal_ticks_ms();
+
+    do {
+        if (MAP_UARTBusy(self->reg) == false) {
+            return mp_const_true;
+        }
+        MICROPY_EVENT_POLL_HOOK
+    } while (mp_hal_ticks_ms() < timeout);
+
+    return mp_const_false;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_uart_flush_obj, 1, 2, pyb_uart_flush);
+
 STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init),        MP_ROM_PTR(&pyb_uart_init_obj) },
@@ -565,6 +589,7 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_any),         MP_ROM_PTR(&pyb_uart_any_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendbreak),   MP_ROM_PTR(&pyb_uart_sendbreak_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),         MP_ROM_PTR(&pyb_uart_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush),       MP_ROM_PTR(&pyb_uart_flush_obj) },
 
     /// \method read([nbytes])
     { MP_ROM_QSTR(MP_QSTR_read),        MP_ROM_PTR(&mp_stream_read_obj) },
