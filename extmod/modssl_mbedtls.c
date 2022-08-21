@@ -49,10 +49,15 @@
 #ifdef MICROPY_SSL_MBEDTLS_EXTRAS
 #if MBEDTLS_VERSION_NUMBER >= 0x03000000
 #include "mbedtls/build_info.h"
+#include "mbedtls/platform_time.h"
 #else
 #include "mbedtls/version.h"
 #endif
 #endif
+#ifdef MICROPY_MBEDTLS_PLATFORM_TIME_ALT
+#include "mbedtls/mbedtls_config.h"
+#endif
+
 
 #define MP_STREAM_POLL_RDWR (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)
 
@@ -182,6 +187,9 @@ STATIC mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     #ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
     mbedtls_debug_set_threshold(3);
+    #endif
+    #ifdef MICROPY_MBEDTLS_PLATFORM_TIME_ALT
+    mbedtls_platform_set_time(platform_mbedtls_time);
     #endif
 
     const byte seed[] = "upy";

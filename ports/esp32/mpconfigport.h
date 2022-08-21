@@ -138,6 +138,7 @@
 #define MICROPY_SSL_MBEDTLS                 (1)
 #define MICROPY_PY_SSL_FINALISER            (1)
 #define MICROPY_PY_WEBSOCKET                (1)
+#define MICROPY_MBEDTLS_PLATFORM_TIME_ALT   (1)
 #define MICROPY_PY_WEBREPL                  (1)
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_SOCKET_EVENTS            (MICROPY_PY_WEBREPL)

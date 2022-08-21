@@ -59,6 +59,8 @@ list(APPEND MICROPY_SOURCE_PORT
     mphalport.c
     fatfs_port.c
     help.c
+	modtime.c
+	mbedtls/mbedtls_port.c
     machine_bitstream.c
     machine_timer.c
     machine_pin.c
