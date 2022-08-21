@@ -68,18 +68,12 @@
 ///       """
 ///         ...
 ///
-STATIC void validate_rate(mp_float_t rate) {
-    if (rate < (mp_float_t)1.0f || rate > (mp_float_t)500000.0f) {
-        mp_raise_ValueError(translate("sample rate must be 1.0-500000.0 per second"));
-    }
-}
-
 STATIC mp_obj_t adcbuffer_bufferedinput_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin, ARG_buffer, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin,    MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_sample_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_int = 500000} },
+        { MP_QSTR_sample_rate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 500000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -103,8 +97,7 @@ STATIC mp_obj_t adcbuffer_bufferedinput_make_new(const mp_obj_type_t *type, size
     }
 
     // Validate sample rate here
-    mp_float_t sample_rate = mp_obj_get_float(args[ARG_sample_rate].u_obj);
-    validate_rate(sample_rate);
+    uint32_t sample_rate = (uint32_t)mp_arg_validate_int_range(args[ARG_sample_rate].u_int, 1, 500000, MP_QSTR_sample_rate);
 
     // Create local object
     adcbuffer_bufferedinput_obj_t *self = m_new_obj(adcbuffer_bufferedinput_obj_t);

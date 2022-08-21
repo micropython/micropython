@@ -47,7 +47,7 @@ typedef struct {
     uint32_t len;
     uint8_t bytes_per_sample;
     bool samples_signed;
-    mp_float_t sample_rate;
+    uint32_t sample_rate;
     uint8_t chan;
     uint dma_chan;
     dma_channel_config cfg;

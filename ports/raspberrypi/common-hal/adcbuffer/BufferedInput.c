@@ -43,7 +43,7 @@
 #define ADC_FIRST_PIN_NUMBER 26
 #define ADC_PIN_COUNT 4
 
-void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, mp_float_t sample_rate) {
+void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, uint32_t sample_rate) {
 
     // Set pin and channel
     self->pin = pin;
@@ -65,9 +65,10 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
 
     // TODO: checks on length here
 
-    // uint8_t bytes_per_sample
     // Set sample rate
-    // self->bits_per_sample = bytes_per_sample * 8;
+    // NOTE: bits_per_sample = bytes_per_sample * 8;
+    self->bytes_per_sample = bytes_per_sample;
+
     // TODO: Possibly check Rate values here, already u_int
     // NOTE: Anything over 500000 for RP2040 will not
     // exceed DMA conversion sampling rate.
@@ -86,8 +87,8 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
         true,    // Write each completed conversion to the sample FIFO
         true,    // Enable DMA data request (DREQ)
         1,       // DREQ (and IRQ) asserted when at least 1 sample present
-        false,   // We won't see the ERR bit because of 8 bit reads; disable. // ??
-        false    // Shift each sample to 8 bits when pushing to FIFO // ??
+        true,    // We will see the ERR bit because of 12 bit reads; enabled.
+        false    // Do not shift each sample to 8 bits when pushing to FIFO
         );
 
     // Divisor of 0 -> full speed. Free-running capture with the divider is
@@ -98,7 +99,7 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
     // intervals). This is all timed by the 48 MHz ADC clock.
     // sample rate determines divisor, not zero.
 
-    adc_set_clkdiv(48000000.0 / self->sample_rate);
+    adc_set_clkdiv((float)48000000.0 / (float)self->sample_rate);
 
     // sleep_ms(1000);
     // Set up the DMA to start transferring data as soon as it appears in FIFO
@@ -109,7 +110,11 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
     self->cfg = dma_channel_get_default_config(dma_chan);
 
     // Reading from constant address, writing to incrementing byte addresses
-    channel_config_set_transfer_data_size(&(self->cfg), DMA_SIZE_16);
+    if (self->bytes_per_sample == 1) {
+        channel_config_set_transfer_data_size(&(self->cfg), DMA_SIZE_8);
+    } else if (self->bytes_per_sample == 2) {
+        channel_config_set_transfer_data_size(&(self->cfg), DMA_SIZE_16);
+    }
     channel_config_set_read_increment(&(self->cfg), false);
     channel_config_set_write_increment(&(self->cfg), true);
 
@@ -141,13 +146,14 @@ void common_hal_adcbuffer_bufferedinput_deinit(adcbuffer_bufferedinput_obj_t *se
 
 bool common_hal_adcbuffer_bufferedinput_readmultiple(adcbuffer_bufferedinput_obj_t *self) {
 
-    // uint32_t cdl = self->len / 2 - 1;
-    uint32_t cdl = self->len;
+    // uint32_t cdl = self->len/2 + 1;
+    // uint32_t cdl = 3*self->len/4; //BAD
+    uint32_t cdl = self->len * self->bytes_per_sample;
 
     dma_channel_configure(self->dma_chan, &(self->cfg),
         self->buffer,   // dst
         &adc_hw->fifo,  // src
-        cdl,            // CAPTURE_DEPTH,  // transfer count
+        cdl,            // transfer count
         true            // start immediately
         );
 
