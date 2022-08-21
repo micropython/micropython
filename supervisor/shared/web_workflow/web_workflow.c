@@ -49,6 +49,7 @@
 #include "shared-bindings/hashlib/Hash.h"
 #include "shared-bindings/mdns/RemoteService.h"
 #include "shared-bindings/mdns/Server.h"
+#include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/socketpool/__init__.h"
 #include "shared-bindings/socketpool/Socket.h"
 #include "shared-bindings/socketpool/SocketPool.h"
@@ -768,8 +769,17 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
         "\"creator_id\": %u, "
         "\"creation_id\": %u, "
         "\"hostname\": \"%s\", "
-        "\"port\": %d, "
-        "\"ip\": \"%s\"}", CIRCUITPY_CREATOR_ID, CIRCUITPY_CREATION_ID, hostname, web_api_port, _our_ip_encoded);
+        "\"port\": %d, ", CIRCUITPY_CREATOR_ID, CIRCUITPY_CREATION_ID, hostname, web_api_port, _our_ip_encoded);
+    #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH > 0
+    uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
+    common_hal_mcu_processor_get_uid(raw_id);
+    mp_printf(&_socket_print, "\"UID\": \"");
+    for (uint8_t i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
+        mp_printf(&_socket_print, "%02X", raw_id[i]);
+    }
+    mp_printf(&_socket_print, "\", ");
+    #endif
+    mp_printf(&_socket_print, "\"ip\": \"%s\"}", _our_ip_encoded);
     // Empty chunk signals the end of the response.
     _send_chunk(socket, "");
 }
