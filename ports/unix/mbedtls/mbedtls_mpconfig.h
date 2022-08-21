@@ -33,6 +33,8 @@
 #define MBEDTLS_TIMING_C
 #define MBEDTLS_X509_RSASSA_PSS_SUPPORT
 #define MBEDTLS_PKCS1_V21
+#define MBEDTLS_HAVE_TIME
+#define MBEDTLS_HAVE_TIME_DATE
 
 // Include common mbedtls configuration.
 #include "extmod/mbedtls/mbedtls_config_common.h"
