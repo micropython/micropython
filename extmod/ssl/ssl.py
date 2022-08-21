@@ -5,6 +5,30 @@ import ussl as _ussl
 PROTOCOL_TLS_CLIENT = const(0)
 PROTOCOL_TLS_SERVER = const(1)
 
+# backwards compatibility even after C code is deprecated
+def wrap_socket(
+    sock,
+    server_side=False,
+    key=None,
+    cert=None,
+    cert_reqs=CERT_NONE,
+    cadata=None,
+    server_hostname=None,
+    do_handshake=True,
+):
+    ctx = _ussl.ctx_init()
+    if (key is not None) and (cert is not None):
+        ctx.load_certchain(key=key, cert=cert)
+    if cadata:
+        ctx.load_cadata(cadata)
+    return ctx.wrap_socket(
+        sock,
+        server_side=server_side,
+        cert_reqs=cert_reqs,
+        server_hostname=server_hostname,
+        do_handshake=do_handshake,
+    )
+
 
 class SSLContext:
     def __init__(self, protocol):
