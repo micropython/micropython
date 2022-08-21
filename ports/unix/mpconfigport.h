@@ -294,7 +294,7 @@ static inline unsigned long mp_urandom_seed_init(void) {
 // We need to provide a declaration/definition of alloca()
 // unless support for it is disabled.
 #if !defined(MICROPY_NO_ALLOCA) || MICROPY_NO_ALLOCA == 0
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 #include <stdlib.h>
 #else
 #include <alloca.h>
