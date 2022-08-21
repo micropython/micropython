@@ -49,6 +49,10 @@
 // #include "mbedtls/build_info.h"
 // #endif
 #include "mbedtls/version.h"
+#ifdef MICROPY_MBEDTLS_PLATFORM_TIME_ALT
+#include "mbedtls/mbedtls_config.h"
+
+#endif
 
 #define MP_STREAM_POLL_RDWR (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)
 
@@ -188,7 +192,7 @@ STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
 
 // SSLContext
 STATIC mp_obj_ssl_context_t *context_new() {
-    #if MICROPY_PY_USSL_FINALISER
+    #if MICROPY_PY_SSL_FINALISER
     mp_obj_ssl_context_t *ctxi = m_new_obj_with_finaliser(mp_obj_ssl_context_t);
     #else
     mp_obj_ssl_context_t *ctxi = m_new_obj(mp_obj_ssl_context_t);
@@ -208,7 +212,16 @@ STATIC mp_obj_ssl_context_t *context_new() {
     // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
     mbedtls_debug_set_threshold(3);
     #endif
-
+    #ifdef MICROPY_MBEDTLS_PLATFORM_TIME_ALT
+    mbedtls_platform_set_time(platform_mbedtls_time);
+    #endif
+    // DEBUG MBEDTLS_PLATFORM
+    // time_t mbt;
+    // time_t mbtz;
+    // mbt = mbedtls_time(NULL);
+    // mbtz = platform_mbedtls_time(NULL);
+    // printf("secs mbt : %lu \n\n", mbt);
+    // printf("secs mbtz: %lu \n\n", mbtz);
     mbedtls_entropy_init(&ctxi->entropy);
     const byte seed[] = "upy";
     ret = mbedtls_ctr_drbg_seed(&ctxi->ctr_drbg, mbedtls_entropy_func, &ctxi->entropy, seed, sizeof(seed));
@@ -418,7 +431,7 @@ STATIC mp_obj_ssl_socket_t *ctx_socket(mp_obj_t self_in, mp_obj_t sock, struct c
     // Verify the socket object has the full stream protocol
     mp_get_stream_raise(sock, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
     mp_obj_ssl_context_t *ctxi = MP_OBJ_TO_PTR(self_in);
-    #if MICROPY_PY_USSL_FINALISER
+    #if MICROPY_PY_SSL_FINALISER
     mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
     #else
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
