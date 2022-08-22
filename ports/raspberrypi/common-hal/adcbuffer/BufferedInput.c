@@ -31,6 +31,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include "common-hal/adcbuffer/BufferedInput.h"
 #include "shared-bindings/adcbuffer/BufferedInput.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -46,6 +47,7 @@
 void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, uint32_t sample_rate) {
 
     // Set pin and channel
+
     self->pin = pin;
     claim_pin(pin);
 
@@ -82,13 +84,23 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
     adc_gpio_init(pin->number);
     adc_select_input(self->chan); // chan = pin - 26 ??
 
+    // self->bytes_per_sample == 1
+    uint dma_size = DMA_SIZE_8;
+    bool show_error_bit = false;
+    bool shift_sample_8_bits = true;
+    if (self->bytes_per_sample == 2) {
+        dma_size = DMA_SIZE_16;
+        show_error_bit = true;
+        shift_sample_8_bits = false;
+    }
+
     // adc_select_input(self->pin->number - ADC_FIRST_PIN_NUMBER);
     adc_fifo_setup(
-        true,    // Write each completed conversion to the sample FIFO
-        true,    // Enable DMA data request (DREQ)
-        1,       // DREQ (and IRQ) asserted when at least 1 sample present
-        true,    // We will see the ERR bit because of 12 bit reads; enabled.
-        false    // Do not shift each sample to 8 bits when pushing to FIFO
+        true,               // Write each completed conversion to the sample FIFO
+        true,               // Enable DMA data request (DREQ)
+        1,                  // DREQ (and IRQ) asserted when at least 1 sample present
+        show_error_bit,     // See the ERR bit on 8 bit bit reads
+        shift_sample_8_bits // Shift each sample to 8 bits when pushing to FIFO
         );
 
     // Divisor of 0 -> full speed. Free-running capture with the divider is
@@ -110,11 +122,7 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
     self->cfg = dma_channel_get_default_config(dma_chan);
 
     // Reading from constant address, writing to incrementing byte addresses
-    if (self->bytes_per_sample == 1) {
-        channel_config_set_transfer_data_size(&(self->cfg), DMA_SIZE_8);
-    } else if (self->bytes_per_sample == 2) {
-        channel_config_set_transfer_data_size(&(self->cfg), DMA_SIZE_16);
-    }
+    channel_config_set_transfer_data_size(&(self->cfg), dma_size);
     channel_config_set_read_increment(&(self->cfg), false);
     channel_config_set_write_increment(&(self->cfg), true);
 
@@ -146,9 +154,7 @@ void common_hal_adcbuffer_bufferedinput_deinit(adcbuffer_bufferedinput_obj_t *se
 
 bool common_hal_adcbuffer_bufferedinput_readmultiple(adcbuffer_bufferedinput_obj_t *self) {
 
-    // uint32_t cdl = self->len/2 + 1;
-    // uint32_t cdl = 3*self->len/4; //BAD
-    uint32_t cdl = self->len * self->bytes_per_sample;
+    uint32_t cdl = self->len / self->bytes_per_sample;
 
     dma_channel_configure(self->dma_chan, &(self->cfg),
         self->buffer,   // dst
