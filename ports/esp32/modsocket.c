@@ -552,7 +552,7 @@ mp_obj_t _socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in,
     }
 
     vstr.len = ret;
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
 STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {

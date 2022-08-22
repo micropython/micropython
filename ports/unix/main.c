@@ -554,7 +554,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
                 vstr_add_strn(&vstr, home, home_l);
                 vstr_add_strn(&vstr, p + 1, p1 - p - 1);
-                path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+                path_items[i] = mp_obj_new_str_from_vstr(&vstr);
             } else {
                 path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
             }
@@ -650,7 +650,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     vstr_init(&vstr, len + sizeof(".__main__"));
                     vstr_add_strn(&vstr, argv[a + 1], len);
                     vstr_add_strn(&vstr, ".__main__", sizeof(".__main__") - 1);
-                    import_args[0] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+                    import_args[0] = mp_obj_new_str_from_vstr(&vstr);
                     goto reimport;
                 }
 

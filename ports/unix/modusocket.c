@@ -559,7 +559,7 @@ STATIC mp_obj_t mod_socket_inet_ntop(mp_obj_t family_in, mp_obj_t binaddr_in) {
         mp_raise_OSError(errno);
     }
     vstr.len = strlen(vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return mp_obj_new_str_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_socket_inet_ntop_obj, mod_socket_inet_ntop);
 
