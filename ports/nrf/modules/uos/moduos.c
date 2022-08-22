@@ -108,7 +108,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
     for (int i = 0; i < n; i++) {
         vstr.buf[i] = (uint8_t)(rng_generate_random_word() & 0xFF);
     }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif

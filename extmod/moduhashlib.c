@@ -109,7 +109,7 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, 32);
     mbedtls_sha256_finish_ret((mbedtls_sha256_context *)&self->state, (unsigned char *)vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
 #else
@@ -143,7 +143,7 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, SHA256_BLOCK_SIZE);
     sha256_final((CRYAL_SHA256_CTX *)self->state, (byte *)vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif
 
@@ -196,7 +196,7 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, SHA1_SIZE);
     SHA1_Final((byte *)vstr.buf, (SHA1_CTX *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif
 
@@ -237,7 +237,7 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
     vstr_init_len(&vstr, 20);
     mbedtls_sha1_finish_ret((mbedtls_sha1_context *)self->state, (byte *)vstr.buf);
     mbedtls_sha1_free((mbedtls_sha1_context *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif
 
@@ -289,7 +289,7 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, MD5_SIZE);
     MD5_Final((byte *)vstr.buf, (MD5_CTX *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif // MICROPY_SSL_AXTLS
 
@@ -330,7 +330,7 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
     vstr_init_len(&vstr, 16);
     mbedtls_md5_finish_ret((mbedtls_md5_context *)self->state, (byte *)vstr.buf);
     mbedtls_md5_free((mbedtls_md5_context *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif // MICROPY_SSL_MBEDTLS
 

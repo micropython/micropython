@@ -791,7 +791,8 @@ mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-prec
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_str(const char *data, size_t len);
 mp_obj_t mp_obj_new_str_via_qstr(const char *data, size_t len);
-mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr);
+mp_obj_t mp_obj_new_str_from_vstr(vstr_t *vstr);
+mp_obj_t mp_obj_new_bytes_from_vstr(vstr_t *vstr);
 mp_obj_t mp_obj_new_bytes(const byte *data, size_t len);
 mp_obj_t mp_obj_new_bytearray(size_t n, const void *items);
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);

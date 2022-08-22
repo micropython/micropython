@@ -63,7 +63,7 @@ STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     trng_start();
     TRNG_GetRandomData(TRNG, vstr.buf, n);
 
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_urandom_obj, mp_uos_urandom);
 #endif

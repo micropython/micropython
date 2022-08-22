@@ -329,7 +329,7 @@ STATIC mp_obj_t aes_process(size_t n_args, const mp_obj_t *args, bool encrypt) {
     if (out_buf != MP_OBJ_NULL) {
         return out_buf;
     }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
 STATIC mp_obj_t ucryptolib_aes_encrypt(size_t n_args, const mp_obj_t *args) {
