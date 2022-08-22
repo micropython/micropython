@@ -46,9 +46,12 @@
 #include "mbedtls/debug.h"
 #include "mbedtls/error.h"
 // #if MICROPY_SSL_MBEDTLS_3
-// #include "mbedtls/build_info.h"
-// #endif
+//
+#if MBEDTLS_VERSION_NUMBER >= 0x03000000
+#include "mbedtls/build_info.h"
+#else
 #include "mbedtls/version.h"
+#endif
 #ifdef MICROPY_MBEDTLS_PLATFORM_TIME_ALT
 #include "mbedtls/mbedtls_config.h"
 
@@ -338,7 +341,11 @@ STATIC mp_obj_t mod_ssl_load_certchain(size_t n_args, const mp_obj_t *pos_args,
         size_t key_len;
         const byte *key = (const byte *)mp_obj_str_get_data(args[0].u_obj, &key_len);
         // len should include terminating null
+        #if MBEDTLS_VERSION_NUMBER >= 0x03000000
+        ret = mbedtls_pk_parse_key(&ctxi->pkey, key, key_len + 1, NULL, 0, mbedtls_ctr_drbg_random, &ctxi->ctr_drbg);
+        #else
         ret = mbedtls_pk_parse_key(&ctxi->pkey, key, key_len + 1, NULL, 0);
+        #endif
         if (ret != 0) {
             ret = MBEDTLS_ERR_PK_BAD_INPUT_DATA; // use general error for all key errors
             goto cleanupcertchain;
@@ -445,6 +452,8 @@ STATIC mp_obj_ssl_socket_t *ctx_socket(mp_obj_t self_in, mp_obj_t sock, struct c
     o->pkey = ctxi->pkey;
     o->ctr_drbg = ctxi->ctr_drbg;
     o->entropy = ctxi->entropy;
+    o->poll_mask = 0;
+    o->last_error = 0;
 
     int ret;
     uint32_t flags = 0;
@@ -587,145 +596,6 @@ STATIC mp_obj_t mod_ssl_ctx_init() {
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_ssl_ctx_init_obj, mod_ssl_ctx_init);
-
-
-
-STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
-    // Verify the socket object has the full stream protocol
-    mp_get_stream_raise(sock, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
-
-    #if MICROPY_PY_SSL_FINALISER
-    mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
-    #else
-    mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
-    #endif
-    o->base.type = &ssl_socket_type;
-    o->sock = sock;
-    o->poll_mask = 0;
-    o->last_error = 0;
-
-    int ret;
-    mbedtls_ssl_init(&o->ssl);
-    mbedtls_ssl_config_init(&o->conf);
-    mbedtls_x509_crt_init(&o->cacert);
-    mbedtls_x509_crt_init(&o->cert);
-    mbedtls_pk_init(&o->pkey);
-    mbedtls_ctr_drbg_init(&o->ctr_drbg);
-    #ifdef MBEDTLS_DEBUG_C
-    // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
-    mbedtls_debug_set_threshold(3);
-    #endif
-
-    mbedtls_entropy_init(&o->entropy);
-    const byte seed[] = "upy";
-    ret = mbedtls_ctr_drbg_seed(&o->ctr_drbg, mbedtls_entropy_func, &o->entropy, seed, sizeof(seed));
-    if (ret != 0) {
-        goto cleanup;
-    }
-
-    ret = mbedtls_ssl_config_defaults(&o->conf,
-        args->server_side.u_bool ? MBEDTLS_SSL_IS_SERVER : MBEDTLS_SSL_IS_CLIENT,
-        MBEDTLS_SSL_TRANSPORT_STREAM,
-        MBEDTLS_SSL_PRESET_DEFAULT);
-    if (ret != 0) {
-        goto cleanup;
-    }
-
-    mbedtls_ssl_conf_authmode(&o->conf, args->cert_reqs.u_int);
-    mbedtls_ssl_conf_rng(&o->conf, mbedtls_ctr_drbg_random, &o->ctr_drbg);
-    #ifdef MBEDTLS_DEBUG_C
-    mbedtls_ssl_conf_dbg(&o->conf, mbedtls_debug, NULL);
-    #endif
-
-    ret = mbedtls_ssl_setup(&o->ssl, &o->conf);
-    if (ret != 0) {
-        goto cleanup;
-    }
-
-    if (args->server_hostname.u_obj != mp_const_none) {
-        const char *sni = mp_obj_str_get_str(args->server_hostname.u_obj);
-        ret = mbedtls_ssl_set_hostname(&o->ssl, sni);
-        if (ret != 0) {
-            goto cleanup;
-        }
-    }
-
-    mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
-
-    if (args->key.u_obj != mp_const_none) {
-        size_t key_len;
-        const byte *key = (const byte *)mp_obj_str_get_data(args->key.u_obj, &key_len);
-        // len should include terminating null
-        #if MBEDTLS_VERSION_NUMBER >= 0x03000000
-        ret = mbedtls_pk_parse_key(&o->pkey, key, key_len + 1, NULL, 0, mbedtls_ctr_drbg_random, &o->ctr_drbg);
-        #else
-        ret = mbedtls_pk_parse_key(&o->pkey, key, key_len + 1, NULL, 0);
-        #endif
-        if (ret != 0) {
-            ret = MBEDTLS_ERR_PK_BAD_INPUT_DATA; // use general error for all key errors
-            goto cleanup;
-        }
-
-        size_t cert_len;
-        const byte *cert = (const byte *)mp_obj_str_get_data(args->cert.u_obj, &cert_len);
-        // len should include terminating null
-        ret = mbedtls_x509_crt_parse(&o->cert, cert, cert_len + 1);
-        if (ret != 0) {
-            ret = MBEDTLS_ERR_X509_BAD_INPUT_DATA; // use general error for all cert errors
-            goto cleanup;
-        }
-
-        ret = mbedtls_ssl_conf_own_cert(&o->conf, &o->cert, &o->pkey);
-        if (ret != 0) {
-            goto cleanup;
-        }
-    }
-
-    if (args->cadata.u_obj != mp_const_none) {
-        size_t cacert_len;
-        const byte *cacert = (const byte *)mp_obj_str_get_data(args->cadata.u_obj, &cacert_len);
-        // len should include terminating null
-        ret = mbedtls_x509_crt_parse(&o->cacert, cacert, cacert_len + 1);
-        if (ret != 0) {
-            ret = MBEDTLS_ERR_X509_BAD_INPUT_DATA; // use general error for all cert errors
-            goto cleanup;
-        }
-
-        mbedtls_ssl_conf_ca_chain(&o->conf, &o->cacert, NULL);
-    }
-
-    if (args->do_handshake.u_bool) {
-        while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
-            if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-                goto cleanup;
-            }
-            #ifdef MICROPY_EVENT_POLL_HOOK
-            MICROPY_EVENT_POLL_HOOK
-            #endif
-        }
-    }
-
-    return o;
-
-cleanup:
-    mbedtls_pk_free(&o->pkey);
-    mbedtls_x509_crt_free(&o->cert);
-    mbedtls_x509_crt_free(&o->cacert);
-    mbedtls_ssl_free(&o->ssl);
-    mbedtls_ssl_config_free(&o->conf);
-    mbedtls_ctr_drbg_free(&o->ctr_drbg);
-    mbedtls_entropy_free(&o->entropy);
-
-    if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
-        mp_raise_OSError(MP_ENOMEM);
-    } else if (ret == MBEDTLS_ERR_PK_BAD_INPUT_DATA) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid key"));
-    } else if (ret == MBEDTLS_ERR_X509_BAD_INPUT_DATA) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid cert"));
-    } else {
-        mbedtls_raise_error(ret);
-    }
-}
 
 STATIC mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
@@ -917,32 +787,9 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &ssl_socket_locals_dict
     );
 
-STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    // TODO: Implement more args
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_cert_reqs, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MBEDTLS_SSL_VERIFY_NONE}},
-        { MP_QSTR_cadata, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
-    };
-
-    // TODO: Check that sock implements stream protocol
-    mp_obj_t sock = pos_args[0];
-
-    struct ssl_args args;
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
-
-    return MP_OBJ_FROM_PTR(socket_new(sock, &args));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
 
 STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ssl) },
-    { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&mod_ssl_wrap_socket_obj) },
     { MP_ROM_QSTR(MP_QSTR_ctx_init), MP_ROM_PTR(&mod_ssl_ctx_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_MBEDTLS_VERSION), MP_ROM_PTR(&mbedtls_version_obj)},
     { MP_ROM_QSTR(MP_QSTR_CERT_NONE), MP_ROM_INT(MBEDTLS_SSL_VERIFY_NONE) },

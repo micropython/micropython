@@ -15,9 +15,15 @@ def wrap_socket(
     cadata=None,
     server_hostname=None,
     do_handshake=True,
+    keyfile=None,
+    certfile=None,
 ):
     ctx = _ussl.ctx_init()
-    if (key is not None) and (cert is not None):
+    if keyfile:
+        key = keyfile
+    if certfile:
+        cert = certfile
+    if key is not None:  # and (cert is not None):
         ctx.load_certchain(key=key, cert=cert)
     if cadata:
         ctx.load_cadata(cadata)
