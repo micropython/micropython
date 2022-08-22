@@ -27,51 +27,105 @@ Documentation is available at http://docs.micropython.org/en/latest/esp8266/quic
 Build instructions
 ------------------
 
-You need the esp-open-sdk toolchain (which provides both the compiler and libraries), which
-you can obtain using one of the following two options:
+You need the esp-open-sdk toolchain, which provides both the compiler and libraries.
 
- - Use a Docker image with a pre-built toolchain (**recommended**).
-   To use this, install Docker, then prepend
-   `docker run --rm -v $HOME:$HOME -u $UID -w $PWD larsks/esp-open-sdk ` to the start
-   of the mpy-cross and firmware `make` commands below. This will run the commands using the
-   toolchain inside the container but using the files on your local filesystem.
+There are two ways to do this:
+ - By running the toolchain in [Docker](https://www.docker.com/) (**recommended**).
+ - By installing a pre-built toolchain and adding it to your `$PATH`.
 
- - or, install the esp-open-sdk directly on your PC, which can be found at
-   <https://github.com/pfalcon/esp-open-sdk>. Clone this repository and
-   run `make` in its directory to build and install the SDK locally.  Make sure
-   to add toolchain bin directory to your PATH.  Read esp-open-sdk's README for
-   additional important information on toolchain setup.
-   If you use this approach, then the command below will work exactly.
+Regardless of which toolchain you use, the first step is to make sure required
+submodules are available:
 
-Add the external dependencies to the MicroPython repository checkout:
 ```bash
 $ make -C ports/esp8266 submodules
 ```
+
 See the README in the repository root for more information about external
 dependencies.
 
-The MicroPython cross-compiler must be built to pre-compile some of the
-built-in scripts to bytecode.  This can be done using:
+__Building with Docker__
+
+Once you have installed Docker, you can run all of the following build
+commands inside the Docker container by prefixing them with `docker
+run --rm -v $HOME:$HOME -u $UID -w $PWD larsks/esp-open-sdk ...command...`.
+This will automatically download the Docker image provided by @larsks which
+contains the full toolchain and SDK.
+
+Then you need to compile the MicroPython cross-compiler (`mpy-cross`). From
+the root of this repository, run:
+
+```bash
+$ docker run --rm -v $HOME:$HOME -u $UID -w $PWD larsks/esp-open-sdk make -C mpy-cross
+```
+
+**Note:** The `mpy-cross` binary will likely only work inside the Docker
+container. This will not be a problem if you're only building ESP8266
+firmware, but if you're also working on other ports then you will need to
+recompile for your host when switching between ports. To avoid this, use
+the local toolchain instead.
+
+Then to compile the ESP8266 firmware:
+
+```
+$ cd ports/esp8266
+$ docker run --rm -v $HOME:$HOME -u $UID -w $PWD larsks/esp-open-sdk make -j BOARD=GENERIC
+```
+
+This will produce binary images in the `build-GENERIC/` subdirectory.
+Substitute the board for whichever board you're using.
+
+__Building with a local toolchain__
+
+First download the pre-built toolchain (thanks to @jepler from Adafruit). You
+will need to find somewhere to put it in your filesystem, e.g. `~/espressif`.
+Create that directory first if necessary.
+
+```
+$ cd ~/espressif # Change as necessary
+$ wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
+$ tar zxvf xtensa-lx106-elf-standalone.tar.gz
+$ rm xtensa-lx106-elf/bin/esptool.py  # Use system version of esptool.py instead.
+```
+
+Then append this to your `$PATH` variable so the compiler binaries can be
+found:
+
+```
+$ export "PATH=$HOME/espressif/xtensa-lx106-elf/bin/:$PATH"
+```
+
+(You will need to do this each time you start a new terminal)
+
+Then you need to compile the MicroPython cross-compiler (`mpy-cross`). From
+the root of this repository, run:
+
 ```bash
 $ make -C mpy-cross
 ```
-(Prepend the Docker command if using Docker, see above)
 
-Then, to build MicroPython for the ESP8266, just run:
-```bash
-$ cd ports/esp8266
-$ make
+Then to compile the ESP8266 firmware:
+
 ```
-(Prepend the Docker command if using Docker, see above)
+$ cd ports/esp8266
+$ make -j BOARD=GENERIC
+```
 
-This will produce binary images in the `build-GENERIC/` subdirectory. If you
-install MicroPython to your module for the first time, or after installing any
-other firmware, you should erase flash completely:
+This will produce binary images in the `build-GENERIC/` subdirectory.
+Substitute the board for whichever board you're using.
+
+
+Installing MicroPython
+----------------------
+
+To communicate with the board you will need to install `esptool.py`. This can
+be obtained from your system package manager or from PyPi via `pip`.
+
+If you install MicroPython to your module for the first time, or after
+installing any other firmware, you should erase flash completely:
+
 ```bash
 $ esptool.py --port /dev/ttyXXX erase_flash
 ```
-
-You can install esptool.py either from your system package manager or from PyPi.
 
 Erasing the flash is also useful as a troubleshooting measure, if a module doesn't
 behave as expected.
@@ -80,7 +134,9 @@ To flash MicroPython image to your ESP8266, use:
 ```bash
 $ make deploy
 ```
-(This should not be run inside Docker as it will need access to the serial port.)
+
+(If using the Docker instructions above, do not run this command via Docker as
+it will need access to the serial port. Run it directly instead.)
 
 This will use the `esptool.py` script to download the images.  You must have
 your ESP module in the bootloader mode, and connected to a serial port on your PC.
