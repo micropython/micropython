@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard friendly",
+        "Castellated Pads",
+        "USB-C"
+    ],
+    "images": [
+        "rp2040-zero-1.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "RP2040-Zero",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/product/rp2040-zero.htm",
+    "vendor": "Waveshare"
+}

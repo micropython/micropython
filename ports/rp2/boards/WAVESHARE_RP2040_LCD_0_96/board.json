@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard friendly",
+        "Battery Charging",
+        "Castellated Pads",
+        "0.96inch LCD",
+        "USB-C"
+    ],
+    "images": [
+        "rp2040-lcd-0.96-1.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Waveshare RP2040-LCD-0.96",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/product/rp2040-lcd-0.96.htm",
+    "vendor": "Waveshare"
+}

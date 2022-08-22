@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard friendly",
+        "Battery Charging",
+        "Castellated Pads",
+        "USB-C"
+    ],
+    "images": [
+        "rp2040-plus-1.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Waveshare RP2040=Plus",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/rp2040-plus.htm",
+    "vendor": "Waveshare"
+}
