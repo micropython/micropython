@@ -29,6 +29,8 @@
 
 #include "hardware/watchdog.h"
 
+#define WDT_TIMEOUT_MAX    (8388)
+
 typedef struct _machine_wdt_obj_t {
     mp_obj_base_t base;
 } machine_wdt_obj_t;
@@ -53,7 +55,11 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type, size_t n_args, s
     }
 
     // Start the watchdog (timeout is in milliseconds).
-    watchdog_enable(args[ARG_timeout].u_int, false);
+    uint32_t timeout = args[ARG_timeout].u_int;
+    if (timeout > WDT_TIMEOUT_MAX) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Timeout exceeds %d."), WDT_TIMEOUT_MAX);
+    }
+    watchdog_enable(timeout, false);
 
     return MP_OBJ_FROM_PTR(&machine_wdt);
 }
