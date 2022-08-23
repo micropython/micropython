@@ -244,7 +244,7 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
     #define REFRESH_COUNT (MICROPY_HW_SDRAM_REFRESH_RATE * 90000 / 8192 - 20)
     HAL_SDRAM_ProgramRefreshRate(hsdram, REFRESH_COUNT);
 
-    #if defined(STM32F7)
+    #if defined(STM32F7)|| defined(STM32H7)
     /* Enable MPU for the SDRAM Memory Region to allow non-aligned
        accesses (hard-fault otherwise)
        Initially disable all access for the entire SDRAM memory space,
