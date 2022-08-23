@@ -87,7 +87,6 @@
 #define MICROPY_PY_MATH_ISCLOSE                 (MICROPY_PY_MATH_SPECIAL_FUNCTIONS)
 #define MICROPY_PY_CMATH                        (1)
 #define MICROPY_PY_IO_IOBASE                    (1)
-#define MICROPY_PY_IO_FILEIO                    (1)
 #define MICROPY_PY_SYS_MAXSIZE                  (1)
 #define MICROPY_PY_SYS_STDFILES                 (1)
 #define MICROPY_PY_UERRNO                       (1)
@@ -295,7 +294,7 @@ static inline unsigned long mp_urandom_seed_init(void) {
 // We need to provide a declaration/definition of alloca()
 // unless support for it is disabled.
 #if !defined(MICROPY_NO_ALLOCA) || MICROPY_NO_ALLOCA == 0
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 #include <stdlib.h>
 #else
 #include <alloca.h>

@@ -397,6 +397,9 @@ STATIC int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len,
     uint8_t dns_ip[MOD_NETWORK_IPADDR_BUF_SIZE] = {8, 8, 8, 8};
     uint8_t *buf = m_new(uint8_t, MAX_DNS_BUF_SIZE);
     DNS_init(2, buf);
+    if (wiznet5k_obj.netinfo.dns[0]) {
+        memcpy(dns_ip, wiznet5k_obj.netinfo.dns, MOD_NETWORK_IPADDR_BUF_SIZE);
+    }
     mp_int_t ret = DNS_run(dns_ip, (uint8_t *)name, out_ip);
     m_del(uint8_t, buf, MAX_DNS_BUF_SIZE);
     if (ret == 1) {

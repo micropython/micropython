@@ -35,7 +35,6 @@
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS       (0)
 #define MICROPY_PY_MATH_FACTORIAL               (0)
 #define MICROPY_PY_MATH_ISCLOSE                 (0)
-#define MICROPY_PY_IO_FILEIO                    (MICROPY_VFS)
 #define MICROPY_PY_SYS_PS1_PS2                  (0)
 #define MICROPY_PY_UBINASCII_CRC32              (0)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS          (0)

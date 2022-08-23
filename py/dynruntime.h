@@ -127,6 +127,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_str_get_data(o, len)         (mp_obj_str_get_data_dyn((o), (len)))
 #define mp_get_buffer_raise(o, bufinfo, fl) (mp_fun_table.get_buffer_raise((o), (bufinfo), (fl)))
 #define mp_get_stream_raise(s, flags)       (mp_fun_table.get_stream_raise((s), (flags)))
+#define mp_obj_is_true(o)                   (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_BOOL))
 
 #define mp_obj_len(o)                       (mp_obj_len_dyn(o))
 #define mp_obj_subscr(base, index, val)     (mp_fun_table.obj_subscr((base), (index), (val)))

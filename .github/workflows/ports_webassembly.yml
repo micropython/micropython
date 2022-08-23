@@ -1,4 +1,4 @@
-name: javascript port
+name: webassembly port
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - 'py/**'
       - 'extmod/**'
       - 'lib/**'
-      - 'ports/javascript/**'
+      - 'ports/webassembly/**'
 
 jobs:
   build:
@@ -17,8 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install packages
-      run: source tools/ci.sh && ci_javascript_setup
+      run: source tools/ci.sh && ci_webassembly_setup
     - name: Build
-      run: source tools/ci.sh && ci_javascript_build
+      run: source tools/ci.sh && ci_webassembly_build
     - name: Run tests
-      run: source tools/ci.sh && ci_javascript_run_tests
+      run: source tools/ci.sh && ci_webassembly_run_tests

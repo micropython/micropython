@@ -170,7 +170,6 @@ STATIC const mp_rom_map_elem_t vfs_fat_rawfile_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(vfs_fat_rawfile_locals_dict, vfs_fat_rawfile_locals_dict_table);
 
-#if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t vfs_fat_fileio_stream_p = {
     .read = file_obj_read,
     .write = file_obj_write,
@@ -186,7 +185,6 @@ const mp_obj_type_t mp_type_vfs_fat_fileio = {
     .protocol = &vfs_fat_fileio_stream_p,
     .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
 };
-#endif
 
 STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
     .read = file_obj_read,
@@ -230,11 +228,9 @@ STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_i
             case '+':
                 mode |= FA_READ | FA_WRITE;
                 break;
-            #if MICROPY_PY_IO_FILEIO
             case 'b':
                 type = &mp_type_vfs_fat_fileio;
                 break;
-            #endif
             case 't':
                 type = &mp_type_vfs_fat_textio;
                 break;

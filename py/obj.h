@@ -283,9 +283,11 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
 #define MP_OBJ_FROM_PTR(p) ((mp_obj_t)((uintptr_t)(p)))
 
 // rom object storage needs special handling to widen 32-bit pointer to 64-bits
-typedef union _mp_rom_obj_t { uint64_t u64;
-                              struct { const void *lo, *hi;
-                              } u32;
+typedef union _mp_rom_obj_t {
+    uint64_t u64;
+    struct {
+        const void *lo, *hi;
+    } u32;
 } mp_rom_obj_t;
 #define MP_ROM_INT(i) {MP_OBJ_NEW_SMALL_INT(i)}
 #define MP_ROM_QSTR(q) {MP_OBJ_NEW_QSTR(q)}

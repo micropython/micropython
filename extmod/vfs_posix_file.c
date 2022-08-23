@@ -30,7 +30,7 @@
 #include "py/stream.h"
 #include "extmod/vfs_posix.h"
 
-#if MICROPY_VFS_POSIX || MICROPY_VFS_POSIX_FILE
+#if MICROPY_VFS_POSIX
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -83,15 +83,12 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
             case '+':
                 mode_rw = O_RDWR;
                 break;
-                #if MICROPY_PY_IO_FILEIO
-            // If we don't have io.FileIO, then files are in text mode implicitly
             case 'b':
                 type = &mp_type_vfs_posix_fileio;
                 break;
             case 't':
                 type = &mp_type_vfs_posix_textio;
                 break;
-                #endif
         }
     }
 
@@ -246,7 +243,6 @@ STATIC const mp_rom_map_elem_t vfs_posix_rawfile_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(vfs_posix_rawfile_locals_dict, vfs_posix_rawfile_locals_dict_table);
 
-#if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t vfs_posix_fileio_stream_p = {
     .read = vfs_posix_file_read,
     .write = vfs_posix_file_write,
@@ -262,7 +258,6 @@ const mp_obj_type_t mp_type_vfs_posix_fileio = {
     .protocol = &vfs_posix_fileio_stream_p,
     .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
 };
-#endif
 
 STATIC const mp_stream_p_t vfs_posix_textio_stream_p = {
     .read = vfs_posix_file_read,
@@ -285,4 +280,4 @@ const mp_obj_vfs_posix_file_t mp_sys_stdin_obj = {{&mp_type_vfs_posix_textio}, S
 const mp_obj_vfs_posix_file_t mp_sys_stdout_obj = {{&mp_type_vfs_posix_textio}, STDOUT_FILENO};
 const mp_obj_vfs_posix_file_t mp_sys_stderr_obj = {{&mp_type_vfs_posix_textio}, STDERR_FILENO};
 
-#endif // MICROPY_VFS_POSIX || MICROPY_VFS_POSIX_FILE
+#endif // MICROPY_VFS_POSIX
