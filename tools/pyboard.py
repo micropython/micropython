@@ -583,7 +583,7 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
         if cmd == "cp":
             srcs = args[:-1]
             dest = args[-1]
-            if srcs[0].startswith("./") or dest.startswith(":"):
+            if dest.startswith(":"):
                 op = pyb.fs_put
                 fmt = "cp %s :%s"
                 dest = fname_remote(dest)
