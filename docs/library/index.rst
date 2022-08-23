@@ -195,4 +195,4 @@ but also the MicroPython libraries too (e.g. ``machine``, ``bluetooth``, etc).
 The main exception is the port-specific libraries (``pyb``, ``esp``, etc).
 
 *Other than when you specifically want to force the use of the built-in module,
-we recommend always using ``import module`` rather than ``import umodule``.*
+we recommend always using* ``import module`` *rather than* ``import umodule``.
