@@ -203,7 +203,7 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
         if (obj_type == MP_PERSISTENT_OBJ_STR || obj_type == MP_PERSISTENT_OBJ_BYTES) {
             read_byte(reader); // skip null terminator
             if (obj_type == MP_PERSISTENT_OBJ_STR) {
-                return mp_obj_new_str_from_vstr(&vstr);
+                return mp_obj_new_str_from_utf8_vstr(&vstr);
             } else {
                 return mp_obj_new_bytes_from_vstr(&vstr);
             }

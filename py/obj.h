@@ -792,6 +792,11 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val); // this must return a 
 mp_obj_t mp_obj_new_str(const char *data, size_t len);
 mp_obj_t mp_obj_new_str_via_qstr(const char *data, size_t len);
 mp_obj_t mp_obj_new_str_from_vstr(vstr_t *vstr);
+#if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+mp_obj_t mp_obj_new_str_from_utf8_vstr(vstr_t *vstr); // only use when vstr is already known to be utf-8 encoded
+#else
+#define mp_obj_new_str_from_utf8_vstr mp_obj_new_str_from_vstr
+#endif
 mp_obj_t mp_obj_new_bytes_from_vstr(vstr_t *vstr);
 mp_obj_t mp_obj_new_bytes(const byte *data, size_t len);
 mp_obj_t mp_obj_new_bytearray(size_t n, const void *items);
