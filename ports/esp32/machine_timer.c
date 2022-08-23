@@ -100,20 +100,25 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_uint_t group = (mp_obj_get_int(args[0]) >> 1) & 1;
     mp_uint_t index = mp_obj_get_int(args[0]) & 1;
 
-    // Check whether the timer is already initialized, if so return it
+    machine_timer_obj_t *self = NULL;
+
+    // Check whether the timer is already initialized, if so use it
     for (machine_timer_obj_t *t = MP_STATE_PORT(machine_timer_obj_head); t; t = t->next) {
         if (t->group == group && t->index == index) {
-            return t;
+            self = t;
+            break;
         }
     }
+    // The timer does not exist, create it.
+    if (self == NULL) {
+        self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
+        self->group = group;
+        self->index = index;
 
-    machine_timer_obj_t *self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
-    self->group = group;
-    self->index = index;
-
-    // Add the timer to the linked-list of timers
-    self->next = MP_STATE_PORT(machine_timer_obj_head);
-    MP_STATE_PORT(machine_timer_obj_head) = self;
+        // Add the timer to the linked-list of timers
+        self->next = MP_STATE_PORT(machine_timer_obj_head);
+        MP_STATE_PORT(machine_timer_obj_head) = self;
+    }
 
     if (n_args > 0 || n_kw > 0) {
         mp_map_t kw_args;
