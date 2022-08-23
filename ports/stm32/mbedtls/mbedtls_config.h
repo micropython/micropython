@@ -85,6 +85,9 @@
 #define MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_KEY_EXCHANGE
 #define MBEDTLS_X509_CRT_PARSE_C
 #define MBEDTLS_X509_USE_C
+#define MBEDTLS_HAVE_TIME
+#define MBEDTLS_HAVE_TIME_DATE
+
 
 // Memory allocation hooks
 #include <stdlib.h>
@@ -94,6 +97,13 @@ void m_tracked_free(void *ptr);
 #define MBEDTLS_PLATFORM_STD_CALLOC m_tracked_calloc
 #define MBEDTLS_PLATFORM_STD_FREE m_tracked_free
 #define MBEDTLS_PLATFORM_SNPRINTF_MACRO snprintf
+
+// Time hook
+time_t platform_mbedtls_time(time_t *timer);
+#define MBEDTLS_PLATFORM_TIME_MACRO platform_mbedtls_time
+#define MBEDTLS_PLATFORM_GMTIME_R_ALT
+typedef time_t mbedtls_time_t;
+struct tm *mbedtls_platform_gmtime_r(const mbedtls_time_t *timer, struct tm *tm_buf);
 
 #include "mbedtls/check_config.h"
 
