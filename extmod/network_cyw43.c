@@ -48,8 +48,8 @@ typedef struct _network_cyw43_obj_t {
     int itf;
 } network_cyw43_obj_t;
 
-STATIC const network_cyw43_obj_t network_cyw43_wl_sta = { { &mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_STA };
-STATIC const network_cyw43_obj_t network_cyw43_wl_ap = { { &mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_AP };
+STATIC const network_cyw43_obj_t network_cyw43_wl_sta = { { (mp_obj_type_t *)&mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_STA };
+STATIC const network_cyw43_obj_t network_cyw43_wl_ap = { { (mp_obj_type_t *)&mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_AP };
 
 STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -383,7 +383,7 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
             }
             #if !MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
             case MP_QSTR_hostname: {
-                return mp_obj_new_str(self->cyw->hostname, strlen(self->cyw->hostname));
+                return mp_obj_new_str(mod_network_get_hostname(), strlen(mod_network_get_hostname()));
             }
             #endif
             default:
@@ -461,8 +461,7 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                     #if !MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
                     case MP_QSTR_hostname: {
                         const char *hostname = mp_obj_str_get_str(e->value);
-                        strncpy(self->cyw->hostname, hostname, MICROPY_BOARD_HOSTNAME_LENGTH);
-                        self->cyw->hostname[MICROPY_BOARD_HOSTNAME_LENGTH - 1] = 0;
+                        mod_network_set_hostname(hostname);
                         break;
                     }
                     #endif
@@ -496,13 +495,17 @@ STATIC const mp_rom_map_elem_t network_cyw43_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(network_cyw43_locals_dict, network_cyw43_locals_dict_table);
 
-MP_DEFINE_CONST_OBJ_TYPE(
-    mp_network_cyw43_type,
+MP_DEFINE_CONST_OBJ_FULL_TYPE(
+    mp_network_cyw43_base,
     MP_QSTR_CYW43,
     MP_TYPE_FLAG_NONE,
     make_new, network_cyw43_make_new,
     print, network_cyw43_print,
     locals_dict, &network_cyw43_locals_dict
     );
+const mod_network_nic_type_t mp_network_cyw43_type = {
+    .base = mp_network_cyw43_base,
+    .netif = (void *)&cyw43_state.netif[CYW43_ITF_STA],  // Hostname is defined for Station only
+};
 
 #endif // MICROPY_PY_NETWORK_CYW43

@@ -97,12 +97,6 @@ eth_t eth_instance;
 #define PHY_INIT_TIMEOUT_MS (10000)
 #define PHY_AUTONEGO_TIMEOUT_US (5000000)
 
-typedef struct _eth_t {
-    uint32_t trace_flags;
-    struct netif netif;
-    struct dhcp dhcp_struct;
-} eth_t;
-
 typedef struct _iomux_table_t {
     uint32_t muxRegister;
     uint32_t muxMode;
