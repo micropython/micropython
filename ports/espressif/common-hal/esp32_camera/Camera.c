@@ -34,6 +34,10 @@
 
 #include "esp32-camera/driver/private_include/cam_hal.h"
 
+#if !CONFIG_SPIRAM
+#error esp32_camera only works on boards configured with spiram, disable it in mpconfigboard.mk
+#endif
+
 static void maybe_claim_pin(const mcu_pin_obj_t *pin) {
     if (pin) {
         claim_pin(pin);
