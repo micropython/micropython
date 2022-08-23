@@ -121,12 +121,6 @@ typedef struct _eth_dma_t {
     uint8_t padding[16384 - 15408];
 } eth_dma_t;
 
-typedef struct _eth_t {
-    uint32_t trace_flags;
-    struct netif netif;
-    struct dhcp dhcp_struct;
-} eth_t;
-
 static eth_dma_t eth_dma __attribute__((aligned(16384)));
 
 eth_t eth_instance;

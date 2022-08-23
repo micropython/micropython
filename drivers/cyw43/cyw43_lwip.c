@@ -33,6 +33,7 @@
 #include "lwip/dns.h"
 #include "lwip/apps/mdns.h"
 #include "drivers/cyw43/cyw43.h"
+#include "extmod/modnetwork.h"
 
 STATIC void cyw43_ethernet_trace(cyw43_t *self, struct netif *netif, size_t len, const void *data, unsigned int flags) {
     bool is_tx = flags & NETUTILS_TRACE_IS_TX;
@@ -117,7 +118,7 @@ void cyw43_tcpip_init(cyw43_t *self, int itf) {
     #else
     netif_add(n, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, cyw43_netif_init, netif_input);
     #endif
-    netif_set_hostname(n, self->hostname);
+    netif_set_hostname(n, mod_network_get_hostname());
     netif_set_default(n);
     netif_set_up(n);
 
@@ -128,12 +129,13 @@ void cyw43_tcpip_init(cyw43_t *self, int itf) {
     } else {
         dhcp_server_init(&self->dhcp_server, &ipconfig[0], &ipconfig[1]);
     }
-
+    
+    // This shall be removed as it is taken care of in mod_network.c
     #if LWIP_MDNS_RESPONDER
     // TODO better to call after IP address is set
     char mdns_hostname[9];
-    int len = MIN(strlen(self->hostname), 4);
-    memcpy(&mdns_hostname[0], self->hostname, len);
+    int len = MIN(strlen(mod_network_get_hostname()), 4);
+    memcpy(&mdns_hostname[0], mod_network_get_hostname(), len);
     mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 4 + len, 8 - len, &mdns_hostname[len]);
     mdns_hostname[8] = '\0';
     mdns_resp_add_netif(n, mdns_hostname, 60);

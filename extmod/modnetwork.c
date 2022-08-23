@@ -44,6 +44,9 @@
 #include "lwip/apps/mdns.h"
 #endif
 
+#define DEFAULT_HOSTNAME    "mp-host"
+static char hostname[MICROPY_PY_HOSTNAME_LENGTH + 1];
+
 #if MICROPY_PY_NETWORK_CYW43 && MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
 // So that CYW43_LINK_xxx constants are available to MICROPY_PORT_NETWORK_INTERFACES.
 #include "lib/cyw43-driver/src/cyw43.h"
@@ -88,9 +91,21 @@ STATIC mp_obj_t network_route(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 
+STATIC mp_obj_t network_hostname(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return mp_obj_new_str(hostname, strlen(hostname));
+    } else {
+        const char *str = mp_obj_str_get_str(args[0]);
+        mod_network_set_hostname(str);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_hostname_obj, 0, 1, network_hostname);
+
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
     { MP_ROM_QSTR(MP_QSTR_route), MP_ROM_PTR(&network_route_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hostname), MP_ROM_PTR(&network_hostname_obj) },
 
     // Defined per port in mpconfigport.h
     MICROPY_PORT_NETWORK_INTERFACES
@@ -111,6 +126,27 @@ MP_REGISTER_MODULE(MP_QSTR_network, mp_module_network);
 
 /*******************************************************************************/
 // Implementations of network methods that can be used by any interface
+
+const char *mod_network_get_hostname(void) {
+    return (const char *)hostname;
+}
+
+const char *mod_network_set_hostname(const char *host) {
+    // New hostname can't be NULL nor zero length string.
+    if (host && *host) {
+        strncpy(hostname, host, MICROPY_PY_HOSTNAME_LENGTH);
+    }
+    hostname[MICROPY_PY_HOSTNAME_LENGTH] = 0;
+    #if LWIP_MDNS_RESPONDER
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+        mod_network_nic_type_t *nic = (mod_network_nic_type_t *)mp_obj_get_type(MP_STATE_PORT(mod_network_nic_list).items[i]);
+        if (nic->netif) {
+            mdns_resp_rename_netif(nic->netif, hostname);
+        }
+    }
+    #endif  // LWIP_MDNS_RESPONDER
+    return (const char *)hostname;
+}
 
 #if MICROPY_PY_LWIP
 
@@ -142,8 +178,6 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
             }
             mp_hal_delay_ms(100);
         }
-
-        return mp_const_none;
     } else {
         // Release and stop any existing DHCP
         dhcp_release(netif);
@@ -157,8 +191,14 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
         ip_addr_t dns;
         netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns, NETUTILS_BIG);
         dns_setserver(0, &dns);
-        return mp_const_none;
     }
+    netif_set_hostname(netif, hostname);
+    #if LWIP_MDNS_RESPONDER
+    if (netif->ip_addr.addr != 0) {
+        mdns_resp_add_netif(netif, netif->hostname, 60);
+    }
+    #endif  // LWIP_MDNS_RESPONDER
+    return mp_const_none;
 }
 
 #endif

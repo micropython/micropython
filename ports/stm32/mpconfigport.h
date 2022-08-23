@@ -176,25 +176,21 @@ extern const struct _mp_obj_module_t stm_module;
 #endif
 
 #if defined(MICROPY_HW_ETH_MDC)
-extern const struct _mp_obj_type_t network_lan_type;
+extern const struct _mod_network_nic_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH                  { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
 #else
 #define MICROPY_HW_NIC_ETH
 #endif
 
 #if MICROPY_PY_NETWORK_CYW43
-extern const struct _mp_obj_type_t mp_network_cyw43_type;
+extern const struct _mod_network_nic_type_t mp_network_cyw43_type;
 #define MICROPY_HW_NIC_CYW43                { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) },
 #else
 #define MICROPY_HW_NIC_CYW43
 #endif
 
 #if MICROPY_PY_NETWORK_WIZNET5K
-#if MICROPY_PY_LWIP
-extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
-#else
 extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
-#endif
 #define MICROPY_HW_NIC_WIZNET5K             { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
 #else
 #define MICROPY_HW_NIC_WIZNET5K

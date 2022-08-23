@@ -38,7 +38,7 @@ typedef struct _network_lan_obj_t {
     eth_t *eth;
 } network_lan_obj_t;
 
-STATIC const network_lan_obj_t network_lan_eth0 = { { &network_lan_type }, &eth_instance };
+STATIC const network_lan_obj_t network_lan_eth0 = { { (mp_obj_type_t *)&network_lan_type }, &eth_instance };
 
 STATIC void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     network_lan_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -158,8 +158,8 @@ STATIC const mp_rom_map_elem_t network_lan_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(network_lan_locals_dict, network_lan_locals_dict_table);
 
-MP_DEFINE_CONST_OBJ_TYPE(
-    network_lan_type,
+MP_DEFINE_CONST_OBJ_FULL_TYPE(
+    network_lan_base,
     MP_QSTR_LAN,
     MP_TYPE_FLAG_NONE,
     make_new, network_lan_make_new,
@@ -167,4 +167,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &network_lan_locals_dict
     );
 
+const mod_network_nic_type_t network_lan_type = {
+    .base = network_lan_base,
+    .netif = (void *)&(eth_instance.netif),
+};
 #endif // defined(MICROPY_HW_ETH_MDC)
