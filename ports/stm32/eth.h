@@ -26,6 +26,15 @@
 #ifndef MICROPY_INCLUDED_STM32_ETH_H
 #define MICROPY_INCLUDED_STM32_ETH_H
 
+#if defined(MICROPY_HW_ETH_MDC)
+#include "lwip/dhcp.h"
+typedef struct _eth_t {
+    uint32_t trace_flags;
+    struct netif netif;
+    struct dhcp dhcp_struct;
+} eth_t;
+#endif
+
 typedef struct _eth_t eth_t;
 extern eth_t eth_instance;
 

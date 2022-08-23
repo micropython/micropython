@@ -773,7 +773,7 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
         #endif
         printf(" %02x", WIZCHIP_READ(reg));
     }
-    for (int sn = 0; sn < 4; ++sn) {
+    for (int sn = 0; sn < _WIZCHIP_SOCK_NUM_; ++sn) {
         printf("\nWiz SREG[%d]:", sn);
         for (int i = 0; i < 0x30; ++i) {
             if (i % 16 == 0) {
@@ -1013,11 +1013,14 @@ STATIC const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
 
 #if WIZNET5K_WITH_LWIP_STACK
-const mp_obj_type_t mod_network_nic_type_wiznet5k = {
-    { &mp_type_type },
-    .name = MP_QSTR_WIZNET5K,
-    .make_new = wiznet5k_make_new,
-    .locals_dict = (mp_obj_dict_t *)&wiznet5k_locals_dict,
+const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
+    .base = {
+        { &mp_type_type },
+        .name = MP_QSTR_WIZNET5K,
+        .make_new = wiznet5k_make_new,
+        .locals_dict = (mp_obj_dict_t *)&wiznet5k_locals_dict,
+    },
+    .netif = (void *)&wiznet5k_obj.netif,
 };
 #else // WIZNET5K_PROVIDED_STACK
 const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
