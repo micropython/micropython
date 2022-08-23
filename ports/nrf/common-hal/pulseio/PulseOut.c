@@ -75,8 +75,8 @@ static void pulseout_event_handler(nrf_timer_event_t event_type, void *p_context
 
     pulse_array_index++;
     // Ignore a zero-length pulse
-    while (pulse_array[pulse_array_index] == 0 &&
-           pulse_array_index < pulse_array_length) {
+    while (pulse_array_index < pulse_array_length &&
+           pulse_array[pulse_array_index] == 0) {
         pulse_array_index++;
     }
 
