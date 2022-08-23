@@ -354,9 +354,13 @@ def do_filesystem(pyb, args):
                 verbose=verbose,
             )
     else:
-        pyboard.filesystem_command(
-            pyb, fs_args, progress_callback=show_progress_bar, verbose=verbose
-        )
+        try:
+            pyboard.filesystem_command(
+                pyb, fs_args, progress_callback=show_progress_bar, verbose=verbose
+            )
+        except OSError as er:
+            print(f"{_PROG}: {er}")
+            sys.exit(1)
 
 
 def do_edit(pyb, args):
