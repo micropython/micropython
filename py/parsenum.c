@@ -160,7 +160,7 @@ value_error:
         mp_printf(&print, "invalid syntax for integer with base %d: ", base);
         mp_str_print_quoted(&print, str_val_start, top - str_val_start, true);
         mp_obj_t exc = mp_obj_new_exception_arg1(&mp_type_ValueError,
-            mp_obj_new_str_from_vstr(&vstr));
+            mp_obj_new_str_from_utf8_vstr(&vstr));
         raise_exc(exc, lex);
         #endif
     }
