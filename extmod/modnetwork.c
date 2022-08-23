@@ -192,10 +192,12 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
         netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns, NETUTILS_BIG);
         dns_setserver(0, &dns);
     }
+    #if LWIP_NETIF_HOSTNAME
     netif_set_hostname(netif, hostname);
+    #endif
     #if LWIP_MDNS_RESPONDER
     if (netif->ip_addr.addr != 0) {
-        mdns_resp_add_netif(netif, netif->hostname, 60);
+        mdns_resp_add_netif(netif, hostname, 60);
     }
     #endif  // LWIP_MDNS_RESPONDER
     return mp_const_none;
