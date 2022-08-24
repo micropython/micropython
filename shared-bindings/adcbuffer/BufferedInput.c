@@ -37,37 +37,37 @@
 #include "shared-bindings/adcbuffer/BufferedInput.h"
 #include "shared-bindings/util.h"
 
-/// class BufferedInput:
-///     """Input analog voltage level to supplied buffer using DMA Capture"""
-///
-///     def __init__(self, pin: microcontroller.Pin, buffer: WriteableBuffer, *, sample_rate: int = 500000) -> None:
-///         """Use the BufferedInput on the given pin. Fill the given buffer from ADC read values at the supplied
-///         sample_rate.
-///
-///         :param ~microcontroller.Pin pin: the pin to read from"""
-///         :param ~circuitpython_typing.WriteableBuffer buffer: buffer: A buffer for samples
-///         :param ~int sample_rate: rate: The desired playback sample rate
-///
-///     Usage::
-///
-///       import board
-///       import adcbuffer
-///       import array
-///
-///       length = 1000
-///       mybuffer = array.array("H", [0] * length)
-///       rate = 500000
-///       adcbuf = adcbuffer.BufferedInput(board.GP26, mybuffer, rate)
-///       adcbuf.readmultiple()
-///       adcbuf.deinit()
-///       for i in range(length):
-///           print(i, mybuffer[i])
-///
-///       (TODO) The reference voltage varies by platform so use ``reference_voltage`` to read the configured setting.
-///       (TODO) Provide mechanism to read CPU Temperature
-///       """
-///         ...
-///
+//| class BufferedInput:
+//|     """Input analog voltage level to supplied buffer using DMA Capture"""
+//|
+//|     def __init__(self, pin: microcontroller.Pin, buffer: WriteableBuffer, *, sample_rate: int = 500000) -> None:
+//|         """Use the BufferedInput on the given pin. Fill the given buffer from ADC read values at the supplied
+//|         sample_rate.
+//|
+//|         :param ~microcontroller.Pin pin: the pin to read from"""
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: buffer: A buffer for samples
+//|         :param ~int sample_rate: rate: The desired playback sample rate
+//|
+//|     Usage::
+//|
+//|       import board
+//|       import adcbuffer
+//|       import array
+//|
+//|       length = 1000
+//|       mybuffer = array.array("H", [0] * length)
+//|       rate = 500000
+//|       adcbuf = adcbuffer.BufferedInput(board.GP26, mybuffer, rate)
+//|       adcbuf.readmultiple()
+//|       adcbuf.deinit()
+//|       for i in range(length):
+//|           print(i, mybuffer[i])
+//|
+//|       (TODO) The reference voltage varies by platform so use ``reference_voltage`` to read the configured setting.
+//|       (TODO) Provide mechanism to read CPU Temperature
+//|       """
+//|         ...
+//|
 STATIC mp_obj_t adcbuffer_bufferedinput_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin, ARG_buffer, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
@@ -116,10 +116,10 @@ STATIC mp_obj_t adcbuffer_bufferedinput_make_new(const mp_obj_type_t *type, size
     return MP_OBJ_FROM_PTR(self);
 }
 
-///     def deinit(self) -> None:
-///         """Turn off the BufferedInput and release the pin for other use."""
-///         ...
-///
+//|     def deinit(self) -> None:
+//|         """Turn off the BufferedInput and release the pin for other use."""
+//|         ...
+//|
 STATIC mp_obj_t adcbuffer_bufferedinput_deinit(mp_obj_t self_in) {
     adcbuffer_bufferedinput_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_adcbuffer_bufferedinput_deinit(self);
@@ -132,17 +132,14 @@ STATIC void check_for_deinit(adcbuffer_bufferedinput_obj_t *self) {
         raise_deinited_error();
     }
 }
-///     def __enter__(self) -> BufferedInput:
-///         """No-op used by Context Managers."""
-///         ...
-///
-///  Provided by context manager helper.
-///
-///     def __exit__(self) -> None:
-///         """Automatically deinitializes the hardware when exiting a context. See
-///         :ref:`lifetime-and-contextmanagers` for more info."""
-///         ...
-///
+
+//|  Provided by context manager helper.
+//|
+//|     def __exit__(self) -> None:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
+//|
 STATIC mp_obj_t adcbuffer_bufferedinput___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_adcbuffer_bufferedinput_deinit(args[0]);
@@ -150,27 +147,20 @@ STATIC mp_obj_t adcbuffer_bufferedinput___exit__(size_t n_args, const mp_obj_t *
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adcbuffer_bufferedinput___exit___obj, 4, 4, adcbuffer_bufferedinput___exit__);
 
-///     value: int
-///     """The value on the analog pin between 0 and 65535 inclusive (16-bit). (read-only)
-///
-///     Even if the underlying analog to digital converter (ADC) is lower
-///     resolution, the value is 16-bit."""
-///
+//|     value: --> None
+//|     """Fills the supplied buffer with ADC values using DMA transfer.
+//|     If the buffer is 8-bit, then values are 8-bit shifted and error bit is off.
+//|     If buffer is 16-bit, then values are not shifted and error bit is present.
+//|     Number of transfers is always the number of samples which is the array
+//|     byte length divided by the byte_per_sample. """
+//|     ...
+//|
 STATIC mp_obj_t adcbuffer_bufferedinput_obj_readmultiple(mp_obj_t self_in) {
     adcbuffer_bufferedinput_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_adcbuffer_bufferedinput_readmultiple(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(adcbuffer_bufferedinput_readmultiple_obj, adcbuffer_bufferedinput_obj_readmultiple);
-
-/// MP_PROPERTY_GETTER(adcbuffer_bufferedinput_value_obj,
-///    (mp_obj_t)&adcbuffer_bufferedinput_get_value_obj);
-///
-///     reference_voltage: float
-///     """The maximum voltage measurable (also known as the reference voltage) as a
-///     `float` in Volts.  Note the ADC value may not scale to the actual voltage linearly
-///     at ends of the analog range."""
-///
 
 STATIC const mp_rom_map_elem_t adcbuffer_bufferedinput_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),             MP_ROM_PTR(&adcbuffer_bufferedinput_deinit_obj) },

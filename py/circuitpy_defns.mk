@@ -484,14 +484,6 @@ SRC_C += \
 
 endif
 
-#ifeq ($(CIRCUITPYTHON_ADCBUFFER),1)
-# Needed for ADCBUFFER
-#SRC_COMMON_HAL_ALL += \
-#		adcbuffer/BufferedInput.c \
-#
-#endif
-
-
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
 # These don't have corresponding files in each port but are still located in

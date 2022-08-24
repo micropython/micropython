@@ -30,8 +30,6 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/adcbuffer/BufferedInput.h"
 
-// #ifdef CIRCUITPY_BUFFEREDINPUT #endif
-
 extern const mp_obj_type_t adcbuffer_bufferedinput_type;
 
 void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, uint32_t sample_rate);

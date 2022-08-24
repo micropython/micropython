@@ -46,34 +46,24 @@
 
 void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, uint32_t sample_rate) {
 
-    // Set pin and channel
-
-    self->pin = pin;
-    claim_pin(pin);
-
-    // validate pin number
+    // Make sure pin number is in range for ADC
     if (pin->number < ADC_FIRST_PIN_NUMBER && pin->number >= (ADC_FIRST_PIN_NUMBER + ADC_PIN_COUNT)) {
         raise_ValueError_invalid_pins();
     }
 
-    // TODO: find a wat to accept ADC4 for temperature
-    self->chan = pin->number - ADC_FIRST_PIN_NUMBER;
+    // Set pin and channel
+    self->pin = pin;
+    claim_pin(pin);
 
-    // TODO: Checks on chan value here
+    // TODO: find a way to accept ADC4 for temperature
+    self->chan = pin->number - ADC_FIRST_PIN_NUMBER;
 
     // Set buffer and length
     self->buffer = buffer;
     self->len = len;
 
-    // TODO: checks on length here
-
-    // Set sample rate
-    // NOTE: bits_per_sample = bytes_per_sample * 8;
+    // Set sample rate - used in readmultiple
     self->bytes_per_sample = bytes_per_sample;
-
-    // TODO: Possibly check Rate values here, already u_int
-    // NOTE: Anything over 500000 for RP2040 will not
-    // exceed DMA conversion sampling rate.
     self->sample_rate = sample_rate;
 
     // Standard IO Init
@@ -111,9 +101,9 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
     // intervals). This is all timed by the 48 MHz ADC clock.
     // sample rate determines divisor, not zero.
 
+    // sample_rate is forced to be >= 1 in shared-bindings
     adc_set_clkdiv((float)48000000.0 / (float)self->sample_rate);
 
-    // sleep_ms(1000);
     // Set up the DMA to start transferring data as soon as it appears in FIFO
     uint dma_chan = dma_claim_unused_channel(true);
     self->dma_chan = dma_chan;
