@@ -491,6 +491,20 @@ class Pyboard:
         )
         self.exec_(cmd, data_consumer=stdout_write_bytes)
 
+    def fs_cp(self, src, dest, chunk_size=256, progress_callback=None):
+        if progress_callback:
+            src_size = int(self.exec_("import os\nprint(os.stat('%s')[6])" % src))
+            written = 0
+        self.exec_("fr=open('%s','rb')\nr=fr.read\nfw=open('%s','wb')\nw=fw.write" % (src, dest))
+        while True:
+            data_len = int(self.exec_("d=r(%u)\nw(d)\nprint(len(d))" % chunk_size))
+            if not data_len:
+                break
+            if progress_callback:
+                written += data_len
+                progress_callback(written, src_size)
+        self.exec_("fr.close()\nfw.close()")
+
     def fs_get(self, src, dest, chunk_size=256, progress_callback=None):
         if progress_callback:
             src_size = int(self.exec_("import os\nprint(os.stat('%s')[6])" % src))
@@ -584,18 +598,21 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
             srcs = args[:-1]
             dest = args[-1]
             if dest.startswith(":"):
-                op = pyb.fs_put
-                fmt = "cp %s :%s"
-                dest = fname_remote(dest)
+                op_remote_src = pyb.fs_cp
+                op_local_src = pyb.fs_put
             else:
-                op = pyb.fs_get
-                fmt = "cp :%s %s"
+                op_remote_src = pyb.fs_get
+                op_local_src = lambda src, dest, **_: __import__("shutil").copy(src, dest)
             for src in srcs:
-                src = fname_remote(src)
-                dest2 = fname_cp_dest(src, dest)
                 if verbose:
-                    print(fmt % (src, dest2))
-                op(src, dest2, progress_callback=progress_callback)
+                    print("cp %s %s" % (src, dest))
+                if src.startswith(":"):
+                    op = op_remote_src
+                else:
+                    op = op_local_src
+                src2 = fname_remote(src)
+                dest2 = fname_cp_dest(src2, fname_remote(dest))
+                op(src2, dest2, progress_callback=progress_callback)
         else:
             op = {
                 "cat": pyb.fs_cat,
