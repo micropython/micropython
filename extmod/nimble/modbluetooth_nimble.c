@@ -290,7 +290,7 @@ STATIC int load_irk(void) {
     int rc;
     const uint8_t *irk;
     size_t irk_len;
-    if (mp_bluetooth_gap_on_get_secret(SECRET_TYPE_OUR_IRK, 0, key, sizeof(key), &irk, &irk_len) && irk_len == 16) {
+    if (mp_bluetooth_gap_on_get_secret(SECRET_TYPE_OUR_IRK, 0, key, sizeof(key), NULL, 0, &irk, &irk_len) && irk_len == 16) {
         DEBUG_printf("load_irk: Applying IRK from store.\n");
         rc = ble_hs_pvcy_set_our_irk(irk);
         if (rc) {
@@ -304,7 +304,7 @@ STATIC int load_irk(void) {
             return rc;
         }
         DEBUG_printf("load_irk: Saving new IRK.\n");
-        if (!mp_bluetooth_gap_on_set_secret(SECRET_TYPE_OUR_IRK, key, sizeof(key), rand_irk, 16)) {
+        if (!mp_bluetooth_gap_on_set_secret(SECRET_TYPE_OUR_IRK, key, sizeof(key), NULL, 0, rand_irk, 16)) {
             // Code that doesn't implement pairing/bonding won't support set/get secret.
             // So they'll just get the default fixed IRK.
             return 0;
@@ -1837,8 +1837,11 @@ int mp_bluetooth_hci_cmd(uint16_t ogf, uint16_t ocf, const uint8_t *req, size_t 
 
 STATIC int ble_secret_store_read(int obj_type, const union ble_store_key *key, union ble_store_value *value) {
     DEBUG_printf("ble_secret_store_read: %d\n", obj_type);
-    const uint8_t *key_data;
-    size_t key_data_len;
+    const uint8_t *key_data = NULL;
+    const uint8_t *key2_data = NULL;
+    size_t key_data_len = 0;
+    size_t key2_data_len = 0;
+    uint8_t skip = 0;
 
     switch (obj_type) {
         case BLE_STORE_OBJ_TYPE_PEER_SEC: {
@@ -1853,8 +1856,7 @@ STATIC int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
                 // <type=peer,*> (with index)
                 // Iterate all known peers.
                 assert(!key->sec.ediv_rand_present);
-                key_data = NULL;
-                key_data_len = 0;
+                skip = key->sec.idx;
             }
             break;
         }
@@ -1869,9 +1871,23 @@ STATIC int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
             break;
         }
         case BLE_STORE_OBJ_TYPE_CCCD: {
-            // TODO: Implement CCCD persistence.
-            DEBUG_printf("ble_secret_store_read: CCCD not supported.\n");
-            return -1;
+            if (ble_addr_cmp(&key->cccd.peer_addr, BLE_ADDR_ANY)) {
+                // <type=peer,addr,*> (single)
+                // Find the entry for this specific peer.
+                key_data = (const uint8_t *)&key->cccd.chr_val_handle;
+                key_data_len = sizeof(key->cccd.chr_val_handle);
+                key2_data = (const uint8_t *)&key->cccd.peer_addr;
+                key2_data_len = sizeof(key->cccd.peer_addr);
+                // There can be multiple CCCD entried per chr_val_handle
+                skip = key->cccd.idx;
+            } else {
+                // <type=peer,*> (with index)
+                // Iterate all known peers.
+                key_data = (const uint8_t *)&key->cccd.chr_val_handle;
+                key_data_len = sizeof(key->cccd.chr_val_handle);
+                skip = key->cccd.idx;
+            }
+            break;
         }
         default:
             return BLE_HS_ENOTSUP;
@@ -1879,17 +1895,34 @@ STATIC int ble_secret_store_read(int obj_type, const union ble_store_key *key, u
 
     const uint8_t *value_data;
     size_t value_data_len;
-    if (!mp_bluetooth_gap_on_get_secret(obj_type, key->sec.idx, key_data, key_data_len, &value_data, &value_data_len)) {
-        DEBUG_printf("ble_secret_store_read: Key not found: type=%d, index=%u, key=0x%p, len=" UINT_FMT "\n", obj_type, key->sec.idx, key_data, key_data_len);
+    if (!mp_bluetooth_gap_on_get_secret(obj_type, skip, key_data, key_data_len, key2_data, key2_data_len, &value_data, &value_data_len)) {
+        DEBUG_printf("ble_secret_store_read: Key not found: type=%d, index=%u, key=0x%p, len=" UINT_FMT "\n", obj_type, skip, key_data, key_data_len);
         return BLE_HS_ENOENT;
     }
 
-    if (value_data_len != sizeof(struct ble_store_value_sec)) {
+    size_t expected_len;
+    uint8_t *dest;
+    switch (obj_type) {
+        case BLE_STORE_OBJ_TYPE_OUR_SEC:
+        case BLE_STORE_OBJ_TYPE_PEER_SEC:
+            expected_len = sizeof(struct ble_store_value_sec);
+            dest = (uint8_t *)&value->sec;
+            break;
+
+        case BLE_STORE_OBJ_TYPE_CCCD:
+            expected_len = sizeof(struct ble_store_value_cccd);
+            dest = (uint8_t *)&value->cccd;
+            break;
+
+        default:
+            return BLE_HS_ENOTSUP;
+
+    }
+    if (value_data_len != expected_len) {
         DEBUG_printf("ble_secret_store_read: Invalid key data: actual=" UINT_FMT " expected=" UINT_FMT "\n", value_data_len, sizeof(struct ble_store_value_sec));
         return BLE_HS_ENOENT;
     }
-
-    memcpy((uint8_t *)&value->sec, value_data, sizeof(struct ble_store_value_sec));
+    memcpy(dest, value_data, expected_len);
 
     DEBUG_printf("ble_secret_store_read: found secret\n");
 
@@ -1914,7 +1947,7 @@ STATIC int ble_secret_store_write(int obj_type, const union ble_store_value *val
             assert(ble_addr_cmp(&key_sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
             assert(key_sec.ediv_rand_present);
 
-            if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key_sec.peer_addr, sizeof(ble_addr_t), (const uint8_t *)value_sec, sizeof(struct ble_store_value_sec))) {
+            if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key_sec.peer_addr, sizeof(ble_addr_t), NULL, 0, (const uint8_t *)value_sec, sizeof(struct ble_store_value_sec))) {
                 DEBUG_printf("Failed to write key: type=%d\n", obj_type);
                 return BLE_HS_ESTORE_CAP;
             }
@@ -1924,9 +1957,25 @@ STATIC int ble_secret_store_write(int obj_type, const union ble_store_value *val
             return 0;
         }
         case BLE_STORE_OBJ_TYPE_CCCD: {
-            // TODO: Implement CCCD persistence.
-            DEBUG_printf("ble_secret_store_write: CCCD not supported.\n");
-            // Just pretend we wrote it.
+            struct ble_store_key_cccd key_cccd;
+            const struct ble_store_value_cccd *value_cccd = &val->cccd;
+            ble_store_key_from_value_cccd(&key_cccd, value_cccd);
+
+            assert(ble_addr_cmp(&key_cccd.peer_addr, BLE_ADDR_ANY)); // Must have address, don't support store by chr_val_handle.
+
+            // CCCD are keyed of both chr handle and peer addr.
+            const uint8_t *key_data = (const uint8_t *)&key_cccd.chr_val_handle;
+            size_t key_data_len = sizeof(key_cccd.chr_val_handle);
+            const uint8_t *key2_data = (const uint8_t *)&key_cccd.peer_addr;
+            size_t key2_data_len = sizeof(key_cccd.peer_addr);
+
+            if (!mp_bluetooth_gap_on_set_secret(obj_type, key_data, key_data_len, key2_data, key2_data_len, (const uint8_t *)value_cccd, sizeof(struct ble_store_value_cccd))) {
+                DEBUG_printf("Failed to write cccd key: type=%d\n", obj_type);
+                return BLE_HS_ESTORE_CAP;
+            }
+
+            DEBUG_printf("ble_secret_store_write: wrote cccd\n");
+
             return 0;
         }
         default:
@@ -1944,7 +1993,7 @@ STATIC int ble_secret_store_delete(int obj_type, const union ble_store_key *key)
             assert(ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
             // ediv_rand is optional (will not be present for delete).
 
-            if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key->sec.peer_addr, sizeof(ble_addr_t), NULL, 0)) {
+            if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key->sec.peer_addr, sizeof(ble_addr_t), NULL, 0, NULL, 0)) {
                 DEBUG_printf("Failed to delete key: type=%d\n", obj_type);
                 return BLE_HS_ENOENT;
             }
@@ -1954,10 +2003,20 @@ STATIC int ble_secret_store_delete(int obj_type, const union ble_store_key *key)
             return 0;
         }
         case BLE_STORE_OBJ_TYPE_CCCD: {
-            // TODO: Implement CCCD persistence.
-            DEBUG_printf("ble_secret_store_delete: CCCD not supported.\n");
-            // Just pretend it wasn't there.
-            return BLE_HS_ENOENT;
+            assert(ble_addr_cmp(&key->cccd.peer_addr, BLE_ADDR_ANY)); // Must have address.
+
+            // There can be one CCCD per char per host.
+            size_t key_data_len = sizeof(&key->cccd.peer_addr) + sizeof(&key->cccd.chr_val_handle);
+
+            if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key->cccd.peer_addr, key_data_len, NULL, 0, NULL, 0)) {
+                DEBUG_printf("Failed to delete key: type=%d\n", obj_type);
+                return BLE_HS_ENOENT;
+            }
+
+            DEBUG_printf("ble_secret_store_delete: deleted secret\n");
+
+            return 0;
+
         }
         default:
             return BLE_HS_ENOTSUP;
