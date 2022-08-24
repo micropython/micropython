@@ -262,6 +262,8 @@ Examples
 
   mpremote cp main.py :
 
+  mpremote cp :a.py :b.py
+
   mpremote cp -r dir/ :
 
   mpremote cp a.py b.py : + repl

@@ -333,10 +333,15 @@ def do_filesystem(pyb, args):
     if fs_args[0] == "cp" and fs_args[1] == "-r":
         fs_args.pop(0)
         fs_args.pop(0)
-        assert fs_args[-1] == ":"
+        if fs_args[-1] != ":":
+            print(f"{_PROG}: 'cp -r' destination must be ':'")
+            sys.exit(1)
         fs_args.pop()
         src_files = []
         for path in fs_args:
+            if path.startswith(":"):
+                print(f"{_PROG}: 'cp -r' source files must be local")
+                sys.exit(1)
             _list_recursive(src_files, path)
         known_dirs = {""}
         pyb.exec_("import uos")
