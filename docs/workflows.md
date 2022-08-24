@@ -138,7 +138,7 @@ root will be returned.
 When requested with the `OPTIONS` method, the server will respond with CORS related headers. Most
 aren't needed for API use. They are there for the web browser.
 
-* `Access-Control-Allow-Methods` - Varies with USB state. `GET, OPTIONS` when USB is active. `GET, OPTIONS, PUT, DELETE` otherwise.
+* `Access-Control-Allow-Methods` - Varies with USB state. `GET, OPTIONS` when USB is active. `GET, OPTIONS, PUT, DELETE, MOVE` otherwise.
 
 Example:
 

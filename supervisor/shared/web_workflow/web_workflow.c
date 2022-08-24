@@ -511,10 +511,10 @@ static void _reply_access_control(socketpool_socket_obj_t *socket, _request *req
         "HTTP/1.1 204 No Content\r\n",
         "Content-Length: 0\r\n",
         "Access-Control-Expose-Headers: Access-Control-Allow-Methods\r\n",
-        "Access-Control-Allow-Headers: X-Timestamp, Content-Type, Authorization\r\n",
+        "Access-Control-Allow-Headers: X-Timestamp, X-Destination, Content-Type, Authorization\r\n",
         "Access-Control-Allow-Methods:GET, OPTIONS", NULL);
     if (!_usb_active()) {
-        _send_str(socket, ", PUT, DELETE");
+        _send_str(socket, ", PUT, DELETE, MOVE");
         #if CIRCUITPY_USB_MSC
         usb_msc_unlock();
         #endif
