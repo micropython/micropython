@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdbool.h>
 #include <string.h>
 
 #include "py/gc.h"
@@ -241,6 +242,10 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *
 mp_obj_t common_hal_usb_hid_device_get_last_received_report(usb_hid_device_obj_t *self, uint8_t report_id) {
     // report_id has already been validated for this device.
     size_t id_idx = get_report_id_idx(self, report_id);
+    if (!self->out_report_buffers_updated[id_idx]) {
+        return mp_const_none;
+    }
+    self->out_report_buffers_updated[id_idx] = false;
     return mp_obj_new_bytes(self->out_report_buffers[id_idx], self->out_report_lengths[id_idx]);
 }
 
@@ -258,6 +263,7 @@ void usb_hid_device_create_report_buffers(usb_hid_device_obj_t *self) {
             ? gc_alloc(self->out_report_lengths[i], false, true /*long-lived*/)
             : NULL;
     }
+    memset(self->out_report_buffers_updated, 0, sizeof(self->out_report_buffers_updated));
 }
 
 
@@ -304,6 +310,7 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
             hid_device->out_report_buffers[id_idx] &&
             hid_device->out_report_lengths[id_idx] >= bufsize) {
             memcpy(hid_device->out_report_buffers[id_idx], buffer, bufsize);
+            hid_device->out_report_buffers_updated[id_idx] = true;
         }
     }
 }
