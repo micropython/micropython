@@ -789,11 +789,11 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value);
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base);
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val); // this must return a multi-precision integer object (or raise an overflow exception)
-mp_obj_t mp_obj_new_str(const char *data, size_t len);
-mp_obj_t mp_obj_new_str_via_qstr(const char *data, size_t len);
-mp_obj_t mp_obj_new_str_from_vstr(vstr_t *vstr);
+mp_obj_t mp_obj_new_str(const char *data, size_t len); // will check utf-8 (raises UnicodeError)
+mp_obj_t mp_obj_new_str_via_qstr(const char *data, size_t len); // input data must be valid utf-8
+mp_obj_t mp_obj_new_str_from_vstr(vstr_t *vstr); // will check utf-8 (raises UnicodeError)
 #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
-mp_obj_t mp_obj_new_str_from_utf8_vstr(vstr_t *vstr); // only use when vstr is already known to be utf-8 encoded
+mp_obj_t mp_obj_new_str_from_utf8_vstr(vstr_t *vstr); // input data must be valid utf-8
 #else
 #define mp_obj_new_str_from_utf8_vstr mp_obj_new_str_from_vstr
 #endif
