@@ -88,8 +88,8 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t
 void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str_len);
 mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 mp_obj_t mp_obj_str_split(size_t n_args, const mp_obj_t *args);
-mp_obj_t mp_obj_new_str_copy(const mp_obj_type_t *type, const byte *data, size_t len);
-mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte *data, size_t len);
+mp_obj_t mp_obj_new_str_copy(const mp_obj_type_t *type, const byte *data, size_t len); // for type=str, must be known to be utf-8 safe
+mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte *data, size_t len); // for type=str, will check utf-8 (raises UnicodeError)
 
 mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);

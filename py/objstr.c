@@ -202,11 +202,7 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
             } else {
                 mp_buffer_info_t bufinfo;
                 mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
-                #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
-                if (!utf8_check(bufinfo.buf, bufinfo.len)) {
-                    mp_raise_msg(&mp_type_UnicodeError, NULL);
-                }
-                #endif
+                // This will utf-8 check the input.
                 return mp_obj_new_str(bufinfo.buf, bufinfo.len);
             }
     }
@@ -2268,6 +2264,11 @@ mp_obj_t mp_obj_new_bytes_from_vstr(vstr_t *vstr) {
 }
 
 mp_obj_t mp_obj_new_str(const char *data, size_t len) {
+    #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+    if (!utf8_check((byte *)data, len)) {
+        mp_raise_msg(&mp_type_UnicodeError, NULL);
+    }
+    #endif
     qstr q = qstr_find_strn(data, len);
     if (q != MP_QSTRnull) {
         // qstr with this data already exists
