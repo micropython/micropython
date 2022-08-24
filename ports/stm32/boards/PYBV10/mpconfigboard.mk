@@ -33,5 +33,4 @@ endif
 
 ifeq ($(BOARD_VARIANT),"network")
 MICROPY_PY_NETWORK_WIZNET5K=5200
-MICROPY_PY_CC3K=1
 endif

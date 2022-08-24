@@ -482,29 +482,6 @@ SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
 	)
 endif
 
-# for CC3000 module
-ifeq ($(MICROPY_PY_CC3K),1)
-CC3000_DIR=drivers/cc3000
-INC += -I$(TOP)/$(CC3000_DIR)/inc
-CFLAGS_MOD += -DMICROPY_PY_CC3K=1
-SRC_MOD += modnwcc3k.c
-SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
-	cc3000_common.c \
-	evnt_handler.c \
-	hci.c \
-	netapp.c \
-	nvmem.c \
-	security.c \
-	socket.c \
-	wlan.c \
-	ccspi.c \
-	inet_ntop.c \
-	inet_pton.c \
-	patch.c \
-	patch_prog.c \
-	)
-endif
-
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
 SRC_MOD += mbedtls/mbedtls_port.c
