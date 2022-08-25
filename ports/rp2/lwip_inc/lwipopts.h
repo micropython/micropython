@@ -26,7 +26,10 @@
 #define LWIP_NETIF_EXT_STATUS_CALLBACK  1
 #define LWIP_NETIF_STATUS_CALLBACK      1
 
-#define LWIP_IPV6                       0
+#define LWIP_IPV4                       1
+#define LWIP_IPV6                       1
+#define LWIP_ND6_NUM_DESTINATIONS       4
+#define LWIP_ND6_QUEUEING               0
 #define LWIP_DHCP                       1
 #define LWIP_DHCP_CHECK_LINK_UP         1
 #define DHCP_DOES_ARP_CHECK             0 // to speed DHCP up
