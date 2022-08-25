@@ -44,7 +44,7 @@
 //|         """Use the BufferedInput on the given pin. Fill the given buffer from ADC read values at the supplied
 //|         sample_rate.
 //|
-//|         :param ~microcontroller.Pin pin: the pin to read from"""
+//|         :param ~microcontroller.Pin pin: the pin to read from
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: buffer: A buffer for samples
 //|         :param ~int sample_rate: rate: The desired playback sample rate
 //|
@@ -147,13 +147,12 @@ STATIC mp_obj_t adcbuffer_bufferedinput___exit__(size_t n_args, const mp_obj_t *
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adcbuffer_bufferedinput___exit___obj, 4, 4, adcbuffer_bufferedinput___exit__);
 
-//|     value: --> None
-//|     """Fills the supplied buffer with ADC values using DMA transfer.
+//|     value: None
+//|         """Fills the supplied buffer with ADC values using DMA transfer.
 //|     If the buffer is 8-bit, then values are 8-bit shifted and error bit is off.
 //|     If buffer is 16-bit, then values are not shifted and error bit is present.
 //|     Number of transfers is always the number of samples which is the array
 //|     byte length divided by the bytes_per_sample."""
-//|     ...
 //|
 STATIC mp_obj_t adcbuffer_bufferedinput_obj_readmultiple(mp_obj_t self_in) {
     adcbuffer_bufferedinput_obj_t *self = MP_OBJ_TO_PTR(self_in);
