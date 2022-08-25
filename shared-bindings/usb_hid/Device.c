@@ -191,10 +191,11 @@ STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 1, usb_hid_device_send_report);
 
-//|     def get_last_received_report(self, report_id: Optional[int] = None) -> bytes:
+//|     def get_last_received_report(self, report_id: Optional[int] = None) -> Optional[bytes]:
 //|         """Get the last received HID OUT or feature report for the given report ID.
 //|         The report ID may be omitted if there is no report ID, or only one report ID.
-//|         Return `None` if nothing received.
+//|         Return `None` if nothing received. After returning a report, subsequent calls
+//|         will return `None` until next report is received.
 //|         """
 //|         ...
 //|
