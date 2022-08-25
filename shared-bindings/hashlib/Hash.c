@@ -39,12 +39,13 @@
 //|     digest_size: int
 //|     """Digest size in bytes"""
 //|
-STATIC mp_obj_t hashlib_hash_get_digest_size(mp_obj_t self_in) {
+STATIC mp_obj_t hashlib_hash_digest_size_get(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &hashlib_hash_type));
     hashlib_hash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_hashlib_hash_get_digest_size(self));
 }
-MP_PROPERTY_GETTER(hashlib_hash_digest_size_obj, hashlib_hash_get_digest_size);
+MP_DEFINE_CONST_FUN_OBJ_1(hashlib_hash_digest_size_get_obj, hashlib_hash_digest_size_get);
+MP_PROPERTY_GETTER(hashlib_hash_digest_size_obj, (mp_obj_t)&hashlib_hash_digest_size_get_obj);
 
 //|     def update(self, data: ReadableBuffer) -> None:
 //|         """Update the hash with the given bytes.
