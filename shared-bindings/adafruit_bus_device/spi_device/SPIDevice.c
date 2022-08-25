@@ -41,7 +41,7 @@
 //| class SPIDevice:
 //|     """SPI Device Manager"""
 //|
-//|     def __init__(self, spi: busio.SPI, chip_select: microcontroller.Pin, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, extra_clocks : int = 0) -> None:
+//|     def __init__(self, spi: busio.SPI, chip_select: digitalio.DigitalInOut, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, extra_clocks : int = 0) -> None:
 //|
 //|         """
 //|         Represents a single SPI device and manages locking the bus and the device address.
