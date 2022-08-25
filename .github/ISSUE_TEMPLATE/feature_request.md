@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-* Please search existing issues before raising a new issue. For questions about MicroPython or for help using MicroPython, or any sort of "how do I?" requests, please see the MicroPython Forum (https://forum.micropython.org/) or raise a documentation request instead.
+* Please search existing issues before raising a new issue. For questions about MicroPython or for help using MicroPython, or any sort of "how do I?" requests, please use the Discussions tab or raise a documentation request instead.
 
 * Describe the feature you'd like to see added to MicroPython. In particular, what does this feature enable and why is it useful. MicroPython aims to strike a balance between functionality and code size, so please consider whether this feature can be optionally enabled and whether it can be provided in other ways (e.g. pure-Python library).
 

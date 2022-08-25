@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
-  - name: MicroPython Forum
-    url: https://forum.micropython.org/
+  - name: MicroPython GitHub Discussions
+    url: https://github.com/orgs/micropython/discussions
     about: Community discussion about all things MicroPython. This is the best place to start if you have questions about using MicroPython or getting started with MicroPython development.
   - name: MicroPython Documentation
     url: https://docs.micropython.org/
