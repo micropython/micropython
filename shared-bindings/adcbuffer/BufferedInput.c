@@ -63,10 +63,10 @@
 //|       for i in range(length):
 //|           print(i, mybuffer[i])
 //|
-//|       (TODO) The reference voltage varies by platform so use ``reference_voltage`` to read the configured setting.
-//|       (TODO) Provide mechanism to read CPU Temperature
-//|       """
-//|         ...
+//|       (TODO) The reference voltage varies by platform so use
+//|       ``reference_voltage`` to read the configured setting.
+//|       (TODO) Provide mechanism to read CPU Temperature."""
+//|       ...
 //|
 STATIC mp_obj_t adcbuffer_bufferedinput_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin, ARG_buffer, ARG_sample_rate };
@@ -152,7 +152,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adcbuffer_bufferedinput___exit___obj,
 //|     If the buffer is 8-bit, then values are 8-bit shifted and error bit is off.
 //|     If buffer is 16-bit, then values are not shifted and error bit is present.
 //|     Number of transfers is always the number of samples which is the array
-//|     byte length divided by the byte_per_sample. """
+//|     byte length divided by the bytes_per_sample."""
 //|     ...
 //|
 STATIC mp_obj_t adcbuffer_bufferedinput_obj_readmultiple(mp_obj_t self_in) {
