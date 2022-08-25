@@ -78,13 +78,14 @@ STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
     } else {
         status_str = "fail";
     }
+    ip4_addr_t *addr = ip_2_ip4(&netif->ip_addr);
     mp_printf(print, "<CYW43 %s %s %u.%u.%u.%u>",
         self->itf == CYW43_ITF_STA ? "STA" : "AP",
         status_str,
-        netif->ip_addr.addr & 0xff,
-        netif->ip_addr.addr >> 8 & 0xff,
-        netif->ip_addr.addr >> 16 & 0xff,
-        netif->ip_addr.addr >> 24
+        addr->addr & 0xff,
+        addr->addr >> 8 & 0xff,
+        addr->addr >> 16 & 0xff,
+        addr->addr >> 24
         );
 }
 
