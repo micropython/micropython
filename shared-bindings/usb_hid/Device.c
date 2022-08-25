@@ -219,25 +219,6 @@ STATIC mp_obj_t usb_hid_device_get_last_received_report(size_t n_args, const mp_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_get_last_received_report_obj, 1, usb_hid_device_get_last_received_report);
 
-//|     last_received_report: bytes
-//|     """The HID OUT report as a `bytes` (read-only). `None` if nothing received.
-//|     Same as `get_last_received_report()` with no argument.
-//|
-//|     Deprecated: will be removed in CircutPython 8.0.0. Use `get_last_received_report()` instead.
-//|     """
-//|
-STATIC mp_obj_t usb_hid_device_obj_get_last_received_report_property(mp_obj_t self_in) {
-    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    // Get the sole report_id, if there is one.
-    const uint8_t report_id = common_hal_usb_hid_device_validate_report_id(self, -1);
-    return common_hal_usb_hid_device_get_last_received_report(self, report_id);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_last_received_report_property_obj, usb_hid_device_obj_get_last_received_report_property);
-
-MP_PROPERTY_GETTER(usb_hid_device_last_received_report_obj,
-    (mp_obj_t)&usb_hid_device_get_last_received_report_property_obj);
-
 //|     usage_page: int
 //|     """The device usage page identifier, which designates a category of device. (read-only)"""
 //|
@@ -269,7 +250,6 @@ MP_PROPERTY_GETTER(usb_hid_device_usage_obj,
 STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_report),              MP_ROM_PTR(&usb_hid_device_send_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_last_received_report), MP_ROM_PTR(&usb_hid_device_get_last_received_report_obj) },
-    { MP_ROM_QSTR(MP_QSTR_last_received_report),     MP_ROM_PTR(&usb_hid_device_last_received_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage_page),               MP_ROM_PTR(&usb_hid_device_usage_page_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage),                    MP_ROM_PTR(&usb_hid_device_usage_obj) },
 
