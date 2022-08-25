@@ -57,54 +57,55 @@ CROSS_COMPILE = arm-none-eabi-
 
 HAL_DIR=hal/$(MCU_SERIES)
 
-INC += -I. \
-       -I../.. \
-       -I../lib/mp-readline \
-       -I../shared/timeutils \
-       -Iboards/$(BOARD) \
-       -Iboards/ \
-       -isystem sdk/ \
-       -isystem sdk/src/common/pico_base/include/ \
-       -isystem sdk/src/common/pico_binary_info/include/ \
-       -isystem sdk/src/common/pico_stdlib/include/ \
-       -isystem sdk/src/common/pico_sync/include/ \
-       -isystem sdk/src/common/pico_time/include/ \
-       -isystem sdk/src/common/pico_util/include/ \
-       -isystem sdk/src/rp2040/hardware_regs/include/ \
-       -isystem sdk/src/rp2040/hardware_structs/include/ \
-       -isystem sdk/src/rp2_common/hardware_adc/include/ \
-       -isystem sdk/src/rp2_common/hardware_base/include/ \
-       -isystem sdk/src/rp2_common/hardware_claim/include/ \
-       -isystem sdk/src/rp2_common/hardware_clocks/include/ \
-       -isystem sdk/src/rp2_common/hardware_divider/include/ \
-       -isystem sdk/src/rp2_common/hardware_dma/include/ \
-       -isystem sdk/src/rp2_common/hardware_flash/include/ \
-       -isystem sdk/src/rp2_common/hardware_gpio/include/ \
-       -isystem sdk/src/rp2_common/hardware_irq/include/ \
-       -isystem sdk/src/rp2_common/hardware_i2c/include/ \
-       -isystem sdk/src/rp2_common/hardware_pio/include/ \
-       -isystem sdk/src/rp2_common/hardware_pll/include/ \
-       -isystem sdk/src/rp2_common/hardware_resets/include/ \
-       -isystem sdk/src/rp2_common/hardware_rtc/include/ \
-       -isystem sdk/src/rp2_common/hardware_spi/include/ \
-       -isystem sdk/src/rp2_common/hardware_sync/include/ \
-       -isystem sdk/src/rp2_common/hardware_timer/include/ \
-       -isystem sdk/src/rp2_common/hardware_uart/include/ \
-       -isystem sdk/src/rp2_common/hardware_watchdog/include/ \
-       -isystem sdk/src/rp2_common/hardware_xosc/include/ \
-       -isystem sdk/src/rp2_common/pico_multicore/include/ \
-       -isystem sdk/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/include/ \
-       -isystem sdk/src/rp2_common/pico_stdio/include/ \
-       -isystem sdk/src/rp2_common/pico_printf/include/ \
-       -isystem sdk/src/rp2_common/pico_float/include/ \
-       -isystem sdk/src/rp2_common/pico_platform/include/ \
-       -isystem sdk/src/rp2_common/pico_runtime/printf/include/ \
-       -isystem sdk/src/rp2_common/pico_bootrom/include/ \
-       -isystem sdk/src/rp2_common/pico_unique_id/include/ \
-       -Isdk_config \
-       -I../../lib/tinyusb/src \
-       -I../../supervisor/shared/usb \
-       -I$(BUILD)
+INC += \
+	-I. \
+        -I../.. \
+        -I../lib/mp-readline \
+        -I../shared/timeutils \
+        -Iboards/$(BOARD) \
+        -Iboards/ \
+        -isystem sdk/ \
+        -isystem sdk/src/common/pico_base/include/ \
+        -isystem sdk/src/common/pico_binary_info/include/ \
+        -isystem sdk/src/common/pico_stdlib/include/ \
+        -isystem sdk/src/common/pico_sync/include/ \
+        -isystem sdk/src/common/pico_time/include/ \
+        -isystem sdk/src/common/pico_util/include/ \
+        -isystem sdk/src/rp2040/hardware_regs/include/ \
+        -isystem sdk/src/rp2040/hardware_structs/include/ \
+        -isystem sdk/src/rp2_common/hardware_adc/include/ \
+        -isystem sdk/src/rp2_common/hardware_base/include/ \
+        -isystem sdk/src/rp2_common/hardware_claim/include/ \
+        -isystem sdk/src/rp2_common/hardware_clocks/include/ \
+        -isystem sdk/src/rp2_common/hardware_divider/include/ \
+        -isystem sdk/src/rp2_common/hardware_dma/include/ \
+        -isystem sdk/src/rp2_common/hardware_flash/include/ \
+        -isystem sdk/src/rp2_common/hardware_gpio/include/ \
+        -isystem sdk/src/rp2_common/hardware_irq/include/ \
+        -isystem sdk/src/rp2_common/hardware_i2c/include/ \
+        -isystem sdk/src/rp2_common/hardware_pio/include/ \
+        -isystem sdk/src/rp2_common/hardware_pll/include/ \
+        -isystem sdk/src/rp2_common/hardware_resets/include/ \
+        -isystem sdk/src/rp2_common/hardware_rtc/include/ \
+        -isystem sdk/src/rp2_common/hardware_spi/include/ \
+        -isystem sdk/src/rp2_common/hardware_sync/include/ \
+        -isystem sdk/src/rp2_common/hardware_timer/include/ \
+        -isystem sdk/src/rp2_common/hardware_uart/include/ \
+        -isystem sdk/src/rp2_common/hardware_watchdog/include/ \
+        -isystem sdk/src/rp2_common/hardware_xosc/include/ \
+        -isystem sdk/src/rp2_common/pico_multicore/include/ \
+        -isystem sdk/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/include/ \
+        -isystem sdk/src/rp2_common/pico_stdio/include/ \
+        -isystem sdk/src/rp2_common/pico_printf/include/ \
+        -isystem sdk/src/rp2_common/pico_float/include/ \
+        -isystem sdk/src/rp2_common/pico_platform/include/ \
+        -isystem sdk/src/rp2_common/pico_runtime/printf/include/ \
+        -isystem sdk/src/rp2_common/pico_bootrom/include/ \
+        -isystem sdk/src/rp2_common/pico_unique_id/include/ \
+        -Isdk_config \
+        -I../../lib/tinyusb/src \
+        -I../../supervisor/shared/usb \
+        -I$(BUILD)
 
 # Pico specific configuration
 CFLAGS += -DRASPBERRYPI -DPICO_ON_DEVICE=1 -DPICO_NO_BINARY_INFO=0 -DPICO_TIME_DEFAULT_ALARM_POOL_DISABLED=0 -DPICO_DIVIDER_CALL_IDIV0=0 -DPICO_DIVIDER_CALL_LDIV0=0 -DPICO_DIVIDER_HARDWARE=1 -DPICO_DOUBLE_ROM=1 -DPICO_FLOAT_ROM=1 -DPICO_MULTICORE=1 -DPICO_BITS_IN_RAM=0 -DPICO_DIVIDER_IN_RAM=0 -DPICO_DOUBLE_PROPAGATE_NANS=0 -DPICO_DOUBLE_IN_RAM=0 -DPICO_MEM_IN_RAM=0 -DPICO_FLOAT_IN_RAM=0 -DPICO_FLOAT_PROPAGATE_NANS=1 -DPICO_NO_FLASH=0 -DPICO_COPY_TO_RAM=0 -DPICO_DISABLE_SHARED_IRQ_HANDLERS=0 -DPICO_NO_BI_BOOTSEL_VIA_DOUBLE_RESET=0
