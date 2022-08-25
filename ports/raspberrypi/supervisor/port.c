@@ -53,11 +53,16 @@
 #include "src/rp2_common/hardware_uart/include/hardware/uart.h"
 #include "src/rp2_common/hardware_sync/include/hardware/sync.h"
 #include "src/rp2_common/hardware_timer/include/hardware/timer.h"
+#if CIRCUITPY_CYW43
+#include "pico/cyw43_arch.h"
+#endif
 #include "src/common/pico_time/include/pico/time.h"
 #include "src/common/pico_binary_info/include/pico/binary_info.h"
 
 #include "pico/bootrom.h"
 #include "hardware/watchdog.h"
+
+#include "supervisor/serial.h"
 
 extern volatile bool mp_msc_enabled;
 
@@ -122,6 +127,24 @@ safe_mode_t port_init(void) {
 
     // Check brownout.
 
+    #if CIRCUITPY_CYW43
+    never_reset_pin_number(23);
+    never_reset_pin_number(24);
+    never_reset_pin_number(25);
+    never_reset_pin_number(29);
+    if (cyw43_arch_init()) {
+        serial_write("WiFi init failed\n");
+        return -1;
+    } else {
+        cyw_ever_init = true;
+        for (int i = 3; i--;) {
+            cyw43_arch_gpio_put(0, 1);
+            sleep_ms(100);
+            cyw43_arch_gpio_put(0, 0);
+            sleep_ms(100);
+        }
+    }
+    #endif
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
     }
@@ -260,4 +283,20 @@ __attribute__((used)) void HardFault_Handler(void) {
     while (true) {
         asm ("nop;");
     }
+}
+
+void port_yield() {
+    #if CIRCUITPY_CYW43
+    cyw43_arch_poll();
+    #endif
+}
+
+void port_boot_info(void) {
+    #if CIRCUITPY_CYW43
+    mp_printf(&mp_plat_print, "MAC");
+    for (int i = 0; i < 6; i++) {
+        mp_printf(&mp_plat_print, ":%02X", cyw43_state.mac[i]);
+    }
+    mp_printf(&mp_plat_print, "\n");
+    #endif
 }

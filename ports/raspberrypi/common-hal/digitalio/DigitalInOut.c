@@ -31,10 +31,17 @@
 #include "py/mphal.h"
 
 #include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "supervisor/shared/translate/translate.h"
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
+
+#if CIRCUITPY_CYW43
+#include "pico/cyw43_arch.h"
+#include "bindings/cyw43/__init__.h"
+#define IS_CYW(self) ((self)->pin->base.type == &cyw43_pin_type)
+#endif
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(
     digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin) {
@@ -61,20 +68,31 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self
     if (common_hal_digitalio_digitalinout_deinited(self)) {
         return;
     }
-    reset_pin_number(self->pin->number);
+    common_hal_reset_pin(self->pin);
     self->pin = NULL;
 }
 
-void common_hal_digitalio_digitalinout_switch_to_input(
+digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_input(
     digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
-    self->output = false;
     // This also sets direction to input.
-    common_hal_digitalio_digitalinout_set_pull(self, pull);
+    return common_hal_digitalio_digitalinout_set_pull(self, pull);
 }
 
 digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
     digitalio_digitalinout_obj_t *self, bool value,
     digitalio_drive_mode_t drive_mode) {
+
+    #if CIRCUITPY_CYW43
+    if (IS_CYW(self)) {
+        if (drive_mode != DRIVE_MODE_PUSH_PULL) {
+            return DIGITALINOUT_INVALID_DRIVE_MODE;
+        }
+        cyw43_arch_gpio_put(self->pin->number, value);
+        self->output = true;
+        self->open_drain = false;
+        return DIGITALINOUT_OK;
+    }
+    #endif
     const uint8_t pin = self->pin->number;
     gpio_disable_pulls(pin);
 
@@ -99,6 +117,12 @@ digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
 void common_hal_digitalio_digitalinout_set_value(
     digitalio_digitalinout_obj_t *self, bool value) {
     const uint8_t pin = self->pin->number;
+    #if CIRCUITPY_CYW43
+    if (IS_CYW(self)) {
+        cyw43_arch_gpio_put(pin, value);
+        return;
+    }
+    #endif
     if (self->open_drain && value) {
         // If true and open-drain, set the direction -before- setting
         // the pin value, to to avoid a high glitch on the pin before
@@ -122,6 +146,13 @@ bool common_hal_digitalio_digitalinout_get_value(
 digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
     digitalio_digitalinout_obj_t *self,
     digitalio_drive_mode_t drive_mode) {
+    #if CIRCUITPY_CYW43
+    if (IS_CYW(self)) {
+        if (drive_mode != DRIVE_MODE_PUSH_PULL) {
+            return DIGITALINOUT_INVALID_DRIVE_MODE;
+        }
+    }
+    #endif
     const uint8_t pin = self->pin->number;
     bool value = common_hal_digitalio_digitalinout_get_value(self);
     self->open_drain = drive_mode == DRIVE_MODE_OPEN_DRAIN;
@@ -142,11 +173,23 @@ digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
     }
 }
 
-void common_hal_digitalio_digitalinout_set_pull(
+digitalinout_result_t common_hal_digitalio_digitalinout_set_pull(
     digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
+    #if CIRCUITPY_CYW43
+    if (IS_CYW(self)) {
+        if (pull != PULL_NONE) {
+            return DIGITALINOUT_INVALID_PULL;
+        }
+        cyw43_arch_gpio_get(self->pin->number);
+        self->output = false;
+        return DIGITALINOUT_OK;
+    }
+    #endif
     const uint8_t pin = self->pin->number;
     gpio_set_pulls(pin, pull == PULL_UP, pull == PULL_DOWN);
     gpio_set_dir(pin, GPIO_IN);
+    self->output = false;
+    return DIGITALINOUT_OK;
 }
 
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
@@ -170,6 +213,11 @@ bool common_hal_digitalio_has_reg_op(digitalinout_reg_op_t op) {
 }
 
 volatile uint32_t *common_hal_digitalio_digitalinout_get_reg(digitalio_digitalinout_obj_t *self, digitalinout_reg_op_t op, uint32_t *mask) {
+    #if CIRCUITPY_CYW43
+    if (IS_CYW(self)) {
+        return NULL;
+    }
+    #endif
     const uint8_t pin = self->pin->number;
 
     *mask = 1u << pin;

@@ -120,4 +120,8 @@ void port_yield(void);
 // A default weak implementation is provided that does nothing.
 void port_post_boot_py(bool heap_valid);
 
+// Some ports want to add information to boot_out.txt.
+// A default weak implementation is provided that does nothing.
+void port_boot_info(void);
+
 #endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

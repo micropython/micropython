@@ -58,10 +58,11 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self
     self->pin = NULL;
 }
 
-void common_hal_digitalio_digitalinout_switch_to_input(
+digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_input(
     digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
     (void)pull;
     touch_oe_write(touch_oe_read() & ~(1 << self->pin->number));
+    return DIGITALINOUT_OK;
 }
 
 digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
@@ -111,10 +112,11 @@ digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
     }
 }
 
-void common_hal_digitalio_digitalinout_set_pull(
+digitalinout_result_t common_hal_digitalio_digitalinout_set_pull(
     digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
     (void)self;
     (void)pull;
+    return DIGITALINOUT_OK;
 }
 
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(

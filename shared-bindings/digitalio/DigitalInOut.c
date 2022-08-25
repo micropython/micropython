@@ -43,6 +43,29 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate/translate.h"
 
+#if CIRCUITPY_CYW43
+#include "bindings/cyw43/__init__.h"
+#endif
+
+STATIC void check_result(digitalinout_result_t result) {
+    switch (result) {
+        case DIGITALINOUT_OK:
+            return;
+        case DIGITALINOUT_PIN_BUSY:
+            mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_Pin);
+        case DIGITALINOUT_INPUT_ONLY:
+            mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_direction);
+        #if CIRCUITPY_DIGITALIO_HAVE_INVALID_PULL
+        case DIGITALINOUT_INVALID_PULL:
+            mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_pull);
+        #endif
+        #if CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE
+        case DIGITALINOUT_INVALID_DRIVE_MODE:
+            mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_drive_mode);
+        #endif
+    }
+}
+
 //| class DigitalInOut:
 //|     """Digital input and output
 //|
@@ -65,7 +88,11 @@ STATIC mp_obj_t digitalio_digitalinout_make_new(const mp_obj_type_t *type,
     digitalio_digitalinout_obj_t *self = m_new_obj(digitalio_digitalinout_obj_t);
     self->base.type = &digitalio_digitalinout_type;
 
+    #if CIRCUITPY_CYW43
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin_including_cyw43(args[0]);
+    #else
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
+    #endif
     common_hal_digitalio_digitalinout_construct(self, pin);
 
     return MP_OBJ_FROM_PTR(self);
@@ -166,7 +193,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_input(size_t n_args, const mp_o
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    common_hal_digitalio_digitalinout_switch_to_input(self, validate_pull(args[ARG_pull].u_rom_obj, MP_QSTR_pull));
+    check_result(common_hal_digitalio_digitalinout_switch_to_input(self, validate_pull(args[ARG_pull].u_rom_obj, MP_QSTR_pull)));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(digitalio_digitalinout_switch_to_input_obj, 1, digitalio_digitalinout_switch_to_input);
@@ -200,7 +227,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_direction(mp_obj_t self_in, mp_ob
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     if (value == MP_ROM_PTR(&digitalio_direction_input_obj)) {
-        common_hal_digitalio_digitalinout_switch_to_input(self, PULL_NONE);
+        check_result(common_hal_digitalio_digitalinout_switch_to_input(self, PULL_NONE));
     } else if (value == MP_ROM_PTR(&digitalio_direction_output_obj)) {
         digitalinout_result_t result = common_hal_digitalio_digitalinout_switch_to_output(self, false, DRIVE_MODE_PUSH_PULL);
         if (result == DIGITALINOUT_INPUT_ONLY) {
@@ -276,7 +303,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_drive_mode(mp_obj_t self_in, mp_o
     if (drive_mode == MP_ROM_PTR(&digitalio_drive_mode_open_drain_obj)) {
         c_drive_mode = DRIVE_MODE_OPEN_DRAIN;
     }
-    common_hal_digitalio_digitalinout_set_drive_mode(self, c_drive_mode);
+    check_result(common_hal_digitalio_digitalinout_set_drive_mode(self, c_drive_mode));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(digitalio_digitalinout_set_drive_mode_obj, digitalio_digitalinout_obj_set_drive_mode);
@@ -319,7 +346,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t p
         return mp_const_none;
     }
 
-    common_hal_digitalio_digitalinout_set_pull(self, validate_pull(pull_obj, MP_QSTR_pull));
+    check_result(common_hal_digitalio_digitalinout_set_pull(self, validate_pull(pull_obj, MP_QSTR_pull)));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(digitalio_digitalinout_set_pull_obj, digitalio_digitalinout_obj_set_pull);

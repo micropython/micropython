@@ -57,6 +57,71 @@ CROSS_COMPILE = arm-none-eabi-
 
 HAL_DIR=hal/$(MCU_SERIES)
 
+ifeq ($(CIRCUITPY_CYW43),1)
+INC_CYW43 := \
+	-isystem sdk/src/rp2_common/pico_cyw43_arch/include/ \
+	-isystem sdk/lib/cyw43-driver/src \
+	-isystem sdk/lib/cyw43-driver/firmware \
+
+CFLAGS_CYW43 := -DCYW43_LWIP=0 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25
+SRC_SDK_CYW43 := \
+	lib/cyw43-driver/src/cyw43_ctrl.c \
+	lib/cyw43-driver/src/cyw43_ll.c \
+	lib/cyw43-driver/src/cyw43_lwip.c \
+	lib/cyw43-driver/src/cyw43_stats.c \
+	src/common/pico_sync/sem.c \
+	src/rp2_common/pico_cyw43_arch/cyw43_arch.c \
+	src/rp2_common/pico_cyw43_arch/cyw43_arch_threadsafe_background.c \
+	src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.c \
+
+SRC_CYW43 := $(wildcard bindings/cyw43/*.c)
+
+PIOASM = $(BUILD)/sdk/pioasm/pioasm
+.PHONY: PioasmBuild
+PioasmBuild: $(PIOASM)
+$(PIOASM):
+	$(Q)cmake -S sdk -B $(BUILD)/sdk
+	$(Q)make -C $(BUILD)/sdk PioasmBuild
+
+$(BUILD)/cyw43_bus_pio_spi.pio.h: sdk/src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.pio $(PIOASM)
+	$(Q)$(PIOASM) -o c-sdk $< $@
+$(BUILD)/sdk/src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.o: $(BUILD)/cyw43_bus_pio_spi.pio.h
+
+CYW43_FIRMWARE_BIN = 43439A0-7.95.49.00.combined
+
+$(BUILD)/cyw43_resource.o: sdk/lib/cyw43-driver/firmware/$(CYW43_FIRMWARE_BIN)
+	$(Q)$(OBJCOPY) -I binary -O elf32-littlearm -B arm \
+		--readonly-text \
+		--rename-section .data=.big_const,contents,alloc,load,readonly,data \
+		--redefine-sym _binary_sdk_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_start=fw_43439A0_7_95_49_00_start \
+		--redefine-sym _binary_sdk_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_size=fw_43439A0_7_95_49_00_size \
+		--redefine-sym _binary_sdk_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_end=fw_43439A0_7_95_49_00_end \
+		$< $@
+OBJ_CYW43 := $(BUILD)/cyw43_resource.o
+# need to do the equivalent of this in cmake
+###     # cyw43_resource.o contains the WiFi and BT firmware as a binary blob
+###     add_custom_command(
+###             OUTPUT ${CYW43_FIRMWARE_OBJ}
+###             DEPENDS ${PICO_CYW43_DRIVER_PATH}/firmware/${CYW43_FIRMWARE_BIN}
+###             WORKING_DIRECTORY ${PICO_CYW43_DRIVER_PATH}/firmware
+###             COMMAND ${CMAKE_OBJCOPY} -I binary -O elf32-littlearm -B arm
+###             --readonly-text
+###             --rename-section .data=${RESOURCE_SECNAME},${RESOURCE_SECFLAGS}
+###             --redefine-sym _binary_${CYW43_FIRMWARE_BIN_}_start=${CYW43_FIRMWARE_PRETTY}_start
+###             --redefine-sym _binary_${CYW43_FIRMWARE_BIN_}_end=${CYW43_FIRMWARE_PRETTY}_end
+###             --redefine-sym _binary_${CYW43_FIRMWARE_BIN_}_size=${CYW43_FIRMWARE_PRETTY}_size
+###             ${CYW43_FIRMWARE_BIN} ${CYW43_FIRMWARE_OBJ}
+###     )
+###
+else
+$(error y u no y fi)
+INC_CYW43 :=
+CFLAGS_CYW43 :=
+SRC_SDK_CYW43 :=
+SRC_CYW43 :=
+OBJ_CYW43 :=
+endif
+
 INC += \
 	-I. \
         -I../.. \
@@ -102,6 +167,7 @@ INC += \
         -isystem sdk/src/rp2_common/pico_runtime/printf/include/ \
         -isystem sdk/src/rp2_common/pico_bootrom/include/ \
         -isystem sdk/src/rp2_common/pico_unique_id/include/ \
+	$(INC_CYW43) \
         -Isdk_config \
         -I../../lib/tinyusb/src \
         -I../../supervisor/shared/usb \
@@ -116,6 +182,9 @@ CFLAGS += -DTUD_OPT_RP2040_USB_DEVICE_ENUMERATION_FIX=1 -DCFG_TUSB_MCU=OPT_MCU_R
 # option to override default optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 CFLAGS += $(OPTIMIZATION_FLAGS)
 
+# flags specific to wifi / cyw43
+
+CFLAGS += $(CFLAGS_CYW43)
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb3 -O3
@@ -133,7 +202,7 @@ endif
 # Remove -Wno-stringop-overflow after we can test with CI's GCC 10. Mac's looks weird.
 DISABLE_WARNINGS = -Wno-stringop-overflow -Wno-unused-function -Wno-unused-variable -Wno-strict-overflow -Wno-cast-align -Wno-strict-prototypes -Wno-nested-externs -Wno-double-promotion -Wno-sign-compare
 
-CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $(DISABLE_WARNINGS) -Werror=missing-prototypes
+CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $(DISABLE_WARNINGS) -Werror=missing-prototypes -Wno-error=unused-result
 
 CFLAGS += \
   -march=armv6-m \
@@ -186,6 +255,7 @@ SRC_SDK := \
 	src/rp2_common/pico_runtime/runtime.c \
 	src/rp2_common/pico_stdio/stdio.c \
 	src/rp2_common/pico_unique_id/unique_id.c \
+	$(SRC_SDK_CYW43) \
 
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_SDK)): CFLAGS += -Wno-missing-prototypes -Wno-undef
@@ -205,6 +275,7 @@ SRC_C += \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/dcd_rp2040.c \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c \
 	mphalport.c \
+	$(SRC_CYW43) \
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
@@ -244,6 +315,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S_UPPER:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/boot2_padded_checksummed.o
+OBJ += $(OBJ_CYW43)
 
 $(BUILD)/boot2_padded_checksummed.o: $(BUILD)/boot2_padded_checksummed.S
 	$(STEPECHO) "CC $<"

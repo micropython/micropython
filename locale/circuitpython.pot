@@ -95,6 +95,7 @@ msgstr ""
 msgid "%q failure: %d"
 msgstr ""
 
+#: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr ""
@@ -916,6 +917,10 @@ msgstr ""
 msgid "Expected a %q"
 msgstr ""
 
+#: ports/raspberrypi/bindings/cyw43/__init__.c
+msgid "Expected a %q or %q"
+msgstr ""
+
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an %q"
 msgstr ""
@@ -1177,7 +1182,7 @@ msgstr ""
 msgid "Internal watchdog timer expired."
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid %q"
 msgstr ""
 

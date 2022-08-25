@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/port.h"
+#include "supervisor/board.h"
 
-MP_WEAK void port_wake_main_task(void) {
+void board_init(void) {
 }
 
-MP_WEAK void port_wake_main_task_from_isr(void) {
+bool board_requests_safe_mode(void) {
+    return false;
 }
 
-MP_WEAK void port_yield(void) {
+void reset_board(void) {
 }
 
-MP_WEAK void port_boot_info(void) {
+void board_deinit(void) {
 }

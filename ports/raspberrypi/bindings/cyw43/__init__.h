@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +25,10 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/port.h"
+#pragma once
 
-MP_WEAK void port_wake_main_task(void) {
-}
+#include "py/obj.h"
 
-MP_WEAK void port_wake_main_task_from_isr(void) {
-}
-
-MP_WEAK void port_yield(void) {
-}
-
-MP_WEAK void port_boot_info(void) {
-}
+extern const mp_obj_type_t cyw43_pin_type;
+const mcu_pin_obj_t *validate_obj_is_free_pin_including_cyw43(mp_obj_t obj);
+const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj);

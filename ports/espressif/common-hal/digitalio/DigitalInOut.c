@@ -82,10 +82,11 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self
     self->pin = NULL;
 }
 
-void common_hal_digitalio_digitalinout_switch_to_input(
+digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_input(
     digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
     common_hal_digitalio_digitalinout_set_pull(self, pull);
     gpio_set_direction(self->pin->number, GPIO_MODE_INPUT);
+    return DIGITALINOUT_OK;
 }
 
 digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
@@ -140,7 +141,7 @@ digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
     return DRIVE_MODE_PUSH_PULL;
 }
 
-void common_hal_digitalio_digitalinout_set_pull(
+digitalinout_result_t common_hal_digitalio_digitalinout_set_pull(
     digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
     gpio_num_t number = self->pin->number;
     gpio_pullup_dis(number);
@@ -150,6 +151,7 @@ void common_hal_digitalio_digitalinout_set_pull(
     } else if (pull == PULL_DOWN) {
         gpio_pulldown_en(number);
     }
+    return DIGITALINOUT_OK;
 }
 
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(

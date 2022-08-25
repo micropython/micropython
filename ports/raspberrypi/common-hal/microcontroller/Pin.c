@@ -28,10 +28,18 @@
 
 #include "common-hal/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "bindings/cyw43/__init__.h"
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
+#if CIRCUITPY_CYW43
+#include "pico/cyw43_arch.h"
+#endif
+
 STATIC uint32_t never_reset_pins;
+
+bool cyw_ever_init;
+static uint32_t cyw_pin_claimed;
 
 void reset_all_pins(void) {
     for (size_t i = 0; i < TOTAL_GPIO_COUNT; i++) {
@@ -40,6 +48,14 @@ void reset_all_pins(void) {
         }
         reset_pin_number(i);
     }
+    #if CIRCUITPY_CYW43
+    if (cyw_ever_init) {
+        for (size_t i = 0; i < 1; i++) {
+            cyw43_arch_gpio_put(i, 0);
+        }
+    }
+    cyw_pin_claimed = 0;
+    #endif
 }
 
 void never_reset_pin_number(uint8_t pin_number) {
@@ -66,15 +82,30 @@ void reset_pin_number(uint8_t pin_number) {
     hw_set_bits(&padsbank0_hw->io[pin_number], PADS_BANK0_GPIO0_OD_BITS);
 }
 
+void reset_pin_number_cyw(uint8_t pin_no) {
+    cyw_pin_claimed &= ~(1 << pin_no);
+}
+
 void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
     never_reset_pin_number(pin->number);
 }
 
 void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
+    #if CIRCUITPY_CYW43
+    if (pin->base.type == &cyw43_pin_type) {
+        reset_pin_number_cyw(pin->number);
+        return;
+    }
+    #endif
     reset_pin_number(pin->number);
 }
 
 void claim_pin(const mcu_pin_obj_t *pin) {
+    #if CIRCUITPY_CYW43
+    if (pin->base.type == &cyw43_pin_type) {
+        cyw_pin_claimed |= (1 << pin->number);
+    }
+    #endif
     // Nothing to do because all changes will set the GPIO settings.
 }
 
@@ -89,6 +120,11 @@ bool pin_number_is_free(uint8_t pin_number) {
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
+    #if CIRCUITPY_CYW43
+    if (pin->base.type == &cyw43_pin_type) {
+        return !(cyw_pin_claimed & (1 << pin->number));
+    }
+    #endif
     return pin_number_is_free(pin->number);
 }
 
