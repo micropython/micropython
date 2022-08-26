@@ -2248,6 +2248,11 @@ STATIC mp_obj_t mp_obj_new_str_type_from_vstr(const mp_obj_type_t *type, vstr_t 
 }
 
 mp_obj_t mp_obj_new_str_from_vstr(vstr_t *vstr) {
+    #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+    if (!utf8_check((byte *)vstr->buf, vstr->len)) {
+        mp_raise_msg(&mp_type_UnicodeError, NULL);
+    }
+    #endif // MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
     return mp_obj_new_str_type_from_vstr(&mp_type_str, vstr);
 }
 
