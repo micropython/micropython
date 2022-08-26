@@ -177,6 +177,32 @@ Methods
 
    Availability: WiPy.
 
+.. method:: UART.flush()
+
+   Waits until all data has been sent. In case of a timeout, an exception is raised. The timeout
+   duration depends on the tx buffer size and the baud rate. Unless flow control is enabled, a timeout
+   should not occur.
+
+   .. note::
+
+       At the rp2, esp8266 and nrf port the call returns while the last byte is sent.
+       If required, a one character wait time has to be added in the calling script.
+
+   Availability: RP2040, ESP32, ESP8266, MIMXRT, CC3200, STM32, NRF
+
+.. method:: UART.txdone()
+
+   Tells, whether all data has been sent or no data transfer is happening. In this case,
+   it returns True. If a data transmission is ongoing, it returns False.
+
+   .. note::
+
+       At the rp2, esp8266 and nrf port the call may return True even if the last byte
+       of a transfer is still being sent. If required, a one character wait time has to be
+       added in the calling script.
+
+   Availability: RP2040, ESP32, ESP8266, MIMXRT, CC3200, STM32, NRF
+
 Constants
 ---------
 
