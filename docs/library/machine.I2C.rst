@@ -20,6 +20,14 @@ Software I2C is implemented by bit-banging and can be used on any pin but is not
 as efficient.  These classes have the same methods available and differ primarily
 in the way they are constructed.
 
+.. Note::
+
+   The I2C bus requires pull-up circuitry for it's operation. Usually these are
+   resistors in the range of 1 - 10 kOhm. Without these, the behaviour is undefined
+   and may range from blocking, unexpected watchdog reset to just wrong values.
+   Often, this pull-up circuitry is built-in already to the MCU board or sensor
+   breakout boards, but there is no rule for that. So please check in case of trouble.
+
 Example usage::
 
     from machine import I2C
