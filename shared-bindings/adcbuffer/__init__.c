@@ -69,7 +69,6 @@
 STATIC const mp_rom_map_elem_t adcbuffer_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_adcbuffer) },
     { MP_ROM_QSTR(MP_QSTR_BufferedInput),   MP_ROM_PTR(&adcbuffer_bufferedinput_type) },
-    // #ifdef CIRCUITPY_BUFFEREDINPUT    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(adcbuffer_module_globals, adcbuffer_module_globals_table);

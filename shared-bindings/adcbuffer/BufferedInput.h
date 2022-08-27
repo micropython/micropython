@@ -35,6 +35,6 @@ extern const mp_obj_type_t adcbuffer_bufferedinput_type;
 void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, uint32_t sample_rate);
 void common_hal_adcbuffer_bufferedinput_deinit(adcbuffer_bufferedinput_obj_t *self);
 bool common_hal_adcbuffer_bufferedinput_deinited(adcbuffer_bufferedinput_obj_t *self);
-bool common_hal_adcbuffer_bufferedinput_readmultiple(adcbuffer_bufferedinput_obj_t *self);
+void common_hal_adcbuffer_bufferedinput_readmultiple(adcbuffer_bufferedinput_obj_t *self);
 
 #endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_ADCBUFFER_BUFFEREDINPUT_H__

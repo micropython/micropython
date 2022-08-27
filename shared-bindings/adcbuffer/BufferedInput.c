@@ -157,7 +157,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adcbuffer_bufferedinput___exit___obj,
 STATIC mp_obj_t adcbuffer_bufferedinput_obj_readmultiple(mp_obj_t self_in) {
     adcbuffer_bufferedinput_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_adcbuffer_bufferedinput_readmultiple(self));
+    common_hal_adcbuffer_bufferedinput_readmultiple(self);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(adcbuffer_bufferedinput_readmultiple_obj, adcbuffer_bufferedinput_obj_readmultiple);
 
