@@ -64,7 +64,7 @@ void common_hal_esp32_camera_camera_construct(
     if (common_hal_espidf_get_reserved_psram() == 0) {
         mp_raise_msg(&mp_type_MemoryError, translate(
             "esp32_camera.Camera requires reserved PSRAM to be configured. "
-            "See the documentation for instructions.");
+            "See the documentation for instructions."));
     }
     for (int i = 0; i < 8; i++) {
         claim_pin_number(data_pins[i]);
