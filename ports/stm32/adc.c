@@ -856,6 +856,9 @@ STATIC mp_obj_t adc_all_make_new(const mp_obj_type_t *type, size_t n_args, size_
 STATIC mp_obj_t adc_all_read_channel(mp_obj_t self_in, mp_obj_t channel) {
     pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t chan = adc_get_internal_channel(mp_obj_get_int(channel));
+    if (!is_adcx_channel(chan)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("not a valid ADC Channel: %d"), chan);
+    }
     uint32_t data = adc_config_and_read_channel(&self->handle, chan);
     return mp_obj_new_int(data);
 }
