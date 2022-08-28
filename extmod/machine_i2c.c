@@ -328,6 +328,9 @@ STATIC mp_obj_t machine_i2c_scan(mp_obj_t self_in) {
         if (ret == 0) {
             mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
         }
+        #ifdef MICROPY_EVENT_POLL_HOOK
+        MICROPY_EVENT_POLL_HOOK
+        #endif
     }
     return list;
 }
