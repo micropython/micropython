@@ -188,7 +188,7 @@ Design for compatibility with CPython
 
 CircuitPython is aimed to be one's first experience with code.  It will be the
 first step into the world of hardware and software. To ease one's exploration
-out from this first step, make sure that the functionality shared with CPython shares
+out from this first step, make sure that functionality shared with CPython shares
 the same API. It doesn't need to be the full API it can be a subset. However, do
 not add non-CPython APIs to the same modules. Instead, use separate non-CPython
 modules to add extra functionality. By distinguishing API boundaries at modules
