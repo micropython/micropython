@@ -141,7 +141,7 @@ statement will ensure hardware isn't enabled longer than needed.
 Verify your device
 --------------------------------------------------------------------------------
 
-Whenever possible, make sure device you are talking to is the device you expect.
+Whenever possible, make sure the device you are talking to is the device you expect.
 If not, raise a RuntimeError. Beware that I2C addresses can be identical on
 different devices so read registers you know to make sure they match your
 expectation. Validating this upfront will help catch mistakes.
@@ -202,7 +202,7 @@ interchangeably with the CPython name. This is confusing. Instead, think up a
 new name that is related to the extra functionality you are adding.
 
 For example, storage mounting and unmounting related functions were moved from
-``uos`` into a new `storage` module. Terminal related functions were moved into
+``uos`` into a new `storage` module. Terminal-related functions were moved into
 `multiterminal`. These names better match their functionality and do not
 conflict with CPython names. Make sure to check that you don't conflict with
 CPython libraries too. That way we can port the API to CPython in the future.
@@ -213,7 +213,7 @@ Example
 When adding extra functionality to CircuitPython to mimic what a normal
 operating system would do, either copy an existing CPython API (for example file
 writing) or create a separate module to achieve what you want. For example,
-mounting and unmount drives is not a part of CPython so it should be done in a
+mounting and unmounting drives is not a part of CPython so it should be done in a
 module, such as a new ``storage`` module, that is only available in CircuitPython.
 That way when someone moves the code to CPython they know what parts need to be
 adapted.
