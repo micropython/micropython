@@ -69,6 +69,38 @@ the tool the files that changed and it will only reformat those.
 v0.71 or v0.72 for MicroPython. Different uncrustify versions produce slightly
 different formatting, and the configuration file formats are often incompatible.
 
+Automatic Pre-Commit Hooks
+==========================
+
+To have code formatting and commit message conventions automatically checked
+using [pre-commit](https://pre-commit.com/), run the following commands in your
+local MicroPython directory:
+
+```
+$ pip install pre-commit
+
+$ pre-commit install
+
+$ pre-commit install --hook-type commit-msg
+```
+
+pre-commit will now automatically run during `git commit` for both code and
+commit message formatting.
+
+The same formatting checks will be run by CI for any Pull Request submitted to
+MicroPython. Pre-commit allows you to see any failure more quickly, and in many
+cases will automatically correct it in your local working copy.
+
+Tips:
+
+* To skip pre-commit checks on a single commit, use `git commit -n` (for
+  `--no-verify`).
+* To ignore the pre-commit message format check temporarily, start the commit
+  message subject line with "WIP" (for "Work In Progress").
+
+(It is also possible to install pre-commit using Brew or other sources, see
+[the docs](https://pre-commit.com/index.html#install) for details.)
+
 Python code conventions
 =======================
 
