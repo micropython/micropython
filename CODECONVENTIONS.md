@@ -65,6 +65,10 @@ changes to the correct style.  Without arguments this tool will reformat all
 source code (and may take some time to run).  Otherwise pass as arguments to
 the tool the files that changed and it will only reformat those.
 
+**Important**: Use only [uncrustify](https://github.com/uncrustify/uncrustify)
+v0.71 or v0.72 for MicroPython. Different uncrustify versions produce slightly
+different formatting, and the configuration file formats are often incompatible.
+
 Python code conventions
 =======================
 
