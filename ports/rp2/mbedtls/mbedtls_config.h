@@ -106,6 +106,7 @@ void m_tracked_free(void *ptr);
 #define MBEDTLS_PLATFORM_SNPRINTF_MACRO snprintf
 
 // Time hook
+#include <time.h>
 time_t rp2_rtctime_seconds(time_t *timer);
 #define MBEDTLS_PLATFORM_TIME_MACRO rp2_rtctime_seconds
 
