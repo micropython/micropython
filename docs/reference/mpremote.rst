@@ -179,6 +179,15 @@ the execution of the tool, if such commands are not explicitly given.  Automatic
 connection will search for the first available serial device. If no action is
 specified then the REPL will be entered.
 
+It is possible to filter the serial devices eligible for auto connection by defining
+``autoconnect_regexp`` in ``.config/mpremote/config.py``:
+
+.. code-block:: python3
+
+    # regular expression used to filter ports eligible for auto connect:
+    autoconnect_regexp = '/dev/cu.usb' # for macOS
+
+
 Once connected to a device, ``mpremote`` will automatically soft-reset the
 device if needed.  This clears the Python heap and restarts the interpreter,
 making sure that subsequent Python code executes in a fresh environment.  Auto
@@ -229,6 +238,8 @@ Any user configuration, including user-defined shortcuts, can be placed in the f
     """,],
         "test": ["mount", ".", "exec", "import test"],
     }
+    
+    autoconnect_regexp = '/dev/cu.usb' # for macOS
 
 
 Examples
