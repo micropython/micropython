@@ -42,7 +42,6 @@
 #include "supervisor/serial.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/shared/title_bar.h"
 #include "supervisor/shared/translate/translate.h"
 
 #include "py/mpstate.h"
@@ -55,6 +54,10 @@
 #if CIRCUITPY_SERIAL_BLE
 #include "supervisor/shared/bluetooth/serial.h"
 #include "bluetooth/ble_drv.h"
+#endif
+
+#if CIRCUITPY_STATUS_BAR
+#include "supervisor/shared/status_bar.h"
 #endif
 
 // This standard advertisement advertises the CircuitPython editing service and a CIRCUITPY short name.
@@ -94,16 +97,21 @@ STATIC bool ble_started = false;
 STATIC uint8_t workflow_state = WORKFLOW_UNSET;
 STATIC bool was_connected = false;
 
+#if CIRCUITPY_STATUS_BAR
 // To detect when the title bar changes.
 STATIC bool _last_connected = false;
 STATIC bool _last_advertising = false;
+#endif
 
+#if CIRCUITPY_STATUS_BAR
 // Title bar status
 bool supervisor_bluetooth_status_dirty(void) {
     return _last_advertising != advertising ||
            _last_connected != was_connected;
 }
+#endif
 
+#if CIRCUITPY_STATUS_BAR
 void supervisor_bluetooth_status(void) {
     serial_write("BLE:");
     if (advertising) {
@@ -123,6 +131,7 @@ void supervisor_bluetooth_status(void) {
     _last_connected = was_connected;
     _last_advertising = advertising;
 }
+#endif
 
 STATIC void supervisor_bluetooth_start_advertising(void) {
     if (workflow_state != WORKFLOW_ENABLED) {
@@ -273,9 +282,13 @@ void supervisor_bluetooth_background(void) {
         supervisor_bluetooth_file_transfer_disconnected();
         #endif
     }
+
+    #if CIRCUITPY_STATUS_BAR
     if (was_connected != is_connected) {
-        supervisor_title_bar_request_update(false);
+        supervisor_status_bar_request_update(false);
     }
+    #endif
+
     was_connected = is_connected;
     if (!is_connected) {
         supervisor_bluetooth_start_advertising();
@@ -312,7 +325,10 @@ void supervisor_start_bluetooth(void) {
 
     // Kick off advertisements
     supervisor_bluetooth_background();
-    supervisor_title_bar_request_update(false);
+
+    #if CIRCUITPY_STATUS_BAR
+    supervisor_status_bar_request_update(false);
+    #endif
 
     #endif
 }

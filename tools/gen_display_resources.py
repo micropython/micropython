@@ -324,7 +324,7 @@ displayio_tilegrid_t supervisor_terminal_scroll_area_text_grid = {{
 
 c_file.write(
     """\
-displayio_tilegrid_t supervisor_terminal_title_bar_text_grid = {{
+displayio_tilegrid_t supervisor_terminal_status_bar_text_grid = {{
     .base = {{ .type = &displayio_tilegrid_type }},
     .bitmap = (displayio_bitmap_t*) &supervisor_terminal_font_bitmap,
     .pixel_shader = &supervisor_terminal_color,
@@ -414,7 +414,7 @@ terminalio_terminal_obj_t supervisor_terminal = {
     .cursor_x = 0,
     .cursor_y = 0,
     .scroll_area = NULL,
-    .title_bar = NULL
+    .status_bar = NULL
 };
 
 #endif

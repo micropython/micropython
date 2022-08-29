@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 by Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,19 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_STATUS_BAR_STATUS_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_STATUS_BAR_STATUS_H
 
 #include <stdbool.h>
+#include "py/obj.h"
+#include "shared-module/supervisor/StatusBar.h"
 
-void supervisor_title_bar_start(void);
-void supervisor_title_bar_suspend(void);
-void supervisor_title_bar_resume(void);
+extern const mp_obj_type_t supervisor_status_bar_type;
 
-// Update the title bar immediately. Useful from main.c where we know state has changed and the code
-// will only be run once.
-void supervisor_title_bar_update(void);
+bool shared_module_supervisor_status_bar_get_console(supervisor_status_bar_obj_t *self);
+void shared_module_supervisor_status_bar_set_console(supervisor_status_bar_obj_t *self, bool enabled);
 
-// Use this if requesting from the background, as code is executing or if the status may not have
-// changed.
-void supervisor_title_bar_request_update(bool force_dirty);
+bool shared_module_supervisor_status_bar_get_display(supervisor_status_bar_obj_t *self);
+void shared_module_supervisor_status_bar_set_display(supervisor_status_bar_obj_t *self, bool enabled);
 
-// Provided by main.c
-void supervisor_execution_status(void);
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR_STATUS_BAR_H

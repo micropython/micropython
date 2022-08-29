@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
+#pragma once
 
-// #include "py/mpconfig.h"
-#include "py/obj.h"
+#include <stdbool.h>
 
-#include "common-hal/supervisor/Runtime.h"
-#include "shared-module/supervisor/StatusBar.h"
+void supervisor_status_bar_start(void);
+void supervisor_status_bar_suspend(void);
+void supervisor_status_bar_resume(void);
 
-extern const super_runtime_obj_t common_hal_supervisor_runtime_obj;
-extern supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj;
-extern mp_obj_t supervisor_ticks_ms(void);
+void supervisor_status_bar_clear(void);
 
+// Update the title bar immediately. Useful from main.c where we know state has changed and the code
+// will only be run once.
+void supervisor_status_bar_update(void);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
+// Use this if requesting from the background, as code is executing or if the status may not have
+// changed.
+void supervisor_status_bar_request_update(bool force_dirty);
+
+// Provided by main.c
+void supervisor_execution_status(void);
