@@ -240,9 +240,9 @@ def do_connect(args):
         elif dev == "auto":
             # Auto-detect and auto-connect to the first available device.
             try:
-                autoconnect_regexp = load_user_config().__dict__['autoconnect_regexp']
+                autoconnect_regexp = load_user_config().__dict__["autoconnect_regexp"]
             except KeyError:
-                autoconnect_regexp = ''
+                autoconnect_regexp = ""
             for p in sorted(serial.tools.list_ports.grep(autoconnect_regexp)):
                 try:
                     return pyboard.PyboardExtended(p.device, baudrate=115200)
