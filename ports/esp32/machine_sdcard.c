@@ -283,6 +283,10 @@ STATIC mp_obj_t sd_deinit(mp_obj_t self_in) {
         {
             self->host.deinit();
         }
+        if (self->host.flags & SDMMC_HOST_FLAG_SPI) {
+            // SD card used a (dedicated) SPI bus, so free that SPI bus.
+            spi_bus_free(self->host.slot);
+        }
         self->flags &= ~SDCARD_CARD_FLAGS_HOST_INIT_DONE;
     }
 
