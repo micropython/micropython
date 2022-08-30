@@ -185,7 +185,7 @@ It is possible to filter the serial devices eligible for auto connection by defi
 .. code-block:: python3
 
     # regular expression used to filter ports eligible for auto connect:
-    autoconnect_regexp = '/dev/cu.usb' # for macOS
+    autoconnect_regexp = '/dev/cu.usbmodem'
 
 
 Once connected to a device, ``mpremote`` will automatically soft-reset the
@@ -238,8 +238,6 @@ Any user configuration, including user-defined shortcuts, can be placed in the f
     """,],
         "test": ["mount", ".", "exec", "import test"],
     }
-    
-    autoconnect_regexp = '/dev/cu.usb' # for macOS
 
 
 Examples

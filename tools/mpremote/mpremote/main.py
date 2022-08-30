@@ -242,7 +242,10 @@ def do_connect(args):
             try:
                 autoconnect_regexp = load_user_config().__dict__["autoconnect_regexp"]
             except KeyError:
-                autoconnect_regexp = ""
+                if sys.platform == 'darwin':
+                    autoconnect_regexp = "/dev/cu.usb"
+                else:
+                    autoconnect_regexp = ""
             for p in sorted(serial.tools.list_ports.grep(autoconnect_regexp)):
                 try:
                     return pyboard.PyboardExtended(p.device, baudrate=115200)
