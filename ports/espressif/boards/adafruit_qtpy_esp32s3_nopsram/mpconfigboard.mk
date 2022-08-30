@@ -20,3 +20,4 @@ CIRCUITPY_ESP_FLASH_SIZE = 8MB
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Register
+CIRCUITPY_ESP32_CAMERA = 0

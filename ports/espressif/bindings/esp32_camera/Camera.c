@@ -63,7 +63,7 @@
 //|         """
 //|         Configure and initialize a camera with the given properties
 //|
-//|         This driver requires that the ``CIRCUITPY_RESERVED_PSRAM`` in ``/.env`` be large enough to hold the camera frambuffer(s). Generally, boards with built-in cameras will have a default setting that is large enough. If the constructor raises a MemoryError, this probably indicates the setting is too small and should be increased.
+//|         This driver requires that the ``CIRCUITPY_RESERVED_PSRAM`` in ``/.env`` be large enough to hold the camera frambuffer(s). Generally, boards with built-in cameras will have a default setting that is large enough. If the constructor raises a MemoryError or an IDFError, this probably indicates the setting is too small and should be increased.
 //|
 //|
 //|         .. important::
