@@ -29,6 +29,8 @@
 // Variant-specific definitions.
 #include "mpconfigvariant.h"
 
+#include "../unix/mpconfigunix.h"
+
 // By default use MicroPython version of readline
 #ifndef MICROPY_USE_READLINE
 #define MICROPY_USE_READLINE        (1)

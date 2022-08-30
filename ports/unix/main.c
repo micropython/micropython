@@ -77,6 +77,9 @@ const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 // and lower 8 bits are SystemExit value. For all other exceptions,
 // return 1.
 STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
+    // Hook for adding custom unhandled exception code.
+    MICROPY_UNIX_UNCAUGHT_EXCEPTION();
+
     // check for SystemExit
     if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
         // None is an exit value of 0; an int is its value; anything else is 1
@@ -473,6 +476,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     stack_limit *= 2;
     #endif
     mp_stack_set_limit(stack_limit);
+
+    // Hook for injecting custom code in early init.
+    MICROPY_UNIX_EARLY_INIT();
 
     pre_process_options(argc, argv);
 
