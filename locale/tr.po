@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2022-08-14 12:14+0000\n"
-"Last-Translator: Can Kocyigit <cank3698@googlemail.com>\n"
+"PO-Revision-Date: 2022-08-29 18:20+0000\n"
+"Last-Translator: Boran Roni <boranroniurtekin@gmail.com>\n"
 "Language-Team: none\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: main.c
 msgid ""
@@ -118,11 +118,11 @@ msgstr "%q indeksleri integer olmalı, %s değil"
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
-msgstr ""
+msgstr "%q init başarısız oldu"
 
 #: py/argcheck.c
 msgid "%q length must be %d"
-msgstr ""
+msgstr "%q boyutu %d olmalıdır"
 
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
@@ -130,11 +130,11 @@ msgstr "%q boyutları %d-%d olmalıdır"
 
 #: py/argcheck.c
 msgid "%q length must be <= %d"
-msgstr ""
+msgstr "%q boyutu <= %d olmalıdır"
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
+msgstr "%q boyutu >= %d olmalıdır"
 
 #: shared-bindings/busio/I2C.c
 msgid "%q length must be >= 1"
@@ -142,7 +142,7 @@ msgstr "%q boyutu >=1 olmalıdır"
 
 #: py/argcheck.c
 msgid "%q must be %d"
-msgstr ""
+msgstr "%q, %d olmalıdır"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
@@ -150,7 +150,7 @@ msgstr "%q, %d-%d olmalıdır"
 
 #: shared-bindings/displayio/Display.c
 msgid "%q must be 1 when %q is True"
-msgstr ""
+msgstr "%q 1 olmalı, %q True olduğu zaman"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
@@ -174,7 +174,7 @@ msgstr "%q bir string olmalıdır"
 
 #: py/argcheck.c
 msgid "%q must be an int"
-msgstr ""
+msgstr "%q bir tam sayı olmalıdır"
 
 #: py/argcheck.c
 msgid "%q must be of type %q"
@@ -219,7 +219,7 @@ msgstr "%q, %q ve %q aynı uzunlukta olmalıdır"
 
 #: py/objint.c
 msgid "%q=%q"
-msgstr ""
+msgstr "%q=%q"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
@@ -316,7 +316,6 @@ msgid "'%s' object isn't subscriptable"
 msgstr "'%s' nesnesi subscriptable özelliğe sahip değil"
 
 #: py/objstr.c
-#, fuzzy
 msgid "'=' alignment not allowed in string format specifier"
 msgstr "'=' hizalamasına string biçiminde izin verilmez"
 
@@ -418,7 +417,7 @@ msgstr "Tüm I2C çevre birimleri kullanımda"
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 msgid "All I2C targets are in use"
-msgstr ""
+msgstr "Tüm I2C hedefleri kullanımda"
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
