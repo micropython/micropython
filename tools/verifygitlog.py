@@ -20,6 +20,22 @@ def very_verbose(*args):
         print(*args)
 
 
+class ErrorCollection:
+    # Track errors and warnings as the program runs
+    def __init__(self):
+        self.has_errors = False
+        self.has_warnings = False
+        self.prefix = ""
+
+    def error(self, text):
+        print("error: {}{}".format(self.prefix, text))
+        self.has_errors = True
+
+    def warning(self, text):
+        print("warning: {}{}".format(self.prefix, text))
+        self.has_warnings = True
+
+
 def git_log(pretty_format, *args):
     # Delete pretty argument from user args so it doesn't interfere with what we do.
     args = ["git", "log"] + [arg for arg in args if "--pretty" not in args]
@@ -30,35 +46,24 @@ def git_log(pretty_format, *args):
         yield line.decode().rstrip("\r\n")
 
 
-def verify(sha):
+def verify(sha, err):
     verbose("verify", sha)
-    errors = []
-    warnings = []
-
-    def error_text(err):
-        return "commit " + sha + ": " + err
-
-    def error(err):
-        errors.append(error_text(err))
-
-    def warning(err):
-        warnings.append(error_text(err))
+    err.prefix = "commit " + sha + ": "
 
     # Author and committer email.
     for line in git_log("%ae%n%ce", sha, "-n1"):
         very_verbose("email", line)
         if "noreply" in line:
-            error("Unwanted email address: " + line)
+            err.error("Unwanted email address: " + line)
 
     # Message body.
     raw_body = list(git_log("%B", sha, "-n1"))
-    verify_message_body(raw_body, error, warning)
-    return errors, warnings
+    verify_message_body(raw_body, err)
 
 
-def verify_message_body(raw_body, error, warning):
+def verify_message_body(raw_body, err):
     if not raw_body:
-        error("Message is empty")
+        err.error("Message is empty")
         return
 
     # Subject line.
@@ -70,70 +75,46 @@ def verify_message_body(raw_body, error, warning):
     very_verbose("subject_line", subject_line)
     subject_line_format = r"^[^!]+: [A-Z]+.+ .+\.$"
     if not re.match(subject_line_format, subject_line):
-        error("Subject line should match " + repr(subject_line_format) + ": " + subject_line)
+        err.error("Subject line should match " + repr(subject_line_format) + ": " + subject_line)
     if len(subject_line) >= 73:
-        error("Subject line should be 72 or less characters: " + subject_line)
+        err.error("Subject line should be 72 or less characters: " + subject_line)
 
     # Second one divides subject and body.
     if len(raw_body) > 1 and raw_body[1]:
-        error("Second message line should be empty: " + raw_body[1])
+        err.error("Second message line should be empty: " + raw_body[1])
 
     # Message body lines.
     for line in raw_body[2:]:
         # Long lines with URLs are exempt from the line length rule.
         if len(line) >= 76 and "://" not in line:
-            error("Message lines should be 75 or less characters: " + line)
+            err.error("Message lines should be 75 or less characters: " + line)
 
     if not raw_body[-1].startswith("Signed-off-by: ") or "@" not in raw_body[-1]:
-        warning("Message should be signed-off")
+        err.warning("Message should be signed-off")
 
 
 def run(args):
     verbose("run", *args)
-    has_errors = False
-    has_warnings = False
+
+    err = ErrorCollection()
 
     if "--check-file" in args:
-        has_errors, has_warnings = run_check_file(args[-1])
-    else:  # Normal operation
+        filename = args[-1]
+        verbose("checking commit message from", filename)
+        with open(args[-1]) as f:
+            lines = [line.rstrip("\r\n") for line in f]
+            verify_message_body(lines, err)
+    else:  # Normal operation, pass arguments to git log
         for sha in git_log("%h", *args):
-            errors, warnings = verify(sha)
-            has_errors |= any(errors)
-            has_warnings |= any(warnings)
-            for err in errors:
-                print("error:", err)
-            for err in warnings:
-                print("warning:", err)
-    if has_errors or has_warnings:
+            verify(sha, err)
+
+    if err.has_errors or err.has_warnings:
         if suggestions:
             print("See https://github.com/micropython/micropython/blob/master/CODECONVENTIONS.md")
     else:
         print("ok")
-    if has_errors:
+    if err.has_errors:
         sys.exit(1)
-
-
-def run_check_file(filename):
-    verbose("checking commit message from", filename)
-    errors = []
-    warnings = []
-
-    def error(err):
-        errors.append(err)
-
-    def warning(err):
-        warnings.append(err)
-
-    with open(args[-1]) as f:
-        lines = [l.rstrip("\r\n") for l in f]
-        verify_message_body(lines, error, warning)
-
-    for err in errors:
-        print("error:", err)
-    for err in warnings:
-        print("warning:", err)
-
-    return any(errors), any(warnings)
 
 
 def show_help():
