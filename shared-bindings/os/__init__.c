@@ -166,15 +166,15 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 //| def stat(path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|     """Get the status of a file or directory.
 //|
-//|        Returns a tuple with the status of a file or directory in the following order,
-//|        
+//|        Returns a tuple with the status of a file or directory in the following order:
+//|
 //|
 //|        * ``st_mode`` -- File type, regular or directory
 //|        * ``st_ino``  -- Unpopulated
-//|        * ``st_dev`` -- Unpopulated 
-//|        * ``st_nlink`` -- Unpopulated 
-//|        * ``st_uid`` -- Unpopulated 
-//|        * ``st_gid`` -- Unpopulated 
+//|        * ``st_dev`` -- Unpopulated
+//|        * ``st_nlink`` -- Unpopulated
+//|        * ``st_uid`` -- Unpopulated
+//|        * ``st_gid`` -- Unpopulated
 //|        * ``st_size`` -- Size of the file in bytes
 //|        * ``st_atime`` -- Time of most recent access expressed in seconds
 //|        * ``st_mtime`` -- Time of most recent content modification expressed in seconds.
