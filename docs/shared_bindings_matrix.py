@@ -40,7 +40,6 @@ ALIASES_BY_BOARD = {
     "pybadge": ["edgebadge"],
     "pyportal": ["pyportal_pynt"],
     "gemma_m0": ["gemma_m0_pycon2018"],
-    "pewpew10": ["pewpew13"],
 }
 
 ALIASES_BRAND_NAMES = {
@@ -54,8 +53,6 @@ ALIASES_BRAND_NAMES = {
         "Adafruit PyPortal Pynt",
     "gemma_m0_pycon2018":
         "Adafruit Gemma M0 PyCon 2018",
-    "pewpew13":
-        "PewPew 13",
 }
 
 ADDITIONAL_MODULES = {
