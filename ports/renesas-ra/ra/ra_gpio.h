@@ -103,7 +103,7 @@ enum AF_INDEX {
     ((DRIVE) == GPIO_HIGH_POWER))
 
 #define IS_GPIO_PULL(PULL) (((PULL) == GPIO_NOPULL) || \
-    ((PULL) == GPIO_PULLUP)) \
+    ((PULL) == GPIO_PULLUP) || \
     ((PULL) == GPIO_PULLDOWN))
 
 #define IS_GPIO_AF(AF)   ((AF) <= (uint8_t)0x1F)

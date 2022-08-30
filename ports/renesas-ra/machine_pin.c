@@ -175,7 +175,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     uint32_t pull;
     if (args[ARG_pull].u_obj != mp_const_none) {
         pull = mp_obj_get_int(args[ARG_pull].u_obj);
-        if (!IS_GPIO_MODE(pull)) {
+        if (!IS_GPIO_PULL(pull)) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pull mode: %d"), pull);
         }
         if (pull == MP_HAL_PIN_PULL_DOWN) {
