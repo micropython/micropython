@@ -411,13 +411,11 @@ msgstr "O endereço deve ter %d bytes de comprimento"
 msgid "All CAN peripherals are in use"
 msgstr "Todos os periféricos CAN estão em uso"
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Todos os periféricos I2C estão em uso"
-
-#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
-msgid "All I2C targets are in use"
-msgstr "Todos os alvos I2C já estão em uso"
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
@@ -1092,6 +1090,7 @@ msgid "I2C init error"
 msgstr "Erro de inicialização do I2C"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "I2C peripheral in use"
 msgstr "Periférico I2C em uso"
 
@@ -1638,6 +1637,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "Apenas um TouchAlarm pode ser colocado em deep sleep."
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "Only one address is allowed"
 msgstr "Apenas um endereço é permitido"
 
@@ -2964,6 +2964,12 @@ msgstr "O epoch_time não é compatível com esta placa"
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "erro = 0x%08lX"
+
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid ""
+"esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+"documentation for instructions."
+msgstr ""
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -4446,6 +4452,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "All I2C targets are in use"
+#~ msgstr "Todos os alvos I2C já estão em uso"
 
 #~ msgid "Failed to init wifi"
 #~ msgstr "Houve uma falha ao iniciar o wifi"
