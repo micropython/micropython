@@ -582,12 +582,12 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
         return src
 
     def fname_cp_dest(src, dest):
-        src = src.rsplit("/", 1)[-1]
+        _, src = os.path.split(src)
         if dest is None or dest == "":
             dest = src
         elif dest == ".":
-            dest = "./" + src
-        elif dest.endswith("/"):
+            dest = os.path.join(".", src)
+        elif dest.endswith(os.path.sep):
             dest += src
         return dest
 
