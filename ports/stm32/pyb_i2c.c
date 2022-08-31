@@ -472,7 +472,17 @@ void i2c_ev_irq_handler(mp_uint_t i2c_id) {
 
     #if defined(STM32F4)
 
-    if (hi2c->Instance->SR1 & I2C_FLAG_BTF && hi2c->State == HAL_I2C_STATE_BUSY_TX) {
+    if (hi2c->Instance->SR1 & I2C_FLAG_SB) {
+        if (hi2c->State == HAL_I2C_STATE_BUSY_TX) {
+            hi2c->Instance->DR = I2C_7BIT_ADD_WRITE(hi2c->Devaddress);
+        } else {
+            hi2c->Instance->DR = I2C_7BIT_ADD_READ(hi2c->Devaddress);
+        }
+    } else if (hi2c->Instance->SR1 & I2C_FLAG_ADDR) {
+        __IO uint32_t tmp_sr2;
+        tmp_sr2 = hi2c->Instance->SR2;
+        UNUSED(tmp_sr2);
+    } else if (hi2c->Instance->SR1 & I2C_FLAG_BTF && hi2c->State == HAL_I2C_STATE_BUSY_TX) {
         if (hi2c->XferCount != 0U) {
             hi2c->Instance->DR = *hi2c->pBuffPtr++;
             hi2c->XferCount--;
