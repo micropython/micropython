@@ -41,6 +41,10 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 
+#if CIRCUITPY_WIFI
+#include "common-hal/wifi/__init__.h"
+#endif
+
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/busio/UART.h"
 
@@ -134,15 +138,8 @@ safe_mode_t port_init(void) {
     never_reset_pin_number(29);
     if (cyw43_arch_init()) {
         serial_write("WiFi init failed\n");
-        return -1;
     } else {
         cyw_ever_init = true;
-        for (int i = 3; i--;) {
-            cyw43_arch_gpio_put(0, 1);
-            sleep_ms(100);
-            cyw43_arch_gpio_put(0, 0);
-            sleep_ms(100);
-        }
     }
     #endif
     if (board_requests_safe_mode()) {
@@ -180,6 +177,10 @@ void reset_port(void) {
     #endif
     #if CIRCUITPY_AUDIOCORE
     audio_dma_reset();
+    #endif
+
+    #if CIRCUITPY_WIFI
+    wifi_reset();
     #endif
 
     reset_all_pins();

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_NETWORK_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_NETWORK_H
+#pragma once
 
-#include <stdint.h>
+#include "py/obj.h"
+#include "py/mpconfig.h"
+#include "lwip/ip_addr.h"
 
-#include "common-hal/wifi/Network.h"
+void wifi_reset(void);
+NORETURN void raise_cyw_error(int err);
+#define CHECK_CYW_RESULT(x) do { int res = (x); if (res != 0) raise_cyw_error(res); } while (0)
 
-#include "py/objstr.h"
-
-extern const mp_obj_type_t wifi_network_type;
-
-extern mp_obj_t common_hal_wifi_network_get_ssid(wifi_network_obj_t *self);
-extern mp_obj_t common_hal_wifi_network_get_bssid(wifi_network_obj_t *self);
-extern mp_obj_t common_hal_wifi_network_get_rssi(wifi_network_obj_t *self);
-extern mp_obj_t common_hal_wifi_network_get_channel(wifi_network_obj_t *self);
-extern mp_obj_t common_hal_wifi_network_get_country(wifi_network_obj_t *self);
-extern mp_obj_t common_hal_wifi_network_get_authmode(wifi_network_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_NETWORK_H
+void ipaddress_ipaddress_to_lwip(mp_obj_t ip_address, ip_addr_t *lwip_ip_address);

@@ -67,6 +67,8 @@ EXCLUSIONS = [
     "tests/**/repl_*.py",
     # needs careful attention before applying automatic formatting
     "tests/basics/*.py",
+    # don't reindent this third-party code we vendored in
+    "ports/raspberrypi/lwip_src",
 ]
 
 # None of the standard Python path matching routines implement the matching

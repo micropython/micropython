@@ -89,7 +89,7 @@ STATIC mp_obj_t wifi_radio_set_hostname(mp_obj_t self_in, mp_obj_t hostname_in) 
 
     mp_arg_validate_length_range(hostname.len, 1, 253, MP_QSTR_hostname);
 
-    #ifndef CONFIG_IDF_TARGET_ESP32C3
+    #if 0 // ndef CONFIG_IDF_TARGET_ESP32C3
     regex_t regex; // validate hostname according to RFC 1123
     regcomp(&regex,"^(([a-z0-9]|[a-z0-9][a-z0-9\\-]{0,61}[a-z0-9])\\.)*([a-z0-9]|[a-z0-9][a-z0-9\\-]{0,61}[a-z0-9])$", REG_EXTENDED | REG_ICASE | REG_NOSUB);
     if (regexec(&regex, hostname.buf, 0, NULL, 0)) {

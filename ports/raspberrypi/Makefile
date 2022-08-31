@@ -59,20 +59,30 @@ HAL_DIR=hal/$(MCU_SERIES)
 
 ifeq ($(CIRCUITPY_CYW43),1)
 INC_CYW43 := \
-	-isystem sdk/src/rp2_common/pico_cyw43_arch/include/ \
-	-isystem sdk/lib/cyw43-driver/src \
 	-isystem sdk/lib/cyw43-driver/firmware \
+	-isystem sdk/lib/cyw43-driver/src \
+	-isystem sdk/lib/lwip/src/include \
+	-isystem sdk/src/rp2_common/pico_cyw43_arch/include/ \
+	-isystem sdk/src/rp2_common/pico_lwip/include/ \
 
-CFLAGS_CYW43 := -DCYW43_LWIP=0 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25
+CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25
 SRC_SDK_CYW43 := \
 	lib/cyw43-driver/src/cyw43_ctrl.c \
 	lib/cyw43-driver/src/cyw43_ll.c \
 	lib/cyw43-driver/src/cyw43_lwip.c \
 	lib/cyw43-driver/src/cyw43_stats.c \
 	src/common/pico_sync/sem.c \
+	src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.c \
 	src/rp2_common/pico_cyw43_arch/cyw43_arch.c \
 	src/rp2_common/pico_cyw43_arch/cyw43_arch_threadsafe_background.c \
-	src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.c \
+	src/rp2_common/pico_lwip/nosys.c \
+	src/rp2_common/pico_lwip/random.c \
+
+SRC_LWIP := \
+	$(wildcard sdk/lib/lwip/src/core/*.c) \
+	$(wildcard sdk/lib/lwip/src/core/ipv4/*.c) \
+	sdk/lib/lwip/src/netif/ethernet.c \
+	$(wildcard lwip_src/*.c) \
 
 SRC_CYW43 := $(wildcard bindings/cyw43/*.c)
 
@@ -114,16 +124,17 @@ OBJ_CYW43 := $(BUILD)/cyw43_resource.o
 ###     )
 ###
 else
-$(error y u no y fi)
 INC_CYW43 :=
 CFLAGS_CYW43 :=
 SRC_SDK_CYW43 :=
 SRC_CYW43 :=
 OBJ_CYW43 :=
+SRC_LWIP :=
 endif
 
 INC += \
 	-I. \
+	-Ilwip_inc \
         -I../.. \
         -I../lib/mp-readline \
         -I../shared/timeutils \
@@ -276,6 +287,7 @@ SRC_C += \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c \
 	mphalport.c \
 	$(SRC_CYW43) \
+	$(SRC_LWIP) \
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \

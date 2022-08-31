@@ -33,7 +33,7 @@
 
 #include "py/objstr.h"
 
-const mp_obj_type_t wifi_radio_type;
+extern const mp_obj_type_t wifi_radio_type;
 
 typedef enum {
     // 0 is circuitpython-specific; 1-53 are IEEE; 200+ are Espressif

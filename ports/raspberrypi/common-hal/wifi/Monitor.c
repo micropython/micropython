@@ -24,27 +24,51 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_MONITOR_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_MONITOR_H
+#include <string.h>
 
-#include "common-hal/wifi/Monitor.h"
+#include "py/mpstate.h"
+#include "py/runtime.h"
 
-extern const mp_obj_type_t wifi_monitor_type;
+#include "shared-bindings/wifi/Monitor.h"
+#include "shared-bindings/wifi/Packet.h"
 
-void common_hal_wifi_monitor_construct(wifi_monitor_obj_t *self,
-    uint8_t channel, size_t queue);
-void common_hal_wifi_monitor_deinit(wifi_monitor_obj_t *self);
-bool common_hal_wifi_monitor_deinited(void);
 
-void common_hal_wifi_monitor_set_channel(wifi_monitor_obj_t *self, uint8_t channel);
-mp_obj_t common_hal_wifi_monitor_get_channel(wifi_monitor_obj_t *self);
+#define MONITOR_PAYLOAD_FCS_LEN     (4)
+#define MONITOR_QUEUE_TIMEOUT_TICK  (0)
 
-mp_obj_t common_hal_wifi_monitor_get_queue(wifi_monitor_obj_t *self);
+typedef struct {
+} monitor_packet_t;
 
-mp_obj_t common_hal_wifi_monitor_get_lost(wifi_monitor_obj_t *self);
+void common_hal_wifi_monitor_construct(wifi_monitor_obj_t *self, uint8_t channel, size_t queue) {
+    mp_raise_NotImplementedError(translate("wifi.Monitor not available"));
+}
 
-mp_obj_t common_hal_wifi_monitor_get_queued(wifi_monitor_obj_t *self);
+bool common_hal_wifi_monitor_deinited(void) {
+    return true;
+}
 
-mp_obj_t common_hal_wifi_monitor_get_packet(wifi_monitor_obj_t *self);
+void common_hal_wifi_monitor_deinit(wifi_monitor_obj_t *self) {
+}
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_MONITOR_H
+void common_hal_wifi_monitor_set_channel(wifi_monitor_obj_t *self, uint8_t channel) {
+}
+
+mp_obj_t common_hal_wifi_monitor_get_channel(wifi_monitor_obj_t *self) {
+    return MP_OBJ_NEW_SMALL_INT(0);
+}
+
+mp_obj_t common_hal_wifi_monitor_get_queue(wifi_monitor_obj_t *self) {
+    return mp_obj_new_int_from_uint(0);
+}
+
+mp_obj_t common_hal_wifi_monitor_get_lost(wifi_monitor_obj_t *self) {
+    return mp_obj_new_int_from_uint(0);
+}
+
+mp_obj_t common_hal_wifi_monitor_get_queued(wifi_monitor_obj_t *self) {
+    return mp_obj_new_int_from_uint(0);
+}
+
+mp_obj_t common_hal_wifi_monitor_get_packet(wifi_monitor_obj_t *self) {
+    return mp_const_none;
+}
