@@ -409,13 +409,11 @@ msgstr "dìzhǐ chángdù bìxū shì %d zìjié"
 msgid "All CAN peripherals are in use"
 msgstr "suǒyǒu CAN wàishè dōu zài shǐyòng zhōng"
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "suǒyǒu I2C wàishè dōu zài shǐyòng zhōng"
-
-#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
-msgid "All I2C targets are in use"
-msgstr "suǒyǒu I2C mùbiāo dōu zài shǐyòng zhōng"
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
@@ -1082,6 +1080,7 @@ msgid "I2C init error"
 msgstr "I2C qǐdòng cuòwù"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "I2C peripheral in use"
 msgstr "I2C wài shè zhèng zài shǐ yòng zhōng"
 
@@ -1626,6 +1625,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mián."
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "Only one address is allowed"
 msgstr "zhǐ yǔn xǔ yí gè dì zhǐ"
 
@@ -2936,6 +2936,12 @@ msgstr "epoch_time bǎn bù zhī chí cǐ bǎn běn"
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "cuòwù = 0x%08lX"
+
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid ""
+"esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+"documentation for instructions."
+msgstr ""
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -4411,6 +4417,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "All I2C targets are in use"
+#~ msgstr "suǒyǒu I2C mùbiāo dōu zài shǐyòng zhōng"
 
 #~ msgid "Failed to init wifi"
 #~ msgstr "Wúfǎ chūshǐhuà wifi"

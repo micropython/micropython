@@ -407,13 +407,11 @@ msgstr "Die Adresse muss %d Bytes lang sein"
 msgid "All CAN peripherals are in use"
 msgstr "Alle CAN-Schnittstellen sind in Benutzung"
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Alle I2C-Peripheriegeräte sind in Benutzung"
-
-#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
-msgid "All I2C targets are in use"
-msgstr "Alle I2C-Ziele sind in Verwendung"
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
@@ -1084,6 +1082,7 @@ msgid "I2C init error"
 msgstr "I2C Initialisierungsfehler"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "I2C peripheral in use"
 msgstr "I2C Peripherie in Verwendung"
 
@@ -1628,6 +1627,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "Nur ein TouchAlarm kann in Deep Sleep gesetzt werden."
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "Only one address is allowed"
 msgstr "Nur eine Adresse ist erlaubt"
 
@@ -2955,6 +2955,12 @@ msgstr "epoch_time wird auf diesem Board nicht unterstützt"
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "Fehler = 0x%08lX"
+
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid ""
+"esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+"documentation for instructions."
+msgstr ""
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -4442,6 +4448,9 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "All I2C targets are in use"
+#~ msgstr "Alle I2C-Ziele sind in Verwendung"
 
 #~ msgid "Failed to init wifi"
 #~ msgstr "Wifi Initialisierung ist fehlgeschlagen"
