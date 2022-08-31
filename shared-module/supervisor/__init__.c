@@ -34,6 +34,4 @@ supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj = {
     .base = {
         .type = &supervisor_status_bar_type,
     },
-    .console = true,
-    .display = true,
 };

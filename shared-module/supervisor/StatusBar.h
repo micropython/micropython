@@ -34,6 +34,7 @@ typedef struct {
     bool console;
     bool display;
     bool update_in_progress;
+    bool written;
 } supervisor_status_bar_obj_t;
 
 extern bool supervisor_status_bar_get_update_in_progress(supervisor_status_bar_obj_t *self);

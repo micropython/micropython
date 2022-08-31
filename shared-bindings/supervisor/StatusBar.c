@@ -52,7 +52,7 @@
 //|     """Whether status bar information is sent over the console (REPL) serial connection,
 //|     using OSC terminal escape codes that change the terminal's title. Default is ``True``.
 //|     If set to ``False``, status bar will be cleared and then disabled.
-//|     May be set in ``boot.py`` or later.
+//|     May be set in ``boot.py`` or later. Persists across soft restarts.
 //|     """
 //|
 STATIC mp_obj_t supervisor_status_bar_get_console(mp_obj_t self_in) {
@@ -83,7 +83,8 @@ MP_PROPERTY_GETSET(supervisor_status_bar_console_obj,
 //|     display: bool
 //|     """Whether status bar information is displayed on the top line of the display.
 //|     Default is ``True``. If set to ``False``, status bar will be cleared and then disabled.
-//|     May be set in ``boot.py`` or later. Not available if `terminalio` is not available.
+//|     May be set in ``boot.py`` or later.  Persists across soft restarts.
+//|     Not available if `terminalio` is not available.
 //|     """
 //|
 STATIC mp_obj_t supervisor_status_bar_get_display(mp_obj_t self_in) {

@@ -937,6 +937,10 @@ int __attribute__((used)) main(void) {
 
     stack_init();
 
+    #if CIRCUITPY_STATUS_BAR
+    supervisor_status_bar_init();
+    #endif
+
     #if CIRCUITPY_BLEIO
     // Early init so that a reset press can cause BLE public advertising.
     supervisor_bluetooth_init();

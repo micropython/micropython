@@ -28,6 +28,8 @@
 
 #include <stdbool.h>
 
+void supervisor_status_bar_init(void);
+
 void supervisor_status_bar_start(void);
 void supervisor_status_bar_suspend(void);
 void supervisor_status_bar_resume(void);

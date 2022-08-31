@@ -50,6 +50,13 @@ static background_callback_t status_bar_background_cb;
 static bool _forced_dirty = false;
 static bool _suspended = false;
 
+void supervisor_status_bar_init(void) {
+    shared_module_supervisor_status_bar_obj.console = true;
+    shared_module_supervisor_status_bar_obj.display = true;
+    shared_module_supervisor_status_bar_obj.update_in_progress = false;
+    shared_module_supervisor_status_bar_obj.written = false;
+}
+
 // Clear if possible, but give up if we can't do it now.
 void supervisor_status_bar_clear(void) {
     if (!_suspended) {

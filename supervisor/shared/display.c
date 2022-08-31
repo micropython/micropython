@@ -144,10 +144,8 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         scroll_area->full_change = true;
 
         common_hal_terminalio_terminal_construct(&supervisor_terminal, scroll_area, &supervisor_terminal_font, status_bar);
-        #if CIRCUITPY_STATUS_BAR
-        // Update the status bar since we just cleared the terminal.
-        supervisor_status_bar_update();
-        #endif
+
+        // Do not update status bar until after boot.py has run, in case it is disabled.
     }
     #endif
 

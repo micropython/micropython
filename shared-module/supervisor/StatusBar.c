@@ -40,8 +40,10 @@ bool shared_module_supervisor_status_bar_get_console(supervisor_status_bar_obj_t
 }
 
 void shared_module_supervisor_status_bar_set_console(supervisor_status_bar_obj_t *self, bool enabled) {
-    // Clear before changing state. If disabling, will remain cleared.
-    supervisor_status_bar_clear();
+    if (self->written) {
+        // Clear before changing state. If disabling, will remain cleared.
+        supervisor_status_bar_clear();
+    }
 
     self->console = enabled;
 
@@ -55,8 +57,10 @@ bool shared_module_supervisor_status_bar_get_display(supervisor_status_bar_obj_t
 
 #if CIRCUITPY_TERMINALIO
 void shared_module_supervisor_status_bar_set_display(supervisor_status_bar_obj_t *self, bool enabled) {
-    terminalio_terminal_clear_status_bar(&supervisor_terminal);
-    // Clear before changing state. If disabling, will remain cleared.
+    if (self->written) {
+        // Clear before changing state. If disabling, will remain cleared.
+        terminalio_terminal_clear_status_bar(&supervisor_terminal);
+    }
 
     self->display = enabled;
 
@@ -70,5 +74,6 @@ bool supervisor_status_bar_get_update_in_progress(supervisor_status_bar_obj_t *s
 }
 
 void supervisor_status_bar_set_update_in_progress(supervisor_status_bar_obj_t *self, bool update_in_progress) {
+    self->written = true;
     self->update_in_progress = update_in_progress;
 }
