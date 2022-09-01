@@ -166,6 +166,20 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 //| def stat(path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|     """Get the status of a file or directory.
 //|
+//|        Returns a tuple with the status of a file or directory in the following order:
+//|
+//|
+//|        * ``st_mode`` -- File type, regular or directory
+//|        * ``st_ino``  -- Set to 0
+//|        * ``st_dev`` -- Set to 0
+//|        * ``st_nlink`` -- Set to 0
+//|        * ``st_uid`` -- Set to 0
+//|        * ``st_gid`` -- Set to 0
+//|        * ``st_size`` -- Size of the file in bytes
+//|        * ``st_atime`` -- Time of most recent access expressed in seconds
+//|        * ``st_mtime`` -- Time of most recent content modification expressed in seconds.
+//|        * ``st_ctime`` -- Time of most recent content modification expressed in seconds.
+//|
 //|     .. note:: On builds without long integers, the number of seconds
 //|        for contemporary dates will not fit in a small integer.
 //|        So the time fields return 946684800,
