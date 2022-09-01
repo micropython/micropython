@@ -38,11 +38,20 @@
 
 //| class SocketPool:
 //|     """A pool of socket resources available for the given radio. Only one
-//|        SocketPool can be created for each radio.
+//|     SocketPool can be created for each radio.
 //|
-//|        SocketPool should be used in place of CPython's socket which provides
-//|        a pool of sockets provided by the underlying OS."""
+//|     SocketPool should be used in place of CPython's socket which provides
+//|     a pool of sockets provided by the underlying OS.
+//|     """
 //|
+//|     def __init__(self, radio: wifi.Radio) -> None:
+//|         """Create a new SocketPool object for the provided radio
+//|
+//|         :param wifi.Radio radio: The (connected) network hardware to associate
+//|             with this SocketPool; currently, this will always be the object
+//|             returned by :py:attr:`wifi.radio`
+//|         """
+//|         ...
 
 STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
