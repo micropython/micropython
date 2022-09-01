@@ -1576,6 +1576,7 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback) 
         switch (self->mode) {
             case CHANNEL_MODE_PWM_NORMAL:
             case CHANNEL_MODE_PWM_INVERTED:
+                HAL_TIM_PWM_Stop_IT(&self->timer->tim, TIMER_CHANNEL(self));
                 HAL_TIM_PWM_Start_IT(&self->timer->tim, TIMER_CHANNEL(self));
                 break;
             case CHANNEL_MODE_OC_TIMING:
@@ -1584,9 +1585,11 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback) 
             case CHANNEL_MODE_OC_TOGGLE:
             case CHANNEL_MODE_OC_FORCED_ACTIVE:
             case CHANNEL_MODE_OC_FORCED_INACTIVE:
+                HAL_TIM_OC_Stop_IT(&self->timer->tim, TIMER_CHANNEL(self));
                 HAL_TIM_OC_Start_IT(&self->timer->tim, TIMER_CHANNEL(self));
                 break;
             case CHANNEL_MODE_IC:
+                HAL_TIM_IC_Stop_IT(&self->timer->tim, TIMER_CHANNEL(self));
                 HAL_TIM_IC_Start_IT(&self->timer->tim, TIMER_CHANNEL(self));
                 break;
         }
