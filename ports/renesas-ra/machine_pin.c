@@ -78,7 +78,7 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 
     uint32_t mode = pin_get_mode(self);
 
-    if (mode == GPIO_MODE_ANALOG) {
+    if (mode == MP_HAL_PIN_MODE_ANALOG) {
         // analog
         mp_print_str(print, "ANALOG)");
 
@@ -86,15 +86,15 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         // IO mode
         bool af = false;
         qstr mode_qst;
-        if (mode == GPIO_MODE_INPUT) {
+        if (mode == MP_HAL_PIN_MODE_INPUT) {
             mode_qst = MP_QSTR_IN;
-        } else if (mode == GPIO_MODE_OUTPUT_PP) {
+        } else if (mode == MP_HAL_PIN_MODE_OUTPUT) {
             mode_qst = MP_QSTR_OUT;
-        } else if (mode == GPIO_MODE_OUTPUT_OD) {
+        } else if (mode == MP_HAL_PIN_MODE_OPEN_DRAIN) {
             mode_qst = MP_QSTR_OPEN_DRAIN;
         } else {
             af = true;
-            if (mode == GPIO_MODE_AF_PP) {
+            if (mode == MP_HAL_PIN_MODE_ALT) {
                 mode_qst = MP_QSTR_ALT;
             } else {
                 mode_qst = MP_QSTR_ALT_OPEN_DRAIN;
@@ -105,9 +105,9 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         // pull mode
         qstr pull_qst = MP_QSTRnull;
         uint32_t pull = pin_get_pull(self);
-        if (pull == GPIO_PULLUP) {
+        if (pull == MP_HAL_PIN_PULL_UP) {
             pull_qst = MP_QSTR_PULL_UP;
-        } else if (pull == GPIO_NOPULL) {
+        } else if (pull == MP_HAL_PIN_PULL_NONE) {
             pull_qst = MP_QSTR_PULL_NONE;
         }
         if (pull_qst != MP_QSTRnull) {
@@ -117,12 +117,14 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         // drive
         qstr drive_qst = MP_QSTRnull;
         uint32_t drive = pin_get_drive(self);
-        if (drive == GPIO_HIGH_POWER) {
-            drive_qst = MP_QSTR_HIGH_POWER;
-        } else if (drive == GPIO_MED_POWER) {
-            drive_qst = MP_QSTR_MED_POWER;
-        } else if (drive == GPIO_LOW_POWER) {
-            drive_qst = MP_QSTR_LOW_POWER;
+        if (drive == MP_HAL_PIN_DRIVE_3) {
+            drive_qst = MP_QSTR_DRIVE_3;
+        } else if (drive == MP_HAL_PIN_DRIVE_2) {
+            drive_qst = MP_QSTR_DRIVE_2;
+        } else if (drive == MP_HAL_PIN_DRIVE_1) {
+            drive_qst = MP_QSTR_DRIVE_1;
+        } else if (drive == MP_HAL_PIN_DRIVE_0) {
+            drive_qst = MP_QSTR_DRIVE_0;
         }
         if (drive_qst != MP_QSTRnull) {
             mp_printf(print, ", drive=Pin.%q", drive_qst);
@@ -143,14 +145,14 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     }
 }
 
-// pin.init(mode, pull=None, *, value=None, driver=None, alt=FUNC_SIO)
+// pin.init(mode=-1, pull=-1, *, value=None, drive=0, alt=-1)
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_mode, ARG_pull, ARG_value, ARG_drive, ARG_alt };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
-        { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
-        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
-        { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GPIO_LOW_POWER}},
+        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         { MP_QSTR_alt, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
     };
 
@@ -159,29 +161,50 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get io mode
-    uint mode = args[0].u_int;
-    if (!IS_GPIO_MODE(mode)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin mode: %d"), mode);
+    uint32_t mode;
+    if (args[ARG_mode].u_obj != mp_const_none) {
+        mode = mp_obj_get_int(args[ARG_mode].u_obj);
+        if (!IS_GPIO_MODE(mode)) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin mode: %d"), mode);
+        }
+    } else {
+        mode = ra_gpio_get_mode(self->pin);
     }
 
     // get pull mode
-    uint pull = 0;
-    if (args[1].u_obj != mp_const_none) {
-        pull = mp_obj_get_int(args[1].u_obj);
+    uint32_t pull;
+    if (args[ARG_pull].u_obj != mp_const_none) {
+        pull = mp_obj_get_int(args[ARG_pull].u_obj);
+        if (!IS_GPIO_PULL(pull)) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pull mode: %d"), pull);
+        }
+        if (pull == MP_HAL_PIN_PULL_DOWN) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("%q is not supported"), MP_QSTR_PULL_DOWN);
+        }
+    } else {
+        pull = ra_gpio_get_pull(self->pin);
     }
 
     // get drive
-    uint drive = args[4].u_int;
-    if (!IS_GPIO_DRIVE(drive)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin drive: %d"), drive);
+    uint32_t drive;
+    if (args[ARG_drive].u_obj != mp_const_none) {
+        drive = mp_obj_get_int(args[ARG_drive].u_obj);
+        if (!IS_GPIO_DRIVE(drive)) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin drive: %d"), drive);
+        }
+    } else {
+        drive = ra_gpio_get_drive(self->pin);
     }
 
-    mp_hal_pin_config(self, mode, pull, drive, -1);
+    // get alt
+    if (args[ARG_alt].u_int != (-1)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("alt is not supported"));
+    }
+    mp_hal_pin_config(self, mode, pull, drive, 0);
     // if given, set the pin value before initialising to prevent glitches
-    if (args[3].u_obj != MP_OBJ_NULL) {
-        mp_hal_pin_write(self, mp_obj_is_true(args[3].u_obj));
+    if (args[ARG_value].u_obj != mp_const_none) {
+        mp_hal_pin_write(self, mp_obj_is_true(args[ARG_value].u_obj));
     }
-
     return mp_const_none;
 }
 
@@ -249,12 +272,16 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     enum { ARG_handler, ARG_trigger, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_MODE_IT_RISING | GPIO_MODE_IT_FALLING} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = MP_HAL_PIN_TRIGGER_RISING | MP_HAL_PIN_TRIGGER_FALLING} },
         { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
     };
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (args[ARG_trigger].u_int & MP_HAL_PIN_TRIGGER_HIGHLEVEL) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("%q is not supported"), MP_QSTR_IRQ_HIGH_LEVEL);
+    }
 
     if (n_args > 1 || kw_args->used != 0) {
         // configure irq
@@ -282,27 +309,23 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&pin_cpu_pins_obj_type) },
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(GPIO_MODE_INPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OUT), MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },
-    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_OUTPUT_OD) },
-    { MP_ROM_QSTR(MP_QSTR_ALT), MP_ROM_INT(GPIO_MODE_AF_PP) },
-    { MP_ROM_QSTR(MP_QSTR_ALT_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_AF_OD) },
-    { MP_ROM_QSTR(MP_QSTR_ANALOG), MP_ROM_INT(GPIO_MODE_ANALOG) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(GPIO_PULLUP) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULLDOWN) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_HOLD), MP_ROM_INT(GPIO_PULLHOLD) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_NONE), MP_ROM_INT(GPIO_NOPULL) },
-    { MP_ROM_QSTR(MP_QSTR_LOW_POWER), MP_ROM_INT(GPIO_LOW_POWER) },
-    { MP_ROM_QSTR(MP_QSTR_MED_POWER), MP_ROM_INT(GPIO_MED_POWER) },
-    { MP_ROM_QSTR(MP_QSTR_HIGH_POWER), MP_ROM_INT(GPIO_HIGH_POWER) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_MODE_IT_RISING) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_MODE_IT_FALLING) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING_FALLING), MP_ROM_INT(GPIO_MODE_IT_RISING_FALLING) },
-    { MP_ROM_QSTR(MP_QSTR_EVT_RISING), MP_ROM_INT(GPIO_MODE_EVT_RISING) },
-    { MP_ROM_QSTR(MP_QSTR_EVT_FALLING), MP_ROM_INT(GPIO_MODE_EVT_FALLING) },
-    { MP_ROM_QSTR(MP_QSTR_EVT_RISING_FALLING), MP_ROM_INT(GPIO_MODE_EVT_RISING_FALLING) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_LOWLEVEL), MP_ROM_INT(GPIO_IRQ_LOWLEVEL) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_HIGHLEVEL), MP_ROM_INT(GPIO_IRQ_HIGHLEVEL) },
+    { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(MP_HAL_PIN_MODE_INPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OUT), MP_ROM_INT(MP_HAL_PIN_MODE_OUTPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(MP_HAL_PIN_MODE_OPEN_DRAIN) },
+    { MP_ROM_QSTR(MP_QSTR_ALT), MP_ROM_INT(MP_HAL_PIN_MODE_ALT) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_OPEN_DRAIN), MP_ROM_INT(MP_HAL_PIN_MODE_ALT_OPEN_DRAIN) },
+    { MP_ROM_QSTR(MP_QSTR_ANALOG), MP_ROM_INT(MP_HAL_PIN_MODE_ANALOG) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_NONE), MP_ROM_INT(MP_HAL_PIN_PULL_NONE) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(MP_HAL_PIN_PULL_UP) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(MP_HAL_PIN_PULL_DOWN) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_0), MP_ROM_INT(MP_HAL_PIN_DRIVE_0) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_1), MP_ROM_INT(MP_HAL_PIN_DRIVE_1) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_2), MP_ROM_INT(MP_HAL_PIN_DRIVE_2) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_3), MP_ROM_INT(MP_HAL_PIN_DRIVE_3) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(MP_HAL_PIN_TRIGGER_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(MP_HAL_PIN_TRIGGER_RISING) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_LOW_LEVEL), MP_ROM_INT(MP_HAL_PIN_TRIGGER_LOWLEVEL) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_HIGH_LEVEL), MP_ROM_INT(MP_HAL_PIN_TRIGGER_HIGHLEVEL) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
@@ -352,7 +375,8 @@ uint32_t pin_get_pull(const machine_pin_obj_t *pin) {
 }
 
 // Returns the pin drive. The value returned by this macro should
-// be one of GPIO_HIGH_POWER, GPIO_MED_POWER, or GPIO_LOW_POWER.
+// be one of GPIO_HIGH_POWER, GPIO_MID_FAST_POWER, GPIO_MID_POWER,
+// or GPIO_LOW_POWER.
 
 uint32_t pin_get_drive(const machine_pin_obj_t *pin) {
     return (uint32_t)ra_gpio_get_drive(pin->pin);

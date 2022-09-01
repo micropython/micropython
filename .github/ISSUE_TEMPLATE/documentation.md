@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-* Please search existing issues before raising a new issue. For questions about MicroPython or for help using MicroPython, or any sort of "how do I?" requests, please see the MicroPython Forum -- https://forum.micropython.org/
+* Please search existing issues before raising a new issue. For questions about MicroPython or for help using MicroPython, or any sort of "how do I?" requests, please use the Discussions tab instead.
 
 * Describe what was missing from the documentation and/or what was incorrect/incomplete.
 

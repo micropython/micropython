@@ -30,6 +30,9 @@ For REPL access, running ``mpremote`` without any arguments is usually all that
 is needed.  ``mpremote`` also supports a set of commands given at the command
 line which will perform various actions on remote MicroPython devices.
 
+For commands that support multiple arguments (e.g. a list of files), the
+argument list can be terminated with ``+``.
+
 The full list of supported commands are:
 
 - connect to a specified device via a device-name shortcut:
@@ -128,6 +131,18 @@ The full list of supported commands are:
   - ``rm <src...>`` to remove files on the device
   - ``mkdir <dirs...>`` to create directories on the device
   - ``rmdir <dirs...>`` to remove directories on the device
+  - ``touch <file..>`` to create the files (if they don't already exist)
+
+- edit a file on the device:
+
+  .. code-block:: bash
+
+      $ mpremote edit <files...>
+
+  The ``edit`` command will copy each file from the device to a local temporary
+  directory and then launch your editor for each file (defined by the environment
+  variable ``$EDITOR``). If the editor exits successfully, the updated file will
+  be copied back to the device.
 
 - mount the local directory on the remote device:
 
@@ -189,8 +204,8 @@ Shortcuts can be defined using the macro system.  Built-in shortcuts are::
 
 - ``c0``, ``c1``, ``c2``, ``c3``: connect to COM?
 
-- ``cat``, ``ls``, ``cp``, ``rm``, ``mkdir``, ``rmdir``, ``df``: filesystem
-  commands
+- ``cat``, ``ls``, ``cp``, ``rm``, ``mkdir``, ``rmdir``, ``touch``, ``df``:
+  filesystem commands
 
 - ``reset``: reset the device
 
@@ -247,4 +262,8 @@ Examples
 
   mpremote cp main.py :
 
+  mpremote cp :a.py :b.py
+
   mpremote cp -r dir/ :
+
+  mpremote cp a.py b.py : + repl

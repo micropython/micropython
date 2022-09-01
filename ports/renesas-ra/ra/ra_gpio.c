@@ -31,23 +31,17 @@ void ra_gpio_config(uint32_t pin, uint32_t mode, uint32_t pull, uint32_t drive, 
     uint32_t port = GPIO_PORT(pin);
     uint32_t bit = GPIO_BIT(pin);
     pwpr_unprotect();
+    _PXXPFS(port, bit) &= ~(PMR_MASK | ASEL_MASK | NCODR_MASK | PCR_MASK | PDR_MASK | DSCR1_MASK | DSCR_MASK);
     switch (mode) {
         case GPIO_MODE_INPUT:
-            _PXXPFS(port, bit) &= ~(PMR_MASK | ASEL_MASK);  // GPIO
-            _PXXPFS(port, bit) &= ~PDR_MASK;    // input
-            if (pull != 0) {
+            if (pull == GPIO_PULLUP) {
                 _PXXPFS(port, bit) |= PCR_MASK;     // set pullup
-            } else {
-                _PXXPFS(port, bit) &= ~PCR_MASK;    // clear pullup
             }
             break;
         case GPIO_MODE_OUTPUT_PP:
-            _PXXPFS(port, bit) &= ~(PMR_MASK | ASEL_MASK);  // GPIO
             _PXXPFS(port, bit) |= PDR_MASK;     // output
-            _PXXPFS(port, bit) &= ~PCR_MASK;    // pullup clear
             break;
         case GPIO_MODE_OUTPUT_OD:
-            _PXXPFS(port, bit) &= ~(PMR_MASK | ASEL_MASK);  // GPIO
             _PXXPFS(port, bit) |= (PDR_MASK | NCODR_MASK);
             break;
         case GPIO_MODE_AF_PP:
@@ -56,20 +50,23 @@ void ra_gpio_config(uint32_t pin, uint32_t mode, uint32_t pull, uint32_t drive, 
         case GPIO_MODE_AF_OD:
             _PXXPFS(port, bit) |= (PMR_MASK | PDR_MASK | NCODR_MASK);
             break;
+        case GPIO_MODE_ANALOG:
+            _PXXPFS(port, bit) |= ASEL_MASK;
+            break;
     }
     switch (drive) {
         case GPIO_HIGH_POWER:
             _PXXPFS(port, bit) |= (DSCR1_MASK | DSCR_MASK);
             break;
-        case GPIO_MED_POWER:
-            _PXXPFS(port, bit) &= ~DSCR1_MASK;
+        case GPIO_MID_FAST_POWER:
+            _PXXPFS(port, bit) |= DSCR1_MASK;
+            break;
+        case GPIO_MID_POWER:
             _PXXPFS(port, bit) |= DSCR_MASK;
             break;
         case GPIO_LOW_POWER:
-            _PXXPFS(port, bit) &= ~(DSCR1_MASK | DSCR_MASK);
-            break;
-        default: /* GPIO_NOTOUCH_POWER */
-            /* do not modify */
+        default:
+            /* Bits are already cleared */
             break;
     }
     _PXXPFS(port, bit) &= ~(uint32_t)(0x1f000000);
@@ -102,7 +99,6 @@ void ra_gpio_toggle(uint32_t pin) {
     uint32_t port = GPIO_PORT(pin);
     uint32_t bit = GPIO_BIT(pin);
     pwpr_unprotect();
-    _PXXPFS(port, bit) &= ~(PMR_MASK | ASEL_MASK);  // GPIO
     _PXXPFS(port, bit) ^= 1;
     pwpr_protect();
 }
@@ -111,7 +107,6 @@ void ra_gpio_write(uint32_t pin, uint32_t value) {
     uint32_t port = GPIO_PORT(pin);
     uint32_t bit = GPIO_BIT(pin);
     pwpr_unprotect();
-    _PXXPFS(port, bit) &= ~(PMR_MASK | ASEL_MASK);  // GPIO
     if (value != 0) {
         _PXXPFS(port, bit) |= 1;
     } else {
@@ -123,15 +118,26 @@ void ra_gpio_write(uint32_t pin, uint32_t value) {
 uint32_t ra_gpio_read(uint32_t pin) {
     uint32_t port = GPIO_PORT(pin);
     uint32_t bit = GPIO_BIT(pin);
-    return ((_PXXPFS(port, bit) &= PIDR_MASK) != 0) ? 1 : 0;
+    return ((_PXXPFS(port, bit) & PIDR_MASK) != 0) ? 1 : 0;
 }
 
 uint32_t ra_gpio_get_mode(uint32_t pin) {
     uint8_t mode = 0;
-    uint32_t port = GPIO_PORT(pin);
-    uint32_t bit = GPIO_BIT(pin);
-    if ((_PXXPFS(port, bit) &= PDR_MASK) != 0) {
-        mode = GPIO_MODE_OUTPUT_PP;
+    uint32_t pfs = _PXXPFS(GPIO_PORT(pin), GPIO_BIT(pin));
+    if ((pfs & ASEL_MASK) != 0) {
+        mode = GPIO_MODE_ANALOG;
+    } else if ((pfs & PMR_MASK) != 0) {
+        if ((pfs & NCODR_MASK) != 0) {
+            mode = GPIO_MODE_AF_OD;
+        } else {
+            mode = GPIO_MODE_AF_PP;
+        }
+    } else if ((pfs & PDR_MASK) != 0) {
+        if ((pfs & NCODR_MASK) != 0) {
+            mode = GPIO_MODE_OUTPUT_OD;
+        } else {
+            mode = GPIO_MODE_OUTPUT_PP;
+        }
     } else {
         mode = GPIO_MODE_INPUT;
     }
@@ -142,7 +148,7 @@ uint32_t ra_gpio_get_pull(uint32_t pin) {
     uint8_t pull = 0;
     uint32_t port = GPIO_PORT(pin);
     uint32_t bit = GPIO_BIT(pin);
-    if ((_PXXPFS(port, bit) &= PCR_MASK) != 0) {
+    if ((_PXXPFS(port, bit) & PCR_MASK) != 0) {
         pull = GPIO_PULLUP;
     } else {
         pull = GPIO_NOPULL;
@@ -153,19 +159,22 @@ uint32_t ra_gpio_get_pull(uint32_t pin) {
 uint32_t ra_gpio_get_af(uint32_t pin) {
     uint32_t port = GPIO_PORT(pin);
     uint32_t bit = GPIO_BIT(pin);
-    return (_PXXPFS(port, bit) &= PMR_MASK) != 0;
+    return (_PXXPFS(port, bit) & PMR_MASK) != 0;
 }
 
 uint32_t ra_gpio_get_drive(uint32_t pin) {
     uint8_t drive = 0;
     uint32_t port = GPIO_PORT(pin);
     uint32_t bit = GPIO_BIT(pin);
-    switch (_PXXPFS(port, bit) &= (DSCR1_MASK | DSCR_MASK)) {
+    switch (_PXXPFS(port, bit) & (DSCR1_MASK | DSCR_MASK)) {
         case (DSCR1_MASK | DSCR_MASK):
             drive = GPIO_HIGH_POWER;
             break;
+        case DSCR1_MASK:
+            drive = GPIO_MID_FAST_POWER;
+            break;
         case DSCR_MASK:
-            drive = GPIO_MED_POWER;
+            drive = GPIO_MID_POWER;
             break;
         case 0:
         default:

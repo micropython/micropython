@@ -448,8 +448,22 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         break;
                     }
                     case MP_QSTR_channel: {
-                        req_if = WIFI_IF_AP;
-                        cfg.ap.channel = mp_obj_get_int(kwargs->table[i].value);
+                        uint8_t primary;
+                        wifi_second_chan_t secondary;
+                        // Get the current value of secondary
+                        esp_exceptions(esp_wifi_get_channel(&primary, &secondary));
+                        primary = mp_obj_get_int(kwargs->table[i].value);
+                        esp_err_t err = esp_wifi_set_channel(primary, secondary);
+                        if (err == ESP_ERR_INVALID_ARG) {
+                            // May need to swap secondary channel above to below or below to above
+                            secondary = (
+                                (secondary == WIFI_SECOND_CHAN_ABOVE)
+                                ? WIFI_SECOND_CHAN_BELOW
+                                : (secondary == WIFI_SECOND_CHAN_BELOW)
+                                    ? WIFI_SECOND_CHAN_ABOVE
+                                    : WIFI_SECOND_CHAN_NONE);
+                            esp_exceptions(esp_wifi_set_channel(primary, secondary));
+                        }
                         break;
                     }
                     case MP_QSTR_hostname:
@@ -474,6 +488,10 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                     case MP_QSTR_txpower: {
                         int8_t power = (mp_obj_get_float(kwargs->table[i].value) * 4);
                         esp_exceptions(esp_wifi_set_max_tx_power(power));
+                        break;
+                    }
+                    case MP_QSTR_protocol: {
+                        esp_exceptions(esp_wifi_set_protocol(self->if_id, mp_obj_get_int(kwargs->table[i].value)));
                         break;
                     }
                     default:
@@ -535,10 +553,13 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             req_if = WIFI_IF_AP;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.authmode);
             break;
-        case MP_QSTR_channel:
-            req_if = WIFI_IF_AP;
-            val = MP_OBJ_NEW_SMALL_INT(cfg.ap.channel);
+        case MP_QSTR_channel: {
+            uint8_t channel;
+            wifi_second_chan_t second;
+            esp_exceptions(esp_wifi_get_channel(&channel, &second));
+            val = MP_OBJ_NEW_SMALL_INT(channel);
             break;
+        }
         case MP_QSTR_hostname:
         case MP_QSTR_dhcp_hostname: {
             const char *s;
@@ -559,6 +580,12 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             int8_t power;
             esp_exceptions(esp_wifi_get_max_tx_power(&power));
             val = mp_obj_new_float(power * 0.25);
+            break;
+        }
+        case MP_QSTR_protocol: {
+            uint8_t protocol_bitmap;
+            esp_exceptions(esp_wifi_get_protocol(self->if_id, &protocol_bitmap));
+            val = MP_OBJ_NEW_SMALL_INT(protocol_bitmap);
             break;
         }
         default:

@@ -372,7 +372,11 @@ STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
     // Add post-match string
     vstr_add_strn(&vstr_return, subj.begin, subj.end - subj.begin);
 
-    return mp_obj_new_str_from_vstr(mp_obj_get_type(where), &vstr_return);
+    if (mp_obj_get_type(where) == &mp_type_str) {
+        return mp_obj_new_str_from_utf8_vstr(&vstr_return);
+    } else {
+        return mp_obj_new_bytes_from_vstr(&vstr_return);
+    }
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_obj, 3, 5, re_sub_helper);

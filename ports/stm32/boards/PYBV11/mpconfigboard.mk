@@ -14,3 +14,23 @@ endif
 
 # MicroPython settings
 MICROPY_VFS_LFS2 = 1
+
+# Provide different variants for the downloads page.
+BOARD_VARIANTS += "dp thread dp-thread network"
+
+ifeq ($(BOARD_VARIANT),"dp")
+MICROPY_FLOAT_IMPL=double
+endif
+
+ifeq ($(BOARD_VARIANT),"thread")
+CFLAGS += -DMICROPY_PY_THREAD=1
+endif
+
+ifeq ($(BOARD_VARIANT),"dp-thread")
+MICROPY_FLOAT_IMPL=double
+CFLAGS += -DMICROPY_PY_THREAD=1
+endif
+
+ifeq ($(BOARD_VARIANT),"network")
+MICROPY_PY_NETWORK_WIZNET5K=5200
+endif

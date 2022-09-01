@@ -788,7 +788,7 @@ static void ra_sci_tx_set_pin(uint32_t pin) {
     uint32_t af;
     find = ra_af_find_ch_af((ra_af_pin_t *)&ra_sci_tx_pins, SCI_TX_PINS_SIZE, pin, &ch, &af);
     if (find) {
-        ra_gpio_config(pin, GPIO_MODE_AF_PP, 0, 0, af);
+        ra_gpio_config(pin, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_LOW_POWER, af);
     }
 }
 
@@ -798,7 +798,7 @@ static void ra_sci_rx_set_pin(uint32_t pin) {
     uint32_t af;
     find = ra_af_find_ch_af((ra_af_pin_t *)&ra_sci_rx_pins, SCI_RX_PINS_SIZE, pin, &ch, &af);
     if (find) {
-        ra_gpio_config(pin, GPIO_MODE_INPUT, 1, 0, af);
+        ra_gpio_config(pin, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_LOW_POWER, af);
     }
 }
 
@@ -808,7 +808,7 @@ static void ra_sci_cts_set_pin(uint32_t pin) {
     uint32_t af;
     find = ra_af_find_ch_af((ra_af_pin_t *)&ra_sci_cts_pins, SCI_CTS_PINS_SIZE, pin, &ch, &af);
     if (find) {
-        ra_gpio_config(pin, GPIO_MODE_INPUT, 1, 0, af);
+        ra_gpio_config(pin, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_LOW_POWER, af);
     }
 }
 
@@ -1134,7 +1134,7 @@ void ra_sci_init_with_flow(uint32_t ch, uint32_t tx_pin, uint32_t rx_pin, uint32
         }
         if (rts_pin != (uint32_t)PIN_END) {
             m_rts_pin[idx] = rts_pin;
-            ra_gpio_config(rts_pin, GPIO_MODE_OUTPUT_PP, false, 0, 0);
+            ra_gpio_config(rts_pin, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_LOW_POWER, 0);
             ra_gpio_write(rts_pin, 0);
         }
     }

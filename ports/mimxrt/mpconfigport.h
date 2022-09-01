@@ -101,7 +101,6 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MATH_ISCLOSE             (1)
 #define MICROPY_PY_CMATH                    (1)
 #define MICROPY_PY_IO_IOBASE                (1)
-#define MICROPY_PY_IO_FILEIO                (1)
 #define MICROPY_PY_SYS_MAXSIZE              (1)
 #define MICROPY_PY_SYS_PLATFORM             "mimxrt"
 #define MICROPY_PY_SYS_STDFILES             (1)

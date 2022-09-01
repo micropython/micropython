@@ -40,8 +40,6 @@
 
 STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 
-#define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
-
 // Returns error condition in *errcode, if non-zero, return value is number of bytes written
 // before error condition occurred. If *errcode == 0, returns total bytes written (which will
 // be equal to input size).
@@ -190,7 +188,7 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
             }
         }
 
-        return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+        return mp_obj_new_str_from_vstr(&vstr);
     }
     #endif
 
@@ -211,7 +209,11 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
         mp_raise_OSError(error);
     } else {
         vstr.len = out_sz;
-        return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
+        if (stream_p->is_text) {
+            return mp_obj_new_str_from_vstr(&vstr);
+        } else {
+            return mp_obj_new_bytes_from_vstr(&vstr);
+        }
     }
 }
 
@@ -337,7 +339,11 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     }
 
     vstr.len = total_size;
-    return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
+    if (stream_p->is_text) {
+        return mp_obj_new_str_from_vstr(&vstr);
+    } else {
+        return mp_obj_new_bytes_from_vstr(&vstr);
+    }
 }
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
@@ -390,7 +396,11 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
         }
     }
 
-    return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
+    if (stream_p->is_text) {
+        return mp_obj_new_str_from_vstr(&vstr);
+    } else {
+        return mp_obj_new_bytes_from_vstr(&vstr);
+    }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj, 1, 2, stream_unbuffered_readline);
 

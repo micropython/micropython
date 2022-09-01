@@ -1,13 +1,18 @@
-MicroPython.js
-==============
+MicroPython WebAssembly
+=======================
 
-MicroPython transmuted into Javascript by Emscripten.
+MicroPython for [WebAssembly](https://webassembly.org/).
 
 Dependencies
 ------------
 
-Building micropython.js bears the same requirements as the standard MicroPython
-ports with the addition of Emscripten (and uglify-js for the minified file).
+Building webassembly port bears the same requirements as the standard
+MicroPython ports with the addition of Emscripten (and uglify-js for the
+minified file).
+
+The output includes `micropython.js` (a JavaScript wrapper for the
+MicroPython runtime) and `firmware.wasm` (actual MicroPython compiled to
+WASM).
 
 Build instructions
 ------------------

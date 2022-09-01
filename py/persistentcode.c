@@ -202,7 +202,11 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
         read_bytes(reader, (byte *)vstr.buf, len);
         if (obj_type == MP_PERSISTENT_OBJ_STR || obj_type == MP_PERSISTENT_OBJ_BYTES) {
             read_byte(reader); // skip null terminator
-            return mp_obj_new_str_from_vstr(obj_type == MP_PERSISTENT_OBJ_STR ? &mp_type_str : &mp_type_bytes, &vstr);
+            if (obj_type == MP_PERSISTENT_OBJ_STR) {
+                return mp_obj_new_str_from_utf8_vstr(&vstr);
+            } else {
+                return mp_obj_new_bytes_from_vstr(&vstr);
+            }
         } else if (obj_type == MP_PERSISTENT_OBJ_INT) {
             return mp_parse_num_integer(vstr.buf, vstr.len, 10, NULL);
         } else {
@@ -398,7 +402,13 @@ mp_compiled_module_t mp_raw_code_load(mp_reader_t *reader, mp_module_context_t *
     if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
         byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
         if (!MPY_FEATURE_ARCH_TEST(arch)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy arch"));
+            if (MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_NONE)) {
+                // On supported ports this can be resolved by enabling feature, eg
+                // mpconfigboard.h: MICROPY_EMIT_THUMB (1)
+                mp_raise_ValueError(MP_ERROR_TEXT("native code in .mpy unsupported"));
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy arch"));
+            }
         }
     }
 

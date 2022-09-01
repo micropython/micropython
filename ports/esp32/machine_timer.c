@@ -68,6 +68,7 @@ typedef struct _machine_timer_obj_t {
 const mp_obj_type_t machine_timer_type;
 
 STATIC void machine_timer_disable(machine_timer_obj_t *self);
+STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 
 void machine_timer_deinit_all(void) {
     // Disable, deallocate and remove all timers from list
@@ -94,24 +95,35 @@ STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 }
 
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
     mp_uint_t group = (mp_obj_get_int(args[0]) >> 1) & 1;
     mp_uint_t index = mp_obj_get_int(args[0]) & 1;
 
-    // Check whether the timer is already initialized, if so return it
+    machine_timer_obj_t *self = NULL;
+
+    // Check whether the timer is already initialized, if so use it
     for (machine_timer_obj_t *t = MP_STATE_PORT(machine_timer_obj_head); t; t = t->next) {
         if (t->group == group && t->index == index) {
-            return t;
+            self = t;
+            break;
         }
     }
+    // The timer does not exist, create it.
+    if (self == NULL) {
+        self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
+        self->group = group;
+        self->index = index;
 
-    machine_timer_obj_t *self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
-    self->group = group;
-    self->index = index;
+        // Add the timer to the linked-list of timers
+        self->next = MP_STATE_PORT(machine_timer_obj_head);
+        MP_STATE_PORT(machine_timer_obj_head) = self;
+    }
 
-    // Add the timer to the linked-list of timers
-    self->next = MP_STATE_PORT(machine_timer_obj_head);
-    MP_STATE_PORT(machine_timer_obj_head) = self;
+    if (n_args > 1 || n_kw > 0) {
+        mp_map_t kw_args;
+        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+        machine_timer_init_helper(self, n_args - 1, args + 1, &kw_args);
+    }
 
     return self;
 }

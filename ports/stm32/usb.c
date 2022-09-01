@@ -813,7 +813,7 @@ STATIC mp_obj_t pyb_usb_vcp_recv(size_t n_args, const mp_obj_t *args, mp_map_t *
         return mp_obj_new_int(ret); // number of bytes read into given buffer
     } else {
         vstr.len = ret; // set actual number of bytes read
-        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr); // create a new buffer
+        return mp_obj_new_bytes_from_vstr(&vstr); // create a new buffer
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_vcp_recv_obj, 1, pyb_usb_vcp_recv);
@@ -1007,7 +1007,7 @@ STATIC mp_obj_t pyb_usb_hid_recv(size_t n_args, const mp_obj_t *args, mp_map_t *
         return mp_obj_new_int(ret); // number of bytes read into given buffer
     } else {
         vstr.len = ret; // set actual number of bytes read
-        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr); // create a new buffer
+        return mp_obj_new_bytes_from_vstr(&vstr); // create a new buffer
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_hid_recv_obj, 1, pyb_usb_hid_recv);
