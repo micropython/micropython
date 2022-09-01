@@ -407,7 +407,7 @@ curl -v -L http://circuitpython.local/cp/version.json
 
 #### `/code/`
 
-The `/code/` page returns a small static html page that will pull in and load the full code editor from 
+The `/code/` page returns a small static html page that will pull in and load the full code editor from
 [code.circuitpython.org](https://code.circuitpython.org) for a full code editor experience. Because most
 of the resources reside online instead of the device, an active internet connection is required.
 
