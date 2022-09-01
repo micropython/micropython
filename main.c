@@ -458,6 +458,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         // Finished executing python code. Cleanup includes filesystem flush and a board reset.
         cleanup_after_vm(heap, _exec_result.exception);
+        _exec_result.exception = NULL;
 
         // If a new next code file was set, that is a reason to keep it (obviously). Stuff this into
         // the options because it can be treated like any other reason-for-stickiness bit. The
@@ -841,6 +842,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     port_post_boot_py(true);
 
     cleanup_after_vm(heap, _exec_result.exception);
+    _exec_result.exception = NULL;
 
     port_post_boot_py(false);
 
@@ -992,7 +994,7 @@ int __attribute__((used)) main(void) {
     supervisor_workflow_start();
 
     #if CIRCUITPY_STATUS_BAR
-    supervisor_status_bar_start();
+    supervisor_status_bar_request_update(true);
     #endif
 
     // Boot script is finished, so now go into REPL or run code.py.

@@ -50,13 +50,6 @@ static background_callback_t status_bar_background_cb;
 static bool _forced_dirty = false;
 static bool _suspended = false;
 
-void supervisor_status_bar_init(void) {
-    shared_module_supervisor_status_bar_obj.console = true;
-    shared_module_supervisor_status_bar_obj.display = true;
-    shared_module_supervisor_status_bar_obj.update_in_progress = false;
-    shared_module_supervisor_status_bar_obj.written = false;
-}
-
 // Clear if possible, but give up if we can't do it now.
 void supervisor_status_bar_clear(void) {
     if (!_suspended) {
@@ -121,8 +114,6 @@ static void status_bar_background(void *data) {
 }
 
 void supervisor_status_bar_start(void) {
-    status_bar_background_cb.fun = status_bar_background;
-    status_bar_background_cb.data = NULL;
     supervisor_status_bar_request_update(true);
 }
 
@@ -140,4 +131,14 @@ void supervisor_status_bar_suspend(void) {
 void supervisor_status_bar_resume(void) {
     _suspended = false;
     supervisor_status_bar_request_update(false);
+}
+
+void supervisor_status_bar_init(void) {
+    status_bar_background_cb.fun = status_bar_background;
+    status_bar_background_cb.data = NULL;
+
+    shared_module_supervisor_status_bar_obj.console = true;
+    shared_module_supervisor_status_bar_obj.display = true;
+    shared_module_supervisor_status_bar_obj.update_in_progress = false;
+    shared_module_supervisor_status_bar_obj.written = false;
 }
