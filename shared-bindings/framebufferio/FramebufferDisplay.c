@@ -173,9 +173,7 @@ MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_auto_refresh_obj,
     (mp_obj_t)&framebufferio_framebufferdisplay_set_auto_refresh_obj);
 
 //|     brightness: float
-//|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness. When
-//|     `auto_brightness` is True, the value of `brightness` will change automatically.
-//|     If `brightness` is set, `auto_brightness` will be disabled and will be set to False."""
+//|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness."""
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_brightness(mp_obj_t self_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
@@ -189,7 +187,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_brightness_obj, f
 
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_brightness(mp_obj_t self_in, mp_obj_t brightness_obj) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
-    common_hal_framebufferio_framebufferdisplay_set_auto_brightness(self, false);
     mp_float_t brightness = mp_obj_get_float(brightness_obj);
     if (brightness < 0.0f || brightness > 1.0f) {
         mp_raise_ValueError(translate("Brightness must be 0-1.0"));
@@ -205,34 +202,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_set_brightness_obj, f
 MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_brightness_obj,
     (mp_obj_t)&framebufferio_framebufferdisplay_get_brightness_obj,
     (mp_obj_t)&framebufferio_framebufferdisplay_set_brightness_obj);
-
-//|     auto_brightness: bool
-//|     """True when the display brightness is adjusted automatically, based on an ambient
-//|     light sensor or other method. Note that some displays may have this set to True by default,
-//|     but not actually implement automatic brightness adjustment. `auto_brightness` is set to False
-//|     if `brightness` is set manually."""
-//|
-STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_auto_brightness(mp_obj_t self_in) {
-    framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
-    return mp_obj_new_bool(common_hal_framebufferio_framebufferdisplay_get_auto_brightness(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_auto_brightness_obj, framebufferio_framebufferdisplay_obj_get_auto_brightness);
-
-STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_auto_brightness(mp_obj_t self_in, mp_obj_t auto_brightness) {
-    framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
-
-    bool ok = common_hal_framebufferio_framebufferdisplay_set_auto_brightness(self, mp_obj_is_true(auto_brightness));
-    if (!ok) {
-        mp_raise_RuntimeError(translate("Brightness not adjustable"));
-    }
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_set_auto_brightness_obj, framebufferio_framebufferdisplay_obj_set_auto_brightness);
-
-MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_auto_brightness_obj,
-    (mp_obj_t)&framebufferio_framebufferdisplay_get_auto_brightness_obj,
-    (mp_obj_t)&framebufferio_framebufferdisplay_set_auto_brightness_obj);
 
 //|     width: int
 //|     """Gets the width of the framebuffer"""
@@ -374,7 +343,6 @@ STATIC const mp_rom_map_elem_t framebufferio_framebufferdisplay_locals_dict_tabl
     { MP_ROM_QSTR(MP_QSTR_auto_refresh), MP_ROM_PTR(&framebufferio_framebufferdisplay_auto_refresh_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&framebufferio_framebufferdisplay_brightness_obj) },
-    { MP_ROM_QSTR(MP_QSTR_auto_brightness), MP_ROM_PTR(&framebufferio_framebufferdisplay_auto_brightness_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&framebufferio_framebufferdisplay_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&framebufferio_framebufferdisplay_height_obj) },

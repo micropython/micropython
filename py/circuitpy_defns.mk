@@ -210,8 +210,8 @@ endif
 ifeq ($(CIRCUITPY_HASHLIB),1)
 SRC_PATTERNS += hashlib/%
 endif
-ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
-SRC_PATTERNS += i2cperipheral/%
+ifeq ($(CIRCUITPY_I2CTARGET),1)
+SRC_PATTERNS += i2ctarget/%
 endif
 ifeq ($(CIRCUITPY_IMAGECAPTURE),1)
 SRC_PATTERNS += imagecapture/%
@@ -424,8 +424,8 @@ SRC_COMMON_HAL_ALL = \
 	gnss/SatelliteSystem.c \
 	hashlib/__init__.c \
 	hashlib/Hash.c \
-	i2cperipheral/I2CPeripheral.c \
-	i2cperipheral/__init__.c \
+	i2ctarget/I2CTarget.c \
+	i2ctarget/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
 	microcontroller/__init__.c \

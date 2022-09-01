@@ -56,9 +56,9 @@ void board_init(void) {
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
-        &pin_GPIO39, // TFT_DC Command or data
-        &pin_GPIO40, // TFT_CS Chip select
-        &pin_GPIO41, // TFT_RESET Reset
+        &pin_GPIO40, // TFT_DC Command or data
+        &pin_GPIO39, // TFT_CS Chip select
+        &pin_GPIO38, // TFT_RESET Reset
         40000000, // Baudrate
         0, // Polarity
         0); // Phase
@@ -87,10 +87,9 @@ void board_init(void) {
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
         display_init_sequence,
         sizeof(display_init_sequence),
-        &pin_GPIO38,  // backlight pin
+        &pin_GPIO41,  // backlight pin
         NO_BRIGHTNESS_COMMAND,
-        1.0f, // brightness (ignored)
-        true, // auto_brightness
+        1.0f, // brightness
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh

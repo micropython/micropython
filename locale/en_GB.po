@@ -219,7 +219,7 @@ msgstr "%q, %q, and %q must all be the same length"
 msgid "%q=%q"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s error 0x%x"
@@ -409,7 +409,7 @@ msgid "All CAN peripherals are in use"
 msgstr "All CAN peripherals are in use"
 
 #: ports/espressif/common-hal/busio/I2C.c
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "All I2C peripherals are in use"
@@ -657,7 +657,7 @@ msgstr "CBC blocks must be multiples of 16 bytes"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC or checksum was invalid"
 
@@ -877,6 +877,10 @@ msgstr "Display must have a 16 bit colourspace."
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Display rotation must be in 90 degree increments"
 
+#: main.c
+msgid "Done"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "Drive mode not used when direction is input."
@@ -972,10 +976,6 @@ msgstr "Failed to connect: internal error"
 msgid "Failed to connect: timeout"
 msgstr "Failed to connect: timeout"
 
-#: ports/espressif/common-hal/wifi/__init__.c
-msgid "Failed to init wifi"
-msgstr "Failed to init WiFi"
-
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
 msgstr "Failed to parse MP3 file"
@@ -1037,7 +1037,7 @@ msgstr "Function requires lock"
 msgid "GNSS init"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
 msgstr "Generic Failure"
 
@@ -1073,6 +1073,7 @@ msgid "I2C init error"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "I2C peripheral in use"
 msgstr "I2C peripheral in use"
 
@@ -1208,7 +1209,7 @@ msgstr "Invalid BSSID"
 msgid "Invalid MAC address"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #: py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Invalid argument"
@@ -1238,7 +1239,7 @@ msgstr ""
 msgid "Invalid pins"
 msgstr "Invalid pins"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "Invalid size"
 
@@ -1246,7 +1247,7 @@ msgstr "Invalid size"
 msgid "Invalid socket for TLS"
 msgstr "Invalid socket for TLS"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid state"
 msgstr "Invalid state"
 
@@ -1270,7 +1271,7 @@ msgstr ""
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
 msgstr "MAC address was invalid"
 
@@ -1556,6 +1557,14 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "Odd parity is not supported"
 
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Off"
+msgstr ""
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Ok"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
@@ -1565,7 +1574,7 @@ msgstr "Only 8 or 16 bit mono with "
 msgid "Only IPv4 addresses supported"
 msgstr "Only IPv4 addresses supported"
 
-#: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr "Only IPv4 sockets supported"
 
@@ -1601,7 +1610,8 @@ msgstr ""
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "Only one TouchAlarm can be set in deep sleep."
 
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "Only one address is allowed"
 msgstr ""
 
@@ -1624,19 +1634,19 @@ msgstr "Only one colour can be transparent at a time"
 msgid "Operation not permitted"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
 msgstr "Operation or feature not supported"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
 msgstr "Operation timed out"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "Out of memory"
 
-#: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "Out of sockets"
 
@@ -1811,9 +1821,13 @@ msgstr "Read-only filesystem"
 msgid "Read-only object"
 msgstr "Read-only object"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
 msgstr "Received response was invalid"
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Reconnecting"
+msgstr ""
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -1827,7 +1841,7 @@ msgstr "RemoteTransmissionRequests limited to 8 bytes"
 msgid "Requested AES mode is unsupported"
 msgstr "Requested AES mode is unsupported"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Requested resource not found"
 msgstr "Requested resource not found"
 
@@ -2258,7 +2272,7 @@ msgstr "Value length != required fixed length"
 msgid "Value length > max_length"
 msgstr "Value length > max_length"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Version was invalid"
 msgstr "Version was invalid"
 
@@ -2341,11 +2355,11 @@ msgstr "__new__ arg must be a user-type"
 msgid "a bytes-like object is required"
 msgstr "a bytes-like object is required"
 
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-bindings/i2ctarget/I2CTarget.c
 msgid "address out of bounds"
 msgstr "address out of bounds"
 
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-bindings/i2ctarget/I2CTarget.c
 msgid "addresses is empty"
 msgstr "addresses is empty"
 
@@ -2537,7 +2551,7 @@ msgstr "Can't assign to expression"
 msgid "can't cancel self"
 msgstr "can't cancel self"
 
-#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
 #: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "Can't convert %q to %q"
@@ -2895,6 +2909,12 @@ msgstr "epoch_time not supported on this board"
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "error = 0x%08lX"
+
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid ""
+"esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+"documentation for instructions."
+msgstr ""
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -3277,6 +3297,10 @@ msgstr "invalid hostname"
 msgid "invalid micropython decorator"
 msgstr "invalid micropython decorator"
 
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid "invalid setting"
+msgstr ""
+
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
 msgstr "invalid step"
@@ -3532,7 +3556,7 @@ msgstr "no reset pin available"
 msgid "no response from SD card"
 msgstr "no response from SD card"
 
-#: py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "no such attribute"
 
@@ -3796,11 +3820,20 @@ msgstr "pow() 3rd argument cannot be 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() with 3 arguments requires integers"
 
+#: ports/espressif/boards/adafruit_qtpy_esp32_pico/mpconfigboard.h
+msgid "pressing BOOT button at start up.\n"
+msgstr ""
+
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "pressing SW38 button at start up.\n"
 msgstr ""
 
+#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+msgid "pressing VOLUME button at start up.\n"
+msgstr ""
+
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
+#: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
 #: supervisor/shared/safe_mode.c
 msgid "pressing boot button at start up.\n"
@@ -4353,6 +4386,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Failed to init wifi"
+#~ msgstr "Failed to init WiFi"
 
 #~ msgid "input must be a tensor of rank 2"
 #~ msgstr "input must be a tensor of rank 2"

@@ -113,20 +113,6 @@ uint16_t common_hal_framebufferio_framebufferdisplay_get_height(framebufferio_fr
     return displayio_display_core_get_height(&self->core);
 }
 
-bool common_hal_framebufferio_framebufferdisplay_get_auto_brightness(framebufferio_framebufferdisplay_obj_t *self) {
-    if (self->framebuffer_protocol->get_auto_brightness) {
-        return self->framebuffer_protocol->get_auto_brightness(self->framebuffer);
-    }
-    return true;
-}
-
-bool common_hal_framebufferio_framebufferdisplay_set_auto_brightness(framebufferio_framebufferdisplay_obj_t *self, bool auto_brightness) {
-    if (self->framebuffer_protocol->set_auto_brightness) {
-        return self->framebuffer_protocol->set_auto_brightness(self->framebuffer, auto_brightness);
-    }
-    return false;
-}
-
 mp_float_t common_hal_framebufferio_framebufferdisplay_get_brightness(framebufferio_framebufferdisplay_obj_t *self) {
     if (self->framebuffer_protocol->get_brightness) {
         return self->framebuffer_protocol->get_brightness(self->framebuffer);

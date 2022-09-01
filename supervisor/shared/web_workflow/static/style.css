@@ -5,3 +5,19 @@ body {
   font-family: "Proxima Nova", Verdana, sans-serif;
   line-height: 20.7px;
 }
+
+
+/* for edit.html */
+#code_textarea {
+    width: 90%;
+    height: 600px;
+}
+
+#output_text {
+    margin: 0;
+    font-size: 0.7em;
+}
+
+:disabled {
+    filter: saturate(0%);
+}

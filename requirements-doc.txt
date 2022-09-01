@@ -5,7 +5,7 @@ isort
 twine
 wheel
 astroid
-setuptools
+setuptools>=45
 setuptools_scm
 
 # For sphinx

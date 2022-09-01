@@ -11,14 +11,15 @@ SRC_SUPERVISOR = \
 	supervisor/shared/port.c \
 	supervisor/shared/reload.c \
 	supervisor/shared/safe_mode.c \
-  supervisor/shared/serial.c \
+	supervisor/shared/serial.c \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \
 	supervisor/shared/tick.c \
 	supervisor/shared/title_bar.c \
 	supervisor/shared/traceback.c \
 	supervisor/shared/translate/translate.c \
-  supervisor/shared/workflow.c
+	supervisor/shared/workflow.c \
+	supervisor/stub/misc.c \
 
 NO_USB ?= $(wildcard supervisor/usb.c)
 
@@ -184,9 +185,8 @@ ifeq ($(CIRCUITPY_DISPLAYIO), 1)
   SRC_SUPERVISOR += \
     supervisor/shared/display.c
 
-  ifeq ($(CIRCUITPY_TERMINALIO), 1)
-    SUPERVISOR_O += $(BUILD)/autogen_display_resources-$(TRANSLATION).o
-  endif
+  # Include the display resources because it includes the Blinka logo as well.
+  SUPERVISOR_O += $(BUILD)/autogen_display_resources-$(TRANSLATION).o
 endif
 
 # Preserve double quotes in these values by single-quoting them.

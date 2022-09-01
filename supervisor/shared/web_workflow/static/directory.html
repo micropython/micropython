@@ -5,17 +5,20 @@
     <meta charset="UTF-8">
     <script src="/directory.js" defer=true></script>
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="http://circuitpython.org/assets/css/webworkflow-8.css">
 </head>
 <body>
     <h1><a href="/"><img src="/favicon.ico"/></a>&nbsp;<span id="path"></span></h1>
-    <div id="usbwarning" style="display: none;">🛈 USB is using the storage. Only allowing reads. See <a href="https://learn.adafruit.com/circuitpython-essentials/circuitpython-storage">the CircuitPython Essentials: Storage guide</a> for details.</div>
-    <template id="row"><tr><td></td><td></td><td><a></a></td><td></td><td><button class="delete">🗑️</button></td><td><a class="edit_link" href="">Edit</a></td></tr></template>
+    <div id="usbwarning" style="display: none;">ℹ️ USB is using the storage. Only allowing reads. See <a href="https://learn.adafruit.com/circuitpython-essentials/circuitpython-storage">the CircuitPython Essentials: Storage guide</a> for details.</div>
+    <template id="row"><tr><td></td><td></td><td><a class="path"></a></td><td class="modtime"></td><td><button class="rename">✏️ Rename</button></td><td><button class="delete">🗑️ Delete</button></td><td><a class="edit_link" href=""><button>📝 Edit</button></a></td></tr></template>
     <table>
-        <thead><tr><th>Type</th><th>Size</th><th>Path</th><th>Modified</th><th></th></tr></thead>
+        <thead><tr><th>Type</th><th>Size</th><th>Path</th><th>Modified</th><th colspan="3"></th></tr></thead>
         <tbody></tbody>
     </table>
     <hr>
-    <input type="file" id="files" multiple><button type="submit" id="upload">Upload</button>
+    <label>📄 <input type="file" id="files" multiple></label>
+    <label for="dirs">📁 <input type="file" id="dirs" multiple webkitdirectory></label>
+    <label>Upload progress:<progress value="0"></progress></label>
     <hr>
-    +🗀&nbsp;<input type="text" id="name"><button type="submit" id="mkdir">Create Directory</button>
+    +📁&nbsp;<input type="text" id="name"><button type="submit" id="mkdir">Create Directory</button>
 </body></html>

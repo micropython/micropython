@@ -1,7 +1,7 @@
 var url_base = window.location;
 var current_path;
 
-var mdns_works = window.location.hostname.endsWith(".local");
+var mdns_works = url_base.hostname.endsWith(".local");
 
 async function find_devices() {
     var version_response = await fetch("/cp/version.json");

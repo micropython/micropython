@@ -47,3 +47,7 @@ void reset_board(void) {
 
 void board_deinit(void) {
 }
+
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    return false;
+}

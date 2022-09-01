@@ -28,9 +28,11 @@
 #define MICROPY_HW_BOARD_NAME       "MicroDev microC3"
 #define MICROPY_HW_MCU_NAME         "ESP32-C3FN4"
 
-// Status LED
+// Status LEDs
 #define MICROPY_HW_NEOPIXEL         (&pin_GPIO7)
 #define MICROPY_HW_NEOPIXEL_COUNT   (2)
+
+#define MICROPY_HW_LED_STATUS (&pin_GPIO8)
 
 // Default bus pins
 #define DEFAULT_I2C_BUS_SCL         (&pin_GPIO4)

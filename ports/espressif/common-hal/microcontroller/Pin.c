@@ -46,15 +46,7 @@ static const uint64_t pin_mask_reset_forbidden =
     // Never ever reset serial pins for bootloader and possibly USB-serial converter.
     GPIO_SEL_1 |          // TXD0
     GPIO_SEL_3 |          // RXD0
-    // Never ever reset pins used to communicate with SPI flash and PSRAM.
-    GPIO_SEL_6 |          // CLK
-    GPIO_SEL_9 |          // (PSRAM) SD2
-    GPIO_SEL_10 |         // (PSRAM) SD3
-    GPIO_SEL_11 |         // CMD
-    GPIO_SEL_16 |         // SPIHD
-    GPIO_SEL_17 |         // SPIDO
-    GPIO_SEL_18 |         // SPIWP
-    GPIO_SEL_23 |         // SPIDI
+    // SPI flash and PSRAM pins are protected at runtime in supervisor/port.c.
     #endif // ESP32
 
     #if defined(CONFIG_IDF_TARGET_ESP32C3)
@@ -108,7 +100,9 @@ static const uint64_t pin_mask_reset_forbidden =
 
 
 void never_reset_pin_number(gpio_num_t pin_number) {
-    if (pin_number == NO_PIN) {
+    // Some CircuitPython APIs deal in uint8_t pin numbers, but NO_PIN is -1.
+    // Also allow pin 255 to be treated as NO_PIN to avoid crashes
+    if (pin_number == NO_PIN || pin_number == (uint8_t)NO_PIN) {
         return;
     }
     never_reset_pins |= PIN_BIT(pin_number);
@@ -136,20 +130,33 @@ STATIC void _reset_pin(gpio_num_t pin_number) {
         return;
     }
 
-    gpio_reset_pin(pin_number);
+    bool pull_down = false;
+
+    // Special case the status LED pin.
+    #if defined(MICROPY_HW_LED_STATUS) && (!defined(MICROPY_HW_LED_STATUS_INVERTED) || !MICROPY_HW_LED_STATUS_INVERTED)
+    pull_down = pull_down || pin_number == MICROPY_HW_LED_STATUS->number;
+    #endif
 
     #ifdef DOUBLE_TAP_PIN
     // Pull the double tap pin down so that resets come back to CircuitPython.
-    if (pin_number == DOUBLE_TAP_PIN->number) {
+    pull_down = pull_down || pin_number == DOUBLE_TAP_PIN->number;
+    #endif
+
+    // This will pull the pin up. For pins needing pull down it shouldn't be a
+    // problem for a moment.
+    gpio_reset_pin(pin_number);
+
+    if (pull_down) {
         gpio_pullup_dis(pin_number);
         gpio_pulldown_en(pin_number);
     }
-    #endif
 }
 
 // Mark pin as free and return it to a quiescent state.
 void reset_pin_number(gpio_num_t pin_number) {
-    if (pin_number == NO_PIN) {
+    // Some CircuitPython APIs deal in uint8_t pin numbers, but NO_PIN is -1.
+    // Also allow pin 255 to be treated as NO_PIN to avoid crashes
+    if (pin_number == NO_PIN || pin_number == (uint8_t)NO_PIN) {
         return;
     }
     never_reset_pins &= ~PIN_BIT(pin_number);
@@ -182,7 +189,9 @@ void reset_all_pins(void) {
 }
 
 void claim_pin_number(gpio_num_t pin_number) {
-    if (pin_number == NO_PIN) {
+    // Some CircuitPython APIs deal in uint8_t pin numbers, but NO_PIN is -1.
+    // Also allow pin 255 to be treated as NO_PIN to avoid crashes
+    if (pin_number == NO_PIN || pin_number == (uint8_t)NO_PIN) {
         return;
     }
     in_use |= PIN_BIT(pin_number);

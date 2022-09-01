@@ -82,6 +82,7 @@ CIRCUITPY_WIFI_SSID='scottswifi'
 CIRCUITPY_WIFI_PASSWORD='secretpassword'
 
 # To enable modifying files from the web. Change this too!
+# Leave the User field blank in the browser.
 CIRCUITPY_WEB_API_PASSWORD='passw0rd'
 
 CIRCUITPY_WEB_API_PORT=80
@@ -121,7 +122,7 @@ The web server will allow requests from `cpy-XXXXXX.local`, `127.0.0.1`, the dev
 ### File REST API
 All file system related APIs are protected by HTTP basic authentication. It is *NOT* secure but will
 hopefully prevent some griefing in shared settings. The password is sent unencrypted so do not reuse
-a password with something important.
+a password with something important. The user field is left blank.
 
 The password is taken from `/.env` with the key `CIRCUITPY_WEB_API_PASSWORD`. If this is unset, the
 server will respond with `403 Forbidden`. When a password is set, but not provided in a request, it
@@ -137,7 +138,7 @@ root will be returned.
 When requested with the `OPTIONS` method, the server will respond with CORS related headers. Most
 aren't needed for API use. They are there for the web browser.
 
-* `Access-Control-Allow-Methods` - Varies with USB state. `GET, OPTIONS` when USB is active. `GET, OPTIONS, PUT, DELETE` otherwise.
+* `Access-Control-Allow-Methods` - Varies with USB state. `GET, OPTIONS` when USB is active. `GET, OPTIONS, PUT, DELETE, MOVE` otherwise.
 
 Example:
 
@@ -201,6 +202,24 @@ Example:
 curl -v -u :passw0rd -X PUT -L --location-trusted http://circuitpython.local/fs/lib/hello/world/
 ```
 
+##### Move
+Moves the directory at the given path to ``X-Destination``. Also known as rename.
+
+The custom `X-Destination` header stores the destination path of the directory.
+
+* `201 Created` - Directory renamed
+* `401 Unauthorized` - Incorrect password
+* `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
+* `404 Not Found` - Source directory not found or destination path is missing
+* `409 Conflict` - USB is active and preventing file system modification
+* `412 Precondition Failed` - The destination path is already in use
+
+Example:
+
+```sh
+curl -v -u :passw0rd -X MOVE -H "X-Destination: /fs/lib/hello2/" -L --location-trusted http://circuitpython.local/fs/lib/hello/
+```
+
 ##### DELETE
 Deletes the directory and all of its contents.
 
@@ -213,7 +232,7 @@ Deletes the directory and all of its contents.
 Example:
 
 ```sh
-curl -v -u :passw0rd -X DELETE -L --location-trusted http://circuitpython.local/fs/lib/hello/world/
+curl -v -u :passw0rd -X DELETE -L --location-trusted http://circuitpython.local/fs/lib/hello2/world/
 ```
 
 
@@ -269,6 +288,25 @@ curl -v -u :passw0rd -L --location-trusted http://circuitpython.local/fs/lib/hel
 ```
 
 
+##### Move
+Moves the file at the given path to the ``X-Destination``. Also known as rename.
+
+The custom `X-Destination` header stores the destination path of the file.
+
+* `201 Created` - File renamed
+* `401 Unauthorized` - Incorrect password
+* `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
+* `404 Not Found` - Source file not found or destination path is missing
+* `409 Conflict` - USB is active and preventing file system modification
+* `412 Precondition Failed` - The destination path is already in use
+
+Example:
+
+```sh
+curl -v -u :passw0rd -X MOVE -H "X-Destination: /fs/lib/hello/world2.txt" -L --location-trusted http://circuitpython.local/fs/lib/hello/world.txt
+```
+
+
 ##### DELETE
 Deletes the file.
 
@@ -282,7 +320,7 @@ Deletes the file.
 Example:
 
 ```sh
-curl -v -u :passw0rd -X DELETE -L --location-trusted http://circuitpython.local/fs/lib/hello/world.txt
+curl -v -u :passw0rd -X DELETE -L --location-trusted http://circuitpython.local/fs/lib/hello/world2.txt
 ```
 
 ### `/cp/`
