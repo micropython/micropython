@@ -2873,6 +2873,12 @@ msgstr ""
 msgid "error = 0x%08lX"
 msgstr ""
 
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid ""
+"esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+"documentation for instructions."
+msgstr ""
+
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
 msgstr ""

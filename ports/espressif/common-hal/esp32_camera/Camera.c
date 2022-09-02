@@ -34,6 +34,10 @@
 
 #include "esp32-camera/driver/private_include/cam_hal.h"
 
+#if !CONFIG_SPIRAM
+#error esp32_camera only works on boards configured with spiram, disable it in mpconfigboard.mk
+#endif
+
 static void maybe_claim_pin(const mcu_pin_obj_t *pin) {
     if (pin) {
         claim_pin(pin);
@@ -57,6 +61,11 @@ void common_hal_esp32_camera_camera_construct(
     mp_int_t framebuffer_count,
     camera_grab_mode_t grab_mode) {
 
+    if (common_hal_espidf_get_reserved_psram() == 0) {
+        mp_raise_msg(&mp_type_MemoryError, translate(
+            "esp32_camera.Camera requires reserved PSRAM to be configured. "
+            "See the documentation for instructions."));
+    }
     for (int i = 0; i < 8; i++) {
         claim_pin_number(data_pins[i]);
     }

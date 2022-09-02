@@ -138,7 +138,7 @@ root will be returned.
 When requested with the `OPTIONS` method, the server will respond with CORS related headers. Most
 aren't needed for API use. They are there for the web browser.
 
-* `Access-Control-Allow-Methods` - Varies with USB state. `GET, OPTIONS` when USB is active. `GET, OPTIONS, PUT, DELETE` otherwise.
+* `Access-Control-Allow-Methods` - Varies with USB state. `GET, OPTIONS` when USB is active. `GET, OPTIONS, PUT, DELETE, MOVE` otherwise.
 
 Example:
 
@@ -404,6 +404,12 @@ curl -v -L http://circuitpython.local/cp/version.json
 	"ip": "192.168.1.94"
 }
 ```
+
+#### `/code/`
+
+The `/code/` page returns a small static html page that will pull in and load the full code editor from
+[code.circuitpython.org](https://code.circuitpython.org) for a full code editor experience. Because most
+of the resources reside online instead of the device, an active internet connection is required.
 
 ### Static files
 

@@ -21,3 +21,4 @@ CIRCUITPY_ESP32_CAMERA = 0
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
 FROZEN_MPY_DIRS += $(TOP)/frozen/mixgo_cp_lib/mixgoce_lib
+CIRCUITPY_ESP32_CAMERA = 0
