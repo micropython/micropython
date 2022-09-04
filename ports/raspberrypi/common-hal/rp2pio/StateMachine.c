@@ -369,6 +369,9 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
 }
 
 static uint32_t mask_and_rotate(const mcu_pin_obj_t *first_pin, uint32_t bit_count, uint32_t value) {
+    if (!first_pin) {
+        return 0;
+    }
     value = value & ((1 << bit_count) - 1);
     uint32_t shift = first_pin->number;
     return value << shift | value >> (32 - shift);
