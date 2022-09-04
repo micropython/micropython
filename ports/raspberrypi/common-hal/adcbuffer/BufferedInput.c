@@ -62,7 +62,7 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
     self->buffer = buffer;
     self->len = len;
 
-    // Set sample rate - used in readmultiple
+    // Set sample rate - used in read
     self->bytes_per_sample = bytes_per_sample;
     self->sample_rate = sample_rate;
 
@@ -74,6 +74,13 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
     adc_gpio_init(pin->number);
     adc_select_input(self->chan); // chan = pin - 26 ??
 
+    // RP2040 Implementation Detail
+    // Fills the supplied buffer with ADC values using DMA transfer.
+    // If the buffer is 8-bit, then values are 8-bit shifted and error bit is off.
+    // If buffer is 16-bit, then values are not shifted and error bit is present.
+    // Number of transfers is always the number of samples which is the array
+    // byte length divided by the bytes_per_sample.
+    
     // self->bytes_per_sample == 1
     uint dma_size = DMA_SIZE_8;
     bool show_error_bit = false;
@@ -141,7 +148,7 @@ void common_hal_adcbuffer_bufferedinput_deinit(adcbuffer_bufferedinput_obj_t *se
     dma_channel_unclaim(self->dma_chan);
 }
 
-void common_hal_adcbuffer_bufferedinput_readmultiple(adcbuffer_bufferedinput_obj_t *self) {
+void common_hal_adcbuffer_bufferedinput_read(adcbuffer_bufferedinput_obj_t *self) {
 
     uint32_t cdl = self->len / self->bytes_per_sample;
 

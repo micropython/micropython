@@ -48,15 +48,13 @@
 //|
 //|   length = 5000000
 //|   mybuffer = array.array("H", [0] * length)
-//|   adcbuf_obj = adcbuffer.BufferedInput(GP26, mybuffer, length)
-//|   adcbuffer.readmultiple()
+//|   adc_in = adcbuffer.BufferedInput(GP26, mybuffer, length)
+//|   adcbuffer.read()
 //|   print(*mybuffer)
-//|   adcbuf_obj.deinit()
+//|   adc_in.deinit()
 //|
 //| This example will initialize the the device, read and fill
-//| :py:data:`~adcbuffer.BufferedInPut` to mybuffer and then
-//| :py:meth:`~adcbuffer.BufferedInPut.deinit` the hardware. The last step is optional
-//| because CircuitPython will do it automatically after the program finishes.
+//| :py:data:`~adcbuffer.BufferedInPut` to mybuffer
 //|
 //| TODO: For the essentials of `adcbuffer`, see the `CircuitPython Essentials
 //| Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-adcbuffer>`_

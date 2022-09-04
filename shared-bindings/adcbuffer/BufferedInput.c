@@ -38,15 +38,19 @@
 #include "shared-bindings/util.h"
 
 //| class BufferedInput:
-//|     """Input analog voltage level to supplied buffer using DMA Capture"""
+//|     """Capture multiple analog voltage levels to the supplied buffer"""
 //|
 //|     def __init__(self, pin: microcontroller.Pin, buffer: WriteableBuffer, *, sample_rate: int = 500000) -> None:
-//|         """Use the BufferedInput on the given pin. Fill the given buffer from ADC read values at the supplied
-//|         sample_rate.
+//|         """Create a `BufferedInput` on the given pin. ADC values will be read
+//|            into the given buffer at the supplied sample_rate. Depending on the
+//|            buffer typecode, 'b', 'B', 'h', 'H', samples are 8-bit byte-arrays or
+//|            16-bit half-words and are signed or unsigned.
+//|            The ADC most significant bits of the ADC are kept. Please see:
+//|            `https://docs.circuitpython.org/en/latest/docs/library/array.html`
 //|
 //|         :param ~microcontroller.Pin pin: the pin to read from
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: buffer: A buffer for samples
-//|         :param ~int sample_rate: rate: The desired playback sample rate
+//|         :param ~int sample_rate: rate: sampling frequency, in samples per second
 //|
 //|     Usage::
 //|
@@ -58,7 +62,7 @@
 //|       mybuffer = array.array("H", [0] * length)
 //|       rate = 500000
 //|       adcbuf = adcbuffer.BufferedInput(board.GP26, mybuffer, rate)
-//|       adcbuf.readmultiple()
+//|       adcbuf.read()
 //|       adcbuf.deinit()
 //|       for i in range(length):
 //|           print(i, mybuffer[i])
@@ -93,7 +97,7 @@ STATIC mp_obj_t adcbuffer_bufferedinput_make_new(const mp_obj_type_t *type, size
     if (bufinfo.typecode == 'h' || bufinfo.typecode == 'H') {
         bytes_per_sample = 2;
     } else if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError(translate("sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or 'B'"));
+      mp_raise_ValueError_varg(translate("%q must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"), MP_QSTR_buffer);
     }
 
     // Validate sample rate here
@@ -117,7 +121,7 @@ STATIC mp_obj_t adcbuffer_bufferedinput_make_new(const mp_obj_type_t *type, size
 }
 
 //|     def deinit(self) -> None:
-//|         """Turn off the BufferedInput and release the pin for other use."""
+//|         """Shut down the `BufferedInput` and release the pin for other use."""
 //|         ...
 //|
 STATIC mp_obj_t adcbuffer_bufferedinput_deinit(mp_obj_t self_in) {
@@ -147,26 +151,23 @@ STATIC mp_obj_t adcbuffer_bufferedinput___exit__(size_t n_args, const mp_obj_t *
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adcbuffer_bufferedinput___exit___obj, 4, 4, adcbuffer_bufferedinput___exit__);
 
-//|     value: None
-//|         """Fills the supplied buffer with ADC values using DMA transfer.
-//|     If the buffer is 8-bit, then values are 8-bit shifted and error bit is off.
-//|     If buffer is 16-bit, then values are not shifted and error bit is present.
-//|     Number of transfers is always the number of samples which is the array
-//|     byte length divided by the bytes_per_sample."""
+//|     
+//|     def read(self) -> None:
+//|         """Fills the provided buffer with ADC voltage values."""
 //|
-STATIC mp_obj_t adcbuffer_bufferedinput_obj_readmultiple(mp_obj_t self_in) {
+STATIC mp_obj_t adcbuffer_bufferedinput_obj_read(mp_obj_t self_in) {
     adcbuffer_bufferedinput_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    common_hal_adcbuffer_bufferedinput_readmultiple(self);
+    common_hal_adcbuffer_bufferedinput_read(self);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(adcbuffer_bufferedinput_readmultiple_obj, adcbuffer_bufferedinput_obj_readmultiple);
+MP_DEFINE_CONST_FUN_OBJ_1(adcbuffer_bufferedinput_read_obj, adcbuffer_bufferedinput_obj_read);
 
 STATIC const mp_rom_map_elem_t adcbuffer_bufferedinput_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit),             MP_ROM_PTR(&adcbuffer_bufferedinput_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__),          MP_ROM_PTR(&default___enter___obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__),           MP_ROM_PTR(&adcbuffer_bufferedinput___exit___obj) },
-    { MP_ROM_QSTR(MP_QSTR_readmultiple),       MP_ROM_PTR(&adcbuffer_bufferedinput_readmultiple_obj)},
+    { MP_ROM_QSTR(MP_QSTR_deinit),     MP_ROM_PTR(&adcbuffer_bufferedinput_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),  MP_ROM_PTR(&default___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__),   MP_ROM_PTR(&adcbuffer_bufferedinput___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR_read),       MP_ROM_PTR(&adcbuffer_bufferedinput_read_obj)},
 
 };
 
