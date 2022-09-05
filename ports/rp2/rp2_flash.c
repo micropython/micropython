@@ -70,16 +70,45 @@ bi_decl(bi_block_device(
     BINARY_INFO_BLOCK_DEV_FLAG_PT_UNKNOWN));
 
 STATIC mp_obj_t rp2_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    // Check args.
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    // Parse arguments
+    enum { ARG_start, ARG_len };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_len,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    #ifndef NDEBUG
-    extern char __flash_binary_end;
-    assert((uintptr_t)&__flash_binary_end - XIP_BASE <= MICROPY_HW_FLASH_STORAGE_BASE);
-    #endif
+    if (args[ARG_start].u_int == -1 && args[ARG_len].u_int == -1) {
+        #ifndef NDEBUG
+        extern char __flash_binary_end;
+        assert((uintptr_t)&__flash_binary_end - XIP_BASE <= MICROPY_HW_FLASH_STORAGE_BASE);
+        #endif
 
-    // Return singleton object.
-    return MP_OBJ_FROM_PTR(&rp2_flash_obj);
+        // Default singleton object that accesses entire flash
+        return MP_OBJ_FROM_PTR(&rp2_flash_obj);
+    }
+
+    rp2_flash_obj_t *self = mp_obj_malloc(rp2_flash_obj_t, &rp2_flash_type);
+
+    mp_int_t start = args[ARG_start].u_int;
+    if (start == -1) {
+        start = 0;
+    } else if (!(0 <= start && start < MICROPY_HW_FLASH_STORAGE_BYTES && start % BLOCK_SIZE_BYTES == 0)) {
+        mp_raise_ValueError(NULL);
+    }
+
+    mp_int_t len = args[ARG_len].u_int;
+    if (len == -1) {
+        len = MICROPY_HW_FLASH_STORAGE_BYTES - start;
+    } else if (!(0 < len && start + len <= MICROPY_HW_FLASH_STORAGE_BYTES && len % BLOCK_SIZE_BYTES == 0)) {
+        mp_raise_ValueError(NULL);
+    }
+
+    self->flash_base = MICROPY_HW_FLASH_STORAGE_BASE + start;
+    self->flash_size = len;
+
+    return MP_OBJ_FROM_PTR(self);
 }
 
 STATIC mp_obj_t rp2_flash_readblocks(size_t n_args, const mp_obj_t *args) {
