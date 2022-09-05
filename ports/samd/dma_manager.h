@@ -32,6 +32,7 @@ int allocate_dma_channel(void);
 void free_dma_channel(int n);
 void dma_init(void);
 void dma_deinit(void);
+void dac_stop_dma(int dma_channel, bool wait);
 
 extern volatile DmacDescriptor dma_desc[];
 
