@@ -51,7 +51,7 @@ typedef struct {
     uint8_t chan;
     uint dma_chan;
     dma_channel_config cfg;
-} analogbuf_bufferedin_obj_t;
+} analogbufio_bufferedin_obj_t;
 
 void bufferedin_init(void);
 
