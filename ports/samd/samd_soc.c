@@ -68,7 +68,6 @@ static void usb_init(void) {
 void init_us_counter(void) {
     #if defined(MCU_SAMD21)
 
-    PM->APBCMASK.bit.TC3_ = 1; // Enable TC3 clock
     PM->APBCMASK.bit.TC4_ = 1; // Enable TC4 clock
     // Select multiplexer generic clock source and enable.
     GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK3 | GCLK_CLKCTRL_ID_TC4_TC5;
