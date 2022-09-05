@@ -33,6 +33,10 @@
 #include "py/objstr.h"
 #include "py/stackctrl.h"
 
+#if MICROPY_PY_BUILTINS_STR_UNICODE
+#include "py/unicode.h"
+#endif
+
 #if MICROPY_PY_URE
 
 #define re1_5_stack_chk() MP_STACK_CHECK()
@@ -120,6 +124,18 @@ STATIC void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span
         s = start - begin;
         e = self->caps[no * 2 + 1] - begin;
     }
+
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    if (mp_obj_get_type(self->str) == &mp_type_str) {
+        const byte *begin = (const byte *)mp_obj_str_get_str(self->str);
+        if (s != -1) {
+            s = utf8_ptr_to_index(begin, begin + s);
+        }
+        if (e != -1) {
+            e = utf8_ptr_to_index(begin, begin + e);
+        }
+    }
+    #endif
 
     span[0] = mp_obj_new_int(s);
     span[1] = mp_obj_new_int(e);
