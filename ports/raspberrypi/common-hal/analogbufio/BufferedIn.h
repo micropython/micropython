@@ -31,15 +31,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ADCBUFFER_BUFFEREDINPUT_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ADCBUFFER_BUFFEREDINPUT_H
+#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ANALOGBUFIO_BUFFEREDIN_H
+#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ANALOGBUFIO_BUFFEREDIN_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "src/rp2_common/hardware_dma/include/hardware/dma.h"
 
 #include "py/obj.h"
 
-//  This is the adcbuffer object
+//  This is the analogbufio object
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
@@ -51,8 +51,8 @@ typedef struct {
     uint8_t chan;
     uint dma_chan;
     dma_channel_config cfg;
-} adcbuffer_bufferedinput_obj_t;
+} analogbuf_bufferedin_obj_t;
 
-void bufferedinput_init(void);
+void bufferedin_init(void);
 
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ADCBUFFER_BUFFEREDINPUT_H
+#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ANALOGBUFIO_BUFFEREDIN_H

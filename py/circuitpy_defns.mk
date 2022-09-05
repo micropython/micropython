@@ -102,14 +102,14 @@ endif
 ###
 # Select which builtin modules to compile and include.
 
-ifeq ($(CIRCUITPY_ADCBUFFER),1)
-SRC_PATTERNS += adcbuffer/%
-endif
 ifeq ($(CIRCUITPY_AESIO),1)
 SRC_PATTERNS += aesio/%
 endif
 ifeq ($(CIRCUITPY_ALARM),1)
 SRC_PATTERNS += alarm/%
+endif
+ifeq ($(CIRCUITPY_ANALOGBUFIO),1)
+SRC_PATTERNS += analogbufio/%
 endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)
 SRC_PATTERNS += analogio/%
@@ -387,13 +387,13 @@ SRC_COMMON_HAL_ALL = \
 	_bleio/__init__.c \
 	_pew/PewPew.c \
 	_pew/__init__.c \
-	adcbuffer/BufferedInput.c \
-	adcbuffer/__init__.c \
 	alarm/SleepMemory.c \
 	alarm/__init__.c \
 	alarm/pin/PinAlarm.c \
 	alarm/time/TimeAlarm.c \
 	alarm/touch/TouchAlarm.c \
+	analogbufio/BufferedIn.c \
+	analogbufio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \

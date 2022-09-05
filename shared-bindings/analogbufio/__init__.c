@@ -27,12 +27,12 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/adcbuffer/__init__.h"
-#include "shared-bindings/adcbuffer/BufferedInput.h"
+#include "shared-bindings/analogbufio/__init__.h"
+#include "shared-bindings/analogbufio/BufferedIn.h"
 
-//| """Analog buffered hardware support
+//| """Analog Buffered IO Hardware Support
 //|
-//| The `adcbuffer` module contains classes to provide access to analog-to-digital
+//| The `analogbufio` module contains classes to provide access to analog-to-digital
 //| conversion and digital-to-analog (DAC) for multiple value transfer.
 //|
 //| All classes change hardware state and should be deinitialized when they
@@ -42,38 +42,38 @@
 //|
 //| For example::
 //|
-//|   import adcbuffer
+//|   import analogbufio
 //|   import array
 //|   from board import *
 //|
 //|   length = 5000000
-//|   mybuffer = array.array("H", [0] * length)
-//|   adc_in = adcbuffer.BufferedInput(GP26, mybuffer, length)
-//|   adcbuffer.read()
+//|   mybuffer = array.array("H", 0x0000 for i in range(length))
+//|   adc_in = analogbufio.BufferedIn(GP26, mybuffer, length)
+//|   analogbufio.read()
 //|   print(*mybuffer)
 //|   adc_in.deinit()
 //|
 //| This example will initialize the the device, read and fill
-//| :py:data:`~adcbuffer.BufferedInPut` to mybuffer
+//| :py:data:`~analogbufio.BufferedIn` to mybuffer
 //|
-//| TODO: For the essentials of `adcbuffer`, see the `CircuitPython Essentials
-//| Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-adcbuffer>`_
+//| TODO: For the essentials of `analogbufio`, see the `CircuitPython Essentials
+//| Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-analogbufio>`_
 //|
-//| TODO: For more information on using `adcbuffer`, see `this additional Learn guide
+//| TODO: For more information on using `analogbufio`, see `this additional Learn guide
 //| <https://learn.adafruit.com/circuitpython-advanced-analog-inputs-and-outputs>`_
 //| """
 //|
 
-STATIC const mp_rom_map_elem_t adcbuffer_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_adcbuffer) },
-    { MP_ROM_QSTR(MP_QSTR_BufferedInput),   MP_ROM_PTR(&adcbuffer_bufferedinput_type) },
+STATIC const mp_rom_map_elem_t analogbufio_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_analogbufio) },
+    { MP_ROM_QSTR(MP_QSTR_BufferedIn),   MP_ROM_PTR(&analogbufio_bufferedin_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(adcbuffer_module_globals, adcbuffer_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(analogbufio_module_globals, analogbufio_module_globals_table);
 
-const mp_obj_module_t adcbuffer_module = {
+const mp_obj_module_t analogbufio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&adcbuffer_module_globals,
+    .globals = (mp_obj_dict_t *)&analogbufio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_adcbuffer, adcbuffer_module, CIRCUITPY_ADCBUFFER);
+MP_REGISTER_MODULE(MP_QSTR_analogbufio, analogbufio_module, CIRCUITPY_ANALOGBUFIO);

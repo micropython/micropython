@@ -1,1 +1,0 @@
-// No adcbuffer module functions.

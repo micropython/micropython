@@ -32,8 +32,8 @@
  */
 
 #include <stdio.h>
-#include "common-hal/adcbuffer/BufferedInput.h"
-#include "shared-bindings/adcbuffer/BufferedInput.h"
+#include "common-hal/analogbufio/BufferedIn.h"
+#include "shared-bindings/analogbufio/BufferedIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate/translate.h"
@@ -44,7 +44,7 @@
 #define ADC_FIRST_PIN_NUMBER 26
 #define ADC_PIN_COUNT 4
 
-void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, uint32_t sample_rate) {
+void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, uint32_t sample_rate) {
 
     // Make sure pin number is in range for ADC
     if (pin->number < ADC_FIRST_PIN_NUMBER || pin->number >= (ADC_FIRST_PIN_NUMBER + ADC_PIN_COUNT)) {
@@ -131,12 +131,12 @@ void common_hal_adcbuffer_bufferedinput_construct(adcbuffer_bufferedinput_obj_t 
     adc_run(false);
 }
 
-bool common_hal_adcbuffer_bufferedinput_deinited(adcbuffer_bufferedinput_obj_t *self) {
+bool common_hal_analogbufio_bufferedin_deinited(analogbufio_bufferedin_obj_t *self) {
     return self->pin == NULL;
 }
 
-void common_hal_adcbuffer_bufferedinput_deinit(adcbuffer_bufferedinput_obj_t *self) {
-    if (common_hal_adcbuffer_bufferedinput_deinited(self)) {
+void common_hal_analogbufio_bufferedin_deinit(analogbufio_bufferedin_obj_t *self) {
+    if (common_hal_analogbufio_bufferedin_deinited(self)) {
         return;
     }
 
@@ -148,7 +148,7 @@ void common_hal_adcbuffer_bufferedinput_deinit(adcbuffer_bufferedinput_obj_t *se
     dma_channel_unclaim(self->dma_chan);
 }
 
-void common_hal_adcbuffer_bufferedinput_read(adcbuffer_bufferedinput_obj_t *self) {
+void common_hal_analogbufio_bufferedin_read(analogbufio_bufferedin_obj_t *self) {
 
     uint32_t cdl = self->len / self->bytes_per_sample;
 
