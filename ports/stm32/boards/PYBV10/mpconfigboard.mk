@@ -34,3 +34,6 @@ endif
 ifeq ($(BOARD_VARIANT),"network")
 MICROPY_PY_NETWORK_WIZNET5K=5200
 endif
+
+# PYB-specific frozen modules
+FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py
