@@ -40,9 +40,9 @@ Testing the display
 
 There is a test program which you can use to test the features of the display,
 and which also serves as a basis to start creating your own code that uses the
-LCD.  This test program is included in recent versions of the pyboard firmware
-and is also available on GitHub
+LCD.  This test program is available on GitHub
 `here <https://github.com/micropython/micropython/blob/master/drivers/display/lcd160cr_test.py>`__.
+Copy it to the board over USB mass storage, or by using `mpremote`.
 
 To run the test from the MicroPython prompt do::
 

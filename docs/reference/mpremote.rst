@@ -1,3 +1,5 @@
+.. _mpremote:
+
 MicroPython remote control: mpremote
 ====================================
 

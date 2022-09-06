@@ -1,5 +1,5 @@
 # TODO: Split these into separate directories with their own manifests.
-options.defaults(lcd160cr=False, ssd1306=False, test=True)
+options.defaults(lcd160cr=False, ssd1306=False, test=False)
 
 if options.lcd160cr:
     module("lcd160cr.py", opt=3)
