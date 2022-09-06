@@ -240,7 +240,7 @@ static mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
             self->tc_index = allocate_tc_instance();
         }
         // Configure TC; no need to check the return value
-        configure_tc(self->tc_index, freq);
+        configure_tc(self->tc_index, freq, 0);
         // Configure DMA for halfword output to the DAC
         #if defined(MCU_SAMD21)
 
