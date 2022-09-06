@@ -40,20 +40,36 @@
 #define DEFAULT_SPI_FIRSTBIT    (SPI_MSB_FIRST)
 
 #ifndef MICROPY_HW_SPI0_SCK
+#if PICO_DEFAULT_SPI == 0
+#define MICROPY_HW_SPI0_SCK     (PICO_DEFAULT_SPI_SCK_PIN)
+#define MICROPY_HW_SPI0_MOSI    (PICO_DEFAULT_SPI_TX_PIN)
+#define MICROPY_HW_SPI0_MISO    (PICO_DEFAULT_SPI_RX_PIN)
+#else
 #define MICROPY_HW_SPI0_SCK     (6)
 #define MICROPY_HW_SPI0_MOSI    (7)
 #define MICROPY_HW_SPI0_MISO    (4)
 #endif
+#endif
 
 #ifndef MICROPY_HW_SPI1_SCK
+#if PICO_DEFAULT_SPI == 1
+#define MICROPY_HW_SPI1_SCK     (PICO_DEFAULT_SPI_SCK_PIN)
+#define MICROPY_HW_SPI1_MOSI    (PICO_DEFAULT_SPI_TX_PIN)
+#define MICROPY_HW_SPI1_MISO    (PICO_DEFAULT_SPI_RX_PIN)
+#else
 #define MICROPY_HW_SPI1_SCK     (10)
 #define MICROPY_HW_SPI1_MOSI    (11)
 #define MICROPY_HW_SPI1_MISO    (8)
 #endif
+#endif
 
+// SPI0 can be GP{0..7,16..23}, SPI1 can be GP{8..15,24..29}.
 #define IS_VALID_PERIPH(spi, pin)   ((((pin) & 8) >> 3) == (spi))
+// GP{2,6,10,14,...}
 #define IS_VALID_SCK(spi, pin)      (((pin) & 3) == 2 && IS_VALID_PERIPH(spi, pin))
+// GP{3,7,11,15,...}
 #define IS_VALID_MOSI(spi, pin)     (((pin) & 3) == 3 && IS_VALID_PERIPH(spi, pin))
+// GP{0,4,8,10,...}
 #define IS_VALID_MISO(spi, pin)     (((pin) & 3) == 0 && IS_VALID_PERIPH(spi, pin))
 
 typedef struct _machine_spi_obj_t {
