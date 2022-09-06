@@ -137,7 +137,7 @@ STATIC void check_for_deinit(analogbufio_bufferedin_obj_t *self) {
 	raise_deinited_error();
     }
 }
-//|     def __enter__(self) -> AnalogIn:
+//|     def __enter__(self) -> BufferedIn:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
