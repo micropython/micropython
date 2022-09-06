@@ -9,15 +9,7 @@
 #define MICROPY_HW_I2C0_SCL  (17)
 #define MICROPY_HW_I2C0_SDA  (16)
 
-// Qwiic on I2C1
-#define MICROPY_HW_I2C1_SCL  (7)
-#define MICROPY_HW_I2C1_SDA  (6)
-
-#define MICROPY_HW_SPI0_SCK  (2)
-#define MICROPY_HW_SPI0_MOSI (3)
-#define MICROPY_HW_SPI0_MISO (4)
-
-// MicroSD on SPI1
+// MicroSD on SPI1 (non-default)
 #define MICROPY_HW_SPI1_SCK  (14)
 #define MICROPY_HW_SPI1_MOSI (15)
 #define MICROPY_HW_SPI1_MISO (12)
