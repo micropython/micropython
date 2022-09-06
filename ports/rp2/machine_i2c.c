@@ -35,13 +35,23 @@
 #define DEFAULT_I2C_FREQ (400000)
 
 #ifndef MICROPY_HW_I2C0_SCL
+#if PICO_DEFAULT_I2C == 0
+#define MICROPY_HW_I2C0_SCL (PICO_DEFAULT_I2C_SCL_PIN)
+#define MICROPY_HW_I2C0_SDA (PICO_DEFAULT_I2C_SDA_PIN)
+#else
 #define MICROPY_HW_I2C0_SCL (9)
 #define MICROPY_HW_I2C0_SDA (8)
 #endif
+#endif
 
 #ifndef MICROPY_HW_I2C1_SCL
+#if PICO_DEFAULT_I2C == 1
+#define MICROPY_HW_I2C1_SCL (PICO_DEFAULT_I2C_SCL_PIN)
+#define MICROPY_HW_I2C1_SDA (PICO_DEFAULT_I2C_SDA_PIN)
+#else
 #define MICROPY_HW_I2C1_SCL (7)
 #define MICROPY_HW_I2C1_SDA (6)
+#endif
 #endif
 
 // SDA/SCL on even/odd pins, I2C0/I2C1 on even/odd pairs of pins.
