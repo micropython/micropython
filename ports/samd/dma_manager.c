@@ -52,7 +52,7 @@ static volatile DmacDescriptor dma_write_back[MICROPY_HW_DMA_CHANNELS] __attribu
 // List of channel flags: true: channel used, false: channel available
 static bool channel_list[MICROPY_HW_DMA_CHANNELS];
 
-STATIC bool dma_initialized = false;
+static bool dma_initialized = false;
 
 // allocate_channel(): retrieve an available channel. Return the number or -1
 int allocate_dma_channel(void) {
