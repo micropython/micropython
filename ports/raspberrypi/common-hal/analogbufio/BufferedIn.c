@@ -80,7 +80,7 @@ void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *s
     // If buffer is 16-bit, then values are not shifted and error bit is present.
     // Number of transfers is always the number of samples which is the array
     // byte length divided by the bytes_per_sample.
-    
+
     // self->bytes_per_sample == 1
     uint dma_size = DMA_SIZE_8;
     bool show_error_bit = false;
