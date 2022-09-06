@@ -22,16 +22,12 @@
 #define MICROPY_HW_UART1_CTS            (10)
 #define MICROPY_HW_UART1_RTS            (11)
 
-// SPI 1 config.
+// SPI 1 config (non-default).
 #define MICROPY_HW_SPI1_SCK             (14)
 #define MICROPY_HW_SPI1_MOSI            (11)
 #define MICROPY_HW_SPI1_MISO            (8)
 
-// I2C0 config.
-#define MICROPY_HW_I2C0_SCL             (13)
-#define MICROPY_HW_I2C0_SDA             (12)
-
-// I2C1 config.
+// I2C1 config (non-default).
 #define MICROPY_HW_I2C1_SCL             (27)
 #define MICROPY_HW_I2C1_SDA             (26)
 
