@@ -31,7 +31,7 @@
 
 int allocate_tc_instance(void);
 void free_tc_instance(int tc_index);
-int configure_tc(int tc_index, int freq);
+int configure_tc(int tc_index, int freq, int event);
 void tc_deinit(void);
 
 extern Tc *tc_instance_list[];

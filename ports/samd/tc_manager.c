@@ -57,7 +57,7 @@ void free_tc_instance(int tc_index) {
     }
 }
 
-int configure_tc(int tc_index, int freq) {
+int configure_tc(int tc_index, int freq, int event) {
     uint32_t clock = DFLL48M_FREQ;  // Use the fixed 48M clock
 
     Tc *tc;
@@ -105,6 +105,9 @@ int configure_tc(int tc_index, int freq) {
         TC_CTRLA_MODE_COUNT16 | TC_CTRLA_RUNSTDBY |
         TC_CTRLA_WAVEGEN_MFRQ;
     tc->COUNT16.CC[0].reg = period;
+    if (event) {
+        tc->COUNT16.EVCTRL.reg = event;
+    }
 
     tc->COUNT16.CTRLA.bit.ENABLE = 1;
     while (tc->COUNT16.STATUS.bit.SYNCBUSY) {

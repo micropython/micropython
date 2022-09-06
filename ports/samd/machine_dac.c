@@ -51,11 +51,11 @@ typedef struct _dac_obj_t {
     uint32_t count;
 } dac_obj_t;
 Dac *const dac_bases[] = DAC_INSTS;
-STATIC void dac_init(dac_obj_t *self, Dac *dac);
+static void dac_init(dac_obj_t *self, Dac *dac);
 
 #if defined(MCU_SAMD21)
 
-STATIC dac_obj_t dac_obj[] = {
+static dac_obj_t dac_obj[] = {
     {{&machine_dac_type}, 0, PIN_PA02},
 };
 
@@ -65,7 +65,7 @@ STATIC dac_obj_t dac_obj[] = {
 
 #elif defined(MCU_SAMD51)
 
-STATIC dac_obj_t dac_obj[] = {
+static dac_obj_t dac_obj[] = {
     {{&machine_dac_type}, 0, PIN_PA02},
     {{&machine_dac_type}, 1, PIN_PA05},
 };
@@ -145,7 +145,7 @@ static mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void dac_init(dac_obj_t *self, Dac *dac) {
+static void dac_init(dac_obj_t *self, Dac *dac) {
     // Init DAC
     if (self->initialized == false) {
         #if defined(MCU_SAMD21)
@@ -190,7 +190,7 @@ STATIC void dac_init(dac_obj_t *self, Dac *dac) {
     self->initialized = true;
 }
 
-STATIC void dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     dac_obj_t *self = self_in;
     mp_printf(print, "DAC(%u, Pin=%q, vref=%d)", self->id, pin_find_by_id(self->gpio_id)->name, self->vref);
 }
@@ -215,7 +215,7 @@ static mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(dac_write_obj, dac_write);
 
-STATIC mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
     Dac *dac = dac_bases[0]; // Just one DAC used
     dac_obj_t *self = args[0];
     mp_buffer_info_t src;
@@ -239,7 +239,7 @@ STATIC mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
             self->tc_index = allocate_tc_instance();
         }
         // Configure TC; no need to check the return value
-        configure_tc(self->tc_index, freq);
+        configure_tc(self->tc_index, freq, 0);
         // Configure DMA for halfword output to the DAC
         #if defined(MCU_SAMD21)
 
@@ -301,9 +301,9 @@ STATIC mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dac_write_timed_obj, 3, 4, dac_write_timed);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dac_write_timed_obj, 3, 4, dac_write_timed);
 
-STATIC mp_obj_t dac_deinit(mp_obj_t self_in) {
+static mp_obj_t dac_deinit(mp_obj_t self_in) {
     dac_obj_t *self = self_in;
     self->initialized = false;
     // Reset the DAC to lower the current consumption as SAMD21
@@ -321,7 +321,7 @@ STATIC mp_obj_t dac_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(dac_deinit_obj, dac_deinit);
 
-STATIC const mp_rom_map_elem_t dac_locals_dict_table[] = {
+static const mp_rom_map_elem_t dac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&dac_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&dac_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_timed), MP_ROM_PTR(&dac_write_timed_obj) },
