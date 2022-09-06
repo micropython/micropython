@@ -5,7 +5,7 @@ include("$(PORT_DIR)/boards/manifest.py")
 include("$(MPY_DIR)/extmod/uasyncio")
 
 # drivers
-include("$(MPY_DIR)/drivers/display", ssd1306=True)
+require("ssd1306")
 
 # micropython-lib: file utilities
 require("upysh")
