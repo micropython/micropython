@@ -76,6 +76,10 @@ msgstr ""
 msgid "%q"
 msgstr ""
 
+#: shared-bindings/analogbufio/BufferedIn.c
+msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
 msgstr ""
@@ -3869,11 +3873,6 @@ msgstr ""
 msgid "rsplit(None,n)"
 msgstr ""
 
-#: shared-bindings/adcbuffer/BufferdInput.c
-msgid "sample rate must be 1.0-500000.0 per second"
-msgstr ""
-
-#: shared-bindings/adcbuffer/BufferdInput.c
 #: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "

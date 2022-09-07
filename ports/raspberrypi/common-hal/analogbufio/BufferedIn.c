@@ -96,7 +96,7 @@ void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *s
         true,               // Write each completed conversion to the sample FIFO
         true,               // Enable DMA data request (DREQ)
         1,                  // DREQ (and IRQ) asserted when at least 1 sample present
-        show_error_bit,     // See the ERR bit on 8 bit bit reads
+        show_error_bit,     // See the ERR bit
         shift_sample_8_bits // Shift each sample to 8 bits when pushing to FIFO
         );
 

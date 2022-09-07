@@ -76,9 +76,9 @@
 STATIC mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin, ARG_buffer, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
-	{ MP_QSTR_pin,    MP_ARG_OBJ | MP_ARG_REQUIRED },
-	{ MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
-	{ MP_QSTR_sample_rate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 500000} },
+        { MP_QSTR_pin,    MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_sample_rate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 500000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -86,7 +86,7 @@ STATIC mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_
     // Validate Pin
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 
-    // Buffer Pointer defined and allocated by user
+    // Buffer defined and allocated by user
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
@@ -96,9 +96,9 @@ STATIC mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_
 
     // Bytes Per Sample
     if (bufinfo.typecode == 'h' || bufinfo.typecode == 'H') {
-	bytes_per_sample = 2;
+        bytes_per_sample = 2;
     } else if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-      mp_raise_ValueError_varg(translate("%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"), MP_QSTR_buffer);
+        mp_raise_ValueError_varg(translate("%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"), MP_QSTR_buffer);
     }
 
     // Validate sample rate here
@@ -110,13 +110,13 @@ STATIC mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_
 
     // Call local intereface in ports/common-hal/analogbufio
     common_hal_analogbufio_bufferedin_construct(self,
-	pin,
-	((uint8_t *)bufinfo.buf),
-	bufinfo.len,
-	bytes_per_sample,
-	signed_samples,
-	sample_rate
-	);
+        pin,
+        ((uint8_t *)bufinfo.buf),
+        bufinfo.len,
+        bytes_per_sample,
+        signed_samples,
+        sample_rate
+        );
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -134,7 +134,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(analogbufio_bufferedin_deinit_obj, analogbufio_buffere
 
 STATIC void check_for_deinit(analogbufio_bufferedin_obj_t *self) {
     if (common_hal_analogbufio_bufferedin_deinited(self)) {
-	raise_deinited_error();
+        raise_deinited_error();
     }
 }
 //|     def __enter__(self) -> BufferedIn:
