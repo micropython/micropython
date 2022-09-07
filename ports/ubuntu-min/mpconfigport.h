@@ -11,16 +11,24 @@
 #define MICROPY_ENABLE_COMPILER     (1)
 
 #define MICROPY_QSTR_EXTRA_POOL           mp_qstr_frozen_const_pool
-#define MICROPY_MODULE_WEAK_LINKS               (1)
 #define MICROPY_ENABLE_GC                 (1)
 #define MICROPY_HELPER_REPL               (1)
 #define MICROPY_MODULE_FROZEN_MPY         (1)
-#define MICROPY_PY_CMATH                        (1)
-#define MICROPY_PY_UOS                    (1)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
 
-#define MICROPY_ALLOC_PATH_MAX            (256)
-#define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
+#define MICROPY_MODULE_WEAK_LINKS               (1)
+
+// Fine control over Python builtins, classes, modules, etc.
+// #define MICROPY_PY_ASYNC_AWAIT                  (1)
+// #define MICROPY_PY_BUILTINS_SET                 (1)
+// #define MICROPY_PY_ATTRTUPLE                    (1)
+// #define MICROPY_PY_COLLECTIONS                  (1)
+#define MICROPY_PY_MATH                         (1)
+// #define MICROPY_PY_IO                           (1)
+// #define MICROPY_PY_STRUCT                       (1)
+
+#define MICROPY_ALLOC_PATH_MAX            (256 * 16)
+#define MICROPY_ALLOC_PARSE_CHUNK_INIT    (64)
 
 // type definitions for the specific machine
 
