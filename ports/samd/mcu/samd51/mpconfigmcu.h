@@ -8,10 +8,19 @@
 #define MICROPY_EMIT_INLINE_THUMB       (1)
 
 #define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
+
+#ifndef MICROPY_PY_BUILTINS_COMPLEX
 #define MICROPY_PY_BUILTINS_COMPLEX     (0)
+#endif
+
+#ifndef MICROPY_PY_MATH
 #define MICROPY_PY_MATH                 (1)
 #define MP_NEED_LOG2                    (1)
+#endif
+
+#ifndef MICROPY_PY_CMATH
 #define MICROPY_PY_CMATH                (0)
+#endif
 
 #define MICOPY_PY_DHT                   (1)
 #define MICROPY_PY_UOS_URANDOM          (1)
@@ -32,7 +41,9 @@ unsigned long trng_random_u32(void);
 
 #define VFS_BLOCK_SIZE_BYTES            (1536) //
 
+#ifndef MICROPY_HW_UART_TXBUF
 #define MICROPY_HW_UART_TXBUF           (1)
+#endif
 
 #define CPU_FREQ                        (120000000)
 #define DFLL48M_FREQ                    (48000000)
