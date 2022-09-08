@@ -30,19 +30,6 @@
 #include "hal/include/hal_gpio.h"
 #include "supervisor/shared/external_flash/external_flash.h"
 
-void board_init(void) {
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
-void board_deinit(void) {
-}
-
 void external_flash_setup(void) {
     // Do not reset the external flash write-protect and hold pins high
     never_reset_pin_number(PIN_PB22);
@@ -59,3 +46,5 @@ void external_flash_setup(void) {
     gpio_set_pin_direction(PIN_PB23, GPIO_DIRECTION_OUT);
     gpio_set_pin_level(PIN_PB23, true);
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

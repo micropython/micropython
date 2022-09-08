@@ -106,14 +106,9 @@ void board_init(void) {
         50000); // backlight pwm frequency
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
 void reset_board(void) {
     // turn off any left over LED
     board_reset_user_neopixels(&pin_GPIO19, 12);
 }
 
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

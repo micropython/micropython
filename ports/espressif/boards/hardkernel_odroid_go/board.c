@@ -110,16 +110,6 @@ void board_init(void) {
         50000); // backlight pwm frequency
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
-void board_deinit(void) {
-}
-
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     // Pull LED down on reset rather than the default up
     if (pin_number == 2) {
@@ -135,3 +125,5 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     }
     return false;
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
