@@ -100,6 +100,7 @@
 #define MICROPY_PY_UBINASCII                    (1)
 #define MICROPY_PY_UBINASCII_CRC32              (1)
 #define MICROPY_PY_URANDOM                      (1)
+#define MICROPY_PY_URANDOM_EXTRA_FUNCS          (1)
 #endif
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
