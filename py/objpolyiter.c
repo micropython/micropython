@@ -51,3 +51,37 @@ const mp_obj_type_t mp_type_polymorph_iter = {
     .getiter = mp_identity_getiter,
     .iternext = polymorph_it_iternext,
 };
+
+#if MICROPY_ENABLE_FINALISER
+// mp_type_polymorph_iter_with_finaliser is a variant of the universal iterator
+// above which has a finaliser function attached. This function will be run when
+// the gc collects the iter object and can be used to close file handles etc.
+
+// Any instance should have these 3 fields at the beginning
+typedef struct _mp_obj_polymorph_iter_with_finaliser_t {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+    mp_fun_1_t finaliser;
+} mp_obj_polymorph_with_finaliser_iter_t;
+
+STATIC mp_obj_t mp_obj_polymorph_iter_del(mp_obj_t self_in) {
+    mp_obj_polymorph_with_finaliser_iter_t *self = MP_OBJ_TO_PTR(self_in);
+    // Redirect call to object instance's iternext method
+    return self->finaliser(self_in);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_obj_polymorph_iter_del_obj, mp_obj_polymorph_iter_del);
+
+STATIC const mp_rom_map_elem_t mp_obj_polymorph_iter_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_obj_polymorph_iter_del_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(mp_obj_polymorph_iter_locals_dict, mp_obj_polymorph_iter_locals_dict_table);
+
+const mp_obj_type_t mp_type_polymorph_iter_with_finaliser = {
+    { &mp_type_type },
+    .name = MP_QSTR_iterator,
+    .getiter = mp_identity_getiter,
+    .iternext = polymorph_it_iternext,
+    .locals_dict = (mp_obj_dict_t *)&mp_obj_polymorph_iter_locals_dict,
+};
+
+#endif

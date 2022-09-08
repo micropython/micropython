@@ -677,6 +677,9 @@ extern const mp_obj_type_t mp_type_stringio;
 extern const mp_obj_type_t mp_type_bytesio;
 extern const mp_obj_type_t mp_type_reversed;
 extern const mp_obj_type_t mp_type_polymorph_iter;
+#if MICROPY_ENABLE_FINALISER
+extern const mp_obj_type_t mp_type_polymorph_iter_with_finaliser;
+#endif
 
 // Exceptions
 extern const mp_obj_type_t mp_type_BaseException;
