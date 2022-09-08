@@ -10,7 +10,7 @@ function do_build() {
     for variant in `$MICROPY_AUTOBUILD_MAKE BOARD=$board query-variants | grep VARIANTS: | cut -d' ' -f2-`; do
         target=$descr-$variant
         echo "building $target $board"
-        build_dir=/tmp/stm-build-$board
+        build_dir=/tmp/stm-build-$board-$variant
         $MICROPY_AUTOBUILD_MAKE $@ BOARD=$board BOARD_VARIANT=$variant BUILD=$build_dir || exit 1
         mv $build_dir/firmware.dfu $dest_dir/$target$fw_tag.dfu
         mv $build_dir/firmware.hex $dest_dir/$target$fw_tag.hex
