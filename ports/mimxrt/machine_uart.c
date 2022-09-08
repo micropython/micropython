@@ -396,7 +396,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
 
         // Wait at least the number of character times for this chunk.
         t = ticks_us64() + (uint64_t)xfer.dataSize * (13000000 / self->config.baudRate_Bps + 1000);
-        while (self->handle.txDataSize) {
+        while (self->tx_status != kStatus_LPUART_TxIdle) {
             // Wait for the first/next character to be sent.
             if (ticks_us64() > t) { // timed out
                 if (self->handle.txDataSize >= size) {
