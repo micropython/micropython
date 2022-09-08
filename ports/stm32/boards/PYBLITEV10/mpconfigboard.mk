@@ -8,20 +8,20 @@ TEXT1_ADDR = 0x08020000
 # Provide different variants for the downloads page.
 BOARD_VARIANTS += "dp thread dp-thread network"
 
-ifeq ($(BOARD_VARIANT),"dp")
+ifeq ($(BOARD_VARIANT),dp)
 MICROPY_FLOAT_IMPL=double
 endif
 
-ifeq ($(BOARD_VARIANT),"thread")
+ifeq ($(BOARD_VARIANT),thread)
 CFLAGS += -DMICROPY_PY_THREAD=1
 endif
 
-ifeq ($(BOARD_VARIANT),"dp-thread")
+ifeq ($(BOARD_VARIANT),dp-thread)
 MICROPY_FLOAT_IMPL=double
 CFLAGS += -DMICROPY_PY_THREAD=1
 endif
 
-ifeq ($(BOARD_VARIANT),"network")
+ifeq ($(BOARD_VARIANT),network)
 MICROPY_PY_NETWORK_WIZNET5K=5200
 endif
 
