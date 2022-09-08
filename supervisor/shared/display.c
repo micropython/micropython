@@ -34,7 +34,6 @@
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/TileGrid.h"
 #include "supervisor/memory.h"
-#include "supervisor/shared/title_bar.h"
 
 #if CIRCUITPY_RGBMATRIX
 #include "shared-module/displayio/__init__.h"
@@ -44,6 +43,10 @@
 #include "shared-module/displayio/__init__.h"
 #include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
+#endif
+
+#if CIRCUITPY_STATUS_BAR
+#include "supervisor/shared/status_bar.h"
 #endif
 
 #if CIRCUITPY_REPL_LOGO
@@ -63,7 +66,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
 
     #if CIRCUITPY_TERMINALIO
     displayio_tilegrid_t *scroll_area = &supervisor_terminal_scroll_area_text_grid;
-    displayio_tilegrid_t *title_bar = &supervisor_terminal_title_bar_text_grid;
+    displayio_tilegrid_t *status_bar = &supervisor_terminal_status_bar_text_grid;
     bool reset_tiles = false;
     uint16_t width_in_tiles = width_px / scroll_area->tile_width;
     // determine scale based on width
@@ -104,21 +107,21 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         uint8_t *tiles = (uint8_t *)tilegrid_tiles->ptr;
 
         #if CIRCUITPY_REPL_LOGO
-        title_bar->x = supervisor_blinka_sprite.pixel_width + 1;
-        // Align the title bar to the bottom of the logo.
-        title_bar->y = supervisor_blinka_sprite.pixel_height - title_bar->tile_height;
+        status_bar->x = supervisor_blinka_sprite.pixel_width + 1;
+        // Align the status bar to the bottom of the logo.
+        status_bar->y = supervisor_blinka_sprite.pixel_height - status_bar->tile_height;
         #else
-        title_bar->x = 0;
-        title_bar->y = 0;
+        status_bar->x = 0;
+        status_bar->y = 0;
         #endif
-        title_bar->top_left_y = 0;
-        title_bar->width_in_tiles = width_in_tiles;
-        title_bar->height_in_tiles = 1;
+        status_bar->top_left_y = 0;
+        status_bar->width_in_tiles = width_in_tiles;
+        status_bar->height_in_tiles = 1;
         assert(width_in_tiles > 0);
-        title_bar->pixel_width = width_in_tiles * title_bar->tile_width;
-        title_bar->pixel_height = title_bar->tile_height;
-        title_bar->tiles = tiles;
-        title_bar->full_change = true;
+        status_bar->pixel_width = width_in_tiles * status_bar->tile_width;
+        status_bar->pixel_height = status_bar->tile_height;
+        status_bar->tiles = tiles;
+        status_bar->full_change = true;
 
         scroll_area->x = 0;
         scroll_area->top_left_y = 0;
@@ -131,7 +134,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         #if CIRCUITPY_REPL_LOGO
         scroll_area->y = blinka_bitmap.height;
         #else
-        scroll_area->y = title_bar->tile_height;
+        scroll_area->y = status_bar->tile_height;
         #endif
         int16_t extra_height = (scroll_area->pixel_height + scroll_area->y) - (height_px / scale);
         // Subtract extra height so that the bottom line fully shows. The top line will be under the
@@ -140,9 +143,9 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         scroll_area->tiles = tiles + width_in_tiles;
         scroll_area->full_change = true;
 
-        common_hal_terminalio_terminal_construct(&supervisor_terminal, scroll_area, &supervisor_terminal_font, title_bar);
-        // Update the title bar since we just cleared the terminal.
-        supervisor_title_bar_update();
+        common_hal_terminalio_terminal_construct(&supervisor_terminal, scroll_area, &supervisor_terminal_font, status_bar);
+
+        // Do not update status bar until after boot.py has run, in case it is disabled.
     }
     #endif
 
@@ -155,9 +158,9 @@ void supervisor_stop_terminal(void) {
         free_memory(tilegrid_tiles);
         tilegrid_tiles = NULL;
         supervisor_terminal_scroll_area_text_grid.tiles = NULL;
-        supervisor_terminal_title_bar_text_grid.tiles = NULL;
+        supervisor_terminal_status_bar_text_grid.tiles = NULL;
         supervisor_terminal.scroll_area = NULL;
-        supervisor_terminal.title_bar = NULL;
+        supervisor_terminal.status_bar = NULL;
     }
     #endif
 }
@@ -165,13 +168,13 @@ void supervisor_stop_terminal(void) {
 void supervisor_display_move_memory(void) {
     #if CIRCUITPY_TERMINALIO
     displayio_tilegrid_t *scroll_area = &supervisor_terminal_scroll_area_text_grid;
-    displayio_tilegrid_t *title_bar = &supervisor_terminal_title_bar_text_grid;
+    displayio_tilegrid_t *status_bar = &supervisor_terminal_status_bar_text_grid;
     if (tilegrid_tiles != NULL) {
-        title_bar->tiles = (uint8_t *)tilegrid_tiles->ptr;
+        status_bar->tiles = (uint8_t *)tilegrid_tiles->ptr;
         scroll_area->tiles = (uint8_t *)tilegrid_tiles->ptr + scroll_area->width_in_tiles;
     } else {
         scroll_area->tiles = NULL;
-        title_bar->tiles = NULL;
+        status_bar->tiles = NULL;
     }
     #endif
 
@@ -195,7 +198,7 @@ void supervisor_display_move_memory(void) {
 
 #if CIRCUITPY_TERMINALIO
 #if CIRCUITPY_REPL_LOGO
-mp_obj_t members[] = { &supervisor_terminal_scroll_area_text_grid, &supervisor_blinka_sprite, &supervisor_terminal_title_bar_text_grid, };
+mp_obj_t members[] = { &supervisor_terminal_scroll_area_text_grid, &supervisor_blinka_sprite, &supervisor_terminal_status_bar_text_grid, };
 mp_obj_list_t splash_children = {
     .base = {.type = &mp_type_list },
     .alloc = 3,
@@ -203,7 +206,7 @@ mp_obj_list_t splash_children = {
     .items = members,
 };
 #else
-mp_obj_t members[] = { &supervisor_terminal_scroll_area_text_grid, &supervisor_terminal_title_bar_text_grid,};
+mp_obj_t members[] = { &supervisor_terminal_scroll_area_text_grid, &supervisor_terminal_status_bar_text_grid,};
 mp_obj_list_t splash_children = {
     .base = {.type = &mp_type_list },
     .alloc = 2,

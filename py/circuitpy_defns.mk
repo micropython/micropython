@@ -101,6 +101,7 @@ endif
 
 ###
 # Select which builtin modules to compile and include.
+# Keep alphabetical.
 
 ifeq ($(CIRCUITPY_AESIO),1)
 SRC_PATTERNS += aesio/%
@@ -175,11 +176,8 @@ endif
 ifeq ($(CIRCUITPY_DOTENV),1)
 SRC_PATTERNS += dotenv/%
 endif
-ifeq ($(CIRCUITPY_PARALLELDISPLAY),1)
-SRC_PATTERNS += paralleldisplay/%
-endif
-ifeq ($(CIRCUITPY_VECTORIO),1)
-SRC_PATTERNS += vectorio/%
+ifeq ($(CIRCUITPY__EVE),1)
+SRC_PATTERNS += _eve/%
 endif
 ifeq ($(CIRCUITPY_FLOPPYIO),1)
 SRC_PATTERNS += floppyio/%
@@ -187,17 +185,12 @@ endif
 ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
 SRC_PATTERNS += framebufferio/%
 endif
-ifeq ($(CIRCUITPY__EVE),1)
-SRC_PATTERNS += _eve/%
-endif
 ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
-
 ifeq ($(CIRCUITPY_FUTURE),1)
 SRC_PATTERNS += __future__/%
 endif
-
 ifeq ($(CIRCUITPY_GETPASS),1)
 SRC_PATTERNS += getpass/%
 endif
@@ -237,6 +230,9 @@ endif
 ifeq ($(CIRCUITPY_MDNS),1)
 SRC_PATTERNS += mdns/%
 endif
+ifeq ($(CIRCUITPY_MSGPACK),1)
+SRC_PATTERNS += msgpack/%
+endif
 ifeq ($(CIRCUITPY_NEOPIXEL_WRITE),1)
 SRC_PATTERNS += neopixel_write/%
 endif
@@ -251,6 +247,12 @@ SRC_PATTERNS += os/%
 endif
 ifeq ($(CIRCUITPY_DUALBANK),1)
 SRC_PATTERNS += dualbank/%
+endif
+ifeq ($(CIRCUITPY_PARALLELDISPLAY),1)
+SRC_PATTERNS += paralleldisplay/%
+endif
+ifeq ($(CIRCUITPY_PEW),1)
+SRC_PATTERNS += _pew/%
 endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += adafruit_pixelbuf/%
@@ -351,8 +353,8 @@ endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
-ifeq ($(CIRCUITPY_ZLIB),1)
-SRC_PATTERNS += zlib/%
+ifeq ($(CIRCUITPY_VECTORIO),1)
+SRC_PATTERNS += vectorio/%
 endif
 ifeq ($(CIRCUITPY_VIDEOCORE),1)
 SRC_PATTERNS += videocore/%
@@ -363,11 +365,8 @@ endif
 ifeq ($(CIRCUITPY_WIFI),1)
 SRC_PATTERNS += wifi/%
 endif
-ifeq ($(CIRCUITPY_PEW),1)
-SRC_PATTERNS += _pew/%
-endif
-ifeq ($(CIRCUITPY_MSGPACK),1)
-SRC_PATTERNS += msgpack/%
+ifeq ($(CIRCUITPY_ZLIB),1)
+SRC_PATTERNS += zlib/%
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS in SRC_COMMON_HAL
@@ -511,6 +510,7 @@ $(filter $(SRC_PATTERNS), \
 	qrio/PixelPolicy.c \
 	qrio/QRInfo.c \
 	supervisor/RunReason.c \
+	supervisor/StatusBar.c \
 	wifi/AuthMode.c \
 	wifi/Packet.c \
 )
@@ -611,6 +611,8 @@ SRC_SHARED_MODULE_ALL = \
 	socket/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
+	supervisor/__init__.c \
+	supervisor/StatusBar.c \
 	synthio/MidiTrack.c \
 	synthio/__init__.c \
 	terminalio/Terminal.c \

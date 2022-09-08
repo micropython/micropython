@@ -15,7 +15,6 @@ SRC_SUPERVISOR = \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \
 	supervisor/shared/tick.c \
-	supervisor/shared/title_bar.c \
 	supervisor/shared/traceback.c \
 	supervisor/shared/translate/translate.c \
 	supervisor/shared/workflow.c \
@@ -96,6 +95,12 @@ endif
 
 ifneq ($(wildcard supervisor/serial.c),)
   SRC_SUPERVISOR += supervisor/serial.c
+endif
+
+ifeq ($(CIRCUITPY_STATUS_BAR),1)
+  SRC_SUPERVISOR += \
+    supervisor/shared/status_bar.c \
+
 endif
 
 ifeq ($(CIRCUITPY_USB),1)

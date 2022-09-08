@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,14 @@
  * THE SOFTWARE.
  */
 
-#pragma once
-
 #include <stdbool.h>
+#include "py/obj.h"
+#include "shared-bindings/supervisor/StatusBar.h"
+#include "shared-bindings/supervisor/__init__.h"
 
-void supervisor_title_bar_start(void);
-void supervisor_title_bar_suspend(void);
-void supervisor_title_bar_resume(void);
-
-// Update the title bar immediately. Useful from main.c where we know state has changed and the code
-// will only be run once.
-void supervisor_title_bar_update(void);
-
-// Use this if requesting from the background, as code is executing or if the status may not have
-// changed.
-void supervisor_title_bar_request_update(bool force_dirty);
-
-// Provided by main.c
-void supervisor_execution_status(void);
+// The singleton supervisor.StatusBar object, bound to supervisor.status_bar
+supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj = {
+    .base = {
+        .type = &supervisor_status_bar_type,
+    },
+};

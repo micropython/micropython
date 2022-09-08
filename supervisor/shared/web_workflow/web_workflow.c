@@ -102,10 +102,12 @@ typedef struct {
 
 static wifi_radio_error_t _wifi_status = WIFI_RADIO_ERROR_NONE;
 
-// Store last status state to compute dirty.
+#if CIRCUITPY_STATUS_BAR
+// Store various last states to compute if status bar needs an update.
 static bool _last_enabled = false;
 static uint32_t _last_ip = 0;
 static wifi_radio_error_t _last_wifi_status = WIFI_RADIO_ERROR_NONE;
+#endif
 
 static mdns_server_obj_t mdns;
 static uint32_t web_api_port = 80;
@@ -193,12 +195,15 @@ STATIC void _update_encoded_ip(void) {
     }
 }
 
+#if CIRCUITPY_STATUS_BAR
 bool supervisor_web_workflow_status_dirty(void) {
     return common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj) != _last_enabled ||
            _encoded_ip != _last_ip ||
            _last_wifi_status != _wifi_status;
 }
+#endif
 
+#if CIRCUITPY_STATUS_BAR
 void supervisor_web_workflow_status(void) {
     _last_enabled = common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj);
     if (_last_enabled) {
@@ -231,6 +236,7 @@ void supervisor_web_workflow_status(void) {
         serial_write_compressed(translate("off"));
     }
 }
+#endif
 
 void supervisor_start_web_workflow(void) {
     #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI

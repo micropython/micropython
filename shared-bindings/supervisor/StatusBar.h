@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2022 by Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_STATUS_BAR_STATUS_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_STATUS_BAR_STATUS_H
 
-// #include "py/mpconfig.h"
+#include <stdbool.h>
 #include "py/obj.h"
-
-#include "common-hal/supervisor/Runtime.h"
 #include "shared-module/supervisor/StatusBar.h"
 
-extern const super_runtime_obj_t common_hal_supervisor_runtime_obj;
-extern supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj;
-extern mp_obj_t supervisor_ticks_ms(void);
+extern const mp_obj_type_t supervisor_status_bar_type;
 
+bool shared_module_supervisor_status_bar_get_console(supervisor_status_bar_obj_t *self);
+void shared_module_supervisor_status_bar_set_console(supervisor_status_bar_obj_t *self, bool enabled);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
+bool shared_module_supervisor_status_bar_get_display(supervisor_status_bar_obj_t *self);
+void shared_module_supervisor_status_bar_set_display(supervisor_status_bar_obj_t *self, bool enabled);
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR_STATUS_BAR_H
