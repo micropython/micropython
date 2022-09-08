@@ -99,13 +99,8 @@ void board_init(void) {
         50000); // backlight pwm frequency
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
 void board_deinit(void) {
     common_hal_displayio_release_displays();
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

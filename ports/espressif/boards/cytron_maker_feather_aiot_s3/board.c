@@ -35,15 +35,10 @@ void board_init(void) {
     reset_board();
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
 void reset_board(void) {
     // Turn on VP by default.
     gpio_set_direction(38, GPIO_MODE_DEF_OUTPUT);
     gpio_set_level(38, true);
 }
 
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

@@ -35,19 +35,14 @@ void board_init(void) {
     reset_board();
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
 void reset_board(void) {
     // Turn on NeoPixel and I2C power by default.
     gpio_set_direction(2, GPIO_MODE_DEF_OUTPUT);
     gpio_set_level(2, true);
 }
 
-void board_deinit(void) {
-}
-
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     return false;
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

@@ -88,13 +88,8 @@ void board_init(void) {
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
 void reset_board(void) {
     initialize_discharge_pin();
 }
 
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

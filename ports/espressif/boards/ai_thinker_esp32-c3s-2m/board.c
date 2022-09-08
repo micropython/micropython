@@ -43,10 +43,6 @@ void board_init(void) {
     USB_SERIAL_JTAG.conf0.dp_pullup = 0;
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     // Pull LEDs down on reset rather than the default up
     if (pin_number == 3 || pin_number == 4 || pin_number == 5 || pin_number == 18 || pin_number == 19) {
@@ -63,8 +59,4 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     return false;
 }
 
-void reset_board(void) {
-}
-
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
