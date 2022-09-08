@@ -33,6 +33,10 @@
 
 #if MICROPY_VFS_POSIX
 
+#if !MICROPY_ENABLE_FINALISER
+#error "MICROPY_VFS_POSIX requires MICROPY_ENABLE_FINALISER"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -162,6 +166,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(vfs_posix_getcwd_obj, vfs_posix_getcwd);
 typedef struct _vfs_posix_ilistdir_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
+    mp_fun_1_t finaliser;
     bool is_str;
     DIR *dir;
 } vfs_posix_ilistdir_it_t;
@@ -226,10 +231,22 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
     }
 }
 
+STATIC mp_obj_t vfs_posix_ilistdir_it_del(mp_obj_t self_in) {
+    vfs_posix_ilistdir_it_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->dir != NULL) {
+        MP_THREAD_GIL_EXIT();
+        closedir(self->dir);
+        MP_THREAD_GIL_ENTER();
+    }
+    return mp_const_none;
+}
+
 STATIC mp_obj_t vfs_posix_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
-    vfs_posix_ilistdir_it_t *iter = mp_obj_malloc(vfs_posix_ilistdir_it_t, &mp_type_polymorph_iter);
+    vfs_posix_ilistdir_it_t *iter = m_new_obj_with_finaliser(vfs_posix_ilistdir_it_t);
+    iter->base.type = &mp_type_polymorph_iter_with_finaliser;
     iter->iternext = vfs_posix_ilistdir_it_iternext;
+    iter->finaliser = vfs_posix_ilistdir_it_del;
     iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;
     const char *path = vfs_posix_get_path_str(self, path_in);
     if (path[0] == '\0') {
