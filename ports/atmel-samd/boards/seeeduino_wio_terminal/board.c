@@ -133,13 +133,6 @@ void board_init(void) {
     reset_pin_number(pin_PA18.number);
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
 void board_deinit(void) {
     common_hal_displayio_release_displays();
     common_hal_digitalio_digitalinout_deinit(&CTR_5V);
@@ -150,3 +143,5 @@ void board_deinit(void) {
     // Pin state is kept during BACKUP sleep.
     gpio_set_pin_direction(pin_PA18.number, GPIO_DIRECTION_OUT);
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

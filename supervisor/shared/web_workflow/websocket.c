@@ -29,8 +29,11 @@
 #include "py/ringbuf.h"
 #include "py/runtime.h"
 #include "shared/runtime/interrupt_char.h"
-#include "supervisor/shared/title_bar.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
+
+#if CIRCUITPY_STATUS_BAR
+#include "supervisor/shared/status_bar.h"
+#endif
 
 // TODO: Remove ESP specific stuff. For now, it is useful as we refine the server.
 #include "esp_log.h"
@@ -73,8 +76,10 @@ void websocket_handoff(socketpool_socket_obj_t *socket) {
     socket->connected = false;
     socket->num = -1;
 
+    #if CIRCUITPY_STATUS_BAR
     // Send the title bar for the new client.
-    supervisor_title_bar_request_update(true);
+    supervisor_status_bar_request_update(true);
+    #endif
 }
 
 bool websocket_connected(void) {

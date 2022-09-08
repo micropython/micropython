@@ -25,18 +25,5 @@
  */
 
 #include "supervisor/board.h"
-#include "supervisor/shared/board.h"
 
-void board_init(void) {
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-    board_reset_user_neopixels(&pin_PA05, 10);
-}
-
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

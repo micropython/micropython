@@ -57,7 +57,6 @@
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/shared/title_bar.h"
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/workflow.h"
@@ -104,6 +103,10 @@
 
 #if CIRCUITPY_SOCKETPOOL
 #include "shared-bindings/socketpool/__init__.h"
+#endif
+
+#if CIRCUITPY_STATUS_BAR
+#include "supervisor/shared/status_bar.h"
 #endif
 
 #if CIRCUITPY_USB_HID
@@ -208,6 +211,7 @@ STATIC const char *_current_executing_filename = NULL;
 
 STATIC pyexec_result_t _exec_result = {0, MP_OBJ_NULL, 0};
 
+#if CIRCUITPY_STATUS_BAR
 void supervisor_execution_status(void) {
     mp_obj_exception_t *exception = MP_OBJ_TO_PTR(_exec_result.exception);
     if (_current_executing_filename != NULL) {
@@ -220,6 +224,7 @@ void supervisor_execution_status(void) {
         serial_write_compressed(translate("Done"));
     }
 }
+#endif
 
 #define STRING_LIST(...) {__VA_ARGS__, ""}
 
@@ -245,13 +250,23 @@ STATIC bool maybe_run_list(const char *const *filenames) {
     }
     mp_hal_stdout_tx_str(_current_executing_filename);
     serial_write_compressed(translate(" output:\n"));
-    supervisor_title_bar_update();
+
+    #if CIRCUITPY_STATUS_BAR
+    supervisor_status_bar_update();
+    #endif
+
     pyexec_file(_current_executing_filename, &_exec_result);
+
     #if CIRCUITPY_ATEXIT
     shared_module_atexit_execute(&_exec_result);
     #endif
+
     _current_executing_filename = NULL;
-    supervisor_title_bar_update();
+
+    #if CIRCUITPY_STATUS_BAR
+    supervisor_status_bar_update();
+    #endif
+
     return true;
 }
 
@@ -443,6 +458,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         // Finished executing python code. Cleanup includes filesystem flush and a board reset.
         cleanup_after_vm(heap, _exec_result.exception);
+        _exec_result.exception = NULL;
 
         // If a new next code file was set, that is a reason to keep it (obviously). Stuff this into
         // the options because it can be treated like any other reason-for-stickiness bit. The
@@ -749,8 +765,10 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     if (ok_to_run) {
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-        // Turn off title bar updates when writing out to boot_out.txt.
-        supervisor_title_bar_suspend();
+        #if CIRCUITPY_STATUS_BAR
+        // Turn off status bar updates when writing out to boot_out.txt.
+        supervisor_status_bar_suspend();
+        #endif
         vstr_t boot_text;
         vstr_init(&boot_text, 512);
         boot_output = &boot_text;
@@ -778,7 +796,9 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         FATFS *fs = &vfs->fatfs;
 
         boot_output = NULL;
-        supervisor_title_bar_resume();
+        #if CIRCUITPY_STATUS_BAR
+        supervisor_status_bar_resume();
+        #endif
         bool write_boot_output = true;
         FIL boot_output_file;
         if (f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
@@ -822,6 +842,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     port_post_boot_py(true);
 
     cleanup_after_vm(heap, _exec_result.exception);
+    _exec_result.exception = NULL;
 
     port_post_boot_py(false);
 
@@ -854,15 +875,23 @@ STATIC int run_repl(bool first_run) {
     status_led_deinit();
     #endif
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-        supervisor_title_bar_suspend();
+        #if CIRCUITPY_STATUS_BAR
+        supervisor_status_bar_suspend();
+        #endif
         exit_code = pyexec_raw_repl();
-        supervisor_title_bar_resume();
+        #if CIRCUITPY_STATUS_BAR
+        supervisor_status_bar_resume();
+        #endif
     } else {
         _current_executing_filename = "REPL";
-        supervisor_title_bar_update();
+        #if CIRCUITPY_STATUS_BAR
+        supervisor_status_bar_update();
+        #endif
         exit_code = pyexec_friendly_repl();
         _current_executing_filename = NULL;
-        supervisor_title_bar_update();
+        #if CIRCUITPY_STATUS_BAR
+        supervisor_status_bar_update();
+        #endif
     }
     #if CIRCUITPY_ATEXIT
     pyexec_result_t result;
@@ -909,6 +938,10 @@ int __attribute__((used)) main(void) {
     }
 
     stack_init();
+
+    #if CIRCUITPY_STATUS_BAR
+    supervisor_status_bar_init();
+    #endif
 
     #if CIRCUITPY_BLEIO
     // Early init so that a reset press can cause BLE public advertising.
@@ -959,7 +992,10 @@ int __attribute__((used)) main(void) {
     run_boot_py(safe_mode);
 
     supervisor_workflow_start();
-    supervisor_title_bar_start();
+
+    #if CIRCUITPY_STATUS_BAR
+    supervisor_status_bar_request_update(true);
+    #endif
 
     // Boot script is finished, so now go into REPL or run code.py.
     int exit_code = PYEXEC_FORCED_EXIT;

@@ -41,6 +41,11 @@
 #include "supervisor/shared/bluetooth/serial.h"
 #endif
 
+#if CIRCUITPY_STATUS_BAR
+#include "shared-bindings/supervisor/__init__.h"
+#include "shared-bindings/supervisor/StatusBar.h"
+#endif
+
 #if CIRCUITPY_USB
 #include "tusb.h"
 #endif
@@ -276,9 +281,20 @@ void serial_write_substring(const char *text, uint32_t length) {
     if (length == 0) {
         return;
     }
+
     #if CIRCUITPY_TERMINALIO
     int errcode;
+    // We might be writing
+    // If the status bar is disabled for the display, common_hal_terminalio_terminal_write() will not write it.
     common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t *)text, length, &errcode);
+    #endif
+
+    #if CIRCUITPY_STATUS_BAR
+    // If the status bar is disabled for the console, skip writing out the OSC sequence.
+    if (supervisor_status_bar_get_update_in_progress(&shared_module_supervisor_status_bar_obj) &&
+        !shared_module_supervisor_status_bar_get_console(&shared_module_supervisor_status_bar_obj)) {
+        return;
+    }
     #endif
 
     #if CIRCUITPY_USB_VENDOR

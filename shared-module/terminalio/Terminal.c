@@ -30,20 +30,31 @@
 #include "shared-bindings/displayio/TileGrid.h"
 #include "shared-bindings/terminalio/Terminal.h"
 
+#if CIRCUITPY_STATUS_BAR
+#include "shared-bindings/supervisor/__init__.h"
+#include "shared-bindings/supervisor/StatusBar.h"
+#endif
+
+void terminalio_terminal_clear_status_bar(terminalio_terminal_obj_t *self) {
+    if (self->status_bar) {
+        common_hal_displayio_tilegrid_set_all_tiles(self->status_bar, 0);
+    }
+}
+
 void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self,
     displayio_tilegrid_t *scroll_area, const fontio_builtinfont_t *font,
-    displayio_tilegrid_t *title_bar) {
+    displayio_tilegrid_t *status_bar) {
     self->cursor_x = 0;
     self->cursor_y = 0;
     self->font = font;
     self->scroll_area = scroll_area;
-    self->title_bar = title_bar;
-    self->title_x = 0;
-    self->title_y = 0;
+    self->status_bar = status_bar;
+    self->status_x = 0;
+    self->status_y = 0;
     self->first_row = 0;
     common_hal_displayio_tilegrid_set_all_tiles(self->scroll_area, 0);
-    if (self->title_bar) {
-        common_hal_displayio_tilegrid_set_all_tiles(self->title_bar, 0);
+    if (self->status_bar) {
+        common_hal_displayio_tilegrid_set_all_tiles(self->status_bar, 0);
     }
 
     common_hal_displayio_tilegrid_set_top_left(self->scroll_area, 0, 1);
@@ -54,6 +65,14 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
     if (self->scroll_area == NULL) {
         return len;
     }
+
+    #if CIRCUITPY_STATUS_BAR
+    // Skip the status bar OSC sequence if it's disabled for the display.
+    const bool status_bar_write_ok =
+        shared_module_supervisor_status_bar_get_display(&shared_module_supervisor_status_bar_obj) ||
+        !supervisor_status_bar_get_update_in_progress(&shared_module_supervisor_status_bar_obj);
+    #endif
+
     const byte *i = data;
     uint16_t start_y = self->cursor_y;
     while (i < data + len) {
@@ -62,21 +81,27 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
         if (self->in_osc_command) {
             if (c == 0x1b && i[0] == '\\') {
                 self->in_osc_command = false;
-                self->title_x = 0;
-                self->title_y = 0;
+                self->status_x = 0;
+                self->status_y = 0;
                 i += 1;
-            } else if (self->osc_command == 0 && self->title_bar != NULL && self->title_y < self->title_bar->height_in_tiles) {
+            } else if (
+                #if CIRCUITPY_STATUS_BAR
+                status_bar_write_ok &&
+                #endif
+                self->osc_command == 0 &&
+                self->status_bar != NULL &&
+                self->status_y < self->status_bar->height_in_tiles) {
                 uint8_t tile_index = fontio_builtinfont_get_glyph_index(self->font, c);
                 if (tile_index != 0xff) {
                     // Clear the tile grid before we start putting new info.
-                    if (self->title_x == 0 && self->title_y == 0) {
-                        common_hal_displayio_tilegrid_set_all_tiles(self->title_bar, 0);
+                    if (self->status_x == 0 && self->status_y == 0) {
+                        common_hal_displayio_tilegrid_set_all_tiles(self->status_bar, 0);
                     }
-                    common_hal_displayio_tilegrid_set_tile(self->title_bar, self->title_x, self->title_y, tile_index);
-                    self->title_x++;
-                    if (self->title_x >= self->title_bar->width_in_tiles) {
-                        self->title_y++;
-                        self->title_x %= self->title_bar->width_in_tiles;
+                    common_hal_displayio_tilegrid_set_tile(self->status_bar, self->status_x, self->status_y, tile_index);
+                    self->status_x++;
+                    if (self->status_x >= self->status_bar->width_in_tiles) {
+                        self->status_y++;
+                        self->status_x %= self->status_bar->width_in_tiles;
                     }
                 }
             }
@@ -98,7 +123,7 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                     self->cursor_x--;
                 }
             } else if (c == 0x1b) {
-                // Handle commands of the form \x1b.####D where . is ignored.
+                // Handle commands of the form [ESC].<digits><command-char> where . is not yet known.
                 uint16_t n = 0;
                 uint8_t j = 1;
                 for (; j < 6; j++) {

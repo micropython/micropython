@@ -40,12 +40,14 @@ typedef struct  {
     uint16_t cursor_x;
     uint16_t cursor_y;
     displayio_tilegrid_t *scroll_area;
-    displayio_tilegrid_t *title_bar;
-    uint16_t title_x;
-    uint16_t title_y;
+    displayio_tilegrid_t *status_bar;
+    uint16_t status_x;
+    uint16_t status_y;
     uint16_t first_row;
     uint16_t osc_command;
     bool in_osc_command;
 } terminalio_terminal_obj_t;
+
+extern void terminalio_terminal_clear_status_bar(terminalio_terminal_obj_t *self);
 
 #endif /* SHARED_MODULE_TERMINALIO_TERMINAL_H */

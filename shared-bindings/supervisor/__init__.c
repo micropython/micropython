@@ -43,6 +43,7 @@
 #include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/time/__init__.h"
 #include "shared-bindings/supervisor/Runtime.h"
+#include "shared-bindings/supervisor/StatusBar.h"
 
 //| """Supervisor settings"""
 //|
@@ -51,6 +52,14 @@
 //| """Runtime information, such as ``runtime.serial_connected``
 //| (USB serial connection status).
 //| This object is the sole instance of `supervisor.Runtime`."""
+//|
+
+//| status_bar: StatusBar
+//| """The status bar, shown on an attached display, and also sent to
+//| an attached terminal via OSC escape codes over the REPL serial connection.
+//| The status bar reports the current IP or BLE connection, what file is running,
+//| the last exception name and location, and firmware version information.
+//| This object is the sole instance of `supervisor.StatusBar`."""
 //|
 
 //| def set_rgb_status_brightness(brightness: int) -> None:
@@ -301,6 +310,7 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_previous_traceback),  MP_ROM_PTR(&supervisor_get_previous_traceback_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_ble_workflow),  MP_ROM_PTR(&supervisor_disable_ble_workflow_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_terminal),  MP_ROM_PTR(&supervisor_reset_terminal_obj) },
+    { MP_ROM_QSTR(MP_QSTR_status_bar),  MP_ROM_PTR(&shared_module_supervisor_status_bar_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals_table);

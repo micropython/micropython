@@ -27,9 +27,15 @@
 #include <stdbool.h>
 #include "genhdr/mpversion.h"
 #include "py/mpconfig.h"
+#include "shared-bindings/supervisor/__init__.h"
+#include "shared-bindings/supervisor/StatusBar.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/serial.h"
-#include "supervisor/shared/title_bar.h"
+#include "supervisor/shared/status_bar.h"
+
+#if CIRCUITPY_TERMINALIO
+#include "shared-module/terminalio/Terminal.h"
+#endif
 
 #if CIRCUITPY_WEB_WORKFLOW
 #include "supervisor/shared/web_workflow/web_workflow.h"
@@ -39,46 +45,56 @@
 #include "supervisor/shared/bluetooth/bluetooth.h"
 #endif
 
-static background_callback_t title_bar_background_cb;
+static background_callback_t status_bar_background_cb;
 
 static bool _forced_dirty = false;
 static bool _suspended = false;
 
+// Clear if possible, but give up if we can't do it now.
+void supervisor_status_bar_clear(void) {
+    if (!_suspended) {
+        supervisor_status_bar_set_update_in_progress(&shared_module_supervisor_status_bar_obj, true);
+        serial_write("\x1b" "]0;" "\x1b" "\\");
+        supervisor_status_bar_set_update_in_progress(&shared_module_supervisor_status_bar_obj, false);
+    }
+}
 
-void supervisor_title_bar_update(void) {
-    #if !CIRCUITPY_STATUS_BAR
-    return;
-    #endif
+void supervisor_status_bar_update(void) {
     if (_suspended) {
-        supervisor_title_bar_request_update(true);
+        supervisor_status_bar_request_update(true);
         return;
     }
     _forced_dirty = false;
+
+    supervisor_status_bar_set_update_in_progress(&shared_module_supervisor_status_bar_obj, true);
+
     // Neighboring "" "" are concatenated by the compiler. Without this separation, the hex code
     // doesn't get terminated after two following characters and the value is invalid.
     // This is the OSC command to set the title and the icon text. It can be up to 255 characters
     // but some may be cut off.
     serial_write("\x1b" "]0;");
     serial_write("🐍");
+
     #if CIRCUITPY_WEB_WORKFLOW
     supervisor_web_workflow_status();
     serial_write(" | ");
     #endif
+
     #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
     supervisor_bluetooth_status();
     serial_write(" | ");
     #endif
+
     supervisor_execution_status();
     serial_write(" | ");
     serial_write(MICROPY_GIT_TAG);
     // Send string terminator
     serial_write("\x1b" "\\");
+
+    supervisor_status_bar_set_update_in_progress(&shared_module_supervisor_status_bar_obj, false);
 }
 
-static void title_bar_background(void *data) {
-    #if !CIRCUITPY_STATUS_BAR
-    return;
-    #endif
+static void status_bar_background(void *data) {
     if (_suspended) {
         return;
     }
@@ -92,42 +108,37 @@ static void title_bar_background(void *data) {
     dirty = dirty || supervisor_bluetooth_status_dirty();
     #endif
 
-    if (!dirty) {
-        return;
+    if (dirty) {
+        supervisor_status_bar_update();
     }
-    supervisor_title_bar_update();
 }
 
-void supervisor_title_bar_start(void) {
-    #if !CIRCUITPY_STATUS_BAR
-    return;
-    #endif
-    title_bar_background_cb.fun = title_bar_background;
-    title_bar_background_cb.data = NULL;
-    supervisor_title_bar_request_update(true);
+void supervisor_status_bar_start(void) {
+    supervisor_status_bar_request_update(true);
 }
 
-void supervisor_title_bar_request_update(bool force_dirty) {
-    #if !CIRCUITPY_STATUS_BAR
-    return;
-    #endif
+void supervisor_status_bar_request_update(bool force_dirty) {
     if (force_dirty) {
         _forced_dirty = true;
     }
-    background_callback_add_core(&title_bar_background_cb);
+    background_callback_add_core(&status_bar_background_cb);
 }
 
-void supervisor_title_bar_suspend(void) {
-    #if !CIRCUITPY_STATUS_BAR
-    return;
-    #endif
+void supervisor_status_bar_suspend(void) {
     _suspended = true;
 }
 
-void supervisor_title_bar_resume(void) {
-    #if !CIRCUITPY_STATUS_BAR
-    return;
-    #endif
+void supervisor_status_bar_resume(void) {
     _suspended = false;
-    supervisor_title_bar_request_update(false);
+    supervisor_status_bar_request_update(false);
+}
+
+void supervisor_status_bar_init(void) {
+    status_bar_background_cb.fun = status_bar_background;
+    status_bar_background_cb.data = NULL;
+
+    shared_module_supervisor_status_bar_obj.console = true;
+    shared_module_supervisor_status_bar_obj.display = true;
+    shared_module_supervisor_status_bar_obj.update_in_progress = false;
+    shared_module_supervisor_status_bar_obj.written = false;
 }
