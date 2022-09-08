@@ -1,4 +1,4 @@
-options.defaults(ds18x20=False)
+options.defaults(ds18x20=True)
 
 module("onewire.py", opt=3)
 
