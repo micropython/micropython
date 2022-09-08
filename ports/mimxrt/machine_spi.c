@@ -131,7 +131,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
         { MP_QSTR_gap_ns,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_drive,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_DRIVE} },
-        { MP_QSTR_cs,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_cs,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
     // Parse the arguments.
@@ -174,7 +174,9 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     self->master_config->lastSckToPcsDelayInNanoSec = self->master_config->betweenTransferDelayInNanoSec;
     self->master_config->pcsToSckDelayInNanoSec = self->master_config->betweenTransferDelayInNanoSec;
     int8_t cs = args[ARG_cs].u_int;
-    // The default value 0 is set already, so only cs=1 has to be set.
+    // In the SPI master_config for automatic CS the value cs=0 is set already,
+    // so only cs=1 has to be addressed here. The case cs == -1 for manual CS is handled
+    // in the function spi_set_iomux() and the value in the master_config can stay at 0.
     if (cs == 1) {
         self->master_config->whichPcs = cs;
     }
