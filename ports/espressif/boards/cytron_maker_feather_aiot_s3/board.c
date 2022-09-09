@@ -37,8 +37,8 @@ void board_init(void) {
 
 void reset_board(void) {
     // Turn on VP by default.
-    gpio_set_direction(38, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(38, true);
+    gpio_set_direction(11, GPIO_MODE_DEF_OUTPUT);
+    gpio_set_level(11, true);
 }
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
