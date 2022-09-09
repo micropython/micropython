@@ -29,7 +29,8 @@ import sys
 import os
 import subprocess
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../mpy-cross"))
+# Always use the mpy-cross from this repo.
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../mpy-cross"))
 import mpy_cross
 
 import manifestfile
