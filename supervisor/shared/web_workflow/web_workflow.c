@@ -1080,7 +1080,19 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     destination[destinationlen - 1] = '\0';
                 }
 
-                FRESULT result = f_rename(fs, path, destination);
+                // Check to see if we're moving a directory into itself.
+                FILINFO file;
+                FRESULT result = f_stat(fs, path, &file);
+                if (result == FR_OK) {
+                    if ((file.fattrib & AM_DIR) != 0 &&
+                        strlen(destination) > strlen(path) &&
+                        destination[strlen(path)] == '/' &&
+                        strncmp(path, destination, strlen(path)) == 0) {
+                        result = FR_NO_PATH;
+                    } else {
+                        result = f_rename(fs, path, destination);
+                    }
+                }
                 #if CIRCUITPY_USB_MSC
                 usb_msc_unlock();
                 #endif
