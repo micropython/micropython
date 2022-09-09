@@ -22,8 +22,8 @@ def simple_request(request):
 @server.route("/get_simple", methods=["GET"])
 def simple_request(request):
     import http_lib
-    res = http_lib.http_get('https://catfact.ninja/fact')
-    return res
+    res = http_lib.get_req('https://api.agify.io/?name=meelad')
+    return str(res)
 
 @server.catchall()
 def catchall(request):
