@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Wai Weng for Cytron Technologies
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,16 +31,16 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO46)
 
-#define MICROPY_HW_LED_STATUS (&pin_GPIO13)
+#define MICROPY_HW_LED_STATUS (&pin_GPIO2)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO41)
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO42)
 
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO6)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO10)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO5)
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO17)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO8)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO18)
 
-#define DEFAULT_UART_BUS_RX (&pin_GPIO11)
-#define DEFAULT_UART_BUS_TX (&pin_GPIO4)
+#define DEFAULT_UART_BUS_RX (&pin_GPIO16)
+#define DEFAULT_UART_BUS_TX (&pin_GPIO15)
 
-#define DOUBLE_TAP_PIN (&pin_GPIO17)
+#define DOUBLE_TAP_PIN (&pin_GPIO1)
