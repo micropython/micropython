@@ -97,12 +97,12 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
             #endif
             break;
         case RUNMODE_NORMAL:
-            #if defined(CONFIG_IDF_TARGET_ESP32)
-            safe_mode_on_next_reset(NO_SAFE_MODE);
-            #else
             // revert back to normal boot
+            #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
             REG_WRITE(RTC_RESET_CAUSE_REG, 0);  // reset uf2
+            #endif
             REG_WRITE(RTC_CNTL_STORE0_REG, 0);  // reset safe mode
+            #if !defined(CONFIG_IDF_TARGET_ESP32)
             REG_WRITE(RTC_CNTL_OPTION1_REG, 0); // reset bootloader
             #endif
             break;
@@ -112,10 +112,12 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
             break;
         case RUNMODE_BOOTLOADER:
             // DFU download
-            #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C3)
+            #if defined(CONFIG_IDF_TARGET_ESP32)
             mp_arg_error_invalid(MP_QSTR_run_mode);
             #else
+            #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
             chip_usb_set_persist_flags(USBDC_BOOT_DFU);
+            #endif
             REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
             #endif
             break;
