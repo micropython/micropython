@@ -450,6 +450,25 @@ supported ADC resolutions:
   - ``ADC.WIDTH_12BIT`` = 12
 
 
+Pulse Counter (pin pulse/edge counting)
+---------------------------------------
+
+The ESP32 provides up to 8 pulse counter peripherals depending on the hardware,
+with id 0..7. These can be configured to count rising and/or falling edges on
+any input pin.
+
+Use the :ref:`esp32.PCNT <esp32.PCNT>` class::
+
+    from machine import Pin
+    from esp32 import PCNT
+
+    counter = PCNT(0, pin=Pin(2), rising=PCNT.INCREMENT)        # create counter
+    counter.start()                                             # start counter
+    count = counter.value()                                     # read count, -32768..32767
+    counter.value(0)                                            # reset counter
+    count = counter.value(0)                                    # read and reset
+
+
 Software SPI bus
 ----------------
 
