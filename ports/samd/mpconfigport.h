@@ -86,6 +86,7 @@
 #define MICROPY_PY_UOS                      (1)
 #define MICROPY_READER_VFS                  (1)
 #define MICROPY_VFS                         (1)
+#define MICROPY_ENABLE_FINALISER            (1)
 #define MICROPY_PY_UJSON                    (1)
 #define MICROPY_PY_URE                      (1)
 #define MICROPY_PY_UBINASCII                (1)
