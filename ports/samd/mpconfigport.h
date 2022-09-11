@@ -41,6 +41,7 @@
 
 // Python internal features
 #define MICROPY_ENABLE_GC                   (1)
+#define MICROPY_ENABLE_FINALISER            (1)
 #define MICROPY_KBD_EXCEPTION               (1)
 #define MICROPY_HELPER_REPL                 (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
