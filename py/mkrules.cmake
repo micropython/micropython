@@ -223,3 +223,9 @@ if(ECHO_SUBMODULES)
     execute_process(COMMAND ${CMAKE_COMMAND} -E echo "GIT_SUBMODULES=${GIT_SUBMODULES}")
     message(FATAL_ERROR "Done")
 endif()
+
+# Display BOARD_VARIANTS
+if(ECHO_BOARD_VARIANTS)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E echo "BOARD_VARIANTS=${BOARD_VARIANTS}")
+    message(FATAL_ERROR "Done")
+endif()
