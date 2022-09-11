@@ -96,6 +96,8 @@
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_VFS                 (1)
 #define MICROPY_READER_VFS          (MICROPY_VFS)
+#define MICROPY_ENABLE_FINALISER    (MICROPY_VFS)
+
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
