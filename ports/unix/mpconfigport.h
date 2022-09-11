@@ -45,7 +45,6 @@
 #ifndef MICROPY_OPT_MAP_LOOKUP_CACHE
 #define MICROPY_OPT_MAP_LOOKUP_CACHE            (1)
 #endif
-#define MICROPY_ENABLE_FINALISER                (1)
 #define MICROPY_STACK_CHECK                     (1)
 #define MICROPY_KBD_EXCEPTION                   (1)
 #define MICROPY_HELPER_REPL                     (1)
@@ -146,6 +145,7 @@
 #define MICROPY_MODULE_OVERRIDE_MAIN_IMPORT (1)
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_POSIX           (1)
+#define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (0)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_ATEXIT       (1)
