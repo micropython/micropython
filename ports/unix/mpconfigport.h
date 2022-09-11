@@ -45,7 +45,6 @@
 #ifndef MICROPY_OPT_MAP_LOOKUP_CACHE
 #define MICROPY_OPT_MAP_LOOKUP_CACHE            (1)
 #endif
-#define MICROPY_ENABLE_FINALISER                (1)
 #define MICROPY_STACK_CHECK                     (1)
 #define MICROPY_KBD_EXCEPTION                   (1)
 #define MICROPY_HELPER_REPL                     (1)
@@ -124,6 +123,7 @@
 #ifndef MICROPY_GC_SPLIT_HEAP_N_HEAPS
 #define MICROPY_GC_SPLIT_HEAP_N_HEAPS (1)
 #endif
+#define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (1)
