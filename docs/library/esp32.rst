@@ -336,6 +336,9 @@ implemented as thin Python shims around :class:`PCNT`.
     value. Thus the ``IRQ_ZERO`` event will also trigger when either of these
     events occurs.
 
+See the :ref:`machine.Counter <machine.Counter>` and
+:ref:`machine.Encoder <machine.Encoder>` classes for simpler abstractions of
+common pulse counting applications.
 
 .. _esp32.RMT:
 
