@@ -56,7 +56,7 @@
 //| ...
 //|
 
-//| def flash(*buffer: ReadableBuffer, offset: int=0) -> None:
+//| def flash(buffer: ReadableBuffer, offset: int=0) -> None:
 //|     """Writes one of two app partitions at the given offset.
 //|
 //|     This can be called multiple times when flashing the firmware

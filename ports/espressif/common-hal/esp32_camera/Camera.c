@@ -191,8 +191,6 @@ framesize_t common_hal_esp32_camera_camera_get_frame_size(esp32_camera_camera_ob
     return self->camera_config.frame_size;
 }
 
-#include "esp_log.h"
-
 void common_hal_esp32_camera_camera_reconfigure(esp32_camera_camera_obj_t *self, framesize_t frame_size, pixformat_t pixel_format, camera_grab_mode_t grab_mode, mp_int_t framebuffer_count) {
     sensor_t *sensor = esp_camera_sensor_get();
     camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);

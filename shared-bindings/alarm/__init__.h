@@ -30,6 +30,7 @@
 #include "py/obj.h"
 
 #include "common-hal/alarm/__init__.h"
+#include "common-hal/digitalio/DigitalInOut.h"
 
 // Light sleep fully self-contained and does not exit user code. It will return
 // the same alarm object that was orignally passed in, unlike deep sleep, which
@@ -42,7 +43,7 @@ extern mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const
 // supervisor will idle using `port_wait_for_interrupt`. After each call, it will
 // call alarm_woken_from_sleep to see if we've been woken by an alarm and if so,
 // it will exit idle as if deep sleep was exited
-extern void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms);
+extern void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms, size_t n_dios, digitalio_digitalinout_obj_t **preserve_dios);
 
 extern NORETURN void common_hal_alarm_enter_deep_sleep(void);
 
