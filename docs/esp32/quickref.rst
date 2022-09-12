@@ -468,6 +468,26 @@ Use the :ref:`esp32.PCNT <esp32.PCNT>` class::
     counter.value(0)                                            # reset counter
     count = counter.value(0)                                    # read and reset
 
+The PCNT hardware supports monitoring multiple pins in a single unit to
+implement quadrature decoding or up/down signal counters.
+
+See the :ref:`machine.Counter <machine.Counter>` and
+:ref:`machine.Encoder <machine.Encoder>` classes for simpler abstractions of
+common pulse counting applications. These classes are implemented as thin Python
+shims around the ``PCNT()`` class::
+
+    from machine import Pin, Counter
+
+    counter = Counter(0, Pin(2))    # create a counter as above and start it
+    count = counter.value()         # read the count as an arbitrary precision signed integer
+
+    encoder = Encoder(0, Pin(12), Pin(14))    # create an encoder and begin counting
+    count = encoder.value()                   # read the count as an arbitrary precision signed integer
+
+Note that the id of these ``Counter()`` and ``Encoder()`` objects is an
+arbitrary number, each uniquely identified object will be allocated a free PCNT
+unit.
+
 
 Software SPI bus
 ----------------
