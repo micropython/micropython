@@ -38,7 +38,7 @@ void board_init(void) {
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     // For GPIOs used in Maker Feather AIoT S3, set the default state to pull down
     // as most of them are connected to active high LED.
-    switch (pin_number) {
+    switch ((int8_t)pin_number) {
         case 4:
         case 5:
         case 6:
