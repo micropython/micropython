@@ -55,18 +55,14 @@ STATIC uint32_t calculate_duty_cycle(uint32_t frequency) {
 
 void pwmout_reset(void) {
     for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
-        if (reserved_channels[i] != INDEX_EMPTY) {
+        if (reserved_channels[i] != INDEX_EMPTY && !never_reset_chan[i]) {
             ledc_stop(LEDC_LOW_SPEED_MODE, i, 0);
-        }
-        if (!never_reset_chan[i]) {
             reserved_channels[i] = INDEX_EMPTY;
         }
     }
     for (size_t i = 0; i < LEDC_TIMER_MAX; i++) {
-        if (reserved_timer_freq[i]) {
+        if (reserved_timer_freq[i] && !never_reset_tim[i]) {
             ledc_timer_rst(LEDC_LOW_SPEED_MODE, i);
-        }
-        if (!never_reset_tim[i]) {
             reserved_timer_freq[i] = 0;
             varfreq_timers[i] = false;
         }
