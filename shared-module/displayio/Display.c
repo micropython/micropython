@@ -399,7 +399,6 @@ void common_hal_displayio_display_set_auto_refresh(displayio_display_obj_t *self
 }
 
 void displayio_display_background(displayio_display_obj_t *self) {
-    common_hal_displayio_display_set_brightness(self, 1.0);
     if (self->auto_refresh && (supervisor_ticks_ms64() - self->core.last_refresh) > self->native_ms_per_frame) {
         _refresh_display(self);
     }
