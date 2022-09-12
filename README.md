@@ -54,6 +54,21 @@ Python 3 is required, but you can install some other version of python3 instead 
 7. `make -C ports/unix`
 8. `./ports/unix/micropython`
 
+## Unix (MAC OS) port
+
+1. `brew install sdl2 pkg-config`
+2. `git clone https://github.com/lvgl/lv_micropython.git`
+3. `cd lv_micropython`
+4. `git submodule update --init --recursive lib/lv_bindings`
+5. `sudo mkdir -p /usr/local/lib/`
+6. `sudo cp /opt/homebrew/Cellar/sdl2/2.24.0/lib/libSDL2.dylib /usr/local/lib/`
+7. `sudo cp -r /opt/homebrew/Cellar/sdl2/2.24.0/include /usr/local/`
+8. `sed -i '' 's/ -Werror//' ports/unix/Makefile` Remove -Werror from compiler parameters as Mac fails compilation otherwise
+9. `make -C mpy-cross`
+10. `make -C ports/unix submodules`
+11. `make -C ports/unix`
+12. `./ports/unix/micropython`
+
 ### ESP32 port
 
 Please run `esp-idf/export.sh` from your ESP-IDF installation directory as explained in the [Micropython ESP32 Getting Started documentation](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/#get-started-export)  
