@@ -30,6 +30,7 @@
 #define MICROPY_HW_MCU_NAME         "ESP32S3"
 
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO46)
+#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO11)
 
 #define MICROPY_HW_LED_STATUS (&pin_GPIO2)
 
