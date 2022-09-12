@@ -64,7 +64,7 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
             gpio_pullup_dis(pin_number);
             gpio_pulldown_en(pin_number);
             return true;
-            
+
         // Do not pull up/down as this is the battery voltage monitoring pin.
         case 13:
             gpio_reset_pin(pin_number);
@@ -72,7 +72,7 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
             gpio_pulldown_dis(pin_number);
             return true;
     }
-    
+
     return false;
 }
 
