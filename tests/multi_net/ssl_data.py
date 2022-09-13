@@ -49,7 +49,7 @@ def instance0():
     s.listen(1)
     multitest.next()
     s2, _ = s.accept()
-    s2 = ssl.wrap_socket(s2, server_side=True, key=key, cert=cert)
+    s2 = ssl.wrap_socket(s2, server_side=True, key=key, cert=cert, ciphers="TLS-RSA-WITH-AES-256-CBC-SHA256")
     print(s2.read(16))
     s2.write(b"server to client")
     s2.close()

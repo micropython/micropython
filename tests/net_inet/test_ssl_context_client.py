@@ -70,12 +70,12 @@ def main(use_stream=True):
 
     # context.check_hostname = True  # enabled by default with
     # PROTOCOL_TLS_CLIENT
-    # print(context.get_ciphers())
+    #print(context.get_ciphers())
 
     # context.load_verify_locations(cafile='certmpy.der') # not sure how to
     # implement a external file
     # in a testd
-    # context.ctx.set_ciphers('TLS-RSA-WITH-AES-256-CBC-SHA')
+    # context.set_ciphers('TLS-ECDHE-RSA-WITH-AES-256-CBC-SHA')
     context.load_verify_locations(cadata=ca_cert_chain)
 
     context.load_default_certs()  # not implemented in MicroPython just a mock, needed

@@ -1,1 +1,1 @@
-freeze(".", ("ssl.py",))
+module("ssl.py", opt=3)

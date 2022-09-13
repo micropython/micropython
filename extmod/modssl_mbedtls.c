@@ -85,7 +85,7 @@ typedef struct _mp_obj_ssl_context_t {
     mbedtls_x509_crt cacert;
     mbedtls_x509_crt cert;
     mbedtls_pk_context pkey;
-    int cipherid;
+    int cipherid [];
 } mp_obj_ssl_context_t;
 
 
@@ -201,7 +201,7 @@ STATIC mp_obj_ssl_context_t *context_new() {
     mp_obj_ssl_context_t *ctxi = m_new_obj(mp_obj_ssl_context_t);
     #endif
     ctxi->base.type = &ssl_context_type;
-    ctxi->cipherid = 0;
+    ctxi->cipherid[0] = 0;
     // o->sock = sock;
     int ret;
 
@@ -293,21 +293,27 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ssl_get_ciphers_obj, mod_ssl_get_ciphers);
 STATIC mp_obj_t mod_ssl_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) {
 
     mp_obj_ssl_context_t *ctxi = MP_OBJ_TO_PTR(self_in);
+    mp_obj_list_t *ciphers = MP_OBJ_TO_PTR(ciphersuite);
 
     int ret = 0;
-    if (ciphersuite != mp_const_none) {
-        const char *ciphername = mp_obj_str_get_str(ciphersuite);
-        const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
-        // const int ciphers[] = {id, 0};
-        ctxi->cipherid = id;
-        if (id == 0) {
-            ret = MBEDTLS_ERR_SSL_BAD_CONFIG;
-            goto cleanupcipher;
-        }
+    for(int i = 0, n = ciphers->len; i < n; i++){
+	    
+	    if (ciphers->items[i] != mp_const_none) {
+		const char *ciphername = mp_obj_str_get_str(ciphers->items[i]);
+		const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
+		// const int ciphers[] = {id, 0};
+		ctxi->cipherid[i] = id;
+		if (id == 0) {
+		    ret = MBEDTLS_ERR_SSL_BAD_CONFIG;
+		    goto cleanupcipher;
+		}
 
-        // mbedtls_ssl_conf_ciphersuites(&ctxi->conf, ciphers);
-        // ctxi->cipherid = id;
+		// mbedtls_ssl_conf_ciphersuites(&ctxi->conf, ciphers);
+		// ctxi->cipherid = id;
+	    }
     }
+    
+    ctxi->cipherid[ciphers->len+1] = 0;
 
     return mp_const_none;
 
@@ -470,9 +476,8 @@ STATIC mp_obj_ssl_socket_t *ctx_socket(mp_obj_t self_in, mp_obj_t sock, struct c
         goto cleanup;
     }
     // Ciphersuite Config
-    if (ctxi->cipherid != 0) {
-        const int ciphers[] = {ctxi->cipherid, 0};
-        mbedtls_ssl_conf_ciphersuites(&o->conf, ciphers);
+    if (ctxi->cipherid[0] != 0) {
+        mbedtls_ssl_conf_ciphersuites(&o->conf, (const int *) ctxi->cipherid);
 
     }
 
@@ -579,15 +584,14 @@ STATIC const mp_rom_map_elem_t ssl_context_locals_dict_table [] = {
 
 STATIC MP_DEFINE_CONST_DICT(ssl_context_locals_dict, ssl_context_locals_dict_table);
 
-STATIC const mp_obj_type_t ssl_context_type = {
-    { &mp_type_type },
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    ssl_context_type,
     // Save on qstr's, reuse same as for module
-    .name = MP_QSTR_ssl_context,
-    .print = context_print,
-    .getiter = NULL,
-    .iternext = NULL,
-    .locals_dict = (void *)&ssl_context_locals_dict,
-};
+    MP_QSTR_ssl_context,
+    MP_TYPE_FLAG_NONE,
+    print, context_print,
+    locals_dict, &ssl_context_locals_dict
+    );
 
 
 STATIC mp_obj_t mod_ssl_ctx_init() {

@@ -17,6 +17,7 @@ def wrap_socket(
     do_handshake=True,
     keyfile=None,
     certfile=None,
+    ciphers="",
 ):
     ctx = _ussl.ctx_init()
     if keyfile:
@@ -27,6 +28,8 @@ def wrap_socket(
         ctx.load_certchain(key=key, cert=cert)
     if cadata:
         ctx.load_cadata(cadata)
+    if ciphers:
+        ctx.set_ciphers(ciphers.split(":"))
     return ctx.wrap_socket(
         sock,
         server_side=server_side,
@@ -48,7 +51,10 @@ class SSLContext:
         self.key = None
         self.cert = None
         self.cadata = None
+        self.ciphersuite = None
         self.ctx = _ussl.ctx_init()
+        self._reload_ctx = False
+
         # PRE-ALLOCATE CONTEXT(key,cert) and SSL socket BUFFERS e.g. from (ussl) ?
         # self.ssl_buffer_sock = _ussl.context_allocate_buffer()
         # initiate context so we can get/set ciphers? :
@@ -82,12 +88,21 @@ class SSLContext:
         if not self.check_hostname:
             self._verify_mode = value
 
-    def reset(self, server=True):
-        self.ctx = _ussl.ctx_init()
+    def _reset(self, server=True):
+        ctx = _ussl.ctx_init()
         if server:
-            self.ctx.load_certchain(key=self.key, cert=self.cert)
+            ctx.load_certchain(key=self.key, cert=self.cert)
+            if self.cadata:
+                ctx.load_cadata(self.cadata)
         else:
-            self.ctx.load_cadata(self.cadata)
+            if self.cadata:
+                ctx.load_cadata(self.cadata)
+            if self.key:
+                ctx.load_certchain(key=self.key, cert=self.cert)
+
+        if self.ciphersuite:
+            ctx.set_ciphers(self.ciphersuite)
+        return ctx
 
     def load_cert_chain(self, certfile, keyfile=None):
         # load certificate/key from a file, is possible to use memoryview to
@@ -125,7 +140,8 @@ class SSLContext:
         return self.ctx.get_ciphers()
 
     def set_ciphers(self, ciphersuite):
-        return self.ctx.set_ciphers(ciphersuite)
+        self.ciphersuite = ciphersuite.split(":")
+        return self.ctx.set_ciphers(self.ciphersuite)
 
     def wrap_socket(
         self, sock, server_side=False, do_handshake_on_connect=True, server_hostname=None
@@ -135,10 +151,15 @@ class SSLContext:
             raise ValueError("check_hostname requires server_hostname")
         # to be substituted by e.g. _ussl._context_wrap_socket in modussl_mbedtls.c ?:
         # _ussl._context_wrap_socket(*args, **kargs)
-        return self.ctx.wrap_socket(
+        if self._reload_ctx:
+            self.ctx = self._reset(server=server_side)
+
+        ssl_sock = self.ctx.wrap_socket(
             sock,
             server_side=server_side,
             cert_reqs=self.verify_mode,
             server_hostname=server_hostname,
             do_handshake=do_handshake_on_connect,
         )
+        self._reload_ctx = True
+        return ssl_sock
