@@ -49,14 +49,16 @@ typedef struct _dac_obj_t {
     int8_t dma_channel;
     int8_t tc_index;
     uint32_t count;
+    mp_obj_t callback;
 } dac_obj_t;
 Dac *const dac_bases[] = DAC_INSTS;
-static void dac_init(dac_obj_t *self, Dac *dac);
+STATIC void dac_init(dac_obj_t *self, Dac *dac);
+STATIC mp_obj_t dac_deinit(mp_obj_t self_in);
 
 #if defined(MCU_SAMD21)
 
-static dac_obj_t dac_obj[] = {
-    {{&machine_dac_type}, 0, PIN_PA02},
+STATIC dac_obj_t dac_obj[] = {
+    {{&machine_dac_type}, 0, 0, PIN_PA02},
 };
 
 #define MAX_DAC_VALUE       (1023)
@@ -65,9 +67,9 @@ static dac_obj_t dac_obj[] = {
 
 #elif defined(MCU_SAMD51)
 
-static dac_obj_t dac_obj[] = {
-    {{&machine_dac_type}, 0, PIN_PA02},
-    {{&machine_dac_type}, 1, PIN_PA05},
+STATIC dac_obj_t dac_obj[] = {
+    {{&machine_dac_type}, 0, 0, PIN_PA02, 2, -1, -1, 1, NULL},
+    {{&machine_dac_type}, 1, 0, PIN_PA05, 2, -1, -1, 1, NULL},
 };
 // According to Errata 2.9.2, VDDANA as ref value is not available. However it worked
 // in tests. So I keep the selection here but set the default to Aref, which is usually
@@ -82,7 +84,6 @@ static uint8_t dac_vref_table[] = {
 
 #endif // defined SAMD21 or SAMD51
 
-
 void dac_irq_handler(int dma_channel) {
     dac_obj_t *self;
 
@@ -94,6 +95,10 @@ void dac_irq_handler(int dma_channel) {
         self->count -= 1;
         dma_desc[self->dma_channel].BTCTRL.reg |= DMAC_BTCTRL_VALID;
         DMAC->CHCTRLA.reg |= DMAC_CHCTRLA_ENABLE;
+    } else {
+        if (self->callback != MP_OBJ_NULL) {
+            mp_sched_schedule(self->callback, self);
+        }
     }
 
     #elif defined(MCU_SAMD51)
@@ -107,6 +112,10 @@ void dac_irq_handler(int dma_channel) {
         self->count -= 1;
         dma_desc[self->dma_channel].BTCTRL.reg |= DMAC_BTCTRL_VALID;
         DMAC->Channel[self->dma_channel].CHCTRLA.reg |= DMAC_CHCTRLA_ENABLE;
+    } else {
+        if (self->callback != MP_OBJ_NULL) {
+            mp_sched_schedule(self->callback, self);
+        }
     }
     #endif
 }
@@ -114,10 +123,11 @@ void dac_irq_handler(int dma_channel) {
 STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     const mp_obj_t *all_args) {
 
-    enum { ARG_id, ARG_vref };
+    enum { ARG_id, ARG_vref, ARG_callback };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_vref,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_DAC_VREF} },
+        { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // Parse the arguments.
@@ -137,6 +147,15 @@ STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         self->vref = vref;
     }
 
+    self->callback = args[ARG_callback].u_obj;
+    if (self->callback == mp_const_none) {
+        self->callback = MP_OBJ_NULL;
+    }
+
+    self->dma_channel = -1;
+    self->tc_index = -1;
+    self->initialized = false;
+
     Dac *dac = dac_bases[0]; // Just one DAC
     dac_init(self, dac);
     // Set the port as given in self->gpio_id as DAC
@@ -151,9 +170,9 @@ STATIC void dac_init(dac_obj_t *self, Dac *dac) {
         #if defined(MCU_SAMD21)
 
         // Configuration SAMD21
-        // Enable APBC clocks and PCHCTRL clocks; GCLK3 at 1 MHz
+        // Enable APBC clocks and PCHCTRL clocks; GCLK5 at 48 MHz
         PM->APBCMASK.reg |= PM_APBCMASK_DAC;
-        GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK3 | GCLK_CLKCTRL_ID_DAC;
+        GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK5 | GCLK_CLKCTRL_ID_DAC;
         while (GCLK->STATUS.bit.SYNCBUSY) {
         }
         // Reset DAC registers
@@ -169,9 +188,9 @@ STATIC void dac_init(dac_obj_t *self, Dac *dac) {
         #elif defined(MCU_SAMD51)
 
         // Configuration SAMD51
-        // Enable APBD clocks and PCHCTRL clocks; GCLK3 at 8 MHz
+        // Enable APBD clocks and PCHCTRL clocks; GCLK5 at 48 MHz
         MCLK->APBDMASK.reg |= MCLK_APBDMASK_DAC;
-        GCLK->PCHCTRL[DAC_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK3 | GCLK_PCHCTRL_CHEN;
+        GCLK->PCHCTRL[DAC_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK5 | GCLK_PCHCTRL_CHEN;
 
         // Reset DAC registers
         dac->CTRLA.bit.SWRST = 1;
@@ -190,7 +209,7 @@ STATIC void dac_init(dac_obj_t *self, Dac *dac) {
     self->initialized = true;
 }
 
-static void dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     dac_obj_t *self = self_in;
     mp_printf(print, "DAC(%u, Pin=%q, vref=%d)", self->id, pin_find_by_id(self->gpio_id)->name, self->vref);
 }
@@ -215,7 +234,7 @@ STATIC mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(dac_write_obj, dac_write);
 
-static mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
     Dac *dac = dac_bases[0]; // Just one DAC used
     dac_obj_t *self = args[0];
     mp_buffer_info_t src;
@@ -301,9 +320,9 @@ static mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
     }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dac_write_timed_obj, 3, 4, dac_write_timed);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dac_write_timed_obj, 3, 4, dac_write_timed);
 
-static mp_obj_t dac_deinit(mp_obj_t self_in) {
+STATIC mp_obj_t dac_deinit(mp_obj_t self_in) {
     dac_obj_t *self = self_in;
     self->initialized = false;
     // Reset the DAC to lower the current consumption as SAMD21
@@ -317,11 +336,20 @@ static mp_obj_t dac_deinit(mp_obj_t self_in) {
         free_tc_instance(self->tc_index);
         self->tc_index = -1;
     }
+    self->callback = MP_OBJ_NULL;
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(dac_deinit_obj, dac_deinit);
 
-static const mp_rom_map_elem_t dac_locals_dict_table[] = {
+// Clear the DMA channel entry in the DAC object.
+void dac_deinit_channel(void) {
+    dac_obj[0].dma_channel = -1;
+    #if defined(MCU_SAMD51)
+    dac_obj[1].dma_channel = -1;
+    #endif
+}
+
+STATIC const mp_rom_map_elem_t dac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&dac_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&dac_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_timed), MP_ROM_PTR(&dac_write_timed_obj) },
