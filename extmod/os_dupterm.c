@@ -93,7 +93,12 @@ uintptr_t mp_os_dupterm_poll(uintptr_t poll_flags) {
     return poll_flags_out;
 }
 
+static bool mp_dupterm_reading = false;
 int mp_os_dupterm_rx_chr(void) {
+    if (mp_dupterm_reading) {
+        return -1;
+    }
+    mp_dupterm_reading = true;
     for (size_t idx = 0; idx < MICROPY_PY_OS_DUPTERM; ++idx) {
         if (MP_STATE_VM(dupterm_objs[idx]) == MP_OBJ_NULL) {
             continue;
@@ -106,6 +111,7 @@ int mp_os_dupterm_rx_chr(void) {
             const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
             mp_uint_t out_sz = stream_p->read(MP_STATE_VM(dupterm_objs[idx]), buf, 1, &errcode);
             if (errcode == 0 && out_sz != 0) {
+                mp_dupterm_reading = false;
                 return buf[0];
             } else {
                 continue;
@@ -135,8 +141,10 @@ int mp_os_dupterm_rx_chr(void) {
                 if (buf[0] == mp_interrupt_char) {
                     // Signal keyboard interrupt to be raised as soon as the VM resumes
                     mp_sched_keyboard_interrupt();
+                    mp_dupterm_reading = false;
                     return -2;
                 }
+                mp_dupterm_reading = false;
                 return buf[0];
             }
         } else {
@@ -145,6 +153,7 @@ int mp_os_dupterm_rx_chr(void) {
     }
 
     // No chars available
+    mp_dupterm_reading = false;
     return -1;
 }
 

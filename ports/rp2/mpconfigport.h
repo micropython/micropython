@@ -163,6 +163,12 @@
 #ifndef MICROPY_PY_WEBREPL
 #define MICROPY_PY_WEBREPL              (1)
 #endif
+#ifndef MICROPY_PY_OS_DUPTERM
+#define MICROPY_PY_OS_DUPTERM           (1)
+#endif
+#ifndef MICROPY_PY_OS_DUPTERM_NOTIFY
+#define MICROPY_PY_OS_DUPTERM_NOTIFY    (1)
+#endif
 #endif
 
 #if MICROPY_PY_NETWORK_CYW43
