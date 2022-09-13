@@ -40,6 +40,7 @@
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 extern void adc_deinit_all(void);
+extern void dac_deinit_channel(void);
 extern void pin_irq_deinit_all(void);
 extern void pwm_deinit_all(void);
 extern void sercom_deinit_all(void);
@@ -93,6 +94,9 @@ void samd_main(void) {
         tc_deinit();
         #if MICROPY_PY_MACHINE_ADC
         adc_deinit_all();
+        #endif
+        #if MICROPY_PY_MACHINE_DAC
+        dac_deinit_channel();
         #endif
         pin_irq_deinit_all();
         #if MICROPY_PY_MACHINE_PWM
