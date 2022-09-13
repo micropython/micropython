@@ -42,6 +42,10 @@
 //| call :py:meth:`!deinit` or use a context manager. See
 //| :ref:`lifetime-and-contextmanagers` for more info.
 //|
+//| For more information on working with this module, refer to the
+//| `CircuitPython Essentials Learn Guide
+//| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-audio-out>`_.
+//|
 //| Since CircuitPython 5, `RawSample` and `WaveFile` are moved
 //| to :mod:`audiocore`, and `Mixer` is moved to :mod:`audiomixer`.
 //|
