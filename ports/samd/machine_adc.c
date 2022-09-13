@@ -28,6 +28,13 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
 
+#if MICROPY_PY_MACHINE_ADC
+
+#include <stdint.h>
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "py/mperrno.h"
+
 #include "py/mphal.h"
 #include "sam.h"
 #include "pin_af.h"
@@ -51,6 +58,7 @@ typedef struct _machine_adc_obj_t {
 #define DEFAULT_ADC_AVG     16
 
 #if defined(MCU_SAMD21)
+
 static uint8_t adc_vref_table[] = {
     ADC_REFCTRL_REFSEL_INT1V_Val, ADC_REFCTRL_REFSEL_INTVCC0_Val,
     ADC_REFCTRL_REFSEL_INTVCC1_Val, ADC_REFCTRL_REFSEL_AREFA_Val, ADC_REFCTRL_REFSEL_AREFB_Val
@@ -60,8 +68,18 @@ static uint8_t adc_vref_table[] = {
 #else
 #define DEFAULT_ADC_VREF    (3)
 #endif
+#define MAX_ADC_VREF        (4)
 
 #define ADC_EVSYS_CHANNEL    0
+
+typedef struct _device_mgmt_t {
+    bool init;
+    bool busy;
+    mp_obj_t callback;
+    mp_obj_t self;
+} device_mgmt_t;
+
+device_mgmt_t device_mgmt[ADC_INST_NUM];
 
 #elif defined(MCU_SAMD51)
 
@@ -75,6 +93,20 @@ static uint8_t adc_vref_table[] = {
 #else
 #define DEFAULT_ADC_VREF    (3)
 #endif
+#define MAX_ADC_VREF        (5)
+
+typedef struct _device_mgmt_t {
+    bool init;
+    bool busy;
+    int8_t dma_channel;
+    mp_obj_t callback;
+    mp_obj_t self;
+} device_mgmt_t;
+
+device_mgmt_t device_mgmt[ADC_INST_NUM] = {
+    { 0, 0, -1, MP_OBJ_NULL, MP_OBJ_NULL},
+    { 0, 0, -1, MP_OBJ_NULL, MP_OBJ_NULL}
+};
 
 #endif  // defined(MCU_SAMD21)
 
@@ -82,12 +114,12 @@ static uint8_t adc_vref_table[] = {
 #define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS
 
 Adc *const adc_bases[] = ADC_INSTS;
-uint32_t busy_flags = 0;
-bool init_flags[2] = {false, false};
-static void adc_init(machine_adc_obj_t *self);
+uint32_t ch_busy_flags = 0;
+
 static uint8_t resolution[] = {
     ADC_CTRLB_RESSEL_8BIT_Val, ADC_CTRLB_RESSEL_10BIT_Val, ADC_CTRLB_RESSEL_12BIT_Val
 };
+static void adc_init(machine_adc_obj_t *self);
 
 extern mp_int_t log2i(mp_int_t num);
 
@@ -97,11 +129,27 @@ void adc_irq_handler(int dma_channel) {
 
     #if defined(MCU_SAMD21)
     DMAC->CHID.reg = dma_channel;
-    DMAC->CHINTFLAG.reg = DMAC_CHINTFLAG_TCMPL;
+    DMAC->CHINTFLAG.reg = DMAC_CHINTFLAG_TCMPL | DMAC_CHINTFLAG_TERR | DMAC_CHINTFLAG_SUSP;
     ADC->EVCTRL.bit.STARTEI = 0;
+    device_mgmt[0].busy = 0;
+    if (device_mgmt[0].callback != MP_OBJ_NULL) {
+        mp_sched_schedule(device_mgmt[0].callback, device_mgmt[0].self);
+    }
 
     #elif defined(MCU_SAMD51)
-    DMAC->Channel[dma_channel].CHINTFLAG.reg = DMAC_CHINTFLAG_TCMPL;
+    DMAC->Channel[dma_channel].CHINTFLAG.reg =
+        DMAC_CHINTFLAG_TCMPL | DMAC_CHINTFLAG_TERR | DMAC_CHINTFLAG_SUSP;
+    if (device_mgmt[0].dma_channel == dma_channel) {
+        device_mgmt[0].busy = 0;
+        if (device_mgmt[0].callback != MP_OBJ_NULL) {
+            mp_sched_schedule(device_mgmt[0].callback, device_mgmt[0].self);
+        }
+    } else if (device_mgmt[1].dma_channel == dma_channel) {
+        device_mgmt[1].busy = 0;
+        if (device_mgmt[1].callback != MP_OBJ_NULL) {
+            mp_sched_schedule(device_mgmt[1].callback, device_mgmt[1].self);
+        }
+    }
     #endif
 }
 
@@ -114,13 +162,16 @@ static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_p
         self->adc_config.channel, self->bits, 1 << self->avg, self->vref);
 }
 
-static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_bits, ARG_average, ARG_vref };
+static mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
+    const mp_obj_t *all_args) {
+
+    enum { ARG_id, ARG_bits, ARG_average, ARG_vref, ARG_callback };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_bits,     MP_ARG_INT, {.u_int = DEFAULT_ADC_BITS} },
         { MP_QSTR_average,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_ADC_AVG} },
         { MP_QSTR_vref,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_ADC_VREF} },
+        { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // Parse the arguments.
@@ -129,7 +180,7 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
 
     // Unpack and check, whether the pin has ADC capability
     int id = mp_hal_get_pin_obj(args[ARG_id].u_obj);
-    adc_config_t adc_config = get_adc_config(id, busy_flags);
+    adc_config_t adc_config = get_adc_config(id, ch_busy_flags);
 
     // Now that we have a valid device and channel, create and populate the ADC instance
     machine_adc_obj_t *self = mp_obj_malloc(machine_adc_obj_t, &machine_adc_type);
@@ -145,13 +196,20 @@ static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
     self->avg = (avg <= 10 ? avg : 10);
 
     uint8_t vref = args[ARG_vref].u_int;
-    if (0 <= vref && vref < sizeof(adc_vref_table)) {
+    if (0 <= vref && vref <= MAX_ADC_VREF) {
         self->vref = vref;
+    }
+    device_mgmt[adc_config.device].callback = args[ARG_callback].u_obj;
+    if (device_mgmt[adc_config.device].callback == mp_const_none) {
+        device_mgmt[adc_config.device].callback = MP_OBJ_NULL;
+    } else {
+        device_mgmt[adc_config.device].self = self;
     }
 
     // flag the device/channel as being in use.
-    busy_flags |= (1 << (self->adc_config.device * 16 + self->adc_config.channel));
-    init_flags[self->adc_config.device] = false;
+    ch_busy_flags |= (1 << (self->adc_config.device * 16 + self->adc_config.channel));
+    self->dma_channel = -1;
+    self->tc_index = -1;
 
     adc_init(self);
 
@@ -163,6 +221,10 @@ static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     Adc *adc = adc_bases[self->adc_config.device];
     // Set the reference voltage. Default: external AREFA.
     adc->REFCTRL.reg = adc_vref_table[self->vref];
+    if (device_mgmt[self->adc_config.device].busy != 0) {
+        mp_raise_OSError(MP_EBUSY);
+    }
+
     // Set Input channel and resolution
     // Select the pin as positive input and gnd as negative input reference, non-diff mode by default
     adc->INPUTCTRL.reg = ADC_INPUTCTRL_MUXNEG_GND | self->adc_config.channel;
@@ -194,6 +256,7 @@ static void machine_adc_read_timed(mp_obj_t self_in, mp_obj_t values, mp_obj_t f
         if (self->dma_channel == -1) {
             self->dma_channel = allocate_dma_channel();
             dma_init();
+            dma_register_irq(self->dma_channel, adc_irq_handler);
         }
         if (self->tc_index == -1) {
             self->tc_index = allocate_tc_instance();
@@ -206,8 +269,6 @@ static void machine_adc_read_timed(mp_obj_t self_in, mp_obj_t values, mp_obj_t f
 
         // Configure DMA for halfword output to the DAC
         #if defined(MCU_SAMD21)
-        // dma irq just for SAMD21 to stop the timer based acquisition
-        dma_register_irq(self->dma_channel, adc_irq_handler);
         configure_tc(self->tc_index, freq, TC_EVCTRL_OVFEO);
         // Enable APBC clock
         PM->APBCMASK.reg |= PM_APBCMASK_EVSYS;
@@ -241,9 +302,11 @@ static void machine_adc_read_timed(mp_obj_t self_in, mp_obj_t values, mp_obj_t f
 
         NVIC_EnableIRQ(DMAC_IRQn);
         adc->EVCTRL.bit.STARTEI = 1;
+        device_mgmt[0].busy = 1;
 
         #elif defined(MCU_SAMD51)
         configure_tc(self->tc_index, freq, 0);
+        device_mgmt[self->adc_config.device].dma_channel = self->dma_channel;
 
         // Restart ADC after data has bee read
         adc->DSEQCTRL.reg = ADC_DSEQCTRL_AUTOSTART;
@@ -265,7 +328,15 @@ static void machine_adc_read_timed(mp_obj_t self_in, mp_obj_t values, mp_obj_t f
             DMAC_CHCTRLA_BURSTLEN(DMAC_CHCTRLA_BURSTLEN_SINGLE_Val) |
             DMAC_CHCTRLA_TRIGACT(DMAC_CHCTRLA_TRIGACT_BURST_Val) |
             DMAC_CHCTRLA_TRIGSRC(TC0_DMAC_ID_OVF + 3 * self->tc_index);
+        DMAC->Channel[self->dma_channel].CHINTENSET.reg = DMAC_CHINTENSET_TCMPL;
         DMAC->Channel[self->dma_channel].CHCTRLA.reg |= DMAC_CHCTRLA_ENABLE;
+
+        if (self->dma_channel < 4) {
+            NVIC_EnableIRQ(DMAC_0_IRQn + self->dma_channel);
+        } else {
+            NVIC_EnableIRQ(DMAC_4_IRQn);
+        }
+        device_mgmt[self->adc_config.device].busy = 1;
 
         #endif // defined SAMD21 or SAMD51
 
@@ -277,6 +348,11 @@ static void machine_adc_read_timed(mp_obj_t self_in, mp_obj_t values, mp_obj_t f
 static void mp_machine_adc_deinit(machine_adc_obj_t *self) {
     busy_flags &= ~((1 << (self->adc_config.device * 16 + self->adc_config.channel)));
     if (self->dma_channel >= 0) {
+        #if defined(MCU_SAMD51)
+        if (self->dma_channel == device_mgmt[self->adc_config.device].dma_channel) {
+            device_mgmt[self->adc_config.device].dma_channel = -1;
+        }
+        #endif
         dac_stop_dma(self->dma_channel, true);
         free_dma_channel(self->dma_channel);
         self->dma_channel = -1;
@@ -288,17 +364,21 @@ static void mp_machine_adc_deinit(machine_adc_obj_t *self) {
 }
 
 void adc_deinit_all(void) {
-    busy_flags = 0;
-    init_flags[0] = 0;
-    init_flags[1] = 0;
+    ch_busy_flags = 0;
+    device_mgmt[0].init = 0;
+    #if defined(MCU_SAMD51)
+    device_mgmt[0].dma_channel = -1;
+    device_mgmt[1].init = 0;
+    device_mgmt[1].dma_channel = -1;
+    #endif
 }
 
 static void adc_init(machine_adc_obj_t *self) {
     // ADC & clock init is done only once per ADC
-    if (init_flags[self->adc_config.device] == false) {
+    if (device_mgmt[self->adc_config.device].init == false) {
         Adc *adc = adc_bases[self->adc_config.device];
 
-        init_flags[self->adc_config.device] = true;
+        device_mgmt[self->adc_config.device].init = true;
 
         #if defined(MCU_SAMD21)
         // Configuration SAMD21
@@ -320,7 +400,7 @@ static void adc_init(machine_adc_obj_t *self) {
         // Divide a 48MHz clock by 32 to obtain 1.5 MHz clock to adc
         adc->CTRLB.reg = ADC_CTRLB_PRESCALER_DIV32;
         // Select external AREFA as reference voltage.
-        adc->REFCTRL.reg = adc_vref_table[self->vref];
+        adc->REFCTRL.reg = self->vref;
         // Average: Accumulate samples and scale them down accordingly
         adc->AVGCTRL.reg = self->avg | ADC_AVGCTRL_ADJRES(self->avg);
         // Enable ADC and wait to be ready
