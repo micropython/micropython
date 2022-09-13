@@ -29,10 +29,9 @@
 #include "py/objtuple.h"
 
 typedef struct _mp_obj_namedtuple_type_t {
-    // Must use the full-size version to avoid this being a variable sized member.
-    // This means that named tuples use slightly more RAM than necessary, but
-    // no worse than if we didn't have slots/split representation.
-    mp_obj_full_type_t base;
+    // This is a mp_obj_type_t with seven slots.
+    mp_obj_empty_type_t base;
+    void *slots[7];
     size_t n_fields;
     qstr fields[];
 } mp_obj_namedtuple_type_t;

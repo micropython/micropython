@@ -104,7 +104,7 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
         #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
         mp_raise_msg_varg(&mp_type_TypeError,
             MP_ERROR_TEXT("%q() takes %d positional arguments but %d were given"),
-            type->base.name, num_fields, n_args + n_kw);
+            ((mp_obj_type_t *)&type->base)->name, num_fields, n_args + n_kw);
         #endif
     }
 
@@ -153,17 +153,18 @@ mp_obj_namedtuple_type_t *mp_obj_new_namedtuple_base(size_t n_fields, mp_obj_t *
 
 STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, size_t n_fields, mp_obj_t *fields) {
     mp_obj_namedtuple_type_t *o = mp_obj_new_namedtuple_base(n_fields, fields);
-    o->base.base.type = &mp_type_type;
-    o->base.flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE; // can match tuple
-    o->base.name = name;
-    o->base.make_new = namedtuple_make_new;
-    MP_OBJ_TYPE_SET_SLOT(&o->base, print, namedtuple_print, 0);
-    MP_OBJ_TYPE_SET_SLOT(&o->base, unary_op, mp_obj_tuple_unary_op, 1);
-    MP_OBJ_TYPE_SET_SLOT(&o->base, binary_op, mp_obj_tuple_binary_op, 2);
-    MP_OBJ_TYPE_SET_SLOT(&o->base, attr, namedtuple_attr, 3);
-    MP_OBJ_TYPE_SET_SLOT(&o->base, subscr, mp_obj_tuple_subscr, 4);
-    MP_OBJ_TYPE_SET_SLOT(&o->base, getiter, mp_obj_tuple_getiter, 5);
-    MP_OBJ_TYPE_SET_SLOT(&o->base, parent, &mp_type_tuple, 6);
+    mp_obj_type_t *type = (mp_obj_type_t *)&o->base;
+    type->base.type = &mp_type_type;
+    type->flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE; // can match tuple
+    type->name = name;
+    type->make_new = namedtuple_make_new;
+    MP_OBJ_TYPE_SET_SLOT(type, print, namedtuple_print, 0);
+    MP_OBJ_TYPE_SET_SLOT(type, unary_op, mp_obj_tuple_unary_op, 1);
+    MP_OBJ_TYPE_SET_SLOT(type, binary_op, mp_obj_tuple_binary_op, 2);
+    MP_OBJ_TYPE_SET_SLOT(type, attr, namedtuple_attr, 3);
+    MP_OBJ_TYPE_SET_SLOT(type, subscr, mp_obj_tuple_subscr, 4);
+    MP_OBJ_TYPE_SET_SLOT(type, getiter, mp_obj_tuple_getiter, 5);
+    MP_OBJ_TYPE_SET_SLOT(type, parent, &mp_type_tuple, 6);
     return MP_OBJ_FROM_PTR(o);
 }
 
