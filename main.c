@@ -967,14 +967,14 @@ int __attribute__((used)) main(void) {
         safe_mode = NO_CIRCUITPY;
     }
 
-    // displays init after filesystem, since they could share the flash SPI
-    board_init();
-
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
     // Port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
     reset_board();
+
+    // displays init after filesystem, since they could share the flash SPI
+    board_init();
 
     // This is first time we are running CircuitPython after a reset or power-up.
     supervisor_set_run_reason(RUN_REASON_STARTUP);
