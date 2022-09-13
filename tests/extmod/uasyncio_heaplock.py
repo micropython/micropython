@@ -8,11 +8,19 @@ import micropython
 
 # strict stackless builds can't call functions without allocating a frame on the heap
 try:
-    f = lambda: 0
+    # force bytecode (in case we're running with emit=native) and verify
+    # that bytecode-calling-bytecode doesn't allocate
+    @micropython.bytecode
+    def f(x):
+        x and f(x - 1)
+
     micropython.heap_lock()
-    f()
+    f(1)
     micropython.heap_unlock()
 except RuntimeError:
+    # RuntimeError (max recursion depth) not MemoryError because effectively
+    # the recursion depth is at the limit while the heap is locked with
+    # stackless
     print("SKIP")
     raise SystemExit
 
