@@ -920,13 +920,23 @@ typedef double mp_float_t;
 #endif
 
 // Support for VFS POSIX component, to mount a POSIX filesystem within VFS
-#ifndef MICROPY_VFS
+#ifndef MICROPY_VFS_POSIX
 #define MICROPY_VFS_POSIX (0)
 #endif
 
 // Support for VFS FAT component, to mount a FAT filesystem within VFS
-#ifndef MICROPY_VFS
+#ifndef MICROPY_VFS_FAT
 #define MICROPY_VFS_FAT (0)
+#endif
+
+// Support for VFS LittleFS v1 component, to mount a LFSv1 filesystem within VFS
+#ifndef MICROPY_VFS_LFS1
+#define MICROPY_VFS_LFS1 (0)
+#endif
+
+// Support for VFS LittleFS v2 component, to mount a LFSv2 filesystem within VFS
+#ifndef MICROPY_VFS_LFS2
+#define MICROPY_VFS_LFS2 (0)
 #endif
 
 /*****************************************************************************/
