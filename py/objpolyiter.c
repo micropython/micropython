@@ -66,7 +66,7 @@ typedef struct _mp_obj_polymorph_iter_with_finaliser_t {
 
 STATIC mp_obj_t mp_obj_polymorph_iter_del(mp_obj_t self_in) {
     mp_obj_polymorph_with_finaliser_iter_t *self = MP_OBJ_TO_PTR(self_in);
-    // Redirect call to object instance's iternext method
+    // Redirect call to object instance's finaliser method
     return self->finaliser(self_in);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_obj_polymorph_iter_del_obj, mp_obj_polymorph_iter_del);
