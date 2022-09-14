@@ -252,7 +252,7 @@ Methods
    For example::
 
         buf = bytearray(8)
-        lst = [0, 0, 0, memoryview(buf)]
+        lst = [0, 0, 0, 0, memoryview(buf)]
         # No heap memory is allocated in the following call
         can.recv(0, lst)
 
