@@ -45,8 +45,6 @@
 #if MICROPY_BLUETOOTH_NIMBLE
 // For mp_bluetooth_nimble_hci_uart_wfi
 #include "nimble/nimble_npl.h"
-#else
-#error "STM32WB must use NimBLE."
 #endif
 
 #if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
@@ -413,9 +411,10 @@ STATIC size_t tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, par
     bool added_to_free_queue = false;
     size_t len = 0;
     while (cur != head) {
+        volatile tl_list_node_t *next = tl_list_unlink(cur);
+        
         len += tl_parse_hci_msg((uint8_t *)cur->body, parse);
 
-        volatile tl_list_node_t *next = tl_list_unlink(cur);
 
         // If this node is allocated from the memmgr event pool, then place it into the free buffer.
         if ((uint8_t *)cur >= ipcc_membuf_memmgr_evt_pool && (uint8_t *)cur < ipcc_membuf_memmgr_evt_pool + sizeof(ipcc_membuf_memmgr_evt_pool)) {

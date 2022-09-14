@@ -161,6 +161,25 @@ const btstack_uart_block_t mp_bluetooth_btstack_hci_uart_block = {
     &btstack_uart_set_wakeup_handler,
 };
 
+
+STATIC void mp_bluetooth_hci_uart_char_cb(uint8_t chr) {
+    recv_buf[recv_idx++] = chr;
+    if (recv_idx == recv_len) {
+        #if HCI_TRACE
+        printf(COL_BLUE "> [% 8d] %02x", (int)mp_hal_ticks_ms(), recv_buf[0]);
+        for (size_t i = 1; i < recv_len; ++i) {
+            printf(":%02x", recv_buf[i]);
+        }
+        printf(COL_OFF "\n");
+        #endif
+        recv_idx = 0;
+        recv_len = 0;
+        if (recv_handler) {
+            recv_handler();
+        }
+    }
+}
+
 void mp_bluetooth_btstack_hci_uart_process(void) {
     bool host_wake = mp_bluetooth_hci_controller_woken();
 
@@ -174,23 +193,19 @@ void mp_bluetooth_btstack_hci_uart_process(void) {
 
     // Append any new bytes to the recv buffer, notifying bstack if we've got
     // the number of bytes it was looking for.
-    int chr;
-    while (recv_idx < recv_len && (chr = mp_bluetooth_hci_uart_readchar()) >= 0) {
-        recv_buf[recv_idx++] = chr;
-        if (recv_idx == recv_len) {
-            #if HCI_TRACE
-            printf(COL_BLUE "> [% 8d] %02x", (int)mp_hal_ticks_ms(), recv_buf[0]);
-            for (size_t i = 1; i < recv_len; ++i) {
-                printf(":%02x", recv_buf[i]);
+    while (recv_idx < recv_len) {
+        #if MICROPY_PY_BLUETOOTH_HCI_READ_MODE == MICROPY_PY_BLUETOOTH_HCI_READ_MODE_BYTE
+            int chr = mp_bluetooth_hci_uart_readchar();
+            if (chr < 0) {
+                break;
             }
-            printf(COL_OFF "\n");
-            #endif
-            recv_idx = 0;
-            recv_len = 0;
-            if (recv_handler) {
-                recv_handler();
-            }
+            mp_bluetooth_hci_uart_char_cb(chr);
         }
+        #elif MICROPY_PY_BLUETOOTH_HCI_READ_MODE == MICROPY_PY_BLUETOOTH_HCI_READ_MODE_PACKET
+        if (mp_bluetooth_hci_uart_readpacket(mp_bluetooth_hci_uart_char_cb) < 0) {
+            break;
+        }
+        #endif
     }
 
     if (host_wake) {

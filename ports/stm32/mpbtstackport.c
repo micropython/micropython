@@ -104,6 +104,104 @@ static const btstack_run_loop_t mp_btstack_runloop_stm32 = {
     &mp_btstack_runloop_get_time_ms,
 };
 
+
+// #if defined(STM32WB)
+
+// /******************************************************************************/
+// // HCI over IPCC
+
+// #include "rfcore.h"
+
+// static void (*transport_packet_handler)(uint8_t packet_type, uint8_t *packet, uint16_t size);
+// static int hci_acl_can_send_now;
+
+
+// STATIC void rfcore_transport_init(const void *transport_config){
+//     rfcore_init();
+// }
+
+// STATIC int rfcore_transport_open(void){
+//     return 0;
+// }
+
+// STATIC int rfcore_transport_close(void){
+//     return 0;
+// }
+
+
+// STATIC void rfcore_transport_register_packet_handler(void (*handler)(uint8_t packet_type, uint8_t *packet, uint16_t size)){
+//     transport_packet_handler = handler;
+// }
+
+// STATIC int rfcore_transport_can_send_packet_now(uint8_t packet_type) {
+//     // if (cpu2_state != CPU2_STATE_READY) return 0;
+//     // switch (packet_type)
+//     // {
+//     //     case HCI_COMMAND_DATA_PACKET:
+//     //         return 1;
+
+//     //     case HCI_ACL_DATA_PACKET:
+//     //         return hci_acl_can_send_now;
+//     // }
+//     return 1;
+// }
+
+// STATIC int rfcore_transport_send_packet(uint8_t packet_type, uint8_t *packet, int size){
+// 	TL_CmdPacket_t *ble_cmd_buff = &BleCmdBuffer;
+
+//     switch (packet_type){
+//         case HCI_COMMAND_DATA_PACKET:
+//             ble_cmd_buff->cmdserial.type = packet_type;
+//             ble_cmd_buff->cmdserial.cmd.plen = size;
+//             memcpy((void *)&ble_cmd_buff->cmdserial.cmd, packet, size);
+//             TL_BLE_SendCmd(NULL, 0);
+//             transport_notify_packet_send();
+//             break;
+
+//         case HCI_ACL_DATA_PACKET:
+//             hci_acl_can_send_now = 0;
+//             ((TL_AclDataPacket_t *)HciAclDataBuffer)->AclDataSerial.type = packet_type;
+//             memcpy((void *)&(((TL_AclDataPacket_t *)HciAclDataBuffer)->AclDataSerial.handle),packet, size);
+//             TL_BLE_SendAclData(NULL, 0);
+//             transport_notify_packet_send();
+//             break;
+
+//         default:
+//             transport_send_hardware_error(0x01);  // invalid HCI packet
+//             break;
+//     }
+//     return 0;
+// }
+
+// STATIC const hci_transport_t hci_wb55_transport = {
+//     "stm32wb-vhci",
+//     &rfcore_transport_init,
+//     &rfcore_transport_open,
+//     &rfcore_transport_close,
+//     &rfcore_transport_register_packet_handler,
+//     &rfcore_transport_can_send_packet_now,
+//     &rfcore_transport_send_packet,
+//     NULL, // set baud rate
+//     NULL, // reset link
+//     NULL, // set SCO config
+// };
+
+// void mp_bluetooth_btstack_port_init(void) {
+//     btstack_run_loop_init(&mp_btstack_runloop_stm32);
+
+//     // hci_dump_open(NULL, HCI_DUMP_STDOUT);
+//     hci_init(&hci_wb55_transport, NULL);
+// }
+
+// #else
+
+/******************************************************************************/
+// HCI over UART
+
+#ifndef MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY
+#define MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY MICROPY_HW_BLE_UART_BAUDRATE
+#endif
+
 STATIC const hci_transport_config_uart_t hci_transport_config_uart = {
     HCI_TRANSPORT_CONFIG_UART,
     MICROPY_HW_BLE_UART_BAUDRATE,
@@ -162,5 +260,6 @@ void mp_bluetooth_btstack_port_deinit(void) {
 void mp_bluetooth_btstack_port_start(void) {
     hci_power_control(HCI_POWER_ON);
 }
+
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK

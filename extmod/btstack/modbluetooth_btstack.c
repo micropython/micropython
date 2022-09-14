@@ -35,7 +35,8 @@
 
 #include "lib/btstack/src/btstack.h"
 
-#define DEBUG_printf(...) // printf("btstack: " __VA_ARGS__)
+#include <stdio.h>
+#define DEBUG_printf(...) printf("btstack: " __VA_ARGS__)
 
 #ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY BTSTACK"
@@ -368,7 +369,7 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
                event_type == SM_EVENT_PAIRING_COMPLETE ||
                // event_type == GAP_EVENT_DEDICATED_BONDING_COMPLETED || // No conn_handle
                event_type == HCI_EVENT_ENCRYPTION_CHANGE) {
-        DEBUG_printf("  --> enc/auth/pair/bond change\n", );
+        DEBUG_printf("  --> enc/auth/pair/bond change\n");
         #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
         uint16_t conn_handle;
         switch (event_type) {
