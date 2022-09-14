@@ -393,14 +393,15 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
 mp_compiled_module_t mp_raw_code_load(mp_reader_t *reader, mp_module_context_t *context) {
     byte header[4];
     read_bytes(reader, header, sizeof(header));
+    byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
     if (header[0] != 'M'
-        || header[1] != MPY_VERSION
+        || (arch == MP_NATIVE_ARCH_NONE && (header[1] < MPY_VERSION_BYTECODE || header[1] > MPY_VERSION_NATIVE))
+        || (arch != MP_NATIVE_ARCH_NONE && header[1] != MPY_VERSION_NATIVE)
         || MPY_FEATURE_DECODE_FLAGS(header[2]) != MPY_FEATURE_FLAGS
         || header[3] > MP_SMALL_INT_BITS) {
         mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
     }
-    if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
-        byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
+    if (arch != MP_NATIVE_ARCH_NONE) {
         if (!MPY_FEATURE_ARCH_TEST(arch)) {
             if (MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_NONE)) {
                 // On supported ports this can be resolved by enabling feature, eg
@@ -595,7 +596,7 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
     //  byte  number of bits in a small int
     byte header[4] = {
         'M',
-        MPY_VERSION,
+        MPY_VERSION_BYTECODE,
         MPY_FEATURE_ENCODE_FLAGS(MPY_FEATURE_FLAGS_DYNAMIC),
         #if MICROPY_DYNAMIC_COMPILER
         mp_dynamic_compiler.small_int_bits,
@@ -604,6 +605,7 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
         #endif
     };
     if (cm->has_native) {
+        header[1] = MPY_VERSION_NATIVE;
         header[2] |= MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH_DYNAMIC);
     }
     mp_print_bytes(print, header, sizeof(header));

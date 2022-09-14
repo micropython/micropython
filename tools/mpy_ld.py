@@ -34,8 +34,12 @@ from elftools.elf import elffile
 sys.path.append(os.path.dirname(__file__) + "/../py")
 import makeqstrdata as qstrutil
 
+# Must be kept in sync with py/persistentcode.h.
+# See comments there for bytecode vs native version.
+MPY_VERSION_BYTECODE = 6
+MPY_VERSION_NATIVE = 6
+
 # MicroPython constants
-MPY_VERSION = 6
 MP_CODE_BYTECODE = 2
 MP_CODE_NATIVE_VIPER = 4
 MP_NATIVE_ARCH_X86 = 1
@@ -917,7 +921,9 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     out.open(fmpy)
 
     # MPY: header
-    out.write_bytes(bytearray([ord("M"), MPY_VERSION, env.arch.mpy_feature, MP_SMALL_INT_BITS]))
+    out.write_bytes(
+        bytearray([ord("M"), MPY_VERSION_NATIVE, env.arch.mpy_feature, MP_SMALL_INT_BITS])
+    )
 
     # MPY: n_qstr
     out.write_uint(1 + len(native_qstr_vals))

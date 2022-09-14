@@ -30,8 +30,16 @@
 #include "py/reader.h"
 #include "py/emitglue.h"
 
-// The current version of .mpy files
-#define MPY_VERSION 6
+// The current version of .mpy files. For a bytecode only .mpy file (i.e. arch
+// set to 0), we will load any file with a version between MPY_VERSION_BYTECODE
+// and MPY_VERSION_NATIVE. When an arch is set (i.e. it used emit=native, or the
+// native dectorator, or was a dynamic native module), then it must exactly
+// match MPY_VERSION_NATIVE.
+// This lets us advance the native ABI (e.g. dynruntime.h) without needing
+// to break compatibility for bytecode-only .mpy files.
+// Must be kept in sync with tools/mpy-tool.py and tools/mpy_ld.py.
+#define MPY_VERSION_BYTECODE 6
+#define MPY_VERSION_NATIVE 6
 
 // Macros to encode/decode flags to/from the feature byte
 #define MPY_FEATURE_ENCODE_FLAGS(flags) (flags)
@@ -81,7 +89,7 @@
 #endif
 
 // 16-bit little-endian integer with the second and third bytes of supported .mpy files
-#define MPY_FILE_HEADER_INT (MPY_VERSION \
+#define MPY_FILE_HEADER_INT (MPY_VERSION_NATIVE \
     | (MPY_FEATURE_ENCODE_FLAGS(MPY_FEATURE_FLAGS) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH)) << 8)
 
 enum {

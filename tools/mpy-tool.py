@@ -87,7 +87,10 @@ class FreezeError(Exception):
 
 
 class Config:
-    MPY_VERSION = 6
+    # Must be kept in sync with py/persistentcode.h.
+    # See comments there for bytecode vs native version.
+    MPY_VERSION_BYTECODE = 6
+    MPY_VERSION_NATIVE = 6
     MICROPY_LONGINT_IMPL_NONE = 0
     MICROPY_LONGINT_IMPL_LONGLONG = 1
     MICROPY_LONGINT_IMPL_MPZ = 2
@@ -1330,11 +1333,14 @@ def read_mpy(filename):
         header = reader.read_bytes(4)
         if header[0] != ord("M"):
             raise MPYReadError(filename, "not a valid .mpy file")
-        if header[1] != config.MPY_VERSION:
-            raise MPYReadError(filename, "incompatible .mpy version")
         feature_byte = header[2]
         mpy_native_arch = feature_byte >> 2
-        if mpy_native_arch != MP_NATIVE_ARCH_NONE:
+        if mpy_native_arch == MP_NATIVE_ARCH_NONE:
+            if header[1] < config.MPY_VERSION_BYTECODE or header[1] > config.MPY_VERSION_NATIVE:
+                raise MPYReadError(filename, "incompatible bytecode .mpy version")
+        else:
+            if header[1] != config.MPY_VERSION_NATIVE:
+                raise MPYReadError(filename, "incompatible native .mpy version")
             if config.native_arch == MP_NATIVE_ARCH_NONE:
                 config.native_arch = mpy_native_arch
             elif config.native_arch != mpy_native_arch:
@@ -1669,7 +1675,9 @@ def merge_mpy(compiled_modules, output_file):
 
         header = bytearray(4)
         header[0] = ord("M")
-        header[1] = config.MPY_VERSION
+        header[1] = (
+            config.MPY_VERSION_NATIVE if config.native_arch else config.MPY_VERSION_BYTECODE
+        )
         header[2] = config.native_arch << 2
         header[3] = config.mp_small_int_bits
         merged_mpy.extend(header)
