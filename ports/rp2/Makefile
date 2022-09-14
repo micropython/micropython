@@ -22,9 +22,11 @@ ifeq ($(DEBUG),1)
 CMAKE_ARGS += -DCMAKE_BUILD_TYPE=Debug
 endif
 
+HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
+
 all:
 	[ -e $(BUILD)/Makefile ] || cmake -S . -B $(BUILD) -DPICO_BUILD_DOCS=0 ${CMAKE_ARGS}
-	$(MAKE) $(MAKESILENT) -C $(BUILD)
+	$(MAKE) $(MAKESILENT) -C $(BUILD) || (echo -e $(HELP_BUILD_ERROR); false)
 
 clean:
 	$(RM) -rf $(BUILD)
