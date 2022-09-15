@@ -38,7 +38,9 @@
 #ifdef _WIN32
 #define fsync _commit
 #else
+#if MICROPY_PY_USELECT
 #include <poll.h>
+#endif
 #endif
 
 typedef struct _mp_obj_vfs_posix_file_t {
