@@ -200,10 +200,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 // These are standard stream methods. Code is in py/stream.c.
 //
 //|     def read(self, nbytes: Optional[int] = None) -> Optional[bytes]:
-//|         """Read characters.  If ``nbytes`` is specified then read at most that many
+//|         """Read bytes.  If ``nbytes`` is specified then read at most that many
 //|         bytes. Otherwise, read everything that arrives until the connection
 //|         times out. Providing the number of bytes expected is highly recommended
-//|         because it will be faster.
+//|         because it will be faster. If no bytes are read, return ``None``.
+//|
+//|         .. note:: When no bytes are read due to a timeout, this function returns ``None``.
+//|           This matches the behavior of `io.RawIOBase.read` in Python 3, but
+//|           differs from pyserial which returns ``b''`` in that situation.
 //|
 //|         :return: Data read
 //|         :rtype: bytes or None"""
