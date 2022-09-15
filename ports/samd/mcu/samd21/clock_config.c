@@ -141,7 +141,7 @@ void init_clocks(uint32_t cpu_freq) {
     // GCLK3: 1Mhz for the us-counter (TC4/TC5)
     // GCLK4: 32kHz from crystal, if present
     // GCLK5: 48MHz from DFLL for USB
-    // GCLK8: 1kHz clock for WDT
+    // GCLK8: 1kHz clock for WDT and RTC
 
     NVMCTRL->CTRLB.bit.MANW = 1; // errata "Spurious Writes"
     NVMCTRL->CTRLB.bit.RWS = 1; // 1 read wait state for 48MHz
@@ -203,6 +203,11 @@ void init_clocks(uint32_t cpu_freq) {
         SYSCTRL_DFLLCTRL_BPLCKC | SYSCTRL_DFLLCTRL_ENABLE;
     while (SYSCTRL->PCLKSR.bit.DFLLLCKF == 0) {
     }
+    // Set GCLK8 to 1 kHz.
+    GCLK->GENDIV.reg = GCLK_GENDIV_ID(8) | GCLK_GENDIV_DIV(32);
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_XOSC32K | GCLK_GENCTRL_ID(8);
+    while (GCLK->STATUS.bit.SYNCBUSY) {
+    }
 
     #else // MICROPY_HW_XOSC32K
 
@@ -242,6 +247,11 @@ void init_clocks(uint32_t cpu_freq) {
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(1);
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }
+    // Set GCLK8 to 1 kHz.
+    GCLK->GENDIV.reg = GCLK_GENDIV_ID(8) | GCLK_GENDIV_DIV(32);
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(8);
+    while (GCLK->STATUS.bit.SYNCBUSY) {
+    }
 
     #endif // MICROPY_HW_XOSC32K
 
@@ -250,11 +260,6 @@ void init_clocks(uint32_t cpu_freq) {
     // Enable GCLK output: 1MHz on GCLK3 for TC4
     GCLK->GENDIV.reg = GCLK_GENDIV_ID(3) | GCLK_GENDIV_DIV(48);
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(3);
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
-    // Set GCLK8 to 1 kHz.
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(8) | GCLK_GENDIV_DIV(32);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(8);
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }
 }
