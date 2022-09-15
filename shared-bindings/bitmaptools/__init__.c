@@ -267,7 +267,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom
 // requires at least 2 arguments (destination bitmap and source bitmap)
 
 //|
-//| def alphablend(dest_bitmap: displayio.Bitmap , source_bitmap_1: displayio.Bitmap, source_bitmap_2: displayio.Bitmap, colorspace: displayio.Colorspace, factor1: float=.5, factor2: float=None) -> None:
+//| def alphablend(dest_bitmap: displayio.Bitmap , source_bitmap_1: displayio.Bitmap, source_bitmap_2: displayio.Bitmap, colorspace: displayio.Colorspace, factor1: float=.5, factor2: Optional[float]=None) -> None:
 //|     """Alpha blend the two source bitmaps into the destination.
 //|
 //|     It is permitted for the destination bitmap to be one of the two

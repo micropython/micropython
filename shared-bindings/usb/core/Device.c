@@ -187,7 +187,7 @@ STATIC mp_obj_t usb_core_device_read(size_t n_args, const mp_obj_t *pos_args, mp
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_read_obj, 2, usb_core_device_read);
 
 //|     def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
-//|                       data_or_wLength: array.array = None, timeout = None) -> int:
+//|                       data_or_wLength: Optional[array.array] = None, timeout = None) -> int:
 //|         """Do a control transfer on the endpoint 0. The parameters bmRequestType,
 //|            bRequest, wValue and wIndex are the same of the USB Standard Control
 //|            Request format.
