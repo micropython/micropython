@@ -94,6 +94,7 @@ SRC_C += \
 	machine_i2c.c \
 	machine_led.c \
 	machine_pin.c \
+	machine_rtc.c \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \

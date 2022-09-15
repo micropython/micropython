@@ -37,6 +37,9 @@
 #include "sam.h"
 #include "tusb.h"
 #include "mphalport.h"
+#if MICROPY_PY_RTC
+extern void machine_rtc_start(bool force);
+#endif
 
 static void usb_init(void) {
     // Init USB clock
@@ -113,5 +116,8 @@ void samd_init(void) {
     check_usb_recovery_mode();
     #if defined(MCU_SAMD51)
     mp_hal_ticks_cpu_enable();
+    #endif
+    #if MICROPY_PY_RTC
+    machine_rtc_start(false);
     #endif
 }

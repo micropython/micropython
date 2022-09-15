@@ -28,6 +28,12 @@
 #define MICROPY_HW_UART_TXBUF           (1)
 #endif
 
+#ifndef MICROPY_PY_RTC
+#if MICROPY_HW_XOSC32K
+#define MICROPY_PY_RTC                  (1)
+#endif
+#endif
+
 #define CPU_FREQ                        (48000000)
 #define DFLL48M_FREQ                    (48000000)
 #define MAX_CPU_FREQ                    (48000000)

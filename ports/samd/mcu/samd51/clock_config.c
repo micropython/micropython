@@ -215,16 +215,19 @@ void init_clocks(uint32_t cpu_freq) {
 
     #if MICROPY_HW_XOSC32K
     // OSCILLATOR CONTROL
+    // Enable the clock for RTC
+    OSC32KCTRL->RTCCTRL.reg = OSC32KCTRL_RTCCTRL_RTCSEL_XOSC1K;
     // Setup XOSC32K
     OSC32KCTRL->INTFLAG.reg = OSC32KCTRL_INTFLAG_XOSC32KRDY | OSC32KCTRL_INTFLAG_XOSC32KFAIL;
-    OSC32KCTRL->XOSC32K.bit.CGM = OSC32KCTRL_XOSC32K_CGM_HS_Val;
-    OSC32KCTRL->XOSC32K.bit.XTALEN = 1; // 0: Generator 1: Crystal
-    OSC32KCTRL->XOSC32K.bit.EN32K = 1;
-    OSC32KCTRL->XOSC32K.bit.ONDEMAND = 0;
-    OSC32KCTRL->XOSC32K.bit.RUNSTDBY = 1;
-    OSC32KCTRL->XOSC32K.bit.STARTUP = 4;
     OSC32KCTRL->CFDCTRL.bit.CFDEN = 1; // Fall back to internal Osc on crystal fail
-    OSC32KCTRL->XOSC32K.bit.ENABLE = 1;
+    OSC32KCTRL->XOSC32K.reg =
+        OSC32KCTRL_XOSC32K_CGM_HS |
+        OSC32KCTRL_XOSC32K_XTALEN |
+        OSC32KCTRL_XOSC32K_EN32K |
+        OSC32KCTRL_XOSC32K_EN1K |
+        OSC32KCTRL_XOSC32K_RUNSTDBY |
+        OSC32KCTRL_XOSC32K_STARTUP(4) |
+        OSC32KCTRL_XOSC32K_ENABLE;
     // make sure osc32kcrtl is ready
     while (OSC32KCTRL->STATUS.bit.XOSC32KRDY == 0) {
     }
@@ -269,6 +272,9 @@ void init_clocks(uint32_t cpu_freq) {
     }
 
     #else // MICROPY_HW_XOSC32K
+
+    // Enable the clock for RTC
+    OSC32KCTRL->RTCCTRL.reg = OSC32KCTRL_RTCCTRL_RTCSEL_ULP1K;
 
     // Derive GCLK1 from DFLL48M at DPLL0_REF_FREQ as defined in mpconfigboard.h (e.g. 32768 Hz)
     GCLK->GENCTRL[1].reg = ((DFLL48M_FREQ + DPLLx_REF_FREQ / 2) / DPLLx_REF_FREQ) << GCLK_GENCTRL_DIV_Pos

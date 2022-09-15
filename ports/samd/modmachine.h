@@ -38,5 +38,8 @@ extern const mp_obj_type_t machine_spi_type;
 extern const mp_obj_type_t machine_timer_type;
 extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_wdt_type;
+#if MICROPY_PY_RTC
+extern const mp_obj_type_t machine_rtc_type;
+#endif
 
 #endif // MICROPY_INCLUDED_SAMD_MODMACHINE_H
