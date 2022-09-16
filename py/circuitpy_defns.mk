@@ -326,6 +326,9 @@ endif
 ifeq ($(CIRCUITPY_TERMINALIO),1)
 SRC_PATTERNS += terminalio/% fontio/%
 endif
+ifeq ($(CIRCUITPY_FONTIO),1)
+SRC_PATTERNS += fontio/%
+endif
 ifeq ($(CIRCUITPY_TIME),1)
 SRC_PATTERNS += time/%
 endif

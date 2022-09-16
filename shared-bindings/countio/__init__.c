@@ -13,6 +13,10 @@
 //|
 //| The `countio` module contains logic to read and count edge transistions
 //|
+//| For more information on the applications of counting edges, see
+//| `this Learn Guide on sequential circuits
+//| <https://learn.adafruit.com/digital-circuits-4-sequential-circuits>`_.
+//|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See

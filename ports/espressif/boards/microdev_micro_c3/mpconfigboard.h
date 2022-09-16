@@ -25,26 +25,31 @@
  */
 
 // Board setup
-#define MICROPY_HW_BOARD_NAME       "MicroDev microC3"
-#define MICROPY_HW_MCU_NAME         "ESP32-C3FN4"
+#define MICROPY_HW_BOARD_NAME           "MicroDev microC3"
+#define MICROPY_HW_MCU_NAME             "ESP32-C3FN4"
 
 // Status LEDs
-#define MICROPY_HW_NEOPIXEL         (&pin_GPIO7)
-#define MICROPY_HW_NEOPIXEL_COUNT   (2)
+#define MICROPY_HW_NEOPIXEL             (&pin_GPIO7)
+#define MICROPY_HW_NEOPIXEL_COUNT       (2)
 
-#define MICROPY_HW_LED_STATUS (&pin_GPIO8)
+#define MICROPY_HW_LED_STATUS           (&pin_GPIO8)
 
 // Default bus pins
-#define DEFAULT_I2C_BUS_SCL         (&pin_GPIO4)
-#define DEFAULT_I2C_BUS_SDA         (&pin_GPIO5)
+#define DEFAULT_I2C_BUS_SCL             (&pin_GPIO4)
+#define DEFAULT_I2C_BUS_SDA             (&pin_GPIO5)
 
-#define DEFAULT_SPI_BUS_SCK         (&pin_GPIO1)
-#define DEFAULT_SPI_BUS_MOSI        (&pin_GPIO2)
-#define DEFAULT_SPI_BUS_MISO        (&pin_GPIO3)
+#define DEFAULT_SPI_BUS_SCK             (&pin_GPIO1)
+#define DEFAULT_SPI_BUS_MOSI            (&pin_GPIO2)
+#define DEFAULT_SPI_BUS_MISO            (&pin_GPIO3)
 
-#define DEFAULT_UART_BUS_RX         (&pin_GPIO20)
-#define DEFAULT_UART_BUS_TX         (&pin_GPIO21)
+#define DEFAULT_UART_BUS_RX             (&pin_GPIO20)
+#define DEFAULT_UART_BUS_TX             (&pin_GPIO21)
 
-// Serial over UART
-#define CIRCUITPY_CONSOLE_UART_RX     DEFAULT_UART_BUS_RX
-#define CIRCUITPY_CONSOLE_UART_TX     DEFAULT_UART_BUS_TX
+// For REPL over built-in USB Serial
+#define CIRCUITPY_ESP_USB_SERIAL_JTAG   (1)
+
+// For entering safe mode
+#define CIRCUITPY_BOOT_BUTTON           (&pin_GPIO9)
+
+// Explanation of how a user got into safe mode
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
