@@ -31,7 +31,7 @@
 #include "py/stream.h"
 
 #include <stdio.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 // Zephyr's generated version header
 #include <version.h>
 #include <zephyr/net/net_context.h>

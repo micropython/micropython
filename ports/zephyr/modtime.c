@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #include "py/obj.h"
 

@@ -28,7 +28,7 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/machine_uart.c via MICROPY_PY_MACHINE_UART_INCLUDEFILE.
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/uart.h>
 
 #include "py/mperrno.h"
