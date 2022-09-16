@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-11 17:18+0000\n"
+"PO-Revision-Date: 2022-09-16 16:46+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: main.c
 msgid ""
@@ -90,6 +90,7 @@ msgstr "%q"
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
 msgstr ""
+"%q ``måste`` vara en bytearray eller matris av typen 'h', 'H', 'b' eller 'B'"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -931,7 +932,7 @@ msgstr "Förväntade %q"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an %q"
-msgstr ""
+msgstr "Förväntade en %q"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -2944,6 +2945,8 @@ msgid ""
 "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
 msgstr ""
+"esp32_camera.Camera kräver reserverad PSRAM att konfigureras. Se "
+"dokumentationen för instruktioner."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
