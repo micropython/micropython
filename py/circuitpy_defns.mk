@@ -109,6 +109,9 @@ endif
 ifeq ($(CIRCUITPY_ALARM),1)
 SRC_PATTERNS += alarm/%
 endif
+ifeq ($(CIRCUITPY_ANALOGBUFIO),1)
+SRC_PATTERNS += analogbufio/%
+endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)
 SRC_PATTERNS += analogio/%
 endif
@@ -391,6 +394,8 @@ SRC_COMMON_HAL_ALL = \
 	alarm/pin/PinAlarm.c \
 	alarm/time/TimeAlarm.c \
 	alarm/touch/TouchAlarm.c \
+	analogbufio/BufferedIn.c \
+	analogbufio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
@@ -480,7 +485,6 @@ SRC_C += \
 	common-hal/_bleio/hci.c \
 
 endif
-
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
