@@ -61,6 +61,8 @@ const mp_obj_module_t mp_module___main__ = {
 
 MP_REGISTER_MODULE(MP_QSTR___main__, mp_module___main__);
 
+#define TYPE_HAS_ITERNEXT(type) (type->flags & (MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_ITER_IS_CUSTOM | MP_TYPE_FLAG_ITER_IS_STREAM))
+
 void mp_init(void) {
     qstr_init();
 
@@ -1167,7 +1169,7 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     }
     #endif
 
-    if (attr == MP_QSTR___next__ && MP_OBJ_TYPE_HAS_SLOT(type, iternext)) {
+    if (attr == MP_QSTR___next__ && TYPE_HAS_ITERNEXT(type)) {
         dest[0] = MP_OBJ_FROM_PTR(&mp_builtin_next_obj);
         dest[1] = obj;
         return;
@@ -1260,21 +1262,26 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     assert(o_in);
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
 
+    // Most types that use iternext just use the identity getiter. We handle this case explicitly
+    // so we don't unnecessarily allocate any RAM for the iter_buf, which won't be used.
+    if ((type->flags & MP_TYPE_FLAG_ITER_IS_ITERNEXT) == MP_TYPE_FLAG_ITER_IS_ITERNEXT || (type->flags & MP_TYPE_FLAG_ITER_IS_STREAM) == MP_TYPE_FLAG_ITER_IS_STREAM) {
+        return o_in;
+    }
 
-    if (MP_OBJ_TYPE_HAS_SLOT(type, getiter)) {
-        // Check for native getiter which is the identity.  We handle this case explicitly
-        // so we don't unnecessarily allocate any RAM for the iter_buf, which won't be used.
-        if (MP_OBJ_TYPE_GET_SLOT(type, getiter) == mp_identity_getiter) {
-            return o_in;
-        }
-
+    if (MP_OBJ_TYPE_HAS_SLOT(type, iter)) {
         // check for native getiter (corresponds to __iter__)
-        if (iter_buf == NULL && MP_OBJ_TYPE_GET_SLOT(type, getiter) != mp_obj_instance_getiter) {
+        if (iter_buf == NULL && MP_OBJ_TYPE_GET_SLOT(type, iter) != mp_obj_instance_getiter) {
             // if caller did not provide a buffer then allocate one on the heap
             // mp_obj_instance_getiter is special, it will allocate only if needed
             iter_buf = m_new_obj(mp_obj_iter_buf_t);
         }
-        mp_obj_t iter = MP_OBJ_TYPE_GET_SLOT(type, getiter)(o_in, iter_buf);
+        mp_getiter_fun_t getiter;
+        if (type->flags & MP_TYPE_FLAG_ITER_IS_CUSTOM) {
+            getiter = ((mp_getiter_iternext_custom_t *)MP_OBJ_TYPE_GET_SLOT(type, iter))->getiter;
+        } else {
+            getiter = (mp_getiter_fun_t)MP_OBJ_TYPE_GET_SLOT(type, iter);
+        }
+        mp_obj_t iter = getiter(o_in, iter_buf);
         if (iter != MP_OBJ_NULL) {
             return iter;
         }
@@ -1302,13 +1309,26 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
 
 }
 
+STATIC mp_fun_1_t type_get_iternext(const mp_obj_type_t *type) {
+    if ((type->flags & MP_TYPE_FLAG_ITER_IS_STREAM) == MP_TYPE_FLAG_ITER_IS_STREAM) {
+        mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
+        return mp_stream_unbuffered_iter;
+    } else if (type->flags & MP_TYPE_FLAG_ITER_IS_ITERNEXT) {
+        return (mp_fun_1_t)MP_OBJ_TYPE_GET_SLOT(type, iter);
+    } else if (type->flags & MP_TYPE_FLAG_ITER_IS_CUSTOM) {
+        return ((mp_getiter_iternext_custom_t *)MP_OBJ_TYPE_GET_SLOT(type, iter))->iternext;
+    } else {
+        return NULL;
+    }
+}
+
 // may return MP_OBJ_STOP_ITERATION as an optimisation instead of raise StopIteration()
 // may also raise StopIteration()
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
-    if (MP_OBJ_TYPE_HAS_SLOT(type, iternext)) {
+    if (TYPE_HAS_ITERNEXT(type)) {
         MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
-        return MP_OBJ_TYPE_GET_SLOT(type, iternext)(o_in);
+        return type_get_iternext(type)(o_in);
     } else {
         // check for __next__ method
         mp_obj_t dest[2];
@@ -1332,9 +1352,9 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
 mp_obj_t mp_iternext(mp_obj_t o_in) {
     MP_STACK_CHECK(); // enumerate, filter, map and zip can recursively call mp_iternext
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
-    if (MP_OBJ_TYPE_HAS_SLOT(type, iternext)) {
+    if (TYPE_HAS_ITERNEXT(type)) {
         MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
-        return MP_OBJ_TYPE_GET_SLOT(type, iternext)(o_in);
+        return type_get_iternext(type)(o_in);
     } else {
         // check for __next__ method
         mp_obj_t dest[2];
@@ -1372,9 +1392,9 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         return mp_obj_gen_resume(self_in, send_value, throw_value, ret_val);
     }
 
-    if (MP_OBJ_TYPE_HAS_SLOT(type, iternext) && send_value == mp_const_none) {
+    if (TYPE_HAS_ITERNEXT(type) && send_value == mp_const_none) {
         MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
-        mp_obj_t ret = MP_OBJ_TYPE_GET_SLOT(type, iternext)(self_in);
+        mp_obj_t ret = type_get_iternext(type)(self_in);
         *ret_val = ret;
         if (ret != MP_OBJ_STOP_ITERATION) {
             return MP_VM_RETURN_YIELD;

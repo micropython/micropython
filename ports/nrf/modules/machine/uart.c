@@ -373,11 +373,9 @@ STATIC const mp_stream_p_t uart_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_hard_uart_type,
     MP_QSTR_UART,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
     machine_hard_uart_make_new,
     print, machine_hard_uart_print,
-    getiter, mp_identity_getiter,
-    iternext, mp_stream_unbuffered_iter,
     protocol, &uart_stream_p,
     locals_dict, &machine_hard_uart_locals_dict
     );

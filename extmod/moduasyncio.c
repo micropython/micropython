@@ -287,14 +287,18 @@ STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
     return mp_const_none;
 }
 
+STATIC const mp_getiter_iternext_custom_t task_getiter_iternext = {
+    .getiter = task_getiter,
+    .iternext = task_iternext,
+};
+
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     task_type,
     MP_QSTR_Task,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_CUSTOM,
     task_make_new,
     attr, task_attr,
-    getiter, task_getiter,
-    iternext, task_iternext
+    iter, &task_getiter_iternext
     );
 
 /******************************************************************************/

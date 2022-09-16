@@ -370,11 +370,10 @@ STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_t
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_gen_instance,
     MP_QSTR_generator,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     MP_TYPE_NULL_MAKE_NEW,
     print, gen_instance_print,
     unary_op, mp_generic_unary_op,
-    getiter, mp_identity_getiter,
-    iternext, gen_instance_iternext,
+    iter, gen_instance_iternext,
     locals_dict, &gen_instance_locals_dict
     );

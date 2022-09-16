@@ -83,7 +83,7 @@ mp_obj_t mp_obj_new_attrtuple(const qstr *fields, size_t n, const mp_obj_t *item
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_attrtuple,
     MP_QSTR_tuple,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
     MP_TYPE_NULL_MAKE_NEW,
     // reuse tuple to save on a qstr
     print, mp_obj_attrtuple_print,
@@ -91,7 +91,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     binary_op, mp_obj_tuple_binary_op,
     attr, mp_obj_attrtuple_attr,
     subscr, mp_obj_tuple_subscr,
-    getiter, mp_obj_tuple_getiter
+    iter, mp_obj_tuple_getiter
     );
 
 #endif // MICROPY_PY_ATTRTUPLE

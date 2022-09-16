@@ -70,10 +70,9 @@ STATIC mp_obj_t enumerate_make_new(const mp_obj_type_t *type, size_t n_args, siz
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_enumerate,
     MP_QSTR_enumerate,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     enumerate_make_new,
-    iternext, enumerate_iternext,
-    getiter, mp_identity_getiter
+    iter, enumerate_iternext
     );
 
 STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in) {

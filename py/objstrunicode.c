@@ -232,13 +232,13 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_str,
     MP_QSTR_str,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
     mp_obj_str_make_new,
     print, uni_print,
     unary_op, uni_unary_op,
     binary_op, mp_obj_str_binary_op,
     subscr, str_subscr,
-    getiter, mp_obj_new_str_iterator,
+    iter, mp_obj_new_str_iterator,
     buffer, mp_obj_str_get_buffer,
     locals_dict, &mp_obj_str_locals_dict
     );

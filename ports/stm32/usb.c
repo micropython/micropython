@@ -939,11 +939,9 @@ STATIC const mp_stream_p_t pyb_usb_vcp_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_usb_vcp_type,
     MP_QSTR_USB_VCP,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
     pyb_usb_vcp_make_new,
     print, pyb_usb_vcp_print,
-    getiter, mp_identity_getiter,
-    iternext, mp_stream_unbuffered_iter,
     protocol, &pyb_usb_vcp_stream_p,
     locals_dict, &pyb_usb_vcp_locals_dict
     );

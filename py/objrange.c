@@ -53,10 +53,9 @@ STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_range_it,
     MP_QSTR_iterator,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     MP_TYPE_NULL_MAKE_NEW,
-    getiter, mp_identity_getiter,
-    iternext, range_it_iternext
+    iter, range_it_iternext
     );
 
 STATIC mp_obj_t mp_obj_new_range_iterator(mp_int_t cur, mp_int_t stop, mp_int_t step, mp_obj_iter_buf_t *iter_buf) {
@@ -232,5 +231,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, range_print,
     unary_op, range_unary_op,
     subscr, range_subscr,
-    getiter, range_getiter
+    iter, range_getiter
     );

@@ -66,8 +66,7 @@ STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_map,
     MP_QSTR_map,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     map_make_new,
-    getiter, mp_identity_getiter,
-    iternext, map_iternext
+    iter, map_iternext
     );

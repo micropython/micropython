@@ -223,11 +223,9 @@ STATIC const mp_stream_p_t MP_VFS_LFSx(fileio_stream_p) = {
 MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_VFS_LFSx_(_fileio),
     MP_QSTR_FileIO,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
     MP_TYPE_NULL_MAKE_NEW,
     print, MP_VFS_LFSx(file_print),
-    getiter, mp_identity_getiter,
-    iternext, mp_stream_unbuffered_iter,
     protocol, &MP_VFS_LFSx(fileio_stream_p),
     locals_dict, &MP_VFS_LFSx(file_locals_dict)
     );
@@ -242,11 +240,9 @@ STATIC const mp_stream_p_t MP_VFS_LFSx(textio_stream_p) = {
 MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_VFS_LFSx_(_textio),
     MP_QSTR_TextIOWrapper,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
     MP_TYPE_NULL_MAKE_NEW,
     print, MP_VFS_LFSx(file_print),
-    getiter, mp_identity_getiter,
-    iternext, mp_stream_unbuffered_iter,
     protocol, &MP_VFS_LFSx(textio_stream_p),
     locals_dict, &MP_VFS_LFSx(file_locals_dict)
     );

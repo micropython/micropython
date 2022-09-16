@@ -507,12 +507,20 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 // Flags for type behaviour (mp_obj_type_t.flags)
 // If MP_TYPE_FLAG_EQ_NOT_REFLEXIVE is clear then __eq__ is reflexive (A==A returns True).
 // If MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE is clear then the type can't be equal to an
-// instance of any different class that also clears this flag.  If this flag is set
-// then the type may check for equality against a different type.
+//   instance of any different class that also clears this flag.  If this flag is set
+//   then the type may check for equality against a different type.
 // If MP_TYPE_FLAG_EQ_HAS_NEQ_TEST is clear then the type only implements the __eq__
-// operator and not the __ne__ operator.  If it's set then __ne__ may be implemented.
+//   operator and not the __ne__ operator.  If it's set then __ne__ may be implemented.
 // If MP_TYPE_FLAG_BINDS_SELF is set then the type as a method binds self as the first arg.
 // If MP_TYPE_FLAG_BUILTIN_FUN is set then the type is a built-in function type.
+// MP_TYPE_FLAG_ITER_IS_GETITER is a no-op flag that means the default behavior for the
+//   iter slot and it's the getiter function.
+// If MP_TYPE_FLAG_ITER_IS_ITERNEXT is set then the "iter" slot is the iternext
+//   function and getiter will be automatically implemented as "return self".
+// If MP_TYPE_FLAG_ITER_IS_CUSTOM is set then the "iter" slot is a pointer to a
+//   mp_getiter_iternext_custom_t struct instance (with both .getiter and .iternext set).
+// If MP_TYPE_FLAG_ITER_IS_STREAM is set then the type implicitly gets a "return self"
+//   getiter, and mp_stream_unbuffered_iter for iternext.
 #define MP_TYPE_FLAG_NONE (0x0000)
 #define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
 #define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
@@ -521,6 +529,10 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 #define MP_TYPE_FLAG_EQ_HAS_NEQ_TEST (0x0010)
 #define MP_TYPE_FLAG_BINDS_SELF (0x0020)
 #define MP_TYPE_FLAG_BUILTIN_FUN (0x0040)
+#define MP_TYPE_FLAG_ITER_IS_GETITER (0x0000)
+#define MP_TYPE_FLAG_ITER_IS_ITERNEXT (0x0080)
+#define MP_TYPE_FLAG_ITER_IS_CUSTOM (0x0100)
+#define MP_TYPE_FLAG_ITER_IS_STREAM (MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_ITER_IS_CUSTOM)
 
 typedef enum {
     PRINT_STR = 0,
@@ -548,6 +560,13 @@ typedef mp_obj_t (*mp_binary_op_fun_t)(mp_binary_op_t op, mp_obj_t, mp_obj_t);
 typedef void (*mp_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 typedef mp_obj_t (*mp_getiter_fun_t)(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
+typedef mp_fun_1_t mp_iternext_fun_t;
+
+// For MP_TYPE_FLAG_ITER_IS_CUSTOM, the "getiter" slot points to an instance of this type.
+typedef struct {
+    mp_getiter_fun_t getiter;
+    mp_iternext_fun_t iternext;
+} mp_getiter_iternext_custom_t;
 
 // Buffer protocol
 typedef struct _mp_buffer_info_t {
@@ -616,14 +635,17 @@ struct _mp_obj_type_t {
     // Can return MP_OBJ_NULL if operation not supported.
     uint8_t slot_index_subscr;
 
-    // Corresponds to __iter__ special method.
-    // Can use the given mp_obj_iter_buf_t to store iterator object,
-    // otherwise can return a pointer to an object on the heap.
-    uint8_t slot_index_getiter;
-
-    // Corresponds to __next__ special method.  May return MP_OBJ_STOP_ITERATION
-    // as an optimisation instead of raising StopIteration() with no args.
-    uint8_t slot_index_iternext;
+    // This slot's behavior depends on the MP_TYPE_FLAG_ITER_IS_* flags above.
+    // - If MP_TYPE_FLAG_ITER_IS_GETITER flag is set, then this corresponds to the __iter__
+    //   special method (of type mp_getiter_fun_t). Can use the given mp_obj_iter_buf_t
+    //   to store the iterator object, otherwise can return a pointer to an object on the heap.
+    // - If MP_TYPE_FLAG_ITER_IS_ITERNEXT is set, then this corresponds to __next__ special method.
+    //   May return MP_OBJ_STOP_ITERATION as an optimisation instead of raising StopIteration()
+    //   with no args. The type will implicitly implement getiter as "return self".
+    // - If MP_TYPE_FLAG_ITER_IS_CUSTOM is set, then this slot must point to an
+    //   mp_getiter_iternext_custom_t instance with both the getiter and iternext fields set.
+    // - If MP_TYPE_FLAG_ITER_IS_STREAM is set, this this slot should be unset.
+    uint8_t slot_index_iter;
 
     // Implements the buffer protocol if supported by this type.
     uint8_t slot_index_buffer;
@@ -659,8 +681,7 @@ typedef struct _mp_obj_empty_type_t {
     uint8_t slot_index_binary_op;
     uint8_t slot_index_attr;
     uint8_t slot_index_subscr;
-    uint8_t slot_index_getiter;
-    uint8_t slot_index_iternext;
+    uint8_t slot_index_iter;
     uint8_t slot_index_buffer;
     uint8_t slot_index_protocol;
     uint8_t slot_index_parent;
@@ -681,15 +702,14 @@ typedef struct _mp_obj_full_type_t {
     uint8_t slot_index_binary_op;
     uint8_t slot_index_attr;
     uint8_t slot_index_subscr;
-    uint8_t slot_index_getiter;
-    uint8_t slot_index_iternext;
+    uint8_t slot_index_iter;
     uint8_t slot_index_buffer;
     uint8_t slot_index_protocol;
     uint8_t slot_index_parent;
     uint8_t slot_index_locals_dict;
 
     // Explicitly add 12 slots.
-    const void *slots[12];
+    const void *slots[11];
 } mp_obj_full_type_t;
 
 #define MP_TYPE_NULL_MAKE_NEW (NULL)
@@ -700,8 +720,7 @@ typedef struct _mp_obj_full_type_t {
 #define _MP_OBJ_TYPE_SLOT_TYPE_binary_op (mp_binary_op_fun_t)
 #define _MP_OBJ_TYPE_SLOT_TYPE_attr (mp_attr_fun_t)
 #define _MP_OBJ_TYPE_SLOT_TYPE_subscr (mp_subscr_fun_t)
-#define _MP_OBJ_TYPE_SLOT_TYPE_getiter (mp_getiter_fun_t)
-#define _MP_OBJ_TYPE_SLOT_TYPE_iternext (mp_fun_1_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_iter (const void *)
 #define _MP_OBJ_TYPE_SLOT_TYPE_buffer (mp_buffer_fun_t)
 #define _MP_OBJ_TYPE_SLOT_TYPE_protocol (const void *)
 #define _MP_OBJ_TYPE_SLOT_TYPE_parent (const void *)
@@ -1162,7 +1181,6 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun);
 
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);
-mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf);
 
 // module
 typedef struct _mp_obj_module_t {

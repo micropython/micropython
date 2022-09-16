@@ -163,7 +163,7 @@ STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, size_t n_fields, mp_obj_t 
     MP_OBJ_TYPE_SET_SLOT(type, binary_op, mp_obj_tuple_binary_op, 2);
     MP_OBJ_TYPE_SET_SLOT(type, attr, namedtuple_attr, 3);
     MP_OBJ_TYPE_SET_SLOT(type, subscr, mp_obj_tuple_subscr, 4);
-    MP_OBJ_TYPE_SET_SLOT(type, getiter, mp_obj_tuple_getiter, 5);
+    MP_OBJ_TYPE_SET_SLOT(type, iter, mp_obj_tuple_getiter, 5);
     MP_OBJ_TYPE_SET_SLOT(type, parent, &mp_type_tuple, 6);
     return MP_OBJ_FROM_PTR(o);
 }

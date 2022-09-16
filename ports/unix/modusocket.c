@@ -522,8 +522,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     socket_make_new,
     print, socket_print,
-    getiter, NULL,
-    iternext, NULL,
     protocol, &usocket_stream_p,
     locals_dict, &usocket_locals_dict
     );
