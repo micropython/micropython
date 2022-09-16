@@ -244,6 +244,7 @@ void SysTick_Handler(void) {
 
 void reset_port(void) {
     reset_all_pins();
+
     #if CIRCUITPY_RTC
     rtc_reset();
     #endif

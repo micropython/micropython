@@ -32,6 +32,20 @@
 
 #include "components/hal/include/hal/gpio_hal.h"
 
+STATIC bool _pin_is_input(uint8_t pin_number) {
+    const uint32_t iomux = READ_PERI_REG(GPIO_PIN_MUX_REG[pin_number]);
+    return (iomux & FUN_IE) != 0;
+}
+
+void digitalio_digitalinout_preserve_for_deep_sleep(size_t n_dios, digitalio_digitalinout_obj_t *preserve_dios[]) {
+    // Mark the pin states of the given DigitalInOuts for preservation during deep sleep
+    for (size_t i = 0; i < n_dios; i++) {
+        if (!common_hal_digitalio_digitalinout_deinited(preserve_dios[i])) {
+            preserve_pin_number(preserve_dios[i]->pin->number);
+        }
+    }
+}
+
 void common_hal_digitalio_digitalinout_never_reset(
     digitalio_digitalinout_obj_t *self) {
     never_reset_pin_number(self->pin->number);
@@ -83,8 +97,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
 
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
     digitalio_digitalinout_obj_t *self) {
-    uint32_t iomux = READ_PERI_REG(GPIO_PIN_MUX_REG[self->pin->number]);
-    if ((iomux & FUN_IE) != 0) {
+    if (_pin_is_input(self->pin->number)) {
         return DIRECTION_INPUT;
     }
     return DIRECTION_OUTPUT;
