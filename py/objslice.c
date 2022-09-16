@@ -104,7 +104,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_slice,
     MP_QSTR_slice,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     SLICE_TYPE_ATTR_OR_LOCALS_DICT
     print, slice_print
     );

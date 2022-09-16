@@ -81,7 +81,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_pinbase_type,
     MP_QSTR_PinBase,
     MP_TYPE_FLAG_NONE,
-    pinbase_make_new,
+    make_new, pinbase_make_new,
     protocol, &pinbase_pin_p
     );
 

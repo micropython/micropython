@@ -260,7 +260,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_adc_type,
     MP_QSTR_ADC,
     MP_TYPE_FLAG_NONE,
-    madc_make_new,
+    make_new, madc_make_new,
     print, madc_print,
     locals_dict, &madc_locals_dict
     );

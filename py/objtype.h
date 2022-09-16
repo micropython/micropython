@@ -46,8 +46,8 @@ mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *cls, const mp_obj_ty
 bool mp_obj_instance_is_callable(mp_obj_t self_in);
 mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
-#define mp_obj_is_instance_type(type) ((type)->make_new == mp_obj_instance_make_new)
-#define mp_obj_is_native_type(type) ((type)->make_new != mp_obj_instance_make_new)
+#define mp_obj_is_instance_type(type) (MP_OBJ_TYPE_GET_SLOT_OR_NULL(type, make_new) == mp_obj_instance_make_new)
+#define mp_obj_is_native_type(type) (MP_OBJ_TYPE_GET_SLOT_OR_NULL(type, make_new) != mp_obj_instance_make_new)
 // this needs to be exposed for the above macros to work correctly
 mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 

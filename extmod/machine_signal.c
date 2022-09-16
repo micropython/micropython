@@ -176,7 +176,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_signal_type,
     MP_QSTR_Signal,
     MP_TYPE_FLAG_NONE,
-    signal_make_new,
+    make_new, signal_make_new,
     call, signal_call,
     protocol, &signal_pin_p,
     locals_dict, &signal_locals_dict

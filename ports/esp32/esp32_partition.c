@@ -288,7 +288,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     esp32_partition_type,
     MP_QSTR_Partition,
     MP_TYPE_FLAG_NONE,
-    esp32_partition_make_new,
+    make_new, esp32_partition_make_new,
     print, esp32_partition_print,
     locals_dict, &esp32_partition_locals_dict
     );

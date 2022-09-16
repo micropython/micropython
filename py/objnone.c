@@ -47,7 +47,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_NoneType,
     MP_QSTR_NoneType,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, none_print,
     unary_op, mp_generic_unary_op
     );

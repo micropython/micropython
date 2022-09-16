@@ -148,7 +148,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     task_queue_type,
     MP_QSTR_TaskQueue,
     MP_TYPE_FLAG_NONE,
-    task_queue_make_new,
+    make_new, task_queue_make_new,
     locals_dict, &task_queue_locals_dict
     );
 
@@ -296,7 +296,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     task_type,
     MP_QSTR_Task,
     MP_TYPE_FLAG_ITER_IS_CUSTOM,
-    task_make_new,
+    make_new, task_make_new,
     attr, task_attr,
     iter, &task_getiter_iternext
     );

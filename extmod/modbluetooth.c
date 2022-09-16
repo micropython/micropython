@@ -244,7 +244,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bluetooth_uuid,
     MP_QSTR_UUID,
     MP_TYPE_FLAG_NONE,
-    bluetooth_uuid_make_new,
+    make_new, bluetooth_uuid_make_new,
     unary_op, bluetooth_uuid_unary_op,
     binary_op, bluetooth_uuid_binary_op,
     print, bluetooth_uuid_print,
@@ -980,7 +980,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bluetooth_ble,
     MP_QSTR_BLE,
     MP_TYPE_FLAG_NONE,
-    bluetooth_ble_make_new,
+    make_new, bluetooth_ble_make_new,
     locals_dict, &bluetooth_ble_locals_dict
     );
 

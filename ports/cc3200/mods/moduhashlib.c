@@ -181,7 +181,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     sha1_type,
     MP_QSTR_sha1,
     MP_TYPE_FLAG_NONE,
-    hash_make_new,
+    make_new, hash_make_new,
     locals_dict, &hash_locals_dict
     );
 
@@ -189,7 +189,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     sha256_type,
     MP_QSTR_sha256,
     MP_TYPE_FLAG_NONE,
-    hash_make_new,
+    make_new, hash_make_new,
     locals_dict, &hash_locals_dict
     );
 

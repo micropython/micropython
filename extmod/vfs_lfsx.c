@@ -512,7 +512,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_VFS_LFSx,
     VFS_LFSx_QSTR,
     MP_TYPE_FLAG_NONE,
-    MP_VFS_LFSx(make_new),
+    make_new, MP_VFS_LFSx(make_new),
     protocol, &MP_VFS_LFSx(proto),
     locals_dict, &MP_VFS_LFSx(locals_dict)
     );

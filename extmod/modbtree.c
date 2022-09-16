@@ -328,7 +328,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     btree_type,
     MP_QSTR_btree,
     MP_TYPE_FLAG_ITER_IS_CUSTOM,
-    MP_TYPE_NULL_MAKE_NEW,
     // Save on qstr's, reuse same as for module
     print, btree_print,
     iter, &btree_getiter_iternext,

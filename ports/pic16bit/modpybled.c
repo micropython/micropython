@@ -88,7 +88,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_led_type,
     MP_QSTR_LED,
     MP_TYPE_FLAG_NONE,
-    pyb_led_make_new,
+    make_new, pyb_led_make_new,
     print, pyb_led_print,
     locals_dict, &pyb_led_locals_dict
     );

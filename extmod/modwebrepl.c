@@ -346,7 +346,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     webrepl_type,
     MP_QSTR__webrepl,
     MP_TYPE_FLAG_NONE,
-    webrepl_make_new,
+    make_new, webrepl_make_new,
     protocol, &webrepl_stream_p,
     locals_dict, &webrepl_locals_dict
     );

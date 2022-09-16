@@ -94,7 +94,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_property,
     MP_QSTR_property,
     MP_TYPE_FLAG_NONE,
-    property_make_new,
+    make_new, property_make_new,
     locals_dict, &property_locals_dict
     );
 

@@ -575,7 +575,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_array,
     MP_QSTR_array,
     MP_TYPE_FLAG_ITER_IS_GETITER,
-    array_make_new,
+    make_new, array_make_new,
     print, array_print,
     iter, array_iterator_new,
     unary_op, array_unary_op,
@@ -591,7 +591,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bytearray,
     MP_QSTR_bytearray,
     MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER,
-    bytearray_make_new,
+    make_new, bytearray_make_new,
     print, array_print,
     iter, array_iterator_new,
     unary_op, array_unary_op,
@@ -619,7 +619,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_memoryview,
     MP_QSTR_memoryview,
     MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER,
-    memoryview_make_new,
+    make_new, memoryview_make_new,
     iter, array_iterator_new,
     unary_op, array_unary_op,
     binary_op, array_binary_op,
@@ -677,7 +677,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_array_it,
     MP_QSTR_iterator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    MP_TYPE_NULL_MAKE_NEW,
     iter, array_it_iternext
     );
 

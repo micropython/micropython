@@ -212,7 +212,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_sdcard_type,
     MP_QSTR_SDCard,
     MP_TYPE_FLAG_NONE,
-    sdcard_obj_make_new,
+    make_new, sdcard_obj_make_new,
     locals_dict, &sdcard_locals_dict
     );
 

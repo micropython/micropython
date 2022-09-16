@@ -84,7 +84,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_attrtuple,
     MP_QSTR_tuple,
     MP_TYPE_FLAG_ITER_IS_GETITER,
-    MP_TYPE_NULL_MAKE_NEW,
     // reuse tuple to save on a qstr
     print, mp_obj_attrtuple_print,
     unary_op, mp_obj_tuple_unary_op,

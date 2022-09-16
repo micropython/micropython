@@ -180,7 +180,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_vfs_fat_fileio,
     MP_QSTR_FileIO,
     MP_TYPE_FLAG_ITER_IS_STREAM,
-    MP_TYPE_NULL_MAKE_NEW,
     print, file_obj_print,
     protocol, &vfs_fat_fileio_stream_p,
     locals_dict, &vfs_fat_rawfile_locals_dict
@@ -197,7 +196,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_vfs_fat_textio,
     MP_QSTR_TextIOWrapper,
     MP_TYPE_FLAG_ITER_IS_STREAM,
-    MP_TYPE_NULL_MAKE_NEW,
     print, file_obj_print,
     protocol, &vfs_fat_textio_stream_p,
     locals_dict, &vfs_fat_rawfile_locals_dict

@@ -57,7 +57,7 @@ STATIC mp_obj_t fun_builtin_0_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 }
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    mp_type_fun_builtin_0, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN, MP_TYPE_NULL_MAKE_NEW,
+    mp_type_fun_builtin_0, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
     call, fun_builtin_0_call,
     unary_op, mp_generic_unary_op
     );
@@ -70,7 +70,7 @@ STATIC mp_obj_t fun_builtin_1_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 }
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    mp_type_fun_builtin_1, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN, MP_TYPE_NULL_MAKE_NEW,
+    mp_type_fun_builtin_1, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
     call, fun_builtin_1_call,
     unary_op, mp_generic_unary_op
     );
@@ -83,7 +83,7 @@ STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 }
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    mp_type_fun_builtin_2, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN, MP_TYPE_NULL_MAKE_NEW,
+    mp_type_fun_builtin_2, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
     call, fun_builtin_2_call,
     unary_op, mp_generic_unary_op
     );
@@ -96,7 +96,7 @@ STATIC mp_obj_t fun_builtin_3_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 }
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    mp_type_fun_builtin_3, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN, MP_TYPE_NULL_MAKE_NEW,
+    mp_type_fun_builtin_3, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
     call, fun_builtin_3_call,
     unary_op, mp_generic_unary_op
     );
@@ -125,7 +125,7 @@ STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_k
 }
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    mp_type_fun_builtin_var, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN, MP_TYPE_NULL_MAKE_NEW,
+    mp_type_fun_builtin_var, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
     call, fun_builtin_var_call,
     unary_op, mp_generic_unary_op
     );
@@ -368,7 +368,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_bc,
     MP_QSTR_function,
     MP_TYPE_FLAG_BINDS_SELF,
-    MP_TYPE_NULL_MAKE_NEW,
     FUN_BC_TYPE_PRINT
     FUN_BC_TYPE_ATTR
     call, fun_bc_call,
@@ -431,7 +430,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_native,
     MP_QSTR_function,
     MP_TYPE_FLAG_BINDS_SELF,
-    MP_TYPE_NULL_MAKE_NEW,
     FUN_BC_TYPE_PRINT
     FUN_BC_TYPE_ATTR
     call, fun_native_call,
@@ -542,7 +540,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_asm,
     MP_QSTR_function,
     MP_TYPE_FLAG_BINDS_SELF,
-    MP_TYPE_NULL_MAKE_NEW,
     call, fun_asm_call,
     unary_op, mp_generic_unary_op
     );

@@ -708,7 +708,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
             MP_ROM_QSTR(MP_QSTR_miso), mp_pin_make_new(NULL, 1, 0, &miso_obj),
             MP_ROM_QSTR(MP_QSTR_mosi), mp_pin_make_new(NULL, 1, 0, &mosi_obj),
         };
-        spi = MP_OBJ_TO_PTR(machine_spi_type.make_new((mp_obj_t)&machine_spi_type, 2, 3, args));
+        spi = MP_OBJ_TO_PTR(MP_OBJ_TYPE_GET_SLOT(&machine_spi_type, make_new)((mp_obj_t)&machine_spi_type, 2, 3, args));
 
         cs = mp_hal_get_pin_obj(mp_pin_make_new(NULL, 1, 0, (mp_obj_t[]) {MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_PIN_CS)}));
         rst = mp_hal_get_pin_obj(mp_pin_make_new(NULL, 1, 0, (mp_obj_t[]) {MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_PIN_RST)}));
@@ -1020,7 +1020,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mod_network_nic_type_wiznet5k,
     MP_QSTR_WIZNET5K,
     MP_TYPE_FLAG_NONE,
-    wiznet5k_make_new,
+    make_new, wiznet5k_make_new,
     locals_dict, &wiznet5k_locals_dict
     );
 #else // WIZNET5K_PROVIDED_STACK
@@ -1028,7 +1028,7 @@ STATIC MP_DEFINE_CONST_OBJ_FULL_TYPE(
     mod_network_nic_type_wiznet5k_base,
     MP_QSTR_WIZNET5K,
     MP_TYPE_FLAG_NONE,
-    wiznet5k_make_new,
+    make_new, wiznet5k_make_new,
     locals_dict, &wiznet5k_locals_dict
     );
 

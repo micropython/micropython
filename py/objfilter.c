@@ -64,7 +64,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_filter,
     MP_QSTR_filter,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    filter_make_new,
+    make_new, filter_make_new,
     iter, filter_iternext
     );
 

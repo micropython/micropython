@@ -138,7 +138,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_touchpad_type,
     MP_QSTR_TouchPad,
     MP_TYPE_FLAG_NONE,
-    mtp_make_new,
+    make_new, mtp_make_new,
     locals_dict, &mtp_locals_dict
     );
 

@@ -396,7 +396,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     ussl_socket_type,
     MP_QSTR_ussl,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     // Save on qstr's, reuse same as for module
     print, socket_print,
     protocol, &ussl_socket_stream_p,

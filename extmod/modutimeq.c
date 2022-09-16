@@ -213,7 +213,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     utimeq_type,
     MP_QSTR_utimeq,
     MP_TYPE_FLAG_NONE,
-    utimeq_make_new,
+    make_new, utimeq_make_new,
     unary_op, utimeq_unary_op,
     locals_dict, &utimeq_locals_dict
     );

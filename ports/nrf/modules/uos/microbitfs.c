@@ -630,7 +630,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     uos_mbfs_textio_type,
     MP_QSTR_TextIO,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     protocol, &textio_stream_p,
     locals_dict, &uos_mbfs_file_locals_dict
     );
@@ -645,7 +644,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     uos_mbfs_fileio_type,
     MP_QSTR_FileIO,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     protocol, &fileio_stream_p,
     locals_dict, &uos_mbfs_file_locals_dict
     );

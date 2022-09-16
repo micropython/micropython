@@ -162,7 +162,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     network_lan_type,
     MP_QSTR_LAN,
     MP_TYPE_FLAG_NONE,
-    network_lan_make_new,
+    make_new, network_lan_make_new,
     print, network_lan_print,
     locals_dict, &network_lan_locals_dict
     );

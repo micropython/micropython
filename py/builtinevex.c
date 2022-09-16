@@ -41,8 +41,7 @@ typedef struct _mp_obj_code_t {
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_code,
     MP_QSTR_code,
-    MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW
+    MP_TYPE_FLAG_NONE
     );
 
 STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {

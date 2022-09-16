@@ -645,7 +645,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_pin_type,
     MP_QSTR_Pin,
     MP_TYPE_FLAG_NONE,
-    mp_pin_make_new,
+    make_new, mp_pin_make_new,
     print, machine_pin_print,
     call, machine_pin_call,
     protocol, &pin_pin_p,

@@ -173,7 +173,7 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
             #if MICROPY_VFS_LFS1
             if (memcmp(&buf[32], "littlefs", 8) == 0) {
                 // LFS1
-                mp_obj_t vfs = mp_type_vfs_lfs1.make_new(&mp_type_vfs_lfs1, 1, 0, &bdev_obj);
+                mp_obj_t vfs = MP_OBJ_TYPE_GET_SLOT(&mp_type_vfs_lfs1, make_new)(&mp_type_vfs_lfs1, 1, 0, &bdev_obj);
                 nlr_pop();
                 return vfs;
             }
@@ -181,7 +181,7 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
             #if MICROPY_VFS_LFS2
             if (memcmp(&buf[0], "littlefs", 8) == 0) {
                 // LFS2
-                mp_obj_t vfs = mp_type_vfs_lfs2.make_new(&mp_type_vfs_lfs2, 1, 0, &bdev_obj);
+                mp_obj_t vfs = MP_OBJ_TYPE_GET_SLOT(&mp_type_vfs_lfs2, make_new)(&mp_type_vfs_lfs2, 1, 0, &bdev_obj);
                 nlr_pop();
                 return vfs;
             }
@@ -194,7 +194,7 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
     #endif
 
     #if MICROPY_VFS_FAT
-    return mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, 0, &bdev_obj);
+    return MP_OBJ_TYPE_GET_SLOT(&mp_fat_vfs_type, make_new)(&mp_fat_vfs_type, 1, 0, &bdev_obj);
     #endif
 
     // no filesystem found

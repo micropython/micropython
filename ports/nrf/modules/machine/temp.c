@@ -116,7 +116,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_temp_type,
     MP_QSTR_Temp,
     MP_TYPE_FLAG_NONE,
-    machine_temp_make_new,
+    make_new, machine_temp_make_new,
     locals_dict, &machine_temp_locals_dict,
     print, machine_temp_print
     );

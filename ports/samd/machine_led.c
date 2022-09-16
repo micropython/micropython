@@ -166,7 +166,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_led_type,
     MP_QSTR_LED,
     MP_TYPE_FLAG_NONE,
-    mp_led_make_new,
+    make_new, mp_led_make_new,
     print, machine_led_print,
     call, machine_led_call,
     locals_dict, &machine_led_locals_dict

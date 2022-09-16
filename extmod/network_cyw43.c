@@ -500,7 +500,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_network_cyw43_type,
     MP_QSTR_CYW43,
     MP_TYPE_FLAG_NONE,
-    network_cyw43_make_new,
+    make_new, network_cyw43_make_new,
     print, network_cyw43_print,
     locals_dict, &network_cyw43_locals_dict
     );

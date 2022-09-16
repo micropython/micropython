@@ -73,7 +73,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     ubluepy_constants_ad_types_type,
     MP_QSTR_ad_types,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     locals_dict, &ubluepy_constants_ad_types_locals_dict
     );
 
@@ -96,7 +95,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     ubluepy_constants_type,
     MP_QSTR_constants,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     locals_dict, &ubluepy_constants_locals_dict
     );
 

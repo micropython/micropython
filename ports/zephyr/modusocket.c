@@ -357,7 +357,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     socket_type,
     MP_QSTR_socket,
     MP_TYPE_FLAG_NONE,
-    socket_make_new,
+    make_new, socket_make_new,
     print, socket_print,
     protocol, &socket_stream_p,
     locals_dict, &socket_locals_dict

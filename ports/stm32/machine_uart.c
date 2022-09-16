@@ -664,7 +664,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_uart_type,
     MP_QSTR_UART,
     MP_TYPE_FLAG_ITER_IS_STREAM,
-    pyb_uart_make_new,
+    make_new, pyb_uart_make_new,
     print, pyb_uart_print,
     protocol, &uart_stream_p,
     locals_dict, &pyb_uart_locals_dict

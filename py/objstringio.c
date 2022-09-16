@@ -248,7 +248,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_stringio,
     MP_QSTR_StringIO,
     MP_TYPE_FLAG_ITER_IS_STREAM,
-    stringio_make_new,
+    make_new, stringio_make_new,
     print, stringio_print,
     protocol, &stringio_stream_p,
     locals_dict, &stringio_locals_dict
@@ -265,7 +265,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bytesio,
     MP_QSTR_BytesIO,
     MP_TYPE_FLAG_ITER_IS_STREAM,
-    stringio_make_new,
+    make_new, stringio_make_new,
     print, stringio_print,
     protocol, &bytesio_stream_p,
     locals_dict, &stringio_locals_dict

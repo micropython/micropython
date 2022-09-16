@@ -219,6 +219,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mimxrt_flash_type,
     MP_QSTR_Flash,
     MP_TYPE_FLAG_NONE,
-    mimxrt_flash_make_new,
+    make_new, mimxrt_flash_make_new,
     locals_dict, &mimxrt_flash_locals_dict
     );

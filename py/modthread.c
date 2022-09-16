@@ -120,7 +120,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_thread_lock,
     MP_QSTR_lock,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     locals_dict, &thread_lock_locals_dict
     );
 

@@ -833,7 +833,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_framebuf,
     MP_QSTR_FrameBuffer,
     MP_TYPE_FLAG_NONE,
-    framebuf_make_new,
+    make_new, framebuf_make_new,
     buffer, framebuf_get_buffer,
     locals_dict, &framebuf_locals_dict
     );

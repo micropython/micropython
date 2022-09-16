@@ -159,7 +159,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_deque,
     MP_QSTR_deque,
     MP_TYPE_FLAG_NONE,
-    deque_make_new,
+    make_new, deque_make_new,
     unary_op, deque_unary_op,
     locals_dict, &deque_locals_dict
     );

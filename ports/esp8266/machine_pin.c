@@ -454,7 +454,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_pin_type,
     MP_QSTR_Pin,
     MP_TYPE_FLAG_NONE,
-    mp_pin_make_new,
+    make_new, mp_pin_make_new,
     print, pyb_pin_print,
     call, pyb_pin_call,
     protocol, &pin_pin_p,
@@ -514,7 +514,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     pin_irq_type,
     MP_QSTR_IRQ,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     call, pin_irq_call,
     locals_dict, &pin_irq_locals_dict
     );

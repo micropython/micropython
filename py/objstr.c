@@ -482,7 +482,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     if (!mp_obj_is_type(arg, &mp_type_list) && !mp_obj_is_type(arg, &mp_type_tuple)) {
         // arg is not a list nor a tuple, try to convert it to a list
         // TODO: Try to optimize?
-        arg = mp_type_list.make_new(&mp_type_list, 1, 0, &arg);
+        arg = mp_obj_list_make_new(&mp_type_list, 1, 0, &arg);
     }
     mp_obj_get_array(arg, &seq_len, &seq_items);
 
@@ -2147,7 +2147,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_str,
     MP_QSTR_str,
     MP_TYPE_FLAG_NONE,
-    mp_obj_str_make_new,
+    make_new, mp_obj_str_make_new,
     print, str_print,
     binary_op, mp_obj_str_binary_op,
     subscr, bytes_subscr,
@@ -2162,7 +2162,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bytes,
     MP_QSTR_bytes,
     MP_TYPE_FLAG_NONE,
-    bytes_make_new,
+    make_new, bytes_make_new,
     print, str_print,
     binary_op, mp_obj_str_binary_op,
     subscr, bytes_subscr,

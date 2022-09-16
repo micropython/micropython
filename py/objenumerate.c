@@ -71,7 +71,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_enumerate,
     MP_QSTR_enumerate,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    enumerate_make_new,
+    make_new, enumerate_make_new,
     iter, enumerate_iternext
     );
 

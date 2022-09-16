@@ -99,7 +99,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_closure,
     MP_QSTR_closure,
     MP_TYPE_FLAG_BINDS_SELF,
-    MP_TYPE_NULL_MAKE_NEW,
     CLOSURE_TYPE_ATTR
     CLOSURE_TYPE_PRINT
     call, closure_call

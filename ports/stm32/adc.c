@@ -707,7 +707,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_adc_type,
     MP_QSTR_ADC,
     MP_TYPE_FLAG_NONE,
-    adc_make_new,
+    make_new, adc_make_new,
     print, adc_print,
     locals_dict, &adc_locals_dict
     );
@@ -916,7 +916,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_adc_all_type,
     MP_QSTR_ADCAll,
     MP_TYPE_FLAG_NONE,
-    adc_all_make_new,
+    make_new, adc_all_make_new,
     locals_dict, &adc_all_locals_dict
     );
 

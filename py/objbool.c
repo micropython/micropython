@@ -89,7 +89,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bool,
     MP_QSTR_bool,
     MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
-    bool_make_new,
+    make_new, bool_make_new,
     print, bool_print,
     unary_op, bool_unary_op,
     binary_op, bool_binary_op

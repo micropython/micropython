@@ -600,7 +600,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pin_type,
     MP_QSTR_Pin,
     MP_TYPE_FLAG_NONE,
-    pin_make_new,
+    make_new, pin_make_new,
     print, pin_print,
     call, pin_call,
     locals_dict, &pin_locals_dict
@@ -676,7 +676,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pin_af_type,
     MP_QSTR_PinAF,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, pin_af_obj_print,
     locals_dict, &pin_af_locals_dict
     );

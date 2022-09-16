@@ -213,7 +213,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     ubluepy_characteristic_type,
     MP_QSTR_Characteristic,
     MP_TYPE_FLAG_NONE,
-    ubluepy_characteristic_make_new,
+    make_new, ubluepy_characteristic_make_new,
     print, ubluepy_characteristic_print,
     locals_dict, &ubluepy_characteristic_locals_dict
     );

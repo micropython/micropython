@@ -682,7 +682,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     microbit_image_type,
     MP_QSTR_MicroBitImage,
     MP_TYPE_FLAG_NONE,
-    microbit_image_make_new,
+    make_new, microbit_image_make_new,
     print, microbit_image_print,
     binary_op, image_binary_op,
     locals_dict, &microbit_image_locals_dict
@@ -832,7 +832,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     microbit_scrolling_string_iterator_type,
     MP_QSTR_iterator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    MP_TYPE_NULL_MAKE_NEW,
     iter, microbit_scrolling_string_iter_next
     );
 
@@ -912,7 +911,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     microbit_facade_iterator_type,
     MP_QSTR_iterator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    MP_TYPE_NULL_MAKE_NEW,
     iter, microbit_facade_iter_next
     );
 

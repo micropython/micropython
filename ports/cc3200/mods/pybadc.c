@@ -237,7 +237,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_adc_type,
     MP_QSTR_ADC,
     MP_TYPE_FLAG_NONE,
-    adc_make_new,
+    make_new, adc_make_new,
     print, adc_print,
     locals_dict, &adc_locals_dict
     );
@@ -305,7 +305,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     pyb_adc_channel_type,
     MP_QSTR_ADCChannel,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, adc_channel_print,
     call, adc_channel_call,
     locals_dict, &adc_channel_locals_dict

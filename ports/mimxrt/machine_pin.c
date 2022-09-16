@@ -62,7 +62,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_pin_cpu_pins_obj_type,
     MP_QSTR_cpu,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     locals_dict, &machine_pin_cpu_pins_locals_dict
     );
 
@@ -70,7 +69,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_pin_board_pins_obj_type,
     MP_QSTR_board,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     locals_dict, &machine_pin_board_pins_locals_dict
     );
 
@@ -424,7 +422,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_pin_type,
     MP_QSTR_Pin,
     MP_TYPE_FLAG_NONE,
-    mp_pin_make_new,
+    make_new, mp_pin_make_new,
     print, machine_pin_obj_print,
     call, machine_pin_obj_call,
     protocol, &machine_pin_obj_protocol,
@@ -436,7 +434,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_pin_af_type,
     MP_QSTR_PinAF,
     MP_TYPE_FLAG_NONE,
-    mp_pin_make_new,
+    make_new, mp_pin_make_new,
     print, machine_pin_obj_print,
     locals_dict, &machine_pin_locals_dict
     );

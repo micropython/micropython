@@ -174,7 +174,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     ra_led_type,
     MP_QSTR_LED,
     MP_TYPE_FLAG_NONE,
-    led_obj_make_new,
+    make_new, led_obj_make_new,
     locals_dict, &led_locals_dict,
     print, led_obj_print
     );

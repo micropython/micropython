@@ -518,7 +518,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     {
         // Mount the host FS at the root of our internal VFS
         mp_obj_t args[2] = {
-            mp_type_vfs_posix.make_new(&mp_type_vfs_posix, 0, 0, NULL),
+            MP_OBJ_TYPE_GET_SLOT(&mp_type_vfs_posix, make_new)(&mp_type_vfs_posix, 0, 0, NULL),
             MP_OBJ_NEW_QSTR(MP_QSTR__slash_),
         };
         mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);

@@ -506,7 +506,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_dac_type,
     MP_QSTR_DAC,
     MP_TYPE_FLAG_NONE,
-    pyb_dac_make_new,
+    make_new, pyb_dac_make_new,
     print, pyb_dac_print,
     locals_dict, &pyb_dac_locals_dict
     );

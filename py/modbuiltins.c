@@ -547,7 +547,7 @@ STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t 
     if (n_args > 1) {
         mp_raise_TypeError(MP_ERROR_TEXT("must use keyword argument for key function"));
     }
-    mp_obj_t self = mp_type_list.make_new(&mp_type_list, 1, 0, args);
+    mp_obj_t self = mp_obj_list_make_new(&mp_type_list, 1, 0, args);
     mp_obj_list_sort(1, &self, kwargs);
 
     return self;

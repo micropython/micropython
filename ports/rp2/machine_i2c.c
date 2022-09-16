@@ -180,7 +180,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_hw_i2c_type,
     MP_QSTR_I2C,
     MP_TYPE_FLAG_NONE,
-    machine_i2c_make_new,
+    make_new, machine_i2c_make_new,
     print, machine_i2c_print,
     protocol, &machine_i2c_p,
     locals_dict, &mp_machine_i2c_locals_dict

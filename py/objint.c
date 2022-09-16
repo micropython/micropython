@@ -461,7 +461,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_int,
     MP_QSTR_int,
     MP_TYPE_FLAG_NONE,
-    mp_obj_int_make_new,
+    make_new, mp_obj_int_make_new,
     print, mp_obj_int_print,
     unary_op, mp_obj_int_unary_op,
     binary_op, mp_obj_int_binary_op,

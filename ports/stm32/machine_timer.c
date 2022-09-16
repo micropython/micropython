@@ -140,7 +140,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_timer_type,
     MP_QSTR_Timer,
     MP_TYPE_FLAG_NONE,
-    machine_timer_make_new,
+    make_new, machine_timer_make_new,
     print, machine_timer_print,
     locals_dict, &machine_timer_locals_dict
     );

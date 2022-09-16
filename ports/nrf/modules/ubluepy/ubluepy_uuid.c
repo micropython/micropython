@@ -164,7 +164,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     ubluepy_uuid_type,
     MP_QSTR_UUID,
     MP_TYPE_FLAG_NONE,
-    ubluepy_uuid_make_new,
+    make_new, ubluepy_uuid_make_new,
     print, ubluepy_uuid_print,
     locals_dict, &ubluepy_uuid_locals_dict
     );

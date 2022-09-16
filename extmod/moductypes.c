@@ -638,7 +638,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     uctypes_struct_type,
     MP_QSTR_struct,
     MP_TYPE_FLAG_NONE,
-    uctypes_struct_make_new,
+    make_new, uctypes_struct_make_new,
     print, uctypes_struct_print,
     attr, uctypes_struct_attr,
     subscr, uctypes_struct_subscr,

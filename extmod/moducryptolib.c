@@ -352,7 +352,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     ucryptolib_aes_type,
     MP_QSTR_aes,
     MP_TYPE_FLAG_NONE,
-    ucryptolib_aes_make_new,
+    make_new, ucryptolib_aes_make_new,
     locals_dict, &ucryptolib_aes_locals_dict
     );
 

@@ -734,7 +734,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_machine_soft_i2c_type,
     MP_QSTR_SoftI2C,
     MP_TYPE_FLAG_NONE,
-    mp_machine_soft_i2c_make_new,
+    make_new, mp_machine_soft_i2c_make_new,
     print, mp_machine_soft_i2c_print,
     protocol, &mp_machine_soft_i2c_p,
     locals_dict, &mp_machine_i2c_locals_dict

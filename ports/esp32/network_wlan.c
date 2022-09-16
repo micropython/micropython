@@ -619,7 +619,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     wlan_if_type,
     MP_QSTR_WLAN,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     locals_dict, &wlan_if_locals_dict
     );
 

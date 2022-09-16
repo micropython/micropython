@@ -179,7 +179,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_hspi_type,
     MP_QSTR_HSPI,
     MP_TYPE_FLAG_NONE,
-    machine_hspi_make_new,
+    make_new, machine_hspi_make_new,
     print, machine_hspi_print,
     protocol, &machine_hspi_p,
     locals_dict, &mp_machine_spi_locals_dict

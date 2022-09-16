@@ -183,7 +183,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     match_type,
     MP_QSTR_match,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, match_print,
     locals_dict, &match_locals_dict
     );
@@ -417,7 +416,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     re_type,
     MP_QSTR_ure,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, re_print,
     locals_dict, &re_locals_dict
     );

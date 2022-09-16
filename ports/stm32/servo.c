@@ -340,7 +340,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_servo_type,
     MP_QSTR_Servo,
     MP_TYPE_FLAG_NONE,
-    pyb_servo_make_new,
+    make_new, pyb_servo_make_new,
     print, pyb_servo_print,
     locals_dict, &pyb_servo_locals_dict
     );

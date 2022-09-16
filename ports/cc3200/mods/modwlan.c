@@ -1289,7 +1289,7 @@ STATIC MP_DEFINE_CONST_OBJ_FULL_TYPE(
     mod_network_nic_type_wlan_base,
     MP_QSTR_WLAN,
     MP_TYPE_FLAG_NONE,
-    wlan_make_new,
+    make_new, wlan_make_new,
     locals_dict, &wlan_locals_dict
     );
 
