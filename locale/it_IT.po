@@ -86,6 +86,10 @@ msgstr ""
 msgid "%q"
 msgstr ""
 
+#: shared-bindings/analogbufio/BufferedIn.c
+msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
 msgstr ""

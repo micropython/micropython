@@ -86,6 +86,10 @@ msgstr "%d adresní pin, %d rgb pin a %d dlaždice indikuje výšku %d, ne %d"
 msgid "%q"
 msgstr "%q"
 
+#: shared-bindings/analogbufio/BufferedIn.c
+msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
 msgstr "%q a %q obsahují duplicitní piny"
