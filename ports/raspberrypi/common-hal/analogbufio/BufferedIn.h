@@ -4,8 +4,6 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2022 Lee Atkinson, MeanStride Technology, Inc.
- *                         Copyright (c) 2013, 2014 Damien P. George
- *                         Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *

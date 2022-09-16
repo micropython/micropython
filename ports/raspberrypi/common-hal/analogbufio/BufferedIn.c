@@ -4,8 +4,6 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2022 Lee Atkinson, MeanStride Technology, Inc.
- *                         Copyright (c) 2013, 2014 Damien P. George
- *                         Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -65,9 +63,6 @@ void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *s
     // Set sample rate - used in read
     self->bytes_per_sample = bytes_per_sample;
     self->sample_rate = sample_rate;
-
-    // Standard IO Init
-    stdio_init_all();
 
     // Init GPIO for analogue use: hi-Z, no pulls, disable digital input buffer.
     adc_init();
