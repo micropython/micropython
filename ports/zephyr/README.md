@@ -102,7 +102,7 @@ To blink an LED:
     import time
     from machine import Pin
 
-    LED = Pin(("GPIO_1", 21), Pin.OUT)
+    LED = Pin(("gpio@400ff040", 21), Pin.OUT)
     while True:
         LED.value(1)
         time.sleep(0.5)
@@ -120,8 +120,8 @@ To respond to Pin change IRQs, on a FRDM-K64F board run:
 
     from machine import Pin
 
-    SW2 = Pin(("GPIO_2", 6), Pin.IN)
-    SW3 = Pin(("GPIO_0", 4), Pin.IN)
+    SW2 = Pin(("gpio@400ff080", 6), Pin.IN)
+    SW3 = Pin(("gpio@400ff000", 4), Pin.IN)
 
     SW2.irq(lambda t: print("SW2 changed"))
     SW3.irq(lambda t: print("SW3 changed"))
@@ -133,14 +133,14 @@ Example of using I2C to scan for I2C slaves:
 
     from machine import I2C
 
-    i2c = I2C("I2C_0")
+    i2c = I2C("i2c@40066000")
     i2c.scan()
 
 Example of using SPI to write a buffer to the MOSI pin:
 
     from machine import SPI
 
-    spi = SPI("SPI_0")
+    spi = SPI("spi@4002c000")
     spi.init(baudrate=500000, polarity=1, phase=1, bits=8, firstbit=SPI.MSB)
     spi.write(b'abcd')
 
