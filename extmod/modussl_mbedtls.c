@@ -399,8 +399,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_NULL_MAKE_NEW,
     // Save on qstr's, reuse same as for module
     print, socket_print,
-    getiter, NULL,
-    iternext, NULL,
     protocol, &ussl_socket_stream_p,
     locals_dict, &ussl_socket_locals_dict
     );

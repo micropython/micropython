@@ -542,12 +542,12 @@ STATIC MP_DEFINE_CONST_DICT(set_locals_dict, set_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_set,
     MP_QSTR_set,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
     set_make_new,
     print, set_print,
     unary_op, set_unary_op,
     binary_op, set_binary_op,
-    getiter, set_getiter,
+    iter, set_getiter,
     locals_dict, &set_locals_dict
     );
 
@@ -568,12 +568,12 @@ STATIC MP_DEFINE_CONST_DICT(frozenset_locals_dict, frozenset_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_frozenset,
     MP_QSTR_frozenset,
-    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER,
     set_make_new,
     print, set_print,
     unary_op, set_unary_op,
     binary_op, set_binary_op,
-    getiter, set_getiter,
+    iter, set_getiter,
     locals_dict, &frozenset_locals_dict
     );
 #endif

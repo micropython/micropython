@@ -71,10 +71,9 @@ STATIC mp_obj_t reversed_iternext(mp_obj_t self_in) {
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_reversed,
     MP_QSTR_reversed,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     reversed_make_new,
-    getiter, mp_identity_getiter,
-    iternext, reversed_iternext
+    iter, reversed_iternext
     );
 
 #endif // MICROPY_PY_BUILTINS_REVERSED

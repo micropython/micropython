@@ -574,10 +574,10 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_array,
     MP_QSTR_array,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
     array_make_new,
     print, array_print,
-    getiter, array_iterator_new,
+    iter, array_iterator_new,
     unary_op, array_unary_op,
     binary_op, array_binary_op,
     subscr, array_subscr,
@@ -590,10 +590,10 @@ MP_DEFINE_CONST_OBJ_TYPE(
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bytearray,
     MP_QSTR_bytearray,
-    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER,
     bytearray_make_new,
     print, array_print,
-    getiter, array_iterator_new,
+    iter, array_iterator_new,
     unary_op, array_unary_op,
     binary_op, array_binary_op,
     subscr, array_subscr,
@@ -618,9 +618,9 @@ MP_DEFINE_CONST_OBJ_TYPE(
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_memoryview,
     MP_QSTR_memoryview,
-    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER,
     memoryview_make_new,
-    getiter, array_iterator_new,
+    iter, array_iterator_new,
     unary_op, array_unary_op,
     binary_op, array_binary_op,
     MEMORYVIEW_TYPE_LOCALS_DICT
@@ -676,10 +676,9 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_array_it,
     MP_QSTR_iterator,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     MP_TYPE_NULL_MAKE_NEW,
-    getiter, mp_identity_getiter,
-    iternext, array_it_iternext
+    iter, array_it_iternext
     );
 
 STATIC mp_obj_t array_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_buf) {

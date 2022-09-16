@@ -325,13 +325,13 @@ STATIC mp_obj_t subscr_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     jobject_type,
     MP_QSTR_jobject,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
     MP_TYPE_NULL_MAKE_NEW,
     print, jobject_print,
     unary_op, jobject_unary_op,
     attr, jobject_attr,
     subscr, jobject_subscr,
-    getiter, subscr_getiter,
+    iter, subscr_getiter,
     //    .locals_dict = &jobject_locals_dict,
     );
 

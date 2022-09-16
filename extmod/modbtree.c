@@ -319,15 +319,19 @@ STATIC const mp_rom_map_elem_t btree_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
 
+STATIC const mp_getiter_iternext_custom_t btree_getiter_iternext = {
+    .getiter = btree_getiter,
+    .iternext = btree_iternext,
+};
+
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     btree_type,
     MP_QSTR_btree,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_CUSTOM,
     MP_TYPE_NULL_MAKE_NEW,
     // Save on qstr's, reuse same as for module
     print, btree_print,
-    getiter, btree_getiter,
-    iternext, btree_iternext,
+    iter, &btree_getiter_iternext,
     binary_op, btree_binary_op,
     subscr, btree_subscr,
     locals_dict, &btree_locals_dict

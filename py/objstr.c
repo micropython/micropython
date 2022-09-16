@@ -2151,7 +2151,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, str_print,
     binary_op, mp_obj_str_binary_op,
     subscr, bytes_subscr,
-    getiter, mp_obj_new_str_iterator,
+    iter, mp_obj_new_str_iterator,
     buffer, mp_obj_str_get_buffer,
     locals_dict, &mp_obj_str_locals_dict
     );
@@ -2166,7 +2166,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, str_print,
     binary_op, mp_obj_str_binary_op,
     subscr, bytes_subscr,
-    getiter, mp_obj_new_bytes_iterator,
+    iter, mp_obj_new_bytes_iterator,
     buffer, mp_obj_str_get_buffer,
     locals_dict, &mp_obj_bytes_locals_dict
     );

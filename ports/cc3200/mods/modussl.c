@@ -64,9 +64,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     ssl_socket_type,
     MP_QSTR_ussl,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
-    getiter, NULL,
-    iternext, NULL,
     protocol, &socket_stream_p,
     locals_dict, &socket_locals_dict
     );

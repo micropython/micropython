@@ -142,7 +142,10 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
         // this should not be applied to class types, as will result in extra
         // lookup either.
         if (lookup->slot_offset != 0 && mp_obj_is_native_type(type)) {
-            if (MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(type, lookup->slot_offset)) {
+            // Check if there is a non-zero value in the specified slot index,
+            // with a special case for getiter where the slot won't be set
+            // for MP_TYPE_FLAG_ITER_IS_STREAM.
+            if (MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(type, lookup->slot_offset) || (lookup->slot_offset == MP_OBJ_TYPE_OFFSETOF_SLOT(iter) && type->flags & MP_TYPE_FLAG_ITER_IS_STREAM)) {
                 DEBUG_printf("mp_obj_class_lookup: Matched special meth slot (off=%d) for %s\n",
                     lookup->slot_offset, qstr_str(lookup->attr));
                 lookup->dest[0] = MP_OBJ_SENTINEL;
@@ -889,7 +892,7 @@ mp_obj_t mp_obj_instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) 
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = MP_QSTR___iter__,
-        .slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(getiter),
+        .slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(iter),
         .dest = member,
         .is_type = false,
     };
@@ -898,10 +901,14 @@ mp_obj_t mp_obj_instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) 
         return MP_OBJ_NULL;
     } else if (member[0] == MP_OBJ_SENTINEL) {
         const mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
-        if (iter_buf == NULL) {
-            iter_buf = m_new_obj(mp_obj_iter_buf_t);
+        if (type->flags & MP_TYPE_FLAG_ITER_IS_ITERNEXT) {
+            return self->subobj[0];
+        } else {
+            if (iter_buf == NULL) {
+                iter_buf = m_new_obj(mp_obj_iter_buf_t);
+            }
+            return ((mp_getiter_fun_t)MP_OBJ_TYPE_GET_SLOT(type, iter))(self->subobj[0], iter_buf);
         }
-        return MP_OBJ_TYPE_GET_SLOT(type, getiter)(self->subobj[0], iter_buf);
     } else {
         return mp_call_method_n_kw(0, 0, member);
     }
@@ -1122,7 +1129,9 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
 
     // Basic validation of base classes
     uint16_t base_flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE
-        | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST;
+        | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE
+        | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST
+        | MP_TYPE_FLAG_ITER_IS_GETITER;
     size_t bases_len;
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);
@@ -1167,7 +1176,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     MP_OBJ_TYPE_SET_SLOT(o, binary_op, instance_binary_op, 3);
     MP_OBJ_TYPE_SET_SLOT(o, attr, mp_obj_instance_attr, 4);
     MP_OBJ_TYPE_SET_SLOT(o, subscr, instance_subscr, 5);
-    MP_OBJ_TYPE_SET_SLOT(o, getiter, mp_obj_instance_getiter, 6);
+    MP_OBJ_TYPE_SET_SLOT(o, iter, mp_obj_instance_getiter, 6);
     // MP_OBJ_TYPE_SET_SLOT(o, iternext, not implemented)
     MP_OBJ_TYPE_SET_SLOT(o, buffer, instance_get_buffer, 7);
 

@@ -126,11 +126,9 @@ STATIC const mp_stream_p_t stdio_obj_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     stdio_obj_type,
     MP_QSTR_FileIO,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
     MP_TYPE_NULL_MAKE_NEW,
     print, stdio_obj_print,
-    getiter, mp_identity_getiter,
-    iternext, mp_stream_unbuffered_iter,
     protocol, &stdio_obj_stream_p,
     locals_dict, &stdio_locals_dict
     );
@@ -162,11 +160,9 @@ STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     stdio_buffer_obj_type,
     MP_QSTR_FileIO,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
     MP_TYPE_NULL_MAKE_NEW,
     print, stdio_obj_print,
-    getiter, mp_identity_getiter,
-    iternext, mp_stream_unbuffered_iter,
     protocol, &stdio_buffer_obj_stream_p,
     locals_dict, &stdio_locals_dict
     );

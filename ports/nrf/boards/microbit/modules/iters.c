@@ -46,10 +46,9 @@ static mp_obj_t microbit_repeat_iter_next(mp_obj_t iter_in) {
 MP_DEFINE_CONST_OBJ_TYPE(
     microbit_repeat_iterator_type,
     MP_QSTR_iterator,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     MP_TYPE_NULL_MAKE_NEW,
-    getiter, mp_identity_getiter,
-    iternext, microbit_repeat_iter_next
+    iter, microbit_repeat_iter_next
     );
 
 mp_obj_t microbit_repeat_iterator(mp_obj_t iterable) {

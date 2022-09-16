@@ -59,10 +59,9 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_it,
     MP_QSTR_iterator,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     MP_TYPE_NULL_MAKE_NEW,
-    getiter, mp_identity_getiter,
-    iternext, it_iternext
+    iter, it_iternext
     );
 
 // args are those returned from mp_load_method_maybe (ie either an attribute or a method)

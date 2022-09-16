@@ -824,18 +824,16 @@ STATIC mp_obj_t microbit_scrolling_string_iter_next(mp_obj_t o_in) {
 MP_DEFINE_CONST_OBJ_TYPE(
     microbit_scrolling_string_type,
     MP_QSTR_ScrollingString,
-    MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
-    getiter, get_microbit_scrolling_string_iter
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    iter, get_microbit_scrolling_string_iter
     );
 
 MP_DEFINE_CONST_OBJ_TYPE(
     microbit_scrolling_string_iterator_type,
     MP_QSTR_iterator,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     MP_TYPE_NULL_MAKE_NEW,
-    getiter, mp_identity_getiter,
-    iternext, microbit_scrolling_string_iter_next
+    iter, microbit_scrolling_string_iter_next
     );
 
 /** Facade types to present a string as a sequence of images.
@@ -877,11 +875,10 @@ static mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in, mp_obj_iter_buf_t
 MP_DEFINE_CONST_OBJ_TYPE(
     string_image_facade_type,
     MP_QSTR_Facade,
-    MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
     unary_op, facade_unary_op,
     subscr, string_image_facade_subscr,
-    getiter, microbit_facade_iterator
+    iter, microbit_facade_iterator
     );
 
 
@@ -914,10 +911,9 @@ static mp_obj_t microbit_facade_iter_next(mp_obj_t iter_in) {
 MP_DEFINE_CONST_OBJ_TYPE(
     microbit_facade_iterator_type,
     MP_QSTR_iterator,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     MP_TYPE_NULL_MAKE_NEW,
-    getiter, mp_identity_getiter,
-    iternext, microbit_facade_iter_next
+    iter, microbit_facade_iter_next
     );
 
 mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in, mp_obj_iter_buf_t *iter_buf) {

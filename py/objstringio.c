@@ -247,11 +247,9 @@ STATIC const mp_stream_p_t stringio_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_stringio,
     MP_QSTR_StringIO,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
     stringio_make_new,
     print, stringio_print,
-    getiter, mp_identity_getiter,
-    iternext, mp_stream_unbuffered_iter,
     protocol, &stringio_stream_p,
     locals_dict, &stringio_locals_dict
     );
@@ -266,11 +264,9 @@ STATIC const mp_stream_p_t bytesio_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bytesio,
     MP_QSTR_BytesIO,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
     stringio_make_new,
     print, stringio_print,
-    getiter, mp_identity_getiter,
-    iternext, mp_stream_unbuffered_iter,
     protocol, &bytesio_stream_p,
     locals_dict, &stringio_locals_dict
     );

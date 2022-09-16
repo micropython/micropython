@@ -1117,11 +1117,9 @@ STATIC const mp_stream_p_t i2s_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_i2s_type,
     MP_QSTR_I2S,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
     machine_i2s_make_new,
     print, machine_i2s_print,
-    getiter, mp_identity_getiter,
-    iternext, mp_stream_unbuffered_iter,
     protocol, &i2s_stream_p,
     locals_dict, &machine_i2s_locals_dict
     );
