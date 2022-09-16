@@ -98,7 +98,7 @@ STATIC mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_
     if (bufinfo.typecode == 'h' || bufinfo.typecode == 'H') {
         bytes_per_sample = 2;
     } else if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError_varg(translate("%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"), MP_QSTR_buffer);
+        mp_raise_ValueError_varg(translate("%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"), MP_QSTR_buffer);
     }
 
     // Validate sample rate here
