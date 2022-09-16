@@ -79,10 +79,6 @@ msgstr ""
 msgid "%q"
 msgstr ""
 
-#: shared-bindings/analogbufio/BufferedIn.c
-msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
-msgstr ""
-
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
 msgstr ""
@@ -161,6 +157,11 @@ msgstr ""
 
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
+msgstr ""
+
+#: shared-bindings/analogbufio/BufferedIn.c
+#: shared-bindings/audiocore/RawSample.c
+msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 
 #: py/argcheck.c
@@ -3876,12 +3877,6 @@ msgstr ""
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
-msgstr ""
-
-#: shared-bindings/audiocore/RawSample.c
-msgid ""
-"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
-"'B'"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c

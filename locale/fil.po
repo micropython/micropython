@@ -80,10 +80,6 @@ msgstr ""
 msgid "%q"
 msgstr ""
 
-#: shared-bindings/analogbufio/BufferedIn.c
-msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
-msgstr ""
-
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
 msgstr ""
@@ -164,6 +160,11 @@ msgstr ""
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "aarehas na haba dapat ang buffer slices"
+
+#: shared-bindings/analogbufio/BufferedIn.c
+#: shared-bindings/audiocore/RawSample.c
+msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -3917,14 +3918,6 @@ msgstr ""
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid ""
-"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
-"'B'"
-msgstr ""
-"ang sample_source buffer ay dapat na isang bytearray o array ng uri na 'h', "
-"'H', 'b' o'B'"
-
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
@@ -4400,6 +4393,13 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid ""
+#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
+#~ "or 'B'"
+#~ msgstr ""
+#~ "ang sample_source buffer ay dapat na isang bytearray o array ng uri na "
+#~ "'h', 'H', 'b' o'B'"
 
 #, fuzzy
 #~ msgid "%q should be an int"

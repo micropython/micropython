@@ -84,10 +84,6 @@ msgstr ""
 msgid "%q"
 msgstr ""
 
-#: shared-bindings/analogbufio/BufferedIn.c
-msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
-msgstr ""
-
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
 msgstr ""
@@ -167,6 +163,11 @@ msgstr "%qは0以上でなければなりません"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%qは1以上でなければなりません"
+
+#: shared-bindings/analogbufio/BufferedIn.c
+#: shared-bindings/audiocore/RawSample.c
+msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -3899,13 +3900,6 @@ msgstr ""
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid ""
-"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
-"'B'"
-msgstr ""
-"sample_source バッファには bytearray または 'h','H','b','B'型のarrayが必要"
-
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
@@ -4378,6 +4372,12 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid ""
+#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
+#~ "or 'B'"
+#~ msgstr ""
+#~ "sample_source バッファには bytearray または 'h','H','b','B'型のarrayが必要"
 
 #~ msgid "%q must be a tuple of length 2"
 #~ msgstr "%qは長さ2のタプルでなければなりません"

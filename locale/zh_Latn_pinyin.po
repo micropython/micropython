@@ -90,10 +90,6 @@ msgstr ""
 msgid "%q"
 msgstr "%q"
 
-#: shared-bindings/analogbufio/BufferedIn.c
-msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
-msgstr ""
-
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
 msgstr "%q hé %q bāo hán chóng fù yǐn jiǎo"
@@ -173,6 +169,11 @@ msgstr "%q bìxū > = 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q bìxū >= 1"
+
+#: shared-bindings/analogbufio/BufferedIn.c
+#: shared-bindings/audiocore/RawSample.c
+msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -3943,14 +3944,6 @@ msgstr "gǔn dòng cān shù bì xū shì ndarray"
 msgid "rsplit(None,n)"
 msgstr "Rchāifēn(wú,N)"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid ""
-"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
-"'B'"
-msgstr ""
-"yàngběn yuán_yuán huǎnchōng qū bìxū shì zì yǎnlèi huò lèixíng 'h', 'H', 'b' "
-"huò 'B' de shùzǔ"
-
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
@@ -4426,6 +4419,13 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid ""
+#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
+#~ "or 'B'"
+#~ msgstr ""
+#~ "yàngběn yuán_yuán huǎnchōng qū bìxū shì zì yǎnlèi huò lèixíng 'h', 'H', "
+#~ "'b' huò 'B' de shùzǔ"
 
 #~ msgid "Expected an alarm"
 #~ msgstr "yù qī yǒu jǐng bào"

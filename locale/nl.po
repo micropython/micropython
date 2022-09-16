@@ -82,10 +82,6 @@ msgstr ""
 msgid "%q"
 msgstr ""
 
-#: shared-bindings/analogbufio/BufferedIn.c
-msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
-msgstr ""
-
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
 msgstr ""
@@ -165,6 +161,11 @@ msgstr "%q moet >= 0 zijn"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q moet >= 1 zijn"
+
+#: shared-bindings/analogbufio/BufferedIn.c
+#: shared-bindings/audiocore/RawSample.c
+msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -3915,14 +3916,6 @@ msgstr "roll argument moet een ndarray zijn"
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid ""
-"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
-"'B'"
-msgstr ""
-"sample_source buffer moet een bytearray of array van type 'h', 'H', 'b' of "
-"'B' zijn"
-
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
@@ -4395,6 +4388,13 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid ""
+#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
+#~ "or 'B'"
+#~ msgstr ""
+#~ "sample_source buffer moet een bytearray of array van type 'h', 'H', 'b' "
+#~ "of 'B' zijn"
 
 #~ msgid "Expected an alarm"
 #~ msgstr "Verwachtte een alarm"

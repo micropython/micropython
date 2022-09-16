@@ -87,11 +87,6 @@ msgstr ""
 msgid "%q"
 msgstr "%q"
 
-#: shared-bindings/analogbufio/BufferedIn.c
-msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
-msgstr ""
-"%q ``måste`` vara en bytearray eller matris av typen 'h', 'H', 'b' eller 'B'"
-
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
 msgstr "%q och %q innehåller duplicerade pinnar"
@@ -171,6 +166,11 @@ msgstr "%q måste vara >= 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q måste vara >= 1"
+
+#: shared-bindings/analogbufio/BufferedIn.c
+#: shared-bindings/audiocore/RawSample.c
+msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -3943,14 +3943,6 @@ msgstr "argumentet roll måste vara en ndarray"
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid ""
-"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
-"'B'"
-msgstr ""
-"sample_source buffert måste vara en bytearray eller matris av typ 'h', 'H', "
-"'b' eller 'B'"
-
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
@@ -4423,6 +4415,18 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
+#~ msgstr ""
+#~ "%q ``måste`` vara en bytearray eller matris av typen 'h', 'H', 'b' eller "
+#~ "'B'"
+
+#~ msgid ""
+#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
+#~ "or 'B'"
+#~ msgstr ""
+#~ "sample_source buffert måste vara en bytearray eller matris av typ 'h', "
+#~ "'H', 'b' eller 'B'"
 
 #~ msgid "Expected an alarm"
 #~ msgstr "Förväntade ett larm"
