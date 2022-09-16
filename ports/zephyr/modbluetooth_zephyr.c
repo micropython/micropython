@@ -31,8 +31,8 @@
 
 #if MICROPY_PY_BLUETOOTH
 
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/hci.h>
+#include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/bluetooth/hci.h>
 #include "extmod/modbluetooth.h"
 
 #define DEBUG_printf(...) // printk("BLE: " __VA_ARGS__)
