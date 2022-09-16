@@ -40,7 +40,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pin_cpu_pins_obj_type,
     MP_QSTR_cpu,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, pin_named_pins_obj_print,
     locals_dict, &pin_cpu_pins_locals_dict
     );
@@ -49,7 +48,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pin_board_pins_obj_type,
     MP_QSTR_board,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, pin_named_pins_obj_print,
     locals_dict, &pin_board_pins_locals_dict
     );

@@ -380,7 +380,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     rp2_pio_type,
     MP_QSTR_PIO,
     MP_TYPE_FLAG_NONE,
-    rp2_pio_make_new,
+    make_new, rp2_pio_make_new,
     print, rp2_pio_print,
     locals_dict, &rp2_pio_locals_dict
     );
@@ -811,7 +811,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     rp2_state_machine_type,
     MP_QSTR_StateMachine,
     MP_TYPE_FLAG_NONE,
-    rp2_state_machine_make_new,
+    make_new, rp2_state_machine_make_new,
     print, rp2_state_machine_print,
     locals_dict, &rp2_state_machine_locals_dict
     );

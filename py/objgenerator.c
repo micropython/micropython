@@ -80,7 +80,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_gen_wrap,
     MP_QSTR_generator,
     MP_TYPE_FLAG_BINDS_SELF,
-    MP_TYPE_NULL_MAKE_NEW,
     GEN_WRAP_TYPE_ATTR
     call, gen_wrap_call,
     unary_op, mp_generic_unary_op
@@ -146,7 +145,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_native_gen_wrap,
     MP_QSTR_generator,
     MP_TYPE_FLAG_BINDS_SELF,
-    MP_TYPE_NULL_MAKE_NEW,
     call, native_gen_wrap_call,
     NATIVE_GEN_WRAP_TYPE_ATTR
     unary_op, mp_generic_unary_op
@@ -371,7 +369,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_gen_instance,
     MP_QSTR_generator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    MP_TYPE_NULL_MAKE_NEW,
     print, gen_instance_print,
     unary_op, mp_generic_unary_op,
     iter, gen_instance_iternext,

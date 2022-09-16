@@ -110,7 +110,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_stest_fileio,
     MP_QSTR_stest_fileio,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     protocol, &fileio_stream_p,
     locals_dict, &rawfile_locals_dict
     );
@@ -140,7 +139,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_stest_textio2,
     MP_QSTR_stest_textio2,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     protocol, &textio_stream_p2,
     locals_dict, &rawfile_locals_dict2
     );

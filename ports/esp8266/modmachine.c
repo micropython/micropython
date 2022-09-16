@@ -341,7 +341,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     esp_timer_type,
     MP_QSTR_Timer,
     MP_TYPE_FLAG_NONE,
-    esp_timer_make_new,
+    make_new, esp_timer_make_new,
     print, esp_timer_print,
     locals_dict, &esp_timer_locals_dict
     );

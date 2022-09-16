@@ -103,7 +103,7 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     // This is a statically-allocated UART (see machine_uart.c), and doesn't
     // contain any heap pointers other than the ringbufs (which are already
     // root pointers), so no need to track this as a root pointer.
-    mp_bthci_uart = machine_uart_type.make_new((mp_obj_t)&machine_uart_type, 2, 2, args);
+    mp_bthci_uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, 2, 2, args);
 
     // Start the HCI polling to process any initial events/packets.
     mp_bluetooth_hci_start_polling();

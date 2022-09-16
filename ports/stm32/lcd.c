@@ -529,7 +529,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_lcd_type,
     MP_QSTR_LCD,
     MP_TYPE_FLAG_NONE,
-    pyb_lcd_make_new,
+    make_new, pyb_lcd_make_new,
     locals_dict, &pyb_lcd_locals_dict
     );
 

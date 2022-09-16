@@ -176,7 +176,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_settrace_codeobj,
     MP_QSTR_code,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, code_print,
     unary_op, mp_generic_unary_op,
     attr, code_attr
@@ -247,7 +246,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_frame,
     MP_QSTR_frame,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, frame_print,
     unary_op, mp_generic_unary_op,
     attr, frame_attr

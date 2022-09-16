@@ -161,7 +161,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     uhashlib_sha256_type,
     MP_QSTR_sha256,
     MP_TYPE_FLAG_NONE,
-    uhashlib_sha256_make_new,
+    make_new, uhashlib_sha256_make_new,
     locals_dict, &uhashlib_sha256_locals_dict
     );
 #endif
@@ -255,7 +255,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     uhashlib_sha1_type,
     MP_QSTR_sha1,
     MP_TYPE_FLAG_NONE,
-    uhashlib_sha1_make_new,
+    make_new, uhashlib_sha1_make_new,
     locals_dict, &uhashlib_sha1_locals_dict
     );
 #endif
@@ -349,7 +349,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     uhashlib_md5_type,
     MP_QSTR_md5,
     MP_TYPE_FLAG_NONE,
-    uhashlib_md5_make_new,
+    make_new, uhashlib_md5_make_new,
     locals_dict, &uhashlib_md5_locals_dict
     );
 #endif // MICROPY_PY_UHASHLIB_MD5

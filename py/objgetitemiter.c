@@ -60,7 +60,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_it,
     MP_QSTR_iterator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    MP_TYPE_NULL_MAKE_NEW,
     iter, it_iternext
     );
 

@@ -841,6 +841,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_rtc_type,
     MP_QSTR_RTC,
     MP_TYPE_FLAG_NONE,
-    pyb_rtc_make_new,
+    make_new, pyb_rtc_make_new,
     locals_dict, &pyb_rtc_locals_dict
     );

@@ -109,7 +109,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     sensor_type,
     MP_QSTR_Sensor,
     MP_TYPE_FLAG_NONE,
-    sensor_make_new,
+    make_new, sensor_make_new,
     locals_dict, &sensor_locals_dict
     );
 

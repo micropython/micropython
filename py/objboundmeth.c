@@ -111,7 +111,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bound_meth,
     MP_QSTR_bound_method,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     BOUND_METH_TYPE_PRINT
     BOUND_METH_TYPE_ATTR
     call, bound_meth_call

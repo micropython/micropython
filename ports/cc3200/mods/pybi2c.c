@@ -525,7 +525,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_i2c_type,
     MP_QSTR_I2C,
     MP_TYPE_FLAG_NONE,
-    pyb_i2c_make_new,
+    make_new, pyb_i2c_make_new,
     print, pyb_i2c_print,
     locals_dict, &pyb_i2c_locals_dict
     );

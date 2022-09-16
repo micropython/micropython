@@ -72,7 +72,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_reversed,
     MP_QSTR_reversed,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    reversed_make_new,
+    make_new, reversed_make_new,
     iter, reversed_iternext
     );
 

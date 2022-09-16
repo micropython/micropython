@@ -187,7 +187,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     nrf_flashbdev_type,
     MP_QSTR_Flash,
     MP_TYPE_FLAG_NONE,
-    nrf_flashbdev_make_new,
+    make_new, nrf_flashbdev_make_new,
     print, nrf_flashbdev_print,
     locals_dict, &nrf_flashbdev_locals_dict
     );

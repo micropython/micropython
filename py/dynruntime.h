@@ -105,7 +105,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_const_none                       ((mp_obj_t)mp_fun_table.const_none)
 #define mp_const_false                      ((mp_obj_t)mp_fun_table.const_false)
 #define mp_const_true                       ((mp_obj_t)mp_fun_table.const_true)
-#define mp_const_empty_bytes                (mp_type_bytes.make_new(NULL, 0, 0, NULL))
+#define mp_const_empty_bytes                (MP_OBJ_TYPE_GET_SLOT(&mp_type_bytes, make_new)(NULL, 0, 0, NULL))
 #define mp_const_empty_tuple                (mp_fun_table.new_tuple(0, NULL))
 
 #define mp_obj_new_bool(b)                  ((b) ? (mp_obj_t)mp_fun_table.const_true : (mp_obj_t)mp_fun_table.const_false)

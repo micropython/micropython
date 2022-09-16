@@ -294,7 +294,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     websocket_type,
     MP_QSTR_websocket,
     MP_TYPE_FLAG_NONE,
-    websocket_make_new,
+    make_new, websocket_make_new,
     protocol, &websocket_stream_p,
     locals_dict, &websocket_locals_dict
     );

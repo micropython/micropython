@@ -74,7 +74,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     ubluepy_descriptor_type,
     MP_QSTR_Descriptor,
     MP_TYPE_FLAG_NONE,
-    ubluepy_descriptor_make_new,
+    make_new, ubluepy_descriptor_make_new,
     print, ubluepy_descriptor_print,
     locals_dict, &ubluepy_descriptor_locals_dict
     );

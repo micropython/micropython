@@ -152,7 +152,8 @@ STATIC void complex_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    mp_type_complex, MP_QSTR_complex, MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE, complex_make_new,
+    mp_type_complex, MP_QSTR_complex, MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    make_new, complex_make_new,
     print, complex_print,
     unary_op, complex_unary_op,
     binary_op, complex_binary_op,

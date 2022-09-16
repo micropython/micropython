@@ -404,7 +404,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_flash_type,
     MP_QSTR_Flash,
     MP_TYPE_FLAG_NONE,
-    pyb_flash_make_new,
+    make_new, pyb_flash_make_new,
     locals_dict, &pyb_flash_locals_dict,
     print, pyb_flash_print
     );

@@ -340,7 +340,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_poll,
     MP_QSTR_poll,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    MP_TYPE_NULL_MAKE_NEW,
     iter, poll_iternext,
     locals_dict, &poll_locals_dict
     );

@@ -134,7 +134,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_module,
     MP_QSTR_module,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, module_print,
     attr, module_attr
     );

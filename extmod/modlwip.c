@@ -181,7 +181,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     lwip_slip_type,
     MP_QSTR_slip,
     MP_TYPE_FLAG_NONE,
-    lwip_slip_make_new,
+    make_new, lwip_slip_make_new,
     locals_dict, &lwip_slip_locals_dict
     );
 
@@ -1599,7 +1599,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     lwip_socket_type,
     MP_QSTR_socket,
     MP_TYPE_FLAG_NONE,
-    lwip_socket_make_new,
+    make_new, lwip_socket_make_new,
     print, lwip_socket_print,
     protocol, &lwip_socket_stream_p,
     locals_dict, &lwip_socket_locals_dict

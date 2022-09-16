@@ -255,7 +255,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_spi_type,
     MP_QSTR_SPI,
     MP_TYPE_FLAG_NONE,
-    machine_spi_make_new,
+    make_new, machine_spi_make_new,
     print, machine_spi_print,
     protocol, &machine_spi_p,
     locals_dict, &mp_machine_spi_locals_dict

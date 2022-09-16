@@ -343,7 +343,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_hard_pwm_type,
     MP_QSTR_PWM,
     MP_TYPE_FLAG_NONE,
-    machine_pwm_make_new,
+    make_new, machine_pwm_make_new,
     print, machine_pwm_print,
     locals_dict, &machine_pwm_locals_dict
     );

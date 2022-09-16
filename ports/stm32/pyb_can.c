@@ -1076,7 +1076,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_can_type,
     MP_QSTR_CAN,
     MP_TYPE_FLAG_NONE,
-    pyb_can_make_new,
+    make_new, pyb_can_make_new,
     print, pyb_can_print,
     protocol, &can_stream_p,
     locals_dict, &pyb_can_locals_dict

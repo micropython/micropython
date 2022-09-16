@@ -73,7 +73,7 @@ int nina_bsp_init(void) {
         MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIFI_SPI_BAUDRATE),
     };
 
-    MP_STATE_PORT(mp_wifi_spi) = machine_spi_type.make_new((mp_obj_t)&machine_spi_type, 2, 0, args);
+    MP_STATE_PORT(mp_wifi_spi) = MP_OBJ_TYPE_GET_SLOT(&machine_spi_type, make_new)((mp_obj_t)&machine_spi_type, 2, 0, args);
     return 0;
 }
 

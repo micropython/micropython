@@ -49,7 +49,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_polymorph_iter,
     MP_QSTR_iterator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    MP_TYPE_NULL_MAKE_NEW,
     iter, polymorph_it_iternext
     );
 
@@ -81,7 +80,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_polymorph_iter_with_finaliser,
     MP_QSTR_iterator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    MP_TYPE_NULL_MAKE_NEW,
     iter, polymorph_it_iternext,
     locals_dict, &mp_obj_polymorph_iter_locals_dict
     );

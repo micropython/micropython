@@ -425,7 +425,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     ffimod_type,
     MP_QSTR_ffimod,
     MP_TYPE_FLAG_NONE,
-    ffimod_make_new,
+    make_new, ffimod_make_new,
     print, ffimod_print,
     locals_dict, &ffimod_locals_dict
     );
@@ -535,7 +535,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     ffifunc_type,
     MP_QSTR_ffifunc,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, ffifunc_print,
     call, ffifunc_call
     );
@@ -563,7 +562,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     fficallback_type,
     MP_QSTR_fficallback,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, fficallback_print,
     locals_dict, &fficallback_locals_dict
     );
@@ -601,7 +599,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     ffivar_type,
     MP_QSTR_ffivar,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     print, ffivar_print,
     locals_dict, &ffivar_locals_dict
     );
@@ -613,8 +610,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     opaque_type,
     MP_QSTR_opaqueval,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
-    //    .print = opaque_print,
+    make_new, //    .print = opaque_print,
     );
 */
 

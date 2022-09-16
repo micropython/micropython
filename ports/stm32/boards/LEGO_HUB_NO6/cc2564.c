@@ -63,7 +63,7 @@ int mp_bluetooth_hci_controller_init(void) {
     //  tim_ch = tim.channel(TIM_CH, pyb.Timer.PWM, pin=btclk)
     //  tim_ch.pulse_width_percent(50)
     mp_obj_t args[6] = { MP_OBJ_NEW_SMALL_INT(CC2564_TIMER_BT_SLOWCLOCK_TIM), MP_OBJ_NEW_QSTR(MP_QSTR_freq), MP_OBJ_NEW_SMALL_INT(32768), MP_OBJ_NULL };
-    mp_obj_t tim = pyb_timer_type.make_new(&pyb_timer_type, 1, 1, args);
+    mp_obj_t tim = MP_OBJ_TYPE_GET_SLOT(&pyb_timer_type, make_new)(&pyb_timer_type, 1, 1, args);
     mp_load_method(tim, MP_QSTR_channel, args);
     args[2] = MP_OBJ_NEW_SMALL_INT(CC2564_TIMER_BT_SLOWCLOCK_TIM_CH);
     args[3] = MP_OBJ_NEW_SMALL_INT(0); // CHANNEL_MODE_PWM_NORMAL

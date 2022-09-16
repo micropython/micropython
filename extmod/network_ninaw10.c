@@ -159,7 +159,7 @@ STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
                     MP_OBJ_NEW_QSTR(MP_QSTR_freq), MP_OBJ_NEW_SMALL_INT(10),
                     MP_OBJ_NEW_QSTR(MP_QSTR_callback), MP_OBJ_FROM_PTR(&network_ninaw10_timer_callback_obj),
                 };
-                MP_STATE_PORT(mp_wifi_timer) = machine_timer_type.make_new((mp_obj_t)&machine_timer_type, 0, 2, timer_args);
+                MP_STATE_PORT(mp_wifi_timer) = MP_OBJ_TYPE_GET_SLOT(&machine_timer_type, make_new)((mp_obj_t)&machine_timer_type, 0, 2, timer_args);
             }
         } else {
             nina_deinit();
@@ -778,7 +778,7 @@ STATIC MP_DEFINE_CONST_OBJ_FULL_TYPE(
     mod_network_nic_type_nina_base,
     MP_QSTR_nina,
     MP_TYPE_FLAG_NONE,
-    network_ninaw10_make_new,
+    make_new, network_ninaw10_make_new,
     locals_dict, &nina_locals_dict
     );
 

@@ -70,6 +70,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_zip,
     MP_QSTR_zip,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    zip_make_new,
+    make_new, zip_make_new,
     iter, zip_iternext
     );

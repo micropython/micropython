@@ -175,7 +175,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     network_server_type,
     MP_QSTR_Server,
     MP_TYPE_FLAG_NONE,
-    network_server_make_new,
+    make_new, network_server_make_new,
     locals_dict, &network_server_locals_dict
     );
 #endif

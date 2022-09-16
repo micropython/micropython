@@ -940,7 +940,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_usb_vcp_type,
     MP_QSTR_USB_VCP,
     MP_TYPE_FLAG_ITER_IS_STREAM,
-    pyb_usb_vcp_make_new,
+    make_new, pyb_usb_vcp_make_new,
     print, pyb_usb_vcp_print,
     protocol, &pyb_usb_vcp_stream_p,
     locals_dict, &pyb_usb_vcp_locals_dict
@@ -1080,7 +1080,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_usb_hid_type,
     MP_QSTR_USB_HID,
     MP_TYPE_FLAG_NONE,
-    pyb_usb_hid_make_new,
+    make_new, pyb_usb_hid_make_new,
     protocol, &pyb_usb_hid_stream_p,
     locals_dict, &pyb_usb_hid_locals_dict
     );

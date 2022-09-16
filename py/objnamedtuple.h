@@ -29,9 +29,9 @@
 #include "py/objtuple.h"
 
 typedef struct _mp_obj_namedtuple_type_t {
-    // This is a mp_obj_type_t with seven slots.
+    // This is a mp_obj_type_t with eight slots.
     mp_obj_empty_type_t base;
-    void *slots[7];
+    void *slots[8];
     size_t n_fields;
     qstr fields[];
 } mp_obj_namedtuple_type_t;

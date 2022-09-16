@@ -108,7 +108,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_dac_type,
     MP_QSTR_DAC,
     MP_TYPE_FLAG_NONE,
-    mdac_make_new,
+    make_new, mdac_make_new,
     print, mdac_print,
     locals_dict, &mdac_locals_dict
     );

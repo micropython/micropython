@@ -101,7 +101,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_iobase,
     MP_QSTR_IOBase,
     MP_TYPE_FLAG_NONE,
-    iobase_make_new,
+    make_new, iobase_make_new,
     protocol, &iobase_p
     );
 
@@ -196,7 +196,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bufwriter,
     MP_QSTR_BufferedWriter,
     MP_TYPE_FLAG_NONE,
-    bufwriter_make_new,
+    make_new, bufwriter_make_new,
     protocol, &bufwriter_stream_p,
     locals_dict, &bufwriter_locals_dict
     );

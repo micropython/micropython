@@ -402,7 +402,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_vfs_posix,
     MP_QSTR_VfsPosix,
     MP_TYPE_FLAG_NONE,
-    vfs_posix_make_new,
+    make_new, vfs_posix_make_new,
     protocol, &vfs_posix_proto,
     locals_dict, &vfs_posix_locals_dict
     );

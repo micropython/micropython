@@ -378,7 +378,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     extint_type,
     MP_QSTR_ExtInt,
     MP_TYPE_FLAG_NONE,
-    extint_make_new,
+    make_new, extint_make_new,
     locals_dict, &extint_locals_dict,
     print, extint_obj_print
     );

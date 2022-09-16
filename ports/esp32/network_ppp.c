@@ -282,6 +282,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     ppp_if_type,
     MP_QSTR_PPP,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     locals_dict, &ppp_if_locals_dict
     );

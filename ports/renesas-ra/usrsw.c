@@ -139,7 +139,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_switch_type,
     MP_QSTR_Switch,
     MP_TYPE_FLAG_NONE,
-    pyb_switch_make_new,
+    make_new, pyb_switch_make_new,
     locals_dict, &pyb_switch_locals_dict,
     print, pyb_switch_print,
     call, pyb_switch_call

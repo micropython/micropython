@@ -71,7 +71,7 @@ STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
     return list;
 }
 
-STATIC mp_obj_t list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
@@ -456,7 +456,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_list,
     MP_QSTR_list,
     MP_TYPE_FLAG_ITER_IS_GETITER,
-    list_make_new,
+    make_new, mp_obj_list_make_new,
     print, list_print,
     unary_op, list_unary_op,
     binary_op, list_binary_op,

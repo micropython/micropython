@@ -473,7 +473,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_uart_type,
     MP_QSTR_UART,
     MP_TYPE_FLAG_ITER_IS_STREAM,
-    machine_uart_make_new,
+    make_new, machine_uart_make_new,
     print, machine_uart_print,
     protocol, &uart_stream_p,
     locals_dict, &machine_uart_locals_dict

@@ -67,6 +67,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_map,
     MP_QSTR_map,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    map_make_new,
+    make_new, map_make_new,
     iter, map_iternext
     );

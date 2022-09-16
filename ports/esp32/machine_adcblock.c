@@ -198,7 +198,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_adcblock_type,
     MP_QSTR_ADCBlock,
     MP_TYPE_FLAG_NONE,
-    madcblock_make_new,
+    make_new, madcblock_make_new,
     print, madcblock_print,
     locals_dict, &madcblock_locals_dict
     );

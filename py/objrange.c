@@ -54,7 +54,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_range_it,
     MP_QSTR_iterator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    MP_TYPE_NULL_MAKE_NEW,
     iter, range_it_iternext
     );
 
@@ -225,7 +224,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_range,
     MP_QSTR_range,
     MP_TYPE_FLAG_NONE,
-    range_make_new,
+    make_new, range_make_new,
     RANGE_TYPE_BINOP
     RANGE_TYPE_ATTR
     print, range_print,

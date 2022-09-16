@@ -266,7 +266,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_rtcounter_type,
     MP_QSTR_RTCounter,
     MP_TYPE_FLAG_NONE,
-    machine_rtc_make_new,
+    make_new, machine_rtc_make_new,
     print, rtc_print,
     locals_dict, &machine_rtc_locals_dict
     );

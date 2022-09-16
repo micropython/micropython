@@ -118,7 +118,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     ubluepy_scanner_type,
     MP_QSTR_Scanner,
     MP_TYPE_FLAG_NONE,
-    ubluepy_scanner_make_new,
+    make_new, ubluepy_scanner_make_new,
     print, ubluepy_scanner_print,
     locals_dict, &ubluepy_scanner_locals_dict
     );

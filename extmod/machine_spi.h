@@ -39,7 +39,7 @@
                 --n_args; \
                 ++all_args; \
             } \
-            return mp_machine_soft_spi_type.make_new(&mp_machine_soft_spi_type, n_args, n_kw, all_args); \
+            return MP_OBJ_TYPE_GET_SLOT(&mp_machine_soft_spi_type, make_new)(&mp_machine_soft_spi_type, n_args, n_kw, all_args); \
         } \
     } while (0)
 

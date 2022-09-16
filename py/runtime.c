@@ -1076,7 +1076,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_checked_fun,
     MP_QSTR_function,
     MP_TYPE_FLAG_BINDS_SELF,
-    MP_TYPE_NULL_MAKE_NEW,
     call, checked_fun_call
     );
 

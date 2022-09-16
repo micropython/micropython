@@ -520,7 +520,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_socket,
     MP_QSTR_socket,
     MP_TYPE_FLAG_NONE,
-    socket_make_new,
+    make_new, socket_make_new,
     print, socket_print,
     protocol, &usocket_stream_p,
     locals_dict, &usocket_locals_dict

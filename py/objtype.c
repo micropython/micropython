@@ -88,7 +88,7 @@ STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *args) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(args[0]);
     const mp_obj_type_t *native_base = NULL;
     instance_count_native_bases(self->base.type, &native_base);
-    self->subobj[0] = native_base->make_new(native_base, n_args - 1, 0, args + 1);
+    self->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args - 1, 0, args + 1);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(native_base_init_wrapper_obj, 1, MP_OBJ_FUN_ARGS_MAX, native_base_init_wrapper);
@@ -285,7 +285,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     struct class_lookup_data lookup = {
         .obj = NULL,
         .attr = MP_QSTR___new__,
-        .slot_offset = offsetof(mp_obj_type_t, make_new),
+        .slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(make_new),
         .dest = init_fn,
         .is_type = false,
     };
@@ -362,7 +362,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     // If the type had a native base that was not explicitly initialised
     // (constructed) by the Python __init__() method then construct it now.
     if (native_base != NULL && o->subobj[0] == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
-        o->subobj[0] = native_base->make_new(native_base, n_args, n_kw, args);
+        o->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args, n_kw, args);
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -998,7 +998,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
 
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->make_new == NULL) {
+    if (!MP_OBJ_TYPE_HAS_SLOT(self, make_new)) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("can't create instance"));
         #else
@@ -1007,7 +1007,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
     }
 
     // make new instance
-    mp_obj_t o = self->make_new(self, n_args, n_kw, args);
+    mp_obj_t o = MP_OBJ_TYPE_GET_SLOT(self, make_new)(self, n_args, n_kw, args);
 
     // return new instance
     return o;
@@ -1109,7 +1109,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_type,
     MP_QSTR_type,
     MP_TYPE_FLAG_NONE,
-    type_make_new,
+    make_new, type_make_new,
     print, type_print,
     call, type_call,
     unary_op, mp_generic_unary_op,
@@ -1141,7 +1141,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         }
         mp_obj_type_t *t = MP_OBJ_TO_PTR(bases_items[i]);
         // TODO: Verify with CPy, tested on function type
-        if (t->make_new == NULL) {
+        if (!MP_OBJ_TYPE_HAS_SLOT(t, make_new)) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(MP_ERROR_TEXT("type isn't an acceptable base type"));
             #else
@@ -1163,35 +1163,35 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     }
 
     // Allocate a variable-sized mp_obj_type_t with as many slots as we need
-    // (currently 9, plus 1 for base, plus 1 for base-protocol).
-    // Note: 11 slots pushes it from 4 to 5 GC blocks.
-    mp_obj_type_t *o = m_new_obj_var0(mp_obj_type_t, void *, 9 + (bases_len ? 1 : 0) + (base_protocol ? 1 : 0));
+    // (currently 10, plus 1 for base, plus 1 for base-protocol).
+    // Note: mp_obj_type_t is (2 + 3 + #slots) words, so going from 11 to 12 slots
+    // moves from 4 to 5 gc blocks.
+    mp_obj_type_t *o = m_new_obj_var0(mp_obj_type_t, void *, 10 + (bases_len ? 1 : 0) + (base_protocol ? 1 : 0));
     o->base.type = &mp_type_type;
     o->flags = base_flags;
     o->name = name;
-    o->make_new = mp_obj_instance_make_new;
-    MP_OBJ_TYPE_SET_SLOT(o, print, instance_print, 0);
-    MP_OBJ_TYPE_SET_SLOT(o, call, mp_obj_instance_call, 1);
-    MP_OBJ_TYPE_SET_SLOT(o, unary_op, instance_unary_op, 2);
-    MP_OBJ_TYPE_SET_SLOT(o, binary_op, instance_binary_op, 3);
-    MP_OBJ_TYPE_SET_SLOT(o, attr, mp_obj_instance_attr, 4);
-    MP_OBJ_TYPE_SET_SLOT(o, subscr, instance_subscr, 5);
-    MP_OBJ_TYPE_SET_SLOT(o, iter, mp_obj_instance_getiter, 6);
-    // MP_OBJ_TYPE_SET_SLOT(o, iternext, not implemented)
-    MP_OBJ_TYPE_SET_SLOT(o, buffer, instance_get_buffer, 7);
+    MP_OBJ_TYPE_SET_SLOT(o, make_new, mp_obj_instance_make_new, 0);
+    MP_OBJ_TYPE_SET_SLOT(o, print, instance_print, 1);
+    MP_OBJ_TYPE_SET_SLOT(o, call, mp_obj_instance_call, 2);
+    MP_OBJ_TYPE_SET_SLOT(o, unary_op, instance_unary_op, 3);
+    MP_OBJ_TYPE_SET_SLOT(o, binary_op, instance_binary_op, 4);
+    MP_OBJ_TYPE_SET_SLOT(o, attr, mp_obj_instance_attr, 5);
+    MP_OBJ_TYPE_SET_SLOT(o, subscr, instance_subscr, 6);
+    MP_OBJ_TYPE_SET_SLOT(o, iter, mp_obj_instance_getiter, 7);
+    MP_OBJ_TYPE_SET_SLOT(o, buffer, instance_get_buffer, 8);
 
     mp_obj_dict_t *locals_ptr = MP_OBJ_TO_PTR(locals_dict);
-    MP_OBJ_TYPE_SET_SLOT(o, locals_dict, locals_ptr, 8);
+    MP_OBJ_TYPE_SET_SLOT(o, locals_dict, locals_ptr, 9);
 
     if (bases_len > 0) {
         if (bases_len >= 2) {
             #if MICROPY_MULTIPLE_INHERITANCE
-            MP_OBJ_TYPE_SET_SLOT(o, parent, MP_OBJ_TO_PTR(bases_tuple), 9);
+            MP_OBJ_TYPE_SET_SLOT(o, parent, MP_OBJ_TO_PTR(bases_tuple), 10);
             #else
             mp_raise_NotImplementedError(MP_ERROR_TEXT("multiple inheritance not supported"));
             #endif
         } else {
-            MP_OBJ_TYPE_SET_SLOT(o, parent, MP_OBJ_TO_PTR(bases_items[0]), 9);
+            MP_OBJ_TYPE_SET_SLOT(o, parent, MP_OBJ_TO_PTR(bases_items[0]), 10);
         }
 
         // Inherit protocol from a base class. This allows to define an
@@ -1199,7 +1199,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         // Python method calls, and any subclass inheriting from it will
         // support this feature.
         if (base_protocol) {
-            MP_OBJ_TYPE_SET_SLOT(o, protocol, base_protocol, 10);
+            MP_OBJ_TYPE_SET_SLOT(o, protocol, base_protocol, 11);
         }
     }
 
@@ -1292,7 +1292,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
     // Allow a call super().__init__() to reach any native base classes.
     if (attr == MP_QSTR___init__) {
-        lookup.slot_offset = offsetof(mp_obj_type_t, make_new);
+        lookup.slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(make_new);
     }
 
     if (!MP_OBJ_TYPE_HAS_SLOT(type, parent)) {
@@ -1340,7 +1340,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_super,
     MP_QSTR_super,
     MP_TYPE_FLAG_NONE,
-    super_make_new,
+    make_new, super_make_new,
     print, super_print,
     attr, super_attr
     );
@@ -1463,12 +1463,12 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_staticmethod,
     MP_QSTR_staticmethod,
     MP_TYPE_FLAG_NONE,
-    static_class_method_make_new
+    make_new, static_class_method_make_new
     );
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_classmethod,
     MP_QSTR_classmethod,
     MP_TYPE_FLAG_NONE,
-    static_class_method_make_new
+    make_new, static_class_method_make_new
     );

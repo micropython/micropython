@@ -465,7 +465,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_dict_view_it,
     MP_QSTR_iterator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    MP_TYPE_NULL_MAKE_NEW,
     iter, dict_view_it_iternext
     );
 
@@ -517,7 +516,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_dict_view,
     MP_QSTR_dict_view,
     MP_TYPE_FLAG_ITER_IS_GETITER,
-    MP_TYPE_NULL_MAKE_NEW,
     print, dict_view_print,
     binary_op, dict_view_binary_op,
     iter, dict_view_getiter
@@ -592,7 +590,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_dict,
     MP_QSTR_dict,
     MP_TYPE_FLAG_ITER_IS_GETITER,
-    mp_obj_dict_make_new,
+    make_new, mp_obj_dict_make_new,
     print, dict_print,
     unary_op, dict_unary_op,
     binary_op, dict_binary_op,
@@ -606,7 +604,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_ordereddict,
     MP_QSTR_OrderedDict,
     MP_TYPE_FLAG_ITER_IS_GETITER,
-    mp_obj_dict_make_new,
+    make_new, mp_obj_dict_make_new,
     print, dict_print,
     unary_op, dict_unary_op,
     binary_op, dict_binary_op,

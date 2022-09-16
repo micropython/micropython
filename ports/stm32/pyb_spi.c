@@ -354,7 +354,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_spi_type,
     MP_QSTR_SPI,
     MP_TYPE_FLAG_NONE,
-    pyb_spi_make_new,
+    make_new, pyb_spi_make_new,
     print, pyb_spi_print,
     protocol, &pyb_spi_p,
     locals_dict, &pyb_spi_locals_dict

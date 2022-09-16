@@ -182,7 +182,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     if (len != -1) {
         // Detected a littlefs filesystem so create correct block device for it
         mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR_len), MP_OBJ_NEW_SMALL_INT(len) };
-        bdev = pyb_flash_type.make_new(&pyb_flash_type, 0, 1, args);
+        bdev = MP_OBJ_TYPE_GET_SLOT(&pyb_flash_type, make_new)(&pyb_flash_type, 0, 1, args);
     }
 
     #endif

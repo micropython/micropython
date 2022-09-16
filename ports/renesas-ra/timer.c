@@ -414,7 +414,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_timer_type,
     MP_QSTR_Timer,
     MP_TYPE_FLAG_NONE,
-    pyb_timer_make_new,
+    make_new, pyb_timer_make_new,
     locals_dict, &pyb_timer_locals_dict,
     print, pyb_timer_print
     );
@@ -507,7 +507,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     pyb_timer_channel_type,
     MP_QSTR_TimerChannel,
     MP_TYPE_FLAG_NONE,
-    MP_TYPE_NULL_MAKE_NEW,
     locals_dict, &pyb_timer_channel_locals_dict,
     print, pyb_timer_channel_print
     );

@@ -144,7 +144,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     decompio_type,
     MP_QSTR_DecompIO,
     MP_TYPE_FLAG_NONE,
-    decompio_make_new,
+    make_new, decompio_make_new,
     protocol, &decompio_stream_p,
     locals_dict, &decompio_locals_dict
     );

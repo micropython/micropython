@@ -233,7 +233,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_str,
     MP_QSTR_str,
     MP_TYPE_FLAG_ITER_IS_GETITER,
-    mp_obj_str_make_new,
+    make_new, mp_obj_str_make_new,
     print, uni_print,
     unary_op, uni_unary_op,
     binary_op, mp_obj_str_binary_op,

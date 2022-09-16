@@ -121,6 +121,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_object,
     MP_QSTR_object,
     MP_TYPE_FLAG_NONE,
-    object_make_new
+    make_new, object_make_new
     OBJECT_TYPE_LOCALS_DICT
     );
