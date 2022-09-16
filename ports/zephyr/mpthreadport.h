@@ -29,7 +29,7 @@
 #ifndef MICROPY_INCLUDED_ZEPHYR_MPTHREADPORT_H
 #define MICROPY_INCLUDED_ZEPHYR_MPTHREADPORT_H
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 typedef struct _mp_thread_mutex_t {
     struct k_sem handle;
