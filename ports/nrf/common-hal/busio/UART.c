@@ -337,6 +337,11 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
     NVIC_EnableIRQ(nrfx_get_irq_number(self->uarte->p_reg));
 
+    if (rx_bytes == 0) {
+        *errcode = EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+
     return rx_bytes;
 }
 
