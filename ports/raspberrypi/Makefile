@@ -79,6 +79,7 @@ SRC_SDK_CYW43 := \
 	src/rp2_common/pico_lwip/random.c \
 
 SRC_LWIP := \
+	shared/netutils/netutils.c \
 	$(wildcard sdk/lib/lwip/src/core/*.c) \
 	$(wildcard sdk/lib/lwip/src/core/ipv4/*.c) \
 	sdk/lib/lwip/src/netif/ethernet.c \

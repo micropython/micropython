@@ -89,4 +89,6 @@
 
 #define LWIP_TIMEVAL_PRIVATE 0
 
+#define LWIP_NO_CTYPE_H 1
+
 #endif /* __LWIPOPTS_H__ */
