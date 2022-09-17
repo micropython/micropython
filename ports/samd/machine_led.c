@@ -30,7 +30,7 @@
 #include "py/mphal.h"
 #include "extmod/virtpin.h"
 #include "modmachine.h"
-#include "pins.h"
+#include "pin_af.h"
 
 extern mp_obj_t machine_pin_low_obj;
 extern mp_obj_t machine_pin_high_obj;
@@ -38,8 +38,10 @@ extern mp_obj_t machine_pin_toggle_obj;
 extern mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 STATIC void machine_led_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_led_obj_t *self = self_in;
-    mp_printf(print, "LED(\"%s\")", self->name);
+    machine_pin_obj_t *self = self_in;
+    mp_printf(print, "LED(\"%s\", GPIO=P%c%02u)",
+        pin_name(self->pin_id),
+        "ABCD"[self->pin_id / 32], self->pin_id % 32);
 }
 
 // constructor(id, ...)
@@ -47,22 +49,15 @@ mp_obj_t mp_led_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get the wanted LED object
-    int wanted_led = pin_find(args[0], (const machine_pin_obj_t *)machine_led_obj, MP_ARRAY_SIZE(machine_led_obj));
-    const machine_led_obj_t *self = NULL;
-    if (0 <= wanted_led && wanted_led < MP_ARRAY_SIZE(machine_led_obj)) {
-        self = (machine_led_obj_t *)&machine_led_obj[wanted_led];
-    }
-    // the array could be padded with 'nulls' (see other Ports).
-    // Will also error if the asked for LED (index) is greater than the array row size.
-    if (self == NULL || self->base.type == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid LED"));
-    }
-    mp_hal_pin_output(self->id);
-    mp_hal_pin_low(self->id);
+    const machine_pin_obj_t *self;
+
+    self = pin_find(args[0], &machine_led_type);
+
+    mp_hal_pin_output(self->pin_id);
+    mp_hal_pin_low(self->pin_id);
 
     return MP_OBJ_FROM_PTR(self);
 }
-
 
 STATIC const mp_rom_map_elem_t machine_led_locals_dict_table[] = {
     // instance methods

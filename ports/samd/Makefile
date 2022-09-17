@@ -47,14 +47,10 @@ INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include/pio
 INC += -I$(TOP)/lib/tinyusb/src
 
-MAKE_PIN_AF = boards/make-pin-af.py
+MAKE_PIN_AF = boards/make-pin-table.py
 PIN_AF_TABLE_CSV = mcu/$(MCU_SERIES_LOWER)/pin-af-table.csv
-GEN_PIN_AF = pin_af_table.c
-
-MAKE_PINS = boards/make-pins.py
 BOARD_PINS = $(BOARD_DIR)/pins.csv
-GEN_PINS_SRC = $(BUILD)/pins.c
-GEN_PINS_HDR = $(BUILD)/pins.h
+GEN_PIN_AF = pin_af_table.c
 
 CFLAGS_MCU_SAMD21 = -mtune=cortex-m0plus -mcpu=cortex-m0plus -msoft-float
 CFLAGS_MCU_SAMD51 = -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
@@ -150,7 +146,7 @@ DRIVERS_SRC_C += \
 	drivers/bus/softspi.c \
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(SRC_CXX) $(GEN_PINS_SRC)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(SRC_CXX)
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -161,7 +157,6 @@ OBJ += $(addprefix $(BUILD)/, $(ASF4_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
-OBJ += $(GEN_PINS_SRC:.c=.o)
 
 ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
@@ -182,19 +177,10 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(UF2CONV) -b $(TEXT0) -c -o $@ $<
 
-pin_af.c: $(BUILD)/$(GEN_PIN_AF)
+pin_af.c: $(BUILD)/$(GEN_PIN_AF) | $(HEADER_BUILD)
 
-$(BUILD)/$(GEN_PIN_AF): $(PIN_AF_TABLE_CSV) | $(HEADER_BUILD)
+$(BUILD)/$(GEN_PIN_AF): $(PIN_AF_TABLE_CSV) $(BOARD_PINS) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PIN_AF) --csv $(PIN_AF_TABLE_CSV) --table $(BUILD)/$(GEN_PIN_AF) --mcu $(MCU_SERIES)
-
-machine_led.c machine_pin.c modsamd.c: $(GEN_PINS_HDR)
-
-$(GEN_PINS_SRC) $(GEN_PINS_HDR): $(BOARD_PINS) | $(HEADER_BUILD)
-	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --pins $(GEN_PINS_SRC) --inc $(GEN_PINS_HDR)
-
-$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
-	$(call compile_c)
+	$(Q)$(PYTHON) $(MAKE_PIN_AF) --csv $(PIN_AF_TABLE_CSV) --board $(BOARD_PINS) --table $(BUILD)/$(GEN_PIN_AF) --mcu $(MCU_SERIES)
 
 include $(TOP)/py/mkrules.mk
