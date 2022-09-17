@@ -107,8 +107,8 @@ STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "PWM P%c%02u device=%u channel=%u output=%u",
-        "ABCD"[self->pin_id / 32], self->pin_id % 32, self->device, self->channel, self->output);
+    mp_printf(print, "PWM %s device=%u channel=%u output=%u",
+        pin_name(self->pin_id), self->device, self->channel, self->output);
 }
 
 // PWM(pin)
