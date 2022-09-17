@@ -27,6 +27,11 @@ Compatibility is based on the following:
 * Version of the .mpy file: the version of the file must match the version
   supported by the system loading it.
 
+* Sub-version of the .mpy file: if the .mpy file contains native machine code
+  then the sub-version of the file must match the version support by the
+  system loading it.  Otherwise, if there is no native machine code in the .mpy
+  file, then the sub-version is ignored when loading.
+
 * Small integer bits: the .mpy file will require a minimum number of bits in
   a small integer and the system loading it must support at least this many
   bits.
@@ -55,6 +60,7 @@ If importing an .mpy file fails then try the following:
         'armv6', 'armv6m', 'armv7m', 'armv7em', 'armv7emsp', 'armv7emdp',
         'xtensa', 'xtensawin'][sys_mpy >> 10]
     print('mpy version:', sys_mpy & 0xff)
+    print('mpy sub-version:', sys_mpy >> 8 & 3)
     print('mpy flags:', end='')
     if arch:
         print(' -march=' + arch, end='')
