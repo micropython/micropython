@@ -63,6 +63,10 @@ STATIC void str_check_arg_type(const mp_obj_type_t *self_type, const mp_obj_t ar
     }
 }
 
+STATIC void check_is_str_or_bytes(mp_obj_t self_in) {
+    mp_check_self(mp_obj_is_str_or_bytes(self_in));
+}
+
 /******************************************************************************/
 /* str                                                                        */
 
@@ -468,7 +472,7 @@ STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 }
 
 STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
-    mp_check_self(mp_obj_is_str_or_bytes(self_in));
+    check_is_str_or_bytes(self_in);
     const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
     const mp_obj_type_t *ret_type = self_type;
 
@@ -724,7 +728,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj, 1, 3, str_rsplit);
 
 STATIC mp_obj_t str_finder(size_t n_args, const mp_obj_t *args, int direction, bool is_index) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
-    mp_check_self(mp_obj_is_str_or_bytes(args[0]));
+    check_is_str_or_bytes(args[0]);
 
     // check argument type
     str_check_arg_type(self_type, args[1]);
@@ -820,7 +824,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj, 2, 3, str_endswith);
 enum { LSTRIP, RSTRIP, STRIP };
 
 STATIC mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
-    mp_check_self(mp_obj_is_str_or_bytes(args[0]));
+    check_is_str_or_bytes(args[0]);
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
 
     const byte *chars_to_del;
@@ -1422,7 +1426,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
 }
 
 mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    mp_check_self(mp_obj_is_str_or_bytes(args[0]));
+    check_is_str_or_bytes(args[0]);
 
     GET_STR_DATA_LEN(args[0], str, len);
     int arg_i = 0;
@@ -1433,7 +1437,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(str_format_obj, 1, mp_obj_str_format);
 
 #if MICROPY_PY_BUILTINS_STR_OP_MODULO
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict) {
-    mp_check_self(mp_obj_is_str_or_bytes(pattern));
+    check_is_str_or_bytes(pattern);
 
     GET_STR_DATA_LEN(pattern, str, len);
     #if MICROPY_ERROR_REPORTING > MICROPY_ERROR_REPORTING_TERSE
@@ -1639,7 +1643,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
 // The implementation is optimized, returning the original string if there's
 // nothing to replace.
 STATIC mp_obj_t str_replace(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(mp_obj_is_str_or_bytes(args[0]));
+    check_is_str_or_bytes(args[0]);
 
     mp_int_t max_rep = -1;
     if (n_args == 4) {
@@ -1742,7 +1746,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
 #if MICROPY_PY_BUILTINS_STR_COUNT
 STATIC mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
-    mp_check_self(mp_obj_is_str_or_bytes(args[0]));
+    check_is_str_or_bytes(args[0]);
 
     // check argument type
     str_check_arg_type(self_type, args[1]);
@@ -1782,7 +1786,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
 
 #if MICROPY_PY_BUILTINS_STR_PARTITION
 STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, int direction) {
-    mp_check_self(mp_obj_is_str_or_bytes(self_in));
+    check_is_str_or_bytes(self_in);
     const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
     str_check_arg_type(self_type, arg);
 

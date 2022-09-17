@@ -33,6 +33,10 @@
 #include "py/objtype.h"
 #include "py/objstr.h"
 
+bool mp_obj_is_dict_or_ordereddict(mp_obj_t o) {
+    return mp_obj_is_obj(o) && MP_OBJ_TYPE_GET_SLOT_OR_NULL(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type, make_new) == mp_obj_dict_make_new;
+}
+
 const mp_obj_dict_t mp_const_empty_dict_obj = {
     .base = { .type = &mp_type_dict },
     .map = {

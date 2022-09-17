@@ -277,7 +277,7 @@ STATIC void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     mp_printf(print, "<%s object at %p>", mp_obj_get_type_str(self_in), self);
 }
 
-mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_instance_type(self));
 
     // look for __new__ function
@@ -1131,7 +1131,8 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     uint16_t base_flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE
         | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE
         | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST
-        | MP_TYPE_FLAG_ITER_IS_GETITER;
+        | MP_TYPE_FLAG_ITER_IS_GETITER
+        | MP_TYPE_FLAG_INSTANCE_TYPE;
     size_t bases_len;
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);
