@@ -1,7 +1,9 @@
 /*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020-2021 Damien P. George
+ * Copyright (c) 2022 Blake W. Felt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +22,11 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
  */
-#ifndef MICROPY_INCLUDED_RP2_TUSB_CONFIG_H
-#define MICROPY_INCLUDED_RP2_TUSB_CONFIG_H
 
-#include "mpconfigport.h"
+#include "py/runtime.h"
+#include "usbd.h"
 
-#define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE)
-
-#define CFG_TUD_CDC             (1)
-#define CFG_TUD_CDC_EP_BUFSIZE  (256)
-#define CFG_TUD_CDC_RX_BUFSIZE  (256)
-#define CFG_TUD_CDC_TX_BUFSIZE  (256)
-
-#if MICROPY_HW_USB_MSC
-// Board and hardware specific configuration
-#define CFG_TUD_MSC             (1)
-// Set MSC EP buffer size to FatFS block size to avoid partial read/writes (offset arg).
-#define CFG_TUD_MSC_BUFSIZE     (MICROPY_FATFS_MAX_SS)
-#endif
-
-#endif // MICROPY_INCLUDED_RP2_TUSB_CONFIG_H
+void usbd_reset_all(void) {
+    usbd_reset_descriptor();
+}

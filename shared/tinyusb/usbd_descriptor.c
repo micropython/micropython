@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2022 Blake W. Felt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +25,9 @@
  * THE SOFTWARE.
  */
 
+#include "mpconfigport.h"
 #include "tusb.h"
-#include "pico/unique_id.h"
-
-#ifndef MICROPY_HW_USB_VID
-#define MICROPY_HW_USB_VID (0x2E8A) // Raspberry Pi
-#endif
-#ifndef MICROPY_HW_USB_PID
-#define MICROPY_HW_USB_PID (0x0005) // RP2 MicroPython
-#endif
+#include "usbd.h"
 
 #if CFG_TUD_MSC
 #define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_MSC_DESC_LEN)
@@ -64,6 +59,9 @@
 #define USBD_STR_SERIAL (0x03)
 #define USBD_STR_CDC (0x04)
 #define USBD_STR_MSC (0x05)
+
+#define USBD_DESC_STR_MAX (20)
+#define USBD_DESC_SERIAL_MAX (32)
 
 // Note: descriptors returned from callbacks must exist long enough for transfer to complete
 
@@ -115,8 +113,7 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
 }
 
 const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
-    #define DESC_STR_MAX (20)
-    static uint16_t desc_str[DESC_STR_MAX];
+    static uint16_t desc_str[USBD_DESC_STR_MAX];
 
     uint8_t len;
     if (index == 0) {
@@ -128,17 +125,22 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
         }
         // check, if serial is requested
         if (index == USBD_STR_SERIAL) {
-            pico_unique_board_id_t id;
-            pico_get_unique_board_id(&id);
+            uint8_t buffer[USBD_DESC_SERIAL_MAX] = {0};
+            int buflen;
+            const char *hexdig = "0123456789abcdef";
+
+            buflen = usbd_serialnumber(buffer);
             // byte by byte conversion
-            for (len = 0; len < 16; len += 2) {
-                const char *hexdig = "0123456789abcdef";
-                desc_str[1 + len] = hexdig[id.id[len >> 1] >> 4];
-                desc_str[1 + len + 1] = hexdig[id.id[len >> 1] & 0x0f];
+            len = 0;
+            for (int i=0; i<buflen; i++) {
+                uint8_t val = buffer[i];
+                desc_str[1 + len] = hexdig[val >> 4];
+                desc_str[2 + len] = hexdig[val & 0x0F];
+                len += 2;
             }
         } else {
             const char *str = usbd_desc_str[index];
-            for (len = 0; len < DESC_STR_MAX - 1 && str[len]; ++len) {
+            for (len = 0; len < USBD_DESC_STR_MAX - 1 && str[len]; ++len) {
                 desc_str[1 + len] = str[len];
             }
         }
@@ -148,4 +150,8 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     desc_str[0] = (TUSB_DESC_STRING << 8) | (2 * len + 2);
 
     return desc_str;
+}
+
+void usbd_reset_descriptor(void) {
+    // not used yet
 }
