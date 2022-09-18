@@ -146,26 +146,139 @@ STATIC mp_obj_t usb_device_descriptor_device(mp_uint_t n_args, const mp_obj_t *p
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(usb_device_descriptor_device_obj, 1, usb_device_descriptor_device);
 
-static const uint8_t usbd_desc_cfg[USBD_DESC_DEFAULT_LEN] = {
-    TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_MAX, USBD_STR_0, USBD_DESC_DEFAULT_LEN,
-        0, USBD_MAX_POWER_MA),
+typedef struct {
+    uint8_t cfg[512];
+    int len;
+    int itf_count;
+    int in_count;
+    int out_count;
+    char names[MICROPY_HW_USB_MAX_DESCRIPTORS][DESC_STR_MAX];
+    int names_len;
+} desc_cfg_t;
+static desc_cfg_t usbd_desc_cfg;
 
-    TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
-        USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
-    #if CFG_TUD_MSC
-    TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, 5, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64),
-    #endif
-};
+uint8_t usbd_desc_cfg_cdc[] = {TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD, USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE)};
 
-static const char *const usbd_desc_str[] = {
-    [USBD_STR_MANUF] = "MicroPython",
-    [USBD_STR_PRODUCT] = "Board in FS mode",
-    [USBD_STR_SERIAL] = NULL, // generated dynamically
-    [USBD_STR_CDC] = "Board CDC",
+#if CFG_TUD_MSC
+uint8_t usbd_desc_cfg_msc[] = {TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, 5, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64)};
+#endif
+
+static int desc_cfg_namesfull(desc_cfg_t *cfg) {
+    if (cfg->names_len >= MICROPY_HW_USB_MAX_DESCRIPTORS) {
+        return -1;
+    }
+    return 0;
+}
+
+static int desc_cfg_addname(desc_cfg_t *cfg, char *name) {
+    int len;
+    char *spot;
+
+    if (desc_cfg_namesfull(cfg)) {
+        return -1;
+    }
+    len = strlen(name);
+    if (len > DESC_STR_MAX-1) {
+        len = DESC_STR_MAX-1;
+    }
+    spot = cfg->names[cfg->names_len];
+    memcpy(spot, name, len);
+    spot[len] = 0;
+    cfg->names_len++;
+    return cfg->names_len;
+}
+
+static int desc_cfg_adddesc(desc_cfg_t *cfg, uint8_t *desc, int len, char *name) {
+    uint8_t *new_desc;
+    uint8_t *line;
+    tusb_desc_interface_t *desc_itf;
+    tusb_desc_endpoint_t *desc_endpoint;
+    int i;
+
+    if (desc_cfg_namesfull(cfg)) {
+        return -1;
+    }
+
+    // get the new spot
+    new_desc = &(cfg->cfg[cfg->len]);
+    // and copy the descriptor over
+    memcpy(new_desc, desc, len);
+
+    for (i=0; i<len; ) {
+        line = &new_desc[i]; // get the new line
+        if (line[1] == TUSB_DESC_INTERFACE) { // if it's an interface descriptor
+            desc_itf = (tusb_desc_interface_t *) line;
+            if (desc_itf->bAlternateSetting == 0) {
+                desc_itf->bInterfaceNumber = cfg->itf_count;
+                cfg->itf_count++;
+                if (name) {
+                    desc_itf->iInterface = desc_cfg_addname(cfg, name);
+                    name = NULL; // only save name once
+                }
+            }
+        } else if (line[1] == TUSB_DESC_ENDPOINT) {
+            desc_endpoint = (tusb_desc_endpoint_t*) line;
+             if (desc_endpoint->bEndpointAddress & 0x80) { // if it's in
+                desc_endpoint->bEndpointAddress = 0x80 | cfg->in_count;
+                cfg->in_count++;
+            } else { // if it's out
+                desc_endpoint->bEndpointAddress = cfg->out_count;
+                cfg->out_count++;
+            }
+        }
+        i += line[0]; // jump to the next "line"
+        if (line[0] == 0) { // no infinite loops for me!
+            return 0; // also, this means we didn't save it at all (desc_len not updated)
+        }
+    }
+    cfg->len += len;
+
+    return 0;
+}
+
+
+static void desc_cfg_init(desc_cfg_t *cfg) {
+    tusb_desc_configuration_t const initial_cfg =
+    {
+        .bLength             = sizeof(tusb_desc_configuration_t),
+        .bDescriptorType     = TUSB_DESC_CONFIGURATION,
+
+        // Total Length & Interface Number will be updated later
+        .wTotalLength        = 0,
+        .bNumInterfaces      = 0,
+        .bConfigurationValue = 1,
+        .iConfiguration      = 0x00,
+        .bmAttributes        = TU_BIT(7) | TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP,
+        .bMaxPower           = TUSB_DESC_CONFIG_POWER_MA(USBD_MAX_POWER_MA)
+    };
+
+    // clear the config
+    memset(cfg->cfg, 0, sizeof(cfg->cfg));
+    // copy the initial contents
+    memcpy(cfg->cfg, &initial_cfg, sizeof(tusb_desc_configuration_t));
+    cfg->len = sizeof(tusb_desc_configuration_t);
+    cfg->itf_count = 0;
+    cfg->in_count = 1;
+    cfg->out_count = 1;
+    cfg->names_len = 0;
+    desc_cfg_addname(cfg, ""); // language code
+    desc_cfg_addname(cfg, "MicroPython");
+    desc_cfg_addname(cfg, "Board in FS mode");
+    desc_cfg_addname(cfg, ""); // this is the serial number, will be dynamic
+
+    desc_cfg_adddesc(cfg, usbd_desc_cfg_cdc, sizeof(usbd_desc_cfg_cdc), "Board CDC");
     #if CFG_TUD_MSC
-    [USBD_STR_MSC] = "Board MSC",
+    desc_cfg_adddesc(cfg, usbd_desc_cfg_msc, sizeof(usbd_desc_cfg_msc), "Board MSC");
     #endif
-};
+}
+
+static void desc_cfg_finalize(desc_cfg_t *cfg) {
+    tusb_desc_configuration_t *conf;
+
+    conf = (tusb_desc_configuration_t*) cfg->cfg;
+    conf->wTotalLength = cfg->len; // update total length
+    conf->bNumInterfaces = cfg->itf_count; // update interface count
+}
 
 
 const uint8_t *tud_descriptor_device_cb(void) {
@@ -174,7 +287,9 @@ const uint8_t *tud_descriptor_device_cb(void) {
 
 const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     (void)index;
-    return usbd_desc_cfg;
+
+    desc_cfg_finalize(&usbd_desc_cfg);
+    return usbd_desc_cfg.cfg;
 }
 
 const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
@@ -185,7 +300,7 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
         desc_str[1] = 0x0409; // supported language is English
         len = 1;
     } else {
-        if (index >= sizeof(usbd_desc_str) / sizeof(usbd_desc_str[0])) {
+        if (index > usbd_desc_cfg.names_len) {
             return NULL;
         }
         // check, if serial is requested
@@ -199,7 +314,7 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
                 desc_str[1 + len + 1] = hexdig[id.id[len >> 1] & 0x0f];
             }
         } else {
-            const char *str = usbd_desc_str[index];
+            const char *str = usbd_desc_cfg.names[index];
             for (len = 0; len < DESC_STR_MAX - 1 && str[len]; ++len) {
                 desc_str[1 + len] = str[len];
             }
@@ -214,6 +329,7 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
 
 void usbd_descriptor_reset(void) {
     usbd_desc_device = usbd_desc_device_default;
+    desc_cfg_init(&usbd_desc_cfg);
 }
 
 STATIC const mp_rom_map_elem_t usb_device_descriptors_locals_dict_table[] = {
