@@ -125,10 +125,11 @@ set(MICROPY_SOURCE_PORT
     pendsv.c
     rp2_flash.c
     rp2_pio.c
-    tusb_port.c
     uart.c
     msc_disk.c
     mbedtls/mbedtls_port.c
+    ${MICROPY_DIR}/shared/tinyusb/usbd_descriptor.c
+    ${MICROPY_DIR}/shared/tinyusb/usbd.c
 )
 
 set(MICROPY_SOURCE_QSTR
@@ -136,6 +137,8 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_DIR}/shared/readline/readline.c
     ${MICROPY_DIR}/shared/runtime/mpirq.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
+    ${MICROPY_DIR}/shared/tinyusb/usbd.c
+    ${MICROPY_DIR}/shared/tinyusb/usbd_descriptor.c
     ${PROJECT_SOURCE_DIR}/machine_adc.c
     ${PROJECT_SOURCE_DIR}/machine_i2c.c
     ${PROJECT_SOURCE_DIR}/machine_i2s.c
@@ -232,6 +235,11 @@ if(MICROPY_BLUETOOTH_NIMBLE)
     get_target_property(NIMBLE_INCLUDE micropy_extmod_nimble INTERFACE_INCLUDE_DIRECTORIES)
     list(APPEND MICROPY_INC_CORE ${NIMBLE_INCLUDE})
 endif()
+
+# tinyusb helper
+target_include_directories(${MICROPY_TARGET} PRIVATE
+    ${MICROPY_DIR}/shared/tinyusb/
+)
 
 if (MICROPY_PY_NETWORK_CYW43)
     string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/cyw43-driver)
