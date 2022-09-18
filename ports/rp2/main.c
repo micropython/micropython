@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     #if MICROPY_HW_ENABLE_USBDEV
     bi_decl(bi_program_feature("USB REPL"))
     tusb_init();
-    usbd_descriptor_reset(); // run now just in case usb initialization occurs early
+    usbd_reset_all(); // run now just in case usb initialization occurs early
     #endif
 
     #if MICROPY_PY_THREAD
@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
         rp2_pio_init();
         machine_i2s_init0();
         #if MICROPY_HW_ENABLE_USBDEV
-        usbd_descriptor_reset();
+        usbd_reset_all();
         #endif
 
         #if MICROPY_PY_BLUETOOTH

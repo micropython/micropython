@@ -43,6 +43,14 @@
 #define CFG_TUD_MSC_BUFSIZE     (MICROPY_FATFS_MAX_SS)
 #endif
 
-#define MICROPY_HW_USB_MAX_DESCRIPTORS 10
+#if MICROPY_HW_USB_HID
+#define CFG_TUD_HID             (1)
+#endif
+
+// HID buffer size Should be sufficient to hold ID (if any) + Data
+#define CFG_TUD_HID_EP_BUFSIZE  (64)
+
+#define MICROPY_HW_USB_MAX_DESCRIPTORS  (10)
+#define MICROPY_HW_USB_MAX_HID          (3)
 
 #endif // MICROPY_INCLUDED_EXTMOD_TUSB_CONFIG_H

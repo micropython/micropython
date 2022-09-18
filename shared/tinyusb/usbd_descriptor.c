@@ -185,7 +185,7 @@ static int desc_cfg_addname(desc_cfg_t *cfg, char *name) {
     memcpy(spot, name, len);
     spot[len] = 0;
     cfg->names_len++;
-    return cfg->names_len;
+    return cfg->names_len - 1;
 }
 
 static int desc_cfg_adddesc(desc_cfg_t *cfg, uint8_t *desc, int len, char *name) {
@@ -236,6 +236,10 @@ static int desc_cfg_adddesc(desc_cfg_t *cfg, uint8_t *desc, int len, char *name)
     return 0;
 }
 
+
+int usbd_desc_add_descriptor(uint8_t *desc, int len, char *name) {
+    return desc_cfg_adddesc(&usbd_desc_cfg, desc, len, name);
+}
 
 static void desc_cfg_init(desc_cfg_t *cfg) {
     tusb_desc_configuration_t const initial_cfg =
@@ -327,7 +331,7 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     return desc_str;
 }
 
-void usbd_descriptor_reset(void) {
+void usbd_reset_descriptor(void) {
     usbd_desc_device = usbd_desc_device_default;
     desc_cfg_init(&usbd_desc_cfg);
 }

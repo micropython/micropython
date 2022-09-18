@@ -1,11 +1,20 @@
 
 #include "py/runtime.h"
 #include "usbd.h"
+#include "tusb_config.h"
+
+void usbd_reset_all(void) {
+    usbd_reset_descriptor();
+    usbd_reset_hid();
+}
 
 STATIC const mp_rom_map_elem_t usb_device_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usb_device) },
 
     { MP_ROM_QSTR(MP_QSTR_Descriptor), MP_ROM_PTR(&usbd_descriptor_type) },
+    #if MICROPY_HW_USB_HID
+    { MP_ROM_QSTR(MP_QSTR_HID), MP_ROM_PTR(&usbd_hid_type) },
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(usb_device_module_globals, usb_device_module_globals_table);
 

@@ -129,6 +129,7 @@ set(MICROPY_SOURCE_PORT
     msc_disk.c
     mbedtls/mbedtls_port.c
     ${MICROPY_DIR}/shared/tinyusb/usbd_descriptor.c
+    ${MICROPY_DIR}/shared/tinyusb/usbd_hid.c
     ${MICROPY_DIR}/shared/tinyusb/usbd.c
 )
 
@@ -139,6 +140,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
     ${MICROPY_DIR}/shared/tinyusb/usbd.c
     ${MICROPY_DIR}/shared/tinyusb/usbd_descriptor.c
+    ${MICROPY_DIR}/shared/tinyusb/usbd_hid.c
     ${PROJECT_SOURCE_DIR}/machine_adc.c
     ${PROJECT_SOURCE_DIR}/machine_i2c.c
     ${PROJECT_SOURCE_DIR}/machine_i2s.c

@@ -109,6 +109,7 @@
 #define MICROPY_VFS_FAT                         (1)
 #define MICROPY_SSL_MBEDTLS                     (1)
 #define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
+#define MICROPY_HW_USB_HID                      (1)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (1)

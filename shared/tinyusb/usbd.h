@@ -4,8 +4,17 @@
 
 #include "py/obj.h"
 
-void usbd_descriptor_reset(void);
+// external
+
+void usbd_reset_all(void);
+void usbd_reset_descriptor(void);
+void usbd_reset_hid(void);
+
+// internal
 
 extern const mp_obj_type_t usbd_descriptor_type;
+extern const mp_obj_type_t usbd_hid_type;
+
+int usbd_desc_add_descriptor(uint8_t *desc, int len, char *name);
 
 #endif
