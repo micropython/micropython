@@ -96,6 +96,10 @@ Methods
        that DMA transfers have more precise timing but currently do not handle bus
        errors properly)
 
+   The actual clock frequency may be lower than the requested frequency.
+   This is dependant on the platform hardware. The actual rate may be determined
+   by printing the I2C object.
+
 .. method:: I2C.is_ready(addr)
 
    Check if an I2C device responds to the given address.  Only valid when in controller mode.
