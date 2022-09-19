@@ -138,7 +138,7 @@ void machine_init(void) {
         if (state & RCC_SR_IWDGRSTF || state & RCC_SR_WWDGRSTF) {
             reset_cause = PYB_RESET_WDT;
         } else if (state & RCC_SR_PORRSTF
-                   #if !defined(STM32F0) && !defined(STM32F412Zx)
+                   #if !defined(STM32F0) && !defined(STM32F412Zx) && !defined(STM32L1)
                    || state & RCC_SR_BORRSTF
                    #endif
                    ) {
@@ -309,7 +309,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4) || defined(STM32G0)
+        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32G0)
         mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
