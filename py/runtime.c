@@ -1692,6 +1692,15 @@ NORETURN void mp_raise_OSError(int errno_) {
     mp_raise_type_arg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_));
 }
 
+NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename) {
+    vstr_t vstr;
+    vstr_init(&vstr, 32);
+    vstr_printf(&vstr, "can't open %s", filename);
+    mp_obj_t o_str = mp_obj_new_str_from_vstr(&vstr);
+    mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(errno_), MP_OBJ_FROM_PTR(o_str)};
+    nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
+}
+
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
 NORETURN void mp_raise_recursion_depth(void) {
     mp_raise_type_arg(&mp_type_RuntimeError, MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded));

@@ -196,6 +196,7 @@ NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
 NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg);
 NORETURN void mp_raise_StopIteration(mp_obj_t arg);
 NORETURN void mp_raise_OSError(int errno_);
+NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename);
 NORETURN void mp_raise_recursion_depth(void);
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
