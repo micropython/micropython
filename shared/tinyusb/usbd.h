@@ -4,7 +4,11 @@
 
 #include "py/obj.h"
 
-// external
+// defined externally (needed per port)
+
+int usbd_serialnumber(uint8_t *buf);
+
+// external use
 
 void usbd_reset_all(void);
 void usbd_reset_descriptor(void);
