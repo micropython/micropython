@@ -3,6 +3,11 @@
 # This file is part of the MicroPython project, http://micropython.org/
 # The MIT License (MIT)
 # Copyright (c) 2020 Damien P. George
+#
+# run-multitests.py
+# Runs a test suite that relies on two micropython instances/devices
+# interacting in some way. Typically used to test networking / bluetooth etc.
+
 
 import sys, os, time, re, select
 import argparse
@@ -471,7 +476,10 @@ def run_tests(test_files, instances_truth, instances_test):
 def main():
     global cmd_args
 
-    cmd_parser = argparse.ArgumentParser(description="Run network tests for MicroPython")
+    cmd_parser = argparse.ArgumentParser(
+        description="Run network tests for MicroPython",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     cmd_parser.add_argument(
         "-s", "--show-output", action="store_true", help="show test output after running"
     )
@@ -487,6 +495,14 @@ def main():
         type=int,
         default=1,
         help="repeat the test with this many permutations of the instance order",
+    )
+    cmd_parser.epilog = (
+        "Supported instance types:\r\n"
+        " -i pyb:<port>   physical device (eg. pyboard) on provided repl port.\n"
+        " -i micropython  unix micropython instance, path customised with MICROPY_MICROPYTHON env.\n"
+        " -i cpython      desktop python3 instance, path customised with MICROPY_CPYTHON3 env.\n"
+        " -i exec:<path>  custom program run on provided path.\n"
+        "Each instance arg can optionally have custom env provided, eg. <cmd>,ENV=VAR,ENV=VAR...\n"
     )
     cmd_parser.add_argument("files", nargs="+", help="input test files")
     cmd_args = cmd_parser.parse_args()
