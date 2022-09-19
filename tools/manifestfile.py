@@ -394,28 +394,37 @@ class ManifestFile:
         `opt` is the optimisation level to pass to mpy-cross when compiling .py
         to .mpy.
         """
-        self._freeze_internal(path, script, exts=(".py", ".mpy"), kind=KIND_FREEZE_AUTO, opt=opt)
+        self._freeze_internal(
+            path,
+            script,
+            exts=(
+                ".py",
+                ".mpy",
+            ),
+            kind=KIND_FREEZE_AUTO,
+            opt=opt,
+        )
 
     def freeze_as_str(self, path):
         """
         Freeze the given `path` and all .py scripts within it as a string,
         which will be compiled upon import.
         """
-        self._search(path, None, None, exts=(".py"), kind=KIND_FREEZE_AS_STR)
+        self._search(path, None, None, exts=(".py",), kind=KIND_FREEZE_AS_STR)
 
     def freeze_as_mpy(self, path, script=None, opt=None):
         """
         Freeze the input (see above) by first compiling the .py scripts to
         .mpy files, then freezing the resulting .mpy files.
         """
-        self._freeze_internal(path, script, exts=(".py"), kind=KIND_FREEZE_AS_MPY, opt=opt)
+        self._freeze_internal(path, script, exts=(".py",), kind=KIND_FREEZE_AS_MPY, opt=opt)
 
     def freeze_mpy(self, path, script=None, opt=None):
         """
         Freeze the input (see above), which must be .mpy files that are
         frozen directly.
         """
-        self._freeze_internal(path, script, exts=(".mpy"), kind=KIND_FREEZE_MPY, opt=opt)
+        self._freeze_internal(path, script, exts=(".mpy",), kind=KIND_FREEZE_MPY, opt=opt)
 
 
 # Generate a temporary file with a line appended to the end that adds __version__.

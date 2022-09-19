@@ -210,9 +210,9 @@ def main():
                 ts_outfile = get_timestamp(outfile)
             mpy_files.append(outfile)
         else:
-            assert kind == manifestfile.KIND_FREEZE_MPY
-            mpy_files.append(full_path)
-            ts_outfile = timestamp
+            assert result.kind == manifestfile.KIND_FREEZE_MPY
+            mpy_files.append(result.full_path)
+            ts_outfile = result.timestamp
         ts_newest = max(ts_newest, ts_outfile)
 
     # Check if output file needs generating
