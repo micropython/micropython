@@ -226,3 +226,10 @@ mp_obj_t common_hal_os_statvfs(const char *path) {
     }
     return mp_vfs_proxy_call(vfs, MP_QSTR_statvfs, 1, &path_out);
 }
+
+void common_hal_os_utime(const char *path, mp_obj_t time) {
+    mp_obj_t args[2];
+    mp_vfs_mount_t *vfs = lookup_path(path, &args[0]);
+    args[1] = time;
+    mp_vfs_proxy_call(vfs, MP_QSTR_utime, 2, args);
+}
