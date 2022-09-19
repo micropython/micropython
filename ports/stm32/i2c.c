@@ -71,9 +71,9 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
     // SM: MAX(4, PCLK1 / (F * 2))
     // FM, 16:9 duty: 0xc000 | MAX(1, (PCLK1 / (F * (16 + 9))))
     if (freq <= 100000) {
-        i2c->CCR = MAX(4, PCLK1 / (freq * 2));
+        i2c->CCR = MAX(4, ((PCLK1 - 1) / (freq * 2) + 1));
     } else {
-        i2c->CCR = 0xc000 | MAX(1, PCLK1 / (freq * 25));
+        i2c->CCR = 0xc000 | MAX(1, ((PCLK1 - 1) / (freq * 25) + 1));
     }
 
     // SM: 1000ns / (1/PCLK1) + 1 = PCLK1 * 1e-6 + 1
