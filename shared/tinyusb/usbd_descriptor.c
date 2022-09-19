@@ -102,12 +102,24 @@ const tusb_desc_device_t usbd_desc_device_default = {
 };
 static tusb_desc_device_t usbd_desc_device;
 
+typedef struct {
+    uint8_t cfg[512];
+    int len;
+    int itf_count;
+    int in_count;
+    int out_count;
+    char names[MICROPY_HW_USB_MAX_DESCRIPTORS][DESC_STR_MAX];
+    int names_len;
+} desc_cfg_t;
+static desc_cfg_t usbd_desc_cfg;
+
 // device(bDeviceClass=None, bDeviceSubclass=None, bDeviceProtocol=None,
-//    idVendor=None, idProduct=None, bcdDevice=None)
+//    idVendor=None, idProduct=None, bcdDevice=None, bmAttributes=None, bMaxPower=None)
 STATIC mp_obj_t usb_device_descriptor_device(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { 
         ARG_bDeviceClass, ARG_bDeviceSubClass, ARG_bDeviceProtocol,
-        ARG_idVendor, ARG_idProduct, ARG_bcdDevice
+        ARG_idVendor, ARG_idProduct, ARG_bcdDevice,
+        ARG_bmAttributes, ARG_bMaxPower
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bDeviceClass, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} },
@@ -115,9 +127,13 @@ STATIC mp_obj_t usb_device_descriptor_device(mp_uint_t n_args, const mp_obj_t *p
         { MP_QSTR_bDeviceProtocol, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} },
         { MP_QSTR_idVendor, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} },
         { MP_QSTR_idProduct, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} },
-        { MP_QSTR_bcdDevice, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} }
+        { MP_QSTR_bcdDevice, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} },
+        { MP_QSTR_bmAttributes, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} },
+        { MP_QSTR_bMaxPower, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} }
     };
+    tusb_desc_configuration_t *desc_config;
 
+    desc_config = (tusb_desc_configuration_t*) usbd_desc_cfg.cfg;
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -139,21 +155,55 @@ STATIC mp_obj_t usb_device_descriptor_device(mp_uint_t n_args, const mp_obj_t *p
     if (args[ARG_bDeviceClass].u_obj != mp_const_none) {
         usbd_desc_device.bDeviceClass = mp_obj_get_int(args[ARG_bDeviceClass].u_obj);
     }
+    if (args[ARG_bmAttributes].u_obj != mp_const_none) {
+        desc_config->bmAttributes = mp_obj_get_int(args[ARG_bmAttributes].u_obj);
+    }
+    if (args[ARG_bMaxPower].u_obj != mp_const_none) {
+        desc_config->bMaxPower = mp_obj_get_int(args[ARG_bMaxPower].u_obj);
+    }
+    
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(usb_device_descriptor_device_obj, 1, usb_device_descriptor_device);
 
-typedef struct {
-    uint8_t cfg[512];
-    int len;
-    int itf_count;
-    int in_count;
-    int out_count;
-    char names[MICROPY_HW_USB_MAX_DESCRIPTORS][DESC_STR_MAX];
-    int names_len;
-} desc_cfg_t;
-static desc_cfg_t usbd_desc_cfg;
+STATIC mp_obj_t usb_device_descriptor_strings(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {
+        ARG_Manufacturer, ARG_Product, ARG_CDC, ARG_MSC
+    };
+    char *name;
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_Manufacturer, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}},
+        { MP_QSTR_Product, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}},
+        { MP_QSTR_CDC, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}},
+        { MP_QSTR_MSC, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}}
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (args[ARG_Manufacturer].u_obj != mp_const_none) {
+        name = (char*) mp_obj_str_get_str(args[ARG_Manufacturer].u_obj);
+        strcpy(usbd_desc_cfg.names[1], name);
+    }
+    if (args[ARG_Product].u_obj != mp_const_none) {
+        name = (char*) mp_obj_str_get_str(args[ARG_Product].u_obj);
+        strcpy(usbd_desc_cfg.names[2], name);
+    }
+    if (args[ARG_CDC].u_obj != mp_const_none) {
+        name = (char*) mp_obj_str_get_str(args[ARG_CDC].u_obj);
+        strcpy(usbd_desc_cfg.names[4], name);
+    }
+    #if CFG_TUD_MSC
+    if (args[ARG_MSC].u_obj != mp_const_none) {
+        name = (char*) mp_obj_str_get_str(args[ARG_MSC].u_obj);
+        strcpy(usbd_desc_cfg.names[5], name);
+    }
+    #endif
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(usb_device_descriptor_strings_obj, 1, usb_device_descriptor_strings);
 
 uint8_t usbd_desc_cfg_cdc[] = {TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD, USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE)};
 
@@ -341,6 +391,7 @@ void usbd_reset_descriptor(void) {
 
 STATIC const mp_rom_map_elem_t usb_device_descriptors_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_device), (mp_obj_t)&usb_device_descriptor_device_obj},
+    { MP_ROM_QSTR(MP_QSTR_strings), (mp_obj_t)&usb_device_descriptor_strings_obj},
 
     { MP_ROM_QSTR(MP_QSTR_CLASS_UNSPECIFIED), MP_ROM_INT(TUSB_CLASS_UNSPECIFIED)},
     { MP_ROM_QSTR(MP_QSTR_CLASS_AUDIO), MP_ROM_INT(TUSB_CLASS_AUDIO)},
