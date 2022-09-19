@@ -199,3 +199,13 @@ X
 '\x1b'
 b'\x00\xff'
 NULL
+uPy
+a long string that is not interned
+a string that has unicode αβγ chars
+b'bytes 1234\x01'
+123456789
+0
+1
+2
+3
+frozentest.py
