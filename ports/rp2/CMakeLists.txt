@@ -126,6 +126,7 @@ set(MICROPY_SOURCE_PORT
     rp2_flash.c
     rp2_pio.c
     uart.c
+    usbd.c
     msc_disk.c
     mbedtls/mbedtls_port.c
     ${MICROPY_DIR}/shared/tinyusb/usbd_descriptor.c

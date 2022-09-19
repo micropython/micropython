@@ -31,8 +31,6 @@
 #include "usbd.h"
 #include "mpconfigport.h"
 
-#include "pico/unique_id.h"
-
 #define DESC_STR_MAX (31)
 
 // tusb.h is not available when running the string preprocessor
@@ -309,13 +307,18 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
         }
         // check, if serial is requested
         if (index == USBD_STR_SERIAL) {
-            pico_unique_board_id_t id;
-            pico_get_unique_board_id(&id);
+            uint8_t buffer[32];
+            int buflen;
+            const char *hexdig = "0123456789abcdef";
+
+            buflen = usbd_serialnumber(buffer);
             // byte by byte conversion
-            for (len = 0; len < 16; len += 2) {
-                const char *hexdig = "0123456789abcdef";
-                desc_str[1 + len] = hexdig[id.id[len >> 1] >> 4];
-                desc_str[1 + len + 1] = hexdig[id.id[len >> 1] & 0x0f];
+            len = 0;
+            for (int i=0; i<buflen; i++) {
+                uint8_t val = buffer[i];
+                desc_str[1 + len] = hexdig[val >> 4];
+                desc_str[2 + len] = hexdig[val & 0x0F];
+                len += 2;
             }
         } else {
             const char *str = usbd_desc_cfg.names[index];
