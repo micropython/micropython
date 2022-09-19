@@ -347,10 +347,17 @@ SRC_O += \
 	resethandler_m0.o \
 	shared/runtime/gchelper_m0.o
 else
+ifeq ($(MCU_SERIES),l1)
+CFLAGS += -DUSE_HAL_DRIVER
+SRC_O += \
+	resethandler_m3.o \
+	shared/runtime/gchelper_m3.o
+else
 SRC_O += \
 	system_stm32.o \
 	resethandler.o \
 	shared/runtime/gchelper_m3.o
+endif
 endif
 
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\

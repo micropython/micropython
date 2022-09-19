@@ -42,7 +42,7 @@
 #define ADCx_COMMON __LL_ADC_COMMON_INSTANCE(0)
 #endif
 
-#if defined(STM32F0) || defined(STM32G0) || defined(STM32L0) || defined(STM32WL)
+#if defined(STM32F0) || defined(STM32G0) || defined(STM32L0) || defined(STM32L1) || defined(STM32WL)
 #define ADC_STAB_DELAY_US (1)
 #define ADC_TEMPSENSOR_DELAY_US (10)
 #elif defined(STM32G4)
@@ -68,6 +68,9 @@
 #elif defined(STM32G0) || defined(STM32L0) || defined(STM32WL)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_160CYCLES_5
+#elif defined(STM32L1)
+#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_384CYCLES
+#define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_384CYCLES
 #elif defined(STM32L4) || defined(STM32WB)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_247CYCLES_5
@@ -239,7 +242,7 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
 STATIC int adc_get_bits(ADC_TypeDef *adc) {
     #if defined(STM32F0) || defined(STM32G0) || defined(STM32L0) || defined(STM32WL)
     uint32_t res = (adc->CFGR1 & ADC_CFGR1_RES) >> ADC_CFGR1_RES_Pos;
-    #elif defined(STM32F4) || defined(STM32F7)
+    #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L1)
     uint32_t res = (adc->CR1 & ADC_CR1_RES) >> ADC_CR1_RES_Pos;
     #elif defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
     uint32_t res = (adc->CFGR & ADC_CFGR_RES) >> ADC_CFGR_RES_Pos;

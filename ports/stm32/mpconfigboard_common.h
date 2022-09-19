@@ -370,6 +370,16 @@
 #define MICROPY_HW_MAX_UART (5)
 #define MICROPY_HW_MAX_LPUART (1)
 
+// Configuration for STM32L1 series
+#elif defined(STM32L1)
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_I2C (2)
+// TODO: L1 has 9 timers but tim0 and tim1 don't exist.
+#define MICROPY_HW_MAX_TIMER (11)
+#define MICROPY_HW_MAX_UART (5)
+#define MICROPY_HW_MAX_LPUART (0)
+
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
 

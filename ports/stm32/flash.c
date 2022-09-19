@@ -117,6 +117,12 @@ static const flash_layout_t flash_layout[] = {
     { (uint32_t)FLASH_BASE, (uint32_t)FLASH_PAGE_SIZE, 512 },
 };
 
+#elif defined(STM32L1)
+
+static const flash_layout_t flash_layout[] = {
+    { (uint32_t)FLASH_BASE, 0x200, 1024 },
+};
+
 #elif defined(STM32H7)
 
 static const flash_layout_t flash_layout[] = {
@@ -264,7 +270,7 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     EraseInitStruct.Page = get_page(flash_dest);
     EraseInitStruct.Banks = get_bank(flash_dest);
     EraseInitStruct.NbPages = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
-    #elif defined(STM32L0)
+    #elif defined(STM32L0) || defined(STM32L1)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR);
     EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
     EraseInitStruct.PageAddress = flash_dest;
@@ -286,6 +292,8 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
 
     #if defined(STM32H7)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS_BANK1 | FLASH_FLAG_ALL_ERRORS_BANK2);
+    #elif defined(STM32L1)
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR);
     #else
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
         FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
