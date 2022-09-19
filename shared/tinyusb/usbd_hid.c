@@ -136,9 +136,13 @@ STATIC mp_obj_t usbd_hid_report(size_t n_args, const mp_obj_t *args) {
     mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
 
     // run the task once if not ready, then just exit
-    if (!tud_hid_n_ready(instance)) {
-        tud_task();
-        if (!tud_hid_n_ready(instance)) {
+    if (!tud_hid_n_ready(instance)) { // if the hid is not ready
+        if (tud_task_event_ready()) { // if there is an event ready, process it then try again
+            tud_task();
+            if (!tud_hid_n_ready(instance)) { // processed but still not ready, return false
+                return mp_obj_new_bool(false);
+            }
+        } else { // no event and not ready, return false
             return mp_obj_new_bool(false);
         }
     }
