@@ -75,8 +75,8 @@ function ci_mpy_format_setup {
 
 function ci_mpy_format_test {
     # Test mpy-tool.py dump feature on bytecode
-    python2 ./tools/mpy-tool.py -xd ports/minimal/frozentest.mpy
-    python3 ./tools/mpy-tool.py -xd ports/minimal/frozentest.mpy
+    python2 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
+    python3 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
 
     # Test mpy-tool.py dump feature on native code
     make -C examples/natmod/features1
