@@ -11,8 +11,8 @@
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_LED          (1)
 #define MICROPY_HW_HAS_FLASH        (1)  // QSPI extflash mounted
-//#define MICROPY_HW_UART_REPL        (1)
-//#define MICROPY_HW_UART_REPL_BAUD   (115200)
+// #define MICROPY_HW_UART_REPL        (1)
+// #define MICROPY_HW_UART_REPL_BAUD   (115200)
 
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
 void board_early_init(void);
@@ -55,12 +55,12 @@ void board_early_init(void);
 #define MICROPY_HW_UART4_RX         (pin_C11)
 
 // xSPI
-//SPI1
+// SPI1
 #define MICROPY_HW_SPI1_NSS         (pin_A3)
 #define MICROPY_HW_SPI1_SCK         (pin_A5)
 #define MICROPY_HW_SPI1_MISO        (pin_B4)
 #define MICROPY_HW_SPI1_MOSI        (pin_B5)
-//SPI2
+// SPI2
 #define MICROPY_HW_SPI2_NSS         (pin_B12)
 #define MICROPY_HW_SPI2_SCK         (pin_B13)
 #define MICROPY_HW_SPI2_MISO        (pin_B14)
@@ -71,7 +71,7 @@ void board_early_init(void);
 // #define MICROPY_HW_SPI3_MISO        (pin_C11)
 // #define MICROPY_HW_SPI3_MOSI        (pin_C12)
 
-//QSPI1
+// QSPI1
 // 8MBit external QSPI flash, used for either the filesystem or XIP memory mapped
 #define MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 (23)
 #define MICROPY_HW_QSPIFLASH_CS     (pin_A2)
@@ -89,7 +89,7 @@ extern struct _spi_bdev_t spi_bdev;
     (op) == BDEV_IOCTL_NUM_BLOCKS ? ((1 << MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2) / 8 / FLASH_BLOCK_SIZE) : \
     (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
     spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
-)
+    )
 #define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(&spi_bdev, (dest), (bl), (n))
 #define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev) // for extended block protocol
@@ -105,4 +105,3 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_LED1             (pin_B7) // Red
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))
-

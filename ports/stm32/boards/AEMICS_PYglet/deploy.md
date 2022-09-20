@@ -8,7 +8,7 @@ The board can also be programmed via the ST DFU bootloader, using e.g. [dfu-util
 To enter the bootloader the `BOOT0` pin can be connected to `3V3` during reset, or you can use `machine.bootloader()` from the MicroPython REPL.
 
 ```bash
-dfu-util --alt 0 -D firmware.dfu
+dfu-util --alt 0 -D build-AEMICS_PYglet/firmware.dfu
 ```
 
 `3V3` is on Pin 1 of the PYglet module.
