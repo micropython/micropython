@@ -85,15 +85,25 @@
 //|           a.play(mp3)
 //|           while a.playing:
 //|             pass
-//|           print("stopped")"""
+//|           print("stopped")
+//|
+//|         Support was added for taking a filename as parameter, instead of an opened file,
+//|         and opening the file internally.
+//|         """
 //|         ...
 //|
+
 STATIC mp_obj_t audiomp3_mp3file_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
+    mp_obj_t arg = args[0];
+
+    if (mp_obj_is_str(arg)) {
+        arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));
+    }
 
     audiomp3_mp3file_obj_t *self = m_new_obj(audiomp3_mp3file_obj_t);
     self->base.type = &audiomp3_mp3file_type;
-    if (!mp_obj_is_type(args[0], &mp_type_fileio)) {
+    if (!mp_obj_is_type(arg, &mp_type_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
     uint8_t *buffer = NULL;
@@ -104,7 +114,7 @@ STATIC mp_obj_t audiomp3_mp3file_make_new(const mp_obj_type_t *type, size_t n_ar
         buffer = bufinfo.buf;
         buffer_size = bufinfo.len;
     }
-    common_hal_audiomp3_mp3file_construct(self, MP_OBJ_TO_PTR(args[0]),
+    common_hal_audiomp3_mp3file_construct(self, MP_OBJ_TO_PTR(arg),
         buffer, buffer_size);
 
     return MP_OBJ_FROM_PTR(self);
