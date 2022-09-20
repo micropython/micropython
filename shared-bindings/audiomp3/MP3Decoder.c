@@ -44,11 +44,11 @@
 //|         https://learn.adafruit.com/Memory-saving-tips-for-CircuitPython/reducing-memory-fragmentation
 //|     """
 //|
-//|     def __init__(self, file: typing.BinaryIO, buffer: WriteableBuffer) -> None:
+//|     def __init__(self, file: Union(typing.BinaryIO, str), buffer: WriteableBuffer) -> None:
 //|
 //|         """Load a .mp3 file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
-//|         :param typing.BinaryIO file: Already opened mp3 file
+//|         :param Union(typing.BinaryIO, str) file: The name of a mp3 file (preferred) or an already opened mp3 file
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two buffers are allocated internally.  The specific buffer size required depends on the mp3 file.
 //|
 //|         Playback of mp3 audio is CPU intensive, and the
@@ -77,8 +77,8 @@
 //|           speaker_enable = digitalio.DigitalInOut(board.SPEAKER_ENABLE)
 //|           speaker_enable.switch_to_output(value=True)
 //|
-//|           data = open("cplay-16bit-16khz-64kbps.mp3", "rb")
-//|           mp3 = audiomp3.MP3Decoder(data)
+//|           mp3 = audiomp3.MP3Decoder("cplay-16bit-16khz-64kbps.mp3")  # preferred use
+//|           # mp3 = audiomp3.MP3Decoder(open("cplay-16bit-16khz-64kbps.mp3", "rb"))
 //|           a = audioio.AudioOut(board.A0)
 //|
 //|           print("playing")
@@ -86,9 +86,6 @@
 //|           while a.playing:
 //|             pass
 //|           print("stopped")
-//|
-//|         Support was added for taking a filename as parameter, instead of an opened file,
-//|         and opening the file internally.
 //|         """
 //|         ...
 //|
