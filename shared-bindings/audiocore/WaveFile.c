@@ -40,10 +40,10 @@
 //|     be 8 bit unsigned or 16 bit signed. If a buffer is provided, it will be used instead of allocating
 //|     an internal buffer, which can prevent memory fragmentation."""
 //|
-//|     def __init__(self, file: Union(typing.BinaryIO, str), buffer: WriteableBuffer) -> None:
+//|     def __init__(self, file: Union[str, typing.BinaryIO], buffer: WriteableBuffer) -> None:
 //|         """Load a .wav file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
-//|         :param Union(typing.BinaryIO, str) file: The name of a wave file (preferred) or an already opened wave file
+//|         :param Union[str, typing.BinaryIO] file: The name of a wave file (preferred) or an already opened wave file
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: Optional pre-allocated buffer,
 //|           that will be split in half and used for double-buffering of the data.
 //|           The buffer must be 8 to 1024 bytes long.

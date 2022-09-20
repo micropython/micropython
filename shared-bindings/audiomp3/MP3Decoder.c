@@ -44,11 +44,11 @@
 //|         https://learn.adafruit.com/Memory-saving-tips-for-CircuitPython/reducing-memory-fragmentation
 //|     """
 //|
-//|     def __init__(self, file: Union(typing.BinaryIO, str), buffer: WriteableBuffer) -> None:
+//|     def __init__(self, file: Union[str, typing.BinaryIO], buffer: WriteableBuffer) -> None:
 //|
 //|         """Load a .mp3 file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
-//|         :param Union(typing.BinaryIO, str) file: The name of a mp3 file (preferred) or an already opened mp3 file
+//|         :param Union[str, typing.BinaryIO] file: The name of a mp3 file (preferred) or an already opened mp3 file
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two buffers are allocated internally.  The specific buffer size required depends on the mp3 file.
 //|
 //|         Playback of mp3 audio is CPU intensive, and the
