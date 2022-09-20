@@ -1,13 +1,12 @@
-# For string compression
-huffman
-
 # For nvm.toml
 cascadetoml
 jinja2
-typer
+# Undo this pin when click and typer are again compatible.
+typer==0.4.0
 
 sh
-click
+# Undo this pin when click and typer are again compatible.
+click==8.0.4
 cpp-coveralls
 requests
 requests-cache
@@ -18,6 +17,7 @@ polib
 # For pre-commit
 pyyaml
 black
+pre-commit
 
 # for combining the Nordic SoftDevice with CircuitPython
 intelhex
@@ -27,3 +27,7 @@ pyelftools
 
 # for stubs and annotations
 adafruit-circuitpython-typing
+
+# for web workflow minify
+minify_html
+jsmin

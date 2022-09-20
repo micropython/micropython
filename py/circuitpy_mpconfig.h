@@ -198,10 +198,11 @@ typedef long mp_off_t;
 
 
 // extra built in names to add to the global namespace
+// Not indented so as not to confused the editor.
 #define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj },      \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },   \
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // board-specific definitions, which control and may override definitions below.
@@ -213,7 +214,7 @@ typedef long mp_off_t;
 #define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
 #endif
 #define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_BUILTINS_POW3)
-#define MICROPY_PY_FSTRINGS                   (MICROPY_CPYTHON_COMPAT)
+#define MICROPY_PY_FSTRINGS                   (1)
 #define MICROPY_MODULE_WEAK_LINKS             (0)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
 #ifndef MICROPY_PY_BUILTINS_COMPLEX
@@ -226,11 +227,14 @@ typedef long mp_off_t;
 #ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT    (CIRCUITPY_FULL_BUILD)
 #endif
+#ifndef MICROPY_PY_COLLECTIONS_DEQUE
+#define MICROPY_PY_COLLECTIONS_DEQUE          (CIRCUITPY_FULL_BUILD)
+#endif
 #define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
 
-#define CIRCUITPY_MICROPYTHON_ADVANCED        (CIRCUITPY_FULL_BUILD)
+#define CIRCUITPY_MICROPYTHON_ADVANCED        (0)
 
 #ifndef MICROPY_FATFS_EXFAT
 #define MICROPY_FATFS_EXFAT           (CIRCUITPY_FULL_BUILD)
@@ -293,6 +297,22 @@ typedef long mp_off_t;
 #define BOARD_UART_ROOT_POINTER     mp_obj_t board_uart_bus;
 #endif
 
+#if MICROPY_PY_ASYNC_AWAIT && !CIRCUITPY_TRACEBACK
+#error CIRCUITPY_ASYNCIO requires CIRCUITPY_TRACEBACK
+#endif
+
+#if defined(CIRCUITPY_CONSOLE_UART_RX) || defined(CIRCUITPY_CONSOLE_UART_TX)
+#if !(defined(CIRCUITPY_CONSOLE_UART_RX) && defined(CIRCUITPY_CONSOLE_UART_TX))
+#error Both CIRCUITPY_CONSOLE_UART_RX and CIRCUITPY_CONSOLE_UART_TX must be defined if one is defined.
+#endif
+#define CIRCUITPY_CONSOLE_UART (1)
+#ifndef CIRCUITPY_CONSOLE_UART_BAUDRATE
+#define CIRCUITPY_CONSOLE_UART_BAUDRATE (115200)
+#endif
+#else
+#define CIRCUITPY_CONSOLE_UART (0)
+#endif
+
 // These CIRCUITPY_xxx values should all be defined in the *.mk files as being on or off.
 // So if any are not defined in *.mk, they'll throw an error here.
 
@@ -309,14 +329,6 @@ typedef long mp_off_t;
 #else
 #define CIRCUITPY_DISPLAY_LIMIT (0)
 #define CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE (0)
-#endif
-
-#if CIRCUITPY_GAMEPADSHIFT
-// Scan gamepad every 32ms
-#define CIRCUITPY_GAMEPAD_TICKS 0x1f
-#define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
-#else
-#define GAMEPAD_ROOT_POINTERS
 #endif
 
 #if CIRCUITPY_KEYPAD
@@ -419,7 +431,6 @@ struct _supervisor_allocation_node;
 #define CIRCUITPY_COMMON_ROOT_POINTERS \
     FLASH_ROOT_POINTERS \
     KEYPAD_ROOT_POINTERS \
-    GAMEPAD_ROOT_POINTERS \
     BOARD_UART_ROOT_POINTER \
     WIFI_MONITOR_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
@@ -553,6 +564,10 @@ void supervisor_run_background_tasks_if_tick(void);
 #error "CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR must be at least 1"
 #endif
 
+#ifndef CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS
+#define CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS (0)
+#endif
+
 #ifndef USB_MIDI_EP_NUM_OUT
 #define USB_MIDI_EP_NUM_OUT (0)
 #endif
@@ -572,5 +587,7 @@ void supervisor_run_background_tasks_if_tick(void);
 #ifndef MICROPY_WRAP_MP_EXECUTE_BYTECODE
 #define MICROPY_WRAP_MP_EXECUTE_BYTECODE PLACE_IN_ITCM
 #endif
+
+#define MICROPY_PY_OPTIMIZE_PROPERTY_FLASH_SIZE (CIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE)
 
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

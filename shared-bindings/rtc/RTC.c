@@ -34,7 +34,7 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "shared-bindings/time/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 const rtc_rtc_obj_t rtc_rtc_obj = {{&rtc_rtc_type}};
 
@@ -87,12 +87,9 @@ STATIC mp_obj_t rtc_rtc_obj_set_datetime(mp_obj_t self_in, mp_obj_t datetime) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(rtc_rtc_set_datetime_obj, rtc_rtc_obj_set_datetime);
 
-const mp_obj_property_t rtc_rtc_datetime_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rtc_rtc_get_datetime_obj,
-              (mp_obj_t)&rtc_rtc_set_datetime_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(rtc_rtc_datetime_obj,
+    (mp_obj_t)&rtc_rtc_get_datetime_obj,
+    (mp_obj_t)&rtc_rtc_set_datetime_obj);
 
 //|     calibration: int
 //|     """The RTC calibration value as an `int`.
@@ -118,12 +115,9 @@ STATIC mp_obj_t rtc_rtc_obj_set_calibration(mp_obj_t self_in, mp_obj_t calibrati
 }
 MP_DEFINE_CONST_FUN_OBJ_2(rtc_rtc_set_calibration_obj, rtc_rtc_obj_set_calibration);
 
-const mp_obj_property_t rtc_rtc_calibration_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rtc_rtc_get_calibration_obj,
-              (mp_obj_t)&rtc_rtc_set_calibration_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(rtc_rtc_calibration_obj,
+    (mp_obj_t)&rtc_rtc_get_calibration_obj,
+    (mp_obj_t)&rtc_rtc_set_calibration_obj);
 
 STATIC const mp_rom_map_elem_t rtc_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&rtc_rtc_datetime_obj) },

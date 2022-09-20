@@ -75,7 +75,7 @@ INC += \
 
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 
-CFLAGS += -Os -ftree-vrp -DNDEBUG -ffreestanding
+CFLAGS += -ftree-vrp -DNDEBUG
 
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512 -DCFG_TUD_MSC_BUFSIZE=1024
@@ -84,12 +84,8 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_
 # Never set -fno-inline because we use inline to move small functions into routines that must be
 # in RAM. If inlining is disallowed, then we may end up calling a function in flash when we cannot.
 ifeq ($(DEBUG), 1)
-  # You may want to disable -flto if it interferes with debugging.
-  # CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
   CFLAGS += -fno-ipa-sra
-else
-  #CFLAGS += -flto -flto-partition=none
 endif
 
 CFLAGS += $(INC) -ggdb -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) -Werror=missing-prototypes
@@ -105,7 +101,6 @@ CFLAGS += \
 	-mfloat-abi=hard \
 	-mfpu=fpv5-sp-d16 \
 	-DCPU_$(CHIP_VARIANT) \
-	-DDEBUG \
 	-DIMXRT10XX \
 	-g3 -Wno-unused-parameter \
 	-ffunction-sections -fdata-sections -fstack-usage

@@ -45,12 +45,10 @@ shared-bindings/audiomp3/__init__.rst shared-bindings/audiomp3/
 shared-bindings/audiopwmio/PWMAudioOut.rst shared-bindings/audiopwmio/#audiopwmio.PWMAudioOut
 shared-bindings/audiopwmio/__init__.rst shared-bindings/audiopwmio/
 shared-bindings/bitbangio/I2C.rst shared-bindings/bitbangio/#bitbangio.I2C
-shared-bindings/bitbangio/OneWire.rst shared-bindings/bitbangio/#bitbangio.OneWire
 shared-bindings/bitbangio/SPI.rst shared-bindings/bitbangio/#bitbangio.SPI
 shared-bindings/bitbangio/__init__.rst shared-bindings/bitbangio/
 shared-bindings/board/__init__.rst shared-bindings/board/
 shared-bindings/busio/I2C.rst shared-bindings/busio/#busio.I2C
-shared-bindings/busio/OneWire.rst shared-bindings/busio/#busio.OneWire
 shared-bindings/busio/Parity.rst shared-bindings/busio/#busio.Parity
 shared-bindings/busio/SPI.rst shared-bindings/busio/#busio.SPI
 shared-bindings/busio/UART.rst shared-bindings/busio/#busio.UART
@@ -82,10 +80,6 @@ shared-bindings/framebufferio/FramebufferDisplay.rst shared-bindings/framebuffer
 shared-bindings/framebufferio/__init__.rst shared-bindings/framebufferio/
 shared-bindings/frequencyio/FrequencyIn.rst shared-bindings/frequencyio/#frequencyio.FrequencyIn
 shared-bindings/frequencyio/__init__.rst shared-bindings/frequencyio/
-shared-bindings/gamepad/GamePad.rst shared-bindings/gamepad/#gamepad.GamePad
-shared-bindings/gamepad/__init__.rst shared-bindings/gamepad/
-shared-bindings/gamepadshift/GamePadShift.rst shared-bindings/gamepadshift/#gamepadshift.GamePadShift
-shared-bindings/gamepadshift/__init__.rst shared-bindings/gamepadshift/
 shared-bindings/gnss/__init__.rst shared-bindings/gnss/
 shared-bindings/i2cperipheral/__init__.rst shared-bindings/i2cperipheral/
 shared-bindings/i2csecondary/__init__.rst shared-bindings/i2csecondary/
@@ -101,6 +95,7 @@ shared-bindings/neopixel_write/__init__.rst shared-bindings/neopixel_write/
 shared-bindings/network/__init__.rst shared-bindings/network/
 shared-bindings/nvm/ByteArray.rst shared-bindings/nvm/#nvm.ByteArray
 shared-bindings/nvm/__init__.rst shared-bindings/nvm/
+shared-bindings/onewireio/OneWire.rst shared-bindings/onewireio/#onewireio.OneWire
 shared-bindings/os/__init__.rst shared-bindings/os/
 shared-bindings/protomatter/__init__.rst shared-bindings/protomatter/
 shared-bindings/ps2io/Ps2.rst shared-bindings/ps2io/#ps2io.Ps2

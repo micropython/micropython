@@ -27,7 +27,7 @@
 #include "esp_sleep.h"
 
 #include "py/runtime.h"
-#include "supervisor/esp_port.h"
+#include "supervisor/port.h"
 
 #include "components/esp_timer/include/esp_timer.h"
 
@@ -66,7 +66,7 @@ STATIC bool woke_up = false;
 STATIC void timer_callback(void *arg) {
     (void)arg;
     woke_up = true;
-    xTaskNotifyGive(circuitpython_task);
+    port_wake_main_task();
 }
 
 bool alarm_time_timealarm_woke_this_cycle(void) {

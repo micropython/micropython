@@ -82,7 +82,7 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
     if (bytes_read != sizeof(chunk_header) ||
         memcmp(chunk_header, "MThd\0\0\0\6\0\0\0\1", 12)) {
-        mp_raise_ValueError(translate("Invalid MIDI file"));
+        mp_arg_error_invalid(MP_QSTR_file);
         // TODO: for a multi-track MIDI (type 1), return an AudioMixer
     }
 
@@ -97,7 +97,7 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
         mp_raise_OSError(MP_EIO);
     }
     if (bytes_read != 8 || memcmp(chunk_header, "MTrk", 4)) {
-        mp_raise_ValueError(translate("Invalid MIDI file"));
+        mp_arg_error_invalid(MP_QSTR_file);
     }
     uint32_t track_size = (chunk_header[4] << 24) |
         (chunk_header[5] << 16) | (chunk_header[6] << 8) | chunk_header[7];
@@ -106,7 +106,7 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
         mp_raise_OSError(MP_EIO);
     }
     if (bytes_read != track_size) {
-        mp_raise_ValueError(translate("Invalid MIDI file"));
+        mp_arg_error_invalid(MP_QSTR_file);
     }
 
     synthio_miditrack_obj_t *result = m_new_obj(synthio_miditrack_obj_t);

@@ -38,7 +38,7 @@
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class SDCard:
 //|     """SD Card Block Interface with SDIO
@@ -129,14 +129,10 @@ STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args,
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t frequency = args[ARG_frequency].u_int;
-    if (frequency < 0) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_baudrate);
-    }
-
+    mp_int_t frequency = mp_arg_validate_int_min(args[ARG_frequency].u_int, 1, MP_QSTR_frequency);
     uint8_t width = args[ARG_width].u_int;
     if (width != 0 && width != 1 && width != 4) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_width);
+        mp_arg_error_invalid(MP_QSTR_width);
     }
 
     if (!common_hal_sdioio_sdcard_configure(self, frequency, width)) {
@@ -218,12 +214,8 @@ STATIC mp_obj_t sdioio_sdcard_obj_get_frequency(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_get_frequency_obj, sdioio_sdcard_obj_get_frequency);
 
-const mp_obj_property_t sdioio_sdcard_frequency_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&sdioio_sdcard_get_frequency_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(sdioio_sdcard_frequency_obj,
+    (mp_obj_t)&sdioio_sdcard_get_frequency_obj);
 
 //|     @property
 //|     def width(self) -> int:
@@ -237,12 +229,8 @@ STATIC mp_obj_t sdioio_sdcard_obj_get_width(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_get_width_obj, sdioio_sdcard_obj_get_width);
 
-const mp_obj_property_t sdioio_sdcard_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&sdioio_sdcard_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(sdioio_sdcard_width_obj,
+    (mp_obj_t)&sdioio_sdcard_get_width_obj);
 
 //|     def deinit(self) -> None:
 //|         """Disable permanently.

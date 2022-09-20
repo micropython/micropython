@@ -69,7 +69,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
 
     const mp_int_t address_type = args[ARG_address_type].u_int;
     if (address_type < BLEIO_ADDRESS_TYPE_MIN || address_type > BLEIO_ADDRESS_TYPE_MAX) {
-        mp_raise_ValueError(translate("Address type out of range"));
+        mp_arg_error_invalid(MP_QSTR_address_type);
     }
 
     common_hal_bleio_address_construct(self, buf_info.buf, address_type);
@@ -101,12 +101,8 @@ STATIC mp_obj_t bleio_address_get_address_bytes(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_address_bytes_obj, bleio_address_get_address_bytes);
 
-const mp_obj_property_t bleio_address_address_bytes_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_address_get_address_bytes_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(bleio_address_address_bytes_obj,
+    (mp_obj_t)&bleio_address_get_address_bytes_obj);
 
 //|     type: int
 //|     """The address type (read-only).
@@ -121,12 +117,8 @@ STATIC mp_obj_t bleio_address_get_type(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_type_obj, bleio_address_get_type);
 
-const mp_obj_property_t bleio_address_type_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_address_get_type_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(bleio_address_type_obj,
+    (mp_obj_t)&bleio_address_get_type_obj);
 
 //|     def __eq__(self, other: object) -> bool:
 //|         """Two Address objects are equal if their addresses and address types are equal."""

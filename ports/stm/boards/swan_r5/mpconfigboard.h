@@ -64,3 +64,6 @@
 
 #define DEFAULT_UART_BUS_RX (&pin_PA10)
 #define DEFAULT_UART_BUS_TX (&pin_PA09)
+
+#define SWAN_R5_DISCHARGE_3V3 (&pin_PE06)
+#define SWAN_R5_ENABLE_3V3 (&pin_PE04)

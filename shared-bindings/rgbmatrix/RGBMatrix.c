@@ -207,11 +207,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     uint8_t clock_pin = validate_pin(args[ARG_clock_pin].u_obj);
     uint8_t latch_pin = validate_pin(args[ARG_latch_pin].u_obj);
     uint8_t output_enable_pin = validate_pin(args[ARG_output_enable_pin].u_obj);
-    int bit_depth = args[ARG_bit_depth].u_int;
-
-    if (bit_depth <= 0 || bit_depth > 6) {
-        mp_raise_ValueError_varg(translate("Bit depth must be from 1 to 6 inclusive, not %d"), bit_depth);
-    }
+    mp_int_t bit_depth = mp_arg_validate_int_range(args[ARG_bit_depth].u_int, 1, 6, MP_QSTR_bit_depth);
 
     validate_pins(MP_QSTR_rgb_pins, rgb_pins, MP_ARRAY_SIZE(self->rgb_pins), args[ARG_rgb_list].u_obj, &rgb_count);
     validate_pins(MP_QSTR_addr_pins, addr_pins, MP_ARRAY_SIZE(self->addr_pins), args[ARG_addr_list].u_obj, &addr_count);
@@ -220,12 +216,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         mp_raise_ValueError_varg(translate("Must use a multiple of 6 rgb pins, not %d"), rgb_count);
     }
 
-    int tile = args[ARG_tile].u_int;
-
-    if (tile <= 0) {
-        mp_raise_ValueError_varg(
-            translate("tile must be greater than zero"));
-    }
+    int tile = mp_arg_validate_int_min(args[ARG_tile].u_int, 1, MP_QSTR_tile);
 
     int computed_height = (rgb_count / 3) * (1 << (addr_count)) * tile;
     if (args[ARG_height].u_int != 0) {
@@ -235,21 +226,18 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         }
     }
 
-    if (args[ARG_width].u_int <= 0) {
-        mp_raise_ValueError(translate("width must be greater than zero"));
-    }
+    mp_int_t width = mp_arg_validate_int_min(args[ARG_width].u_int, 1, MP_QSTR_width);
 
     preflight_pins_or_throw(clock_pin, rgb_pins, rgb_count, true);
 
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
     if (framebuffer == mp_const_none) {
-        int width = args[ARG_width].u_int;
         int bufsize = 2 * width * computed_height;
         framebuffer = mp_obj_new_bytearray_of_zeros(bufsize);
     }
 
     common_hal_rgbmatrix_rgbmatrix_construct(self,
-        args[ARG_width].u_int,
+        width,
         bit_depth,
         rgb_count, rgb_pins,
         addr_count, addr_pins,
@@ -310,12 +298,9 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_set_brightness(mp_obj_t self_in, mp_obj_t va
 }
 MP_DEFINE_CONST_FUN_OBJ_2(rgbmatrix_rgbmatrix_set_brightness_obj, rgbmatrix_rgbmatrix_set_brightness);
 
-const mp_obj_property_t rgbmatrix_rgbmatrix_brightness_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rgbmatrix_rgbmatrix_get_brightness_obj,
-              (mp_obj_t)&rgbmatrix_rgbmatrix_set_brightness_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(rgbmatrix_rgbmatrix_brightness_obj,
+    (mp_obj_t)&rgbmatrix_rgbmatrix_get_brightness_obj,
+    (mp_obj_t)&rgbmatrix_rgbmatrix_set_brightness_obj);
 
 //|     def refresh(self) -> None:
 //|         """Transmits the color data in the buffer to the pixels so that
@@ -339,12 +324,8 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_get_width(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_rgbmatrix_rgbmatrix_get_width(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_width_obj, rgbmatrix_rgbmatrix_get_width);
-const mp_obj_property_t rgbmatrix_rgbmatrix_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rgbmatrix_rgbmatrix_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(rgbmatrix_rgbmatrix_width_obj,
+    (mp_obj_t)&rgbmatrix_rgbmatrix_get_width_obj);
 
 //|     height: int
 //|     """The height of the display, in pixels"""
@@ -356,12 +337,8 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_get_height(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_height_obj, rgbmatrix_rgbmatrix_get_height);
 
-const mp_obj_property_t rgbmatrix_rgbmatrix_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rgbmatrix_rgbmatrix_get_height_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(rgbmatrix_rgbmatrix_height_obj,
+    (mp_obj_t)&rgbmatrix_rgbmatrix_get_height_obj);
 
 STATIC const mp_rom_map_elem_t rgbmatrix_rgbmatrix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&rgbmatrix_rgbmatrix_deinit_obj) },

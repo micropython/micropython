@@ -32,7 +32,7 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Shape:
 //|     """Represents a shape made by defining boundaries that may be mirrored."""
@@ -58,14 +58,8 @@ STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t width = args[ARG_width].u_int;
-    if (width < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_width);
-    }
-    mp_int_t height = args[ARG_height].u_int;
-    if (height < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_height);
-    }
+    mp_int_t width = mp_arg_validate_int_min(args[ARG_width].u_int, 1, MP_QSTR_width);
+    mp_int_t height = mp_arg_validate_int_min(args[ARG_height].u_int, 1, MP_QSTR_height);
 
     displayio_shape_t *self = m_new_obj(displayio_shape_t);
     self->base.type = &displayio_shape_type;

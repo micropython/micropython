@@ -34,7 +34,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class AnalogOut:
 //|     """Output analog values (a specific voltage).
@@ -108,21 +108,16 @@ STATIC mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t valu
     if (common_hal_analogio_analogout_deinited(self)) {
         raise_deinited_error();
     }
-    uint32_t v = mp_obj_get_int(value);
-    if (v >= (1 << 16)) {
-        mp_raise_ValueError(translate("AnalogOut is only 16 bits. Value must be less than 65536."));
-    }
+    uint16_t v = mp_arg_validate_int_range(mp_obj_get_int(value), 0, 65535, MP_QSTR_value);
+
     common_hal_analogio_analogout_set_value(self, v);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(analogio_analogout_set_value_obj, analogio_analogout_obj_set_value);
 
-const mp_obj_property_t analogio_analogout_value_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {MP_ROM_NONE,
-              (mp_obj_t)&analogio_analogout_set_value_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(analogio_analogout_value_obj,
+    MP_ROM_NONE,
+    (mp_obj_t)&analogio_analogout_set_value_obj);
 
 STATIC const mp_rom_map_elem_t analogio_analogout_locals_dict_table[] = {
     // instance methods

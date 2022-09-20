@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/bitbangio/I2C.h"
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
@@ -65,14 +66,14 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         self->peripheral = i2c[sda_instance];
     }
     if (self->peripheral == NULL) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
     if ((i2c_get_hw(self->peripheral)->enable & I2C_IC_ENABLE_ENABLE_BITS) != 0) {
         mp_raise_ValueError(translate("I2C peripheral in use"));
     }
-    if (frequency > 1000000) {
-        mp_raise_ValueError(translate("Unsupported baudrate"));
-    }
+
+    mp_arg_validate_int_max(frequency, 1000000, MP_QSTR_frequency);
+
 
     #if CIRCUITPY_REQUIRE_I2C_PULLUPS
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)

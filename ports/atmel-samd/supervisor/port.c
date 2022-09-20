@@ -122,16 +122,17 @@
 
 #include "tusb.h"
 
-#if CIRCUITPY_GAMEPADSHIFT
-#include "shared-module/gamepadshift/__init__.h"
-#endif
 #if CIRCUITPY_PEW
 #include "common-hal/_pew/PewPew.h"
 #endif
 static volatile bool sleep_ok = true;
 
 #ifdef SAMD21
-uint8_t _tick_event_channel;
+static uint8_t _tick_event_channel = EVSYS_SYNCH_NUM;
+
+static bool tick_enabled(void) {
+    return _tick_event_channel != EVSYS_SYNCH_NUM;
+}
 
 // Sleeping requires a register write that can stall interrupt handling. Turning
 // off sleeps allows for more accurate interrupt timing. (Python still thinks
@@ -424,15 +425,19 @@ void reset_port(void) {
 
     reset_gclks();
 
-    #if CIRCUITPY_GAMEPADSHIFT
-    gamepadshift_reset();
-    #endif
     #if CIRCUITPY_PEW
     pew_reset();
     #endif
 
-    reset_event_system();
-    reset_ticks();
+    #ifdef SAMD21
+    if (!tick_enabled())
+    // SAMD21 ticks depend on the event system, so don't disturb the event system if we need ticks,
+    // such as for a display that lives across VM instantiations.
+    #endif
+    {
+        reset_event_system();
+        reset_ticks();
+    }
 
     reset_all_pins();
 
@@ -613,8 +618,8 @@ void port_enable_tick(void) {
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_PER2;
     #endif
     #ifdef SAMD21
-    // SAMD21 ticks won't survive reset_port(). This *should* be ok since it'll
-    // be triggered by ticks and no Python will be running.
+    // reset_port() preserves the event system if ticks were still enabled after a VM finished,
+    // such as for an on-board display. Normally the event system would be reset between VM instantiations.
     if (_tick_event_channel >= EVSYS_SYNCH_NUM) {
         turn_on_event_system();
         _tick_event_channel = find_sync_event_channel();

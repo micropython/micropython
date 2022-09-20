@@ -34,9 +34,6 @@
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/busio/UART.h"
-#if CIRCUITPY_ONEWIREIO
-#include "shared-bindings/onewireio/OneWire.h"
-#endif
 
 #include "py/runtime.h"
 
@@ -68,16 +65,25 @@
 //| This example will initialize the the device, run
 //| :py:meth:`~busio.I2C.scan` and then :py:meth:`~busio.I2C.deinit` the
 //| hardware. The last step is optional because CircuitPython automatically
-//| resets hardware after a program finishes."""
+//| resets hardware after a program finishes.
+//|
+//| Note that drivers will typically handle communication if provided the bus
+//| instance (such as ``busio.I2C(board.SCL, board.SDA)``), and that many of
+//| the methods listed here are lower level functionalities that are needed
+//| for working with custom drivers.
+//|
+//| Tutorial for I2C and SPI:
+//| https://learn.adafruit.com/circuitpython-basics-i2c-and-spi
+//|
+//| Tutorial for UART:
+//| https://learn.adafruit.com/circuitpython-essentials/circuitpython-uart-serial
+//| """
 //|
 
 STATIC const mp_rom_map_elem_t busio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_busio) },
     { MP_ROM_QSTR(MP_QSTR_I2C),   MP_ROM_PTR(&busio_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&busio_spi_type) },
-    #if CIRCUITPY_ONEWIREIO
-    { MP_ROM_QSTR(MP_QSTR_OneWire),   MP_ROM_PTR(&onewireio_onewire_type) },
-    #endif
     { MP_ROM_QSTR(MP_QSTR_UART),   MP_ROM_PTR(&busio_uart_type) },
 };
 

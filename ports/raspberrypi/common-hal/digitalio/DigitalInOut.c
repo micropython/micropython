@@ -32,7 +32,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
@@ -163,4 +163,29 @@ digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
         }
     }
     return PULL_NONE;
+}
+
+bool common_hal_digitalio_has_reg_op(digitalinout_reg_op_t op) {
+    return true;
+}
+
+volatile uint32_t *common_hal_digitalio_digitalinout_get_reg(digitalio_digitalinout_obj_t *self, digitalinout_reg_op_t op, uint32_t *mask) {
+    const uint8_t pin = self->pin->number;
+
+    *mask = 1u << pin;
+
+    switch (op) {
+        case DIGITALINOUT_REG_READ:
+            return (volatile uint32_t *)&sio_hw->gpio_in;
+        case DIGITALINOUT_REG_WRITE:
+            return &sio_hw->gpio_out;
+        case DIGITALINOUT_REG_SET:
+            return &sio_hw->gpio_set;
+        case DIGITALINOUT_REG_RESET:
+            return &sio_hw->gpio_clr;
+        case DIGITALINOUT_REG_TOGGLE:
+            return &sio_hw->gpio_togl;
+        default:
+            return NULL;
+    }
 }

@@ -29,10 +29,11 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin) {
     if (pin->analog) {
-        mp_raise_ValueError(translate("DigitalInOut not supported on given pin"));
+        raise_ValueError_invalid_pin();
     }
 
     claim_pin(pin);

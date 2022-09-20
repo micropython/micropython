@@ -15,7 +15,7 @@ __attribute__((section(".boot_hdr.ivt")))
  *  IVT Data
  *************************************/
 const ivt image_vector_table = {
-    IVT_HEADER,                       /* IVT Header */
+    0x432000D1,                       /* Teensy bootloader looks for this value*/
     IMAGE_ENTRY_ADDRESS,              /* Image Entry Function */
     IVT_RSVD,                         /* Reserved = 0 */
     (uint32_t)DCD_ADDRESS,            /* Address where DCD information is stored */
@@ -25,13 +25,15 @@ const ivt image_vector_table = {
     IVT_RSVD                          /* Reserved = 0 */
 };
 
+extern unsigned long _flashimagelen;
+
 __attribute__((section(".boot_hdr.boot_data")))
 /*************************************
  *  Boot Data
  *************************************/
 const BOOT_DATA_T boot_data = {
     FLASH_BASE,               /* boot start location */
-    FLASH_SIZE,               /* size */
+    (uint32_t)&_flashimagelen, /* actual size of image */
     PLUGIN_FLAG,              /* Plugin flag*/
     0xFFFFFFFF                /* empty - extra data word */
 };

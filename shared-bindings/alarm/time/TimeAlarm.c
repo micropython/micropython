@@ -33,7 +33,7 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
@@ -123,12 +123,8 @@ STATIC mp_obj_t alarm_time_timealarm_obj_get_monotonic_time(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(alarm_time_timealarm_get_monotonic_time_obj, alarm_time_timealarm_obj_get_monotonic_time);
 
-const mp_obj_property_t alarm_time_timealarm_monotonic_time_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&alarm_time_timealarm_get_monotonic_time_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(alarm_time_timealarm_monotonic_time_obj,
+    (mp_obj_t)&alarm_time_timealarm_get_monotonic_time_obj);
 
 STATIC const mp_rom_map_elem_t alarm_time_timealarm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_monotonic_time), MP_ROM_PTR(&alarm_time_timealarm_monotonic_time_obj) },

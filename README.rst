@@ -90,9 +90,11 @@ If you'd like to use the term "CircuitPython" and Blinka for your product here i
 * Your product is listed on `circuitpython.org <https://circuitpython.org>`__ (source
   `here <https://github.com/adafruit/circuitpython-org/>`_). This is to ensure that a user of your
   product can always download the latest version of CircuitPython from the standard place.
-* Your product has a user accessible USB plug which appears as a CIRCUITPY drive when plugged in
-  AND/OR provides file and serial access over Bluetooth Low Energy. Boards that do not support USB
-  should be clearly marked as BLE-only CircuitPython.
+* Your product supports at least one standard "`Workflow <https://docs.circuitpython.org/en/latest/docs/workflows.html>`__" for serial and file access:
+  * With a user accessible USB plug which appears as a CIRCUITPY drive when plugged in.
+  * With file and serial access over Bluetooth Low Energy using the BLE Workflow.
+  * With file access over WiFi using the WiFi Workflow with serial access over USB and/or WebSocket.
+* Boards that do not support the USB Workflow should be clearly marked.
 
 If you choose not to meet these requirements, then we ask you call your version of CircuitPython
 something else (for example, SuperDuperPython) and not use the Blinka logo. You can say it is
@@ -120,7 +122,7 @@ Behavior
    make each file independent from each other.
 
    -  ``boot.py`` runs only once on start up before
-      USB is initialized. This lays the ground work for configuring USB at
+      workflows are initialized. This lays the ground work for configuring USB at
       startup rather than it being fixed. Since serial is not available,
       output is written to ``boot_out.txt``.
    -  ``code.py`` (or ``main.py``) is run after every reload until it
@@ -135,7 +137,10 @@ Behavior
    possible to fix code that causes nasty crashes by making it available through mass storage after
    the crash. A reset (the button) is needed after it's fixed to get back into normal mode.
 -  RGB status LED indicating CircuitPython state.
--  Re-runs ``code.py`` or other main file after file system writes over USB mass storage. (Disable with
+   - One green flash - code completed without error.
+   - Two red flashes - code ended due to an exception.
+   - Three yellow flashes - safe mode. May be due to CircuitPython internal error.
+-  Re-runs ``code.py`` or other main file after file system writes by a workflow. (Disable with
    ``supervisor.disable_autoreload()``)
 -  Autoreload is disabled while the REPL is active.
 -  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,

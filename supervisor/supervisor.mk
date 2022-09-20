@@ -8,23 +8,43 @@ SRC_SUPERVISOR = \
 	supervisor/shared/lock.c \
 	supervisor/shared/memory.c \
 	supervisor/shared/micropython.c \
+	supervisor/shared/port.c \
 	supervisor/shared/reload.c \
 	supervisor/shared/safe_mode.c \
-  supervisor/shared/serial.c \
+	supervisor/shared/serial.c \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \
 	supervisor/shared/tick.c \
 	supervisor/shared/traceback.c \
-	supervisor/shared/translate.c \
-  supervisor/shared/workflow.c
-
-ifeq ($(DISABLE_FILESYSTEM),1)
-SRC_SUPERVISOR += supervisor/stub/filesystem.c
-else
-SRC_SUPERVISOR += supervisor/shared/filesystem.c
-endif
+	supervisor/shared/translate/translate.c \
+	supervisor/shared/workflow.c \
+	supervisor/stub/misc.c \
 
 NO_USB ?= $(wildcard supervisor/usb.c)
+
+
+ifeq ($(CIRCUITPY_USB),1)
+CIRCUITPY_CREATOR_ID ?= $(USB_VID)
+CIRCUITPY_CREATION_ID ?= $(USB_PID)
+endif
+
+ifneq ($(CIRCUITPY_CREATOR_ID),)
+CFLAGS += -DCIRCUITPY_CREATOR_ID=$(CIRCUITPY_CREATOR_ID)
+endif
+
+ifneq ($(CIRCUITPY_CREATION_ID),)
+CFLAGS += -DCIRCUITPY_CREATION_ID=$(CIRCUITPY_CREATION_ID)
+endif
+
+ifeq ($(CIRCUITPY_BLEIO),1)
+	SRC_SUPERVISOR += supervisor/shared/bluetooth/bluetooth.c
+  ifeq ($(CIRCUITPY_BLE_FILE_SERVICE),1)
+    SRC_SUPERVISOR += supervisor/shared/bluetooth/file_transfer.c
+  endif
+  ifeq ($(CIRCUITPY_SERIAL_BLE),1)
+    SRC_SUPERVISOR += supervisor/shared/bluetooth/serial.c
+  endif
+endif
 
 INTERNAL_FLASH_FILESYSTEM ?= 0
 CFLAGS += -DINTERNAL_FLASH_FILESYSTEM=$(INTERNAL_FLASH_FILESYSTEM)
@@ -35,18 +55,13 @@ CFLAGS += -DQSPI_FLASH_FILESYSTEM=$(QSPI_FLASH_FILESYSTEM)
 SPI_FLASH_FILESYSTEM ?= 0
 CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM)
 
-ifeq ($(CIRCUITPY_BLEIO),1)
-	SRC_SUPERVISOR += supervisor/shared/bluetooth/bluetooth.c
-  CIRCUITPY_CREATOR_ID ?= $(USB_VID)
-  CIRCUITPY_CREATION_ID ?= $(USB_PID)
-  CFLAGS += -DCIRCUITPY_CREATOR_ID=$(CIRCUITPY_CREATOR_ID)
-  CFLAGS += -DCIRCUITPY_CREATION_ID=$(CIRCUITPY_CREATION_ID)
-  ifeq ($(CIRCUITPY_BLE_FILE_SERVICE),1)
-    SRC_SUPERVISOR += supervisor/shared/bluetooth/file_transfer.c
-  endif
-  ifeq ($(CIRCUITPY_SERIAL_BLE),1)
-    SRC_SUPERVISOR += supervisor/shared/bluetooth/serial.c
-  endif
+DISABLE_FILESYSTEM ?= 0
+CFLAGS += -DDISABLE_FILESYSTEM=$(DISABLE_FILESYSTEM)
+
+ifeq ($(DISABLE_FILESYSTEM),1)
+SRC_SUPERVISOR += supervisor/stub/filesystem.c
+else
+SRC_SUPERVISOR += supervisor/shared/filesystem.c
 endif
 
 # Choose which flash filesystem impl to use.
@@ -80,6 +95,12 @@ endif
 
 ifneq ($(wildcard supervisor/serial.c),)
   SRC_SUPERVISOR += supervisor/serial.c
+endif
+
+ifeq ($(CIRCUITPY_STATUS_BAR),1)
+  SRC_SUPERVISOR += \
+    supervisor/shared/status_bar.c \
+
 endif
 
 ifeq ($(CIRCUITPY_USB),1)
@@ -146,6 +167,20 @@ ifeq ($(CIRCUITPY_USB),1)
   endif
 endif
 
+STATIC_RESOURCES = $(wildcard $(TOP)/supervisor/shared/web_workflow/static/*)
+
+$(BUILD)/autogen_web_workflow_static.c: ../../tools/gen_web_workflow_static.py $(STATIC_RESOURCES) | $(HEADER_BUILD)
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON) $< \
+		--output_c_file $@ \
+		$(STATIC_RESOURCES)
+
+ifeq ($(CIRCUITPY_WEB_WORKFLOW),1)
+  SRC_SUPERVISOR += supervisor/shared/web_workflow/web_workflow.c \
+                    supervisor/shared/web_workflow/websocket.c
+  SRC_SUPERVISOR += $(BUILD)/autogen_web_workflow_static.c
+endif
+
 SRC_TINYUSB = $(filter lib/tinyusb/%.c, $(SRC_SUPERVISOR))
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_TINYUSB)): CFLAGS += -Wno-missing-prototypes
 
@@ -155,9 +190,8 @@ ifeq ($(CIRCUITPY_DISPLAYIO), 1)
   SRC_SUPERVISOR += \
     supervisor/shared/display.c
 
-  ifeq ($(CIRCUITPY_TERMINALIO), 1)
-    SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
-  endif
+  # Include the display resources because it includes the Blinka logo as well.
+  SUPERVISOR_O += $(BUILD)/autogen_display_resources-$(TRANSLATION).o
 endif
 
 # Preserve double quotes in these values by single-quoting them.
@@ -190,14 +224,14 @@ endif
 USB_HIGHSPEED ?= 0
 CFLAGS += -DUSB_HIGHSPEED=$(USB_HIGHSPEED)
 
-$(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compression.generated.h
 
 CIRCUITPY_DISPLAY_FONT ?= "../../tools/fonts/ter-u12n.bdf"
 
-$(BUILD)/autogen_display_resources.c: ../../tools/gen_display_resources.py $(HEADER_BUILD)/qstrdefs.generated.h Makefile | $(HEADER_BUILD)
+$(BUILD)/autogen_display_resources-$(TRANSLATION).c: ../../tools/gen_display_resources.py $(TOP)/locale/$(TRANSLATION).po Makefile | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
 	$(Q)install -d $(BUILD)/genhdr
 	$(Q)$(PYTHON) ../../tools/gen_display_resources.py \
 		--font $(CIRCUITPY_DISPLAY_FONT) \
-		--sample_file $(HEADER_BUILD)/qstrdefs.generated.h \
-		--output_c_file $(BUILD)/autogen_display_resources.c
+		--sample_file $(TOP)/locale/$(TRANSLATION).po \
+		--output_c_file $@

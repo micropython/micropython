@@ -112,19 +112,19 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
         NULL, 0, 0, 0, // sideset pins
         #endif
         false, // No sideset enable
-        NULL, // jump pin
+        NULL, PULL_NONE, // jump pin
         (1 << vertical_sync->number) | (1 << horizontal_reference->number) | (1 << data_clock->number), // wait gpio pins
         true, // exclusive pin use
         false, 32, false, // out settings
         false, // wait for txstall
         true, 32, true,  // in settings
-        false); // Not user-interruptible.
+        false, // Not user-interruptible.
+        2, 5); // wrap settings
 
 
     PIO pio = self->state_machine.pio;
     uint8_t pio_index = pio_get_index(pio);
     uint sm = self->state_machine.state_machine;
-    rp2pio_statemachine_set_wrap(&self->state_machine, 2, 5);
 }
 
 void common_hal_imagecapture_parallelimagecapture_deinit(imagecapture_parallelimagecapture_obj_t *self) {
@@ -153,7 +153,7 @@ void common_hal_imagecapture_parallelimagecapture_singleshot_capture(imagecaptur
     pio_sm_exec(pio, sm, pio_encode_jmp(offset));
     pio_sm_set_enabled(pio, sm, true);
 
-    common_hal_rp2pio_statemachine_readinto(&self->state_machine, bufinfo.buf, bufinfo.len, 4);
+    common_hal_rp2pio_statemachine_readinto(&self->state_machine, bufinfo.buf, bufinfo.len, 4, false);
 
     pio_sm_set_enabled(pio, sm, false);
 }

@@ -221,6 +221,15 @@ void common_hal_displayio_tilegrid_set_pixel_shader(displayio_tilegrid_t *self, 
     self->full_change = true;
 }
 
+mp_obj_t common_hal_displayio_tilegrid_get_bitmap(displayio_tilegrid_t *self) {
+    return self->bitmap;
+}
+
+void common_hal_displayio_tilegrid_set_bitmap(displayio_tilegrid_t *self, mp_obj_t bitmap) {
+    self->bitmap = bitmap;
+    self->full_change = true;
+}
+
 uint16_t common_hal_displayio_tilegrid_get_width(displayio_tilegrid_t *self) {
     return self->width_in_tiles;
 }
@@ -287,6 +296,27 @@ void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t
     self->partial_change = true;
 }
 
+void common_hal_displayio_tilegrid_set_all_tiles(displayio_tilegrid_t *self, uint8_t tile_index) {
+    if (tile_index >= self->tiles_in_bitmap) {
+        mp_raise_ValueError(translate("Tile index out of bounds"));
+    }
+    uint8_t *tiles = self->tiles;
+    if (self->inline_tiles) {
+        tiles = (uint8_t *)&self->tiles;
+    }
+    if (tiles == NULL) {
+        return;
+    }
+
+    for (uint16_t x = 0; x < self->width_in_tiles; x++) {
+        for (uint16_t y = 0; y < self->height_in_tiles; y++) {
+            tiles[y * self->width_in_tiles + x] = tile_index;
+        }
+    }
+
+    self->full_change = true;
+}
+
 bool common_hal_displayio_tilegrid_get_flip_x(displayio_tilegrid_t *self) {
     return self->flip_x;
 }
@@ -331,6 +361,13 @@ void common_hal_displayio_tilegrid_set_transpose_xy(displayio_tilegrid_t *self, 
     _update_current_y(self);
 
     self->moved = true;
+}
+
+bool common_hal_displayio_tilegrid_contains(displayio_tilegrid_t *self, uint16_t x, uint16_t y) {
+    uint16_t right_edge = self->x + (self->width_in_tiles * self->tile_width);
+    uint16_t bottom_edge = self->y + (self->height_in_tiles * self->tile_height);
+    return x >= self->x && x < right_edge &&
+           y >= self->y && y < bottom_edge;
 }
 
 void common_hal_displayio_tilegrid_set_top_left(displayio_tilegrid_t *self, uint16_t x, uint16_t y) {

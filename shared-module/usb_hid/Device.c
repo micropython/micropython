@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdbool.h>
 #include <string.h>
 
 #include "py/gc.h"
@@ -31,7 +32,7 @@
 #include "shared-bindings/usb_hid/Device.h"
 #include "shared-module/usb_hid/__init__.h"
 #include "shared-module/usb_hid/Device.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 #include "tusb.h"
 
@@ -181,16 +182,14 @@ uint8_t common_hal_usb_hid_device_validate_report_id(usb_hid_device_obj_t *self,
     }
     if (!(report_id_arg >= 0 &&
           get_report_id_idx(self, (size_t)report_id_arg) < CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR)) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_report_id);
+        mp_arg_error_invalid(MP_QSTR_report_id);
     }
     return (uint8_t)report_id_arg;
 }
 
 void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t report_descriptor, uint16_t usage_page, uint16_t usage, size_t num_report_ids, uint8_t *report_ids, uint8_t *in_report_lengths, uint8_t *out_report_lengths) {
-    if (num_report_ids > CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR) {
-        mp_raise_ValueError_varg(translate("More than %d report ids not supported"),
-            CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR);
-    }
+    mp_arg_validate_length_max(
+        num_report_ids, CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR, MP_QSTR_report_ids);
 
     // report buffer pointers are NULL at start, and are created when USB is initialized.
     mp_buffer_info_t bufinfo;
@@ -223,10 +222,7 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *
     // report_id and len have already been validated for this device.
     size_t id_idx = get_report_id_idx(self, report_id);
 
-    if (len != self->in_report_lengths[id_idx]) {
-        mp_raise_ValueError_varg(translate("Buffer incorrect size. Should be %d bytes."),
-            self->in_report_lengths[id_idx]);
-    }
+    mp_arg_validate_length(len, self->in_report_lengths[id_idx], MP_QSTR_report);
 
     // Wait until interface is ready, timeout = 2 seconds
     uint64_t end_ticks = supervisor_ticks_ms64() + 2000;
@@ -235,7 +231,7 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *
     }
 
     if (!tud_hid_ready()) {
-        mp_raise_msg(&mp_type_OSError,  translate("USB busy"));
+        mp_raise_msg(&mp_type_OSError, translate("USB busy"));
     }
 
     if (!tud_hid_report(report_id, report, len)) {
@@ -246,6 +242,10 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *
 mp_obj_t common_hal_usb_hid_device_get_last_received_report(usb_hid_device_obj_t *self, uint8_t report_id) {
     // report_id has already been validated for this device.
     size_t id_idx = get_report_id_idx(self, report_id);
+    if (!self->out_report_buffers_updated[id_idx]) {
+        return mp_const_none;
+    }
+    self->out_report_buffers_updated[id_idx] = false;
     return mp_obj_new_bytes(self->out_report_buffers[id_idx], self->out_report_lengths[id_idx]);
 }
 
@@ -263,6 +263,7 @@ void usb_hid_device_create_report_buffers(usb_hid_device_obj_t *self) {
             ? gc_alloc(self->out_report_lengths[i], false, true /*long-lived*/)
             : NULL;
     }
+    memset(self->out_report_buffers_updated, 0, sizeof(self->out_report_buffers_updated));
 }
 
 
@@ -309,6 +310,7 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
             hid_device->out_report_buffers[id_idx] &&
             hid_device->out_report_lengths[id_idx] >= bufsize) {
             memcpy(hid_device->out_report_buffers[id_idx], buffer, bufsize);
+            hid_device->out_report_buffers_updated[id_idx] = true;
         }
     }
 }

@@ -47,10 +47,8 @@ STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    int code = args[ARG_code].u_int;
-    if (code < 0 || code > 127) {
-        mp_raise_AttributeError(translate("code outside range 0~127"));
-    }
+    int code = mp_arg_validate_int_range(args[ARG_code].u_int, 0, 127, MP_QSTR_code);
+
     self->code = code;
 
     mp_obj_t data = args[ARG_data].u_obj;
@@ -80,12 +78,9 @@ STATIC mp_obj_t mod_msgpack_exttype_set_code(mp_obj_t self_in, mp_obj_t code_in)
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mod_msgpack_exttype_set_code_obj, mod_msgpack_exttype_set_code);
 
-const mp_obj_property_t mod_msgpack_exttype_code_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&mod_msgpack_exttype_get_code_obj,
-              (mp_obj_t)&mod_msgpack_exttype_set_code_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(mod_msgpack_exttype_code_obj,
+    (mp_obj_t)&mod_msgpack_exttype_get_code_obj,
+    (mp_obj_t)&mod_msgpack_exttype_set_code_obj);
 
 //|     data: bytes
 //|     """Data."""
@@ -104,12 +99,9 @@ STATIC mp_obj_t mod_msgpack_exttype_set_data(mp_obj_t self_in, mp_obj_t data_in)
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mod_msgpack_exttype_set_data_obj, mod_msgpack_exttype_set_data);
 
-const mp_obj_property_t mod_msgpack_exttype_data_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&mod_msgpack_exttype_get_data_obj,
-              (mp_obj_t)&mod_msgpack_exttype_set_data_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(mod_msgpack_exttype_data_obj,
+    (mp_obj_t)&mod_msgpack_exttype_get_data_obj,
+    (mp_obj_t)&mod_msgpack_exttype_set_data_obj);
 
 STATIC mp_rom_map_elem_t mod_msgpack_exttype_locals_dict_table[] = {
     // Properties

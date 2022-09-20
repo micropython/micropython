@@ -33,7 +33,7 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Serial:
 //|     """Receives cdc commands over USB"""
@@ -157,12 +157,8 @@ STATIC mp_obj_t usb_cdc_serial_get_connected(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_connected_obj, usb_cdc_serial_get_connected);
 
-const mp_obj_property_t usb_cdc_serial_connected_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_cdc_serial_get_connected_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(usb_cdc_serial_connected_obj,
+    (mp_obj_t)&usb_cdc_serial_get_connected_obj);
 
 //|     in_waiting: int
 //|     """Returns the number of bytes waiting to be read on the USB serial input. (read-only)"""
@@ -173,12 +169,8 @@ STATIC mp_obj_t usb_cdc_serial_get_in_waiting(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_in_waiting_obj, usb_cdc_serial_get_in_waiting);
 
-const mp_obj_property_t usb_cdc_serial_in_waiting_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_cdc_serial_get_in_waiting_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(usb_cdc_serial_in_waiting_obj,
+    (mp_obj_t)&usb_cdc_serial_get_in_waiting_obj);
 
 //|     out_waiting: int
 //|     """Returns the number of bytes waiting to be written on the USB serial output. (read-only)"""
@@ -189,12 +181,8 @@ STATIC mp_obj_t usb_cdc_serial_get_out_waiting(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_out_waiting_obj, usb_cdc_serial_get_out_waiting);
 
-const mp_obj_property_t usb_cdc_serial_out_waiting_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_cdc_serial_get_out_waiting_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(usb_cdc_serial_out_waiting_obj,
+    (mp_obj_t)&usb_cdc_serial_get_out_waiting_obj);
 
 //|     def reset_input_buffer(self) -> None:
 //|         """Clears any unread bytes."""
@@ -237,12 +225,9 @@ STATIC mp_obj_t usb_cdc_serial_set_timeout(mp_obj_t self_in, mp_obj_t timeout_in
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_cdc_serial_set_timeout_obj, usb_cdc_serial_set_timeout);
 
-const mp_obj_property_t usb_cdc_serial_timeout_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_cdc_serial_get_timeout_obj,
-              (mp_obj_t)&usb_cdc_serial_set_timeout_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(usb_cdc_serial_timeout_obj,
+    (mp_obj_t)&usb_cdc_serial_get_timeout_obj,
+    (mp_obj_t)&usb_cdc_serial_set_timeout_obj);
 
 //|     write_timeout: Optional[float]
 //|     """The initial value of `write_timeout` is ``None``. If ``None``, wait indefinitely to finish
@@ -264,12 +249,9 @@ STATIC mp_obj_t usb_cdc_serial_set_write_timeout(mp_obj_t self_in, mp_obj_t writ
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_cdc_serial_set_write_timeout_obj, usb_cdc_serial_set_write_timeout);
 
-const mp_obj_property_t usb_cdc_serial_write_timeout_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_cdc_serial_get_write_timeout_obj,
-              (mp_obj_t)&usb_cdc_serial_set_write_timeout_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(usb_cdc_serial_write_timeout_obj,
+    (mp_obj_t)&usb_cdc_serial_get_write_timeout_obj,
+    (mp_obj_t)&usb_cdc_serial_set_write_timeout_obj);
 
 
 STATIC const mp_rom_map_elem_t usb_cdc_serial_locals_dict_table[] = {

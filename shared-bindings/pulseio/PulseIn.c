@@ -33,7 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class PulseIn:
 //|     """Measure a series of active and idle pulses. This is commonly used in infrared receivers
@@ -87,7 +87,8 @@ STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 
-    pulseio_pulsein_obj_t *self = m_new_obj(pulseio_pulsein_obj_t);
+    // Make object long-lived to avoid moving between imports
+    pulseio_pulsein_obj_t *self = m_new_ll_obj(pulseio_pulsein_obj_t);
     self->base.type = &pulseio_pulsein_type;
 
     common_hal_pulseio_pulsein_construct(self, pin, args[ARG_maxlen].u_int,
@@ -208,12 +209,8 @@ STATIC mp_obj_t pulseio_pulsein_obj_get_maxlen(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_get_maxlen_obj, pulseio_pulsein_obj_get_maxlen);
 
-const mp_obj_property_t pulseio_pulsein_maxlen_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pulseio_pulsein_get_maxlen_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(pulseio_pulsein_maxlen_obj,
+    (mp_obj_t)&pulseio_pulsein_get_maxlen_obj);
 
 //|     paused: bool
 //|     """True when pulse capture is paused as a result of :py:func:`pause` or an error during capture
@@ -227,12 +224,8 @@ STATIC mp_obj_t pulseio_pulsein_obj_get_paused(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_get_paused_obj, pulseio_pulsein_obj_get_paused);
 
-const mp_obj_property_t pulseio_pulsein_paused_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pulseio_pulsein_get_paused_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(pulseio_pulsein_paused_obj,
+    (mp_obj_t)&pulseio_pulsein_get_paused_obj);
 
 //|     def __bool__(self) -> bool: ...
 //|

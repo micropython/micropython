@@ -33,6 +33,8 @@ extern const mp_obj_type_t displayio_bitmap_type;
 
 void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t width,
     uint32_t height, uint32_t bits_per_value);
+void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self, uint32_t width,
+    uint32_t height, uint32_t bits_per_value, uint32_t *data, bool read_only);
 
 void common_hal_displayio_bitmap_load_row(displayio_bitmap_t *self, uint16_t y, uint8_t *data,
     uint16_t len);

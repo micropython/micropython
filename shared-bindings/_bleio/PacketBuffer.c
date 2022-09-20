@@ -73,10 +73,7 @@ STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n
 
     bleio_characteristic_obj_t *characteristic = mp_arg_validate_type(args[ARG_characteristic].u_obj, &bleio_characteristic_type, MP_QSTR_characteristic);
 
-    const mp_int_t buffer_size = args[ARG_buffer_size].u_int;
-    if (buffer_size < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_buffer_size);
-    }
+    const mp_int_t buffer_size = mp_arg_validate_int_min(args[ARG_buffer_size].u_int, 1, MP_QSTR_buffer_size);
 
     size_t max_packet_size = common_hal_bleio_characteristic_get_max_length(characteristic);
     if (args[ARG_max_packet_size].u_obj != mp_const_none) {
@@ -197,12 +194,8 @@ STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_incoming_packet_length_obj, bleio_packet_buffer_get_incoming_packet_length);
 
-const mp_obj_property_t bleio_packet_buffer_incoming_packet_length_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_packet_buffer_get_incoming_packet_length_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_packet_buffer_incoming_packet_length_obj,
+    (mp_obj_t)&bleio_packet_buffer_get_incoming_packet_length_obj);
 
 //|     outgoing_packet_length: int
 //|     """Maximum length in bytes of a packet we are writing."""
@@ -218,12 +211,8 @@ STATIC mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_outgoing_packet_length_obj, bleio_packet_buffer_get_outgoing_packet_length);
 
-const mp_obj_property_t bleio_packet_buffer_outgoing_packet_length_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_packet_buffer_get_outgoing_packet_length_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_packet_buffer_outgoing_packet_length_obj,
+    (mp_obj_t)&bleio_packet_buffer_get_outgoing_packet_length_obj);
 
 STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),                     MP_ROM_PTR(&bleio_packet_buffer_deinit_obj) },

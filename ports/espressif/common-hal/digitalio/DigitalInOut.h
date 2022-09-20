@@ -36,4 +36,6 @@ typedef struct {
     bool output_value;
 } digitalio_digitalinout_obj_t;
 
+extern void digitalio_digitalinout_preserve_for_deep_sleep(size_t n_dios, digitalio_digitalinout_obj_t *preserve_dios[]);
+
 #endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_DIGITALIO_DIGITALINOUT_H

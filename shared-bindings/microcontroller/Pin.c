@@ -31,7 +31,7 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Pin:
 //|     """Identifies an IO pin on the microcontroller."""
@@ -42,6 +42,12 @@
 //|         :mod:`board` or :mod:`microcontroller.pin` to reference the desired pin."""
 //|         ...
 //|
+
+//|     def __hash__(self) -> int:
+//|         """Returns a hash for the Pin."""
+//|         ...
+//|
+// Provided by mp_generic_unary_op().
 
 static void get_pin_name(const mcu_pin_obj_t *self, qstr *package, qstr *module, qstr *name) {
     const mp_map_t *board_map = &board_module_globals.map;
@@ -80,8 +86,12 @@ STATIC void mcu_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 
 const mp_obj_type_t mcu_pin_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Pin,
-    .print = mcu_pin_print
+    .print = mcu_pin_print,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = mp_generic_unary_op,
+        )
 };
 
 const mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj) {
@@ -183,4 +193,16 @@ void validate_pins(qstr what, uint8_t *pin_nos, mp_int_t max_pins, mp_obj_t seq,
     for (mp_int_t i = 0; i < *count_out; i++) {
         pin_nos[i] = common_hal_mcu_pin_number(pins[i]);
     }
+}
+
+NORETURN void raise_ValueError_invalid_pin(void) {
+    mp_arg_error_invalid(MP_QSTR_pin);
+}
+
+NORETURN void raise_ValueError_invalid_pins(void) {
+    mp_arg_error_invalid(MP_QSTR_pins);
+}
+
+NORETURN void raise_ValueError_invalid_pin_name(qstr pin_name) {
+    mp_raise_ValueError_varg(translate("Invalid %q pin"), pin_name);
 }

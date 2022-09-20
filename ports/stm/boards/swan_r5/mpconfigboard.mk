@@ -14,6 +14,7 @@ LD_DEFAULT = boards/STM32L4R5_default.ld
 # UF2 boot option
 LD_BOOT = boards/STM32L4R5_boot.ld
 UF2_OFFSET = 0x8010000
+UF2_BOOTLOADER ?= 1
 
 # Turn all of the below off while trying to get the thing to run
 # These modules are implemented in ports/<port>/common-hal:
@@ -41,7 +42,7 @@ CIRCUITPY_PWMIO = 1
 CIRCUITPY_AUDIOPWMIO = 1
 CIRCUITPY_CANIO = 0
 CIRCUITPY_AUDIOBUSIO = 0
-CIRCUITPY_I2CPERIPHERAL = 0
+CIRCUITPY_I2CTARGET = 0
 # Requires SPI, PulseIO (stub ok):
 CIRCUITPY_DISPLAYIO = 0
 
@@ -49,8 +50,6 @@ CIRCUITPY_DISPLAYIO = 0
 # any port once their prerequisites in common-hal are complete.
 # Requires DigitalIO:
 CIRCUITPY_BITBANGIO = 1
-# Requires DigitalIO
-CIRCUITPY_GAMEPADSHIFT = 1
 # Requires neopixel_write or SPI (dotstar)
 CIRCUITPY_PIXELBUF = 0
 # Requires OS
@@ -71,3 +70,6 @@ CIRCUITPY_BLEIO = 0
 CIRCUITPY_BUSDEVICE = 0
 CIRCUITPY_KEYPAD = 1
 CIRCUITPY_RGBMATRIX = 0
+CIRCUITPY_RTC = 1
+
+CIRCUITPY_BUILD_EXTENSIONS = bin,uf2

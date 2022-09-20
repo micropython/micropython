@@ -28,7 +28,7 @@
 
 #include "__init__.h"
 #include "Layer.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Layer:
 //|     """Keep information about a single layer of graphics"""

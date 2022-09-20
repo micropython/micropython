@@ -29,7 +29,6 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
 
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
     const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {
@@ -37,24 +36,41 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     claim_pin(pin_b);
 
     // Prepare configuration for the PCNT unit
-    const pcnt_config_t pcnt_config = {
+    pcnt_config_t pcnt_config_channel_0 = {
         // Set PCNT input signal and control GPIOs
         .pulse_gpio_num = pin_a->number,
         .ctrl_gpio_num = pin_b->number,
         .channel = PCNT_CHANNEL_0,
         // What to do on the positive / negative edge of pulse input?
-        .pos_mode = PCNT_COUNT_DEC,   // Count up on the positive edge
-        .neg_mode = PCNT_COUNT_INC,   // Keep the counter value on the negative edge
+        .pos_mode = PCNT_COUNT_DEC,      // Count up on the positive edge
+        .neg_mode = PCNT_COUNT_INC,      // Keep the counter value on the negative edge
         // What to do when control input is low or high?
         .lctrl_mode = PCNT_MODE_REVERSE, // Reverse counting direction if low
         .hctrl_mode = PCNT_MODE_KEEP,    // Keep the primary counter mode if high
     };
 
-    // Initialize PCNT unit
-    const int8_t unit = peripherals_pcnt_init(pcnt_config);
+    // Allocate and initialize PCNT unit, CHANNEL_0.
+    const int8_t unit = peripherals_pcnt_init(&pcnt_config_channel_0);
     if (unit == -1) {
         mp_raise_RuntimeError(translate("All PCNT units in use"));
     }
+
+    pcnt_config_t pcnt_config_channel_1 = {
+        // Set PCNT input signal and control GPIOs
+        .pulse_gpio_num = pin_b->number,  // Pins are reversed from above
+        .ctrl_gpio_num = pin_a->number,
+        .channel = PCNT_CHANNEL_1,
+        // What to do on the positive / negative edge of pulse input?
+        .pos_mode = PCNT_COUNT_DEC,      // Count up on the positive edge
+        .neg_mode = PCNT_COUNT_INC,      // Keep the counter value on the negative edge
+        // What to do when control input is low or high?
+        .lctrl_mode = PCNT_MODE_KEEP,        // Keep the primary counter mode if low
+        .hctrl_mode = PCNT_MODE_REVERSE,     // Reverse counting direction if high
+        .unit = unit,
+    };
+
+    // Reinitalize same unit, CHANNEL_1 with different parameters.
+    peripherals_pcnt_reinit(&pcnt_config_channel_1);
 
     self->pin_a = pin_a->number;
     self->pin_b = pin_b->number;
@@ -77,21 +93,20 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
 mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t *self) {
     int16_t count;
     pcnt_get_counter_value(self->unit, &count);
-    return (count / 2) + self->position;
+
+    return (count + self->position) / self->divisor;
 }
 
 void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self,
     mp_int_t new_position) {
-    self->position = new_position;
+    self->position = new_position * self->divisor;
     pcnt_counter_clear(self->unit);
 }
 
 mp_int_t common_hal_rotaryio_incrementalencoder_get_divisor(rotaryio_incrementalencoder_obj_t *self) {
-    return 4;
+    return self->divisor;
 }
 
 void common_hal_rotaryio_incrementalencoder_set_divisor(rotaryio_incrementalencoder_obj_t *self, mp_int_t divisor) {
-    if (divisor != 4) {
-        mp_raise_ValueError(translate("divisor must be 4"));
-    }
+    self->divisor = divisor;
 }

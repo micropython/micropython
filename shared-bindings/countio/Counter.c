@@ -30,7 +30,7 @@
 //|             import countio
 //|
 //|             # Count rising edges only.
-//|             pin_counter = countio.Counter(board.D1, edge=Edge.RISE)
+//|             pin_counter = countio.Counter(board.D1, edge=countio.Edge.RISE)
 //|             # Reset the count after 100 counts.
 //|             while True:
 //|                 if pin_counter.count >= 100:
@@ -114,12 +114,9 @@ STATIC mp_obj_t countio_counter_obj_set_count(mp_obj_t self_in, mp_obj_t new_cou
 }
 MP_DEFINE_CONST_FUN_OBJ_2(countio_counter_set_count_obj, countio_counter_obj_set_count);
 
-const mp_obj_property_t countio_counter_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&countio_counter_get_count_obj,
-              (mp_obj_t)&countio_counter_set_count_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(countio_counter_count_obj,
+    (mp_obj_t)&countio_counter_get_count_obj,
+    (mp_obj_t)&countio_counter_set_count_obj);
 
 //|     def reset(self) -> None:
 //|         """Resets the count back to 0."""

@@ -30,9 +30,16 @@
 #include <math.h>
 #include <stdint.h>
 
-#include "py/objproperty.h"
+#include "shared-bindings/util.h"
 
+#include "shared/runtime/buffer_helper.h"
+#include "shared/runtime/context_manager_helpers.h"
+#include "py/mperrno.h"
+#include "py/objtype.h"
+#include "py/objproperty.h"
 #include "py/runtime.h"
+#include "supervisor/shared/translate/translate.h"
+
 
 //| class Processor:
 //|     """Microcontroller CPU information and control
@@ -61,19 +68,29 @@
 //|     frequency: int
 //|     """The CPU operating frequency in Hertz. (read-only)"""
 //|
+
+STATIC mp_obj_t mcu_processor_set_frequency(mp_obj_t self, mp_obj_t freq) {
+    #if CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY
+    uint32_t value_of_freq = (uint32_t)mp_arg_validate_int_min(mp_obj_get_int(freq), 0, MP_QSTR_frequency);
+    common_hal_mcu_processor_set_frequency(self, value_of_freq);
+    #else
+    mp_raise_msg(&mp_type_NotImplementedError,translate("frequency is read-only for this board"));
+    #endif
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(mcu_processor_set_frequency_obj, mcu_processor_set_frequency);
+
+
 STATIC mp_obj_t mcu_processor_get_frequency(mp_obj_t self) {
     return mp_obj_new_int_from_uint(common_hal_mcu_processor_get_frequency());
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_frequency_obj, mcu_processor_get_frequency);
 
-const mp_obj_property_t mcu_processor_frequency_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&mcu_processor_get_frequency_obj,  // getter
-              MP_ROM_NONE,            // no setter
-              MP_ROM_NONE,            // no deleter
-    },
-};
+MP_PROPERTY_GETSET(mcu_processor_frequency_obj,
+    (mp_obj_t)&mcu_processor_get_frequency_obj,
+    (mp_obj_t)&mcu_processor_set_frequency_obj);
 
 //|     reset_reason: microcontroller.ResetReason
 //|     """The reason the microcontroller started up from reset state."""
@@ -84,13 +101,8 @@ STATIC mp_obj_t mcu_processor_get_reset_reason(mp_obj_t self) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_reset_reason_obj, mcu_processor_get_reset_reason);
 
-const mp_obj_property_t mcu_processor_reset_reason_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&mcu_processor_get_reset_reason_obj,  // getter
-              MP_ROM_NONE,            // no setter
-              MP_ROM_NONE,            // no deleter
-    },
-};
+MP_PROPERTY_GETTER(mcu_processor_reset_reason_obj,
+    (mp_obj_t)&mcu_processor_get_reset_reason_obj);
 
 //|     temperature: Optional[float]
 //|     """The on-chip temperature, in Celsius, as a float. (read-only)
@@ -104,13 +116,8 @@ STATIC mp_obj_t mcu_processor_get_temperature(mp_obj_t self) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_temperature_obj, mcu_processor_get_temperature);
 
-const mp_obj_property_t mcu_processor_temperature_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&mcu_processor_get_temperature_obj,  // getter
-              MP_ROM_NONE,            // no setter
-              MP_ROM_NONE,            // no deleter
-    },
-};
+MP_PROPERTY_GETTER(mcu_processor_temperature_obj,
+    (mp_obj_t)&mcu_processor_get_temperature_obj);
 
 //|     uid: bytearray
 //|     """The unique id (aka serial number) of the chip as a `bytearray`. (read-only)"""
@@ -123,13 +130,8 @@ STATIC mp_obj_t mcu_processor_get_uid(mp_obj_t self) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_uid_obj, mcu_processor_get_uid);
 
-const mp_obj_property_t mcu_processor_uid_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&mcu_processor_get_uid_obj,  // getter
-              MP_ROM_NONE,      // no setter
-              MP_ROM_NONE,      // no deleter
-    },
-};
+MP_PROPERTY_GETTER(mcu_processor_uid_obj,
+    (mp_obj_t)&mcu_processor_get_uid_obj);
 
 //|     voltage: Optional[float]
 //|     """The input voltage to the microcontroller, as a float. (read-only)
@@ -143,13 +145,8 @@ STATIC mp_obj_t mcu_processor_get_voltage(mp_obj_t self) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_voltage_obj, mcu_processor_get_voltage);
 
-const mp_obj_property_t mcu_processor_voltage_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&mcu_processor_get_voltage_obj,  // getter
-              MP_ROM_NONE,            // no setter
-              MP_ROM_NONE,            // no deleter
-    },
-};
+MP_PROPERTY_GETTER(mcu_processor_voltage_obj,
+    (mp_obj_t)&mcu_processor_get_voltage_obj);
 
 STATIC const mp_rom_map_elem_t mcu_processor_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&mcu_processor_frequency_obj) },

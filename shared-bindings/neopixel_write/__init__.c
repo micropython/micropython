@@ -30,7 +30,43 @@
 #include "py/runtime.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
+
+// RGB LED timing information:
+
+// From the WS2811 datasheet: high speed mode
+// - T0H 0 code,high voltage time 0.25 us +-150ns
+// - T1H 1 code,high voltage time 0.6  us +-150ns
+// - T0L 0 code,low voltage time 1.0 us +-150ns
+// - T1L 1 code,low voltage time 0.65 us +-150ns
+// - RES low voltage time Above 50us
+
+// From the SK6812 datasheet:
+// - T0H 0 code, high level time 0.3us +-0.15us
+// - T1H 1 code, high level time 0.6us +-0.15us
+// - T0L 0 code, low level time 0.9us +-0.15us
+// - T1L 1 code, low level time 0.6us +-0.15us
+// - Trst Reset code，low level time 80us
+
+// From the WS2812 datasheet:
+// - T0H 0 code, high voltage time 0.35us +-150ns
+// - T1H 1 code, high voltage time 0.7us +-150ns
+// - T0L 0 code, low voltage time 0.8us +-150ns
+// - T1L 1 code, low voltage time 0.6us +-150ns
+// - RES low voltage time Above 50us
+
+// From the WS28212B datasheet:
+// - T0H 0 code, high voltage time 0.4us +-150ns
+// - T1H 1 code, high voltage time 0.8us +-150ns
+// - T0L 0 code, low voltage time 0.85us +-150ns
+// - T1L 1 code, low voltage time 0.45us +-150ns
+// - RES low voltage time Above 50us
+
+// The timings used in various ports do not always follow the guidelines above.
+// In general, a zero bit is about 300ns high, 900ns low.
+// A one bit is about 700ns high, 500ns low.
+// But the ports vary based on implementation considerations; the proof is in the testing.
+// https://adafru.it/5225 is more sensitive to timing and should be included in testing.
 
 STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
     if (common_hal_digitalio_digitalinout_deinited(self)) {
@@ -55,7 +91,19 @@ STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
 //|   pin = digitalio.DigitalInOut(board.NEOPIXEL)
 //|   pin.direction = digitalio.Direction.OUTPUT
 //|   pixel_off = bytearray([0, 0, 0])
-//|   neopixel_write.neopixel_write(pin, pixel_off)"""
+//|   neopixel_write.neopixel_write(pin, pixel_off)
+//|
+//| .. note::
+//|
+//|     This module is typically not used by user level code.
+//|
+//|     For more information on actually using NeoPixels, refer to the `CircuitPython
+//|     Essentials Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-neopixel>`_
+//|
+//|     For a much more thorough guide about using NeoPixels, refer to the `Adafruit NeoPixel Überguide
+//|     <https://learn.adafruit.com/adafruit-neopixel-uberguide>`_.
+//|
+//| """
 //|
 //| def neopixel_write(digitalinout: digitalio.DigitalInOut, buf: ReadableBuffer) -> None:
 //|     """Write buf out on the given DigitalInOut.

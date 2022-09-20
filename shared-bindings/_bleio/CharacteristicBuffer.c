@@ -70,15 +70,9 @@ STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, 
 
     bleio_characteristic_obj_t *characteristic = mp_arg_validate_type(args[ARG_characteristic].u_obj, &bleio_characteristic_type, MP_QSTR_characteristic);
 
-    mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
-    if (timeout < 0.0f) {
-        mp_raise_ValueError(translate("timeout must be >= 0.0"));
-    }
+    mp_float_t timeout = mp_arg_validate_obj_float_non_negative(args[ARG_timeout].u_obj, 1.0f, MP_QSTR_timeout);
 
-    const int buffer_size = args[ARG_buffer_size].u_int;
-    if (buffer_size < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_buffer_size);
-    }
+    const mp_int_t buffer_size = mp_arg_validate_int_min(args[ARG_buffer_size].u_int, 1, MP_QSTR_buffer_size);
 
     bleio_characteristic_buffer_obj_t *self = m_new_obj(bleio_characteristic_buffer_obj_t);
     self->base.type = &bleio_characteristic_buffer_type;
@@ -173,12 +167,8 @@ STATIC mp_obj_t bleio_characteristic_buffer_obj_get_in_waiting(mp_obj_t self_in)
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_get_in_waiting_obj, bleio_characteristic_buffer_obj_get_in_waiting);
 
-const mp_obj_property_t bleio_characteristic_buffer_in_waiting_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_characteristic_buffer_get_in_waiting_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(bleio_characteristic_buffer_in_waiting_obj,
+    (mp_obj_t)&bleio_characteristic_buffer_get_in_waiting_obj);
 
 //|     def reset_input_buffer(self) -> None:
 //|         """Discard any unread characters in the input buffer."""

@@ -26,4 +26,10 @@
 
 #pragma once
 
+#include "lib/oofatfs/ff.h"
+
 extern bool supervisor_workflow_connecting(void);
+
+// File system helpers for workflow code.
+FRESULT supervisor_workflow_mkdir_parents(FATFS *fs, char *path);
+FRESULT supervisor_workflow_delete_directory_contents(FATFS *fs, const TCHAR *path);

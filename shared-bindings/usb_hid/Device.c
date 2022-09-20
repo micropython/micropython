@@ -27,6 +27,7 @@
 #include "py/objproperty.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "py/runtime.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Device:
 //|     """HID Device specification"""
@@ -107,17 +108,15 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     const uint16_t usage_page = usage_page_arg;
 
     const mp_int_t usage_arg = args[ARG_usage].u_int;
-    mp_arg_validate_int_range(usage_arg, 1, 0xFFFF, MP_QSTR_usage_page);
+    mp_arg_validate_int_range(usage_arg, 1, 0xFFFF, MP_QSTR_usage);
     const uint16_t usage = usage_arg;
 
     mp_obj_t report_ids = args[ARG_report_ids].u_obj;
     mp_obj_t in_report_lengths = args[ARG_in_report_lengths].u_obj;
     mp_obj_t out_report_lengths = args[ARG_out_report_lengths].u_obj;
 
-    size_t report_ids_count = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(report_ids));
-    if (report_ids_count < 1) {
-        mp_raise_ValueError_varg(translate("%q length must be >= 1"), MP_QSTR_report_ids);
-    }
+    size_t report_ids_count =
+        mp_arg_validate_length_min((size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(report_ids)), 1, MP_QSTR_report_ids);
 
     if ((size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(in_report_lengths)) != report_ids_count ||
         (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(out_report_lengths)) != report_ids_count) {
@@ -158,7 +157,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 }
 
 
-//|     def send_report(self, buf: ReadableBuffer, report_id: Optional[int] = None) -> None:
+//|     def send_report(self, report: ReadableBuffer, report_id: Optional[int] = None) -> None:
 //|         """Send an HID report. If the device descriptor specifies zero or one report id's,
 //|         you can supply `None` (the default) as the value of ``report_id``.
 //|         Otherwise you must specify which report id to use when sending the report.
@@ -168,9 +167,9 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_buf, ARG_report_id };
+    enum { ARG_report, ARG_report_id };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_buf, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_report, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_report_id, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
@@ -178,7 +177,7 @@ STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_ar
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_buf].u_obj, &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[ARG_report].u_obj, &bufinfo, MP_BUFFER_READ);
 
     // -1 asks common_hal to determine the report id if possible.
     mp_int_t report_id_arg = -1;
@@ -192,10 +191,11 @@ STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 1, usb_hid_device_send_report);
 
-//|     def get_last_received_report(self, report_id: Optional[int] = None) -> bytes:
+//|     def get_last_received_report(self, report_id: Optional[int] = None) -> Optional[bytes]:
 //|         """Get the last received HID OUT or feature report for the given report ID.
 //|         The report ID may be omitted if there is no report ID, or only one report ID.
-//|         Return `None` if nothing received.
+//|         Return `None` if nothing received. After returning a report, subsequent calls
+//|         will return `None` until next report is received.
 //|         """
 //|         ...
 //|
@@ -220,29 +220,6 @@ STATIC mp_obj_t usb_hid_device_get_last_received_report(size_t n_args, const mp_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_get_last_received_report_obj, 1, usb_hid_device_get_last_received_report);
 
-//|     last_received_report: bytes
-//|     """The HID OUT report as a `bytes` (read-only). `None` if nothing received.
-//|     Same as `get_last_received_report()` with no argument.
-//|
-//|     Deprecated: will be removed in CircutPython 8.0.0. Use `get_last_received_report()` instead.
-//|     """
-//|
-STATIC mp_obj_t usb_hid_device_obj_get_last_received_report_property(mp_obj_t self_in) {
-    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    // Get the sole report_id, if there is one.
-    const uint8_t report_id = common_hal_usb_hid_device_validate_report_id(self, -1);
-    return common_hal_usb_hid_device_get_last_received_report(self, report_id);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_last_received_report_property_obj, usb_hid_device_obj_get_last_received_report_property);
-
-const mp_obj_property_t usb_hid_device_last_received_report_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_hid_device_get_last_received_report_property_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
-
 //|     usage_page: int
 //|     """The device usage page identifier, which designates a category of device. (read-only)"""
 //|
@@ -252,12 +229,8 @@ STATIC mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_usage_page_obj, usb_hid_device_obj_get_usage_page);
 
-const mp_obj_property_t usb_hid_device_usage_page_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_hid_device_get_usage_page_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(usb_hid_device_usage_page_obj,
+    (mp_obj_t)&usb_hid_device_get_usage_page_obj);
 
 //|     usage: int
 //|     """The device usage identifier, which designates a specific kind of device. (read-only)
@@ -272,17 +245,12 @@ STATIC mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_usage_obj,
     usb_hid_device_obj_get_usage);
 
-const mp_obj_property_t usb_hid_device_usage_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_hid_device_get_usage_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(usb_hid_device_usage_obj,
+    (mp_obj_t)&usb_hid_device_get_usage_obj);
 
 STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_report),              MP_ROM_PTR(&usb_hid_device_send_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_last_received_report), MP_ROM_PTR(&usb_hid_device_get_last_received_report_obj) },
-    { MP_ROM_QSTR(MP_QSTR_last_received_report),     MP_ROM_PTR(&usb_hid_device_last_received_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage_page),               MP_ROM_PTR(&usb_hid_device_usage_page_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage),                    MP_ROM_PTR(&usb_hid_device_usage_obj) },
 

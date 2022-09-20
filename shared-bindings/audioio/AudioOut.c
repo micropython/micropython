@@ -34,7 +34,7 @@
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class AudioOut:
 //|     """Output an analog audio signal"""
@@ -197,12 +197,8 @@ STATIC mp_obj_t audioio_audioout_obj_get_playing(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_get_playing_obj, audioio_audioout_obj_get_playing);
 
-const mp_obj_property_t audioio_audioout_playing_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audioio_audioout_get_playing_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(audioio_audioout_playing_obj,
+    (mp_obj_t)&audioio_audioout_get_playing_obj);
 
 //|     def pause(self) -> None:
 //|         """Stops playback temporarily while remembering the position. Use `resume` to resume playback."""
@@ -246,12 +242,8 @@ STATIC mp_obj_t audioio_audioout_obj_get_paused(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_get_paused_obj, audioio_audioout_obj_get_paused);
 
-const mp_obj_property_t audioio_audioout_paused_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audioio_audioout_get_paused_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(audioio_audioout_paused_obj,
+    (mp_obj_t)&audioio_audioout_get_paused_obj);
 
 STATIC const mp_rom_map_elem_t audioio_audioout_locals_dict_table[] = {
     // Methods

@@ -33,14 +33,19 @@
 #include "py/objnamedtuple.h"
 #include "py/runtime.h"
 #include "shared-bindings/storage/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """Storage management
 //|
 //| The `storage` provides storage management functionality such as mounting and
 //| unmounting which is typically handled by the operating system hosting Python.
 //| CircuitPython does not have an OS, so this module provides this functionality
-//| directly."""
+//| directly.
+
+//| For more information regarding using the `storage` module, refer to the `CircuitPython
+//| Essentials Learn guide
+//| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-storage>`_.
+//| """
 //|
 
 //| def mount(filesystem: VfsFat, mount_path: str, *, readonly: bool = False) -> None:

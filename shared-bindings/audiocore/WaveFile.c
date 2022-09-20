@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/audiocore/WaveFile.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class WaveFile:
 //|     """Load a wave file for audio playback
@@ -148,12 +148,9 @@ STATIC mp_obj_t audioio_wavefile_obj_set_sample_rate(mp_obj_t self_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(audioio_wavefile_set_sample_rate_obj, audioio_wavefile_obj_set_sample_rate);
 
-const mp_obj_property_t audioio_wavefile_sample_rate_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audioio_wavefile_get_sample_rate_obj,
-              (mp_obj_t)&audioio_wavefile_set_sample_rate_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(audioio_wavefile_sample_rate_obj,
+    (mp_obj_t)&audioio_wavefile_get_sample_rate_obj,
+    (mp_obj_t)&audioio_wavefile_set_sample_rate_obj);
 
 //|     bits_per_sample: int
 //|     """Bits per sample. (read only)"""
@@ -165,12 +162,8 @@ STATIC mp_obj_t audioio_wavefile_obj_get_bits_per_sample(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_wavefile_get_bits_per_sample_obj, audioio_wavefile_obj_get_bits_per_sample);
 
-const mp_obj_property_t audioio_wavefile_bits_per_sample_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audioio_wavefile_get_bits_per_sample_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(audioio_wavefile_bits_per_sample_obj,
+    (mp_obj_t)&audioio_wavefile_get_bits_per_sample_obj);
 //|     channel_count: int
 //|     """Number of audio channels. (read only)"""
 //|
@@ -181,12 +174,8 @@ STATIC mp_obj_t audioio_wavefile_obj_get_channel_count(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_wavefile_get_channel_count_obj, audioio_wavefile_obj_get_channel_count);
 
-const mp_obj_property_t audioio_wavefile_channel_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audioio_wavefile_get_channel_count_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(audioio_wavefile_channel_count_obj,
+    (mp_obj_t)&audioio_wavefile_get_channel_count_obj);
 
 
 STATIC const mp_rom_map_elem_t audioio_wavefile_locals_dict_table[] = {

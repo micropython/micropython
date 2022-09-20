@@ -38,7 +38,7 @@
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/Shape.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class TileGrid:
 //|     """A grid of tiles sourced out of one bitmap
@@ -52,6 +52,8 @@
 //|         """Create a TileGrid object. The bitmap is source for 2d pixels. The pixel_shader is used to
 //|         convert the value and its location to a display native pixel color. This may be a simple color
 //|         palette lookup, a gradient, a pattern or a color transformer.
+//|
+//|         To save RAM usage, tile values are only allowed in the range from 0 to 255 inclusive (single byte values).
 //|
 //|         tile_width and tile_height match the height of the bitmap by default.
 //|
@@ -141,6 +143,7 @@ static displayio_tilegrid_t *native_tilegrid(mp_obj_t tilegrid_obj) {
     mp_obj_assert_native_inited(native_tilegrid);
     return MP_OBJ_TO_PTR(native_tilegrid);
 }
+
 //|     hidden: bool
 //|     """True when the TileGrid is hidden. This may be False even when a part of a hidden Group."""
 //|
@@ -158,12 +161,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_hidden(mp_obj_t self_in, mp_obj_t hid
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_hidden_obj, displayio_tilegrid_obj_set_hidden);
 
-const mp_obj_property_t displayio_tilegrid_hidden_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_hidden_obj,
-              (mp_obj_t)&displayio_tilegrid_set_hidden_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_tilegrid_hidden_obj,
+    (mp_obj_t)&displayio_tilegrid_get_hidden_obj,
+    (mp_obj_t)&displayio_tilegrid_set_hidden_obj);
 
 //|     x: int
 //|     """X position of the left edge in the parent."""
@@ -183,12 +183,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_x(mp_obj_t self_in, mp_obj_t x_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_x_obj, displayio_tilegrid_obj_set_x);
 
-const mp_obj_property_t displayio_tilegrid_x_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_x_obj,
-              (mp_obj_t)&displayio_tilegrid_set_x_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_tilegrid_x_obj,
+    (mp_obj_t)&displayio_tilegrid_get_x_obj,
+    (mp_obj_t)&displayio_tilegrid_set_x_obj);
 
 //|     y: int
 //|     """Y position of the top edge in the parent."""
@@ -208,12 +205,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_y(mp_obj_t self_in, mp_obj_t y_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_y_obj, displayio_tilegrid_obj_set_y);
 
-const mp_obj_property_t displayio_tilegrid_y_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_y_obj,
-              (mp_obj_t)&displayio_tilegrid_set_y_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_tilegrid_y_obj,
+    (mp_obj_t)&displayio_tilegrid_get_y_obj,
+    (mp_obj_t)&displayio_tilegrid_set_y_obj);
 
 //|     width: int
 //|     """Width of the tilegrid in tiles."""
@@ -224,11 +218,8 @@ STATIC mp_obj_t displayio_tilegrid_obj_get_width(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_width_obj, displayio_tilegrid_obj_get_width);
 
-const mp_obj_property_t displayio_tilegrid_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_width_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(displayio_tilegrid_width_obj,
+    (mp_obj_t)&displayio_tilegrid_get_width_obj);
 
 //|     height: int
 //|     """Height of the tilegrid in tiles."""
@@ -239,11 +230,8 @@ STATIC mp_obj_t displayio_tilegrid_obj_get_height(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_height_obj, displayio_tilegrid_obj_get_height);
 
-const mp_obj_property_t displayio_tilegrid_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_height_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(displayio_tilegrid_height_obj,
+    (mp_obj_t)&displayio_tilegrid_get_height_obj);
 
 //|     tile_width: int
 //|     """Width of a single tile in pixels."""
@@ -254,11 +242,8 @@ STATIC mp_obj_t displayio_tilegrid_obj_get_tile_width(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_tile_width_obj, displayio_tilegrid_obj_get_tile_width);
 
-const mp_obj_property_t displayio_tilegrid_tile_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_tile_width_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(displayio_tilegrid_tile_width_obj,
+    (mp_obj_t)&displayio_tilegrid_get_tile_width_obj);
 
 //|     tile_height: int
 //|     """Height of a single tile in pixels."""
@@ -269,11 +254,8 @@ STATIC mp_obj_t displayio_tilegrid_obj_get_tile_height(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_tile_height_obj, displayio_tilegrid_obj_get_tile_height);
 
-const mp_obj_property_t displayio_tilegrid_tile_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_tile_height_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(displayio_tilegrid_tile_height_obj,
+    (mp_obj_t)&displayio_tilegrid_get_tile_height_obj);
 
 //|     flip_x: bool
 //|     """If true, the left edge rendered will be the right edge of the right-most tile."""
@@ -292,12 +274,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_flip_x(mp_obj_t self_in, mp_obj_t fli
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_flip_x_obj, displayio_tilegrid_obj_set_flip_x);
 
-const mp_obj_property_t displayio_tilegrid_flip_x_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_flip_x_obj,
-              (mp_obj_t)&displayio_tilegrid_set_flip_x_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_tilegrid_flip_x_obj,
+    (mp_obj_t)&displayio_tilegrid_get_flip_x_obj,
+    (mp_obj_t)&displayio_tilegrid_set_flip_x_obj);
 
 //|     flip_y: bool
 //|     """If true, the top edge rendered will be the bottom edge of the bottom-most tile."""
@@ -316,12 +295,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_flip_y(mp_obj_t self_in, mp_obj_t fli
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_flip_y_obj, displayio_tilegrid_obj_set_flip_y);
 
-const mp_obj_property_t displayio_tilegrid_flip_y_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_flip_y_obj,
-              (mp_obj_t)&displayio_tilegrid_set_flip_y_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_tilegrid_flip_y_obj,
+    (mp_obj_t)&displayio_tilegrid_get_flip_y_obj,
+    (mp_obj_t)&displayio_tilegrid_set_flip_y_obj);
 
 
 //|     transpose_xy: bool
@@ -342,12 +318,27 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_transpose_xy(mp_obj_t self_in, mp_obj
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_transpose_xy_obj, displayio_tilegrid_obj_set_transpose_xy);
 
-const mp_obj_property_t displayio_tilegrid_transpose_xy_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_transpose_xy_obj,
-              (mp_obj_t)&displayio_tilegrid_set_transpose_xy_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_tilegrid_transpose_xy_obj,
+    (mp_obj_t)&displayio_tilegrid_get_transpose_xy_obj,
+    (mp_obj_t)&displayio_tilegrid_set_transpose_xy_obj);
+
+//|     def contains(self, touch_tuple: tuple) -> bool:
+//|         """Returns True if the first two values in ``touch_tuple`` represent an x,y coordinate
+//|            inside the tilegrid rectangle bounds."""
+//|
+STATIC mp_obj_t displayio_tilegrid_obj_contains(mp_obj_t self_in, mp_obj_t touch_tuple) {
+    displayio_tilegrid_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_obj_t *touch_tuple_items;
+    mp_obj_get_array_fixed_n(touch_tuple, 3, &touch_tuple_items);
+    uint16_t x = 0;
+    uint16_t y = 0;
+    x = mp_obj_get_int(touch_tuple_items[0]);
+    y = mp_obj_get_int(touch_tuple_items[1]);
+
+    return mp_obj_new_bool(common_hal_displayio_tilegrid_contains(self, x, y));
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_contains_obj, displayio_tilegrid_obj_contains);
 
 //|     pixel_shader: Union[ColorConverter, Palette]
 //|     """The pixel shader of the tilegrid."""
@@ -370,12 +361,72 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_pixel_shader(mp_obj_t self_in, mp_obj
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_pixel_shader_obj, displayio_tilegrid_obj_set_pixel_shader);
 
-const mp_obj_property_t displayio_tilegrid_pixel_shader_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_pixel_shader_obj,
-              (mp_obj_t)&displayio_tilegrid_set_pixel_shader_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_tilegrid_pixel_shader_obj,
+    (mp_obj_t)&displayio_tilegrid_get_pixel_shader_obj,
+    (mp_obj_t)&displayio_tilegrid_set_pixel_shader_obj);
+
+//|     bitmap: Union[Bitmap,OnDiskBitmap,Shape]
+//|     """The bitmap of the tilegrid."""
+//|
+STATIC mp_obj_t displayio_tilegrid_obj_get_bitmap(mp_obj_t self_in) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+    return common_hal_displayio_tilegrid_get_bitmap(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_bitmap_obj, displayio_tilegrid_obj_get_bitmap);
+
+STATIC mp_obj_t displayio_tilegrid_obj_set_bitmap(mp_obj_t self_in, mp_obj_t bitmap) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+
+    uint16_t new_bitmap_width;
+    uint16_t new_bitmap_height;
+    mp_obj_t native = mp_obj_cast_to_native_base(bitmap, &displayio_shape_type);
+    if (native != MP_OBJ_NULL) {
+        displayio_shape_t *bmp = MP_OBJ_TO_PTR(native);
+        new_bitmap_width = bmp->width;
+        new_bitmap_height = bmp->height;
+    } else if (mp_obj_is_type(bitmap, &displayio_bitmap_type)) {
+        displayio_bitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
+        native = bitmap;
+        new_bitmap_width = bmp->width;
+        new_bitmap_height = bmp->height;
+    } else if (mp_obj_is_type(bitmap, &displayio_ondiskbitmap_type)) {
+        displayio_ondiskbitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
+        native = bitmap;
+        new_bitmap_width = bmp->width;
+        new_bitmap_height = bmp->height;
+    } else {
+        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_bitmap);
+    }
+
+    mp_obj_t old_native = mp_obj_cast_to_native_base(self->bitmap, &displayio_shape_type);
+    if (old_native != MP_OBJ_NULL) {
+        displayio_shape_t *old_bmp = MP_OBJ_TO_PTR(old_native);
+        if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
+            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
+        }
+    } else if (mp_obj_is_type(self->bitmap, &displayio_bitmap_type)) {
+        displayio_bitmap_t *old_bmp = MP_OBJ_TO_PTR(self->bitmap);
+        old_native = self->bitmap;
+        if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
+            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
+        }
+    } else if (mp_obj_is_type(self->bitmap, &displayio_ondiskbitmap_type)) {
+        displayio_ondiskbitmap_t *old_bmp = MP_OBJ_TO_PTR(self->bitmap);
+        old_native = self->bitmap;
+        if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
+            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
+        }
+    }
+
+    common_hal_displayio_tilegrid_set_bitmap(self, bitmap);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_bitmap_obj, displayio_tilegrid_obj_set_bitmap);
+
+MP_PROPERTY_GETSET(displayio_tilegrid_bitmap_obj,
+    (mp_obj_t)&displayio_tilegrid_get_bitmap_obj,
+    (mp_obj_t)&displayio_tilegrid_set_bitmap_obj);
 
 //|     def __getitem__(self, index: Union[Tuple[int, int], int]) -> int:
 //|         """Returns the tile index at the given index. The index can either be an x,y tuple or an int equal
@@ -431,9 +482,8 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
             return MP_OBJ_NULL; // op not supported
         } else {
             mp_int_t value = mp_obj_get_int(value_obj);
-            if (value < 0 || value > 255) {
-                mp_raise_ValueError(translate("Tile value out of bounds"));
-            }
+            mp_arg_validate_int_range(value, 0, 255, MP_QSTR_tile);
+
             common_hal_displayio_tilegrid_set_tile(self, x, y, value);
         }
     }
@@ -452,7 +502,9 @@ STATIC const mp_rom_map_elem_t displayio_tilegrid_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_flip_x), MP_ROM_PTR(&displayio_tilegrid_flip_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_flip_y), MP_ROM_PTR(&displayio_tilegrid_flip_y_obj) },
     { MP_ROM_QSTR(MP_QSTR_transpose_xy), MP_ROM_PTR(&displayio_tilegrid_transpose_xy_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pixel_shader),          MP_ROM_PTR(&displayio_tilegrid_pixel_shader_obj) },
+    { MP_ROM_QSTR(MP_QSTR_contains), MP_ROM_PTR(&displayio_tilegrid_contains_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&displayio_tilegrid_pixel_shader_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&displayio_tilegrid_bitmap_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_tilegrid_locals_dict, displayio_tilegrid_locals_dict_table);
 

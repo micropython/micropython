@@ -107,12 +107,9 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_timeout(mp_obj_t self_in, mp_obj_
 }
 MP_DEFINE_CONST_FUN_OBJ_2(watchdog_watchdogtimer_set_timeout_obj, watchdog_watchdogtimer_obj_set_timeout);
 
-const mp_obj_property_t watchdog_watchdogtimer_timeout_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&watchdog_watchdogtimer_get_timeout_obj,
-              (mp_obj_t)&watchdog_watchdogtimer_set_timeout_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(watchdog_watchdogtimer_timeout_obj,
+    (mp_obj_t)&watchdog_watchdogtimer_get_timeout_obj,
+    (mp_obj_t)&watchdog_watchdogtimer_set_timeout_obj);
 
 //|     mode: WatchDogMode
 //|     """The current operating mode of the WatchDogTimer `watchdog.WatchDogMode`.
@@ -158,12 +155,9 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t m
 }
 MP_DEFINE_CONST_FUN_OBJ_2(watchdog_watchdogtimer_set_mode_obj, watchdog_watchdogtimer_obj_set_mode);
 
-const mp_obj_property_t watchdog_watchdogtimer_mode_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&watchdog_watchdogtimer_get_mode_obj,
-              (mp_obj_t)&watchdog_watchdogtimer_set_mode_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(watchdog_watchdogtimer_mode_obj,
+    (mp_obj_t)&watchdog_watchdogtimer_get_mode_obj,
+    (mp_obj_t)&watchdog_watchdogtimer_set_mode_obj);
 
 STATIC const mp_rom_map_elem_t watchdog_watchdogtimer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&watchdog_watchdogtimer_feed_obj) },

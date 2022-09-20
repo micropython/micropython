@@ -74,12 +74,13 @@ STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, 
     const mcu_pin_obj_t *pin_a = validate_obj_is_free_pin(args[ARG_pin_a].u_obj);
     const mcu_pin_obj_t *pin_b = validate_obj_is_free_pin(args[ARG_pin_b].u_obj);
 
-    rotaryio_incrementalencoder_obj_t *self = m_new_obj(rotaryio_incrementalencoder_obj_t);
+    // Make long-lived because some implementations use a pointer to the object as interrupt-handler data.
+    rotaryio_incrementalencoder_obj_t *self = m_new_ll_obj(rotaryio_incrementalencoder_obj_t);
     self->base.type = &rotaryio_incrementalencoder_type;
 
     common_hal_rotaryio_incrementalencoder_construct(self, pin_a, pin_b);
-
     common_hal_rotaryio_incrementalencoder_set_divisor(self, args[ARG_divisor].u_int);
+
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -141,12 +142,9 @@ STATIC mp_obj_t rotaryio_incrementalencoder_obj_set_divisor(mp_obj_t self_in, mp
 }
 MP_DEFINE_CONST_FUN_OBJ_2(rotaryio_incrementalencoder_set_divisor_obj, rotaryio_incrementalencoder_obj_set_divisor);
 
-const mp_obj_property_t rotaryio_incrementalencoder_divisor_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rotaryio_incrementalencoder_get_divisor_obj,
-              (mp_obj_t)&rotaryio_incrementalencoder_set_divisor_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(rotaryio_incrementalencoder_divisor_obj,
+    (mp_obj_t)&rotaryio_incrementalencoder_get_divisor_obj,
+    (mp_obj_t)&rotaryio_incrementalencoder_set_divisor_obj);
 
 //|     position: int
 //|     """The current position in terms of pulses. The number of pulses per rotation is defined by the
@@ -169,12 +167,9 @@ STATIC mp_obj_t rotaryio_incrementalencoder_obj_set_position(mp_obj_t self_in, m
 }
 MP_DEFINE_CONST_FUN_OBJ_2(rotaryio_incrementalencoder_set_position_obj, rotaryio_incrementalencoder_obj_set_position);
 
-const mp_obj_property_t rotaryio_incrementalencoder_position_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rotaryio_incrementalencoder_get_position_obj,
-              (mp_obj_t)&rotaryio_incrementalencoder_set_position_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(rotaryio_incrementalencoder_position_obj,
+    (mp_obj_t)&rotaryio_incrementalencoder_get_position_obj,
+    (mp_obj_t)&rotaryio_incrementalencoder_set_position_obj);
 
 STATIC const mp_rom_map_elem_t rotaryio_incrementalencoder_locals_dict_table[] = {
     // Methods

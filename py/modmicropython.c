@@ -32,7 +32,7 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // Various builtins specific to MicroPython runtime,
 // living in micropython module

@@ -55,18 +55,14 @@ STATIC uint32_t calculate_duty_cycle(uint32_t frequency) {
 
 void pwmout_reset(void) {
     for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
-        if (reserved_channels[i] != INDEX_EMPTY) {
+        if (reserved_channels[i] != INDEX_EMPTY && !never_reset_chan[i]) {
             ledc_stop(LEDC_LOW_SPEED_MODE, i, 0);
-        }
-        if (!never_reset_chan[i]) {
             reserved_channels[i] = INDEX_EMPTY;
         }
     }
     for (size_t i = 0; i < LEDC_TIMER_MAX; i++) {
-        if (reserved_timer_freq[i]) {
+        if (reserved_timer_freq[i] && !never_reset_tim[i]) {
             ledc_timer_rst(LEDC_LOW_SPEED_MODE, i);
-        }
-        if (!never_reset_tim[i]) {
             reserved_timer_freq[i] = 0;
             varfreq_timers[i] = false;
         }
@@ -217,7 +213,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t fr
     // Calculate duty cycle
     uint32_t duty_bits = calculate_duty_cycle(frequency);
     if (duty_bits == 0) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     self->duty_resolution = duty_bits;
     ledc_set_freq(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num, frequency);

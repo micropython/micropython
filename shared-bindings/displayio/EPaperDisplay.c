@@ -37,7 +37,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class EPaperDisplay:
 //|     """Manage updating an epaper display over a display bus
@@ -268,12 +268,8 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_get_time_to_refresh(mp_obj_t self_in
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_time_to_refresh_obj, displayio_epaperdisplay_obj_get_time_to_refresh);
 
-const mp_obj_property_t displayio_epaperdisplay_time_to_refresh_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_time_to_refresh_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(displayio_epaperdisplay_time_to_refresh_obj,
+    (mp_obj_t)&displayio_epaperdisplay_get_time_to_refresh_obj);
 
 //|     busy: bool
 //|     """True when the display is refreshing. This uses the ``busy_pin`` when available or the
@@ -285,12 +281,8 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_get_busy(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_busy_obj, displayio_epaperdisplay_obj_get_busy);
 
-const mp_obj_property_t displayio_epaperdisplay_busy_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_busy_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(displayio_epaperdisplay_busy_obj,
+    (mp_obj_t)&displayio_epaperdisplay_get_busy_obj);
 
 //|     width: int
 //|     """Gets the width of the display in pixels"""
@@ -301,12 +293,8 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_get_width(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_width_obj, displayio_epaperdisplay_obj_get_width);
 
-const mp_obj_property_t displayio_epaperdisplay_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(displayio_epaperdisplay_width_obj,
+    (mp_obj_t)&displayio_epaperdisplay_get_width_obj);
 
 //|     height: int
 //|     """Gets the height of the display in pixels"""
@@ -317,12 +305,8 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_get_height(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_height_obj, displayio_epaperdisplay_obj_get_height);
 
-const mp_obj_property_t displayio_epaperdisplay_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_height_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(displayio_epaperdisplay_height_obj,
+    (mp_obj_t)&displayio_epaperdisplay_get_height_obj);
 
 //|     rotation: int
 //|     """The rotation of the display as an int in degrees."""
@@ -340,12 +324,9 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_set_rotation(mp_obj_t self_in, mp_ob
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_set_rotation_obj, displayio_epaperdisplay_obj_set_rotation);
 
 
-const mp_obj_property_t displayio_epaperdisplay_rotation_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_rotation_obj,
-              (mp_obj_t)&displayio_epaperdisplay_set_rotation_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_epaperdisplay_rotation_obj,
+    (mp_obj_t)&displayio_epaperdisplay_get_rotation_obj,
+    (mp_obj_t)&displayio_epaperdisplay_set_rotation_obj);
 
 //|     bus: _DisplayBus
 //|     """The bus being used by the display"""
@@ -356,12 +337,8 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_get_bus(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_bus_obj, displayio_epaperdisplay_obj_get_bus);
 
-const mp_obj_property_t displayio_epaperdisplay_bus_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_bus_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(displayio_epaperdisplay_bus_obj,
+    (mp_obj_t)&displayio_epaperdisplay_get_bus_obj);
 
 
 STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {

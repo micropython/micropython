@@ -33,6 +33,8 @@
 #include "shared-bindings/supervisor/RunReason.h"
 #include "shared-bindings/supervisor/Runtime.h"
 
+#include "supervisor/shared/reload.h"
+
 #if (CIRCUITPY_USB)
 #include "tusb.h"
 #endif
@@ -69,12 +71,8 @@ STATIC mp_obj_t supervisor_runtime_get_usb_connected(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_usb_connected_obj, supervisor_runtime_get_usb_connected);
 
-const mp_obj_property_t supervisor_runtime_usb_connected_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&supervisor_runtime_get_usb_connected_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(supervisor_runtime_usb_connected_obj,
+    (mp_obj_t)&supervisor_runtime_get_usb_connected_obj);
 
 //|     serial_connected: bool
 //|     """Returns the USB serial communication status (read-only)."""
@@ -84,12 +82,8 @@ STATIC mp_obj_t supervisor_runtime_get_serial_connected(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_connected_obj, supervisor_runtime_get_serial_connected);
 
-const mp_obj_property_t supervisor_runtime_serial_connected_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&supervisor_runtime_get_serial_connected_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(supervisor_runtime_serial_connected_obj,
+    (mp_obj_t)&supervisor_runtime_get_serial_connected_obj);
 
 //|     serial_bytes_available: int
 //|     """Returns the whether any bytes are available to read
@@ -101,12 +95,8 @@ STATIC mp_obj_t supervisor_runtime_get_serial_bytes_available(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_bytes_available_obj, supervisor_runtime_get_serial_bytes_available);
 
-const mp_obj_property_t supervisor_runtime_serial_bytes_available_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&supervisor_runtime_get_serial_bytes_available_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(supervisor_runtime_serial_bytes_available_obj,
+    (mp_obj_t)&supervisor_runtime_get_serial_bytes_available_obj);
 
 supervisor_run_reason_t supervisor_get_run_reason(void) {
     return _run_reason;
@@ -117,25 +107,44 @@ void supervisor_set_run_reason(supervisor_run_reason_t run_reason) {
 }
 
 //|     run_reason: RunReason
-//|     """Returns why CircuitPython started running this particular time."""
+//|     """Why CircuitPython started running this particular time."""
 //|
 STATIC mp_obj_t supervisor_runtime_get_run_reason(mp_obj_t self) {
     return cp_enum_find(&supervisor_run_reason_type, _run_reason);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_run_reason_obj, supervisor_runtime_get_run_reason);
 
-const mp_obj_property_t supervisor_runtime_run_reason_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&supervisor_runtime_get_run_reason_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(supervisor_runtime_run_reason_obj,
+    (mp_obj_t)&supervisor_runtime_get_run_reason_obj);
+
+//|     autoreload: bool
+//|     """Whether CircuitPython may autoreload based on workflow writes to the filesystem."""
+//|
+STATIC mp_obj_t supervisor_runtime_get_autoreload(mp_obj_t self) {
+    return mp_obj_new_bool(autoreload_is_enabled());
+}
+MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_autoreload_obj, supervisor_runtime_get_autoreload);
+
+STATIC mp_obj_t supervisor_runtime_set_autoreload(mp_obj_t self, mp_obj_t state_in) {
+    if (mp_obj_is_true(state_in)) {
+        autoreload_enable();
+    } else {
+        autoreload_disable();
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(supervisor_runtime_set_autoreload_obj, supervisor_runtime_set_autoreload);
+
+MP_PROPERTY_GETSET(supervisor_runtime_autoreload_obj,
+    (mp_obj_t)&supervisor_runtime_get_autoreload_obj,
+    (mp_obj_t)&supervisor_runtime_set_autoreload_obj);
 
 STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_usb_connected), MP_ROM_PTR(&supervisor_runtime_usb_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_serial_connected), MP_ROM_PTR(&supervisor_runtime_serial_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_serial_bytes_available), MP_ROM_PTR(&supervisor_runtime_serial_bytes_available_obj) },
     { MP_ROM_QSTR(MP_QSTR_run_reason), MP_ROM_PTR(&supervisor_runtime_run_reason_obj) },
+    { MP_ROM_QSTR(MP_QSTR_autoreload), MP_ROM_PTR(&supervisor_runtime_autoreload_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_runtime_locals_dict, supervisor_runtime_locals_dict_table);

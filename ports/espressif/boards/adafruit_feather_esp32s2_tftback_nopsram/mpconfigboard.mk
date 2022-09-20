@@ -12,13 +12,11 @@ LONGINT_IMPL = MPZ
 # so increase it to 32.
 CFLAGS += -DCFG_TUD_TASK_QUEUE_SZ=32
 
-CIRCUITPY_ESP_FLASH_MODE=dio
-CIRCUITPY_ESP_FLASH_FREQ=40m
-CIRCUITPY_ESP_FLASH_SIZE=4MB
-
-CIRCUITPY_MODULE=wroom
+CIRCUITPY_ESP_FLASH_MODE = dio
+CIRCUITPY_ESP_FLASH_FREQ = 40m
+CIRCUITPY_ESP_FLASH_SIZE = 4MB
 
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Register
+CIRCUITPY_ESP32_CAMERA = 0

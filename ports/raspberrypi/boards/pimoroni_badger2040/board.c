@@ -320,13 +320,6 @@ void board_init(void) {
         false);  // two_byte_sequence_length
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
 void board_deinit(void) {
     displayio_epaperdisplay_obj_t *display = &displays[0].epaper_display;
     if (display->base.type == &displayio_epaperdisplay_type) {
@@ -338,3 +331,5 @@ void board_deinit(void) {
     }
     common_hal_displayio_release_displays();
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

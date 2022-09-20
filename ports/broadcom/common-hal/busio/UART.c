@@ -162,13 +162,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
 
-    if (bits > 8) {
-        mp_raise_ValueError(translate("Invalid word/bit length"));
-    }
-
-    if (receiver_buffer_size == 0) {
-        mp_raise_ValueError(translate("Invalid buffer size"));
-    }
+    mp_arg_validate_int_max(bits, 8, MP_QSTR_bits);
+    mp_arg_validate_int_min(receiver_buffer_size, 1, MP_QSTR_receiver_buffer_size);
 
     if ((rs485_dir != NULL) || (rs485_invert)) {
         mp_raise_NotImplementedError(translate("RS485 Not yet supported on this device"));
@@ -203,7 +198,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         break;
     }
     if (instance_index == NUM_UART) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     self->rx_pin = rx;
@@ -224,7 +219,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             // in the long-lived pool is not strictly necessary)
             // (This is a macro.)
             if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
-                mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
+                m_malloc_fail(receiver_buffer_size);
             }
         }
     }

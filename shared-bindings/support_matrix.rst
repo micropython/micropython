@@ -4,7 +4,7 @@ Module Support Matrix - Which Modules Are Available on Which Boards
 ===================================================================
 
 The following table lists the available built-in modules for each CircuitPython
-capable board.
+capable board, as well as each :term:`frozen module` included on it.
 
 .. raw:: html
 
@@ -21,6 +21,14 @@ capable board.
    {% for key, value in support_matrix|dictsort %}
        {{ '.. _' ~ key|replace(" ", "-") ~ ':' }}
    * - {{ key }}
-     - {{ ':py:mod:`' ~ value|join("`, :py:mod:`") ~ '`' }}
+     - {{ ':py:mod:`' ~ value.modules|join("`, :py:mod:`") ~ '`' }}
+
+       {% for module in value.frozen_libraries %}\
+       {% if loop.index == 1 %}**Frozen Modules:** {% endif %}\
+       {% if loop.index > 1 %}, {% endif %}\
+       {% if module[1] %}{{ '`' ~ module[0] ~ ' <' ~ module[1] ~ '>`__' }}\
+       {% else %}{{ '`' ~ module[0] ~ ' <#>`__' }}\
+       {% endif %}\
+       {% endfor %}
 
    {% endfor %}

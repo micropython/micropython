@@ -8,7 +8,7 @@
 #include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Circle:
 //|
@@ -76,12 +76,9 @@ STATIC mp_obj_t vectorio_circle_obj_set_radius(mp_obj_t self_in, mp_obj_t radius
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_circle_set_radius_obj, vectorio_circle_obj_set_radius);
 
-const mp_obj_property_t vectorio_circle_radius_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&vectorio_circle_get_radius_obj,
-              (mp_obj_t)&vectorio_circle_set_radius_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(vectorio_circle_radius_obj,
+    (mp_obj_t)&vectorio_circle_get_radius_obj,
+    (mp_obj_t)&vectorio_circle_set_radius_obj);
 
 //|     color_index : int
 //|     """The color_index of the circle as 0 based index of the palette."""
@@ -99,12 +96,9 @@ STATIC mp_obj_t vectorio_circle_obj_set_color_index(mp_obj_t self_in, mp_obj_t c
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_circle_set_color_index_obj, vectorio_circle_obj_set_color_index);
 
-const mp_obj_property_t vectorio_circle_color_index_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&vectorio_circle_get_color_index_obj,
-              (mp_obj_t)&vectorio_circle_set_color_index_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(vectorio_circle_color_index_obj,
+    (mp_obj_t)&vectorio_circle_get_color_index_obj,
+    (mp_obj_t)&vectorio_circle_set_color_index_obj);
 
 
 // Documentation for properties inherited from VectorShape.

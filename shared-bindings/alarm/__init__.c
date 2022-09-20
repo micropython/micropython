@@ -32,6 +32,7 @@
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/alarm/touch/TouchAlarm.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/supervisor/Runtime.h"
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/workflow.h"
@@ -55,6 +56,9 @@
 //|
 //| For both light sleep and deep sleep, if CircuitPython is connected to a host computer,
 //| maintaining the connection takes priority and power consumption may not be reduced.
+//|
+//| For more information about working with alarms and light/deep sleep in CircuitPython,
+//| see `this Learn guide <https://learn.adafruit.com/deep-sleep-with-circuitpython>`_.
 //| """
 
 //| sleep_memory: SleepMemory
@@ -77,7 +81,7 @@ STATIC void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
             mp_obj_is_type(objs[i], &alarm_touch_touchalarm_type)) {
             continue;
         }
-        mp_raise_TypeError_varg(translate("Expected an alarm"));
+        mp_raise_TypeError_varg(translate("Expected an %q"), MP_QSTR_Alarm);
     }
 }
 
@@ -109,7 +113,7 @@ STATIC mp_obj_t alarm_light_sleep_until_alarms(size_t n_args, const mp_obj_t *ar
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_light_sleep_until_alarms);
 
-//| def exit_and_deep_sleep_until_alarms(*alarms: circuitpython_typing.Alarm) -> None:
+//| def exit_and_deep_sleep_until_alarms(*alarms: circuitpython_typing.Alarm, preserve_dios: Sequence[digitalio.DigitalInOut] = ()) -> None:
 //|     """Exit the program and go into a deep sleep, until awakened by one of the alarms.
 //|     This function does not return.
 //|
@@ -123,6 +127,22 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OB
 //|
 //|     If no alarms are specified, the microcontroller will deep sleep until reset.
 //|
+//|     :param circuitpython_typing.Alarm alarms: the alarms that can wake the microcontroller.
+//|     :param Sequence[digitalio.DigitalInOut] preserve_dios: A sequence of `DigitalInOut` objects
+//|       whose state should be preserved during deep sleep.
+//|       If a `DigitalInOut` in the sequence is set to be an output,
+//|       its current `DigitalInOut.value` (``True`` or ``False``)
+//|       will be preserved during the deep sleep.
+//|       If a `DigitalInOut` in the sequence is set to be an input,
+//|       its current `DigitalInOut.pull` value (``DOWN``, ``UP``, or ``None``)
+//|       will be preserved during deep sleep.
+//|
+//|     Preserving `DigitalInOut` states during deep sleep can be used to ensure that
+//|     external or on-board devices are powered or unpowered during sleep, among other purposes.
+//|
+//|     On some microcontrollers, some pins cannot remain in their original state for hardware reasons.
+//|
+//|
 //|     **If CircuitPython is connected to a host computer via USB or BLE
 //|     the first time a deep sleep is requested,
 //|     the connection will be maintained and the system will not go into deep sleep.**
@@ -133,28 +153,50 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OB
 //|     the next deep sleep will still be a true deep sleep. You must do a hard reset
 //|     or power-cycle to exit a true deep sleep loop.
 //|
-//|     Here is skeletal example that deep-sleeps and restarts every 60 seconds:
+//|     Here is a skeletal example:
 //|
 //|     .. code-block:: python
 //|
 //|         import alarm
 //|         import time
+//|         import board
 //|
 //|         print("Waking up")
 //|
-//|         # Set an alarm for 60 seconds from now.
+//|         # Create an alarm for 60 seconds from now, and also a pin alarm.
 //|         time_alarm = alarm.time.TimeAlarm(monotonic_time=time.monotonic() + 60)
+//|         pin_alarm = alarm.pin.PinAlarm(board.D7, False)
 //|
-//|         # Deep sleep until the alarm goes off. Then restart the program.
-//|         alarm.exit_and_deep_sleep_until_alarms(time_alarm)
+//|         # Deep sleep until one of the alarm goes off. Then restart the program.
+//|         alarm.exit_and_deep_sleep_until_alarms(time_alarm, pin_alarm)
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
-    validate_objs_are_alarms(n_args, args);
+STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_preserve_dios };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_preserve_dios, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_empty_tuple} },
+    };
 
-    // Validate the alarms and set them.
-    common_hal_alarm_set_deep_sleep_alarms(n_args, args);
+    // args will contain only the value for preserve_dios. The *alarms args are in pos_args.
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(0, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    validate_objs_are_alarms(n_args, pos_args);
+
+    mp_obj_t preserve_dios = args[ARG_preserve_dios].u_obj;
+    const size_t num_dios = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(preserve_dios));
+    digitalio_digitalinout_obj_t *dios_array[num_dios];
+
+    for (mp_uint_t i = 0; i < num_dios; i++) {
+        mp_obj_t dio = mp_obj_subscr(preserve_dios, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
+        if (!mp_obj_is_type(dio, &digitalio_digitalinout_type)) {
+            mp_raise_TypeError_varg(translate("Expected a %q"), MP_QSTR_DigitalInOut);
+        }
+        dios_array[i] = MP_OBJ_TO_PTR(dio);
+    }
+
+    common_hal_alarm_set_deep_sleep_alarms(n_args, pos_args, num_dios, dios_array);
 
     // Raise an exception, which will be processed in main.c.
     mp_raise_type_arg(&mp_type_DeepSleepRequest, NULL);
@@ -162,7 +204,7 @@ STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_o
     // Doesn't get here.
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_exit_and_deep_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_exit_and_deep_sleep_until_alarms);
+MP_DEFINE_CONST_FUN_OBJ_KW(alarm_exit_and_deep_sleep_until_alarms_obj, 0, alarm_exit_and_deep_sleep_until_alarms);
 
 STATIC const mp_map_elem_t alarm_pin_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pin) },

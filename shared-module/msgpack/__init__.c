@@ -36,7 +36,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/msgpack/ExtType.h"
 #include "shared-bindings/msgpack/__init__.h"
 #include "shared-module/msgpack/__init__.h"

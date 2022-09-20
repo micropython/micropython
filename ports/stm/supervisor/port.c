@@ -61,6 +61,9 @@
 #if CIRCUITPY_ALARM
 #include "common-hal/alarm/__init__.h"
 #endif
+#if CIRCUITPY_RTC
+#include "shared-bindings/rtc/__init__.h"
+#endif
 
 #include "peripherals/clocks.h"
 #include "peripherals/gpio.h"
@@ -241,6 +244,11 @@ void SysTick_Handler(void) {
 
 void reset_port(void) {
     reset_all_pins();
+
+    #if CIRCUITPY_RTC
+    rtc_reset();
+    #endif
+
     #if CIRCUITPY_AUDIOPWMIO
     audiopwmout_reset();
     #endif
@@ -268,7 +276,39 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
+
+/*
+From STM AN2606:
+Before jumping to bootloader user must:
+• Disable all peripheral clocks
+• Disable used PLL
+• Disable interrupts
+• Clear pending interrupts
+System memory boot mode can be exited by getting out from bootloader activation
+condition and generating hardware reset or using Go command to execute user code
+*/
+    HAL_RCC_DeInit();
+    HAL_DeInit();
+
+    // disable all interupts
+    __disable_irq();
+
+    // Clear all pending interrupts
+    for (uint8_t i = 0; i < (sizeof(NVIC->ICPR) / NVIC->ICPR[0]); ++i) {
+        NVIC->ICPR[i] = 0xFFFFFFFF;
+    }
+    // information about jump addresses has been taken from STM AN2606.
+    #if defined(STM32F4)
+    __set_MSP(*((uint32_t *)0x1FFF0000));
+    ((void (*)(void)) * ((uint32_t *)0x1FFF0004))();
+    #else
+    // DFU mode for STM32 variant note implemented.
     NVIC_SystemReset();
+    #endif
+
+    while (true) {
+        asm ("nop;");
+    }
 }
 
 void reset_cpu(void) {

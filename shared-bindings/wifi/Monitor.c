@@ -55,19 +55,14 @@ STATIC mp_obj_t wifi_monitor_make_new(const mp_obj_type_t *type, size_t n_args, 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_channel].u_int < 1 || args[ARG_channel].u_int > 13) {
-        mp_raise_ValueError_varg(translate("%q out of bounds"), MP_QSTR_channel);
-    }
-
-    if (args[ARG_queue].u_int < 0) {
-        mp_raise_ValueError_varg(translate("%q out of bounds"), MP_QSTR_channel);
-    }
+    mp_int_t channel = mp_arg_validate_int_range(args[ARG_channel].u_int, 1, 13, MP_QSTR_channel);
+    mp_int_t queue = mp_arg_validate_int_min(args[ARG_queue].u_int, 0, MP_QSTR_queue);
 
     wifi_monitor_obj_t *self = MP_STATE_VM(wifi_monitor_singleton);
     if (common_hal_wifi_monitor_deinited()) {
         self = m_new_obj(wifi_monitor_obj_t);
         self->base.type = &wifi_monitor_type;
-        common_hal_wifi_monitor_construct(self, args[ARG_channel].u_int, args[ARG_queue].u_int);
+        common_hal_wifi_monitor_construct(self, channel, queue);
         MP_STATE_VM(wifi_monitor_singleton) = self;
     }
 
@@ -92,12 +87,9 @@ STATIC mp_obj_t wifi_monitor_obj_set_channel(mp_obj_t self_in, mp_obj_t channel)
 }
 MP_DEFINE_CONST_FUN_OBJ_2(wifi_monitor_set_channel_obj, wifi_monitor_obj_set_channel);
 
-const mp_obj_property_t wifi_monitor_channel_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_monitor_get_channel_obj,
-               (mp_obj_t)&wifi_monitor_set_channel_obj,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETSET(wifi_monitor_channel_obj,
+    (mp_obj_t)&wifi_monitor_get_channel_obj,
+    (mp_obj_t)&wifi_monitor_set_channel_obj);
 
 //| queue: int
 //| """The queue size for buffering the packet."""
@@ -107,12 +99,8 @@ STATIC mp_obj_t wifi_monitor_obj_get_queue(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_get_queue_obj, wifi_monitor_obj_get_queue);
 
-const mp_obj_property_t wifi_monitor_queue_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_monitor_get_queue_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(wifi_monitor_queue_obj,
+    (mp_obj_t)&wifi_monitor_get_queue_obj);
 
 //| def deinit(self) -> None:
 //|     """De-initialize `wifi.Monitor` singleton."""

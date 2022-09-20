@@ -33,7 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 
 void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
@@ -41,10 +41,10 @@ void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
         case PWMOUT_OK:
             break;
         case PWMOUT_INVALID_PIN:
-            mp_raise_ValueError(translate("Invalid pin"));
+            raise_ValueError_invalid_pin();
             break;
         case PWMOUT_INVALID_FREQUENCY:
-            mp_raise_ValueError(translate("Invalid PWM frequency"));
+            mp_arg_error_invalid(MP_QSTR_frequency);
             break;
         case PWMOUT_INVALID_FREQUENCY_ON_PIN:
             mp_raise_ValueError(translate("Frequency must match existing PWMOut using this timer"));
@@ -212,20 +212,17 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t duty_
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     mp_int_t duty = mp_obj_get_int(duty_cycle);
-    if (duty < 0 || duty > 0xffff) {
-        mp_raise_ValueError(translate("PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"));
-    }
+
+    mp_arg_validate_int_range(duty, 0, 0xffff, MP_QSTR_duty_cycle);
+
     common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pwmio_pwmout_set_duty_cycle_obj, pwmio_pwmout_obj_set_duty_cycle);
 
-const mp_obj_property_t pwmio_pwmout_duty_cycle_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pwmio_pwmout_get_duty_cycle_obj,
-              (mp_obj_t)&pwmio_pwmout_set_duty_cycle_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(pwmio_pwmout_duty_cycle_obj,
+    (mp_obj_t)&pwmio_pwmout_get_duty_cycle_obj,
+    (mp_obj_t)&pwmio_pwmout_set_duty_cycle_obj);
 
 //|     frequency: int
 //|     """32 bit value that dictates the PWM frequency in Hertz (cycles per
@@ -254,19 +251,16 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freque
     }
     mp_int_t freq = mp_obj_get_int(frequency);
     if (freq == 0) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     common_hal_pwmio_pwmout_set_frequency(self, freq);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pwmio_pwmout_set_frequency_obj, pwmio_pwmout_obj_set_frequency);
 
-const mp_obj_property_t pwmio_pwmout_frequency_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pwmio_pwmout_get_frequency_obj,
-              (mp_obj_t)&pwmio_pwmout_set_frequency_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(pwmio_pwmout_frequency_obj,
+    (mp_obj_t)&pwmio_pwmout_get_frequency_obj,
+    (mp_obj_t)&pwmio_pwmout_set_frequency_obj);
 
 STATIC const mp_rom_map_elem_t pwmio_pwmout_locals_dict_table[] = {
     // Methods

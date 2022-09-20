@@ -56,9 +56,12 @@ DEFAULT_CLUSTERLIST = {
         "espressif_esp32s3_devkitc_1_n8r8",
     ],
     "0x303A:0x7009": ["espressif_esp32s2_devkitc_1_n4", "espressif_esp32s2_devkitc_1_n4r2"],
+    "0x70010001:0x00100001": ["ai_thinker_esp32-c3s", "ai_thinker_esp32-c3s-2m"],
 }
 
-cli_parser = argparse.ArgumentParser(description="USB VID/PID Duplicate Checker")
+cli_parser = argparse.ArgumentParser(
+    description="USB VID/PID and Creator/Creation ID Duplicate Checker"
+)
 
 
 def configboard_files():
@@ -71,31 +74,40 @@ def configboard_files():
     return working_dir.glob("ports/**/boards/**/mpconfigboard.mk")
 
 
+VID_PATTERN = re.compile(r"^USB_VID\s*=\s*(.*)", flags=re.M)
+PID_PATTERN = re.compile(r"^USB_PID\s*=\s*(.*)", flags=re.M)
+CREATOR_PATTERN = re.compile(r"^CIRCUITPY_CREATOR_ID\s*=\s*(.*)", flags=re.M)
+CREATION_PATTERN = re.compile(r"^CIRCUITPY_CREATION_ID\s*=\s*(.*)", flags=re.M)
+
+
 def check_vid_pid(files, clusterlist):
     """Compiles a list of USB VID & PID values for all boards, and checks
     for duplicates. Exits with ``sys.exit()`` (non-zero exit code)
     if duplicates are found, and lists the duplicates.
     """
 
-    vid_pattern = re.compile(r"^USB_VID\s*=\s*(.*)", flags=re.M)
-    pid_pattern = re.compile(r"^USB_PID\s*=\s*(.*)", flags=re.M)
-    usb_pattern = re.compile(r"^CIRCUITPY_USB\s*=\s*0$|^IDF_TARGET = esp32c3$", flags=re.M)
+    usb_pattern = re.compile(r"^CIRCUITPY_USB\s*=\s*0$|^IDF_TARGET = (esp32|esp32c3)$", flags=re.M)
 
     usb_ids = defaultdict(set)
     for board_config in files:
         src_text = board_config.read_text()
 
-        usb_vid = vid_pattern.search(src_text)
-        usb_pid = pid_pattern.search(src_text)
+        usb_vid = VID_PATTERN.search(src_text)
+        usb_pid = PID_PATTERN.search(src_text)
+        creator = CREATOR_PATTERN.search(src_text)
+        creation = CREATION_PATTERN.search(src_text)
         non_usb = usb_pattern.search(src_text)
         board_name = board_config.parts[-2]
 
         if usb_vid and usb_pid:
             id_group = f"0x{int(usb_vid.group(1), 16):04X}:0x{int(usb_pid.group(1), 16):04X}"
         elif non_usb:
-            continue
+            if creator is None or creation is None:
+                print(f"{board_name=} {creator=} {creation=}", file=sys.stderr)
+                continue
+            id_group = f"0x{int(creator.group(1), 16):08X}:0x{int(creation.group(1), 16):08X}"
         else:
-            raise SystemExit(f"Could not parse {board_config}")
+            raise SystemExit(f"Could not find expected settings in {board_config}")
 
         usb_ids[id_group].add(board_name)
 
@@ -117,17 +129,19 @@ def check_vid_pid(files, clusterlist):
         duplicate_message = (
             f"Duplicate VID/PID usage found!\n{duplicates}\n"
             f"If you are open source maker, then you can request a PID from http://pid.codes\n"
+            f"For boards without native USB, you can request a Creator ID from https://github.com/creationid/creators/\n"
             f"Otherwise, companies should pay the USB-IF for a vendor ID: https://www.usb.org/getting-vendor-id"
         )
         sys.exit(duplicate_message)
+
     else:
-        print("No USB PID duplicates found.")
+        print("No unexpected ID duplicates found.")
 
 
 if __name__ == "__main__":
     arguments = cli_parser.parse_args()
 
-    print("Running USB VID/PID Duplicate Checker...")
+    print("Running USB VID/PID and Creator/Creation ID Duplicate Checker...")
 
     board_files = configboard_files()
     check_vid_pid(board_files, DEFAULT_CLUSTERLIST)

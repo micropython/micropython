@@ -39,12 +39,15 @@
 #include "shared-bindings/wifi/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
+#include "common-hal/digitalio/DigitalInOut.h"
+
 #include "supervisor/port.h"
 #include "supervisor/shared/workflow.h"
 
 #include "esp_sleep.h"
 
 #include "soc/rtc_cntl_reg.h"
+#include "components/driver/include/driver/gpio.h"
 #include "components/driver/include/driver/uart.h"
 
 // Singleton instance of SleepMemory.
@@ -158,13 +161,20 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
     return wake_alarm;
 }
 
-void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms, size_t n_dios, digitalio_digitalinout_obj_t *preserve_dios[]) {
+    digitalio_digitalinout_preserve_for_deep_sleep(n_dios, preserve_dios);
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     alarm_touch_touchalarm_prepare_for_deep_sleep();
+
+    // We no longer need to remember the pin preservations, since any pin resets are all done.
+    clear_pin_preservations();
+
+    // Allow pin holds to work during deep sleep.
+    gpio_deep_sleep_hold_en();
 
     // The ESP-IDF caches the deep sleep settings and applies them before sleep.
     // We don't need to worry about resetting them in the interim.

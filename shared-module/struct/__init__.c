@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/parsenum.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/struct/__init__.h"
 
 STATIC void struct_validate_format(char fmt) {

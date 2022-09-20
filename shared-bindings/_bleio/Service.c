@@ -80,12 +80,8 @@ STATIC mp_obj_t bleio_service_get_characteristics(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_characteristics_obj, bleio_service_get_characteristics);
 
-const mp_obj_property_t bleio_service_characteristics_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_service_get_characteristics_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_service_characteristics_obj,
+    (mp_obj_t)&bleio_service_get_characteristics_obj);
 
 //|     remote: bool
 //|     """True if this is a service provided by a remote device. (read-only)"""
@@ -97,12 +93,8 @@ STATIC mp_obj_t bleio_service_get_remote(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_remote_obj, bleio_service_get_remote);
 
-const mp_obj_property_t bleio_service_remote_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_service_get_remote_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_service_remote_obj,
+    (mp_obj_t)&bleio_service_get_remote_obj);
 
 //|     secondary: bool
 //|     """True if this is a secondary service. (read-only)"""
@@ -114,12 +106,8 @@ STATIC mp_obj_t bleio_service_get_secondary(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_secondary_obj, bleio_service_get_secondary);
 
-const mp_obj_property_t bleio_service_secondary_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_service_get_secondary_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_service_secondary_obj,
+    (mp_obj_t)&bleio_service_get_secondary_obj);
 
 //|     uuid: Optional[UUID]
 //|     """The UUID of this service. (read-only)
@@ -134,12 +122,8 @@ STATIC mp_obj_t bleio_service_get_uuid(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_uuid_obj, bleio_service_get_uuid);
 
-const mp_obj_property_t bleio_service_uuid_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_service_get_uuid_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_service_uuid_obj,
+    (mp_obj_t)&bleio_service_get_uuid_obj);
 
 
 STATIC const mp_rom_map_elem_t bleio_service_locals_dict_table[] = {

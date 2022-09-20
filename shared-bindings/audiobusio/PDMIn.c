@@ -34,7 +34,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class PDMIn:
 //|     """Record an input PDM audio stream"""
@@ -226,12 +226,8 @@ STATIC mp_obj_t audiobusio_pdmin_obj_get_sample_rate(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_pdmin_get_sample_rate_obj, audiobusio_pdmin_obj_get_sample_rate);
 
-const mp_obj_property_t audiobusio_pdmin_sample_rate_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiobusio_pdmin_get_sample_rate_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(audiobusio_pdmin_sample_rate_obj,
+    (mp_obj_t)&audiobusio_pdmin_get_sample_rate_obj);
 
 STATIC const mp_rom_map_elem_t audiobusio_pdmin_locals_dict_table[] = {
     // Methods

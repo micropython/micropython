@@ -35,7 +35,7 @@
 #include "py/runtime.h"
 
 #include "shared-module/audiomp3/MP3Decoder.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/background_callback.h"
 #include "lib/mp3/src/mp3common.h"
 
@@ -53,7 +53,7 @@
  */
 STATIC bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self) {
     // If we didn't previously reach the end of file, we can try reading now
-    if (!self->eof) {
+    if (!self->eof && self->inbuf_offset != 0) {
 
         // Move the unconsumed portion of the buffer to the start
         uint8_t *end_of_buffer = self->inbuf + self->inbuf_length;
@@ -193,8 +193,7 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
     self->inbuf = m_malloc(self->inbuf_length, false);
     if (self->inbuf == NULL) {
         common_hal_audiomp3_mp3file_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError,
-            translate("Couldn't allocate input buffer"));
+        m_malloc_fail(self->inbuf_length);
     }
     self->decoder = MP3InitDecoder();
     if (self->decoder == NULL) {
@@ -214,15 +213,13 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
         self->buffers[0] = m_malloc(MAX_BUFFER_LEN, false);
         if (self->buffers[0] == NULL) {
             common_hal_audiomp3_mp3file_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError,
-                translate("Couldn't allocate first buffer"));
+            m_malloc_fail(MAX_BUFFER_LEN);
         }
 
         self->buffers[1] = m_malloc(MAX_BUFFER_LEN, false);
         if (self->buffers[1] == NULL) {
             common_hal_audiomp3_mp3file_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError,
-                translate("Couldn't allocate second buffer"));
+            m_malloc_fail(MAX_BUFFER_LEN);
         }
     }
 
@@ -356,6 +353,11 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
         return GET_BUFFER_DONE;
     }
 
+    self->samples_decoded += *buffer_length / sizeof(int16_t);
+
+    mp3file_skip_id3v2(self);
+    int result = mp3file_find_sync_word(self) ? GET_BUFFER_MORE_DATA : GET_BUFFER_DONE;
+
     if (self->inbuf_offset >= 512) {
         background_callback_add(
             &self->inbuf_fill_cb,
@@ -363,8 +365,7 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
             self);
     }
 
-    self->samples_decoded += *buffer_length / sizeof(int16_t);
-    return GET_BUFFER_MORE_DATA;
+    return result;
 }
 
 void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t *self, bool single_channel_output,

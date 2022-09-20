@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/UART.h"
 
 #include "components/driver/include/driver/uart.h"
@@ -37,10 +38,10 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 
-uint8_t never_reset_uart_mask = 0;
+static uint8_t never_reset_uart_mask = 0;
 
 static void uart_event_task(void *param) {
     busio_uart_obj_t *self = param;
@@ -49,8 +50,8 @@ static void uart_event_task(void *param) {
         if (xQueueReceive(self->event_queue, &event, portMAX_DELAY)) {
             switch (event.type) {
                 case UART_PATTERN_DET:
-                    // When the debug uart receives CTRL+C, wake the main task and schedule a keyboard interrupt
-                    if (self->is_debug) {
+                    // When the console uart receives CTRL+C, wake the main task and schedule a keyboard interrupt
+                    if (self->is_console) {
                         port_wake_main_task();
                         if (mp_interrupt_char == CHAR_CTRL_C) {
                             uart_flush(self->uart_num);
@@ -59,8 +60,8 @@ static void uart_event_task(void *param) {
                     }
                     break;
                 case UART_DATA:
-                    // When the debug uart receives any key, wake the main task
-                    if (self->is_debug) {
+                    // When the console uart receives any key, wake the main task
+                    if (self->is_console) {
                         port_wake_main_task();
                     }
                     break;
@@ -73,13 +74,13 @@ static void uart_event_task(void *param) {
 
 void uart_reset(void) {
     for (uart_port_t num = 0; num < UART_NUM_MAX; num++) {
-        // Ignore the UART used by the IDF.
-        #ifdef CONFIG_CONSOLE_UART_NUM
-        if (num == CONFIG_CONSOLE_UART_NUM) {
+        #ifdef CONFIG_ESP_CONSOLE_UART_NUM
+        // Do not reset the UART used by the IDF for logging.
+        if (num == CONFIG_ESP_CONSOLE_UART_NUM) {
             continue;
         }
         #endif
-        if (uart_is_driver_installed(num) && !(never_reset_uart_mask & 1 << num)) {
+        if (uart_is_driver_installed(num) && !(never_reset_uart_mask & (1 << num))) {
             uart_driver_delete(num);
         }
     }
@@ -101,14 +102,14 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
 
-    if (bits > 8) {
-        mp_raise_NotImplementedError(translate("bytes > 8 bits not supported"));
-    }
+    mp_arg_validate_int_max(bits, 8, MP_QSTR_bytes);
 
     bool have_tx = tx != NULL;
     bool have_rx = rx != NULL;
     bool have_rts = rts != NULL;
     bool have_cts = cts != NULL;
+
+    uart_config_t uart_config = {0};
     bool have_rs485_dir = rs485_dir != NULL;
     if (!have_tx && !have_rx) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
@@ -136,37 +137,40 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     uart_mode_t mode = UART_MODE_UART;
-    uart_hw_flowcontrol_t flow_control = UART_HW_FLOWCTRL_DISABLE;
+    uart_config.flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
     if (have_rs485_dir) {
         mode = UART_MODE_RS485_HALF_DUPLEX;
         if (!rs485_invert) {
+            // This one is not in the set
             uart_set_line_inverse(self->uart_num, UART_SIGNAL_DTR_INV);
         }
     } else if (have_rts && have_cts) {
-        flow_control = UART_HW_FLOWCTRL_CTS_RTS;
+        uart_config.flow_ctrl = UART_HW_FLOWCTRL_CTS_RTS;
     } else if (have_rts) {
-        flow_control = UART_HW_FLOWCTRL_RTS;
+        uart_config.flow_ctrl = UART_HW_FLOWCTRL_RTS;
     } else if (have_rts) {
-        flow_control = UART_HW_FLOWCTRL_CTS;
+        uart_config.flow_ctrl = UART_HW_FLOWCTRL_CTS;
     }
 
     if (receiver_buffer_size <= UART_FIFO_LEN) {
         receiver_buffer_size = UART_FIFO_LEN + 8;
     }
 
-    uint8_t rx_threshold = UART_FIFO_LEN - 8;
+    uart_config.rx_flow_ctrl_thresh = UART_FIFO_LEN - 8;
     // Install the driver before we change the settings.
     if (uart_driver_install(self->uart_num, receiver_buffer_size, 0, 20, &self->event_queue, 0) != ESP_OK ||
         uart_set_mode(self->uart_num, mode) != ESP_OK) {
-        mp_raise_ValueError(translate("Could not initialize UART"));
+        mp_raise_RuntimeError(translate("UART init"));
     }
-    // On the debug uart, enable pattern detection to look for CTRL+C
-    #ifdef CIRCUITPY_DEBUG_UART_RX
-    if (rx == CIRCUITPY_DEBUG_UART_RX) {
-        self->is_debug = true;
+
+    // On the console uart, enable pattern detection to look for CTRL+C
+    #if CIRCUITPY_CONSOLE_UART
+    if (rx == CIRCUITPY_CONSOLE_UART_RX) {
+        self->is_console = true;
         uart_enable_pattern_det_baud_intr(self->uart_num, CHAR_CTRL_C, 1, 1, 0, 0);
     }
     #endif
+
     // Start a task to listen for uart events
     xTaskCreatePinnedToCore(
         uart_event_task,
@@ -176,55 +180,62 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         CONFIG_PTHREAD_TASK_PRIO_DEFAULT,
         &self->event_task,
         xPortGetCoreID());
-    uart_set_hw_flow_ctrl(self->uart_num, flow_control, rx_threshold);
+    // uart_set_hw_flow_ctrl(self->uart_num, uart_config.flow_control, uart_config.rx_flow_ctrl_thresh);
 
     // Set baud rate
-    common_hal_busio_uart_set_baudrate(self, baudrate);
+    // common_hal_busio_uart_set_baudrate(self, baudrate);
+    uart_config.baud_rate = baudrate;
 
-    uart_word_length_t word_length = UART_DATA_8_BITS;
+    uart_config.data_bits = UART_DATA_8_BITS;
     switch (bits) {
         // Shared bindings prevents data < 7 bits.
         // case 5:
-        //     word_length = UART_DATA_5_BITS;
+        //     uart_config.data_bits = UART_DATA_5_BITS;
         //     break;
         // case 6:
-        //     word_length = UART_DATA_6_BITS;
+        //     uart_config.data_bits = UART_DATA_6_BITS;
         //     break;
         case 7:
-            word_length = UART_DATA_7_BITS;
+            uart_config.data_bits = UART_DATA_7_BITS;
             break;
         case 8:
-            word_length = UART_DATA_8_BITS;
+            uart_config.data_bits = UART_DATA_8_BITS;
             break;
         default:
             // Won't hit this because shared-bindings limits to 7-9 bits. We error on 9 above.
             break;
     }
-    uart_set_word_length(self->uart_num, word_length);
+    // uart_set_word_length(self->uart_num, uart_config.data_bits);
 
-    uart_parity_t parity_mode = UART_PARITY_DISABLE;
+    uart_config.parity = UART_PARITY_DISABLE;
     switch (parity) {
         case BUSIO_UART_PARITY_NONE:
-            parity_mode = UART_PARITY_DISABLE;
+            uart_config.parity = UART_PARITY_DISABLE;
             break;
         case BUSIO_UART_PARITY_EVEN:
-            parity_mode = UART_PARITY_EVEN;
+            uart_config.parity = UART_PARITY_EVEN;
             break;
         case BUSIO_UART_PARITY_ODD:
-            parity_mode = UART_PARITY_ODD;
+            uart_config.parity = UART_PARITY_ODD;
             break;
         default:
             // Won't reach here because the input is an enum that is completely handled.
             break;
     }
-    uart_set_parity(self->uart_num, parity_mode);
+    // uart_set_parity(self->uart_num, uart_config.parity);
 
     // Stop is 1 or 2 always.
-    uart_stop_bits_t stop_bits = UART_STOP_BITS_1;
+    uart_config.stop_bits = UART_STOP_BITS_1;
     if (stop == 2) {
-        stop_bits = UART_STOP_BITS_2;
+        uart_config.stop_bits = UART_STOP_BITS_2;
     }
-    uart_set_stop_bits(self->uart_num, stop_bits);
+    // uart_set_stop_bits(self->uart_num, stop_bits);
+    uart_config.source_clk = UART_SCLK_APB; // guessing here...
+
+    // config all in one?
+    if (uart_param_config(self->uart_num, &uart_config) != ESP_OK) {
+        mp_raise_RuntimeError(translate("UART init"));
+    }
 
     self->tx_pin = NULL;
     self->rx_pin = NULL;
@@ -265,7 +276,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         rts_num = rs485_dir->number;
     }
     if (uart_set_pin(self->uart_num, tx_num, rx_num, rts_num, cts_num) != ESP_OK) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 }
 
@@ -376,7 +387,7 @@ uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
 void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate) {
     if (baudrate > UART_BITRATE_MAX ||
         uart_set_baudrate(self->uart_num, baudrate) != ESP_OK) {
-        mp_raise_ValueError(translate("Unsupported baudrate"));
+        mp_arg_error_invalid(MP_QSTR_baudrate);
     }
 }
 

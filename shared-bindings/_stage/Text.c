@@ -28,7 +28,7 @@
 
 #include "__init__.h"
 #include "Text.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Text:
 //|     """Keep information about a single grid of text"""

@@ -7,4 +7,4 @@ BUILD=build-arm64
 
 include mpy-cross.mk
 # Because mpy-cross.mk unconditionally overwrites CC for Darwin, we must set it BELOW the inclusion
-CC := $(shell xcrun --sdk macosx11.1 --find clang) -isysroot $(shell xcrun --sdk macosx11.1 --show-sdk-path) -target arm64-apple-macos11
+CC := $(shell xcrun --find clang) -isysroot $(shell xcrun --show-sdk-path) -target arm64-apple-macos11

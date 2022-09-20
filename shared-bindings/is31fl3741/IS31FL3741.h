@@ -46,4 +46,4 @@ void common_hal_is31fl3741_send_reset(is31fl3741_IS31FL3741_obj_t *self);
 void common_hal_is31fl3741_set_current(is31fl3741_IS31FL3741_obj_t *self, uint8_t current);
 uint8_t common_hal_is31fl3741_get_current(is31fl3741_IS31FL3741_obj_t *self);
 void common_hal_is31fl3741_set_led(is31fl3741_IS31FL3741_obj_t *self, uint16_t led, uint8_t level, uint8_t page);
-void common_hal_is31fl3741_draw_pixel(is31fl3741_IS31FL3741_obj_t *self, int16_t x, int16_t y, uint32_t color, uint16_t *mapping);
+void common_hal_is31fl3741_draw_pixel(is31fl3741_IS31FL3741_obj_t *self, int16_t x, int16_t y, uint32_t color, uint16_t *mapping, uint8_t display_height);

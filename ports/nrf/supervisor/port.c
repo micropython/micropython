@@ -246,10 +246,6 @@ void reset_port(void) {
 
     timers_reset();
 
-    #if CIRCUITPY_BLEIO
-    bleio_reset();
-    #endif
-
     #if CIRCUITPY_WATCHDOG
     watchdog_reset();
     #endif
@@ -408,9 +404,3 @@ void HardFault_Handler(void) {
         asm ("nop;");
     }
 }
-
-#if CIRCUITPY_ALARM
-// in case boards/xxx/board.c does not provide board_deinit()
-MP_WEAK void board_deinit(void) {
-}
-#endif

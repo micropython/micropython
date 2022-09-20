@@ -37,7 +37,7 @@
 #include "supervisor/serial.h"
 #include "supervisor/shared/rgb_led_colors.h"
 #include "supervisor/shared/status_leds.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 
 #define SAFE_MODE_DATA_GUARD 0xad0000af
@@ -178,7 +178,7 @@ void print_safe_mode_message(safe_mode_t reason) {
             message = translate("Boot device must be first device (interface #0).");
             break;
         case WATCHDOG_RESET:
-            message = translate("Watchdog timer expired.");
+            message = translate("Internal watchdog timer expired.");
             break;
         case NO_CIRCUITPY:
             message = translate("CIRCUITPY drive could not be found or created.");

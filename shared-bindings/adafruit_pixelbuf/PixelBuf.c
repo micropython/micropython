@@ -44,6 +44,10 @@
 #include "extmod/ulab/code/ndarray.h"
 #endif
 
+static NORETURN void invalid_byteorder(void) {
+    mp_arg_error_invalid(MP_QSTR_byteorder);
+}
+
 static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed);
 
 //| class PixelBuf:
@@ -124,7 +128,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
     size_t bo_len;
     const char *byteorder = mp_obj_str_get_data(byteorder_obj, &bo_len);
     if (bo_len < 3 || bo_len > 4) {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
+        invalid_byteorder();
     }
     parsed->order_string = byteorder_obj;
 
@@ -136,7 +140,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
     char *w = strchr(byteorder, 'W');
     int num_chars = (dotstar ? 1 : 0) + (w ? 1 : 0) + (r ? 1 : 0) + (g ? 1 : 0) + (b ? 1 : 0);
     if ((num_chars < parsed->bpp) || !(r && b && g)) {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
+        invalid_byteorder();
     }
     parsed->is_dotstar = dotstar ? true : false;
     parsed->has_white = w ? true : false;
@@ -146,10 +150,10 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
     parsed->byteorder.w = w ? w - byteorder : 0;
     // The dotstar brightness byte is always first (as it goes with the pixel start bits)
     if (dotstar && byteorder[0] != 'P') {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
+        invalid_byteorder();
     }
     if (parsed->has_white && parsed->is_dotstar) {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
+        invalid_byteorder();
     }
 }
 
@@ -161,12 +165,8 @@ STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_bpp(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_bpp_obj, pixelbuf_pixelbuf_obj_get_bpp);
 
-const mp_obj_property_t pixelbuf_pixelbuf_bpp_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_bpp_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(pixelbuf_pixelbuf_bpp_obj,
+    (mp_obj_t)&pixelbuf_pixelbuf_get_bpp_obj);
 
 
 //|     brightness: float
@@ -193,12 +193,9 @@ STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_brightness(mp_obj_t self_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_set_brightness_obj, pixelbuf_pixelbuf_obj_set_brightness);
 
-const mp_obj_property_t pixelbuf_pixelbuf_brightness_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_brightness_obj,
-              (mp_obj_t)&pixelbuf_pixelbuf_set_brightness_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(pixelbuf_pixelbuf_brightness_obj,
+    (mp_obj_t)&pixelbuf_pixelbuf_get_brightness_obj,
+    (mp_obj_t)&pixelbuf_pixelbuf_set_brightness_obj);
 
 //|     auto_write: bool
 //|     """Whether to automatically write the pixels after each update."""
@@ -215,12 +212,9 @@ STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_auto_write(mp_obj_t self_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_set_auto_write_obj, pixelbuf_pixelbuf_obj_set_auto_write);
 
-const mp_obj_property_t pixelbuf_pixelbuf_auto_write_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_auto_write_obj,
-              (mp_obj_t)&pixelbuf_pixelbuf_set_auto_write_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(pixelbuf_pixelbuf_auto_write_obj,
+    (mp_obj_t)&pixelbuf_pixelbuf_get_auto_write_obj,
+    (mp_obj_t)&pixelbuf_pixelbuf_set_auto_write_obj);
 
 //|     byteorder: str
 //|     """byteorder string for the buffer (read-only)"""
@@ -230,12 +224,8 @@ STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_byteorder(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_byteorder_str, pixelbuf_pixelbuf_obj_get_byteorder);
 
-const mp_obj_property_t pixelbuf_pixelbuf_byteorder_str = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_byteorder_str,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(pixelbuf_pixelbuf_byteorder_str,
+    (mp_obj_t)&pixelbuf_pixelbuf_get_byteorder_str);
 
 STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {

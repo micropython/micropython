@@ -35,6 +35,10 @@
 #include "shared/runtime/interrupt_char.h"
 #include "shared/readline/readline.h"
 
+#if CIRCUITPY_STATUS_BAR
+#include "supervisor/shared/status_bar.h"
+#endif
+
 #if CIRCUITPY_STORAGE
 #include "shared-module/storage/__init__.h"
 #endif
@@ -266,6 +270,11 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
         if (coding.bit_rate == 1200) {
             reset_to_bootloader();
         }
+    } else {
+        #if CIRCUITPY_STATUS_BAR
+        // We are connected, let's request a title bar update.
+        supervisor_status_bar_request_update(true);
+        #endif
     }
 }
 

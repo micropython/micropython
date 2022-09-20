@@ -36,13 +36,11 @@
 #include "py/parsenum.h"
 #include "shared-bindings/struct/__init__.h"
 #include "shared-module/struct/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """Manipulation of c-style data
 //|
-//| This module implements a subset of the corresponding CPython module,
-//| as described below. For more information, refer to the original CPython
-//| documentation: struct.
+//| |see_cpython_module| :mod:`cpython:struct`.
 //|
 //| Supported size/byte order prefixes: *@*, *<*, *>*, *!*.
 //|

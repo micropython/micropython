@@ -164,14 +164,6 @@ void board_init(void) {
         false);  // two_byte_sequence_length
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-
-}
-
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     // Pin 16 is speaker enable and it's pulled down on the board. We don't want
     // to pull it high because then we'll compete with the external pull down.
@@ -186,6 +178,10 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
             .intr_type = GPIO_INTR_DISABLE,
         };
         gpio_config(&cfg);
+        return true;
+    }
+    // Pin 4 is used for voltage monitoring, so don't reset
+    if (pin_number == 4) {
         return true;
     }
     return false;
@@ -205,3 +201,5 @@ void board_deinit(void) {
     }
     common_hal_displayio_release_displays();
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

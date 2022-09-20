@@ -33,7 +33,7 @@
 #include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Group:
 //|     """Manage a group of sprites and groups and how they are inter-related."""
@@ -57,10 +57,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t scale = args[ARG_scale].u_int;
-    if (scale < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_scale);
-    }
+    mp_int_t scale = mp_arg_validate_int_min(args[ARG_scale].u_int, 1, MP_QSTR_scale);
 
     displayio_group_t *self = m_new_obj(displayio_group_t);
     self->base.type = &displayio_group_type;
@@ -97,12 +94,9 @@ STATIC mp_obj_t displayio_group_obj_set_hidden(mp_obj_t self_in, mp_obj_t hidden
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_hidden_obj, displayio_group_obj_set_hidden);
 
-const mp_obj_property_t displayio_group_hidden_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_group_get_hidden_obj,
-              (mp_obj_t)&displayio_group_set_hidden_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_group_hidden_obj,
+    (mp_obj_t)&displayio_group_get_hidden_obj,
+    (mp_obj_t)&displayio_group_set_hidden_obj);
 
 //|     scale: int
 //|     """Scales each pixel within the Group in both directions. For example, when scale=2 each pixel
@@ -117,21 +111,16 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_group_get_scale_obj, displayio_group_obj_get
 STATIC mp_obj_t displayio_group_obj_set_scale(mp_obj_t self_in, mp_obj_t scale_obj) {
     displayio_group_t *self = native_group(self_in);
 
-    mp_int_t scale = mp_obj_get_int(scale_obj);
-    if (scale < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_scale);
-    }
+    mp_int_t scale = mp_arg_validate_int_min(mp_obj_get_int(scale_obj), 1, MP_QSTR_scale);
+
     common_hal_displayio_group_set_scale(self, scale);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_scale_obj, displayio_group_obj_set_scale);
 
-const mp_obj_property_t displayio_group_scale_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_group_get_scale_obj,
-              (mp_obj_t)&displayio_group_set_scale_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_group_scale_obj,
+    (mp_obj_t)&displayio_group_get_scale_obj,
+    (mp_obj_t)&displayio_group_set_scale_obj);
 
 //|     x: int
 //|     """X position of the Group in the parent."""
@@ -151,12 +140,9 @@ STATIC mp_obj_t displayio_group_obj_set_x(mp_obj_t self_in, mp_obj_t x_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_x_obj, displayio_group_obj_set_x);
 
-const mp_obj_property_t displayio_group_x_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_group_get_x_obj,
-              (mp_obj_t)&displayio_group_set_x_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_group_x_obj,
+    (mp_obj_t)&displayio_group_get_x_obj,
+    (mp_obj_t)&displayio_group_set_x_obj);
 
 //|     y: int
 //|     """Y position of the Group in the parent."""
@@ -176,12 +162,9 @@ STATIC mp_obj_t displayio_group_obj_set_y(mp_obj_t self_in, mp_obj_t y_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_y_obj, displayio_group_obj_set_y);
 
-const mp_obj_property_t displayio_group_y_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_group_get_y_obj,
-              (mp_obj_t)&displayio_group_set_y_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(displayio_group_y_obj,
+    (mp_obj_t)&displayio_group_get_y_obj,
+    (mp_obj_t)&displayio_group_set_y_obj);
 
 //|     def append(self, layer: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]) -> None:
 //|         """Append a layer to the group. It will be drawn above other layers."""

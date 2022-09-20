@@ -33,7 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/frequencyio/FrequencyIn.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class FrequencyIn:
 //|     """Read a frequency signal
@@ -193,12 +193,9 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_set_capture_period(mp_obj_t self_in,
 }
 MP_DEFINE_CONST_FUN_OBJ_2(frequencyio_frequency_set_capture_period_obj, frequencyio_frequencyin_obj_set_capture_period);
 
-const mp_obj_property_t frequencyio_frequencyin_capture_period_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&frequencyio_frequency_get_capture_period_obj,
-              (mp_obj_t)&frequencyio_frequency_set_capture_period_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(frequencyio_frequencyin_capture_period_obj,
+    (mp_obj_t)&frequencyio_frequency_get_capture_period_obj,
+    (mp_obj_t)&frequencyio_frequency_set_capture_period_obj);
 
 //|     def __get__(self, index: int) -> int:
 //|         """Returns the value of the last frequency captured."""
@@ -213,12 +210,8 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_get_value(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_get_value_obj, frequencyio_frequencyin_obj_get_value);
 
-const mp_obj_property_t frequencyio_frequencyin_value_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&frequencyio_frequencyin_get_value_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(frequencyio_frequencyin_value_obj,
+    (mp_obj_t)&frequencyio_frequencyin_get_value_obj);
 
 STATIC const mp_rom_map_elem_t frequencyio_frequencyin_locals_dict_table[] = {
     // Methods

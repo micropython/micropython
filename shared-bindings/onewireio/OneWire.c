@@ -42,9 +42,6 @@
 //|
 //|           :param ~microcontroller.Pin pin: Pin connected to the OneWire bus
 //|
-//|           .. note:: The OneWire class is available on `busio` and `bitbangio` in CircuitPython
-//|                     7.x for backwards compatibility but will be removed in CircuitPython 8.0.0.
-//|
 //|           Read a short series of pulses::
 //|
 //|             import onewireio

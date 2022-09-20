@@ -79,12 +79,8 @@ STATIC mp_obj_t usb_core_device_obj_get_idVendor(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_idVendor_obj, usb_core_device_obj_get_idVendor);
 
-const mp_obj_property_t usb_core_device_idVendor_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_core_device_get_idVendor_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(usb_core_device_idVendor_obj,
+    (mp_obj_t)&usb_core_device_get_idVendor_obj);
 
 //|     idProduct: int
 //|     """The USB product ID of the device"""
@@ -95,12 +91,8 @@ STATIC mp_obj_t usb_core_device_obj_get_idProduct(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_idProduct_obj, usb_core_device_obj_get_idProduct);
 
-const mp_obj_property_t usb_core_device_idProduct_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_core_device_get_idProduct_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(usb_core_device_idProduct_obj,
+    (mp_obj_t)&usb_core_device_get_idProduct_obj);
 
 //|     serial_number: str
 //|     """The USB device's serial number string."""
@@ -111,12 +103,8 @@ STATIC mp_obj_t usb_core_device_obj_get_serial_number(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_serial_number_obj, usb_core_device_obj_get_serial_number);
 
-const mp_obj_property_t usb_core_device_serial_number_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_core_device_get_serial_number_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(usb_core_device_serial_number_obj,
+    (mp_obj_t)&usb_core_device_get_serial_number_obj);
 
 //|     product: str
 //|     """The USB device's product string."""
@@ -127,12 +115,8 @@ STATIC mp_obj_t usb_core_device_obj_get_product(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_product_obj, usb_core_device_obj_get_product);
 
-const mp_obj_property_t usb_core_device_product_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_core_device_get_product_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(usb_core_device_product_obj,
+    (mp_obj_t)&usb_core_device_get_product_obj);
 
 //|     manufacturer: str
 //|     """The USB device's manufacturer string."""
@@ -143,12 +127,8 @@ STATIC mp_obj_t usb_core_device_obj_get_manufacturer(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_manufacturer_obj, usb_core_device_obj_get_manufacturer);
 
-const mp_obj_property_t usb_core_device_manufacturer_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_core_device_get_manufacturer_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(usb_core_device_manufacturer_obj,
+    (mp_obj_t)&usb_core_device_get_manufacturer_obj);
 
 //|     def write(self, endpoint: int, data: ReadableBuffer, timeout = None) -> int:
 //|         """Write data to a specific endpoint on the device.
@@ -207,7 +187,7 @@ STATIC mp_obj_t usb_core_device_read(size_t n_args, const mp_obj_t *pos_args, mp
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_read_obj, 2, usb_core_device_read);
 
 //|     def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
-//|                       data_or_wLength: array.array = None, timeout = None) -> int:
+//|                       data_or_wLength: Optional[array.array] = None, timeout = None) -> int:
 //|         """Do a control transfer on the endpoint 0. The parameters bmRequestType,
 //|            bRequest, wValue and wIndex are the same of the USB Standard Control
 //|            Request format.

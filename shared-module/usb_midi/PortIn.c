@@ -26,7 +26,7 @@
 
 #include "shared-bindings/usb_midi/PortIn.h"
 #include "shared-module/usb_midi/PortIn.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "tusb.h"
 
 size_t common_hal_usb_midi_portin_read(usb_midi_portin_obj_t *self, uint8_t *data, size_t len, int *errcode) {

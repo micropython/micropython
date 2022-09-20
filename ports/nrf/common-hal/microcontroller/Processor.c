@@ -31,7 +31,6 @@
 
 #include "common-hal/alarm/__init__.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
-#include "supervisor/shared/translate.h"
 
 #include "nrfx_saadc.h"
 #ifdef BLUETOOTH_SD
@@ -72,7 +71,7 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
 }
 
 float common_hal_mcu_processor_get_voltage(void) {
-    nrf_saadc_value_t value;
+    nrf_saadc_value_t value = -1;
 
     const nrf_saadc_channel_config_t config = {
         .resistor_p = NRF_SAADC_RESISTOR_DISABLED,

@@ -1078,6 +1078,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_PROPERTY (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether to optimize property flash storage size (requires linker script support)
+#ifndef MICROPY_PY_BUILTINS_PROPERTY
+#define MICROPY_PY_BUILTINS_PROPERTY (0)
+#endif
+
 // Whether to implement the start/stop/step attributes (readback) on
 // the "range" builtin type. Rarely used, and costs ~60 bytes (x86).
 #ifndef MICROPY_PY_BUILTINS_RANGE_ATTRS

@@ -27,7 +27,6 @@
 
 #include "py/runtime.h"
 #include "supervisor/usb.h"
-#include "supervisor/esp_port.h"
 #include "supervisor/port.h"
 #include "shared/runtime/interrupt_char.h"
 #include "shared/readline/readline.h"
