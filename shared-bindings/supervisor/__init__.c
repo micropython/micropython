@@ -348,7 +348,7 @@ STATIC mp_obj_t supervisor_set_usb_identification(size_t n_args, const mp_obj_t 
         memcpy(identification->manufacturer_name, info.buf, info.len);
         identification->manufacturer_name[info.len] = 0;
     } else {
-        memcpy(identification->manufacturer_name, USB_MANUFACTURER, sizeof(USB_MANUFACTURER));
+        strcpy(identification->manufacturer_name, USB_MANUFACTURER);
     }
 
     if (args.product.u_obj != mp_const_none) {
@@ -357,7 +357,7 @@ STATIC mp_obj_t supervisor_set_usb_identification(size_t n_args, const mp_obj_t 
         memcpy(identification->product_name, info.buf, info.len);
         identification->product_name[info.len] = 0;
     } else {
-        memcpy(identification->product_name, USB_MANUFACTURER, sizeof(USB_MANUFACTURER));
+        strcpy(identification->product_name, USB_PRODUCT);
     }
 
     return mp_const_none;

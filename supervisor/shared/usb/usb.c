@@ -143,11 +143,12 @@ void usb_get_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
     if (usb_identification_allocation) {
         memcpy(temp_storage, usb_identification_allocation->ptr, sizeof(usb_identification_t));
         free_memory(usb_identification_allocation);
+    }
     #else
     if (false) {
-        // Nothing
-        #endif
-    } else {
+    }
+    #endif
+    else {
         usb_identification_t defaults;
         // This compiles to less code than using a struct initializer.
         defaults.vid = USB_VID;
