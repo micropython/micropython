@@ -122,9 +122,13 @@ void usb_set_defaults(void) {
     #endif
 };
 
+#if CIRCUITPY_USB_IDENTIFICATION
+supervisor_allocation *usb_identification_allocation;
+#endif
+
 // Some dynamic USB data must be saved after boot.py. How much is needed?
 size_t usb_boot_py_data_size(void) {
-    size_t size = 0;
+    size_t size = sizeof(usb_identification_t);
 
     #if CIRCUITPY_USB_HID
     size += usb_hid_report_descriptor_length();
@@ -135,6 +139,28 @@ size_t usb_boot_py_data_size(void) {
 
 // Fill in the data to save.
 void usb_get_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
+    #if CIRCUITPY_USB_IDENTIFICATION
+    if (usb_identification_allocation) {
+        memcpy(temp_storage, usb_identification_allocation->ptr, sizeof(usb_identification_t));
+        free_memory(usb_identification_allocation);
+    }
+    #else
+    if (false) {
+    }
+    #endif
+    else {
+        usb_identification_t defaults;
+        // This compiles to less code than using a struct initializer.
+        defaults.vid = USB_VID;
+        defaults.pid = USB_PID;
+        strcpy(defaults.manufacturer_name, USB_MANUFACTURER);
+        strcpy(defaults.product_name, USB_PRODUCT);
+        memcpy(temp_storage, &defaults, sizeof(defaults));
+    }
+
+    temp_storage += sizeof(usb_identification_t);
+    temp_storage_size -= sizeof(usb_identification_t);
+
     #if CIRCUITPY_USB_HID
     usb_hid_build_report_descriptor(temp_storage, temp_storage_size);
     #endif
@@ -142,12 +168,18 @@ void usb_get_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
 
 // After VM is gone, save data into non-heap storage (storage_allocations).
 void usb_return_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
+    usb_identification_t identification;
+    memcpy(&identification, temp_storage, sizeof(usb_identification_t));
+
+    temp_storage += sizeof(usb_identification_t);
+    temp_storage_size -= sizeof(usb_identification_t);
+
     #if CIRCUITPY_USB_HID
     usb_hid_save_report_descriptor(temp_storage, temp_storage_size);
     #endif
 
     // Now we can also build the rest of the descriptors and place them in storage_allocations.
-    usb_build_descriptors();
+    usb_build_descriptors(&identification);
 }
 
 // Call this when ready to run code.py or a REPL, and a VM has been started.

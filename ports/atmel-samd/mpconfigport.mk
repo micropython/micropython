@@ -51,12 +51,11 @@ CIRCUITPY_ULAB = 0
 CIRCUITPY_VECTORIO = 0
 CIRCUITPY_ZLIB = 0
 
-# TODO: In CircuitPython 8.0, turn this back on, after `busio.OneWire` is removed.
-# We'd like a smoother transition, but we can't afford the space to have both
-# `busio.OneWire` and `onewireio.OneWire` present on these tiny builds.
+# Turn off a few more things that don't fit in 192kB
 
 ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
 CIRCUITPY_ONEWIREIO ?= 0
+CIRCUITPY_USB_IDENTIFICATION ?= 0
 endif
 
 MICROPY_PY_ASYNC_AWAIT = 0

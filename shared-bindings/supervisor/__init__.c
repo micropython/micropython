@@ -39,6 +39,10 @@
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/workflow.h"
 
+#if CIRCUITPY_USB_IDENTIFICATION
+#include "supervisor/usb.h"
+#endif
+
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/time/__init__.h"
@@ -298,6 +302,71 @@ STATIC mp_obj_t supervisor_reset_terminal(mp_obj_t x_pixels, mp_obj_t y_pixels) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(supervisor_reset_terminal_obj, supervisor_reset_terminal);
 
+//| def set_usb_identification(manufacturer: Optional[str] = None, product: Optional[str] = None, vid: int = -1, pid: int = -1) -> None:
+//|     """Override identification constants in the USB Device Descriptor.
+//|
+//|     If passed, `manufacturer` and `product` must be ASCII strings (or buffers) of at most 126
+//|     characters. Any omitted arguments will be left at their default values.
+//|
+//|     This method must be called in boot.py to have any effect.
+
+//|     Not available on boards without native USB support.
+//|     """
+//|     ...
+//|
+STATIC mp_obj_t supervisor_set_usb_identification(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    #if CIRCUITPY_USB_IDENTIFICATION
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_manufacturer, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_product, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_vid, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_pid, MP_ARG_INT, {.u_int = -1} },
+    };
+    struct {
+        mp_arg_val_t manufacturer;
+        mp_arg_val_t product;
+        mp_arg_val_t vid;
+        mp_arg_val_t pid;
+    } args;
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
+
+    if (!usb_identification_allocation) {
+        usb_identification_allocation = allocate_memory(sizeof(usb_identification_t), false, true);
+    }
+    usb_identification_t *identification = (usb_identification_t *)usb_identification_allocation->ptr;
+
+    mp_arg_validate_int_range(args.vid.u_int, -1, (1 << 16) - 1, MP_QSTR_vid);
+    mp_arg_validate_int_range(args.pid.u_int, -1, (1 << 16) - 1, MP_QSTR_pid);
+
+    identification->vid = args.vid.u_int > -1 ? args.vid.u_int : USB_VID;
+    identification->pid = args.pid.u_int > -1 ? args.pid.u_int : USB_PID;
+
+    mp_buffer_info_t info;
+    if (args.manufacturer.u_obj != mp_const_none) {
+        mp_get_buffer_raise(args.manufacturer.u_obj, &info, MP_BUFFER_READ);
+        mp_arg_validate_length_range(info.len, 0, 126, MP_QSTR_manufacturer);
+        memcpy(identification->manufacturer_name, info.buf, info.len);
+        identification->manufacturer_name[info.len] = 0;
+    } else {
+        strcpy(identification->manufacturer_name, USB_MANUFACTURER);
+    }
+
+    if (args.product.u_obj != mp_const_none) {
+        mp_get_buffer_raise(args.product.u_obj, &info, MP_BUFFER_READ);
+        mp_arg_validate_length_range(info.len, 0, 126, MP_QSTR_product);
+        memcpy(identification->product_name, info.buf, info.len);
+        identification->product_name[info.len] = 0;
+    } else {
+        strcpy(identification->product_name, USB_PRODUCT);
+    }
+
+    return mp_const_none;
+    #else
+    mp_raise_NotImplementedError(NULL);
+    #endif
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(supervisor_set_usb_identification_obj, 0, supervisor_set_usb_identification);
+
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
     { MP_ROM_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&supervisor_set_rgb_status_brightness_obj) },
@@ -310,6 +379,7 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_previous_traceback),  MP_ROM_PTR(&supervisor_get_previous_traceback_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_ble_workflow),  MP_ROM_PTR(&supervisor_disable_ble_workflow_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_terminal),  MP_ROM_PTR(&supervisor_reset_terminal_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_usb_identification),  MP_ROM_PTR(&supervisor_set_usb_identification_obj) },
     { MP_ROM_QSTR(MP_QSTR_status_bar),  MP_ROM_PTR(&shared_module_supervisor_status_bar_obj) },
 };
 
