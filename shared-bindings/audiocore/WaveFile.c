@@ -60,8 +60,7 @@
 //|           speaker_enable = digitalio.DigitalInOut(board.SPEAKER_ENABLE)
 //|           speaker_enable.switch_to_output(value=True)
 //|
-//|           wav = audiocore.WaveFile("cplay-5.1-16bit-16khz.wav")  # preferred use
-//|           # wav = audiocore.WaveFile(open("cplay-5.1-16bit-16khz.wav", "rb"))
+//|           wav = audiocore.WaveFile("cplay-5.1-16bit-16khz.wav")
 //|           a = audioio.AudioOut(board.A0)
 //|
 //|           print("playing")

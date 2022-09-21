@@ -77,8 +77,7 @@
 //|           speaker_enable = digitalio.DigitalInOut(board.SPEAKER_ENABLE)
 //|           speaker_enable.switch_to_output(value=True)
 //|
-//|           mp3 = audiomp3.MP3Decoder("cplay-16bit-16khz-64kbps.mp3")  # preferred use
-//|           # mp3 = audiomp3.MP3Decoder(open("cplay-16bit-16khz-64kbps.mp3", "rb"))
+//|           mp3 = audiomp3.MP3Decoder("cplay-16bit-16khz-64kbps.mp3")
 //|           a = audioio.AudioOut(board.A0)
 //|
 //|           print("playing")
