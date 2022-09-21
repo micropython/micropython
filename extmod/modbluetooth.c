@@ -52,6 +52,9 @@
 #error pairing and bonding require synchronous modbluetooth events
 #endif
 
+// NimBLE can have fragmented data for GATTC events, so requires reassembly.
+#define MICROPY_PY_BLUETOOTH_USE_GATTC_EVENT_DATA_REASSEMBLY MICROPY_BLUETOOTH_NIMBLE
+
 #define MP_BLUETOOTH_CONNECT_DEFAULT_SCAN_DURATION_MS 2000
 
 #define MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN 5
@@ -1168,6 +1171,34 @@ STATIC mp_obj_t invoke_irq_handler_run(uint16_t event,
         data_tuple->items[data_tuple->len++] = MP_OBJ_FROM_PTR(uuid);
     }
     #endif
+
+    #if MICROPY_PY_BLUETOOTH_USE_GATTC_EVENT_DATA_REASSEMBLY
+    void *buf_to_free = NULL;
+    uint16_t buf_to_free_len = 0;
+    if (event == MP_BLUETOOTH_IRQ_GATTC_NOTIFY || event == MP_BLUETOOTH_IRQ_GATTC_INDICATE || event == MP_BLUETOOTH_IRQ_GATTC_READ_RESULT) {
+        if (n_data > 1) {
+            // Fragmented buffer, need to combine into a new heap-allocated buffer
+            // in order to pass to Python.
+            // Only gattc_on_data_available calls this code, so data and data_len are writable.
+            uint16_t total_len = 0;
+            for (size_t i = 0; i < n_data; ++i) {
+                total_len += data_len[i];
+            }
+            uint8_t *buf = m_new(uint8_t, total_len);
+            uint8_t *p = buf;
+            for (size_t i = 0; i < n_data; ++i) {
+                memcpy(p, data[i], data_len[i]);
+                p += data_len[i];
+            }
+            data[0] = buf;
+            data_len[0] = total_len;
+            n_data = 1;
+            buf_to_free = buf;
+            buf_to_free_len = total_len;
+        }
+    }
+    #endif
+
     for (size_t i = 0; i < n_data; ++i) {
         if (data[i]) {
             mp_obj_memoryview_init(&mv_data[i], 'B', 0, data_len[i], (void *)data[i]);
@@ -1176,9 +1207,16 @@ STATIC mp_obj_t invoke_irq_handler_run(uint16_t event,
             data_tuple->items[data_tuple->len++] = mp_const_none;
         }
     }
+
     assert(data_tuple->len <= MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN);
 
     mp_obj_t result = mp_call_function_2(o->irq_handler, MP_OBJ_NEW_SMALL_INT(event), MP_OBJ_FROM_PTR(data_tuple));
+
+    #if MICROPY_PY_BLUETOOTH_USE_GATTC_EVENT_DATA_REASSEMBLY
+    if (buf_to_free != NULL) {
+        m_del(uint8_t, (uint8_t *)buf_to_free, buf_to_free_len);
+    }
+    #endif
 
     mp_local_free(data_tuple);
 
@@ -1393,35 +1431,8 @@ void mp_bluetooth_gattc_on_discover_complete(uint8_t event, uint16_t conn_handle
 }
 
 void mp_bluetooth_gattc_on_data_available(uint8_t event, uint16_t conn_handle, uint16_t value_handle, const uint8_t **data, uint16_t *data_len, size_t num) {
-    const uint8_t *combined_data;
-    uint16_t total_len;
-
-    if (num > 1) {
-        // Fragmented buffer, need to combine into a new heap-allocated buffer
-        // in order to pass to Python.
-        total_len = 0;
-        for (size_t i = 0; i < num; ++i) {
-            total_len += data_len[i];
-        }
-        uint8_t *buf = m_new(uint8_t, total_len);
-        uint8_t *p = buf;
-        for (size_t i = 0; i < num; ++i) {
-            memcpy(p, data[i], data_len[i]);
-            p += data_len[i];
-        }
-        combined_data = buf;
-    } else {
-        // Single buffer, use directly.
-        combined_data = *data;
-        total_len = *data_len;
-    }
-
     mp_int_t args[] = {conn_handle, value_handle};
-    invoke_irq_handler(event, args, 2, 0, NULL_ADDR, NULL_UUID, &combined_data, &total_len, 1);
-
-    if (num > 1) {
-        m_del(uint8_t, (uint8_t *)combined_data, total_len);
-    }
+    invoke_irq_handler(event, args, 2, 0, NULL_ADDR, NULL_UUID, data, data_len, num);
 }
 
 void mp_bluetooth_gattc_on_read_write_status(uint8_t event, uint16_t conn_handle, uint16_t value_handle, uint16_t status) {
