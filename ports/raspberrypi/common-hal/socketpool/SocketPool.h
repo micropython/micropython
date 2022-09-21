@@ -31,3 +31,5 @@
 typedef struct {
     mp_obj_base_t base;
 } socketpool_socketpool_obj_t;
+
+int socketpool_resolve_host(socketpool_socketpool_obj_t *self, const char *host, ip_addr_t *addr);

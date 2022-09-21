@@ -57,8 +57,7 @@ STATIC void lwip_getaddrinfo_cb(const char *name, const ip_addr_t *ipaddr, void 
     }
 }
 
-mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
-    const char *host) {
+int socketpool_resolve_host(socketpool_socketpool_obj_t *self, const char *host, ip_addr_t *addr) {
 
     getaddrinfo_state_t state;
     state.status = 0;
@@ -85,13 +84,27 @@ mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_ob
     }
 
     if (state.status < 0) {
+        return state.status;
         // TODO: CPython raises gaierror, we raise with native lwIP negative error
         // values, to differentiate from normal errno's at least in such way.
         mp_raise_OSError(state.status);
     }
 
+    *addr = state.ipaddr;
+    return 0;
+}
+
+mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
+    const char *host) {
+
+    ip_addr_t addr;
+    int result = socketpool_resolve_host(self, host, &addr);
+    if (result < 0) {
+        mp_raise_OSError(-result);
+    }
+
     char ip_str[IP4ADDR_STRLEN_MAX];
-    inet_ntoa_r(state.ipaddr, ip_str, IP4ADDR_STRLEN_MAX);
+    inet_ntoa_r(addr, ip_str, IP4ADDR_STRLEN_MAX);
     mp_obj_t ip_obj = mp_obj_new_str(ip_str, strlen(ip_str));
     return ip_obj;
 }

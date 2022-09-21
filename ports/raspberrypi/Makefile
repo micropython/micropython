@@ -59,18 +59,14 @@ HAL_DIR=hal/$(MCU_SERIES)
 
 ifeq ($(CIRCUITPY_CYW43),1)
 INC_CYW43 := \
-	-isystem sdk/lib/cyw43-driver/firmware \
-	-isystem sdk/lib/cyw43-driver/src \
-	-isystem sdk/lib/lwip/src/include \
+	-isystem lib/cyw43-driver/firmware \
+	-isystem lib/cyw43-driver/src \
+	-isystem lib/lwip/src/include \
 	-isystem sdk/src/rp2_common/pico_cyw43_arch/include/ \
 	-isystem sdk/src/rp2_common/pico_lwip/include/ \
 
-CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25
+CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25 -DCYW43_LOGIC_DEBUG=0
 SRC_SDK_CYW43 := \
-	lib/cyw43-driver/src/cyw43_ctrl.c \
-	lib/cyw43-driver/src/cyw43_ll.c \
-	lib/cyw43-driver/src/cyw43_lwip.c \
-	lib/cyw43-driver/src/cyw43_stats.c \
 	src/common/pico_sync/sem.c \
 	src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.c \
 	src/rp2_common/pico_cyw43_arch/cyw43_arch.c \
@@ -80,19 +76,24 @@ SRC_SDK_CYW43 := \
 
 SRC_LWIP := \
 	shared/netutils/netutils.c \
-	$(wildcard sdk/lib/lwip/src/core/*.c) \
-	$(wildcard sdk/lib/lwip/src/core/ipv4/*.c) \
-	sdk/lib/lwip/src/netif/ethernet.c \
+	$(wildcard lib/lwip/src/core/*.c) \
+	$(wildcard lib/lwip/src/core/ipv4/*.c) \
+	lib/lwip/src/netif/ethernet.c \
 	$(wildcard lwip_src/*.c) \
 
-SRC_CYW43 := $(wildcard bindings/cyw43/*.c)
+SRC_CYW43 := \
+	$(wildcard bindings/cyw43/*.c) \
+	lib/cyw43-driver/src/cyw43_stats.c \
+	lib/cyw43-driver/src/cyw43_ctrl.c \
+	lib/cyw43-driver/src/cyw43_ll.c \
+	lib/cyw43-driver/src/cyw43_lwip.c \
 
-PIOASM = $(BUILD)/sdk/pioasm/pioasm
+PIOASM = $(BUILD)/pioasm/pioasm/pioasm
 .PHONY: PioasmBuild
 PioasmBuild: $(PIOASM)
 $(PIOASM):
-	$(Q)cmake -S sdk -B $(BUILD)/sdk
-	$(Q)make -C $(BUILD)/sdk PioasmBuild
+	$(Q)cmake -S pioasm -B $(BUILD)/pioasm
+	$(Q)$(MAKE) -C $(BUILD)/pioasm PioasmBuild
 
 $(BUILD)/cyw43_bus_pio_spi.pio.h: sdk/src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.pio $(PIOASM)
 	$(Q)$(PIOASM) -o c-sdk $< $@
@@ -100,13 +101,13 @@ $(BUILD)/sdk/src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.o: $(BUILD)/cyw43_bus
 
 CYW43_FIRMWARE_BIN = 43439A0-7.95.49.00.combined
 
-$(BUILD)/cyw43_resource.o: sdk/lib/cyw43-driver/firmware/$(CYW43_FIRMWARE_BIN)
+$(BUILD)/cyw43_resource.o: lib/cyw43-driver/firmware/$(CYW43_FIRMWARE_BIN)
 	$(Q)$(OBJCOPY) -I binary -O elf32-littlearm -B arm \
 		--readonly-text \
 		--rename-section .data=.big_const,contents,alloc,load,readonly,data \
-		--redefine-sym _binary_sdk_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_start=fw_43439A0_7_95_49_00_start \
-		--redefine-sym _binary_sdk_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_size=fw_43439A0_7_95_49_00_size \
-		--redefine-sym _binary_sdk_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_end=fw_43439A0_7_95_49_00_end \
+		--redefine-sym _binary_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_start=fw_43439A0_7_95_49_00_start \
+		--redefine-sym _binary_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_size=fw_43439A0_7_95_49_00_size \
+		--redefine-sym _binary_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_end=fw_43439A0_7_95_49_00_end \
 		$< $@
 OBJ_CYW43 := $(BUILD)/cyw43_resource.o
 # need to do the equivalent of this in cmake
@@ -270,7 +271,7 @@ SRC_SDK := \
 	$(SRC_SDK_CYW43) \
 
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
-$(patsubst %.c,$(BUILD)/%.o,$(SRC_SDK)): CFLAGS += -Wno-missing-prototypes -Wno-undef
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_SDK) $(SRC_CYW43)): CFLAGS += -Wno-missing-prototypes -Wno-undef
 
 SRC_C += \
 	boards/$(BOARD)/board.c \

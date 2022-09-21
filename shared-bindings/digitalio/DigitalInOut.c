@@ -158,10 +158,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_output(size_t n_args, const mp_
         drive_mode = DRIVE_MODE_OPEN_DRAIN;
     }
     // do the transfer
-    digitalinout_result_t result = common_hal_digitalio_digitalinout_switch_to_output(self, args[ARG_value].u_bool, drive_mode);
-    if (result == DIGITALINOUT_INPUT_ONLY) {
-        mp_raise_NotImplementedError(translate("Pin is input only"));
-    }
+    check_result(common_hal_digitalio_digitalinout_switch_to_output(self, args[ARG_value].u_bool, drive_mode));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(digitalio_digitalinout_switch_to_output_obj, 1, digitalio_digitalinout_switch_to_output);
@@ -229,10 +226,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_direction(mp_obj_t self_in, mp_ob
     if (value == MP_ROM_PTR(&digitalio_direction_input_obj)) {
         check_result(common_hal_digitalio_digitalinout_switch_to_input(self, PULL_NONE));
     } else if (value == MP_ROM_PTR(&digitalio_direction_output_obj)) {
-        digitalinout_result_t result = common_hal_digitalio_digitalinout_switch_to_output(self, false, DRIVE_MODE_PUSH_PULL);
-        if (result == DIGITALINOUT_INPUT_ONLY) {
-            mp_raise_NotImplementedError(translate("Pin is input only"));
-        }
+        check_result(common_hal_digitalio_digitalinout_switch_to_output(self, false, DRIVE_MODE_PUSH_PULL));
     } else {
         mp_arg_error_invalid(MP_QSTR_direction);
     }
