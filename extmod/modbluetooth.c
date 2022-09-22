@@ -1139,7 +1139,7 @@ STATIC mp_obj_t invoke_irq_handler_run(uint16_t event,
     const mp_int_t *numeric, size_t n_unsigned, size_t n_signed,
     const uint8_t *addr,
     const mp_obj_bluetooth_uuid_t *uuid,
-    const uint8_t **data, size_t *data_len, size_t n_data) {
+    const uint8_t **data, uint16_t *data_len, size_t n_data) {
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     if (o->irq_handler == mp_const_none) {
         return mp_const_none;
@@ -1199,7 +1199,7 @@ STATIC mp_obj_t invoke_irq_handler(uint16_t event,
     const mp_int_t *numeric, size_t n_unsigned, size_t n_signed,
     const uint8_t *addr,
     const mp_obj_bluetooth_uuid_t *uuid,
-    const uint8_t **data, size_t *data_len, size_t n_data) {
+    const uint8_t **data, uint16_t *data_len, size_t n_data) {
 
     // This code may run on an existing MicroPython thread, or a non-MicroPython thread
     // that's not using the mp_thread_get_state() value.  In the former case the state
@@ -1249,7 +1249,7 @@ STATIC mp_obj_t invoke_irq_handler(uint16_t event,
     const mp_int_t *numeric, size_t n_unsigned, size_t n_signed,
     const uint8_t *addr,
     const mp_obj_bluetooth_uuid_t *uuid,
-    const uint8_t **data, size_t *data_len, size_t n_data) {
+    const uint8_t **data, uint16_t *data_len, size_t n_data) {
     return invoke_irq_handler_run(event, numeric, n_unsigned, n_signed, addr, uuid, data, data_len, n_data);
 }
 
@@ -1277,7 +1277,7 @@ void mp_bluetooth_gatts_on_encryption_update(uint16_t conn_handle, bool encrypte
     invoke_irq_handler(MP_BLUETOOTH_IRQ_ENCRYPTION_UPDATE, args, 5, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
 }
 
-bool mp_bluetooth_gap_on_get_secret(uint8_t type, uint8_t index, const uint8_t *key, size_t key_len, const uint8_t **value, size_t *value_len) {
+bool mp_bluetooth_gap_on_get_secret(uint8_t type, uint8_t index, const uint8_t *key, uint16_t key_len, const uint8_t **value, size_t *value_len) {
     mp_int_t args[] = {type, index};
     mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_GET_SECRET, args, 2, 0, NULL_ADDR, NULL_UUID, &key, &key_len, 1);
     if (result == mp_const_none) {
@@ -1293,7 +1293,7 @@ bool mp_bluetooth_gap_on_get_secret(uint8_t type, uint8_t index, const uint8_t *
 bool mp_bluetooth_gap_on_set_secret(uint8_t type, const uint8_t *key, size_t key_len, const uint8_t *value, size_t value_len) {
     mp_int_t args[] = { type };
     const uint8_t *data[] = {key, value};
-    size_t data_len[] = {key_len, value_len};
+    uint16_t data_len[] = {key_len, value_len};
     mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_SET_SECRET, args, 1, 0, NULL_ADDR, NULL_UUID, data, data_len, 2);
     return mp_obj_is_true(result);
 }
@@ -1364,7 +1364,7 @@ void mp_bluetooth_gap_on_scan_complete(void) {
     invoke_irq_handler(MP_BLUETOOTH_IRQ_SCAN_DONE, NULL_NUMERIC, 0, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
 }
 
-void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uint8_t adv_type, const int8_t rssi, const uint8_t *data, size_t data_len) {
+void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uint8_t adv_type, const int8_t rssi, const uint8_t *data, uint16_t data_len) {
     mp_int_t args[] = {addr_type, adv_type, rssi};
     invoke_irq_handler(MP_BLUETOOTH_IRQ_SCAN_RESULT, args, 1, 2, addr, NULL_UUID, &data, &data_len, 1);
 }
@@ -1394,7 +1394,7 @@ void mp_bluetooth_gattc_on_discover_complete(uint8_t event, uint16_t conn_handle
 
 void mp_bluetooth_gattc_on_data_available(uint8_t event, uint16_t conn_handle, uint16_t value_handle, const uint8_t **data, uint16_t *data_len, size_t num) {
     const uint8_t *combined_data;
-    size_t total_len;
+    uint16_t total_len;
 
     if (num > 1) {
         // Fragmented buffer, need to combine into a new heap-allocated buffer
@@ -1553,7 +1553,7 @@ void mp_bluetooth_gap_on_scan_complete(void) {
     schedule_ringbuf(atomic_state);
 }
 
-void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uint8_t adv_type, const int8_t rssi, const uint8_t *data, size_t data_len) {
+void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uint8_t adv_type, const int8_t rssi, const uint8_t *data, uint16_t data_len) {
     MICROPY_PY_BLUETOOTH_ENTER
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     data_len = MIN(o->irq_data_data_alloc, data_len);
