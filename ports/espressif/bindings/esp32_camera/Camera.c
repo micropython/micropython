@@ -125,7 +125,7 @@ STATIC mp_obj_t esp32_camera_camera_make_new(const mp_obj_type_t *type, size_t n
     const mcu_pin_obj_t *pixel_clock_pin = validate_obj_is_free_pin(args[ARG_pixel_clock_pin].u_obj);
     const mcu_pin_obj_t *vsync_pin = validate_obj_is_free_pin(args[ARG_vsync_pin].u_obj);
     const mcu_pin_obj_t *href_pin = validate_obj_is_free_pin(args[ARG_href_pin].u_obj);
-    const busio_i2c_obj_t *i2c = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c));
+    busio_i2c_obj_t *i2c = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c));
     const mcu_pin_obj_t *external_clock_pin = validate_obj_is_free_pin(args[ARG_external_clock_pin].u_obj);
     const mcu_pin_obj_t *powerdown_pin = validate_obj_is_free_pin_or_none(args[ARG_powerdown_pin].u_obj);
     const mcu_pin_obj_t *reset_pin = validate_obj_is_free_pin_or_none(args[ARG_reset_pin].u_obj);
