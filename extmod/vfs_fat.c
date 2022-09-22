@@ -422,12 +422,15 @@ STATIC mp_obj_t vfs_fat_utime(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t times_
         mp_raise_type_arg(&mp_type_TypeError, times_in);
     }
 
-    mp_obj_t *times;
-    mp_obj_get_array_fixed_n(times_in, 2, &times);
-    const int atime = mp_obj_get_int(times[0]);
-    const int mtime = mp_obj_get_int(times[1]);
+    mp_obj_t *otimes;
+    mp_obj_get_array_fixed_n(times_in, 2, &otimes);
+
+    // Validate that both elements of the tuple are int and discard the second one
+    int time[2];
+    time[0] = mp_obj_get_int(otimes[0]);
+    time[1] = mp_obj_get_int(otimes[1]);
     timeutils_struct_time_t tm;
-    timeutils_seconds_since_epoch_to_struct_time(atime, &tm);
+    timeutils_seconds_since_epoch_to_struct_time(time[0], &tm);
 
     FILINFO fno;
     fno.fdate = (WORD)(((tm.tm_year - 1980) * 512U) | tm.tm_mon * 32U | tm.tm_mday);
