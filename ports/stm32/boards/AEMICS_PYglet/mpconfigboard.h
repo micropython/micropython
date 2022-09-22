@@ -96,7 +96,7 @@ extern struct _spi_bdev_t spi_bdev;
 #endif
 
 // USRSW has pullup, pressing the switch makes the input go low
-#define MICROPY_HW_USRSW_PIN        (pin_B8)
+#define MICROPY_HW_USRSW_PIN        (pin_B9)
 #define MICROPY_HW_USRSW_PULL       (GPIO_PULLDOWN)
 #define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_RISING)
 #define MICROPY_HW_USRSW_PRESSED    (1)
