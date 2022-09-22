@@ -247,13 +247,13 @@ STATIC mp_obj_t os_urandom(mp_obj_t size_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
-//| def utime(path: str, time: int) -> None:
+//| def utime(path: str, times: Tuple[int, int]) -> None:
 //|     """Change the timestamp of a file."""
 //|     ...
 //|
-STATIC mp_obj_t os_utime(mp_obj_t path_in, mp_obj_t time_in) {
+STATIC mp_obj_t os_utime(mp_obj_t path_in, mp_obj_t times_in) {
     const char *path = mp_obj_str_get_str(path_in);
-    common_hal_os_utime(path, time_in);
+    common_hal_os_utime(path, times_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(os_utime_obj, os_utime);

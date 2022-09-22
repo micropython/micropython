@@ -415,18 +415,23 @@ STATIC mp_obj_t vfs_fat_umount(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_umount_obj, vfs_fat_umount);
 
-STATIC mp_obj_t vfs_fat_utime(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t time_in) {
+STATIC mp_obj_t vfs_fat_utime(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t times_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path = mp_obj_str_get_str(path_in);
-    const int time = mp_obj_get_int(time_in);
+    if (!mp_obj_is_tuple_compatible(times_in)) {
+        mp_raise_type_arg(&mp_type_TypeError, times_in);
+    }
 
+    mp_obj_t *times;
+    mp_obj_get_array_fixed_n(times_in, 2, &times);
+    const int atime = mp_obj_get_int(times[0]);
+    const int mtime = mp_obj_get_int(times[1]);
     timeutils_struct_time_t tm;
-    timeutils_seconds_since_epoch_to_struct_time(time, &tm);
+    timeutils_seconds_since_epoch_to_struct_time(atime, &tm);
 
     FILINFO fno;
     fno.fdate = (WORD)(((tm.tm_year - 1980) * 512U) | tm.tm_mon * 32U | tm.tm_mday);
     fno.ftime = (WORD)(tm.tm_hour * 2048U | tm.tm_min * 32U | tm.tm_sec / 2U);
-
     FRESULT res = f_utime(&self->fatfs, path, &fno);
     if (res != FR_OK) {
         mp_raise_OSError_fresult(res);
