@@ -1143,10 +1143,6 @@ STATIC mp_obj_t invoke_irq_handler_run(uint16_t event,
     const uint8_t *addr,
     const mp_obj_bluetooth_uuid_t *uuid,
     const uint8_t **data, uint16_t *data_len, size_t n_data) {
-    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
-    if (o->irq_handler == mp_const_none) {
-        return mp_const_none;
-    }
 
     mp_obj_array_t mv_addr;
     mp_obj_array_t mv_data[2];
@@ -1210,6 +1206,7 @@ STATIC mp_obj_t invoke_irq_handler_run(uint16_t event,
 
     assert(data_tuple->len <= MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN);
 
+    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     mp_obj_t result = mp_call_function_2(o->irq_handler, MP_OBJ_NEW_SMALL_INT(event), MP_OBJ_FROM_PTR(data_tuple));
 
     #if MICROPY_PY_BLUETOOTH_USE_GATTC_EVENT_DATA_REASSEMBLY
@@ -1219,6 +1216,34 @@ STATIC mp_obj_t invoke_irq_handler_run(uint16_t event,
     #endif
 
     mp_local_free(data_tuple);
+
+    return result;
+}
+
+STATIC mp_obj_t invoke_irq_handler_run_protected(uint16_t event,
+    const mp_int_t *numeric, size_t n_unsigned, size_t n_signed,
+    const uint8_t *addr,
+    const mp_obj_bluetooth_uuid_t *uuid,
+    const uint8_t **data, uint16_t *data_len, size_t n_data) {
+
+    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
+    if (o->irq_handler == mp_const_none) {
+        return mp_const_none;
+    }
+
+    mp_obj_t result = mp_const_none;
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        result = invoke_irq_handler_run(event, numeric, n_unsigned, n_signed, addr, uuid, data, data_len, n_data);
+        nlr_pop();
+    } else {
+        // Uncaught exception, print it out.
+        mp_printf(MICROPY_ERROR_PRINTER, "Unhandled exception in IRQ callback handler\n");
+        mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
+
+        // Disable the BLE IRQ handler.
+        o->irq_handler = mp_const_none;
+    }
 
     return result;
 }
@@ -1256,19 +1281,9 @@ STATIC mp_obj_t invoke_irq_handler(uint16_t event,
         MP_THREAD_GIL_ENTER();
     }
 
-    mp_obj_t result = mp_const_none;
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_sched_lock();
-        result = invoke_irq_handler_run(event, numeric, n_unsigned, n_signed, addr, uuid, data, data_len, n_data);
-        mp_sched_unlock();
-        nlr_pop();
-    } else {
-        // Uncaught exception, print it out.
-        mp_sched_unlock();
-        mp_printf(MICROPY_ERROR_PRINTER, "Unhandled exception in IRQ callback handler\n");
-        mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
-    }
+    mp_sched_lock();
+    mp_obj_t result = invoke_irq_handler_run_protected(event, numeric, n_unsigned, n_signed, addr, uuid, data, data_len, n_data);
+    mp_sched_unlock();
 
     if (ts_orig == NULL) {
         MP_THREAD_GIL_EXIT();
@@ -1288,7 +1303,7 @@ STATIC mp_obj_t invoke_irq_handler(uint16_t event,
     const uint8_t *addr,
     const mp_obj_bluetooth_uuid_t *uuid,
     const uint8_t **data, uint16_t *data_len, size_t n_data) {
-    return invoke_irq_handler_run(event, numeric, n_unsigned, n_signed, addr, uuid, data, data_len, n_data);
+    return invoke_irq_handler_run_protected(event, numeric, n_unsigned, n_signed, addr, uuid, data, data_len, n_data);
 }
 
 #endif
