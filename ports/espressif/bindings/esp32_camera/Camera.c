@@ -46,9 +46,9 @@
 //|         self,
 //|         *,
 //|         data_pins: List[microcontroller.Pin],
-//|         pixel_clock: microcontroller.Pin,
-//|         vsync: microcontroller.Pin,
-//|         href: microcontroller.Pin,
+//|         pixel_clock_pin: microcontroller.Pin,
+//|         vsync_pin: microcontroller.Pin,
+//|         href_pin: microcontroller.Pin,
 //|         i2c: busio.I2C,
 //|         external_clock_pin: microcontroller.Pin,
 //|         external_clock_frequency: int,
@@ -79,12 +79,12 @@
 //|             that case.
 //|
 //|         :param data_pins: The 8 data data_pins used for image data transfer from the camera module, least significant bit first
-//|         :param pixel_clock: The pixel clock output from the camera module
-//|         :param vsync: The vertical sync pulse output from the camera module
-//|         :param href: The horizontal reference output from the camera module
+//|         :param pixel_clock_pin: The pixel clock output from the camera module
+//|         :param vsync_pin: The vertical sync pulse output from the camera module
+//|         :param href_pin: The horizontal reference output from the camera module
 //|         :param i2c: The I2C bus connected to the camera module
-//|         :param external_clock_frequency: The frequency generated on the external clock pin
 //|         :param external_clock_pin: The pin on which to generate the external clock
+//|         :param external_clock_frequency: The frequency generated on the external clock pin
 //|         :param powerdown_pin: The powerdown input to the camera module
 //|         :param reset_pin: The reset input to the camera module
 //|         :param pixel_format: The pixel format of the captured image
