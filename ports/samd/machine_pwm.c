@@ -40,39 +40,65 @@ typedef struct _machine_pwm_obj_t {
     mp_obj_base_t base;
     Tcc *instance;
     uint8_t pin_id;
+    uint8_t alt_fct;
     uint8_t device;
     uint8_t channel;
     uint8_t output;
     uint16_t prescaler;
     uint32_t period;  // full period count ticks
-    uint32_t duty;
 } machine_pwm_obj_t;
 
 #define PWM_NOT_INIT    (0)
-#define PWM_INIT_CLK    (1)
-#define PWM_ENABLE_TCC  (2)
+#define PWM_CLK_READY   (1)
+#define PWM_TCC_ENABLED (2)
 #define PWM_MASTER_CLK  (get_peripheral_freq())
 #define PWM_FULL_SCALE  (65536)
 
 static Tcc *tcc_instance[] = TCC_INSTS;
 
 #if defined(MCU_SAMD21)
+
 static const int tcc_gclk_id[] = {
     GCLK_CLKCTRL_ID_TCC0_TCC1, GCLK_CLKCTRL_ID_TCC0_TCC1, GCLK_CLKCTRL_ID_TCC2_TC3
 };
 const uint8_t tcc_channel_count[] = {4, 2, 2};
+const static uint8_t tcc_channel_offset[] = {0, 4, 6};
+static uint32_t pwm_duty_values[8];
+
+#define PERBUF      PERB
+#define CCBUF       CCB
+
 #elif defined(MCU_SAMD51)
+
 static const int tcc_gclk_id[] = {
     TCC0_GCLK_ID, TCC1_GCLK_ID, TCC2_GCLK_ID,
-    #if defined(TCC4_GCLK_ID)
+    #if TCC_INST_NUM > 3
     TCC3_GCLK_ID, TCC4_GCLK_ID
     #endif
 };
+
+#if TCC_INST_NUM > 3
 const uint8_t tcc_channel_count[] = {6, 4, 3, 2, 2};
-#endif
+const static uint8_t tcc_channel_offset[] = {0, 6, 10, 13, 15};
+static uint32_t pwm_duty_values[17];
+#else
+const uint8_t tcc_channel_count[] = {6, 4, 3};
+const static uint8_t tcc_channel_offset[] = {0, 6, 10};
+static uint32_t pwm_duty_values[13];
+#endif // TCC_INST_NUM > 3
+
+#endif // defined(MCU_SAMD51)
+
+#define put_duty_value(device, channel, duty) \
+    pwm_duty_values[tcc_channel_offset[device] + channel] = duty;
+
+#define get_duty_value(device, channel) \
+    pwm_duty_values[tcc_channel_offset[device] + channel]
 
 static uint8_t duty_type_flags[TCC_INST_NUM];
 static uint8_t device_status[TCC_INST_NUM];
+static uint8_t output_active[TCC_INST_NUM];
+const uint16_t prescaler_table[] = {1, 2, 4, 8, 16, 64, 256, 1024};
 
 STATIC void pwm_stop_device(int device);
 STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
@@ -87,14 +113,14 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 
 // PWM(pin)
 STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_pin, ARG_device, ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert };
+    enum { ARG_pin, ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert, ARG_device };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin,      MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_device,   MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_freq,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_freq,     MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_duty_u16, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_duty_ns,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_invert,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_device,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
     // Parse the arguments.
@@ -117,21 +143,20 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->instance = tcc_instance[device];
     self->device = device;
     self->pin_id = pin_id;
+    self->alt_fct = config.alt_fct;
     self->channel = (config.device_channel & 0x0f) % tcc_channel_count[device];
     self->output = config.device_channel & 0x0f;
     self->prescaler = 1;
     self->period = 1; // Use an invalid but safe value
-    self->duty = 0;
+    put_duty_value(self->device, self->channel, 0);
 
-    // Select PWM function for given GPIO.
-    mp_hal_set_pin_mux(pin_id, config.alt_fct);
     Tcc *tcc = self->instance;
 
     if (device_status[device] == PWM_NOT_INIT) {
         // Enable the device clock at first use.
         #if defined(MCU_SAMD21)
         // Enable synchronous clock. The bits are nicely arranged
-        PM->APBCMASK.reg |= 0x100 << device;
+        PM->APBCMASK.reg |= PM_APBCMASK_TCC0 << device;
         // Select multiplexer generic clock source and enable.
         GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | tcc_gclk_id[device];
         // Wait while it updates synchronously.
@@ -153,7 +178,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
             case 2:
                 MCLK->APBCMASK.reg |= MCLK_APBCMASK_TCC2;
                 break;
-            #if defined(TCC4_GCLK_ID)
+            #if TCC_INST_NUM > 3
             case 3:
                 MCLK->APBCMASK.reg |= MCLK_APBCMASK_TCC3;
                 break;
@@ -170,12 +195,12 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
         tcc->CTRLA.reg = TCC_CTRLA_PRESCALER_DIV1;
         tcc->WAVE.reg = TCC_WAVE_WAVEGEN_NPWM;
         // Flag the clock as initialized, but not the device as enabled.
-        device_status[device] = PWM_INIT_CLK;
+        device_status[device] = PWM_CLK_READY;
     }
 
     if (args[ARG_invert].u_int != -1) {
         bool invert = !!args[ARG_invert].u_int;
-        if (device_status[device] != PWM_INIT_CLK) {
+        if (device_status[device] != PWM_CLK_READY) {
             pwm_stop_device(device);
         }
         uint32_t mask = 1 << (self->output + TCC_DRVCTRL_INVEN0_Pos);
@@ -185,14 +210,14 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
             tcc->DRVCTRL.reg &= ~(mask);
         }
     }
-    if (args[ARG_freq].u_int != -1) {
-        mp_machine_pwm_freq_set(self, args[ARG_freq].u_int);
-    }
     if (args[ARG_duty_u16].u_int != -1) {
         mp_machine_pwm_duty_set_u16(self, args[ARG_duty_u16].u_int);
     }
     if (args[ARG_duty_ns].u_int != -1) {
         mp_machine_pwm_duty_set_ns(self, args[ARG_duty_ns].u_int);
+    }
+    if (args[ARG_freq].u_int != -1) {
+        mp_machine_pwm_freq_set(self, args[ARG_freq].u_int);
     }
     return MP_OBJ_FROM_PTR(self);
 }
@@ -202,7 +227,7 @@ STATIC void pwm_stop_device(int device) {
     tcc->CTRLA.bit.ENABLE = 0;
     while (tcc->SYNCBUSY.reg & TCC_SYNCBUSY_ENABLE) {
     }
-    device_status[device] = PWM_INIT_CLK;
+    device_status[device] = PWM_CLK_READY;
 }
 
 // Stop all TTC devices
@@ -214,14 +239,21 @@ void pwm_deinit_all(void) {
         }
         device_status[i] = PWM_NOT_INIT;
         duty_type_flags[i] = 0;
+        output_active[i] = 0;
     }
 }
 
-// Switch off the device related to a channel.
-// That stops all channels, but keeps the configuration
-// Calling pwm.freq(n) will start them again
+// Switch off an output. If all outputs of a device are off,
+// switch off that device.
+// This stops all channels, but keeps the configuration
+// Calling pwm.freq(n) will start an instance again.
 STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
-    pwm_stop_device(self->device);
+    mp_hal_clr_pin_mux(self->pin_id); // Switch the output off
+    output_active[self->device] &= ~(1 << self->output);  // clear output flasg
+    // Stop the device, if no output is active.
+    if (output_active[self->device] == 0) {
+        pwm_stop_device(self->device);
+    }
 }
 
 STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
@@ -229,10 +261,9 @@ STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
 }
 
 STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
-    // Set the frequency. The period counter is 24 bit or 16 bit, allowing a range
-    // from 24 MHz down to ~3 mHz (24 bit channels) or ~1 Hz (16 bit channels).
+    // Set the frequency. The period counter is 24 bit or 16 bit with a pre-scaling
+    // of up to 1024, allowing a range from 24 MHz down to 1 Hz.
     static const uint32_t max_period[5] = {1 << 24, 1 << 24, 1 << 16, 1 << 16, 1 << 16};
-    static const uint16_t prescaler_table[] = {1, 2, 4, 8, 16, 64, 256, 1024};
 
     Tcc *tcc = self->instance;
     if (freq < 1) {
@@ -242,7 +273,6 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     // Get the actual settings of prescaler & period from the unit
     // To be able for cope for changes.
     uint32_t prev_period = tcc->PER.reg + 1;
-    uint16_t prev_prescaler = prescaler_table[tcc->CTRLA.bit.PRESCALER];
 
     // Check for the right prescaler
     uint8_t index;
@@ -258,40 +288,54 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     if (period < 2) {
         mp_raise_ValueError(MP_ERROR_TEXT("freq too large"));
     }
-    // check, if the prescaler has to be changed
+    // Check, if the prescaler has to be changed and stop the device if so.
     if (index != tcc->CTRLA.bit.PRESCALER) {
         // stop the device
         pwm_stop_device(self->device);
         // update the prescaler
         tcc->CTRLA.bit.PRESCALER = index;
     }
-    tcc->PER.reg = period - 1;
+    // Lock the update to get a glitch-free change of period and duty cycle
+    tcc->CTRLBSET.reg = TCC_CTRLBSET_LUPD;
+    tcc->PERBUF.reg = period - 1;
     self->period = period;
 
     // Check if the Duty rate has to be aligned again when freq or prescaler were changed.
+    // This condition is as well true on first call after instantiation. So (re-)configure
+    // all channels with a duty_u16 setting.
     if (period != prev_period) {
-        for (uint16_t ch = 0, mask = 0x100; ch < tcc_channel_count[self->device]; ch++, mask <<= 1) {
+        for (uint16_t ch = 0; ch < tcc_channel_count[self->device]; ch++) {
             if ((duty_type_flags[self->device] & (1 << ch)) != 0) {  // duty_u16 type?
-                tcc->CC[ch].reg = (uint64_t)self->duty * period / PWM_FULL_SCALE;
+                tcc->CCBUF[ch].reg = (uint64_t)get_duty_value(self->device, ch) * period /
+                    PWM_FULL_SCALE;
             }
         }
     }
-    if (self->prescaler != prev_prescaler) {
-        for (uint16_t ch = 0, mask = 0x100; ch < tcc_channel_count[self->device]; ch++, mask <<= 1) {
+    // If the prescaler was changed, the device is disabled. So this condition is true
+    // after the instantiation and after a prescaler change.
+    // (re-)configure all channels with a duty_ns setting.
+    if (!(tcc->CTRLA.reg & TCC_CTRLA_ENABLE)) {
+        for (uint16_t ch = 0; ch < tcc_channel_count[self->device]; ch++) {
             if ((duty_type_flags[self->device] & (1 << ch)) == 0) {  // duty_ns type?
-                tcc->CC[ch].reg = (uint64_t)self->duty * PWM_MASTER_CLK / self->prescaler / 1000000000ULL;
+                tcc->CCBUF[ch].reg = (uint64_t)get_duty_value(self->device, ch) * PWM_MASTER_CLK /
+                    self->prescaler / 1000000000ULL;
             }
         }
     }
-    // Reset the count register to avoid a lng dropout on freq increase.
-    tcc->COUNT.reg = 0;
-    // (Re-)Start the module
-    if ((device_status[self->device] & PWM_ENABLE_TCC) == 0) {
+    // Remember the output as active.
+    output_active[self->device] |= 1 << self->output; // set output flag
+    // (Re-)Select PWM function for given GPIO.
+    mp_hal_set_pin_mux(self->pin_id, self->alt_fct);
+    // Enable the device, if required.
+    if ((device_status[self->device] & PWM_TCC_ENABLED) == 0) {
+        tcc->CTRLBSET.reg = TCC_CTRLBSET_CMD_UPDATE;
         tcc->CTRLA.reg |= TCC_CTRLA_ENABLE;
         while (tcc->SYNCBUSY.reg & TCC_SYNCBUSY_ENABLE) {
         }
-        device_status[self->device] |= PWM_ENABLE_TCC;
+        device_status[self->device] |= PWM_TCC_ENABLED;
     }
+    // Unlock the register update, now that the settings are complete
+    tcc->CTRLBCLR.reg = TCC_CTRLBCLR_LUPD;
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
@@ -299,8 +343,12 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
 }
 
 STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
-    self->duty = duty_u16;
-    self->instance->CC[self->channel].reg = (uint64_t)duty_u16 * (self->instance->PER.reg + 1) / PWM_FULL_SCALE;
+    put_duty_value(self->device, self->channel, duty_u16);
+    // If the device is enabled, than the period is set and we get a reasonable value for
+    // the duty cycle, set to the CCBUF register. Otherwise, PWM does not start.
+    if (self->instance->CTRLA.reg & TCC_CTRLA_ENABLE) {
+        self->instance->CCBUF[self->channel].reg = (uint64_t)duty_u16 * (self->instance->PER.reg + 1) / PWM_FULL_SCALE;
+    }
     duty_type_flags[self->device] |= 1 << self->channel;
 }
 
@@ -309,7 +357,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
 }
 
 STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
-    self->duty = duty_ns;
-    self->instance->CC[self->channel].reg = (uint64_t)duty_ns * PWM_MASTER_CLK / self->prescaler / 1000000000ULL;
+    put_duty_value(self->device, self->channel, duty_ns);
+    self->instance->CCBUF[self->channel].reg = (uint64_t)duty_ns * PWM_MASTER_CLK / self->prescaler / 1000000000ULL;
     duty_type_flags[self->device] &= ~(1 << self->channel);
 }
