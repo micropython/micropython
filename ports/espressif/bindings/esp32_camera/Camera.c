@@ -46,9 +46,9 @@
 //|         self,
 //|         *,
 //|         data_pins: List[microcontroller.Pin],
-//|         pixel_clock: microcontroller.Pin,
-//|         vsync: microcontroller.Pin,
-//|         href: microcontroller.Pin,
+//|         pixel_clock_pin: microcontroller.Pin,
+//|         vsync_pin: microcontroller.Pin,
+//|         href_pin: microcontroller.Pin,
 //|         i2c: busio.I2C,
 //|         external_clock_pin: microcontroller.Pin,
 //|         external_clock_frequency: int,
@@ -79,12 +79,12 @@
 //|             that case.
 //|
 //|         :param data_pins: The 8 data data_pins used for image data transfer from the camera module, least significant bit first
-//|         :param pixel_clock: The pixel clock output from the camera module
-//|         :param vsync: The vertical sync pulse output from the camera module
-//|         :param href: The horizontal reference output from the camera module
+//|         :param pixel_clock_pin: The pixel clock output from the camera module
+//|         :param vsync_pin: The vertical sync pulse output from the camera module
+//|         :param href_pin: The horizontal reference output from the camera module
 //|         :param i2c: The I2C bus connected to the camera module
-//|         :param external_clock_frequency: The frequency generated on the external clock pin
 //|         :param external_clock_pin: The pin on which to generate the external clock
+//|         :param external_clock_frequency: The frequency generated on the external clock pin
 //|         :param powerdown_pin: The powerdown input to the camera module
 //|         :param reset_pin: The reset input to the camera module
 //|         :param pixel_format: The pixel format of the captured image
@@ -125,7 +125,7 @@ STATIC mp_obj_t esp32_camera_camera_make_new(const mp_obj_type_t *type, size_t n
     const mcu_pin_obj_t *pixel_clock_pin = validate_obj_is_free_pin(args[ARG_pixel_clock_pin].u_obj);
     const mcu_pin_obj_t *vsync_pin = validate_obj_is_free_pin(args[ARG_vsync_pin].u_obj);
     const mcu_pin_obj_t *href_pin = validate_obj_is_free_pin(args[ARG_href_pin].u_obj);
-    const busio_i2c_obj_t *i2c = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c));
+    busio_i2c_obj_t *i2c = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c));
     const mcu_pin_obj_t *external_clock_pin = validate_obj_is_free_pin(args[ARG_external_clock_pin].u_obj);
     const mcu_pin_obj_t *powerdown_pin = validate_obj_is_free_pin_or_none(args[ARG_powerdown_pin].u_obj);
     const mcu_pin_obj_t *reset_pin = validate_obj_is_free_pin_or_none(args[ARG_reset_pin].u_obj);
