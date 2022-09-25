@@ -2530,8 +2530,7 @@ msgstr ""
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -2718,10 +2717,6 @@ msgstr ""
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr ""
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr ""
@@ -2871,10 +2866,6 @@ msgstr ""
 
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
-msgstr ""
-
-#: shared-bindings/displayio/Shape.c
-msgid "end_x should be an int"
 msgstr ""
 
 #: shared-bindings/alarm/time/TimeAlarm.c
@@ -3743,10 +3734,6 @@ msgstr ""
 msgid "palette must be 32 bytes long"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr ""
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
@@ -3984,10 +3971,6 @@ msgstr ""
 msgid "start/end indices"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c
-msgid "start_x should be an int"
-msgstr ""
-
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
 msgstr ""
@@ -4202,7 +4185,6 @@ msgid "unreadable attribute"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr ""
 
@@ -4330,10 +4312,6 @@ msgstr ""
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
-msgstr ""
-
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
 msgstr ""
 
 #: shared-module/displayio/Shape.c
