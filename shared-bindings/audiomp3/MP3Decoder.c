@@ -172,7 +172,7 @@ STATIC mp_obj_t audiomp3_mp3file_obj_set_file(mp_obj_t self_in, mp_obj_t file) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(audiomp3_mp3file_set_file_obj, audiomp3_mp3file_obj_set_file);
 
-//|     def open(self, str) -> None:
+//|     def open(self, filepath: str) -> None:
 //|         """Takes in the name of a mp3 file, opens it, and replaces the old playback file."""
 //|         ...
 //|
