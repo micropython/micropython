@@ -201,11 +201,9 @@ STATIC mp_obj_t sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block
 
 MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_writeblocks_obj, sdioio_sdcard_writeblocks);
 
-//|     @property
-//|     def frequency(self) -> int:
-//|         """The actual SDIO bus frequency. This may not match the frequency
-//|         requested due to internal limitations."""
-//|         ...
+//|     frequency: int
+//|     """The actual SDIO bus frequency. This may not match the frequency
+//|     requested due to internal limitations."""
 //|
 STATIC mp_obj_t sdioio_sdcard_obj_get_frequency(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -217,10 +215,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_get_frequency_obj, sdioio_sdcard_obj_get
 MP_PROPERTY_GETTER(sdioio_sdcard_frequency_obj,
     (mp_obj_t)&sdioio_sdcard_get_frequency_obj);
 
-//|     @property
-//|     def width(self) -> int:
-//|         """The actual SDIO bus width, in bits"""
-//|         ...
+//|     width:int
+//|     """The actual SDIO bus width, in bits"""
 //|
 STATIC mp_obj_t sdioio_sdcard_obj_get_width(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);

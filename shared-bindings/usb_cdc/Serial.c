@@ -54,11 +54,12 @@
 //|         ...
 //|
 //|     def readinto(self, buf: WriteableBuffer) -> int:
-//|         """Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
-//|         that many bytes, subject to `timeout`.  Otherwise, read at most ``len(buf)`` bytes.
+//|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes. If `timeout`
+//|         is > 0 or ``None``, keep waiting until the timeout expires or ``len(buf)``
+//|         bytes are available.
 //|
 //|         :return: number of bytes read and stored into ``buf``
-//|         :rtype: bytes"""
+//|         :rtype: int"""
 //|         ...
 //|
 //|     def readline(self, size: int = -1) -> Optional[bytes]:
