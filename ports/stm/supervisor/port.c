@@ -290,13 +290,22 @@ condition and generating hardware reset or using Go command to execute user code
     HAL_RCC_DeInit();
     HAL_DeInit();
 
-    // disable all interupts
-    __disable_irq();
+    // Disable all pending interrupts using NVIC
+    for (uint8_t i = 0; i < (sizeof(NVIC->ICER) / sizeof(NVIC->ICER[0])); ++i) {
+        NVIC->ICER[i] = 0xFFFFFFFF;
+    }
 
-    // Clear all pending interrupts
-    for (uint8_t i = 0; i < (sizeof(NVIC->ICPR) / NVIC->ICPR[0]); ++i) {
+    // if it is necessary to ensure an interrupt will not be triggered after disabling it in the NVIC,
+    // add a DSB instruction and then an ISB instruction. (ARM Cortex™-M Programming Guide to
+    // Memory Barrier Instructions, 4.6 Disabling Interrupts using NVIC)
+    __DSB();
+    __ISB();
+
+    // Clear all pending interrupts using NVIC
+    for (uint8_t i = 0; i < (sizeof(NVIC->ICPR) / sizeof(NVIC->ICPR[0])); ++i) {
         NVIC->ICPR[i] = 0xFFFFFFFF;
     }
+
     // information about jump addresses has been taken from STM AN2606.
     #if defined(STM32F4)
     __set_MSP(*((uint32_t *)0x1FFF0000));
