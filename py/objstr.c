@@ -1768,6 +1768,8 @@ STATIC mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
         return MP_OBJ_NEW_SMALL_INT(utf8_charlen(start, end - start) + 1);
     }
 
+    bool is_str = self_type == &mp_type_str;
+
     // count the occurrences
     mp_int_t num_occurrences = 0;
     for (const byte *haystack_ptr = start; haystack_ptr + needle_len <= end;) {
@@ -1775,7 +1777,7 @@ STATIC mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
             num_occurrences++;
             haystack_ptr += needle_len;
         } else {
-            haystack_ptr = utf8_next_char(haystack_ptr);
+            haystack_ptr = is_str ? utf8_next_char(haystack_ptr) : haystack_ptr + 1;
         }
     }
 
