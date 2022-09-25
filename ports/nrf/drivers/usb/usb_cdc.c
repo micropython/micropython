@@ -236,18 +236,6 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     }
 }
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-
-    for (const char *top = str + len; str < top; str++) {
-        if (*str == '\n') {
-            ringbuf_put((ringbuf_t*)&tx_ringbuf, '\r');
-            usb_cdc_loop();
-        }
-        ringbuf_put((ringbuf_t*)&tx_ringbuf, *str);
-        usb_cdc_loop();
-    }
-}
-
 void USBD_IRQHandler(void) {
     tud_int_handler(0);
 }

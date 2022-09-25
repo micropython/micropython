@@ -234,6 +234,7 @@ SRC_LIB += $(addprefix shared/,\
 	runtime/sys_stdio_mphal.c \
 	runtime/interrupt_char.c \
 	runtime/tinyusb_helpers.c \
+	runtime/stdout_helpers.c \
 	timeutils/timeutils.c \
 	)
 
