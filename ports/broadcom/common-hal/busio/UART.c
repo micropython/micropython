@@ -211,7 +211,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         // Use the provided buffer when given.
         if (receiver_buffer != NULL) {
             ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
-            self->ringbuf = (ringbuf_t) { receiver_buffer, receiver_buffer_size };
         } else {
             // Initially allocate the UART's buffer in the long-lived part of the
             // heap. UARTs are generally long-lived objects, but the "make long-
