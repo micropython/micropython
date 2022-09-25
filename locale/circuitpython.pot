@@ -2942,10 +2942,6 @@ msgstr ""
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
-#: shared-bindings/audiomp3/MP3Decoder.c
-msgid "file path must be provided as input"
-msgstr ""
-
 #: shared-bindings/traceback/__init__.c
 msgid "file write is not available"
 msgstr ""
