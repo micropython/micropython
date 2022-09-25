@@ -156,11 +156,8 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
 STATIC mp_obj_t displayio_palette_obj_make_transparent(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t palette_index;
-    if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
-        mp_raise_ValueError(translate("palette_index should be an int"));
-    }
-    palette_index = mp_arg_validate_int_range(palette_index, 0, common_hal_displayio_palette_get_len(self) - 1, MP_QSTR_palette_index);
+    mp_int_t palette_index = mp_arg_validate_type_int(palette_index_obj, MP_QSTR_palette_index);
+    mp_arg_validate_int_range(palette_index, 0, common_hal_displayio_palette_get_len(self) - 1, MP_QSTR_palette_index);
 
     common_hal_displayio_palette_make_transparent(self, palette_index);
     return mp_const_none;
@@ -173,10 +170,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_make_transparent_obj, displayio_pale
 STATIC mp_obj_t displayio_palette_obj_make_opaque(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t palette_index;
-    if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
-        mp_raise_ValueError(translate("palette_index should be an int"));
-    }
+    mp_int_t palette_index = mp_arg_validate_type_int(palette_index_obj, MP_QSTR_palette_index);
     palette_index = mp_arg_validate_int_range(palette_index, 0, common_hal_displayio_palette_get_len(self) - 1, MP_QSTR_palette_index);
 
     common_hal_displayio_palette_make_opaque(self, palette_index);
@@ -191,10 +185,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_make_opaque_obj, displayio_palette_o
 STATIC mp_obj_t displayio_palette_obj_is_transparent(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t palette_index;
-    if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
-        mp_raise_ValueError(translate("palette_index should be an int"));
-    }
+    mp_int_t palette_index = mp_arg_validate_type_int(palette_index_obj, MP_QSTR_palette_index);
     palette_index = mp_arg_validate_int_range(palette_index, 0, common_hal_displayio_palette_get_len(self) - 1, MP_QSTR_palette_index);
 
     return mp_obj_new_bool(common_hal_displayio_palette_is_transparent(self, palette_index));

@@ -34,13 +34,9 @@ static mp_obj_t vectorio_rectangle_make_new(const mp_obj_type_t *type, size_t n_
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_int_t width = args[ARG_width].u_int;
-    if (width < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_width);
-    }
+    mp_arg_validate_int_min(width, 1, MP_QSTR_width);
     mp_int_t height = args[ARG_height].u_int;
-    if (height < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_height);
-    }
+    mp_arg_validate_int_min(height, 1, MP_QSTR_height);
 
     vectorio_rectangle_t *self = m_new_obj(vectorio_rectangle_t);
     self->base.type = &vectorio_rectangle_type;
