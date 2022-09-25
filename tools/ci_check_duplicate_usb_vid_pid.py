@@ -56,7 +56,6 @@ DEFAULT_CLUSTERLIST = {
         "espressif_esp32s3_devkitc_1_n8r8",
     ],
     "0x303A:0x7009": ["espressif_esp32s2_devkitc_1_n4", "espressif_esp32s2_devkitc_1_n4r2"],
-    "0x70010001:0x00100001": ["ai_thinker_esp32-c3s", "ai_thinker_esp32-c3s-2m"],
 }
 
 cli_parser = argparse.ArgumentParser(
