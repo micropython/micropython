@@ -521,9 +521,8 @@ STATIC mp_obj_t rp2pio_statemachine_obj_stop_background_write(mp_obj_t self_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_stop_background_write_obj, rp2pio_statemachine_obj_stop_background_write);
 
-//|     @property
-//|     def writing(self) -> bool:
-//|         """Returns True if a background write is in progress"""
+//|     writing: bool
+//|     """Returns True if a background write is in progress"""
 //|
 STATIC mp_obj_t rp2pio_statemachine_obj_get_writing(mp_obj_t self_in) {
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -539,11 +538,10 @@ const mp_obj_property_t rp2pio_statemachine_writing_obj = {
 };
 
 
-//|     @property
-//|     def pending(self) -> int:
-//|         """Returns the number of pending buffers for background writing.
+//|     pending: int
+//|     """Returns the number of pending buffers for background writing.
 //|
-//|         If the number is 0, then a `StateMachine.background_write` call will not block."""
+//|     If the number is 0, then a `StateMachine.background_write` call will not block."""
 //|
 STATIC mp_obj_t rp2pio_statemachine_obj_get_pending(mp_obj_t self_in) {
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);
