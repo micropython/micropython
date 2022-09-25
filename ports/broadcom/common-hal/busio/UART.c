@@ -208,8 +208,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->sigint_enabled = sigint_enabled;
 
     if (rx != NULL) {
+        // Use the provided buffer when given.
         if (receiver_buffer != NULL) {
-            self->ringbuf = (ringbuf_t) { receiver_buffer, receiver_buffer_size };
+            ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
         } else {
             // Initially allocate the UART's buffer in the long-lived part of the
             // heap. UARTs are generally long-lived objects, but the "make long-
@@ -217,7 +218,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             // self->buffer, so do it manually.  (However, as long as internal
             // pointers like this are NOT moved, allocating the buffer
             // in the long-lived pool is not strictly necessary)
-            // (This is a macro.)
             if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
                 m_malloc_fail(receiver_buffer_size);
             }
@@ -337,7 +337,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         pl011->CR = 0;
     }
     active_uart[self->uart_id] = NULL;
-    ringbuf_free(&self->ringbuf);
+    ringbuf_deinit(&self->ringbuf);
     uart_status[self->uart_id] = STATUS_FREE;
     common_hal_reset_pin(self->tx_pin);
     common_hal_reset_pin(self->rx_pin);
