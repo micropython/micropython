@@ -71,6 +71,12 @@ byte console_uart_rx_buf[64];
 bool tud_vendor_connected(void);
 #endif
 
+// Set to true to temporarily discard writes to the console only.
+static bool _console_write_disabled;
+
+// Set to true to temporarily discard writes to the display terminal only.
+static bool _display_write_disabled;
+
 #if CIRCUITPY_CONSOLE_UART
 STATIC void console_uart_print_strn(void *env, const char *str, size_t len) {
     (void)env;
@@ -277,6 +283,12 @@ bool serial_bytes_available(void) {
     return false;
 }
 
+#if CIRCUITPY_STATUS_BAR
+// Detect when USB is down when the status bar write starts. If USB comes up in the middle of writing
+// the status bar, we want to the skip the rest so so junk doesn't get written out.
+static bool ignore_rest_of_status_bar_update = false;
+#endif
+
 void serial_write_substring(const char *text, uint32_t length) {
     if (length == 0) {
         return;
@@ -284,15 +296,23 @@ void serial_write_substring(const char *text, uint32_t length) {
 
     #if CIRCUITPY_TERMINALIO
     int errcode;
-    // We might be writing
     // If the status bar is disabled for the display, common_hal_terminalio_terminal_write() will not write it.
     common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t *)text, length, &errcode);
     #endif
 
     #if CIRCUITPY_STATUS_BAR
     // If the status bar is disabled for the console, skip writing out the OSC sequence.
-    if (supervisor_status_bar_get_update_in_progress(&shared_module_supervisor_status_bar_obj) &&
-        !shared_module_supervisor_status_bar_get_console(&shared_module_supervisor_status_bar_obj)) {
+    if (supervisor_status_bar_get_update_in_progress(&shared_module_supervisor_status_bar_obj)) {
+        if (!shared_module_supervisor_status_bar_get_console(&shared_module_supervisor_status_bar_obj)) {
+            // Console status bar disabled, so just return.
+            return;
+        }
+    } else {
+        // Status bar update is not in progress, so clear this history flag (will get cleared repeatedly).
+        ignore_rest_of_status_bar_update = false;
+    }
+
+    if (ignore_rest_of_status_bar_update) {
         return;
     }
     #endif
@@ -325,14 +345,23 @@ void serial_write_substring(const char *text, uint32_t length) {
 
     #if CIRCUITPY_USB
     uint32_t count = 0;
-    while (count < length && tud_cdc_connected()) {
-        count += tud_cdc_write(text + count, length - count);
-        // If we're in an interrupt, then don't wait for more room. Queue up what we can.
-        if (cpu_interrupt_active()) {
-            break;
+    if (tud_cdc_connected()) {
+        while (count < length) {
+            count += tud_cdc_write(text + count, length - count);
+            // If we're in an interrupt, then don't wait for more room. Queue up what we can.
+            if (cpu_interrupt_active()) {
+                break;
+            }
+            usb_background();
         }
-        usb_background();
     }
+    #if CIRCUITPY_STATUS_BAR
+    else {
+        // USB was not connected for the first part of the status bar update. Ignore the rest
+        // so we don't send the remaining part of the OSC sequence if USB comes up later.
+        ignore_rest_of_status_bar_update = true;
+    }
+    #endif
     #endif
 
     port_serial_write_substring(text, length);
@@ -340,4 +369,12 @@ void serial_write_substring(const char *text, uint32_t length) {
 
 void serial_write(const char *text) {
     serial_write_substring(text, strlen(text));
+}
+
+void serial_console_write_disable(bool disabled) {
+    _serial_console_write_disabled = disabled;
+}
+
+void serial_display_write_disable(bool disabled) {
+    _serial_display_write_disabled = disabled;
 }
