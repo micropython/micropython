@@ -118,3 +118,128 @@ int ringbuf_put_bytes(ringbuf_t *r, const uint8_t *data, size_t data_len) {
     r->iput = iput_a;
     return 0;
 }
+
+#if MICROPY_PY_MICROPYTHON_RINGBUFFER
+#include "py/runtime.h"
+#include "py/stream.h"
+#include "py/mphal.h"
+
+typedef struct _micropython_ringbuffer_obj_t {
+    mp_obj_base_t base;
+    ringbuf_t ringbuffer;
+} micropython_ringbuffer_obj_t;
+
+static mp_obj_t micropython_ringbuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_int_t buff_size = -1;
+    mp_buffer_info_t bufinfo = {NULL, 0, 0};
+
+    if (!mp_get_buffer(args[0], &bufinfo, MP_BUFFER_RW)) {
+        buff_size = mp_obj_get_int(args[0]);
+    }
+    micropython_ringbuffer_obj_t *self = mp_obj_malloc(micropython_ringbuffer_obj_t, type);
+    if (bufinfo.buf != NULL) {
+        // buffer passed in, use it directly for ringbuffer.
+        // This can be user to no-copy stream an existing data buffer (except final byte).
+        self->ringbuffer.buf = bufinfo.buf;
+        self->ringbuffer.size = bufinfo.len;
+        self->ringbuffer.iput = bufinfo.len - 1;
+        self->ringbuffer.iget = 0;
+    } else {
+        // Allocate new buffer, add one extra to buff_size as ringbuf consumes one byte for tracking.
+        ringbuf_alloc(&(self->ringbuffer), buff_size + 1);
+    }
+    return MP_OBJ_FROM_PTR(self);
+}
+
+static mp_uint_t micropython_ringbuffer_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+    micropython_ringbuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    size = MIN(size, ringbuf_avail(&self->ringbuffer)); // limit size to available data
+
+    if (size == 0 || ringbuf_get_bytes(&self->ringbuffer, buf_in, size) == -1) {
+        // no data available
+        *errcode = MP_EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+    *errcode = 0;
+    return size;
+}
+
+static mp_uint_t micropython_ringbuffer_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+    micropython_ringbuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    size = MIN(size, ringbuf_free(&self->ringbuffer)); // limit size to available space
+
+    if (size == 0 || ringbuf_put_bytes(&self->ringbuffer, buf_in, size) == -1) {
+        // no space available
+        *errcode = MP_EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+    *errcode = 0;
+    return size;
+}
+
+static mp_uint_t micropython_ringbuffer_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    micropython_ringbuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (request) {
+        case MP_STREAM_POLL: {
+            mp_uint_t ret = 0;
+            if ((arg & MP_STREAM_POLL_RD) && ringbuf_avail(&self->ringbuffer) > 0) {
+                ret |= MP_STREAM_POLL_RD;
+            }
+            if ((arg & MP_STREAM_POLL_WR) && ringbuf_free(&self->ringbuffer) > 0) {
+                ret |= MP_STREAM_POLL_WR;
+            }
+            return ret;
+        }
+        case MP_STREAM_CLOSE:
+        case MP_STREAM_FLUSH:
+            return 0;
+    }
+    *errcode = MP_EINVAL;
+    return MP_STREAM_ERROR;
+}
+
+static mp_obj_t micropython_ringbuffer_any(mp_obj_t self_in) {
+    micropython_ringbuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(ringbuf_avail(&self->ringbuffer));
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(micropython_ringbuffer_any_obj, micropython_ringbuffer_any);
+
+static mp_obj_t micropython_ringbuffer_reset(mp_obj_t self_in) {
+    micropython_ringbuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    self->ringbuffer.iget = self->ringbuffer.iput = 0;
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(micropython_ringbuffer_reset_obj, micropython_ringbuffer_reset);
+
+
+static const mp_rom_map_elem_t micropython_ringbuffer_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&micropython_ringbuffer_any_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&micropython_ringbuffer_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
+
+};
+static MP_DEFINE_CONST_DICT(micropython_ringbuffer_locals_dict, micropython_ringbuffer_locals_dict_table);
+
+static const mp_stream_p_t ringbuffer_stream_p = {
+    .read = micropython_ringbuffer_read,
+    .write = micropython_ringbuffer_write,
+    .ioctl = micropython_ringbuffer_ioctl,
+    .is_text = false,
+};
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_micropython_ringbuffer,
+    MP_QSTR_ringbuffer,
+    MP_TYPE_FLAG_NONE,
+    make_new, micropython_ringbuffer_make_new,
+    protocol, &ringbuffer_stream_p,
+    locals_dict, &micropython_ringbuffer_locals_dict
+    );
+
+#endif

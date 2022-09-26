@@ -981,6 +981,11 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_SCHEDULER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Support for micropython.ringbuffer()
+#ifndef MICROPY_PY_MICROPYTHON_RINGBUFFER
+#define MICROPY_PY_MICROPYTHON_RINGBUFFER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether the scheduler supports scheduling static nodes with C callbacks
 #ifndef MICROPY_SCHEDULER_STATIC_NODES
 #define MICROPY_SCHEDULER_STATIC_NODES (0)
