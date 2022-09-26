@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-
 #include "ringbuf.h"
 
 int ringbuf_get16(ringbuf_t *r) {
@@ -83,17 +81,7 @@ int ringbuf_get_bytes(ringbuf_t *r, uint8_t *data, size_t data_len) {
     if (ringbuf_avail(r) < data_len) {
         return (r->size <= data_len) ? -2 : -1;
     }
-    uint32_t iget = r->iget;
-    uint32_t iget_a = (iget + data_len) % r->size;
-    uint8_t *datap = data;
-    if (iget_a < iget) {
-        // Copy part of the data from the space left at the end of the buffer
-        memcpy(datap, r->buf + iget, r->size - iget);
-        datap += (r->size - iget);
-        iget = 0;
-    }
-    memcpy(datap, r->buf + iget, iget_a - iget);
-    r->iget = iget_a;
+    ringbuf_memcpy_get_internal(r, data, data_len);
     return 0;
 }
 
@@ -105,16 +93,6 @@ int ringbuf_put_bytes(ringbuf_t *r, const uint8_t *data, size_t data_len) {
     if (ringbuf_free(r) < data_len) {
         return (r->size <= data_len) ? -2 : -1;
     }
-    uint32_t iput = r->iput;
-    uint32_t iput_a = (iput + data_len) % r->size;
-    const uint8_t *datap = data;
-    if (iput_a < iput) {
-        // Copy part of the data to the end of the buffer
-        memcpy(r->buf + iput, datap, r->size - iput);
-        datap += (r->size - iput);
-        iput = 0;
-    }
-    memcpy(r->buf + iput, datap, iput_a - iput);
-    r->iput = iput_a;
+    ringbuf_memcpy_put_internal(r, data, data_len);
     return 0;
 }

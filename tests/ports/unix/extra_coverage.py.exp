@@ -144,6 +144,11 @@ cc99
 22ff
 -1
 -1
+0
+0
+abc123
+-1
+-2
 # pairheap
 create: 0 0 0 0
 pop all: 0 1 2 3
