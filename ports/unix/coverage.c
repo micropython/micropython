@@ -692,6 +692,24 @@ static mp_obj_t extra_coverage(void) {
         ringbuf.iget = 0;
         ringbuf_put(&ringbuf, 0xaa);
         mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
+
+        // ringbuf_put_bytes() / ringbuf_get_bytes() functions.
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        uint8_t *put = (uint8_t *)"abc123";
+        uint8_t get[7] = {0};
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put_bytes(&ringbuf, put, 7));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get_bytes(&ringbuf, get, 7));
+        mp_printf(&mp_plat_print, "%s\n", get);
+        // Prefill ringbuffer.
+        for (size_t i = 0; i < sizeof(buf) - 3; ++i) {
+            ringbuf_put(&ringbuf, i);
+        }
+        // Should fail - too full.
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put_bytes(&ringbuf, put, 7));
+        // Should fail - buffer too big.
+        uint8_t large[sizeof(buf) + 5] = {0};
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put_bytes(&ringbuf, large, sizeof(large)));
     }
 
     // pairheap
