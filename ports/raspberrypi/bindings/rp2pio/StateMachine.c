@@ -313,9 +313,8 @@ STATIC void check_for_deinit(rp2pio_statemachine_obj_t *self) {
 
 //|     def restart(self) -> None:
 //|         """Resets this state machine, runs any init and enables the clock."""
-// TODO: "and any others given. They must share an underlying PIO. An exception will be raised otherwise.""
 //|         ...
-//|
+// TODO: "and any others given. They must share an underlying PIO. An exception will be raised otherwise.""
 STATIC mp_obj_t rp2pio_statemachine_restart(mp_obj_t self_obj) {
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     check_for_deinit(self);

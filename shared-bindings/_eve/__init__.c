@@ -40,10 +40,10 @@
 //| contains methods for constructing EVE command
 //| buffers and appending basic graphics commands."""
 //|
-
 //| class _EVE:
+//|     def __init__(self) -> None:
+//|         """Create an _EVE object"""
 //|
-
 typedef struct _mp_obj__EVE_t {
     mp_obj_base_t base;
     common_hal__eve_t _eve;
