@@ -130,7 +130,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_manufacturer_obj, usb_core_device_
 MP_PROPERTY_GETTER(usb_core_device_manufacturer_obj,
     (mp_obj_t)&usb_core_device_get_manufacturer_obj);
 
-//|     def write(self, endpoint: int, data: ReadableBuffer, timeout = None) -> int:
+//|     def write(self, endpoint: int, data: ReadableBuffer, timeout:Optional[int] = None) -> int:
 //|         """Write data to a specific endpoint on the device.
 //|
 //|            :param int endpoint: the bEndpointAddress you want to communicate with.
@@ -159,7 +159,7 @@ STATIC mp_obj_t usb_core_device_write(size_t n_args, const mp_obj_t *pos_args, m
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_write_obj, 2, usb_core_device_write);
 
 
-//|     def read(self, endpoint: int, size_or_buffer: array.array, timeout = None) -> int:
+//|     def read(self, endpoint: int, size_or_buffer: array.array, timeout:Optional[int] = None) -> int:
 //|         """Read data from the endpoint.
 //|
 //|            :param int endpoint: the bEndpointAddress you want to communicate with.
@@ -186,8 +186,8 @@ STATIC mp_obj_t usb_core_device_read(size_t n_args, const mp_obj_t *pos_args, mp
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_read_obj, 2, usb_core_device_read);
 
-//|     def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
-//|                       data_or_wLength: Optional[array.array] = None, timeout = None) -> int:
+//|     def ctrl_transfer(self, bmRequestType:int, bRequest:int, wValue:int=0, wIndex:int=0,
+//|                       data_or_wLength: Optional[array.array] = None, timeout:Optional[int] = None) -> int:
 //|         """Do a control transfer on the endpoint 0. The parameters bmRequestType,
 //|            bRequest, wValue and wIndex are the same of the USB Standard Control
 //|            Request format.
@@ -254,7 +254,7 @@ STATIC mp_obj_t usb_core_device_is_kernel_driver_active(mp_obj_t self_in, mp_obj
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_core_device_is_kernel_driver_active_obj, usb_core_device_is_kernel_driver_active);
 
-//|     def detach_kernel_driver(self, interface: int):
+//|     def detach_kernel_driver(self, interface: int) -> None:
 //|         """Stop CircuitPython from using the interface. If successful, you
 //|            will then be able to perform I/O. CircuitPython will automatically
 //|            re-start using the interface on reload.
@@ -271,7 +271,7 @@ STATIC mp_obj_t usb_core_device_detach_kernel_driver(mp_obj_t self_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_core_device_detach_kernel_driver_obj, usb_core_device_detach_kernel_driver);
 
-//|     def attach_kernel_driver(self, interface: int):
+//|     def attach_kernel_driver(self, interface: int) -> None:
 //|         """Allow CircuitPython to use the interface if it wants to.
 //|
 //|            :param int interface: the device interface number to allow CircuitPython to use

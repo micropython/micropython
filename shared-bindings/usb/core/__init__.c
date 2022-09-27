@@ -64,7 +64,7 @@ NORETURN void mp_raise_usb_core_USBTimeoutError(void) {
 }
 
 
-//| def find(find_all=False, *, idVendor=None, idProduct=None):
+//| def find(find_all:bool=False, *, idVendor:Optional[int]=None, idProduct:Optional[int]=None) -> Device:
 //|    """Find the first device that matches the given requirements or, if
 //|       find_all is True, return a generator of all matching devices.
 //|
