@@ -27,6 +27,7 @@
 
 from __future__ import print_function
 import os
+import re
 import stat
 import subprocess
 
@@ -54,19 +55,30 @@ NATIVE_ARCHS = [
     NATIVE_ARCH_XTENSAWIN,
 ]
 
-__all__ = ["compile", "run", "CrossCompileError"]
+__all__ = ["version", "compile", "run", "CrossCompileError"]
 
 
 class CrossCompileError(Exception):
     pass
 
 
-def find_mpy_cross_binary(mpy_cross):
+_VERSION_RE = re.compile("mpy-cross emitting mpy v([0-9]+)(?:.([0-9]+))?")
+
 
 def _find_mpy_cross_binary(mpy_cross):
     if mpy_cross:
         return mpy_cross
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "../build/mpy-cross"))
+
+
+def mpy_version(mpy_cross=None):
+    version_info = run(["--version"], mpy_cross=mpy_cross)
+    match = re.search(_VERSION_RE, version_info)
+    mpy_version, mpy_sub_version = int(match.group(1)), int(match.group(2) or "0")
+    return (
+        mpy_version,
+        mpy_sub_version,
+    )
 
 
 def compile(src, dest=None, src_path=None, opt=None, march=None, mpy_cross=None, extra_args=None):
