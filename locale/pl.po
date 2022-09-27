@@ -2537,8 +2537,7 @@ msgstr "przypisanie do wyrażenia"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "nie można dokonać konwersji %q na %q"
 
@@ -2725,10 +2724,6 @@ msgstr "bufor kolorów musi być bytearray lub tablicą typu 'b' lub 'B'"
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "kolor musi być pomiędzy 0x000000 a 0xffffff"
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr "kolor powinien być liczbą całkowitą"
-
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr ""
@@ -2880,10 +2875,6 @@ msgstr "pusta sekwencja"
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
 msgstr "koniec formatu przy szukaniu specyfikacji konwersji"
-
-#: shared-bindings/displayio/Shape.c
-msgid "end_x should be an int"
-msgstr "end_x powinien być całkowity"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
@@ -3751,10 +3742,6 @@ msgstr ""
 msgid "palette must be 32 bytes long"
 msgstr "paleta musi mieć 32 bajty długości"
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr "palette_index powinien być całkowity"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parametry muszą być rejestrami w kolejności a2 do a5"
@@ -3993,10 +3980,6 @@ msgstr ""
 msgid "start/end indices"
 msgstr "początkowe/końcowe indeksy"
 
-#: shared-bindings/displayio/Shape.c
-msgid "start_x should be an int"
-msgstr "start_x powinien być całkowity"
-
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
 msgstr "step nie może być zerowe"
@@ -4211,7 +4194,6 @@ msgid "unreadable attribute"
 msgstr "nieczytelny atrybut"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "zły typ %q"
 
@@ -4341,10 +4323,6 @@ msgstr "x poza zakresem"
 msgid "xTaskCreate failed"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
-msgstr "y powinno być całkowite"
-
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
 msgstr "y poza zakresem"
@@ -4364,6 +4342,21 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "color should be an int"
+#~ msgstr "kolor powinien być liczbą całkowitą"
+
+#~ msgid "end_x should be an int"
+#~ msgstr "end_x powinien być całkowity"
+
+#~ msgid "palette_index should be an int"
+#~ msgstr "palette_index powinien być całkowity"
+
+#~ msgid "start_x should be an int"
+#~ msgstr "start_x powinien być całkowity"
+
+#~ msgid "y should be an int"
+#~ msgstr "y powinno być całkowite"
 
 #~ msgid ""
 #~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "

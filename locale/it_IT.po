@@ -2560,8 +2560,7 @@ msgstr "impossibile assegnare all'espressione"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -2750,10 +2749,6 @@ msgstr ""
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "il colore deve essere compreso tra 0x000000 e 0xffffff"
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr "il colore deve essere un int"
-
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr ""
@@ -2907,11 +2902,6 @@ msgstr "sequenza vuota"
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
 msgstr ""
-
-#: shared-bindings/displayio/Shape.c
-#, fuzzy
-msgid "end_x should be an int"
-msgstr "y dovrebbe essere un int"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
@@ -3789,10 +3779,6 @@ msgstr ""
 msgid "palette must be 32 bytes long"
 msgstr "la palette deve essere lunga 32 byte"
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr "palette_index deve essere un int"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parametri devono essere i registri in sequenza da a2 a a5"
@@ -4032,11 +4018,6 @@ msgstr ""
 msgid "start/end indices"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c
-#, fuzzy
-msgid "start_x should be an int"
-msgstr "y dovrebbe essere un int"
-
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
 msgstr "step deve essere non zero"
@@ -4251,7 +4232,6 @@ msgid "unreadable attribute"
 msgstr "attributo non leggibile"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "tipo di %q non supportato"
 
@@ -4382,10 +4362,6 @@ msgstr "indirizzo fuori limite"
 msgid "xTaskCreate failed"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
-msgstr "y dovrebbe essere un int"
-
 #: shared-module/displayio/Shape.c
 #, fuzzy
 msgid "y value out of bounds"
@@ -4406,6 +4382,23 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "color should be an int"
+#~ msgstr "il colore deve essere un int"
+
+#, fuzzy
+#~ msgid "end_x should be an int"
+#~ msgstr "y dovrebbe essere un int"
+
+#~ msgid "palette_index should be an int"
+#~ msgstr "palette_index deve essere un int"
+
+#, fuzzy
+#~ msgid "start_x should be an int"
+#~ msgstr "y dovrebbe essere un int"
+
+#~ msgid "y should be an int"
+#~ msgstr "y dovrebbe essere un int"
 
 #~ msgid ""
 #~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "

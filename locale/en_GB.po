@@ -2560,8 +2560,7 @@ msgstr "Can't assign to expression"
 msgid "can't cancel self"
 msgstr "can't cancel self"
 
-#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "Can't convert %q to %q"
 
@@ -2750,10 +2749,6 @@ msgstr "colour buffer must be a bytearray or array of type 'b' or 'B'"
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "colour must be between 0x000000 and 0xffffff"
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr "colour should be an int"
-
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr "comparison of int and uint"
@@ -2905,10 +2900,6 @@ msgstr "empty sequence"
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
 msgstr "end of format while looking for conversion specifier"
-
-#: shared-bindings/displayio/Shape.c
-msgid "end_x should be an int"
-msgstr "end_x should be an int"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
@@ -3776,10 +3767,6 @@ msgstr "pack expected %d items for packing (got %d)"
 msgid "palette must be 32 bytes long"
 msgstr "palette must be 32 bytes long"
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr "palette_index should be an int"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parameters must be registers in sequence a2 to a5"
@@ -4017,10 +4004,6 @@ msgstr ""
 msgid "start/end indices"
 msgstr "start/end indices"
 
-#: shared-bindings/displayio/Shape.c
-msgid "start_x should be an int"
-msgstr "start_x should be an int"
-
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
 msgstr "step must be non-zero"
@@ -4235,7 +4218,6 @@ msgid "unreadable attribute"
 msgstr "unreadable attribute"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "unsupported %q type"
 
@@ -4365,10 +4347,6 @@ msgstr "x value out of bounds"
 msgid "xTaskCreate failed"
 msgstr "xTaskCreate failed"
 
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
-msgstr "y should be an int"
-
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
 msgstr "y value out of bounds"
@@ -4388,6 +4366,21 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "color should be an int"
+#~ msgstr "colour should be an int"
+
+#~ msgid "end_x should be an int"
+#~ msgstr "end_x should be an int"
+
+#~ msgid "palette_index should be an int"
+#~ msgstr "palette_index should be an int"
+
+#~ msgid "start_x should be an int"
+#~ msgstr "start_x should be an int"
+
+#~ msgid "y should be an int"
+#~ msgstr "y should be an int"
 
 #~ msgid ""
 #~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
