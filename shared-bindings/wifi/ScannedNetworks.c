@@ -35,7 +35,6 @@
 //| class ScannedNetworks:
 //|     """Iterates over all `wifi.Network` objects found while scanning. This object is always created
 //|     by a `wifi.Radio`: it has no user-visible constructor."""
-//|
 STATIC mp_obj_t scannednetworks_iternext(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &wifi_scannednetworks_type));
     wifi_scannednetworks_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -50,16 +49,13 @@ STATIC mp_obj_t scannednetworks_iternext(mp_obj_t self_in) {
 //|     def __init__(self) -> None:
 //|         """Cannot be instantiated directly. Use `wifi.Radio.start_scanning_networks`."""
 //|         ...
-//|
 //|     def __iter__(self) -> Iterator[Network]:
 //|         """Returns itself since it is the iterator."""
 //|         ...
-//|
 //|     def __next__(self) -> Network:
 //|         """Returns the next `wifi.Network`.
-//|            Raises `StopIteration` if scanning is finished and no other results are available."""
+//|         Raises `StopIteration` if scanning is finished and no other results are available."""
 //|         ...
-//|
 
 const mp_obj_type_t wifi_scannednetworks_type = {
     { &mp_type_type },

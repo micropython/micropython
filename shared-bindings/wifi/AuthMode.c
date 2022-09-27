@@ -59,7 +59,6 @@ MAKE_ENUM_VALUE(wifi_authmode_type, authmode, ENTERPRISE, AUTHMODE_ENTERPRISE);
 //|
 //|     ENTERPRISE: object
 //|     """Each user has a unique credential."""
-//|
 MAKE_ENUM_MAP(wifi_authmode) {
     MAKE_ENUM_MAP_ENTRY(authmode, OPEN),
     MAKE_ENUM_MAP_ENTRY(authmode, WEP),

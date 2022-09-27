@@ -51,17 +51,14 @@ STATIC supervisor_run_reason_t _run_reason;
 //|        import supervisor
 //|        if supervisor.runtime.serial_connected:
 //|            print("Hello World!")"""
-//|
 
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `supervisor.Runtime`.
 //|         Use `supervisor.runtime` to access the sole instance available."""
 //|         ...
-//|
 
 //|     usb_connected: bool
 //|     """Returns the USB enumeration status (read-only)."""
-//|
 STATIC mp_obj_t supervisor_runtime_get_usb_connected(mp_obj_t self) {
     #if CIRCUITPY_USB
     return mp_obj_new_bool(tud_ready());
@@ -76,7 +73,6 @@ MP_PROPERTY_GETTER(supervisor_runtime_usb_connected_obj,
 
 //|     serial_connected: bool
 //|     """Returns the USB serial communication status (read-only)."""
-//|
 STATIC mp_obj_t supervisor_runtime_get_serial_connected(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_supervisor_runtime_get_serial_connected());
 }
@@ -89,7 +85,6 @@ MP_PROPERTY_GETTER(supervisor_runtime_serial_connected_obj,
 //|     """Returns the whether any bytes are available to read
 //|     on the USB serial input.  Allows for polling to see whether
 //|     to call the built-in input() or wait. (read-only)"""
-//|
 STATIC mp_obj_t supervisor_runtime_get_serial_bytes_available(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_supervisor_runtime_get_serial_bytes_available());
 }
@@ -108,7 +103,6 @@ void supervisor_set_run_reason(supervisor_run_reason_t run_reason) {
 
 //|     run_reason: RunReason
 //|     """Why CircuitPython started running this particular time."""
-//|
 STATIC mp_obj_t supervisor_runtime_get_run_reason(mp_obj_t self) {
     return cp_enum_find(&supervisor_run_reason_type, _run_reason);
 }
@@ -119,7 +113,6 @@ MP_PROPERTY_GETTER(supervisor_runtime_run_reason_obj,
 
 //|     autoreload: bool
 //|     """Whether CircuitPython may autoreload based on workflow writes to the filesystem."""
-//|
 STATIC mp_obj_t supervisor_runtime_get_autoreload(mp_obj_t self) {
     return mp_obj_new_bool(autoreload_is_enabled());
 }

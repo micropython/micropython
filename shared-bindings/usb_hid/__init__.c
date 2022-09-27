@@ -36,7 +36,6 @@
 //| """USB Human Interface Device
 //|
 //| The `usb_hid` module allows you to output data as a HID device."""
-//|
 
 //| devices: Tuple[Device, ...]
 //| """Tuple of all active HID device interfaces.
@@ -48,7 +47,6 @@
 //| containing a `Device` that describes the boot device chosen (keyboard or mouse).
 //| The request for a boot device overrides any other HID devices.
 //| """
-//|
 
 //| def disable() -> None:
 //|     """Do not present any USB HID devices to the host computer.
@@ -58,7 +56,6 @@
 //|     it is disabled by default. You must turn off another USB device such
 //|     as `usb_cdc` or `storage` to free up endpoints for use by `usb_hid`.
 //|     """
-//|
 STATIC mp_obj_t usb_hid_disable(void) {
     if (!common_hal_usb_hid_disable()) {
         mp_raise_RuntimeError(translate("Cannot change USB devices now"));
@@ -110,7 +107,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_disable_obj, usb_hid_disable);
 //|     will enter safe mode to report this error.
 //|     """
 //|     ...
-//|
 STATIC mp_obj_t usb_hid_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_devices, ARG_boot_device };
     static const mp_arg_t allowed_args[] = {
@@ -154,7 +150,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_enable_obj, 1, usb_hid_enable);
 //|       if you are using those devices.
 //|     :rtype int:
 //|     """
-//|
 STATIC mp_obj_t usb_hid_get_boot_device(void) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_get_boot_device());
 }

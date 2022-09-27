@@ -52,7 +52,6 @@
 //|
 //|         :param ~microcontroller.Pin pin: the pin to output to"""
 //|         ...
-//|
 STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
@@ -69,7 +68,6 @@ STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t
 //|     def deinit(self) -> None:
 //|         """Turn off the AnalogOut and release the pin for other use."""
 //|         ...
-//|
 STATIC mp_obj_t analogio_analogout_deinit(mp_obj_t self_in) {
     analogio_analogout_obj_t *self = self_in;
 
@@ -82,14 +80,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogout_deinit_obj, analogio_analogo
 //|     def __enter__(self) -> AnalogOut:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t analogio_analogout___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_analogio_analogout_deinit(args[0]);
@@ -102,7 +98,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4
 //|
 //|     Even if the underlying digital to analog converter (DAC) is lower
 //|     resolution, the value is 16-bit."""
-//|
 STATIC mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
     analogio_analogout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (common_hal_analogio_analogout_deinited(self)) {

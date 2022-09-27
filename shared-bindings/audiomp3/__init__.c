@@ -37,7 +37,6 @@
 //| see `this CircuitPython Essentials Learn guide page
 //| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-mp3-audio>`_.
 //| """
-//|
 
 STATIC const mp_rom_map_elem_t audiomp3_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiomp3) },

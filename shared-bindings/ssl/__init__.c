@@ -36,12 +36,10 @@
 //|
 //| |see_cpython_module| :mod:`cpython:ssl`.
 //| """
-//|
 
 //| def create_default_context() -> ssl.SSLContext:
 //|     """Return the default SSLContext."""
 //|     ...
-//|
 
 STATIC mp_obj_t ssl_create_default_context(void) {
     ssl_sslcontext_obj_t *s = m_new_obj(ssl_sslcontext_obj_t);

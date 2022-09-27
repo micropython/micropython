@@ -58,9 +58,10 @@
 //|         (TODO) The reference voltage varies by platform so use
 //|         ``reference_voltage`` to read the configured setting.
 //|         (TODO) Provide mechanism to read CPU Temperature."""
-//|
 
-//|     def __init__(self, pin: microcontroller.Pin, buffer: WriteableBuffer, *, sample_rate: int = 500000) -> None:
+//|     def __init__(
+//|         self, pin: microcontroller.Pin, buffer: WriteableBuffer, *, sample_rate: int = 500000
+//|     ) -> None:
 //|         """Create a `BufferedIn` on the given pin. ADC values will be read
 //|            into the given buffer at the supplied sample_rate. Depending on the
 //|            buffer typecode, 'b', 'B', 'h', 'H', samples are 8-bit byte-arrays or
@@ -72,7 +73,6 @@
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: buffer: A buffer for samples
 //|         :param ~int sample_rate: rate: sampling frequency, in samples per second"""
 //|         ...
-//|
 STATIC mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin, ARG_buffer, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
@@ -124,7 +124,6 @@ STATIC mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_
 //|     def deinit(self) -> None:
 //|         """Shut down the `BufferedIn` and release the pin for other use."""
 //|         ...
-//|
 STATIC mp_obj_t analogbufio_bufferedin_deinit(mp_obj_t self_in) {
     analogbufio_bufferedin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_analogbufio_bufferedin_deinit(self);
@@ -140,14 +139,12 @@ STATIC void check_for_deinit(analogbufio_bufferedin_obj_t *self) {
 //|     def __enter__(self) -> BufferedIn:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t analogbufio_bufferedin___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_analogbufio_bufferedin_deinit(args[0]);
@@ -158,7 +155,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogbufio_bufferedin___exit___obj, 
 //|     def read(self) -> None:
 //|         """Fills the provided buffer with ADC voltage values."""
 //|         ...
-//|
 STATIC mp_obj_t analogbufio_bufferedin_obj_read(mp_obj_t self_in) {
     analogbufio_bufferedin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

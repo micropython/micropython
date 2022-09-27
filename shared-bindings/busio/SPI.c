@@ -53,7 +53,13 @@
 //|     multiple secondaries can share the `!clock`, `!MOSI` and `!MISO` lines
 //|     and therefore the hardware.)"""
 //|
-//|     def __init__(self, clock: microcontroller.Pin, MOSI: Optional[microcontroller.Pin] = None, MISO: Optional[microcontroller.Pin] = None, half_duplex: bool = False) -> None:
+//|     def __init__(
+//|         self,
+//|         clock: microcontroller.Pin,
+//|         MOSI: Optional[microcontroller.Pin] = None,
+//|         MISO: Optional[microcontroller.Pin] = None,
+//|         half_duplex: bool = False,
+//|     ) -> None:
 //|
 //|         """Construct an SPI object on the given pins.
 //|
@@ -77,7 +83,6 @@
 //|         :param ~microcontroller.Pin MISO: the Main In Selected Out pin.
 //|         :param bool half_duplex: True when MOSI is used for bidirectional data. False when SPI is full-duplex or simplex."""
 //|         ...
-//|
 
 
 // TODO(tannewt): Support LSB SPI.
@@ -114,7 +119,6 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
 //|     def deinit(self) -> None:
 //|         """Turn off the SPI bus."""
 //|         ...
-//|
 STATIC mp_obj_t busio_spi_obj_deinit(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_busio_spi_deinit(self);
@@ -126,13 +130,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_deinit_obj, busio_spi_obj_deinit);
 //|         """No-op used by Context Managers.
 //|         Provided by context manager helper."""
 //|         ...
-//|
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t busio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_busio_spi_deinit(MP_OBJ_TO_PTR(args[0]));
@@ -153,7 +155,9 @@ STATIC void check_for_deinit(busio_spi_obj_t *self) {
     }
 }
 
-//|     def configure(self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8) -> None:
+//|     def configure(
+//|         self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8
+//|     ) -> None:
 //|         """Configures the SPI bus. The SPI object must be locked.
 //|
 //|         :param int baudrate: the desired clock rate in Hertz. The actual clock rate may be higher or lower
@@ -175,7 +179,6 @@ STATIC void check_for_deinit(busio_spi_obj_t *self) {
 //|           Two SPI objects may be created, except on the Circuit Playground Bluefruit,
 //|           which allows only one (to allow for an additional I2C object)."""
 //|         ...
-//|
 
 STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
@@ -209,7 +212,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_configure_obj, 1, busio_spi_configure);
 //|         :return: True when lock has been grabbed
 //|         :rtype: bool"""
 //|         ...
-//|
 
 STATIC mp_obj_t busio_spi_obj_try_lock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -220,7 +222,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_try_lock_obj, busio_spi_obj_try_lock);
 //|     def unlock(self) -> None:
 //|         """Releases the SPI lock."""
 //|         ...
-//|
 
 STATIC mp_obj_t busio_spi_obj_unlock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -244,7 +245,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_unlock_obj, busio_spi_obj_unlock);
 //|         :param int end: end of buffer slice; if not specified, use ``len(buffer)``
 //|         """
 //|         ...
-//|
 
 STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
@@ -279,7 +279,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 1, busio_spi_write);
 
 
 //|     import sys
-//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: int = sys.maxsize, write_value: int = 0) -> None:
+//|     def readinto(
+//|         self,
+//|         buffer: WriteableBuffer,
+//|         *,
+//|         start: int = 0,
+//|         end: int = sys.maxsize,
+//|         write_value: int = 0
+//|     ) -> None:
 //|         """Read into ``buffer`` while writing ``write_value`` for each byte read.
 //|         The SPI object must be locked.
 //|         If the number of bytes to read is 0, nothing happens.
@@ -296,7 +303,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 1, busio_spi_write);
 //|         :param int write_value: value to write while reading
 //|         """
 //|         ...
-//|
 
 STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end, ARG_write_value };
@@ -331,7 +337,16 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_readinto_obj, 1, busio_spi_readinto);
 
 //|     import sys
-//|     def write_readinto(self, out_buffer: ReadableBuffer, in_buffer: WriteableBuffer, *, out_start: int = 0, out_end: int = sys.maxsize, in_start: int = 0, in_end: int = sys.maxsize) -> None:
+//|     def write_readinto(
+//|         self,
+//|         out_buffer: ReadableBuffer,
+//|         in_buffer: WriteableBuffer,
+//|         *,
+//|         out_start: int = 0,
+//|         out_end: int = sys.maxsize,
+//|         in_start: int = 0,
+//|         in_end: int = sys.maxsize
+//|     ) -> None:
 //|         """Write out the data in ``out_buffer`` while simultaneously reading data into ``in_buffer``.
 //|         The SPI object must be locked.
 //|
@@ -355,7 +370,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_readinto_obj, 1, busio_spi_readinto);
 //|         :param int in_end: end of ``in_buffer slice``; if not specified, use ``len(in_buffer)``
 //|         """
 //|         ...
-//|
 
 STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
@@ -407,7 +421,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_readinto_obj, 1, busio_spi_write_read
 //|     frequency: int
 //|     """The actual SPI bus frequency. This may not match the frequency requested
 //|     due to internal limitations."""
-//|
 
 STATIC mp_obj_t busio_spi_obj_get_frequency(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);

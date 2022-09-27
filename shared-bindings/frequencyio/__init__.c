@@ -58,7 +58,6 @@
 //| CircuitPython will automatically turn off FrequencyIn capture when it resets all
 //| hardware after program completion. Use ``deinit()`` or a ``with`` statement
 //| to do it yourself."""
-//|
 
 STATIC const mp_rom_map_elem_t frequencyio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_frequencyio) },

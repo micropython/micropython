@@ -44,7 +44,9 @@ STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self
 //| class CharacteristicBuffer:
 //|     """Accumulates a Characteristic's incoming values in a FIFO buffer."""
 //|
-//|     def __init__(self, characteristic: Characteristic, *, timeout: int = 1, buffer_size: int = 64) -> None:
+//|     def __init__(
+//|         self, characteristic: Characteristic, *, timeout: int = 1, buffer_size: int = 64
+//|     ) -> None:
 //|
 //|         """Monitor the given Characteristic. Each time a new value is written to the Characteristic
 //|         add the newly-written bytes to a FIFO buffer.
@@ -56,7 +58,6 @@ STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self
 //|         :param int buffer_size: Size of ring buffer that stores incoming data coming from client.
 //|           Must be >= 1."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_characteristic, ARG_timeout, ARG_buffer_size, };
     static const mp_arg_t allowed_args[] = {
@@ -99,21 +100,18 @@ STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
 //|         :return: Data read
 //|         :rtype: bytes or None"""
 //|         ...
-//|
 //|     def readinto(self, buf: WriteableBuffer) -> Optional[int]:
 //|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|         :return: number of bytes read and stored into ``buf``
 //|         :rtype: int or None (on a non-blocking error)"""
 //|         ...
-//|
 //|     def readline(self) -> bytes:
 //|         """Read a line, ending in a newline character.
 //|
 //|         :return: the line read
 //|         :rtype: int or None"""
 //|         ...
-//|
 
 // These three methods are used by the shared stream methods.
 STATIC mp_uint_t bleio_characteristic_buffer_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
@@ -159,7 +157,6 @@ STATIC mp_uint_t bleio_characteristic_buffer_ioctl(mp_obj_t self_in, mp_uint_t r
 
 //|     in_waiting: int
 //|     """The number of bytes in the input buffer, available to be read"""
-//|
 STATIC mp_obj_t bleio_characteristic_buffer_obj_get_in_waiting(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -173,7 +170,6 @@ MP_PROPERTY_GETTER(bleio_characteristic_buffer_in_waiting_obj,
 //|     def reset_input_buffer(self) -> None:
 //|         """Discard any unread characters in the input buffer."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_characteristic_buffer_obj_reset_input_buffer(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -185,7 +181,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_reset_input_buffer_
 //|     def deinit(self) -> None:
 //|         """Disable permanently."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_characteristic_buffer_deinit(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_bleio_characteristic_buffer_deinit(self);

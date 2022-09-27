@@ -63,7 +63,6 @@
 //|     """Returns the `busio.I2C` object for the board's designated I2C bus(es).
 //|     The object created is a singleton, and uses the default parameter values for `busio.I2C`."""
 //|     ...
-//|
 #if CIRCUITPY_BOARD_I2C
 STATIC mp_obj_t board_i2c_0(void) {
     return common_hal_board_create_i2c(0);
@@ -80,7 +79,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c_0);
 //|     """Returns the `busio.SPI` object for the board's designated SPI bus(es).
 //|     The object created is a singleton, and uses the default parameter values for `busio.SPI`."""
 //|     ...
-//|
 #if CIRCUITPY_BOARD_SPI
 STATIC mp_obj_t board_spi_0(void) {
     return common_hal_board_create_spi(0);
@@ -97,7 +95,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi_0);
 //|     """Returns the `busio.UART` object for the board's designated UART bus(es).
 //|     The object created is a singleton, and uses the default parameter values for `busio.UART`."""
 //|     ...
-//|
 #if CIRCUITPY_BOARD_UART
 STATIC mp_obj_t board_uart_0(void) {
     return common_hal_board_create_uart(0);

@@ -41,12 +41,10 @@
 //|         hardware so they cannot be constructed on demand. Instead, use
 //|         :mod:`board` or :mod:`microcontroller.pin` to reference the desired pin."""
 //|         ...
-//|
 
 //|     def __hash__(self) -> int:
 //|         """Returns a hash for the Pin."""
 //|         ...
-//|
 // Provided by mp_generic_unary_op().
 
 static void get_pin_name(const mcu_pin_obj_t *self, qstr *package, qstr *module, qstr *name) {

@@ -42,7 +42,6 @@
 //|     `this Learn guide <https://learn.adafruit.com/custom-fonts-for-pyportal-circuitpython-display>`_
 //|
 //| """
-//|
 
 STATIC const mp_rom_map_elem_t fontio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_fontio) },

@@ -91,7 +91,6 @@
 //|    Raspberry Pi in particular does not support this with its I2C hw block.
 //|    This can be worked around by using the ``i2c-gpio`` bit banging driver.
 //|    Since the RPi firmware uses the hw i2c, it's not possible to emulate a HAT eeprom."""
-//|
 
 STATIC const mp_rom_map_elem_t i2ctarget_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_i2ctarget) },

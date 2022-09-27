@@ -40,10 +40,10 @@
 //|
 //| This is a subset of the PyUSB core module.
 //| """
-//|
 
 //| class USBError(OSError):
 //|     """Catchall exception for USB related errors."""
+//|
 //|     ...
 MP_DEFINE_USB_CORE_EXCEPTION(USBError, OSError)
 NORETURN void mp_raise_usb_core_USBError(const compressed_string_t *fmt, ...) {
@@ -56,21 +56,22 @@ NORETURN void mp_raise_usb_core_USBError(const compressed_string_t *fmt, ...) {
 
 //| class USBTimeoutError(USBError):
 //|     """Raised when a USB transfer times out."""
-//|     ...
 //|
+//|     ...
 MP_DEFINE_USB_CORE_EXCEPTION(USBTimeoutError, usb_core_USBError)
 NORETURN void mp_raise_usb_core_USBTimeoutError(void) {
     mp_raise_type(&mp_type_usb_core_USBTimeoutError);
 }
 
 
-//| def find(find_all:bool=False, *, idVendor:Optional[int]=None, idProduct:Optional[int]=None) -> Device:
-//|    """Find the first device that matches the given requirements or, if
-//|       find_all is True, return a generator of all matching devices.
+//| def find(
+//|     find_all: bool = False, *, idVendor: Optional[int] = None, idProduct: Optional[int] = None
+//| ) -> Device:
+//|     """Find the first device that matches the given requirements or, if
+//|     find_all is True, return a generator of all matching devices.
 //|
-//|       Returns None if no device matches.
-//|    """
-//|
+//|     Returns None if no device matches.
+//|     """
 typedef struct {
     mp_obj_base_t base;
     mp_int_t vid;

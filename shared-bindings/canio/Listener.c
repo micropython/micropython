@@ -41,15 +41,13 @@
 //|     the `in_waiting` method to check for an available message, a
 //|     listener can be used as an iterable, yielding messages until no
 //|     message arrives within ``self.timeout`` seconds."""
-//|
 
-//|     def receive(self) -> Optional[Union[RemoteTransmissionRequest,Message]]:
+//|     def receive(self) -> Optional[Union[RemoteTransmissionRequest, Message]]:
 //|         """Reads a message, after waiting up to ``self.timeout`` seconds
 //|
 //|         If no message is received in time, `None` is returned.  Otherwise,
 //|         a `Message` or `RemoteTransmissionRequest` is returned."""
 //|         ...
-//|
 STATIC mp_obj_t canio_listener_receive(mp_obj_t self_in) {
     canio_listener_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_listener_check_for_deinit(self);
@@ -68,7 +66,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_receive_obj, canio_listener_rece
 //|         """Returns the number of messages (including remote
 //|         transmission requests) waiting"""
 //|         ...
-//|
 STATIC mp_obj_t canio_listener_in_waiting(mp_obj_t self_in) {
     canio_listener_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_listener_check_for_deinit(self);
@@ -82,8 +79,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_in_waiting_obj, canio_listener_i
 //|         This method exists so that `Listener` can be used as an
 //|         iterable"""
 //|         ...
-//|
-//|     def __next__(self) -> Union[RemoteTransmissionRequest,Message]:
+//|     def __next__(self) -> Union[RemoteTransmissionRequest, Message]:
 //|         """Reads a message, after waiting up to self.timeout seconds
 //|
 //|         If no message is received in time, raises StopIteration.  Otherwise,
@@ -92,7 +88,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_in_waiting_obj, canio_listener_i
 //|         This method enables the `Listener` to be used as an
 //|         iterable, for instance in a for-loop."""
 //|         ...
-//|
 STATIC mp_obj_t canio_iternext(mp_obj_t self_in) {
     mp_obj_t result = canio_listener_receive(self_in);
     if (result == mp_const_none) {
@@ -104,7 +99,6 @@ STATIC mp_obj_t canio_iternext(mp_obj_t self_in) {
 //|     def deinit(self) -> None:
 //|         """Deinitialize this object, freeing its hardware resources"""
 //|         ...
-//|
 STATIC mp_obj_t canio_listener_deinit(mp_obj_t self_in) {
     canio_listener_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_listener_deinit(self);
@@ -115,7 +109,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_deinit_obj, canio_listener_deini
 //|     def __enter__(self) -> CAN:
 //|         """Returns self, to allow the object to be used in a `with` statement for resource control"""
 //|         ...
-//|
 STATIC mp_obj_t canio_listener_enter(mp_obj_t self_in) {
     canio_listener_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_listener_check_for_deinit(self);
@@ -123,7 +116,12 @@ STATIC mp_obj_t canio_listener_enter(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_enter_obj, canio_listener_enter);
 
-//|     def __exit__(self, unused1: Optional[Type[BaseException]], unused2: Optional[BaseException], unused3: Optional[TracebackType]) -> None:
+//|     def __exit__(
+//|         self,
+//|         unused1: Optional[Type[BaseException]],
+//|         unused2: Optional[BaseException],
+//|         unused3: Optional[TracebackType],
+//|     ) -> None:
 //|         """Calls deinit()"""
 //|         ...
 STATIC mp_obj_t canio_listener_exit(size_t num_args, const mp_obj_t args[]) {
@@ -134,7 +132,7 @@ STATIC mp_obj_t canio_listener_exit(size_t num_args, const mp_obj_t args[]) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canio_listener_exit_obj, 4, 4, canio_listener_exit);
 
 
-//|     timeout : float
+//|     timeout: float
 STATIC mp_obj_t canio_listener_timeout_get(mp_obj_t self_in) {
     canio_listener_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_listener_check_for_deinit(self);

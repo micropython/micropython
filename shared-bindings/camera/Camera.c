@@ -55,12 +55,10 @@
 //|         size = cam.take_picture(buffer, width=1920, height=1080, format=camera.ImageFormat.JPG)
 //|         file.write(buffer, size)
 //|         file.close()"""
-//|
 
 //|     def __init__(self) -> None:
 //|         """Initialize camera."""
 //|         ...
-//|
 STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     camera_obj_t *self = m_new_obj(camera_obj_t);
     self->base.type = &camera_type;
@@ -74,7 +72,6 @@ STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 //|     def deinit(self) -> None:
 //|         """De-initialize camera."""
 //|         ...
-//|
 STATIC mp_obj_t camera_obj_deinit(mp_obj_t self_in) {
     camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_camera_deinit(self);
@@ -95,7 +92,6 @@ STATIC void check_for_deinit(camera_obj_t *self) {
 //|         :return: the number of bytes written into buf
 //|         :rtype: int"""
 //|         ...
-//|
 STATIC mp_obj_t camera_obj_take_picture(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_width, ARG_height, ARG_format };
     static const mp_arg_t allowed_args[] = {

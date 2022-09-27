@@ -33,12 +33,10 @@
 
 //| class Hash:
 //|     """In progress hash algorithm. This object is always created by a `hashlib.new()`. It has no
-//|        user-visible constructor."""
-//|
+//|     user-visible constructor."""
 
 //|     digest_size: int
 //|     """Digest size in bytes"""
-//|
 STATIC mp_obj_t hashlib_hash_digest_size_get(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &hashlib_hash_type));
     hashlib_hash_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -52,7 +50,6 @@ MP_PROPERTY_GETTER(hashlib_hash_digest_size_obj, (mp_obj_t)&hashlib_hash_digest_
 //|
 //|         :param ~circuitpython_typing.ReadableBuffer data: Update the hash from data in this buffer"""
 //|         ...
-//|
 mp_obj_t hashlib_hash_update(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_check_self(mp_obj_is_type(self_in, &hashlib_hash_type));
     hashlib_hash_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -68,7 +65,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(hashlib_hash_update_obj, hashlib_hash_update);
 //|     def digest(self) -> bytes:
 //|         """Returns the current digest as bytes() with a length of `hashlib.Hash.digest_size`."""
 //|         ...
-//|
 STATIC mp_obj_t hashlib_hash_digest(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &hashlib_hash_type));
     hashlib_hash_obj_t *self = MP_OBJ_TO_PTR(self_in);

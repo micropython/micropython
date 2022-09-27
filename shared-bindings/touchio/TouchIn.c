@@ -50,14 +50,12 @@
 //|        while True:
 //|            if touch.value:
 //|                print("touched!")"""
-//|
 
 //|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Use the TouchIn on the given pin.
 //|
 //|         :param ~microcontroller.Pin pin: the pin to read from"""
 //|         ...
-//|
 STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check number of arguments
@@ -76,7 +74,6 @@ STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
 //|     def deinit(self) -> None:
 //|         """Deinitialises the TouchIn and releases any hardware resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t touchio_touchin_deinit(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_touchio_touchin_deinit(self);
@@ -93,14 +90,12 @@ STATIC void check_for_deinit(touchio_touchin_obj_t *self) {
 //|     def __enter__(self) -> TouchIn:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t touchio_touchin_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_touchio_touchin_deinit(args[0]);
@@ -112,7 +107,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(touchio_touchin___exit___obj, 4, 4, t
 //|     """Whether the touch pad is being touched or not. (read-only)
 //|
 //|     True when `raw_value` > `threshold`."""
-//|
 STATIC mp_obj_t touchio_touchin_obj_get_value(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -126,7 +120,6 @@ MP_PROPERTY_GETTER(touchio_touchin_value_obj,
 
 //|     raw_value: int
 //|     """The raw touch measurement as an `int`. (read-only)"""
-//|
 STATIC mp_obj_t touchio_touchin_obj_get_raw_value(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -152,7 +145,6 @@ MP_PROPERTY_GETTER(touchio_touchin_raw_value_obj,
 //|
 //|       touch = touchio.TouchIn(board.A1)
 //|       touch.threshold = 7300"""
-//|
 STATIC mp_obj_t touchio_touchin_obj_get_threshold(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

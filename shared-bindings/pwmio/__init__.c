@@ -61,7 +61,6 @@
 //| For the essentials of `pwmio`, see the `CircuitPython Essentials
 //| Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-pwm>`_.
 //| """
-//|
 
 STATIC const mp_rom_map_elem_t pwmio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pwmio) },

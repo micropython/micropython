@@ -58,7 +58,6 @@
 //| For more information on working with this module, refer to
 //| `this Learn Guide on using it <https://learn.adafruit.com/using-canio-circuitpython>`_.
 //| """
-//|
 
 #include "py/obj.h"
 #include "py/enum.h"
@@ -97,7 +96,6 @@ MAKE_ENUM_VALUE(canio_bus_state_type, bus_state, BUS_OFF, BUS_STATE_OFF);
 //|     """The bus has turned off due to the number of errors that have
 //|     occurred recently.  It must be restarted before it will send or receive
 //|     packets.  This device will neither send or acknowledge packets on the bus."""
-//|
 MAKE_ENUM_MAP(canio_bus_state) {
     MAKE_ENUM_MAP_ENTRY(bus_state, ERROR_ACTIVE),
     MAKE_ENUM_MAP_ENTRY(bus_state, ERROR_PASSIVE),

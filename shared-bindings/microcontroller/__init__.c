@@ -49,19 +49,16 @@
 //|
 //| from nvm import ByteArray
 //| from watchdog import WatchDogTimer
-//|
 
 //| cpu: Processor
 //| """CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
 //| (clock frequency).
 //| This object is an instance of `microcontroller.Processor`."""
-//|
 
 //| cpus: Processor
 //| """CPU information and control, such as ``cpus[0].temperature`` and ``cpus[1].frequency``
 //| (clock frequency) on chips with more than 1 cpu. The index selects which cpu.
 //| This object is an instance of `microcontroller.Processor`."""
-//|
 
 //| def delay_us(delay: int) -> None:
 //|     """Dedicated delay method used for very short delays. **Do not** do long delays
@@ -71,7 +68,6 @@
 //|     processing while you are waiting, explore a different avenue such as using
 //|     `time.sleep()`."""
 //|     ...
-//|
 STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
     uint32_t delay = mp_obj_get_int(delay_obj);
 
@@ -84,7 +80,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_delay_us_obj, mcu_delay_us);
 //| def disable_interrupts() -> None:
 //|     """Disable all interrupts. Be very careful, this can stall everything."""
 //|     ...
-//|
 STATIC mp_obj_t mcu_disable_interrupts(void) {
     common_hal_mcu_disable_interrupts();
     return mp_const_none;
@@ -94,7 +89,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_disable_interrupts_obj, mcu_disable_interru
 //| def enable_interrupts() -> None:
 //|     """Enable the interrupts that were enabled at the last disable."""
 //|     ...
-//|
 STATIC mp_obj_t mcu_enable_interrupts(void) {
     common_hal_mcu_enable_interrupts();
     return mp_const_none;
@@ -107,7 +101,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupt
 //|
 //|     :param ~microcontroller.RunMode run_mode: The next run mode"""
 //|     ...
-//|
 STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
     mcu_runmode_t run_mode;
     if (run_mode_obj == MP_OBJ_FROM_PTR(&mcu_runmode_uf2_obj)) {
@@ -134,7 +127,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_on_next_reset_obj, mcu_on_next_reset);
 //|       host computer. Be very careful when calling this! Make sure the device
 //|       "Safely removed" on Windows or "ejected" on Mac OSX and Linux."""
 //|     ...
-//|
 STATIC mp_obj_t mcu_reset(void) {
     common_hal_mcu_reset();
     // We won't actually get here because we're resetting.
@@ -147,12 +139,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 //| This object is the sole instance of `nvm.ByteArray` when available or ``None`` otherwise.
 //|
 //| :type: nvm.ByteArray or None"""
-//|
 
 //| watchdog: Optional[WatchDogTimer]
 //| """Available watchdog timer.
 //| This object is the sole instance of `watchdog.WatchDogTimer` when available or ``None`` otherwise."""
-//|
 
 const mp_obj_module_t mcu_pin_module = {
     .base = { &mp_type_module },
