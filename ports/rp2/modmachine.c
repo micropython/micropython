@@ -48,6 +48,9 @@
 #include "pico/bootrom.h"
 #include "pico/stdlib.h"
 #include "pico/unique_id.h"
+#if MICROPY_PY_NETWORK_CYW43
+#include "lib/cyw43-driver/src/cyw43.h"
+#endif
 
 #if MICROPY_PY_MACHINE
 
@@ -141,6 +144,13 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     const uint32_t xosc_hz = XOSC_MHZ * 1000000;
 
+    uint32_t my_interrupts = save_and_disable_interrupts();
+    #if MICROPY_PY_NETWORK_CYW43
+    if (cyw43_has_pending) {
+        restore_interrupts(my_interrupts);
+        return mp_const_none;
+    }
+    #endif
     // Disable USB and ADC clocks.
     clock_stop(clk_usb);
     clock_stop(clk_adc);
@@ -165,6 +175,9 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_DISABLE << ROSC_CTRL_ENABLE_LSB;
 
     if (n_args == 0) {
+        #if MICROPY_PY_NETWORK_CYW43
+        gpio_set_dormant_irq_enabled(CYW43_PIN_WL_HOST_WAKE, GPIO_IRQ_LEVEL_HIGH, true);
+        #endif
         xosc_dormant();
     } else {
         uint32_t sleep_en0 = clocks_hw->sleep_en0;
@@ -190,6 +203,7 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     // Bring back all clocks.
     clocks_init();
+    restore_interrupts(my_interrupts);
 
     return mp_const_none;
 }
