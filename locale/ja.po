@@ -2540,8 +2540,7 @@ msgstr "式には代入できません"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "%qを%qに変換できません"
 
@@ -2730,10 +2729,6 @@ msgstr ""
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "色は0x000000から0xffffffでなければなりません"
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr ""
@@ -2886,10 +2881,6 @@ msgstr ""
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
 msgstr ""
-
-#: shared-bindings/displayio/Shape.c
-msgid "end_x should be an int"
-msgstr "end_xは整数でなければなりません"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
@@ -3758,10 +3749,6 @@ msgstr ""
 msgid "palette must be 32 bytes long"
 msgstr "パレットの長さは32バイトでなければなりません"
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr "palette_indexには整数が必要"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
@@ -4001,10 +3988,6 @@ msgstr ""
 msgid "start/end indices"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c
-msgid "start_x should be an int"
-msgstr ""
-
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
 msgstr "stepは非ゼロ値でなければなりません"
@@ -4219,7 +4202,6 @@ msgid "unreadable attribute"
 msgstr "読み込み不可能な属性"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "非対応の型 %q"
 
@@ -4349,10 +4331,6 @@ msgstr "xが範囲外"
 msgid "xTaskCreate failed"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
-msgstr "yは整数でなければなりません"
-
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
 msgstr "yが範囲外"
@@ -4372,6 +4350,15 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "end_x should be an int"
+#~ msgstr "end_xは整数でなければなりません"
+
+#~ msgid "palette_index should be an int"
+#~ msgstr "palette_indexには整数が必要"
+
+#~ msgid "y should be an int"
+#~ msgstr "yは整数でなければなりません"
 
 #~ msgid ""
 #~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "

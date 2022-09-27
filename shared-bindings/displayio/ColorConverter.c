@@ -72,10 +72,7 @@ STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, siz
 STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t color;
-    if (!mp_obj_get_int_maybe(color_obj, &color)) {
-        mp_raise_ValueError(translate("color should be an int"));
-    }
+    mp_int_t color = mp_arg_validate_type_int(color_obj, MP_QSTR_color);
     _displayio_colorspace_t colorspace;
     colorspace.depth = 16;
     uint32_t output_color;

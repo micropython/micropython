@@ -172,6 +172,21 @@ STATIC mp_obj_t audiomp3_mp3file_obj_set_file(mp_obj_t self_in, mp_obj_t file) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(audiomp3_mp3file_set_file_obj, audiomp3_mp3file_obj_set_file);
 
+//|     def open(self, filepath: str) -> None:
+//|         """Takes in the name of a mp3 file, opens it, and replaces the old playback file."""
+//|         ...
+//|
+STATIC mp_obj_t audiomp3_mp3file_obj_open(mp_obj_t self_in, mp_obj_t path) {
+    audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
+    mp_obj_t file = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), path, MP_ROM_QSTR(MP_QSTR_rb));
+
+    common_hal_audiomp3_mp3file_set_file(self, file);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(audiomp3_mp3file_open_obj, audiomp3_mp3file_obj_open);
+
 MP_PROPERTY_GETSET(audiomp3_mp3file_file_obj,
     (mp_obj_t)&audiomp3_mp3file_get_file_obj,
     (mp_obj_t)&audiomp3_mp3file_set_file_obj);
@@ -256,6 +271,7 @@ MP_PROPERTY_GETTER(audiomp3_mp3file_samples_decoded_obj,
 
 STATIC const mp_rom_map_elem_t audiomp3_mp3file_locals_dict_table[] = {
     // Methods
+    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&audiomp3_mp3file_open_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiomp3_mp3file_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audiomp3_mp3file___exit___obj) },

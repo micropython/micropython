@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2022 flom84
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
-
+#include "peripherals/gpio.h"
+#include "stm32f4xx_hal.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "nrfx_uarte.h"
 
-#include "py/obj.h"
-#include "py/ringbuf.h"
+void stm32_peripherals_gpio_init(void) {
+    // * GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOH_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
-typedef struct {
-    mp_obj_base_t base;
+    // Never reset pins
+    never_reset_pin_number(2, 13); // PC13 anti tamp
+    never_reset_pin_number(2, 14); // PC14 OSC32_IN
+    never_reset_pin_number(2, 15); // PC15 OSC32_OUT
+    never_reset_pin_number(0, 13); // PA13 SWDIO
+    never_reset_pin_number(0, 14); // PA14 SWCLK
+}
 
-    nrfx_uarte_t *uarte;
-
-    uint32_t baudrate;
-    uint32_t timeout_ms;
-
-    ringbuf_t ringbuf;
-    uint8_t rx_char;    // EasyDMA buf
-    bool rx_paused;     // set by irq if no space in rbuf
-
-    uint8_t tx_pin_number;
-    uint8_t rx_pin_number;
-    uint8_t cts_pin_number;
-    uint8_t rts_pin_number;
-} busio_uart_obj_t;
-
-void uart_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
+void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
+}

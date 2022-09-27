@@ -2548,8 +2548,7 @@ msgstr "hindi ma i-assign sa expression"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -2741,10 +2740,6 @@ msgstr "ang color buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "color ay dapat mula sa 0x000000 hangang 0xffffff"
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr "color ay dapat na int"
-
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr ""
@@ -2899,11 +2894,6 @@ msgstr "walang laman ang sequence"
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
 msgstr "sa huli ng format habang naghahanap sa conversion specifier"
-
-#: shared-bindings/displayio/Shape.c
-#, fuzzy
-msgid "end_x should be an int"
-msgstr "y ay dapat int"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
@@ -3777,10 +3767,6 @@ msgstr ""
 msgid "palette must be 32 bytes long"
 msgstr "ang palette ay dapat 32 bytes ang haba"
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr "palette_index ay dapat na int"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence a2 hanggang a5"
@@ -4019,11 +4005,6 @@ msgstr ""
 msgid "start/end indices"
 msgstr "start/end indeks"
 
-#: shared-bindings/displayio/Shape.c
-#, fuzzy
-msgid "start_x should be an int"
-msgstr "y ay dapat int"
-
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
 msgstr "step ay dapat hindi zero"
@@ -4238,7 +4219,6 @@ msgid "unreadable attribute"
 msgstr "hindi mabasa ang attribute"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "Hindi supportadong tipo ng %q"
 
@@ -4369,10 +4349,6 @@ msgstr "wala sa sakop ang address"
 msgid "xTaskCreate failed"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
-msgstr "y ay dapat int"
-
 #: shared-module/displayio/Shape.c
 #, fuzzy
 msgid "y value out of bounds"
@@ -4393,6 +4369,23 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "color should be an int"
+#~ msgstr "color ay dapat na int"
+
+#, fuzzy
+#~ msgid "end_x should be an int"
+#~ msgstr "y ay dapat int"
+
+#~ msgid "palette_index should be an int"
+#~ msgstr "palette_index ay dapat na int"
+
+#, fuzzy
+#~ msgid "start_x should be an int"
+#~ msgstr "y ay dapat int"
+
+#~ msgid "y should be an int"
+#~ msgstr "y ay dapat int"
 
 #~ msgid ""
 #~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "

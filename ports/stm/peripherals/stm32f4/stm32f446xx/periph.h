@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2022 flom84
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
+#ifndef MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F446RE_PERIPH_H
+#define MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F446RE_PERIPH_H
 
-#include "common-hal/microcontroller/Pin.h"
-#include "nrfx_uarte.h"
+// I2C
+extern I2C_TypeDef *mcu_i2c_banks[3];
 
-#include "py/obj.h"
-#include "py/ringbuf.h"
+extern const mcu_periph_obj_t mcu_i2c_sda_list[3];
+extern const mcu_periph_obj_t mcu_i2c_scl_list[3];
 
-typedef struct {
-    mp_obj_base_t base;
+// SPI
+extern SPI_TypeDef *mcu_spi_banks[3];
 
-    nrfx_uarte_t *uarte;
+extern const mcu_periph_obj_t mcu_spi_sck_list[3];
+extern const mcu_periph_obj_t mcu_spi_mosi_list[3];
+extern const mcu_periph_obj_t mcu_spi_miso_list[3];
+extern const mcu_periph_obj_t mcu_spi_nss_list[3];
 
-    uint32_t baudrate;
-    uint32_t timeout_ms;
+// UART
+extern USART_TypeDef *mcu_uart_banks[MAX_UART];
+extern bool mcu_uart_has_usart[MAX_UART];
 
-    ringbuf_t ringbuf;
-    uint8_t rx_char;    // EasyDMA buf
-    bool rx_paused;     // set by irq if no space in rbuf
+extern const mcu_periph_obj_t mcu_uart_tx_list[3];
+extern const mcu_periph_obj_t mcu_uart_rx_list[3];
 
-    uint8_t tx_pin_number;
-    uint8_t rx_pin_number;
-    uint8_t cts_pin_number;
-    uint8_t rts_pin_number;
-} busio_uart_obj_t;
+// Timers
+#define TIM_BANK_ARRAY_LEN 14
+#define TIM_PIN_ARRAY_LEN 34
+extern TIM_TypeDef *mcu_tim_banks[TIM_BANK_ARRAY_LEN];
+extern const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN];
 
-void uart_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
+#endif // MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F446RE_PERIPH_H

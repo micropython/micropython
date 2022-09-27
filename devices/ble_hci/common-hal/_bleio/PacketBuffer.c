@@ -37,13 +37,13 @@
 #include "supervisor/shared/tick.h"
 
 STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
-    if (len + sizeof(uint16_t) > ringbuf_capacity(&self->ringbuf)) {
+    if (len + sizeof(uint16_t) > ringbuf_size(&self->ringbuf)) {
         // This shouldn't happen.
         return;
     }
     // Push all the data onto the ring buffer.
     // Make room for the new value by dropping the oldest packets first.
-    while (ringbuf_capacity(&self->ringbuf) - ringbuf_num_filled(&self->ringbuf) < len + sizeof(uint16_t)) {
+    while (ringbuf_size(&self->ringbuf) - ringbuf_num_filled(&self->ringbuf) < len + sizeof(uint16_t)) {
         uint16_t packet_length;
         ringbuf_get_n(&self->ringbuf, (uint8_t *)&packet_length, sizeof(uint16_t));
         for (uint16_t i = 0; i < packet_length; i++) {
@@ -264,5 +264,6 @@ bool common_hal_bleio_packet_buffer_deinited(bleio_packet_buffer_obj_t *self) {
 void common_hal_bleio_packet_buffer_deinit(bleio_packet_buffer_obj_t *self) {
     if (!common_hal_bleio_packet_buffer_deinited(self)) {
         bleio_characteristic_clear_observer(self->characteristic);
+        ringbuf_deinit(&self->ringbuf);
     }
 }

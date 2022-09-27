@@ -2581,8 +2581,7 @@ msgstr "kan inte tilldela uttryck"
 msgid "can't cancel self"
 msgstr "kan inte avbryta sig själv"
 
-#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kan inte konvertera %q till %q"
 
@@ -2771,10 +2770,6 @@ msgstr "färgbuffert måste vara en bytearray eller matris av typ 'b' eller 'B'"
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "färg måste vara mellan 0x000000 och 0xffffff"
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr "color ska vara en int"
-
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr "jämförelse av int och uint"
@@ -2928,10 +2923,6 @@ msgstr "tom sekvens"
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
 msgstr "slut på format vid sökning efter konverteringsspecificerare"
-
-#: shared-bindings/displayio/Shape.c
-msgid "end_x should be an int"
-msgstr "color ska vara en int"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
@@ -3804,10 +3795,6 @@ msgstr "pack förväntade %d stycken för packning (fick %d)"
 msgid "palette must be 32 bytes long"
 msgstr "palette måste vara 32 bytes lång"
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr "palette_index ska vara en int"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parametrarna måste registreras i följd a2-a5"
@@ -4046,10 +4033,6 @@ msgstr "source_bitmap måste ha value_count av 8"
 msgid "start/end indices"
 msgstr "start-/slutindex"
 
-#: shared-bindings/displayio/Shape.c
-msgid "start_x should be an int"
-msgstr "start_x ska vara en int"
-
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
 msgstr "step måste vara icke-noll"
@@ -4264,7 +4247,6 @@ msgid "unreadable attribute"
 msgstr "attribut kan inte läsas"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "typ %q stöds inte"
 
@@ -4394,10 +4376,6 @@ msgstr "x-värde utanför intervall"
 msgid "xTaskCreate failed"
 msgstr "xTaskCreate misslyckades"
 
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
-msgstr "y ska vara en int"
-
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
 msgstr "y-värde utanför intervall"
@@ -4417,6 +4395,21 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "color should be an int"
+#~ msgstr "color ska vara en int"
+
+#~ msgid "end_x should be an int"
+#~ msgstr "color ska vara en int"
+
+#~ msgid "palette_index should be an int"
+#~ msgstr "palette_index ska vara en int"
+
+#~ msgid "start_x should be an int"
+#~ msgstr "start_x ska vara en int"
+
+#~ msgid "y should be an int"
+#~ msgstr "y ska vara en int"
 
 #~ msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
 #~ msgstr ""

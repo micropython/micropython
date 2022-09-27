@@ -85,13 +85,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_make_new(const mp_obj_type_t *type, size_t 
     uint8_t *addresses = NULL;
     unsigned int i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        mp_int_t value;
-        if (!mp_obj_get_int_maybe(item, &value)) {
-            mp_raise_TypeError_varg(translate("can't convert %q to %q"), MP_QSTR_address, MP_QSTR_int);
-        }
-        if (value < 0x00 || value > 0x7f) {
-            mp_raise_ValueError(translate("address out of bounds"));
-        }
+        mp_uint_t value = mp_arg_validate_int_range(mp_obj_get_int(item), 0x00, 0x7f, MP_QSTR_address);
         addresses = m_renew(uint8_t, addresses, i, i + 1);
         addresses[i++] = value;
     }

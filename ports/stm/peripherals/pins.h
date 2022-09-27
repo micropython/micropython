@@ -97,6 +97,9 @@ extern const mp_obj_type_t mcu_pin_type;
 #ifdef STM32F407xx
 #include "stm32f4/stm32f407xx/pins.h"
 #endif
+#ifdef STM32F446xx
+#include "stm32f4/stm32f446xx/pins.h"
+#endif
 
 // F7 Series
 #ifdef STM32F746xx

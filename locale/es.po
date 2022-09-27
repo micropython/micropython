@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-08-23 14:19+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"PO-Revision-Date: 2022-09-23 17:20+0000\n"
+"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.8.1-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: main.c
 msgid ""
@@ -31,6 +31,8 @@ msgid ""
 "\n"
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
+"\n"
+"Código detenido por la auto-recarga. Recargando pronto.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -85,20 +87,21 @@ msgstr ""
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/rtc/RTC.c
+#, fuzzy
 msgid "%q"
-msgstr ""
+msgstr "%q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
-msgstr ""
+msgstr "%q y %q contienen pines duplicados"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "%q and %q must be different"
-msgstr ""
+msgstr "%q y %q deben ser diferentes"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
-msgstr ""
+msgstr "%q contiene pines duplicados"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -118,31 +121,31 @@ msgstr "%q indices deben ser enteros, no %s"
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
-msgstr ""
+msgstr "%q inicializado fallido"
 
 #: py/argcheck.c
 msgid "%q length must be %d"
-msgstr ""
+msgstr "%q tamaño debe ser %d"
 
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
-msgstr ""
+msgstr "%q tamaño debe ser %d-%d"
 
 #: py/argcheck.c
 msgid "%q length must be <= %d"
-msgstr ""
+msgstr "%q tamaño debe ser <= %d"
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
+msgstr "%q tamaño debe ser >= %d"
 
 #: shared-bindings/busio/I2C.c
 msgid "%q length must be >= 1"
-msgstr ""
+msgstr "%q tamaño debe ser >= 1"
 
 #: py/argcheck.c
 msgid "%q must be %d"
-msgstr ""
+msgstr "%q debe ser %d"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
@@ -150,11 +153,11 @@ msgstr "%q debe ser %d-%d"
 
 #: shared-bindings/displayio/Display.c
 msgid "%q must be 1 when %q is True"
-msgstr ""
+msgstr "%q debe ser 1 cuando %q es True"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
-msgstr ""
+msgstr "%q debe ser <= %d"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -2593,8 +2596,7 @@ msgstr "no se puede asignar a la expresión"
 msgid "can't cancel self"
 msgstr "no se puede cancelar a si mismo"
 
-#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "no puede convertir %q a %q"
 
@@ -2786,10 +2788,6 @@ msgstr "color buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "color debe estar entre 0x000000 y 0xffffff"
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr "color deberia ser un int"
-
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr "comparación entre int y uint"
@@ -2942,10 +2940,6 @@ msgstr "secuencia vacía"
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
 msgstr "el final del formato mientras se busca el especificador de conversión"
-
-#: shared-bindings/displayio/Shape.c
-msgid "end_x should be an int"
-msgstr "end_x debe ser un int"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
@@ -3820,10 +3814,6 @@ msgstr "pack espera %d items para empaquetado (se recibió %d)"
 msgid "palette must be 32 bytes long"
 msgstr "palette debe ser 32 bytes de largo"
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr "palette_index deberia ser un int"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "los parámetros deben ser registros en secuencia de a2 a a5"
@@ -4061,10 +4051,6 @@ msgstr ""
 msgid "start/end indices"
 msgstr "índices inicio/final"
 
-#: shared-bindings/displayio/Shape.c
-msgid "start_x should be an int"
-msgstr "start_x deberia ser un int"
-
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
 msgstr "paso debe ser numero no cero"
@@ -4280,7 +4266,6 @@ msgid "unreadable attribute"
 msgstr "atributo no legible"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "tipo de %q no soportado"
 
@@ -4410,10 +4395,6 @@ msgstr "valor x fuera de límites"
 msgid "xTaskCreate failed"
 msgstr "fallo en xTaskCreate"
 
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
-msgstr "y deberia ser un int"
-
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
 msgstr "valor y fuera de límites"
@@ -4433,6 +4414,21 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "color should be an int"
+#~ msgstr "color deberia ser un int"
+
+#~ msgid "end_x should be an int"
+#~ msgstr "end_x debe ser un int"
+
+#~ msgid "palette_index should be an int"
+#~ msgstr "palette_index deberia ser un int"
+
+#~ msgid "start_x should be an int"
+#~ msgstr "start_x deberia ser un int"
+
+#~ msgid "y should be an int"
+#~ msgstr "y deberia ser un int"
 
 #~ msgid ""
 #~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "

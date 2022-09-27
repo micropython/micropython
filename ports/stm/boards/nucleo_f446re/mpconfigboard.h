@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2022 flom84
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
+// Micropython setup
 
-#include "common-hal/microcontroller/Pin.h"
-#include "nrfx_uarte.h"
+#define MICROPY_HW_BOARD_NAME "NUCLEO F446RE"
+#define MICROPY_HW_MCU_NAME "STM32F446xx"
 
-#include "py/obj.h"
-#include "py/ringbuf.h"
+#define FLASH_SIZE (0x80000u)     // 512K
+#define FLASH_PAGE_SIZE (0x4000u) // 16K
 
-typedef struct {
-    mp_obj_base_t base;
+#define HSE_VALUE ((uint32_t)8000000u)
+#define BOARD_HSE_SOURCE (RCC_HSE_ON)
+// The schematic has a 32k crystal that isn't fitted. Uncommented the line below if you add it.
+// #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
+// #define LSE_VALUE  ((uint32_t)32000U)
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
 
-    nrfx_uarte_t *uarte;
+// USART3 + USB FTDI
+// #define CIRCUITPY_CONSOLE_UART_TX (&pin_PC10)
+// #define CIRCUITPY_CONSOLE_UART_RX (&pin_PC11)
 
-    uint32_t baudrate;
-    uint32_t timeout_ms;
+// USART2 + ST link
+// #define CIRCUITPY_CONSOLE_UART_TX (&pin_PA02)
+// #define CIRCUITPY_CONSOLE_UART_RX (&pin_PA03)
 
-    ringbuf_t ringbuf;
-    uint8_t rx_char;    // EasyDMA buf
-    bool rx_paused;     // set by irq if no space in rbuf
+// Status LEDs
+#define MICROPY_HW_LED_STATUS (&pin_PA05)
 
-    uint8_t tx_pin_number;
-    uint8_t rx_pin_number;
-    uint8_t cts_pin_number;
-    uint8_t rts_pin_number;
-} busio_uart_obj_t;
+#define MICROPY_FATFS_EXFAT 0
 
-void uart_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
+#define BOARD_NO_VBUS_SENSE (1)

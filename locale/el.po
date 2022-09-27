@@ -8,19 +8,23 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
+"PO-Revision-Date: 2022-09-23 17:20+0000\n"
+"Last-Translator: Bill Sideris <bill88t@feline.gr>\n"
 "Language-Team: none\n"
 "Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code done running.\n"
 msgstr ""
+"\n"
+"Η εκτέλεση του κώδικα ολοκληρώθηκε.\n"
 
 #: main.c
 msgid ""
@@ -34,14 +38,18 @@ msgid ""
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
+"\n"
+"Παρακαλώ δημιουγήστε ενα πρόβλημα με τα περιεχόμενα του CIRCUITPY δίσκου "
+"στο\n"
+"https://github.com/adafruit/circuitpython/issues\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
-msgstr ""
+msgstr "  Αρχείο \"%q\""
 
 #: py/obj.c
 msgid "  File \"%q\", line %d"
-msgstr ""
+msgstr "  Αρχείο \"%q\", γραμμή %d"
 
 #: py/builtinhelp.c
 msgid " is of type %q\n"
@@ -53,7 +61,7 @@ msgstr ""
 
 #: main.c
 msgid " output:\n"
-msgstr ""
+msgstr " έξοδος:\n"
 
 #: py/objstr.c
 #, c-format
@@ -325,7 +333,7 @@ msgstr ""
 
 #: py/compile.c
 msgid "'await' outside function"
-msgstr ""
+msgstr "'await' εκτός συνάρτησης"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
@@ -337,15 +345,15 @@ msgstr ""
 
 #: py/compile.c
 msgid "'continue' outside loop"
-msgstr ""
+msgstr "'continue' εκτός επανάληψης"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "'coroutine' αντικείμενο δεν μπορεί να χρησιμοποιηθεί σαν επαναλήπτης"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
-msgstr ""
+msgstr "'data' απαιτεί τουλάχιστον 2 παραμέτρους"
 
 #: py/compile.c
 msgid "'data' requires integer arguments"
@@ -373,15 +381,15 @@ msgstr ""
 
 #: py/obj.c
 msgid ", in %q\n"
-msgstr ""
+msgstr ", στο %q\n"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
-msgstr ""
+msgstr "0.0 σε μία σύνθετη δύναμη"
 
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
-msgstr ""
+msgstr "pow() με 3 παραμέτρους δεν υποστηρίζεται"
 
 #: shared-module/msgpack/__init__.c
 msgid "64 bit types"
@@ -391,66 +399,66 @@ msgstr ""
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
-msgstr ""
+msgstr "Ένα κανάλι interrupt υλικού είναι ήδη σε χρήση"
 
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
-msgstr ""
+msgstr "Το ADC2 χρησιμοποιείται απο το WIFI"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
-msgstr ""
+msgstr "Η διεύθυνση πρέπει να είναι %d bytes μεγάλη"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr ""
+msgstr "Όλα τα περιφεριακά CAN είναι σε χρήση"
 
 #: ports/espressif/common-hal/busio/I2C.c
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
-msgstr ""
+msgstr "Όλα τα I2C περιφεριακά ειναι σε χρήση"
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
 #: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
-msgstr ""
+msgstr "Όλες οι μονάδες PCNT είναι σε χρήση"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
-msgstr ""
+msgstr "Όλα τα RX FIFOs είναι σε χρήση"
 
 #: ports/espressif/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
-msgstr ""
+msgstr "Όλα τα SPI περιφεριακά είναι σε χρήση"
 
 #: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
-msgstr ""
+msgstr "Όλα τα UART περιφεριακά ειναι σε χρήση"
 
 #: ports/nrf/common-hal/countio/Counter.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
-msgstr ""
+msgstr "Όλα τα κανάλια είναι σε χρήση"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
-msgstr ""
+msgstr "Όλα τα κανάλια γεγονότων είναι σε χρήση"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
-msgstr ""
+msgstr "Όλες οι μηχανές κατάστασης είναι σε χρήση"
 
 #: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
-msgstr ""
+msgstr "Όλα τα κανάλια γεγονότων συγχρονισμού είναι σε χρήση"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
@@ -535,7 +543,7 @@ msgstr ""
 
 #: main.c
 msgid "Auto-reload is off.\n"
-msgstr ""
+msgstr "Η αυτόματη επαναφόρτωση είναι απενεργοποιημένη.\n"
 
 #: main.c
 msgid ""
@@ -2526,8 +2534,7 @@ msgstr ""
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -2714,10 +2721,6 @@ msgstr ""
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr ""
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr ""
@@ -2867,10 +2870,6 @@ msgstr ""
 
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
-msgstr ""
-
-#: shared-bindings/displayio/Shape.c
-msgid "end_x should be an int"
 msgstr ""
 
 #: shared-bindings/alarm/time/TimeAlarm.c
@@ -3739,10 +3738,6 @@ msgstr ""
 msgid "palette must be 32 bytes long"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr ""
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
@@ -3980,10 +3975,6 @@ msgstr ""
 msgid "start/end indices"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c
-msgid "start_x should be an int"
-msgstr ""
-
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
 msgstr ""
@@ -4198,7 +4189,6 @@ msgid "unreadable attribute"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr ""
 
@@ -4326,10 +4316,6 @@ msgstr ""
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
-msgstr ""
-
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
 msgstr ""
 
 #: shared-module/displayio/Shape.c
