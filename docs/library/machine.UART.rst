@@ -188,7 +188,7 @@ Methods
        For the rp2, esp8266 and nrf ports the call returns while the last byte is sent.
        If required, a one character wait time has to be added in the calling script.
 
-   Availability: rp2, esp32, esp8266, mimxrt, cc3200, stm32, nrf ports
+   Availability: rp2, esp32, esp8266, mimxrt, cc3200, stm32, nrf ports, renesas-ra
 
 .. method:: UART.txdone()
 
@@ -201,7 +201,7 @@ Methods
        of a transfer is still being sent. If required, a one character wait time has to be
        added in the calling script.
 
-   Availability: rp2, esp32, esp8266, mimxrt, cc3200, stm32, nrf ports
+   Availability: rp2, esp32, esp8266, mimxrt, cc3200, stm32, nrf ports, renesas-ra
 
 Constants
 ---------
