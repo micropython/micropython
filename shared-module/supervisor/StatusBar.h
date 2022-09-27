@@ -33,11 +33,10 @@ typedef struct {
     mp_obj_base_t base;
     bool console;
     bool display;
-    bool update_in_progress;
-    bool written;
+    bool updated;
 } supervisor_status_bar_obj_t;
 
-extern bool supervisor_status_bar_get_update_in_progress(supervisor_status_bar_obj_t *self);
-extern void supervisor_status_bar_set_update_in_progress(supervisor_status_bar_obj_t *self, bool in_progress);
+extern void shared_module_supervisor_status_bar_init(supervisor_status_bar_obj_t *self);
+extern void shared_module_supervisor_status_bar_updated(supervisor_status_bar_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_SUPERVISOR_STATUS_BAR_H
