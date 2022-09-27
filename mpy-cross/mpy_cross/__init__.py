@@ -62,9 +62,11 @@ class CrossCompileError(Exception):
 
 
 def find_mpy_cross_binary(mpy_cross):
+
+def _find_mpy_cross_binary(mpy_cross):
     if mpy_cross:
         return mpy_cross
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "../mpy-cross"))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "../build/mpy-cross"))
 
 
 def compile(src, dest=None, src_path=None, opt=None, march=None, mpy_cross=None, extra_args=None):
@@ -82,7 +84,7 @@ def compile(src, dest=None, src_path=None, opt=None, march=None, mpy_cross=None,
         args += ["-o", dest]
 
     if march:
-        args += ["-march", march]
+        args += ["-march=" + march]
 
     if opt is not None:
         args += ["-O{}".format(opt)]
@@ -96,7 +98,7 @@ def compile(src, dest=None, src_path=None, opt=None, march=None, mpy_cross=None,
 
 
 def run(args, mpy_cross=None):
-    mpy_cross = find_mpy_cross_binary(mpy_cross)
+    mpy_cross = _find_mpy_cross_binary(mpy_cross)
 
     if not os.path.exists(mpy_cross):
         raise CrossCompileError("mpy-cross binary not found at {}.".format(mpy_cross))
@@ -108,6 +110,6 @@ def run(args, mpy_cross=None):
         pass
 
     try:
-        subprocess.check_output([mpy_cross] + args, stderr=subprocess.STDOUT)
+        return subprocess.check_output([mpy_cross] + args, stderr=subprocess.STDOUT).decode()
     except subprocess.CalledProcessError as er:
-        raise CrossCompileError(er.output)
+        raise CrossCompileError(er.output.decode())
