@@ -309,7 +309,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(supervisor_reset_terminal_obj, supervisor_reset_termin
 //|     characters. Any omitted arguments will be left at their default values.
 //|
 //|     This method must be called in boot.py to have any effect.
-
+//|
 //|     Not available on boards without native USB support.
 //|     """
 //|     ...

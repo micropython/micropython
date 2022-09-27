@@ -288,7 +288,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_writeto_obj, 1, bitbangio_i2c_wr
 //|         If ``in_start`` or ``in_end`` is provided, then the input buffer will be sliced
 //|         as if ``in_buffer[in_start:in_end]`` were passed,
 //|         The number of bytes read will be the length of ``out_buffer[in_start:in_end]``.
-
+//|
 //|         :param int address: 7-bit device address
 //|         :param ~circuitpython_typing.ReadableBuffer out_buffer: buffer containing the bytes to write
 //|         :param ~circuitpython_typing.WriteableBuffer in_buffer: buffer to write into

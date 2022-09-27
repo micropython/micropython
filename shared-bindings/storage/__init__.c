@@ -41,13 +41,12 @@
 //| unmounting which is typically handled by the operating system hosting Python.
 //| CircuitPython does not have an OS, so this module provides this functionality
 //| directly.
-
+//|
 //| For more information regarding using the `storage` module, refer to the `CircuitPython
 //| Essentials Learn guide
 //| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-storage>`_.
 //| """
 //|
-
 //| def mount(filesystem: VfsFat, mount_path: str, *, readonly: bool = False) -> None:
 //|     """Mounts the given filesystem object at the given path.
 //|
