@@ -57,7 +57,6 @@
 //|
 //|         :param ~microcontroller.Pin pin: The pin to control"""
 //|         ...
-//|
 STATIC mp_obj_t digitalio_digitalinout_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
@@ -74,7 +73,6 @@ STATIC mp_obj_t digitalio_digitalinout_make_new(const mp_obj_type_t *type,
 //|     def deinit(self) -> None:
 //|         """Turn off the DigitalInOut and release the pin for other use."""
 //|         ...
-//|
 STATIC mp_obj_t digitalio_digitalinout_obj_deinit(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_digitalio_digitalinout_deinit(self);
@@ -85,14 +83,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_deinit_obj, digitalio_digitalin
 //|     def __enter__(self) -> DigitalInOut:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t digitalio_digitalinout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_digitalio_digitalinout_deinit(MP_OBJ_TO_PTR(args[0]));
@@ -106,7 +102,9 @@ STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
     }
 }
 
-//|     def switch_to_output(self, value: bool = False, drive_mode: DriveMode = DriveMode.PUSH_PULL) -> None:
+//|     def switch_to_output(
+//|         self, value: bool = False, drive_mode: DriveMode = DriveMode.PUSH_PULL
+//|     ) -> None:
 //|         """Set the drive mode and value and then switch to writing out digital
 //|         values.
 //|
@@ -114,7 +112,6 @@ STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
 //|         :param ~digitalio.DriveMode drive_mode: drive mode for the output
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t digitalio_digitalinout_switch_to_output(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_value, ARG_drive_mode };
     static const mp_arg_t allowed_args[] = {
@@ -155,7 +152,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(digitalio_digitalinout_switch_to_output_obj, 1, digit
 //|           switch.pull = digitalio.Pull.UP
 //|           print(switch.value)"""
 //|         ...
-//|
 STATIC mp_obj_t digitalio_digitalinout_switch_to_input(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_pull };
     static const mp_arg_t allowed_args[] = {
@@ -178,7 +174,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(digitalio_digitalinout_switch_to_input_obj, 1, digita
 //|     :py:meth:`switch_to_input` or :py:meth:`switch_to_output` method. If
 //|     you want to set pull, value or drive mode prior to switching, then use
 //|     those methods instead."""
-//|
 typedef struct {
     mp_obj_base_t base;
 } digitalio_digitalio_direction_obj_t;
@@ -219,7 +214,6 @@ MP_PROPERTY_GETSET(digitalio_digitalio_direction_obj,
 
 //|     value: bool
 //|     """The digital logic level of the pin."""
-//|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_value(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -249,7 +243,6 @@ MP_PROPERTY_GETSET(digitalio_digitalinout_value_obj,
 //|
 //|     - `digitalio.DriveMode.PUSH_PULL`
 //|     - `digitalio.DriveMode.OPEN_DRAIN`"""
-//|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_drive_mode(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -293,7 +286,6 @@ MP_PROPERTY_GETSET(digitalio_digitalio_drive_mode_obj,
 //|     - `None`
 //|
 //|     :raises AttributeError: if `direction` is :py:data:`~digitalio.Direction.OUTPUT`."""
-//|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_pull(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

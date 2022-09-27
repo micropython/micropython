@@ -46,7 +46,6 @@
 //|         :param ~busio.I2C i2c: I2C bus the IS31FL3741 is on
 //|         :param int addr: device address"""
 //|         ...
-//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_i2c, ARG_addr };
     static const mp_arg_t allowed_args[] = {
@@ -74,7 +73,6 @@ STATIC mp_obj_t is31fl3741_IS31FL3741_make_new(const mp_obj_type_t *type, size_t
 //|         IS31FL3741 instance.  After deinitialization, no further operations
 //|         may be performed."""
 //|         ...
-//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_deinit(mp_obj_t self_in) {
     is31fl3741_IS31FL3741_obj_t *self = (is31fl3741_IS31FL3741_obj_t *)self_in;
     common_hal_is31fl3741_IS31FL3741_deinit(self);
@@ -85,7 +83,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_deinit_obj, is31fl3741_IS
 //| def reset(self) -> None:
 //|     """Resets the IS31FL3741 chip."""
 //|     ...
-//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_reset(mp_obj_t self_in) {
     is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_is31fl3741_send_reset(self);
@@ -96,7 +93,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_reset_obj, is31fl3741_IS31FL3741
 //| def enable(self) -> None:
 //|     """Enables the IS31FL3741 chip."""
 //|     ...
-//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_enable(mp_obj_t self_in) {
     is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_is31fl3741_send_enable(self);
@@ -109,7 +105,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_enable_obj, is31fl3741_IS31FL374
 //|
 //|     :param int current: global current value 0x00 to 0xFF"""
 //|     ...
-//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_set_global_current(mp_obj_t self_in, mp_obj_t value) {
     is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t current = mp_obj_get_int(value);
@@ -127,7 +122,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(is31fl3741_IS31FL3741_set_global_current_obj, is31fl37
 //|       the routine will automatically write to page 1 or 3 (instead
 //|       of 0 or 2)"""
 //|     ...
-//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_set_led(size_t n_args, const mp_obj_t *args) {
     is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_int_t led = mp_obj_get_int(args[1]);

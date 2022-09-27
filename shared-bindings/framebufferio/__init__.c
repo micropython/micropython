@@ -35,7 +35,6 @@
 //| It is used in conjunction with classes from `displayio` to actually
 //| place items on the display; and classes like `RGBMatrix` to actually
 //| drive the display."""
-//|
 
 #if CIRCUITPY_FRAMEBUFFERIO
 static const mp_rom_map_elem_t framebufferio_module_globals_table[] = {

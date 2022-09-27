@@ -39,13 +39,14 @@
 //| class ColorConverter:
 //|     """Converts one color format to another."""
 //|
-//|     def __init__(self, *, input_colorspace: Colorspace=Colorspace.RGB888, dither: bool = False) -> None:
+//|     def __init__(
+//|         self, *, input_colorspace: Colorspace = Colorspace.RGB888, dither: bool = False
+//|     ) -> None:
 //|         """Create a ColorConverter object to convert color formats.
 //|
 //|         :param Colorspace colorspace: The source colorspace, one of the Colorspace constants
 //|         :param bool dither: Adds random noise to dither the output image"""
 //|         ...
-//|
 
 STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_dither, ARG_input_colorspace };
@@ -68,7 +69,6 @@ STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, siz
 //|     def convert(self, color: int) -> int:
 //|         """Converts the given color to RGB565 according to the Colorspace"""
 //|         ...
-//|
 STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -84,7 +84,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_convert_obj, displayio_colorc
 //|     dither: bool
 //|     """When `True` the ColorConverter dithers the output by adding random noise when
 //|     truncating to display bitdepth"""
-//|
 STATIC mp_obj_t displayio_colorconverter_obj_get_dither(mp_obj_t self_in) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_displayio_colorconverter_get_dither(self));
@@ -109,7 +108,6 @@ MP_PROPERTY_GETSET(displayio_colorconverter_dither_obj,
 //|         raise an Exception if there is already a selected transparent index.
 //|
 //|         :param int color: The color to be transparent"""
-//|
 STATIC mp_obj_t displayio_colorconverter_make_transparent(mp_obj_t self_in, mp_obj_t transparent_color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -123,7 +121,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_make_transparent_obj, display
 //|         """Make the ColorConverter be opaque and have no transparent pixels.
 //|
 //|         :param int color: [IGNORED] Use any value"""
-//|
 STATIC mp_obj_t displayio_colorconverter_make_opaque(mp_obj_t self_in, mp_obj_t transparent_color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
 

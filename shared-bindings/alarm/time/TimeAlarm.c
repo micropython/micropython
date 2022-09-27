@@ -44,7 +44,9 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 //| class TimeAlarm:
 //|     """Trigger an alarm when the specified time is reached."""
 //|
-//|     def __init__(self, monotonic_time: Optional[float] = None, epoch_time: Optional[int] = None) -> None:
+//|     def __init__(
+//|         self, monotonic_time: Optional[float] = None, epoch_time: Optional[int] = None
+//|     ) -> None:
 //|         """Create an alarm that will be triggered when `time.monotonic()` would equal
 //|         ``monotonic_time``, or when `time.time()` would equal ``epoch_time``.
 //|         Only one of the two arguments can be given.
@@ -56,7 +58,6 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 //|         immediately.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     alarm_time_timealarm_obj_t *self = m_new_obj(alarm_time_timealarm_obj_t);
@@ -116,7 +117,6 @@ STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
 //|        The time may be given as ``epoch_time`` in the constructor, but it is returned
 //|        by this property only as a `time.monotonic()` time.
 //|        """
-//|
 STATIC mp_obj_t alarm_time_timealarm_obj_get_monotonic_time(mp_obj_t self_in) {
     alarm_time_timealarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_alarm_time_timealarm_get_monotonic_time(self));

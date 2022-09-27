@@ -41,7 +41,6 @@
 //| def heap_caps_get_total_size() -> int:
 //|     """Return the total size of the ESP-IDF, which includes the CircuitPython heap."""
 //|     ...
-//|
 
 STATIC mp_obj_t espidf_heap_caps_get_total_size(void) {
     return MP_OBJ_NEW_SMALL_INT(heap_caps_get_total_size(MALLOC_CAP_8BIT));
@@ -51,7 +50,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_total_size_obj, espidf_heap_caps_
 //| def heap_caps_get_free_size() -> int:
 //|     """Return total free memory in the ESP-IDF heap."""
 //|     ...
-//|
 
 STATIC mp_obj_t espidf_heap_caps_get_free_size(void) {
     return MP_OBJ_NEW_SMALL_INT(heap_caps_get_free_size(MALLOC_CAP_8BIT));
@@ -61,7 +59,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_free_size_obj, espidf_heap_caps_g
 //| def heap_caps_get_largest_free_block() -> int:
 //|     """Return the size of largest free memory block in the ESP-IDF heap."""
 //|     ...
-//|
 
 STATIC mp_obj_t espidf_heap_caps_get_largest_free_block(void) {
     return MP_OBJ_NEW_SMALL_INT(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
@@ -103,10 +100,11 @@ const mp_obj_type_t mp_type_espidf_IDFError = {
 
 
 //| import builtins
+//|
 //| class MemoryError(builtins.MemoryError):
 //|     """Raised when an ESP IDF memory allocation fails."""
-//|     ...
 //|
+//|     ...
 NORETURN void mp_raise_espidf_MemoryError(void) {
     nlr_raise(mp_obj_new_exception(&mp_type_espidf_MemoryError));
 }

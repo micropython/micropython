@@ -37,7 +37,9 @@
 //| class RawSample:
 //|     """A raw audio sample buffer in memory"""
 //|
-//|     def __init__(self, buffer: ReadableBuffer, *, channel_count: int = 1, sample_rate: int = 8000) -> None:
+//|     def __init__(
+//|         self, buffer: ReadableBuffer, *, channel_count: int = 1, sample_rate: int = 8000
+//|     ) -> None:
 //|         """Create a RawSample based on the given buffer of signed values. If channel_count is more than
 //|         1 then each channel's samples should alternate. In other words, for a two channel buffer, the
 //|         first sample will be for channel 1, the second sample will be for channel two, the third for
@@ -68,7 +70,6 @@
 //|           time.sleep(1)
 //|           dac.stop()"""
 //|         ...
-//|
 STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_buffer, ARG_channel_count, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
@@ -100,7 +101,6 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
 //|     def deinit(self) -> None:
 //|         """Deinitialises the RawSample and releases any hardware resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t audioio_rawsample_deinit(mp_obj_t self_in) {
     audioio_rawsample_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_audioio_rawsample_deinit(self);
@@ -117,14 +117,12 @@ STATIC void check_for_deinit(audioio_rawsample_obj_t *self) {
 //|     def __enter__(self) -> RawSample:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t audioio_rawsample_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_audioio_rawsample_deinit(args[0]);
@@ -137,7 +135,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_rawsample___exit___obj, 4, 4,
 //|     When the sample is looped, this can change the pitch output without changing the underlying
 //|     sample. This will not change the sample rate of any active playback. Call ``play`` again to
 //|     change it."""
-//|
 STATIC mp_obj_t audioio_rawsample_obj_get_sample_rate(mp_obj_t self_in) {
     audioio_rawsample_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

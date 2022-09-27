@@ -62,7 +62,6 @@
 //|     :return: the current monotonic time
 //|     :rtype: float"""
 //|     ...
-//|
 STATIC mp_obj_t time_monotonic(void) {
     uint64_t ticks_ms = common_hal_time_monotonic_ms();
     return mp_obj_new_float(uint64_to_float(ticks_ms) / 1000.0f);
@@ -74,7 +73,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 //|
 //|     :param float seconds: the time to sleep in fractional seconds"""
 //|     ...
-//|
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     #if MICROPY_PY_BUILTINS_FLOAT
     mp_float_t seconds = mp_obj_get_float(seconds_o);
@@ -119,7 +117,6 @@ STATIC mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, s
 //|           * ``tm_yday``: the day of the year, range [1, 366], -1 indicates not known
 //|           * ``tm_isdst``: 1 when in daylight savings, 0 when not, -1 if unknown."""
 //|         ...
-//|
 const mp_obj_namedtuple_type_t struct_time_type_obj = {
     .base = {
         .base = {
@@ -218,7 +215,6 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 //|     :return: the current time
 //|     :rtype: int"""
 //|     ...
-//|
 STATIC mp_obj_t time_time(void) {
     timeutils_struct_time_t tm;
     struct_time_to_tm(rtc_get_time_source_time(), &tm);
@@ -235,7 +231,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 //|     :return: the current time
 //|     :rtype: int"""
 //|     ...
-//|
 STATIC mp_obj_t time_monotonic_ns(void) {
     uint64_t time64 = common_hal_time_monotonic_ns();
     return mp_obj_new_int_from_ll((long long)time64);
@@ -251,7 +246,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_ns_obj, time_monotonic_ns);
 //|     :return: the current time
 //|     :rtype: time.struct_time"""
 //|     ...
-//|
 STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0 || args[0] == mp_const_none) {
         return rtc_get_time_source_time();
@@ -288,7 +282,6 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
 //|     :return: seconds
 //|     :rtype: int"""
 //|     ...
-//|
 STATIC mp_obj_t time_mktime(mp_obj_t t) {
     mp_obj_t *elem;
     size_t len;

@@ -50,13 +50,11 @@
 #include "shared-bindings/supervisor/StatusBar.h"
 
 //| """Supervisor settings"""
-//|
 
 //| runtime: Runtime
 //| """Runtime information, such as ``runtime.serial_connected``
 //| (USB serial connection status).
 //| This object is the sole instance of `supervisor.Runtime`."""
-//|
 
 //| status_bar: StatusBar
 //| """The status bar, shown on an attached display, and also sent to
@@ -64,14 +62,12 @@
 //| The status bar reports the current IP or BLE connection, what file is running,
 //| the last exception name and location, and firmware version information.
 //| This object is the sole instance of `supervisor.StatusBar`."""
-//|
 
 //| def set_rgb_status_brightness(brightness: int) -> None:
 //|     """Set brightness of status RGB LED from 0-255. This will take effect
-//|        after the current code finishes and the status LED is used to show
-//|        the finish state."""
+//|     after the current code finishes and the status LED is used to show
+//|     the finish state."""
 //|     ...
-//|
 STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl) {
     // This must be int. If cast to uint8_t first, will never raise a ValueError.
     int brightness_int = mp_obj_get_int(lvl);
@@ -84,7 +80,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_s
 //| def reload() -> None:
 //|     """Reload the main Python code and run it (equivalent to hitting Ctrl-D at the REPL)."""
 //|     ...
-//|
 STATIC mp_obj_t supervisor_reload(void) {
     reload_initiate(RUN_REASON_SUPERVISOR_RELOAD);
     return mp_const_none;
@@ -94,7 +89,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
 //| def set_next_stack_limit(size: int) -> None:
 //|     """Set the size of the stack for the next vm run. If its too large, the default will be used."""
 //|     ...
-//|
 STATIC mp_obj_t supervisor_set_next_stack_limit(mp_obj_t size_obj) {
     mp_int_t size = mp_obj_get_int(size_obj);
 
@@ -106,7 +100,15 @@ STATIC mp_obj_t supervisor_set_next_stack_limit(mp_obj_t size_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_next_stack_limit_obj, supervisor_set_next_stack_limit);
 
-//| def set_next_code_file(filename: Optional[str], *, reload_on_success : bool = False, reload_on_error: bool = False, sticky_on_success: bool = False, sticky_on_error: bool = False, sticky_on_reload: bool = False) -> None:
+//| def set_next_code_file(
+//|     filename: Optional[str],
+//|     *,
+//|     reload_on_success: bool = False,
+//|     reload_on_error: bool = False,
+//|     sticky_on_success: bool = False,
+//|     sticky_on_error: bool = False,
+//|     sticky_on_reload: bool = False
+//| ) -> None:
 //|     """Set what file to run on the next vm run.
 //|
 //|     When not ``None``, the given ``filename`` is inserted at the front of the usual ['code.py',
@@ -138,7 +140,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_next_stack_limit_obj, supervisor_set_ne
 //|     settings made by previous ones. This is the main use of passing ``None`` as a filename: to
 //|     reset to the standard search sequence."""
 //|     ...
-//|
 STATIC mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_filename, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
@@ -254,7 +255,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_ticks_ms_obj, supervisor_ticks_ms);
 //|
 //|     Only code (main or boot) runs are considered, not REPL runs."""
 //|     ...
-//|
 STATIC mp_obj_t supervisor_get_previous_traceback(void) {
     if (prev_traceback_allocation) {
         size_t len = strlen((const char *)prev_traceback_allocation->ptr);
@@ -274,9 +274,8 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_get_previous_traceback_obj, supervisor_get_
 
 //| def disable_ble_workflow() -> None:
 //|     """Disable ble workflow until a reset. This prevents BLE advertising outside of the VM and
-//|        the services used for it."""
+//|     the services used for it."""
 //|     ...
-//|
 STATIC mp_obj_t supervisor_disable_ble_workflow(void) {
     #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
     mp_raise_NotImplementedError(NULL);
@@ -290,7 +289,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_ble_workflow_obj, supervisor_disabl
 //| def reset_terminal(x_pixels: int, y_pixels: int) -> None:
 //|     """Reset the CircuitPython serial terminal with new dimensions."""
 //|     ...
-//|
 STATIC mp_obj_t supervisor_reset_terminal(mp_obj_t x_pixels, mp_obj_t y_pixels) {
     #if CIRCUITPY_DISPLAYIO
     supervisor_stop_terminal();
@@ -302,18 +300,22 @@ STATIC mp_obj_t supervisor_reset_terminal(mp_obj_t x_pixels, mp_obj_t y_pixels) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(supervisor_reset_terminal_obj, supervisor_reset_terminal);
 
-//| def set_usb_identification(manufacturer: Optional[str] = None, product: Optional[str] = None, vid: int = -1, pid: int = -1) -> None:
+//| def set_usb_identification(
+//|     manufacturer: Optional[str] = None,
+//|     product: Optional[str] = None,
+//|     vid: int = -1,
+//|     pid: int = -1,
+//| ) -> None:
 //|     """Override identification constants in the USB Device Descriptor.
 //|
 //|     If passed, `manufacturer` and `product` must be ASCII strings (or buffers) of at most 126
 //|     characters. Any omitted arguments will be left at their default values.
 //|
 //|     This method must be called in boot.py to have any effect.
-
+//|
 //|     Not available on boards without native USB support.
 //|     """
 //|     ...
-//|
 STATIC mp_obj_t supervisor_set_usb_identification(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     #if CIRCUITPY_USB_IDENTIFICATION
     static const mp_arg_t allowed_args[] = {

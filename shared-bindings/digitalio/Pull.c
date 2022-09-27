@@ -35,7 +35,6 @@
 //|         """Enum-like class to define the pull value, if any, used while reading
 //|         digital values in."""
 //|         ...
-//|
 //|     UP: Pull
 //|     """When the input line isn't being driven the pull up can pull the state
 //|     of the line high so it reads as true."""
@@ -43,7 +42,6 @@
 //|     DOWN: Pull
 //|     """When the input line isn't being driven the pull down can pull the
 //|     state of the line low so it reads as false."""
-//|
 const mp_obj_type_t digitalio_pull_type;
 
 const digitalio_pull_obj_t digitalio_pull_up_obj = {

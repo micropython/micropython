@@ -64,13 +64,11 @@
 //| sleep_memory: SleepMemory
 //| """Memory that persists during deep sleep.
 //| This object is the sole instance of `alarm.SleepMemory`."""
-//|
 
 //| wake_alarm: Optional[circuitpython_typing.Alarm]
 //| """The most recently triggered alarm. If CircuitPython was sleeping, the alarm that woke it from sleep.
 //| If no alarm occured since the last hard reset or soft restart, value is ``None``.
 //| """
-//|
 
 // wake_alarm is implemented as a dictionary entry, so there's no code here.
 
@@ -85,7 +83,9 @@ STATIC void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     }
 }
 
-//| def light_sleep_until_alarms(*alarms: circuitpython_typing.Alarm) -> circuitpython_typing.Alarm:
+//| def light_sleep_until_alarms(
+//|     *alarms: circuitpython_typing.Alarm,
+//| ) -> circuitpython_typing.Alarm:
 //|     """Go into a light sleep until awakened one of the alarms. The alarm causing the wake-up
 //|     is returned, and is also available as `alarm.wake_alarm`.
 //|
@@ -99,7 +99,6 @@ STATIC void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
 //|     it may be necessary to disconnect from the host.
 //|     """
 //|     ...
-//|
 STATIC mp_obj_t alarm_light_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_const_none;
@@ -113,7 +112,9 @@ STATIC mp_obj_t alarm_light_sleep_until_alarms(size_t n_args, const mp_obj_t *ar
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_light_sleep_until_alarms);
 
-//| def exit_and_deep_sleep_until_alarms(*alarms: circuitpython_typing.Alarm, preserve_dios: Sequence[digitalio.DigitalInOut] = ()) -> None:
+//| def exit_and_deep_sleep_until_alarms(
+//|     *alarms: circuitpython_typing.Alarm, preserve_dios: Sequence[digitalio.DigitalInOut] = ()
+//| ) -> None:
 //|     """Exit the program and go into a deep sleep, until awakened by one of the alarms.
 //|     This function does not return.
 //|
@@ -171,7 +172,6 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OB
 //|         alarm.exit_and_deep_sleep_until_alarms(time_alarm, pin_alarm)
 //|     """
 //|     ...
-//|
 STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_preserve_dios };
     static const mp_arg_t allowed_args[] = {

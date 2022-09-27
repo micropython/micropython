@@ -60,7 +60,6 @@
 //|             pass
 //|           print("stopped")"""
 //|     ...
-//|
 STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_file, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {

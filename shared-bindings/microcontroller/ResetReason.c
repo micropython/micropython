@@ -64,7 +64,6 @@ MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, RESCUE_DEBUG, RESET_REASON_
 //|
 //|     RESCUE_DEBUG: object
 //|     """The microntroller was reset by the rescue debug port."""
-//|
 MAKE_ENUM_MAP(mcu_reset_reason) {
     MAKE_ENUM_MAP_ENTRY(reset_reason, POWER_ON),
     MAKE_ENUM_MAP_ENTRY(reset_reason, BROWNOUT),

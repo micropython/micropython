@@ -70,7 +70,6 @@
 //|           print("stopped")
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t audioio_wavefile_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
     mp_obj_t arg = args[0];
@@ -117,14 +116,12 @@ STATIC void check_for_deinit(audioio_wavefile_obj_t *self) {
 //|     def __enter__(self) -> WaveFile:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t audioio_wavefile_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_audioio_wavefile_deinit(args[0]);
@@ -136,7 +133,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_wavefile___exit___obj, 4, 4, 
 //|     """32 bit value that dictates how quickly samples are loaded into the DAC
 //|     in Hertz (cycles per second). When the sample is looped, this can change
 //|     the pitch output without changing the underlying sample."""
-//|
 STATIC mp_obj_t audioio_wavefile_obj_get_sample_rate(mp_obj_t self_in) {
     audioio_wavefile_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -158,7 +154,6 @@ MP_PROPERTY_GETSET(audioio_wavefile_sample_rate_obj,
 
 //|     bits_per_sample: int
 //|     """Bits per sample. (read only)"""
-//|
 STATIC mp_obj_t audioio_wavefile_obj_get_bits_per_sample(mp_obj_t self_in) {
     audioio_wavefile_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -170,7 +165,6 @@ MP_PROPERTY_GETTER(audioio_wavefile_bits_per_sample_obj,
     (mp_obj_t)&audioio_wavefile_get_bits_per_sample_obj);
 //|     channel_count: int
 //|     """Number of audio channels. (read only)"""
-//|
 STATIC mp_obj_t audioio_wavefile_obj_get_channel_count(mp_obj_t self_in) {
     audioio_wavefile_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

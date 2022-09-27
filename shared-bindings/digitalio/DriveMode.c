@@ -33,14 +33,12 @@
 //|         """Enum-like class to define the drive mode used when outputting
 //|         digital values."""
 //|         ...
-//|
 //|     PUSH_PULL: DriveMode
 //|     """Output both high and low digital values"""
 //|
 //|     OPEN_DRAIN: DriveMode
 //|     """Output low digital values but go into high z for digital high. This is
 //|     useful for i2c and other protocols that share a digital line."""
-//|
 const mp_obj_type_t digitalio_drive_mode_type;
 
 const digitalio_drive_mode_obj_t digitalio_drive_mode_push_pull_obj = {

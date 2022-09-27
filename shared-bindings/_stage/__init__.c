@@ -39,7 +39,17 @@
 //| The `_stage` module contains native code to speed-up the ```stage`` Library
 //| <https://github.com/python-ugame/circuitpython-stage>`_."""
 //|
-//| def render(x0: int, y0: int, x1: int, y1: int, layers: List[Layer], buffer: WriteableBuffer, display: displayio.Display, scale: int, background: int) -> None:
+//| def render(
+//|     x0: int,
+//|     y0: int,
+//|     x1: int,
+//|     y1: int,
+//|     layers: List[Layer],
+//|     buffer: WriteableBuffer,
+//|     display: displayio.Display,
+//|     scale: int,
+//|     background: int,
+//| ) -> None:
 //|     """Render and send to the display a fragment of the screen.
 //|
 //|     :param int x0: Left edge of the fragment.
@@ -59,7 +69,6 @@
 //|
 //|     This function is intended for internal use in the ``stage`` library
 //|     and all the necessary checks are performed there."""
-//|
 STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     uint16_t x0 = mp_obj_get_int(args[0]);
     uint16_t y0 = mp_obj_get_int(args[1]);

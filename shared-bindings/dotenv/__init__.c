@@ -65,11 +65,10 @@
 
 //| def get_key(dotenv_path: str, key_to_get: str) -> Optional[str]:
 //|     """Get the value for the given key from the given .env file. If the key occurs multiple
-//|        times in the file, then the last value will be returned.
+//|     times in the file, then the last value will be returned.
 //|
-//|        Returns None if the key isn't found or doesn't have a value."""
+//|     Returns None if the key isn't found or doesn't have a value."""
 //|     ...
-//|
 STATIC mp_obj_t _dotenv_get_key(mp_obj_t path_in, mp_obj_t key_to_get_in) {
     return common_hal_dotenv_get_key(mp_obj_str_get_str(path_in),
         mp_obj_str_get_str(key_to_get_in));
@@ -78,11 +77,10 @@ MP_DEFINE_CONST_FUN_OBJ_2(dotenv_get_key_obj, _dotenv_get_key);
 
 //| def load_dotenv() -> None:
 //|     """Does nothing in CircuitPython because os.getenv will automatically read .env when
-//|        available.
+//|     available.
 //|
-//|        Present in CircuitPython so CPython-compatible code can use it without error."""
+//|     Present in CircuitPython so CPython-compatible code can use it without error."""
 //|     ...
-//|
 STATIC mp_obj_t dotenv_load_dotenv(void) {
     return mp_const_none;
 }

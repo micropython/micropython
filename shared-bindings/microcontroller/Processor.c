@@ -57,17 +57,14 @@
 //|
 //|        print(microcontroller.cpus[0].temperature)
 //|        print(microcontroller.cpus[1].frequency)"""
-//|
 
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `microcontroller.Processor`.
 //|         Use `microcontroller.cpu` to access the sole instance available."""
 //|         ...
-//|
 
 //|     frequency: int
 //|     """The CPU operating frequency in Hertz. (read-only)"""
-//|
 
 STATIC mp_obj_t mcu_processor_set_frequency(mp_obj_t self, mp_obj_t freq) {
     #if CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY
@@ -94,7 +91,6 @@ MP_PROPERTY_GETSET(mcu_processor_frequency_obj,
 
 //|     reset_reason: microcontroller.ResetReason
 //|     """The reason the microcontroller started up from reset state."""
-//|
 STATIC mp_obj_t mcu_processor_get_reset_reason(mp_obj_t self) {
     return cp_enum_find(&mcu_reset_reason_type, common_hal_mcu_processor_get_reset_reason());
 }
@@ -108,7 +104,6 @@ MP_PROPERTY_GETTER(mcu_processor_reset_reason_obj,
 //|     """The on-chip temperature, in Celsius, as a float. (read-only)
 //|
 //|     Is `None` if the temperature is not available."""
-//|
 STATIC mp_obj_t mcu_processor_get_temperature(mp_obj_t self) {
     float temperature = common_hal_mcu_processor_get_temperature();
     return isnan(temperature) ? mp_const_none : mp_obj_new_float(temperature);
@@ -121,7 +116,6 @@ MP_PROPERTY_GETTER(mcu_processor_temperature_obj,
 
 //|     uid: bytearray
 //|     """The unique id (aka serial number) of the chip as a `bytearray`. (read-only)"""
-//|
 STATIC mp_obj_t mcu_processor_get_uid(mp_obj_t self) {
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
     common_hal_mcu_processor_get_uid(raw_id);
@@ -137,7 +131,6 @@ MP_PROPERTY_GETTER(mcu_processor_uid_obj,
 //|     """The input voltage to the microcontroller, as a float. (read-only)
 //|
 //|     Is `None` if the voltage is not available."""
-//|
 STATIC mp_obj_t mcu_processor_get_voltage(mp_obj_t self) {
     float voltage = common_hal_mcu_processor_get_voltage();
     return isnan(voltage) ? mp_const_none : mp_obj_new_float(voltage);

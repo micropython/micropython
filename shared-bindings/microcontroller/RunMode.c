@@ -32,7 +32,6 @@
 //|     def __init__(self) -> None:
 //|         """Enum-like class to define the run mode of the microcontroller and
 //|         CircuitPython."""
-//|
 //|     NORMAL: RunMode
 //|     """Run CircuitPython as normal.
 //|
@@ -53,7 +52,6 @@
 //|     """Run the default bootloader.
 //|
 //|     :type microcontroller.RunMode:"""
-//|
 const mp_obj_type_t mcu_runmode_type;
 
 const mcu_runmode_obj_t mcu_runmode_uf2_obj = {
