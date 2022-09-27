@@ -214,8 +214,13 @@ def main():
             if os.path.splitext(file)[1].lower() in exts:
                 yield file
 
+    def bindings_files():
+        for file in lang_files(C_EXTS):
+            if file.startswith("shared-bindings/") or "/bindings/" in file:
+                yield file
+
     # Run tool on N files at a time (to avoid making the command line too long).
-    def batch(cmd, files, N=200):
+    def batch(cmd, files, N=200, check=False):
         while True:
             file_args = list(itertools.islice(files, N))
             if not file_args:
@@ -223,7 +228,10 @@ def main():
             if args.dry_run:
                 print(" ".join(cmd + file_args))
             else:
-                subprocess.call(cmd + file_args)
+                if check:
+                    subprocess.check_call(cmd + file_args)
+                else:
+                    subprocess.run(cmd + file_args)
 
     # Format C files with uncrustify.
     if format_c:
@@ -234,6 +242,10 @@ def main():
         batch(command, lang_files(C_EXTS))
         for file in lang_files(C_EXTS):
             fixup_c(file)
+        # Format bindings with black_bindings
+        if format_py:
+            command = ["python3", "tools/black_bindings.py"]
+            batch(command, bindings_files(), check=True)
 
     # Format Python files with black.
     if format_py:
