@@ -78,17 +78,17 @@ The :term:`mpremote` tool also includes the same functionality as ``mip`` and
 can be used from a host PC to install packages to a locally connected device
 (e.g. via USB or UART)::
 
-    $ mpremote install pkgname
-    $ mpremote install pkgname@x.y
-    $ mpremote install http://example.com/x/y/foo.py
-    $ mpremote install github:org/repo
-    $ mpremote install github:org/repo@branch-or-tag
+    $ mpremote mip install pkgname
+    $ mpremote mip install pkgname@x.y
+    $ mpremote mip install http://example.com/x/y/foo.py
+    $ mpremote mip install github:org/repo
+    $ mpremote mip install github:org/repo@branch-or-tag
 
 The ``--target=path``, ``--no-mpy``, and ``--index`` arguments can be set::
 
-    $ mpremote install --target=/flash/third-party pkgname
-    $ mpremote install --no-mpy pkgname
-    $ mpremote install --index https://host/pi pkgname
+    $ mpremote mip install --target=/flash/third-party pkgname
+    $ mpremote mip install --no-mpy pkgname
+    $ mpremote mip install --index https://host/pi pkgname
 
 Installing packages manually
 ----------------------------

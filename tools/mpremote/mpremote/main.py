@@ -36,6 +36,7 @@ from .commands import (
     do_resume,
     do_soft_reset,
 )
+from .mip import do_mip
 from .repl import do_repl
 
 _PROG = "mpremote"
@@ -162,6 +163,29 @@ def argparse_filesystem():
     return cmd_parser
 
 
+def argparse_mip():
+    cmd_parser = argparse.ArgumentParser(
+        description="install packages from micropython-lib or third-party sources"
+    )
+    _bool_flag(cmd_parser, "mpy", "m", True, "download as compiled .mpy files (default)")
+    cmd_parser.add_argument(
+        "--target", type=str, required=False, help="destination direction on the device"
+    )
+    cmd_parser.add_argument(
+        "--index",
+        type=str,
+        required=False,
+        help="package index to use (defaults to micropython-lib)",
+    )
+    cmd_parser.add_argument("command", nargs=1, help="mip command (e.g. install)")
+    cmd_parser.add_argument(
+        "packages",
+        nargs="+",
+        help="list package specifications, e.g. name, name@version, github:org/repo, github:org/repo@branch",
+    )
+    return cmd_parser
+
+
 def argparse_none(description):
     return lambda: argparse.ArgumentParser(description=description)
 
@@ -215,6 +239,10 @@ _COMMANDS = {
     "fs": (
         do_filesystem,
         argparse_filesystem,
+    ),
+    "mip": (
+        do_mip,
+        argparse_mip,
     ),
     "help": (
         do_help,

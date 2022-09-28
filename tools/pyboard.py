@@ -476,6 +476,13 @@ class Pyboard:
         t = str(self.eval("pyb.RTC().datetime()"), encoding="utf8")[1:-1].split(", ")
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
+    def fs_exists(self, src):
+        try:
+            self.exec_("import uos\nuos.stat(%s)" % (("'%s'" % src) if src else ""))
+            return True
+        except PyboardError:
+            return False
+
     def fs_ls(self, src):
         cmd = (
             "import uos\nfor f in uos.ilistdir(%s):\n"
