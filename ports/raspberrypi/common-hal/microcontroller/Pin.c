@@ -28,18 +28,22 @@
 
 #include "common-hal/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "bindings/cyw43/__init__.h"
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
 #if CIRCUITPY_CYW43
+#include "bindings/cyw43/__init__.h"
 #include "pico/cyw43_arch.h"
-#endif
-
-STATIC uint32_t never_reset_pins;
 
 bool cyw_ever_init;
 static uint32_t cyw_pin_claimed;
+
+void reset_pin_number_cyw(uint8_t pin_no) {
+    cyw_pin_claimed &= ~(1 << pin_no);
+}
+#endif
+
+STATIC uint32_t never_reset_pins;
 
 void reset_all_pins(void) {
     for (size_t i = 0; i < TOTAL_GPIO_COUNT; i++) {
@@ -80,10 +84,6 @@ void reset_pin_number(uint8_t pin_number) {
         PADS_BANK0_GPIO0_PUE_BITS |
         PADS_BANK0_GPIO0_PDE_BITS);
     hw_set_bits(&padsbank0_hw->io[pin_number], PADS_BANK0_GPIO0_OD_BITS);
-}
-
-void reset_pin_number_cyw(uint8_t pin_no) {
-    cyw_pin_claimed &= ~(1 << pin_no);
 }
 
 void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
