@@ -346,7 +346,6 @@ STATIC mp_uint_t lwip_raw_udp_send(socketpool_socket_obj_t *socket, const byte *
 
     MICROPY_PY_LWIP_ENTER
 
-    // FIXME: maybe PBUF_ROM?
     struct pbuf *p = pbuf_alloc(PBUF_TRANSPORT, len, PBUF_RAM);
     if (p == NULL) {
         MICROPY_PY_LWIP_EXIT
