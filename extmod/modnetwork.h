@@ -117,9 +117,15 @@ typedef struct _mod_network_socket_obj_t {
 #define MICROPY_PY_HOSTNAME_LENGTH  32
 #endif
 
+#ifndef MICROPY_PY_HOSTNAME_LENGTH
+#define MICROPY_PY_HOSTNAME_LENGTH  32
+#endif
+
 void mod_network_init(void);
 void mod_network_deinit(void);
 void mod_network_register_nic(mp_obj_t nic);
+const char *mod_network_get_hostname(void);
+const char *mod_network_set_hostname(const char *);
 const char *mod_network_get_hostname(void);
 const char *mod_network_set_hostname(const char *);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);

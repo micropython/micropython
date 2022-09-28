@@ -48,8 +48,8 @@ typedef struct _network_cyw43_obj_t {
     int itf;
 } network_cyw43_obj_t;
 
-STATIC const network_cyw43_obj_t network_cyw43_wl_sta = { { (mp_obj_type_t *)&mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_STA };
-STATIC const network_cyw43_obj_t network_cyw43_wl_ap = { { (mp_obj_type_t *)&mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_AP };
+STATIC const network_cyw43_obj_t network_cyw43_wl_sta = { { (mp_obj_type_t *)(mp_obj_type_t *)&mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_STA };
+STATIC const network_cyw43_obj_t network_cyw43_wl_ap = { { (mp_obj_type_t *)(mp_obj_type_t *)&mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_AP };
 
 STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
