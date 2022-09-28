@@ -31,31 +31,23 @@ import re
 import stat
 import subprocess
 
-NATIVE_ARCH_X86 = "x86"
-NATIVE_ARCH_X64 = "x64"
-NATIVE_ARCH_ARMV6 = "armv6"
-NATIVE_ARCH_ARMV6M = "armv6m"
-NATIVE_ARCH_ARMV7M = "armv7m"
-NATIVE_ARCH_ARMV7EM = "armv7em"
-NATIVE_ARCH_ARMV7EMSP = "armv7emsp"
-NATIVE_ARCH_ARMV7EMDP = "armv7emdp"
-NATIVE_ARCH_XTENSA = "xtensa"
-NATIVE_ARCH_XTENSAWIN = "xtensawin"
+NATIVE_ARCHS = {
+    "NATIVE_ARCH_NONE": "",
+    "NATIVE_ARCH_X86": "x86",
+    "NATIVE_ARCH_X64": "x64",
+    "NATIVE_ARCH_ARMV6": "armv6",
+    "NATIVE_ARCH_ARMV6M": "armv6m",
+    "NATIVE_ARCH_ARMV7M": "armv7m",
+    "NATIVE_ARCH_ARMV7EM": "armv7em",
+    "NATIVE_ARCH_ARMV7EMSP": "armv7emsp",
+    "NATIVE_ARCH_ARMV7EMDP": "armv7emdp",
+    "NATIVE_ARCH_XTENSA": "xtensa",
+    "NATIVE_ARCH_XTENSAWIN": "xtensawin",
+}
 
-NATIVE_ARCHS = [
-    NATIVE_ARCH_X86,
-    NATIVE_ARCH_X64,
-    NATIVE_ARCH_ARMV6,
-    NATIVE_ARCH_ARMV6M,
-    NATIVE_ARCH_ARMV7M,
-    NATIVE_ARCH_ARMV7EM,
-    NATIVE_ARCH_ARMV7EMSP,
-    NATIVE_ARCH_ARMV7EMDP,
-    NATIVE_ARCH_XTENSA,
-    NATIVE_ARCH_XTENSAWIN,
-]
+globals().update(NATIVE_ARCHS)
 
-__all__ = ["version", "compile", "run", "CrossCompileError"]
+__all__ = ["version", "compile", "run", "CrossCompileError"] + list(NATIVE_ARCHS.keys())
 
 
 class CrossCompileError(Exception):
