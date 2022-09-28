@@ -170,6 +170,9 @@ endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
 endif
+ifeq ($(CIRCUITPY_CYW43),1)
+SRC_PATTERNS += cyw43/%
+endif
 ifeq ($(CIRCUITPY_DIGITALIO),1)
 SRC_PATTERNS += digitalio/%
 endif

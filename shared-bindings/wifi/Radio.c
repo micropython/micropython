@@ -27,13 +27,49 @@
 #include "shared-bindings/wifi/__init__.h"
 #include "shared-bindings/wifi/AuthMode.h"
 
-#include <regex.h>
 #include <string.h>
 
 #include "py/runtime.h"
 #include "py/objproperty.h"
 
 #define MAC_ADDRESS_LENGTH 6
+
+STATIC bool hostname_valid(const char *ptr, size_t len) {
+    #if 0 // validated by mp_arg_validate_length_range
+    if (len == 0 || len > 253) {
+        // at most 253 characters long
+        return false;
+    }
+    #endif
+    int partlen = 0;
+    while (len) {
+        char c = *ptr++;
+        len--;
+        if (c == '.') {
+            if (partlen == 0 || partlen > 63) {
+                return false;
+            }
+            partlen = 0;
+            continue;
+        }
+        partlen++;
+        if (c == '-') {
+            if (partlen == 1) {
+                return false; // part cannot begin with a dash
+            }
+            continue;
+        } else if (
+            (c >= 'a' && c <= 'z') ||
+            (c >= 'A' && c <= 'Z') ||
+            (c >= '0' && c <= '9')) {
+            continue;
+        }
+        return false;
+    }
+    // check length of last part
+    return !(partlen > 63);
+}
+
 
 //| class Radio:
 //|     """Native wifi radio.
@@ -85,14 +121,9 @@ STATIC mp_obj_t wifi_radio_set_hostname(mp_obj_t self_in, mp_obj_t hostname_in) 
 
     mp_arg_validate_length_range(hostname.len, 1, 253, MP_QSTR_hostname);
 
-    #ifndef CONFIG_IDF_TARGET_ESP32C3
-    regex_t regex; // validate hostname according to RFC 1123
-    regcomp(&regex,"^(([a-z0-9]|[a-z0-9][a-z0-9\\-]{0,61}[a-z0-9])\\.)*([a-z0-9]|[a-z0-9][a-z0-9\\-]{0,61}[a-z0-9])$", REG_EXTENDED | REG_ICASE | REG_NOSUB);
-    if (regexec(&regex, hostname.buf, 0, NULL, 0)) {
+    if (!hostname_valid(hostname.buf, hostname.len)) {
         mp_raise_ValueError(translate("invalid hostname"));
     }
-    regfree(&regex);
-    #endif
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_wifi_radio_set_hostname(self, hostname.buf);

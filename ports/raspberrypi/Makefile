@@ -57,54 +57,134 @@ CROSS_COMPILE = arm-none-eabi-
 
 HAL_DIR=hal/$(MCU_SERIES)
 
-INC += -I. \
-       -I../.. \
-       -I../lib/mp-readline \
-       -I../shared/timeutils \
-       -Iboards/$(BOARD) \
-       -Iboards/ \
-       -isystem sdk/ \
-       -isystem sdk/src/common/pico_base/include/ \
-       -isystem sdk/src/common/pico_binary_info/include/ \
-       -isystem sdk/src/common/pico_stdlib/include/ \
-       -isystem sdk/src/common/pico_sync/include/ \
-       -isystem sdk/src/common/pico_time/include/ \
-       -isystem sdk/src/common/pico_util/include/ \
-       -isystem sdk/src/rp2040/hardware_regs/include/ \
-       -isystem sdk/src/rp2040/hardware_structs/include/ \
-       -isystem sdk/src/rp2_common/hardware_adc/include/ \
-       -isystem sdk/src/rp2_common/hardware_base/include/ \
-       -isystem sdk/src/rp2_common/hardware_claim/include/ \
-       -isystem sdk/src/rp2_common/hardware_clocks/include/ \
-       -isystem sdk/src/rp2_common/hardware_divider/include/ \
-       -isystem sdk/src/rp2_common/hardware_dma/include/ \
-       -isystem sdk/src/rp2_common/hardware_flash/include/ \
-       -isystem sdk/src/rp2_common/hardware_gpio/include/ \
-       -isystem sdk/src/rp2_common/hardware_irq/include/ \
-       -isystem sdk/src/rp2_common/hardware_i2c/include/ \
-       -isystem sdk/src/rp2_common/hardware_pio/include/ \
-       -isystem sdk/src/rp2_common/hardware_pll/include/ \
-       -isystem sdk/src/rp2_common/hardware_resets/include/ \
-       -isystem sdk/src/rp2_common/hardware_rtc/include/ \
-       -isystem sdk/src/rp2_common/hardware_spi/include/ \
-       -isystem sdk/src/rp2_common/hardware_sync/include/ \
-       -isystem sdk/src/rp2_common/hardware_timer/include/ \
-       -isystem sdk/src/rp2_common/hardware_uart/include/ \
-       -isystem sdk/src/rp2_common/hardware_watchdog/include/ \
-       -isystem sdk/src/rp2_common/hardware_xosc/include/ \
-       -isystem sdk/src/rp2_common/pico_multicore/include/ \
-       -isystem sdk/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/include/ \
-       -isystem sdk/src/rp2_common/pico_stdio/include/ \
-       -isystem sdk/src/rp2_common/pico_printf/include/ \
-       -isystem sdk/src/rp2_common/pico_float/include/ \
-       -isystem sdk/src/rp2_common/pico_platform/include/ \
-       -isystem sdk/src/rp2_common/pico_runtime/printf/include/ \
-       -isystem sdk/src/rp2_common/pico_bootrom/include/ \
-       -isystem sdk/src/rp2_common/pico_unique_id/include/ \
-       -Isdk_config \
-       -I../../lib/tinyusb/src \
-       -I../../supervisor/shared/usb \
-       -I$(BUILD)
+ifeq ($(CIRCUITPY_CYW43),1)
+INC_CYW43 := \
+	-isystem lib/cyw43-driver/firmware \
+	-isystem lib/cyw43-driver/src \
+	-isystem lib/lwip/src/include \
+	-isystem sdk/src/rp2_common/pico_cyw43_arch/include/ \
+	-isystem sdk/src/rp2_common/pico_lwip/include/ \
+
+CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25 -DCYW43_LOGIC_DEBUG=0
+SRC_SDK_CYW43 := \
+	src/common/pico_sync/sem.c \
+	src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.c \
+	src/rp2_common/pico_cyw43_arch/cyw43_arch.c \
+	src/rp2_common/pico_cyw43_arch/cyw43_arch_threadsafe_background.c \
+	src/rp2_common/pico_lwip/nosys.c \
+	src/rp2_common/pico_lwip/random.c \
+
+SRC_LWIP := \
+	shared/netutils/netutils.c \
+	$(wildcard lib/lwip/src/core/*.c) \
+	$(wildcard lib/lwip/src/core/ipv4/*.c) \
+	lib/lwip/src/netif/ethernet.c \
+	$(wildcard lwip_src/*.c) \
+
+SRC_CYW43 := \
+	$(wildcard bindings/cyw43/*.c) \
+	lib/cyw43-driver/src/cyw43_stats.c \
+	lib/cyw43-driver/src/cyw43_ctrl.c \
+	lib/cyw43-driver/src/cyw43_ll.c \
+	lib/cyw43-driver/src/cyw43_lwip.c \
+
+PIOASM = $(BUILD)/pioasm/pioasm/pioasm
+.PHONY: PioasmBuild
+PioasmBuild: $(PIOASM)
+$(PIOASM):
+	$(Q)cmake -S pioasm -B $(BUILD)/pioasm
+	$(Q)$(MAKE) -C $(BUILD)/pioasm PioasmBuild
+
+$(BUILD)/cyw43_bus_pio_spi.pio.h: sdk/src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.pio $(PIOASM)
+	$(Q)$(PIOASM) -o c-sdk $< $@
+$(BUILD)/sdk/src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.o: $(BUILD)/cyw43_bus_pio_spi.pio.h
+
+CYW43_FIRMWARE_BIN = 43439A0-7.95.49.00.combined
+
+$(BUILD)/cyw43_resource.o: lib/cyw43-driver/firmware/$(CYW43_FIRMWARE_BIN)
+	$(Q)$(OBJCOPY) -I binary -O elf32-littlearm -B arm \
+		--readonly-text \
+		--rename-section .data=.big_const,contents,alloc,load,readonly,data \
+		--redefine-sym _binary_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_start=fw_43439A0_7_95_49_00_start \
+		--redefine-sym _binary_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_size=fw_43439A0_7_95_49_00_size \
+		--redefine-sym _binary_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_end=fw_43439A0_7_95_49_00_end \
+		$< $@
+OBJ_CYW43 := $(BUILD)/cyw43_resource.o
+# need to do the equivalent of this in cmake
+###     # cyw43_resource.o contains the WiFi and BT firmware as a binary blob
+###     add_custom_command(
+###             OUTPUT ${CYW43_FIRMWARE_OBJ}
+###             DEPENDS ${PICO_CYW43_DRIVER_PATH}/firmware/${CYW43_FIRMWARE_BIN}
+###             WORKING_DIRECTORY ${PICO_CYW43_DRIVER_PATH}/firmware
+###             COMMAND ${CMAKE_OBJCOPY} -I binary -O elf32-littlearm -B arm
+###             --readonly-text
+###             --rename-section .data=${RESOURCE_SECNAME},${RESOURCE_SECFLAGS}
+###             --redefine-sym _binary_${CYW43_FIRMWARE_BIN_}_start=${CYW43_FIRMWARE_PRETTY}_start
+###             --redefine-sym _binary_${CYW43_FIRMWARE_BIN_}_end=${CYW43_FIRMWARE_PRETTY}_end
+###             --redefine-sym _binary_${CYW43_FIRMWARE_BIN_}_size=${CYW43_FIRMWARE_PRETTY}_size
+###             ${CYW43_FIRMWARE_BIN} ${CYW43_FIRMWARE_OBJ}
+###     )
+###
+else
+INC_CYW43 :=
+CFLAGS_CYW43 :=
+SRC_SDK_CYW43 :=
+SRC_CYW43 :=
+OBJ_CYW43 :=
+SRC_LWIP :=
+endif
+
+INC += \
+	-I. \
+	-Ilwip_inc \
+        -I../.. \
+        -I../lib/mp-readline \
+        -I../shared/timeutils \
+        -Iboards/$(BOARD) \
+        -Iboards/ \
+        -isystem sdk/ \
+        -isystem sdk/src/common/pico_base/include/ \
+        -isystem sdk/src/common/pico_binary_info/include/ \
+        -isystem sdk/src/common/pico_stdlib/include/ \
+        -isystem sdk/src/common/pico_sync/include/ \
+        -isystem sdk/src/common/pico_time/include/ \
+        -isystem sdk/src/common/pico_util/include/ \
+        -isystem sdk/src/rp2040/hardware_regs/include/ \
+        -isystem sdk/src/rp2040/hardware_structs/include/ \
+        -isystem sdk/src/rp2_common/hardware_adc/include/ \
+        -isystem sdk/src/rp2_common/hardware_base/include/ \
+        -isystem sdk/src/rp2_common/hardware_claim/include/ \
+        -isystem sdk/src/rp2_common/hardware_clocks/include/ \
+        -isystem sdk/src/rp2_common/hardware_divider/include/ \
+        -isystem sdk/src/rp2_common/hardware_dma/include/ \
+        -isystem sdk/src/rp2_common/hardware_flash/include/ \
+        -isystem sdk/src/rp2_common/hardware_gpio/include/ \
+        -isystem sdk/src/rp2_common/hardware_irq/include/ \
+        -isystem sdk/src/rp2_common/hardware_i2c/include/ \
+        -isystem sdk/src/rp2_common/hardware_pio/include/ \
+        -isystem sdk/src/rp2_common/hardware_pll/include/ \
+        -isystem sdk/src/rp2_common/hardware_resets/include/ \
+        -isystem sdk/src/rp2_common/hardware_rtc/include/ \
+        -isystem sdk/src/rp2_common/hardware_spi/include/ \
+        -isystem sdk/src/rp2_common/hardware_sync/include/ \
+        -isystem sdk/src/rp2_common/hardware_timer/include/ \
+        -isystem sdk/src/rp2_common/hardware_uart/include/ \
+        -isystem sdk/src/rp2_common/hardware_watchdog/include/ \
+        -isystem sdk/src/rp2_common/hardware_xosc/include/ \
+        -isystem sdk/src/rp2_common/pico_multicore/include/ \
+        -isystem sdk/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/include/ \
+        -isystem sdk/src/rp2_common/pico_stdio/include/ \
+        -isystem sdk/src/rp2_common/pico_printf/include/ \
+        -isystem sdk/src/rp2_common/pico_float/include/ \
+        -isystem sdk/src/rp2_common/pico_platform/include/ \
+        -isystem sdk/src/rp2_common/pico_runtime/printf/include/ \
+        -isystem sdk/src/rp2_common/pico_bootrom/include/ \
+        -isystem sdk/src/rp2_common/pico_unique_id/include/ \
+	$(INC_CYW43) \
+        -Isdk_config \
+        -I../../lib/tinyusb/src \
+        -I../../supervisor/shared/usb \
+        -I$(BUILD)
 
 # Pico specific configuration
 CFLAGS += -DRASPBERRYPI -DPICO_ON_DEVICE=1 -DPICO_NO_BINARY_INFO=0 -DPICO_TIME_DEFAULT_ALARM_POOL_DISABLED=0 -DPICO_DIVIDER_CALL_IDIV0=0 -DPICO_DIVIDER_CALL_LDIV0=0 -DPICO_DIVIDER_HARDWARE=1 -DPICO_DOUBLE_ROM=1 -DPICO_FLOAT_ROM=1 -DPICO_MULTICORE=1 -DPICO_BITS_IN_RAM=0 -DPICO_DIVIDER_IN_RAM=0 -DPICO_DOUBLE_PROPAGATE_NANS=0 -DPICO_DOUBLE_IN_RAM=0 -DPICO_MEM_IN_RAM=0 -DPICO_FLOAT_IN_RAM=0 -DPICO_FLOAT_PROPAGATE_NANS=1 -DPICO_NO_FLASH=0 -DPICO_COPY_TO_RAM=0 -DPICO_DISABLE_SHARED_IRQ_HANDLERS=0 -DPICO_NO_BI_BOOTSEL_VIA_DOUBLE_RESET=0
@@ -115,6 +195,9 @@ CFLAGS += -DTUD_OPT_RP2040_USB_DEVICE_ENUMERATION_FIX=1 -DCFG_TUSB_MCU=OPT_MCU_R
 # option to override default optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 CFLAGS += $(OPTIMIZATION_FLAGS)
 
+# flags specific to wifi / cyw43
+
+CFLAGS += $(CFLAGS_CYW43)
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb3 -O3
@@ -185,9 +268,10 @@ SRC_SDK := \
 	src/rp2_common/pico_runtime/runtime.c \
 	src/rp2_common/pico_stdio/stdio.c \
 	src/rp2_common/pico_unique_id/unique_id.c \
+	$(SRC_SDK_CYW43) \
 
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
-$(patsubst %.c,$(BUILD)/%.o,$(SRC_SDK)): CFLAGS += -Wno-missing-prototypes -Wno-undef
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_SDK) $(SRC_CYW43)): CFLAGS += -Wno-missing-prototypes -Wno-undef
 
 SRC_C += \
 	boards/$(BOARD)/board.c \
@@ -204,6 +288,8 @@ SRC_C += \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/dcd_rp2040.c \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c \
 	mphalport.c \
+	$(SRC_CYW43) \
+	$(SRC_LWIP) \
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
@@ -243,6 +329,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S_UPPER:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/boot2_padded_checksummed.o
+OBJ += $(OBJ_CYW43)
 
 $(BUILD)/boot2_padded_checksummed.o: $(BUILD)/boot2_padded_checksummed.S
 	$(STEPECHO) "CC $<"
@@ -276,12 +363,13 @@ SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_M
 
 all: $(BUILD)/firmware.uf2
 
-$(BUILD)/firmware.elf: $(OBJ) link.ld
+LINK_LD := $(firstword $(wildcard boards/$(BOARD)/link.ld link.ld))
+$(BUILD)/firmware.elf: $(OBJ) $(LINK_LD)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
 	$(Q)echo $(PICO_LDFLAGS) > $(BUILD)/firmware.ldflags
-	$(Q)$(CC) -o $@ $(CFLAGS) @$(BUILD)/firmware.ldflags -Wl,-T,link.ld -Wl,-Map=$@.map -Wl,-cref -Wl,--gc-sections @$(BUILD)/firmware.objs
-	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py link.ld
+	$(Q)$(CC) -o $@ $(CFLAGS) @$(BUILD)/firmware.ldflags -Wl,-T,$(LINK_LD) -Wl,-Map=$@.map -Wl,-cref -Wl,--gc-sections @$(BUILD)/firmware.objs
+	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(LINK_LD)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"

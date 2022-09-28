@@ -174,7 +174,7 @@ STATIC mp_obj_t socketpool_socket_recvfrom_into(mp_obj_t self_in, mp_obj_t data_
     mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_WRITE);
 
     byte ip[4];
-    mp_uint_t port;
+    uint32_t port;
     mp_int_t ret = common_hal_socketpool_socket_recvfrom_into(self,
         (byte *)bufinfo.buf, bufinfo.len, ip, &port);
     mp_obj_t tuple_contents[2];

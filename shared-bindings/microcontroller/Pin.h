@@ -55,6 +55,8 @@ void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin);
 void common_hal_mcu_pin_claim_number(uint8_t pin_no);
 void common_hal_mcu_pin_reset_number(uint8_t pin_no);
 
+void shared_bindings_microcontroller_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
+
 #define COMMON_HAL_MCU_NO_PIN ((uint8_t)0xff)
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H

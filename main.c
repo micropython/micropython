@@ -784,6 +784,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
             mp_printf(&mp_plat_print, "%02X", raw_id[i]);
         }
         mp_printf(&mp_plat_print, "\n");
+        port_boot_info();
         #endif
 
         bool found_boot = maybe_run_list(boot_py_filenames);
