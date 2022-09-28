@@ -104,6 +104,7 @@ msgstr "%q contém pinos duplicados"
 msgid "%q failure: %d"
 msgstr "%q falha: %d"
 
+#: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q em uso"
@@ -311,7 +312,7 @@ msgstr "O objeto '%s' não suporta a atribuição dos itens"
 msgid "'%s' object doesn't support item deletion"
 msgstr "O objeto '%s' não é compatível com exclusão do item"
 
-#: py/runtime.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "O objeto '%s' não possui o atributo '%q'"
 
@@ -501,6 +502,7 @@ msgid "Already running"
 msgstr "Já está em execução"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Já está em busca das redes de wifi"
 
@@ -943,6 +945,10 @@ msgstr "Erro: Falha na vinculação"
 msgid "Expected a %q"
 msgstr "Esperado um"
 
+#: ports/raspberrypi/bindings/cyw43/__init__.c
+msgid "Expected a %q or %q"
+msgstr ""
+
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an %q"
 msgstr "Esperava-se um(a) %q"
@@ -1216,7 +1222,7 @@ msgstr "Erro interno #%d"
 msgid "Internal watchdog timer expired."
 msgstr "O temporizador do watchdog interno expirou."
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid %q"
 msgstr "%q Inválido"
 
@@ -2272,6 +2278,11 @@ msgstr "Erro desconhecido do firmware: %04x"
 #, c-format
 msgid "Unknown system firmware error: %d"
 msgstr "Ocorreu um erro desconhecido no firmware do sistema: %d"
+
+#: ports/raspberrypi/common-hal/wifi/__init__.c
+#, c-format
+msgid "Unkown error code %d"
+msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -4220,13 +4231,9 @@ msgstr "o tipo '%q' não é um tipo base aceitável"
 msgid "type is not an acceptable base type"
 msgstr "tipo não é um tipo base aceitável"
 
-#: py/runtime.c
+#: py/objgenerator.c py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "o objeto tipo '%q' não possuí atributo '%q'"
-
-#: py/objgenerator.c
-msgid "type object 'generator' has no attribute '__await__'"
-msgstr "o tipo do objeto 'generator' não possui qualquer atributo '__await__'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
@@ -4358,8 +4365,13 @@ msgid "width must be greater than zero"
 msgstr "a largura deve ser maior que zero"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
 msgstr "o wifi não está ativo"
+
+#: ports/raspberrypi/common-hal/wifi/Monitor.c
+msgid "wifi.Monitor not available"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
@@ -4434,6 +4446,10 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "type object 'generator' has no attribute '__await__'"
+#~ msgstr ""
+#~ "o tipo do objeto 'generator' não possui qualquer atributo '__await__'"
 
 #~ msgid "color should be an int"
 #~ msgstr "cor deve ser um int"
