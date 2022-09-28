@@ -89,6 +89,9 @@ STATIC mp_obj_t digitalio_digitalinout_make_new(const mp_obj_type_t *type,
     self->base.type = &digitalio_digitalinout_type;
 
     #if CIRCUITPY_CYW43
+    // The GPIO pin attached to the CYW43 co-processor can only be used for
+    // DigitalInOut, not for other purposes like PWM. That's why this check
+    // is here, and it's not rolled into validate_obj_is_free_pin.
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin_including_cyw43(args[0]);
     #else
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
