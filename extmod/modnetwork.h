@@ -59,7 +59,7 @@ void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
 typedef struct _mod_network_nic_type_t {
     mp_obj_full_type_t base;
-    struct netif* netif;
+    struct netif *netif;
 } mod_network_nic_type_t;
 #else
 
