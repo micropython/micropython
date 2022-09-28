@@ -58,13 +58,8 @@ void mod_network_lwip_init(void);
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
 typedef struct _mod_network_nic_type_t {
-<<<<<<< HEAD
     mp_obj_full_type_t base;
-    struct netif* netif;
-=======
-    mp_obj_type_t base;
     struct netif *netif;
->>>>>>> extmod/modnetwork.h: Fix code formatting.
 } mod_network_nic_type_t;
 #else
 
