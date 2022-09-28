@@ -66,13 +66,6 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
         return len;
     }
 
-    #if CIRCUITPY_STATUS_BAR
-    // Skip the status bar OSC sequence if it's disabled for the display.
-    const bool status_bar_write_ok =
-        shared_module_supervisor_status_bar_get_display(&shared_module_supervisor_status_bar_obj) ||
-        !supervisor_status_bar_get_update_in_progress(&shared_module_supervisor_status_bar_obj);
-    #endif
-
     const byte *i = data;
     uint16_t start_y = self->cursor_y;
     while (i < data + len) {
@@ -85,9 +78,6 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                 self->status_y = 0;
                 i += 1;
             } else if (
-                #if CIRCUITPY_STATUS_BAR
-                status_bar_write_ok &&
-                #endif
                 self->osc_command == 0 &&
                 self->status_bar != NULL &&
                 self->status_y < self->status_bar->height_in_tiles) {
