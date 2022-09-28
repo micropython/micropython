@@ -48,7 +48,7 @@ typedef struct _network_lan_obj_t {
     eth_t *eth;
 } network_lan_obj_t;
 
-STATIC const network_lan_obj_t network_lan_eth0 = { { (mp_obj_type_t *)&network_lan_type }, &eth_instance };
+STATIC const network_lan_obj_t network_lan_eth0 = { { (mp_obj_type_t *)(mp_obj_type_t *)&network_lan_type }, &eth_instance };
 
 STATIC void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     network_lan_obj_t *self = MP_OBJ_TO_PTR(self_in);
