@@ -316,3 +316,6 @@
 [submodule "ports/raspberrypi/lib/lwip"]
 	path = ports/raspberrypi/lib/lwip
 	url = https://github.com/lwip-tcpip/lwip.git
+[submodule "lib/mbedtls"]
+	path = lib/mbedtls
+	url = https://github.com/ARMmbed/mbedtls.git

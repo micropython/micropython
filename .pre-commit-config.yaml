@@ -10,7 +10,7 @@ repos:
     -   id: end-of-file-fixer
         exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|ports/espressif/esp-idf-config/.*|ports/espressif/boards/.*/sdkconfig)'
     -   id: trailing-whitespace
-        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*)'
+        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|lib/mbedtls_errors/.*)'
 -   repo: local
     hooks:
     -   id: translations
