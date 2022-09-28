@@ -80,6 +80,7 @@ void wifi_reset(void) {
     if (!wifi_inited) {
         return;
     }
+    // the cyw43 wifi chip is not reset due to https://github.com/raspberrypi/pico-sdk/issues/980
     common_hal_wifi_monitor_deinit(MP_STATE_VM(wifi_monitor_singleton));
     wifi_radio_obj_t *radio = &common_hal_wifi_radio_obj;
     common_hal_wifi_radio_obj.current_scan = NULL;
