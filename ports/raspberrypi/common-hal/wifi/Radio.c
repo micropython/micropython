@@ -141,6 +141,7 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
 }
 
 void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
+    mp_raise_NotImplementedError(NULL);
 }
 
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
@@ -229,6 +230,7 @@ void common_hal_wifi_radio_set_ipv4_dns(wifi_radio_obj_t *self, mp_obj_t ipv4_dn
 }
 
 void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self) {
+    mp_raise_NotImplementedError(NULL);
 }
 
 void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
