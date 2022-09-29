@@ -37,7 +37,7 @@
 
 extern int mp_interrupt_char;
 extern volatile uint32_t systick_ms;
-extern volatile uint32_t systick_ms_upper;
+uint64_t mp_hal_ticks_us_64(void);
 
 void mp_hal_set_interrupt_char(int c);
 
@@ -47,28 +47,19 @@ void mp_hal_set_interrupt_char(int c);
 
 #define mp_hal_delay_us_fast  mp_hal_delay_us
 
-static inline mp_uint_t mp_hal_ticks_ms(void) {
-    return systick_ms;
+static inline uint64_t mp_hal_ticks_ms_64(void) {
+    return mp_hal_ticks_us_64() / 1000;
 }
 
-static inline uint64_t mp_hal_ticks_ms_64(void) {
-    return ((uint64_t)systick_ms_upper << 32) + systick_ms;
+static inline mp_uint_t mp_hal_ticks_ms(void) {
+    return (mp_uint_t)mp_hal_ticks_ms_64();
 }
 
 static inline mp_uint_t mp_hal_ticks_us(void) {
     #if defined(MCU_SAMD21)
-
     return REG_TC4_COUNT32_COUNT;
-
-    #elif defined(MCU_SAMD51)
-
-    TC0->COUNT32.CTRLBSET.reg = TC_CTRLBSET_CMD_READSYNC;
-    while (TC0->COUNT32.CTRLBSET.reg != 0) {
-    }
-    return REG_TC0_COUNT32_COUNT >> 3;
-
     #else
-    return systick_ms * 1000;
+    return (mp_uint_t)mp_hal_ticks_us_64();
     #endif
 }
 
@@ -89,7 +80,7 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #endif
 
 static inline uint64_t mp_hal_time_ns(void) {
-    return mp_hal_ticks_ms_64() * 1000000;
+    return mp_hal_ticks_us_64() * 1000;
 }
 
 // C-level pin HAL
