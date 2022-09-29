@@ -81,7 +81,10 @@ mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *hostname) {
-    ro_attribute(MP_QSTR_hostname);
+    self->hostname = mp_obj_new_str(hostname, strlen(hostname));
+    hostname = mp_obj_str_get_str(self->hostname);
+    netif_set_hostname(NETIF_STA, hostname);
+    netif_set_hostname(NETIF_AP, hostname);
 }
 
 mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {

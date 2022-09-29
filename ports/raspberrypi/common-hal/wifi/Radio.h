@@ -33,6 +33,7 @@
 
 typedef struct {
     mp_obj_base_t base;
+    mp_obj_t hostname;
     wifi_scannednetworks_obj_t *current_scan;
 } wifi_radio_obj_t;
 
