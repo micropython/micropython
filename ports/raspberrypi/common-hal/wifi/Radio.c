@@ -59,6 +59,17 @@
 #define NETIF_STA (&cyw43_state.netif[CYW43_ITF_STA])
 #define NETIF_AP (&cyw43_state.netif[CYW43_ITF_AP])
 
+static inline uint32_t nw_get_le32(const uint8_t *buf) {
+    return buf[0] | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
+}
+
+static inline void nw_put_le32(uint8_t *buf, uint32_t x) {
+    buf[0] = x;
+    buf[1] = x >> 8;
+    buf[2] = x >> 16;
+    buf[3] = x >> 24;
+}
+
 NORETURN static void ro_attribute(int attr) {
     mp_raise_msg_varg(&mp_type_AttributeError, MP_ERROR_TEXT("'%s' object has no attribute '%q'"), "Radio", attr);
 }
@@ -96,12 +107,19 @@ void common_hal_wifi_radio_set_mac_address(wifi_radio_obj_t *self, const uint8_t
 }
 
 mp_float_t common_hal_wifi_radio_get_tx_power(wifi_radio_obj_t *self) {
-    return MICROPY_FLOAT_CONST(0.);
+    uint8_t buf[13];
+    memcpy(buf, "qtxpower\x00\x00\x00\x00\x00", 13);
+    cyw43_ioctl(&cyw43_state, CYW43_IOCTL_GET_VAR, 13, buf, CYW43_ITF_STA);
+    return nw_get_le32(buf) * MICROPY_FLOAT_CONST(0.25);
 }
 
 void common_hal_wifi_radio_set_tx_power(wifi_radio_obj_t *self, const mp_float_t tx_power) {
-    ro_attribute(MP_QSTR_tx_power);
-
+    mp_int_t dbm_times_four = (int)(4 * tx_power);
+    uint8_t buf[9 + 4];
+    memcpy(buf, "qtxpower\x00", 9);
+    nw_put_le32(buf + 9, dbm_times_four);
+    cyw43_ioctl(&cyw43_state, CYW43_IOCTL_SET_VAR, 9 + 4, buf, CYW43_ITF_STA);
+    cyw43_ioctl(&cyw43_state, CYW43_IOCTL_SET_VAR, 9 + 4, buf, CYW43_ITF_AP);
 }
 
 mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self) {
