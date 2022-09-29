@@ -32,6 +32,7 @@ port_deps = {
     "raspberrypi": [
         "extmod/ulab/",
         "lib/adafruit_floppy/",
+        "lib/mbedtls/",
         "lib/mp3/",
         "lib/protomatter/",
         "lib/quirc/",

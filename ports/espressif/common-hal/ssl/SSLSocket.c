@@ -158,7 +158,7 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t
 
         if (err == ESP_ERR_MBEDTLS_SSL_SETUP_FAILED) {
             mp_raise_espidf_MemoryError();
-        } else if (ESP_ERR_MBEDTLS_SSL_HANDSHAKE_FAILED) {
+        } else if (err == ESP_ERR_MBEDTLS_SSL_HANDSHAKE_FAILED) {
             mp_raise_OSError_msg_varg(translate("Failed SSL handshake"));
         } else {
             mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, sent);

@@ -276,6 +276,88 @@ SRC_C += \
 	$(SRC_CYW43) \
 	$(SRC_LWIP) \
 
+ifeq ($(CIRCUITPY_SSL),1)
+CFLAGS += -isystem $(TOP)/mbedtls/include
+SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
+        aes.c \
+        aesni.c \
+        arc4.c \
+        asn1parse.c \
+        asn1write.c \
+        base64.c \
+        bignum.c \
+        blowfish.c \
+        camellia.c \
+        ccm.c \
+        certs.c \
+        chacha20.c \
+        chachapoly.c \
+        cipher.c \
+        cipher_wrap.c \
+        cmac.c \
+        ctr_drbg.c \
+        debug.c \
+        des.c \
+        dhm.c \
+        ecdh.c \
+        ecdsa.c \
+        ecjpake.c \
+        ecp.c \
+        ecp_curves.c \
+        entropy.c \
+        entropy_poll.c \
+        gcm.c \
+        havege.c \
+        hmac_drbg.c \
+        md2.c \
+        md4.c \
+        md5.c \
+        md.c \
+        md_wrap.c \
+        oid.c \
+        padlock.c \
+        pem.c \
+        pk.c \
+        pkcs11.c \
+        pkcs12.c \
+        pkcs5.c \
+        pkparse.c \
+        pk_wrap.c \
+        pkwrite.c \
+        platform.c \
+        platform_util.c \
+        poly1305.c \
+        ripemd160.c \
+        rsa.c \
+        rsa_internal.c \
+        sha1.c \
+        sha256.c \
+        sha512.c \
+        ssl_cache.c \
+        ssl_ciphersuites.c \
+        ssl_cli.c \
+        ssl_cookie.c \
+        ssl_srv.c \
+        ssl_ticket.c \
+        ssl_tls.c \
+        timing.c \
+        x509.c \
+        x509_create.c \
+        x509_crl.c \
+        x509_crt.c \
+        x509_csr.c \
+        x509write_crt.c \
+        x509write_csr.c \
+        xtea.c \
+	)
+SRC_C += $(SRC_MBEDTLS) mbedtls/mbedtls_port.c
+CFLAGS += \
+	  -isystem $(TOP)/lib/mbedtls/include \
+	  -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"' \
+
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_MBEDTLS))): CFLAGS += -Wno-suggest-attribute=format
+endif
+
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
                           $(addprefix common-hal/, $(SRC_COMMON_HAL))
