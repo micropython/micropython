@@ -291,7 +291,7 @@ condition and generating hardware reset or using Go command to execute user code
     HAL_DeInit();
 
     // Disable all pending interrupts using NVIC
-    for (uint8_t i = 0; i < (sizeof(NVIC->ICER) / sizeof(NVIC->ICER[0])); ++i) {
+    for (uint8_t i = 0; i < MP_ARRAY_SIZE(NVIC->ICER); ++i) {
         NVIC->ICER[i] = 0xFFFFFFFF;
     }
 
@@ -302,7 +302,7 @@ condition and generating hardware reset or using Go command to execute user code
     __ISB();
 
     // Clear all pending interrupts using NVIC
-    for (uint8_t i = 0; i < (sizeof(NVIC->ICPR) / sizeof(NVIC->ICPR[0])); ++i) {
+    for (uint8_t i = 0; i < MP_ARRAY_SIZE(NVIC->ICPR); ++i) {
         NVIC->ICPR[i] = 0xFFFFFFFF;
     }
 
