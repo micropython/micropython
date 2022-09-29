@@ -200,19 +200,21 @@ Python prompt over WiFi, connecting through a browser.
 - GitHub repository https://github.com/micropython/webrepl.
   Please follow the instructions there.
 
-__upip__
+__mip__
 
-The ESP8266 port comes with builtin `upip` package manager, which can
-be used to install additional modules (see the main README for more
-information):
+The ESP8266 port comes with the built-in `mip` package manager, which can
+be used to install additional modules:
 
 ```
->>> import upip
->>> upip.install("micropython-pystone_lowmem")
+>>> import mip
+>>> mip.install("hmac")
 [...]
->>> import pystone_lowmem
->>> pystone_lowmem.main()
+>>> import hmac
+>>> hmac.new(b"1234567890", msg="hello world").hexdigest()
 ```
+
+See [Package management](https://docs.micropython.org/en/latest/reference/packages.html) for more
+information about `mip`.
 
 Downloading and installing packages may requite a lot of free memory,
 if you get an error, retry immediately after the hard reset.

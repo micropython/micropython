@@ -24,21 +24,26 @@ Use `CTRL-D` (i.e. EOF) to exit the shell.
 Learn about command-line options (in particular, how to increase heap size
 which may be needed for larger applications):
 
-    $ ./micropython -h
+    $ ./build-standard/micropython -h
 
 To run the complete testsuite, use:
 
     $ make test
 
-The Unix port comes with a builtin package manager called upip, e.g.:
+The Unix port comes with a built-in package manager called `mip`, e.g.:
 
-    $ ./micropython -m upip install micropython-pystone
-    $ ./micropython -m pystone
+    $ ./build-standard/micropython -m mip install hmac
 
-Browse available modules on
-[PyPI](https://pypi.python.org/pypi?%3Aaction=search&term=micropython).
-Standard library modules come from the
-[micropython-lib](https://github.com/micropython/micropython-lib) project.
+or
+
+    $ ./build-standard/micropython
+    >>> import mip
+    >>> mip.install("hmac")
+
+Browse available modules at [micropython-lib]
+(https://github.com/micropython/micropython-lib). See
+[Package management](https://docs.micropython.org/en/latest/reference/packages.html)
+for more information about `mip`.
 
 External dependencies
 ---------------------
@@ -65,6 +70,5 @@ or not). If you intend to build MicroPython with additional options
 (like cross-compiling), the same set of options should be passed to `make
 deplibs`. To actually enable/disable use of dependencies, edit the
 `ports/unix/mpconfigport.mk` file, which has inline descriptions of the
-options. For example, to build SSL module (required for the `upip` tool
-described above, and so enabled by default), `MICROPY_PY_USSL` should be set
-to 1.
+options. For example, to build the SSL module, `MICROPY_PY_USSL` should be
+set to 1.

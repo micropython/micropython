@@ -322,7 +322,8 @@ tests
 
 tools
 
-  Contains helper tools including the ``upip`` and the ``pyboard.py`` module.
+  Contains scripts used by the build and CI process, as well as user tools such
+  as ``pyboard.py`` and ``mpremote``.
 
 examples
 
