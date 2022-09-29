@@ -190,7 +190,7 @@ void init_clocks(uint32_t cpu_freq) {
     // GCLK0: 48MHz from DFLL48M or 48 - 200 MHz from DPLL0 (SAMD51)
     // GCLK1: 32768 Hz from 32KULP or DFLL48M
     // GCLK2: 8-48MHz from DFLL48M for Peripheral devices
-    // GCLK3: 8Mhz for the us-counter (TC0/TC1)
+    // GCLK3: 16Mhz for the us-counter (TC0/TC1)
     // GCLK4: 32kHz from crystal, if present
     // GCLK5: 48MHz from DFLL48M for USB
     // DPLL0: 48 - 200 MHz
@@ -204,7 +204,7 @@ void init_clocks(uint32_t cpu_freq) {
     // Setup DPLL0 to 120MHz
     // Setup GCLK0 to 120MHz
     // Setup GCLK2 to 48MHz for Peripherals
-    // Setup GCLK3 to 8MHz for TC0/TC1
+    // Setup GCLK3 to 16MHz for TC0/TC1
     // Setup GCLK4 to 32kHz crystal, if present
     // Setup GCLK5 to 48 MHz
 
@@ -320,8 +320,8 @@ void init_clocks(uint32_t cpu_freq) {
     while (GCLK->SYNCBUSY.bit.GENCTRL2) {
     }
 
-    // Setup GCLK3 for 8MHz, Used for TC0/1 counter
-    GCLK->GENCTRL[3].reg = GCLK_GENCTRL_DIV(6) | GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
+    // Setup GCLK3 for 16MHz, Used for TC0/1 counter
+    GCLK->GENCTRL[3].reg = GCLK_GENCTRL_DIV(3) | GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
     while (GCLK->SYNCBUSY.bit.GENCTRL3) {
     }
 }

@@ -67,7 +67,7 @@ static void usb_init(void) {
     tusb_init();
 }
 
-// Initialize the microsecond counter on TC 0/1
+// Initialize the µs counter on TC 0/1 or TC4/5
 void init_us_counter(void) {
     #if defined(MCU_SAMD21)
 
@@ -88,6 +88,9 @@ void init_us_counter(void) {
     TC4->COUNT32.READREQ.reg = TC_READREQ_RREQ | TC_READREQ_RCONT | 0x10;
     while (TC4->COUNT32.STATUS.bit.SYNCBUSY) {
     }
+    // Enable the IRQ
+    TC4->COUNT32.INTENSET.reg = TC_INTENSET_OVF;
+    NVIC_EnableIRQ(TC4_IRQn);
 
     #elif defined(MCU_SAMD51)
 
@@ -106,6 +109,9 @@ void init_us_counter(void) {
     while (TC0->COUNT32.SYNCBUSY.bit.ENABLE) {
     }
 
+    // Enable the IRQ
+    TC0->COUNT32.INTENSET.reg = TC_INTENSET_OVF;
+    NVIC_EnableIRQ(TC0_IRQn);
     #endif
 }
 
