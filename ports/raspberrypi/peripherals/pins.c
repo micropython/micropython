@@ -75,4 +75,5 @@ PIN(28);
 PIN(29);
 #if CIRCUITPY_CYW43
 CYW_PIN(0);
+CYW_PIN(1);
 #endif
