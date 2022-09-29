@@ -87,14 +87,17 @@ class ManifestMetadata:
         self.version = None
         self.description = None
         self.license = None
+        self.author = None
 
-    def update(self, description=None, version=None, license=None):
+    def update(self, description=None, version=None, license=None, author=None):
         if description:
             self.description = description
         if version:
             self.version = version
         if license:
             self.license = version
+        if author:
+            self.author = author
 
 
 # Turns a dict of options into a object with attributes used to turn the
@@ -228,7 +231,7 @@ class ManifestFile:
             if base_path:
                 os.chdir(prev_cwd)
 
-    def metadata(self, description=None, version=None, license=None):
+    def metadata(self, description=None, version=None, license=None, author=None):
         """
         From within a manifest file, use this to set the metadata for the
         package described by current manifest.
@@ -237,7 +240,7 @@ class ManifestFile:
         to obtain the metadata for the top-level manifest file.
         """
 
-        self._metadata[-1].update(description, version, license)
+        self._metadata[-1].update(description, version, license, author)
         return self._metadata[-1]
 
     def include(self, manifest_path, top_level=False, **kwargs):
