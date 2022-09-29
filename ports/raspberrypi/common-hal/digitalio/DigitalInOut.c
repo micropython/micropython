@@ -140,6 +140,11 @@ void common_hal_digitalio_digitalinout_set_value(
 
 bool common_hal_digitalio_digitalinout_get_value(
     digitalio_digitalinout_obj_t *self) {
+    #if CIRCUITPY_CYW43
+    if (IS_CYW(self)) {
+        return cyw43_arch_gpio_get(self->pin->number);
+    }
+    #endif
     return gpio_get(self->pin->number);
 }
 
