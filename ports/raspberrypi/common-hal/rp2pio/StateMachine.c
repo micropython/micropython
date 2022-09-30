@@ -871,7 +871,7 @@ bool common_hal_rp2pio_statemachine_get_txstall(rp2pio_statemachine_obj_t *self)
 }
 
 void common_hal_rp2pio_statemachine_clear_txstall(rp2pio_statemachine_obj_t *self) {
-    uint8_t level = pio_sm_get_rx_fifo_level(self->pio, self->state_machine);
+    (void)pio_sm_get_rx_fifo_level(self->pio, self->state_machine);
     uint32_t stall_mask = 1 << (PIO_FDEBUG_TXSTALL_LSB + self->state_machine);
     self->pio->fdebug = stall_mask;
 }

@@ -829,7 +829,6 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
 
 bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     const char *host, size_t hostlen, uint32_t port) {
-    uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
 
     // get address
     ip_addr_t bind_addr;
