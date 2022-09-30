@@ -368,12 +368,6 @@ ping_raw_init(void) {
     sys_timeout(PING_DELAY, ping_timeout, ping_pcb);
 }
 
-static void
-ping_send_now(void) {
-    LWIP_ASSERT("ping_pcb != NULL", ping_pcb != NULL);
-    ping_send(ping_pcb, ping_target);
-}
-
 #endif /* PING_USE_SOCKETS */
 
 void

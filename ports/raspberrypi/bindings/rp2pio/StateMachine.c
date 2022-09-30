@@ -831,10 +831,3 @@ const mp_obj_type_t rp2pio_statemachine_type = {
     .make_new = rp2pio_statemachine_make_new,
     .locals_dict = (mp_obj_dict_t *)&rp2pio_statemachine_locals_dict,
 };
-
-static rp2pio_statemachine_obj_t *validate_obj_is_statemachine(mp_obj_t obj) {
-    if (!mp_obj_is_type(obj, &rp2pio_statemachine_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), rp2pio_statemachine_type.name);
-    }
-    return MP_OBJ_TO_PTR(obj);
-}

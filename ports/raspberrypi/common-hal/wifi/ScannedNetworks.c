@@ -44,11 +44,6 @@ static uint8_t scan_put, scan_get;
 static bool scan_full;
 
 
-static void scan_result_clear() {
-    scan_put = scan_get = 0;
-    scan_full = false;
-}
-
 static void scan_result_put(const cyw43_ev_scan_result_t *result) {
     if (!scan_full) {
         scan_results[scan_put] = *result;
