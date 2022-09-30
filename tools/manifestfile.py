@@ -311,14 +311,14 @@ class ManifestFile:
                 lib_dirs = ["unix-ffi"] + lib_dirs
 
             for lib_dir in lib_dirs:
-                for manifest_path in glob.glob(
-                    os.path.join(
-                        self._path_vars["MPY_LIB_DIR"], lib_dir, "**", name, "manifest.py"
-                    ),
-                    recursive=True,
+                # Search for {lib_dir}/**/{name}/manifest.py.
+                for root, dirnames, filenames in os.walk(
+                    os.path.join(self._path_vars["MPY_LIB_DIR"], lib_dir)
                 ):
-                    self.include(manifest_path, **kwargs)
-                    return
+                    if os.path.basename(root) == name and "manifest.py" in filenames:
+                        self.include(root, **kwargs)
+                        return
+
             raise ValueError("Library not found in local micropython-lib: {}".format(name))
         else:
             # TODO: HTTP request to obtain URLs from manifest.json.
