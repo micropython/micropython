@@ -36,7 +36,7 @@
 //|     """A class that represents a GPIO pin attached to the wifi chip.
 //|
 //|     Cannot be constructed at runtime, but may be the type of a pin object
-//|     in `board`. A `CywPin` can be used as a DigitalInOut, but not with other
+//|     in :py:mod:`board`. A `CywPin` can be used as a DigitalInOut, but not with other
 //|     peripherals such as `PWMOut`."""
 const mp_obj_type_t cyw43_pin_type = {
     { &mp_type_type },
