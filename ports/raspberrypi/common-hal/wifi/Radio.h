@@ -33,7 +33,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    mp_obj_t hostname;
+    char hostname[254]; // hostname max is 253 chars, + 1 for trailing NUL
     wifi_scannednetworks_obj_t *current_scan;
 } wifi_radio_obj_t;
 
