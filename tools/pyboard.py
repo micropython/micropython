@@ -621,23 +621,28 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
                 dest2 = fname_cp_dest(src2, fname_remote(dest))
                 op(src2, dest2, progress_callback=progress_callback)
         else:
-            op = {
+            ops = {
                 "cat": pyb.fs_cat,
                 "ls": pyb.fs_ls,
                 "mkdir": pyb.fs_mkdir,
                 "rm": pyb.fs_rm,
                 "rmdir": pyb.fs_rmdir,
                 "touch": pyb.fs_touch,
-            }[cmd]
+            }
+            if cmd not in ops:
+                raise PyboardError("'{}' is not a filesystem command".format(cmd))
             if cmd == "ls" and not args:
                 args = [""]
             for src in args:
                 src = fname_remote(src)
                 if verbose:
                     print("%s :%s" % (cmd, src))
-                op(src)
+                ops[cmd](src)
     except PyboardError as er:
-        print(str(er.args[2], "ascii"))
+        if len(er.args) > 1:
+            print(str(er.args[2], "ascii"))
+        else:
+            print(er)
         pyb.exit_raw_repl()
         pyb.close()
         sys.exit(1)
