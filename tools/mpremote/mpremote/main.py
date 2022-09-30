@@ -17,6 +17,7 @@ MicroPython device over a serial connection.  Commands supported are:
     mpremote repl                    -- enter REPL
 """
 
+import argparse
 import os, sys
 from collections.abc import Mapping
 from textwrap import dedent
@@ -41,10 +42,10 @@ _PROG = "mpremote"
 
 
 def do_help(state, _args=None):
-    def print_commands_help(cmds, help_idx):
+    def print_commands_help(cmds, help_key):
         max_command_len = max(len(cmd) for cmd in cmds.keys())
         for cmd in sorted(cmds.keys()):
-            help_message_lines = dedent(cmds[cmd][help_idx]).split("\n")
+            help_message_lines = dedent(help_key(cmds[cmd])).split("\n")
             help_message = help_message_lines[0]
             for line in help_message_lines[1:]:
                 help_message = "{}\n{}{}".format(help_message, " " * (max_command_len + 4), line)
@@ -54,10 +55,12 @@ def do_help(state, _args=None):
     print("See https://docs.micropython.org/en/latest/reference/mpremote.html")
 
     print("\nList of commands:")
-    print_commands_help(_COMMANDS, 1)
+    print_commands_help(
+        _COMMANDS, lambda x: x[1]().description
+    )  # extract description from argparse
 
     print("\nList of shortcuts:")
-    print_commands_help(_command_expansions, 2)
+    print_commands_help(_command_expansions, lambda x: x[2])  # (args, sub, help_message)
 
     sys.exit(0)
 
@@ -69,89 +72,157 @@ def do_version(state, _args=None):
     sys.exit(0)
 
 
-# Map of "command" to tuple of (num_args_min, help_text, handler).
+def _bool_flag(cmd_parser, name, short_name, default, description):
+    # In Python 3.9+ this can be replaced with argparse.BooleanOptionalAction.
+    group = cmd_parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--" + name,
+        "-" + short_name,
+        action="store_true",
+        default=default,
+        help=description,
+    )
+    group.add_argument(
+        "--no-" + name,
+        action="store_false",
+        dest=name,
+    )
+
+
+def argparse_connect():
+    cmd_parser = argparse.ArgumentParser(description="connect to given device")
+    cmd_parser.add_argument(
+        "device", nargs=1, help="Either list, auto, id:x, port:x, or any valid device name/path"
+    )
+    return cmd_parser
+
+
+def argparse_edit():
+    cmd_parser = argparse.ArgumentParser(description="edit files on the device")
+    cmd_parser.add_argument("files", nargs="+", help="list of remote paths")
+    return cmd_parser
+
+
+def argparse_mount():
+    cmd_parser = argparse.ArgumentParser(description="mount local directory on device")
+    _bool_flag(
+        cmd_parser,
+        "unsafe-links",
+        "l",
+        False,
+        "follow symbolic links pointing outside of local directory",
+    )
+    cmd_parser.add_argument("path", nargs=1, help="local path to mount")
+    return cmd_parser
+
+
+def argparse_repl():
+    cmd_parser = argparse.ArgumentParser(description="connect to given device")
+    cmd_parser.add_argument("--capture", type=str, required=False, help="TODO")
+    cmd_parser.add_argument("--inject-code", type=str, required=False, help="TODO")
+    cmd_parser.add_argument("--inject-file", type=str, required=False, help="TODO")
+    return cmd_parser
+
+
+def argparse_eval():
+    cmd_parser = argparse.ArgumentParser(description="evaluate and print the string")
+    _bool_flag(cmd_parser, "follow", "f", True, "TODO")
+    cmd_parser.add_argument("expr", nargs=1, help="expression to execute")
+    return cmd_parser
+
+
+def argparse_exec():
+    cmd_parser = argparse.ArgumentParser(description="execute the string")
+    _bool_flag(cmd_parser, "follow", "f", True, "TODO")
+    cmd_parser.add_argument("expr", nargs=1, help="expression to execute")
+    return cmd_parser
+
+
+def argparse_run():
+    cmd_parser = argparse.ArgumentParser(description="run the given local script")
+    _bool_flag(cmd_parser, "follow", "f", False, "TODO")
+    cmd_parser.add_argument("path", nargs=1, help="expression to execute")
+    return cmd_parser
+
+
+def argparse_filesystem():
+    cmd_parser = argparse.ArgumentParser(description="execute filesystem commands on the device")
+    _bool_flag(cmd_parser, "recursive", "r", False, "recursive copy (for cp command only)")
+    _bool_flag(
+        cmd_parser,
+        "verbose",
+        "v",
+        None,
+        "enable verbose output (defaults to True for all commands except cat)",
+    )
+    cmd_parser.add_argument(
+        "command", nargs=1, help="filesystem command (e.g. cat, cp, ls, rm, touch)"
+    )
+    cmd_parser.add_argument("path", nargs="+", help="local and remote paths")
+    return cmd_parser
+
+
+def argparse_none(description):
+    return lambda: argparse.ArgumentParser(description=description)
+
+
+# Map of "command" to tuple of (handler_func, argparse_func).
 _COMMANDS = {
     "connect": (
-        1,
-        """\
-        connect to given device
-        device may be: list, auto, id:x, port:x
-        or any valid device name/path""",
         do_connect,
+        argparse_connect,
     ),
     "disconnect": (
-        0,
-        "disconnect current device",
         do_disconnect,
+        argparse_none("disconnect current device"),
     ),
     "edit": (
-        1,
-        "edit files on the device",
         do_edit,
+        argparse_edit,
     ),
     "resume": (
-        0,
-        "resume a previous mpremote session (will not auto soft-reset)",
         do_resume,
+        argparse_none("resume a previous mpremote session (will not auto soft-reset)"),
     ),
     "soft-reset": (
-        0,
-        "perform a soft-reset of the device",
         do_soft_reset,
+        argparse_none("perform a soft-reset of the device"),
     ),
     "mount": (
-        1,
-        """\
-        mount local directory on device
-        options:
-            --unsafe-links, -l
-                follow symbolic links pointing outside of local directory""",
         do_mount,
+        argparse_mount,
     ),
     "umount": (
-        0,
-        "unmount the local directory",
         do_umount,
+        argparse_none("unmount the local directory"),
     ),
     "repl": (
-        0,
-        """\
-        enter REPL
-        options:
-            --capture <file>
-            --inject-code <string>
-            --inject-file <file>""",
         do_repl,
+        argparse_repl,
     ),
     "eval": (
-        1,
-        "evaluate and print the string",
         do_eval,
+        argparse_eval,
     ),
     "exec": (
-        1,
-        "execute the string",
         do_exec,
+        argparse_exec,
     ),
     "run": (
-        1,
-        "run the given local script",
         do_run,
+        argparse_run,
     ),
     "fs": (
-        1,
-        "execute filesystem commands on the device",
         do_filesystem,
+        argparse_filesystem,
     ),
     "help": (
-        0,
-        "print help and exit",
         do_help,
+        argparse_none("print help and exit"),
     ),
     "version": (
-        0,
-        "print version and exit",
         do_version,
+        argparse_none("print version and exit"),
     ),
 }
 
@@ -301,7 +372,6 @@ def do_command_expansion(args):
         # Extra unknown arguments given.
         arg = args[last_arg_idx].split("=", 1)[0]
         usage_error(cmd, exp_args, f"given unexpected argument {arg}")
-        sys.exit(1)
 
     # Insert expansion with optional setting of arguments.
     if pre:
@@ -322,7 +392,7 @@ class State:
 
     def ensure_connected(self):
         if self.pyb is None:
-            do_connect(self, ["auto"])
+            do_connect(self)
 
     def ensure_raw_repl(self, soft_reset=None):
         self.ensure_connected()
@@ -341,28 +411,60 @@ def main():
     config = load_user_config()
     prepare_command_expansions(config)
 
-    args = sys.argv[1:]
+    remaining_args = sys.argv[1:]
     state = State()
 
     try:
-        while args:
-            do_command_expansion(args)
-            cmd = args.pop(0)
+        while remaining_args:
+            # Skip the terminator.
+            if remaining_args[0] == "+":
+                remaining_args.pop(0)
+                continue
+
+            # Rewrite the front of the list with any matching expansion.
+            do_command_expansion(remaining_args)
+
+            # The (potentially rewritten) command must now be a base command.
+            cmd = remaining_args.pop(0)
             try:
-                num_args_min, _help, handler = _COMMANDS[cmd]
+                handler_func, parser_func = _COMMANDS[cmd]
             except KeyError:
                 raise CommandError(f"'{cmd}' is not a command")
 
-            if len(args) < num_args_min:
-                print(f"{_PROG}: '{cmd}' neads at least {num_args_min} argument(s)")
-                return 1
+            # If this command (or any down the chain) has a terminator, then
+            # limit the arguments passed for this command. They will be added
+            # back after processing this command.
+            try:
+                terminator = remaining_args.index("+")
+                command_args = remaining_args[:terminator]
+                extra_args = remaining_args[terminator:]
+            except ValueError:
+                command_args = remaining_args
+                extra_args = []
 
-            handler(state, args)
+            # Special case: "fs ls" allowed have no path specified.
+            if cmd == "fs" and len(command_args) == 1 and command_args[0] == "ls":
+                command_args.append("")
 
+            # Use the command-specific argument parser.
+            cmd_parser = parser_func()
+            cmd_parser.prog = cmd
+            # Catch all for unhandled positional arguments (this is the next command).
+            cmd_parser.add_argument(
+                "next_command", nargs=argparse.REMAINDER, help=f"Next {_PROG} command"
+            )
+            args = cmd_parser.parse_args(command_args)
 
-        # If no commands were "actions" then implicitly finish with the REPL.
+            # Execute command.
+            handler_func(state, args)
+
+            # Get any leftover unprocessed args.
+            remaining_args = args.next_command + extra_args
+
+        # If no commands were "actions" then implicitly finish with the REPL
+        # using default args.
         if state.run_repl_on_completion():
-            do_repl(state, args)
+            do_repl(state, argparse_repl().parse_args([]))
 
         return 0
     except CommandError as e:

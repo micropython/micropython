@@ -10,6 +10,9 @@ from . import pyboardextended as pyboard
 class CommandError(Exception):
     pass
 
+
+def do_connect(state, args=None):
+    dev = args.device[0] if args else "auto"
     do_disconnect(state)
 
     try:
@@ -101,19 +104,6 @@ def show_progress_bar(size, total_size, op="copying"):
         )
 
 
-# Get all args up to the terminator ("+").
-# The passed args will be updated with these ones removed.
-def _get_fs_args(args):
-    n = 0
-    for src in args:
-        if src == "+":
-            break
-        n += 1
-    fs_args = args[:n]
-    args[:] = args[n + 1 :]
-    return fs_args
-
-
 def do_filesystem(state, args):
     state.ensure_raw_repl()
     state.did_action()
@@ -125,20 +115,22 @@ def do_filesystem(state, args):
         else:
             files.append(os.path.split(path))
 
-    fs_args = _get_fs_args(args)
+    command = args.command[0]
+    paths = args.path
 
-    # Don't be verbose when using cat, so output can be redirected to something.
-    verbose = fs_args[0] != "cat"
+    if command == "cat":
+        # Don't be verbose by default when using cat, so output can be
+        # redirected to something.
+        verbose = args.verbose == True
+    else:
+        verbose = args.verbose != False
 
-    if fs_args[0] == "cp" and fs_args[1] == "-r":
-        fs_args.pop(0)
-        fs_args.pop(0)
-        if fs_args[-1] != ":":
-            print(f"{_PROG}: 'cp -r' destination must be ':'")
-            sys.exit(1)
-        fs_args.pop()
+    if command == "cp" and args.recursive:
+        if paths[-1] != ":":
+            raise CommandError("'cp -r' destination must be ':'")
+        paths.pop()
         src_files = []
-        for path in fs_args:
+        for path in paths:
             if path.startswith(":"):
                 raise CommandError("'cp -r' source files must be local")
             _list_recursive(src_files, path)
@@ -158,9 +150,11 @@ def do_filesystem(state, args):
                 verbose=verbose,
             )
     else:
+        if args.recursive:
+            raise CommandError("'-r' only supported for 'cp'")
         try:
             pyboard.filesystem_command(
-                state.pyb, fs_args, progress_callback=show_progress_bar, verbose=verbose
+                state.pyb, [command] + paths, progress_callback=show_progress_bar, verbose=verbose
             )
         except OSError as er:
             raise CommandError(er)
@@ -172,7 +166,7 @@ def do_edit(state, args):
 
     if not os.getenv("EDITOR"):
         raise pyboard.PyboardError("edit: $EDITOR not set")
-    for src in _get_fs_args(args):
+    for src in args.files:
         src = src.lstrip(":")
         dest_fd, dest = tempfile.mkstemp(suffix=os.path.basename(src))
         try:
@@ -184,14 +178,6 @@ def do_edit(state, args):
                 state.pyb.fs_put(dest, src, progress_callback=show_progress_bar)
         finally:
             os.unlink(dest)
-
-
-def _get_follow_arg(args):
-    if args[0] == "--no-follow":
-        args.pop(0)
-        return False
-    else:
-        return True
 
 
 def _do_execbuffer(state, buf, follow):
@@ -213,38 +199,28 @@ def _do_execbuffer(state, buf, follow):
 
 
 def do_exec(state, args):
-    follow = _get_follow_arg(args)
-    buf = args.pop(0)
-    _do_execbuffer(state, buf, follow)
+    _do_execbuffer(state, args.expr[0], args.follow)
 
 
 def do_eval(state, args):
-    follow = _get_follow_arg(args)
-    buf = "print(" + args.pop(0) + ")"
-    _do_execbuffer(state, buf, follow)
+    buf = "print(" + args.expr[0] + ")"
+    _do_execbuffer(state, buf, args.follow)
 
 
 def do_run(state, args):
-    follow = _get_follow_arg(args)
-    filename = args.pop(0)
+    filename = args.path[0]
     try:
         with open(filename, "rb") as f:
             buf = f.read()
     except OSError:
         raise CommandError(f"could not read file '{filename}'")
-        sys.exit(1)
-    _do_execbuffer(state, buf, follow)
+    _do_execbuffer(state, buf, args.follow)
 
 
 def do_mount(state, args):
     state.ensure_raw_repl()
-
-    unsafe_links = False
-    if args[0] == "--unsafe-links" or args[0] == "-l":
-        args.pop(0)
-        unsafe_links = True
-    path = args.pop(0)
-    state.pyb.mount_local(path, unsafe_links=unsafe_links)
+    path = args.path[0]
+    state.pyb.mount_local(path, unsafe_links=args.unsafe_links)
     print(f"Local directory {path} is mounted at /remote")
 
 

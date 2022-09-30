@@ -51,22 +51,9 @@ def do_repl(state, args):
     state.ensure_friendly_repl()
     state.did_action()
 
-    capture_file = None
-    code_to_inject = None
-    file_to_inject = None
-
-    while len(args):
-        if args[0] == "--capture":
-            args.pop(0)
-            capture_file = args.pop(0)
-        elif args[0] == "--inject-code":
-            args.pop(0)
-            code_to_inject = bytes(args.pop(0).replace("\\n", "\r\n"), "utf8")
-        elif args[0] == "--inject-file":
-            args.pop(0)
-            file_to_inject = args.pop(0)
-        else:
-            break
+    capture_file = args.capture
+    code_to_inject = args.inject_code
+    file_to_inject = args.inject_file
 
     print("Connected to MicroPython at %s" % state.pyb.device_name)
     print("Use Ctrl-] to exit this shell")
