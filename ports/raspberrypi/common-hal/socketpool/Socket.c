@@ -409,7 +409,7 @@ STATIC mp_uint_t lwip_raw_udp_receive(socketpool_socket_obj_t *socket, byte *buf
         // Wait for data to arrive on UDP socket.
         mp_uint_t start = mp_hal_ticks_ms();
         while (socket->incoming.pbuf == NULL) {
-            if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
+            if (socket->timeout != (unsigned)-1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = MP_ETIMEDOUT;
                 return -1;
             }
@@ -479,7 +479,7 @@ STATIC mp_uint_t lwip_tcp_send(socketpool_socket_obj_t *socket, const byte *buf,
         // Avoid sending too small packets, so wait until at least 16 bytes available
         while (socket->state >= STATE_CONNECTED && (available = tcp_sndbuf(socket->pcb.tcp)) < 16) {
             MICROPY_PY_LWIP_EXIT
-            if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
+            if (socket->timeout != (unsigned)-1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = MP_ETIMEDOUT;
                 return MP_STREAM_ERROR;
             }
@@ -546,7 +546,7 @@ STATIC mp_uint_t lwip_tcp_receive(socketpool_socket_obj_t *socket, byte *buf, mp
 
         mp_uint_t start = mp_hal_ticks_ms();
         while (socket->state == STATE_CONNECTED && socket->incoming.pbuf == NULL) {
-            if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
+            if (socket->timeout != (unsigned)-1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = MP_ETIMEDOUT;
                 return -1;
             }
@@ -778,7 +778,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
             MICROPY_PY_LWIP_EXIT
             m_del_obj(socketpool_socket_obj_t, socket2);
             mp_raise_OSError(MP_EAGAIN);
-        } else if (socket->timeout != -1) {
+        } else if (socket->timeout != (unsigned)-1) {
             mp_uint_t retries = socket->timeout / 100;
             while (*incoming_connection == NULL) {
                 MICROPY_PY_LWIP_EXIT
@@ -829,7 +829,6 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
 
 bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     const char *host, size_t hostlen, uint32_t port) {
-    uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
 
     // get address
     ip_addr_t bind_addr;
@@ -952,7 +951,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *socket,
             MICROPY_PY_LWIP_EXIT
 
             // And now we wait...
-            if (socket->timeout != -1) {
+            if (socket->timeout != (unsigned)-1) {
                 for (mp_uint_t retries = socket->timeout / 100; retries--;) {
                     mp_hal_delay_ms(100);
                     if (socket->state != STATE_CONNECTING) {
@@ -1048,7 +1047,7 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *so
             ret = lwip_raw_udp_receive(socket, (byte *)buf, len, ip, port, &_errno);
             break;
     }
-    if (ret == -1) {
+    if (ret == (unsigned)-1) {
         mp_raise_OSError(_errno);
     }
 
@@ -1097,7 +1096,7 @@ int socketpool_socket_send(socketpool_socket_obj_t *socket, const uint8_t *buf, 
             ret = lwip_raw_udp_send(socket, buf, len, NULL, 0, &_errno);
             break;
     }
-    if (ret == -1) {
+    if (ret == (unsigned)-1) {
         return -_errno;
     }
     return ret;
@@ -1134,7 +1133,7 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *socket,
             ret = lwip_raw_udp_send(socket, buf, len, &ip, port, &_errno);
             break;
     }
-    if (ret == -1) {
+    if (ret == (unsigned)-1) {
         mp_raise_OSError(_errno);
     }
 

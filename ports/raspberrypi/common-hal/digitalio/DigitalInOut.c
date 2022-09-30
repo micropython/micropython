@@ -158,7 +158,6 @@ digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
         }
     }
     #endif
-    const uint8_t pin = self->pin->number;
     bool value = common_hal_digitalio_digitalinout_get_value(self);
     self->open_drain = drive_mode == DRIVE_MODE_OPEN_DRAIN;
     // True is implemented differently between modes so reset the value to make

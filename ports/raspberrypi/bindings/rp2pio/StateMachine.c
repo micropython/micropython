@@ -259,10 +259,10 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         bufinfo.buf, bufinfo.len / 2,
         args[ARG_frequency].u_int,
         init_bufinfo.buf, init_bufinfo.len / 2,
-        first_out_pin, args[ARG_out_pin_count].u_int, args[ARG_initial_out_pin_state].u_int, args[ARG_initial_out_pin_direction].u_int,
-        first_in_pin, args[ARG_in_pin_count].u_int, args[ARG_pull_in_pin_up].u_int, args[ARG_pull_in_pin_down].u_int,
-        first_set_pin, args[ARG_set_pin_count].u_int, args[ARG_initial_set_pin_state].u_int, args[ARG_initial_set_pin_direction].u_int,
-        first_sideset_pin, args[ARG_sideset_pin_count].u_int, args[ARG_initial_sideset_pin_state].u_int, args[ARG_initial_sideset_pin_direction].u_int,
+        first_out_pin, out_pin_count, args[ARG_initial_out_pin_state].u_int, args[ARG_initial_out_pin_direction].u_int,
+        first_in_pin, in_pin_count, args[ARG_pull_in_pin_up].u_int, args[ARG_pull_in_pin_down].u_int,
+        first_set_pin, set_pin_count, args[ARG_initial_set_pin_state].u_int, args[ARG_initial_set_pin_direction].u_int,
+        first_sideset_pin, sideset_pin_count, args[ARG_initial_sideset_pin_state].u_int, args[ARG_initial_sideset_pin_direction].u_int,
         args[ARG_sideset_enable].u_bool,
         jmp_pin, jmp_pin_pull,
         0,
@@ -397,7 +397,6 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
         return mp_const_none;
     }
 
-    uint8_t *original_pointer = bufinfo.buf;
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
         mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
@@ -606,7 +605,6 @@ STATIC mp_obj_t rp2pio_statemachine_readinto(size_t n_args, const mp_obj_t *pos_
         return mp_const_none;
     }
 
-    uint8_t *original_pointer = bufinfo.buf;
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
         mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
@@ -832,10 +830,3 @@ const mp_obj_type_t rp2pio_statemachine_type = {
     .make_new = rp2pio_statemachine_make_new,
     .locals_dict = (mp_obj_dict_t *)&rp2pio_statemachine_locals_dict,
 };
-
-static rp2pio_statemachine_obj_t *validate_obj_is_statemachine(mp_obj_t obj) {
-    if (!mp_obj_is_type(obj, &rp2pio_statemachine_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), rp2pio_statemachine_type.name);
-    }
-    return MP_OBJ_TO_PTR(obj);
-}

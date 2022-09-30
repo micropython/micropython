@@ -104,10 +104,6 @@ void common_hal_i2ctarget_i2c_target_deinit(i2ctarget_i2c_target_obj_t *self) {
     return;
 }
 
-static int i2c_peripheral_check_error(i2ctarget_i2c_target_obj_t *self, bool raise) {
-    return 0;
-}
-
 int common_hal_i2ctarget_i2c_target_is_addressed(i2ctarget_i2c_target_obj_t *self, uint8_t *address, bool *is_read, bool *is_restart) {
     if (!((self->peripheral->hw->raw_intr_stat & I2C_IC_INTR_STAT_R_RX_FULL_BITS) || (self->peripheral->hw->raw_intr_stat & I2C_IC_INTR_STAT_R_RD_REQ_BITS))) {
         return 0;
