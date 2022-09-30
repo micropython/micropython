@@ -173,9 +173,6 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     // We no longer need to remember the pin preservations, since any pin resets are all done.
     clear_pin_preservations();
 
-    // Allow pin holds to work during deep sleep.
-    gpio_deep_sleep_hold_en();
-
     // The ESP-IDF caches the deep sleep settings and applies them before sleep.
     // We don't need to worry about resetting them in the interim.
     esp_deep_sleep_start();

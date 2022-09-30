@@ -143,6 +143,12 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OB
 //|
 //|     On some microcontrollers, some pins cannot remain in their original state for hardware reasons.
 //|
+//|     .. note::
+//|       On Espressif chips, preserving pin settings during deep sleep may consume extra current.
+//|       On ESP32, this was measured to be 250 uA or more.
+//|       Consider not preserving pins unless you need to.
+//|       Measure power consumption carefully both with no pins preserved and with the pins you might want to
+//|       preserve to achieve the lowest consumption.
 //|
 //|     **If CircuitPython is connected to a host computer via USB or BLE
 //|     the first time a deep sleep is requested,

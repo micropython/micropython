@@ -88,9 +88,6 @@ void board_init(void) {
     displayio_display_obj_t *display = &displays[0].display;
     display->base.type = &displayio_display_type;
 
-    // workaround as board_init() is called before reset_port() in main.c
-///    pwmout_reset();
-
     common_hal_displayio_display_construct(
         display,
         bus,
@@ -127,8 +124,8 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     // Override the I2C/TFT power pin reset to prevent resetting the display.
     if (pin_number == 21) {
         // Turn on TFT and I2C
-        gpio_set_direction(21, GPIO_MODE_DEF_OUTPUT);
-        gpio_set_level(21, true);
+        gpio_set_direction(pin_number, GPIO_MODE_DEF_OUTPUT);
+        gpio_set_level(pin_number, true);
         return true;
     }
     return false;
