@@ -65,7 +65,7 @@ INC_CYW43 := \
 	-isystem sdk/src/rp2_common/pico_cyw43_arch/include/ \
 	-isystem sdk/src/rp2_common/pico_lwip/include/ \
 
-CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25 -DCYW43_LOGIC_DEBUG=0
+CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25 -DIGNORE_GPIO23 -DCYW43_LOGIC_DEBUG=0
 SRC_SDK_CYW43 := \
 	src/common/pico_sync/sem.c \
 	src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.c \
@@ -110,21 +110,6 @@ $(BUILD)/cyw43_resource.o: lib/cyw43-driver/firmware/$(CYW43_FIRMWARE_BIN)
 		--redefine-sym _binary_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_end=fw_43439A0_7_95_49_00_end \
 		$< $@
 OBJ_CYW43 := $(BUILD)/cyw43_resource.o
-# need to do the equivalent of this in cmake
-###     # cyw43_resource.o contains the WiFi and BT firmware as a binary blob
-###     add_custom_command(
-###             OUTPUT ${CYW43_FIRMWARE_OBJ}
-###             DEPENDS ${PICO_CYW43_DRIVER_PATH}/firmware/${CYW43_FIRMWARE_BIN}
-###             WORKING_DIRECTORY ${PICO_CYW43_DRIVER_PATH}/firmware
-###             COMMAND ${CMAKE_OBJCOPY} -I binary -O elf32-littlearm -B arm
-###             --readonly-text
-###             --rename-section .data=${RESOURCE_SECNAME},${RESOURCE_SECFLAGS}
-###             --redefine-sym _binary_${CYW43_FIRMWARE_BIN_}_start=${CYW43_FIRMWARE_PRETTY}_start
-###             --redefine-sym _binary_${CYW43_FIRMWARE_BIN_}_end=${CYW43_FIRMWARE_PRETTY}_end
-###             --redefine-sym _binary_${CYW43_FIRMWARE_BIN_}_size=${CYW43_FIRMWARE_PRETTY}_size
-###             ${CYW43_FIRMWARE_BIN} ${CYW43_FIRMWARE_OBJ}
-###     )
-###
 else
 INC_CYW43 :=
 CFLAGS_CYW43 :=

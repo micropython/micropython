@@ -32,6 +32,12 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "bindings/cyw43/__init__.h"
 
+//| class CywPin:
+//|     """A class that represents a GPIO pin attached to the wifi chip.
+//|
+//|     Cannot be constructed at runtime, but may be the type of a pin object
+//|     in :py:mod:`board`. A `CywPin` can be used as a DigitalInOut, but not with other
+//|     peripherals such as `PWMOut`."""
 const mp_obj_type_t cyw43_pin_type = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
@@ -41,6 +47,22 @@ const mp_obj_type_t cyw43_pin_type = {
         .unary_op = mp_generic_unary_op,
         )
 };
+
+//| def set_power_management(value: int) -> None:
+//|     """Set the power management register
+//|
+//|     According to Raspberry Pi documentation, the value 0xa11140
+//|     increases responsiveness at the cost of higher power usage.
+//|
+//|     Besides this value, there appears to be no other public documentation
+//|     of the values that can be used.
+//|     """
+STATIC mp_obj_t cyw43_set_power_management(const mp_obj_t value_in) {
+    mp_int_t value = mp_obj_get_int(value_in);
+    cyw43_wifi_pm(&cyw43_state, value);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(cyw43_set_power_management_obj, cyw43_set_power_management);
 
 const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj) {
     if (!mp_obj_is_type(obj, &mcu_pin_type) && !mp_obj_is_type(obj, &cyw43_pin_type)) {
@@ -58,6 +80,7 @@ const mcu_pin_obj_t *validate_obj_is_free_pin_including_cyw43(mp_obj_t obj) {
 STATIC const mp_rom_map_elem_t cyw43_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cyw43) },
     { MP_ROM_QSTR(MP_QSTR_CywPin), MP_ROM_QSTR(MP_QSTR_CywPin) },
+    { MP_ROM_QSTR(MP_QSTR_set_power_management), &cyw43_set_power_management_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(cyw43_module_globals, cyw43_module_globals_table);
