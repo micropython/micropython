@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-09-19 21:21+0000\n"
+"PO-Revision-Date: 2022-09-30 08:18+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -947,7 +947,7 @@ msgstr "Esperado um"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c
 msgid "Expected a %q or %q"
-msgstr ""
+msgstr "Era esperado um %q ou %q"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an %q"
@@ -2282,7 +2282,7 @@ msgstr "Ocorreu um erro desconhecido no firmware do sistema: %d"
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
 msgid "Unkown error code %d"
-msgstr ""
+msgstr "Código de erro desconhecido %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -4371,7 +4371,7 @@ msgstr "o wifi não está ativo"
 
 #: ports/raspberrypi/common-hal/wifi/Monitor.c
 msgid "wifi.Monitor not available"
-msgstr ""
+msgstr "O wifi.Monitor não está disponível"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
