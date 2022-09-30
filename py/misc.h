@@ -125,7 +125,19 @@ size_t m_get_peak_bytes_allocated(void);
 /** array helpers ***********************************************/
 
 // get the number of elements in a fixed-size array
+#ifdef __GNUC__
+// detect the incorrect use of MP_ARRAY_SIZE on a pointer at build time
+// If you get a diagnostic like "void value not ignored as it ought to be" on a
+// use of MP_ARRAY_SIZE, this is why.
+#define MP_ARRAY_SIZE(array) ( \
+    __builtin_choose_expr( \
+    (!__builtin_types_compatible_p(__typeof((array)), __typeof(&(array)[0]))), \
+    sizeof((array)) / sizeof((array)[0]), \
+    (void)0))
+#else
+// Under other platforms, the error will pass silently
 #define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+#endif
 
 // align ptr to the nearest multiple of "alignment"
 #define MP_ALIGN(ptr, alignment) (void *)(((uintptr_t)(ptr) + ((alignment) - 1)) & ~((alignment) - 1))
