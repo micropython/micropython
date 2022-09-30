@@ -80,7 +80,7 @@ const mcu_pin_obj_t *validate_obj_is_free_pin_including_cyw43(mp_obj_t obj) {
 STATIC const mp_rom_map_elem_t cyw43_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cyw43) },
     { MP_ROM_QSTR(MP_QSTR_CywPin), MP_ROM_QSTR(MP_QSTR_CywPin) },
-    { MP_ROM_QSTR(MP_QSTR_set_power_management), MP_ROM_QSTR(MP_QSTR_set_power_management) },
+    { MP_ROM_QSTR(MP_QSTR_set_power_management), &cyw43_set_power_management_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(cyw43_module_globals, cyw43_module_globals_table);
