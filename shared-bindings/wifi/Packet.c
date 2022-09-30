@@ -47,6 +47,7 @@ MAKE_ENUM_VALUE(wifi_packet_type, packet, RSSI, PACKET_RSSI);
 //|
 //|     RSSI: object
 //|     """The packet's rssi."""
+//|
 MAKE_ENUM_MAP(wifi_packet) {
     MAKE_ENUM_MAP_ENTRY(packet, CH),
     MAKE_ENUM_MAP_ENTRY(packet, LEN),

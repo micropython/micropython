@@ -58,6 +58,7 @@ MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, L8, DISPLAYIO_C
 //|
 //|     RGB555_SWAPPED: Colorspace
 //|     """The swapped 15-bit colorspace.  First, the high and low 8 bits of the number are swapped, then they are interpreted as for RGB555"""
+//|
 MAKE_ENUM_MAP(displayio_colorspace) {
     MAKE_ENUM_MAP_ENTRY(displayio_colorspace, RGB888),
     MAKE_ENUM_MAP_ENTRY(displayio_colorspace, RGB565),

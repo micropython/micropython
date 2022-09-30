@@ -135,6 +135,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_rawsample___exit___obj, 4, 4,
 //|     When the sample is looped, this can change the pitch output without changing the underlying
 //|     sample. This will not change the sample rate of any active playback. Call ``play`` again to
 //|     change it."""
+//|
 STATIC mp_obj_t audioio_rawsample_obj_get_sample_rate(mp_obj_t self_in) {
     audioio_rawsample_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

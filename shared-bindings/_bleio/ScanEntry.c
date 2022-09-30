@@ -39,6 +39,7 @@
 //|     """Encapsulates information about a device that was received during scanning. It can be
 //|     advertisement or scan response data. This object may only be created by a `_bleio.ScanResults`:
 //|     it has no user-visible constructor."""
+//|
 
 //|     def __init__(self) -> None:
 //|         """Cannot be instantiated directly. Use `_bleio.Adapter.start_scan`."""
@@ -114,6 +115,7 @@ MP_PROPERTY_GETTER(bleio_scanentry_connectable_obj,
 
 //|     scan_response: bool
 //|     """True if the entry was a scan response. (read-only)"""
+//|
 STATIC mp_obj_t scanentry_get_scan_response(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_bleio_scanentry_get_scan_response(self));

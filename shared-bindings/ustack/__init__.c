@@ -40,6 +40,7 @@
 //| def max_stack_usage() -> int:
 //|     """Return the maximum excursion of the stack so far."""
 //|     ...
+//|
 STATIC mp_obj_t max_stack_usage(void) {
     return MP_OBJ_NEW_SMALL_INT(shared_module_ustack_max_stack_usage());
 }
@@ -52,6 +53,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(max_stack_usage_obj, max_stack_usage);
 //|     Same as in micropython.mem_info(), but returns a value instead
 //|     of just printing it."""
 //|     ...
+//|
 STATIC mp_obj_t stack_size(void) {
     return MP_OBJ_NEW_SMALL_INT(shared_module_ustack_stack_size());
 }
@@ -61,6 +63,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(stack_size_obj, stack_size);
 //|     """Return how much stack is currently in use.
 //|     Same as micropython.stack_use(); duplicated here for convenience."""
 //|     ...
+//|
 STATIC mp_obj_t stack_usage(void) {
     return MP_OBJ_NEW_SMALL_INT(shared_module_ustack_stack_usage());
 }

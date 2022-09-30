@@ -23,6 +23,7 @@
 //|
 //|     QZSS_L1S: SatelliteSystem
 //|     """Quasi-Zenith Satellite System L1S."""
+//|
 const mp_obj_type_t gnss_satellitesystem_type;
 
 const gnss_satellitesystem_obj_t gnss_satellitesystem_gps_obj = {

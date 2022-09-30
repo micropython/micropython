@@ -48,6 +48,7 @@
 //|        alarm.sleep_memory[0] = True
 //|        alarm.sleep_memory[1] = 12
 //|     """
+//|
 
 //|     def __init__(self) -> None:
 //|         """Not used. Access the sole instance through `alarm.sleep_memory`."""
@@ -90,6 +91,7 @@ STATIC MP_DEFINE_CONST_DICT(alarm_sleep_memory_locals_dict, alarm_sleep_memory_l
 //|     def __setitem__(self, index: int, value: int) -> None:
 //|         """Set the value at the given index."""
 //|         ...
+//|
 STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item

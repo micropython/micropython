@@ -44,6 +44,7 @@
 //|
 //|     RGB565: PixelPolicy
 //|     """The input buffer to `QRDecoder.decode` consists of RGB565 values in native order. The green component is used."""
+//|
 
 MAKE_ENUM_VALUE(qrio_pixel_policy_type, qrio_pixel_policy, EVERY_BYTE, QRIO_EVERY_BYTE);
 MAKE_ENUM_VALUE(qrio_pixel_policy_type, qrio_pixel_policy, RGB565, QRIO_RGB565);

@@ -192,6 +192,7 @@ MP_PROPERTY_GETSET(frequencyio_frequencyin_capture_period_obj,
 //|     def __get__(self, index: int) -> int:
 //|         """Returns the value of the last frequency captured."""
 //|         ...
+//|
 STATIC mp_obj_t frequencyio_frequencyin_obj_get_value(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

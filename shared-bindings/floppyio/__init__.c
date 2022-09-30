@@ -50,6 +50,7 @@
 //|     :return: The actual number of bytes of read
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t floppyio_flux_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_data, ARG_index };
     static const mp_arg_t allowed_args[] = {
@@ -86,6 +87,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(floppyio_flux_readinto_obj, 0, floppyio_flux_readinto
 //|     :return: The actual number of sectors read
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t floppyio_mfm_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_data, ARG_index };
     static const mp_arg_t allowed_args[] = {

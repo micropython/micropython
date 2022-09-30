@@ -132,6 +132,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_unary_op(mp_unary_op_t op, mp_obj_t
 //|           mm = memorymonitor.AllocationSize()
 //|           print(mm[0])"""
 //|         ...
+//|
 STATIC mp_obj_t memorymonitor_allocationsize_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
     if (value == mp_const_none) {
         // delete item

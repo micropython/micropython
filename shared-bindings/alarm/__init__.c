@@ -99,6 +99,7 @@ STATIC void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
 //|     it may be necessary to disconnect from the host.
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t alarm_light_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_const_none;
@@ -172,6 +173,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OB
 //|         alarm.exit_and_deep_sleep_until_alarms(time_alarm, pin_alarm)
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_preserve_dios };
     static const mp_arg_t allowed_args[] = {

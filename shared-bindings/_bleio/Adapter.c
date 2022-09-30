@@ -62,6 +62,7 @@
 //|     The Adapter can do both parts of this process: it can scan for other device
 //|     advertisements and it can advertise its own data. Furthermore, Adapters can accept incoming
 //|     connections and also initiate connections."""
+//|
 
 //|     def __init__(
 //|         self, *, uart: busio.UART, rts: digitalio.DigitalInOut, cts: digitalio.DigitalInOut
@@ -435,6 +436,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_connect_obj, 1, bleio_adapter_co
 //|     def erase_bonding(self) -> None:
 //|         """Erase all bonding information stored in flash memory."""
 //|         ...
+//|
 STATIC mp_obj_t bleio_adapter_erase_bonding(mp_obj_t self_in) {
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(self_in);
 

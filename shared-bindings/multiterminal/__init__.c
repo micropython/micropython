@@ -39,6 +39,7 @@
 //| def get_secondary_terminal() -> Optional[typing.BinaryIO]:
 //|     """Returns the current secondary terminal."""
 //|     ...
+//|
 STATIC mp_obj_t multiterminal_obj_get_secondary_terminal() {
     return common_hal_multiterminal_get_secondary_terminal();
 }
@@ -51,6 +52,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(multiterminal_get_secondary_terminal_obj, multitermina
 //|
 //|     :param stream stream: secondary stream"""
 //|     ...
+//|
 STATIC mp_obj_t multiterminal_obj_set_secondary_terminal(mp_obj_t secondary_terminal) {
     mp_obj_t write_m[3];
     mp_load_method_maybe(secondary_terminal, MP_QSTR_write, write_m);
@@ -68,6 +70,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(multiterminal_set_secondary_terminal_obj, multitermina
 //| def clear_secondary_terminal() -> None:
 //|     """Clears the secondary terminal."""
 //|     ...
+//|
 STATIC mp_obj_t multiterminal_obj_clear_secondary_terminal() {
     common_hal_multiterminal_clear_secondary_terminal();
     return mp_const_none;
@@ -79,6 +82,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(multiterminal_clear_secondary_terminal_obj, multitermi
 //|     the OS when more data is available on the socket to read. This is useful
 //|     as a callback for lwip sockets."""
 //|     ...
+//|
 // TODO(tannewt): This is a funny API. Replace it with a direct call into the OS
 // by the lwip object.
 STATIC mp_obj_t multiterminal_obj_schedule_secondary_terminal_read(mp_obj_t socket) {

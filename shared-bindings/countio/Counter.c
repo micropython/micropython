@@ -120,6 +120,7 @@ MP_PROPERTY_GETSET(countio_counter_count_obj,
 
 //|     def reset(self) -> None:
 //|         """Resets the count back to 0."""
+//|
 STATIC mp_obj_t countio_counter_reset(mp_obj_t self_in) {
     countio_counter_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

@@ -102,6 +102,7 @@ MP_PROPERTY_GETTER(alarm_pin_pinalarm_pin_obj,
 
 //|     value: bool
 //|     """The value on which to trigger."""
+//|
 STATIC mp_obj_t alarm_pin_pinalarm_obj_get_value(mp_obj_t self_in) {
     alarm_pin_pinalarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_alarm_pin_pinalarm_get_value(self));

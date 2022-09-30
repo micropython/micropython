@@ -173,6 +173,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_sync_obj, sdcardio_sdcard_sync);
 //|         :param ~circuitpython_typing.ReadableBuffer buf: The buffer to read from.  Length must be multiple of 512.
 //|
 //|         :return: None"""
+//|
 
 STATIC mp_obj_t sdcardio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);

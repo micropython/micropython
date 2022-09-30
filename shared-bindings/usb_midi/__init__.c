@@ -49,6 +49,7 @@
 //|     including ESP32-S2 and certain STM boards, it is disabled by default.
 //|     Can be called in ``boot.py``, before USB is connected."""
 //|     ...
+//|
 STATIC mp_obj_t usb_midi_disable(void) {
     if (!common_hal_usb_midi_disable()) {
         mp_raise_RuntimeError(translate("Cannot change USB devices now"));
@@ -68,6 +69,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_midi_disable_obj, usb_midi_disable);
 //|     not enough endpoints are available.
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t usb_midi_enable(void) {
     if (!common_hal_usb_midi_enable()) {
         mp_raise_RuntimeError(translate("Cannot change USB devices now"));

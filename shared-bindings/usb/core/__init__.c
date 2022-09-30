@@ -45,6 +45,7 @@
 //|     """Catchall exception for USB related errors."""
 //|
 //|     ...
+//|
 MP_DEFINE_USB_CORE_EXCEPTION(USBError, OSError)
 NORETURN void mp_raise_usb_core_USBError(const compressed_string_t *fmt, ...) {
     va_list argptr;
@@ -58,6 +59,7 @@ NORETURN void mp_raise_usb_core_USBError(const compressed_string_t *fmt, ...) {
 //|     """Raised when a USB transfer times out."""
 //|
 //|     ...
+//|
 MP_DEFINE_USB_CORE_EXCEPTION(USBTimeoutError, usb_core_USBError)
 NORETURN void mp_raise_usb_core_USBTimeoutError(void) {
     mp_raise_type(&mp_type_usb_core_USBTimeoutError);
@@ -72,6 +74,7 @@ NORETURN void mp_raise_usb_core_USBTimeoutError(void) {
 //|
 //|     Returns None if no device matches.
 //|     """
+//|
 typedef struct {
     mp_obj_base_t base;
     mp_int_t vid;

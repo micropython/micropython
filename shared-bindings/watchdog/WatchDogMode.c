@@ -40,6 +40,7 @@
 //|     """Reset the system if the WatchDogTimer expires.
 //|
 //|     :type WatchDogMode:"""
+//|
 const mp_obj_type_t watchdog_watchdogmode_type;
 
 const watchdog_watchdogmode_obj_t watchdog_watchdogmode_raise_obj = {

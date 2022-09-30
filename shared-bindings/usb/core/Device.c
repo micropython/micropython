@@ -275,6 +275,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(usb_core_device_detach_kernel_driver_obj, usb_core_dev
 //|         :param int interface: the device interface number to allow CircuitPython to use
 //|         """
 //|         ...
+//|
 STATIC mp_obj_t usb_core_device_attach_kernel_driver(mp_obj_t self_in, mp_obj_t interface_in) {
     usb_core_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t interface = mp_obj_get_int(interface_in);

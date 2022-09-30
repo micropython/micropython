@@ -166,6 +166,7 @@ MP_PROPERTY_GETTER(bleio_descriptor_characteristic_obj,
 
 //|     value: bytearray
 //|     """The value of this descriptor."""
+//|
 STATIC mp_obj_t bleio_descriptor_get_value(mp_obj_t self_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
 

@@ -220,6 +220,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(audiobusio_pdmin_record_obj, audiobusio_pdmin_obj_reco
 //|     sample_rate: int
 //|     """The actual sample_rate of the recording. This may not match the constructed
 //|     sample rate due to internal clock limitations."""
+//|
 STATIC mp_obj_t audiobusio_pdmin_obj_get_sample_rate(mp_obj_t self_in) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

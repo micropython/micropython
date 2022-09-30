@@ -50,6 +50,7 @@
 //|
 //|     OUTPUT: Direction
 //|     """Write digital data out"""
+//|
 const mp_obj_type_t digitalio_direction_type;
 
 const digitalio_direction_obj_t digitalio_direction_input_obj = {

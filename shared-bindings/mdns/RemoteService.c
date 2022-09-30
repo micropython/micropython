@@ -35,6 +35,7 @@
 //| class RemoteService:
 //|     """Encapsulates information about a remote service that was found during a search. This
 //|     object may only be created by a `mdns.Server`. It has no user-visible constructor."""
+//|
 
 //|     def __init__(self) -> None:
 //|         """Cannot be instantiated directly. Use `mdns.Server.find`."""
@@ -113,6 +114,7 @@ MP_PROPERTY_GETTER(mdns_remoteservice_ipv4_address_obj,
 //|     def __del__(self) -> None:
 //|         """Deletes the RemoteService object."""
 //|         ...
+//|
 STATIC mp_obj_t mdns_remoteservice_obj_deinit(mp_obj_t self_in) {
     mdns_remoteservice_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_mdns_remoteservice_deinit(self);

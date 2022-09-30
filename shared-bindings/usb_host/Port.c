@@ -76,6 +76,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_host_port_deinit_obj, usb_host_port_obj_deinit);
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
+//|
 STATIC mp_obj_t usb_host_port_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_usb_host_port_deinit(MP_OBJ_TO_PTR(args[0]));

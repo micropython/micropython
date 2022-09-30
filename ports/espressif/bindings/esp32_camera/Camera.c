@@ -928,6 +928,7 @@ MP_PROPERTY_GETTER(esp32_camera_camera_grab_mode_obj,
 
 //|     framebuffer_count: int
 //|     """True if double buffering is used"""
+//|
 STATIC mp_obj_t esp32_camera_camera_get_framebuffer_count(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

@@ -315,6 +315,7 @@ STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t valu
 //|     def sort(self, key: function, reverse: bool) -> None:
 //|         """Sort the members of the group."""
 //|         ...
+//|
 STATIC mp_obj_t displayio_group_obj_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     displayio_group_t *self = native_group(pos_args[0]);
     mp_obj_t *args = m_new(mp_obj_t, n_args);

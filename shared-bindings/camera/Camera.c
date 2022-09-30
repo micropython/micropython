@@ -55,6 +55,7 @@
 //|         size = cam.take_picture(buffer, width=1920, height=1080, format=camera.ImageFormat.JPG)
 //|         file.write(buffer, size)
 //|         file.close()"""
+//|
 
 //|     def __init__(self) -> None:
 //|         """Initialize camera."""
@@ -92,6 +93,7 @@ STATIC void check_for_deinit(camera_obj_t *self) {
 //|         :return: the number of bytes written into buf
 //|         :rtype: int"""
 //|         ...
+//|
 STATIC mp_obj_t camera_obj_take_picture(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_width, ARG_height, ARG_format };
     static const mp_arg_t allowed_args[] = {

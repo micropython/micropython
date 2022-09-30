@@ -65,6 +65,7 @@ mp_obj_t rtc_get_time_source_time(void) {
 //|       r = RTC()
 //|       rtc.set_time_source(r)"""
 //|     ...
+//|
 STATIC mp_obj_t rtc_set_time_source(mp_obj_t time_source) {
     MP_STATE_VM(rtc_time_source) = time_source;
 

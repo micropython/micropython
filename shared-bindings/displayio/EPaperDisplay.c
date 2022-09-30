@@ -339,6 +339,7 @@ MP_PROPERTY_GETSET(displayio_epaperdisplay_rotation_obj,
 
 //|     bus: _DisplayBus
 //|     """The bus being used by the display"""
+//|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_bus(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
     return common_hal_displayio_epaperdisplay_get_bus(self);

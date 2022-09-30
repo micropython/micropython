@@ -121,6 +121,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_make_transparent_obj, display
 //|         """Make the ColorConverter be opaque and have no transparent pixels.
 //|
 //|         :param int color: [IGNORED] Use any value"""
+//|
 STATIC mp_obj_t displayio_colorconverter_make_opaque(mp_obj_t self_in, mp_obj_t transparent_color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
 

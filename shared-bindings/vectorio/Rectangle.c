@@ -144,6 +144,7 @@ const mp_obj_property_t vectorio_rectangle_color_index_obj = {
 //|
 //|     pixel_shader: Union[displayio.ColorConverter, displayio.Palette]
 //|     """The pixel shader of the rectangle."""
+//|
 
 STATIC const mp_rom_map_elem_t vectorio_rectangle_locals_dict_table[] = {
     // Functions

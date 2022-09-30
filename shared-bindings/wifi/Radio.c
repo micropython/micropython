@@ -78,6 +78,7 @@ STATIC bool hostname_valid(const char *ptr, size_t len) {
 //|     Wifi radio.
 //|
 //|     """
+//|
 
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `wifi.Radio`.
@@ -558,6 +559,7 @@ MP_PROPERTY_GETTER(wifi_radio_ap_info_obj,
 //|         """Ping an IP to test connectivity. Returns echo time in seconds.
 //|         Returns None when it times out."""
 //|         ...
+//|
 STATIC mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ip, ARG_timeout };
     static const mp_arg_t allowed_args[] = {

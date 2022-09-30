@@ -311,6 +311,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
 //|         :param int in_end: end of ``in_buffer slice``; if not specified, use ``len(in_buffer)``
 //|         """
 //|         ...
+//|
 STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
     static const mp_arg_t allowed_args[] = {

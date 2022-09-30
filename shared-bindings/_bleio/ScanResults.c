@@ -35,6 +35,7 @@
 //| class ScanResults:
 //|     """Iterates over advertising data received while scanning. This object is always created
 //|     by a `_bleio.Adapter`: it has no user-visible constructor."""
+//|
 STATIC mp_obj_t scanresults_iternext(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &bleio_scanresults_type));
     bleio_scanresults_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -55,6 +56,7 @@ STATIC mp_obj_t scanresults_iternext(mp_obj_t self_in) {
 //|         """Returns the next `_bleio.ScanEntry`. Blocks if none have been received and scanning is still
 //|         active. Raises `StopIteration` if scanning is finished and no other results are available."""
 //|         ...
+//|
 
 const mp_obj_type_t bleio_scanresults_type = {
     { &mp_type_type },

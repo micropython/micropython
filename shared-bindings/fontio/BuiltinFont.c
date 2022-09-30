@@ -53,6 +53,7 @@
 //|
 //|         If the code point is not present in the font, `None` is returned."""
 //|         pass
+//|
 
 //| class BuiltinFont:
 //|     """A font built into CircuitPython"""
@@ -90,6 +91,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(fontio_builtinfont_get_bounding_box_obj, fontio_builti
 //|     def get_glyph(self, codepoint: int) -> Glyph:
 //|         """Returns a `fontio.Glyph` for the given codepoint or None if no glyph is available."""
 //|         ...
+//|
 STATIC mp_obj_t fontio_builtinfont_obj_get_glyph(mp_obj_t self_in, mp_obj_t codepoint_obj) {
     fontio_builtinfont_t *self = MP_OBJ_TO_PTR(self_in);
 

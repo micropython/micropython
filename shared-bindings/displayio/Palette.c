@@ -173,6 +173,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_make_opaque_obj, displayio_palette_o
 //|     def is_transparent(self, palette_index: int) -> bool:
 //|         """Returns `True` if the palette index is transparent.  Returns `False` if opaque."""
 //|         ...
+//|
 STATIC mp_obj_t displayio_palette_obj_is_transparent(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
 

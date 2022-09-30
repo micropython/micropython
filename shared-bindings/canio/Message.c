@@ -111,6 +111,7 @@ MP_PROPERTY_GETSET(canio_message_data_obj,
 
 //|     extended: bool
 //|     """True if the message's id is an extended id"""
+//|
 STATIC mp_obj_t canio_message_extended_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
     return mp_obj_new_bool(common_hal_canio_message_get_extended(self));

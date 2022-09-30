@@ -36,6 +36,7 @@
 
 //| class Address:
 //|     """Encapsulates the address of a BLE device."""
+//|
 
 //|     def __init__(self, address: ReadableBuffer, address_type: int) -> None:
 //|         """Create a new Address object encapsulating the address value.
@@ -185,6 +186,7 @@ STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 //|
 //|     RANDOM_PRIVATE_NON_RESOLVABLE: int
 //|     """A randomly generated address that changes on every connection."""
+//|
 STATIC const mp_rom_map_elem_t bleio_address_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_address_bytes),                 MP_ROM_PTR(&bleio_address_address_bytes_obj) },
     { MP_ROM_QSTR(MP_QSTR_type),                          MP_ROM_PTR(&bleio_address_type_obj) },

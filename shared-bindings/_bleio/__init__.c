@@ -63,6 +63,7 @@
 //|     """Catchall exception for Bluetooth related errors."""
 //|
 //|     ...
+//|
 MP_DEFINE_BLEIO_EXCEPTION(BluetoothError, Exception)
 NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t *fmt, ...) {
     va_list argptr;
@@ -77,6 +78,7 @@ NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t *fmt, ...)
 //|     attempted to be set but they can only be set when remote."""
 //|
 //|     ...
+//|
 MP_DEFINE_BLEIO_EXCEPTION(RoleError, bleio_BluetoothError)
 NORETURN void mp_raise_bleio_RoleError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_bleio_RoleError, msg);
@@ -86,6 +88,7 @@ NORETURN void mp_raise_bleio_RoleError(const compressed_string_t *msg) {
 //|     """Raised when a security related error occurs."""
 //|
 //|     ...
+//|
 MP_DEFINE_BLEIO_EXCEPTION(SecurityError, bleio_BluetoothError)
 NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t *fmt, ...) {
     va_list argptr;
@@ -115,6 +118,7 @@ STATIC mp_obj_dict_t bleio_module_globals;
 //|     """Set the adapter to use for BLE, such as when using an HCI adapter.
 //|     Raises `NotImplementedError` when the adapter is a singleton and cannot be set."""
 //|     ...
+//|
 mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj) {
     #if CIRCUITPY_BLEIO_HCI
     if (adapter_obj != mp_const_none && !mp_obj_is_type(adapter_obj, &bleio_adapter_type)) {

@@ -189,6 +189,7 @@ STATIC NORETURN void math_error(void) {
 //| def trunc(x: float) -> int:
 //|     """Return an integer, being ``x`` rounded towards 0."""
 //|     ...
+//|
 MATH_FUN_1_ERRCOND(sqrt, sqrt, (x < (mp_float_t)0.0))
 
 MATH_FUN_2(pow, pow)
@@ -201,6 +202,7 @@ MATH_FUN_1(exp, exp)
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1(expm1, expm1)
 
 //| def log2(x: float) -> float:
@@ -209,6 +211,7 @@ MATH_FUN_1(expm1, expm1)
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1_ERRCOND(log2, log2, (x <= (mp_float_t)0.0))
 
 //| def log10(x: float) -> float:
@@ -217,6 +220,7 @@ MATH_FUN_1_ERRCOND(log2, log2, (x <= (mp_float_t)0.0))
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1_ERRCOND(log10, log10, (x <= (mp_float_t)0.0))
 
 //| def cosh(x: float) -> float:
@@ -225,6 +229,7 @@ MATH_FUN_1_ERRCOND(log10, log10, (x <= (mp_float_t)0.0))
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1(cosh, cosh)
 
 //| def sinh(x: float) -> float:
@@ -233,6 +238,7 @@ MATH_FUN_1(cosh, cosh)
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1(sinh, sinh)
 
 //| def tanh(x: float) -> float:
@@ -241,6 +247,7 @@ MATH_FUN_1(sinh, sinh)
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1(tanh, tanh)
 
 //| def acosh(x: float) -> float:
@@ -249,6 +256,7 @@ MATH_FUN_1(tanh, tanh)
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1(acosh, acosh)
 
 //| def asinh(x: float) -> float:
@@ -257,6 +265,7 @@ MATH_FUN_1(acosh, acosh)
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1(asinh, asinh)
 
 //| def atanh(x: float) -> float:
@@ -265,6 +274,7 @@ MATH_FUN_1(asinh, asinh)
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1(atanh, atanh)
 #endif
 
@@ -309,6 +319,7 @@ MATH_FUN_2(ldexp, ldexp)
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1(erf, erf)
 
 //| def erfc(x: float) -> float:
@@ -317,6 +328,7 @@ MATH_FUN_1(erf, erf)
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1(erfc, erfc)
 
 //| def gamma(x: float) -> float:
@@ -325,6 +337,7 @@ MATH_FUN_1(erfc, erfc)
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1(gamma, tgamma)
 
 //| def lgamma(x: float) -> float:
@@ -333,6 +346,7 @@ MATH_FUN_1(gamma, tgamma)
 //|     May not be available on some boards.
 //|     """
 //|     ...
+//|
 MATH_FUN_1(lgamma, lgamma)
 #endif
 // TODO: factorial, fsum

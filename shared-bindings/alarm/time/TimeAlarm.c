@@ -117,6 +117,7 @@ STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
 //|        The time may be given as ``epoch_time`` in the constructor, but it is returned
 //|        by this property only as a `time.monotonic()` time.
 //|        """
+//|
 STATIC mp_obj_t alarm_time_timealarm_obj_get_monotonic_time(mp_obj_t self_in) {
     alarm_time_timealarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_alarm_time_timealarm_get_monotonic_time(self));

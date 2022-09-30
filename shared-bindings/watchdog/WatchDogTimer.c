@@ -47,6 +47,7 @@
 //|     A lock up is detected when the watchdog hasn't been fed after a given duration. So, make
 //|     sure to call `feed` within the timeout.
 //|     """
+//|
 
 //|     def __init__(self) -> None:
 //|         """Not currently dynamically supported. Access the sole instance through `microcontroller.watchdog`."""
@@ -120,6 +121,7 @@ MP_PROPERTY_GETSET(watchdog_watchdogtimer_timeout_obj,
 //|
 //|
 //|     Once set, the WatchDogTimer will perform the specified action if the timer expires."""
+//|
 STATIC mp_obj_t watchdog_watchdogtimer_obj_get_mode(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return watchdog_watchdogmode_type_to_obj(common_hal_watchdog_get_mode(self));

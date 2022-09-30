@@ -62,6 +62,7 @@ STATIC const mp_rom_map_elem_t bleio_attribute_locals_dict_table[] = {
 //|
 //|     SIGNED_WITH_MITM: int
 //|     """security_mode: authenticated data signing, without man-in-the-middle protection"""
+//|
     { MP_ROM_QSTR(MP_QSTR_NO_ACCESS),              MP_ROM_INT(SECURITY_MODE_NO_ACCESS) },
     { MP_ROM_QSTR(MP_QSTR_OPEN),                   MP_ROM_INT(SECURITY_MODE_OPEN) },
     { MP_ROM_QSTR(MP_QSTR_ENCRYPT_NO_MITM),        MP_ROM_INT(SECURITY_MODE_ENC_NO_MITM) },

@@ -193,6 +193,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(aesio_aes_encrypt_into_obj,
 //|         buffers must be a multiple of 16 bytes, and must be equal length.  For
 //|         CTX mode, there are no restrictions."""
 //|         ...
+//|
 STATIC mp_obj_t aesio_aes_decrypt_into(mp_obj_t aesio_obj, mp_obj_t src,
     mp_obj_t dest) {
     if (!mp_obj_is_type(aesio_obj, &aesio_aes_type)) {

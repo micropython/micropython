@@ -106,6 +106,7 @@ MP_PROPERTY_GETSET(canio_remote_transmission_request_extended_obj,
 
 //|     length: int
 //|     """The length of the requested message."""
+//|
 STATIC mp_obj_t canio_remote_transmission_request_length_get(const mp_obj_t self_in) {
     canio_remote_transmission_request_obj_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT(common_hal_canio_remote_transmission_request_get_length(self));

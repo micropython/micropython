@@ -37,6 +37,7 @@
 //|
 //|     data_type: Union[str, int]
 //|     """The encoding of the payload as a string (if a standard encoding) or int (if not standard)"""
+//|
 
 const mp_obj_namedtuple_type_t qrio_qrinfo_type_obj = {
     .base = {

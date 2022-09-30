@@ -212,6 +212,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(keypad_keymatrix_row_column_to_key_number_obj, keypad_
 //|     events: EventQueue
 //|     """The `EventQueue` associated with this `Keys` object. (read-only)
 //|     """
+//|
 
 STATIC const mp_rom_map_elem_t keypad_keymatrix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),                   MP_ROM_PTR(&keypad_keymatrix_deinit_obj) },

@@ -82,6 +82,7 @@ STATIC MP_DEFINE_CONST_DICT(nvm_bytearray_locals_dict, nvm_bytearray_locals_dict
 //|     def __setitem__(self, index: int, value: int) -> None:
 //|         """Set the value at the given index."""
 //|         ...
+//|
 STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item

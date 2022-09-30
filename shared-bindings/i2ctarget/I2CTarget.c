@@ -136,6 +136,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2ctarget_i2c_target___exit___obj, 4,
 //|         :param float timeout: Timeout in seconds. Zero means wait forever, a negative value means check once
 //|         :return: I2CTargetRequest or None if timeout=-1 and there's no request
 //|         :rtype: ~i2ctarget.I2CTargetRequest"""
+//|
 STATIC mp_obj_t i2ctarget_i2c_target_request(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_check_self(mp_obj_is_type(pos_args[0], &i2ctarget_i2c_target_type));
     i2ctarget_i2c_target_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -378,6 +379,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(i2ctarget_i2c_target_request_write_obj, i2ctarg
 //|
 //|         :param ack: Whether to send an ACK or NACK"""
 //|         ...
+//|
 STATIC mp_obj_t i2ctarget_i2c_target_request_ack(uint n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(args[0]);

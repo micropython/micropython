@@ -44,6 +44,7 @@
 //| """
 //|
 //| import typing
+//|
 
 //| def uname() -> _Uname:
 //|     """Returns a named tuple of operating specific and CircuitPython port
@@ -58,6 +59,7 @@
 //|     release: str
 //|     version: str
 //|     machine: str
+//|
 STATIC mp_obj_t os_uname(void) {
     return common_hal_os_uname();
 }
@@ -66,6 +68,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 //| def chdir(path: str) -> None:
 //|     """Change current directory."""
 //|     ...
+//|
 STATIC mp_obj_t os_chdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_chdir(path);
@@ -76,6 +79,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_chdir_obj, os_chdir);
 //| def getcwd() -> str:
 //|     """Get the current directory."""
 //|     ...
+//|
 STATIC mp_obj_t os_getcwd(void) {
     return common_hal_os_getcwd();
 }
@@ -86,6 +90,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 //|
 //|     This may load values from disk so cache the result instead of calling this often."""
 //|     ...
+//|
 STATIC mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_key, ARG_default };
     static const mp_arg_t allowed_args[] = {
@@ -102,6 +107,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(os_getenv_obj, 1, os_getenv);
 //| def listdir(dir: str) -> str:
 //|     """With no argument, list the current directory.  Otherwise list the given directory."""
 //|     ...
+//|
 STATIC mp_obj_t os_listdir(size_t n_args, const mp_obj_t *args) {
     const char *path;
     if (n_args == 1) {
@@ -116,6 +122,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
 //| def mkdir(path: str) -> None:
 //|     """Create a new directory."""
 //|     ...
+//|
 STATIC mp_obj_t os_mkdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_mkdir(path);
@@ -126,6 +133,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
 //| def remove(path: str) -> None:
 //|     """Remove a file."""
 //|     ...
+//|
 STATIC mp_obj_t os_remove(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_remove(path);
@@ -136,6 +144,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
 //| def rmdir(path: str) -> None:
 //|     """Remove a directory."""
 //|     ...
+//|
 STATIC mp_obj_t os_rename(mp_obj_t old_path_in, mp_obj_t new_path_in) {
     const char *old_path = mp_obj_str_get_str(old_path_in);
     const char *new_path = mp_obj_str_get_str(new_path_in);
@@ -147,6 +156,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
 //| def rename(old_path: str, new_path: str) -> str:
 //|     """Rename a file."""
 //|     ...
+//|
 STATIC mp_obj_t os_rmdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_rmdir(path);
@@ -176,6 +186,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 //|        So the time fields return 946684800,
 //|        which is the number of seconds corresponding to 1999-12-31."""
 //|     ...
+//|
 STATIC mp_obj_t os_stat(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     return common_hal_os_stat(path);
@@ -202,6 +213,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 //|     and the ``f_flags`` parameter may return ``0`` as they can be unavailable
 //|     in a port-specific implementation."""
 //|     ...
+//|
 STATIC mp_obj_t os_statvfs(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     return common_hal_os_statvfs(path);
@@ -211,6 +223,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_statvfs_obj, os_statvfs);
 //| def sync() -> None:
 //|     """Sync all filesystems."""
 //|     ...
+//|
 STATIC mp_obj_t os_sync(void) {
     for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
         // this assumes that vfs->obj is fs_user_mount_t with block device functions
@@ -224,6 +237,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 //|     """Returns a string of *size* random bytes based on a hardware True Random
 //|     Number Generator. When not available, it will raise a NotImplementedError."""
 //|     ...
+//|
 STATIC mp_obj_t os_urandom(mp_obj_t size_in) {
     mp_int_t size = mp_obj_get_int(size_in);
     mp_obj_str_t *result = MP_OBJ_TO_PTR(mp_obj_new_bytes_of_zeros(size));

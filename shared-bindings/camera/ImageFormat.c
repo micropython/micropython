@@ -36,6 +36,7 @@
 //|
 //|     RGB565: ImageFormat
 //|     """RGB565 format."""
+//|
 
 const camera_imageformat_obj_t camera_imageformat_jpg_obj = {
     { &camera_imageformat_type },

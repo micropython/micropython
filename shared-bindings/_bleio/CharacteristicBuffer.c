@@ -181,6 +181,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_reset_input_buffer_
 //|     def deinit(self) -> None:
 //|         """Disable permanently."""
 //|         ...
+//|
 STATIC mp_obj_t bleio_characteristic_buffer_deinit(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_bleio_characteristic_buffer_deinit(self);

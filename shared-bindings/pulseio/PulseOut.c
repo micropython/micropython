@@ -123,6 +123,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulseout___exit___obj, 4, 4, 
 //|
 //|         :param array.array pulses: pulse durations in microseconds"""
 //|         ...
+//|
 STATIC mp_obj_t pulseio_pulseout_obj_send(mp_obj_t self_in, mp_obj_t pulses) {
     pulseio_pulseout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (common_hal_pulseio_pulseout_deinited(self)) {

@@ -248,6 +248,7 @@ MP_PROPERTY_GETTER(audiomp3_mp3file_rms_level_obj,
 
 //|     samples_decoded: int
 //|     """The number of audio samples decoded from the current file. (read only)"""
+//|
 STATIC mp_obj_t audiomp3_mp3file_obj_get_samples_decoded(mp_obj_t self_in) {
     audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

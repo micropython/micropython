@@ -296,6 +296,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_f
 //|         For RGBW byteorders, if given only RGB values either as an int or as a tuple, the white value
 //|         is used instead when the red, green, and blue values are the same."""
 //|         ...
+//|
 STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item

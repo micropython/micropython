@@ -32,6 +32,7 @@
 
 //| class Network:
 //|     """A wifi network provided by a nearby access point."""
+//|
 
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `wifi.Network`. They are returned by `wifi.Radio.start_scanning_networks`."""
@@ -97,6 +98,7 @@ MP_PROPERTY_GETTER(wifi_network_country_obj,
 
 //|     authmode: str
 //|     """String id of the authmode"""
+//|
 STATIC mp_obj_t wifi_network_get_authmode(mp_obj_t self) {
     return common_hal_wifi_network_get_authmode(self);
 

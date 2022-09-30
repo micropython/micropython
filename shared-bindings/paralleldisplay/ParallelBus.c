@@ -132,6 +132,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(paralleldisplay_parallelbus_reset_obj, paralleldisplay
 //|         """Sends the given command value followed by the full set of data. Display state, such as
 //|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
 //|         ...
+//|
 STATIC mp_obj_t paralleldisplay_parallelbus_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
     mp_int_t command_int = mp_arg_validate_int_range(mp_obj_get_int(command_obj), 0, 255, MP_QSTR_command);
 

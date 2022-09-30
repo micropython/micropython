@@ -310,6 +310,7 @@ MP_PROPERTY_GETSET(digitalio_digitalio_drive_mode_obj,
 //|     - `None`
 //|
 //|     :raises AttributeError: if `direction` is :py:data:`~digitalio.Direction.OUTPUT`."""
+//|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_pull(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

@@ -166,6 +166,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(imagecapture_parallelimagecapture_deinit_obj, i
 //|         """Automatically deinitializes the hardware on context exit. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
+//|
 STATIC mp_obj_t imagecapture_parallelimagecapture___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_imagecapture_parallelimagecapture_deinit(args[0]);

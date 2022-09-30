@@ -43,6 +43,7 @@
 //|
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t getpass_getpass(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_prompt, ARG_stream };
     static const mp_arg_t allowed_args[] = {

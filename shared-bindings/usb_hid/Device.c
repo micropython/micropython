@@ -241,6 +241,7 @@ MP_PROPERTY_GETTER(usb_hid_device_usage_page_obj,
 //|
 //|     For example, Keyboard is 0x06 within the generic desktop usage page 0x01.
 //|     Mouse is 0x02 within the same usage page."""
+//|
 STATIC mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_usage(self));

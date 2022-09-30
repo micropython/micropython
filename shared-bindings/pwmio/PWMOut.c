@@ -235,6 +235,7 @@ MP_PROPERTY_GETSET(pwmio_pwmout_duty_cycle_obj,
 //|     changes. In these cases, the duty cycle is automatically recalculated
 //|     from the original duty cycle value. This should happen without any need
 //|     to manually re-set the duty cycle."""
+//|
 STATIC mp_obj_t pwmio_pwmout_obj_get_frequency(mp_obj_t self_in) {
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

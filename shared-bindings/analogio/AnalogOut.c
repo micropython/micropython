@@ -98,6 +98,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4
 //|
 //|     Even if the underlying digital to analog converter (DAC) is lower
 //|     resolution, the value is 16-bit."""
+//|
 STATIC mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
     analogio_analogout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (common_hal_analogio_analogout_deinited(self)) {

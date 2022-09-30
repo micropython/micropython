@@ -96,6 +96,7 @@ MP_PROPERTY_GETTER(canio_match_mask_obj,
 
 //|     extended: bool
 //|     """True to match extended ids, False to match standard ides"""
+//|
 
 STATIC mp_obj_t canio_match_extended_get(mp_obj_t self_in) {
     canio_match_obj_t *self = self_in;

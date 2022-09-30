@@ -40,6 +40,7 @@
 
 //| class RGBMatrix:
 //|     """Displays an in-memory framebuffer to a HUB75-style RGB LED matrix."""
+//|
 
 extern Protomatter_core *_PM_protoPtr;
 
@@ -330,6 +331,7 @@ MP_PROPERTY_GETTER(rgbmatrix_rgbmatrix_width_obj,
 
 //|     height: int
 //|     """The height of the display, in pixels"""
+//|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_height(mp_obj_t self_in) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     check_for_deinit(self);

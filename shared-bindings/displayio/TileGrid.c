@@ -446,6 +446,7 @@ MP_PROPERTY_GETSET(displayio_tilegrid_bitmap_obj,
 //|
 //|           grid[0,0] = 10"""
 //|         ...
+//|
 STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value_obj) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
 

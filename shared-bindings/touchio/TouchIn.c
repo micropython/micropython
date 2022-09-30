@@ -50,6 +50,7 @@
 //|        while True:
 //|            if touch.value:
 //|                print("touched!")"""
+//|
 
 //|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Use the TouchIn on the given pin.
@@ -145,6 +146,7 @@ MP_PROPERTY_GETTER(touchio_touchin_raw_value_obj,
 //|
 //|       touch = touchio.TouchIn(board.A1)
 //|       touch.threshold = 7300"""
+//|
 STATIC mp_obj_t touchio_touchin_obj_get_threshold(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

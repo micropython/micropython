@@ -36,6 +36,7 @@
 //| class Server:
 //|     """The MDNS Server responds to queries for this device's information and allows for querying
 //|     other devices."""
+//|
 
 //|     def __init__(self, network_interface: wifi.Radio) -> None:
 //|         """
@@ -163,6 +164,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mdns_server_find_obj, 1, _mdns_server_find);
 //|         :param str protocol: The service protocol such as "_tcp"
 //|         :param int port: The port used by the service"""
 //|         ...
+//|
 STATIC mp_obj_t mdns_server_advertise_service(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mdns_server_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);

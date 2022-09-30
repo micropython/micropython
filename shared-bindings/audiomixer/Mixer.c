@@ -228,6 +228,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixer_play_obj, 1, audiomixer_mixer_obj_pl
 //|     def stop_voice(self, voice: int = 0) -> None:
 //|         """Stops playback of the sample on the given voice."""
 //|         ...
+//|
 STATIC mp_obj_t audiomixer_mixer_obj_stop_voice(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_voice };
     static const mp_arg_t allowed_args[] = {

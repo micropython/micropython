@@ -111,6 +111,7 @@ STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
 //|     :param ~digitalio.DigitalInOut digitalinout: the DigitalInOut to output with
 //|     :param ~circuitpython_typing.ReadableBuffer buf: The bytes to clock out. No assumption is made about color order"""
 //|     ...
+//|
 STATIC mp_obj_t neopixel_write_neopixel_write_(mp_obj_t digitalinout_obj, mp_obj_t buf) {
     if (!mp_obj_is_type(digitalinout_obj, &digitalio_digitalinout_type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), digitalio_digitalinout_type.name);
