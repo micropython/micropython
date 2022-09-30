@@ -52,7 +52,7 @@ static void scan_result_put(const cyw43_ev_scan_result_t *result) {
     }
 }
 
-static bool scan_result_available() {
+static bool scan_result_available(void) {
     return scan_full || (scan_get != scan_put);
 }
 
@@ -83,7 +83,7 @@ static int scan_result(void *env, const cyw43_ev_scan_result_t *result) {
 
 mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) {
     // no results available, wait for some
-    while (!scan_result_available(self) && cyw43_wifi_scan_active(&cyw43_state)) {
+    while (!scan_result_available() && cyw43_wifi_scan_active(&cyw43_state)) {
         RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             return mp_const_none;
@@ -91,7 +91,7 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
         cyw43_arch_poll();
     }
 
-    if (!scan_result_available(self)) {
+    if (!scan_result_available()) {
         common_hal_wifi_radio_obj.current_scan = NULL;
         return mp_const_none;
     }

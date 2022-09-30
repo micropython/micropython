@@ -71,7 +71,7 @@ STATIC void *_interrupt_arg[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 STATIC void rp2pio_statemachine_interrupt_handler(void);
 
 static void rp2pio_statemachine_set_pull(uint32_t pull_pin_up, uint32_t pull_pin_down, uint32_t pins_we_use) {
-    for (int i = 0; i < TOTAL_GPIO_COUNT; i++) {
+    for (size_t i = 0; i < TOTAL_GPIO_COUNT; i++) {
         bool used = pins_we_use & (1 << i);
         if (used) {
             bool pull_up = pull_pin_up & (1 << i);
@@ -231,7 +231,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         program_offset = 32;
     }
 
-    int state_machine = -1;
+    size_t state_machine = NUM_PIO_STATE_MACHINES;
     if (pio_index < NUM_PIOS) {
         PIO pio = pio_instances[pio_index];
         for (size_t i = 0; i < NUM_PIOS; i++) {
