@@ -48,6 +48,7 @@ MAKE_ENUM_VALUE(supervisor_run_reason_type, run_reason, REPL_RELOAD, RUN_REASON_
 //|
 //|     REPL_RELOAD: object
 //|     """CircuitPython started due to the user typing CTRL-D in the REPL."""
+//|
 MAKE_ENUM_MAP(supervisor_run_reason) {
     MAKE_ENUM_MAP_ENTRY(run_reason, STARTUP),
     MAKE_ENUM_MAP_ENTRY(run_reason, AUTO_RELOAD),

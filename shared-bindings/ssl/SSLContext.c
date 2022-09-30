@@ -39,6 +39,7 @@
 //|     """Settings related to SSL that can be applied to a socket by wrapping it.
 //|     This is useful to provide SSL certificates to specific connections
 //|     rather than all of them."""
+//|
 
 STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
@@ -114,6 +115,7 @@ MP_PROPERTY_GETSET(ssl_sslcontext_check_hostname_obj,
 //|     ) -> ssl.SSLSocket:
 //|         """Wraps the socket into a socket-compatible class that handles SSL negotiation.
 //|         The socket must be of type SOCK_STREAM."""
+//|
 
 STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sock, ARG_server_side, ARG_server_hostname };

@@ -42,6 +42,7 @@
 //| def pins_are_sequential(pins: List[microcontroller.Pin]) -> bool:
 //|     """Return True if the pins have sequential GPIO numbers, False otherwise"""
 //|     ...
+//|
 STATIC mp_obj_t rp2pio_pins_are_sequential(const mp_obj_t pins) {
     size_t len;
     mp_obj_t *items;

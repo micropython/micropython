@@ -53,6 +53,7 @@
 //|         :param shift_x: the x difference to the next glyph
 //|         :param shift_y: the y difference to the next glyph"""
 //|         ...
+//|
 const mp_obj_namedtuple_type_t fontio_glyph_type = {
     .base = {
         .base = {

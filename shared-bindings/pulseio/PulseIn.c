@@ -250,6 +250,7 @@ STATIC mp_obj_t pulsein_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|           pulses = pulseio.PulseIn(pin)
 //|           print(pulses[0])"""
 //|         ...
+//|
 STATIC mp_obj_t pulsein_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
     if (value == mp_const_none) {
         // delete item

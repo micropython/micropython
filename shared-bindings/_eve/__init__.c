@@ -956,6 +956,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cmd0_obj, _cmd0);
 //|         This method is used by the ``eve`` module to efficiently add
 //|         commands to the FIFO."""
 //|         ...
+//|
 STATIC mp_obj_t _cmd(size_t n_args, const mp_obj_t *args) {
     mp_obj_t self = args[0];
     mp_obj_t num = args[1];

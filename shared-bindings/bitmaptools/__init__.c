@@ -173,6 +173,7 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 //|     :param int skip_index: Bitmap palette index in the source that will not be copied,
 //|            set to None to copy all pixels"""
 //|     ...
+//|
 STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_source_bitmap,
           ARG_ox, ARG_oy, ARG_dest_clip0, ARG_dest_clip1,
@@ -295,6 +296,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom
 //|
 //|     For the L8 colorspace, the bitmaps must have a bits-per-value of 8.
 //|     For the RGB colorspaces, they must have a bits-per-value of 16."""
+//|
 
 STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_source_bitmap_1, ARG_source_bitmap_2, ARG_colorspace, ARG_factor_1, ARG_factor_2};
@@ -369,6 +371,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_alphablend_obj, 0, bitmaptools_alphablend
 //|     :param int value: Bitmap palette index that will be written into the rectangular
 //|            fill region in the destination bitmap"""
 //|     ...
+//|
 STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
 
@@ -422,6 +425,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_
 //|     :param int replaced_color_value: Bitmap palette index that will filled with the
 //|            value color in the enclosed area in the destination bitmap"""
 //|     ...
+//|
 STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_fill_color_value, ARG_replaced_color_value};
 
@@ -481,6 +485,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_boundary_fill_obj, 0, bitmaptools_obj_bou
 //|     :param int value: Bitmap palette index that will be written into the
 //|            line in the destination bitmap"""
 //|     ...
+//|
 STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
 
@@ -560,6 +565,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_li
 //|             set to None to copy all pixels
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_data, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_skip_index };
     static const mp_arg_t allowed_args[] = {
@@ -632,6 +638,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_arrayblit_obj, 0, bitmaptools_arrayblit);
 //|     :param bool reverse_rows: Reverse the direction of the row loading (required for some bitmap images).
 //|     """
 //|     ...
+//|
 
 STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_file, ARG_bits_per_pixel, ARG_element_size, ARG_reverse_pixels_in_element, ARG_swap_bytes_in_element, ARG_reverse_rows };
@@ -693,6 +700,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_readinto_obj, 0, bitmaptools_readinto);
 //|
 //|     FloydStenberg: "DitherAlgorithm"
 //|     """The Floyd-Stenberg dither"""
+//|
 MAKE_ENUM_VALUE(bitmaptools_dither_algorithm_type, dither_algorithm, Atkinson, DITHER_ALGORITHM_ATKINSON);
 MAKE_ENUM_VALUE(bitmaptools_dither_algorithm_type, dither_algorithm, FloydStenberg, DITHER_ALGORITHM_FLOYD_STENBERG);
 
@@ -720,6 +728,7 @@ MAKE_ENUM_TYPE(bitmaptools, DitherAlgorithm, bitmaptools_dither_algorithm);
 //|     :param algorithm: The dither algorithm to use, one of the `DitherAlgorithm` values.
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_dest_bitmap, ARG_source_bitmap, ARG_source_colorspace, ARG_algorithm };
     static const mp_arg_t allowed_args[] = {

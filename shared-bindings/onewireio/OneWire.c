@@ -132,6 +132,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(onewireio_onewire_read_bit_obj, onewireio_onewire_obj_
 //|     def write_bit(self, value: bool) -> None:
 //|         """Write out a bit based on value."""
 //|         ...
+//|
 STATIC mp_obj_t onewireio_onewire_obj_write_bit(mp_obj_t self_in, mp_obj_t bool_obj) {
     onewireio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

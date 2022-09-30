@@ -421,6 +421,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_readinto_obj, 1, busio_spi_write_read
 //|     frequency: int
 //|     """The actual SPI bus frequency. This may not match the frequency requested
 //|     due to internal limitations."""
+//|
 
 STATIC mp_obj_t busio_spi_obj_get_frequency(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);

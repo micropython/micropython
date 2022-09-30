@@ -123,6 +123,7 @@ MP_PROPERTY_GETSET(vectorio_polygon_color_index_obj,
 //|
 //|     pixel_shader: Union[displayio.ColorConverter, displayio.Palette]
 //|     """The pixel shader of the polygon."""
+//|
 
 STATIC const mp_rom_map_elem_t vectorio_polygon_locals_dict_table[] = {
     // Functions

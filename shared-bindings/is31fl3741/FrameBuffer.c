@@ -201,6 +201,7 @@ MP_PROPERTY_GETTER(is31fl3741_FrameBuffer_width_obj,
 
 //|     height: int
 //|     """The height of the display, in pixels"""
+//|
 STATIC mp_obj_t is31fl3741_FrameBuffer_get_height(mp_obj_t self_in) {
     is31fl3741_FrameBuffer_obj_t *self = (is31fl3741_FrameBuffer_obj_t *)self_in;
     check_for_deinit(self);

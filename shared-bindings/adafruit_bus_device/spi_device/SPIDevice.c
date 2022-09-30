@@ -127,6 +127,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adafruit_bus_device_spidevice___enter___obj, ad
 //|         """Ends a SPI transaction by deasserting chip select. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
+//|
 STATIC mp_obj_t adafruit_bus_device_spidevice_obj___exit__(size_t n_args, const mp_obj_t *args) {
     common_hal_adafruit_bus_device_spidevice_exit(MP_OBJ_TO_PTR(args[0]));
     return mp_const_none;

@@ -165,6 +165,7 @@ MP_PROPERTY_GETTER(audioio_wavefile_bits_per_sample_obj,
     (mp_obj_t)&audioio_wavefile_get_bits_per_sample_obj);
 //|     channel_count: int
 //|     """Number of audio channels. (read only)"""
+//|
 STATIC mp_obj_t audioio_wavefile_obj_get_channel_count(mp_obj_t self_in) {
     audioio_wavefile_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

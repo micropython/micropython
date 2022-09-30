@@ -63,6 +63,7 @@
 //|         :return: number of bytes read and stored into ``buf``
 //|         :rtype: bytes or None"""
 //|         ...
+//|
 
 // These three methods are used by the shared stream methods.
 STATIC mp_uint_t usb_midi_portin_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {

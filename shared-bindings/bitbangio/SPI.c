@@ -317,6 +317,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_readinto_obj, 1, bitbangio_spi_readinto
 //|         :param int in_end: end of ``in_buffer slice``; if not specified, use ``len(in_buffer)``
 //|         """
 //|         ...
+//|
 STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
     static const mp_arg_t allowed_args[] = {

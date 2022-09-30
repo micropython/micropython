@@ -57,6 +57,7 @@
 //| """
 
 //| import paralleldisplay
+//|
 
 //| def release_displays() -> None:
 //|     """Releases any actively used displays so their busses and pins can be used again. This will also
@@ -66,6 +67,7 @@
 //|     Use this once in your code.py if you initialize a display. Place it right before the
 //|     initialization so the display is active as long as possible."""
 //|     ...
+//|
 STATIC mp_obj_t displayio_release_displays(void) {
     common_hal_displayio_release_displays();
     return mp_const_none;

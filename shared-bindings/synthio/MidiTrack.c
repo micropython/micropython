@@ -122,6 +122,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(synthio_miditrack___exit___obj, 4, 4,
 
 //|     sample_rate: Optional[int]
 //|     """32 bit value that tells how quickly samples are played in Hertz (cycles per second)."""
+//|
 STATIC mp_obj_t synthio_miditrack_obj_get_sample_rate(mp_obj_t self_in) {
     synthio_miditrack_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

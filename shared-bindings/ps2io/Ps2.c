@@ -201,6 +201,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_clear_errors_obj, ps2io_ps2_obj_clear_errors
 //|         """Returns the number of received bytes in buffer, available
 //|         to :py:func:`popleft()`."""
 //|         ...
+//|
 STATIC mp_obj_t ps2_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

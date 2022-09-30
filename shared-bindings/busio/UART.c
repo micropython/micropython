@@ -353,6 +353,7 @@ MP_PROPERTY_GETSET(busio_uart_timeout_obj,
 //|     def reset_input_buffer(self) -> None:
 //|         """Discard any unread characters in the input buffer."""
 //|         ...
+//|
 STATIC mp_obj_t busio_uart_obj_reset_input_buffer(mp_obj_t self_in) {
     busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
@@ -370,6 +371,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_o
 //|
 //|     EVEN: int
 //|     """Total number of ones should be even."""
+//|
 const mp_obj_type_t busio_uart_parity_type;
 
 const busio_uart_parity_obj_t busio_uart_parity_odd_obj = {

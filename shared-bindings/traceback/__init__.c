@@ -89,6 +89,7 @@ STATIC void traceback_exception_common(mp_print_t *print, mp_obj_t value, mp_obj
 //|
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_etype, ARG_value, ARG_tb, ARG_limit, ARG_chain };
     static const mp_arg_t allowed_args[] = {
@@ -135,6 +136,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 0, traceback_f
 //|
 //|     """
 //|     ...
+//|
 
 STATIC mp_obj_t traceback_print_exception(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_etype, ARG_value, ARG_tb, ARG_limit, ARG_file, ARG_chain };

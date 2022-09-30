@@ -221,6 +221,7 @@ MP_PROPERTY_GETSET(usb_cdc_serial_timeout_obj,
 //|     """The initial value of `write_timeout` is ``None``. If ``None``, wait indefinitely to finish
 //|     writing all the bytes passed to ``write()``.If 0, do not wait.
 //|     If > 0, wait only ``write_timeout`` seconds."""
+//|
 STATIC mp_obj_t usb_cdc_serial_get_write_timeout(mp_obj_t self_in) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_float_t write_timeout = common_hal_usb_cdc_serial_get_write_timeout(self);

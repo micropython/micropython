@@ -57,6 +57,7 @@
 //|
 //|        print(microcontroller.cpus[0].temperature)
 //|        print(microcontroller.cpus[1].frequency)"""
+//|
 
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `microcontroller.Processor`.
@@ -131,6 +132,7 @@ MP_PROPERTY_GETTER(mcu_processor_uid_obj,
 //|     """The input voltage to the microcontroller, as a float. (read-only)
 //|
 //|     Is `None` if the voltage is not available."""
+//|
 STATIC mp_obj_t mcu_processor_get_voltage(mp_obj_t self) {
     float voltage = common_hal_mcu_processor_get_voltage();
     return isnan(voltage) ? mp_const_none : mp_obj_new_float(voltage);

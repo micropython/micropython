@@ -43,6 +43,7 @@
 //|
 //|     Provides a subset of CPython's `ssl.SSLSocket` API. It only implements the versions of
 //|     recv that do not allocate bytes objects."""
+//|
 
 //|     def __hash__(self) -> int:
 //|         """Returns a hash for the Socket."""
@@ -263,6 +264,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_settimeout_obj, ssl_sslsocket_set
 //|
 //|         :param ~bool flag: False means non-blocking, True means block indefinitely."""
 //|         ...
+//|
 // method socket.setblocking(flag)
 STATIC mp_obj_t ssl_sslsocket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);

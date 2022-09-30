@@ -359,7 +359,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_stop_obj, rp2pio_statemachine_stop
 //|         *,
 //|         start: int = 0,
 //|         end: Optional[int] = None,
-//|         swap: bool = False
+//|         swap: bool = False,
 //|     ) -> None:
 //|         """Write the data contained in ``buffer`` to the state machine. If the buffer is empty, nothing happens.
 //|
@@ -419,7 +419,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine
 //|         once: Optional[ReadableBuffer] = None,
 //|         *,
 //|         loop: Optional[ReadableBuffer] = None,
-//|         swap: bool = False
+//|         swap: bool = False,
 //|     ) -> None:
 //|         """Write data to the TX fifo in the background, with optional looping.
 //|
@@ -564,7 +564,7 @@ const mp_obj_property_t rp2pio_statemachine_pending_obj = {
 //|         *,
 //|         start: int = 0,
 //|         end: Optional[int] = None,
-//|         swap: bool = False
+//|         swap: bool = False,
 //|     ) -> None:
 //|         """Read into ``buffer``. If the number of bytes to read is 0, nothing happens. The buffer
 //|         includes any data added to the fifo even if it was added before this was called.
@@ -628,7 +628,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_readinto_obj, 2, rp2pio_statemach
 //|         out_start: int = 0,
 //|         out_end: Optional[int] = None,
 //|         in_start: int = 0,
-//|         in_end: Optional[int] = None
+//|         in_end: Optional[int] = None,
 //|     ) -> None:
 //|         """Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
 //|         The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
@@ -788,6 +788,7 @@ MP_PROPERTY_GETTER(rp2pio_statemachine_rxstall_obj,
 
 //|     in_waiting: int
 //|     """The number of words available to readinto"""
+//|
 
 STATIC mp_obj_t rp2pio_statemachine_obj_get_in_waiting(mp_obj_t self_in) {
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);

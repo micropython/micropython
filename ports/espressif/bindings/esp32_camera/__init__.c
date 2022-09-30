@@ -54,6 +54,7 @@
 //|
 //|     LATEST: GrabMode
 //|     """Except when 1 frame buffer is used, queue will always contain the last ``fb_count`` frames"""
+//|
 
 MAKE_ENUM_VALUE(esp32_camera_grab_mode_type, grab_mode, WHEN_EMPTY, CAMERA_GRAB_WHEN_EMPTY);
 MAKE_ENUM_VALUE(esp32_camera_grab_mode_type, grab_mode, LATEST, CAMERA_GRAB_LATEST);
@@ -82,6 +83,7 @@ camera_grab_mode_t validate_grab_mode(mp_obj_t obj, qstr arg_name) {
 //|
 //|     JPEG: PixelFormat
 //|     """A compressed format"""
+//|
 
 MAKE_ENUM_VALUE(esp32_camera_pixel_format_type, pixel_format, RGB565, PIXFORMAT_RGB565);
 MAKE_ENUM_VALUE(esp32_camera_pixel_format_type, pixel_format, GRAYSCALE, PIXFORMAT_GRAYSCALE);
@@ -169,6 +171,7 @@ pixformat_t validate_pixel_format(mp_obj_t obj, qstr arg_name) {
 //|
 //|     QSXGA: FrameSize
 //|     """2560x1920"""
+//|
 
 MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, R96X96, FRAMESIZE_96X96);
 MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, R240X240, FRAMESIZE_240X240);
@@ -237,6 +240,7 @@ framesize_t validate_frame_size(mp_obj_t obj, qstr arg_name) {
 //|     GAIN_32X: GainCeiling
 //|     GAIN_64X: GainCeiling
 //|     GAIN_128X: GainCeiling
+//|
 
 MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_2X, GAINCEILING_2X);
 MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_4X, GAINCEILING_4X);

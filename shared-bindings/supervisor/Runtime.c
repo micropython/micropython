@@ -51,6 +51,7 @@ STATIC supervisor_run_reason_t _run_reason;
 //|        import supervisor
 //|        if supervisor.runtime.serial_connected:
 //|            print("Hello World!")"""
+//|
 
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `supervisor.Runtime`.
@@ -113,6 +114,7 @@ MP_PROPERTY_GETTER(supervisor_runtime_run_reason_obj,
 
 //|     autoreload: bool
 //|     """Whether CircuitPython may autoreload based on workflow writes to the filesystem."""
+//|
 STATIC mp_obj_t supervisor_runtime_get_autoreload(mp_obj_t self) {
     return mp_obj_new_bool(autoreload_is_enabled());
 }

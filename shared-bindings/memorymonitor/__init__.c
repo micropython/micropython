@@ -39,6 +39,7 @@
 //|     """Catchall exception for allocation related errors."""
 //|
 //|     ...
+//|
 MP_DEFINE_MEMORYMONITOR_EXCEPTION(AllocationError, Exception)
 
 NORETURN void mp_raise_memorymonitor_AllocationError(const compressed_string_t *fmt, ...) {

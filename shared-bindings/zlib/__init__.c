@@ -70,6 +70,7 @@
 //|     :param int bufsize: ignored for compatibility with CPython only
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t zlib_decompress(size_t n_args, const mp_obj_t *args) {
     bool is_zlib = true;
     if (n_args > 1 && MP_OBJ_SMALL_INT_VALUE(args[1]) < 0) {

@@ -61,6 +61,7 @@
 //|         is connected to the common side of all buttons (the other sides of the
 //|         buttons are connected to rows of the matrix)."""
 //|         ...
+//|
 STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_buffer, ARG_rows, ARG_cols, ARG_buttons };
     static const mp_arg_t allowed_args[] = {

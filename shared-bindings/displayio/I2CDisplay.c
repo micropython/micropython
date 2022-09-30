@@ -100,6 +100,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_i2cdisplay_reset_obj, displayio_i2cdisplay_o
 //|         """Sends the given command value followed by the full set of data. Display state, such as
 //|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
 //|         ...
+//|
 STATIC mp_obj_t displayio_i2cdisplay_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
     mp_int_t command_int = mp_obj_get_int(command_obj);
     mp_arg_validate_int_range(command_int, 0, 255, MP_QSTR_command);

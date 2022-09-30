@@ -40,6 +40,7 @@
 //|
 //|        supervisor.status_bar.console = False
 //|     """
+//|
 
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `supervisor.StatusBar`.
@@ -83,6 +84,7 @@ MP_PROPERTY_GETSET(supervisor_status_bar_console_obj,
 //|     May be set in ``boot.py`` or later.  Persists across soft restarts.
 //|     Not available if `terminalio` is not available.
 //|     """
+//|
 STATIC mp_obj_t supervisor_status_bar_get_display(mp_obj_t self_in) {
     #if CIRCUITPY_STATUS_BAR && CIRCUITPY_TERMINALIO
     supervisor_status_bar_obj_t *self = MP_OBJ_TO_PTR(self_in);

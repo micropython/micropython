@@ -57,6 +57,7 @@
 //|     :param bool readonly: True when the filesystem should be readonly to CircuitPython.
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_filesystem, ARG_mount_path, ARG_readonly };
     static const mp_arg_t allowed_args[] = {
@@ -93,6 +94,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(storage_mount_obj, 0, storage_mount);
 //|
 //|     This is the CircuitPython analog to the UNIX ``umount`` command."""
 //|     ...
+//|
 STATIC mp_obj_t storage_umount(mp_obj_t mnt_in) {
     if (mp_obj_is_str(mnt_in)) {
         common_hal_storage_umount_path(mp_obj_str_get_str(mnt_in));
@@ -119,6 +121,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(storage_umount_obj, storage_umount);
 //|       allows CircuitPython and a host to write to the same filesystem with the risk that the
 //|       filesystem will be corrupted."""
 //|     ...
+//|
 STATIC mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mount_path, ARG_readonly, ARG_disable_concurrent_write_protection };
     static const mp_arg_t allowed_args[] = {
@@ -141,6 +144,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(storage_remount_obj, 0, storage_remount);
 //| def getmount(mount_path: str) -> VfsFat:
 //|     """Retrieves the mount object associated with the mount path"""
 //|     ...
+//|
 STATIC mp_obj_t storage_getmount(const mp_obj_t mnt_in) {
     return common_hal_storage_getmount(mp_obj_str_get_str(mnt_in));
 }
@@ -159,6 +163,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(storage_getmount_obj, storage_getmount);
 //|     .. warning:: All the data on ``CIRCUITPY`` will be lost, and
 //|          CircuitPython will restart on certain boards."""
 //|     ...
+//|
 
 STATIC mp_obj_t storage_erase_filesystem(void) {
     common_hal_storage_erase_filesystem();
@@ -171,6 +176,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(storage_erase_filesystem_obj, storage_erase_filesystem
 //|     By default, the device is enabled and ``CIRCUITPY`` is visible.
 //|     Can be called in ``boot.py``, before USB is connected."""
 //|     ...
+//|
 STATIC mp_obj_t storage_disable_usb_drive(void) {
     #if CIRCUITPY_USB_MSC
     if (!common_hal_storage_disable_usb_drive()) {
@@ -195,6 +201,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(storage_disable_usb_drive_obj, storage_disable_usb_dri
 //|     not enough endpoints are available.
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t storage_enable_usb_drive(void) {
     #if CIRCUITPY_USB_MSC
     if (!common_hal_storage_enable_usb_drive()) {
@@ -259,6 +266,7 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|     def umount(self) -> None:
 //|         """Don't call this directly, call `storage.umount`."""
 //|         ...
+//|
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
 };
 

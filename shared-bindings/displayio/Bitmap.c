@@ -318,6 +318,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_bitmap_fill_obj, displayio_bitmap_obj_fill);
 //|         notified of the "dirty rectangle" that encloses all modified
 //|         pixels."""
 //|         ...
+//|
 STATIC mp_obj_t displayio_bitmap_obj_dirty(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     enum { ARG_x1, ARG_y1, ARG_x2, ARG_y2 };

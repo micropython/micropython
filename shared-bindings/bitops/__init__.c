@@ -53,6 +53,7 @@
 //|
 //|     Returns the output buffer."""
 //|     ...
+//|
 
 STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_input, ARG_output, ARG_width };

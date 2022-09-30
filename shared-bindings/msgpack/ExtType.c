@@ -84,6 +84,7 @@ MP_PROPERTY_GETSET(mod_msgpack_exttype_code_obj,
 //|     data: bytes
 //|     """Data."""
 //|     ...
+//|
 STATIC mp_obj_t mod_msgpack_exttype_get_data(mp_obj_t self_in) {
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return self->data;

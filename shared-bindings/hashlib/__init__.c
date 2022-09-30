@@ -45,6 +45,7 @@
 //|     :return: a hash object for the given algorithm
 //|     :rtype: hashlib.Hash"""
 //|     ...
+//|
 STATIC mp_obj_t hashlib_new(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_name, ARG_data };
     static const mp_arg_t allowed_args[] = {

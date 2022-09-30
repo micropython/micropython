@@ -100,6 +100,7 @@ STATIC mp_obj_t terminalio_terminal_make_new(const mp_obj_type_t *type, size_t n
 //|         :return: the number of bytes written
 //|         :rtype: int or None"""
 //|         ...
+//|
 STATIC mp_uint_t terminalio_terminal_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     terminalio_terminal_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const byte *buf = buf_in;

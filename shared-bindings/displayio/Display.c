@@ -433,6 +433,7 @@ MP_PROPERTY_GETTER(displayio_display_root_group_obj,
 //|         :param int y: The top edge of the area
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
 //|         ...
+//|
 STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_y, ARG_buffer };
     static const mp_arg_t allowed_args[] = {

@@ -114,6 +114,7 @@ MP_PROPERTY_GETSET(vectorio_circle_color_index_obj,
 //|
 //|     pixel_shader: Union[displayio.ColorConverter, displayio.Palette]
 //|     """The pixel shader of the circle."""
+//|
 
 STATIC const mp_rom_map_elem_t vectorio_circle_locals_dict_table[] = {
     // Functions

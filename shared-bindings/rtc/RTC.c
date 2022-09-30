@@ -100,6 +100,7 @@ MP_PROPERTY_GETSET(rtc_rtc_datetime_obj,
 //|
 //|       r = rtc.RTC()
 //|       r.calibration = 1"""
+//|
 STATIC mp_obj_t rtc_rtc_obj_get_calibration(mp_obj_t self_in) {
     int calibration = common_hal_rtc_get_calibration();
     return mp_obj_new_int(calibration);

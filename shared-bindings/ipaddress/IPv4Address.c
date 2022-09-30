@@ -37,6 +37,7 @@
 
 //| class IPv4Address:
 //|     """Encapsulates an IPv4 address."""
+//|
 
 //|     def __init__(self, address: Union[int, str, bytes]) -> None:
 //|         """Create a new IPv4Address object encapsulating the address value.
@@ -141,6 +142,7 @@ STATIC mp_obj_t ipaddress_ipv4address_binary_op(mp_binary_op_t op, mp_obj_t lhs_
 //|     def __hash__(self) -> int:
 //|         """Returns a hash for the IPv4Address data."""
 //|         ...
+//|
 STATIC mp_obj_t ipaddress_ipv4address_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {
         // Two Addresses are equal if their address bytes and address_type are equal

@@ -34,6 +34,7 @@
 //| class Hash:
 //|     """In progress hash algorithm. This object is always created by a `hashlib.new()`. It has no
 //|     user-visible constructor."""
+//|
 
 //|     digest_size: int
 //|     """Digest size in bytes"""
@@ -65,6 +66,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(hashlib_hash_update_obj, hashlib_hash_update);
 //|     def digest(self) -> bytes:
 //|         """Returns the current digest as bytes() with a length of `hashlib.Hash.digest_size`."""
 //|         ...
+//|
 STATIC mp_obj_t hashlib_hash_digest(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &hashlib_hash_type));
     hashlib_hash_obj_t *self = MP_OBJ_TO_PTR(self_in);

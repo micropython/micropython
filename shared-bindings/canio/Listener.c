@@ -41,6 +41,7 @@
 //|     the `in_waiting` method to check for an available message, a
 //|     listener can be used as an iterable, yielding messages until no
 //|     message arrives within ``self.timeout`` seconds."""
+//|
 
 //|     def receive(self) -> Optional[Union[RemoteTransmissionRequest, Message]]:
 //|         """Reads a message, after waiting up to ``self.timeout`` seconds
@@ -133,6 +134,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canio_listener_exit_obj, 4, 4, canio_
 
 
 //|     timeout: float
+//|
 STATIC mp_obj_t canio_listener_timeout_get(mp_obj_t self_in) {
     canio_listener_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_listener_check_for_deinit(self);

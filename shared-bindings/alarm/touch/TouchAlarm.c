@@ -63,6 +63,7 @@ STATIC mp_obj_t alarm_touch_touchalarm_make_new(const mp_obj_type_t *type,
 
 //|     pin: microcontroller.Pin
 //|     """The trigger pin."""
+//|
 STATIC mp_obj_t alarm_touch_touchalarm_obj_get_pin(mp_obj_t self_in) {
     alarm_touch_touchalarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(self->pin);

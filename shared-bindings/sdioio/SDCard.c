@@ -248,6 +248,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_deinit_obj, sdioio_sdcard_obj_deinit);
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
+//|
 STATIC mp_obj_t sdioio_sdcard_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_sdioio_sdcard_deinit(args[0]);

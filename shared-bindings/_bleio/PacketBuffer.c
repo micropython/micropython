@@ -201,6 +201,7 @@ MP_PROPERTY_GETTER(bleio_packet_buffer_incoming_packet_length_obj,
 
 //|     outgoing_packet_length: int
 //|     """Maximum length in bytes of a packet we are writing."""
+//|
 STATIC mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 

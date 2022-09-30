@@ -29,6 +29,7 @@
 //|                     continue
 //|                 print("Latitude: {0:.6f} degrees".format(nav.latitude))
 //|                 print("Longitude: {0:.6f} degrees".format(nav.longitude))"""
+//|
 
 //|     def __init__(self, system: Union[SatelliteSystem, List[SatelliteSystem]]) -> None:
 //|         """Turn on the GNSS.
@@ -146,6 +147,7 @@ MP_PROPERTY_GETTER(gnss_timestamp_obj,
 
 //|     fix: PositionFix
 //|     """Fix mode."""
+//|
 STATIC mp_obj_t gnss_obj_get_fix(mp_obj_t self_in) {
     gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

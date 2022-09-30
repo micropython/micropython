@@ -42,6 +42,7 @@
 //|     DOWN: Pull
 //|     """When the input line isn't being driven the pull down can pull the
 //|     state of the line low so it reads as false."""
+//|
 const mp_obj_type_t digitalio_pull_type;
 
 const digitalio_pull_obj_t digitalio_pull_up_obj = {

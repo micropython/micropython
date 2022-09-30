@@ -58,6 +58,7 @@
 //|         (TODO) The reference voltage varies by platform so use
 //|         ``reference_voltage`` to read the configured setting.
 //|         (TODO) Provide mechanism to read CPU Temperature."""
+//|
 
 //|     def __init__(
 //|         self, pin: microcontroller.Pin, buffer: WriteableBuffer, *, sample_rate: int = 500000
@@ -155,6 +156,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogbufio_bufferedin___exit___obj, 
 //|     def read(self) -> None:
 //|         """Fills the provided buffer with ADC voltage values."""
 //|         ...
+//|
 STATIC mp_obj_t analogbufio_bufferedin_obj_read(mp_obj_t self_in) {
     analogbufio_bufferedin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

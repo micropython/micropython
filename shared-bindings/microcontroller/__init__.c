@@ -49,6 +49,7 @@
 //|
 //| from nvm import ByteArray
 //| from watchdog import WatchDogTimer
+//|
 
 //| cpu: Processor
 //| """CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
@@ -68,6 +69,7 @@
 //|     processing while you are waiting, explore a different avenue such as using
 //|     `time.sleep()`."""
 //|     ...
+//|
 STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
     uint32_t delay = mp_obj_get_int(delay_obj);
 
@@ -80,6 +82,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_delay_us_obj, mcu_delay_us);
 //| def disable_interrupts() -> None:
 //|     """Disable all interrupts. Be very careful, this can stall everything."""
 //|     ...
+//|
 STATIC mp_obj_t mcu_disable_interrupts(void) {
     common_hal_mcu_disable_interrupts();
     return mp_const_none;
@@ -89,6 +92,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_disable_interrupts_obj, mcu_disable_interru
 //| def enable_interrupts() -> None:
 //|     """Enable the interrupts that were enabled at the last disable."""
 //|     ...
+//|
 STATIC mp_obj_t mcu_enable_interrupts(void) {
     common_hal_mcu_enable_interrupts();
     return mp_const_none;
@@ -101,6 +105,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupt
 //|
 //|     :param ~microcontroller.RunMode run_mode: The next run mode"""
 //|     ...
+//|
 STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
     mcu_runmode_t run_mode;
     if (run_mode_obj == MP_OBJ_FROM_PTR(&mcu_runmode_uf2_obj)) {
@@ -127,6 +132,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_on_next_reset_obj, mcu_on_next_reset);
 //|       host computer. Be very careful when calling this! Make sure the device
 //|       "Safely removed" on Windows or "ejected" on Mac OSX and Linux."""
 //|     ...
+//|
 STATIC mp_obj_t mcu_reset(void) {
     common_hal_mcu_reset();
     // We won't actually get here because we're resetting.

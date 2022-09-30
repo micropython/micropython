@@ -109,6 +109,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(layer_move_obj, layer_move);
 //|         """Set the animation frame of the sprite, and optionally rotation its
 //|         graphic."""
 //|         ...
+//|
 STATIC mp_obj_t layer_frame(mp_obj_t self_in, mp_obj_t frame_in,
     mp_obj_t rotation_in) {
     layer_obj_t *self = MP_OBJ_TO_PTR(self_in);

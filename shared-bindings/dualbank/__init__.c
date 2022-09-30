@@ -62,6 +62,7 @@
 //|     in small chunks.
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t dualbank_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_offset };
     static const mp_arg_t allowed_args[] = {
@@ -91,6 +92,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dualbank_flash_obj, 0, dualbank_flash);
 //|     just switched over to.
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t dualbank_switch(void) {
     common_hal_dualbank_switch();
     return mp_const_none;

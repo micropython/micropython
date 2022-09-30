@@ -146,6 +146,7 @@ MP_PROPERTY_GETSET(rotaryio_incrementalencoder_divisor_obj,
 //|     position: int
 //|     """The current position in terms of pulses. The number of pulses per rotation is defined by the
 //|     specific hardware and by the divisor."""
+//|
 STATIC mp_obj_t rotaryio_incrementalencoder_obj_get_position(mp_obj_t self_in) {
     rotaryio_incrementalencoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

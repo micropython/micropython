@@ -91,6 +91,7 @@ STATIC mp_obj_t text_make_new(const mp_obj_type_t *type, size_t n_args,
 //|     def move(self, x: int, y: int) -> None:
 //|         """Set the offset of the text to the specified values."""
 //|         ...
+//|
 STATIC mp_obj_t text_move(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
     text_obj_t *self = MP_OBJ_TO_PTR(self_in);
     self->x = mp_obj_get_int(x_in);

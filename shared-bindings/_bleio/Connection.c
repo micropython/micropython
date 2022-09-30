@@ -59,6 +59,7 @@
 //|            raise Exception("'InterestingPeripheral' not found")
 //|
 //|        connection = _bleio.adapter.connect(my_entry.address, timeout=10)"""
+//|
 
 void bleio_connection_ensure_connected(bleio_connection_obj_t *self) {
     if (!common_hal_bleio_connection_get_connected(self)) {
@@ -199,6 +200,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_connection_interval_obj, b
 //|     which must be sent in a single packet.
 //|     But for a regular characteristic read or write, may be sent in multiple packets,
 //|     so this limit does not apply."""
+//|
 STATIC mp_obj_t bleio_connection_get_max_packet_length(mp_obj_t self_in) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
 

@@ -77,6 +77,7 @@ STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_arg
 //|     def set_boundary(self, y: int, start_x: int, end_x: int) -> None:
 //|         """Loads pre-packed data into the given row."""
 //|         ...
+//|
 STATIC mp_obj_t displayio_shape_obj_set_boundary(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     displayio_shape_t *self = MP_OBJ_TO_PTR(args[0]);

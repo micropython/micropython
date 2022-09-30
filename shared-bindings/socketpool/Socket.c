@@ -44,6 +44,7 @@
 //|
 //|     Provides a subset of CPython's `socket.socket` API. It only implements the versions of
 //|     recv that do not allocate bytes objects."""
+//|
 
 //|     def __hash__(self) -> int:
 //|         """Returns a hash for the Socket."""
@@ -340,6 +341,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_setblocking_obj, socketpool_s
 //|
 //|         :param ~int value: timeout in seconds.  0 means non-blocking.  None means block indefinitely."""
 //|         ...
+//|
 STATIC mp_obj_t socketpool_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t timeout_ms;

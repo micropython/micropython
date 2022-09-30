@@ -52,6 +52,7 @@
 //|         :return: the number of bytes written
 //|         :rtype: int or None"""
 //|         ...
+//|
 
 STATIC mp_uint_t usb_midi_portout_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     usb_midi_portout_obj_t *self = MP_OBJ_TO_PTR(self_in);

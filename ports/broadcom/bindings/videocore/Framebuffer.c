@@ -98,6 +98,7 @@ MP_PROPERTY_GETTER(videocore_framebuffer_width_obj,
 
 //|     height: int
 //|     """The height of the display, in pixels"""
+//|
 STATIC mp_obj_t videocore_framebuffer_get_height(mp_obj_t self_in) {
     videocore_framebuffer_obj_t *self = (videocore_framebuffer_obj_t *)self_in;
     check_for_deinit(self);

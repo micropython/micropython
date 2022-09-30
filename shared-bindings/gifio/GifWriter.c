@@ -122,6 +122,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_gifwriter_deinit_obj, gifio_gifwriter_deinit);
 //|         :param delay: The frame delay in seconds.  The GIF format rounds this to the nearest 1/100 second, and the largest permitted value is 655 seconds.
 //|         """
 //|         ...
+//|
 static mp_obj_t gifio_gifwriter_add_frame(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_delay };
     static const mp_arg_t allowed_args[] = {

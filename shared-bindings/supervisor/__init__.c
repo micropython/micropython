@@ -68,6 +68,7 @@
 //|     after the current code finishes and the status LED is used to show
 //|     the finish state."""
 //|     ...
+//|
 STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl) {
     // This must be int. If cast to uint8_t first, will never raise a ValueError.
     int brightness_int = mp_obj_get_int(lvl);
@@ -80,6 +81,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_s
 //| def reload() -> None:
 //|     """Reload the main Python code and run it (equivalent to hitting Ctrl-D at the REPL)."""
 //|     ...
+//|
 STATIC mp_obj_t supervisor_reload(void) {
     reload_initiate(RUN_REASON_SUPERVISOR_RELOAD);
     return mp_const_none;
@@ -89,6 +91,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
 //| def set_next_stack_limit(size: int) -> None:
 //|     """Set the size of the stack for the next vm run. If its too large, the default will be used."""
 //|     ...
+//|
 STATIC mp_obj_t supervisor_set_next_stack_limit(mp_obj_t size_obj) {
     mp_int_t size = mp_obj_get_int(size_obj);
 
@@ -140,6 +143,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_next_stack_limit_obj, supervisor_set_ne
 //|     settings made by previous ones. This is the main use of passing ``None`` as a filename: to
 //|     reset to the standard search sequence."""
 //|     ...
+//|
 STATIC mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_filename, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
@@ -240,6 +244,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(supervisor_set_next_code_file_obj, 0, supervisor_set_
 //|
 //|     """
 //|     ...
+//|
 mp_obj_t supervisor_ticks_ms(void) {
     uint64_t ticks_ms = common_hal_time_monotonic_ms();
     return mp_obj_new_int((ticks_ms + 0x1fff0000) % (1 << 29));
@@ -255,6 +260,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_ticks_ms_obj, supervisor_ticks_ms);
 //|
 //|     Only code (main or boot) runs are considered, not REPL runs."""
 //|     ...
+//|
 STATIC mp_obj_t supervisor_get_previous_traceback(void) {
     if (prev_traceback_allocation) {
         size_t len = strlen((const char *)prev_traceback_allocation->ptr);
@@ -276,6 +282,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_get_previous_traceback_obj, supervisor_get_
 //|     """Disable ble workflow until a reset. This prevents BLE advertising outside of the VM and
 //|     the services used for it."""
 //|     ...
+//|
 STATIC mp_obj_t supervisor_disable_ble_workflow(void) {
     #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
     mp_raise_NotImplementedError(NULL);
@@ -289,6 +296,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_ble_workflow_obj, supervisor_disabl
 //| def reset_terminal(x_pixels: int, y_pixels: int) -> None:
 //|     """Reset the CircuitPython serial terminal with new dimensions."""
 //|     ...
+//|
 STATIC mp_obj_t supervisor_reset_terminal(mp_obj_t x_pixels, mp_obj_t y_pixels) {
     #if CIRCUITPY_DISPLAYIO
     supervisor_stop_terminal();
@@ -316,6 +324,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(supervisor_reset_terminal_obj, supervisor_reset_termin
 //|     Not available on boards without native USB support.
 //|     """
 //|     ...
+//|
 STATIC mp_obj_t supervisor_set_usb_identification(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     #if CIRCUITPY_USB_IDENTIFICATION
     static const mp_arg_t allowed_args[] = {

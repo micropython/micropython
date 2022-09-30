@@ -46,6 +46,7 @@
 //|
 //|        adc = analogio.AnalogIn(A1)
 //|        val = adc.value"""
+//|
 
 //|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Use the AnalogIn on the given pin. The reference voltage varies by
@@ -118,6 +119,7 @@ MP_PROPERTY_GETTER(analogio_analogin_value_obj,
 //|     """The maximum voltage measurable (also known as the reference voltage) as a
 //|     `float` in Volts.  Note the ADC value may not scale to the actual voltage linearly
 //|     at ends of the analog range."""
+//|
 STATIC mp_obj_t analogio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
     analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

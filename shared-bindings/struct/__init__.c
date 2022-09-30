@@ -51,6 +51,7 @@
 //| def calcsize(fmt: str) -> int:
 //|     """Return the number of bytes needed to store the given fmt."""
 //|     ...
+//|
 
 STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
 
@@ -62,6 +63,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(struct_calcsize_obj, struct_calcsize);
 //|     """Pack the values according to the format string fmt.
 //|     The return value is a bytes object encoding the values."""
 //|     ...
+//|
 
 STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
@@ -79,6 +81,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, str
 //|     """Pack the values according to the format string fmt into a buffer
 //|     starting at offset. offset may be negative to count from the end of buffer."""
 //|     ...
+//|
 
 STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
@@ -105,6 +108,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_into_obj, 3, MP_OBJ_FUN_ARGS_MAX
 //|     is a tuple of the unpacked values. The buffer size must match the size
 //|     required by the format."""
 //|     ...
+//|
 
 STATIC mp_obj_t struct_unpack(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
@@ -123,6 +127,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_obj, 2, 3, struct_unpack);
 //|     a tuple of the unpacked values. The buffer size must be at least as big
 //|     as the size required by the form."""
 //|     ...
+//|
 
 STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_format, ARG_buffer, ARG_offset };

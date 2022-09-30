@@ -323,6 +323,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_enter_obj, canio_can_enter);
 //|     ) -> None:
 //|         """Calls deinit()"""
 //|         ...
+//|
 STATIC mp_obj_t canio_can_exit(size_t num_args, const mp_obj_t args[]) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     common_hal_canio_can_deinit(self);

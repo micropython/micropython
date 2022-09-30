@@ -238,6 +238,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_resume_obj, audiobusio_i2sout_obj_re
 
 //|     paused: bool
 //|     """True when playback is paused. (read-only)"""
+//|
 STATIC mp_obj_t audiobusio_i2sout_obj_get_paused(mp_obj_t self_in) {
     audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

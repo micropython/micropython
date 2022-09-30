@@ -112,6 +112,7 @@ MP_PROPERTY_GETSET(qrio_qrdecoder_width_obj,
 
 //|     height: int
 //|     """The height of image the decoder expects"""
+//|
 STATIC mp_obj_t qrio_qrdecoder_get_height(mp_obj_t self_in) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(shared_module_qrio_qrdecoder_get_height(self));

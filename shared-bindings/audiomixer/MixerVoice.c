@@ -132,6 +132,7 @@ MP_PROPERTY_GETSET(audiomixer_mixervoice_level_obj,
 
 //|     playing: bool
 //|     """True when this voice is being output. (read-only)"""
+//|
 
 STATIC mp_obj_t audiomixer_mixervoice_obj_get_playing(mp_obj_t self_in) {
     audiomixer_mixervoice_obj_t *self = MP_OBJ_TO_PTR(self_in);

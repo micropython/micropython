@@ -321,6 +321,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_fill_row_obj, 1, fra
 
 //|     root_group: displayio.Group
 //|     """The root group on the display."""
+//|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_root_group(mp_obj_t self_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     return common_hal_framebufferio_framebufferdisplay_get_root_group(self);

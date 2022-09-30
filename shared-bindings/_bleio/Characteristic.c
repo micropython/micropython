@@ -301,6 +301,7 @@ STATIC const mp_rom_map_elem_t bleio_characteristic_locals_dict_table[] = {
 //|
 //|     WRITE_NO_RESPONSE: int
 //|     """property: clients may write this characteristic; no response will be sent back"""
+//|
     { MP_ROM_QSTR(MP_QSTR_BROADCAST),         MP_ROM_INT(CHAR_PROP_BROADCAST) },
     { MP_ROM_QSTR(MP_QSTR_INDICATE),          MP_ROM_INT(CHAR_PROP_INDICATE) },
     { MP_ROM_QSTR(MP_QSTR_NOTIFY),            MP_ROM_INT(CHAR_PROP_NOTIFY) },
