@@ -35,6 +35,7 @@
 #include "shared/runtime/interrupt_char.h"
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "bindings/cyw43/__init__.h"
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
 #include "shared-bindings/wifi/AuthMode.h"
@@ -152,6 +153,7 @@ void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_start_station(wifi_radio_obj_t *self) {
     cyw43_arch_enable_sta_mode();
+    bindings_cyw43_wifi_enforce_pm();
 }
 
 void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
@@ -159,6 +161,7 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode, uint8_t max_connections) {
     mp_raise_NotImplementedError(NULL);
+    bindings_cyw43_wifi_enforce_pm();
 }
 
 void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
@@ -173,6 +176,7 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     // TODO use connect_async so we can service bg tasks & check for ctrl-c during
     // connect
     int result = cyw43_arch_wifi_connect_timeout_ms((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK, timeout_ms);
+    bindings_cyw43_wifi_enforce_pm();
     switch (result) {
         case 0:
             return WIFI_RADIO_ERROR_NONE;

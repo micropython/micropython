@@ -28,6 +28,7 @@
 #pragma once
 
 #include "py/obj.h"
+#include "common-hal/microcontroller/Pin.h"
 
 extern const mp_obj_type_t cyw43_pin_type;
 const mcu_pin_obj_t *validate_obj_is_free_pin_including_cyw43(mp_obj_t obj);
@@ -48,3 +49,5 @@ const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj);
 #define PM_PERFORMANCE CONSTANT_CYW43_PM_VALUE(CYW43_PM2_POWERSAVE_MODE, 20, 1, 1, 1)
 // The 0xa11140 magic value
 #define PM_DISABLED CONSTANT_CYW43_PM_VALUE(CYW43_NO_POWERSAVE_MODE, 200, 1, 1, 10)
+
+extern void bindings_cyw43_wifi_enforce_pm(void);

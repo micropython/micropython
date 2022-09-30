@@ -31,6 +31,14 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "bindings/cyw43/__init__.h"
+
+
+static int power_management_value = PM_DISABLED;
+
+void bindings_cyw43_wifi_enforce_pm() {
+    cyw43_wifi_pm(&cyw43_state, power_management_value);
+}
+
 //| class CywPin:
 //|     """A class that represents a GPIO pin attached to the wifi chip.
 //|
@@ -55,7 +63,7 @@ const mp_obj_type_t cyw43_pin_type = {
 //| PM_PERFORMANCE: int
 //| """Performance power management mode where more power is used to increase performance"""
 //| PM_DISABLED: int
-//| """Disable power management and always use highest power mode"""
+//| """Disable power management and always use highest power mode. CircuitPython sets this value at reset time, because it provides the best reliability."""
 //|
 //| def set_power_management(value: int) -> None:
 //|     """Set the power management register
@@ -88,10 +96,19 @@ const mp_obj_type_t cyw43_pin_type = {
 //|
 STATIC mp_obj_t cyw43_set_power_management(const mp_obj_t value_in) {
     mp_int_t value = mp_obj_get_int(value_in);
-    cyw43_wifi_pm(&cyw43_state, value);
+    power_management_value = value;
+    bindings_cyw43_wifi_enforce_pm();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cyw43_set_power_management_obj, cyw43_set_power_management);
+
+//| def get_power_management() -> int:
+//|     """Retrieve the power management register"""
+//|
+STATIC mp_obj_t cyw43_get_power_management() {
+    return mp_obj_new_int(power_management_value);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(cyw43_get_power_management_obj, cyw43_get_power_management);
 
 const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj) {
     if (!mp_obj_is_type(obj, &mcu_pin_type) && !mp_obj_is_type(obj, &cyw43_pin_type)) {
@@ -110,6 +127,7 @@ STATIC const mp_rom_map_elem_t cyw43_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cyw43) },
     { MP_ROM_QSTR(MP_QSTR_CywPin), MP_ROM_QSTR(MP_QSTR_CywPin) },
     { MP_ROM_QSTR(MP_QSTR_set_power_management), &cyw43_set_power_management_obj },
+    { MP_ROM_QSTR(MP_QSTR_get_power_management), &cyw43_get_power_management_obj },
     { MP_ROM_QSTR(MP_QSTR_PM_STANDARD), MP_ROM_INT(PM_STANDARD) },
     { MP_ROM_QSTR(MP_QSTR_PM_AGGRESSIVE), MP_ROM_INT(PM_AGGRESSIVE) },
     { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(PM_PERFORMANCE) },
