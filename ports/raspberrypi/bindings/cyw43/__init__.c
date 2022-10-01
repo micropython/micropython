@@ -59,11 +59,11 @@ const mp_obj_type_t cyw43_pin_type = {
 //| PM_STANDARD: int
 //| """The standard power management mode"""
 //| PM_AGGRESSIVE: int
-//| """Aggressive power management mode for optimial power usage at the cost of performance"""
+//| """Aggressive power management mode for optimal power usage at the cost of performance"""
 //| PM_PERFORMANCE: int
 //| """Performance power management mode where more power is used to increase performance"""
 //| PM_DISABLED: int
-//| """Disable power management and always use highest power mode. CircuitPython sets this value at reset time, because it provides the best reliability."""
+//| """Disable power management and always use highest power mode. CircuitPython sets this value at reset time, because it provides the best connectivity reliability."""
 //|
 //| def set_power_management(value: int) -> None:
 //|     """Set the power management register
@@ -78,7 +78,7 @@ const mp_obj_type_t cyw43_pin_type = {
 //|     The low 4 bits, ``m``, are the power management mode:
 //|      * 0: disabled
 //|      * 1: aggressive power saving which reduces wifi throughput
-//|      * 2: Power saving with High througput
+//|      * 2: Power saving with high througput
 //|
 //|     The next 8 bits, ``r``, specify "the maximum time to wait before going back to sleep" for power management mode 2. The units of ``r`` are 10ms.
 //|
