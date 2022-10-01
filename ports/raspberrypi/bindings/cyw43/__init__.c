@@ -32,6 +32,13 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "bindings/cyw43/__init__.h"
 
+
+static int power_management_value = PM_DISABLED;
+
+void bindings_cyw43_wifi_enforce_pm() {
+    cyw43_wifi_pm(&cyw43_state, power_management_value);
+}
+
 //| class CywPin:
 //|     """A class that represents a GPIO pin attached to the wifi chip.
 //|
@@ -49,22 +56,59 @@ const mp_obj_type_t cyw43_pin_type = {
         )
 };
 
+//| PM_STANDARD: int
+//| """The standard power management mode"""
+//| PM_AGGRESSIVE: int
+//| """Aggressive power management mode for optimal power usage at the cost of performance"""
+//| PM_PERFORMANCE: int
+//| """Performance power management mode where more power is used to increase performance"""
+//| PM_DISABLED: int
+//| """Disable power management and always use highest power mode. CircuitPython sets this value at reset time, because it provides the best connectivity reliability."""
+//|
 //| def set_power_management(value: int) -> None:
 //|     """Set the power management register
 //|
-//|     According to Raspberry Pi documentation, the value 0xa11140
-//|     increases responsiveness at the cost of higher power usage.
+//|     For transmitter power, see ``wifi.Radio.txpower``.
+//|     This controls software power saving features inside the cyw43 chip.
+//|     it does not control transmitter power.
 //|
-//|     Besides this value, there appears to be no other public documentation
-//|     of the values that can be used.
+//|     The value is interpreted as a 24-bit hexadecimal number of the form
+//|     ``0x00adbrrm``.
+//|
+//|     The low 4 bits, ``m``, are the power management mode:
+//|      * 0: disabled
+//|      * 1: aggressive power saving which reduces wifi throughput
+//|      * 2: Power saving with high througput
+//|
+//|     The next 8 bits, ``r``, specify "the maximum time to wait before going back to sleep" for power management mode 2. The units of ``r`` are 10ms.
+//|
+//|     The next 4 bits, ``b``, are the "wake period is measured in beacon periods".
+//|
+//|     The next 4 bits, ``d``, specify the "wake interval measured in DTIMs. If this is set to 0, the wake interval is measured in beacon periods".
+//|
+//|     The top 4 bits, ``a``, specifies the "wake interval sent to the access point"
+//|
+//|     Several ``PM_`` constants gathered from various sources are included
+//|     in this module.  According to Raspberry Pi documentation, the value 0xa11140
+//|     (called `cyw43.PM_DISABLED` here) increases responsiveness at the cost of higher power
+//|     usage.
 //|     """
 //|
 STATIC mp_obj_t cyw43_set_power_management(const mp_obj_t value_in) {
     mp_int_t value = mp_obj_get_int(value_in);
-    cyw43_wifi_pm(&cyw43_state, value);
+    power_management_value = value;
+    bindings_cyw43_wifi_enforce_pm();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cyw43_set_power_management_obj, cyw43_set_power_management);
+
+//| def get_power_management() -> int:
+//|     """Retrieve the power management register"""
+//|
+STATIC mp_obj_t cyw43_get_power_management() {
+    return mp_obj_new_int(power_management_value);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(cyw43_get_power_management_obj, cyw43_get_power_management);
 
 const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj) {
     if (!mp_obj_is_type(obj, &mcu_pin_type) && !mp_obj_is_type(obj, &cyw43_pin_type)) {
@@ -83,6 +127,11 @@ STATIC const mp_rom_map_elem_t cyw43_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cyw43) },
     { MP_ROM_QSTR(MP_QSTR_CywPin), MP_ROM_QSTR(MP_QSTR_CywPin) },
     { MP_ROM_QSTR(MP_QSTR_set_power_management), &cyw43_set_power_management_obj },
+    { MP_ROM_QSTR(MP_QSTR_get_power_management), &cyw43_get_power_management_obj },
+    { MP_ROM_QSTR(MP_QSTR_PM_STANDARD), MP_ROM_INT(PM_STANDARD) },
+    { MP_ROM_QSTR(MP_QSTR_PM_AGGRESSIVE), MP_ROM_INT(PM_AGGRESSIVE) },
+    { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(PM_PERFORMANCE) },
+    { MP_ROM_QSTR(MP_QSTR_PM_DISABLED), MP_ROM_INT(PM_DISABLED) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(cyw43_module_globals, cyw43_module_globals_table);
