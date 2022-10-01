@@ -1,9 +1,3 @@
-# Build files
-#####################
-build-*/
-
 # Reference files
 #####################
 ref/
-
-.gdb_history
