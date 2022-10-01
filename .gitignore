@@ -90,3 +90,4 @@ TAGS
 
 # Uncrustify formatting
 *.uncrustify
+ports/broadcom/firmware
