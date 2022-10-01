@@ -1,9 +1,2 @@
-# Old Nordic soft devices that don't allow redistribution
-#########################################################
-drivers/bluetooth/s132_nrf52_2.0.1/
-
+# Softdevice .hex files that should be preserved
 !drivers/bluetooth/*/*.hex
-
-# Build files
-#####################
-build-*/
