@@ -173,6 +173,12 @@ void preserve_pin_number(gpio_num_t pin_number) {
         gpio_hold_en(pin_number);
         _preserved_pin_mask |= PIN_BIT(pin_number);
     }
+    if (_preserved_pin_mask) {
+        // Allow pin holds to work during deep sleep. This increases power consumption noticeably
+        // during deep sleep, so enable holds only if we actually are holding some pins.
+        // 270uA or so extra current is consumed even with no pins held.
+        gpio_deep_sleep_hold_en();
+    }
 }
 
 void clear_pin_preservations(void) {
