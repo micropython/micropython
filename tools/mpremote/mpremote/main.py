@@ -239,7 +239,14 @@ def do_connect(args):
             return None
         elif dev == "auto":
             # Auto-detect and auto-connect to the first available device.
-            for p in sorted(serial.tools.list_ports.comports()):
+            try:
+                autoconnect_regexp = load_user_config().__dict__["autoconnect_regexp"]
+            except KeyError:
+                if sys.platform == "darwin":
+                    autoconnect_regexp = "/dev/cu.usb"
+                else:
+                    autoconnect_regexp = ""
+            for p in sorted(serial.tools.list_ports.grep(autoconnect_regexp)):
                 try:
                     return pyboard.PyboardExtended(p.device, baudrate=115200)
                 except pyboard.PyboardError as er:
