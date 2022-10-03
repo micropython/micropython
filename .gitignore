@@ -88,6 +88,4 @@ TAGS
 .venv
 .env
 
-# Uncrustify formatting
-*.uncrustify
-ports/broadcom/firmware
+
