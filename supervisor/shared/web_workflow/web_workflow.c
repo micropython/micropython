@@ -660,7 +660,7 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *req
             (file_info.fdate >> 5) & 0xf,
             file_info.fdate & 0x1f,
             file_info.ftime >> 11,
-            (file_info.ftime >> 5) & 0x1f,
+            (file_info.ftime >> 5) & 0x3f,
             (file_info.ftime & 0x1f) * 2);
 
         // Manually append zeros to make the time nanoseconds. Support for printing 64 bit numbers
