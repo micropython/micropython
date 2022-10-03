@@ -130,7 +130,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_obj___exit__(size_t n_args, const mp_obj_t 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2ctarget_i2c_target___exit___obj, 4, 4, i2ctarget_i2c_target_obj___exit__);
 
-//|     def request(self, timeout: float = -1) -> I2CTargetRequest:
+//|     def request(self, *, timeout: float = -1) -> I2CTargetRequest:
 //|         """Wait for an I2C request.
 //|
 //|         :param float timeout: Timeout in seconds. Zero means wait forever, a negative value means check once
@@ -159,7 +159,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_request(size_t n_args, const mp_obj_t *pos_
 
     bool forever = false;
     uint64_t timeout_end = 0;
-    if (timeout_ms == 0) {
+    if (timeout_ms <= 0) {
         forever = true;
     } else if (timeout_ms > 0) {
         timeout_end = common_hal_time_monotonic_ms() + timeout_ms;
