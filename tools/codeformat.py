@@ -43,6 +43,7 @@ PATHS = [
     "shared/netutils/*.[ch]",
     "shared/timeutils/*.[ch]",
     "shared/runtime/*.[ch]",
+    "shared/tinyusb/*.[ch]",
     "mpy-cross/*.[ch]",
     "ports/**/*.[ch]",
     "py/*.[ch]",

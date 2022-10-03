@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Blake W. Felt
+ * Copyright (c) 2022 Blake W. Felt & Angus Gratton
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_LIB_UTILS_USBD_H
-#define MICROPY_INCLUDED_LIB_UTILS_USBD_H
+#ifndef MICROPY_INCLUDED_LIB_UTILS_MP_USBD_H
+#define MICROPY_INCLUDED_LIB_UTILS_MP_USBD_H
 
 #include "py/obj.h"
 
-// defined externally (needed per port)
+// Call instead of tud_task()
+void mp_usbd_task(void);
 
-int usbd_serialnumber(uint8_t *buf);
-
-// external use
-
-void usbd_reset_all(void);
-void usbd_reset_descriptor(void);
+// Function to be implemented in port code.
+// Can write a string up to USBD_DESC_STR_MAX characters long, plus terminating byte.
+extern void mp_usbd_port_get_serial_number(char *buf);
 
 #endif // MICROPY_INCLUDED_LIB_UTILS_USBD_H
