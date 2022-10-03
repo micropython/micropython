@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Blake W. Felt
+ * Copyright (c) 2022 Blake W. Felt & Angus Gratton
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_TINYUSB_USBD_H
-#define MICROPY_INCLUDED_SHARED_TINYUSB_USBD_H
+#include <stdlib.h>
 
-#include "py/obj.h"
+#ifndef NO_QSTR
+#include "tusb.h" // TinyUSB is not avaiable when running the string preprocessor
+#include "device/usbd.h"
+#include "device/usbd_pvt.h"
+#endif
 
-// defined externally (needed per port)
-
-int usbd_serialnumber(uint8_t *buf);
-
-// external use
-
-void usbd_reset_all(void);
-void usbd_reset_descriptor(void);
-
-#endif // MICROPY_INCLUDED_SHARED_TINYUSB_USBD_H
+void usbd_task(void) {
+    tud_task_ext(0, false);
+}

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Blake W. Felt
+ * Copyright (c) 2022 Angus Gratton
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_INTERNAL_H
+#define MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_INTERNAL_H
+#include "tusb.h"
 
-#include "py/runtime.h"
-#include "usbd.h"
+// Static USB device descriptor values
+extern const tusb_desc_device_t mp_usbd_desc_device_static;
+extern const uint8_t mp_usbd_desc_cfg_static[USBD_STATIC_DESC_LEN];
 
-void usbd_reset_all(void) {
-    usbd_reset_descriptor();
-}
+#endif // MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_INTERNAL_H

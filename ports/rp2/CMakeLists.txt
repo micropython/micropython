@@ -94,10 +94,10 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/shared/runtime/pyexec.c
     ${MICROPY_DIR}/shared/runtime/stdout_helpers.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
-    ${MICROPY_DIR}/shared/runtime/tinyusb_helpers.c
     ${MICROPY_DIR}/shared/timeutils/timeutils.c
-    ${MICROPY_DIR}/shared/tinyusb/usbd.c
-    ${MICROPY_DIR}/shared/tinyusb/usbd_descriptor.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_cdc_common.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_usbd.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_usbd_descriptor.c
 )
 
 set(MICROPY_SOURCE_DRIVERS

@@ -24,21 +24,16 @@
  * THE SOFTWARE.
  */
 
-#include "mp_usbd.h"
-#include "string.h"
-#include "tusb.h"
-#include "pico/unique_id.h"
+#ifndef MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_H
+#define MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_H
 
-void mp_usbd_port_get_serial_number(char *serial_buf) {
-    pico_unique_board_id_t id;
-    pico_get_unique_board_id(&id);
-    // convert to hex
-    int hexlen = sizeof(id.id) * 2;
-    MP_STATIC_ASSERT(hexlen <= USBD_DESC_STR_MAX);
-    for (int i = 0; i < hexlen; i += 2) {
-        static const char *hexdig = "0123456789abcdef";
-        serial_buf[i] = hexdig[id.id[i / 2] >> 4];
-        serial_buf[i + 1] = hexdig[id.id[i / 2] & 0x0f];
-    }
-    serial_buf[hexlen] = 0;
-}
+#include "py/obj.h"
+
+// Call instead of tud_task()
+void mp_usbd_task(void);
+
+// Function to be implemented in port code.
+// Can write a string up to USBD_DESC_STR_MAX characters long, plus terminating byte.
+extern void mp_usbd_port_get_serial_number(char *buf);
+
+#endif // MICROPY_INCLUDED_SHARED_TINYUSB_USBD_H

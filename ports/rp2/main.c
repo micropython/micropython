@@ -43,7 +43,7 @@
 #include "modrp2.h"
 #include "mpbthciport.h"
 #include "genhdr/mpversion.h"
-#include "usbd.h"
+#include "mp_usbd.h"
 
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
@@ -88,7 +88,6 @@ int main(int argc, char **argv) {
     #if MICROPY_HW_ENABLE_USBDEV
     bi_decl(bi_program_feature("USB REPL"))
     tusb_init();
-    usbd_reset_all(); // run now just in case usb initialization occurs early
     #endif
 
     #if MICROPY_PY_THREAD
@@ -161,9 +160,6 @@ int main(int argc, char **argv) {
         machine_pin_init();
         rp2_pio_init();
         machine_i2s_init0();
-        #if MICROPY_HW_ENABLE_USBDEV
-        usbd_reset_all();
-        #endif
 
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_hci_init();
