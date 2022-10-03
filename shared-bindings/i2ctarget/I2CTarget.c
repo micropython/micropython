@@ -159,7 +159,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_request(size_t n_args, const mp_obj_t *pos_
 
     bool forever = false;
     uint64_t timeout_end = 0;
-    if (timeout_ms == 0) {
+    if (timeout_ms <= 0) {
         forever = true;
     } else if (timeout_ms > 0) {
         timeout_end = common_hal_time_monotonic_ms() + timeout_ms;
