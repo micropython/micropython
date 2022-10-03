@@ -88,4 +88,6 @@ TAGS
 .venv
 .env
 
+# Uncrustify formatting
+*.uncrustify
 
