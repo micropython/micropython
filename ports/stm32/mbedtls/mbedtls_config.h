@@ -28,7 +28,6 @@
 
 // Enable mbedtls modules
 // #define MBEDTLS_ECP_C
-#define MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_KEY_EXCHANGE
 
 // Set MicroPython-specific options.
 #define MICROPY_MBEDTLS_CONFIG_BARE_METAL (1)

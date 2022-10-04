@@ -32,7 +32,6 @@
 // Enable mbedtls modules
 #define MBEDTLS_HAVEGE_C
 #define MBEDTLS_TIMING_C
-#define MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_KEY_EXCHANGE
 
 // Include common mbedtls configuration.
 #include "extmod/mbedtls/mbedtls_config_common.h"
