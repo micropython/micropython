@@ -13,11 +13,11 @@ MCU_SERIES_LOWER = $(shell echo $(MCU_SERIES) | tr '[:upper:]' '[:lower:]')
 
 include ../../py/mkenv.mk
 include $(BOARD_DIR)/mpconfigboard.mk
-include variants/$(MCU_SERIES_LOWER)/mpconfigmcu.mk
+include mcu/$(MCU_SERIES_LOWER)/mpconfigmcu.mk
 
 # Qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
-QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h variants/$(MCU_SERIES_LOWER)/mpconfigmcu.h
+QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h mcu/$(MCU_SERIES_LOWER)/mpconfigmcu.h
 
 FROZEN_MANIFEST ?= boards/manifest.py
 
@@ -31,7 +31,7 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
-INC += -Ivariants/$(MCU_SERIES_LOWER)
+INC += -Imcu/$(MCU_SERIES_LOWER)
 INC += -I$(TOP)/lib/cmsis/inc
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/utils/include
@@ -48,7 +48,7 @@ INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include/pio
 INC += -I$(TOP)/lib/tinyusb/src
 
 MAKE_PIN_AF = boards/make-pin-af.py
-PIN_AF_TABLE_CSV = variants/$(MCU_SERIES_LOWER)/pin-af-table.csv
+PIN_AF_TABLE_CSV = mcu/$(MCU_SERIES_LOWER)/pin-af-table.csv
 GEN_PIN_AF = pin_af_table.c
 
 MAKE_PINS = boards/make-pins.py
@@ -87,7 +87,7 @@ LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
 SRC_C += \
-	variants/$(MCU_SERIES_LOWER)/clock_config.c \
+	mcu/$(MCU_SERIES_LOWER)/clock_config.c \
 	help.c \
 	machine_adc.c \
  	machine_bitstream.c \
