@@ -1,0 +1,45 @@
+Device is not initialized
+True
+CAN(tx=4, rx=5, baudrate=500000kb, mode=LOOPBACK, loopback=1)
+False
+True
+[0, 0, 0, 0, 0, 0, 0]
+True [0, 0, 0, 0, 0, 0, 1]
+(123, False, False, b'A')
+(2047, False, False, b'B')
+(0, False, False, b'C')
+passed
+[42, False, False, <memoryview>] 1 bytearray(b'E\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+[42, False, False, <memoryview>] 1 bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+TypeError
+ValueError
+TypeError
+ValueError
+ValueError
+==== TEST extframe=True filter ====
+True [0, 0, 0, 0, 0, 0, 1]
+(257, True, False, b'G')
+False [0, 0, 0, 0, 0, 0, 0]
+==== TEST extframe=False filter ====
+True [0, 0, 0, 0, 0, 0, 1]
+(257, False, False, b'H')
+False [0, 0, 0, 0, 0, 0, 0]
+False [0, 0, 0, 0, 0, 0, 0]
+True [0, 0, 0, 0, 0, 0, 1]
+(257, False, False, b'J')
+False [0, 0, 0, 0, 0, 0, 0]
+==== TEST rx callbacks ====
+pending
+full
+overflow
+(257, False, False, b'K1')
+(257, False, False, b'K2')
+(257, False, False, b'K3')
+False
+==== TEST async send ====
+False
+(1, False, False, b'L')
+==== TEST rtr messages ====
+(1, False, True, b'')
+==== TEST errors ====
+OSError(116, 'ESP_ERR_TIMEOUT')
