@@ -141,9 +141,6 @@
 //#ifndef MICROPY_PY_LVGL
 //#define MICROPY_PY_LVGL             (1)
 //#endif
-#ifndef MICROPY_PY_LODEPNG
-#define MICROPY_PY_LODEPNG          (1)
-#endif
 #ifndef MICROPY_PY_RK043FN48H
 #define MICROPY_PY_RK043FN48H       (1)
 #endif

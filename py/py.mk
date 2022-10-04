@@ -52,29 +52,6 @@ LVGL_MPY: $(LVGL_MPY)
 CFLAGS_MOD += -Wno-unused-function
 SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR)/src $(LVGL_DIR)/examples $(LVGL_GENERIC_DRV_DIR) -type f -name "*.c") $(LVGL_MPY))
 
-#lodepng
-LODEPNG_DIR = $(TOP)/lib/lv_bindings/driver/png/lodepng
-MP_LODEPNG_C = $(TOP)/lib/lv_bindings/driver/png/mp_lodepng.c
-ALL_LODEPNG_SRC = $(shell find $(LODEPNG_DIR) -type f)
-LODEPNG_MODULE = $(BUILD)/lodepng/mp_lodepng.c
-LODEPNG_C = $(BUILD)/lodepng/lodepng.c
-LODEPNG_PP = $(BUILD)/lodepng/lodepng.pp.c
-INC += -I$(LODEPNG_DIR)
-LODEPNG_CFLAGS += -DLODEPNG_NO_COMPILE_ENCODER -DLODEPNG_NO_COMPILE_DISK -DLODEPNG_NO_COMPILE_ALLOCATORS
-CFLAGS_MOD += $(LODEPNG_CFLAGS)
-
-$(LODEPNG_MODULE): $(ALL_LODEPNG_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py 
-	$(ECHO) "LODEPNG-GEN $@"
-	$(Q)mkdir -p $(dir $@)
-	$(Q)$(CPP) $(LODEPNG_CFLAGS) -DPYCPARSER -x c $(INC) -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(LODEPNG_DIR)/lodepng.h > $(LODEPNG_PP)
-	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -M lodepng -E $(LODEPNG_PP) $(LODEPNG_DIR)/lodepng.h > $@
-
-$(LODEPNG_C): $(LODEPNG_DIR)/lodepng.cpp $(LODEPNG_DIR)/*
-	$(Q)mkdir -p $(dir $@)
-	cp $< $@
-
-SRC_MOD += $(subst $(TOP)/,,$(LODEPNG_C) $(MP_LODEPNG_C) $(LODEPNG_MODULE))
-
 # External modules written in C.
 ifneq ($(USER_C_MODULES),)
 # pre-define USERMOD variables as expanded so that variables are immediate

@@ -36,7 +36,6 @@
 #endif
 
 #define MICROPY_PY_LVGL                         (1)
-#define MICROPY_PY_LODEPNG                      (1)
 
 // Board and hardware specific configuration
 #define MICROPY_HW_MCU_NAME                     "RP2040"

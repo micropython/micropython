@@ -31,6 +31,9 @@ FROZEN_MANIFEST ?= boards/manifest.py
 # Used by machine.bootloader().
 MBOOT_TEXT0_ADDR ?= 0x08000000
 
+# Disable TINY TTF, since build fails on stm32
+CFLAGS_MOD += -DLV_USE_TINY_TTF=0
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 

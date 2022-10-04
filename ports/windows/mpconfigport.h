@@ -188,7 +188,6 @@ extern const struct _mp_print_t mp_stderr_print;
 //LVGL binding relative
 #define MICROPY_PY_LVGL             (1)
 #define MICROPY_PY_LVGL_SDL         (1)
-#define MICROPY_PY_LVGL_LODEPNG     (1)
 
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_os;
@@ -196,7 +195,6 @@ extern const struct _mp_obj_module_t mp_module_uos_vfs;
 extern const struct _mp_obj_module_t mp_module_lvgl;
 extern const struct _mp_obj_module_t mp_module_lvindev;
 extern const struct _mp_obj_module_t mp_module_SDL;
-extern const struct _mp_obj_module_t mp_module_lodepng;
 
 #if MICROPY_PY_LVGL
 #ifndef MICROPY_INCLUDED_PY_MPSTATE_H
@@ -211,11 +209,6 @@ extern const struct _mp_obj_module_t mp_module_lodepng;
     #define MICROPY_PY_LVGL_SDL_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_SDL), (mp_obj_t)&mp_module_SDL },
     #else
     #define MICROPY_PY_LVGL_SDL_DEF
-    #endif
-    #if MICROPY_PY_LVGL_LODEPNG
-    #define MICROPY_PY_LVGL_LODEPNG_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_lodepng), (mp_obj_t)&mp_module_lodepng },
-    #else
-    #define MICROPY_PY_LVGL_LODEPNG_DEF
     #endif
 #else
     #define LV_ROOTS

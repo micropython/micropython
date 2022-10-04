@@ -60,22 +60,21 @@ To test you can open up the REPL with:
 
 ### ESP32 port
 
-Please set `ESPIDF` parameter for the esp-idf install dir.
-It needs to match Micropython expected esp-idf, otherwise a warning will be displayed (and build will probably fail)
+Please run `esp-idf/export.sh` from your ESP-IDF installation directory as explained in the [Micropython ESP32 Getting Started documentation](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/#get-started-export)  
+ESP-IDF version needs to match Micropython expected esp-idf, otherwise a warning will be displayed (and build will probably fail)
 For more details refer to [Setting up the toolchain and ESP-IDF](https://github.com/lvgl/lv_micropython/blob/master/ports/esp32/README.md#setting-up-the-toolchain-and-esp-idf)
 
-When using IL9341 driver, the color depth and swap mode need to be set to match ILI9341. This can be done from the command line.
+When using IL9341 driver, the color depth need to be set to match ILI9341. This can be done from the command line.
 Here is the command to build ESP32 + LVGL which is compatible with ILI9341 driver:
 
 ```
 make -C mpy-cross
-make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=1" BOARD=GENERIC_SPIRAM deploy
+make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16" BOARD=GENERIC_SPIRAM deploy
 ```
 
 Explanation about the paramters:
-- `LV_CFLAGS` are used to override color depth and swap mode, for ILI9341 compatibility.
+- `LV_CFLAGS` are used to override color depth, for ILI9341 compatibility.
   - `LV_COLOR_DEPTH=16` is needed if you plan to use the ILI9341 driver.
-  - `LV_COLOR_16_SWAP=1` is needed if you plan to use the [Pure Micropython Display Driver](https://blog.lvgl.io/2019-08-05/micropython-pure-display-driver).
 - `BOARD` - I use WROVER board with SPIRAM. You can choose other boards from `ports/esp32/boards/` directory.
 - `deploy` - make command will create ESP32 port of Micropython, and will try to deploy it through USB-UART bridge.
 
@@ -83,9 +82,6 @@ For more details please refer to [Micropython ESP32 README](https://github.com/m
 
 ### JavaScript port
 
-<<<<<<< HEAD
-# This is still a work in progress
-=======
 Refer to the README of the `lvgl_javascript` branch: https://github.com/lvgl/lv_micropython/tree/lvgl_javascript_v8#javascript-port
 
 ### Raspberry Pi Pico port
@@ -104,9 +100,8 @@ This port uses [Micropython infrastructure for C modules](https://docs.micropyth
 If you experience unstable behaviour, it is worth checking the value of *MICROPY_HW_FLASH_STORAGE_BASE* against the value of *__flash_binary_end* from the firmware.elf.map file.
 If the storage base is lower than the binary end, parts of the firmware will be overwritten when the micropython filesystem is initialised.
 
-## Super Simple Example
+Refer to the README of the `PyDive_javascript` branch: https://github.com/lvgl/lv_micropython/tree/lvgl_javascript_v8#javascript-port
 
-First, LVGL needs to be imported and initialized
 
 ```python
 import lvgl as lv
@@ -147,16 +142,18 @@ Here is an alternative example, for registering ILI9341 drivers on Micropython E
 
 ```python
 import lvgl as lv
->>>>>>> 2e880fb7ebf131f5d359a5d1415d8346c145f3da
 
-Refer to the README of the `PyDive_javascript` branch: https://github.com/lvgl/lv_micropython/tree/lvgl_javascript_v8#javascript-port
+# Import ILI9341 driver and initialized it
+
+from ili9341 import ili9341
+disp = ili9341()
 
 
 
 More info about LVGL:
 - Website https://lvgl.io
 - GitHub: https://github.com/lvgl/lvgl
-- Documentation: https://docs.lvgl.io/master/get-started/micropython.html
+- Documentation: https://docs.lvgl.io/master/get-started/bindings/micropython.html
 - Examples: https://docs.lvgl.io/master/examples.html
 - More examples: https://github.com/lvgl/lv_binding_micropython/tree/master/examples
 

@@ -233,6 +233,14 @@ CFLAGS_MOD += $(FREETYPE_CFLAGS_MOD) -DMICROPY_FREETYPE=1
 LDFLAGS_MOD += $(FREETYPE_LDFLAGS_MOD)
 endif
 
+FFMPEG_LIBS := libavformat libavcodec libswscale libavutil
+FFMPEG_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags $(FFMPEG_LIBS))
+FFMPEG_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   $(FFMPEG_LIBS))
+ifneq ($(FFMPEG_LDFLAGS_MOD),)
+CFLAGS_MOD += $(FFMPEG_CFLAGS_MOD) -DMICROPY_FFMPEG=1
+LDFLAGS_MOD += $(FFMPEG_LDFLAGS_MOD)
+endif
+
 # source files
 SRC_C += \
 	main.c \
