@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Last-Translator: Bill Sideris <bill88t@feline.gr>\n"
 "Language-Team: none\n"
 "Language: el\n"
 "MIME-Version: 1.0\n"
@@ -789,8 +789,7 @@ msgstr "Δεν μπορούν να αλλάξουν οι USB συσκευές τ
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
-msgstr ""
-"Δεν μπορεί να δημιουργηθεί νέο Adapter; χρησιμοποιείστε _bleio.adapter;"
+msgstr "Δεν μπορεί να δημιουργηθεί νέο Adapter; χρησιμοποιείστε _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
