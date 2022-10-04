@@ -42,7 +42,13 @@
 #include "supervisor/flash.h"
 #include "supervisor/usb.h"
 
-STATIC const esp_partition_t *_partition[2];
+#if CIRCUITPY_STORAGE_EXTEND
+#define PARTITION_NUM (2)
+#else
+#define PARTITION_NUM (1)
+#endif
+
+STATIC const esp_partition_t *_partition[PARTITION_NUM];
 
 // TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
 #define SECTOR_SIZE 4096
@@ -53,9 +59,11 @@ void supervisor_flash_init(void) {
     _partition[0] = esp_partition_find_first(ESP_PARTITION_TYPE_DATA,
         ESP_PARTITION_SUBTYPE_DATA_FAT,
         NULL);
+    #if CIRCUITPY_STORAGE_EXTEND
     _partition[1] = esp_partition_find_first(ESP_PARTITION_TYPE_APP,
         ESP_PARTITION_SUBTYPE_APP_OTA_1,
         NULL);
+    #endif
 }
 
 uint32_t supervisor_flash_get_block_size(void) {
@@ -63,7 +71,11 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
+    #if CIRCUITPY_STORAGE_EXTEND
     return (_partition[0]->size + _partition[1]->size) / FILESYSTEM_BLOCK_SIZE;
+    #else
+    return _partition[0]->size / FILESYSTEM_BLOCK_SIZE;
+    #endif
 }
 
 void port_internal_flash_flush(void) {
@@ -74,6 +86,7 @@ mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t n
     uint32_t offset = block * FILESYSTEM_BLOCK_SIZE;
     uint32_t read_total = num_blocks * FILESYSTEM_BLOCK_SIZE;
 
+    #if CIRCUITPY_STORAGE_EXTEND
     if (offset > _partition[0]->size) {
         // only read from partition 1
         esp_partition_read(_partition[1], (offset - _partition[0]->size), dest, read_total);
@@ -83,7 +96,9 @@ mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t n
         uint32_t read_1 = read_total - read_0;
         esp_partition_read(_partition[0], offset, dest, read_0);
         esp_partition_read(_partition[1], 0, (dest + read_0), read_1);
-    } else {
+    } else
+    #endif
+    {
         // only read from partition 0
         esp_partition_read(_partition[0], offset, dest, read_total);
     }
@@ -115,6 +130,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
             block++;
         }
 
+        #if CIRCUITPY_STORAGE_EXTEND
         if (sector_offset > _partition[0]->size) {
             // only write to partition 1
             esp_partition_erase_range(_partition[1], sector_offset - _partition[0]->size, SECTOR_SIZE);
@@ -127,7 +143,9 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
             esp_partition_write(_partition[0], sector_offset, _cache, write_0);
             esp_partition_erase_range(_partition[1], 0, write_1);
             esp_partition_write(_partition[1], 0, _cache + write_0, write_1);
-        } else {
+        } else
+        #endif
+        {
             // only write to partition 0
             esp_partition_erase_range(_partition[0], sector_offset, SECTOR_SIZE);
             esp_partition_write(_partition[0], sector_offset, _cache, SECTOR_SIZE);
