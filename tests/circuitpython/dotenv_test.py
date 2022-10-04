@@ -1,6 +1,6 @@
 import dotenv
 
-FILE = "dotenv_test.env"
+FILE = __file__.rsplit(".", 1)[0] + ".env"
 
 print("e0", dotenv.get_key(FILE, "e0"))
 print("e1", dotenv.get_key(FILE, "e1"))
