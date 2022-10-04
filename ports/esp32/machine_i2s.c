@@ -533,7 +533,8 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
 
     machine_i2s_obj_t *self;
     if (MP_STATE_PORT(machine_i2s_obj)[port] == NULL) {
-        self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
+        self = m_new_obj_with_finaliser(machine_i2s_obj_t);
+        self->base.type = &machine_i2s_type;
         MP_STATE_PORT(machine_i2s_obj)[port] = self;
         self->port = port;
     } else {
@@ -688,6 +689,7 @@ STATIC const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write),           MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&machine_i2s_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),             MP_ROM_PTR(&machine_i2s_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__),         MP_ROM_PTR(&machine_i2s_deinit_obj) },
 
     // Static method
     { MP_ROM_QSTR(MP_QSTR_shift),           MP_ROM_PTR(&machine_i2s_shift_obj) },
