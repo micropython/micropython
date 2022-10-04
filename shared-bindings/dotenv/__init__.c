@@ -40,9 +40,13 @@
 //|    A subset of the CPython `dotenv library <https://saurabh-kumar.com/python-dotenv/>`_. It does
 //|    not support variables or double quotes.
 //|
-//|    The simplest way to define keys and values is to put them in single quotes. \ and ' are
-//|    escaped by \ in single quotes. Newlines can occur in quotes for multiline values. Comments
-//|    start with # and apply for the rest of the line.
+//|    Keys and values may be put in single quotes.
+//|    ``\`` and ``'`` are escaped by ``\`` in single quotes. Newlines can occur in quotes for multiline values.
+//|    Comments start with ``#`` and apply for the rest of the line.
+//|    A ``#`` immediately following an ``=`` is part of the value, not the start of a comment,
+//|    and a ``#`` embedded in a value without whitespace will be part of that value.
+//|    This corresponds to how assignments and comments work in most Unix shells.
+//|
 //|
 //|    File format example:
 //|
@@ -58,6 +62,9 @@
 //|        multiline = 'hello
 //|        world
 //|        how are you?'
+//|        # The #'s below will be included in the value. They do not start a comment.
+//|        key6=#value
+//|        key7=abc#def
 //|
 //| """
 //|
