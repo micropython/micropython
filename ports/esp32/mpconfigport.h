@@ -128,7 +128,6 @@
 
 #define MICROPY_PY_LVGL                     (1)
 #define MICROPY_PY_ESPIDF                   (1)
-#define MICROPY_PY_LODEPNG                  (1)
 #define MICROPY_PY_RTCH                     (1)
 
 // fatfs configuration

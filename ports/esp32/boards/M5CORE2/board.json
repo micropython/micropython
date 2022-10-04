@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "https://docs.m5stack.com/en/core/core2",
+    "features": [
+        "BLE",
+        "WiFi",
+        "SPIRAM",
+        "IMU",
+        "RTC",
+        "PMU",
+        "SDCard",
+        "Microphone",
+        "USB-C"
+    ],
+    "images": [
+        "m5core2.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "M5Stack Core2",
+    "thumbnail": "",
+    "url": "https://m5stack.com/",
+    "vendor": "M5 Stack"
+}

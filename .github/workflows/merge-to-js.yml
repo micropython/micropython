@@ -22,11 +22,11 @@ jobs:
         uses: devmasx/merge-branch@v1.1.0
         with:
           type: now
-          target_branch: 'lvgl_javascript_v8'
+          target_branch: 'lvgl_javascript_v9'
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Trigger Javascript port build
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: Build Javascript v8 port
+          workflow: Build Javascript v9 port
           token: ${{ secrets.LVGL_BOT_TOKEN }}

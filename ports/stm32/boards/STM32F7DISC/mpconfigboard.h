@@ -82,7 +82,8 @@ void STM32F7DISC_board_early_init(void);
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
 
 // Ethernet via RMII
-#define MICROPY_HW_ETH_MDC          (pin_C1)
+// embeddedt: the line below is commented out to allow building without LwIP
+//#define MICROPY_HW_ETH_MDC          (pin_C1)
 #define MICROPY_HW_ETH_MDIO         (pin_A2)
 #define MICROPY_HW_ETH_RMII_REF_CLK (pin_A1)
 #define MICROPY_HW_ETH_RMII_CRS_DV  (pin_A7)

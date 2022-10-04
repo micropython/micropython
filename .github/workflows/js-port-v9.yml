@@ -1,10 +1,10 @@
-name: Build Javascript v8 port
+name: Build Javascript v9 port
 env:
   EM_VERSION: 2.0.31
   EM_CACHE_FOLDER: 'emsdk-cache'
 on:
   push:
-    branches: [ lvgl_javascript_v8 ]
+    branches: [ lvgl_javascript_v9 ]
   workflow_dispatch:
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           persist-credentials: false
-          ref: 'lvgl_javascript_v8'
+          ref: 'lvgl_javascript_v9'
           fetch-depth: 0
       - name: Setup cache
         id: cache-system-libraries
