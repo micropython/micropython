@@ -29,11 +29,44 @@
 
 #include "shared-bindings/dotenv/__init__.h"
 
-#include "extmod/vfs.h"
-#include "extmod/vfs_fat.h"
 #include "py/mpstate.h"
 #include "py/objstr.h"
 #include "supervisor/filesystem.h"
+
+#if defined(UNIX)
+typedef FILE *file_arg;
+STATIC bool open_file(const char *name, file_arg *active_file) {
+    FILE *result = fopen(name, "r");
+    if (result) {
+        *active_file = result;
+    }
+    return result != NULL;
+}
+STATIC void close_file(file_arg *active_file) {
+    fclose(*active_file);
+}
+STATIC uint8_t get_next_character(file_arg *active_file) {
+    int value = fgetc(*active_file);
+    if (value == EOF) {
+        return 0;
+    }
+    return value;
+}
+STATIC void seek_minus_one(file_arg *active_file) {
+    fseek(*active_file, -1, SEEK_CUR);
+}
+#else
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
+typedef FIL file_arg;
+STATIC bool open_file(const char *name, file_arg *active_file) {
+    FATFS *fs = filesystem_circuitpy();
+    FRESULT result = f_open(fs, active_file, name, FA_READ);
+    return result == FR_OK;
+}
+STATIC void close_file(file_arg *active_file) {
+    // nothing
+}
 
 // Return 0 if there is no next character (EOF).
 STATIC uint8_t get_next_character(FIL *active_file) {
@@ -43,10 +76,14 @@ STATIC uint8_t get_next_character(FIL *active_file) {
     f_read(active_file, &character, 1, &quantity_read);
     return character;
 }
+STATIC void seek_minus_one(file_arg *active_file) {
+    f_lseek(active_file, f_tell(active_file) - 1);
+}
+#endif
 
 // Discard whitespace, except for newlines, returning the next character after the whitespace.
 // Return 0 if there is no next character (EOF).
-STATIC uint8_t consume_whitespace(FIL *active_file) {
+STATIC uint8_t consume_whitespace(file_arg *active_file) {
     uint8_t character;
     do {
         character = get_next_character(active_file);
@@ -56,7 +93,7 @@ STATIC uint8_t consume_whitespace(FIL *active_file) {
 
 // Starting at the start of a new line, determines if the key matches the given
 // key. File pointer is set to be just before the = after the key.
-STATIC bool key_matches(FIL *active_file, const char *key) {
+STATIC bool key_matches(file_arg *active_file, const char *key) {
     uint8_t character;
     character = consume_whitespace(active_file);
     if (character == 0) {
@@ -99,7 +136,7 @@ STATIC bool key_matches(FIL *active_file, const char *key) {
     }
     if (character == '=' || character == '\n' || character == '#' || character == 0) {
         // Rewind one so the value, if any, can be found.
-        f_lseek(active_file, f_tell(active_file) - 1);
+        seek_minus_one(active_file);
     } else {
         // We're followed by something else that is invalid syntax.
         matches = false;
@@ -108,7 +145,7 @@ STATIC bool key_matches(FIL *active_file, const char *key) {
     return matches && key_pos == key_len;
 }
 
-STATIC bool next_line(FIL *active_file) {
+STATIC bool next_line(file_arg *active_file) {
     uint8_t character;
     bool quoted = false;
     bool escaped = false;
@@ -135,7 +172,7 @@ STATIC bool next_line(FIL *active_file) {
     return character != 0;
 }
 
-STATIC mp_int_t read_value(FIL *active_file, char *value, size_t value_len) {
+STATIC mp_int_t read_value(file_arg *active_file, char *value, size_t value_len) {
     uint8_t character;
     // Consume spaces before "=", and get first character of interest.
     character = consume_whitespace(active_file);
@@ -184,7 +221,7 @@ STATIC mp_int_t read_value(FIL *active_file, char *value, size_t value_len) {
         if (!quoted && (character == '\n' || (character == '#' && !first_char))) {
             if (character == '\n') {
                 // Rewind one so the next_line can find the \n.
-                f_lseek(active_file, f_tell(active_file) - 1);
+                seek_minus_one(active_file);
             }
             break;
         }
@@ -208,10 +245,8 @@ STATIC mp_int_t read_value(FIL *active_file, char *value, size_t value_len) {
 }
 
 mp_int_t dotenv_get_key(const char *path, const char *key, char *value, mp_int_t value_len) {
-    FIL active_file;
-    FATFS *fs = filesystem_circuitpy();
-    FRESULT result = f_open(fs, &active_file, path, FA_READ);
-    if (result != FR_OK) {
+    file_arg active_file;
+    if (!open_file(path, &active_file)) {
         return -1;
     }
 
@@ -224,7 +259,7 @@ mp_int_t dotenv_get_key(const char *path, const char *key, char *value, mp_int_t
 
         read_ok = next_line(&active_file);
     }
-    f_close(&active_file);
+    close_file(&active_file);
     return actual_value_len;
 }
 
