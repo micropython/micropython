@@ -37,7 +37,8 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 
-#include "components/spi_flash/include/esp_partition.h"
+#include "esp_ota_ops.h"
+#include "esp_partition.h"
 
 #include "supervisor/flash.h"
 #include "supervisor/usb.h"
@@ -60,9 +61,7 @@ void supervisor_flash_init(void) {
         ESP_PARTITION_SUBTYPE_DATA_FAT,
         NULL);
     #if CIRCUITPY_STORAGE_EXTEND
-    _partition[1] = esp_partition_find_first(ESP_PARTITION_TYPE_APP,
-        ESP_PARTITION_SUBTYPE_APP_OTA_1,
-        NULL);
+    _partition[1] = esp_ota_get_next_update_partition(NULL);
     #endif
 }
 
