@@ -64,7 +64,19 @@ uint32_t machine_pin_open_drain_mask[4];
 
 STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
-    mp_printf(print, "GPIO P%c%02u", "ABCD"[self->id / 32], self->id % 32);
+    char *mode_str;
+    char *pull_str[] = {"PULL_OFF", "PULL_UP", "PULL_DOWN"};
+    if (GPIO_IS_OPEN_DRAIN(self->id)) {
+        mode_str = "OPEN_DRAIN";
+    } else {
+        mode_str = (mp_hal_get_pin_direction(self->id) == GPIO_DIRECTION_OUT) ? "OUT" : "IN";
+    }
+
+    mp_printf(print, "Pin(\"%s\", mode=%s, pull=%s, GPIO=P%c%02u)",
+        self->name,
+        mode_str,
+        pull_str[mp_hal_get_pull_mode(self->id)],
+        "ABCD"[self->id / 32], self->id % 32);
 }
 
 STATIC void pin_validate_drive(bool strength) {

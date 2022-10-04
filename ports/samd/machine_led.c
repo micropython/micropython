@@ -39,7 +39,7 @@ extern mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
 
 STATIC void machine_led_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_led_obj_t *self = self_in;
-    mp_printf(print, "LED(%u)", self->id);
+    mp_printf(print, "LED(\"%s\")", self->name);
 }
 
 // constructor(id, ...)
