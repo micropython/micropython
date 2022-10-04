@@ -68,7 +68,7 @@ class Pins:
             if self.board_leds:
                 pins_file.write("\nconst machine_led_obj_t machine_led_obj[] = {\n")
                 for pin in self.board_leds:
-                    pins_file.write("    {{&machine_pin_type}, ")
+                    pins_file.write("    {{&machine_led_type}, ")
                     pins_file.write(pin[0] + ', "' + pin[1])
                     pins_file.write('"},\n')
                 pins_file.write("};\n")

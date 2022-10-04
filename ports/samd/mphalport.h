@@ -125,7 +125,17 @@ static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
 }
 
 static inline unsigned int mp_hal_get_pin_direction(mp_hal_pin_obj_t pin) {
-    return (PORT->Group[pin / 32].DIR.reg & (1 << (pin % 32))) >> (pin % 32);
+    return (PORT->Group[pin / 32].DIR.reg & (1 << (pin % 32))) ?
+           GPIO_DIRECTION_OUT : GPIO_DIRECTION_IN;
+}
+
+static inline unsigned int mp_hal_get_pull_mode(mp_hal_pin_obj_t pin) {
+    bool pull_en = (PORT->Group[pin / 32].PINCFG[pin % 32].reg & PORT_PINCFG_PULLEN) != 0;
+    if (pull_en) {
+        return gpio_get_pin_level(pin) ? GPIO_PULL_UP : GPIO_PULL_DOWN;
+    } else {
+        return GPIO_PULL_OFF;
+    }
 }
 
 static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
