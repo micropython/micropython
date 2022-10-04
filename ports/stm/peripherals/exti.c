@@ -26,9 +26,6 @@
 
 #include <stdbool.h>
 #include "py/mpconfig.h"
-#include "py/gc.h"
-#include "py/obj.h"
-#include "py/runtime.h"
 
 #include "peripherals/exti.h"
 
@@ -128,7 +125,7 @@ void EXTI4_IRQHandler(void) {
 #endif
 void EXTI9_5_IRQHandler(void) {
     uint32_t pending = EXTI->PR;
-    for (uint i = 5; i <= 9; i++) {
+    for (uint8_t i = 5; i <= 9; i++) {
         if (pending & (1 << i)) {
             stm_exti_callback[i](i);
         }
@@ -137,7 +134,7 @@ void EXTI9_5_IRQHandler(void) {
 
 void EXTI15_10_IRQHandler(void) {
     uint32_t pending = EXTI->PR;
-    for (uint i = 10; i <= 15; i++) {
+    for (uint8_t i = 10; i <= 15; i++) {
         if (pending & (1 << i)) {
             stm_exti_callback[i](i);
         }

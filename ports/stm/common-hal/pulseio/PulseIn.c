@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <string.h>
 #include "py/mpconfig.h"
-#include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"

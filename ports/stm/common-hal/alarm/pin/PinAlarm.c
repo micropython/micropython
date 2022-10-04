@@ -27,8 +27,6 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/alarm/pin/PinAlarm.h"
-#include "shared-bindings/microcontroller/__init__.h"
-#include "shared-bindings/microcontroller/Pin.h"
 
 #include "peripherals/exti.h"
 
