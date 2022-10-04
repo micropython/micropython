@@ -330,6 +330,14 @@ void set_status_brightness(uint8_t level) {
     #endif
 }
 
+uint8_t get_status_brightness(void) {
+    #if CIRCUITPY_STATUS_LED
+    return rgb_status_brightness;
+    #else
+    return 0;
+    #endif
+}
+
 void init_rxtx_leds(void) {
     #if CIRCUITPY_DIGITALIO && defined(MICROPY_HW_LED_RX)
     common_hal_digitalio_digitalinout_construct(&rx_led, MICROPY_HW_LED_RX);

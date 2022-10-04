@@ -30,11 +30,8 @@
 #include "py/objstr.h"
 
 #include "shared/runtime/interrupt_char.h"
-#include "supervisor/shared/bluetooth/bluetooth.h"
 #include "supervisor/shared/display.h"
-#include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/reload.h"
-#include "supervisor/shared/stack.h"
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/workflow.h"
@@ -63,21 +60,6 @@
 //| the last exception name and location, and firmware version information.
 //| This object is the sole instance of `supervisor.StatusBar`."""
 
-//| def set_rgb_status_brightness(brightness: int) -> None:
-//|     """Set brightness of status RGB LED from 0-255. This will take effect
-//|     after the current code finishes and the status LED is used to show
-//|     the finish state."""
-//|     ...
-//|
-STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl) {
-    // This must be int. If cast to uint8_t first, will never raise a ValueError.
-    int brightness_int = mp_obj_get_int(lvl);
-    mp_arg_validate_int_range(brightness_int, 0, 255, MP_QSTR_brightness);
-    set_status_brightness((uint8_t)brightness_int);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_set_rgb_status_brightness);
-
 //| def reload() -> None:
 //|     """Reload the main Python code and run it (equivalent to hitting Ctrl-D at the REPL)."""
 //|     ...
@@ -87,21 +69,6 @@ STATIC mp_obj_t supervisor_reload(void) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
-
-//| def set_next_stack_limit(size: int) -> None:
-//|     """Set the size of the stack for the next vm run. If its too large, the default will be used."""
-//|     ...
-//|
-STATIC mp_obj_t supervisor_set_next_stack_limit(mp_obj_t size_obj) {
-    mp_int_t size = mp_obj_get_int(size_obj);
-
-    mp_arg_validate_int_min(size, 256, MP_QSTR_size);
-
-    set_next_stack_size(size);
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_next_stack_limit_obj, supervisor_set_next_stack_limit);
 
 //| def set_next_code_file(
 //|     filename: Optional[str],
@@ -278,21 +245,6 @@ STATIC mp_obj_t supervisor_get_previous_traceback(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_get_previous_traceback_obj, supervisor_get_previous_traceback);
 
-//| def disable_ble_workflow() -> None:
-//|     """Disable ble workflow until a reset. This prevents BLE advertising outside of the VM and
-//|     the services used for it."""
-//|     ...
-//|
-STATIC mp_obj_t supervisor_disable_ble_workflow(void) {
-    #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
-    mp_raise_NotImplementedError(NULL);
-    #else
-    supervisor_bluetooth_disable_workflow();
-    #endif
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_ble_workflow_obj, supervisor_disable_ble_workflow);
-
 //| def reset_terminal(x_pixels: int, y_pixels: int) -> None:
 //|     """Reset the CircuitPython serial terminal with new dimensions."""
 //|     ...
@@ -380,15 +332,12 @@ MP_DEFINE_CONST_FUN_OBJ_KW(supervisor_set_usb_identification_obj, 0, supervisor_
 
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
-    { MP_ROM_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&supervisor_set_rgb_status_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_runtime),  MP_ROM_PTR(&common_hal_supervisor_runtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_reload),  MP_ROM_PTR(&supervisor_reload_obj) },
     { MP_ROM_QSTR(MP_QSTR_RunReason),  MP_ROM_PTR(&supervisor_run_reason_type) },
-    { MP_ROM_QSTR(MP_QSTR_set_next_stack_limit),  MP_ROM_PTR(&supervisor_set_next_stack_limit_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_next_code_file),  MP_ROM_PTR(&supervisor_set_next_code_file_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_ms),  MP_ROM_PTR(&supervisor_ticks_ms_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_previous_traceback),  MP_ROM_PTR(&supervisor_get_previous_traceback_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disable_ble_workflow),  MP_ROM_PTR(&supervisor_disable_ble_workflow_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_terminal),  MP_ROM_PTR(&supervisor_reset_terminal_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_usb_identification),  MP_ROM_PTR(&supervisor_set_usb_identification_obj) },
     { MP_ROM_QSTR(MP_QSTR_status_bar),  MP_ROM_PTR(&shared_module_supervisor_status_bar_obj) },
