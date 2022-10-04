@@ -201,9 +201,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_rgb_status_brightness_obj, supe
 STATIC mp_obj_t supervisor_runtime_set_rgb_status_brightness(mp_obj_t self, mp_obj_t lvl) {
     #if CIRCUITPY_STATUS_LED
     // This must be int. If cast to uint8_t first, will never raise a ValueError.
-    int brightness_int = mp_obj_get_int(lvl);
-    mp_arg_validate_int_range(brightness_int, 0, 255, MP_QSTR_brightness);
-    set_status_brightness((uint8_t)brightness_int);
+    set_status_brightness((uint8_t)mp_arg_validate_int_range(mp_obj_get_int(lvl), 0, 255, MP_QSTR_brightness));
     #else
     mp_raise_NotImplementedError(NULL);
     #endif
