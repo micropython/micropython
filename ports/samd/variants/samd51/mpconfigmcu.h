@@ -28,10 +28,6 @@ unsigned long trng_random_u32(void);
 #define DFLL48M_FREQ                    (48000000)
 #define DPLLx_REF_FREQ                  (32768)
 
-// Use VfsLfs2's types for fileio/textio
-#define mp_type_fileio mp_type_vfs_lfs2_fileio
-#define mp_type_textio mp_type_vfs_lfs2_textio
-
 #define NVIC_PRIORITYGROUP_4            ((uint32_t)0x00000003)
 #define IRQ_PRI_PENDSV                  NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 7, 0)
 

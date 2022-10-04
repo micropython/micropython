@@ -20,10 +20,6 @@
 #define CPU_FREQ                        (48000000)
 #define DFLL48M_FREQ                    (48000000)
 
-// Use VfsLfs's types for fileio/textio
-#define mp_type_fileio mp_type_vfs_lfs1_fileio
-#define mp_type_textio mp_type_vfs_lfs1_textio
-
 #define IRQ_PRI_PENDSV                  ((1 << __NVIC_PRIO_BITS) - 1)
 
 static inline uint32_t raise_irq_pri(uint32_t pri) {

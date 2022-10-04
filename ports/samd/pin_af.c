@@ -1,10 +1,6 @@
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
- * This file provides and checks pin capabilities as required
- * for USART, I2C, SPI, PWM, ADC
- *
- *
  * The MIT License (MIT)
  *
  * Copyright (c) 2022 Robert Hammelrath
@@ -26,6 +22,10 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ *
+ * This file provides and checks pin capabilities as required
+ * for USART, I2C, SPI, PWM, ADC
+ *
  */
 
 #include <stdint.h>
