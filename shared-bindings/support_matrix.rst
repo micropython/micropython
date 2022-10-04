@@ -6,6 +6,11 @@ Module Support Matrix - Which Modules Are Available on Which Boards
 The following table lists the available built-in modules for each CircuitPython
 capable board, as well as each :term:`frozen module` included on it.
 
+You can filter this list by typing one or more module names or partial names into the search box.
+Only those boards that provide those modules will be listed.
+To exclude boards that provide a module, type a "-" in front of the module name.
+You can also type a regular expression as a filter.
+
 .. raw:: html
 
     <p id="support-matrix-filter-block"><input placeholder="Filter the boards by available modules" id="support-matrix-filter" type="text"/><span id="support-matrix-filter-num">(all)</span></p>

@@ -56,12 +56,22 @@ ALIASES_BRAND_NAMES = {
 }
 
 ADDITIONAL_MODULES = {
-    "fontio": "CIRCUITPY_DISPLAYIO",
-    "terminalio": "CIRCUITPY_DISPLAYIO",
+    "_asyncio": "MICROPY_PY_UASYNCIO",
     "adafruit_bus_device": "CIRCUITPY_BUSDEVICE",
     "adafruit_pixelbuf": "CIRCUITPY_PIXELBUF",
+    "array": "CIRCUITPY_ARRAY",
+    # always available, so depend on something that's always 1.
+    "builtins": "CIRCUITPY",
+    "collections": "CIRCUITPY_COLLECTIONS",
+    "fontio": "CIRCUITPY_DISPLAYIO",
+    "io": "CIRCUITPY_IO",
+    "select": "MICROPY_PY_USELECT_SELECT",
+    "terminalio": "CIRCUITPY_DISPLAYIO",
+    "sys": "CIRCUITPY_SYS",
     "usb": "CIRCUITPY_USB_HOST",
 }
+
+MODULES_NOT_IN_SHARED_BINDINGS = ["_asyncio", "array", "binascii", "builtins", "collections", "errno", "json", "re", "select", "sys", "ulab"]
 
 FROZEN_EXCLUDES = ["examples", "docs", "tests", "utils", "conf.py", "setup.py"]
 """Files and dirs at the root of a frozen directory that should be ignored.
@@ -82,7 +92,7 @@ def get_shared_bindings():
     """ Get a list of modules in shared-bindings based on folder names.
     """
     shared_bindings_dir = get_circuitpython_root_dir() / "shared-bindings"
-    return [item.name for item in shared_bindings_dir.iterdir()] + ["binascii", "errno", "json", "re", "ulab"]
+    return [item.name for item in shared_bindings_dir.iterdir()] + MODULES_NOT_IN_SHARED_BINDINGS
 
 
 def get_board_mapping():

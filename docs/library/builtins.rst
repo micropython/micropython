@@ -1,8 +1,11 @@
 :mod:`builtins` -- builtin functions and exceptions
 ===================================================
 
+..  module:: builtins
+    :synopsis: builtin Python functions
+
 All builtin functions and exceptions are described here. They are also
-available via ``builtins`` module.
+available via the ``builtins`` module.
 
 For more information about built-ins, see the following CPython documentation:
 
