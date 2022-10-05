@@ -1206,11 +1206,15 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             if (*s == '.') {
                 s++;
                 s = str_to_int(s, stop, &precision);
+                if (precision == -1) {
+                    goto invalid_format_specifier;
+                }
             }
             if (istype(*s)) {
                 type = *s++;
             }
             if (*s) {
+            invalid_format_specifier:
                 #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                 terse_str_format_value_error();
                 #else

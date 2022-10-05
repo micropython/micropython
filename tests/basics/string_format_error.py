@@ -88,3 +88,19 @@ try:
     '{:X}'.format('zz')
 except ValueError:
     print('ValueError')
+
+# missing precision
+try:
+    '{:.}'.format(2)
+except ValueError:
+    print('ValueError')
+
+try:
+    '{:3.}'.format(2)
+except ValueError:
+    print('ValueError')
+
+try:
+    '{:3.f}'.format(2)
+except ValueError:
+    print('ValueError')
