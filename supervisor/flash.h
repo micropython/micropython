@@ -50,4 +50,8 @@ void supervisor_flash_init_vfs(struct _fs_user_mount_t *vfs);
 void supervisor_flash_flush(void);
 void supervisor_flash_release_cache(void);
 
+void supervisor_flash_set_extended(bool extended);
+bool supervisor_flash_get_extended(void);
+void supervisor_flash_update_extended(void);
+
 #endif  // MICROPY_INCLUDED_SUPERVISOR_FLASH_H
