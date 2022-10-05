@@ -119,30 +119,45 @@ def argparse_mount():
 
 def argparse_repl():
     cmd_parser = argparse.ArgumentParser(description="connect to given device")
-    cmd_parser.add_argument("--capture", type=str, required=False, help="TODO")
-    cmd_parser.add_argument("--inject-code", type=str, required=False, help="TODO")
-    cmd_parser.add_argument("--inject-file", type=str, required=False, help="TODO")
+    cmd_parser.add_argument(
+        "--capture",
+        type=str,
+        required=False,
+        help="saves a copy of the REPL session to the specified path",
+    )
+    cmd_parser.add_argument(
+        "--inject-code", type=str, required=False, help="code to be run when Ctrl-J is pressed"
+    )
+    cmd_parser.add_argument(
+        "--inject-file",
+        type=str,
+        required=False,
+        help="path to file to be run when Ctrl-K is pressed",
+    )
     return cmd_parser
 
 
 def argparse_eval():
     cmd_parser = argparse.ArgumentParser(description="evaluate and print the string")
-    _bool_flag(cmd_parser, "follow", "f", True, "TODO")
     cmd_parser.add_argument("expr", nargs=1, help="expression to execute")
     return cmd_parser
 
 
 def argparse_exec():
     cmd_parser = argparse.ArgumentParser(description="execute the string")
-    _bool_flag(cmd_parser, "follow", "f", True, "TODO")
+    _bool_flag(
+        cmd_parser, "follow", "f", True, "follow output until the expression completes (default)"
+    )
     cmd_parser.add_argument("expr", nargs=1, help="expression to execute")
     return cmd_parser
 
 
 def argparse_run():
     cmd_parser = argparse.ArgumentParser(description="run the given local script")
-    _bool_flag(cmd_parser, "follow", "f", False, "TODO")
-    cmd_parser.add_argument("path", nargs=1, help="expression to execute")
+    _bool_flag(
+        cmd_parser, "follow", "f", True, "follow output until the script completes (default)"
+    )
+    cmd_parser.add_argument("path", nargs=1, help="path to script to execute")
     return cmd_parser
 
 
