@@ -19,3 +19,5 @@ space_after_key=value
 space_after_key_before_value=value
 quoted_then_comment=value
 hash_with_spaces=#value value
+aa🐍bb=key with emoji
+value_with_emoji=aa🐍bb
