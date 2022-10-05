@@ -204,7 +204,7 @@ def do_exec(state, args):
 
 def do_eval(state, args):
     buf = "print(" + args.expr[0] + ")"
-    _do_execbuffer(state, buf, args.follow)
+    _do_execbuffer(state, buf, True)
 
 
 def do_run(state, args):

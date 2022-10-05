@@ -61,6 +61,7 @@ def do_repl(state, args):
         print('Capturing session to file "%s"' % capture_file)
         capture_file = open(capture_file, "wb")
     if code_to_inject is not None:
+        code_to_inject = bytes(code_to_inject.replace("\\n", "\r\n"), "utf8")
         print("Use Ctrl-J to inject", code_to_inject)
     if file_to_inject is not None:
         print('Use Ctrl-K to inject file "%s"' % file_to_inject)
