@@ -633,12 +633,11 @@ The default devices at the board are:
 Scripts for creating the pin assignment tables
 ----------------------------------------------
 
-The tables shown above were created with small Python scripts running at the target board:
-
-SAMD21 script::
+The tables shown above were created with small a Python script running at the target board::
 
   from samd import pininfo
   from machine import Pin
+  import os
 
   def print_entry(e, txt):
       print(txt, end=": ")
@@ -647,66 +646,36 @@ SAMD21 script::
       else:
           print("%d/%d" % (e >> 4, e & 0x0f), end="")
 
-  def get_pininfo(pin):
+  def print_pininfo(pin):
       p = Pin(pin)
       info = pininfo(p)
 
       print("%3d" % pin, end=" ")
-      print(repr(p), end="")
-      print(" %12s" % info[0], end="")
-      print(" IRQ:%2s" % (info[1] if info[1] != 255 else "-"), end="")
-      print(" ADC:%2s" % (info[2] if info[2] != 255 else "-"), end="")
-      print_entry(info[3], " Serial1")
-      print_entry(info[4], " Serial2")
-      print_entry(info[5], " PWM1" if (info[5] >> 4) < 3 else "   TC")
-      print_entry(info[6], " PWM2")
-      print()
-
-  def table(num=64):
-      for i in range(num):
-          try:
-              get_pininfo(i)
-          except:
-              pass
-
-  table()  
-
-
-SAMD51 script::
-
-  from samd import pininfo
-  from machine import Pin
-
-  def print_entry(e, txt):
-      print(txt, end=":")
-      if e == 255:
-          print(" - ", end="")
-      else:
-          print("%d/%d" % (e >> 4, e & 0x0f), end="")
-
-  def get_pininfo(pin):
-      p = Pin(pin)
-      info = pininfo(p)
-
-      print("%3d" % pin, end=" ")
-      print(repr(p), end="")
+      print(repr(p)[-5:-1], end="")
+      # print("P%c%02d" % ("ABCD"[pin // 32], pin % 32), end="")
       print(" %12s" % info[0], end="")
       print(" IRQ:%2s" % (info[1] if info[1] != 255 else "-"), end="")
       print(" ADC0:%2s" % (info[2] if info[2] != 255 else "-"), end="")
-      print(" ADC1:%2s" % (info[3] if info[3] != 255 else "-"), end="")
-      print_entry(info[4], " Serial1")
-      print_entry(info[5], " Serial2")
-      print_entry(info[6], " TC")
-      print_entry(info[7], " PWM1")
-      print_entry(info[8], " PWM2")
+      if len(info) == 7:  # SAMD21
+          print_entry(info[3], " Serial1")
+          print_entry(info[4], " Serial2")
+          print_entry(info[5], " PWM1" if (info[5] >> 4) < 3 else "   TC")
+          print_entry(info[6], " PWM2")
+      else:
+          print(" ADC1:%2s" % (info[3] if info[3] != 255 else "-"), end="")
+          print_entry(info[4], " Serial1")
+          print_entry(info[5], " Serial2")
+          print_entry(info[6], " TC")
+          print_entry(info[7], " PWM1")
+          print_entry(info[8], " PWM2")
       print()
 
-  def table(num=128):
+  def table(num = 128):
       for i in range(num):
           try:
-              get_pininfo(i)
+              print_pininfo(i)
           except:
               pass
+              # print("not defined")
 
   table()
- 
