@@ -354,7 +354,6 @@ void supervisor_bluetooth_enable_workflow(void) {
     if (workflow_state == WORKFLOW_DISABLED) {
         return;
     }
-
     workflow_state = WORKFLOW_ENABLED;
     #endif
 }
@@ -363,4 +362,13 @@ void supervisor_bluetooth_disable_workflow(void) {
     #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
     workflow_state = WORKFLOW_DISABLED;
     #endif
+}
+
+bool supervisor_bluetooth_workflow_is_enabled(void) {
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+    if (workflow_state == 1) {
+        return true;
+    }
+    #endif
+    return false;
 }

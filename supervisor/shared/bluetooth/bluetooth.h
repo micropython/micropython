@@ -37,6 +37,7 @@ void supervisor_stop_bluetooth(void);
 // Enable only works if it hasn't been set yet.
 void supervisor_bluetooth_enable_workflow(void);
 void supervisor_bluetooth_disable_workflow(void);
+bool supervisor_bluetooth_workflow_is_enabled(void);
 
 // Title bar status
 bool supervisor_bluetooth_status_dirty(void);
