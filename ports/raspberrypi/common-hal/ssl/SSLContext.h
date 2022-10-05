@@ -28,8 +28,12 @@
 #pragma once
 
 #include "py/obj.h"
+#include "mbedtls/ssl.h"
 
 typedef struct {
     mp_obj_base_t base;
-    bool check_name;
+    bool check_name, use_global_ca_store;
+    const unsigned char *cacert_buf;
+    size_t cacert_bytes;
+    int (*crt_bundle_attach)(mbedtls_ssl_config *conf);
 } ssl_sslcontext_obj_t;

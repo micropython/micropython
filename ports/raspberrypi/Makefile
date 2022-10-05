@@ -350,12 +350,17 @@ SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
         x509write_csr.c \
         xtea.c \
 	)
-SRC_C += $(SRC_MBEDTLS) mbedtls/mbedtls_port.c
+SRC_C += $(SRC_MBEDTLS) mbedtls/mbedtls_port.c mbedtls/crt_bundle.c
 CFLAGS += \
 	  -isystem $(TOP)/lib/mbedtls/include \
 	  -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"' \
 
+$(BUILD)/x509_crt_bundle.S: $(TOP)/lib/certificates/nina-fw/data/roots.pem $(TOP)/tools/gen_crt_bundle.py
+	$(Q)$(PYTHON) $(TOP)/tools/gen_crt_bundle.py -i $< -o $@ --asm
+OBJ_MBEDTLS := $(BUILD)/x509_crt_bundle.o
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_MBEDTLS))): CFLAGS += -Wno-suggest-attribute=format
+else
+OBJ_MBEDTLS :=
 endif
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
@@ -396,9 +401,9 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S_UPPER:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/boot2_padded_checksummed.o
-OBJ += $(OBJ_CYW43)
+OBJ += $(OBJ_CYW43) $(OBJ_MBEDTLS)
 
-$(BUILD)/boot2_padded_checksummed.o: $(BUILD)/boot2_padded_checksummed.S
+$(BUILD)/%.o: $(BUILD)/%.S
 	$(STEPECHO) "CC $<"
 	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 

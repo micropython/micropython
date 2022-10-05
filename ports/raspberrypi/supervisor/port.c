@@ -41,6 +41,10 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 
+#if CIRCUITPY_SSL
+#include "common-hal/ssl/__init__.h"
+#endif
+
 #if CIRCUITPY_WIFI
 #include "common-hal/wifi/__init__.h"
 #endif
@@ -177,6 +181,10 @@ void reset_port(void) {
     #endif
     #if CIRCUITPY_AUDIOCORE
     audio_dma_reset();
+    #endif
+
+    #if CIRCUITPY_SSL
+    ssl_reset();
     #endif
 
     #if CIRCUITPY_WIFI

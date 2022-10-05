@@ -25,3 +25,5 @@
  */
 
 #pragma once
+
+void ssl_reset(void);

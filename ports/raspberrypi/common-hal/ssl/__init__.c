@@ -25,8 +25,15 @@
  * THE SOFTWARE.
  */
 
+#include "common-hal/ssl/__init__.h"
 #include "shared-bindings/ssl/__init__.h"
 #include "shared-bindings/ssl/SSLContext.h"
+#include "mbedtls/crt_bundle.h"
 
 void common_hal_ssl_create_default_context(ssl_sslcontext_obj_t *self) {
+    common_hal_ssl_sslcontext_construct(self);
+}
+
+void ssl_reset(void) {
+    crt_bundle_detach(NULL);
 }

@@ -171,8 +171,15 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
         goto cleanup;
     }
 
-    // no certificate checking now
-    mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
+    if (self->crt_bundle_attach != NULL) {
+        mp_printf(&mp_plat_print, "attaching bundle\n");
+        mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+        self->crt_bundle_attach(&o->conf);
+        // } else if(self->cacert_buf && self->cacert_bytes) { // TODO: user bundle
+    } else {
+        mp_printf(&mp_plat_print, "yolo\n");
+        mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
+    }
     mbedtls_ssl_conf_rng(&o->conf, mbedtls_ctr_drbg_random, &o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&o->conf, mbedtls_debug, NULL);
