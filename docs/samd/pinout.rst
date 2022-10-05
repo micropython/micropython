@@ -238,7 +238,7 @@ or other combinations.
 
 SAMD51 SPI assignments
 ``````````````````````
-The I2C devices and signals must be chosen according to the following rules:
+The SPI devices and signals must be chosen according to the following rules:
 
 - The following pad number pairs are suitable for MOSI/SCK: 0/1 and 3/1.
 - The MISO signal must be at a Pin with a different pad number than MOSI or SCK.
@@ -312,7 +312,7 @@ Adafruit ItsyBitsy M4 Express :ref:`samd51_pinout_table`.
 
 The default devices at the board are:
 
-- UART 5 at pins 0/1, labella RX/TX
+- UART 5 at pins 0/1, labelled RX/TX
 - I2C 2 at pins 21/20, labelled SDA/SCL
 - SPI 1 at pins 22/23/24, labelled MOSI, MISO and SCK
 - DAC output on pins 14 and 15, labelled A0 and A1
@@ -398,9 +398,9 @@ Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
 
 The default devices at the board are:
 
-- UART 5 at pins 21/22, labelled RX/TX
-- I2C 3 at pins 22/22, labelled SDA/SCL
-- SPI 4 at pins 22/23/24, labelled MOSI, MISO and SCK
+- UART 5 at pins 21/20, labelled RX/TX
+- I2C 3 at pins 22/23, labelled SDA/SCL
+- SPI 4 at pins 24/25/26, labelled MOSI, MISO and SCK
 - DAC output on pin 14, labelled A0
 
 |
@@ -623,7 +623,7 @@ Adafruit ItsyBitsy M4 Express :ref:`samd51_pinout_table`.
 
 The default devices at the board are:
 
-- UART 1 at pins 2/3, labelled RX/TX
+- UART 1 at pins 2/3, labelled RXD/TXD
 - I2C 5 at pins 20/21, labelled SDA/SCL
 - SPI 4 at pins 22/23/24, labelled MOSI, MISO and SCK
 - DAC output on pins 14 and 18, labelled A0 and A4
