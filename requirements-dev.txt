@@ -26,6 +26,9 @@ pyelftools
 # for stubs and annotations
 adafruit-circuitpython-typing
 
+# for mbedtls certificate store
+cryptography
+
 # for web workflow minify
 minify_html
 jsmin

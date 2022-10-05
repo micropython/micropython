@@ -30,6 +30,7 @@ import os
 import re
 import struct
 import sys
+import textwrap
 from io import open
 
 try:
@@ -217,6 +218,15 @@ def main():
         help="Path to CSV-file where the second columns contains the name of the certificates \
                         that should be included from cacrt_all.pem",
     )
+    parser.add_argument(
+        "--asm",
+        "-S",
+        action="store_true",
+        default=False,
+        help="Output an asm file for use with gas, rather than a binary file",
+    )
+    parser.add_argument("--symbol", help="The symbol to define", default="x509_crt_bundle")
+    parser.add_argument("--output", "-o", help="The output file", default=None)
 
     args = parser.parse_args()
 
@@ -239,8 +249,45 @@ def main():
 
     crt_bundle = bundle.create_bundle()
 
-    with open(ca_bundle_bin_file, "wb") as f:
-        f.write(crt_bundle)
+    if args.asm:
+        symbol = args.symbol
+        filename = args.output or (ca_bundle_bin_file + ".S")
+        with open(filename, "w") as f:
+            print(
+                textwrap.dedent(
+                    f"""\
+                // Generated from {" ".join(args.input)} with {len(bundle.certificates)} certificates
+                .data
+                .section .rodata.embedded
+
+                .global {symbol}
+                .global _binary_{symbol}_start
+                .global _binary_{symbol}_end
+                {symbol}:
+                _binary_{symbol}_start:
+                """
+                ),
+                file=f,
+            )
+            for i in range(0, len(crt_bundle), 16):
+                chunk = crt_bundle[i : i + 16]
+                formatted = ", ".join(f"0x{byte:02x}" for byte in chunk)
+                print(f".byte {formatted}", file=f)
+            print(
+                textwrap.dedent(
+                    f"""\
+                _binary_{symbol}_end:
+
+                {symbol}_length:
+                .word {len(crt_bundle)}
+            """
+                ),
+                file=f,
+            )
+    else:
+        filename = args.output or ca_bundle_bin_file
+        with open(filename, "wb") as f:
+            f.write(crt_bundle)
 
 
 if __name__ == "__main__":
