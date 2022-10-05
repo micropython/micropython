@@ -267,6 +267,7 @@ bool common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, const char *host, 
 
 void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
     self->closed = true;
+    common_hal_socketpool_socket_close(self->sock);
     mbedtls_pk_free(&self->pkey);
     mbedtls_x509_crt_free(&self->cert);
     mbedtls_x509_crt_free(&self->cacert);
