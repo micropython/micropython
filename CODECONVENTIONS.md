@@ -72,16 +72,27 @@ different formatting, and the configuration file formats are often incompatible.
 Automatic Pre-Commit Hooks
 ==========================
 
-To have code formatting and commit message conventions automatically checked
-using [pre-commit](https://pre-commit.com/), run the following commands in your
-local MicroPython directory:
+To have code formatting and commit message conventions automatically checked,
+a configuration file is provided for the [pre-commit]
+(https://pre-commit.com/) tool.
+
+First install `pre-commit`, either from your system package manager or via
+`pip`. When installing `pre-commit` via pip, it is recommended to use a
+virtual environment. Other sources, such as Brew are also available, see
+[the docs](https://pre-commit.com/index.html#install) for details.
 
 ```
-$ pip install pre-commit
+$ apt install pre-commit       # Ubuntu
+$ pacman -Sy python-precommit  # Arch Linux
+$ brew install pre-commit      # Brew
+$ pip install pre-commit       # PyPI
+```
 
-$ pre-commit install
+Then inside the MicroPython repository, register the git hooks for pre-commit
+by running:
 
-$ pre-commit install --hook-type commit-msg
+```
+$ pre-commit install --hook-type pre-commit --hook-type commit-msg
 ```
 
 pre-commit will now automatically run during `git commit` for both code and
@@ -91,6 +102,12 @@ The same formatting checks will be run by CI for any Pull Request submitted to
 MicroPython. Pre-commit allows you to see any failure more quickly, and in many
 cases will automatically correct it in your local working copy.
 
+To unregister `pre-commit` from your MicroPython repository, run:
+
+```
+$ pre-commit uninstall --hook-type pre-commit --hook-type commit-msg
+```
+
 Tips:
 
 * To skip pre-commit checks on a single commit, use `git commit -n` (for
@@ -98,8 +115,6 @@ Tips:
 * To ignore the pre-commit message format check temporarily, start the commit
   message subject line with "WIP" (for "Work In Progress").
 
-(It is also possible to install pre-commit using Brew or other sources, see
-[the docs](https://pre-commit.com/index.html#install) for details.)
 
 Python code conventions
 =======================
