@@ -102,7 +102,10 @@ def run(args):
         filename = args[-1]
         verbose("checking commit message from", filename)
         with open(args[-1]) as f:
-            lines = [line.rstrip("\r\n") for line in f]
+            # Remove comment lines as well as any empty lines at the end.
+            lines = [line.rstrip("\r\n") for line in f if not line.startswith("#")]
+            while not lines[-1]:
+                lines.pop()
             verify_message_body(lines, err)
     else:  # Normal operation, pass arguments to git log
         for sha in git_log("%h", *args):
