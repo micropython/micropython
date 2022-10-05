@@ -137,7 +137,7 @@ STATIC bool key_matches(file_arg *active_file, const char *key) {
     if (character == '=' || character == '\n' || character == '#' || character == 0) {
         // Rewind one so the value, if any, can be found.
         seek_minus_one(active_file);
-    } else {
+    } else if (!unichar_isspace(character)) {
         // We're followed by something else that is invalid syntax.
         matches = false;
     }
