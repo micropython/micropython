@@ -96,7 +96,7 @@ bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog) {
     return common_hal_socketpool_socket_listen(self->sock, backlog);
 }
 
-mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len) {
+mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, uint32_t len) {
     int received = 0;
     bool timed_out = false;
     int status = 0;
