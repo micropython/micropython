@@ -31,8 +31,6 @@
 #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
 
 // Enable mbedtls modules
-#define MBEDTLS_ECDH_C
-#define MBEDTLS_ECP_C
 #define MBEDTLS_GCM_C
 #define MBEDTLS_HAVE_TIME
 #define MBEDTLS_HAVE_TIME_DATE
