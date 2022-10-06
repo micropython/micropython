@@ -678,7 +678,7 @@ const spi_t *spi_from_mp_obj(mp_obj_t o) {
     if (mp_obj_is_type(o, &pyb_spi_type)) {
         pyb_spi_obj_t *self = MP_OBJ_TO_PTR(o);
         return self->spi;
-    } else if (mp_obj_is_type(o, &machine_hard_spi_type)) {
+    } else if (mp_obj_is_type(o, &machine_spi_type)) {
         machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(o);
         return self->spi;
     } else {
@@ -687,7 +687,7 @@ const spi_t *spi_from_mp_obj(mp_obj_t o) {
 }
 
 mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t o) {
-    if (mp_obj_is_type(o, &machine_hard_spi_type)) {
+    if (mp_obj_is_type(o, &machine_spi_type)) {
         return MP_OBJ_TO_PTR(o);
     }
     #if MICROPY_PY_MACHINE_SOFTSPI
