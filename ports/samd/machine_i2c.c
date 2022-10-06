@@ -144,7 +144,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
 
     // Get the peripheral object.
-    machine_i2c_obj_t *self = mp_obj_malloc(machine_i2c_obj_t, &machine_hw_i2c_type);
+    machine_i2c_obj_t *self = mp_obj_malloc(machine_i2c_obj_t, &machine_i2c_type);
     self->id = id;
     self->instance = sercom_instance[self->id];
 
@@ -260,7 +260,7 @@ STATIC const mp_machine_i2c_p_t machine_i2c_p = {
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    machine_hw_i2c_type,
+    machine_i2c_type,
     MP_QSTR_I2C,
     MP_TYPE_FLAG_NONE,
     make_new, machine_i2c_make_new,
