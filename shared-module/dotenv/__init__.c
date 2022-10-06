@@ -124,7 +124,7 @@ STATIC bool key_matches(file_arg *active_file, const char *key) {
             // Still on tentative key; see if it matches the next supplied key character,
             // but don't run off the end of the supplied key.
             if (key_pos < key_len) {
-                matches = matches && key[key_pos] == character;
+                matches = matches && (unsigned char)key[key_pos] == character;
                 escaped = false;
                 key_pos++;
             } else {
