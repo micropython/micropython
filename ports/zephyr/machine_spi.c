@@ -106,7 +106,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
         .cs = NULL
     };
 
-    machine_hard_spi_obj_t *self = mp_obj_malloc(machine_hard_spi_obj_t, &machine_hard_spi_type);
+    machine_hard_spi_obj_t *self = mp_obj_malloc(machine_hard_spi_obj_t, &machine_spi_type);
     self->dev = dev;
     self->config = cfg;
 
@@ -198,7 +198,7 @@ STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    machine_hard_spi_type,
+    machine_spi_type,
     MP_QSTR_SPI,
     MP_TYPE_FLAG_NONE,
     make_new, machine_hard_spi_make_new,
