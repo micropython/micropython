@@ -58,11 +58,9 @@
 _start:
     b       boot_entry
 
-/* QEMU comes in at 0x10. Put a value in argc/r3 to distingush from
- * microwatt. */
+/* QEMU comes in at 0x10 */
     . = 0x10
     FIXUP_ENDIAN
-    LOAD_IMM64(%r3, 1)
     b       boot_entry
 
     .global boot_entry

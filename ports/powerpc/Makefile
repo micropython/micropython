@@ -7,8 +7,7 @@ QSTR_DEFS = qstrdefsport.h
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-# potato or lpc_serial
-UART ?= potato
+GIT_SUBMODULES += lib/dtc
 
 ARCH = $(shell uname -m)
 ifneq ("$(ARCH)", "ppc64")
@@ -20,13 +19,19 @@ endif
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
+INC += -I$(TOP)/lib/dtc/libfdt
+
+COPT ?= -Os
 
 CFLAGS = $(INC) -g -Wall -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
 CFLAGS += -mno-string -mno-multiple -mno-vsx -mno-altivec -nostdlib
 CFLAGS += -mlittle-endian -mstrict-align -msoft-float
-CFLAGS += -Os
 CFLAGS += -fdata-sections -ffunction-sections -fno-stack-protector -ffreestanding
 CFLAGS += -U_FORTIFY_SOURCE
+
+ifneq ($(DEBUG),)
+CFLAGS += -DDEBUG=1
+endif
 
 LDFLAGS = -N -T powerpc.lds -nostdlib
 
@@ -34,7 +39,9 @@ LIBS =
 
 SRC_C = \
 	main.c \
-	uart_$(UART).c \
+	uart_std.c \
+	lib/dtc/libfdt/fdt.c \
+	lib/dtc/libfdt/fdt_ro.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
 	shared/readline/readline.c \

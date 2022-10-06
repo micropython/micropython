@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
-void lpc_uart_init(void);
-char lpc_uart_read(void);
-void lpc_uart_write(char c);
+void std_uart_init(unsigned long base, unsigned int reg_shift,
+    unsigned int freq, unsigned int bauds);
+void std_uart_tx_strn(const char *str, mp_uint_t len);
+int std_uart_rx_chr(void);

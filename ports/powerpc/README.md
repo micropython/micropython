@@ -6,13 +6,10 @@ potato UART.
 
 ## Building
 
-By default the port will be built with the potato uart for microwatt:
-
     $ make
 
-To instead build for a machine with LPC serial, such as QEMU powernv:
-
-    $ make UART=lpc_serial
+The end result will work on Microwatt standalone (with 0 passed
+in register r3) or Qemu (with a device-tree passed in r3).
 
 ## Cross compilation for POWERPC
 

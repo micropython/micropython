@@ -141,6 +141,15 @@ size_t strlen(const char *str) {
     return len;
 }
 
+size_t strnlen(const char *str, size_t maxlen) {
+    int len = 0;
+    for (const char *s = str; *s && maxlen; s++) {
+        len += 1;
+	maxlen--;
+    }
+    return len;
+}
+
 int strcmp(const char *s1, const char *s2) {
     while (*s1 && *s2) {
         char c1 = *s1++; // XXX UTF8 get char, next char
@@ -228,6 +237,23 @@ char *strchr(const char *s, int c)
     return ((*s == c) ? (char *) s : 0);
 }
 
+// Public Domain implementation of strchr from:
+// http://en.wikibooks.org/wiki/C_Programming/Strings#The_strrchr_function
+char *(strrchr)(const char *s, int c)
+{
+    const char *last = NULL;
+    /* If the character we're looking for is the terminating null,
+       we just need to look for that character as there's only one
+       of them in the string.  */
+    if (c == '\0')
+        return strchr(s, c);
+    /* Loop through, finding the last match before hitting NULL.  */
+    while ((s = strchr(s, c)) != NULL) {
+        last = s;
+        s++;
+    }
+    return (char *) last;
+}
 
 // Public Domain implementation of strstr from:
 // http://en.wikibooks.org/wiki/C_Programming/Strings#The_strstr_function
