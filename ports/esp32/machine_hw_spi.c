@@ -490,7 +490,7 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
         self = &machine_hw_spi_obj[1];
         default_pins = &machine_hw_spi_default_pins[1];
     }
-    self->base.type = &machine_hw_spi_type;
+    self->base.type = &machine_spi_type;
 
     int8_t sck, mosi, miso;
 
@@ -540,7 +540,7 @@ STATIC const mp_machine_spi_p_t machine_hw_spi_p = {
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    machine_hw_spi_type,
+    machine_spi_type,
     MP_QSTR_SPI,
     MP_TYPE_FLAG_NONE,
     make_new, machine_hw_spi_make_new,
