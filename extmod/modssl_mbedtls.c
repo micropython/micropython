@@ -296,24 +296,24 @@ STATIC mp_obj_t mod_ssl_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) {
     mp_obj_list_t *ciphers = MP_OBJ_TO_PTR(ciphersuite);
 
     int ret = 0;
-    for(int i = 0, n = ciphers->len; i < n; i++){
-	    
-	    if (ciphers->items[i] != mp_const_none) {
-		const char *ciphername = mp_obj_str_get_str(ciphers->items[i]);
-		const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
-		// const int ciphers[] = {id, 0};
-		ctxi->cipherid[i] = id;
-		if (id == 0) {
-		    ret = MBEDTLS_ERR_SSL_BAD_CONFIG;
-		    goto cleanupcipher;
-		}
+    for (int i = 0, n = ciphers->len; i < n; i++) {
 
-		// mbedtls_ssl_conf_ciphersuites(&ctxi->conf, ciphers);
-		// ctxi->cipherid = id;
-	    }
+        if (ciphers->items[i] != mp_const_none) {
+            const char *ciphername = mp_obj_str_get_str(ciphers->items[i]);
+            const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
+            // const int ciphers[] = {id, 0};
+            ctxi->cipherid[i] = id;
+            if (id == 0) {
+                ret = MBEDTLS_ERR_SSL_BAD_CONFIG;
+                goto cleanupcipher;
+            }
+
+            // mbedtls_ssl_conf_ciphersuites(&ctxi->conf, ciphers);
+            // ctxi->cipherid = id;
+        }
     }
-    
-    ctxi->cipherid[ciphers->len+1] = 0;
+
+    ctxi->cipherid[ciphers->len + 1] = 0;
 
     return mp_const_none;
 
@@ -477,7 +477,7 @@ STATIC mp_obj_ssl_socket_t *ctx_socket(mp_obj_t self_in, mp_obj_t sock, struct c
     }
     // Ciphersuite Config
     if (ctxi->cipherid[0] != 0) {
-        mbedtls_ssl_conf_ciphersuites(&o->conf, (const int *) ctxi->cipherid);
+        mbedtls_ssl_conf_ciphersuites(&o->conf, (const int *)ctxi->cipherid);
 
     }
 

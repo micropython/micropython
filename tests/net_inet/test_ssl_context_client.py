@@ -70,7 +70,7 @@ def main(use_stream=True):
 
     # context.check_hostname = True  # enabled by default with
     # PROTOCOL_TLS_CLIENT
-    #print(context.get_ciphers())
+    # print(context.get_ciphers())
 
     # context.load_verify_locations(cafile='certmpy.der') # not sure how to
     # implement a external file
