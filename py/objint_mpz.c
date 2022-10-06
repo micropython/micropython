@@ -312,6 +312,14 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 return MP_OBJ_NULL; // op not supported
         }
 
+        // Check if the result fits in a small-int, and if so just return that.
+        mp_int_t res_small;
+        if (mpz_as_int_checked(&res->mpz, &res_small)) {
+            if (MP_SMALL_INT_FITS(res_small)) {
+                return MP_OBJ_NEW_SMALL_INT(res_small);
+            }
+        }
+
         return MP_OBJ_FROM_PTR(res);
 
     } else {
@@ -425,6 +433,10 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
         const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
         mp_int_t value;
         if (mpz_as_int_checked(&self->mpz, &value)) {
+            // mp_obj_int_t objects should always contain a value that is a large
+            // integer (if the value fits in a small-int then it should have been
+            // converted to a small-int object), and so this code-path should never
+            // be taken in normal circumstances.
             return value;
         } else {
             // overflow
