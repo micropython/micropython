@@ -32,7 +32,7 @@
 #include "genhdr/pins.h"
 
 typedef struct _machine_hard_uart_obj_t machine_hard_uart_obj_t;
-extern const mp_obj_type_t machine_hard_uart_type;
+extern const mp_obj_type_t machine_uart_type;
 
 void uart_init0(void);
 void uart_deinit(void);
