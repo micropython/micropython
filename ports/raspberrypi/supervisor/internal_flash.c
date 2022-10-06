@@ -46,7 +46,13 @@
 #include "src/rp2_common/hardware_flash/include/hardware/flash.h"
 #include "src/common/pico_binary_info/include/pico/binary_info.h"
 
+#if !defined(RESERVED_FLASH)
 #define RESERVED_FLASH (1 * 1024 * 1024)
+#endif
+
+#if !defined(TOTAL_FLASH_MINIMUM)
+#define TOTAL_FLASH_MINIMUM (2 * 1024 * 1024)
+#endif
 
 // TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
 #define SECTOR_SIZE 4096
@@ -60,7 +66,7 @@ void supervisor_flash_init(void) {
         BINARY_INFO_MAKE_TAG('C', 'P'),
         "CircuitPython",
         RESERVED_FLASH,
-        (1 * 1024 * 1024), // This is a minimum. We can't set it dynamically.
+        TOTAL_FLASH_MINIMUM - RESERVED_FLASH, // This is a minimum. We can't set it dynamically.
         NULL,
         BINARY_INFO_BLOCK_DEV_FLAG_READ |
         BINARY_INFO_BLOCK_DEV_FLAG_WRITE |

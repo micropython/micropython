@@ -148,7 +148,7 @@
 	url = https://github.com/adafruit/esp-idf.git
 	branch = circuitpython8
 [submodule "ports/espressif/certificates/nina-fw"]
-	path = ports/espressif/certificates/nina-fw
+	path = lib/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git
 [submodule "frozen/Adafruit_CircuitPython_ST7789"]
 	path = frozen/Adafruit_CircuitPython_ST7789
@@ -316,3 +316,6 @@
 [submodule "ports/raspberrypi/lib/lwip"]
 	path = ports/raspberrypi/lib/lwip
 	url = https://github.com/lwip-tcpip/lwip.git
+[submodule "lib/mbedtls"]
+	path = lib/mbedtls
+	url = https://github.com/ARMmbed/mbedtls.git
