@@ -27,7 +27,7 @@
 #include "py/obj.h"
 
 typedef struct _machine_hard_spi_obj_t machine_hard_spi_obj_t;
-extern const mp_obj_type_t machine_hard_spi_type;
+extern const mp_obj_type_t machine_spi_type;
 
 void spi_init0(void);
 void spi_transfer(const machine_hard_spi_obj_t * self,
