@@ -31,9 +31,17 @@
 
 #define MICROPY_PY_SYS_PLATFORM             "RP2040"
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE         (4 * 1024)
-#define CIRCUITPY_INTERNAL_NVM_START_ADDR   (0x100FF000)
+// Setting a non-default value also requires a non-default link.ld
+#ifndef CIRCUITPY_FIRMWARE_SIZE
+#define CIRCUITPY_FIRMWARE_SIZE (1020 * 1024)
+#endif
 
+#define CIRCUITPY_INTERNAL_NVM_SIZE         (4 * 1024)
+// This is the XIP address
+#define CIRCUITPY_INTERNAL_NVM_START_ADDR   (0x10000000 + CIRCUITPY_FIRMWARE_SIZE)
+
+// This is the flash linear address
+#define CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR (CIRCUITPY_FIRMWARE_SIZE + CIRCUITPY_INTERNAL_NVM_SIZE)
 #define CIRCUITPY_DEFAULT_STACK_SIZE        (24 * 1024)
 
 #define MICROPY_USE_INTERNAL_PRINTF         (1)
