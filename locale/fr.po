@@ -164,14 +164,6 @@ msgstr "%q doit être <= %d"
 msgid "%q must be >= %d"
 msgstr "%q doit être >= %d"
 
-#: py/argcheck.c
-msgid "%q must be >= 0"
-msgstr "%q doit être >= 0"
-
-#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
-msgid "%q must be >= 1"
-msgstr "%q doit être >= 1"
-
 #: shared-bindings/analogbufio/BufferedIn.c
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
@@ -944,8 +936,7 @@ msgstr "Erreur dans l'expression régulière"
 msgid "Error: Failure to bind"
 msgstr "Erreur : Impossible de lier"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c py/enum.c
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
 #: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
@@ -1297,6 +1288,7 @@ msgid "Invalid size"
 msgstr "Taille invalide"
 
 #: ports/espressif/common-hal/ssl/SSLContext.c
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr "Socket non valide pour TLS"
 
@@ -1629,10 +1621,12 @@ msgid "Only 8 or 16 bit mono with "
 msgstr "Uniquement 8 ou 16 bit mono avec "
 
 #: ports/espressif/common-hal/wifi/__init__.c
+#: ports/raspberrypi/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Seulement les adresses IPv4 sont supportées"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
+#: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr "Seulement les sockets IPv4 sont supportés"
 
@@ -1706,6 +1700,7 @@ msgid "Out of memory"
 msgstr "Hors de mémoire"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
+#: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "Plus de sockets"
 
@@ -1762,7 +1757,6 @@ msgid "Pin interrupt already in use"
 msgstr "L'interruption de cette broche est déjà utilisée"
 
 #: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
-#: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "La broche est entrée uniquement"
 
@@ -1989,6 +1983,7 @@ msgid "Slices not supported"
 msgstr "Tranches non supportées"
 
 #: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/raspberrypi/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
 msgstr "SocketPool ne s'utilise qu'avec wifi.radio"
 
@@ -2441,10 +2436,6 @@ msgstr "l'argument __new__ doit être d'un type défini par l'utilisateur"
 #: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "un objet 'bytes-like' est requis"
-
-#: shared-bindings/i2ctarget/I2CTarget.c
-msgid "address out of bounds"
-msgstr "adresse hors limites"
 
 #: shared-bindings/i2ctarget/I2CTarget.c
 msgid "addresses is empty"
@@ -2928,10 +2919,6 @@ msgstr ""
 "le tampon de destination doit être une matrice de type 'H' pour bit_depth = "
 "16"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "destination_length must be an int >= 0"
-msgstr "destination_length doit être un entier >= 0"
-
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
 msgstr "la séquence de mise à jour de dict a une mauvaise longueur"
@@ -3357,6 +3344,10 @@ msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr ""
 "%d est invalide pour bits_per_pixel, doit être 1, 2, 4, 8, 16, 24, ou 32"
 
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+msgid "invalid cert"
+msgstr "certificat invalide"
+
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element size %d for bits_per_pixel %d\n"
@@ -3382,6 +3373,10 @@ msgstr "spécification de format invalide"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "hostname incorrect"
+
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+msgid "invalid key"
+msgstr "clé invalide"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -4469,6 +4464,18 @@ msgstr "zi doit être de type float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
 
+#~ msgid "%q must be >= 0"
+#~ msgstr "%q doit être >= 0"
+
+#~ msgid "%q must be >= 1"
+#~ msgstr "%q doit être >= 1"
+
+#~ msgid "address out of bounds"
+#~ msgstr "adresse hors limites"
+
+#~ msgid "destination_length must be an int >= 0"
+#~ msgstr "destination_length doit être un entier >= 0"
+
 #~ msgid "type object 'generator' has no attribute '__await__'"
 #~ msgstr "le type 'generator' n'a pas d'attribut '__await__'"
 
@@ -5159,12 +5166,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 
 #~ msgid "can only save bytecode"
 #~ msgstr "ne peut sauvegarder que du bytecode"
-
-#~ msgid "invalid cert"
-#~ msgstr "certificat invalide"
-
-#~ msgid "invalid key"
-#~ msgstr "clé invalide"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr ""

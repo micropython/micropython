@@ -157,14 +157,6 @@ msgstr ""
 msgid "%q must be >= %d"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must be >= 0"
-msgstr "%q musi być >= 0"
-
-#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
-msgid "%q must be >= 1"
-msgstr "%q musi być >= 1"
-
 #: shared-bindings/analogbufio/BufferedIn.c
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
@@ -919,8 +911,7 @@ msgstr "Błąd w regex"
 msgid "Error: Failure to bind"
 msgstr ""
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c py/enum.c
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
 #: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
@@ -1254,6 +1245,7 @@ msgid "Invalid size"
 msgstr "Nieprawidłowy rozmiar"
 
 #: ports/espressif/common-hal/ssl/SSLContext.c
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr ""
 
@@ -1580,10 +1572,12 @@ msgid "Only 8 or 16 bit mono with "
 msgstr "Tylko 8 lub 16 bitów mono z "
 
 #: ports/espressif/common-hal/wifi/__init__.c
+#: ports/raspberrypi/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr ""
 
 #: ports/espressif/common-hal/socketpool/Socket.c
+#: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr ""
 
@@ -1653,6 +1647,7 @@ msgid "Out of memory"
 msgstr "Brak pamięci"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
+#: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr ""
 
@@ -1707,7 +1702,6 @@ msgid "Pin interrupt already in use"
 msgstr ""
 
 #: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
-#: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr ""
 
@@ -1927,6 +1921,7 @@ msgid "Slices not supported"
 msgstr "Fragmenty nieobsługiwane"
 
 #: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/raspberrypi/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
 msgstr ""
 
@@ -2351,10 +2346,6 @@ msgstr "Argument __new__ musi być typu użytkownika"
 #: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "wymagany obiekt typu bytes"
-
-#: shared-bindings/i2ctarget/I2CTarget.c
-msgid "address out of bounds"
-msgstr "adres poza zakresem"
 
 #: shared-bindings/i2ctarget/I2CTarget.c
 msgid "addresses is empty"
@@ -2826,10 +2817,6 @@ msgstr ""
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
 msgstr "bufor docelowy musi być tablicą typu 'H' dla bit_depth = 16"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "destination_length must be an int >= 0"
-msgstr "destination_length musi być nieujemną liczbą całkowitą"
-
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
 msgstr "sekwencja ma złą długość"
@@ -3253,6 +3240,10 @@ msgstr ""
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+msgid "invalid cert"
+msgstr "zły ceryfikat"
+
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element size %d for bits_per_pixel %d\n"
@@ -3278,6 +3269,10 @@ msgstr "zła specyfikacja formatu"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr ""
+
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+msgid "invalid key"
+msgstr "zły klucz"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -4355,6 +4350,18 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid "%q must be >= 0"
+#~ msgstr "%q musi być >= 0"
+
+#~ msgid "%q must be >= 1"
+#~ msgstr "%q musi być >= 1"
+
+#~ msgid "address out of bounds"
+#~ msgstr "adres poza zakresem"
+
+#~ msgid "destination_length must be an int >= 0"
+#~ msgstr "destination_length musi być nieujemną liczbą całkowitą"
+
 #~ msgid "color should be an int"
 #~ msgstr "kolor powinien być liczbą całkowitą"
 
@@ -4749,12 +4756,6 @@ msgstr ""
 
 #~ msgid "can only save bytecode"
 #~ msgstr "można zapisać tylko bytecode"
-
-#~ msgid "invalid cert"
-#~ msgstr "zły ceryfikat"
-
-#~ msgid "invalid key"
-#~ msgstr "zły klucz"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "Funkcje Viper nie obsługują obecnie więcej niż 4 argumentów"
