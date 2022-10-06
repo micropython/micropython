@@ -154,6 +154,9 @@ typedef long mp_off_t;
 // Don't default sys.argv because we do that in main.
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (0)
 
+// Enable sys.executable.
+#define MICROPY_PY_SYS_EXECUTABLE (1)
+
 #define MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT (SOMAXCONN < 128 ? SOMAXCONN : 128)
 
 // Bare-metal ports don't have stderr. Printing debug to stderr may give tests
