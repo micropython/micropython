@@ -20,6 +20,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: make -C examples/embedding
+      run: make -C examples/embedding -f micropython_embed.mk && make -C examples/embedding
     - name: Run
-      run: test "$(./examples/embedding/hello-embed)" = "Hello world of easy embedding!"
+      run: ./examples/embedding/embed | grep "hello world"
