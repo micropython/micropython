@@ -32,6 +32,8 @@
 #include "esp_log.h"
 #include "esp_ota_ops.h"
 
+#include "supervisor/flash.h"
+
 static const esp_partition_t *update_partition = NULL;
 static esp_ota_handle_t update_handle = 0;
 
