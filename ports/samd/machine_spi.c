@@ -82,7 +82,7 @@ void common_spi_irq_handler(int spi_id) {
 
 STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "SPI(%u), baudrate=%u, firstbit=%u, polarity=%u, phase=%u, bits=8",
+    mp_printf(print, "SPI(%u, baudrate=%u, firstbit=%u, polarity=%u, phase=%u, bits=8)",
         self->id, self->baudrate, self->firstbit, self->polarity, self->phase);
 }
 
