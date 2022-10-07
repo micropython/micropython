@@ -1,7 +1,7 @@
 FROM minyiky/dev_environment:ubuntu-22.04 as prebuilder
 
 RUN apt update && \
-    apt install -y --no-install-recommends build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python3 parallel make
+    apt install -y --no-install-recommends build-essential make libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python3 parallel
 
 RUN rm -rf /var/lib/apt/lists/* 
 
