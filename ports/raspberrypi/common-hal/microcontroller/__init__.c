@@ -176,7 +176,9 @@ const mp_rom_map_elem_t mcu_pin_global_dict_table[TOTAL_GPIO_COUNT] = {
     #if !defined(IGNORE_GPIO23)
     { MP_ROM_QSTR(MP_QSTR_GPIO23), MP_ROM_PTR(&pin_GPIO23) },
     #endif
+    #if !defined(IGNORE_GPIO24)
     { MP_ROM_QSTR(MP_QSTR_GPIO24), MP_ROM_PTR(&pin_GPIO24) },
+    #endif
     #if !defined(IGNORE_GPIO25)
     { MP_ROM_QSTR(MP_QSTR_GPIO25), MP_ROM_PTR(&pin_GPIO25) },
     #endif
@@ -187,6 +189,7 @@ const mp_rom_map_elem_t mcu_pin_global_dict_table[TOTAL_GPIO_COUNT] = {
     #if CIRCUITPY_CYW43
     { MP_ROM_QSTR(MP_QSTR_CYW0), MP_ROM_PTR(&pin_CYW0) },
     { MP_ROM_QSTR(MP_QSTR_CYW1), MP_ROM_PTR(&pin_CYW1) },
+    { MP_ROM_QSTR(MP_QSTR_CYW2), MP_ROM_PTR(&pin_CYW2) },
     #endif
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_global_dict_table);
