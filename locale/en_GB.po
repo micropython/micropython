@@ -1958,10 +1958,6 @@ msgstr "Stereo left must be on PWM channel A"
 msgid "Stereo right must be on PWM channel B"
 msgstr "Stereo right must be on PWM channel B"
 
-#: shared-bindings/multiterminal/__init__.c
-msgid "Stream missing readinto() or write() method."
-msgstr "Stream missing readinto() or write() method."
-
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr "Supply at least one UART pin"
@@ -3836,6 +3832,7 @@ msgstr ""
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
 #: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n8r2/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: supervisor/shared/safe_mode.c
@@ -4373,6 +4370,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Stream missing readinto() or write() method."
+#~ msgstr "Stream missing readinto() or write() method."
 
 #~ msgid "%q must be >= 0"
 #~ msgstr "%q must be >= 0"
