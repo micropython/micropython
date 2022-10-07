@@ -131,7 +131,8 @@ void common_hal_wifi_radio_set_mac_address_ap(wifi_radio_obj_t *self, const uint
     ro_attribute(MP_QSTR_mac_address_ap);
 }
 
-mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
+mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, uint8_t start_channel, uint8_t stop_channel) {
+    // channel bounds are ignored; not implemented in driver
     if (self->current_scan) {
         mp_raise_RuntimeError(translate("Already scanning for wifi networks"));
     }

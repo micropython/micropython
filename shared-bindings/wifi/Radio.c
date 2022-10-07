@@ -216,7 +216,12 @@ MP_PROPERTY_GETSET(wifi_radio_mac_address_ap_obj,
 //|     def start_scanning_networks(
 //|         self, *, start_channel: int = 1, stop_channel: int = 11
 //|     ) -> Iterable[Network]:
-//|         """Scans for available wifi networks over the given channel range. Make sure the channels are allowed in your country."""
+//|         """Scans for available wifi networks over the given channel range. Make sure the channels are allowed in your country.
+//|
+//|         .. note::
+//|
+//|             In the raspberrypi port (RP2040 CYW43), ``start_channel`` and ``stop_channel`` are ignored.
+//|         """
 //|         ...
 STATIC mp_obj_t wifi_radio_start_scanning_networks(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_start_channel, ARG_stop_channel };
