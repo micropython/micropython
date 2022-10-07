@@ -2045,6 +2045,12 @@ mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_u
     }
 }
 
+void mp_obj_str_set_data(mp_obj_str_t *str, const byte *data, size_t len) {
+    str->data = data;
+    str->len = len;
+    str->hash = qstr_compute_hash(data, len);
+}
+
 // This locals table is used for the following types: str, bytes, bytearray, array.array.
 // Each type takes a different section (start to end offset) of this table.
 STATIC const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
