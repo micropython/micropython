@@ -66,7 +66,7 @@ STATIC void adc_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t k
     (void)kind;
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(o);
 
-    mp_printf(print, "ADC(%s, ADC%u, channel=%u, bits=%u, average=%u)",
+    mp_printf(print, "ADC(%s, device=%u, channel=%u, bits=%u, average=%u)",
         pin_name(self->id), self->adc_config.device,
         self->adc_config.channel, self->bits, 1 << self->avg);
 }
