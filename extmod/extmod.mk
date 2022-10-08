@@ -100,6 +100,7 @@ CFLAGS_MOD += -DMICROPY_PY_USSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
 CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I$(TOP)/lib/axtls/ssl -I$(TOP)/lib/axtls/crypto -I$(TOP)/extmod/axtls-include
 AXTLS_DIR = lib/axtls
+GIT_SUBMODULES += $(AXTLS_DIR)
 $(BUILD)/$(AXTLS_DIR)/%.o: CFLAGS += -Wno-all -Wno-unused-parameter -Wno-uninitialized -Wno-sign-compare -Wno-old-style-definition -Dmp_stream_errno=errno $(AXTLS_DEFS_EXTRA)
 SRC_MOD += $(addprefix $(AXTLS_DIR)/,\
 	ssl/asn1.c \
@@ -118,7 +119,7 @@ SRC_MOD += $(addprefix $(AXTLS_DIR)/,\
 	)
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
 MBEDTLS_DIR = lib/mbedtls
-CFLAGS_MOD += -DMICROPY_SSL_MBEDTLS=1 -I$(TOP)/$(MBEDTLS_DIR)/include
+GIT_SUBMODULES += $(MBEDTLS_DIR)
 SRC_MOD += lib/mbedtls_errors/mp_mbedtls_errors.c
 SRC_MOD += $(addprefix $(MBEDTLS_DIR)/library/,\
 	aes.c \
@@ -199,6 +200,7 @@ endif
 # lwip
 
 ifeq ($(MICROPY_PY_LWIP),1)
+GIT_SUBMODULES += lib/lwip
 # A port should add an include path where lwipopts.h can be found (eg extmod/lwip-include)
 LWIP_DIR = lib/lwip/src
 INC += -I$(TOP)/$(LWIP_DIR)/include

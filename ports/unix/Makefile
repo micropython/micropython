@@ -133,10 +133,9 @@ endif
 
 ifeq ($(MICROPY_PY_USSL),1)
 ifeq ($(MICROPY_SSL_AXTLS),1)
-GIT_SUBMODULES += lib/axtls
+
 endif
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
-GIT_SUBMODULES += lib/mbedtls
 CFLAGS += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
 endif
 endif
@@ -182,14 +181,12 @@ endif
 endif
 
 # BTstack is enabled.
-GIT_SUBMODULES += lib/btstack
 include $(TOP)/extmod/btstack/btstack.mk
 SRC_BTSTACK += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 
 else
 
 # NimBLE is enabled.
-GIT_SUBMODULES += lib/mynewt-nimble
 CFLAGS += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
 include $(TOP)/extmod/nimble/nimble.mk
 
