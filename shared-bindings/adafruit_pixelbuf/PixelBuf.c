@@ -53,7 +53,16 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //| class PixelBuf:
 //|     """A fast RGB[W] pixel buffer for LED and similar devices."""
 //|
-//|     def __init__(self, size: int, *, byteorder: str = "BGR", brightness: float = 0, auto_write: bool = False, header: ReadableBuffer = b"", trailer: ReadableBuffer = b"") -> None:
+//|     def __init__(
+//|         self,
+//|         size: int,
+//|         *,
+//|         byteorder: str = "BGR",
+//|         brightness: float = 0,
+//|         auto_write: bool = False,
+//|         header: ReadableBuffer = b"",
+//|         trailer: ReadableBuffer = b""
+//|     ) -> None:
 //|         """Create a PixelBuf object of the specified size, byteorder, and bits per pixel.
 //|
 //|         When brightness is less than 1.0, a second buffer will be used to store the color values
@@ -71,7 +80,6 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|         :param ~circuitpython_typing.ReadableBuffer header: Sequence of bytes to always send before pixel values.
 //|         :param ~circuitpython_typing.ReadableBuffer trailer: Sequence of bytes to always send after pixel values."""
 //|         ...
-//|
 STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_size, ARG_byteorder, ARG_brightness, ARG_auto_write, ARG_header, ARG_trailer };
     static const mp_arg_t allowed_args[] = {
@@ -159,7 +167,6 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 
 //|     bpp: int
 //|     """The number of bytes per pixel in the buffer (read-only)"""
-//|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_bpp(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_adafruit_pixelbuf_pixelbuf_get_bpp(self_in));
 }
@@ -174,7 +181,6 @@ MP_PROPERTY_GETTER(pixelbuf_pixelbuf_bpp_obj,
 //|
 //|     When brightness is less than 1.0, a second buffer will be used to store the color values
 //|     before they are adjusted for brightness."""
-//|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_brightness(mp_obj_t self_in) {
     return mp_obj_new_float(common_hal_adafruit_pixelbuf_pixelbuf_get_brightness(self_in));
 }
@@ -199,7 +205,6 @@ MP_PROPERTY_GETSET(pixelbuf_pixelbuf_brightness_obj,
 
 //|     auto_write: bool
 //|     """Whether to automatically write the pixels after each update."""
-//|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_auto_write(mp_obj_t self_in) {
     return mp_obj_new_bool(common_hal_adafruit_pixelbuf_pixelbuf_get_auto_write(self_in));
 }
@@ -218,7 +223,6 @@ MP_PROPERTY_GETSET(pixelbuf_pixelbuf_auto_write_obj,
 
 //|     byteorder: str
 //|     """byteorder string for the buffer (read-only)"""
-//|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_byteorder(mp_obj_t self_in) {
     return common_hal_adafruit_pixelbuf_pixelbuf_get_byteorder_string(self_in);
 }
@@ -242,7 +246,6 @@ STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|         """Transmits the color data to the pixels so that they are shown. This is done automatically
 //|         when `auto_write` is True."""
 //|         ...
-//|
 
 STATIC mp_obj_t pixelbuf_pixelbuf_show(mp_obj_t self_in) {
     common_hal_adafruit_pixelbuf_pixelbuf_show(self_in);
@@ -250,10 +253,11 @@ STATIC mp_obj_t pixelbuf_pixelbuf_show(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_show);
 
-//|     def fill(self, color: Union[int, Tuple[int, int, int], Tuple[int, int, int, float]]) -> None:
+//|     def fill(
+//|         self, color: Union[int, Tuple[int, int, int], Tuple[int, int, int, float]]
+//|     ) -> None:
 //|         """Fills the given pixelbuf with the given color."""
 //|         ...
-//|
 
 STATIC mp_obj_t pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t value) {
     common_hal_adafruit_pixelbuf_pixelbuf_fill(self_in, value);
@@ -263,20 +267,29 @@ STATIC mp_obj_t pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t value) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_fill);
 
 //|     @overload
-//|     def __getitem__(self, index: slice) -> Union[Tuple[Tuple[int, int, int], ...], Tuple[Tuple[int, int, int, float], ...]]: ...
+//|     def __getitem__(
+//|         self, index: slice
+//|     ) -> Union[Tuple[Tuple[int, int, int], ...], Tuple[Tuple[int, int, int, float], ...]]: ...
 //|     @overload
-//|     def __getitem__(self, index: int) -> Union[Tuple[int, int, int], Tuple[int, int, int, float]]:
+//|     def __getitem__(
+//|         self, index: int
+//|     ) -> Union[Tuple[int, int, int], Tuple[int, int, int, float]]:
 //|         """Returns the pixel value at the given index as a tuple of (Red, Green, Blue[, White]) values
 //|         between 0 and 255.  When in PWM (DotStar) mode, the 4th tuple value is a float of the pixel
 //|         intensity from 0-1.0."""
 //|         ...
-//|
 //|     @overload
-//|     def __setitem__(self, index: slice, value: Tuple[Union[int, Tuple[float, ...], List[float]], ...]) -> None: ...
+//|     def __setitem__(
+//|         self, index: slice, value: Tuple[Union[int, Tuple[float, ...], List[float]], ...]
+//|     ) -> None: ...
 //|     @overload
-//|     def __setitem__(self, index: slice, value: List[Union[int, Tuple[float, ...], List[float]]]) -> None: ...
+//|     def __setitem__(
+//|         self, index: slice, value: List[Union[int, Tuple[float, ...], List[float]]]
+//|     ) -> None: ...
 //|     @overload
-//|     def __setitem__(self, index: int, value: Union[int, Tuple[float, ...], List[float]]) -> None:
+//|     def __setitem__(
+//|         self, index: int, value: Union[int, Tuple[float, ...], List[float]]
+//|     ) -> None:
 //|         """Sets the pixel value at the given index.  Value can either be a tuple or integer.  Tuples are
 //|         The individual (Red, Green, Blue[, White]) values between 0 and 255.  If given an integer, the
 //|         red, green and blue values are packed into the lower three bytes (0xRRGGBB).

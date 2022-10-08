@@ -92,9 +92,6 @@ static void display_init(void) {
     displayio_display_obj_t *display = &displays[0].display;
     display->base.type = &displayio_display_type;
 
-    // workaround as board_init() is called before reset_port() in main.c
-    pwmout_reset();
-
     common_hal_displayio_display_construct(
         display,
         bus,
@@ -125,8 +122,6 @@ static void display_init(void) {
         false,          // SH1107_addressing
         50000           // backlight pwm frequency
         );
-
-    common_hal_never_reset_pin(&pin_GPIO45); // backlight pin
 }
 
 

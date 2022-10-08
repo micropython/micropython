@@ -1,2 +1,5 @@
-build*/
-sdkconfig.old
+# idf.py menuconfig
+sdkconfig*
+
+# lock files for examples and components
+dependencies.lock

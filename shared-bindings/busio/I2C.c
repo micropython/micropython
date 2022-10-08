@@ -39,7 +39,14 @@
 //| class I2C:
 //|     """Two wire serial protocol"""
 //|
-//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, *, frequency: int = 100000, timeout: int = 255) -> None:
+//|     def __init__(
+//|         self,
+//|         scl: microcontroller.Pin,
+//|         sda: microcontroller.Pin,
+//|         *,
+//|         frequency: int = 100000,
+//|         timeout: int = 255
+//|     ) -> None:
 //|
 //|         """I2C is a two-wire protocol for communicating between devices.  At the
 //|         physical level it consists of 2 wires: SCL and SDA, the clock and data
@@ -60,7 +67,6 @@
 //|             :class:`bitbangio.I2C`; ignored for :class:`busio.I2C`)
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     busio_i2c_obj_t *self = m_new_obj(busio_i2c_obj_t);
     self->base.type = &busio_i2c_type;
@@ -84,7 +90,6 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
 //|     def deinit(self) -> None:
 //|         """Releases control of the underlying hardware so other classes can use it."""
 //|         ...
-//|
 STATIC mp_obj_t busio_i2c_obj_deinit(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_busio_i2c_deinit(self);
@@ -101,14 +106,12 @@ STATIC void check_for_deinit(busio_i2c_obj_t *self) {
 //|     def __enter__(self) -> I2C:
 //|         """No-op used in Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware on context exit. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t busio_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_busio_i2c_deinit(MP_OBJ_TO_PTR(args[0]));
@@ -130,7 +133,6 @@ static void check_lock(busio_i2c_obj_t *self) {
 //|         :return: List of device ids on the I2C bus
 //|         :rtype: list"""
 //|         ...
-//|
 STATIC mp_obj_t busio_i2c_scan(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -153,7 +155,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_scan_obj, busio_i2c_scan);
 //|         :return: True when lock has been grabbed
 //|         :rtype: bool"""
 //|         ...
-//|
 STATIC mp_obj_t busio_i2c_obj_try_lock(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -164,7 +165,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_try_lock_obj, busio_i2c_obj_try_lock);
 //|     def unlock(self) -> None:
 //|         """Releases the I2C lock."""
 //|         ...
-//|
 STATIC mp_obj_t busio_i2c_obj_unlock(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -174,7 +174,9 @@ STATIC mp_obj_t busio_i2c_obj_unlock(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 
 //|     import sys
-//|     def readfrom_into(self, address: int, buffer: WriteableBuffer, *, start: int = 0, end: int = sys.maxsize) -> None:
+//|     def readfrom_into(
+//|         self, address: int, buffer: WriteableBuffer, *, start: int = 0, end: int = sys.maxsize
+//|     ) -> None:
 //|         """Read into ``buffer`` from the device selected by ``address``.
 //|         At least one byte must be read.
 //|
@@ -187,7 +189,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 //|         :param int start: beginning of buffer slice
 //|         :param int end: end of buffer slice; if not specified, use ``len(buffer)``"""
 //|         ...
-//|
 STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
@@ -223,7 +224,9 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 1, busio_i2c_readfrom_into);
 
 //|     import sys
-//|     def writeto(self, address: int, buffer: ReadableBuffer, *, start: int = 0, end: int = sys.maxsize) -> None:
+//|     def writeto(
+//|         self, address: int, buffer: ReadableBuffer, *, start: int = 0, end: int = sys.maxsize
+//|     ) -> None:
 //|         """Write the bytes from ``buffer`` to the device selected by ``address`` and
 //|         then transmit a stop bit.
 //|
@@ -240,7 +243,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 1, busio_i2c_readfrom_in
 //|         :param int end: end of buffer slice; if not specified, use ``len(buffer)``
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
@@ -277,7 +279,17 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
 
 //|     import sys
-//|     def writeto_then_readfrom(self, address: int, out_buffer: ReadableBuffer, in_buffer: WriteableBuffer, *, out_start: int = 0, out_end: int = sys.maxsize, in_start: int = 0, in_end: int = sys.maxsize) -> None:
+//|     def writeto_then_readfrom(
+//|         self,
+//|         address: int,
+//|         out_buffer: ReadableBuffer,
+//|         in_buffer: WriteableBuffer,
+//|         *,
+//|         out_start: int = 0,
+//|         out_end: int = sys.maxsize,
+//|         in_start: int = 0,
+//|         in_end: int = sys.maxsize
+//|     ) -> None:
 //|         """Write the bytes from ``out_buffer`` to the device selected by ``address``, generate no stop
 //|         bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
 //|         ``in_buffer`` can be the same buffer because they are used sequentially.
@@ -289,7 +301,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
 //|         If ``in_start`` or ``in_end`` is provided, then the input buffer will be sliced
 //|         as if ``in_buffer[in_start:in_end]`` were passed,
 //|         The number of bytes read will be the length of ``out_buffer[in_start:in_end]``.
-
+//|
 //|         :param int address: 7-bit device address
 //|         :param ~circuitpython_typing.ReadableBuffer out_buffer: buffer containing the bytes to write
 //|         :param ~circuitpython_typing.WriteableBuffer in_buffer: buffer to write into

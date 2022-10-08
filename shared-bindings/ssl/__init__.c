@@ -36,7 +36,6 @@
 //|
 //| |see_cpython_module| :mod:`cpython:ssl`.
 //| """
-//|
 
 //| def create_default_context() -> ssl.SSLContext:
 //|     """Return the default SSLContext."""

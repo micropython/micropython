@@ -30,11 +30,11 @@
 #include "shared-bindings/bitops/__init__.h"
 
 //| """Routines for low-level manipulation of binary data"""
-//|
-//|
 
-//| def bit_transpose(input: ReadableBuffer, output: WriteableBuffer, width:int = 8) -> WriteableBuffer:
-//|     """"Transpose" a buffer by assembling each output byte with bits taken from each of ``width`` different input bytes.
+//| def bit_transpose(
+//|     input: ReadableBuffer, output: WriteableBuffer, width: int = 8
+//| ) -> WriteableBuffer:
+//|     """ "Transpose" a buffer by assembling each output byte with bits taken from each of ``width`` different input bytes.
 //|
 //|     This can be useful to convert a sequence of pixel values into a single
 //|     stream of bytes suitable for sending via a parallel conversion method.
@@ -53,6 +53,7 @@
 //|
 //|     Returns the output buffer."""
 //|     ...
+//|
 
 STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_input, ARG_output, ARG_width };

@@ -44,6 +44,7 @@
 //| """
 //|
 //| import typing
+//|
 
 //| def uname() -> _Uname:
 //|     """Returns a named tuple of operating specific and CircuitPython port
@@ -87,7 +88,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 //| def getenv(key: str, default: Optional[str] = None) -> Optional[str]:
 //|     """Get the environment variable value for the given key or return ``default``.
 //|
-//|        This may load values from disk so cache the result instead of calling this often."""
+//|     This may load values from disk so cache the result instead of calling this often."""
 //|     ...
 //|
 STATIC mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -280,10 +281,8 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&os_urandom_obj) },
 
-//|
 //| sep: str
 //| """Separator used to delineate path components such as folder and file names."""
-//|
     { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
 };
 

@@ -70,7 +70,6 @@
 //|               # as the value.
 //|               frequency.clear()"""
 //|         ...
-//|
 STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
 
@@ -96,7 +95,6 @@ STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size
 //|     def deinit(self) -> None:
 //|         """Deinitialises the FrequencyIn and releases any hardware resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t frequencyio_frequencyin_deinit(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_frequencyio_frequencyin_deinit(self);
@@ -113,14 +111,12 @@ STATIC void check_for_deinit(frequencyio_frequencyin_obj_t *self) {
 //|     def __enter__(self) -> FrequencyIn:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t frequencyio_frequencyin_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_frequencyio_frequencyin_deinit(args[0]);
@@ -131,7 +127,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(frequencyio_frequencyin___exit___obj,
 //|     def pause(self) -> None:
 //|         """Pause frequency capture."""
 //|         ...
-//|
 STATIC mp_obj_t frequencyio_frequencyin_obj_pause(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -144,7 +139,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_pause_obj, frequencyio_frequen
 //|     def resume(self) -> None:
 //|         """Resumes frequency capture."""
 //|         ...
-//|
 STATIC mp_obj_t frequencyio_frequencyin_obj_resume(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -157,7 +151,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_resume_obj, frequencyio_freque
 //|     def clear(self) -> None:
 //|         """Clears the last detected frequency capture value."""
 //|         ...
-//|
 
 STATIC mp_obj_t frequencyio_frequencyin_obj_clear(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -175,7 +168,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_clear_obj, frequencyio_frequen
 //|
 //|     .. note:: When setting a new ``capture_period``, all previous capture information is
 //|               cleared with a call to ``clear()``."""
-//|
 STATIC mp_obj_t frequencyio_frequencyin_obj_get_capture_period(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

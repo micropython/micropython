@@ -1,3 +1,6 @@
+# Use internal flash for CIRCUITPY drive
+INTERNAL_FLASH_FILESYSTEM = 1
+
 # Internal math library is substantially smaller than toolchain one
 INTERNAL_LIBM = 1
 

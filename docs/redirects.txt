@@ -90,7 +90,6 @@ shared-bindings/microcontroller/Pin.rst shared-bindings/microcontroller/#microco
 shared-bindings/microcontroller/Processor.rst shared-bindings/microcontroller/#microcontroller.Processor
 shared-bindings/microcontroller/RunMode.rst shared-bindings/microcontroller/#microcontroller.RunMode
 shared-bindings/microcontroller/__init__.rst shared-bindings/microcontroller/
-shared-bindings/multiterminal/__init__.rst shared-bindings/multiterminal/
 shared-bindings/neopixel_write/__init__.rst shared-bindings/neopixel_write/
 shared-bindings/network/__init__.rst shared-bindings/network/
 shared-bindings/nvm/ByteArray.rst shared-bindings/nvm/#nvm.ByteArray

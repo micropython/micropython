@@ -33,7 +33,6 @@
 //|         """Enum-like class to define the drive mode used when outputting
 //|         digital values."""
 //|         ...
-//|
 //|     PUSH_PULL: DriveMode
 //|     """Output both high and low digital values"""
 //|

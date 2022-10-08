@@ -33,7 +33,6 @@
 #include "py/enum.h"
 
 //| class QRDecoder:
-//|
 //|     def __init__(self, width: int, height: int) -> None:
 //|         """Construct a QRDecoder object
 //|
@@ -58,9 +57,10 @@ STATIC mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args
     return self;
 }
 
-//|     def decode(self, buffer: ReadableBuffer, pixel_policy: PixelPolicy = PixelPolicy.EVERY_BYTE) -> List[QRInfo]:
+//|     def decode(
+//|         self, buffer: ReadableBuffer, pixel_policy: PixelPolicy = PixelPolicy.EVERY_BYTE
+//|     ) -> List[QRInfo]:
 //|         """Decode zero or more QR codes from the given image.  The size of the buffer must be at least ``length``×``width`` bytes for `EVERY_BYTE`, and 2×``length``×``width`` bytes for `EVEN_BYTES` or `ODD_BYTES`."""
-//|
 STATIC mp_obj_t qrio_qrdecoder_decode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -92,7 +92,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(qrio_qrdecoder_decode_obj, 1, qrio_qrdecoder_decode);
 
 //|     width: int
 //|     """The width of image the decoder expects"""
-//|
 STATIC mp_obj_t qrio_qrdecoder_get_width(mp_obj_t self_in) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(shared_module_qrio_qrdecoder_get_width(self));

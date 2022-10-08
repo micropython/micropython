@@ -37,8 +37,8 @@
 
 //| class SSLContext:
 //|     """Settings related to SSL that can be applied to a socket by wrapping it.
-//|        This is useful to provide SSL certificates to specific connections
-//|        rather than all of them."""
+//|     This is useful to provide SSL certificates to specific connections
+//|     rather than all of them."""
 //|
 
 STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -54,8 +54,7 @@ STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args
 
 //|     def load_verify_locations(self, cadata: Optional[str] = None) -> None:
 //|         """Load a set of certification authority (CA) certificates used to validate
-//|            other peers' certificates."""
-//|
+//|         other peers' certificates."""
 
 STATIC mp_obj_t ssl_sslcontext_load_verify_locations(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_cadata };
@@ -76,7 +75,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_verify_locations_obj, 1, s
 
 //|     def set_default_verify_paths(self) -> None:
 //|         """Load a set of default certification authority (CA) certificates."""
-//|
 
 STATIC mp_obj_t ssl_sslcontext_set_default_verify_paths(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -88,7 +86,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_set_default_verify_paths_obj, 1
 
 //|     check_hostname: bool
 //|     """Whether to match the peer certificate's hostname."""
-//|
 
 STATIC mp_obj_t ssl_sslcontext_get_check_hostname(mp_obj_t self_in) {
     ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -109,9 +106,15 @@ MP_PROPERTY_GETSET(ssl_sslcontext_check_hostname_obj,
     (mp_obj_t)&ssl_sslcontext_get_check_hostname_obj,
     (mp_obj_t)&ssl_sslcontext_set_check_hostname_obj);
 
-//|     def wrap_socket(self, sock: socketpool.Socket, *, server_side: bool = False, server_hostname: Optional[str] = None) -> ssl.SSLSocket:
+//|     def wrap_socket(
+//|         self,
+//|         sock: socketpool.Socket,
+//|         *,
+//|         server_side: bool = False,
+//|         server_hostname: Optional[str] = None
+//|     ) -> ssl.SSLSocket:
 //|         """Wraps the socket into a socket-compatible class that handles SSL negotiation.
-//|            The socket must be of type SOCK_STREAM."""
+//|         The socket must be of type SOCK_STREAM."""
 //|
 
 STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

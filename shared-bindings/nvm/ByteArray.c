@@ -43,20 +43,15 @@
 //|        import microcontroller
 //|        microcontroller.nvm[0:3] = b"\xcc\x10\x00"
 //|     """
-//|
 
 //|     def __init__(self) -> None:
 //|         """Not currently dynamically supported. Access the sole instance through `microcontroller.nvm`."""
 //|         ...
-//|
 
-//|     def __bool__(self) -> bool:
-//|         ...
-//|
+//|     def __bool__(self) -> bool: ...
 //|     def __len__(self) -> int:
 //|         """Return the length. This is used by (`len`)"""
 //|         ...
-//|
 STATIC mp_obj_t nvm_bytearray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     nvm_bytearray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint16_t len = common_hal_nvm_bytearray_get_length(self);
@@ -81,7 +76,6 @@ STATIC MP_DEFINE_CONST_DICT(nvm_bytearray_locals_dict, nvm_bytearray_locals_dict
 //|     def __getitem__(self, index: int) -> int:
 //|         """Returns the value at the given index."""
 //|         ...
-//|
 //|     @overload
 //|     def __setitem__(self, index: slice, value: ReadableBuffer) -> None: ...
 //|     @overload

@@ -38,10 +38,12 @@
 
 //| class PulseOut:
 //|     """Pulse PWM "carrier" output on and off. This is commonly used in infrared remotes. The
-//|        pulsed signal consists of timed on and off periods. Unlike PWM, there is no set duration
-//|        for on and off pairs."""
+//|     pulsed signal consists of timed on and off periods. Unlike PWM, there is no set duration
+//|     for on and off pairs."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin, *, frequency: int = 38000, duty_cycle: int = 1 << 15) -> None:
+//|     def __init__(
+//|         self, pin: microcontroller.Pin, *, frequency: int = 38000, duty_cycle: int = 1 << 15
+//|     ) -> None:
 //|         """Create a PulseOut object associated with the given pin.
 //|
 //|         :param ~microcontroller.Pin pin: Signal output pin
@@ -65,7 +67,6 @@
 //|           pulses[0] = 200
 //|           pulse.send(pulses)"""
 //|         ...
-//|
 STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin, ARG_frequency, ARG_duty_cycle};
     static const mp_arg_t allowed_args[] = {
@@ -89,7 +90,6 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
 //|     def deinit(self) -> None:
 //|         """Deinitialises the PulseOut and releases any hardware resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t pulseio_pulseout_deinit(mp_obj_t self_in) {
     pulseio_pulseout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_pulseio_pulseout_deinit(self);
@@ -100,14 +100,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulseout_deinit_obj, pulseio_pulseout_d
 //|     def __enter__(self) -> PulseOut:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t pulseio_pulseout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_pulseio_pulseout_deinit(args[0]);

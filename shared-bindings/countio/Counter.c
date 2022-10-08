@@ -11,10 +11,15 @@
 #include "shared-bindings/util.h"
 
 //| class Counter:
-//|     """Count the number of rising- and/or falling-edge transitions on a given pin.
-//|     """
+//|     """Count the number of rising- and/or falling-edge transitions on a given pin."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin, *, edge: Edge = Edge.FALL, pull: Optional[digitalio.Pull] = None) -> None:
+//|     def __init__(
+//|         self,
+//|         pin: microcontroller.Pin,
+//|         *,
+//|         edge: Edge = Edge.FALL,
+//|         pull: Optional[digitalio.Pull] = None
+//|     ) -> None:
 //|         """Create a Counter object associated with the given pin that counts
 //|         rising- and/or falling-edge transitions. At least one of ``rise`` and ``fall`` must be True.
 //|         The default is to count only falling edges, and is for historical backward compatibility.
@@ -38,7 +43,6 @@
 //|                 print(pin_counter.count)
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin, ARG_edge, ARG_pull };
     static const mp_arg_t allowed_args[] = {
@@ -63,7 +67,6 @@ STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_arg
 
 //|     def deinit(self) -> None:
 //|         """Deinitializes the Counter and releases any hardware resources for reuse."""
-//|
 STATIC mp_obj_t countio_counter_deinit(mp_obj_t self_in) {
     countio_counter_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_countio_counter_deinit(self);
@@ -79,13 +82,11 @@ STATIC void check_for_deinit(countio_counter_obj_t *self) {
 
 //|     def __enter__(self) -> Counter:
 //|         """No-op used by Context Managers."""
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
-//|            :ref:`lifetime-and-contextmanagers` for more info."""
-//|
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
 STATIC mp_obj_t countio_counter_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_countio_counter_deinit(args[0]);
@@ -96,7 +97,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(countio_counter___exit___obj, 4, 4, c
 
 //|     count: int
 //|     """The current count in terms of pulses."""
-//|
 STATIC mp_obj_t countio_counter_obj_get_count(mp_obj_t self_in) {
     countio_counter_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

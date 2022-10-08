@@ -43,7 +43,13 @@
 //|     """Manage updating a display over I2C in the background while Python code runs.
 //|     It doesn't handle display initialization."""
 //|
-//|     def __init__(self, i2c_bus: busio.I2C, *, device_address: int, reset: Optional[microcontroller.Pin] = None) -> None:
+//|     def __init__(
+//|         self,
+//|         i2c_bus: busio.I2C,
+//|         *,
+//|         device_address: int,
+//|         reset: Optional[microcontroller.Pin] = None
+//|     ) -> None:
 //|         """Create a I2CDisplay object associated with the given I2C bus and reset pin.
 //|
 //|         The I2C bus and pins are then in use by the display until `displayio.release_displays()` is
@@ -55,7 +61,6 @@
 //|         :param int device_address: The I2C address of the device
 //|         :param microcontroller.Pin reset: Reset pin. When None only software reset can be used"""
 //|         ...
-//|
 STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_i2c_bus, ARG_device_address, ARG_reset };
     static const mp_arg_t allowed_args[] = {
@@ -81,7 +86,6 @@ STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t 
 //|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
 //|         is available."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_i2cdisplay_obj_reset(mp_obj_t self_in) {
     displayio_i2cdisplay_obj_t *self = self_in;
 

@@ -45,7 +45,7 @@ extern void common_hal_esp32_camera_camera_construct(
     const mcu_pin_obj_t *href_pin,
     const mcu_pin_obj_t *powerdown_pin,
     const mcu_pin_obj_t *reset_pin,
-    const busio_i2c_obj_t *i2c,
+    busio_i2c_obj_t *i2c,
     mp_int_t external_clock_frequency,
     pixformat_t pixel_format,
     framesize_t frame_size,

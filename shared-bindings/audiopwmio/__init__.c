@@ -44,7 +44,6 @@
 //|
 //| Since CircuitPython 5, `Mixer`, `RawSample` and `WaveFile` are moved
 //| to :mod:`audiocore`."""
-//|
 
 STATIC const mp_rom_map_elem_t audiopwmio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiopwmio) },

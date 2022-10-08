@@ -31,7 +31,6 @@
 //|
 //|     def __init__(self) -> None:
 //|         """Enum-like class to define the run mode of the watchdog timer."""
-//|
 //|     RAISE: WatchDogMode
 //|     """Raise an exception when the WatchDogTimer expires.
 //|

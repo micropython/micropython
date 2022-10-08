@@ -81,7 +81,6 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
 //|         in CPython are not supported.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_family, ARG_type };
     static const mp_arg_t allowed_args[] = {
@@ -100,7 +99,15 @@ STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_socket_obj, 1, socketpool_socketpool_socket);
 
-//|     def getaddrinfo(self, host: str, port: int, family: int = 0, type: int = 0, proto: int = 0, flags: int = 0) -> Tuple[int, int, int, str, Tuple[str, int]]:
+//|     def getaddrinfo(
+//|         self,
+//|         host: str,
+//|         port: int,
+//|         family: int = 0,
+//|         type: int = 0,
+//|         proto: int = 0,
+//|         flags: int = 0,
+//|     ) -> Tuple[int, int, int, str, Tuple[str, int]]:
 //|         """Gets the address information for a hostname and port
 //|
 //|         Returns the appropriate family, socket type, socket protocol and

@@ -71,12 +71,6 @@ uint8_t display_init_sequence[] = {
 
 
 void board_init(void) {
-    // THIS SHOULD BE HANDLED BY espressif_board_reset_pin_number(), but it is not working.
-    // TEMPORARY FIX UNTIL IT'S DIAGNOSED.
-    common_hal_never_reset_pin(&pin_GPIO21);
-    gpio_set_direction(21, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(21, true);
-
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
@@ -93,9 +87,6 @@ void board_init(void) {
         );
     displayio_display_obj_t *display = &displays[0].display;
     display->base.type = &displayio_display_type;
-
-    // workaround as board_init() is called before reset_port() in main.c
-    pwmout_reset();
 
     common_hal_displayio_display_construct(
         display,
@@ -127,8 +118,6 @@ void board_init(void) {
         false,          // SH1107_addressing
         50000           // backlight pwm frequency
         );
-
-    common_hal_never_reset_pin(&pin_GPIO45); // backlight pin
 }
 
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {

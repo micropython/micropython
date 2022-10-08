@@ -41,7 +41,16 @@
 //| class SPIDevice:
 //|     """SPI Device Manager"""
 //|
-//|     def __init__(self, spi: busio.SPI, chip_select: digitalio.DigitalInOut, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, extra_clocks : int = 0) -> None:
+//|     def __init__(
+//|         self,
+//|         spi: busio.SPI,
+//|         chip_select: digitalio.DigitalInOut,
+//|         *,
+//|         baudrate: int = 100000,
+//|         polarity: int = 0,
+//|         phase: int = 0,
+//|         extra_clocks: int = 0
+//|     ) -> None:
 //|
 //|         """
 //|         Represents a single SPI device and manages locking the bus and the device address.
@@ -70,7 +79,6 @@
 //|                 with device as spi:
 //|                     spi.write(bytes_read)"""
 //|     ...
-//|
 STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     adafruit_bus_device_spidevice_obj_t *self = m_new_obj(adafruit_bus_device_spidevice_obj_t);
     self->base.type = &adafruit_bus_device_spidevice_type;
@@ -108,7 +116,6 @@ STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type
 //|     def __enter__(self) -> busio.SPI:
 //|         """Starts a SPI transaction by configuring the SPI and asserting chip select."""
 //|         ...
-//|
 STATIC mp_obj_t adafruit_bus_device_spidevice_obj___enter__(mp_obj_t self_in) {
     adafruit_bus_device_spidevice_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_adafruit_bus_device_spidevice_enter(self);

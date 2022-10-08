@@ -53,9 +53,7 @@ static bool _suspended = false;
 // Clear if possible, but give up if we can't do it now.
 void supervisor_status_bar_clear(void) {
     if (!_suspended) {
-        supervisor_status_bar_set_update_in_progress(&shared_module_supervisor_status_bar_obj, true);
         serial_write("\x1b" "]0;" "\x1b" "\\");
-        supervisor_status_bar_set_update_in_progress(&shared_module_supervisor_status_bar_obj, false);
     }
 }
 
@@ -66,9 +64,31 @@ void supervisor_status_bar_update(void) {
     }
     _forced_dirty = false;
 
-    supervisor_status_bar_set_update_in_progress(&shared_module_supervisor_status_bar_obj, true);
+    shared_module_supervisor_status_bar_updated(&shared_module_supervisor_status_bar_obj);
 
-    // Neighboring "" "" are concatenated by the compiler. Without this separation, the hex code
+    // Disable status bar console writes if supervisor.status_bar.console is False.
+    // Also disable if there is no serial connection now. This avoids sending part
+    // of the status bar update if the serial connection comes up during the update.
+    bool disable_console_writes =
+        !shared_module_supervisor_status_bar_get_console(&shared_module_supervisor_status_bar_obj) ||
+        !serial_connected();
+
+    // Disable status bar display writes if supervisor.status_bar.display is False.
+    bool disable_display_writes =
+        !shared_module_supervisor_status_bar_get_display(&shared_module_supervisor_status_bar_obj);
+
+    // Suppress writes to console and/or display if status bar is not enabled for either or both.
+    bool prev_console_disable;
+    bool prev_display_disable;
+
+    if (disable_console_writes) {
+        prev_console_disable = serial_console_write_disable(true);
+    }
+    if (disable_display_writes) {
+        prev_display_disable = serial_display_write_disable(true);
+    }
+
+    // Neighboring "..." "..." are concatenated by the compiler. Without this separation, the hex code
     // doesn't get terminated after two following characters and the value is invalid.
     // This is the OSC command to set the title and the icon text. It can be up to 255 characters
     // but some may be cut off.
@@ -91,7 +111,14 @@ void supervisor_status_bar_update(void) {
     // Send string terminator
     serial_write("\x1b" "\\");
 
-    supervisor_status_bar_set_update_in_progress(&shared_module_supervisor_status_bar_obj, false);
+    // Restore writes to console and/or display.
+    if (disable_console_writes) {
+        serial_console_write_disable(prev_console_disable);
+    }
+    if (disable_display_writes) {
+        serial_display_write_disable(prev_display_disable);
+    }
+
 }
 
 static void status_bar_background(void *data) {
@@ -137,8 +164,5 @@ void supervisor_status_bar_init(void) {
     status_bar_background_cb.fun = status_bar_background;
     status_bar_background_cb.data = NULL;
 
-    shared_module_supervisor_status_bar_obj.console = true;
-    shared_module_supervisor_status_bar_obj.display = true;
-    shared_module_supervisor_status_bar_obj.update_in_progress = false;
-    shared_module_supervisor_status_bar_obj.written = false;
+    shared_module_supervisor_status_bar_init(&shared_module_supervisor_status_bar_obj);
 }

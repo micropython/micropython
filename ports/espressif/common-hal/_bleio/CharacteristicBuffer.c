@@ -72,11 +72,7 @@ void _common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buff
     void *static_handler_entry) {
     self->characteristic = characteristic;
     self->timeout_ms = timeout * 1000;
-
-    self->ringbuf.buf = (uint8_t *)buffer;
-    self->ringbuf.size = buffer_size;
-    self->ringbuf.iget = 0;
-    self->ringbuf.iput = 0;
+    ringbuf_init(&self->ringbuf, buffer, buffer_size);
 
     if (static_handler_entry != NULL) {
         ble_event_add_handler_entry((ble_event_handler_entry_t *)static_handler_entry, characteristic_buffer_on_ble_evt, self);
@@ -131,6 +127,7 @@ void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_o
     if (!common_hal_bleio_characteristic_buffer_deinited(self)) {
         ble_event_remove_handler(characteristic_buffer_on_ble_evt, self);
         self->characteristic = NULL;
+        ringbuf_deinit(&self->ringbuf);
     }
 }
 

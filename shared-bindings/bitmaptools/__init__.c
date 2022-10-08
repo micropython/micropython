@@ -50,7 +50,6 @@
 //|     <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_
 //|     for information about using the :py:mod:`displayio` module.
 //| """
-//|
 
 STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
     // Checks if point is None and returns default_value, otherwise decodes integer value
@@ -126,45 +125,54 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 
 }
 
-//|
 //| def rotozoom(
-//|        dest_bitmap: displayio.Bitmap, source_bitmap: displayio.Bitmap,
-//|        *,
-//|        ox: int, oy: int, dest_clip0: Tuple[int, int], dest_clip1: Tuple[int, int],
-//|        px: int, py: int, source_clip0: Tuple[int, int], source_clip1: Tuple[int, int],
-//|        angle: float, scale: float, skip_index: int) -> None:
-//|      """Inserts the source bitmap region into the destination bitmap with rotation
-//|      (angle), scale and clipping (both on source and destination bitmaps).
+//|     dest_bitmap: displayio.Bitmap,
+//|     source_bitmap: displayio.Bitmap,
+//|     *,
+//|     ox: int,
+//|     oy: int,
+//|     dest_clip0: Tuple[int, int],
+//|     dest_clip1: Tuple[int, int],
+//|     px: int,
+//|     py: int,
+//|     source_clip0: Tuple[int, int],
+//|     source_clip1: Tuple[int, int],
+//|     angle: float,
+//|     scale: float,
+//|     skip_index: int
+//| ) -> None:
+//|     """Inserts the source bitmap region into the destination bitmap with rotation
+//|     (angle), scale and clipping (both on source and destination bitmaps).
 //|
-//|      :param bitmap dest_bitmap: Destination bitmap that will be copied into
-//|      :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
-//|      :param int ox: Horizontal pixel location in destination bitmap where source bitmap
-//|             point (px,py) is placed. Defaults to None which causes it to use the horizontal
-//|             midway point of the destination bitmap.
-//|      :param int oy: Vertical pixel location in destination bitmap where source bitmap
-//|             point (px,py) is placed. Defaults to None which causes it to use the vertical
-//|             midway point of the destination bitmap.
-//|      :param Tuple[int,int] dest_clip0: First corner of rectangular destination clipping
-//|             region that constrains region of writing into destination bitmap
-//|      :param Tuple[int,int] dest_clip1: Second corner of rectangular destination clipping
-//|             region that constrains region of writing into destination bitmap
-//|      :param int px: Horizontal pixel location in source bitmap that is placed into the
-//|             destination bitmap at (ox,oy). Defaults to None which causes it to use the
-//|             horizontal midway point in the source bitmap.
-//|      :param int py: Vertical pixel location in source bitmap that is placed into the
-//|             destination bitmap at (ox,oy). Defaults to None which causes it to use the
-//|             vertical midway point in the source bitmap.
-//|      :param Tuple[int,int] source_clip0: First corner of rectangular source clipping
-//|             region that constrains region of reading from the source bitmap
-//|      :param Tuple[int,int] source_clip1: Second corner of rectangular source clipping
-//|             region that constrains region of reading from the source bitmap
-//|      :param float angle: Angle of rotation, in radians (positive is clockwise direction).
-//|             Defaults to None which gets treated as 0.0 radians or no rotation.
-//|      :param float scale: Scaling factor. Defaults to None which gets treated as 1.0 or same
-//|             as original source size.
-//|      :param int skip_index: Bitmap palette index in the source that will not be copied,
-//|             set to None to copy all pixels"""
-//|      ...
+//|     :param bitmap dest_bitmap: Destination bitmap that will be copied into
+//|     :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
+//|     :param int ox: Horizontal pixel location in destination bitmap where source bitmap
+//|            point (px,py) is placed. Defaults to None which causes it to use the horizontal
+//|            midway point of the destination bitmap.
+//|     :param int oy: Vertical pixel location in destination bitmap where source bitmap
+//|            point (px,py) is placed. Defaults to None which causes it to use the vertical
+//|            midway point of the destination bitmap.
+//|     :param Tuple[int,int] dest_clip0: First corner of rectangular destination clipping
+//|            region that constrains region of writing into destination bitmap
+//|     :param Tuple[int,int] dest_clip1: Second corner of rectangular destination clipping
+//|            region that constrains region of writing into destination bitmap
+//|     :param int px: Horizontal pixel location in source bitmap that is placed into the
+//|            destination bitmap at (ox,oy). Defaults to None which causes it to use the
+//|            horizontal midway point in the source bitmap.
+//|     :param int py: Vertical pixel location in source bitmap that is placed into the
+//|            destination bitmap at (ox,oy). Defaults to None which causes it to use the
+//|            vertical midway point in the source bitmap.
+//|     :param Tuple[int,int] source_clip0: First corner of rectangular source clipping
+//|            region that constrains region of reading from the source bitmap
+//|     :param Tuple[int,int] source_clip1: Second corner of rectangular source clipping
+//|            region that constrains region of reading from the source bitmap
+//|     :param float angle: Angle of rotation, in radians (positive is clockwise direction).
+//|            Defaults to None which gets treated as 0.0 radians or no rotation.
+//|     :param float scale: Scaling factor. Defaults to None which gets treated as 1.0 or same
+//|            as original source size.
+//|     :param int skip_index: Bitmap palette index in the source that will not be copied,
+//|            set to None to copy all pixels"""
+//|     ...
 //|
 STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_source_bitmap,
@@ -266,8 +274,14 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom);
 // requires at least 2 arguments (destination bitmap and source bitmap)
 
-//|
-//| def alphablend(dest_bitmap: displayio.Bitmap , source_bitmap_1: displayio.Bitmap, source_bitmap_2: displayio.Bitmap, colorspace: displayio.Colorspace, factor1: float=.5, factor2: float=None) -> None:
+//| def alphablend(
+//|     dest_bitmap: displayio.Bitmap,
+//|     source_bitmap_1: displayio.Bitmap,
+//|     source_bitmap_2: displayio.Bitmap,
+//|     colorspace: displayio.Colorspace,
+//|     factor1: float = 0.5,
+//|     factor2: Optional[float] = None,
+//| ) -> None:
 //|     """Alpha blend the two source bitmaps into the destination.
 //|
 //|     It is permitted for the destination bitmap to be one of the two
@@ -343,23 +357,20 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_alphablend_obj, 0, bitmaptools_alphablend);
 
-//|
 //| def fill_region(
-//|        dest_bitmap: displayio.Bitmap,
-//|        x1: int, y1: int,
-//|        x2: int, y2: int,
-//|        value: int) -> None:
-//|      """Draws the color value into the destination bitmap within the
-//|      rectangular region bounded by (x1,y1) and (x2,y2), exclusive.
+//|     dest_bitmap: displayio.Bitmap, x1: int, y1: int, x2: int, y2: int, value: int
+//| ) -> None:
+//|     """Draws the color value into the destination bitmap within the
+//|     rectangular region bounded by (x1,y1) and (x2,y2), exclusive.
 //|
-//|      :param bitmap dest_bitmap: Destination bitmap that will be written into
-//|      :param int x1: x-pixel position of the first corner of the rectangular fill region
-//|      :param int y1: y-pixel position of the first corner of the rectangular fill region
-//|      :param int x2: x-pixel position of the second corner of the rectangular fill region (exclusive)
-//|      :param int y2: y-pixel position of the second corner of the rectangular fill region (exclusive)
-//|      :param int value: Bitmap palette index that will be written into the rectangular
-//|             fill region in the destination bitmap"""
-//|      ...
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param int x1: x-pixel position of the first corner of the rectangular fill region
+//|     :param int y1: y-pixel position of the first corner of the rectangular fill region
+//|     :param int x2: x-pixel position of the second corner of the rectangular fill region (exclusive)
+//|     :param int y2: y-pixel position of the second corner of the rectangular fill region (exclusive)
+//|     :param int value: Bitmap palette index that will be written into the rectangular
+//|            fill region in the destination bitmap"""
+//|     ...
 //|
 STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
@@ -395,23 +406,25 @@ STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_a
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_region);
-//|
 //| def boundary_fill(
-//|        dest_bitmap: displayio.Bitmap,
-//|        x: int, y: int,
-//|        fill_color_value: int, replaced_color_value: int) -> None:
-//|      """Draws the color value into the destination bitmap enclosed
-//|      area of pixels of the background_value color. Like "Paint Bucket"
-//|      fill tool.
+//|     dest_bitmap: displayio.Bitmap,
+//|     x: int,
+//|     y: int,
+//|     fill_color_value: int,
+//|     replaced_color_value: int,
+//| ) -> None:
+//|     """Draws the color value into the destination bitmap enclosed
+//|     area of pixels of the background_value color. Like "Paint Bucket"
+//|     fill tool.
 //|
-//|      :param bitmap dest_bitmap: Destination bitmap that will be written into
-//|      :param int x: x-pixel position of the first pixel to check and fill if needed
-//|      :param int y: y-pixel position of the first pixel to check and fill if needed
-//|      :param int fill_color_value: Bitmap palette index that will be written into the
-//|             enclosed area in the destination bitmap
-//|      :param int replaced_color_value: Bitmap palette index that will filled with the
-//|             value color in the enclosed area in the destination bitmap"""
-//|      ...
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param int x: x-pixel position of the first pixel to check and fill if needed
+//|     :param int y: y-pixel position of the first pixel to check and fill if needed
+//|     :param int fill_color_value: Bitmap palette index that will be written into the
+//|            enclosed area in the destination bitmap
+//|     :param int replaced_color_value: Bitmap palette index that will filled with the
+//|            value color in the enclosed area in the destination bitmap"""
+//|     ...
 //|
 STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_fill_color_value, ARG_replaced_color_value};
@@ -459,22 +472,19 @@ STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_boundary_fill_obj, 0, bitmaptools_obj_boundary_fill);
 // requires all 6 arguments
 
-//|
 //| def draw_line(
-//|        dest_bitmap: displayio.Bitmap,
-//|        x1: int, y1: int,
-//|        x2: int, y2: int,
-//|        value: int) -> None:
-//|      """Draws a line into a bitmap specified two endpoints (x1,y1) and (x2,y2).
+//|     dest_bitmap: displayio.Bitmap, x1: int, y1: int, x2: int, y2: int, value: int
+//| ) -> None:
+//|     """Draws a line into a bitmap specified two endpoints (x1,y1) and (x2,y2).
 //|
-//|      :param bitmap dest_bitmap: Destination bitmap that will be written into
-//|      :param int x1: x-pixel position of the line's first endpoint
-//|      :param int y1: y-pixel position of the line's first endpoint
-//|      :param int x2: x-pixel position of the line's second endpoint
-//|      :param int y2: y-pixel position of the line's second endpoint
-//|      :param int value: Bitmap palette index that will be written into the
-//|             line in the destination bitmap"""
-//|      ...
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param int x1: x-pixel position of the line's first endpoint
+//|     :param int y1: y-pixel position of the line's first endpoint
+//|     :param int x2: x-pixel position of the line's second endpoint
+//|     :param int y2: y-pixel position of the line's second endpoint
+//|     :param int value: Bitmap palette index that will be written into the
+//|            line in the destination bitmap"""
+//|     ...
 //|
 STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
@@ -519,7 +529,15 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_line);
 // requires all 6 arguments
 
-//| def arrayblit(bitmap: displayio.Bitmap, data: ReadableBuffer, x1: int=0, y1: int=0, x2: Optional[int]=None, y2: Optional[int]=None, skip_index:Optional[int]=None) -> None:
+//| def arrayblit(
+//|     bitmap: displayio.Bitmap,
+//|     data: ReadableBuffer,
+//|     x1: int = 0,
+//|     y1: int = 0,
+//|     x2: Optional[int] = None,
+//|     y2: Optional[int] = None,
+//|     skip_index: Optional[int] = None,
+//| ) -> None:
 //|     """Inserts pixels from ``data`` into the rectangle of width×height pixels with the upper left corner at ``(x,y)``
 //|
 //|     The values from ``data`` are taken modulo the number of color values
@@ -593,7 +611,15 @@ STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, m
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_arrayblit_obj, 0, bitmaptools_arrayblit);
 
 
-//| def readinto(bitmap: displayio.Bitmap, file: typing.BinaryIO, bits_per_pixel: int, element_size: int = 1, reverse_pixels_in_element: bool = False, swap_bytes_in_element: bool = False, reverse_rows: bool = False) -> None:
+//| def readinto(
+//|     bitmap: displayio.Bitmap,
+//|     file: typing.BinaryIO,
+//|     bits_per_pixel: int,
+//|     element_size: int = 1,
+//|     reverse_pixels_in_element: bool = False,
+//|     swap_bytes_in_element: bool = False,
+//|     reverse_rows: bool = False,
+//| ) -> None:
 //|     """Reads from a binary file into a bitmap.
 //|
 //|     The file must be positioned so that it consists of ``bitmap.height`` rows of pixel data, where each row is the smallest multiple of ``element_size`` bytes that can hold ``bitmap.width`` pixels.
@@ -688,7 +714,12 @@ MAKE_PRINTER(bitmaptools, bitmaptools_dither_algorithm);
 
 MAKE_ENUM_TYPE(bitmaptools, DitherAlgorithm, bitmaptools_dither_algorithm);
 
-//| def dither(dest_bitmap: displayio.Bitmap, source_bitmapp: displayio.Bitmap, source_colorspace: displayio.Colorspace, algorithm: DitherAlgorithm=DitherAlgorithm.Atkinson) -> None:
+//| def dither(
+//|     dest_bitmap: displayio.Bitmap,
+//|     source_bitmapp: displayio.Bitmap,
+//|     source_colorspace: displayio.Colorspace,
+//|     algorithm: DitherAlgorithm = DitherAlgorithm.Atkinson,
+//| ) -> None:
 //|     """Convert the input image into a 2-level output image using the given dither algorithm.
 //|
 //|     :param bitmap dest_bitmap: Destination bitmap.  It must have a value_count of 2 or 65536.  The stored values are 0 and the maximum pixel value.

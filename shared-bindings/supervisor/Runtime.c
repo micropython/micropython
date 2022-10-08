@@ -34,6 +34,9 @@
 #include "shared-bindings/supervisor/Runtime.h"
 
 #include "supervisor/shared/reload.h"
+#include "supervisor/shared/stack.h"
+#include "supervisor/shared/status_leds.h"
+#include "supervisor/shared/bluetooth/bluetooth.h"
 
 #if (CIRCUITPY_USB)
 #include "tusb.h"
@@ -57,11 +60,9 @@ STATIC supervisor_run_reason_t _run_reason;
 //|         """You cannot create an instance of `supervisor.Runtime`.
 //|         Use `supervisor.runtime` to access the sole instance available."""
 //|         ...
-//|
 
 //|     usb_connected: bool
 //|     """Returns the USB enumeration status (read-only)."""
-//|
 STATIC mp_obj_t supervisor_runtime_get_usb_connected(mp_obj_t self) {
     #if CIRCUITPY_USB
     return mp_obj_new_bool(tud_ready());
@@ -76,7 +77,6 @@ MP_PROPERTY_GETTER(supervisor_runtime_usb_connected_obj,
 
 //|     serial_connected: bool
 //|     """Returns the USB serial communication status (read-only)."""
-//|
 STATIC mp_obj_t supervisor_runtime_get_serial_connected(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_supervisor_runtime_get_serial_connected());
 }
@@ -89,7 +89,6 @@ MP_PROPERTY_GETTER(supervisor_runtime_serial_connected_obj,
 //|     """Returns the whether any bytes are available to read
 //|     on the USB serial input.  Allows for polling to see whether
 //|     to call the built-in input() or wait. (read-only)"""
-//|
 STATIC mp_obj_t supervisor_runtime_get_serial_bytes_available(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_supervisor_runtime_get_serial_bytes_available());
 }
@@ -108,7 +107,6 @@ void supervisor_set_run_reason(supervisor_run_reason_t run_reason) {
 
 //|     run_reason: RunReason
 //|     """Why CircuitPython started running this particular time."""
-//|
 STATIC mp_obj_t supervisor_runtime_get_run_reason(mp_obj_t self) {
     return cp_enum_find(&supervisor_run_reason_type, _run_reason);
 }
@@ -139,12 +137,91 @@ MP_PROPERTY_GETSET(supervisor_runtime_autoreload_obj,
     (mp_obj_t)&supervisor_runtime_get_autoreload_obj,
     (mp_obj_t)&supervisor_runtime_set_autoreload_obj);
 
+//|     ble_workflow: bool
+//|     """Enable/Disable ble workflow until a reset. This prevents BLE advertising outside of the VM and
+//|     the services used for it."""
+//|
+STATIC mp_obj_t supervisor_runtime_get_ble_workflow(mp_obj_t self) {
+    #if CIRCUITPY_BLE_FILE_SERVICE && CIRCUITPY_SERIAL_BLE
+    return mp_obj_new_bool(supervisor_bluetooth_workflow_is_enabled());
+    #else
+    return mp_const_false;
+    #endif
+}
+MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_ble_workflow_obj, supervisor_runtime_get_ble_workflow);
+
+STATIC mp_obj_t supervisor_runtime_set_ble_workflow(mp_obj_t self, mp_obj_t state_in) {
+    #if CIRCUITPY_BLE_FILE_SERVICE && CIRCUITPY_SERIAL_BLE
+    if (mp_obj_is_true(state_in)) {
+        supervisor_bluetooth_enable_workflow();
+    } else {
+        supervisor_bluetooth_disable_workflow();
+    }
+    #else
+    mp_raise_NotImplementedError(NULL);
+    #endif
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(supervisor_runtime_set_ble_workflow_obj, supervisor_runtime_set_ble_workflow);
+
+MP_PROPERTY_GETSET(supervisor_runtime_ble_workflow_obj,
+    (mp_obj_t)&supervisor_runtime_get_ble_workflow_obj,
+    (mp_obj_t)&supervisor_runtime_set_ble_workflow_obj);
+
+//|     next_stack_limit: int
+//|     """The size of the stack for the next vm run. If its too large, the default will be used."""
+//|
+STATIC mp_obj_t supervisor_runtime_get_next_stack_limit(mp_obj_t self) {
+    return mp_obj_new_int(get_next_stack_size());
+}
+MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_next_stack_limit_obj, supervisor_runtime_get_next_stack_limit);
+
+STATIC mp_obj_t supervisor_runtime_set_next_stack_limit(mp_obj_t self, mp_obj_t size_obj) {
+    mp_int_t size = mp_obj_get_int(size_obj);
+    mp_arg_validate_int_min(size, 256, MP_QSTR_size);
+    set_next_stack_size(size);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(supervisor_runtime_set_next_stack_limit_obj, supervisor_runtime_set_next_stack_limit);
+
+MP_PROPERTY_GETSET(supervisor_runtime_next_stack_limit_obj,
+    (mp_obj_t)&supervisor_runtime_get_next_stack_limit_obj,
+    (mp_obj_t)&supervisor_runtime_set_next_stack_limit_obj);
+
+//|     rgb_status_brightness: int
+//|     """Set brightness of status RGB LED from 0-255. This will take effect
+//|     after the current code finishes and the status LED is used to show
+//|     the finish state."""
+//|
+STATIC mp_obj_t supervisor_runtime_get_rgb_status_brightness(mp_obj_t self) {
+    return MP_OBJ_NEW_SMALL_INT(get_status_brightness());
+}
+MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_rgb_status_brightness_obj, supervisor_runtime_get_rgb_status_brightness);
+
+STATIC mp_obj_t supervisor_runtime_set_rgb_status_brightness(mp_obj_t self, mp_obj_t lvl) {
+    #if CIRCUITPY_STATUS_LED
+    // This must be int. If cast to uint8_t first, will never raise a ValueError.
+    set_status_brightness((uint8_t)mp_arg_validate_int_range(mp_obj_get_int(lvl), 0, 255, MP_QSTR_brightness));
+    #else
+    mp_raise_NotImplementedError(NULL);
+    #endif
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(supervisor_runtime_set_rgb_status_brightness_obj, supervisor_runtime_set_rgb_status_brightness);
+
+MP_PROPERTY_GETSET(supervisor_runtime_rgb_status_brightness_obj,
+    (mp_obj_t)&supervisor_runtime_get_rgb_status_brightness_obj,
+    (mp_obj_t)&supervisor_runtime_set_rgb_status_brightness_obj);
+
 STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_usb_connected), MP_ROM_PTR(&supervisor_runtime_usb_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_serial_connected), MP_ROM_PTR(&supervisor_runtime_serial_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_serial_bytes_available), MP_ROM_PTR(&supervisor_runtime_serial_bytes_available_obj) },
     { MP_ROM_QSTR(MP_QSTR_run_reason), MP_ROM_PTR(&supervisor_runtime_run_reason_obj) },
     { MP_ROM_QSTR(MP_QSTR_autoreload), MP_ROM_PTR(&supervisor_runtime_autoreload_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ble_workflow),  MP_ROM_PTR(&supervisor_runtime_ble_workflow_obj) },
+    { MP_ROM_QSTR(MP_QSTR_next_stack_limit),  MP_ROM_PTR(&supervisor_runtime_next_stack_limit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rgb_status_brightness),  MP_ROM_PTR(&supervisor_runtime_rgb_status_brightness_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_runtime_locals_dict, supervisor_runtime_locals_dict_table);

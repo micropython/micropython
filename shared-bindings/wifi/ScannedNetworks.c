@@ -50,14 +50,12 @@ STATIC mp_obj_t scannednetworks_iternext(mp_obj_t self_in) {
 //|     def __init__(self) -> None:
 //|         """Cannot be instantiated directly. Use `wifi.Radio.start_scanning_networks`."""
 //|         ...
-//|
 //|     def __iter__(self) -> Iterator[Network]:
 //|         """Returns itself since it is the iterator."""
 //|         ...
-//|
 //|     def __next__(self) -> Network:
 //|         """Returns the next `wifi.Network`.
-//|            Raises `StopIteration` if scanning is finished and no other results are available."""
+//|         Raises `StopIteration` if scanning is finished and no other results are available."""
 //|         ...
 //|
 

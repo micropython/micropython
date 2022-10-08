@@ -71,7 +71,6 @@ STATIC mp_obj_t wifi_monitor_make_new(const mp_obj_type_t *type, size_t n_args, 
 
 //| channel: int
 //| """The WiFi channel to scan."""
-//|
 STATIC mp_obj_t wifi_monitor_obj_get_channel(mp_obj_t self_in) {
     return common_hal_wifi_monitor_get_channel(self_in);
 }
@@ -93,7 +92,6 @@ MP_PROPERTY_GETSET(wifi_monitor_channel_obj,
 
 //| queue: int
 //| """The queue size for buffering the packet."""
-//|
 STATIC mp_obj_t wifi_monitor_obj_get_queue(mp_obj_t self_in) {
     return common_hal_wifi_monitor_get_queue(self_in);
 }

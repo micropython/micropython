@@ -17,7 +17,13 @@
 
 
 //| class Polygon:
-//|     def __init__(self, pixel_shader: Union[displayio.ColorConverter, displayio.Palette], points: List[Tuple[int, int]], x: int, y: int) -> None:
+//|     def __init__(
+//|         self,
+//|         pixel_shader: Union[displayio.ColorConverter, displayio.Palette],
+//|         points: List[Tuple[int, int]],
+//|         x: int,
+//|         y: int,
+//|     ) -> None:
 //|         """Represents a closed shape by ordered vertices. The path will be treated as
 //|         'closed', the last point will connect to the first point.
 //|
@@ -27,7 +33,6 @@
 //|         :param int x: Initial screen x position of the 0,0 origin in the points list.
 //|         :param int y: Initial screen y position of the 0,0 origin in the points list.
 //|         :param int color_index: Initial color_index to use when selecting color from the palette."""
-//|
 static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pixel_shader, ARG_points_list, ARG_x, ARG_y, ARG_color_index };
     static const mp_arg_t allowed_args[] = {
@@ -67,7 +72,6 @@ STATIC const vectorio_draw_protocol_t polygon_draw_protocol = {
 
 //|     points: List[Tuple[int, int]]
 //|     """Vertices for the polygon."""
-//|
 STATIC mp_obj_t vectorio_polygon_obj_get_points(mp_obj_t self_in) {
     vectorio_polygon_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_vectorio_polygon_get_points(self);
@@ -86,9 +90,8 @@ MP_PROPERTY_GETSET(vectorio_polygon_points_obj,
     (mp_obj_t)&vectorio_polygon_get_points_obj,
     (mp_obj_t)&vectorio_polygon_set_points_obj);
 
-//|     color_index : int
+//|     color_index: int
 //|     """The color_index of the polygon as 0 based index of the palette."""
-//|
 STATIC mp_obj_t vectorio_polygon_obj_get_color_index(mp_obj_t self_in) {
     vectorio_polygon_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(common_hal_vectorio_polygon_get_color_index(self));
@@ -109,16 +112,16 @@ MP_PROPERTY_GETSET(vectorio_polygon_color_index_obj,
 
 // Documentation for properties inherited from VectorShape.
 
-//|     x : int
+//|     x: int
 //|     """X position of the 0,0 origin in the points list."""
 //|
-//|     y : int
+//|     y: int
 //|     """Y position of the 0,0 origin in the points list."""
 //|
-//|     location : Tuple[int,int]
+//|     location: Tuple[int, int]
 //|     """(X,Y) position of the 0,0 origin in the points list."""
 //|
-//|     pixel_shader : Union[displayio.ColorConverter,displayio.Palette]
+//|     pixel_shader: Union[displayio.ColorConverter, displayio.Palette]
 //|     """The pixel shader of the polygon."""
 //|
 

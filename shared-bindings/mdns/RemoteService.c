@@ -40,11 +40,9 @@
 //|     def __init__(self) -> None:
 //|         """Cannot be instantiated directly. Use `mdns.Server.find`."""
 //|         ...
-//|
 
 //|     hostname: str
 //|     """The hostname of the device (read-only),."""
-//|
 STATIC mp_obj_t mdns_remoteservice_get_hostname(mp_obj_t self_in) {
     mdns_remoteservice_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const char *hostname = common_hal_mdns_remoteservice_get_hostname(self);
@@ -57,7 +55,6 @@ MP_PROPERTY_GETTER(mdns_remoteservice_hostname_obj,
 
 //|     instance_name: str
 //|     """The human readable instance name for the service. (read-only)"""
-//|
 STATIC mp_obj_t remoteservice_get_instance_name(mp_obj_t self_in) {
     mdns_remoteservice_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const char *instance_name = common_hal_mdns_remoteservice_get_instance_name(self);
@@ -70,7 +67,6 @@ MP_PROPERTY_GETTER(mdns_remoteservice_instance_name_obj,
 
 //|     service_type: str
 //|     """The service type string such as ``_http``. (read-only)"""
-//|
 STATIC mp_obj_t remoteservice_get_service_type(mp_obj_t self_in) {
     mdns_remoteservice_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const char *service_type = common_hal_mdns_remoteservice_get_service_type(self);
@@ -83,7 +79,6 @@ MP_PROPERTY_GETTER(mdns_remoteservice_service_type_obj,
 
 //|     protocol: str
 //|     """The protocol string such as ``_tcp``. (read-only)"""
-//|
 STATIC mp_obj_t remoteservice_get_protocol(mp_obj_t self_in) {
     mdns_remoteservice_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const char *protocol = common_hal_mdns_remoteservice_get_protocol(self);
@@ -96,7 +91,6 @@ MP_PROPERTY_GETTER(mdns_remoteservice_protocol_obj,
 
 //|     port: int
 //|     """Port number used for the service. (read-only)"""
-//|
 STATIC mp_obj_t remoteservice_get_port(mp_obj_t self_in) {
     mdns_remoteservice_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_mdns_remoteservice_get_port(self));
@@ -108,7 +102,6 @@ MP_PROPERTY_GETTER(mdns_remoteservice_port_obj,
 
 //|     ipv4_address: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the remote service. None if no A records are found."""
-//|
 STATIC mp_obj_t _mdns_remoteservice_get_ipv4_address(mp_obj_t self) {
     return common_hal_mdns_remoteservice_get_ipv4_address(self);
 

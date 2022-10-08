@@ -1,12 +1,10 @@
 # For nvm.toml
 cascadetoml
 jinja2
-# Undo this pin when click and typer are again compatible.
-typer==0.4.0
+typer
 
 sh
-# Undo this pin when click and typer are again compatible.
-click==8.0.4
+click
 cpp-coveralls
 requests
 requests-cache
@@ -27,6 +25,9 @@ pyelftools
 
 # for stubs and annotations
 adafruit-circuitpython-typing
+
+# for mbedtls certificate store
+cryptography
 
 # for web workflow minify
 minify_html

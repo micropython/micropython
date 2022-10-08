@@ -37,7 +37,9 @@
 //| class IncrementalEncoder:
 //|     """IncrementalEncoder determines the relative rotational position based on two series of pulses."""
 //|
-//|     def __init__(self, pin_a: microcontroller.Pin, pin_b: microcontroller.Pin, divisor: int = 4) -> None:
+//|     def __init__(
+//|         self, pin_a: microcontroller.Pin, pin_b: microcontroller.Pin, divisor: int = 4
+//|     ) -> None:
 //|         """Create an IncrementalEncoder object associated with the given pins. It tracks the positional
 //|         state of an incremental rotary encoder (also known as a quadrature encoder.) Position is
 //|         relative to the position when the object is contructed.
@@ -60,7 +62,6 @@
 //|                   print(position)
 //|               last_position = position"""
 //|         ...
-//|
 STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin_a, ARG_pin_b, ARG_divisor };
     static const mp_arg_t allowed_args[] = {
@@ -87,7 +88,6 @@ STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, 
 //|     def deinit(self) -> None:
 //|         """Deinitializes the IncrementalEncoder and releases any hardware resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t rotaryio_incrementalencoder_deinit(mp_obj_t self_in) {
     rotaryio_incrementalencoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_rotaryio_incrementalencoder_deinit(self);
@@ -104,14 +104,12 @@ STATIC void check_for_deinit(rotaryio_incrementalencoder_obj_t *self) {
 //|     def __enter__(self) -> IncrementalEncoder:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t rotaryio_incrementalencoder_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_rotaryio_incrementalencoder_deinit(args[0]);
@@ -124,7 +122,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rotaryio_incrementalencoder___exit___
 //|     """The divisor of the quadrature signal.  Use 1 for encoders without
 //|     detents, or encoders with 4 detents per cycle.  Use 2 for encoders with 2
 //|     detents per cycle.  Use 4 for encoders with 1 detent per cycle."""
-//|
 STATIC mp_obj_t rotaryio_incrementalencoder_obj_get_divisor(mp_obj_t self_in) {
     rotaryio_incrementalencoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

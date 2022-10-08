@@ -41,7 +41,6 @@
 //|         hardware so they cannot be constructed on demand. Instead, use
 //|         :mod:`board` or :mod:`microcontroller.pin` to reference the desired pin."""
 //|         ...
-//|
 
 //|     def __hash__(self) -> int:
 //|         """Returns a hash for the Pin."""
@@ -70,7 +69,7 @@ static void get_pin_name(const mcu_pin_obj_t *self, qstr *package, qstr *module,
     }
 }
 
-STATIC void mcu_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+void shared_bindings_microcontroller_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mcu_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     qstr package = MP_QSTR_Pin;
     qstr module;
@@ -88,7 +87,7 @@ const mp_obj_type_t mcu_pin_type = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Pin,
-    .print = mcu_pin_print,
+    .print = shared_bindings_microcontroller_pin_print,
     MP_TYPE_EXTENDED_FIELDS(
         .unary_op = mp_generic_unary_op,
         )

@@ -35,7 +35,7 @@
 
 //| class Characteristic:
 //|     """Stores information about a BLE service characteristic and allows reading
-//|        and writing of the characteristic's value."""
+//|     and writing of the characteristic's value."""
 //|
 //|     def __init__(self) -> None:
 //|         """There is no regular constructor for a Characteristic. A new local Characteristic can be created
@@ -43,13 +43,20 @@
 //|         Remote Characteristic objects are created by `Connection.discover_remote_services()`
 //|         as part of remote Services."""
 //|         ...
-//|
 
-//|     def add_to_service(self, service: Service, uuid: UUID, *, properties: int = 0,
-//|                        read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN,
-//|                        max_length: int = 20, fixed_length: bool = False,
-//|                        initial_value: Optional[ReadableBuffer] = None,
-//|                        user_description: Optional[str] = None) -> Characteristic:
+//|     def add_to_service(
+//|         self,
+//|         service: Service,
+//|         uuid: UUID,
+//|         *,
+//|         properties: int = 0,
+//|         read_perm: int = Attribute.OPEN,
+//|         write_perm: int = Attribute.OPEN,
+//|         max_length: int = 20,
+//|         fixed_length: bool = False,
+//|         initial_value: Optional[ReadableBuffer] = None,
+//|         user_description: Optional[str] = None
+//|     ) -> Characteristic:
 //|         """Create a new Characteristic object, and add it to this Service.
 //|
 //|         :param Service service: The service that will provide this characteristic
@@ -73,7 +80,6 @@
 //|
 //|         :return: the new Characteristic."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // class is arg[0], which we can ignore.
 
@@ -157,7 +163,6 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_characteristic_add_to_service_obj, 
 //|     """An int bitmask representing which properties are set, specified as bitwise or'ing of
 //|     of these possible values.
 //|     `BROADCAST`, `INDICATE`, `NOTIFY`, `READ`, `WRITE`, `WRITE_NO_RESPONSE`."""
-//|
 STATIC mp_obj_t bleio_characteristic_get_properties(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -172,7 +177,6 @@ MP_PROPERTY_GETTER(bleio_characteristic_properties_obj,
 //|     """The UUID of this characteristic. (read-only)
 //|
 //|     Will be ``None`` if the 128-bit UUID for this characteristic is not known."""
-//|
 STATIC mp_obj_t bleio_characteristic_get_uuid(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -186,7 +190,6 @@ MP_PROPERTY_GETTER(bleio_characteristic_uuid_obj,
 
 //|     value: bytearray
 //|     """The value of this characteristic."""
-//|
 STATIC mp_obj_t bleio_characteristic_get_value(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -214,7 +217,6 @@ MP_PROPERTY_GETSET(bleio_characteristic_value_obj,
 
 //|     max_length: int
 //|     """The max length of this characteristic."""
-//|
 STATIC mp_obj_t bleio_characteristic_get_max_length(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -227,7 +229,6 @@ MP_PROPERTY_GETTER(bleio_characteristic_max_length_obj,
 
 //|     descriptors: Descriptor
 //|     """A tuple of :py:class:`Descriptor` objects related to this characteristic. (read-only)"""
-//|
 STATIC mp_obj_t bleio_characteristic_get_descriptors(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // Return list as a tuple so user won't be able to change it.
@@ -241,7 +242,6 @@ MP_PROPERTY_GETTER(bleio_characteristic_descriptors_obj,
 
 //|     service: Service
 //|     """The Service this Characteristic is a part of."""
-//|
 STATIC mp_obj_t bleio_characteristic_get_service(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -258,7 +258,6 @@ MP_PROPERTY_GETTER(bleio_characteristic_service_obj,
 //|         :param bool notify: True if Characteristic should receive notifications of remote writes
 //|         :param float indicate: True if Characteristic should receive indications of remote writes"""
 //|         ...
-//|
 STATIC mp_obj_t bleio_characteristic_set_cccd(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 

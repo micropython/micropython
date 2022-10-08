@@ -37,7 +37,15 @@
 //| class Keys:
 //|     """Manage a set of independent keys."""
 //|
-//|     def __init__(self, pins: Sequence[microcontroller.Pin], *, value_when_pressed: bool, pull: bool = True, interval: float = 0.020, max_events: int = 64) -> None:
+//|     def __init__(
+//|         self,
+//|         pins: Sequence[microcontroller.Pin],
+//|         *,
+//|         value_when_pressed: bool,
+//|         pull: bool = True,
+//|         interval: float = 0.020,
+//|         max_events: int = 64
+//|     ) -> None:
 //|         """
 //|         Create a `Keys` object that will scan keys attached to the given sequence of pins.
 //|         Each key is independent and attached to its own pin.
@@ -103,7 +111,6 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, s
 //|     def deinit(self) -> None:
 //|         """Stop scanning and release the pins."""
 //|         ...
-//|
 STATIC mp_obj_t keypad_keys_deinit(mp_obj_t self_in) {
     keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -115,14 +122,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_deinit_obj, keypad_keys_deinit);
 //|     def __enter__(self) -> Keys:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t keypad_keys___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_keypad_keys_deinit(args[0]);
@@ -137,12 +142,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_keys___exit___obj, 4, 4, keypa
 //|         a new key-pressed event to occur.
 //|         """
 //|         ...
-//|
 
 //|     key_count: int
 //|     """The number of keys that are being scanned. (read-only)
 //|     """
-//|
 
 //|     events: EventQueue
 //|     """The `EventQueue` associated with this `Keys` object. (read-only)

@@ -39,7 +39,13 @@
 //| class PWMAudioOut:
 //|     """Output an analog audio signal by varying the PWM duty cycle."""
 //|
-//|     def __init__(self, left_channel: microcontroller.Pin, *, right_channel: Optional[microcontroller.Pin] = None, quiescent_value: int = 0x8000) -> None:
+//|     def __init__(
+//|         self,
+//|         left_channel: microcontroller.Pin,
+//|         *,
+//|         right_channel: Optional[microcontroller.Pin] = None,
+//|         quiescent_value: int = 0x8000
+//|     ) -> None:
 //|         """Create a PWMAudioOut object associated with the given pin(s). This allows you to
 //|         play audio signals out on the given pin(s).  In contrast to mod:`audioio`,
 //|         the pin(s) specified are digital pins, and are driven with a device-dependent PWM
@@ -92,7 +98,6 @@
 //|             pass
 //|           print("stopped")"""
 //|         ...
-//|
 STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_left_channel, ARG_right_channel, ARG_quiescent_value };
     static const mp_arg_t allowed_args[] = {
@@ -117,7 +122,6 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_
 //|     def deinit(self) -> None:
 //|         """Deinitialises the PWMAudioOut and releases any hardware resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t audiopwmio_pwmaudioout_deinit(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_audiopwmio_pwmaudioout_deinit(self);
@@ -133,7 +137,6 @@ STATIC void check_for_deinit(audiopwmio_pwmaudioout_obj_t *self) {
 //|     def __enter__(self) -> PWMAudioOut:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
@@ -157,7 +160,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiopwmio_pwmaudioout___exit___obj, 
 //|         The sample itself should consist of 16 bit samples. Microcontrollers with a lower output
 //|         resolution will use the highest order bits to output."""
 //|         ...
-//|
 STATIC mp_obj_t audiopwmio_pwmaudioout_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
     static const mp_arg_t allowed_args[] = {
@@ -179,7 +181,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audiopwmio_pwmaudioout_play_obj, 1, audiopwmio_pwmaud
 //|     def stop(self) -> None:
 //|         """Stops playback and resets to the start of the sample."""
 //|         ...
-//|
 STATIC mp_obj_t audiopwmio_pwmaudioout_obj_stop(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -190,7 +191,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_stop_obj, audiopwmio_pwmaudioou
 
 //|     playing: bool
 //|     """True when an audio sample is being output even if `paused`. (read-only)"""
-//|
 STATIC mp_obj_t audiopwmio_pwmaudioout_obj_get_playing(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -204,7 +204,6 @@ MP_PROPERTY_GETTER(audiopwmio_pwmaudioout_playing_obj,
 //|     def pause(self) -> None:
 //|         """Stops playback temporarily while remembering the position. Use `resume` to resume playback."""
 //|         ...
-//|
 STATIC mp_obj_t audiopwmio_pwmaudioout_obj_pause(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -220,7 +219,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_pause_obj, audiopwmio_pwmaudioo
 //|     def resume(self) -> None:
 //|         """Resumes sample playback after :py:func:`pause`."""
 //|         ...
-//|
 STATIC mp_obj_t audiopwmio_pwmaudioout_obj_resume(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

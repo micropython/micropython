@@ -38,7 +38,9 @@
 //| class PinAlarm:
 //|     """Trigger an alarm when a pin changes state."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin, value: bool, edge: bool = False, pull: bool = False) -> None:
+//|     def __init__(
+//|         self, pin: microcontroller.Pin, value: bool, edge: bool = False, pull: bool = False
+//|     ) -> None:
 //|         """Create an alarm triggered by a `microcontroller.Pin` level. The alarm is not active
 //|         until it is passed to an `alarm`-enabling function, such as `alarm.light_sleep_until_alarms()` or
 //|         `alarm.exit_and_deep_sleep_until_alarms()`.
@@ -59,7 +61,6 @@
 //|           pulls it high.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t alarm_pin_pinalarm_make_new(const mp_obj_type_t *type, mp_uint_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     alarm_pin_pinalarm_obj_t *self = m_new_obj(alarm_pin_pinalarm_obj_t);
     self->base.type = &alarm_pin_pinalarm_type;
@@ -86,7 +87,6 @@ STATIC mp_obj_t alarm_pin_pinalarm_make_new(const mp_obj_type_t *type, mp_uint_t
 
 //|     pin: microcontroller.Pin
 //|     """The trigger pin."""
-//|
 STATIC mp_obj_t alarm_pin_pinalarm_obj_get_pin(mp_obj_t self_in) {
     alarm_pin_pinalarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const mcu_pin_obj_t *pin = common_hal_alarm_pin_pinalarm_get_pin(self);

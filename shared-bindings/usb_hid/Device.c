@@ -32,7 +32,16 @@
 //| class Device:
 //|     """HID Device specification"""
 //|
-//|     def __init__(self, *, report_descriptor: ReadableBuffer, usage_page: int, usage: int, report_ids: Sequence[int], in_report_lengths: Sequence[int], out_report_lengths: Sequence[int]) -> None:
+//|     def __init__(
+//|         self,
+//|         *,
+//|         report_descriptor: ReadableBuffer,
+//|         usage_page: int,
+//|         usage: int,
+//|         report_ids: Sequence[int],
+//|         in_report_lengths: Sequence[int],
+//|         out_report_lengths: Sequence[int]
+//|     ) -> None:
 //|         """Create a description of a USB HID device. The actual device is created when you
 //|         pass a `Device` to `usb_hid.enable()`.
 //|
@@ -66,7 +75,6 @@
 //|             )
 //|         """
 //|         ...
-//|
 //|     KEYBOARD: Device
 //|     """Standard keyboard device supporting keycodes 0x00-0xDD, modifiers 0xE-0xE7, and five LED indicators.
 //|     Uses Report ID 1 for its IN and OUT reports.
@@ -81,7 +89,6 @@
 //|     CONSUMER_CONTROL: Device
 //|     """Consumer Control device supporting sent values from 1-652, with no rollover.
 //|     Uses Report ID 3 for its IN report."""
-//|
 
 STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     usb_hid_device_obj_t *self = m_new_obj(usb_hid_device_obj_t);
@@ -163,7 +170,6 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 //|         Otherwise you must specify which report id to use when sending the report.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -198,7 +204,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 1, usb_hid_device_sen
 //|         will return `None` until next report is received.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t usb_hid_device_get_last_received_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -222,7 +227,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_get_last_received_report_obj, 1, usb_h
 
 //|     usage_page: int
 //|     """The device usage page identifier, which designates a category of device. (read-only)"""
-//|
 STATIC mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_usage_page(self));

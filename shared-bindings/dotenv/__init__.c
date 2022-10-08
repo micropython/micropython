@@ -40,9 +40,13 @@
 //|    A subset of the CPython `dotenv library <https://saurabh-kumar.com/python-dotenv/>`_. It does
 //|    not support variables or double quotes.
 //|
-//|    The simplest way to define keys and values is to put them in single quotes. \ and ' are
-//|    escaped by \ in single quotes. Newlines can occur in quotes for multiline values. Comments
-//|    start with # and apply for the rest of the line.
+//|    Keys and values may be put in single quotes.
+//|    ``\`` and ``'`` are escaped by ``\`` in single quotes. Newlines can occur in quotes for multiline values.
+//|    Comments start with ``#`` and apply for the rest of the line.
+//|    A ``#`` immediately following an ``=`` is part of the value, not the start of a comment,
+//|    and a ``#`` embedded in a value without whitespace will be part of that value.
+//|    This corresponds to how assignments and comments work in most Unix shells.
+//|
 //|
 //|    File format example:
 //|
@@ -58,16 +62,20 @@
 //|        multiline = 'hello
 //|        world
 //|        how are you?'
+//|        # The #'s below will be included in the value. They do not start a comment.
+//|        key6=#value
+//|        key7=abc#def
 //|
 //| """
 //|
 //| import typing
+//|
 
 //| def get_key(dotenv_path: str, key_to_get: str) -> Optional[str]:
 //|     """Get the value for the given key from the given .env file. If the key occurs multiple
-//|        times in the file, then the last value will be returned.
+//|     times in the file, then the last value will be returned.
 //|
-//|        Returns None if the key isn't found or doesn't have a value."""
+//|     Returns None if the key isn't found or doesn't have a value."""
 //|     ...
 //|
 STATIC mp_obj_t _dotenv_get_key(mp_obj_t path_in, mp_obj_t key_to_get_in) {
@@ -78,9 +86,9 @@ MP_DEFINE_CONST_FUN_OBJ_2(dotenv_get_key_obj, _dotenv_get_key);
 
 //| def load_dotenv() -> None:
 //|     """Does nothing in CircuitPython because os.getenv will automatically read .env when
-//|        available.
+//|     available.
 //|
-//|        Present in CircuitPython so CPython-compatible code can use it without error."""
+//|     Present in CircuitPython so CPython-compatible code can use it without error."""
 //|     ...
 //|
 STATIC mp_obj_t dotenv_load_dotenv(void) {

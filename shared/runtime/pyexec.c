@@ -168,17 +168,21 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         }
 
         // check for SystemExit
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type((mp_obj_t)nlr.ret_val)), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
+
+        // nlr.ret_val is an exception object.
+        mp_obj_t exception_obj = (mp_obj_t)nlr.ret_val;
+
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(exception_obj)), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
         #if CIRCUITPY_ALARM
-        } else if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type((mp_obj_t)nlr.ret_val)), &mp_type_DeepSleepRequest)) {
+        } else if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(exception_obj)), MP_OBJ_FROM_PTR(&mp_type_DeepSleepRequest))) {
             ret = PYEXEC_DEEP_SLEEP;
         #endif
-        } else if ((mp_obj_t)nlr.ret_val == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
+        } else if (exception_obj == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
             ret = PYEXEC_RELOAD;
         } else {
-            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            mp_obj_print_exception(&mp_plat_print, exception_obj);
             ret = PYEXEC_EXCEPTION;
         }
 
