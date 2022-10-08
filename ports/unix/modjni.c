@@ -24,18 +24,18 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+#include "py/binary.h"
+
+#if MICROPY_PY_JNI
+
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
 #include <dlfcn.h>
 #include <ctype.h>
 
-#include "py/runtime.h"
-#include "py/binary.h"
-
 #include <jni.h>
-
-#if MICROPY_PY_JNI
 
 #define JJ(call, ...) (*env)->call(env, __VA_ARGS__)
 #define JJ1(call) (*env)->call(env)
