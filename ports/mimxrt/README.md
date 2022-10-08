@@ -30,33 +30,41 @@ TODO:
   - More peripherals (Counter, I2S, CAN, etc)
   - More Python options
 
-## Building
+## Build Instructions
+
+Before building the firmware for a given board the MicroPython cross-compiler must be built; it will be used to pre-compile some of the built-in scripts to bytecode. The cross-compiler is built and run on the host machine, using:
 
 ``` bash
-cd ports/mimxrt
+$ make -C mpy-cross
 ```
+This command should be executed from the root directory of this repository. All other commands below should be executed from the ports/mimxrt/ directory.
 
-Make sure you have the appropriate c library installed
+An ARM compiler is required for the build, along with the associated binary
+utilities.  The default compiler is `arm-none-eabi-gcc`, which is available for
+Arch Linux via the package `arm-none-eabi-gcc`, for Ubuntu via instructions
+[here](https://launchpad.net/~team-gcc-arm-embedded/+archive/ubuntu/ppa), or
+see [here](https://launchpad.net/gcc-arm-embedded) for the main GCC ARM
+Embedded page.  The compiler can be changed using the `CROSS_COMPILE` variable
+when invoking `make`.
 
-Ubunutu/Debian
-``` bash
-sudo apt-get install libnewlib-arm-none-eabi
-```
+In addition newlib is required which is available for Arch Linux via the package `arm-none-eabi-newlib`, for ubuntu/debian install package `libnewlib-arm-none-eabi`
 
-Arch
-``` bash
-sudo pacman -S arm-none-eabi-newlib
-```
+Next, the board to build must be selected.  Any of the board names of the subdirectories in the `boards/` directory is a valid board.
+The board name must be passed as the argument to `BOARD=` when invoking `make`.
 
-Update submodules
-``` bash
-git submodule update --init --recursive 
-```
+All boards require certain submodules to be obtained before they can be built.
+The correct set of submodules can be initialised using (with `PYBV11` as an
+example of the selected board):
 
-Build
-``` bash
-make -j BOARD=SEEED_ARCH_MIX
-```
+    $ make BOARD=SEEED_ARCH_MIX submodules
+
+Then to build the board's firmware run:
+
+    $ make BOARD=SEEED_ARCH_MIX
+
+The above command should produce binary images in the `build-SEEED_ARCH_MIX/`
+subdirectory (or the equivalent directory for the board specified).
+
 
 ## Flashing
 
