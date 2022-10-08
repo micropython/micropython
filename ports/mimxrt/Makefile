@@ -393,7 +393,7 @@ CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 # Linker Flags
 # =============================================================================
 
-LDFLAGS = \
+LDFLAGS += \
 	--cref \
 	--gc-sections \
 	--print-memory-usage \
