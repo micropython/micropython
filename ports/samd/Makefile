@@ -110,16 +110,8 @@ SRC_C += \
 	samd_isr.c \
 	samd_soc.c \
 	tusb_port.c \
-	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_atomic.c \
-	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_flash.c \
-	lib/asf4/$(MCU_SERIES_LOWER)/hpl/nvmctrl/hpl_nvmctrl.c \
-	lib/tinyusb/src/class/cdc/cdc_device.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/device/usbd_control.c \
-	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
-	lib/tinyusb/src/tusb.c \
-	drivers/bus/softspi.c \
+
+SHARED_SRC_C += \
 	shared/runtime/mpirq.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
@@ -132,39 +124,43 @@ SRC_C += \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
 
-LIBM_SRC_C += \
-	lib/libm/ef_sqrt.c \
-	lib/libm/fmodf.c \
-	lib/libm/math.c \
-	lib/libm/nearbyintf.c \
+ASF4_SRC_C += $(addprefix lib/asf4/$(MCU_SERIES_LOWER)/,\
+	hal/src/hal_atomic.c \
+	hal/src/hal_flash.c \
+	hpl/nvmctrl/hpl_nvmctrl.c \
+	)
+
+LIBM_SRC_C += $(addprefix lib/libm/,\
+	ef_sqrt.c \
+	fmodf.c \
+	math.c \
+	nearbyintf.c \
+	)
+
+TINYUSB_SRC_C += $(addprefix lib/tinyusb/src/,\
+	class/cdc/cdc_device.c \
+	common/tusb_fifo.c \
+	device/usbd.c \
+	device/usbd_control.c \
+	portable/microchip/samd/dcd_samd.c \
+	tusb.c \
+	)
+
+DRIVERS_SRC_C += \
+	drivers/bus/softspi.c \
 
 # List of sources for qstr extraction
-SRC_QSTR += \
-	machine_adc.c \
-	machine_dac.c \
-	machine_i2c.c \
-	machine_led.c \
-	machine_pin.c \
-	machine_pwm.c \
-	machine_spi.c \
-	machine_timer.c \
-	machine_uart.c \
-	machine_wdt.c \
-	modutime.c \
-	modmachine.c \
-	modsamd.c \
-	samd_flash.c \
-	shared/readline/readline.c \
-	shared/runtime/mpirq.c \
-	shared/runtime/sys_stdio_mphal.c \
-
-SRC_QSTR += $(SRC_CXX)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(SRC_CXX) $(GEN_PINS_SRC)
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(ASF4_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
 ifneq ($(FROZEN_MANIFEST),)
