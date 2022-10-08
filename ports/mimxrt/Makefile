@@ -150,10 +150,6 @@ SRC_C += \
 	drivers/bus/softspi.c \
 	drivers/dht/dht.c \
 	eth.c \
-	extmod/modnetwork.c \
-	extmod/modonewire.c \
-	extmod/modusocket.c \
-	extmod/uos_dupterm.c \
 	fatfs_port.c \
 	hal/pwm_backport.c \
 	led.c \
@@ -256,16 +252,6 @@ SRC_S += shared/runtime/gchelper_m3.s \
 # =============================================================================
 # QSTR Sources
 # =============================================================================
-
-# All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
-ifeq ($(MICROPY_PY_LWIP),1)
-SRC_QSTR += \
-	extmod/modlwip.c \
-	extmod/modnetwork.c \
-	extmod/modusocket.c \
-	extmod/moduwebsocket.c \
-	network_lan.c
-endif
 
 # List of sources for qstr extraction
 SRC_QSTR += \
@@ -386,7 +372,7 @@ CFLAGS += \
 	-DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
 endif
 
-CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += $(CFLAGS_EXTRA)
 
 # =============================================================================
 # Linker Flags
@@ -433,7 +419,6 @@ OBJ += $(LIBM_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
 # Workaround for bug in older gcc, warning on "static usbd_device_t _usbd_dev = { 0 };"

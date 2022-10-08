@@ -39,7 +39,7 @@ INC += -I$(BUILD)
 # compiler settings
 CWARN = -Wall -Werror
 CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
-CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
+CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -142,35 +142,10 @@ endif
 
 # If the variant enables it, enable modbluetooth.
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
-
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
 HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
 
-# Only one stack can be enabled.
-ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-$(error Cannot enable both NimBLE and BTstack at the same time)
-endif
-endif
-
-# Default to btstack, but a variant (or make command line) can set NimBLE
-# explicitly (which is always via H4 UART).
-ifneq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-ifneq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-MICROPY_BLUETOOTH_BTSTACK ?= 1
-endif
-endif
-
-CFLAGS += -DMICROPY_PY_BLUETOOTH=1
-CFLAGS += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-
 # Figure out which BTstack transport to use.
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
-$(error Cannot enable BTstack support for USB and H4 UART at the same time)
-endif
-else
 ifeq ($(HAVE_LIBUSB),1)
 # Default to btstack-over-usb.
 MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
@@ -178,20 +153,9 @@ else
 # Fallback to HCI controller via a H4 UART (e.g. Zephyr on nRF) over a /dev/tty serial port.
 MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 endif
+
+SRC_BTSTACK_C += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 endif
-
-# BTstack is enabled.
-include $(TOP)/extmod/btstack/btstack.mk
-SRC_BTSTACK += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
-
-else
-
-# NimBLE is enabled.
-CFLAGS += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
-include $(TOP)/extmod/nimble/nimble.mk
-
-endif
-
 endif
 
 ifeq ($(MICROPY_PY_FFI),1)
@@ -242,7 +206,6 @@ SRC_C += \
 	mpbtstackport_h4.c \
 	mpbtstackport_usb.c \
 	mpnimbleport.c \
-	$(SRC_MOD) \
 	modtermios.c \
 	modusocket.c \
 	modffi.c \
@@ -256,17 +219,14 @@ SHARED_SRC_C += $(addprefix shared/,\
 	)
 
 SRC_CXX += \
-	$(SRC_MOD_CXX)
 
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
