@@ -45,7 +45,7 @@ endif
 -include boards/$(BOARD)/modules/boardmodules.mk
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
+QSTR_DEFS = qstrdefsport.h $(GEN_PINS_QSTR)
 
 # MicroPython feature configurations
 ifeq ($(DEBUG), 0)
@@ -105,6 +105,16 @@ endif
 
 NRF_DEFINES += -D$(MCU_SUB_VARIANT_UPPER)
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
+
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = boards/$(BOARD)/pins.csv
+AF_FILE = $(MCU_VARIANT)_af.csv
+PREFIX_FILE = boards/$(MCU_VARIANT)_prefix.c
+GEN_PINS_SRC = $(BUILD)/pins_gen.c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 CFLAGS_CORTEX_M = -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
 
@@ -354,7 +364,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SYSTEM_C_SRC:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
-OBJ += $(BUILD)/pins_gen.o
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 $(BUILD)/$(OOFATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
@@ -528,18 +538,8 @@ $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qst
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
-$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
+$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
 	$(call compile_c)
-
-MAKE_PINS = boards/make-pins.py
-BOARD_PINS = boards/$(BOARD)/pins.csv
-AF_FILE = $(MCU_VARIANT)_af.csv
-PREFIX_FILE = boards/$(MCU_VARIANT)_prefix.c
-GEN_PINS_SRC = $(BUILD)/pins_gen.c
-GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool

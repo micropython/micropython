@@ -15,7 +15,7 @@ MICROPY_VFS_LFS2 ?= 1
 MICROPY_VFS_FAT ?= 1
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
+QSTR_DEFS += qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
 # Generation scripts
@@ -49,7 +49,6 @@ GEN_FLEXRAM_CONFIG_SRC = $(BUILD)/flexram_config.s
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
 
 # =============================================================================
@@ -435,7 +434,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
-OBJ += $(BUILD)/pins_gen.o
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 # Workaround for bug in older gcc, warning on "static usbd_device_t _usbd_dev = { 0 };"
 $(BUILD)/lib/tinyusb/src/device/usbd.o: CFLAGS += -Wno-missing-braces
@@ -486,7 +485,7 @@ $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h: $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PR
 		--iomux $(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h) \
 		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
 
-$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
+$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
 	$(call compile_c)
 
 include $(TOP)/py/mkrules.mk

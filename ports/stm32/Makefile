@@ -15,7 +15,7 @@ include ../../py/mkenv.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
 # Files that are generated and needed before the QSTR build.
-QSTR_GENERATED_HEADERS = $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
+QSTR_GENERATED_HEADERS = $(GEN_PINS_QSTR) $(GEN_STMCONST_QSTR)
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS += qstrdefsport.h $(QSTR_GENERATED_HEADERS)
@@ -56,6 +56,31 @@ OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 
 include stm32.mk
+
+PLLVALUES = boards/pllvalues.py
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = $(BOARD_DIR)/pins.csv
+PREFIX_FILE = boards/stm32f4xx_prefix.c
+GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
+GEN_PINS_AF_PY = $(BUILD)/pins_af.py
+
+INSERT_USB_IDS = $(TOP)/tools/insert-usb-ids.py
+FILE2H = $(TOP)/tools/file2h.py
+
+USB_IDS_FILE = mpconfigboard_common.h
+CDCINF_TEMPLATE = pybcdc.inf_template
+GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
+GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
+
+GEN_PLLFREQTABLE_HDR = $(HEADER_BUILD)/pllfreqtable.h
+GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
+GEN_STMCONST_QSTR = $(BUILD)/modstm_qstr.h
+GEN_STMCONST_MPZ = $(HEADER_BUILD)/modstm_mpz.h
+CMSIS_MCU_HDR = $(STM32LIB_CMSIS_ABS)/Include/$(CMSIS_MCU_LOWER).h
 
 # Select the cross compile prefix
 CROSS_COMPILE ?= arm-none-eabi-
@@ -537,8 +562,7 @@ OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(USBDEV_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
-OBJ += $(BUILD)/pins_$(BOARD).o
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 # This file contains performance critical functions so turn up the optimisation
 # level.  It doesn't add much to the code size and improves performance a bit.
@@ -689,25 +713,6 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 $(BUILD)/firmware.elf: $(OBJ)
 	$(call GENERATE_ELF,$@,$^)
 
-PLLVALUES = boards/pllvalues.py
-MAKE_PINS = boards/make-pins.py
-BOARD_PINS = $(BOARD_DIR)/pins.csv
-PREFIX_FILE = boards/stm32f4xx_prefix.c
-GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
-GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
-
-INSERT_USB_IDS = $(TOP)/tools/insert-usb-ids.py
-FILE2H = $(TOP)/tools/file2h.py
-
-USB_IDS_FILE = mpconfigboard_common.h
-CDCINF_TEMPLATE = pybcdc.inf_template
-GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
-GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
-
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SRC_MOD) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
@@ -738,14 +743,8 @@ $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_
 		--af-defs $(GEN_PINS_AF_DEFS) --af-defs-cmp-strings \
 		--af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
-$(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
+$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
 	$(call compile_c)
-
-GEN_PLLFREQTABLE_HDR = $(HEADER_BUILD)/pllfreqtable.h
-GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
-GEN_STMCONST_QSTR = $(BUILD)/modstm_qstr.h
-GEN_STMCONST_MPZ = $(HEADER_BUILD)/modstm_mpz.h
-CMSIS_MCU_HDR = $(STM32LIB_CMSIS_ABS)/Include/$(CMSIS_MCU_LOWER).h
 
 modmachine.c: $(GEN_PLLFREQTABLE_HDR)
 $(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)

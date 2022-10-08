@@ -106,7 +106,6 @@ SRC_C += \
 	mphalport.c \
 	pendsv.c \
 	pin_af.c \
-	$(BUILD)/pins.c \
 	samd_flash.c \
 	samd_isr.c \
 	samd_soc.c \
@@ -170,6 +169,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
@@ -204,5 +204,8 @@ machine_led.c machine_pin.c modsamd.c: $(GEN_PINS_HDR)
 $(GEN_PINS_SRC) $(GEN_PINS_HDR): $(BOARD_PINS) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --pins $(GEN_PINS_SRC) --inc $(GEN_PINS_HDR)
+
+$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
+	$(call compile_c)
 
 include $(TOP)/py/mkrules.mk
