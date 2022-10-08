@@ -81,7 +81,8 @@ endif
 # Flags for optional C++ source code
 CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
 CXXFLAGS += $(CXXFLAGS_MOD)
-ifneq ($(SRC_CXX)$(SRC_MOD_CXX),)
+# TODO make this common -- shouldn't be using these "private" vars from py.mk
+ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
 LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
 LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
