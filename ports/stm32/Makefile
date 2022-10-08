@@ -95,7 +95,7 @@ INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
 INC += -Ilwip_inc
 
-CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU) -DUSE_FULL_LL_DRIVER
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
@@ -156,7 +156,7 @@ endif
 
 # Flags for optional C++ source code
 CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS))
-CXXFLAGS += $(CXXFLAGS_MOD)
+
 # TODO make this common -- shouldn't be using these "private" vars from py.mk
 ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
 LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
@@ -275,12 +275,6 @@ ifeq ($(MICROPY_FLOAT_IMPL),double)
 $(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
-EXTMOD_SRC_C += $(addprefix extmod/,\
-	modonewire.c \
-	modnetwork.c \
-	modusocket.c \
-	)
-
 DRIVERS_SRC_C += $(addprefix drivers/,\
 	bus/softspi.c \
 	bus/softqspi.c \
@@ -358,10 +352,8 @@ SRC_C += \
 	servo.c \
 	dac.c \
 	adc.c \
+	sdio.c \
 	$(wildcard $(BOARD_DIR)/*.c)
-
-SRC_CXX += \
-	$(SRC_MOD_CXX)
 
 SRC_O += \
 	$(STARTUP_FILE) \
@@ -482,70 +474,26 @@ USBDEV_SRC_C += $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_scsi.c \
 	)
 
-ifeq ($(MICROPY_PY_BLUETOOTH),1)
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-endif
-
-ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
-CFLAGS_MOD += -DMICROPY_PY_NETWORK_CYW43=1
-SRC_C += sdio.c
-EXTMOD_SRC_C += extmod/network_cyw43.c
-DRIVERS_SRC_C += drivers/cyw43/cyw43_ctrl.c drivers/cyw43/cyw43_lwip.c
-LIBS += $(TOP)/drivers/cyw43/libcyw43.a
-endif
-
-ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),0)
-WIZNET5K_DIR=lib/wiznet5k
-GIT_SUBMODULES += lib/wiznet5k
-INC += -I$(TOP)/$(WIZNET5K_DIR) -I$(TOP)/$(WIZNET5K_DIR)/Ethernet
-CFLAGS_MOD += -DMICROPY_PY_NETWORK_WIZNET5K=$(MICROPY_PY_NETWORK_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_NETWORK_WIZNET5K)
-CFLAGS_MOD += -DWIZCHIP_PREFIXED_EXPORTS=1
-ifeq ($(MICROPY_PY_LWIP),1)
-# When using MACRAW mode (with lwIP), maximum buffer space must be used for the raw socket
-CFLAGS_MOD += -DWIZCHIP_USE_MAX_BUFFER
-endif
-SRC_MOD += extmod/network_wiznet5k.c
-SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
-	Ethernet/W$(MICROPY_PY_NETWORK_WIZNET5K)/w$(MICROPY_PY_NETWORK_WIZNET5K).c \
-	Ethernet/wizchip_conf.c \
-	Ethernet/socket.c \
-	Internet/DNS/dns.c \
-	Internet/DHCP/dhcp.c \
-	)
-endif
-
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
-CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
-SRC_MOD += mbedtls/mbedtls_port.c
+CFLAGS += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
+LIB_SRC_C += mbedtls/mbedtls_port.c
 endif
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
-
 SRC_C += mpbthciport.c
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-$(error Cannot enable both NimBLE and BTstack at the same time)
-endif
-endif
-
-ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
-include $(TOP)/extmod/nimble/nimble.mk
 SRC_C += mpnimbleport.c
 endif
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
-include $(TOP)/extmod/btstack/btstack.mk
 SRC_C += mpbtstackport.c
+MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 endif
 
 ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
 DRIVERS_SRC_C += drivers/cyw43/cywbt.c
 endif
-
 endif
 
 # SRC_O should be placed first to work around this LTO bug with binutils <2.35:
@@ -555,7 +503,6 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(LIBM_O)
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(USBDEV_SRC_C:.c=.o))
@@ -713,7 +660,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(call GENERATE_ELF,$@,$^)
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SRC_MOD) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS += $(GEN_CDCINF_HEADER)

@@ -33,14 +33,15 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+
+#if MICROPY_PY_NETWORK_WIZNET5K
+
 #include "shared/netutils/netutils.h"
 #include "extmod/modnetwork.h"
 #include "extmod/machine_spi.h"
 #include "extmod/virtpin.h"
 #include "modmachine.h"
 #include "drivers/bus/spi.h"
-
-#if MICROPY_PY_NETWORK_WIZNET5K
 
 #include "lib/wiznet5k/Ethernet/wizchip_conf.h"
 

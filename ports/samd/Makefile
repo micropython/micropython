@@ -60,11 +60,10 @@ CFLAGS_MCU_SAMD21 = -mtune=cortex-m0plus -mcpu=cortex-m0plus -msoft-float
 CFLAGS_MCU_SAMD51 = -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CFLAGS += $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
-CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += $(CFLAGS_EXTRA)
 CFLAGS += -DMPCONFIG_MCU_H='<boards/mpconfig_$(MCU_SERIES_LOWER).h>'
 
 LDFLAGS += -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
-LDFLAGS += $(LDFLAGS_MOD)
 
 LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
@@ -80,7 +79,7 @@ endif
 
 # Flags for optional C++ source code
 CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
-CXXFLAGS += $(CXXFLAGS_MOD)
+
 # TODO make this common -- shouldn't be using these "private" vars from py.mk
 ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
 LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
@@ -114,10 +113,6 @@ SRC_C += \
 	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_atomic.c \
 	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_flash.c \
 	lib/asf4/$(MCU_SERIES_LOWER)/hpl/nvmctrl/hpl_nvmctrl.c \
-	lib/libm/ef_sqrt.c \
-	lib/libm/fmodf.c \
-	lib/libm/math.c \
-	lib/libm/nearbyintf.c \
 	lib/tinyusb/src/class/cdc/cdc_device.c \
 	lib/tinyusb/src/common/tusb_fifo.c \
 	lib/tinyusb/src/device/usbd.c \
@@ -125,7 +120,6 @@ SRC_C += \
 	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	lib/tinyusb/src/tusb.c \
 	drivers/bus/softspi.c \
-	extmod/uos_dupterm.c \
 	shared/runtime/mpirq.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
@@ -138,9 +132,11 @@ SRC_C += \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
 
-SRC_C += $(SRC_MOD)
-
-SRC_CXX += $(SRC_MOD_CXX)
+LIBM_SRC_C += \
+	lib/libm/ef_sqrt.c \
+	lib/libm/fmodf.c \
+	lib/libm/math.c \
+	lib/libm/nearbyintf.c \
 
 # List of sources for qstr extraction
 SRC_QSTR += \
@@ -159,17 +155,16 @@ SRC_QSTR += \
 	modsamd.c \
 	samd_flash.c \
 	shared/readline/readline.c \
-	extmod/uos_dupterm.c \
 	shared/runtime/mpirq.c \
 	shared/runtime/sys_stdio_mphal.c \
 
-SRC_QSTR += $(SRC_MOD) $(SRC_CXX)
+SRC_QSTR += $(SRC_CXX)
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
 ifneq ($(FROZEN_MANIFEST),)
