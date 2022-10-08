@@ -178,6 +178,11 @@ SRC_C += \
 	pendsv.c \
 	pin.c \
 	sdcard.c \
+	systick.c \
+	ticks.c \
+	tusb_port.c \
+
+SHARED_SRC_C += \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
 	shared/netutils/dhcpserver.c \
@@ -191,23 +196,17 @@ SRC_C += \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
-	systick.c \
-	ticks.c \
-	tusb_port.c \
-	$(SRC_TINYUSB_C) \
-	$(SRC_HAL_IMX_C) \
-	$(SRC_ETH_C)
 
 # Add sources for respective board flash type
 ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash qspi_hyper_flash))
     # Add hal/flexspi_nor_flash.c or hal/flashspi_hyper_flash.c respectively
-    SRC_C += hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).c
+    SRC_HAL_C += hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).c
     #
     # Add custom (board specific) or default configuration
     ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
-        SRC_C += $(BOARD_DIR)/$(MICROPY_HW_FLASH_TYPE)_config.c
+        SRC_HAL_C += $(BOARD_DIR)/$(MICROPY_HW_FLASH_TYPE)_config.c
     else
-        SRC_C += hal/$(MICROPY_HW_FLASH_TYPE)_config.c
+        SRC_HAL_C += hal/$(MICROPY_HW_FLASH_TYPE)_config.c
     endif
 else
     $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
@@ -254,29 +253,7 @@ SRC_S += shared/runtime/gchelper_m3.s \
 # =============================================================================
 
 # List of sources for qstr extraction
-SRC_QSTR += \
-	extmod/modonewire.c \
-	extmod/uos_dupterm.c \
-	machine_adc.c \
-	machine_i2s.c \
-	machine_led.c \
-	machine_pin.c \
-	machine_pwm.c \
-	machine_rtc.c \
-	machine_sdcard.c \
-	machine_spi.c \
-	machine_timer.c \
-	machine_uart.c \
-	machine_wdt.c \
-	mimxrt_flash.c \
-	modmachine.c \
-	modmimxrt.c \
-	modutime.c \
-	pin.c \
-	shared/readline/readline.c \
-	shared/runtime/mpirq.c \
-	shared/runtime/sys_stdio_mphal.c \
-	$(GEN_PINS_SRC)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 
 # =============================================================================
 # Compiler Flags
@@ -413,12 +390,16 @@ ifeq ($(MICROPY_FLOAT_IMPL),double)
 $(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
-
 OBJ += $(PY_O)
 OBJ += $(LIBM_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_TINYUSB_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_HAL_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_HAL_IMX_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_ETH_C:.c=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
 # Workaround for bug in older gcc, warning on "static usbd_device_t _usbd_dev = { 0 };"
