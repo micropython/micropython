@@ -35,7 +35,7 @@ MBOOT_TEXT0_ADDR ?= 0x08000000
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/libhydrogen lib/lwip lib/mbedtls lib/stm32lib
+GIT_SUBMODULES += lib/libhydrogen lib/stm32lib
 
 query-variants:
 	$(ECHO) "VARIANTS:" $(BOARD_VARIANTS)
@@ -531,14 +531,12 @@ endif
 endif
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-GIT_SUBMODULES += lib/mynewt-nimble
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
 include $(TOP)/extmod/nimble/nimble.mk
 SRC_C += mpnimbleport.c
 endif
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-GIT_SUBMODULES += lib/btstack
 MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 include $(TOP)/extmod/btstack/btstack.mk
 SRC_C += mpbtstackport.c

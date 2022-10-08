@@ -17,6 +17,8 @@ CFLAGS_MOD += -DMICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY=$(MICROPY_BLUETOOTH_NIMBL
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY),0)
 
+GIT_SUBMODULES += lib/mynewt-nimble
+
 # On all ports where we provide the full implementation (i.e. not just
 # bindings like on ESP32), then we don't need to use the ringbuffer. In this
 # case, all NimBLE events are run by the MicroPython scheduler. On Unix, the
