@@ -179,7 +179,7 @@ typedef struct _vstr_t {
     size_t alloc;
     size_t len;
     char *buf;
-    bool fixed_buf : 1;
+    bool fixed_buf;
 } vstr_t;
 
 // convenience macro to declare a vstr with a fixed size buffer on the stack
