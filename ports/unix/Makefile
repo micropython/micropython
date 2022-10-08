@@ -110,27 +110,25 @@ ifeq ($(MICROPY_FORCE_32BIT),1)
 # starting with linux-libc-dev:i386
 ifeq ($(MICROPY_PY_FFI),1)
 ifeq ($(UNAME_S),Linux)
-CFLAGS_MOD += -I/usr/include/i686-linux-gnu
+CFLAGS += -I/usr/include/i686-linux-gnu
 endif
 endif
 endif
 
 ifeq ($(MICROPY_USE_READLINE),1)
 INC += -I$(TOP)/shared/readline
-CFLAGS_MOD += -DMICROPY_USE_READLINE=1
+CFLAGS += -DMICROPY_USE_READLINE=1
 SHARED_SRC_C_EXTRA += readline/readline.c
 endif
 ifeq ($(MICROPY_PY_TERMIOS),1)
-CFLAGS_MOD += -DMICROPY_PY_TERMIOS=1
-SRC_MOD += modtermios.c
+CFLAGS += -DMICROPY_PY_TERMIOS=1
 endif
 ifeq ($(MICROPY_PY_SOCKET),1)
-CFLAGS_MOD += -DMICROPY_PY_SOCKET=1
-SRC_MOD += modusocket.c
+CFLAGS += -DMICROPY_PY_SOCKET=1
 endif
 ifeq ($(MICROPY_PY_THREAD),1)
-CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
-LDFLAGS_MOD += $(LIBPTHREAD)
+CFLAGS += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
+LDFLAGS += $(LIBPTHREAD)
 endif
 
 ifeq ($(MICROPY_PY_USSL),1)
@@ -139,7 +137,7 @@ GIT_SUBMODULES += lib/axtls
 endif
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 GIT_SUBMODULES += lib/mbedtls
-CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
+CFLAGS += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
 endif
 endif
 
@@ -163,8 +161,8 @@ MICROPY_BLUETOOTH_BTSTACK ?= 1
 endif
 endif
 
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+CFLAGS += -DMICROPY_PY_BLUETOOTH=1
+CFLAGS += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
 
@@ -192,7 +190,7 @@ else
 
 # NimBLE is enabled.
 GIT_SUBMODULES += lib/mynewt-nimble
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
+CFLAGS += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
 include $(TOP)/extmod/nimble/nimble.mk
 
 endif
@@ -205,31 +203,29 @@ ifeq ($(MICROPY_STANDALONE),1)
 # Build libffi from source.
 GIT_SUBMODULES += lib/libffi
 DEPLIBS += libffi
-LIBFFI_CFLAGS_MOD := -I$(shell ls -1d $(BUILD)/lib/libffi/out/lib/libffi-*/include)
+LIBFFI_CFLAGS := -I$(shell ls -1d $(BUILD)/lib/libffi/out/lib/libffi-*/include)
  ifeq ($(MICROPY_FORCE_32BIT),1)
-  LIBFFI_LDFLAGS_MOD = $(BUILD)/lib/libffi/out/lib32/libffi.a
+  LIBFFI_LDFLAGS = $(BUILD)/lib/libffi/out/lib32/libffi.a
  else
-  LIBFFI_LDFLAGS_MOD = $(BUILD)/lib/libffi/out/lib/libffi.a
+  LIBFFI_LDFLAGS = $(BUILD)/lib/libffi/out/lib/libffi.a
  endif
 else
 # Use system version of libffi.
-LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
-LIBFFI_LDFLAGS_MOD := $(shell pkg-config --libs libffi)
+LIBFFI_CFLAGS := $(shell pkg-config --cflags libffi)
+LIBFFI_LDFLAGS := $(shell pkg-config --libs libffi)
 endif
 
 ifeq ($(UNAME_S),Linux)
-LIBFFI_LDFLAGS_MOD += -ldl
+LIBFFI_LDFLAGS += -ldl
 endif
 
-CFLAGS_MOD += $(LIBFFI_CFLAGS_MOD) -DMICROPY_PY_FFI=1
-LDFLAGS_MOD += $(LIBFFI_LDFLAGS_MOD)
-SRC_MOD += modffi.c
+CFLAGS += $(LIBFFI_CFLAGS) -DMICROPY_PY_FFI=1
+LDFLAGS += $(LIBFFI_LDFLAGS)
 endif
 
 ifeq ($(MICROPY_PY_JNI),1)
 # Path for 64-bit OpenJDK, should be adjusted for other JDKs
-CFLAGS_MOD += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
-SRC_MOD += modjni.c
+CFLAGS += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
 endif
 
 # source files
@@ -250,6 +246,10 @@ SRC_C += \
 	mpbtstackport_usb.c \
 	mpnimbleport.c \
 	$(SRC_MOD) \
+	modtermios.c \
+	modusocket.c \
+	modffi.c \
+	modjni.c \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
 SHARED_SRC_C += $(addprefix shared/,\
