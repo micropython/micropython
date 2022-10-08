@@ -75,8 +75,8 @@ INC += -I$(TOP)/ports/stm32
 INC += -I$(BUILD)
 INC += -Icore
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4)
-LDFLAGS = -nostdlib -T mk20dx256.ld -msoft-float -mfloat-abi=soft
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4)
+LDFLAGS += -nostdlib -T mk20dx256.ld -msoft-float -mfloat-abi=soft
 
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
 
