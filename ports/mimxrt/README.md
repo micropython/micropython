@@ -29,3 +29,36 @@ Known issues:
 TODO:
   - More peripherals (Counter, I2S, CAN, etc)
   - More Python options
+
+## Building
+
+``` bash
+cd ports/mimxrt
+```
+
+Make sure you have the appropriate c library installed
+
+Ubunutu/Debian
+``` bash
+sudo apt-get install libnewlib-arm-none-eabi
+```
+
+Arch
+``` bash
+sudo pacman -S arm-none-eabi-newlib
+```
+
+Update submodules
+``` bash
+git submodule update --init --recursive 
+```
+
+Build
+``` bash
+make -j BOARD=SEEED_ARCH_MIX
+```
+
+## Flashing
+
+Deploy the firmware following the instructions here
+https://docs.micropython.org/en/latest/mimxrt/tutorial/intro.html#deploying-the-firmware
