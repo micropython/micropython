@@ -163,7 +163,7 @@ LIBS = \
 
 ifeq ($(MCU_VARIANT), nrf52)
 
-SRC_LIB += $(addprefix lib/,\
+SRC_LIB_C += $(addprefix lib/,\
         libm/math.c \
         libm/fmodf.c \
         libm/nearbyintf.c \
@@ -197,7 +197,7 @@ endif
 
 ifeq ($(MCU_VARIANT), nrf91)
 
-SRC_LIB += $(addprefix lib/,\
+SRC_LIB_C += $(addprefix lib/,\
         libm/math.c \
         libm/fmodf.c \
         libm/nearbyintf.c \
@@ -236,7 +236,7 @@ include drivers/secureboot/secureboot.mk
 
 endif
 
-SRC_LIB += $(addprefix shared/,\
+SRC_SHARED_C += $(addprefix shared/,\
 	libc/string0.c \
 	readline/readline.c \
 	runtime/pyexec.c \
@@ -247,7 +247,7 @@ SRC_LIB += $(addprefix shared/,\
 	)
 
 ifeq ($(MICROPY_FATFS), 1)
-SRC_LIB += $(addprefix lib/,\
+SRC_LIB_C += $(addprefix lib/,\
         oofatfs/ff.c \
         oofatfs/ffunicode.c \
         )
@@ -362,7 +362,8 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SYSTEM_C_SRC:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_LIB_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_C:.c=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
 $(BUILD)/$(OOFATFS_DIR)/ff.o: COPT += -Os
@@ -518,7 +519,7 @@ $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES)
+SRC_QSTR += $(SRC_C) $(SRC_SHARED_C) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES)
 
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
