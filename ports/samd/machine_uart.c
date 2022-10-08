@@ -59,7 +59,7 @@ typedef struct _machine_uart_obj_t {
 } machine_uart_obj_t;
 
 Sercom *sercom_instance[] = SERCOM_INSTS;
-machine_uart_obj_t *uart_table[SERCOM_INST_NUM] = {};
+extern void *sercom_table[SERCOM_INST_NUM];
 
 STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
 
@@ -82,7 +82,7 @@ STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self, Sercom *uart) {
 }
 
 void common_uart_irq_handler(int uart_id) {
-    machine_uart_obj_t *self = uart_table[uart_id];
+    machine_uart_obj_t *self = sercom_table[uart_id];
     // Handle IRQ
     if (self != NULL) {
         Sercom *uart = sercom_instance[self->id];
@@ -322,7 +322,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     }
 
     // Create the UART object and fill it with defaults.
-    machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
+    machine_uart_obj_t *self = m_new_obj_with_finaliser(machine_uart_obj_t);
+    self->base.type = &machine_uart_type;
     self->id = uart_id;
     self->baudrate = DEFAULT_UART_BAUDRATE;
     self->bits = 8;
@@ -332,7 +333,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->tx = 0xff;
     self->rx = 0xff;
     self->new = true;
-    uart_table[uart_id] = self;
+    sercom_table[uart_id] = self;
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -348,10 +349,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_uart_init_obj, 1, machine_uart_init);
 STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     Sercom *uart = sercom_instance[self->id];
-    // clear table entry of uart
-    uart_table[self->id] = NULL;
     // Disable interrupts
     uart->USART.INTENCLR.reg = 0xff;
+    // clear table entry of uart
+    sercom_table[self->id] = NULL;
     MP_STATE_PORT(samd_uart_rx_buffer[self->id]) = NULL;
     #if MICROPY_HW_UART_TXBUF
     MP_STATE_PORT(samd_uart_tx_buffer[self->id]) = NULL;
@@ -409,14 +410,6 @@ STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
 
-void uart_deinit_all(void) {
-    for (int i = 0; i < SERCOM_INST_NUM; i++) {
-        if (uart_table[i] != NULL) {
-            machine_uart_deinit((mp_obj_t)uart_table[i]);
-        }
-    }
-}
-
 STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj) },
@@ -430,6 +423,7 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_uart_deinit_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
 
