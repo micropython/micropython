@@ -36,11 +36,7 @@ class Pins:
                     # for compatibility, map LED_ to PIN_
                     if row[0].startswith("LED_"):
                         row[0] = "PIN_" + row[0][4:]
-                        if len(row) == 1:
-                            self.pin_names[row[0]] = (row[0][4:], "{&machine_led_type}")
-                        else:
-                            self.pin_names[row[0]] = (row[1], "{&machine_led_type}")
-                    elif row[0].startswith("PIN_"):
+                    if row[0].startswith("PIN_"):
                         if len(row) == 1:
                             self.pin_names[row[0]] = (row[0][4:], "{&machine_pin_type}")
                         else:
