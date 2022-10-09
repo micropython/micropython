@@ -143,7 +143,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     const machine_pin_obj_t *self;
 
     // get the wanted pin object
-    self = pin_find(args[0], &machine_pin_type);
+    self = pin_find(args[0]);
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
@@ -499,7 +499,7 @@ STATIC const mp_irq_methods_t machine_pin_irq_methods = {
 };
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
-    const machine_pin_obj_t *pin = pin_find(obj, &machine_pin_type);
+    const machine_pin_obj_t *pin = pin_find(obj);
     return pin->pin_id;
 }
 

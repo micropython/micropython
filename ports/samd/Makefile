@@ -88,7 +88,6 @@ SRC_C += \
 	machine_bitstream.c \
 	machine_dac.c \
 	machine_i2c.c \
-	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_spi.c \

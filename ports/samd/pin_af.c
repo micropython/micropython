@@ -54,10 +54,10 @@ const machine_pin_obj_t *get_pin_obj_ptr(int pin_id) {
     mp_raise_ValueError(MP_ERROR_TEXT("not a Pin"));
 }
 
-const machine_pin_obj_t *pin_find(mp_obj_t pin, const mp_obj_type_t *type) {
+const machine_pin_obj_t *pin_find(mp_obj_t pin) {
     const machine_pin_obj_t *self = NULL;
     // Is already a object of the proper type
-    if (mp_obj_is_type(pin, type)) {
+    if (mp_obj_is_type(pin, &machine_pin_type)) {
         return pin;
     }
     if (mp_obj_is_small_int(pin)) {
@@ -81,7 +81,7 @@ const machine_pin_obj_t *pin_find(mp_obj_t pin, const mp_obj_type_t *type) {
             }
         }
     }
-    if (self != NULL && (type == NULL || mp_obj_is_type(self, type))) {
+    if (self != NULL) {
         return self;
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("not a Pin"));

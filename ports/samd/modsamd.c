@@ -35,7 +35,7 @@
 extern const mp_obj_type_t samd_flash_type;
 
 STATIC mp_obj_t samd_pininfo(mp_obj_t pin_obj) {
-    const machine_pin_obj_t *pin_af = pin_find(pin_obj, NULL);
+    const machine_pin_obj_t *pin_af = pin_find(pin_obj);
     // Get the name, now that it is not in the pin object
     const char *name = pin_af->name;
 
