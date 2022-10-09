@@ -1742,10 +1742,6 @@ NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
     va_end(argptr);
 }
 
-NORETURN void mp_raise_MpyError(const compressed_string_t *msg) {
-    mp_raise_msg(&mp_type_MpyError, msg);
-}
-
 NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg) {
     nlr_raise(mp_obj_new_exception_arg1(exc_type, arg));
 }
