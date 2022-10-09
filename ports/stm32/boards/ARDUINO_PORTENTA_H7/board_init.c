@@ -178,3 +178,15 @@ void PORTENTA_board_low_power(int mode) {
     }
     #endif
 }
+
+#if defined(MICROPY_PY_PLUGNTRUST)
+#include "extmod/modmachine.h"
+mp_obj_t mp_plugntrust_i2c_instance(void) {
+    mp_obj_t args[] = {
+        MP_OBJ_NEW_SMALL_INT(1),
+        MP_OBJ_NEW_QSTR(MP_QSTR_freq),
+        MP_OBJ_NEW_SMALL_INT(100000),
+    };
+    return MP_OBJ_TYPE_GET_SLOT(&machine_i2c_type, make_new)((mp_obj_t)&machine_i2c_type, 1, 1, args);
+}
+#endif
