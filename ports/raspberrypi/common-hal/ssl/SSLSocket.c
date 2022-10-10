@@ -197,6 +197,21 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
 
     mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
 
+    if (self->cert_buf.buf != NULL) {
+        ret = mbedtls_pk_parse_key(&o->pkey, self->key_buf.buf, self->key_buf.len + 1, NULL, 0);
+        if (ret != 0) {
+            goto cleanup;
+        }
+        ret = mbedtls_x509_crt_parse(&o->cert, self->cert_buf.buf, self->cert_buf.len + 1);
+        if (ret != 0) {
+            goto cleanup;
+        }
+
+        ret = mbedtls_ssl_conf_own_cert(&o->conf, &o->cert, &o->pkey);
+        if (ret != 0) {
+            goto cleanup;
+        }
+    }
     return o;
 cleanup:
     mbedtls_pk_free(&o->pkey);
