@@ -70,6 +70,11 @@ msgstr " sortie :\n"
 msgid "%%c requires int or char"
 msgstr "%%c nécessite un chiffre entier 'int' ou un caractère 'char'"
 
+#: main.c
+#, c-format
+msgid "%02X"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -2160,6 +2165,10 @@ msgstr "Ré-initialisation du UART"
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write"
 msgstr "Écriture UART"
+
+#: main.c
+msgid "UID:"
+msgstr ""
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
