@@ -7,3 +7,4 @@ TEXT0 = 0x2000
 # MicroPython settings
 MICROPY_VFS_LFS1 ?= 1
 
+FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py
