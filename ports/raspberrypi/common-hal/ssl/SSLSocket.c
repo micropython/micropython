@@ -174,7 +174,14 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     if (self->crt_bundle_attach != NULL) {
         mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
         self->crt_bundle_attach(&o->conf);
-        // } else if(self->cacert_buf && self->cacert_bytes) { // TODO: user bundle
+    } else if (self->cacert_buf && self->cacert_bytes) {
+        ret = mbedtls_x509_crt_parse(&o->cacert, self->cacert_buf, self->cacert_bytes);
+        if (ret != 0) {
+            goto cleanup;
+        }
+        mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+        mbedtls_ssl_conf_ca_chain(&o->conf, &o->cacert, NULL);
+
     } else {
         mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
     }
