@@ -26,6 +26,15 @@
 #ifndef MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 #define MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 
+// Enable mbedtls modules.
+#define MBEDTLS_HAVE_TIME
+#define MBEDTLS_HAVE_TIME_DATE
+
+// Time hook.
+#include <time.h>
+extern time_t stm32_rtctime_seconds(time_t *timer);
+#define MBEDTLS_PLATFORM_TIME_MACRO stm32_rtctime_seconds
+
 // Set MicroPython-specific options.
 #define MICROPY_MBEDTLS_CONFIG_BARE_METAL (1)
 
