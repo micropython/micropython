@@ -779,9 +779,9 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH > 0
         uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
         common_hal_mcu_processor_get_uid(raw_id);
-        mp_printf(&mp_plat_print, "UID:");
-        for (uint8_t i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
-            mp_printf(&mp_plat_print, "%02X", raw_id[i]);
+        mp_cprintf(&mp_plat_print, translate("UID:"));
+        for (size_t i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
+            mp_cprintf(&mp_plat_print, translate("%02X"), raw_id[i]);
         }
         mp_printf(&mp_plat_print, "\n");
         port_boot_info();
