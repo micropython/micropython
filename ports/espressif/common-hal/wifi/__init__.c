@@ -172,7 +172,7 @@ void common_hal_wifi_init(bool user_initiated) {
     // Even though we just called esp_netif_create_default_wifi_sta,
     //   station mode isn't actually ready for use until esp_wifi_set_mode()
     //   is called and the configuration is loaded via esp_wifi_set_config().
-    // Set both convienence flags to false so it's not forgotten.
+    // Set both convenience flags to false so it's not forgotten.
     self->sta_mode = 0;
     self->ap_mode = 0;
 
