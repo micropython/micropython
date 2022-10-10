@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2022-08-29 18:20+0000\n"
+"PO-Revision-Date: 2022-10-10 18:23+0000\n"
 "Last-Translator: Boran Roni <boranroniurtekin@gmail.com>\n"
 "Language-Team: none\n"
 "Language: tr\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: main.c
 msgid ""
@@ -167,7 +167,7 @@ msgstr "%q >= %d olmalıdır"
 #: shared-bindings/analogbufio/BufferedIn.c
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
-msgstr ""
+msgstr "%q 'h', 'H', 'b' yada 'B' tipi bir bytearray /array olmalı"
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -375,7 +375,7 @@ msgstr "fonksiyon dışında 'yield'"
 
 #: py/compile.c
 msgid "*x must be assignment target"
-msgstr ""
+msgstr "*x atama hedefi olmalıdır"
 
 #: py/obj.c
 msgid ", in %q\n"
@@ -486,7 +486,7 @@ msgstr "Halihazırda duyuruluyor."
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "Already have all-matches listener"
-msgstr ""
+msgstr "Tüm eşleşmelerle eşleşen dinleyiciniz var"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -605,15 +605,15 @@ msgstr "Parlaklık ayarlanabilir değil"
 #: shared-bindings/_bleio/UUID.c
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
-msgstr ""
+msgstr "Buffer + offset çok küçük %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "Buffer elementleri 4 bit olmak zorunda"
 
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
-msgstr "Arabellek bayt dizisi değil"
+msgstr "Buffer bir bytearray değil."
 
 #: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -632,12 +632,12 @@ msgstr "Arabellek boyutu 512'nin katı olmalı"
 
 #: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr ""
+msgstr "Buffer 512 bitin katı olmalı"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
-msgstr ""
+msgstr "Buffer bitten %d daha az"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -653,7 +653,7 @@ msgstr "Veriyolu pini %d kullanımda"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
-msgstr ""
+msgstr "Bit buffer'ı 16bit olmalı."
 
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
@@ -661,11 +661,11 @@ msgstr "CBC blokları 16 baytın katları şeklinde olmalı"
 
 #: supervisor/shared/safe_mode.c
 msgid "CIRCUITPY drive could not be found or created."
-msgstr "CIRCUITPY sürücüsü bulunamadı veya oluşturulamadı"
+msgstr "CIRCUITPY sürücüsü bulunamadı veya oluşturulamadı."
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
-msgstr ""
+msgstr "CRC yada checksum geçersiz"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -712,15 +712,16 @@ msgstr "Değerler silinemez"
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
 #: ports/raspberrypi/common-hal/digitalio/DigitalInOut.c
 msgid "Cannot get pull while in output mode"
-msgstr ""
+msgstr "Çıkış modundayken çekme alınamıyor"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c
 msgid "Cannot get temperature"
-msgstr ""
+msgstr "Isı okunamadı"
 
 #: shared-bindings/_bleio/Adapter.c
+#, fuzzy
 msgid "Cannot have scan responses for extended, connectable advertisements."
-msgstr ""
+msgstr "Genişletilmiş, bağlanabilir reklamlar için tarama yanıtları yapılamaz."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
@@ -779,7 +780,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython core code crashed hard. Whoops!\n"
-msgstr ""
+msgstr "CircuitPython kor kodu patladı. Haydaaa!\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap."
@@ -791,17 +792,17 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
-msgstr ""
+msgstr "Saat ünitesi kullanımda"
 
 #: shared-bindings/_bleio/Connection.c
 msgid ""
 "Connection has been disconnected and can no longer be used. Create a new "
 "connection."
-msgstr ""
+msgstr "Bağlantı koparıldı ve tekrar kullanılamaz. Yeni bir bağlantı kurun."
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
-msgstr ""
+msgstr "Bozuk .mpy dosyası"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
@@ -813,7 +814,7 @@ msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
-msgstr ""
+msgstr "PWM başlatılamadı"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Could not start interrupt, RX busy"
