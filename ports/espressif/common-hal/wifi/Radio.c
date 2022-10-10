@@ -165,7 +165,7 @@ void common_hal_wifi_radio_set_mac_address_ap(wifi_radio_obj_t *self, const uint
     esp_wifi_set_mac(ESP_IF_WIFI_AP, mac);
 }
 
-mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
+mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, uint8_t start_channel, uint8_t stop_channel) {
     if (self->current_scan != NULL) {
         mp_raise_RuntimeError(translate("Already scanning for wifi networks"));
     }
@@ -177,9 +177,12 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
     wifi_scannednetworks_obj_t *scan = m_new_obj(wifi_scannednetworks_obj_t);
     scan->base.type = &wifi_scannednetworks_type;
     self->current_scan = scan;
-    scan->start_channel = 1;
-    scan->end_channel = 11;
+    scan->current_channel_index = 0;
+    scan->start_channel = start_channel;
+    scan->end_channel = stop_channel;
     scan->radio_event_group = self->event_group_handle;
+    scan->done = false;
+    scan->channel_scan_in_progress = false;
     wifi_scannednetworks_scan_next_channel(scan);
     return scan;
 }
