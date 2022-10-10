@@ -65,7 +65,7 @@ INC_CYW43 := \
 	-isystem sdk/src/rp2_common/pico_cyw43_arch/include/ \
 	-isystem sdk/src/rp2_common/pico_lwip/include/ \
 
-CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25 -DIGNORE_GPIO23 -DCYW43_LOGIC_DEBUG=0
+CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25 -DIGNORE_GPIO23 -DIGNORE_GPIO24 -DCYW43_LOGIC_DEBUG=0
 SRC_SDK_CYW43 := \
 	src/common/pico_sync/sem.c \
 	src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.c \

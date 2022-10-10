@@ -73,6 +73,7 @@ extern const mcu_pin_obj_t pin_GPIO29;
 #if CIRCUITPY_CYW43
 extern const mcu_pin_obj_t pin_CYW0;
 extern const mcu_pin_obj_t pin_CYW1;
+extern const mcu_pin_obj_t pin_CYW2;
 #endif
 
 #endif  // MICROPY_INCLUDED_RASPBERRYPI_PERIPHERALS_PINS_H

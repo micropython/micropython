@@ -64,8 +64,12 @@ PIN(19);
 PIN(20);
 PIN(21);
 PIN(22);
+#if !defined(IGNORE_GPIO23)
 PIN(23);
+#endif
+#if !defined(IGNORE_GPIO24)
 PIN(24);
+#endif
 #if !defined(IGNORE_GPIO25)
 PIN(25);
 #endif
@@ -76,4 +80,5 @@ PIN(29);
 #if CIRCUITPY_CYW43
 CYW_PIN(0);
 CYW_PIN(1);
+CYW_PIN(2);
 #endif
