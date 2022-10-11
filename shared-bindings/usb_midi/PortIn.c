@@ -33,7 +33,7 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class PortIn:
 //|     """Receives midi commands over USB"""
@@ -44,7 +44,6 @@
 //|         PortIn objects are constructed for every corresponding entry in the USB
 //|         descriptor and added to the ``usb_midi.ports`` tuple."""
 //|         ...
-//|
 
 // These are standard stream methods. Code is in py/stream.c.
 //
@@ -57,7 +56,6 @@
 //|         :return: Data read
 //|         :rtype: bytes or None"""
 //|         ...
-//|
 //|     def readinto(self, buf: WriteableBuffer, nbytes: Optional[int] = None) -> Optional[bytes]:
 //|         """Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
 //|         that many bytes.  Otherwise, read at most ``len(buf)`` bytes.

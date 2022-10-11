@@ -31,7 +31,7 @@
 #include "py/runtime0.h"
 
 #include "shared-bindings/alarm/SleepMemory.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class SleepMemory:
 //|     """Store raw bytes in RAM that persists during deep sleep.
@@ -48,21 +48,19 @@
 //|        alarm.sleep_memory[0] = True
 //|        alarm.sleep_memory[1] = 12
 //|     """
+//|
 
 //|     def __init__(self) -> None:
 //|         """Not used. Access the sole instance through `alarm.sleep_memory`."""
 //|         ...
-//|
 //|     def __bool__(self) -> bool:
 //|         """``sleep_memory`` is ``True`` if its length is greater than zero.
 //|         This is an easy way to check for its existence.
 //|         """
 //|         ...
-//|
 //|     def __len__(self) -> int:
 //|         """Return the length. This is used by (`len`)"""
 //|         ...
-//|
 STATIC mp_obj_t alarm_sleep_memory_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     alarm_sleep_memory_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint16_t len = common_hal_alarm_sleep_memory_get_length(self);
@@ -87,7 +85,6 @@ STATIC MP_DEFINE_CONST_DICT(alarm_sleep_memory_locals_dict, alarm_sleep_memory_l
 //|     def __getitem__(self, index: int) -> int:
 //|         """Returns the value at the given index."""
 //|         ...
-//|
 //|     @overload
 //|     def __setitem__(self, index: slice, value: ReadableBuffer) -> None: ...
 //|     @overload
@@ -159,9 +156,8 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
             } else {
                 // store
                 mp_int_t byte_value = mp_obj_get_int(value);
-                if (byte_value > 0xff || byte_value < 0) {
-                    mp_raise_ValueError(translate("Bytes must be between 0 and 255."));
-                }
+                mp_arg_validate_int_range(byte_value, 0, 255, MP_QSTR_bytes);
+
                 uint8_t short_value = byte_value;
                 if (!common_hal_alarm_sleep_memory_set_bytes(self, index, &short_value, 1)) {
                     mp_raise_RuntimeError(translate("Unable to write to sleep_memory."));

@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/bitbangio/I2C.h"
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
@@ -65,14 +66,14 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         self->peripheral = i2c[sda_instance];
     }
     if (self->peripheral == NULL) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
     if ((i2c_get_hw(self->peripheral)->enable & I2C_IC_ENABLE_ENABLE_BITS) != 0) {
         mp_raise_ValueError(translate("I2C peripheral in use"));
     }
-    if (frequency > 1000000) {
-        mp_raise_ValueError(translate("Unsupported baudrate"));
-    }
+
+    mp_arg_validate_int_max(frequency, 1000000, MP_QSTR_frequency);
+
 
     #if CIRCUITPY_REQUIRE_I2C_PULLUPS
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
@@ -189,7 +190,7 @@ STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
         return status;
     }
 
-    int result = i2c_write_timeout_us(self->peripheral, addr, data, len, !transmit_stop_bit, BUS_TIMEOUT_US);
+    size_t result = i2c_write_timeout_us(self->peripheral, addr, data, len, !transmit_stop_bit, BUS_TIMEOUT_US);
     if (result == len) {
         return 0;
     }
@@ -210,7 +211,7 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
     uint8_t *data, size_t len) {
-    int result = i2c_read_timeout_us(self->peripheral, addr, data, len, false, BUS_TIMEOUT_US);
+    size_t result = i2c_read_timeout_us(self->peripheral, addr, data, len, false, BUS_TIMEOUT_US);
     if (result == len) {
         return 0;
     }

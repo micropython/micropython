@@ -33,17 +33,20 @@
 #include "common-hal/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "esp_sleep.h"
 #include "esp_system.h"
 
 #include "soc/efuse_reg.h"
+
+#if !defined(CONFIG_IDF_TARGET_ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S3)
 #include "driver/temp_sensor.h"
+#endif
 
 float common_hal_mcu_processor_get_temperature(void) {
     float tsens_out;
-    #ifdef CONFIG_IDF_TARGET_ESP32S3
+    #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32)
     mp_raise_NotImplementedError(NULL);
     #else
     temp_sensor_config_t temp_sensor = TSENS_CONFIG_DEFAULT(); // DEFAULT: range:-10℃ ~  80℃, error < 1℃.
@@ -60,12 +63,16 @@ float common_hal_mcu_processor_get_voltage(void) {
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
-    #ifdef CONFIG_IDF_TARGET_ESP32C3
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    return CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ * 100000;
+    #elif defined(CONFIG_IDF_TARGET_ESP32C3)
     return CONFIG_ESP32C3_DEFAULT_CPU_FREQ_MHZ * 1000000;
     #elif defined(CONFIG_IDF_TARGET_ESP32S2)
     return CONFIG_ESP32S2_DEFAULT_CPU_FREQ_MHZ * 1000000;
     #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     return CONFIG_ESP32S3_DEFAULT_CPU_FREQ_MHZ * 1000000;
+    #else
+    #error No known CONFIG_IDF_TARGET_xxx found
     #endif
 }
 
@@ -78,7 +85,13 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
 
     uint8_t *ptr = &raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH - 1];
     // MAC address contains 48 bits (6 bytes), 32 in the low order word
+
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    uint32_t mac_address_part = REG_READ(EFUSE_BLK0_RDATA1_REG);
+    #else
     uint32_t mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_0_REG);
+    #endif
+
     *ptr-- = swap_nibbles(mac_address_part & 0xff);
     mac_address_part >>= 8;
     *ptr-- = swap_nibbles(mac_address_part & 0xff);
@@ -88,7 +101,12 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     *ptr-- = swap_nibbles(mac_address_part & 0xff);
 
     // and 16 in the high order word
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    mac_address_part = REG_READ(EFUSE_BLK0_RDATA2_REG);
+    #else
     mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_1_REG);
+    #endif
+
     *ptr-- = swap_nibbles(mac_address_part & 0xff);
     mac_address_part >>= 8;
     *ptr-- = swap_nibbles(mac_address_part & 0xff);

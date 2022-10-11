@@ -36,12 +36,20 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Mixer:
 //|     """Mixes one or more audio samples together into one sample."""
 //|
-//|     def __init__(self, voice_count: int = 2, buffer_size: int = 1024, channel_count: int = 2, bits_per_sample: int = 16, samples_signed: bool = True, sample_rate: int = 8000) -> None:
+//|     def __init__(
+//|         self,
+//|         voice_count: int = 2,
+//|         buffer_size: int = 1024,
+//|         channel_count: int = 2,
+//|         bits_per_sample: int = 16,
+//|         samples_signed: bool = True,
+//|         sample_rate: int = 8000,
+//|     ) -> None:
 //|         """Create a Mixer object that can mix multiple channels with the same sample rate.
 //|         Samples are accessed and controlled with the mixer's `audiomixer.MixerVoice` objects.
 //|
@@ -77,7 +85,6 @@
 //|             time.sleep(1)
 //|           print("stopped")"""
 //|         ...
-//|
 STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_voice_count, ARG_buffer_size, ARG_channel_count, ARG_bits_per_sample, ARG_samples_signed, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
@@ -91,19 +98,9 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t voice_count = args[ARG_voice_count].u_int;
-    if (voice_count < 1 || voice_count > 255) {
-        mp_raise_ValueError(translate("Invalid voice count"));
-    }
-
-    mp_int_t channel_count = args[ARG_channel_count].u_int;
-    if (channel_count < 1 || channel_count > 2) {
-        mp_raise_ValueError(translate("Invalid channel count"));
-    }
-    mp_int_t sample_rate = args[ARG_sample_rate].u_int;
-    if (sample_rate < 1) {
-        mp_raise_ValueError(translate("Sample rate must be positive"));
-    }
+    mp_int_t voice_count = mp_arg_validate_int_range(args[ARG_voice_count].u_int, 1, 255, MP_QSTR_voice_count);
+    mp_int_t channel_count = mp_arg_validate_int_range(args[ARG_channel_count].u_int, 1, 2, MP_QSTR_channel_count);
+    mp_int_t sample_rate = mp_arg_validate_int_min(args[ARG_sample_rate].u_int, 1, MP_QSTR_sample_rate);
     mp_int_t bits_per_sample = args[ARG_bits_per_sample].u_int;
     if (bits_per_sample != 8 && bits_per_sample != 16) {
         mp_raise_ValueError(translate("bits_per_sample must be 8 or 16"));
@@ -124,7 +121,6 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
 //|     def deinit(self) -> None:
 //|         """Deinitialises the Mixer and releases any hardware resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t audiomixer_mixer_deinit(mp_obj_t self_in) {
     audiomixer_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_audiomixer_mixer_deinit(self);
@@ -141,14 +137,12 @@ STATIC void check_for_deinit(audiomixer_mixer_obj_t *self) {
 //|     def __enter__(self) -> Mixer:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t audiomixer_mixer_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_audiomixer_mixer_deinit(args[0]);
@@ -158,7 +152,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiomixer_mixer___exit___obj, 4, 4, 
 
 //|     playing: bool
 //|     """True when any voice is being output. (read-only)"""
-//|
 STATIC mp_obj_t audiomixer_mixer_obj_get_playing(mp_obj_t self_in) {
     audiomixer_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -171,7 +164,6 @@ MP_PROPERTY_GETTER(audiomixer_mixer_playing_obj,
 
 //|     sample_rate: int
 //|     """32 bit value that dictates how quickly samples are played in Hertz (cycles per second)."""
-//|
 STATIC mp_obj_t audiomixer_mixer_obj_get_sample_rate(mp_obj_t self_in) {
     audiomixer_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -199,7 +191,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_voice_obj, audiomixer_mixer_obj_g
 MP_PROPERTY_GETTER(audiomixer_mixer_voice_obj,
     (mp_obj_t)&audiomixer_mixer_get_voice_obj);
 
-//|     def play(self, sample: circuitpython_typing.AudioSample, *, voice: int = 0, loop: bool = False) -> None:
+//|     def play(
+//|         self, sample: circuitpython_typing.AudioSample, *, voice: int = 0, loop: bool = False
+//|     ) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.
 //|         Does not block. Use `playing` to block.
 //|
@@ -207,7 +201,6 @@ MP_PROPERTY_GETTER(audiomixer_mixer_voice_obj,
 //|
 //|         The sample must match the Mixer's encoding settings given in the constructor."""
 //|         ...
-//|
 STATIC mp_obj_t audiomixer_mixer_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_voice, ARG_loop };
     static const mp_arg_t allowed_args[] = {
@@ -222,7 +215,7 @@ STATIC mp_obj_t audiomixer_mixer_obj_play(size_t n_args, const mp_obj_t *pos_arg
 
     uint8_t v = args[ARG_voice].u_int;
     if (v > (self->voice_count - 1)) {
-        mp_raise_ValueError(translate("Invalid voice"));
+        mp_arg_error_invalid(MP_QSTR_voice);
     }
     audiomixer_mixervoice_obj_t *voice = MP_OBJ_TO_PTR(self->voice[v]);
     mp_obj_t sample = args[ARG_sample].u_obj;
@@ -248,7 +241,7 @@ STATIC mp_obj_t audiomixer_mixer_obj_stop_voice(size_t n_args, const mp_obj_t *p
 
     uint8_t v = args[ARG_voice].u_int;
     if (v > (self->voice_count - 1)) {
-        mp_raise_ValueError(translate("Invalid voice"));
+        mp_arg_error_invalid(MP_QSTR_voice);
     }
     audiomixer_mixervoice_obj_t *voice = MP_OBJ_TO_PTR(self->voice[v]);
     common_hal_audiomixer_mixervoice_stop(voice);

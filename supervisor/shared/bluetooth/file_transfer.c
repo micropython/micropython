@@ -43,14 +43,15 @@
 #include "common-hal/_bleio/__init__.h"
 
 #include "supervisor/fatfs_port.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/bluetooth/file_transfer.h"
 #include "supervisor/shared/bluetooth/file_transfer_protocol.h"
+#include "supervisor/shared/workflow.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"
 
 #include "py/mpstate.h"
-#include "py/stackctrl.h"
 
 STATIC bleio_service_obj_t supervisor_ble_service;
 STATIC bleio_uuid_obj_t supervisor_ble_service_uuid;
@@ -172,7 +173,7 @@ STATIC uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
     char *path = (char *)((uint8_t *)command) + header_size;
     path[command->path_length] = '\0';
 
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     FRESULT result = f_open(fs, &active_file, path, FA_READ);
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
@@ -289,7 +290,7 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
         return ANY_COMMAND;
     }
 
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     DWORD fattime;
     _truncated_time = truncate_time(command->modification_time, &fattime);
     override_fattime(fattime);
@@ -386,39 +387,6 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
     return WRITE_DATA;
 }
 
-STATIC FRESULT _delete_directory_contents(FATFS *fs, const TCHAR *path) {
-    FF_DIR dir;
-    FRESULT res = f_opendir(fs, &dir, path);
-    FILINFO file_info;
-    // Check the stack since we're putting paths on it.
-    if (mp_stack_usage() >= MP_STATE_THREAD(stack_limit)) {
-        return FR_INT_ERR;
-    }
-    while (res == FR_OK) {
-        res = f_readdir(&dir, &file_info);
-        if (res != FR_OK || file_info.fname[0] == '\0') {
-            break;
-        }
-        size_t pathlen = strlen(path);
-        size_t fnlen = strlen(file_info.fname);
-        TCHAR full_path[pathlen + 1 + fnlen];
-        memcpy(full_path, path, pathlen);
-        full_path[pathlen] = '/';
-        size_t full_pathlen = pathlen + 1 + fnlen;
-        memcpy(full_path + pathlen + 1, file_info.fname, fnlen);
-        full_path[full_pathlen] = '\0';
-        if ((file_info.fattrib & AM_DIR) != 0) {
-            res = _delete_directory_contents(fs, full_path);
-        }
-        if (res != FR_OK) {
-            break;
-        }
-        res = f_unlink(fs, full_path);
-    }
-    f_closedir(&dir);
-    return res;
-}
-
 STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     const struct delete_command *command = (struct delete_command *)raw_buf;
     size_t header_size = sizeof(struct delete_command);
@@ -438,14 +406,14 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     if (command_len < header_size + command->path_length) {
         return THIS_COMMAND;
     }
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     char *path = (char *)((uint8_t *)command) + header_size;
     path[command->path_length] = '\0';
     FILINFO file;
     FRESULT result = f_stat(fs, path, &file);
     if (result == FR_OK) {
         if ((file.fattrib & AM_DIR) != 0) {
-            result = _delete_directory_contents(fs, path);
+            result = supervisor_workflow_delete_directory_contents(fs, path);
         }
         if (result == FR_OK) {
             result = f_unlink(fs, path);
@@ -495,14 +463,14 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
     if (command_len < header_size + command->path_length) {
         return THIS_COMMAND;
     }
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     char *path = (char *)command->path;
     _terminate_path(path, command->path_length);
 
     DWORD fattime;
     response.truncated_time = truncate_time(command->modification_time, &fattime);
     override_fattime(fattime);
-    FRESULT result = f_mkdir(fs, path);
+    FRESULT result = supervisor_workflow_mkdir_parents(fs, path);
     override_fattime(0);
     #if CIRCUITPY_USB_MSC
     usb_msc_unlock();
@@ -552,7 +520,7 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
         return THIS_COMMAND;
     }
 
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     char *path = (char *)&command->path;
     _terminate_path(path, command->path_length);
     // mp_printf(&mp_plat_print, "list %s\n", path);
@@ -640,7 +608,7 @@ STATIC uint8_t _process_move(const uint8_t *raw_buf, size_t command_len) {
     if (command_len < header_size + total_path_length) {
         return THIS_COMMAND;
     }
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     char *old_path = (char *)command->paths;
     old_path[command->old_path_length] = '\0';
 

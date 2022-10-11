@@ -37,7 +37,18 @@
 //| class ShiftRegisterKeys:
 //|     """Manage a set of keys attached to an incoming shift register."""
 //|
-//|     def __init__(self, *, clock: microcontroller.Pin, data: microcontroller.Pin, latch: microcontroller.Pin, value_to_latch: bool = True, key_count: int, value_when_pressed: bool, interval: float = 0.020, max_events: int = 64) -> None:
+//|     def __init__(
+//|         self,
+//|         *,
+//|         clock: microcontroller.Pin,
+//|         data: microcontroller.Pin,
+//|         latch: microcontroller.Pin,
+//|         value_to_latch: bool = True,
+//|         key_count: int,
+//|         value_when_pressed: bool,
+//|         interval: float = 0.020,
+//|         max_events: int = 64
+//|     ) -> None:
 //|         """
 //|         Create a `Keys` object that will scan keys attached to a parallel-in serial-out shift register
 //|         like the 74HC165 or CD4021.
@@ -107,7 +118,6 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
 //|     def deinit(self) -> None:
 //|         """Stop scanning and release the pins."""
 //|         ...
-//|
 STATIC mp_obj_t keypad_shiftregisterkeys_deinit(mp_obj_t self_in) {
     keypad_shiftregisterkeys_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -119,14 +129,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_shiftregisterkeys_deinit_obj, keypad_shiftregis
 //|     def __enter__(self) -> Keys:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t keypad_shiftregisterkeys___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_keypad_shiftregisterkeys_deinit(args[0]);
@@ -140,12 +148,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_shiftregisterkeys___exit___obj
 //|         a new key-pressed event to occur.
 //|         """
 //|         ...
-//|
 
 //|     key_count: int
 //|     """The number of keys that are being scanned. (read-only)
 //|     """
-//|
 
 //|     events: EventQueue
 //|     """The `EventQueue` associated with this `Keys` object. (read-only)

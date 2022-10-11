@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-04-23 21:13+0000\n"
+"PO-Revision-Date: 2022-08-20 14:09+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.12.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: main.c
 msgid ""
@@ -69,6 +69,11 @@ msgstr " shūchū:\n"
 msgid "%%c requires int or char"
 msgstr "%%c xūyào zhěngshù huòzhě zìfú"
 
+#: main.c
+#, c-format
+msgid "%02X"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -77,9 +82,26 @@ msgstr ""
 "%d de zhǐ yǐn jiǎo, %d rgb yǐn jiǎo hé %d qiē piàn biǎo shì %d de gāo dù, ér "
 "bù shì %d"
 
+#: ports/atmel-samd/common-hal/alarm/__init__.c
+#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
+#: ports/espressif/common-hal/rtc/RTC.c
+#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
+#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
+#: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/alarm/__init__.c
+#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
+#: ports/stm/common-hal/rtc/RTC.c
+msgid "%q"
+msgstr "%q"
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
 msgstr "%q hé %q bāo hán chóng fù yǐn jiǎo"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "%q and %q must be different"
+msgstr "%q hé %q bìxū bùtóng"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
@@ -89,16 +111,12 @@ msgstr "%q bāo hán chóng fù de yǐn jiǎo"
 msgid "%q failure: %d"
 msgstr "%q Shībài: %d"
 
+#: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q zhèngzài bèi shǐyòng"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
-#: py/objstrunicode.c
+#: py/obj.c py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "%q suǒyǐn chāochū fànwéi"
 
@@ -106,13 +124,33 @@ msgstr "%q suǒyǐn chāochū fànwéi"
 msgid "%q indices must be integers, not %s"
 msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
 
+#: shared-module/bitbangio/SPI.c
+msgid "%q init failed"
+msgstr "%q chūshǐhuà shībài"
+
+#: py/argcheck.c
+msgid "%q length must be %d"
+msgstr "%q de chángdù bìxū shì %d"
+
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
 msgstr "%q cháng dù bì xū wéi %d-%d"
 
-#: shared-bindings/busio/I2C.c shared-bindings/usb_hid/Device.c
+#: py/argcheck.c
+msgid "%q length must be <= %d"
+msgstr "%q chángdù bìxū <= %d"
+
+#: py/argcheck.c
+msgid "%q length must be >= %d"
+msgstr "%q chángdù bìxū >= %d"
+
+#: shared-bindings/busio/I2C.c
 msgid "%q length must be >= 1"
-msgstr "%q cháng dù bì xū >= 1"
+msgstr "%q cháng dù bìxū >= 1"
+
+#: py/argcheck.c
+msgid "%q must be %d"
+msgstr "%q bìxū %d"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
@@ -120,40 +158,28 @@ msgstr "%q bì xū wéi %d-%d"
 
 #: shared-bindings/displayio/Display.c
 msgid "%q must be 1 when %q is True"
-msgstr ""
+msgstr "sāng %q wèi True shí, %q bìxū wèi 1"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
-msgstr "%q bì xū <= %d"
+msgstr "%q bìxū <= %d"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
-msgstr "%q bì xū >= %d"
+msgstr "%q bìxū >= %d"
 
-#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
-msgid "%q must be >= 0"
-msgstr "%q Bìxū > = 0"
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c
-#: shared-bindings/memorymonitor/AllocationAlarm.c
-#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
-msgid "%q must be >= 1"
-msgstr "%q bìxū >= 1"
+#: shared-bindings/analogbufio/BufferedIn.c
+#: shared-bindings/audiocore/RawSample.c
+msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
-msgstr "%q bì xū shì yí gè zì fú chuàn"
+msgstr "%q bìxū shì yí gè zì fú chuàn"
 
-#: shared-module/vectorio/Polygon.c
-msgid "%q must be a tuple of length 2"
-msgstr "%q bìxū shì chángdù wèi 2 de yuánzǔ"
-
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-#: shared-module/vectorio/VectorShape.c
-msgid "%q must be between %d and %d"
-msgstr "%q bì xū zài %d hé %d zhī jiān"
+#: py/argcheck.c
+msgid "%q must be an int"
+msgstr "%q bìxū shì zhěng xíng"
 
 #: py/argcheck.c
 msgid "%q must be of type %q"
@@ -171,7 +197,11 @@ msgstr "%q bì xū shì 2 de zhěng shù cì fāng"
 msgid "%q out of bounds"
 msgstr "%q chāo chū jiè xiàn"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr "%q chāochū fànwéi"
@@ -179,10 +209,6 @@ msgstr "%q chāochū fànwéi"
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
 msgstr "%q yǐn jiǎo wúxiào"
-
-#: shared-bindings/fontio/BuiltinFont.c
-msgid "%q should be an int"
-msgstr "%q yīnggāi shì yīgè zhěngshù (int)"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q with a report ID of 0 must be of length 1"
@@ -196,7 +222,11 @@ msgstr "%q() yāoqiú shūrù %d gè wèizhì cānshù, dàn mùqián shūrù le
 msgid "%q, %q, and %q must all be the same length"
 msgstr "%q, %q, hé %q bì xū cháng dù xiāng tóng"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: py/objint.c
+msgid "%q=%q"
+msgstr "%q=%q"
+
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s cuò wù 0x%x"
@@ -281,7 +311,7 @@ msgstr "'%s' duìxiàng bù zhīchí yuánsù fùzhí"
 msgid "'%s' object doesn't support item deletion"
 msgstr "'%s' duìxiàng bù zhīchí yuánsù shānchú"
 
-#: py/runtime.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "'%s' duìxiàng méiyǒu shǔxìng '%q'"
 
@@ -346,10 +376,6 @@ msgstr "Yìbù hánshù zhōng cúnzài 'yield from'"
 msgid "'yield' outside function"
 msgstr "'yield' wèiyú hánshù zhīwài"
 
-#: shared-module/vectorio/VectorShape.c
-msgid "(x,y) integers required"
-msgstr "xūyào zhěngshù (x,y)"
-
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x bìxū shì bèi fùzhí de duìxiàng"
@@ -385,16 +411,12 @@ msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
 msgid "Address must be %d bytes long"
 msgstr "dìzhǐ chángdù bìxū shì %d zìjié"
 
-#: shared-bindings/_bleio/Address.c
-msgid "Address type out of range"
-msgstr "Dìzhǐ lèixíng chāochū fànwéi"
-
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
 msgstr "suǒyǒu CAN wàishè dōu zài shǐyòng zhōng"
 
 #: ports/espressif/common-hal/busio/I2C.c
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "suǒyǒu I2C wàishè dōu zài shǐyòng zhōng"
@@ -431,7 +453,6 @@ msgstr "suǒyǒu píndào dōu zài shǐyòng zhōng"
 msgid "All event channels in use"
 msgstr "suǒyǒu shìjiàn píndào dōu zài shǐyòng zhōng"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr "suǒyǒu zhuàngtàijī dōu zài shǐyòng zhōng"
@@ -467,9 +488,8 @@ msgid "Already advertising."
 msgstr "Mùqián zhèngzài guǎngbō."
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
-#, fuzzy
 msgid "Already have all-matches listener"
-msgstr "yǐjīng yǒu all-matches jiāntīngqì"
+msgstr "yǐjīng yǒu all-matches jiāntīng qì"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -477,27 +497,9 @@ msgid "Already running"
 msgstr "yǐjīng zài yùnxíng"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "yǐjīng zài sǎomiáo WIFI wǎngluò"
-
-#: ports/cxd56/common-hal/analogio/AnalogIn.c
-msgid "AnalogIn not supported on given pin"
-msgstr "gěidìng de yǐnjiǎo bù zhīchí AnalogIn"
-
-#: ports/cxd56/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-msgid "AnalogOut functionality not supported"
-msgstr "Bù zhīchí AnalogOut gōngnéng"
-
-#: shared-bindings/analogio/AnalogOut.c
-msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-msgstr "AnalogOut jǐn wèi 16 wèi. Zhí bìxū xiǎoyú 65536."
-
-#: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-msgid "AnalogOut not supported on given pin"
-msgstr "zhǐdìng de yǐn jiǎo bù zhīchí AnalogOut"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -537,7 +539,7 @@ msgstr "yīnpín zhuǎnhuàn wèi bèi shíxiàn"
 msgid "AuthMode.OPEN is not used with password"
 msgstr "AuthMode.OPEN wèi shǐyòng mìmǎ"
 
-#: shared-bindings/wifi/Radio.c
+#: shared-bindings/wifi/Radio.c supervisor/shared/web_workflow/web_workflow.c
 msgid "Authentication failure"
 msgstr "shēnfèn ren4zheng4 shībài"
 
@@ -563,28 +565,20 @@ msgid "Below minimum frame rate"
 msgstr "dīyú zuìdī zhēnlǜ"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-#, fuzzy
 msgid "Bit clock and word select must be sequential pins"
-msgstr "wèi shí zhōng hé dān cí xuǎn zé bì xū shì shùn xù yǐn jiǎo"
+msgstr "wèi shízhōng hé zì xuǎnzé bìxū shì liánxù de yǐn jiǎo"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#, fuzzy
 msgid "Bit clock and word select must share a clock unit"
-msgstr "Bǐtè shízhōng hé dānzì xuǎnzé bìxū gòngxiǎng shízhōng dānwèi"
-
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format
-msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr "wèi shēndù bìxū shì 1 dào 6, ér búshì %d"
+msgstr "wèi shízhōng hé zì xuǎnzé bìxū gòngxiǎng yīgè shízhōng dānyuán"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "wèi shēndù bìxū shì 8 de zhěngshùbèi."
 
 #: shared-bindings/bitmaptools/__init__.c
-#, fuzzy
 msgid "Bitmap size and bits per value must match"
-msgstr "wèitú dàxiǎo hé měigè zhí de wèi bìxū pǐpèi"
+msgstr "wèi tú dàxiǎo hé měi gè zhí de wèi shù bìxū pǐpèi"
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
@@ -619,11 +613,6 @@ msgstr "huǎnchōngqū yǔ piānyíliàng de hé tài xiǎo %d %d %d"
 msgid "Buffer elements must be 4 bytes long or less"
 msgstr "huǎnchōngqū de yuánsù bìxū wéi 4 zìjié cháng huò gèngshǎo"
 
-#: shared-module/usb_hid/Device.c
-#, c-format
-msgid "Buffer incorrect size. Should be %d bytes."
-msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè. Yīnggāi shì %d zì jié."
-
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
 msgstr "Huǎnchōng qū bùshì bytearray."
@@ -633,7 +622,6 @@ msgstr "Huǎnchōng qū bùshì bytearray."
 msgid "Buffer is too small"
 msgstr "Huǎnchōng qū tài xiǎo"
 
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -648,14 +636,10 @@ msgstr "Huǎnchōngqū chángdù bìxū wéi 512 de bèishù"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Huǎnchōngqū bìxū shì 512 zìjié de bèishù"
 
-#: shared-bindings/bitbangio/I2C.c
-msgid "Buffer must be at least length 1"
-msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù wéi 1"
-
 #: shared-bindings/_bleio/PacketBuffer.c
-#, fuzzy, c-format
+#, c-format
 msgid "Buffer too short by %d bytes"
-msgstr "Huǎn chōng qū tài duǎn , àn %d zì jié"
+msgstr "Huǎnchōngqū tàiduǎn , mùqián zhǐyǒu %d zìjié"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -673,10 +657,6 @@ msgstr "Zǒngxiàn yǐnjiǎo %d yǐjīng zài shǐyòng zhōng"
 msgid "Byte buffer must be 16 bytes."
 msgstr "Zìjié huǎnchōng qū bìxū shì 16 zìjié."
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
-msgid "Bytes must be between 0 and 255."
-msgstr "Zìjié bìxū jiè yú 0 dào 255 zhījiān."
-
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "CBC kuài bìxū shì 16 zìjié de bèishù"
@@ -685,7 +665,7 @@ msgstr "CBC kuài bìxū shì 16 zìjié de bèishù"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr "zhǎo bú dào huò chuàng jiàn CIRCUITPY qū dòng qì."
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC huò jiàoyàn hé wúxiào"
 
@@ -693,22 +673,24 @@ msgstr "CRC huò jiàoyàn hé wúxiào"
 msgid "Call super().__init__() before accessing native object."
 msgstr "Zài fǎngwèn yuánshēn dùixiàng zhīqián diàoyòng super().__init__()."
 
-#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
-#, fuzzy
-msgid "Can only alarm on RTC IO from deep sleep."
-msgstr "zhǐ néng zài RTC IO shàng cóng shēndù shuìmián zhōng bào jǐng."
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Camera init"
+msgstr "xiàngjī chūshǐhuà"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
-#, fuzzy
+msgid "Can only alarm on RTC IO from deep sleep."
+msgstr "Zhǐ néng cóng shēndù shuìmián zhōng duì RTC IO jìnxíng bàojǐng."
+
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
 msgstr ""
-"Zhǐ néng zài yīgè dī diàn píng yǐn jiǎo shàng fāchū jǐngbào, ér qítā yǐn "
-"jiǎo cóng shēndù shuìmián zhōng fāchū gāo diàn píng jǐngbào."
+"Zhǐ néng zài yīgè dī yǐn jiǎo shàng bàojǐng, ér qítā yǐn jiǎo cóng shēndù "
+"shuìmián zhōng fāchū gāo diàn píng bàojǐng."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
-#, fuzzy
 msgid "Can only alarm on two low pins from deep sleep."
-msgstr "zhǐ néng cóng shēn dù shuì mián zhōng bào jǐng liǎng gè dī yǐn jiǎo."
+msgstr ""
+"Zhǐ néng cóng shēndù shuìmián zhōng de liǎng gè dī yǐn jiǎo shàng bàojǐng."
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -745,17 +727,9 @@ msgstr "Wúfǎ huòqǔ wēndù"
 msgid "Cannot have scan responses for extended, connectable advertisements."
 msgstr "Nín wúfǎ sǎomiáo kuòzhǎn de, kě liánjiē de guǎnggào."
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-msgid "Cannot output both channels on the same pin"
-msgstr "Wúfǎ shūchū tóng yīgè yǐn jiǎo shàng de liǎng gè píndào"
-
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
 msgstr "wú fǎ lā dòng jǐn shū rù yǐn jiǎo."
-
-#: shared-module/bitbangio/SPI.c
-msgid "Cannot read without MISO pin."
-msgstr "Wúfǎ dòu qǔ méiyǒu MISO de yǐn jiǎo."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Cannot record to a file"
@@ -768,16 +742,16 @@ msgstr "tōng guò USB kě jiàn shí wú fǎ chóng xīn ān zhuāng '/'."
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
-msgid "Cannot reset into bootloader because no bootloader is present."
-msgstr "Wúfǎ chóng zhì wèi bootloader, yīnwèi méiyǒu bootloader cúnzài."
+msgid "Cannot reset into bootloader because no bootloader is present"
+msgstr "wúfǎ chóngxīn qǐdòng dào yǐdǎo chéngxù, yīnwéi yǐdǎo chéngxù bù cúnzài"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
-msgstr "wú fǎ shè zhì tào jiē zì xuǎn xiàng"
+msgstr "wúfǎ shèzhì tàojiēzì xuǎnxiàng"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
-msgstr "Dāng fāngxiàng xiàng nèi shí, bùnéng shèzhì gāi zhí."
+msgstr "Dāng fāngxiàng wéi shūrù shí, bùnéng shèzhì zhí."
 
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
@@ -786,24 +760,23 @@ msgstr "wú fǎ zài RS485 mó shì xià zhǐ dìng RTS huò CTS"
 
 #: py/objslice.c
 msgid "Cannot subclass slice"
-msgstr "Wúfǎ zi fēnlèi"
+msgstr "bùnéng zi lèi huà qiēpiàn"
 
 #: shared-module/bitbangio/SPI.c
-msgid "Cannot transfer without MOSI and MISO pins."
-msgstr "Méiyǒu MOSI/MISO jiù wúfǎ zhuǎnyí."
+msgid "Cannot transfer without MOSI and MISO pins"
+msgstr "méiyǒu MOSI hé MISO yǐn jiǎo wúfǎ chuánshū"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Wúfǎ gēnggǎi yǐ zài shǐyòng de jìshí qì shàng de pínlǜ"
 
-#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot wake on pin edge, only level"
+msgstr "wúfǎ zài yǐn jiǎo biānyuán huànxǐng, zhǐ néng diàn píng"
+
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr "wú fǎ zài yǐn jiǎo biān yuán huàn xǐng. jǐn jí bié."
-
-#: shared-module/bitbangio/SPI.c
-msgid "Cannot write without MOSI pin."
-msgstr "Wúfǎ xiě rù MOSI de yǐn jiǎo."
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -817,10 +790,6 @@ msgstr "CircuitPython de héxīn chūxiàn gùzhàng. Āiyā!\n"
 msgid "CircuitPython was unable to allocate the heap."
 msgstr "CircuitPython wúfǎ fēnpèi duī."
 
-#: shared-module/bitbangio/SPI.c
-msgid "Clock pin init failed."
-msgstr "Shízhōng de yǐn jiǎo chūshǐhuà shībài."
-
 #: shared-module/bitbangio/I2C.c
 msgid "Clock stretch too long"
 msgstr "Shízhōng shēnzhǎn tài zhǎng"
@@ -828,11 +797,6 @@ msgstr "Shízhōng shēnzhǎn tài zhǎng"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "Shǐyòng shízhōng dānwèi"
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/paralleldisplay/ParallelBus.c
-msgid "Command must be an int between 0 and 255"
-msgstr "Mìnglìng bìxū shì 0 dào 255 zhī jiān de int"
 
 #: shared-bindings/_bleio/Connection.c
 msgid ""
@@ -842,40 +806,11 @@ msgstr "Liánjiē yǐ duàn kāi, wúfǎ zài shǐyòng. Chuàngjiàn yīgè xī
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
-msgstr "Fǔbài de .mpy wénjiàn"
-
-#: ports/cxd56/common-hal/camera/Camera.c
-msgid "Could not initialize Camera"
-msgstr "Wúfǎ chūshǐhuà xiàngjī"
-
-#: ports/cxd56/common-hal/gnss/GNSS.c
-msgid "Could not initialize GNSS"
-msgstr "wú fǎ chū shǐ huà GNSS"
-
-#: ports/cxd56/common-hal/sdioio/SDCard.c
-msgid "Could not initialize SDCard"
-msgstr "wú fǎ chū shǐ huà SDCard"
-
-#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c
-msgid "Could not initialize UART"
-msgstr "Wúfǎ chūshǐhuà UART"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not re-init channel"
-msgstr "Wúfǎ chóngxīn chūshǐhuà píndào"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not re-init timer"
-msgstr "Wúfǎ chóngxīn qǐdòng jìshí qì"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not restart PWM"
-msgstr "Wúfǎ chóngqǐ PWM"
+msgstr "sǔnhuài de .mpy wénjiàn"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
-msgstr "Wúfǎ huòqǔ shízhōng"
+msgstr "wúfǎ jiǎnsuǒ shízhōng"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -892,20 +827,6 @@ msgstr "Wúfǎ qǐdòng zhōngduàn,RX máng"
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate decoder"
 msgstr "Zhǎo bù dào jiěmǎ qì"
-
-#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
-#: shared-module/audiomp3/MP3Decoder.c
-msgid "Couldn't allocate first buffer"
-msgstr "Wúfǎ fēnpèi dì yī gè huǎnchōng qū"
-
-#: shared-module/audiomp3/MP3Decoder.c
-msgid "Couldn't allocate input buffer"
-msgstr "Wúfǎ fēnpèi shūrù huǎnchōng qū"
-
-#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
-#: shared-module/audiomp3/MP3Decoder.c
-msgid "Couldn't allocate second buffer"
-msgstr "Wúfǎ fēnpèi dì èr gè huǎnchōng qū"
 
 #: supervisor/shared/safe_mode.c
 msgid "Crash into the HardFault_Handler."
@@ -955,10 +876,6 @@ msgstr "Mùbiāo róngliàng xiǎoyú mùdì de_chángdù."
 msgid "Device in use"
 msgstr "Zhèngzài shǐyòng de shèbèi"
 
-#: ports/cxd56/common-hal/digitalio/DigitalInOut.c
-msgid "DigitalInOut not supported on given pin"
-msgstr "Gěi dìng de yǐn jiǎo bù zhīchí DigitalInOut"
-
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display must have a 16 bit colorspace."
@@ -969,6 +886,10 @@ msgstr "Xiǎnshì bìxū jùyǒu 16 wèi yánsè kōngjiān."
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Xiǎnshì xuánzhuǎn bìxū 90 dù jiā xīn"
+
+#: main.c
+msgid "Done"
+msgstr "zuò"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
@@ -1003,21 +924,20 @@ msgstr "Zhèngzé biǎodá shì cuòwù"
 msgid "Error: Failure to bind"
 msgstr "cuò wù: bǎng dìng shī bài"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c py/enum.c
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
+#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
 msgstr "Yùqí %q"
 
-#: shared-bindings/alarm/__init__.c
-msgid "Expected an alarm"
-msgstr "yù qī yǒu jǐng bào"
+#: ports/raspberrypi/bindings/cyw43/__init__.c
+msgid "Expected a %q or %q"
+msgstr ""
 
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Expected tuple of length %d, got %d"
-msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
+#: shared-bindings/alarm/__init__.c
+msgid "Expected an %q"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1045,21 +965,9 @@ msgstr "Fāsòng mìnglìng shībài."
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Wúfǎ huòdé mutex, err 0x%04x"
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "Failed to allocate RX buffer"
-msgstr "Fēnpèi RX huǎnchōng shībài"
-
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c
-#, c-format
-msgid "Failed to allocate RX buffer of %d bytes"
-msgstr "Fēnpèi RX huǎnchōng qū%d zì jié shībài"
+#: shared-module/rgbmatrix/RGBMatrix.c
+msgid "Failed to allocate %q buffer"
+msgstr "wèi néng fēnpèi %q huǎnchōng qū"
 
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
@@ -1081,10 +989,6 @@ msgstr "Liánjiē shībài: Nèibù cuòwù"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: timeout"
 msgstr "Liánjiē shībài: Chāoshí"
-
-#: ports/espressif/common-hal/wifi/__init__.c
-msgid "Failed to init wifi"
-msgstr "Wúfǎ chūshǐhuà wifi"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
@@ -1132,11 +1036,6 @@ msgstr ""
 msgid "Format not supported"
 msgstr "Bù zhīyuán géshì"
 
-#: shared-module/framebufferio/FramebufferDisplay.c
-#, c-format
-msgid "Framebuffer requires %d bytes"
-msgstr "zhēn huǎn chōng qū xū yào %d zì jié"
-
 #: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
 msgid ""
 "Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
@@ -1152,7 +1051,11 @@ msgstr "Pínlǜ bìxū yǔ shǐyòng cǐ jìshí qì de xiàn yǒu PWMOut xiāng
 msgid "Function requires lock"
 msgstr "Hánshù xūyào suǒdìng"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "GNSS init"
+msgstr "GNSS chūshǐhuà"
+
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
 msgstr "tōng yòng gù zhàng"
 
@@ -1179,19 +1082,16 @@ msgstr "Yìngjiàn máng, qǐng chángshì qítā zhēnjiǎo"
 msgid "Hardware in use, try alternative pins"
 msgstr "Shǐyòng de yìngjiàn, qǐng chángshì qítā yǐn jiǎo"
 
-#: shared-bindings/wifi/Radio.c
-msgid "Hostname must be between 1 and 253 characters"
-msgstr "zhǔ jī míng bì xū jiè yú 1 hé 253 gè zì fú zhī jiān"
-
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "Wénjiàn shàng de I/ O cāozuò"
 
 #: ports/stm/common-hal/busio/I2C.c
-msgid "I2C Init Error"
-msgstr "I2C chūshǐhuà cuòwù"
+msgid "I2C init error"
+msgstr "I2C qǐdòng cuòwù"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "I2C peripheral in use"
 msgstr "I2C wài shè zhèng zài shǐ yòng zhōng"
 
@@ -1303,75 +1203,37 @@ msgstr "nèi bù cuò wù"
 msgid "Internal error #%d"
 msgstr "nèi bù cuò wù #%d"
 
-#: shared-bindings/sdioio/SDCard.c shared-module/usb_hid/Device.c
+#: supervisor/shared/safe_mode.c
+msgid "Internal watchdog timer expired."
+msgstr "Nèibù kān mén gǒu dìngshí qì chāoshí."
+
+#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid %q"
 msgstr "wú xiào %q"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Wúxiào de %q yǐn jiǎo"
-
-#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
-#: ports/stm/common-hal/sdioio/SDCard.c
-msgid "Invalid %q pin selection"
-msgstr "wú xiào %q yǐn jiǎo xuǎn zé"
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "Wúxiào de ADC dānwèi zhí"
-
-#: ports/espressif/common-hal/wifi/Radio.c
-msgid "Invalid AuthMode"
-msgstr "wú xiào AuthMode"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
 msgstr "wú xiào BLE cān shù"
 
-#: shared-module/displayio/OnDiskBitmap.c
-msgid "Invalid BMP file"
-msgstr "Wúxiào de BMP wénjiàn"
-
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
 msgstr "Wúxiào de BSSID"
-
-#: ports/espressif/common-hal/analogio/AnalogOut.c
-#: ports/stm/common-hal/analogio/AnalogOut.c
-msgid "Invalid DAC pin supplied"
-msgstr "Tí gōng liǎo wúxiào de DAC yǐn jiǎo"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
 msgstr "wú xiào de MAC dì zhǐ"
 
-#: shared-bindings/synthio/__init__.c
-msgid "Invalid MIDI file"
-msgstr "wú xiào de MIDI wén jiàn"
-
-#: ports/atmel-samd/common-hal/pwmio/PWMOut.c
-#: ports/cxd56/common-hal/pwmio/PWMOut.c
-#: ports/espressif/common-hal/pwmio/PWMOut.c
-#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
-#: ports/nrf/common-hal/pwmio/PWMOut.c
-#: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
-msgid "Invalid PWM frequency"
-msgstr "Wúxiào de PWM pínlǜ"
-
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "Invalid Pin"
-msgstr "wú xiào yǐn jiǎo"
-
-#: ports/espressif/bindings/espidf/__init__.c
-#: ports/espressif/common-hal/busio/I2C.c
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
-#: ports/espressif/esp_error.c py/moduerrno.c
-#: shared-module/rgbmatrix/RGBMatrix.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Wúxiào de cānshù"
 
@@ -1379,41 +1241,10 @@ msgstr "Wúxiào de cānshù"
 msgid "Invalid bits per value"
 msgstr "Měi gè zhí de wèi wúxiào"
 
-#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
-#: ports/stm/common-hal/busio/UART.c
-msgid "Invalid buffer size"
-msgstr "Wúxiào de huǎnchōng qū dàxiǎo"
-
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "Invalid byteorder string"
-msgstr "Wúxiào de zì jié shùnxù zìfú chuàn"
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-msgid "Invalid capture period. Valid range: 1 - 500"
-msgstr "Wúxiào de bǔhuò zhōuqí. Yǒuxiào fànwéi: 1-500"
-
-#: shared-bindings/audiomixer/Mixer.c
-msgid "Invalid channel count"
-msgstr "Wúxiào de tōngdào jìshù"
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#, c-format
-msgid "Invalid data_count %d"
-msgstr "wú xiào data_count %d"
-
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "wú xiào data_pins[%d]"
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Invalid direction."
-msgstr "Wúxiào de fāngxiàng."
-
-#: shared-module/audiocore/WaveFile.c
-msgid "Invalid file"
-msgstr "Wúxiào de wénjiàn"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -1423,106 +1254,26 @@ msgstr "Géshì kuài dàxiǎo wúxiào"
 msgid "Invalid memory access."
 msgstr "Wúxiào de nèicún fǎngwèn."
 
-#: extmod/vfs_fat_file.c
-msgid "Invalid mode"
-msgstr "wú xiào mó shì"
-
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
 msgstr "wú xiào de duō bō MAC dì zhǐ"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
-msgid "Invalid number of bits"
-msgstr "Wèi shù wúxiào"
-
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
-#: shared-bindings/displayio/FourWire.c
-msgid "Invalid phase"
-msgstr "Jiēduàn wúxiào"
-
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
-#: ports/espressif/common-hal/touchio/TouchIn.c
-#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
-#: shared-module/rgbmatrix/RGBMatrix.c
-msgid "Invalid pin"
-msgstr "Wúxiào de yǐn jiǎo"
-
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-msgid "Invalid pin for left channel"
-msgstr "Zuǒ tōngdào de yǐn jiǎo wúxiào"
-
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-msgid "Invalid pin for right channel"
-msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/SPI.c
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
-#: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
-#: ports/espressif/common-hal/busio/I2C.c
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/espressif/common-hal/canio/CAN.c
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/usb_host/Port.c ports/nrf/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/SPI.c
-#: ports/raspberrypi/common-hal/busio/UART.c shared-bindings/busio/SPI.c
 #: shared-bindings/busio/UART.c
 msgid "Invalid pins"
 msgstr "Wúxiào de yǐn jiǎo"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
-#: shared-bindings/displayio/FourWire.c
-msgid "Invalid polarity"
-msgstr "Wúxiào liǎng jí zhí"
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Invalid properties"
-msgstr "Wúxiào de shǔxìng"
-
-#: shared-bindings/microcontroller/__init__.c
-msgid "Invalid run mode."
-msgstr "Wúxiào de yùnxíng móshì."
-
-#: shared-module/_bleio/Attribute.c
-msgid "Invalid security_mode"
-msgstr "Ānquán móshì wúxiào"
-
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "dà xiǎo wú xiào"
 
 #: ports/espressif/common-hal/ssl/SSLContext.c
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr "TLS de chā zuò wú xiào"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid state"
 msgstr "wú xiào zhuàng tài"
-
-#: shared-bindings/audiomixer/Mixer.c
-msgid "Invalid voice"
-msgstr "Yǔyīn wúxiào"
-
-#: shared-bindings/audiomixer/Mixer.c
-msgid "Invalid voice count"
-msgstr "Wúxiào de yǔyīn jìshù"
-
-#: shared-module/audiocore/WaveFile.c
-msgid "Invalid wave file"
-msgstr "Wúxiào de làng làngcháo wénjiàn"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "Invalid word/bit length"
-msgstr "Wúxiào de zì/wèi chángdù"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1537,24 +1288,16 @@ msgid "LHS of keyword arg must be an id"
 msgstr "Guānjiàn zì arg de LHS bìxū shì id"
 
 #: shared-module/displayio/Group.c
-msgid "Layer already in a group."
-msgstr "Tú céng yǐjīng zài yīgè zǔ zhōng."
+msgid "Layer already in a group"
+msgstr "tú céng yǐ zài zǔ zhōng"
 
 #: shared-module/displayio/Group.c
-msgid "Layer must be a Group or TileGrid subclass."
-msgstr "Layer bìxū shì Group huò TileGrid zi lèi."
+msgid "Layer must be a Group or TileGrid subclass"
+msgstr "tú céng bìxū shì zǔ huò píng pū wǎng gé zi lèi"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
 msgstr "MAC dì zhǐ wú xiào"
-
-#: shared-module/bitbangio/SPI.c
-msgid "MISO pin init failed."
-msgstr "MISO yǐn jiǎo chūshǐhuà shībài."
-
-#: shared-module/bitbangio/SPI.c
-msgid "MOSI pin init failed."
-msgstr "MOSI yǐn jiǎo shūrù shībài."
 
 #: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
@@ -1565,10 +1308,6 @@ msgstr "yìng shè bì xū shì yuán zǔ"
 msgid "Maximum x value when mirrored is %d"
 msgstr "Jìngxiàng shí de zuìdà X zhí wèi%d"
 
-#: shared-bindings/canio/Message.c
-msgid "Messages limited to 8 bytes"
-msgstr "Yóujiàn xiànzhì wèi 8 gè zì jié"
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi"
@@ -1576,15 +1315,19 @@ msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched data size"
-msgstr ""
+msgstr "shùjù dàxiǎo bù pǐpèi"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched swap flag"
-msgstr ""
+msgstr "jiāohuàn biāozhì bù pǐpèi"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Quēshǎo MISO huò MOSI yǐn jiǎo"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "Missing MISO or MOSI pin"
+msgstr "quēshǎo MISO huò MOSI yǐn jiǎo"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1622,11 +1365,6 @@ msgstr "quē shǎo dì yī zǔ yǐn jiǎo. zhǐ lìng %d shè zhì yǐn jiǎo"
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
 msgstr "shī zōng de jmp_pin. zhǐ lìng %d zài yǐn jiǎo shàng tiào yuè"
 
-#: shared-module/usb_hid/Device.c
-#, c-format
-msgid "More than %d report ids not supported"
-msgstr "chāo guò %d bào gào bù zhī chí de ID"
-
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr "Bìxū shì %q zi lèi."
@@ -1654,7 +1392,7 @@ msgstr "Míngchēng tài zhǎng"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "New bitmap must be same size as old bitmap"
-msgstr ""
+msgstr "xīn wèi tú de dàxiǎo bìxū yǔ jiù wèi tú xiāngtóng"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -1686,15 +1424,27 @@ msgstr "wèi zhǎo dào DMA qǐ bó qì"
 msgid "No I2C device at address: 0x%x"
 msgstr "dì zhǐ: 0x%x shí méi yǒu I2C qì jiàn"
 
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "No IP"
+msgstr "wú IP"
+
 #: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "No MISO Pin"
 msgstr "Méiyǒu MISO yǐn jiǎo"
 
+#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
+msgid "No MISO pin"
+msgstr "wú MISO pin"
+
 #: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
 msgstr "Méiyǒu MOSI yǐn jiǎo"
+
+#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
+msgid "No MOSI pin"
+msgstr "wú MOSI pin"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
@@ -1733,16 +1483,6 @@ msgstr "Méiyǒu miǎnfèi de GCLKs"
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
 msgstr "Méiyǒu kěyòng de yìngjiàn suíjī"
-
-#: ports/atmel-samd/common-hal/ps2io/Ps2.c
-msgid "No hardware support on clk pin"
-msgstr "Shízhōng yǐn jiǎo wú yìngjiàn zhīchí"
-
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-msgid "No hardware support on pin"
-msgstr "Méiyǒu zài yǐn jiǎo shàng de yìngjiàn zhīchí"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in in program"
@@ -1790,7 +1530,7 @@ msgstr "Shèbèi shàng méiyǒu kònggé"
 
 #: py/moduerrno.c
 msgid "No such device"
-msgstr ""
+msgstr "wú cǐ shèbèi"
 
 #: py/moduerrno.c
 msgid "No such file/directory"
@@ -1842,16 +1582,26 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "Bù zhīchí jīshù"
 
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Off"
+msgstr "guānbì"
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Ok"
+msgstr "hái hǎo"
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
 msgstr "Zhǐyǒu 8 huò 16 wèi dānwèi "
 
 #: ports/espressif/common-hal/wifi/__init__.c
+#: ports/raspberrypi/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Jǐn zhīchí IPv4 dìzhǐ"
 
-#: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/Socket.c
+#: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr "jǐn zhī chí IPv4 tào jiē zì"
 
@@ -1888,15 +1638,19 @@ msgstr ""
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mián."
 
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/common-hal/i2ctarget/I2CTarget.c
+#: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "Only one address is allowed"
 msgstr "zhǐ yǔn xǔ yí gè dì zhǐ"
 
 #: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
-#: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
-#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
+msgid "Only one alarm.time alarm can be set"
+msgstr "zhǐ néng shèzhì yīgè nào líng shíjiān nào líng"
+
+#: ports/espressif/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "zhǐ néng shè zhì yí gè bào jǐng."
 
@@ -1906,32 +1660,28 @@ msgstr "Yīcì zhǐ néng yǒuyī zhǒng yánsè shì tòumíng de"
 
 #: py/moduerrno.c
 msgid "Operation not permitted"
-msgstr ""
+msgstr "bù yǔnxǔ cāozuò"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
 msgstr "bù zhī chí cāo zuò huò gōng néng"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
 msgstr "cāo zuò yǐ fēn shí"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "nèi cún bù zú"
 
-#: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/Socket.c
+#: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "tào jiē zì wài"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr "huǎn chōng wài yuán sù bì xū <= 4 zì jié cháng"
-
-#: shared-bindings/bitops/__init__.c
-#, c-format
-msgid "Output buffer must be at least %d bytes"
-msgstr "shū chū huǎn chōng qū bì xū zhì shǎo wéi %d zì jié"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1943,14 +1693,12 @@ msgstr "PDMIn bù kě yòng"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
-"PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
-msgstr ""
-"PWM yìwù zhōuqí bìxū jiè yú 0 zhì 65535 de bāoróng xìng (16 wèi fēnbiàn lǜ)"
-
-#: shared-bindings/pwmio/PWMOut.c
-msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr "Dāng biànliàng_pínlǜ shì False zài jiànzhú shí PWM pínlǜ bùkě xiě."
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "PWM restart"
+msgstr "PWM chóngqǐ"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice already in use"
@@ -1968,28 +1716,13 @@ msgstr "shǐ yòng zhōng de wài shè"
 msgid "Permission denied"
 msgstr "Quánxiàn bèi jùjué"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr "yǐn jiǎo wú fǎ cóng shēn dù shuì mián zhōng huàn xǐng"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Pin count must be at least 1"
-msgstr "yǐn jiǎo jì shù bì xū zhì shǎo wéi 1"
-
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
 msgstr "yǐn jiǎo jì shù tài dà"
-
-#: ports/atmel-samd/common-hal/analogio/AnalogIn.c
-#: ports/cxd56/common-hal/analogio/AnalogIn.c
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
-#: ports/nrf/common-hal/analogio/AnalogIn.c
-#: ports/raspberrypi/common-hal/analogio/AnalogIn.c
-#: ports/stm/common-hal/analogio/AnalogIn.c
-msgid "Pin does not have ADC capabilities"
-msgstr "Pin méiyǒu ADC nénglì"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
@@ -1997,7 +1730,6 @@ msgid "Pin interrupt already in use"
 msgstr "yǐn jiǎo zhōng duàn yǐ zài shǐ yòng zhōng"
 
 #: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
-#: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Yǐn jiǎo jǐn shūrù"
 
@@ -2063,16 +1795,8 @@ msgid "Program does OUT without loading OSR"
 msgstr "chéng xù zài bù jiā zǎi Osr de qíng kuàng xià zhí xíng OUT"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Program must contain at least one 16-bit instruction."
-msgstr "chéng xù bì xū zhì shǎo bāo hán yí gè 16 wèi zhǐ lìng ."
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program size invalid"
 msgstr "chéng xù dà xiǎo wú xiào"
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Program too large"
-msgstr "chéng xù tài dà"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -2095,29 +1819,19 @@ msgstr "RNG qǔxiāo chūshǐhuà cuòwù"
 msgid "RNG Init Error"
 msgstr "RNG chūshǐhuà cuòwù"
 
-#: ports/nrf/common-hal/busio/UART.c
-msgid "RS485 Not yet supported on this device"
-msgstr "RS485 cǐ shè bèi shàng bù zhī chí"
+#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+msgid "RS485"
+msgstr "RS485"
 
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
 msgstr "Wèi chǔyú RS485 móshì shí zhǐdìngle RS485 fǎn zhuǎn"
 
-#: ports/cxd56/common-hal/rtc/RTC.c ports/espressif/common-hal/rtc/RTC.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c
-msgid "RTC calibration is not supported on this board"
-msgstr "Cǐ bǎn bù zhīchí RTC jiàozhǔn"
-
 #: shared-bindings/alarm/time/TimeAlarm.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "Cǐ bǎn bù zhīchí RTC"
-
-#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/stm/common-hal/busio/UART.c
-msgid "RTS/CTS/RS485 Not yet supported on this device"
-msgstr "RTS/CTS/RS485 gāi shèbèi shàng bù zhīchí"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "Random number generation error"
@@ -2136,9 +1850,13 @@ msgstr "Zhǐ dú wénjiàn xìtǒng"
 msgid "Read-only object"
 msgstr "Zhǐ dú duìxiàng"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
 msgstr "shōu dào de xiǎng yìng wú xiào"
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Reconnecting"
+msgstr "chóngxīn liánjiē"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -2152,7 +1870,7 @@ msgstr "RemoteTransmissionRequests xiànzhì wèi 8 gè zì jié"
 msgid "Requested AES mode is unsupported"
 msgstr "Qǐngqiú de AES móshì bù shòu zhīchí"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Requested resource not found"
 msgstr "wèi zhǎo dào qǐng qiú de zī yuán"
 
@@ -2168,6 +1886,10 @@ msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dài
 msgid "SD card CSD format not supported"
 msgstr "Bù zhīchí SD kǎ CSD géshì"
 
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "SDCard init"
+msgstr "SDCard chūshǐhuà"
+
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO GetCardInfo Error %d"
@@ -2178,30 +1900,21 @@ msgstr "SDIO GetCardInfo Cuòwù %d"
 msgid "SDIO Init Error %d"
 msgstr "SDIO Init Cuòwù %d"
 
-#: ports/stm/common-hal/busio/SPI.c
-msgid "SPI Init Error"
-msgstr "SPI chūshǐhuà cuòwù"
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "SPI Re-initialization error"
-msgstr "SPI chóngxīn chūshǐhuà cuòwù"
-
 #: ports/espressif/common-hal/busio/SPI.c
 msgid "SPI configuration failed"
 msgstr "SPI pèi zhì shī bài"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "SPI init error"
+msgstr "SPI chūshǐhuà cuòwù"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr "SPI wài shè zhèng zài shǐ yòng zhōng"
 
-#: shared-bindings/audiomixer/Mixer.c
-msgid "Sample rate must be positive"
-msgstr "Cǎiyàng lǜ bìxū wèi zhèng shù"
-
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#, c-format
-msgid "Sample rate too high. It must be less than %d"
-msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"
+#: ports/stm/common-hal/busio/SPI.c
+msgid "SPI re-init"
+msgstr "SPI chóngxīn qǐdòng"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "Scale dimensions must divide by 3"
@@ -2220,14 +1933,6 @@ msgstr "Xùliè huà yǐjīng shǐyòngguò"
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
 msgstr "Fúwùqì duān shàngxiàwén bùnéng jùyǒu zhǔjī míng"
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Set pin count must be between 1 and 5"
-msgstr "shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Side set pin count must be between 1 and 5"
-msgstr "cè miàn shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
@@ -2249,6 +1954,7 @@ msgid "Slices not supported"
 msgstr "Qiēpiàn bù shòu zhīchí"
 
 #: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/raspberrypi/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
 msgstr "SocketPool zhǐ néng yǔ wifi.Radio yīqǐ shǐyòng"
 
@@ -2264,10 +1970,6 @@ msgstr "zhǐ dìng data0 huò data_pins zhōng de yí gè"
 msgid "Splitting with sub-captures"
 msgstr "Yǔ zi bǔhuò fēnliè"
 
-#: shared-bindings/supervisor/__init__.c
-msgid "Stack size must be at least 256"
-msgstr "Duīzhàn dàxiǎo bìxū zhìshǎo 256"
-
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
 msgstr "lì tǐ shēng zuǒ bì xū shì zài PWM tōng dào A"
@@ -2275,10 +1977,6 @@ msgstr "lì tǐ shēng zuǒ bì xū shì zài PWM tōng dào A"
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
 msgstr "lì tǐ shēng yòu cè bì xū zài PWM tōng dào B shàng"
-
-#: shared-bindings/multiterminal/__init__.c
-msgid "Stream missing readinto() or write() method."
-msgstr "Liú quēshǎo readinto() huò write() fāngfǎ."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
@@ -2363,10 +2061,6 @@ msgid "Tile index out of bounds"
 msgstr "Píng pū zhǐshù chāochū fànwéi"
 
 #: shared-bindings/displayio/TileGrid.c
-msgid "Tile value out of bounds"
-msgstr "Píng pū zhí chāochū fànwéi"
-
-#: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr "Píng pū kuāndù bìxū huàfēn wèi tú kuāndù"
 
@@ -2385,6 +2079,9 @@ msgid "To exit, please reset the board without "
 msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "Too many channels in sample"
+msgstr "yàngběn zhōng de tōngdào tài duō"
+
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "Chōuyàng zhōng de píndào tài duō."
@@ -2417,24 +2114,25 @@ msgid "Tuple or struct_time argument required"
 msgstr "Xūyào Tuple huò struct_time cānshù"
 
 #: ports/stm/common-hal/busio/UART.c
-msgid "UART Buffer allocation error"
-msgstr "UART huǎnchōng qū fēnpèi cuòwù"
+msgid "UART de-init"
+msgstr "UART qù chūshǐhuà"
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+msgid "UART init"
+msgstr "UART chūshǐhuà"
 
 #: ports/stm/common-hal/busio/UART.c
-msgid "UART De-init error"
-msgstr "UART qǔxiāo chūshǐhuà cuòwù"
+msgid "UART re-init"
+msgstr "UART chóngxīn qǐdòng"
 
 #: ports/stm/common-hal/busio/UART.c
-msgid "UART Init Error"
-msgstr "UART chūshǐhuà cuòwù"
+msgid "UART write"
+msgstr "UART xiě rù"
 
-#: ports/stm/common-hal/busio/UART.c
-msgid "UART Re-init error"
-msgstr "UART chóngxīn chūshǐhuà cuòwù"
-
-#: ports/stm/common-hal/busio/UART.c
-msgid "UART write error"
-msgstr "UART xiě cuòwù"
+#: main.c
+msgid "UID:"
+msgstr ""
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
@@ -2559,6 +2257,11 @@ msgstr "wèi zhī xì tǒng gù jiàn cuò wù: %04x"
 msgid "Unknown system firmware error: %d"
 msgstr "wèi zhī de xì tǒng gù jiàn cuò wù: %d"
 
+#: ports/raspberrypi/common-hal/wifi/__init__.c
+#, c-format
+msgid "Unkown error code %d"
+msgstr ""
+
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
@@ -2572,12 +2275,6 @@ msgstr ""
 "Wèi zhǐdìng de wèntí. Kěnéng shì qítā shèbèi shàng de pèiduì tíshì bèi jùjué "
 "huò hūlüè."
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
-msgid "Unsupported baudrate"
-msgstr "Bù zhīchí de baudrate"
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Unsupported colorspace"
 msgstr "bú zhī chí de sè cǎi kōng jiān"
@@ -2589,6 +2286,10 @@ msgstr "Bù zhīchí de gōnggòng qìchē lèixíng"
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Bù zhīchí de géshì"
+
+#: shared-bindings/hashlib/__init__.c
+msgid "Unsupported hash algorithm"
+msgstr "bù zhīchí de hā xī suànfǎ"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -2608,7 +2309,7 @@ msgstr "Zhí chángdù != Suǒ xū de gùdìng chángdù"
 msgid "Value length > max_length"
 msgstr "Zhí chángdù > zuìdà chángdù"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Version was invalid"
 msgstr "bǎn běn wú xiào"
 
@@ -2639,10 +2340,6 @@ msgstr ""
 msgid "WatchDogTimer.timeout must be greater than 0"
 msgstr "WatchDogTimer.Timeout bìxū dàyú 0"
 
-#: supervisor/shared/safe_mode.c
-msgid "Watchdog timer expired."
-msgstr "Kān mén gǒu dìngshí qì yǐ guòqí."
-
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -2658,9 +2355,9 @@ msgstr ""
 "\n"
 "liè chū nèi zhì mó kuài jiàn rù `help(\"modules\")`.\n"
 
-#: shared-bindings/wifi/Radio.c
-msgid "WiFi password must be between 8 and 63 characters"
-msgstr "WiFi mìmǎ bìxū jiè yú 8 dào 63 gè zìfú zhī jiān"
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "Wi-Fi: "
+msgstr "Wi-Fi: "
 
 #: main.c
 msgid "Woken up by alarm.\n"
@@ -2702,11 +2399,7 @@ msgstr "__new__ cānshù bìxū shì yònghù lèixíng"
 msgid "a bytes-like object is required"
 msgstr "xūyào yīgè zì jié lèi duìxiàng"
 
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
-msgid "address out of bounds"
-msgstr "dìzhǐ chāochū biānjiè"
-
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-bindings/i2ctarget/I2CTarget.c
 msgid "addresses is empty"
 msgstr "dìzhǐ wèi kōng"
 
@@ -2754,6 +2447,10 @@ msgstr "cānshù bìxū shì ndarrays"
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
 msgstr "shù zǔ hé suǒ yǐn cháng dù bì xū xiāng děng"
+
+#: extmod/ulab/code/numpy/io/io.c
+msgid "array has too many dimensions"
+msgstr "shùzǔ yǒu tài duō wéidù"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2816,10 +2513,6 @@ msgstr "wèi tú dà xiǎo bì xū pǐ pèi"
 msgid "bits must be 32 or less"
 msgstr "wèi bì xū shì 32 huò gèng shǎo"
 
-#: shared-bindings/busio/UART.c
-msgid "bits must be in range 5 to 9"
-msgstr "wèi bì xū zài fàn wéi nèi 5 zhì 9"
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "měi jiàn yàngběn bìxū wèi 8 huò 16"
@@ -2857,11 +2550,6 @@ msgstr "huǎn chōng qū tài xiǎo, duì yú qǐng qiú de zì jié"
 msgid "byteorder is not a string"
 msgstr "byteorder bùshì zìfú chuàn"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c
-msgid "bytes > 8 bits not supported"
-msgstr "zì jié > 8 wèi"
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr "zì jié chángdù, bùshì xiàngmù dàxiǎo de bèishù"
@@ -2870,7 +2558,7 @@ msgstr "zì jié chángdù, bùshì xiàngmù dàxiǎo de bèishù"
 msgid "bytes value out of range"
 msgstr "zì jié zhí chāochū fànwéi"
 
-#: ports/atmel-samd/bindings/samd/Clock.c ports/atmel-samd/common-hal/rtc/RTC.c
+#: ports/atmel-samd/bindings/samd/Clock.c
 msgid "calibration is out of range"
 msgstr "jiàozhǔn fànwéi chāochū fànwéi"
 
@@ -2878,13 +2566,10 @@ msgstr "jiàozhǔn fànwéi chāochū fànwéi"
 msgid "calibration is read only"
 msgstr "jiàozhǔn zhǐ dú dào"
 
-#: ports/atmel-samd/common-hal/rtc/RTC.c
-msgid "calibration value out of range +/-127"
-msgstr "jiàozhǔn zhí chāochū fànwéi +/-127"
-
+#: shared-module/vectorio/Circle.c shared-module/vectorio/Polygon.c
 #: shared-module/vectorio/Rectangle.c
-msgid "can only be registered in one parent"
-msgstr "zhǐ néng zài yí gè jiā zhǎng zhōng zhù cè"
+msgid "can only have one parent"
+msgstr "zhǐ néng yǒu yīgè fù xiàng"
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
@@ -2906,8 +2591,7 @@ msgstr "bùnéng fēnpèi dào biǎodá shì"
 msgid "can't cancel self"
 msgstr "bù néng qǔ xiāo zì wǒ"
 
-#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "Wúfǎ jiāng %q zhuǎnhuàn wèi %q"
 
@@ -3055,6 +2739,10 @@ msgstr "bù néng háo bù hán hu de dé dào dà xiǎo de lín"
 msgid "casting"
 msgstr "tóuyǐng"
 
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "channel re-init"
+msgstr "tōngdào chóngxīn chūshǐhuà"
+
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr "zìfú huǎnchōng qū tài xiǎo"
@@ -3066,10 +2754,6 @@ msgstr "chr() cān shǔ bùzài fànwéi (0x110000)"
 #: py/modbuiltins.c
 msgid "chr() arg not in range(256)"
 msgstr "chr() cān shǔ bùzài fànwéi (256)"
-
-#: shared-module/vectorio/Circle.c
-msgid "circle can only be registered in one parent"
-msgstr "quānzi zhǐ néng zài yī wèi jiāzhǎng zhōng zhùcè"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
@@ -3097,10 +2781,6 @@ msgstr ""
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "yánsè bìxū jiè yú 0x000000 hé 0xffffff zhī jiān"
-
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr "yánsè yīng wèi zhěngshù"
 
 #: py/emitnative.c
 msgid "comparison of int and uint"
@@ -3137,6 +2817,10 @@ msgstr "juàn jī cānshù bìxū shì ndarrays"
 #: extmod/ulab/code/numpy/filter.c
 msgid "convolve arguments must not be empty"
 msgstr "juàn jī cān shǔ bùnéng wéi kōng"
+
+#: extmod/ulab/code/numpy/io/io.c
+msgid "corrupted file"
+msgstr "wénjiàn sǔnhuài"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "could not invert Vandermonde matrix"
@@ -3190,10 +2874,6 @@ msgstr ""
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
 msgstr "mùbiāo huǎnchōng qū bìxū shì wèi shēndù'H' lèixíng de shùzǔ = 16"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "destination_length must be an int >= 0"
-msgstr "mùbiāo chángdù bìxū shì > = 0 de zhěngshù"
-
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
 msgstr "yǔfǎ gēngxīn xùliè de chángdù cuòwù"
@@ -3231,6 +2911,10 @@ msgstr "dtype bì xū shì fú diǎn xíng huò fù shù"
 msgid "empty"
 msgstr "kòngxián"
 
+#: extmod/ulab/code/numpy/io/io.c
+msgid "empty file"
+msgstr "kōng de wénjiàn"
+
 #: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "kōng yīn yīnxiào"
@@ -3247,10 +2931,6 @@ msgstr "kōng xùliè"
 msgid "end of format while looking for conversion specifier"
 msgstr "xúnzhǎo zhuǎnhuàn biāozhù géshì de jiéshù"
 
-#: shared-bindings/displayio/Shape.c
-msgid "end_x should be an int"
-msgstr "jiéwěi_x yīnggāi shì yīgè zhěngshù"
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
 msgstr "epoch_time bǎn bù zhī chí cǐ bǎn běn"
@@ -3259,6 +2939,12 @@ msgstr "epoch_time bǎn bù zhī chí cǐ bǎn běn"
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "cuòwù = 0x%08lX"
+
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid ""
+"esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+"documentation for instructions."
+msgstr ""
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -3334,7 +3020,7 @@ msgstr "dì yīgè cānshù bìxū shì yī gè hánshù"
 msgid "first argument must be a tuple of ndarrays"
 msgstr "dì yī gè cān shù bì xū shì yí gè yuán zǔ ndarrays"
 
-#: extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/numpy/transform.c extmod/ulab/code/numpy/vector.c
 msgid "first argument must be an ndarray"
 msgstr "dì yī gè cānshù bìxū shì ndarray"
 
@@ -3482,7 +3168,7 @@ msgstr "géshì bù wánzhěng de mì yào"
 msgid "incorrect padding"
 msgstr "bù zhèngquè de tiánchōng"
 
-#: extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/transform.c
 msgid "index is out of bounds"
 msgstr "suǒyǐn chāochū fànwéi"
 
@@ -3499,6 +3185,10 @@ msgstr "suǒyǐn bìxū shì zhěngshù"
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr "suǒyǐn bìxū shì zhěngshù, qiēpiàn huò bù'ěr zhí lièbiǎo"
+
+#: ports/espressif/common-hal/busio/I2C.c
+msgid "init I2C"
+msgstr "chūshǐhuà I2C"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "initial values must be iterable"
@@ -3545,6 +3235,10 @@ msgstr "shūrù jǔzhèn bù duìchèn"
 msgid "input matrix is singular"
 msgstr "shūrù jǔzhèn shì qíyì de"
 
+#: extmod/ulab/code/numpy/create.c
+msgid "input must be 1- or 2-d"
+msgstr "shūrù bìxū shì 1- huò 2-d"
+
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
 msgstr "shū rù bì xū shì 1D ndarray"
@@ -3553,11 +3247,7 @@ msgstr "shū rù bì xū shì 1D ndarray"
 msgid "input must be a dense ndarray"
 msgstr "shū rù bì xū shì mì jí de ndarray"
 
-#: extmod/ulab/code/numpy/create.c
-msgid "input must be a tensor of rank 2"
-msgstr "shū rù bì xū shì děng jí 2 de zhāng liàng"
-
-#: extmod/ulab/code/numpy/create.c extmod/ulab/code/user/user.c
+#: extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
 msgstr "shū rù bì xū shì ndarray"
 
@@ -3607,6 +3297,10 @@ msgstr "wú xiào de jià gòu"
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr "wú xiào bits_per_pixel %d, bì xū shì, 1, 2, 4, 8, 16, 24, huò 32"
 
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+msgid "invalid cert"
+msgstr "zhèngshū wúxiào"
+
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element size %d for bits_per_pixel %d\n"
@@ -3633,9 +3327,17 @@ msgstr "wúxiào de géshì biāozhù"
 msgid "invalid hostname"
 msgstr "wú xiào zhǔ jī míng"
 
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+msgid "invalid key"
+msgstr "wúxiào de mì yào"
+
 #: py/compile.c
 msgid "invalid micropython decorator"
 msgstr "wúxiào de MicroPython zhuāngshì qì"
+
+#: ports/espressif/common-hal/esp32_camera/Camera.c
+msgid "invalid setting"
+msgstr "shèzhì wúxiào"
 
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
@@ -3751,24 +3453,16 @@ msgstr "shùxué yù cuòwù"
 msgid "matrix is not positive definite"
 msgstr "jǔzhèn bùshì zhèngdìng de"
 
-#: ports/espressif/common-hal/wifi/Radio.c
-msgid "max_connections must be between 0 and 10"
-msgstr "max_connections bì xū jiè yú 0 hé 10 zhī jiān"
-
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
-msgstr "dāng fixed_length de zhí wéi %s shí, max_length bì xū wéi 0-%d"
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be >= 0"
-msgstr "zuì dà cháng dù bì xū >= 0"
+msgstr "max_length bìxū shì 0-%d, dāng fixed_length shì %s"
 
 #: extmod/ulab/code/ndarray.c
-msgid "maximum number of dimensions is 4"
-msgstr "zuì dà chǐ cùn shù wéi 4"
+msgid "maximum number of dimensions is "
+msgstr "zuìdà wéi shù shì "
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3901,7 +3595,7 @@ msgstr "Méiyǒu kěyòng de fùwèi yǐn jiǎo"
 msgid "no response from SD card"
 msgstr "SD kǎ wú huíyīng"
 
-#: py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "méiyǒu cǐ shǔxìng"
 
@@ -4012,7 +3706,11 @@ msgstr "xūyào huǎnchōng qū xiéyì de duìxiàng"
 msgid "odd-length string"
 msgstr "jīshù zìfú chuàn"
 
-#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "off"
+msgstr "guānbì"
+
+#: extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr "piān yí tài dà"
 
@@ -4108,10 +3806,6 @@ msgstr "bāo zhuāng yù qī de %d bāo zhuāng xiàng mù (dé dào %d)"
 msgid "palette must be 32 bytes long"
 msgstr "yánsè bìxū shì 32 gè zì jié"
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr "yánsè suǒyǐn yīnggāi shì yīgè zhěngshù"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "cānshù bìxū shì xùliè a2 zhì a5 de dēngjì shù"
@@ -4135,10 +3829,6 @@ msgstr "pixel_shader bìxū shì displayio.Palette huò displayio.ColorConverter
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "zài win32 shàng bù tí gōng wén jiàn tóu piào"
-
-#: shared-module/vectorio/Polygon.c
-msgid "polygon can only be registered in one parent"
-msgstr "duōbiānxíng zhī néng zài yīgè fù jí zhōng zhùcè"
 
 #: ports/espressif/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
@@ -4165,7 +3855,23 @@ msgstr "pow() 3 cān shǔ bùnéng wéi 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 
+#: ports/espressif/boards/adafruit_qtpy_esp32_pico/mpconfigboard.h
+msgid "pressing BOOT button at start up.\n"
+msgstr "zài qǐdòng shí àn BOOT ànniǔ.\n"
+
+#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
+msgid "pressing SW38 button at start up.\n"
+msgstr "zài qǐdòng shí àn SW38 ànniǔ.\n"
+
+#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+msgid "pressing VOLUME button at start up.\n"
+msgstr "zài qǐdòng shí àn SW38 ànniǔ.\n"
+
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
+#: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n8r2/mpconfigboard.h
+#: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
+#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: supervisor/shared/safe_mode.c
 msgid "pressing boot button at start up.\n"
 msgstr "Zài qǐdòng shí àn qǐdòng ànniǔ.\n"
@@ -4185,14 +3891,6 @@ msgstr "qǐ dòng shí àn xià zuǒ àn niǔ\n"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
 msgstr "lā kǒu zhào yǔ fāng xiàng miàn mó chōng tū"
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "pull_threshold must be between 1 and 32"
-msgstr "lā lì yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "push_threshold must be between 1 and 32"
-msgstr "tuī sòng yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
@@ -4244,14 +3942,6 @@ msgstr "gǔn dòng cān shù bì xū shì ndarray"
 #: py/objstr.c
 msgid "rsplit(None,n)"
 msgstr "Rchāifēn(wú,N)"
-
-#: shared-bindings/audiocore/RawSample.c
-msgid ""
-"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
-"'B'"
-msgstr ""
-"yàngběn yuán_yuán huǎnchōng qū bìxū shì zì yǎnlèi huò lèixíng 'h', 'H', 'b' "
-"huò 'B' de shùzǔ"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
@@ -4353,25 +4043,13 @@ msgstr ""
 msgid "source_bitmap must have value_count of 8"
 msgstr "yuán wèi tú (source_bitmap) de zhí de shù mù (value_count) bì xū shì 8"
 
-#: shared-bindings/wifi/Radio.c
-msgid "ssid can't be more than 32 bytes"
-msgstr "ssid bù néng chāo guò 32 gè zì jié"
-
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "kāishǐ/jiéshù zhǐshù"
 
-#: shared-bindings/displayio/Shape.c
-msgid "start_x should be an int"
-msgstr "kāishǐ_x yīnggāi shì yīgè zhěngshù"
-
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
 msgstr "bùzhòu bìxū shìfēi líng"
-
-#: shared-bindings/busio/UART.c
-msgid "stop must be 1 or 2"
-msgstr "tíngzhǐ bìxū wèi 1 huò 2"
 
 #: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
@@ -4421,10 +4099,6 @@ msgstr "uctypes miáoshù fú zhōng de yǔfǎ cuòwù"
 msgid "threshold must be in the range 0-65536"
 msgstr "yùzhí bìxū zài fànwéi 0-65536"
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "tile must be greater than zero"
-msgstr "cí tiē bì xū dà yú líng"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() xūyào 9 xùliè"
@@ -4444,10 +4118,6 @@ msgstr "Chāo shí shíjiān bìxū wèi 0.0 Dào 100.0 Miǎo"
 msgid "timeout must be < 655.35 secs"
 msgstr "chāo shí bì xū < 655.35 miǎo"
 
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-msgid "timeout must be >= 0.0"
-msgstr "chāoshí bìxū shì >= 0.0"
-
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
 msgstr "děngdài v1 kǎ chāoshí"
@@ -4455,6 +4125,10 @@ msgstr "děngdài v1 kǎ chāoshí"
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v2 card"
 msgstr "děngdài v2 kǎ chāoshí"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "timer re-init"
+msgstr "dìngshí qì chóngxīn chūshǐhuà"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
@@ -4521,13 +4195,9 @@ msgstr "lèixíng '%q' bùshì kě jiēshòu de jīchǔ lèixíng"
 msgid "type is not an acceptable base type"
 msgstr "lèixíng bùshì kě jiēshòu de jīchǔ lèixíng"
 
-#: py/runtime.c
+#: py/objgenerator.c py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "lèixíng duìxiàng '%q' méiyǒu shǔxìng '%q'"
-
-#: py/objgenerator.c
-msgid "type object 'generator' has no attribute '__await__'"
-msgstr "lèi xíng duì xiàng 'generator' méi yǒu shǔ xìng '__await__'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
@@ -4587,7 +4257,6 @@ msgid "unreadable attribute"
 msgstr "bùkě dú shǔxìng"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "bù zhīchí %q lèixíng"
 
@@ -4626,6 +4295,14 @@ msgstr "bù zhīchí de cāozuò zhě lèixíng"
 msgid "unsupported types for %q: '%q', '%q'"
 msgstr "%q bù zhīchí de lèixíng: '%q', '%q'"
 
+#: extmod/ulab/code/numpy/io/io.c
+msgid "usecols is too high"
+msgstr "Usecols tài gāo"
+
+#: extmod/ulab/code/numpy/io/io.c
+msgid "usecols keyword must be specified"
+msgstr "bìxū zhǐdìng usecols guānjiàn zì"
+
 #: py/objint.c
 #, c-format
 msgid "value must fit in %d byte(s)"
@@ -4647,19 +4324,18 @@ msgstr "wèi chū shǐ huà jiān shì qì"
 msgid "watchdog timeout must be greater than 0"
 msgstr "kān mén gǒu chāoshí bìxū dàyú 0"
 
-#: shared-bindings/bitops/__init__.c
-#, c-format
-msgid "width must be from 2 to 8 (inclusive), not %d"
-msgstr "kuān dù bì xū cóng 2 dào 8 ( hán ), ér bù shì %d"
-
 #: shared-bindings/is31fl3741/FrameBuffer.c
-#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "kuāndù bìxū dàyú líng"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
 msgstr "wèi qǐ yòng WIFI"
+
+#: ports/raspberrypi/common-hal/wifi/Monitor.c
+msgid "wifi.Monitor not available"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
@@ -4673,13 +4349,27 @@ msgstr "cuò wù de zhóu suǒ yǐn"
 msgid "wrong axis specified"
 msgstr "zhǐ dìng de zhóu cuò wù"
 
-#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/numpy/io/io.c
+msgid "wrong dtype"
+msgstr "cuòwù de shùjù lèixíng"
+
+#: extmod/ulab/code/numpy/transform.c
+msgid "wrong index type"
+msgstr "cuòwù de suǒyǐn lèixíng"
+
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/create.c
+#: extmod/ulab/code/numpy/io/io.c extmod/ulab/code/numpy/transform.c
+#: extmod/ulab/code/numpy/vector.c
 msgid "wrong input type"
 msgstr "shūrù lèixíng cuòwù"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong length of condition array"
 msgstr "tiáo jiàn shù zǔ de cháng dù cuò wù"
+
+#: extmod/ulab/code/numpy/transform.c
+msgid "wrong length of index array"
+msgstr "suǒyǐn shùzǔ de chángdù cuòwù"
 
 #: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
@@ -4701,10 +4391,6 @@ msgstr "x zhí chāochū biānjiè"
 msgid "xTaskCreate failed"
 msgstr "xTaskCreate shī bài"
 
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
-msgstr "y yīnggāi shì yīgè zhěngshù"
-
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
 msgstr "y zhí chāochū biānjiè"
@@ -4724,6 +4410,413 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Stream missing readinto() or write() method."
+#~ msgstr "Liú quēshǎo readinto() huò write() fāngfǎ."
+
+#~ msgid "%q must be >= 0"
+#~ msgstr "%q bìxū > = 0"
+
+#~ msgid "%q must be >= 1"
+#~ msgstr "%q bìxū >= 1"
+
+#~ msgid "address out of bounds"
+#~ msgstr "dìzhǐ chāochū biānjiè"
+
+#~ msgid "destination_length must be an int >= 0"
+#~ msgstr "mùbiāo chángdù bìxū shì > = 0 de zhěngshù"
+
+#~ msgid "type object 'generator' has no attribute '__await__'"
+#~ msgstr "lèi xíng duì xiàng 'generator' méi yǒu shǔ xìng '__await__'"
+
+#~ msgid "color should be an int"
+#~ msgstr "yánsè yīng wèi zhěngshù"
+
+#~ msgid "end_x should be an int"
+#~ msgstr "jiéwěi_x yīnggāi shì yīgè zhěngshù"
+
+#~ msgid "palette_index should be an int"
+#~ msgstr "yánsè suǒyǐn yīnggāi shì yīgè zhěngshù"
+
+#~ msgid "start_x should be an int"
+#~ msgstr "kāishǐ_x yīnggāi shì yīgè zhěngshù"
+
+#~ msgid "y should be an int"
+#~ msgstr "y yīnggāi shì yīgè zhěngshù"
+
+#~ msgid ""
+#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
+#~ "or 'B'"
+#~ msgstr ""
+#~ "yàngběn yuán_yuán huǎnchōng qū bìxū shì zì yǎnlèi huò lèixíng 'h', 'H', "
+#~ "'b' huò 'B' de shùzǔ"
+
+#~ msgid "Expected an alarm"
+#~ msgstr "yù qī yǒu jǐng bào"
+
+#~ msgid "All I2C targets are in use"
+#~ msgstr "suǒyǒu I2C mùbiāo dōu zài shǐyòng zhōng"
+
+#~ msgid "Failed to init wifi"
+#~ msgstr "Wúfǎ chūshǐhuà wifi"
+
+#~ msgid "input must be a tensor of rank 2"
+#~ msgstr "shū rù bì xū shì děng jí 2 de zhāng liàng"
+
+#~ msgid "maximum number of dimensions is 4"
+#~ msgstr "zuì dà chǐ cùn shù wéi 4"
+
+#~ msgid "Watchdog timer expired."
+#~ msgstr "Kān mén gǒu dìngshí qì yǐ guòqí."
+
+#~ msgid "ssid can't be more than 32 bytes"
+#~ msgstr "ssid bù néng chāo guò 32 gè zì jié"
+
+#~ msgid "%q must be a tuple of length 2"
+#~ msgstr "%q bìxū shì chángdù wèi 2 de yuánzǔ"
+
+#~ msgid "%q must be between %d and %d"
+#~ msgstr "%q bì xū zài %d hé %d zhī jiān"
+
+#~ msgid "%q should be an int"
+#~ msgstr "%q yīnggāi shì yīgè zhěngshù (int)"
+
+#~ msgid "(x,y) integers required"
+#~ msgstr "xūyào zhěngshù (x,y)"
+
+#~ msgid "Address type out of range"
+#~ msgstr "Dìzhǐ lèixíng chāochū fànwéi"
+
+#~ msgid "AnalogIn not supported on given pin"
+#~ msgstr "gěidìng de yǐnjiǎo bù zhīchí AnalogIn"
+
+#~ msgid "AnalogOut functionality not supported"
+#~ msgstr "Bù zhīchí AnalogOut gōngnéng"
+
+#~ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
+#~ msgstr "AnalogOut jǐn wèi 16 wèi. Zhí bìxū xiǎoyú 65536."
+
+#~ msgid "AnalogOut not supported on given pin"
+#~ msgstr "zhǐdìng de yǐn jiǎo bù zhīchí AnalogOut"
+
+#, c-format
+#~ msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+#~ msgstr "wèi shēndù bìxū shì 1 dào 6, ér búshì %d"
+
+#, c-format
+#~ msgid "Buffer incorrect size. Should be %d bytes."
+#~ msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè. Yīnggāi shì %d zì jié."
+
+#~ msgid "Buffer must be at least length 1"
+#~ msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù wéi 1"
+
+#~ msgid "Bytes must be between 0 and 255."
+#~ msgstr "Zìjié bìxū jiè yú 0 dào 255 zhījiān."
+
+#~ msgid "Cannot output both channels on the same pin"
+#~ msgstr "Wúfǎ shūchū tóng yīgè yǐn jiǎo shàng de liǎng gè píndào"
+
+#~ msgid "Cannot read without MISO pin."
+#~ msgstr "Wúfǎ dòu qǔ méiyǒu MISO de yǐn jiǎo."
+
+#~ msgid "Cannot reset into bootloader because no bootloader is present."
+#~ msgstr "Wúfǎ chóng zhì wèi bootloader, yīnwèi méiyǒu bootloader cúnzài."
+
+#~ msgid "Cannot transfer without MOSI and MISO pins."
+#~ msgstr "Méiyǒu MOSI/MISO jiù wúfǎ zhuǎnyí."
+
+#~ msgid "Cannot write without MOSI pin."
+#~ msgstr "Wúfǎ xiě rù MOSI de yǐn jiǎo."
+
+#~ msgid "Clock pin init failed."
+#~ msgstr "Shízhōng de yǐn jiǎo chūshǐhuà shībài."
+
+#~ msgid "Command must be an int between 0 and 255"
+#~ msgstr "Mìnglìng bìxū shì 0 dào 255 zhī jiān de int"
+
+#~ msgid "Could not initialize Camera"
+#~ msgstr "Wúfǎ chūshǐhuà xiàngjī"
+
+#~ msgid "Could not initialize GNSS"
+#~ msgstr "wú fǎ chū shǐ huà GNSS"
+
+#~ msgid "Could not initialize SDCard"
+#~ msgstr "wú fǎ chū shǐ huà SDCard"
+
+#~ msgid "Could not initialize UART"
+#~ msgstr "Wúfǎ chūshǐhuà UART"
+
+#~ msgid "Could not re-init channel"
+#~ msgstr "Wúfǎ chóngxīn chūshǐhuà píndào"
+
+#~ msgid "Could not re-init timer"
+#~ msgstr "Wúfǎ chóngxīn qǐdòng jìshí qì"
+
+#~ msgid "Could not restart PWM"
+#~ msgstr "Wúfǎ chóngqǐ PWM"
+
+#~ msgid "Couldn't allocate first buffer"
+#~ msgstr "Wúfǎ fēnpèi dì yī gè huǎnchōng qū"
+
+#~ msgid "Couldn't allocate input buffer"
+#~ msgstr "Wúfǎ fēnpèi shūrù huǎnchōng qū"
+
+#~ msgid "Couldn't allocate second buffer"
+#~ msgstr "Wúfǎ fēnpèi dì èr gè huǎnchōng qū"
+
+#~ msgid "DigitalInOut not supported on given pin"
+#~ msgstr "Gěi dìng de yǐn jiǎo bù zhīchí DigitalInOut"
+
+#, c-format
+#~ msgid "Expected tuple of length %d, got %d"
+#~ msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
+
+#~ msgid "Failed to allocate RX buffer"
+#~ msgstr "Fēnpèi RX huǎnchōng shībài"
+
+#, c-format
+#~ msgid "Failed to allocate RX buffer of %d bytes"
+#~ msgstr "Fēnpèi RX huǎnchōng qū%d zì jié shībài"
+
+#, c-format
+#~ msgid "Framebuffer requires %d bytes"
+#~ msgstr "zhēn huǎn chōng qū xū yào %d zì jié"
+
+#~ msgid "Hostname must be between 1 and 253 characters"
+#~ msgstr "zhǔ jī míng bì xū jiè yú 1 hé 253 gè zì fú zhī jiān"
+
+#~ msgid "I2C Init Error"
+#~ msgstr "I2C chūshǐhuà cuòwù"
+
+#~ msgid "Invalid %q pin selection"
+#~ msgstr "wú xiào %q yǐn jiǎo xuǎn zé"
+
+#~ msgid "Invalid AuthMode"
+#~ msgstr "wú xiào AuthMode"
+
+#~ msgid "Invalid BMP file"
+#~ msgstr "Wúxiào de BMP wénjiàn"
+
+#~ msgid "Invalid DAC pin supplied"
+#~ msgstr "Tí gōng liǎo wúxiào de DAC yǐn jiǎo"
+
+#~ msgid "Invalid MIDI file"
+#~ msgstr "wú xiào de MIDI wén jiàn"
+
+#~ msgid "Invalid PWM frequency"
+#~ msgstr "Wúxiào de PWM pínlǜ"
+
+#~ msgid "Invalid Pin"
+#~ msgstr "wú xiào yǐn jiǎo"
+
+#~ msgid "Invalid buffer size"
+#~ msgstr "Wúxiào de huǎnchōng qū dàxiǎo"
+
+#~ msgid "Invalid byteorder string"
+#~ msgstr "Wúxiào de zì jié shùnxù zìfú chuàn"
+
+#~ msgid "Invalid capture period. Valid range: 1 - 500"
+#~ msgstr "Wúxiào de bǔhuò zhōuqí. Yǒuxiào fànwéi: 1-500"
+
+#~ msgid "Invalid channel count"
+#~ msgstr "Wúxiào de tōngdào jìshù"
+
+#, c-format
+#~ msgid "Invalid data_count %d"
+#~ msgstr "wú xiào data_count %d"
+
+#~ msgid "Invalid direction."
+#~ msgstr "Wúxiào de fāngxiàng."
+
+#~ msgid "Invalid file"
+#~ msgstr "Wúxiào de wénjiàn"
+
+#~ msgid "Invalid mode"
+#~ msgstr "wú xiào mó shì"
+
+#~ msgid "Invalid number of bits"
+#~ msgstr "Wèi shù wúxiào"
+
+#~ msgid "Invalid phase"
+#~ msgstr "Jiēduàn wúxiào"
+
+#~ msgid "Invalid pin"
+#~ msgstr "Wúxiào de yǐn jiǎo"
+
+#~ msgid "Invalid pin for left channel"
+#~ msgstr "Zuǒ tōngdào de yǐn jiǎo wúxiào"
+
+#~ msgid "Invalid pin for right channel"
+#~ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
+
+#~ msgid "Invalid polarity"
+#~ msgstr "Wúxiào liǎng jí zhí"
+
+#~ msgid "Invalid properties"
+#~ msgstr "Wúxiào de shǔxìng"
+
+#~ msgid "Invalid run mode."
+#~ msgstr "Wúxiào de yùnxíng móshì."
+
+#~ msgid "Invalid security_mode"
+#~ msgstr "Ānquán móshì wúxiào"
+
+#~ msgid "Invalid voice"
+#~ msgstr "Yǔyīn wúxiào"
+
+#~ msgid "Invalid voice count"
+#~ msgstr "Wúxiào de yǔyīn jìshù"
+
+#~ msgid "Invalid wave file"
+#~ msgstr "Wúxiào de làng làngcháo wénjiàn"
+
+#~ msgid "Invalid word/bit length"
+#~ msgstr "Wúxiào de zì/wèi chángdù"
+
+#~ msgid "Layer already in a group."
+#~ msgstr "Tú céng yǐjīng zài yīgè zǔ zhōng."
+
+#~ msgid "Layer must be a Group or TileGrid subclass."
+#~ msgstr "Layer bìxū shì Group huò TileGrid zi lèi."
+
+#~ msgid "MISO pin init failed."
+#~ msgstr "MISO yǐn jiǎo chūshǐhuà shībài."
+
+#~ msgid "MOSI pin init failed."
+#~ msgstr "MOSI yǐn jiǎo shūrù shībài."
+
+#~ msgid "Messages limited to 8 bytes"
+#~ msgstr "Yóujiàn xiànzhì wèi 8 gè zì jié"
+
+#, c-format
+#~ msgid "More than %d report ids not supported"
+#~ msgstr "chāo guò %d bào gào bù zhī chí de ID"
+
+#~ msgid "No hardware support on clk pin"
+#~ msgstr "Shízhōng yǐn jiǎo wú yìngjiàn zhīchí"
+
+#~ msgid "No hardware support on pin"
+#~ msgstr "Méiyǒu zài yǐn jiǎo shàng de yìngjiàn zhīchí"
+
+#, c-format
+#~ msgid "Output buffer must be at least %d bytes"
+#~ msgstr "shū chū huǎn chōng qū bì xū zhì shǎo wéi %d zì jié"
+
+#~ msgid ""
+#~ "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
+#~ msgstr ""
+#~ "PWM yìwù zhōuqí bìxū jiè yú 0 zhì 65535 de bāoróng xìng (16 wèi fēnbiàn "
+#~ "lǜ)"
+
+#~ msgid "Pin count must be at least 1"
+#~ msgstr "yǐn jiǎo jì shù bì xū zhì shǎo wéi 1"
+
+#~ msgid "Pin does not have ADC capabilities"
+#~ msgstr "Pin méiyǒu ADC nénglì"
+
+#~ msgid "Program must contain at least one 16-bit instruction."
+#~ msgstr "chéng xù bì xū zhì shǎo bāo hán yí gè 16 wèi zhǐ lìng ."
+
+#~ msgid "Program too large"
+#~ msgstr "chéng xù tài dà"
+
+#~ msgid "RS485 Not yet supported on this device"
+#~ msgstr "RS485 cǐ shè bèi shàng bù zhī chí"
+
+#~ msgid "RTC calibration is not supported on this board"
+#~ msgstr "Cǐ bǎn bù zhīchí RTC jiàozhǔn"
+
+#~ msgid "RTS/CTS/RS485 Not yet supported on this device"
+#~ msgstr "RTS/CTS/RS485 gāi shèbèi shàng bù zhīchí"
+
+#~ msgid "SPI Init Error"
+#~ msgstr "SPI chūshǐhuà cuòwù"
+
+#~ msgid "SPI Re-initialization error"
+#~ msgstr "SPI chóngxīn chūshǐhuà cuòwù"
+
+#~ msgid "Sample rate must be positive"
+#~ msgstr "Cǎiyàng lǜ bìxū wèi zhèng shù"
+
+#, c-format
+#~ msgid "Sample rate too high. It must be less than %d"
+#~ msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"
+
+#~ msgid "Set pin count must be between 1 and 5"
+#~ msgstr "shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
+
+#~ msgid "Side set pin count must be between 1 and 5"
+#~ msgstr "cè miàn shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
+
+#~ msgid "Stack size must be at least 256"
+#~ msgstr "Duīzhàn dàxiǎo bìxū zhìshǎo 256"
+
+#~ msgid "Tile value out of bounds"
+#~ msgstr "Píng pū zhí chāochū fànwéi"
+
+#~ msgid "UART Buffer allocation error"
+#~ msgstr "UART huǎnchōng qū fēnpèi cuòwù"
+
+#~ msgid "UART De-init error"
+#~ msgstr "UART qǔxiāo chūshǐhuà cuòwù"
+
+#~ msgid "UART Init Error"
+#~ msgstr "UART chūshǐhuà cuòwù"
+
+#~ msgid "UART Re-init error"
+#~ msgstr "UART chóngxīn chūshǐhuà cuòwù"
+
+#~ msgid "UART write error"
+#~ msgstr "UART xiě cuòwù"
+
+#~ msgid "Unsupported baudrate"
+#~ msgstr "Bù zhīchí de baudrate"
+
+#~ msgid "WiFi password must be between 8 and 63 characters"
+#~ msgstr "WiFi mìmǎ bìxū jiè yú 8 dào 63 gè zìfú zhī jiān"
+
+#~ msgid "bits must be in range 5 to 9"
+#~ msgstr "wèi bì xū zài fàn wéi nèi 5 zhì 9"
+
+#~ msgid "bytes > 8 bits not supported"
+#~ msgstr "zì jié > 8 wèi"
+
+#~ msgid "calibration value out of range +/-127"
+#~ msgstr "jiàozhǔn zhí chāochū fànwéi +/-127"
+
+#~ msgid "can only be registered in one parent"
+#~ msgstr "zhǐ néng zài yí gè jiā zhǎng zhōng zhù cè"
+
+#~ msgid "circle can only be registered in one parent"
+#~ msgstr "quānzi zhǐ néng zài yī wèi jiāzhǎng zhōng zhùcè"
+
+#~ msgid "max_connections must be between 0 and 10"
+#~ msgstr "max_connections bì xū jiè yú 0 hé 10 zhī jiān"
+
+#~ msgid "max_length must be >= 0"
+#~ msgstr "zuì dà cháng dù bì xū >= 0"
+
+#~ msgid "polygon can only be registered in one parent"
+#~ msgstr "duōbiānxíng zhī néng zài yīgè fù jí zhōng zhùcè"
+
+#~ msgid "pull_threshold must be between 1 and 32"
+#~ msgstr "lā lì yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
+
+#~ msgid "push_threshold must be between 1 and 32"
+#~ msgstr "tuī sòng yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
+
+#~ msgid "stop must be 1 or 2"
+#~ msgstr "tíngzhǐ bìxū wèi 1 huò 2"
+
+#~ msgid "tile must be greater than zero"
+#~ msgstr "cí tiē bì xū dà yú líng"
+
+#~ msgid "timeout must be >= 0.0"
+#~ msgstr "chāoshí bìxū shì >= 0.0"
+
+#, c-format
+#~ msgid "width must be from 2 to 8 (inclusive), not %d"
+#~ msgstr "kuān dù bì xū cóng 2 dào 8 ( hán ), ér bù shì %d"
 
 #~ msgid "Unsupported operation"
 #~ msgstr "Bù zhīchí de cāozuò"
@@ -5037,12 +5130,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "can only save bytecode"
 #~ msgstr "zhǐ néng bǎocún zì jié mǎ jìlù"
 
-#~ msgid "invalid cert"
-#~ msgstr "zhèngshū wúxiào"
-
-#~ msgid "invalid key"
-#~ msgstr "wúxiào de mì yào"
-
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "Viper hánshù mùqián bù zhīchí chāoguò 4 gè cānshù"
 
@@ -5242,9 +5329,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
 #~ msgid "wrong argument type"
 #~ msgstr "cuòwù de cānshù lèixíng"
-
-#~ msgid "wrong index type"
-#~ msgstr "cuòwù de suǒyǐn lèixíng"
 
 #~ msgid "Must provide SCK pin"
 #~ msgstr "bì xū tí gòng SCK yǐn jiǎo"

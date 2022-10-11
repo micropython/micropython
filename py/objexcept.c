@@ -39,7 +39,7 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // Number of items per traceback entry (file, line, block)
 #define TRACEBACK_ENTRY_LEN (3)
@@ -347,7 +347,6 @@ MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
 #if CIRCUITPY_ALARM
 MP_DEFINE_EXCEPTION(DeepSleepRequest, BaseException)
 #endif
-MP_DEFINE_EXCEPTION(MpyError, ValueError)
 /*
   MP_DEFINE_EXCEPTION(Warning, Exception)
     MP_DEFINE_EXCEPTION(DeprecationWarning, Warning)

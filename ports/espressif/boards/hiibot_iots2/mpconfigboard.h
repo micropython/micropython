@@ -34,3 +34,12 @@
 
 #define MICROPY_HW_BUTTON (&pin_GPIO21)
 #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO21)
+
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO1, .sda = &pin_GPIO2}}
+
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO40, .mosi = &pin_GPIO42, .miso = &pin_GPIO41}}
+
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO43, .rx = &pin_GPIO44}}

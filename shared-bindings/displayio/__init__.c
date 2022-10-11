@@ -55,9 +55,9 @@
 //| refer to `this Learn guide
 //| <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_.
 //| """
-//|
 
 //| import paralleldisplay
+//|
 
 //| def release_displays() -> None:
 //|     """Releases any actively used displays so their busses and pins can be used again. This will also

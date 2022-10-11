@@ -31,9 +31,13 @@
 
 #include "shared-bindings/imagecapture/ParallelImageCapture.h"
 
-//| """Support for "Parallel capture" interfaces"""
+//| """Support for "Parallel capture" interfaces
 //|
-
+//| .. seealso::
+//|
+//|     Espressif microcontrollers use the `esp32_camera` module together.
+//|
+//| """
 STATIC const mp_rom_map_elem_t imagecapture_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_imagecapture) },
     { MP_ROM_QSTR(MP_QSTR_ParallelImageCapture), MP_ROM_PTR(&imagecapture_parallelimagecapture_type) },

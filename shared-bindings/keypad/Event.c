@@ -33,7 +33,10 @@
 
 //| class Event:
 //|     """A key transition event."""
-//|     def __init__(self, key_number: int=0, pressed: bool=True, timestamp:Optional[int]=None) -> None:
+//|
+//|     def __init__(
+//|         self, key_number: int = 0, pressed: bool = True, timestamp: Optional[int] = None
+//|     ) -> None:
 //|         """Create a key transition event, which reports a key-pressed or key-released transition.
 //|
 //|         :param int key_number: The key number.
@@ -41,7 +44,6 @@
 //|         :param int timestamp: The time in milliseconds that the keypress occurred in the `supervisor.ticks_ms` time system.  If specified as None, the current value of `supervisor.ticks_ms` is used.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     keypad_event_obj_t *self = m_new_obj(keypad_event_obj_t);
     self->base.type = &keypad_event_type;
@@ -69,7 +71,6 @@ STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, 
 
 //|     key_number: int
 //|     """The key number."""
-//|
 STATIC mp_obj_t keypad_event_get_key_number(mp_obj_t self_in) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_event_get_key_number(self));
@@ -83,7 +84,6 @@ MP_PROPERTY_GETTER(keypad_event_key_number_obj,
 //|     """``True`` if the event represents a key down (pressed) transition.
 //|     The opposite of `released`.
 //|     """
-//|
 STATIC mp_obj_t keypad_event_get_pressed(mp_obj_t self_in) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_keypad_event_get_pressed(self));
@@ -97,7 +97,6 @@ MP_PROPERTY_GETTER(keypad_event_pressed_obj,
 //|     """``True`` if the event represents a key up (released) transition.
 //|     The opposite of `pressed`.
 //|     """
-//|
 STATIC mp_obj_t keypad_event_get_released(mp_obj_t self_in) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_keypad_event_get_released(self));
@@ -109,7 +108,6 @@ MP_PROPERTY_GETTER(keypad_event_released_obj,
 
 //|     timestamp: int
 //|     """The timestamp."""
-//|
 STATIC mp_obj_t keypad_event_get_timestamp(mp_obj_t self_in) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_keypad_event_get_timestamp(self);
@@ -126,7 +124,6 @@ MP_PROPERTY_GETTER(keypad_event_timestamp_obj,
 //|         Note that this does not compare the event timestamps.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t keypad_event_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         case MP_BINARY_OP_EQUAL:

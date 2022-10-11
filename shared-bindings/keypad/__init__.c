@@ -86,8 +86,10 @@ const mp_obj_property_t keypad_generic_events_obj = {
 //| connected independently to individual pins,
 //| connected to a shift register,
 //| or connected in a row-and-column matrix.
-//| """
 //|
+//| For more information about working with the `keypad` module in CircuitPython,
+//| see `this Learn guide <https://learn.adafruit.com/key-pad-matrix-scanning-in-circuitpython>`_.
+//| """
 
 STATIC mp_rom_map_elem_t keypad_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),          MP_OBJ_NEW_QSTR(MP_QSTR_keypad) },

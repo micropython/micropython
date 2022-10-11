@@ -46,7 +46,9 @@
 #include "src/rp2_common/hardware_flash/include/hardware/flash.h"
 #include "src/common/pico_binary_info/include/pico/binary_info.h"
 
-#define RESERVED_FLASH (1 * 1024 * 1024)
+#if !defined(TOTAL_FLASH_MINIMUM)
+#define TOTAL_FLASH_MINIMUM (2 * 1024 * 1024)
+#endif
 
 // TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
 #define SECTOR_SIZE 4096
@@ -59,8 +61,8 @@ void supervisor_flash_init(void) {
     bi_decl_if_func_used(bi_block_device(
         BINARY_INFO_MAKE_TAG('C', 'P'),
         "CircuitPython",
-        RESERVED_FLASH,
-        (1 * 1024 * 1024), // This is a minimum. We can't set it dynamically.
+        CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR,
+        TOTAL_FLASH_MINIMUM - CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR, // This is a minimum. We can't set it dynamically.
         NULL,
         BINARY_INFO_BLOCK_DEV_FLAG_READ |
         BINARY_INFO_BLOCK_DEV_FLAG_WRITE |
@@ -86,7 +88,7 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return (_flash_size - RESERVED_FLASH) / FILESYSTEM_BLOCK_SIZE;
+    return (_flash_size - CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR) / FILESYSTEM_BLOCK_SIZE;
 }
 
 void port_internal_flash_flush(void) {
@@ -94,15 +96,15 @@ void port_internal_flash_flush(void) {
         return;
     }
     common_hal_mcu_disable_interrupts();
-    flash_range_erase(RESERVED_FLASH + _cache_lba, SECTOR_SIZE);
-    flash_range_program(RESERVED_FLASH + _cache_lba, _cache, SECTOR_SIZE);
+    flash_range_erase(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + _cache_lba, SECTOR_SIZE);
+    flash_range_program(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + _cache_lba, _cache, SECTOR_SIZE);
     common_hal_mcu_enable_interrupts();
     _cache_lba = NO_CACHE;
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
     memcpy(dest,
-        (void *)(XIP_BASE + RESERVED_FLASH + block * FILESYSTEM_BLOCK_SIZE),
+        (void *)(XIP_BASE + CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + block * FILESYSTEM_BLOCK_SIZE),
         num_blocks * FILESYSTEM_BLOCK_SIZE);
     return 0;
 }
@@ -117,7 +119,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
 
         if (_cache_lba != block_address) {
             memcpy(_cache,
-                (void *)(XIP_BASE + RESERVED_FLASH + sector_offset),
+                (void *)(XIP_BASE + CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + sector_offset),
                 SECTOR_SIZE);
             _cache_lba = sector_offset;
         }
@@ -133,8 +135,8 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         }
         // Make sure we don't have an interrupt while we do flash operations.
         common_hal_mcu_disable_interrupts();
-        flash_range_erase(RESERVED_FLASH + sector_offset, SECTOR_SIZE);
-        flash_range_program(RESERVED_FLASH + sector_offset, _cache, SECTOR_SIZE);
+        flash_range_erase(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + sector_offset, SECTOR_SIZE);
+        flash_range_program(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + sector_offset, _cache, SECTOR_SIZE);
         common_hal_mcu_enable_interrupts();
     }
 

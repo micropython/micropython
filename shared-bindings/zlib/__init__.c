@@ -39,16 +39,17 @@
 
 #include "shared-bindings/zlib/__init__.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """zlib decompression functionality
 //|
 //| The `zlib` module allows limited functionality similar to the CPython zlib library.
 //| This module allows to decompress binary data compressed with DEFLATE algorithm
 //| (commonly used in zlib library and gzip archiver). Compression is not yet implemented."""
-//|
 
-//| def zlib_decompress(data: bytes, wbits: Optional[int] = 0, bufsize: Optional[int] = 0) -> bytes:
+//| def zlib_decompress(
+//|     data: bytes, wbits: Optional[int] = 0, bufsize: Optional[int] = 0
+//| ) -> bytes:
 //|     """Return decompressed *data* as bytes. *wbits* is DEFLATE dictionary window
 //|     size used during compression (8-15, the dictionary size is power of 2 of
 //|     that value). Additionally, if value is positive, *data* is assumed to be

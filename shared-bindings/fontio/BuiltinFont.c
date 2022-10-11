@@ -34,12 +34,13 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
-//| from typing_extensions import Protocol # for compat with python < 3.8
+//| from typing_extensions import Protocol  # for compat with python < 3.8
 //|
 //| class FontProtocol(Protocol):
 //|     """A protocol shared by `BuiltinFont` and classes in ``adafruit_bitmap_font``"""
+//|
 //|     def get_bounding_box(self) -> Union[Tuple[int, int], Tuple[int, int, int, int]]:
 //|         """Retrieve the maximum bounding box of any glyph in the font.
 //|
@@ -47,7 +48,6 @@
 //|         The two element version is ``(width, height)``, in which
 //|         ``x_offset`` and ``y_offset`` are assumed to be zero."""
 //|         pass
-//|
 //|     def get_glyph(self, codepoint: int) -> Optional[Glyph]:
 //|         """Retrieve the Glyph for a given code point
 //|
@@ -63,13 +63,11 @@
 //|         `Adafruit_CircuitPython_Bitmap_Font <https://github.com/adafruit/Adafruit_CircuitPython_Bitmap_Font>`_
 //|         library for dynamically loaded fonts."""
 //|         ...
-//|
 
 //|     bitmap: displayio.Bitmap
 //|     """Bitmap containing all font glyphs starting with ASCII and followed by unicode. Use
 //|     `get_glyph` in most cases. This is useful for use with `displayio.TileGrid` and
 //|     `terminalio.Terminal`."""
-//|
 STATIC mp_obj_t fontio_builtinfont_obj_get_bitmap(mp_obj_t self_in) {
     fontio_builtinfont_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_fontio_builtinfont_get_bitmap(self);
@@ -82,7 +80,6 @@ MP_PROPERTY_GETTER(fontio_builtinfont_bitmap_obj,
 //|     def get_bounding_box(self) -> Tuple[int, int]:
 //|         """Returns the maximum bounds of all glyphs in the font in a tuple of two values: width, height."""
 //|         ...
-//|
 STATIC mp_obj_t fontio_builtinfont_obj_get_bounding_box(mp_obj_t self_in) {
     fontio_builtinfont_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -98,10 +95,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(fontio_builtinfont_get_bounding_box_obj, fontio_builti
 STATIC mp_obj_t fontio_builtinfont_obj_get_glyph(mp_obj_t self_in, mp_obj_t codepoint_obj) {
     fontio_builtinfont_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t codepoint;
-    if (!mp_obj_get_int_maybe(codepoint_obj, &codepoint)) {
-        mp_raise_ValueError_varg(translate("%q should be an int"), MP_QSTR_codepoint);
-    }
+    mp_int_t codepoint = mp_arg_validate_type_int(codepoint_obj, MP_QSTR_codepoint);
     return common_hal_fontio_builtinfont_get_glyph(self, codepoint);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(fontio_builtinfont_get_glyph_obj, fontio_builtinfont_obj_get_glyph);

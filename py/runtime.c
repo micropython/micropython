@@ -45,7 +45,7 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -1740,10 +1740,6 @@ NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
     va_start(argptr,fmt);
     mp_raise_msg_vlist(&mp_type_OverflowError, fmt, argptr);
     va_end(argptr);
-}
-
-NORETURN void mp_raise_MpyError(const compressed_string_t *msg) {
-    mp_raise_msg(&mp_type_MpyError, msg);
 }
 
 NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg) {

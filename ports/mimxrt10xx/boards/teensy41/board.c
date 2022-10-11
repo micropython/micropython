@@ -52,13 +52,3 @@ void board_init(void) {
     // Data strobe needs protection despite being grounded
     common_hal_never_reset_pin(&pin_GPIO_SD_B1_05);
 }
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
-void board_deinit(void) {
-}

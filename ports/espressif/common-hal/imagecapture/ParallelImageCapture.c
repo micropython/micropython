@@ -41,9 +41,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     const mcu_pin_obj_t *horizontal_reference) {
 
     // only 8 bits is supported at present
-    if (data_count < 8 || data_count > 16) {
-        mp_raise_ValueError_varg(translate("%q must be between %d and %d"), MP_QSTR_data_count, 8, 16);
-    }
+    mp_arg_validate_int_range(data_count, 8, 16, MP_QSTR_data_count);
 
     // This will throw if unsuccessful.  Everything following is guaranteed to succeed.
     port_i2s_allocate_i2s0();

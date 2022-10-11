@@ -120,11 +120,6 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
         true, 32, true,  // in settings
         false, // Not user-interruptible.
         2, 5); // wrap settings
-
-
-    PIO pio = self->state_machine.pio;
-    uint8_t pio_index = pio_get_index(pio);
-    uint sm = self->state_machine.state_machine;
 }
 
 void common_hal_imagecapture_parallelimagecapture_deinit(imagecapture_parallelimagecapture_obj_t *self) {

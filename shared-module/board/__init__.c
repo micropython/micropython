@@ -27,7 +27,7 @@
 #include "shared-bindings/board/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/board/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "mpconfigboard.h"
 #include "py/runtime.h"
 

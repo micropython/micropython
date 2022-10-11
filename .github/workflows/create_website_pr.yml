@@ -16,12 +16,12 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: "3.x"
     - name: Get CP deps

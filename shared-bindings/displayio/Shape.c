@@ -32,12 +32,14 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Shape:
 //|     """Represents a shape made by defining boundaries that may be mirrored."""
 //|
-//|     def __init__(self, width: int, height: int, *, mirror_x: bool = False, mirror_y: bool = False) -> None:
+//|     def __init__(
+//|         self, width: int, height: int, *, mirror_x: bool = False, mirror_y: bool = False
+//|     ) -> None:
 //|         """Create a Shape object with the given fixed size. Each pixel is one bit and is stored by the
 //|         column boundaries of the shape on each row. Each row's boundary defaults to the full row.
 //|
@@ -46,7 +48,6 @@
 //|         :param bool mirror_x: When true the left boundary is mirrored to the right.
 //|         :param bool mirror_y: When true the top boundary is mirrored to the bottom."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_width, ARG_height, ARG_mirror_x, ARG_mirror_y };
     static const mp_arg_t allowed_args[] = {
@@ -58,14 +59,8 @@ STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t width = args[ARG_width].u_int;
-    if (width < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_width);
-    }
-    mp_int_t height = args[ARG_height].u_int;
-    if (height < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_height);
-    }
+    mp_int_t width = mp_arg_validate_int_min(args[ARG_width].u_int, 1, MP_QSTR_width);
+    mp_int_t height = mp_arg_validate_int_min(args[ARG_height].u_int, 1, MP_QSTR_height);
 
     displayio_shape_t *self = m_new_obj(displayio_shape_t);
     self->base.type = &displayio_shape_type;
@@ -86,18 +81,9 @@ STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_arg
 STATIC mp_obj_t displayio_shape_obj_set_boundary(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     displayio_shape_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t y;
-    if (!mp_obj_get_int_maybe(args[1], &y)) {
-        mp_raise_ValueError(translate("y should be an int"));
-    }
-    mp_int_t start_x;
-    if (!mp_obj_get_int_maybe(args[2], &start_x)) {
-        mp_raise_ValueError(translate("start_x should be an int"));
-    }
-    mp_int_t end_x;
-    if (!mp_obj_get_int_maybe(args[3], &end_x)) {
-        mp_raise_ValueError(translate("end_x should be an int"));
-    }
+    mp_int_t y = mp_arg_validate_type_int(args[1], MP_QSTR_y);
+    mp_int_t start_x = mp_arg_validate_type_int(args[1], MP_QSTR_start_x);
+    mp_int_t end_x = mp_arg_validate_type_int(args[1], MP_QSTR_end_x);
     common_hal_displayio_shape_set_boundary(self, y, start_x, end_x);
 
     return mp_const_none;

@@ -14,7 +14,8 @@
 
 
 // Converts a list of points tuples to a flat list of ints for speedier internal use.
-// Also validates the points.
+// Also validates the points. If this fails due to invalid types or values, the
+// number of points is 0 and the points_list is NULL.
 static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple_list) {
     size_t len = 0;
     mp_obj_t *items;
@@ -25,38 +26,30 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
         mp_raise_TypeError(translate("Polygon needs at least 3 points"));
     }
 
-    if (self->len < 2 * len) {
-        if (self->points_list != NULL) {
-            VECTORIO_POLYGON_DEBUG("free(%d), ", sizeof(self->points_list));
-            gc_free(self->points_list);
-        }
-        self->points_list = gc_alloc(2 * len * sizeof(uint16_t), false, false);
-        VECTORIO_POLYGON_DEBUG("alloc(%p, %d)", self->points_list, 2 * len * sizeof(uint16_t));
-    }
-    self->len = 2 * len;
+    int16_t *points_list = gc_realloc(self->points_list, 2 * len * sizeof(uint16_t), true);
+    VECTORIO_POLYGON_DEBUG("realloc(%p, %d) -> %p", self->points_list, 2 * len * sizeof(uint16_t), points_list);
+
+    // In case the validation calls below fail, set these values temporarily
+    self->points_list = NULL;
+    self->len = 0;
 
     for (uint16_t i = 0; i < len; ++i) {
         size_t tuple_len = 0;
         mp_obj_t *tuple_items;
         mp_obj_tuple_get(items[i], &tuple_len, &tuple_items);
 
-        if (tuple_len != 2) {
-            mp_raise_ValueError_varg(translate("%q must be a tuple of length 2"), MP_QSTR_point);
-        }
-        mp_int_t x;
-        mp_int_t y;
-        if (!mp_obj_get_int_maybe(tuple_items[ 0 ], &x)
-            || !mp_obj_get_int_maybe(tuple_items[ 1 ], &y)
-            || x < SHRT_MIN || x > SHRT_MAX || y < SHRT_MIN || y > SHRT_MAX
-            ) {
-            gc_free(self->points_list);
-            self->points_list = NULL;
-            mp_raise_ValueError_varg(translate("unsupported %q type"), MP_QSTR_point);
-            self->len = 0;
-        }
-        self->points_list[2 * i    ] = (int16_t)x;
-        self->points_list[2 * i + 1] = (int16_t)y;
+        mp_arg_validate_length(tuple_len, 2, MP_QSTR_point);
+
+        mp_int_t x = mp_arg_validate_type_int(tuple_items[0], MP_QSTR_x);
+        mp_arg_validate_int_range(x, SHRT_MIN, SHRT_MAX, MP_QSTR_x);
+        mp_int_t y = mp_arg_validate_type_int(tuple_items[1], MP_QSTR_y);
+        mp_arg_validate_int_range(y, SHRT_MIN, SHRT_MAX, MP_QSTR_y);
+        points_list[2 * i    ] = (int16_t)x;
+        points_list[2 * i + 1] = (int16_t)y;
     }
+
+    self->points_list = points_list;
+    self->len = 2 * len;
 }
 
 
@@ -103,7 +96,7 @@ void common_hal_vectorio_polygon_set_points(vectorio_polygon_t *self, mp_obj_t p
 
 void common_hal_vectorio_polygon_set_on_dirty(vectorio_polygon_t *self, vectorio_event_t notification) {
     if (self->on_dirty.obj != NULL) {
-        mp_raise_TypeError(translate("polygon can only be registered in one parent"));
+        mp_raise_TypeError(translate("can only have one parent"));
     }
     self->on_dirty = notification;
 }

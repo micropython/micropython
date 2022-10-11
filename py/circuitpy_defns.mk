@@ -67,6 +67,20 @@ else
 CFLAGS += -DCIRCUITPY_DEBUG=0
 endif
 
+CIRCUITPY_LTO ?= 0
+CIRCUITPY_LTO_PARTITION ?= balanced
+ifeq ($(CIRCUITPY_LTO),1)
+CFLAGS += -flto -flto-partition=$(CIRCUITPY_LTO_PARTITION) -DCIRCUITPY_LTO=1
+else
+CFLAGS += -DCIRCUITPY_LTO=0
+endif
+
+# Produce an object file for translate.c instead of including it in a header.
+# The header version can be optimized on non-LTO builds *if* inlining is allowed
+# otherwise, it blows up the binary sizes with tons of translate copies.
+CIRCUITPY_TRANSLATE_OBJECT ?= $(CIRCUITPY_LTO)
+CFLAGS += -DCIRCUITPY_TRANSLATE_OBJECT=$(CIRCUITPY_TRANSLATE_OBJECT)
+
 ###
 # Handle frozen modules.
 
@@ -87,12 +101,16 @@ endif
 
 ###
 # Select which builtin modules to compile and include.
+# Keep alphabetical.
 
 ifeq ($(CIRCUITPY_AESIO),1)
 SRC_PATTERNS += aesio/%
 endif
 ifeq ($(CIRCUITPY_ALARM),1)
 SRC_PATTERNS += alarm/%
+endif
+ifeq ($(CIRCUITPY_ANALOGBUFIO),1)
+SRC_PATTERNS += analogbufio/%
 endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)
 SRC_PATTERNS += analogio/%
@@ -152,17 +170,20 @@ endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
 endif
+ifeq ($(CIRCUITPY_CYW43),1)
+SRC_PATTERNS += cyw43/%
+endif
 ifeq ($(CIRCUITPY_DIGITALIO),1)
 SRC_PATTERNS += digitalio/%
 endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/%
 endif
-ifeq ($(CIRCUITPY_PARALLELDISPLAY),1)
-SRC_PATTERNS += paralleldisplay/%
+ifeq ($(CIRCUITPY_DOTENV),1)
+SRC_PATTERNS += dotenv/%
 endif
-ifeq ($(CIRCUITPY_VECTORIO),1)
-SRC_PATTERNS += vectorio/%
+ifeq ($(CIRCUITPY__EVE),1)
+SRC_PATTERNS += _eve/%
 endif
 ifeq ($(CIRCUITPY_FLOPPYIO),1)
 SRC_PATTERNS += floppyio/%
@@ -170,19 +191,11 @@ endif
 ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
 SRC_PATTERNS += framebufferio/%
 endif
-ifeq ($(CIRCUITPY__EVE),1)
-SRC_PATTERNS += _eve/%
-endif
 ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
-
 ifeq ($(CIRCUITPY_FUTURE),1)
 SRC_PATTERNS += __future__/%
-endif
-
-ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
-SRC_PATTERNS += gamepadshift/%
 endif
 ifeq ($(CIRCUITPY_GETPASS),1)
 SRC_PATTERNS += getpass/%
@@ -193,8 +206,11 @@ endif
 ifeq ($(CIRCUITPY_GNSS),1)
 SRC_PATTERNS += gnss/%
 endif
-ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
-SRC_PATTERNS += i2cperipheral/%
+ifeq ($(CIRCUITPY_HASHLIB),1)
+SRC_PATTERNS += hashlib/%
+endif
+ifeq ($(CIRCUITPY_I2CTARGET),1)
+SRC_PATTERNS += i2ctarget/%
 endif
 ifeq ($(CIRCUITPY_IMAGECAPTURE),1)
 SRC_PATTERNS += imagecapture/%
@@ -220,6 +236,9 @@ endif
 ifeq ($(CIRCUITPY_MDNS),1)
 SRC_PATTERNS += mdns/%
 endif
+ifeq ($(CIRCUITPY_MSGPACK),1)
+SRC_PATTERNS += msgpack/%
+endif
 ifeq ($(CIRCUITPY_NEOPIXEL_WRITE),1)
 SRC_PATTERNS += neopixel_write/%
 endif
@@ -234,6 +253,12 @@ SRC_PATTERNS += os/%
 endif
 ifeq ($(CIRCUITPY_DUALBANK),1)
 SRC_PATTERNS += dualbank/%
+endif
+ifeq ($(CIRCUITPY_PARALLELDISPLAY),1)
+SRC_PATTERNS += paralleldisplay/%
+endif
+ifeq ($(CIRCUITPY_PEW),1)
+SRC_PATTERNS += _pew/%
 endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += adafruit_pixelbuf/%
@@ -304,6 +329,9 @@ endif
 ifeq ($(CIRCUITPY_TERMINALIO),1)
 SRC_PATTERNS += terminalio/% fontio/%
 endif
+ifeq ($(CIRCUITPY_FONTIO),1)
+SRC_PATTERNS += fontio/%
+endif
 ifeq ($(CIRCUITPY_TIME),1)
 SRC_PATTERNS += time/%
 endif
@@ -334,8 +362,8 @@ endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
-ifeq ($(CIRCUITPY_ZLIB),1)
-SRC_PATTERNS += zlib/%
+ifeq ($(CIRCUITPY_VECTORIO),1)
+SRC_PATTERNS += vectorio/%
 endif
 ifeq ($(CIRCUITPY_VIDEOCORE),1)
 SRC_PATTERNS += videocore/%
@@ -346,11 +374,8 @@ endif
 ifeq ($(CIRCUITPY_WIFI),1)
 SRC_PATTERNS += wifi/%
 endif
-ifeq ($(CIRCUITPY_PEW),1)
-SRC_PATTERNS += _pew/%
-endif
-ifeq ($(CIRCUITPY_MSGPACK),1)
-SRC_PATTERNS += msgpack/%
+ifeq ($(CIRCUITPY_ZLIB),1)
+SRC_PATTERNS += zlib/%
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS in SRC_COMMON_HAL
@@ -372,6 +397,8 @@ SRC_COMMON_HAL_ALL = \
 	alarm/pin/PinAlarm.c \
 	alarm/time/TimeAlarm.c \
 	alarm/touch/TouchAlarm.c \
+	analogbufio/BufferedIn.c \
+	analogbufio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
@@ -405,8 +432,10 @@ SRC_COMMON_HAL_ALL = \
 	gnss/GNSS.c \
 	gnss/PositionFix.c \
 	gnss/SatelliteSystem.c \
-	i2cperipheral/I2CPeripheral.c \
-	i2cperipheral/__init__.c \
+	hashlib/__init__.c \
+	hashlib/Hash.c \
+	i2ctarget/I2CTarget.c \
+	i2ctarget/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
 	microcontroller/__init__.c \
@@ -460,7 +489,6 @@ SRC_C += \
 
 endif
 
-
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
 # These don't have corresponding files in each port but are still located in
@@ -492,6 +520,7 @@ $(filter $(SRC_PATTERNS), \
 	qrio/PixelPolicy.c \
 	qrio/QRInfo.c \
 	supervisor/RunReason.c \
+	supervisor/StatusBar.c \
 	wifi/AuthMode.c \
 	wifi/Packet.c \
 )
@@ -548,13 +577,12 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/TileGrid.c \
 	displayio/area.c \
 	displayio/__init__.c \
+	dotenv/__init__.c \
 	floppyio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
-	gamepadshift/GamePadShift.c \
-	gamepadshift/__init__.c \
 	getpass/__init__.c \
 	gifio/__init__.c \
 	gifio/GifWriter.c \
@@ -593,6 +621,8 @@ SRC_SHARED_MODULE_ALL = \
 	socket/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
+	supervisor/__init__.c \
+	supervisor/StatusBar.c \
 	synthio/MidiTrack.c \
 	synthio/__init__.c \
 	terminalio/Terminal.c \
@@ -757,3 +787,6 @@ endif
 
 check-release-needs-clean-build:
 	@echo "RELEASE_NEEDS_CLEAN_BUILD = $(RELEASE_NEEDS_CLEAN_BUILD)"
+
+# Ignore these errors
+$(BUILD)/lib/libm/kf_rem_pio2.o: CFLAGS += -Wno-maybe-uninitialized

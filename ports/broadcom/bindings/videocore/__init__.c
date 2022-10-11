@@ -32,7 +32,6 @@
 #include "bindings/videocore/Framebuffer.h"
 
 //| """Low-level routines for interacting with the Broadcom VideoCore GPU"""
-//|
 
 STATIC const mp_rom_map_elem_t videocore_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_videocore) },

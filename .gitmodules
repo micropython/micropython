@@ -145,10 +145,10 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM69.git
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
-	url = https://github.com/espressif/esp-idf.git
-	branch = release/v4.4
+	url = https://github.com/adafruit/esp-idf.git
+	branch = circuitpython8
 [submodule "ports/espressif/certificates/nina-fw"]
-	path = ports/espressif/certificates/nina-fw
+	path = lib/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git
 [submodule "frozen/Adafruit_CircuitPython_ST7789"]
 	path = frozen/Adafruit_CircuitPython_ST7789
@@ -289,3 +289,33 @@
 [submodule "frozen/pew-pewpew-lcd"]
 	path = frozen/pew-pewpew-lcd
 	url = https://github.com/pypewpew/pew-pewpew-lcd.git
+[submodule "frozen/mixgo_cp_lib"]
+	path = frozen/mixgo_cp_lib
+	url = https://github.com/dahanzimin/circuitpython_lib.git
+[submodule "frozen/Adafruit_CircuitPython_IS31FL3731"]
+	path = frozen/Adafruit_CircuitPython_IS31FL3731
+	url = https://github.com/adafruit/Adafruit_CircuitPython_IS31FL3731.git
+[submodule "frozen/Adafruit_CircuitPython_Ticks"]
+	path = frozen/Adafruit_CircuitPython_Ticks
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Ticks.git
+[submodule "frozen/Adafruit_CircuitPython_asyncio"]
+	path = frozen/Adafruit_CircuitPython_asyncio
+	url = https://github.com/adafruit/Adafruit_CircuitPython_asyncio.git
+[submodule "frozen/circuitpython_ef_music"]
+	path = frozen/circuitpython_ef_music
+	url = https://github.com/elecfreaks/circuitpython_ef_music.git
+[submodule "frozen/circuitpython_picoed"]
+	path = frozen/circuitpython_picoed
+	url = https://github.com/elecfreaks/circuitpython_picoed.git
+[submodule "ports/espressif/esp32-camera"]
+	path = ports/espressif/esp32-camera
+	url = https://github.com/adafruit/esp32-camera/
+[submodule "ports/raspberrypi/lib/cyw43-driver"]
+	path = ports/raspberrypi/lib/cyw43-driver
+	url = https://github.com/georgerobotics/cyw43-driver.git
+[submodule "ports/raspberrypi/lib/lwip"]
+	path = ports/raspberrypi/lib/lwip
+	url = https://github.com/lwip-tcpip/lwip.git
+[submodule "lib/mbedtls"]
+	path = lib/mbedtls
+	url = https://github.com/ARMmbed/mbedtls.git

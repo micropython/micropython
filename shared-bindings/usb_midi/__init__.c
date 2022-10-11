@@ -32,6 +32,7 @@
 #include "shared-bindings/usb_midi/__init__.h"
 #include "shared-bindings/usb_midi/PortIn.h"
 #include "shared-bindings/usb_midi/PortOut.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "py/runtime.h"
 
@@ -41,7 +42,6 @@
 //|
 //| ports: Tuple[Union[PortIn, PortOut], ...]
 //| """Tuple of all MIDI ports. Each item is ether `PortIn` or `PortOut`."""
-//|
 
 //| def disable() -> None:
 //|     """Disable presenting a USB MIDI device to the host.

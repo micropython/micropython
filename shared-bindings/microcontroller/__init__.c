@@ -39,7 +39,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """Pin references and cpu functionality
 //|
@@ -55,13 +55,11 @@
 //| """CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
 //| (clock frequency).
 //| This object is an instance of `microcontroller.Processor`."""
-//|
 
 //| cpus: Processor
 //| """CPU information and control, such as ``cpus[0].temperature`` and ``cpus[1].frequency``
 //| (clock frequency) on chips with more than 1 cpu. The index selects which cpu.
 //| This object is an instance of `microcontroller.Processor`."""
-//|
 
 //| def delay_us(delay: int) -> None:
 //|     """Dedicated delay method used for very short delays. **Do not** do long delays
@@ -119,7 +117,7 @@ STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
     } else if (run_mode_obj == MP_OBJ_FROM_PTR(&mcu_runmode_bootloader_obj)) {
         run_mode = RUNMODE_BOOTLOADER;
     } else {
-        mp_raise_ValueError(translate("Invalid run mode."));
+        mp_arg_error_invalid(MP_QSTR_run_mode);
     }
     common_hal_mcu_on_next_reset(run_mode);
     return mp_const_none;
@@ -147,12 +145,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 //| This object is the sole instance of `nvm.ByteArray` when available or ``None`` otherwise.
 //|
 //| :type: nvm.ByteArray or None"""
-//|
 
 //| watchdog: Optional[WatchDogTimer]
 //| """Available watchdog timer.
 //| This object is the sole instance of `watchdog.WatchDogTimer` when available or ``None`` otherwise."""
-//|
 
 const mp_obj_module_t mcu_pin_module = {
     .base = { &mp_type_module },

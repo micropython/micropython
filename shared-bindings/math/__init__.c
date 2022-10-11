@@ -27,7 +27,7 @@
 
 #include "py/builtin.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
@@ -45,7 +45,6 @@
 //|
 //| |see_cpython_module| :mod:`cpython:math`.
 //| """
-//|
 
 STATIC NORETURN void math_error(void) {
     mp_raise_ValueError(translate("math domain error"));
@@ -87,7 +86,6 @@ STATIC NORETURN void math_error(void) {
 //|
 //| pi: float
 //| """the ratio of a circle's circumference to its diameter"""
-//|
 
 //| def acos(x: float) -> float:
 //|     """Return the inverse cosine of ``x``."""

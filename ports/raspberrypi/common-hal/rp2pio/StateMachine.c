@@ -71,7 +71,7 @@ STATIC void *_interrupt_arg[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 STATIC void rp2pio_statemachine_interrupt_handler(void);
 
 static void rp2pio_statemachine_set_pull(uint32_t pull_pin_up, uint32_t pull_pin_down, uint32_t pins_we_use) {
-    for (int i = 0; i < TOTAL_GPIO_COUNT; i++) {
+    for (size_t i = 0; i < TOTAL_GPIO_COUNT; i++) {
         bool used = pins_we_use & (1 << i);
         if (used) {
             bool pull_up = pull_pin_up & (1 << i);
@@ -231,7 +231,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         program_offset = 32;
     }
 
-    int state_machine = -1;
+    size_t state_machine = NUM_PIO_STATE_MACHINES;
     if (pio_index < NUM_PIOS) {
         PIO pio = pio_instances[pio_index];
         for (size_t i = 0; i < NUM_PIOS; i++) {
@@ -369,6 +369,9 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
 }
 
 static uint32_t mask_and_rotate(const mcu_pin_obj_t *first_pin, uint32_t bit_count, uint32_t value) {
+    if (!first_pin) {
+        return 0;
+    }
     value = value & ((1 << bit_count) - 1);
     uint32_t shift = first_pin->number;
     return value << shift | value >> (32 - shift);
@@ -436,7 +439,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
                 if (first_in_pin == NULL) {
                     mp_raise_ValueError_varg(translate("Missing first_in_pin. Instruction %d waits based on pin"), i);
                 }
-                if (wait_index > in_pin_count) {
+                if (wait_index >= in_pin_count) {
                     mp_raise_ValueError_varg(translate("Instruction %d waits on input outside of count"), i);
                 }
             }
@@ -868,7 +871,7 @@ bool common_hal_rp2pio_statemachine_get_txstall(rp2pio_statemachine_obj_t *self)
 }
 
 void common_hal_rp2pio_statemachine_clear_txstall(rp2pio_statemachine_obj_t *self) {
-    uint8_t level = pio_sm_get_rx_fifo_level(self->pio, self->state_machine);
+    (void)pio_sm_get_rx_fifo_level(self->pio, self->state_machine);
     uint32_t stall_mask = 1 << (PIO_FDEBUG_TXSTALL_LSB + self->state_machine);
     self->pio->fdebug = stall_mask;
 }

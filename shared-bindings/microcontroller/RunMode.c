@@ -32,7 +32,6 @@
 //|     def __init__(self) -> None:
 //|         """Enum-like class to define the run mode of the microcontroller and
 //|         CircuitPython."""
-//|
 //|     NORMAL: RunMode
 //|     """Run CircuitPython as normal.
 //|

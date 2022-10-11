@@ -37,13 +37,23 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class FourWire:
 //|     """Manage updating a display over SPI four wire protocol in the background while Python code runs.
 //|     It doesn't handle display initialization."""
 //|
-//|     def __init__(self, spi_bus: busio.SPI, *, command: Optional[microcontroller.Pin], chip_select: microcontroller.Pin, reset: Optional[microcontroller.Pin] = None, baudrate: int = 24000000, polarity: int = 0, phase: int = 0) -> None:
+//|     def __init__(
+//|         self,
+//|         spi_bus: busio.SPI,
+//|         *,
+//|         command: Optional[microcontroller.Pin],
+//|         chip_select: microcontroller.Pin,
+//|         reset: Optional[microcontroller.Pin] = None,
+//|         baudrate: int = 24000000,
+//|         polarity: int = 0,
+//|         phase: int = 0
+//|     ) -> None:
 //|         """Create a FourWire object associated with the given pins.
 //|
 //|         The SPI bus and pins are then in use by the display until `displayio.release_displays()` is
@@ -65,7 +75,6 @@
 //|         :param int phase: the edge of the clock that data is captured. First (0)
 //|             or second (1). Rising or falling depends on clock polarity."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset, ARG_baudrate, ARG_polarity, ARG_phase };
     static const mp_arg_t allowed_args[] = {
@@ -89,14 +98,8 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     displayio_fourwire_obj_t *self = &allocate_display_bus_or_raise()->fourwire_bus;
     self->base.type = &displayio_fourwire_type;
 
-    uint8_t polarity = args[ARG_polarity].u_int;
-    if (polarity != 0 && polarity != 1) {
-        mp_raise_ValueError(translate("Invalid polarity"));
-    }
-    uint8_t phase = args[ARG_phase].u_int;
-    if (phase != 0 && phase != 1) {
-        mp_raise_ValueError(translate("Invalid phase"));
-    }
+    uint8_t polarity = (uint8_t)mp_arg_validate_int_range(args[ARG_polarity].u_int, 0, 1, MP_QSTR_polarity);
+    uint8_t phase = (uint8_t)mp_arg_validate_int_range(args[ARG_phase].u_int, 0, 1, MP_QSTR_phase);
 
     common_hal_displayio_fourwire_construct(self,
         MP_OBJ_TO_PTR(spi), command, chip_select, reset, args[ARG_baudrate].u_int, polarity, phase);
@@ -107,7 +110,6 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
 //|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
 //|         is available."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_fourwire_obj_reset(mp_obj_t self_in) {
     displayio_fourwire_obj_t *self = self_in;
 
@@ -118,7 +120,9 @@ STATIC mp_obj_t displayio_fourwire_obj_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_fourwire_reset_obj, displayio_fourwire_obj_reset);
 
-//|     def send(self, command: int, data: ReadableBuffer, *, toggle_every_byte: bool = False) -> None:
+//|     def send(
+//|         self, command: int, data: ReadableBuffer, *, toggle_every_byte: bool = False
+//|     ) -> None:
 //|         """Sends the given command value followed by the full set of data. Display state, such as
 //|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
 //|         ...
@@ -133,10 +137,8 @@ STATIC mp_obj_t displayio_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t command_int = args[ARG_command].u_int;
-    if (command_int > 255 || command_int < 0) {
-        mp_raise_ValueError(translate("Command must be an int between 0 and 255"));
-    }
+    mp_int_t command_int = mp_arg_validate_int_range(args[ARG_command].u_int, 0, 255, MP_QSTR_command);
+
     displayio_fourwire_obj_t *self = pos_args[0];
     uint8_t command = command_int;
     mp_buffer_info_t bufinfo;

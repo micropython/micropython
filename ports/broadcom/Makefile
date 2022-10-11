@@ -1,12 +1,12 @@
 # Select the board to build for.
-BOARD=raspberrypi_pi4
+BOARD?=raspberrypi_pi4b
 
 ifeq ($(BOARD),)
-	$(error You must provide a BOARD parameter)
+  $(error You must provide a BOARD parameter)
 else
-	ifeq ($(wildcard boards/$(BOARD)/.),)
-		$(error Invalid BOARD specified)
-	endif
+  ifeq ($(wildcard boards/$(BOARD)/.),)
+    $(error Invalid BOARD "$(BOARD)" specified)
+  endif
 endif
 
 # If the build directory is not given, make it reflect the board name.
@@ -107,7 +107,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 # BCM CLFAGS
-CFLAGS += -ffreestanding -nostartfiles -DMICROPY_HW_MCU_NAME="\"$(CHIP_VARIANT)\""
+CFLAGS += -nostartfiles -DMICROPY_HW_MCU_NAME="\"$(CHIP_VARIANT)\""
 
 
 OPTIMIZATION_FLAGS ?= -O3

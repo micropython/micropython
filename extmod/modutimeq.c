@@ -10,7 +10,7 @@
 #include "py/runtime.h"
 #include "py/smallint.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_UTIMEQ
 

@@ -33,8 +33,8 @@
 //| class Clock:
 //|     """Identifies a clock on the microcontroller.
 //|
-//|        They are fixed by the hardware so they cannot be constructed on demand. Instead, use
-//|        ``samd.clock`` to reference the desired clock."""
+//|     They are fixed by the hardware so they cannot be constructed on demand. Instead, use
+//|     ``samd.clock`` to reference the desired clock."""
 //|
 
 STATIC void samd_clock_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -45,7 +45,6 @@ STATIC void samd_clock_print(const mp_print_t *print, mp_obj_t self_in, mp_print
 
 //|     enabled: bool
 //|     """Is the clock enabled? (read-only)"""
-//|
 STATIC mp_obj_t samd_clock_get_enabled(mp_obj_t self_in) {
     samd_clock_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(clock_get_enabled(self->type, self->index));
@@ -58,7 +57,6 @@ MP_PROPERTY_GETTER(samd_clock_enabled_obj,
 
 //|     parent: Union[Clock, None]
 //|     """Clock parent. (read-only)"""
-//|
 STATIC mp_obj_t samd_clock_get_parent(mp_obj_t self_in) {
     samd_clock_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t p_type, p_index;
@@ -83,7 +81,6 @@ MP_PROPERTY_GETTER(samd_clock_parent_obj,
 
 //|     frequency: int
 //|     """Clock frequency in Herz. (read-only)"""
-//|
 STATIC mp_obj_t samd_clock_get_frequency(mp_obj_t self_in) {
     samd_clock_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int_from_uint(clock_get_frequency(self->type, self->index));

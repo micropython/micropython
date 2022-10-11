@@ -88,8 +88,6 @@ else
 	CFLAGS += -DNDEBUG
 	OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
 	CFLAGS += -ggdb3
-	# TODO: Test with -flto
-	# CFLAGS += -flto
 endif
 
 # to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
@@ -302,11 +300,11 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"
-	$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -f 0x57755a57 -b $(BOOTLOADER_OFFSET) -c -o "$(BUILD)/firmware.uf2" $^
+	$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -f $(UF2_FAMILY_ID) -b $(BOOTLOADER_OFFSET) -c -o "$(BUILD)/firmware.uf2" $^
 
 flash: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"
-	dfu-util -a 0 --dfuse-address 0x08000000 -D $(BUILD)/firmware.bin
+	dfu-util -a 0 --dfuse-address $(BOOTLOADER_OFFSET) -D $(BUILD)/firmware.bin
 
 include $(TOP)/py/mkrules.mk
 

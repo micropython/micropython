@@ -52,8 +52,8 @@ subprocess.check_output(["make", "stubs"])
 #modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
 modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
 modules_support_matrix_reverse = defaultdict(list)
-for board, modules in modules_support_matrix.items():
-    for module in modules[0]:
+for board, matrix_info in modules_support_matrix.items():
+    for module in matrix_info["modules"]:
         modules_support_matrix_reverse[module].append(board)
 
 modules_support_matrix_reverse = dict(
@@ -199,6 +199,7 @@ exclude_patterns = ["**/build*",
                     "ports/cxd56/spresense-exported-sdk",
                     "ports/espressif/certificates",
                     "ports/espressif/esp-idf",
+                    "ports/espressif/esp32-camera",
                     "ports/espressif/.idf_tools",
                     "ports/espressif/peripherals",
                     "ports/litex/hw",
@@ -212,6 +213,7 @@ exclude_patterns = ["**/build*",
                     "ports/nrf/peripherals",
                     "ports/nrf/usb",
                     "ports/raspberrypi/sdk",
+                    "ports/raspberrypi/lib",
                     "ports/stm/st_driver",
                     "ports/stm/packages",
                     "ports/stm/peripherals",

@@ -55,19 +55,14 @@ STATIC mp_obj_t wifi_monitor_make_new(const mp_obj_type_t *type, size_t n_args, 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_channel].u_int < 1 || args[ARG_channel].u_int > 13) {
-        mp_raise_ValueError_varg(translate("%q out of bounds"), MP_QSTR_channel);
-    }
-
-    if (args[ARG_queue].u_int < 0) {
-        mp_raise_ValueError_varg(translate("%q out of bounds"), MP_QSTR_channel);
-    }
+    mp_int_t channel = mp_arg_validate_int_range(args[ARG_channel].u_int, 1, 13, MP_QSTR_channel);
+    mp_int_t queue = mp_arg_validate_int_min(args[ARG_queue].u_int, 0, MP_QSTR_queue);
 
     wifi_monitor_obj_t *self = MP_STATE_VM(wifi_monitor_singleton);
     if (common_hal_wifi_monitor_deinited()) {
         self = m_new_obj(wifi_monitor_obj_t);
         self->base.type = &wifi_monitor_type;
-        common_hal_wifi_monitor_construct(self, args[ARG_channel].u_int, args[ARG_queue].u_int);
+        common_hal_wifi_monitor_construct(self, channel, queue);
         MP_STATE_VM(wifi_monitor_singleton) = self;
     }
 
@@ -76,7 +71,6 @@ STATIC mp_obj_t wifi_monitor_make_new(const mp_obj_type_t *type, size_t n_args, 
 
 //| channel: int
 //| """The WiFi channel to scan."""
-//|
 STATIC mp_obj_t wifi_monitor_obj_get_channel(mp_obj_t self_in) {
     return common_hal_wifi_monitor_get_channel(self_in);
 }
@@ -98,7 +92,6 @@ MP_PROPERTY_GETSET(wifi_monitor_channel_obj,
 
 //| queue: int
 //| """The queue size for buffering the packet."""
-//|
 STATIC mp_obj_t wifi_monitor_obj_get_queue(mp_obj_t self_in) {
     return common_hal_wifi_monitor_get_queue(self_in);
 }

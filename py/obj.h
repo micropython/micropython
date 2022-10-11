@@ -34,7 +34,7 @@
 #include "py/mpprint.h"
 #include "py/runtime0.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/compressed_string.h"
 
 // This is the definition of the opaque MicroPython object type.
 // All concrete objects have an encoding within this type and the
@@ -742,7 +742,6 @@ extern const mp_obj_type_t mp_type_ReloadException;
 extern const mp_obj_type_t mp_type_KeyError;
 extern const mp_obj_type_t mp_type_LookupError;
 extern const mp_obj_type_t mp_type_MemoryError;
-extern const mp_obj_type_t mp_type_MpyError;
 extern const mp_obj_type_t mp_type_NameError;
 extern const mp_obj_type_t mp_type_NotImplementedError;
 extern const mp_obj_type_t mp_type_OSError;

@@ -36,7 +36,7 @@
 #include "py/objint.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // Helpers to work with binary-encoded data
 

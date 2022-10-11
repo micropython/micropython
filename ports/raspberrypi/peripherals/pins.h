@@ -62,10 +62,18 @@ extern const mcu_pin_obj_t pin_GPIO21;
 extern const mcu_pin_obj_t pin_GPIO22;
 extern const mcu_pin_obj_t pin_GPIO23;
 extern const mcu_pin_obj_t pin_GPIO24;
+#if !defined(IGNORE_GPIO25)
 extern const mcu_pin_obj_t pin_GPIO25;
+#endif
 extern const mcu_pin_obj_t pin_GPIO26;
 extern const mcu_pin_obj_t pin_GPIO27;
 extern const mcu_pin_obj_t pin_GPIO28;
 extern const mcu_pin_obj_t pin_GPIO29;
+
+#if CIRCUITPY_CYW43
+extern const mcu_pin_obj_t pin_CYW0;
+extern const mcu_pin_obj_t pin_CYW1;
+extern const mcu_pin_obj_t pin_CYW2;
+#endif
 
 #endif  // MICROPY_INCLUDED_RASPBERRYPI_PERIPHERALS_PINS_H

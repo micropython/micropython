@@ -34,9 +34,6 @@
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/busio/UART.h"
-#if CIRCUITPY_ONEWIREIO
-#include "shared-bindings/onewireio/OneWire.h"
-#endif
 
 #include "py/runtime.h"
 
@@ -81,15 +78,11 @@
 //| Tutorial for UART:
 //| https://learn.adafruit.com/circuitpython-essentials/circuitpython-uart-serial
 //| """
-//|
 
 STATIC const mp_rom_map_elem_t busio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_busio) },
     { MP_ROM_QSTR(MP_QSTR_I2C),   MP_ROM_PTR(&busio_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&busio_spi_type) },
-    #if CIRCUITPY_ONEWIREIO
-    { MP_ROM_QSTR(MP_QSTR_OneWire),   MP_ROM_PTR(&onewireio_onewire_type) },
-    #endif
     { MP_ROM_QSTR(MP_QSTR_UART),   MP_ROM_PTR(&busio_uart_type) },
 };
 

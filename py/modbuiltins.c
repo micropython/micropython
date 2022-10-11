@@ -35,7 +35,7 @@
 #include "py/builtin.h"
 #include "py/stream.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
@@ -190,8 +190,8 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
         // Implemented by probing all possible qstrs with mp_load_method_maybe
         size_t nqstr = QSTR_TOTAL();
         for (size_t i = MP_QSTR_ + 1; i < nqstr; ++i) {
-            mp_obj_t dest[2];
-            mp_load_method_protected(args[0], i, dest, false);
+            mp_obj_t dest[2] = {};
+            mp_load_method_protected(args[0], i, dest, true);
             if (dest[0] != MP_OBJ_NULL) {
                 #if MICROPY_PY_ALL_SPECIAL_METHODS
                 // Support for __dir__: see if we can dispatch to this special method
@@ -759,7 +759,6 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_KeyError), MP_ROM_PTR(&mp_type_KeyError) },
     { MP_ROM_QSTR(MP_QSTR_LookupError), MP_ROM_PTR(&mp_type_LookupError) },
     { MP_ROM_QSTR(MP_QSTR_MemoryError), MP_ROM_PTR(&mp_type_MemoryError) },
-    { MP_ROM_QSTR(MP_QSTR_MpyError), MP_ROM_PTR(&mp_type_MpyError) },
     { MP_ROM_QSTR(MP_QSTR_NameError), MP_ROM_PTR(&mp_type_NameError) },
     { MP_ROM_QSTR(MP_QSTR_NotImplementedError), MP_ROM_PTR(&mp_type_NotImplementedError) },
     { MP_ROM_QSTR(MP_QSTR_OSError), MP_ROM_PTR(&mp_type_OSError) },

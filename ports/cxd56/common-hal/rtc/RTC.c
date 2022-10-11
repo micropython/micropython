@@ -50,5 +50,5 @@ int common_hal_rtc_get_calibration(void) {
 }
 
 void common_hal_rtc_set_calibration(int calibration) {
-    mp_raise_NotImplementedError(translate("RTC calibration is not supported on this board"));
+    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_calibration);
 }

@@ -35,14 +35,24 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class ParallelBus:
 //|     """Manage updating a display over 8-bit parallel bus in the background while Python code runs. This
 //|     protocol may be refered to as 8080-I Series Parallel Interface in datasheets. It doesn't handle
 //|     display initialization."""
 //|
-//|     def __init__(self, *, data0: microcontroller.Pin, command: microcontroller.Pin, chip_select: microcontroller.Pin, write: microcontroller.Pin, read: Optional[microcontroller.Pin], reset: Optional[microcontroller.Pin] = None, frequency: int = 30_000_000) -> None:
+//|     def __init__(
+//|         self,
+//|         *,
+//|         data0: microcontroller.Pin,
+//|         command: microcontroller.Pin,
+//|         chip_select: microcontroller.Pin,
+//|         write: microcontroller.Pin,
+//|         read: Optional[microcontroller.Pin],
+//|         reset: Optional[microcontroller.Pin] = None,
+//|         frequency: int = 30_000_000,
+//|     ) -> None:
 //|         """Create a ParallelBus object associated with the given pins. The bus is inferred from data0
 //|         by implying the next 7 additional pins on a given GPIO port.
 //|
@@ -60,7 +70,6 @@
 //|         :param microcontroller.Pin reset: Reset pin, optional
 //|         :param int frequency: The communication frequency in Hz for the display on the bus"""
 //|         ...
-//|
 STATIC mp_obj_t paralleldisplay_parallelbus_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_data0, ARG_data_pins, ARG_command, ARG_chip_select, ARG_write, ARG_read, ARG_reset, ARG_frequency };
     static const mp_arg_t allowed_args[] = {
@@ -108,7 +117,6 @@ STATIC mp_obj_t paralleldisplay_parallelbus_make_new(const mp_obj_type_t *type, 
 //|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
 //|         is available."""
 //|         ...
-//|
 
 STATIC mp_obj_t paralleldisplay_parallelbus_obj_reset(mp_obj_t self_in) {
     paralleldisplay_parallelbus_obj_t *self = self_in;
@@ -126,10 +134,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(paralleldisplay_parallelbus_reset_obj, paralleldisplay
 //|         ...
 //|
 STATIC mp_obj_t paralleldisplay_parallelbus_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
-    mp_int_t command_int = MP_OBJ_SMALL_INT_VALUE(command_obj);
-    if (!mp_obj_is_small_int(command_obj) || command_int > 255 || command_int < 0) {
-        mp_raise_ValueError(translate("Command must be an int between 0 and 255"));
-    }
+    mp_int_t command_int = mp_arg_validate_int_range(mp_obj_get_int(command_obj), 0, 255, MP_QSTR_command);
+
     uint8_t command = command_int;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_obj, &bufinfo, MP_BUFFER_READ);

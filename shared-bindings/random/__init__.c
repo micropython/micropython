@@ -31,7 +31,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared-bindings/random/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """pseudo-random numbers and choices
 //|
@@ -45,8 +45,8 @@
 //|   bytes from `os.urandom` directly for true randomness."""
 //|
 //| from typing import TypeVar
-//| _T = TypeVar('_T')
 //|
+//| _T = TypeVar("_T")
 
 //| def seed(seed: int) -> None:
 //|     """Sets the starting seed of the random  number generation. Further calls to

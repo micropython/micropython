@@ -42,13 +42,16 @@
 //| call :py:meth:`!deinit` or use a context manager. See
 //| :ref:`lifetime-and-contextmanagers` for more info.
 //|
+//| For more information on working with this module, refer to the
+//| `CircuitPython Essentials Learn Guide
+//| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-audio-out>`_.
+//|
 //| Since CircuitPython 5, `RawSample` and `WaveFile` are moved
 //| to :mod:`audiocore`, and `Mixer` is moved to :mod:`audiomixer`.
 //|
 //| For compatibility with CircuitPython 4.x, some builds allow the items in
 //| `audiocore` to be imported from `audioio`.  This will be removed for all
 //| boards in a future build of CircuitPython."""
-//|
 
 STATIC const mp_rom_map_elem_t audioio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audioio) },

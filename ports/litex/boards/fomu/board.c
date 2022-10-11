@@ -66,14 +66,3 @@ void board_init(void) {
     ledda_write(3, LEDDPWRG);   // Green
     ledda_write(98, LEDDPWRB);  // Blue
 }
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-
-}
-
-void board_deinit(void) {
-}

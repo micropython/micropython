@@ -35,7 +35,7 @@
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
@@ -136,20 +136,21 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t *self,
         mp_raise_ValueError(translate("Right channel unsupported"));
     }
     if (left_channel != &pin_PA02) {
-        mp_raise_ValueError(translate("Invalid pin"));
+        raise_ValueError_invalid_pin();
     }
     claim_pin(left_channel);
     #endif
     #ifdef SAM_D5X_E5X
     self->right_channel = NULL;
     if (left_channel != &pin_PA02 && left_channel != &pin_PA05) {
-        mp_raise_ValueError(translate("Invalid pin for left channel"));
+        raise_ValueError_invalid_pin_name(MP_QSTR_left_channel);
     }
     if (right_channel != NULL && right_channel != &pin_PA02 && right_channel != &pin_PA05) {
-        mp_raise_ValueError(translate("Invalid pin for right channel"));
+        raise_ValueError_invalid_pin_name(MP_QSTR_right_channel);
     }
     if (right_channel == left_channel) {
-        mp_raise_ValueError(translate("Cannot output both channels on the same pin"));
+        mp_raise_ValueError_varg(translate("%q and %q must be different"),
+            MP_QSTR_left_channel, MP_QSTR_right_channel);
     }
     claim_pin(left_channel);
     if (right_channel != NULL) {
@@ -376,14 +377,13 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t *self,
     audio_dma_result result = AUDIO_DMA_OK;
     uint32_t sample_rate = audiosample_sample_rate(sample);
     #ifdef SAMD21
-    uint32_t max_sample_rate = 350000;
+    const uint32_t max_sample_rate = 350000;
     #endif
     #ifdef SAM_D5X_E5X
-    uint32_t max_sample_rate = 1000000;
+    const uint32_t max_sample_rate = 1000000;
     #endif
-    if (sample_rate > max_sample_rate) {
-        mp_raise_ValueError_varg(translate("Sample rate too high. It must be less than %d"), max_sample_rate);
-    }
+    mp_arg_validate_int_max(sample_rate, max_sample_rate, MP_QSTR_sample_rate);
+
     #ifdef SAMD21
     result = audio_dma_setup_playback(&self->left_dma, sample, loop, true, 0,
         false /* output unsigned */,

@@ -37,7 +37,7 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // This is the time in seconds since 2000 that the RTC was started.
 // TODO: Change the offset to ticks so that it can be a subsecond adjustment.
@@ -68,13 +68,7 @@ int common_hal_rtc_get_calibration(void) {
 }
 
 void common_hal_rtc_set_calibration(int calibration) {
-    if (calibration > 127 || calibration < -127) {
-        #if CIRCUITPY_FULL_BUILD
-        mp_raise_ValueError(translate("calibration value out of range +/-127"));
-        #else
-        mp_raise_ValueError(translate("calibration is out of range"));
-        #endif
-    }
+    mp_arg_validate_int_range(calibration, -127, 127, MP_QSTR_calibration);
 
     hri_rtcmode0_write_FREQCORR_SIGN_bit(RTC, calibration < 0 ? 0 : 1);
     hri_rtcmode0_write_FREQCORR_VALUE_bf(RTC, abs(calibration));

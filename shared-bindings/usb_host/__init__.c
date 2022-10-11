@@ -36,7 +36,6 @@
 //| The `usb_host` module allows you to manage USB host ports. To communicate
 //| with devices use the `usb` module that is a subset of PyUSB's API.
 //| """
-//|
 
 STATIC mp_map_elem_t usb_host_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_usb_host) },

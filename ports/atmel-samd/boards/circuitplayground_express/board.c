@@ -31,9 +31,6 @@
 #include "supervisor/shared/board.h"
 #include "hal/include/hal_gpio.h"
 
-void board_init(void) {
-}
-
 // Check the status of the two buttons on CircuitPlayground Express. If both are
 // pressed, then boot into user safe mode.
 bool board_requests_safe_mode(void) {
@@ -55,5 +52,4 @@ void reset_board(void) {
     board_reset_user_neopixels(&pin_PB23, 10);
 }
 
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

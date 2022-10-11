@@ -32,6 +32,7 @@
 #include "supervisor/shared/tick.h"
 #include "shared/runtime/interrupt_char.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "src/rp2_common/hardware_irq/include/hardware/irq.h"
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
@@ -66,7 +67,7 @@ static uint8_t pin_init(const uint8_t uart, const mcu_pin_obj_t *pin, const uint
         return NO_PIN;
     }
     if (!(((pin->number % 4) == pin_type) && ((((pin->number + 4) / 8) % NUM_UARTS) == uart))) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
     claim_pin(pin);
     gpio_set_function(pin->number, GPIO_FUNC_UART);
@@ -104,13 +105,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
 
-    if (bits > 8) {
-        mp_raise_ValueError(translate("Invalid word/bit length"));
-    }
-
-    if (receiver_buffer_size == 0) {
-        mp_raise_ValueError(translate("Invalid buffer size"));
-    }
+    mp_arg_validate_int_max(bits, 8, MP_QSTR_bits);
+    mp_arg_validate_int_min(receiver_buffer_size, 1, MP_QSTR_receiver_buffer_size);
 
     uint8_t uart_id = ((((tx != NULL) ? tx->number : rx->number) + 4) / 8) % NUM_UARTS;
 
@@ -159,27 +155,33 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uart_set_hw_flow(self->uart, (cts != NULL), (rts != NULL));
 
     if (rx != NULL) {
-        // Initially allocate the UART's buffer in the long-lived part of the
-        // heap. UARTs are generally long-lived objects, but the "make long-
-        // lived" machinery is incapable of moving internal pointers like
-        // self->buffer, so do it manually.  (However, as long as internal
-        // pointers like this are NOT moved, allocating the buffer
-        // in the long-lived pool is not strictly necessary)
-        // (This is a macro.)
-        if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
-            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
-        }
-        active_uarts[uart_id] = self;
-        if (uart_id == 1) {
-            self->uart_irq_id = UART1_IRQ;
-            irq_set_exclusive_handler(self->uart_irq_id, uart1_callback);
+        // Use the provided buffer when given.
+        if (receiver_buffer != NULL) {
+            ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
         } else {
-            self->uart_irq_id = UART0_IRQ;
-            irq_set_exclusive_handler(self->uart_irq_id, uart0_callback);
+            // Initially allocate the UART's buffer in the long-lived part of the
+            // heap. UARTs are generally long-lived objects, but the "make long-
+            // lived" machinery is incapable of moving internal pointers like
+            // self->buffer, so do it manually.  (However, as long as internal
+            // pointers like this are NOT moved, allocating the buffer
+            // in the long-lived pool is not strictly necessary)
+            if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
+                uart_deinit(self->uart);
+                m_malloc_fail(receiver_buffer_size);
+            }
         }
-        irq_set_enabled(self->uart_irq_id, true);
-        uart_set_irq_enables(self->uart, true /* rx has data */, false /* tx needs data */);
     }
+
+    active_uarts[uart_id] = self;
+    if (uart_id == 1) {
+        self->uart_irq_id = UART1_IRQ;
+        irq_set_exclusive_handler(self->uart_irq_id, uart1_callback);
+    } else {
+        self->uart_irq_id = UART0_IRQ;
+        irq_set_exclusive_handler(self->uart_irq_id, uart0_callback);
+    }
+    irq_set_enabled(self->uart_irq_id, true);
+    uart_set_irq_enables(self->uart, true /* rx has data */, false /* tx needs data */);
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -191,7 +193,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         return;
     }
     uart_deinit(self->uart);
-    ringbuf_free(&self->ringbuf);
+    ringbuf_deinit(&self->ringbuf);
     active_uarts[self->uart_id] = NULL;
     uart_status[self->uart_id] = STATUS_FREE;
     reset_pin_number(self->tx_pin);
@@ -315,7 +317,7 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
     // The UART only interrupts after a threshold so make sure to copy anything
     // out of its FIFO before measuring how many bytes we've received.
     _copy_into_ringbuf(&self->ringbuf, self->uart);
-    irq_set_enabled(self->uart_irq_id, false);
+    irq_set_enabled(self->uart_irq_id, true);
     return ringbuf_num_filled(&self->ringbuf);
 }
 

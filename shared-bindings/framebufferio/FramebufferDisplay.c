@@ -38,7 +38,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class FramebufferDisplay:
 //|     """Manage updating a display with framebuffer in RAM
@@ -47,14 +47,19 @@
 //|     objects in CircuitPython, Display objects live until `displayio.release_displays()`
 //|     is called. This is done so that CircuitPython can use the display itself."""
 //|
-//|     def __init__(self, framebuffer: circuitpython_typing.FrameBuffer, *, rotation: int = 0, auto_refresh: bool = True) -> None:
+//|     def __init__(
+//|         self,
+//|         framebuffer: circuitpython_typing.FrameBuffer,
+//|         *,
+//|         rotation: int = 0,
+//|         auto_refresh: bool = True
+//|     ) -> None:
 //|         """Create a Display object with the given framebuffer (a buffer, array, ulab.array, etc)
 //|
 //|         :param ~circuitpython_typing.FrameBuffer framebuffer: The framebuffer that the display is connected to
 //|         :param bool auto_refresh: Automatically refresh the screen
 //|         :param int rotation: The rotation of the display in degrees clockwise. Must be in 90 degree increments (0, 90, 180, 270)"""
 //|         ...
-//|
 STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_framebuffer, ARG_rotation, ARG_auto_refresh, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
@@ -99,7 +104,6 @@ static framebufferio_framebufferdisplay_obj_t *native_display(mp_obj_t display_o
 //|
 //|         :param Group group: The group to show."""
 //|         ...
-//|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     displayio_group_t *group = NULL;
@@ -115,7 +119,9 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_show(mp_obj_t self_in, mp_o
 }
 MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_show_obj, framebufferio_framebufferdisplay_obj_show);
 
-//|     def refresh(self, *, target_frames_per_second: int = 60, minimum_frames_per_second: int = 1) -> bool:
+//|     def refresh(
+//|         self, *, target_frames_per_second: int = 60, minimum_frames_per_second: int = 1
+//|     ) -> bool:
 //|         """When auto refresh is off, waits for the target frame rate and then refreshes the display,
 //|         returning True. If the call has taken too long since the last refresh call for the given
 //|         target frame rate, then the refresh returns False immediately without updating the screen to
@@ -130,7 +136,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_show_obj, framebuffer
 //|         :param int target_frames_per_second: How many times a second `refresh` should be called and the screen updated.
 //|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second."""
 //|         ...
-//|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_refresh(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_target_frames_per_second, ARG_minimum_frames_per_second };
     static const mp_arg_t allowed_args[] = {
@@ -152,7 +157,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_refresh_obj, 1, fram
 
 //|     auto_refresh: bool
 //|     """True when the display is refreshed automatically."""
-//|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_auto_refresh(mp_obj_t self_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     return mp_obj_new_bool(common_hal_framebufferio_framebufferdisplay_get_auto_refresh(self));
@@ -173,10 +177,7 @@ MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_auto_refresh_obj,
     (mp_obj_t)&framebufferio_framebufferdisplay_set_auto_refresh_obj);
 
 //|     brightness: float
-//|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness. When
-//|     `auto_brightness` is True, the value of `brightness` will change automatically.
-//|     If `brightness` is set, `auto_brightness` will be disabled and will be set to False."""
-//|
+//|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness."""
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_brightness(mp_obj_t self_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     mp_float_t brightness = common_hal_framebufferio_framebufferdisplay_get_brightness(self);
@@ -189,7 +190,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_brightness_obj, f
 
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_brightness(mp_obj_t self_in, mp_obj_t brightness_obj) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
-    common_hal_framebufferio_framebufferdisplay_set_auto_brightness(self, false);
     mp_float_t brightness = mp_obj_get_float(brightness_obj);
     if (brightness < 0.0f || brightness > 1.0f) {
         mp_raise_ValueError(translate("Brightness must be 0-1.0"));
@@ -206,37 +206,8 @@ MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_brightness_obj,
     (mp_obj_t)&framebufferio_framebufferdisplay_get_brightness_obj,
     (mp_obj_t)&framebufferio_framebufferdisplay_set_brightness_obj);
 
-//|     auto_brightness: bool
-//|     """True when the display brightness is adjusted automatically, based on an ambient
-//|     light sensor or other method. Note that some displays may have this set to True by default,
-//|     but not actually implement automatic brightness adjustment. `auto_brightness` is set to False
-//|     if `brightness` is set manually."""
-//|
-STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_auto_brightness(mp_obj_t self_in) {
-    framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
-    return mp_obj_new_bool(common_hal_framebufferio_framebufferdisplay_get_auto_brightness(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_auto_brightness_obj, framebufferio_framebufferdisplay_obj_get_auto_brightness);
-
-STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_auto_brightness(mp_obj_t self_in, mp_obj_t auto_brightness) {
-    framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
-
-    bool ok = common_hal_framebufferio_framebufferdisplay_set_auto_brightness(self, mp_obj_is_true(auto_brightness));
-    if (!ok) {
-        mp_raise_RuntimeError(translate("Brightness not adjustable"));
-    }
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_set_auto_brightness_obj, framebufferio_framebufferdisplay_obj_set_auto_brightness);
-
-MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_auto_brightness_obj,
-    (mp_obj_t)&framebufferio_framebufferdisplay_get_auto_brightness_obj,
-    (mp_obj_t)&framebufferio_framebufferdisplay_set_auto_brightness_obj);
-
 //|     width: int
 //|     """Gets the width of the framebuffer"""
-//|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_width(mp_obj_t self_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_framebufferio_framebufferdisplay_get_width(self));
@@ -248,7 +219,6 @@ MP_PROPERTY_GETTER(framebufferio_framebufferdisplay_width_obj,
 
 //|     height: int
 //|     """Gets the height of the framebuffer"""
-//|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_height(mp_obj_t self_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_framebufferio_framebufferdisplay_get_height(self));
@@ -260,7 +230,6 @@ MP_PROPERTY_GETTER(framebufferio_framebufferdisplay_height_obj,
 
 //|     rotation: int
 //|     """The rotation of the display as an int in degrees."""
-//|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_rotation(mp_obj_t self_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_framebufferio_framebufferdisplay_get_rotation(self));
@@ -280,8 +249,6 @@ MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_rotation_obj,
 
 //|     framebuffer: circuitpython_typing.FrameBuffer
 //|     """The framebuffer being used by the display"""
-//|
-//|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_framebuffer(mp_obj_t self_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     return common_hal_framebufferio_framebufferdisplay_get_framebuffer(self);
@@ -298,7 +265,6 @@ MP_PROPERTY_GETTER(framebufferio_framebufferframebuffer_obj,
 //|         :param int y: The top edge of the area
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
 //|         ...
-//|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_y, ARG_buffer };
     static const mp_arg_t allowed_args[] = {
@@ -353,6 +319,18 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, con
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_fill_row_obj, 1, framebufferio_framebufferdisplay_obj_fill_row);
 
+//|     root_group: displayio.Group
+//|     """The root group on the display."""
+//|
+STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_root_group(mp_obj_t self_in) {
+    framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
+    return common_hal_framebufferio_framebufferdisplay_get_root_group(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_root_group_obj, framebufferio_framebufferdisplay_obj_get_root_group);
+
+MP_PROPERTY_GETTER(framebufferio_framebufferdisplay_root_group_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_get_root_group_obj);
+
 STATIC const mp_rom_map_elem_t framebufferio_framebufferdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&framebufferio_framebufferdisplay_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&framebufferio_framebufferdisplay_refresh_obj) },
@@ -361,12 +339,12 @@ STATIC const mp_rom_map_elem_t framebufferio_framebufferdisplay_locals_dict_tabl
     { MP_ROM_QSTR(MP_QSTR_auto_refresh), MP_ROM_PTR(&framebufferio_framebufferdisplay_auto_refresh_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&framebufferio_framebufferdisplay_brightness_obj) },
-    { MP_ROM_QSTR(MP_QSTR_auto_brightness), MP_ROM_PTR(&framebufferio_framebufferdisplay_auto_brightness_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&framebufferio_framebufferdisplay_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&framebufferio_framebufferdisplay_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotation), MP_ROM_PTR(&framebufferio_framebufferdisplay_rotation_obj) },
     { MP_ROM_QSTR(MP_QSTR_framebuffer), MP_ROM_PTR(&framebufferio_framebufferframebuffer_obj) },
+    { MP_ROM_QSTR(MP_QSTR_root_group), MP_ROM_PTR(&framebufferio_framebufferdisplay_root_group_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(framebufferio_framebufferdisplay_locals_dict, framebufferio_framebufferdisplay_locals_dict_table);
 

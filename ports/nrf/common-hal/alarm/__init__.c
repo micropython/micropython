@@ -96,7 +96,7 @@ static const char *cause_str[] = {
     "VBUS",
     "RESETPIN",
 };
-void print_wakeup_cause(nrf_sleep_source_t cause) {
+static void print_wakeup_cause(nrf_sleep_source_t cause) {
     if (cause >= 0 && cause < NRF_SLEEP_WAKEUP_ZZZ) {
         mp_printf(&mp_plat_print, "wakeup cause = NRF_SLEEP_WAKEUP_%s\r\n",
             cause_str[(int)cause]);
@@ -108,7 +108,7 @@ bool common_hal_alarm_woken_from_sleep(void) {
     nrf_sleep_source_t cause = _get_wakeup_cause();
     #ifdef NRF_DEBUG_PRINT
     if (cause != NRF_SLEEP_WAKEUP_UNDEFINED) {
-        // print_wakeup_cause(cause);
+        print_wakeup_cause(cause);
     }
     #endif
     return cause == NRF_SLEEP_WAKEUP_GPIO || cause == NRF_SLEEP_WAKEUP_TIMER
@@ -247,7 +247,10 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
     return wake_alarm;
 }
 
-void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms, size_t n_dios, digitalio_digitalinout_obj_t **preserve_dios) {
+    if (n_dios > 0) {
+        mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_preserve_dios);
+    }
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 

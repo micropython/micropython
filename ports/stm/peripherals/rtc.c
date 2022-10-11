@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2022 Matthew McGowan for Blues Wireless Inc
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,6 +76,46 @@ void stm32_peripherals_rtc_init(void) {
     HAL_RTCEx_EnableBypassShadow(&hrtc);
     HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 }
+
+#if CIRCUITPY_RTC
+void stm32_peripherals_rtc_get_time(timeutils_struct_time_t *tm) {
+    RTC_DateTypeDef date = {0};
+    RTC_TimeTypeDef time = {0};
+
+    int code;
+    if ((code = HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN)) == HAL_OK &&
+        (code = HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN)) == HAL_OK) {
+        tm->tm_hour = time.Hours;
+        tm->tm_min = time.Minutes;
+        tm->tm_sec = time.Seconds;
+        tm->tm_wday = date.WeekDay - 1;
+        tm->tm_mday = date.Date;
+        tm->tm_mon = date.Month;
+        tm->tm_year = date.Year + 2000;
+        tm->tm_yday = -1;
+    }
+}
+
+void stm32_peripherals_rtc_set_time(timeutils_struct_time_t *tm) {
+    RTC_DateTypeDef date = {0};
+    RTC_TimeTypeDef time = {0};
+
+    time.Hours = tm->tm_hour;
+    time.Minutes = tm->tm_min;
+    time.Seconds = tm->tm_sec;
+    date.WeekDay = tm->tm_wday + 1;
+    date.Date = tm->tm_mday;
+    date.Month = tm->tm_mon;
+    date.Year = tm->tm_year - 2000;
+    time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+    time.StoreOperation = RTC_STOREOPERATION_RESET;
+
+    if (HAL_RTC_SetTime(&hrtc, &time, RTC_FORMAT_BIN) != HAL_OK ||
+        HAL_RTC_SetDate(&hrtc, &date, RTC_FORMAT_BIN) != HAL_OK) {
+        // todo - throw an exception
+    }
+}
+#endif
 
 // This function is called often for timing so we cache the seconds elapsed computation based on the
 // register value. The STM HAL always does shifts and conversion if we use it directly.

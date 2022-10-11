@@ -40,7 +40,6 @@ MAKE_ENUM_VALUE(countio_edge_type, edge, RISE_AND_FALL, EDGE_RISE_AND_FALL);
 //|     def __init__(self) -> None:
 //|         """Enum-like class to define which signal transitions to count."""
 //|         ...
-//|
 //|     RISE: Edge
 //|     """Count the rising edges."""
 //|

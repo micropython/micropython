@@ -33,7 +33,7 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class PortOut:
 //|     """Sends midi messages to a computer over USB"""
@@ -43,7 +43,6 @@
 //|
 //|         PortOut objects are constructed for every corresponding entry in the USB
 //|         descriptor and added to the ``usb_midi.ports`` tuple."""
-//|
 
 // These are standard stream methods. Code is in py/stream.c.
 //

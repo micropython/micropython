@@ -1,0 +1,13 @@
+USB_VID = 0x303A
+USB_PID = 0x80E6
+USB_PRODUCT = "BPI-Bit-S2"
+USB_MANUFACTURER = "BananaPi"
+
+IDF_TARGET = esp32s2
+
+CIRCUITPY_ESP_FLASH_MODE=dio
+CIRCUITPY_ESP_FLASH_FREQ=40m
+CIRCUITPY_ESP_FLASH_SIZE=4MB
+
+# Include these Python libraries in firmware.
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel

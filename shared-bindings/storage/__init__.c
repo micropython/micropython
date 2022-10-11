@@ -33,7 +33,7 @@
 #include "py/objnamedtuple.h"
 #include "py/runtime.h"
 #include "shared-bindings/storage/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """Storage management
 //|
@@ -41,13 +41,12 @@
 //| unmounting which is typically handled by the operating system hosting Python.
 //| CircuitPython does not have an OS, so this module provides this functionality
 //| directly.
-
+//|
 //| For more information regarding using the `storage` module, refer to the `CircuitPython
 //| Essentials Learn guide
 //| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-storage>`_.
 //| """
 //|
-
 //| def mount(filesystem: VfsFat, mount_path: str, *, readonly: bool = False) -> None:
 //|     """Mounts the given filesystem object at the given path.
 //|
@@ -107,15 +106,20 @@ STATIC mp_obj_t storage_umount(mp_obj_t mnt_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(storage_umount_obj, storage_umount);
 
-//| def remount(mount_path: str, readonly: bool = False, *, disable_concurrent_write_protection: bool = False) -> None:
+//| def remount(
+//|     mount_path: str,
+//|     readonly: bool = False,
+//|     *,
+//|     disable_concurrent_write_protection: bool = False
+//| ) -> None:
 //|     """Remounts the given path with new parameters.
 //|
-//|       :param str mount_path: The path to remount.
-//|       :param bool readonly: True when the filesystem should be readonly to CircuitPython.
-//|       :param bool disable_concurrent_write_protection: When True, the check that makes sure the
-//|         underlying filesystem data is written by one computer is disabled. Disabling the protection
-//|         allows CircuitPython and a host to write to the same filesystem with the risk that the
-//|         filesystem will be corrupted."""
+//|     :param str mount_path: The path to remount.
+//|     :param bool readonly: True when the filesystem should be readonly to CircuitPython.
+//|     :param bool disable_concurrent_write_protection: When True, the check that makes sure the
+//|       underlying filesystem data is written by one computer is disabled. Disabling the protection
+//|       allows CircuitPython and a host to write to the same filesystem with the risk that the
+//|       filesystem will be corrupted."""
 //|     ...
 //|
 STATIC mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -226,7 +230,6 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|         """Create a new VfsFat filesystem around the given block device.
 //|
 //|         :param block_device: Block device the the filesystem lives on"""
-//|
 //|     label: str
 //|     """The filesystem label, up to 11 case-insensitive bytes.  Note that
 //|     this property can only be set when the device is writable by the
@@ -236,36 +239,30 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|     def mkfs(self) -> None:
 //|         """Format the block device, deleting any data that may have been there"""
 //|         ...
-//|
 //|     def open(self, path: str, mode: str) -> None:
 //|         """Like builtin ``open()``"""
 //|         ...
-//|
-//|     def ilistdir(self, path: str) -> Iterator[Union[Tuple[AnyStr, int, int, int], Tuple[AnyStr, int, int]]]:
+//|     def ilistdir(
+//|         self, path: str
+//|     ) -> Iterator[Union[Tuple[AnyStr, int, int, int], Tuple[AnyStr, int, int]]]:
 //|         """Return an iterator whose values describe files and folders within
 //|         ``path``"""
 //|         ...
-//|
 //|     def mkdir(self, path: str) -> None:
 //|         """Like `os.mkdir`"""
 //|         ...
-//|
 //|     def rmdir(self, path: str) -> None:
 //|         """Like `os.rmdir`"""
 //|         ...
-//|
 //|     def stat(self, path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|         """Like `os.stat`"""
 //|         ...
-//|
 //|     def statvfs(self, path: int) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|         """Like `os.statvfs`"""
 //|         ...
-//|
 //|     def mount(self, readonly: bool, mkfs: VfsFat) -> None:
 //|         """Don't call this directly, call `storage.mount`."""
 //|         ...
-//|
 //|     def umount(self) -> None:
 //|         """Don't call this directly, call `storage.umount`."""
 //|         ...

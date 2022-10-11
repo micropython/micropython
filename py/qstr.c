@@ -35,6 +35,7 @@
 #include "py/runtime.h"
 
 #include "supervisor/linker.h"
+#include "supervisor/shared/translate/translate.h"
 
 // NOTE: we are using linear arrays to store and search for qstr's (unique strings, interned strings)
 // ultimately we will replace this with a static hash table of some kind

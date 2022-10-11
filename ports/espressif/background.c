@@ -40,7 +40,6 @@
 #include "common-hal/pulseio/PulseIn.h"
 #endif
 
-
 void port_background_task(void) {
     // Zero delay in case FreeRTOS wants to switch to something else.
     vTaskDelay(0);

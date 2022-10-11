@@ -36,6 +36,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/os/__init__.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """functions that an OS normally provides
 //|
@@ -43,6 +44,7 @@
 //| """
 //|
 //| import typing
+//|
 
 //| def uname() -> _Uname:
 //|     """Returns a named tuple of operating specific and CircuitPython port
@@ -82,6 +84,25 @@ STATIC mp_obj_t os_getcwd(void) {
     return common_hal_os_getcwd();
 }
 MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
+
+//| def getenv(key: str, default: Optional[str] = None) -> Optional[str]:
+//|     """Get the environment variable value for the given key or return ``default``.
+//|
+//|     This may load values from disk so cache the result instead of calling this often."""
+//|     ...
+//|
+STATIC mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_key, ARG_default };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_key, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_default,  MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    return common_hal_os_getenv(mp_obj_str_get_str(args[ARG_key].u_obj), args[ARG_default].u_obj);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(os_getenv_obj, 1, os_getenv);
 
 //| def listdir(dir: str) -> str:
 //|     """With no argument, list the current directory.  Otherwise list the given directory."""
@@ -145,6 +166,20 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 
 //| def stat(path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|     """Get the status of a file or directory.
+//|
+//|        Returns a tuple with the status of a file or directory in the following order:
+//|
+//|
+//|        * ``st_mode`` -- File type, regular or directory
+//|        * ``st_ino``  -- Set to 0
+//|        * ``st_dev`` -- Set to 0
+//|        * ``st_nlink`` -- Set to 0
+//|        * ``st_uid`` -- Set to 0
+//|        * ``st_gid`` -- Set to 0
+//|        * ``st_size`` -- Size of the file in bytes
+//|        * ``st_atime`` -- Time of most recent access expressed in seconds
+//|        * ``st_mtime`` -- Time of most recent content modification expressed in seconds.
+//|        * ``st_ctime`` -- Time of most recent content modification expressed in seconds.
 //|
 //|     .. note:: On builds without long integers, the number of seconds
 //|        for contemporary dates will not fit in a small integer.
@@ -220,6 +255,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&os_chdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&os_getcwd_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&os_getenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_listdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&os_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_remove_obj) },
@@ -233,10 +269,8 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&os_urandom_obj) },
 
-//|
 //| sep: str
 //| """Separator used to delineate path components such as folder and file names."""
-//|
     { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
 };
 

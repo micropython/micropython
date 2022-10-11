@@ -31,10 +31,11 @@
 #include "shared-bindings/usb_hid/__init__.h"
 #include "shared-bindings/usb_hid/Device.h"
 
+#include "supervisor/shared/translate/translate.h"
+
 //| """USB Human Interface Device
 //|
 //| The `usb_hid` module allows you to output data as a HID device."""
-//|
 
 //| devices: Tuple[Device, ...]
 //| """Tuple of all active HID device interfaces.
@@ -46,7 +47,6 @@
 //| containing a `Device` that describes the boot device chosen (keyboard or mouse).
 //| The request for a boot device overrides any other HID devices.
 //| """
-//|
 
 //| def disable() -> None:
 //|     """Do not present any USB HID devices to the host computer.

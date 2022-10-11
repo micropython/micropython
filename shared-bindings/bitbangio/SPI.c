@@ -37,7 +37,7 @@
 #include "shared/runtime/context_manager_helpers.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class SPI:
 //|     """A 3-4 wire serial protocol
@@ -51,7 +51,12 @@
 //|     multiple secondaries can share the `!clock`, `!MOSI` and `!MISO` lines
 //|     and therefore the hardware.)"""
 //|
-//|     def __init__(self, clock: microcontroller.Pin, MOSI: Optional[microcontroller.Pin] = None, MISO: Optional[microcontroller.Pin] = None) -> None:
+//|     def __init__(
+//|         self,
+//|         clock: microcontroller.Pin,
+//|         MOSI: Optional[microcontroller.Pin] = None,
+//|         MISO: Optional[microcontroller.Pin] = None,
+//|     ) -> None:
 //|         """Construct an SPI object on the given pins.
 //|
 //|         .. seealso:: Using this class directly requires careful lock management.
@@ -67,7 +72,6 @@
 //|         :param ~microcontroller.Pin MOSI: the Main Out Selected In pin.
 //|         :param ~microcontroller.Pin MISO: the Main In Selected Out pin."""
 //|         ...
-//|
 
 // TODO(tannewt): Support LSB SPI.
 STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -93,7 +97,6 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
 //|     def deinit(self) -> None:
 //|         """Turn off the SPI bus."""
 //|         ...
-//|
 STATIC mp_obj_t bitbangio_spi_obj_deinit(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     shared_module_bitbangio_spi_deinit(self);
@@ -110,14 +113,12 @@ STATIC void check_for_deinit(bitbangio_spi_obj_t *self) {
 //|     def __enter__(self) -> SPI:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t bitbangio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     shared_module_bitbangio_spi_deinit(args[0]);
@@ -132,7 +133,9 @@ static void check_lock(bitbangio_spi_obj_t *self) {
     }
 }
 
-//|     def configure(self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8) -> None:
+//|     def configure(
+//|         self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8
+//|     ) -> None:
 //|         """Configures the SPI bus. Only valid when locked.
 //|
 //|         :param int baudrate: the clock rate in Hertz
@@ -141,7 +144,6 @@ static void check_lock(bitbangio_spi_obj_t *self) {
 //|           or second (1). Rising or falling depends on clock polarity.
 //|         :param int bits: the number of bits per word"""
 //|         ...
-//|
 STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
     static const mp_arg_t allowed_args[] = {
@@ -156,18 +158,10 @@ STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    uint8_t polarity = args[ARG_polarity].u_int;
-    if (polarity != 0 && polarity != 1) {
-        mp_raise_ValueError(translate("Invalid polarity"));
-    }
-    uint8_t phase = args[ARG_phase].u_int;
-    if (phase != 0 && phase != 1) {
-        mp_raise_ValueError(translate("Invalid phase"));
-    }
-    uint8_t bits = args[ARG_bits].u_int;
-    if (bits != 8 && bits != 9) {
-        mp_raise_ValueError(translate("Invalid number of bits"));
-    }
+    uint8_t polarity = (uint8_t)mp_arg_validate_int_range(args[ARG_polarity].u_int, 0, 1, MP_QSTR_polarity);
+    uint8_t phase = (uint8_t)mp_arg_validate_int_range(args[ARG_phase].u_int, 0, 1, MP_QSTR_phase);
+    uint8_t bits = (uint8_t)mp_arg_validate_int_range(args[ARG_bits].u_int, 8, 9, MP_QSTR_bits);
+
 
     shared_module_bitbangio_spi_configure(self, args[ARG_baudrate].u_int, polarity, phase, bits);
     return mp_const_none;
@@ -180,7 +174,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_configure_obj, 1, bitbangio_spi_configu
 //|         :return: True when lock has been grabbed
 //|         :rtype: bool"""
 //|         ...
-//|
 STATIC mp_obj_t bitbangio_spi_obj_try_lock(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -191,7 +184,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_try_lock_obj, bitbangio_spi_obj_try_lock
 //|     def unlock(self) -> None:
 //|         """Releases the SPI lock."""
 //|         ...
-//|
 STATIC mp_obj_t bitbangio_spi_obj_unlock(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -204,7 +196,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_unlock_obj, bitbangio_spi_obj_unlock);
 //|         """Write the data contained in ``buf``. Requires the SPI being locked.
 //|         If the buffer is empty, nothing happens."""
 //|         ...
-//|
 STATIC mp_obj_t bitbangio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
@@ -238,7 +229,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_write_obj, 1, bitbangio_spi_write);
 
 
 //|     import sys
-//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: int = sys.maxsize, write_value: int = 0) -> None:
+//|     def readinto(
+//|         self,
+//|         buffer: WriteableBuffer,
+//|         *,
+//|         start: int = 0,
+//|         end: int = sys.maxsize,
+//|         write_value: int = 0
+//|     ) -> None:
 //|         """Read into ``buffer`` while writing ``write_value`` for each byte read.
 //|         The SPI object must be locked.
 //|         If the number of bytes to read is 0, nothing happens.
@@ -253,7 +251,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_write_obj, 1, bitbangio_spi_write);
 //|         :param int write_value: value to write while reading
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end, ARG_write_value };
     static const mp_arg_t allowed_args[] = {
@@ -287,7 +284,16 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_readinto_obj, 1, bitbangio_spi_readinto);
 
 //|     import sys
-//|     def write_readinto(self, out_buffer: ReadableBuffer, in_buffer: WriteableBuffer, *, out_start: int = 0, out_end: int = sys.maxsize, in_start: int = 0, in_end: int = sys.maxsize) -> None:
+//|     def write_readinto(
+//|         self,
+//|         out_buffer: ReadableBuffer,
+//|         in_buffer: WriteableBuffer,
+//|         *,
+//|         out_start: int = 0,
+//|         out_end: int = sys.maxsize,
+//|         in_start: int = 0,
+//|         in_end: int = sys.maxsize
+//|     ) -> None:
 //|         """Write out the data in ``out_buffer`` while simultaneously reading data into ``in_buffer``.
 //|         The SPI object must be locked.
 //|

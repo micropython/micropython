@@ -41,7 +41,6 @@
 //|         In CAN, messages can have a length from 0 to 8 bytes.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_data, ARG_extended, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
@@ -57,9 +56,7 @@ STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_buffer_info_t data;
     mp_get_buffer_raise(args[ARG_data].u_obj, &data, MP_BUFFER_READ);
 
-    if (data.len > 8) {
-        mp_raise_ValueError(translate("Messages limited to 8 bytes"));
-    }
+    mp_arg_validate_length_range(data.len, 0, 8, MP_QSTR_data);
 
     canio_message_obj_t *self = m_new_obj(canio_message_obj_t);
     self->base.type = &canio_message_type;
@@ -69,7 +66,6 @@ STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args,
 
 //|     id: int
 //|     """The numeric ID of the message"""
-//|
 STATIC mp_obj_t canio_message_id_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT(common_hal_canio_message_get_id(self));
@@ -89,7 +85,6 @@ MP_PROPERTY_GETSET(canio_message_id_obj,
 
 //|     data: bytes
 //|     """The content of the message"""
-//|
 STATIC mp_obj_t canio_message_data_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
     return mp_obj_new_bytes((const byte *)common_hal_canio_message_get_data(self), common_hal_canio_message_get_length(self));
@@ -100,9 +95,9 @@ STATIC mp_obj_t canio_message_data_set(const mp_obj_t self_in, const mp_obj_t da
     canio_message_obj_t *self = self_in;
     mp_buffer_info_t data;
     mp_get_buffer_raise(data_in, &data, MP_BUFFER_READ);
-    if (data.len > 8) {
-        mp_raise_ValueError(translate("Messages limited to 8 bytes"));
-    }
+
+    mp_arg_validate_length_range(data.len, 0, 8, MP_QSTR_data);
+
     common_hal_canio_message_set_data(self, data.buf, data.len);
     return mp_const_none;
 }

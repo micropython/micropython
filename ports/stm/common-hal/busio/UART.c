@@ -35,7 +35,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #define ALL_UARTS 0xFFFF
 
@@ -58,7 +58,7 @@ STATIC USART_TypeDef *assign_uart_or_throw(busio_uart_obj_t *self, bool pin_eval
         if (uart_taken) {
             mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
         } else {
-            mp_raise_ValueError_varg(translate("Invalid %q pin selection"), MP_QSTR_UART);
+            raise_ValueError_invalid_pin();
         }
     }
 }
@@ -93,7 +93,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint8_t periph_index = 0; // origin 0 corrected
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert == true)) {
-        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+        mp_raise_NotImplementedError(translate("RS485"));
     }
 
     // Can have both pins, or either
@@ -164,14 +164,11 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     // Other errors
-    if (receiver_buffer_size == 0) {
-        mp_raise_ValueError(translate("Invalid buffer size"));
-    }
-    if (bits != 8 && bits != 9) {
-        mp_raise_ValueError(translate("Invalid word/bit length"));
-    }
+    mp_arg_validate_length_min(receiver_buffer_size, 1, MP_QSTR_receiver_buffer_size);
+    mp_arg_validate_int_range(bits, 8, 9, MP_QSTR_bits);
+
     if (USARTx == NULL) {  // this can only be hit if the periph file is wrong
-        mp_raise_ValueError(translate("Internal define error"));
+        mp_raise_RuntimeError(translate("Internal define error"));
     }
 
     // GPIO Init
@@ -211,17 +208,24 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     self->handle.Init.OverSampling = UART_OVERSAMPLING_16;
     if (HAL_UART_Init(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("UART Init Error"));
+        mp_raise_RuntimeError(translate("UART init"));
 
     }
 
     // Init buffer for rx and claim pins
     if (self->rx != NULL) {
+        // Use the provided buffer when given.
         if (receiver_buffer != NULL) {
-            self->ringbuf = (ringbuf_t) { receiver_buffer, receiver_buffer_size };
+            ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
         } else {
+            // Initially allocate the UART's buffer in the long-lived part of the
+            // heap. UARTs are generally long-lived objects, but the "make long-
+            // lived" machinery is incapable of moving internal pointers like
+            // self->buffer, so do it manually.  (However, as long as internal
+            // pointers like this are NOT moved, allocating the buffer
+            // in the long-lived pool is not strictly necessary)
             if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
-                mp_raise_ValueError(translate("UART Buffer allocation error"));
+                m_malloc_fail(receiver_buffer_size);
             }
         }
         common_hal_mcu_pin_claim(rx);
@@ -235,7 +239,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     // start the interrupt series
     if ((HAL_UART_GetState(&self->handle) & HAL_UART_STATE_BUSY_RX) == HAL_UART_STATE_BUSY_RX) {
-        mp_raise_ValueError(translate("Could not start interrupt, RX busy"));
+        mp_raise_RuntimeError(translate("Could not start interrupt, RX busy"));
     }
 
     // start the receive interrupt chain
@@ -284,7 +288,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         self->rx = NULL;
     }
 
-    ringbuf_free(&self->ringbuf);
+    ringbuf_deinit(&self->ringbuf);
 }
 
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
@@ -338,7 +342,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
             Status = HAL_UART_GetState(&self->handle);
         }
     } else {
-        mp_raise_ValueError(translate("UART write error"));
+        mp_raise_RuntimeError(translate("UART write"));
     }
 
     return len;
@@ -408,11 +412,11 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 
     // Otherwise de-init and set new rate
     if (HAL_UART_DeInit(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("UART De-init error"));
+        mp_raise_RuntimeError(translate("UART de-init"));
     }
     self->handle.Init.BaudRate = baudrate;
     if (HAL_UART_Init(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("UART Re-init error"));
+        mp_raise_RuntimeError(translate("UART re-init"));
     }
 
     self->baudrate = baudrate;

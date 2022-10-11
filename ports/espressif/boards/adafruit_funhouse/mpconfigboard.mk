@@ -5,18 +5,11 @@ USB_MANUFACTURER = "Adafruit"
 
 IDF_TARGET = esp32s2
 
-INTERNAL_FLASH_FILESYSTEM = 1
-LONGINT_IMPL = MPZ
+CIRCUITPY_ESP_FLASH_MODE = dio
+CIRCUITPY_ESP_FLASH_FREQ = 40m
+CIRCUITPY_ESP_FLASH_SIZE = 4MB
 
-# The default queue depth of 16 overflows on release builds,
-# so increase it to 32.
-CFLAGS += -DCFG_TUD_TASK_QUEUE_SZ=32
-
-CIRCUITPY_ESP_FLASH_MODE=dio
-CIRCUITPY_ESP_FLASH_FREQ=40m
-CIRCUITPY_ESP_FLASH_SIZE=4MB
-
-CIRCUITPY_MODULE=wrover
+CIRCUITPY_ESP32_CAMERA = 0
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_PortalBase

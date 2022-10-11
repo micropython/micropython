@@ -33,7 +33,7 @@
 
 #include "py/objstr.h"
 
-const mp_obj_type_t wifi_network_type;
+extern const mp_obj_type_t wifi_network_type;
 
 extern mp_obj_t common_hal_wifi_network_get_ssid(wifi_network_obj_t *self);
 extern mp_obj_t common_hal_wifi_network_get_bssid(wifi_network_obj_t *self);

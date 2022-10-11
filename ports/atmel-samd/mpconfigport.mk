@@ -9,6 +9,7 @@ USB_NUM_ENDPOINT_PAIRS = 8
 
 CIRCUITPY_ROTARYIO_SOFTENCODER = 1
 CIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE ?= 1
+CIRCUITPY_LTO = 1
 
 ######################################################################
 # Put samd21-only choices here.
@@ -37,7 +38,7 @@ CIRCUITPY_FRAMEBUFFERIO ?= 0
 CIRCUITPY_FREQUENCYIO ?= 0
 CIRCUITPY_GETPASS ?= 0
 CIRCUITPY_GIFIO ?= 0
-CIRCUITPY_I2CPERIPHERAL ?= 0
+CIRCUITPY_I2CTARGET ?= 0
 CIRCUITPY_JSON ?= 0
 CIRCUITPY_KEYPAD ?= 0
 CIRCUITPY_MSGPACK ?= 0
@@ -45,37 +46,34 @@ CIRCUITPY_RE ?= 0
 CIRCUITPY_SDCARDIO ?= 0
 CIRCUITPY_SYNTHIO ?= 0
 CIRCUITPY_TOUCHIO_USE_NATIVE ?= 1
+CIRCUITPY_TRACEBACK = 0
 CIRCUITPY_ULAB = 0
 CIRCUITPY_VECTORIO = 0
 CIRCUITPY_ZLIB = 0
 
-# TODO: In CircuitPython 8.0, turn this back on, after `busio.OneWire` is removed.
-# We'd like a smoother transition, but we can't afford the space to have both
-# `busio.OneWire` and `onewireio.OneWire` present on these tiny builds.
+# Turn off a few more things that don't fit in 192kB
 
 ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
 CIRCUITPY_ONEWIREIO ?= 0
+CIRCUITPY_USB_IDENTIFICATION ?= 0
 endif
 
 MICROPY_PY_ASYNC_AWAIT = 0
 
-# We don't have room for the fonts for terminalio for ja and ko
+# We don't have room for the fonts for terminalio for certain languages,
 # so turn off terminalio, and if it's off and displayio is on,
 # force a clean build.
 # Note that we cannot test $(CIRCUITPY_DISPLAYIO) directly with an
 # ifeq, because it's not set yet.
-ifeq ($(TRANSLATION), ja)
-CIRCUITPY_TERMINALIO = 0
-RELEASE_NEEDS_CLEAN_BUILD = $(CIRCUITPY_DISPLAYIO)
-endif
-
-ifeq ($(TRANSLATION), ko)
+ifneq (,$(filter $(TRANSLATION),ja ko ru))
 CIRCUITPY_TERMINALIO = 0
 RELEASE_NEEDS_CLEAN_BUILD = $(CIRCUITPY_DISPLAYIO)
 endif
 
 SUPEROPT_GC = 0
 SUPEROPT_VM = 0
+
+CIRCUITPY_LTO_PARTITION = one
 
 ifeq ($(CIRCUITPY_FULL_BUILD),0)
 # On the smallest boards, this saves about 180 bytes. On other boards, it may -increase- space used.
@@ -92,6 +90,10 @@ ifeq ($(CHIP_FAMILY),samd51)
 
 # No native touchio on SAMD51.
 CIRCUITPY_TOUCHIO_USE_NATIVE = 0
+
+ifeq ($(CIRCUITPY_FULL_BUILD),0)
+CIRCUITPY_LTO_PARTITION ?= one
+endif
 
 # The ?='s allow overriding in mpconfigboard.mk.
 
@@ -115,6 +117,10 @@ ifeq ($(CHIP_FAMILY),same51)
 # No native touchio on SAME51.
 CIRCUITPY_TOUCHIO_USE_NATIVE = 0
 
+ifeq ($(CIRCUITPY_FULL_BUILD),0)
+CIRCUITPY_LTO_PARTITION ?= one
+endif
+
 # The ?='s allow overriding in mpconfigboard.mk.
 
 CIRCUITPY_ALARM ?= 1
@@ -126,3 +132,5 @@ CIRCUITPY_RGBMATRIX ?= $(CIRCUITPY_FRAMEBUFFERIO)
 
 endif # same51
 ######################################################################
+
+CIRCUITPY_BUILD_EXTENSIONS ?= uf2

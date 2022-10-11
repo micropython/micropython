@@ -33,7 +33,7 @@
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_dac_sync.h"
@@ -45,8 +45,8 @@
 #endif
 
 #define HAVE_ANALOGOUT ( \
-    (defined(PIN_PA02) && !defined(IGNORE_PA02)) || \
-    (defined(SAM_D5X_E5X) && defined(PIN_PA05) && !defined(IGNORE_PA05)) \
+    (defined(PIN_PA02) && !defined(IGNORE_PIN_PA02)) || \
+    (defined(SAM_D5X_E5X) && defined(PIN_PA05) && !defined(IGNORE_PIN_PA05)) \
     )
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
@@ -70,7 +70,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
         #endif
 
         default:
-            mp_raise_ValueError(translate("AnalogOut not supported on given pin"));
+            raise_ValueError_invalid_pin();
             return;
     }
 

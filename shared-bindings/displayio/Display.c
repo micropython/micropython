@@ -37,13 +37,11 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
-//| _DisplayBus = Union['FourWire', 'paralleldisplay.ParallelBus', 'I2CDisplay']
+//| _DisplayBus = Union["FourWire", "paralleldisplay.ParallelBus", "I2CDisplay"]
 //| """:py:class:`FourWire`, :py:class:`paralleldisplay.ParallelBus` or :py:class:`I2CDisplay`"""
-//|
 
-//|
 //| class Display:
 //|     """Manage updating a display over a display bus
 //|
@@ -54,7 +52,34 @@
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the initialization sequence at minimum."""
 //|
-//|     def __init__(self, display_bus: _DisplayBus, init_sequence: ReadableBuffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: Optional[int] = None, brightness: float = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False,  auto_refresh: bool = True, native_frames_per_second: int = 60, backlight_on_high: bool = True, SH1107_addressing: bool = False) -> None:
+//|     def __init__(
+//|         self,
+//|         display_bus: _DisplayBus,
+//|         init_sequence: ReadableBuffer,
+//|         *,
+//|         width: int,
+//|         height: int,
+//|         colstart: int = 0,
+//|         rowstart: int = 0,
+//|         rotation: int = 0,
+//|         color_depth: int = 16,
+//|         grayscale: bool = False,
+//|         pixels_in_byte_share_row: bool = True,
+//|         bytes_per_cell: int = 1,
+//|         reverse_pixels_in_byte: bool = False,
+//|         set_column_command: int = 0x2A,
+//|         set_row_command: int = 0x2B,
+//|         write_ram_command: int = 0x2C,
+//|         backlight_pin: Optional[microcontroller.Pin] = None,
+//|         brightness_command: Optional[int] = None,
+//|         brightness: float = 1.0,
+//|         single_byte_bounds: bool = False,
+//|         data_as_commands: bool = False,
+//|         auto_refresh: bool = True,
+//|         native_frames_per_second: int = 60,
+//|         backlight_on_high: bool = True,
+//|         SH1107_addressing: bool = False
+//|     ) -> None:
 //|         r"""Create a Display object on the given display bus (`FourWire`, `ParallelBus` or `I2CDisplay`).
 //|
 //|         The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
@@ -102,8 +127,7 @@
 //|         :param int write_ram_command: Command used to write pixels values into the update region. Ignored if data_as_commands is set.
 //|         :param microcontroller.Pin backlight_pin: Pin connected to the display's backlight
 //|         :param int brightness_command: Command to set display brightness. Usually available in OLED controllers.
-//|         :param float brightness: Initial display brightness. This value is ignored if auto_brightness is True.
-//|         :param bool auto_brightness: If True, brightness is controlled via an ambient light sensor or other mechanism.
+//|         :param float brightness: Initial display brightness.
 //|         :param bool single_byte_bounds: Display column and row commands use single bytes
 //|         :param bool data_as_commands: Treat all init and boundary data as SPI commands. Certain displays require this.
 //|         :param bool auto_refresh: Automatically refresh the screen
@@ -111,9 +135,9 @@
 //|         :param bool backlight_on_high: If True, pulling the backlight pin high turns the backlight on.
 //|         :param bool SH1107_addressing: Special quirk for SH1107, use upper/lower column set and page set
 //|         :param int set_vertical_scroll: This parameter is accepted but ignored for backwards compatibility. It will be removed in a future release.
+//|         :param int backlight_pwm_frequency: The frequency to use to drive the PWM for backlight brightness control. Default is 50000.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args,
     size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart,
@@ -121,9 +145,9 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
            ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word,
            ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command,
            ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command,
-           ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands,
+           ARG_brightness, ARG_single_byte_bounds, ARG_data_as_commands,
            ARG_auto_refresh, ARG_native_frames_per_second, ARG_backlight_on_high,
-           ARG_SH1107_addressing };
+           ARG_SH1107_addressing, ARG_backlight_pwm_frequency };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_init_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -145,13 +169,13 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_backlight_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_brightness_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = NO_BRIGHTNESS_COMMAND} },
         { MP_QSTR_brightness, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
-        { MP_QSTR_auto_brightness, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_single_byte_bounds, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_data_as_commands, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_auto_refresh, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_native_frames_per_second, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 60} },
         { MP_QSTR_backlight_on_high, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
-        { MP_QSTR_SH1107_addressing, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} }
+        { MP_QSTR_SH1107_addressing, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
+        { MP_QSTR_backlight_pwm_frequency, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 50000} }
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -194,13 +218,13 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         MP_OBJ_TO_PTR(backlight_pin),
         args[ARG_brightness_command].u_int,
         brightness,
-        args[ARG_auto_brightness].u_bool,
         args[ARG_single_byte_bounds].u_bool,
         args[ARG_data_as_commands].u_bool,
         args[ARG_auto_refresh].u_bool,
         args[ARG_native_frames_per_second].u_int,
         args[ARG_backlight_on_high].u_bool,
-        sh1107_addressing
+        sh1107_addressing,
+        args[ARG_backlight_pwm_frequency].u_int
         );
 
     return self;
@@ -219,7 +243,6 @@ static displayio_display_obj_t *native_display(mp_obj_t display_obj) {
 //|
 //|         :param Group group: The group to show."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     displayio_display_obj_t *self = native_display(self_in);
     displayio_group_t *group = NULL;
@@ -235,7 +258,12 @@ STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show);
 
-//|     def refresh(self, *, target_frames_per_second: Optional[int] = None, minimum_frames_per_second: int = 0) -> bool:
+//|     def refresh(
+//|         self,
+//|         *,
+//|         target_frames_per_second: Optional[int] = None,
+//|         minimum_frames_per_second: int = 0
+//|     ) -> bool:
 //|         """When auto_refresh is off, and :py:attr:`target_frames_per_second` is not `None` this waits
 //|         for the target frame rate and then refreshes the display,
 //|         returning `True`. If the call has taken too long since the last refresh call for the given
@@ -255,7 +283,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show
 //|             achieve. Set to `None` for immediate refresh.
 //|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_target_frames_per_second, ARG_minimum_frames_per_second };
     static const mp_arg_t allowed_args[] = {
@@ -287,7 +314,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_refresh_obj, 1, displayio_display_o
 
 //|     auto_refresh: bool
 //|     """True when the display is refreshed automatically."""
-//|
 STATIC mp_obj_t displayio_display_obj_get_auto_refresh(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return mp_obj_new_bool(common_hal_displayio_display_get_auto_refresh(self));
@@ -308,10 +334,7 @@ MP_PROPERTY_GETSET(displayio_display_auto_refresh_obj,
     (mp_obj_t)&displayio_display_set_auto_refresh_obj);
 
 //|     brightness: float
-//|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness. When
-//|     `auto_brightness` is True, the value of `brightness` will change automatically.
-//|     If `brightness` is set, `auto_brightness` will be disabled and will be set to False."""
-//|
+//|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness."""
 STATIC mp_obj_t displayio_display_obj_get_brightness(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     mp_float_t brightness = common_hal_displayio_display_get_brightness(self);
@@ -324,7 +347,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_brightness_obj, displayio_displa
 
 STATIC mp_obj_t displayio_display_obj_set_brightness(mp_obj_t self_in, mp_obj_t brightness_obj) {
     displayio_display_obj_t *self = native_display(self_in);
-    common_hal_displayio_display_set_auto_brightness(self, false);
     mp_float_t brightness = mp_obj_get_float(brightness_obj);
     if (brightness < 0 || brightness > 1.0) {
         mp_raise_ValueError(translate("Brightness must be 0-1.0"));
@@ -341,37 +363,8 @@ MP_PROPERTY_GETSET(displayio_display_brightness_obj,
     (mp_obj_t)&displayio_display_get_brightness_obj,
     (mp_obj_t)&displayio_display_set_brightness_obj);
 
-//|     auto_brightness: bool
-//|     """True when the display brightness is adjusted automatically, based on an ambient
-//|     light sensor or other method. Note that some displays may have this set to True by default,
-//|     but not actually implement automatic brightness adjustment. `auto_brightness` is set to False
-//|     if `brightness` is set manually."""
-//|
-STATIC mp_obj_t displayio_display_obj_get_auto_brightness(mp_obj_t self_in) {
-    displayio_display_obj_t *self = native_display(self_in);
-    return mp_obj_new_bool(common_hal_displayio_display_get_auto_brightness(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_auto_brightness_obj, displayio_display_obj_get_auto_brightness);
-
-STATIC mp_obj_t displayio_display_obj_set_auto_brightness(mp_obj_t self_in, mp_obj_t auto_brightness) {
-    displayio_display_obj_t *self = native_display(self_in);
-
-    common_hal_displayio_display_set_auto_brightness(self, mp_obj_is_true(auto_brightness));
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_set_auto_brightness_obj, displayio_display_obj_set_auto_brightness);
-
-MP_PROPERTY_GETSET(displayio_display_auto_brightness_obj,
-    (mp_obj_t)&displayio_display_get_auto_brightness_obj,
-    (mp_obj_t)&displayio_display_set_auto_brightness_obj);
-
-
-
-
 //|     width: int
 //|     """Gets the width of the board"""
-//|
 STATIC mp_obj_t displayio_display_obj_get_width(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_width(self));
@@ -383,7 +376,6 @@ MP_PROPERTY_GETTER(displayio_display_width_obj,
 
 //|     height: int
 //|     """Gets the height of the board"""
-//|
 STATIC mp_obj_t displayio_display_obj_get_height(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_height(self));
@@ -395,7 +387,6 @@ MP_PROPERTY_GETTER(displayio_display_height_obj,
 
 //|     rotation: int
 //|     """The rotation of the display as an int in degrees."""
-//|
 STATIC mp_obj_t displayio_display_obj_get_rotation(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_rotation(self));
@@ -415,8 +406,6 @@ MP_PROPERTY_GETSET(displayio_display_rotation_obj,
 
 //|     bus: _DisplayBus
 //|     """The bus being used by the display"""
-//|
-//|
 STATIC mp_obj_t displayio_display_obj_get_bus(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return common_hal_displayio_display_get_bus(self);
@@ -428,8 +417,6 @@ MP_PROPERTY_GETTER(displayio_display_bus_obj,
 
 //|     root_group: Group
 //|     """The root group on the display."""
-//|
-//|
 STATIC mp_obj_t displayio_display_obj_get_root_group(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return common_hal_displayio_display_get_root_group(self);
@@ -506,7 +493,6 @@ STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_auto_refresh), MP_ROM_PTR(&displayio_display_auto_refresh_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&displayio_display_brightness_obj) },
-    { MP_ROM_QSTR(MP_QSTR_auto_brightness), MP_ROM_PTR(&displayio_display_auto_brightness_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_display_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_display_height_obj) },

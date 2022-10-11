@@ -76,6 +76,7 @@
 //|
 //|         print("Exited loop")
 //|     """
+//|
 
 const mp_obj_type_t mp_type_WatchDogTimeout = {
     { &mp_type_type },

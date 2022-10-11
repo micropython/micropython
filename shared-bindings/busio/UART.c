@@ -38,14 +38,26 @@
 #include "py/objtype.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #define STREAM_DEBUG(...) (void)0
 // #define STREAM_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
 //| class UART:
 //|     """A bidirectional serial protocol"""
-//|     def __init__(self, tx: microcontroller.Pin, rx: microcontroller.Pin, *, baudrate: int = 9600, bits: int = 8, parity: Optional[Parity] = None, stop: int = 1, timeout: float = 1, receiver_buffer_size: int = 64) -> None:
+//|
+//|     def __init__(
+//|         self,
+//|         tx: microcontroller.Pin,
+//|         rx: microcontroller.Pin,
+//|         *,
+//|         baudrate: int = 9600,
+//|         bits: int = 8,
+//|         parity: Optional[Parity] = None,
+//|         stop: int = 1,
+//|         timeout: float = 1,
+//|         receiver_buffer_size: int = 64
+//|     ) -> None:
 //|         """A common bidirectional serial protocol that uses an an agreed upon speed
 //|         rather than a shared clock line.
 //|
@@ -70,7 +82,6 @@
 //|            RS485 specifications intermittently.
 //|         """
 //|         ...
-//|
 typedef struct {
     mp_obj_base_t base;
 } busio_uart_parity_obj_t;
@@ -113,10 +124,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
 
-    if (args[ARG_bits].u_int < 5 || args[ARG_bits].u_int > 9) {
-        mp_raise_ValueError(translate("bits must be in range 5 to 9"));
-    }
-    uint8_t bits = args[ARG_bits].u_int;
+    uint8_t bits = (uint8_t)mp_arg_validate_int_range(args[ARG_bits].u_int, 5, 9, MP_QSTR_bits);
 
     busio_uart_parity_t parity = BUSIO_UART_PARITY_NONE;
     if (args[ARG_parity].u_obj == MP_OBJ_FROM_PTR(&busio_uart_parity_even_obj)) {
@@ -125,10 +133,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
         parity = BUSIO_UART_PARITY_ODD;
     }
 
-    uint8_t stop = args[ARG_stop].u_int;
-    if (stop != 1 && stop != 2) {
-        mp_raise_ValueError(translate("stop must be 1 or 2"));
-    }
+    uint8_t stop = (uint8_t)mp_arg_validate_int_range(args[ARG_stop].u_int, 1, 2, MP_QSTR_stop);
 
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     validate_timeout(timeout);
@@ -171,7 +176,6 @@ STATIC busio_uart_obj_t *native_uart(mp_obj_t uart_obj) {
 //|     def deinit(self) -> None:
 //|         """Deinitialises the UART and releases any hardware resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t busio_uart_obj_deinit(mp_obj_t self_in) {
     busio_uart_obj_t *self = native_uart(self_in);
     common_hal_busio_uart_deinit(self);
@@ -188,14 +192,12 @@ STATIC void check_for_deinit(busio_uart_obj_t *self) {
 //|     def __enter__(self) -> UART:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t busio_uart_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_busio_uart_deinit(MP_OBJ_TO_PTR(args[0]));
@@ -206,15 +208,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 // These are standard stream methods. Code is in py/stream.c.
 //
 //|     def read(self, nbytes: Optional[int] = None) -> Optional[bytes]:
-//|         """Read characters.  If ``nbytes`` is specified then read at most that many
+//|         """Read bytes.  If ``nbytes`` is specified then read at most that many
 //|         bytes. Otherwise, read everything that arrives until the connection
 //|         times out. Providing the number of bytes expected is highly recommended
-//|         because it will be faster.
+//|         because it will be faster. If no bytes are read, return ``None``.
+//|
+//|         .. note:: When no bytes are read due to a timeout, this function returns ``None``.
+//|           This matches the behavior of `io.RawIOBase.read` in Python 3, but
+//|           differs from pyserial which returns ``b''`` in that situation.
 //|
 //|         :return: Data read
 //|         :rtype: bytes or None"""
 //|         ...
-//|
 
 //|     def readinto(self, buf: WriteableBuffer) -> Optional[int]:
 //|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
@@ -224,27 +229,25 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|
 //|         *New in CircuitPython 4.0:* No length parameter is permitted."""
 //|         ...
-//|
 
 //|     def readline(self) -> bytes:
 //|         """Read a line, ending in a newline character, or
-//|            return None if a timeout occurs sooner, or
-//|            return everything readable if no newline is found and timeout=0
+//|         return ``None`` if a timeout occurs sooner, or
+//|         return everything readable if no newline is found and
+//|         ``timeout=0``
 //|
 //|         :return: the line read
 //|         :rtype: bytes or None"""
 //|         ...
-//|
 
-//|     def write(self, buf: WriteableBuffer) -> Optional[int]:
+//|     def write(self, buf: ReadableBuffer) -> Optional[int]:
 //|         """Write the buffer of bytes to the bus.
 //|
-//|       *New in CircuitPython 4.0:* ``buf`` must be bytes, not a string.
+//|         *New in CircuitPython 4.0:* ``buf`` must be bytes, not a string.
 //|
-//|         :return: the number of bytes written
-//|         :rtype: int or None"""
+//|           :return: the number of bytes written
+//|           :rtype: int or None"""
 //|         ...
-//|
 
 // These three methods are used by the shared stream methods.
 STATIC mp_uint_t busio_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
@@ -291,7 +294,6 @@ STATIC mp_uint_t busio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t
 
 //|     baudrate: int
 //|     """The current baudrate."""
-//|
 STATIC mp_obj_t busio_uart_obj_get_baudrate(mp_obj_t self_in) {
     busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
@@ -314,7 +316,6 @@ MP_PROPERTY_GETSET(busio_uart_baudrate_obj,
 
 //|     in_waiting: int
 //|     """The number of bytes in the input buffer, available to be read"""
-//|
 STATIC mp_obj_t busio_uart_obj_get_in_waiting(mp_obj_t self_in) {
     busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
@@ -327,7 +328,6 @@ MP_PROPERTY_GETTER(busio_uart_in_waiting_obj,
 
 //|     timeout: float
 //|     """The current timeout, in seconds (float)."""
-//|
 STATIC mp_obj_t busio_uart_obj_get_timeout(mp_obj_t self_in) {
     busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);

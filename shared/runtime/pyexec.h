@@ -37,6 +37,9 @@ typedef struct {
     int return_code;
     mp_obj_t exception;
     int exception_line;
+    // Only store the first 32 characters of the filename. It is very unlikely that they can all be
+    // seen.
+    char exception_filename[33];
 } pyexec_result_t;
 
 extern pyexec_mode_kind_t pyexec_mode_kind;

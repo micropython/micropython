@@ -84,21 +84,13 @@ void board_init(void) {
         NULL, // &pin_PA17, // brightness pin
         NO_BRIGHTNESS_COMMAND,
         0.0f, // brightness
-        false, // auto_brightness
         false, // single_byte_bounds
         true, // data as commands
         true, // auto_refresh
         2, // native_frames_per_second
         true, // backlight_on_high
-        true); // SH1107_addressing
+        true, // SH1107_addressing
+        50000); // backlight pwm frequency
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

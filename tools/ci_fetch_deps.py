@@ -25,14 +25,22 @@ port_deps = {
     ],
     "broadcom": ["extmod/ulab/", "lib/tinyusb/"],
     "cxd56": ["extmod/ulab/", "lib/tinyusb/"],
-    "espressif": ["extmod/ulab/", "lib/tinyusb/", "lib/protomatter/", "lib/quirc/"],
+    "espressif": [
+        "extmod/ulab/",
+        "lib/certificates/nina-fw/",
+        "lib/protomatter/",
+        "lib/quirc/",
+        "lib/tinyusb/",
+    ],
     "litex": ["extmod/ulab/", "lib/tinyusb/"],
     "mimxrt10xx": ["extmod/ulab/", "lib/tinyusb/", "data/nvm.toml/"],
     "nrf": ["extmod/ulab/", "lib/mp3/", "lib/protomatter/", "lib/tinyusb/", "data/nvm.toml/"],
     "raspberrypi": [
         "extmod/ulab/",
         "lib/adafruit_floppy/",
+        "lib/mbedtls/",
         "lib/mp3/",
+        "lib/certificates/nina-fw/",
         "lib/protomatter/",
         "lib/quirc/",
         "lib/tinyusb/",
@@ -43,13 +51,15 @@ port_deps = {
 }
 
 
-def run(title, command):
+def run(title, command, check=True):
     print("::group::" + title, flush=True)
     print(command, flush=True)
     start = time.monotonic()
-    subprocess.run(shlex.split(command), stderr=subprocess.STDOUT)
-    print("Duration:", time.monotonic() - start, flush=True)
-    print("::endgroup::", flush=True)
+    try:
+        subprocess.run(shlex.split(command), stderr=subprocess.STDOUT, check=check)
+    finally:
+        print("Duration:", time.monotonic() - start, flush=True)
+        print("::endgroup::", flush=True)
 
 
 run(
@@ -106,7 +116,11 @@ if submodules:
     submodules = " ".join(submodules)
     # This line will fail because the submodule's need different commits than the tip of the branch. We
     # fix it later.
-    run("Init the submodules we'll need", f"git submodule update --init -N --depth 1 {submodules}")
+    run(
+        "Init the submodules we'll need",
+        f"git submodule update --init -N --depth 1 {submodules}",
+        check=False,
+    )
 
     run(
         "Fetch the submodule sha",

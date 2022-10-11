@@ -42,23 +42,21 @@
 
 //| class WatchDogTimer:
 //|     """Timer that is used to detect code lock ups and automatically reset the microcontroller
-//|        when one is detected.
+//|     when one is detected.
 //|
-//|        A lock up is detected when the watchdog hasn't been fed after a given duration. So, make
-//|        sure to call `feed` within the timeout.
+//|     A lock up is detected when the watchdog hasn't been fed after a given duration. So, make
+//|     sure to call `feed` within the timeout.
 //|     """
 //|
 
 //|     def __init__(self) -> None:
 //|         """Not currently dynamically supported. Access the sole instance through `microcontroller.watchdog`."""
 //|         ...
-//|
 
 //|     def feed(self) -> None:
 //|         """Feed the watchdog timer. This must be called regularly, otherwise
 //|         the timer will expire."""
 //|         ...
-//|
 STATIC mp_obj_t watchdog_watchdogtimer_feed(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     watchdog_watchdogmode_t current_mode = common_hal_watchdog_get_mode(self);
@@ -76,7 +74,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_feed_obj, watchdog_watch
 //|         """Stop the watchdog timer. This may raise an error if the watchdog
 //|         timer cannot be disabled on this platform."""
 //|         ...
-//|
 STATIC mp_obj_t watchdog_watchdogtimer_deinit(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_watchdog_deinit(self);
@@ -87,7 +84,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_deinit_obj, watchdog_wat
 //|     timeout: float
 //|     """The maximum number of seconds that can elapse between calls
 //|     to feed()"""
-//|
 STATIC mp_obj_t watchdog_watchdogtimer_obj_get_timeout(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_watchdog_get_timeout(self));

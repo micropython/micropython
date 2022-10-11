@@ -41,6 +41,9 @@
 //|
 //| Not implemented: 64-bit int, uint, float.
 //|
+//| For more information about working with msgpack,
+//| see `the CPython Library Documentation <https://msgpack-python.readthedocs.io/en/latest/?badge=latest>`_.
+//|
 //| Example 1::
 //|
 //|    import msgpack
@@ -81,9 +84,13 @@
 //|    print(f"{data} -> {buffer.getvalue()} -> {decoded}")
 //|
 //| """
-//|
 
-//| def pack(obj: object, stream: circuitpython_typing.ByteStream, *, default: Union[Callable[[object], None], None] = None) -> None:
+//| def pack(
+//|     obj: object,
+//|     stream: circuitpython_typing.ByteStream,
+//|     *,
+//|     default: Union[Callable[[object], None], None] = None
+//| ) -> None:
 //|     """Output object to stream in msgpack format.
 //|
 //|     :param object obj: Object to convert to msgpack format.
@@ -115,7 +122,12 @@ STATIC mp_obj_t mod_msgpack_pack(size_t n_args, const mp_obj_t *pos_args, mp_map
 MP_DEFINE_CONST_FUN_OBJ_KW(mod_msgpack_pack_obj, 0, mod_msgpack_pack);
 
 
-//| def unpack(stream: circuitpython_typing.ByteStream, *, ext_hook: Union[Callable[[int, bytes], object], None] = None, use_list: bool=True) -> object:
+//| def unpack(
+//|     stream: circuitpython_typing.ByteStream,
+//|     *,
+//|     ext_hook: Union[Callable[[int, bytes], object], None] = None,
+//|     use_list: bool = True
+//| ) -> object:
 //|     """Unpack and return one object from stream.
 //|
 //|     :param ~circuitpython_typing.ByteStream stream: stream to read from

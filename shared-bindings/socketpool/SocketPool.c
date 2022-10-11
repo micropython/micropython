@@ -38,11 +38,20 @@
 
 //| class SocketPool:
 //|     """A pool of socket resources available for the given radio. Only one
-//|        SocketPool can be created for each radio.
+//|     SocketPool can be created for each radio.
 //|
-//|        SocketPool should be used in place of CPython's socket which provides
-//|        a pool of sockets provided by the underlying OS."""
+//|     SocketPool should be used in place of CPython's socket which provides
+//|     a pool of sockets provided by the underlying OS.
+//|     """
 //|
+//|     def __init__(self, radio: wifi.Radio) -> None:
+//|         """Create a new SocketPool object for the provided radio
+//|
+//|         :param wifi.Radio radio: The (connected) network hardware to associate
+//|             with this SocketPool; currently, this will always be the object
+//|             returned by :py:attr:`wifi.radio`
+//|         """
+//|         ...
 
 STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
@@ -72,7 +81,6 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
 //|         in CPython are not supported.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_family, ARG_type };
     static const mp_arg_t allowed_args[] = {
@@ -91,7 +99,15 @@ STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_socket_obj, 1, socketpool_socketpool_socket);
 
-//|     def getaddrinfo(self, host: str, port: int, family: int = 0, type: int = 0, proto: int = 0, flags: int = 0) -> Tuple[int, int, int, str, Tuple[str, int]]:
+//|     def getaddrinfo(
+//|         self,
+//|         host: str,
+//|         port: int,
+//|         family: int = 0,
+//|         type: int = 0,
+//|         proto: int = 0,
+//|         flags: int = 0,
+//|     ) -> Tuple[int, int, int, str, Tuple[str, int]]:
 //|         """Gets the address information for a hostname and port
 //|
 //|         Returns the appropriate family, socket type, socket protocol and

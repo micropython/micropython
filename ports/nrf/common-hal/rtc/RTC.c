@@ -33,7 +33,7 @@
 #include "common-hal/rtc/RTC.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // This is the time in seconds since 2000 that the RTC was started.
 __attribute__((section(".uninitialized"))) static uint32_t rtc_offset[3];
@@ -80,5 +80,5 @@ int common_hal_rtc_get_calibration(void) {
 }
 
 void common_hal_rtc_set_calibration(int calibration) {
-    mp_raise_NotImplementedError(translate("RTC calibration is not supported on this board"));
+    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_calibration);
 }

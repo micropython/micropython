@@ -45,6 +45,10 @@
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
 
+#if CIRCUITPY_STATUS_BAR
+#include "supervisor/shared/status_bar.h"
+#endif
+
 #if CIRCUITPY_REPL_LOGO
 extern uint32_t blinka_bitmap_data[];
 extern displayio_bitmap_t blinka_bitmap;
@@ -61,37 +65,26 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     uint8_t scale = 2;
 
     #if CIRCUITPY_TERMINALIO
-    displayio_tilegrid_t *grid = &supervisor_terminal_text_grid;
-    bool tall = height_px > width_px;
+    displayio_tilegrid_t *scroll_area = &supervisor_terminal_scroll_area_text_grid;
+    displayio_tilegrid_t *status_bar = &supervisor_terminal_status_bar_text_grid;
     bool reset_tiles = false;
-    #if CIRCUITPY_REPL_LOGO
-    uint16_t terminal_width_px = tall ? width_px : width_px - blinka_bitmap.width;
-    uint16_t terminal_height_px = tall ? height_px - blinka_bitmap.height : height_px;
-    #else
-    uint16_t terminal_width_px = width_px;
-    uint16_t terminal_height_px = height_px;
-    #endif
-    uint16_t width_in_tiles = terminal_width_px / grid->tile_width;
-    // determine scale based on h
-    if (width_in_tiles < 80) {
+    uint16_t width_in_tiles = width_px / scroll_area->tile_width;
+    // determine scale based on width
+    if (width_in_tiles <= 80) {
         scale = 1;
     }
 
-    width_in_tiles = terminal_width_px / (grid->tile_width * scale);
+    width_in_tiles = width_px / (scroll_area->tile_width * scale);
     if (width_in_tiles < 1) {
         width_in_tiles = 1;
     }
-    uint16_t height_in_tiles = terminal_height_px / (grid->tile_height * scale);
-    uint16_t remaining_pixels = tall ? 0 : terminal_height_px % (grid->tile_height * scale);
-    if (height_in_tiles < 1 || remaining_pixels > 0) {
-        height_in_tiles += 1;
-    }
+    uint16_t height_in_tiles = height_px / (scroll_area->tile_height * scale);
 
     uint16_t total_tiles = width_in_tiles * height_in_tiles;
 
     // check if the terminal tile dimensions are the same
-    if ((grid->width_in_tiles != width_in_tiles) ||
-        (grid->height_in_tiles != height_in_tiles)) {
+    if ((scroll_area->width_in_tiles != width_in_tiles) ||
+        (scroll_area->height_in_tiles != height_in_tiles - 1)) {
         reset_tiles = true;
     }
     // Reuse the previous allocation if possible
@@ -114,27 +107,45 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         uint8_t *tiles = (uint8_t *)tilegrid_tiles->ptr;
 
         #if CIRCUITPY_REPL_LOGO
-        grid->y = tall ? blinka_bitmap.height : 0;
-        grid->x = tall ? 0 : blinka_bitmap.width;
+        status_bar->x = supervisor_blinka_sprite.pixel_width + 1;
+        // Align the status bar to the bottom of the logo.
+        status_bar->y = supervisor_blinka_sprite.pixel_height - status_bar->tile_height;
         #else
-        grid->y = 0;
-        grid->x = 0;
+        status_bar->x = 0;
+        status_bar->y = 0;
         #endif
-        grid->top_left_y = 0;
-        if (remaining_pixels > 0) {
-            grid->y -= (grid->tile_height - remaining_pixels);
-        }
-        grid->width_in_tiles = width_in_tiles;
-        grid->height_in_tiles = height_in_tiles;
+        status_bar->top_left_y = 0;
+        status_bar->width_in_tiles = width_in_tiles;
+        status_bar->height_in_tiles = 1;
         assert(width_in_tiles > 0);
-        assert(height_in_tiles > 0);
-        grid->pixel_width = width_in_tiles * grid->tile_width;
-        grid->pixel_height = height_in_tiles * grid->tile_height;
-        grid->tiles = tiles;
+        status_bar->pixel_width = width_in_tiles * status_bar->tile_width;
+        status_bar->pixel_height = status_bar->tile_height;
+        status_bar->tiles = tiles;
+        status_bar->full_change = true;
 
-        grid->full_change = true;
+        scroll_area->x = 0;
+        scroll_area->top_left_y = 0;
+        scroll_area->width_in_tiles = width_in_tiles;
+        scroll_area->height_in_tiles = height_in_tiles - 1;
+        assert(width_in_tiles > 0);
+        assert(height_in_tiles > 1);
+        scroll_area->pixel_width = width_in_tiles * scroll_area->tile_width;
+        scroll_area->pixel_height = (height_in_tiles - 1) * scroll_area->tile_height;
+        #if CIRCUITPY_REPL_LOGO
+        scroll_area->y = blinka_bitmap.height;
+        #else
+        scroll_area->y = status_bar->tile_height;
+        #endif
+        int16_t extra_height = (scroll_area->pixel_height + scroll_area->y) - (height_px / scale);
+        // Subtract extra height so that the bottom line fully shows. The top line will be under the
+        // title bar and Blinka logo.
+        scroll_area->y -= extra_height;
+        scroll_area->tiles = tiles + width_in_tiles;
+        scroll_area->full_change = true;
 
-        common_hal_terminalio_terminal_construct(&supervisor_terminal, grid, &supervisor_terminal_font);
+        common_hal_terminalio_terminal_construct(&supervisor_terminal, scroll_area, &supervisor_terminal_font, status_bar);
+
+        // Do not update status bar until after boot.py has run, in case it is disabled.
     }
     #endif
 
@@ -146,18 +157,24 @@ void supervisor_stop_terminal(void) {
     if (tilegrid_tiles != NULL) {
         free_memory(tilegrid_tiles);
         tilegrid_tiles = NULL;
-        supervisor_terminal_text_grid.tiles = NULL;
-        supervisor_terminal.tilegrid = NULL;
+        supervisor_terminal_scroll_area_text_grid.tiles = NULL;
+        supervisor_terminal_status_bar_text_grid.tiles = NULL;
+        supervisor_terminal.scroll_area = NULL;
+        supervisor_terminal.status_bar = NULL;
     }
     #endif
 }
 
 void supervisor_display_move_memory(void) {
     #if CIRCUITPY_TERMINALIO
+    displayio_tilegrid_t *scroll_area = &supervisor_terminal_scroll_area_text_grid;
+    displayio_tilegrid_t *status_bar = &supervisor_terminal_status_bar_text_grid;
     if (tilegrid_tiles != NULL) {
-        supervisor_terminal_text_grid.tiles = (uint8_t *)tilegrid_tiles->ptr;
+        status_bar->tiles = (uint8_t *)tilegrid_tiles->ptr;
+        scroll_area->tiles = (uint8_t *)tilegrid_tiles->ptr + scroll_area->width_in_tiles;
     } else {
-        supervisor_terminal_text_grid.tiles = NULL;
+        scroll_area->tiles = NULL;
+        status_bar->tiles = NULL;
     }
     #endif
 
@@ -179,144 +196,27 @@ void supervisor_display_move_memory(void) {
     #endif
 }
 
-#if CIRCUITPY_REPL_LOGO
-uint32_t blinka_bitmap_data[32] = {
-    0x00000011, 0x11000000,
-    0x00000111, 0x53100000,
-    0x00000111, 0x56110000,
-    0x00000111, 0x11140000,
-    0x00000111, 0x20002000,
-    0x00000011, 0x13000000,
-    0x00000001, 0x11200000,
-    0x00000000, 0x11330000,
-    0x00000000, 0x01122000,
-    0x00001111, 0x44133000,
-    0x00032323, 0x24112200,
-    0x00111114, 0x44113300,
-    0x00323232, 0x34112200,
-    0x11111144, 0x44443300,
-    0x11111111, 0x11144401,
-    0x23232323, 0x21111110
-};
-
-displayio_bitmap_t blinka_bitmap = {
-    .base = {.type = &displayio_bitmap_type },
-    .width = 16,
-    .height = 16,
-    .data = blinka_bitmap_data,
-    .stride = 2,
-    .bits_per_value = 4,
-    .x_shift = 3,
-    .x_mask = 0x7,
-    .bitmask = 0xf,
-    .read_only = true
-};
-
-_displayio_color_t blinka_colors[7] = {
-    {
-        .rgb888 = 0x000000,
-        .rgb565 = 0x0000,
-        .luma = 0x00,
-        .chroma = 0,
-        .transparent = true
-    },
-    {
-        .rgb888 = 0x8428bc,
-        .rgb565 = 0x8978,
-        .luma = 0xff, // We cheat the luma here. It is actually 0x60
-        .hue = 184,
-        .chroma = 148
-    },
-    {
-        .rgb888 = 0xff89bc,
-        .rgb565 = 0xFCB8,
-        .luma = 0xb5,
-        .hue = 222,
-        .chroma = 118
-    },
-    {
-        .rgb888 = 0x7beffe,
-        .rgb565 = 0x869F,
-        .luma = 0xe0,
-        .hue = 124,
-        .chroma = 131
-    },
-    {
-        .rgb888 = 0x51395f,
-        .rgb565 = 0x5A0D,
-        .luma = 0x47,
-        .hue = 185,
-        .chroma = 38
-    },
-    {
-        .rgb888 = 0xffffff,
-        .rgb565 = 0xffff,
-        .luma = 0xff,
-        .chroma = 0
-    },
-    {
-        .rgb888 = 0x0736a0,
-        .rgb565 = 0x01f5,
-        .luma = 0x44,
-        .hue = 147,
-        .chroma = 153
-    },
-};
-
-displayio_palette_t blinka_palette = {
-    .base = {.type = &displayio_palette_type },
-    .colors = blinka_colors,
-    .color_count = 7,
-    .needs_refresh = false
-};
-
-displayio_tilegrid_t blinka_sprite = {
-    .base = {.type = &displayio_tilegrid_type },
-    .bitmap = &blinka_bitmap,
-    .pixel_shader = &blinka_palette,
-    .x = 0,
-    .y = 0,
-    .pixel_width = 16,
-    .pixel_height = 16,
-    .bitmap_width_in_tiles = 1,
-    .width_in_tiles = 1,
-    .height_in_tiles = 1,
-    .tile_width = 16,
-    .tile_height = 16,
-    .top_left_x = 16,
-    .top_left_y = 16,
-    .tiles = 0,
-    .partial_change = false,
-    .full_change = false,
-    .hidden = false,
-    .hidden_by_parent = false,
-    .moved = false,
-    .inline_tiles = true,
-    .in_group = true
-};
-#endif
-
 #if CIRCUITPY_TERMINALIO
 #if CIRCUITPY_REPL_LOGO
-mp_obj_t members[] = { &blinka_sprite, &supervisor_terminal_text_grid, };
+mp_obj_t members[] = { &supervisor_terminal_scroll_area_text_grid, &supervisor_blinka_sprite, &supervisor_terminal_status_bar_text_grid, };
+mp_obj_list_t splash_children = {
+    .base = {.type = &mp_type_list },
+    .alloc = 3,
+    .len = 3,
+    .items = members,
+};
+#else
+mp_obj_t members[] = { &supervisor_terminal_scroll_area_text_grid, &supervisor_terminal_status_bar_text_grid,};
 mp_obj_list_t splash_children = {
     .base = {.type = &mp_type_list },
     .alloc = 2,
     .len = 2,
     .items = members,
 };
-#else
-mp_obj_t members[] = { &supervisor_terminal_text_grid, };
-mp_obj_list_t splash_children = {
-    .base = {.type = &mp_type_list },
-    .alloc = 1,
-    .len = 1,
-    .items = members,
-};
 #endif
 #else
 #if CIRCUITPY_REPL_LOGO
-mp_obj_t members[] = { &blinka_sprite };
+mp_obj_t members[] = { &supervisor_blinka_sprite };
 mp_obj_list_t splash_children = {
     .base = {.type = &mp_type_list },
     .alloc = 1,

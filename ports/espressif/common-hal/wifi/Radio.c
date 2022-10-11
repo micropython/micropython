@@ -139,6 +139,16 @@ void common_hal_wifi_radio_set_mac_address(wifi_radio_obj_t *self, const uint8_t
     esp_wifi_set_mac(ESP_IF_WIFI_STA, mac);
 }
 
+mp_float_t common_hal_wifi_radio_get_tx_power(wifi_radio_obj_t *self) {
+    int8_t tx_power;
+    esp_wifi_get_max_tx_power(&tx_power);
+    return tx_power / 4.0f;
+}
+
+void common_hal_wifi_radio_set_tx_power(wifi_radio_obj_t *self, const mp_float_t tx_power) {
+    esp_wifi_set_max_tx_power(tx_power * 4.0f);
+}
+
 mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self) {
     uint8_t mac[MAC_ADDRESS_LENGTH];
     esp_wifi_get_mac(ESP_IF_WIFI_AP, mac);
@@ -155,7 +165,7 @@ void common_hal_wifi_radio_set_mac_address_ap(wifi_radio_obj_t *self, const uint
     esp_wifi_set_mac(ESP_IF_WIFI_AP, mac);
 }
 
-mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
+mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, uint8_t start_channel, uint8_t stop_channel) {
     if (self->current_scan != NULL) {
         mp_raise_RuntimeError(translate("Already scanning for wifi networks"));
     }
@@ -167,9 +177,12 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
     wifi_scannednetworks_obj_t *scan = m_new_obj(wifi_scannednetworks_obj_t);
     scan->base.type = &wifi_scannednetworks_type;
     self->current_scan = scan;
-    scan->start_channel = 1;
-    scan->end_channel = 11;
+    scan->current_channel_index = 0;
+    scan->start_channel = start_channel;
+    scan->end_channel = stop_channel;
     scan->radio_event_group = self->event_group_handle;
+    scan->done = false;
+    scan->channel_scan_in_progress = false;
     wifi_scannednetworks_scan_next_channel(scan);
     return scan;
 }
@@ -209,7 +222,7 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
             authmode = WIFI_AUTH_WPA_WPA2_PSK;
             break;
         default:
-            mp_raise_ValueError(translate("Invalid AuthMode"));
+            mp_arg_error_invalid(MP_QSTR_authmode);
             break;
     }
 
@@ -221,9 +234,8 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     config->ap.channel = channel;
     config->ap.authmode = authmode;
 
-    if (max_connections < 0 || max_connections > 10) {
-        mp_raise_ValueError(translate("max_connections must be between 0 and 10"));
-    }
+    mp_arg_validate_int_range(max_connections, 0, 10, MP_QSTR_max_connections);
+
     config->ap.max_connection = max_connections;
 
     esp_wifi_set_config(WIFI_IF_AP, config);
@@ -237,6 +249,11 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
     }
+    wifi_config_t *config = &self->sta_config;
+
+    size_t timeout_ms = timeout * 1000;
+    uint32_t start_time = common_hal_time_monotonic_ms();
+    uint32_t end_time = start_time + timeout_ms;
 
     EventBits_t bits;
     // can't block since both bits are false after wifi_init
@@ -246,18 +263,37 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
         pdTRUE,
         pdTRUE,
         0);
-    if (((bits & WIFI_CONNECTED_BIT) != 0) &&
-        !((bits & WIFI_DISCONNECTED_BIT) != 0)) {
-        return WIFI_RADIO_ERROR_NONE;
+    bool connected = ((bits & WIFI_CONNECTED_BIT) != 0) &&
+        !((bits & WIFI_DISCONNECTED_BIT) != 0);
+    if (connected) {
+        // SSIDs are up to 32 bytes. Assume it is null terminated if it is less.
+        if (memcmp(ssid, config->sta.ssid, ssid_len) == 0 &&
+            (ssid_len == 32 || strlen((const char *)config->sta.ssid) == ssid_len)) {
+            // Already connected to the desired network.
+            return WIFI_RADIO_ERROR_NONE;
+        } else {
+            xEventGroupClearBits(self->event_group_handle, WIFI_DISCONNECTED_BIT);
+            // Trying to switch networks so disconnect first.
+            esp_wifi_disconnect();
+            do {
+                RUN_BACKGROUND_TASKS;
+                bits = xEventGroupWaitBits(self->event_group_handle,
+                    WIFI_DISCONNECTED_BIT,
+                    pdTRUE,
+                    pdTRUE,
+                    0);
+            } while ((bits & WIFI_DISCONNECTED_BIT) == 0 && !mp_hal_is_interrupted());
+        }
     }
     // explicitly clear bits since xEventGroupWaitBits may have timed out
     xEventGroupClearBits(self->event_group_handle, WIFI_CONNECTED_BIT);
     xEventGroupClearBits(self->event_group_handle, WIFI_DISCONNECTED_BIT);
     set_mode_station(self, true);
 
-    wifi_config_t *config = &self->sta_config;
     memcpy(&config->sta.ssid, ssid, ssid_len);
-    config->sta.ssid[ssid_len] = 0;
+    if (ssid_len < 32) {
+        config->sta.ssid[ssid_len] = 0;
+    }
     memcpy(&config->sta.password, password, password_len);
     config->sta.password[password_len] = 0;
     config->sta.channel = channel;
@@ -290,7 +326,12 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             pdTRUE,
             pdTRUE,
             0);
+        // Don't retry anymore if we're over our time budget.
+        if (self->retries_left > 0 && common_hal_time_monotonic_ms() > end_time) {
+            self->retries_left = 0;
+        }
     } while ((bits & (WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT)) == 0 && !mp_hal_is_interrupted());
+
     if ((bits & WIFI_DISCONNECTED_BIT) != 0) {
         if (self->last_disconnect_reason == WIFI_REASON_AUTH_FAIL) {
             return WIFI_RADIO_ERROR_AUTH_FAIL;
@@ -298,6 +339,9 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             return WIFI_RADIO_ERROR_NO_AP_FOUND;
         }
         return self->last_disconnect_reason;
+    } else {
+        // We're connected, allow us to retry if we get disconnected.
+        self->retries_left = self->starting_retries;
     }
     return WIFI_RADIO_ERROR_NONE;
 }
@@ -369,6 +413,14 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(self->ap_ip_info.netmask.addr);
 }
 
+uint32_t wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return 0;
+    }
+    esp_netif_get_ip_info(self->netif, &self->ip_info);
+    return self->ip_info.ip.addr;
+}
+
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return mp_const_none;
@@ -397,6 +449,35 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
     // common_hal_wifi_radio_get_ipv4_address (includes both ipv4 and 6),
     // so some extra jumping is required to get to the actual address
     return common_hal_ipaddress_new_ipv4address(self->dns_info.ip.u_addr.ip4.addr);
+}
+
+void common_hal_wifi_radio_set_ipv4_dns(wifi_radio_obj_t *self, mp_obj_t ipv4_dns_addr) {
+    esp_netif_dns_info_t dns_addr;
+    ipaddress_ipaddress_to_esp_idf_ip4(ipv4_dns_addr, &dns_addr.ip.u_addr.ip4);
+    esp_netif_set_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &dns_addr);
+}
+
+void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self) {
+    esp_netif_dhcpc_start(self->netif);
+}
+
+void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
+    esp_netif_dhcpc_stop(self->netif);
+}
+
+void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway, mp_obj_t ipv4_dns) {
+    common_hal_wifi_radio_stop_dhcp_client(self); // Must stop DHCP to set a manual address
+
+    esp_netif_ip_info_t ip_info;
+    ipaddress_ipaddress_to_esp_idf_ip4(ipv4, &ip_info.ip);
+    ipaddress_ipaddress_to_esp_idf_ip4(netmask, &ip_info.netmask);
+    ipaddress_ipaddress_to_esp_idf_ip4(gateway, &ip_info.gw);
+
+    esp_netif_set_ip_info(self->netif, &ip_info);
+
+    if (ipv4_dns != MP_OBJ_NULL) {
+        common_hal_wifi_radio_set_ipv4_dns(self, ipv4_dns);
+    }
 }
 
 mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout) {
