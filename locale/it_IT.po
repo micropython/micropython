@@ -66,6 +66,11 @@ msgstr " output:\n"
 msgid "%%c requires int or char"
 msgstr "%%c necessita di int o char"
 
+#: main.c
+#, c-format
+msgid "%02X"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -2102,6 +2107,10 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write"
+msgstr ""
+
+#: main.c
+msgid "UID:"
 msgstr ""
 
 #: shared-module/usb_hid/Device.c
