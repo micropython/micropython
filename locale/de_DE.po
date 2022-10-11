@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-14 12:14+0000\n"
-"Last-Translator: Can Kocyigit <cank3698@googlemail.com>\n"
+"PO-Revision-Date: 2022-10-13 06:43+0000\n"
+"Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: main.c
 msgid ""
@@ -934,7 +934,7 @@ msgstr "Erwartet ein(e) %q"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c
 msgid "Expected a %q or %q"
-msgstr ""
+msgstr "Erwartete ein %q oder %q"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an %q"
@@ -2267,7 +2267,7 @@ msgstr "Unbekannter System-Firmware-Fehler: %d"
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
 msgid "Unkown error code %d"
-msgstr ""
+msgstr "Unbekannter Fehlercode %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
