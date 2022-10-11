@@ -134,7 +134,26 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
 
-    #if !CONFIG_IDF_TARGET_ESP32C3
+    #if CONFIG_IDF_TARGET_ESP32C3
+
+    if (machine_rtc_config.ext1_pins != 0) {
+        for (int i = 0; i < GPIO_NUM_MAX; ++i) {
+            uint64_t bm = 1ULL << i;
+
+            if (machine_rtc_config.ext1_pins & bm) {
+                if (!esp_sleep_is_valid_wakeup_gpio((gpio_num_t)i)) {
+                    mp_raise_ValueError(MP_ERROR_TEXT("invalid wake-up port"));
+                }
+                gpio_sleep_set_direction((gpio_num_t)i, GPIO_MODE_INPUT);
+            }
+        }
+        esp_deep_sleep_enable_gpio_wakeup(
+            machine_rtc_config.ext1_pins,
+            machine_rtc_config.ext1_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW);
+        esp_sleep_enable_gpio_wakeup();
+    }
+
+    #else
 
     if (machine_rtc_config.ext0_pin != -1 && (machine_rtc_config.ext0_wake_types & wake_type)) {
         esp_sleep_enable_ext0_wakeup(machine_rtc_config.ext0_pin, machine_rtc_config.ext0_level ? 1 : 0);
