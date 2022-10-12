@@ -122,8 +122,6 @@ STATIC float calculate_temperature(uint16_t raw_value) {
     int VADCR = ADCR * INT1VR;
     int VADCH = ADCH * INT1VH;
 
-    int INT1VM;    /* Voltage calculation for reality INT1V value during the ADC conversion */
-
     int VADC = raw_value * 1000;
 
     // Hopefully compiler will remove common subepxressions here.
@@ -134,7 +132,10 @@ STATIC float calculate_temperature(uint16_t raw_value) {
     // Coarse Temp Calculation by assume INT1V=1V for this ADC conversion
     int coarse_temp = tempR + (tempH - tempR) * (VADC - VADCR) / (VADCH - VADCR);
 
+    #if CIRCUITPY_FULL_BUILD
     // Calculation to find the real INT1V value during the ADC conversion
+    int INT1VM;    /* Voltage calculation for reality INT1V value during the ADC conversion */
+
     INT1VM = INT1VR + (((INT1VH - INT1VR) * (coarse_temp - tempR)) / (tempH - tempR));
 
     int VADCM = raw_value * INT1VM;
@@ -143,6 +144,9 @@ STATIC float calculate_temperature(uint16_t raw_value) {
     float fine_temp = tempR + (((tempH - tempR) * (VADCM - VADCR)) / (VADCH - VADCR));
 
     return fine_temp / 10;
+    #else
+    return coarse_temp / 10.;
+    #endif
 }
 #endif // SAMD21
 
