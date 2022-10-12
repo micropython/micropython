@@ -230,7 +230,7 @@ cleanup:
     mbedtls_entropy_free(&o->entropy);
 
     if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
-        mp_raise_OSError(MP_ENOMEM);
+        mp_raise_type(&mp_type_MemoryError);
     } else if (ret == MBEDTLS_ERR_PK_BAD_INPUT_DATA) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid key"));
     } else if (ret == MBEDTLS_ERR_X509_BAD_INPUT_DATA) {
@@ -326,7 +326,7 @@ cleanup:
     mbedtls_entropy_free(&self->entropy);
 
     if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
-        mp_raise_OSError(MP_ENOMEM);
+        mp_raise_type(&mp_type_MemoryError);
     } else if (ret == MBEDTLS_ERR_PK_BAD_INPUT_DATA) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid key"));
     } else if (ret == MBEDTLS_ERR_X509_BAD_INPUT_DATA) {
