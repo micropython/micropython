@@ -14,8 +14,6 @@ the set of rows is different.
 Adafruit ItsyBitsy M0 Express pin assignment table
 --------------------------------------------------
 
-|
-
 === ==== ============ ==== ==== ====== ====== ====== ======
 Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
 === ==== ============ ==== ==== ====== ====== ====== ======
@@ -133,15 +131,10 @@ frequencies can be used, and 8 different duty cycle values.
 
 The DAC output for the Adafruit ItsyBitsy M0 Express board is available at the pin A0.
 
-|
-|
-
 .. _samd51_pinout_table:
 
 Adafruit ItsyBitsy M4 Express pin assignment table
 --------------------------------------------------
-
-|
 
 === ==== ============ ==== ==== ==== ====== ====== ===== ===== =====
 Pin GPIO Pin name     IRQ  ADC  ADC  Serial Serial  TC    PWM   PWM
@@ -263,13 +256,8 @@ do not apply to every board.
 
 The DAC outputs for the Adafruit ItsyBitsy M4 Express board are available at the pins A0 and A1.
 
-|
-|
-
 Adafruit Feather M4 Express pin assignment table
 ------------------------------------------------
-
-|
 
 === ==== ============ ==== ==== ==== ====== ====== ===== ===== =====
 Pin GPIO Pin name     IRQ  ADC  ADC  Serial Serial  TC    PWM   PWM
@@ -317,13 +305,8 @@ The default devices at the board are:
 - SPI 1 at pins 22/23/24, labelled MOSI, MISO and SCK
 - DAC output on pins 14 and 15, labelled A0 and A1
 
-|
-|
-
 SEEED XIAO pin assignment table
 -------------------------------
-
-|
 
 === ==== ============ ==== ==== ====== ====== ====== ======
 Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
@@ -351,13 +334,8 @@ The default devices at the board are:
 - SPI 0 at pins 10/9/8, labelled A10_D10, A9_D9 and A8_D8
 - DAC output on pin 0, labelled A0_D0
 
-|
-|
-
 Adafruit Feather M0 Express pin assignment table
 ------------------------------------------------
-
-|
 
 === ==== ============ ==== ==== ====== ====== ====== ======
 Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
@@ -403,13 +381,8 @@ The default devices at the board are:
 - SPI 4 at pins 24/25/26, labelled MOSI, MISO and SCK
 - DAC output on pin 14, labelled A0
 
-|
-|
-
 Adafruit Trinket M0 pin assignment table
 ------------------------------------------------
-
-|
 
 === ==== ============ ==== ==== ====== ====== ====== ======
 Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
@@ -433,13 +406,8 @@ The default devices at the board are:
 - SPI 0 at pins 4/2/3, labelled D4, D2 and D0
 - DAC output on pin 1, labelled D1
 
-|
-|
-
 SAMD21 Xplained PRO pin assignment table
 ----------------------------------------
-
-|
 
 === ==== ============ ==== ==== ====== ====== ====== ======
 Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
@@ -493,13 +461,8 @@ Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
 There are no pins labelled for default devices on this board. DAC output 
 is on pin 32, labelled EXT3_PIN3
 
-|
-|
-
 Minisam M4 pin assignment table
 -------------------------------
-
-|
 
 === ==== ============ ==== ==== ==== ====== ====== ===== ===== =====
 Pin GPIO Pin name     IRQ  ADC  ADC  Serial Serial  TC    PWM   PWM
@@ -537,13 +500,8 @@ The default devices at the board are:
 - SPI 1 at pins 16/17/18, labelled MOSI, MISO and SCK
 - DAC output on pins 0 and 4, labelled A0_D9 and A4_D13
 
-|
-|
-
 Seeed WIO Terminal pin assignment table
 ---------------------------------------
-
-|
 
 === ==== ============ ==== ==== ==== ====== ====== ===== ===== =====
 Pin GPIO Pin name     IRQ  ADC  ADC  Serial Serial  TC    PWM   PWM
@@ -575,13 +533,8 @@ Adafruit ItsyBitsy M4 Express :ref:`samd51_pinout_table`.
 
 There seems to be no default pin assignment for this board. 
 
-|
-|
-
 Sparkfun SAMD51 Thing Plus pin assignment table
 ------------------------------------------------
-
-|
 
 === ==== ============ ==== ==== ==== ====== ====== ===== ===== =====
 Pin GPIO Pin name     IRQ  ADC  ADC  Serial Serial  TC    PWM   PWM
@@ -627,8 +580,6 @@ The default devices at the board are:
 - I2C 5 at pins 20/21, labelled SDA/SCL
 - SPI 4 at pins 22/23/24, labelled MOSI, MISO and SCK
 - DAC output on pins 14 and 18, labelled A0 and A4
-
-|
 
 Scripts for creating the pin assignment tables
 ----------------------------------------------

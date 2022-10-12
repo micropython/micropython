@@ -45,8 +45,6 @@ Setting the CPU frequency is only supported on SAMD51 devices. The range accepte
 by the function call is 48_000_000 to 200_000_000 (48 MHz to 200 MHz). The safe
 range according to the data sheet is 96 MHz to 120 MHz.
 
-|
-
 Delay and timing
 ----------------
 
@@ -59,8 +57,6 @@ Use the :mod:`time <time>` module::
     time.sleep_us(10)       # sleep for 10 microseconds
     start = time.ticks_ms() # get millisecond counter
     delta = time.ticks_diff(time.ticks_ms(), start) # compute time difference
-
-|
 
 Timers
 ------
@@ -76,8 +72,6 @@ The SAMD21/SAMD51 uses software timers. Use the :ref:`machine.Timer <machine.Tim
     tim1.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(1))
 
 The period is in milliseconds.
-
-|
 
 .. _samd_Pins_and_GPIO:
 
@@ -106,8 +100,6 @@ Notes:
 At Adafruit Feather and ItsyBity boards, Pin D5 is connected to an external gate output
 and can therefore only be used as input.
 
-|
-
 UART (serial bus)
 -----------------
 
@@ -124,8 +116,6 @@ The SAMD21/SAMD51 MCUs have up to eight hardware so called SERCOM devices, which
 SPI or I2C device, but not every MCU variant and board exposes all
 TX and RX pins for users. For the assignment of Pins to devices and UART signals,
 refer to the :ref:`SAMD pinout <samd_pinout>`.
-
-|
 
 PWM (pulse width modulation)
 ----------------------------
@@ -198,8 +188,6 @@ PWM Pin Assignment
 Pins are specified in the same way as for the Pin class.  For the assignment of Pins
 to PWM signals, refer to the :ref:`SAMD pinout <samd_pinout>`.
 
-|
-
 ADC (analog to digital conversion)
 ----------------------------------
 
@@ -224,8 +212,6 @@ value returned by read_u16(). If you need a higher resolution or better accuracy
 an external ADC. The default value of average is 16. Averaging is used to reduce the noise. With
 a value of 16 the LSB noise is about 1 digit.
 
-|
-
 DAC (digital to analog conversion)
 ----------------------------------
 
@@ -240,8 +226,6 @@ The DAC class provides a fast digital to analog conversion. Usage example::
 
 The resolution of the DAC is 12 bit for SAMD51 and 10 bit for SAMD21. SAMD21 devices
 have 1 DAC channel at GPIO PA02, SAMD51 devices have 2 DAC channels at GPIO PA02 and PA05.
-
-|
 
 Software SPI bus
 ----------------
@@ -273,8 +257,6 @@ Software SPI (using bit-banging) works on all pins, and is accessed via the
 
 The highest supported baud rate is 500000.
 
-|
-
 Hardware SPI bus
 ----------------
 
@@ -297,8 +279,6 @@ Note:
    setting a baud rate will not always result in exactly that
    frequency, especially at high baud rates.
 
-|
-
 Software I2C bus
 ----------------
 
@@ -319,8 +299,6 @@ accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class::
 
 The highest supported freq is 400000.
 
-|
-
 Hardware I2C bus
 ----------------
 
@@ -336,8 +314,6 @@ has the same methods as software SPI above::
 
     i2c = I2C(2, scl=Pin("SCL"), sda=Pin("SDA"), freq=400_000)
     i2c.writeto(0x76, b"Hello World")
-
-|
 
 OneWire driver
 --------------
@@ -369,8 +345,6 @@ Be sure to put a 4.7k pull-up resistor on the data line.  Note that
 the ``convert_temp()`` method must be called each time you want to
 sample the temperature.
 
-|
-
 DHT driver
 ----------
 
@@ -391,8 +365,6 @@ The DHT driver is implemented in software and works on all pins::
 
 Be sure to have a 4.7k pull-up resistor on the data line.  Some
 DHT modules may already have one.
-
-|
 
 Driving an APA102 LED
 ---------------------
@@ -416,8 +388,6 @@ The APA102 on some Adafruit boards can be controlled using SoftSPI::
 Since SoftSPI does not allow miso to be undefined, miso has to be
 assigned to an otherwise unused pin.
 
-|
-
 Driving a Neopixel LED
 ----------------------
 
@@ -439,8 +409,6 @@ with the Neopixel driver from the MicroPython driver library::
 
 machine.bitstream() is set up for a SAMD21 clock frequency of 48MHz and a SAMD51
 clock frequency of 120 MHz. At other clock frequencies, the timing will not fit.
-
-|
 
 Transferring files
 ------------------
