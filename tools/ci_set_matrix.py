@@ -48,6 +48,14 @@ except json.decoder.JSONDecodeError as exc:
         raise
 
 
+def set_output(name, value):
+    if "GITHUB_OUTPUT" in os.environ:
+        with open(os.environ["GITHUB_OUTPUT"], "at") as f:
+            print(f"{name}={value}", file=f)
+    else:
+        print("Would set GitHub actions output {name} to '{value}'")
+
+
 def set_boards_to_build(build_all):
     # Get boards in json format
     boards_info_json = build_board_info.get_board_mapping()
@@ -161,7 +169,7 @@ def set_boards_to_build(build_all):
 
     # Set the step outputs for each architecture
     for arch in arch_to_boards:
-        print("::set-output name=boards-" + arch + "::" + json.dumps(sorted(arch_to_boards[arch])))
+        set_output(f"boards-{arch}", json.dumps(sorted(arch_to_boards[arch])))
 
 
 def set_docs_to_build(build_all):
@@ -177,7 +185,7 @@ def set_docs_to_build(build_all):
 
     # Set the step outputs
     print("Building docs:", doc_match)
-    print("::set-output name=build-doc::" + str(doc_match))
+    set_output(f"build-doc", doc_match)
 
 
 def check_changed_files():
