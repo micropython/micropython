@@ -4828,7 +4828,7 @@ FRESULT f_rename (
         strlen(path_new) > strlen(path_old) &&
         path_new[strlen(path_old)] == '/' &&
         strncmp(path_old, path_new, strlen(path_old)) == 0) {
-        return FR_NO_PATH;
+        return FR_INVALID_NAME;
     }
 
     res = find_volume(fs, FA_WRITE);    /* Get logical drive of the old object */

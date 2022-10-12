@@ -234,8 +234,6 @@ STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_
     }
     if (res == FR_OK) {
         return mp_const_none;
-    } else if (res == FR_NO_PATH) {
-        mp_raise_OSError(MP_EINVAL);
     } else {
         mp_raise_OSError_fresult(res);
     }
