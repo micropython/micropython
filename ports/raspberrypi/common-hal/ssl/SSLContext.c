@@ -42,7 +42,7 @@ void common_hal_ssl_sslcontext_load_verify_locations(ssl_sslcontext_obj_t *self,
     self->crt_bundle_attach = NULL;
     self->use_global_ca_store = false;
     self->cacert_buf = (const unsigned char *)cadata;
-    self->cacert_bytes = strlen(cadata) + 1;
+    self->cacert_bytes = *cadata ? strlen(cadata) + 1 : 0;
 }
 
 void common_hal_ssl_sslcontext_set_default_verify_paths(ssl_sslcontext_obj_t *self) {
