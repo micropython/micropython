@@ -83,6 +83,17 @@
 
 // Extract the production calibration data information from NVM (adapted from ASF sample),
 // then calculate the temperature
+//
+// This code performs almost all operations with scaled integers.  For
+// instance, tempR is in units of 1/10°C, INT1VR is in units of 1mV, etc,
+// This is important to reduce the code size of the function. The effect on
+// precision is a ~.9°C difference vs the floating point algorithm on an
+// approximate 0..60°C range with a difference of ~.5°C at 25°C. When the fine
+// calculation step is skipped, the additional error approximately doubles.
+//
+// To save code size, rounding is neglected. However, trying to add back rounding
+// (by computing (a + b/2) / b instead of just a / b) actually didn't help
+// accuracy anyway.
 #ifdef SAMD21
 STATIC float calculate_temperature(uint16_t raw_value) {
     uint32_t val1;    /* Temperature Log Row Content first 32 bits */
