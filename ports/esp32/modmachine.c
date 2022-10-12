@@ -137,16 +137,28 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
     #if CONFIG_IDF_TARGET_ESP32C3
 
     if (machine_rtc_config.ext1_pins != 0) {
+        gpio_int_type_t intr_type = machine_rtc_config.ext1_level ? GPIO_INTR_HIGH_LEVEL : GPIO_INTR_LOW_LEVEL;
+
         for (int i = 0; i < GPIO_NUM_MAX; ++i) {
+            gpio_num_t gpio = (gpio_num_t)i;
             uint64_t bm = 1ULL << i;
+
             if (machine_rtc_config.ext1_pins & bm) {
-                gpio_sleep_set_direction((gpio_num_t)i, GPIO_MODE_INPUT);
+                gpio_sleep_set_direction(gpio, GPIO_MODE_INPUT);
+
+                if (MACHINE_WAKE_SLEEP == wake_type) {
+                    gpio_wakeup_enable(gpio, intr_type);
+                }
             }
         }
-        esp_deep_sleep_enable_gpio_wakeup(
-            machine_rtc_config.ext1_pins,
-            machine_rtc_config.ext1_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW);
-        esp_sleep_enable_gpio_wakeup();
+
+        if (MACHINE_WAKE_DEEPSLEEP == wake_type) {
+            esp_deep_sleep_enable_gpio_wakeup(
+                machine_rtc_config.ext1_pins,
+                machine_rtc_config.ext1_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW);
+        } else {
+            esp_sleep_enable_gpio_wakeup();
+        }
     }
 
     #else
