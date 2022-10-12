@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "py/mpconfig.h"
+#include "py/mphal.h"
 
 #include "supervisor/shared/cpu.h"
 #include "supervisor/shared/display.h"
@@ -60,6 +61,13 @@ byte console_uart_rx_buf[SOC_UART_FIFO_LEN + 1];
 #else
 byte console_uart_rx_buf[64];
 #endif
+#endif
+
+#if CIRCUITPY_USB || CIRCUITPY_CONSOLE_UART
+// Flag to note whether this is the first write after connection.
+// Delay slightly on the first write to allow time for the host to set up things,
+// including turning off echo mode.
+static bool _first_write_done = false;
 #endif
 
 #if CIRCUITPY_USB_VENDOR
@@ -144,6 +152,10 @@ void serial_early_init(void) {
 }
 
 void serial_init(void) {
+    #if CIRCUITPY_USB || CIRCUITPY_CONSOLE_UART
+    _first_write_done = false;
+    #endif
+
     port_serial_init();
 }
 
@@ -301,8 +313,11 @@ void serial_write_substring(const char *text, uint32_t length) {
     #endif
 
     #if CIRCUITPY_CONSOLE_UART
+    if (!_first_write_done) {
+        mp_hal_delay_ms(50);
+        _first_write_done = true;
+    }
     int uart_errcode;
-
     common_hal_busio_uart_write(&console_uart, (const uint8_t *)text, length, &uart_errcode);
     #endif
 
@@ -321,6 +336,11 @@ void serial_write_substring(const char *text, uint32_t length) {
     #endif
 
     #if CIRCUITPY_USB
+    // Delay the very first write
+    if (tud_cdc_connected() && !_first_write_done) {
+        mp_hal_delay_ms(50);
+        _first_write_done = true;
+    }
     uint32_t count = 0;
     if (tud_cdc_connected()) {
         while (count < length) {
