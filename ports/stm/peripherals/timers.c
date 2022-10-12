@@ -26,7 +26,6 @@
 #include "timers.h"
 
 #include "py/mpconfig.h"
-#include "py/gc.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate/translate.h"

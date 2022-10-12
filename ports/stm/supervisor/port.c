@@ -29,7 +29,6 @@
 #include "supervisor/background_callback.h"
 #include "supervisor/board.h"
 #include "supervisor/port.h"
-#include "shared/timeutils/timeutils.h"
 
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"

@@ -26,13 +26,9 @@
 
 #include <stdio.h>
 
-#include "py/obj.h"
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
-#include "shared-bindings/rtc/__init__.h"
-#include "common-hal/rtc/RTC.h"
 #include "shared-bindings/rtc/RTC.h"
-#include "supervisor/port.h"
 #include "supervisor/shared/translate/translate.h"
 #include "peripherals/rtc.h"
 

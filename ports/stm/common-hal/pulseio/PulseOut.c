@@ -29,14 +29,10 @@
 #include <stdint.h>
 
 #include "py/mpconfig.h"
-#include "py/gc.h"
-#include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include STM32_HAL_H
-#include "shared-bindings/microcontroller/Pin.h"
 #include "timers.h"
 
 // A single timer is shared amongst all PulseOut objects under the assumption that
