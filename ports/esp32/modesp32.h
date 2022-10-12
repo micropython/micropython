@@ -30,6 +30,19 @@
     )
     #define RTC_LAST_EXT_PIN 21
 
+#elif CONFIG_IDF_TARGET_ESP32C3
+
+    #define RTC_VALID_EXT_PINS \
+    ( \
+    (1ll << 0) | \
+    (1ll << 1) | \
+    (1ll << 2) | \
+    (1ll << 3) | \
+    (1ll << 4) | \
+    (1ll << 5)   \
+    )
+    #define RTC_LAST_EXT_PIN 5
+
 #else
 
     #define RTC_VALID_EXT_PINS \

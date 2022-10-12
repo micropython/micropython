@@ -139,11 +139,7 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
     if (machine_rtc_config.ext1_pins != 0) {
         for (int i = 0; i < GPIO_NUM_MAX; ++i) {
             uint64_t bm = 1ULL << i;
-
             if (machine_rtc_config.ext1_pins & bm) {
-                if (!esp_sleep_is_valid_wakeup_gpio((gpio_num_t)i)) {
-                    mp_raise_ValueError(MP_ERROR_TEXT("invalid wake-up port"));
-                }
                 gpio_sleep_set_direction((gpio_num_t)i, GPIO_MODE_INPUT);
             }
         }
