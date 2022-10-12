@@ -821,6 +821,16 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
 
     MICROPY_PY_LWIP_EXIT
 
+    DEBUG_printf("registering socket in socketpool_socket_accept()\n");
+    if (!register_open_socket(socket2)) {
+        DEBUG_printf("collecting garbage to open socket\n");
+        gc_collect();
+        if (!register_open_socket(socket2)) {
+            mp_raise_RuntimeError(translate("Out of sockets"));
+        }
+    }
+    mark_user_socket(socket2);
+
     // output values
     memcpy(ip, &(socket2->pcb.tcp->remote_ip), NETUTILS_IPV4ADDR_BUFSIZE);
     *port = (mp_uint_t)socket2->pcb.tcp->remote_port;
