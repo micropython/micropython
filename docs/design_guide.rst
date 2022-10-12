@@ -202,10 +202,10 @@ interchangeably with the CPython name. This is confusing. Instead, think up a
 new name that is related to the extra functionality you are adding.
 
 For example, storage mounting and unmounting related functions were moved from
-``uos`` into a new `storage` module. Terminal-related functions were moved into
-`multiterminal`. These names better match their functionality and do not
-conflict with CPython names. Make sure to check that you don't conflict with
-CPython libraries too. That way we can port the API to CPython in the future.
+``uos`` into a new `storage` module.  These names better match their
+functionality and do not conflict with CPython names. Make sure to check that
+you don't conflict with CPython libraries too. That way we can port the API to
+CPython in the future.
 
 Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -309,7 +309,7 @@ following structure:
 
 param_type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The type of the parameter. This could be among other `int`, `float`, `str` `bool`, etc.
+The type of the parameter. This could be, among others, ``int``, ``float``, ``str``, ``bool``, etc.
 To document an object in the CircuitPython domain, you need to include a ``~`` before the
 definition as shown in the following example:
 

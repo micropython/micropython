@@ -39,11 +39,13 @@
 //| `Wikipedia's Rotary Encoder page <https://en.wikipedia.org/wiki/Rotary_encoder>`_ for more
 //| background.
 //|
+//| For more information on working with rotary encoders using this library, see
+//| `this Learn Guide <https://learn.adafruit.com/rotary-encoder>`_.
+//|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See
 //| :ref:`lifetime-and-contextmanagers` for more info."""
-//|
 
 STATIC const mp_rom_map_elem_t rotaryio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_rotaryio) },

@@ -32,7 +32,6 @@
 #include "shared-bindings/uheap/__init__.h"
 
 //| """Heap size analysis"""
-//|
 
 //| def info(object: object) -> int:
 //|     """Prints memory debugging info for the given object and returns the

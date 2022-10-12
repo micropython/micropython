@@ -44,13 +44,11 @@
 //|     def __init__(self) -> None:
 //|         """Cannot be instantiated directly. Use `_bleio.Adapter.start_scan`."""
 //|         ...
-//|
 //|     def matches(self, prefixes: ScanEntry, *, match_all: bool = True) -> bool:
 //|         """Returns True if the ScanEntry matches all prefixes when ``match_all`` is True. This is stricter
 //|         than the scan filtering which accepts any advertisements that match any of the prefixes
 //|         where ``match_all`` is False."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_scanentry_matches(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -73,7 +71,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_scanentry_matches_obj, 1, bleio_scanentr
 
 //|     address: Address
 //|     """The address of the device (read-only), of type `_bleio.Address`."""
-//|
 STATIC mp_obj_t bleio_scanentry_get_address(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_bleio_scanentry_get_address(self);
@@ -85,7 +82,6 @@ MP_PROPERTY_GETTER(bleio_scanentry_address_obj,
 
 //|     advertisement_bytes: bytes
 //|     """All the advertisement data present in the packet, returned as a ``bytes`` object. (read-only)"""
-//|
 STATIC mp_obj_t scanentry_get_advertisement_bytes(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_bleio_scanentry_get_advertisement_bytes(self);
@@ -97,7 +93,6 @@ MP_PROPERTY_GETTER(bleio_scanentry_advertisement_bytes_obj,
 
 //|     rssi: int
 //|     """The signal strength of the device at the time of the scan, in integer dBm. (read-only)"""
-//|
 STATIC mp_obj_t scanentry_get_rssi(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(common_hal_bleio_scanentry_get_rssi(self));
@@ -109,7 +104,6 @@ MP_PROPERTY_GETTER(bleio_scanentry_rssi_obj,
 
 //|     connectable: bool
 //|     """True if the device can be connected to. (read-only)"""
-//|
 STATIC mp_obj_t scanentry_get_connectable(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_bleio_scanentry_get_connectable(self));

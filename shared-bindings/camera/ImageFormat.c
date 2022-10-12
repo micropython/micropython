@@ -31,7 +31,6 @@
 //|
 //|     def __init__(self) -> None:
 //|         """Enum-like class to define the image format."""
-//|
 //|     JPG: ImageFormat
 //|     """JPG format."""
 //|

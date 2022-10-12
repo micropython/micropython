@@ -44,7 +44,6 @@
 //|         PortIn objects are constructed for every corresponding entry in the USB
 //|         descriptor and added to the ``usb_midi.ports`` tuple."""
 //|         ...
-//|
 
 // These are standard stream methods. Code is in py/stream.c.
 //
@@ -57,7 +56,6 @@
 //|         :return: Data read
 //|         :rtype: bytes or None"""
 //|         ...
-//|
 //|     def readinto(self, buf: WriteableBuffer, nbytes: Optional[int] = None) -> Optional[bytes]:
 //|         """Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
 //|         that many bytes.  Otherwise, read at most ``len(buf)`` bytes.

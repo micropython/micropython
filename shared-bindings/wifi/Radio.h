@@ -33,7 +33,7 @@
 
 #include "py/objstr.h"
 
-const mp_obj_type_t wifi_radio_type;
+extern const mp_obj_type_t wifi_radio_type;
 
 typedef enum {
     // 0 is circuitpython-specific; 1-53 are IEEE; 200+ are Espressif
@@ -85,7 +85,7 @@ extern void common_hal_wifi_radio_set_mac_address_ap(wifi_radio_obj_t *self, con
 extern mp_float_t common_hal_wifi_radio_get_tx_power(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_tx_power(wifi_radio_obj_t *self, const mp_float_t power);
 
-extern mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self);
+extern mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, uint8_t start_channel, uint8_t stop_channel);
 extern void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self);
 
 extern void common_hal_wifi_radio_start_station(wifi_radio_obj_t *self);

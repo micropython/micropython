@@ -46,7 +46,6 @@
 //|
 //|         A Framebuffer is often used in conjunction with a
 //|         `framebufferio.FramebufferDisplay`."""
-//|
 
 STATIC mp_obj_t videocore_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_width, ARG_height, };
@@ -72,7 +71,6 @@ STATIC mp_obj_t videocore_framebuffer_make_new(const mp_obj_type_t *type, size_t
 //|         rgbmatrix instance.  After deinitialization, no further operations
 //|         may be performed."""
 //|         ...
-//|
 STATIC mp_obj_t videocore_framebuffer_deinit(mp_obj_t self_in) {
     videocore_framebuffer_obj_t *self = (videocore_framebuffer_obj_t *)self_in;
     common_hal_videocore_framebuffer_deinit(self);
@@ -89,7 +87,6 @@ static void check_for_deinit(videocore_framebuffer_obj_t *self) {
 
 //|     width: int
 //|     """The width of the display, in pixels"""
-//|
 STATIC mp_obj_t videocore_framebuffer_get_width(mp_obj_t self_in) {
     videocore_framebuffer_obj_t *self = (videocore_framebuffer_obj_t *)self_in;
     check_for_deinit(self);

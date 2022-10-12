@@ -55,7 +55,6 @@
 //|         :param microcontroller.Pin href: The horizontal reference input, which is high whenever the camera is transmitting valid pixel information.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t imagecapture_parallelimagecapture_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_data_pins, ARG_clock, ARG_vsync, ARG_href,
            NUM_ARGS };
@@ -90,7 +89,6 @@ STATIC mp_obj_t imagecapture_parallelimagecapture_make_new(const mp_obj_type_t *
 //|
 //|         This will stop a continuous-mode capture, if one is in progress."""
 //|         ...
-//|
 STATIC mp_obj_t imagecapture_parallelimagecapture_capture(mp_obj_t self_in, mp_obj_t buffer) {
     imagecapture_parallelimagecapture_obj_t *self = (imagecapture_parallelimagecapture_obj_t *)self_in;
     common_hal_imagecapture_parallelimagecapture_singleshot_capture(self, buffer);
@@ -99,7 +97,9 @@ STATIC mp_obj_t imagecapture_parallelimagecapture_capture(mp_obj_t self_in, mp_o
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(imagecapture_parallelimagecapture_capture_obj, imagecapture_parallelimagecapture_capture);
 
-//|     def continuous_capture_start(self, buffer1: WriteableBuffer, buffer2: WriteableBuffer, /) -> None:
+//|     def continuous_capture_start(
+//|         self, buffer1: WriteableBuffer, buffer2: WriteableBuffer, /
+//|     ) -> None:
 //|         """Begin capturing into the given buffers in the background.
 //|
 //|         Call `continuous_capture_get_frame` to get the next available
@@ -109,7 +109,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(imagecapture_parallelimagecapture_capture_obj, 
 //|         `ParallelImageCapture` object keeps references to ``buffer1`` and
 //|         ``buffer2``, so the objects will not be garbage collected."""
 //|         ...
-//|
 STATIC mp_obj_t imagecapture_parallelimagecapture_continuous_capture_start(mp_obj_t self_in, mp_obj_t buffer1, mp_obj_t buffer2) {
     imagecapture_parallelimagecapture_obj_t *self = (imagecapture_parallelimagecapture_obj_t *)self_in;
     common_hal_imagecapture_parallelimagecapture_continuous_capture_start(self, buffer1, buffer2);
@@ -121,7 +120,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(imagecapture_parallelimagecapture_continuous_ca
 //|     def continuous_capture_get_frame(self) -> WriteableBuffer:
 //|         """Return the next available frame, one of the two buffers passed to `continuous_capture_start`"""
 //|         ...
-//|
 STATIC mp_obj_t imagecapture_parallelimagecapture_continuous_capture_get_frame(mp_obj_t self_in) {
     imagecapture_parallelimagecapture_obj_t *self = (imagecapture_parallelimagecapture_obj_t *)self_in;
     return common_hal_imagecapture_parallelimagecapture_continuous_capture_get_frame(self);
@@ -137,7 +135,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(imagecapture_parallelimagecapture_continuous_ca
 //|         references to the buffers passed to `continuous_capture_start`,
 //|         potentially allowing the objects to be garbage collected."""
 //|         ...
-//|
 STATIC mp_obj_t imagecapture_parallelimagecapture_continuous_capture_stop(mp_obj_t self_in) {
     imagecapture_parallelimagecapture_obj_t *self = (imagecapture_parallelimagecapture_obj_t *)self_in;
     common_hal_imagecapture_parallelimagecapture_continuous_capture_stop(self);
@@ -152,7 +149,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(imagecapture_parallelimagecapture_continuous_ca
 //|     def deinit(self) -> None:
 //|         """Deinitialize this instance"""
 //|         ...
-//|
 STATIC mp_obj_t imagecapture_parallelimagecapture_deinit(mp_obj_t self_in) {
     imagecapture_parallelimagecapture_obj_t *self = (imagecapture_parallelimagecapture_obj_t *)self_in;
     common_hal_imagecapture_parallelimagecapture_deinit(self);
@@ -164,7 +160,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(imagecapture_parallelimagecapture_deinit_obj, i
 //|     def __enter__(self) -> ParallelImageCapture:
 //|         """No-op used in Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:

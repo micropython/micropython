@@ -67,7 +67,7 @@
 //|       while True:
 //|           pass"""
 //|
-//|     def __init__(self, file: Union[str,typing.BinaryIO]) -> None:
+//|     def __init__(self, file: Union[str, typing.BinaryIO]) -> None:
 //|         """Create an OnDiskBitmap object with the given file.
 //|
 //|         :param file file: The name of the bitmap file.  For backwards compatibility, a file opened in binary mode may also be passed.
@@ -78,7 +78,6 @@
 //|         of CircuitPython will remove the ability to pass in an opened file.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     mp_obj_t arg = all_args[0];
@@ -99,7 +98,6 @@ STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_
 
 //|     width: int
 //|     """Width of the bitmap. (read only)"""
-//|
 STATIC mp_obj_t displayio_ondiskbitmap_obj_get_width(mp_obj_t self_in) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -113,7 +111,6 @@ MP_PROPERTY_GETTER(displayio_ondiskbitmap_width_obj,
 
 //|     height: int
 //|     """Height of the bitmap. (read only)"""
-//|
 STATIC mp_obj_t displayio_ondiskbitmap_obj_get_height(mp_obj_t self_in) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
 

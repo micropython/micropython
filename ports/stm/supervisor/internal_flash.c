@@ -29,12 +29,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "extmod/vfs.h"
-#include "extmod/vfs_fat.h"
-#include "py/mphal.h"
 #include "py/obj.h"
-#include "py/runtime.h"
-#include "lib/oofatfs/ff.h"
 #include "supervisor/flash.h"
 #include "supervisor/shared/safe_mode.h"
 

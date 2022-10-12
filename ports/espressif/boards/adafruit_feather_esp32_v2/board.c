@@ -31,17 +31,14 @@
 #include "components/hal/include/hal/gpio_hal.h"
 #include "common-hal/microcontroller/Pin.h"
 
-void board_init(void) {
-    reset_board();
-}
-
-void reset_board(void) {
-    // Turn on NeoPixel and I2C power by default.
-    gpio_set_direction(2, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(2, true);
-}
-
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    if (pin_number == 2) {
+        // Turn on NeoPixel and I2C power by default.
+        gpio_set_direction(pin_number, GPIO_MODE_DEF_OUTPUT);
+        gpio_set_level(pin_number, true);
+        return true;
+    }
+
     return false;
 }
 

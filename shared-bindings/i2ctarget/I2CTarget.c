@@ -52,7 +52,13 @@ STATIC mp_obj_t mp_obj_new_i2ctarget_i2c_target_request(i2ctarget_i2c_target_obj
 //| class I2CTarget:
 //|     """Two wire serial protocol target"""
 //|
-//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, addresses: Sequence[int], smbus: bool = False) -> None:
+//|     def __init__(
+//|         self,
+//|         scl: microcontroller.Pin,
+//|         sda: microcontroller.Pin,
+//|         addresses: Sequence[int],
+//|         smbus: bool = False,
+//|     ) -> None:
 //|         """I2C is a two-wire protocol for communicating between devices.
 //|         This implements the target (peripheral, sensor, secondary) side.
 //|
@@ -62,7 +68,6 @@ STATIC mp_obj_t mp_obj_new_i2ctarget_i2c_target_request(i2ctarget_i2c_target_obj
 //|         :type addresses: list[int]
 //|         :param bool smbus: Use SMBUS timings if the hardware supports it"""
 //|         ...
-//|
 STATIC mp_obj_t i2ctarget_i2c_target_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     i2ctarget_i2c_target_obj_t *self = m_new_obj(i2ctarget_i2c_target_obj_t);
     self->base.type = &i2ctarget_i2c_target_type;
@@ -85,13 +90,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_make_new(const mp_obj_type_t *type, size_t 
     uint8_t *addresses = NULL;
     unsigned int i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        mp_int_t value;
-        if (!mp_obj_get_int_maybe(item, &value)) {
-            mp_raise_TypeError_varg(translate("can't convert %q to %q"), MP_QSTR_address, MP_QSTR_int);
-        }
-        if (value < 0x00 || value > 0x7f) {
-            mp_raise_ValueError(translate("address out of bounds"));
-        }
+        mp_uint_t value = mp_arg_validate_int_range(mp_obj_get_int(item), 0x00, 0x7f, MP_QSTR_address);
         addresses = m_renew(uint8_t, addresses, i, i + 1);
         addresses[i++] = value;
     }
@@ -106,7 +105,6 @@ STATIC mp_obj_t i2ctarget_i2c_target_make_new(const mp_obj_type_t *type, size_t 
 //|     def deinit(self) -> None:
 //|         """Releases control of the underlying hardware so other classes can use it."""
 //|         ...
-//|
 STATIC mp_obj_t i2ctarget_i2c_target_obj_deinit(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &i2ctarget_i2c_target_type));
     i2ctarget_i2c_target_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -118,14 +116,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(i2ctarget_i2c_target_deinit_obj, i2ctarget_i2c_target_
 //|     def __enter__(self) -> I2CTarget:
 //|         """No-op used in Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware on context exit. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t i2ctarget_i2c_target_obj___exit__(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &i2ctarget_i2c_target_type));
     i2ctarget_i2c_target_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -134,7 +130,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_obj___exit__(size_t n_args, const mp_obj_t 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2ctarget_i2c_target___exit___obj, 4, 4, i2ctarget_i2c_target_obj___exit__);
 
-//|     def request(self, timeout: float = -1) -> I2CTargetRequest:
+//|     def request(self, *, timeout: float = -1) -> I2CTargetRequest:
 //|         """Wait for an I2C request.
 //|
 //|         :param float timeout: Timeout in seconds. Zero means wait forever, a negative value means check once
@@ -163,7 +159,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_request(size_t n_args, const mp_obj_t *pos_
 
     bool forever = false;
     uint64_t timeout_end = 0;
-    if (timeout_ms == 0) {
+    if (timeout_ms <= 0) {
         forever = true;
     } else if (timeout_ms > 0) {
         timeout_end = common_hal_time_monotonic_ms() + timeout_ms;
@@ -227,8 +223,9 @@ const mp_obj_type_t i2ctarget_i2c_target_type = {
 };
 
 //| class I2CTargetRequest:
-//|
-//|     def __init__(self, target: i2ctarget.I2CTarget, address: int, is_read: bool, is_restart: bool) -> None:
+//|     def __init__(
+//|         self, target: i2ctarget.I2CTarget, address: int, is_read: bool, is_restart: bool
+//|     ) -> None:
 //|         """Information about an I2C transfer request
 //|         This cannot be instantiated directly, but is returned by :py:meth:`I2CTarget.request`.
 //|
@@ -236,7 +233,6 @@ const mp_obj_type_t i2ctarget_i2c_target_type = {
 //|         :param address: I2C address
 //|         :param is_read: True if the main target is requesting data
 //|         :param is_restart: Repeated Start Condition"""
-//|
 STATIC mp_obj_t i2ctarget_i2c_target_request_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 4, 4, false);
     return mp_obj_new_i2ctarget_i2c_target_request(args[0], mp_obj_get_int(args[1]), mp_obj_is_true(args[2]), mp_obj_is_true(args[3]));
@@ -245,13 +241,11 @@ STATIC mp_obj_t i2ctarget_i2c_target_request_make_new(const mp_obj_type_t *type,
 //|     def __enter__(self) -> I2CTargetRequest:
 //|         """No-op used in Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Close the request."""
 //|         ...
-//|
 STATIC mp_obj_t i2ctarget_i2c_target_request_obj___exit__(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -262,7 +256,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2ctarget_i2c_target_request___exit__
 
 //|     address: int
 //|     """The I2C address of the request."""
-//|
 STATIC mp_obj_t i2ctarget_i2c_target_request_get_address(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -272,7 +265,6 @@ MP_DEFINE_CONST_PROP_GET(i2ctarget_i2c_target_request_address_obj, i2ctarget_i2c
 
 //|     is_read: bool
 //|     """The I2C main controller is reading from this target."""
-//|
 STATIC mp_obj_t i2ctarget_i2c_target_request_get_is_read(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -282,7 +274,6 @@ MP_DEFINE_CONST_PROP_GET(i2ctarget_i2c_target_request_is_read_obj, i2ctarget_i2c
 
 //|     is_restart: bool
 //|     """Is Repeated Start Condition."""
-//|
 STATIC mp_obj_t i2ctarget_i2c_target_request_get_is_restart(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -298,7 +289,6 @@ MP_DEFINE_CONST_PROP_GET(i2ctarget_i2c_target_request_is_restart_obj, i2ctarget_
 //|         :param ack: Whether or not to send an ACK after the n'th byte
 //|         :return: Bytes read"""
 //|         ...
-//|
 STATIC mp_obj_t i2ctarget_i2c_target_request_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_check_self(mp_obj_is_type(pos_args[0], &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -356,7 +346,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(i2ctarget_i2c_target_request_read_obj, 1, i2ctarget_i
 //|         :param ~circuitpython_typing.ReadableBuffer buffer: Write out the data in this buffer
 //|         :return: Number of bytes written"""
 //|         ...
-//|
 STATIC mp_obj_t i2ctarget_i2c_target_request_write(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_check_self(mp_obj_is_type(self_in, &i2ctarget_i2c_target_request_type));
     i2ctarget_i2c_target_request_obj_t *self = MP_OBJ_TO_PTR(self_in);

@@ -132,15 +132,22 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-//|     def __init__(self, *, width: int, bit_depth: int,
-//|                  rgb_pins: Sequence[digitalio.DigitalInOut],
-//|                  addr_pins: Sequence[digitalio.DigitalInOut],
-//|                  clock_pin: digitalio.DigitalInOut,
-//|                  latch_pin: digitalio.DigitalInOut,
-//|                  output_enable_pin: digitalio.DigitalInOut,
-//|                  doublebuffer: bool = True,
-//|                  framebuffer: Optional[WriteableBuffer] = None,
-//|                  height: int = 0, tile: int = 1, serpentine: bool = True) -> None:
+//|     def __init__(
+//|         self,
+//|         *,
+//|         width: int,
+//|         bit_depth: int,
+//|         rgb_pins: Sequence[digitalio.DigitalInOut],
+//|         addr_pins: Sequence[digitalio.DigitalInOut],
+//|         clock_pin: digitalio.DigitalInOut,
+//|         latch_pin: digitalio.DigitalInOut,
+//|         output_enable_pin: digitalio.DigitalInOut,
+//|         doublebuffer: bool = True,
+//|         framebuffer: Optional[WriteableBuffer] = None,
+//|         height: int = 0,
+//|         tile: int = 1,
+//|         serpentine: bool = True
+//|     ) -> None:
 //|         """Create a RGBMatrix object with the given attributes.  The height of
 //|         the display is determined by the number of rgb and address pins and the number of tiles:
 //|         ``len(rgb_pins) // 3 * 2 ** len(address_pins) * abs(tile)``.  With 6 RGB pins, 4
@@ -176,7 +183,6 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|
 //|         A RGBMatrix is often used in conjunction with a
 //|         `framebufferio.FramebufferDisplay`."""
-//|
 
 STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_width, ARG_bit_depth, ARG_rgb_list, ARG_addr_list,
@@ -259,7 +265,6 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
 //|         rgbmatrix instance.  After deinitialization, no further operations
 //|         may be performed."""
 //|         ...
-//|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_deinit(mp_obj_t self_in) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     common_hal_rgbmatrix_rgbmatrix_deinit(self);
@@ -277,7 +282,6 @@ static void check_for_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
 //|     brightness: float
 //|     """In the current implementation, 0.0 turns the display off entirely
 //|     and any other value up to 1.0 turns the display on fully."""
-//|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_brightness(mp_obj_t self_in) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     check_for_deinit(self);
@@ -306,7 +310,6 @@ MP_PROPERTY_GETSET(rgbmatrix_rgbmatrix_brightness_obj,
 //|         """Transmits the color data in the buffer to the pixels so that
 //|         they are shown."""
 //|         ...
-//|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_refresh(mp_obj_t self_in) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     check_for_deinit(self);
@@ -317,7 +320,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_refresh_obj, rgbmatrix_rgbmatrix_r
 
 //|     width: int
 //|     """The width of the display, in pixels"""
-//|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_width(mp_obj_t self_in) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     check_for_deinit(self);

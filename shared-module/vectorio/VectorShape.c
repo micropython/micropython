@@ -277,12 +277,8 @@ void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self
     mp_obj_tuple_get(xy, &tuple_len, &tuple_items);
     mp_arg_validate_length(tuple_len, 2, MP_QSTR_location);
 
-    mp_int_t x;
-    mp_int_t y;
-    if (!mp_obj_get_int_maybe(tuple_items[ 0 ], &x)
-        || !mp_obj_get_int_maybe(tuple_items[ 1 ], &y)) {
-        mp_raise_ValueError_varg(translate("unsupported %q type"), MP_QSTR_point);
-    }
+    mp_int_t x = mp_arg_validate_type_int(tuple_items[0], MP_QSTR_x);
+    mp_int_t y = mp_arg_validate_type_int(tuple_items[0], MP_QSTR_y);
     bool dirty = false;
     if (self->x != x) {
         check_bounds_and_set_x(self, x);

@@ -125,8 +125,6 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     // exact cutoff, but no frequency well under 100kHz is available)
     if ((frequency < 95000) ||
         (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE)) {
-        reset_pin_number(sda->number);
-        reset_pin_number(scl->number);
         common_hal_busio_i2c_deinit(self);
         mp_arg_error_invalid(MP_QSTR_frequency);
     }

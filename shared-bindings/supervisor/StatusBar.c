@@ -46,7 +46,6 @@
 //|         """You cannot create an instance of `supervisor.StatusBar`.
 //|         Use `supervisor.status_bar` to access the sole instance available."""
 //|         ...
-//|
 
 //|     console: bool
 //|     """Whether status bar information is sent over the console (REPL) serial connection,
@@ -54,7 +53,6 @@
 //|     If set to ``False``, status bar will be cleared and then disabled.
 //|     May be set in ``boot.py`` or later. Persists across soft restarts.
 //|     """
-//|
 STATIC mp_obj_t supervisor_status_bar_get_console(mp_obj_t self_in) {
     #if CIRCUITPY_STATUS_BAR
     supervisor_status_bar_obj_t *self = MP_OBJ_TO_PTR(self_in);

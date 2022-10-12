@@ -40,27 +40,32 @@
 //| class Terminal:
 //|     """Display a character stream with a TileGrid
 //|
-//|        ASCII control:
-//|        * ``\\r`` - Move cursor to column 1
-//|        * ``\\n`` - Move cursor down a row
-//|        * ``\\b`` - Move cursor left one if possible
+//|     ASCII control:
+//|     * ``\\r`` - Move cursor to column 1
+//|     * ``\\n`` - Move cursor down a row
+//|     * ``\\b`` - Move cursor left one if possible
 //|
-//|        OSC control sequences:
-//|        * ``ESC ] 0; <s> ESC \\`` - Set title bar to <s>
-//|        * ``ESC ] ####; <s> ESC \\`` - Ignored
+//|     OSC control sequences:
+//|     * ``ESC ] 0; <s> ESC \\`` - Set title bar to <s>
+//|     * ``ESC ] ####; <s> ESC \\`` - Ignored
 //|
-//|        VT100 control sequences:
-//|        * ``ESC [ K`` - Clear the remainder of the line
-//|        * ``ESC [ #### D`` - Move the cursor to the left by ####
-//|        * ``ESC [ 2 J`` - Erase the entire display
-//|        * ``ESC [ nnnn ; mmmm H`` - Move the cursor to mmmm, nnnn.
+//|     VT100 control sequences:
+//|     * ``ESC [ K`` - Clear the remainder of the line
+//|     * ``ESC [ #### D`` - Move the cursor to the left by ####
+//|     * ``ESC [ 2 J`` - Erase the entire display
+//|     * ``ESC [ nnnn ; mmmm H`` - Move the cursor to mmmm, nnnn.
 //|     """
 //|
-//|     def __init__(self, scroll_area: displayio.TileGrid, font: fontio.BuiltinFont, *, status_bar: displayio.TileGrid = None) -> None:
+//|     def __init__(
+//|         self,
+//|         scroll_area: displayio.TileGrid,
+//|         font: fontio.BuiltinFont,
+//|         *,
+//|         status_bar: displayio.TileGrid = None
+//|     ) -> None:
 //|         """Terminal manages tile indices and cursor position based on VT100 commands. The font should be
 //|         a `fontio.BuiltinFont` and the TileGrid's bitmap should match the font's bitmap."""
 //|         ...
-//|
 
 STATIC mp_obj_t terminalio_terminal_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_scroll_area, ARG_font, ARG_status_bar };

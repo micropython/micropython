@@ -40,7 +40,6 @@
 //|   :platform: SAMD21
 //|
 //| References to clocks as named by the microcontroller"""
-//|
 const mp_obj_module_t samd_clock_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&samd_clock_globals,

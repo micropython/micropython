@@ -29,7 +29,6 @@
 #include "supervisor/background_callback.h"
 #include "supervisor/board.h"
 #include "supervisor/port.h"
-#include "shared/timeutils/timeutils.h"
 
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
@@ -244,6 +243,7 @@ void SysTick_Handler(void) {
 
 void reset_port(void) {
     reset_all_pins();
+
     #if CIRCUITPY_RTC
     rtc_reset();
     #endif
@@ -275,7 +275,48 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
+
+/*
+From STM AN2606:
+Before jumping to bootloader user must:
+• Disable all peripheral clocks
+• Disable used PLL
+• Disable interrupts
+• Clear pending interrupts
+System memory boot mode can be exited by getting out from bootloader activation
+condition and generating hardware reset or using Go command to execute user code
+*/
+    HAL_RCC_DeInit();
+    HAL_DeInit();
+
+    // Disable all pending interrupts using NVIC
+    for (uint8_t i = 0; i < MP_ARRAY_SIZE(NVIC->ICER); ++i) {
+        NVIC->ICER[i] = 0xFFFFFFFF;
+    }
+
+    // if it is necessary to ensure an interrupt will not be triggered after disabling it in the NVIC,
+    // add a DSB instruction and then an ISB instruction. (ARM Cortex™-M Programming Guide to
+    // Memory Barrier Instructions, 4.6 Disabling Interrupts using NVIC)
+    __DSB();
+    __ISB();
+
+    // Clear all pending interrupts using NVIC
+    for (uint8_t i = 0; i < MP_ARRAY_SIZE(NVIC->ICPR); ++i) {
+        NVIC->ICPR[i] = 0xFFFFFFFF;
+    }
+
+    // information about jump addresses has been taken from STM AN2606.
+    #if defined(STM32F4)
+    __set_MSP(*((uint32_t *)0x1FFF0000));
+    ((void (*)(void)) * ((uint32_t *)0x1FFF0004))();
+    #else
+    // DFU mode for STM32 variant note implemented.
     NVIC_SystemReset();
+    #endif
+
+    while (true) {
+        asm ("nop;");
+    }
 }
 
 void reset_cpu(void) {

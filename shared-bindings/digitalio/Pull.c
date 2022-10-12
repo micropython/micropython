@@ -35,7 +35,6 @@
 //|         """Enum-like class to define the pull value, if any, used while reading
 //|         digital values in."""
 //|         ...
-//|
 //|     UP: Pull
 //|     """When the input line isn't being driven the pull up can pull the state
 //|     of the line high so it reads as true."""

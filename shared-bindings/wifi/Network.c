@@ -31,19 +31,15 @@
 #include "shared-bindings/wifi/Network.h"
 
 //| class Network:
-//|     """A wifi network provided by a nearby access point.
-//|
-//|     """
+//|     """A wifi network provided by a nearby access point."""
 //|
 
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `wifi.Network`. They are returned by `wifi.Radio.start_scanning_networks`."""
 //|         ...
-//|
 
 //|     ssid: str
 //|     """String id of the network"""
-//|
 STATIC mp_obj_t wifi_network_get_ssid(mp_obj_t self) {
     return common_hal_wifi_network_get_ssid(self);
 
@@ -56,7 +52,6 @@ MP_PROPERTY_GETTER(wifi_network_ssid_obj,
 
 //|     bssid: bytes
 //|     """BSSID of the network (usually the AP's MAC address)"""
-//|
 STATIC mp_obj_t wifi_network_get_bssid(mp_obj_t self) {
     return common_hal_wifi_network_get_bssid(self);
 
@@ -69,7 +64,6 @@ MP_PROPERTY_GETTER(wifi_network_bssid_obj,
 
 //|     rssi: int
 //|     """Signal strength of the network"""
-//|
 STATIC mp_obj_t wifi_network_get_rssi(mp_obj_t self) {
     return common_hal_wifi_network_get_rssi(self);
 
@@ -82,7 +76,6 @@ MP_PROPERTY_GETTER(wifi_network_rssi_obj,
 
 //|     channel: int
 //|     """Channel number the network is operating on"""
-//|
 STATIC mp_obj_t wifi_network_get_channel(mp_obj_t self) {
     return common_hal_wifi_network_get_channel(self);
 
@@ -94,7 +87,6 @@ MP_PROPERTY_GETTER(wifi_network_channel_obj,
 
 //|     country: str
 //|     """String id of the country code"""
-//|
 STATIC mp_obj_t wifi_network_get_country(mp_obj_t self) {
     return common_hal_wifi_network_get_country(self);
 

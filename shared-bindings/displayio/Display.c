@@ -39,11 +39,9 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate/translate.h"
 
-//| _DisplayBus = Union['FourWire', 'paralleldisplay.ParallelBus', 'I2CDisplay']
+//| _DisplayBus = Union["FourWire", "paralleldisplay.ParallelBus", "I2CDisplay"]
 //| """:py:class:`FourWire`, :py:class:`paralleldisplay.ParallelBus` or :py:class:`I2CDisplay`"""
-//|
 
-//|
 //| class Display:
 //|     """Manage updating a display over a display bus
 //|
@@ -54,7 +52,34 @@
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the initialization sequence at minimum."""
 //|
-//|     def __init__(self, display_bus: _DisplayBus, init_sequence: ReadableBuffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: Optional[int] = None, brightness: float = 1.0, single_byte_bounds: bool = False, data_as_commands: bool = False,  auto_refresh: bool = True, native_frames_per_second: int = 60, backlight_on_high: bool = True, SH1107_addressing: bool = False) -> None:
+//|     def __init__(
+//|         self,
+//|         display_bus: _DisplayBus,
+//|         init_sequence: ReadableBuffer,
+//|         *,
+//|         width: int,
+//|         height: int,
+//|         colstart: int = 0,
+//|         rowstart: int = 0,
+//|         rotation: int = 0,
+//|         color_depth: int = 16,
+//|         grayscale: bool = False,
+//|         pixels_in_byte_share_row: bool = True,
+//|         bytes_per_cell: int = 1,
+//|         reverse_pixels_in_byte: bool = False,
+//|         set_column_command: int = 0x2A,
+//|         set_row_command: int = 0x2B,
+//|         write_ram_command: int = 0x2C,
+//|         backlight_pin: Optional[microcontroller.Pin] = None,
+//|         brightness_command: Optional[int] = None,
+//|         brightness: float = 1.0,
+//|         single_byte_bounds: bool = False,
+//|         data_as_commands: bool = False,
+//|         auto_refresh: bool = True,
+//|         native_frames_per_second: int = 60,
+//|         backlight_on_high: bool = True,
+//|         SH1107_addressing: bool = False
+//|     ) -> None:
 //|         r"""Create a Display object on the given display bus (`FourWire`, `ParallelBus` or `I2CDisplay`).
 //|
 //|         The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
@@ -113,7 +138,6 @@
 //|         :param int backlight_pwm_frequency: The frequency to use to drive the PWM for backlight brightness control. Default is 50000.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args,
     size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart,
@@ -219,7 +243,6 @@ static displayio_display_obj_t *native_display(mp_obj_t display_obj) {
 //|
 //|         :param Group group: The group to show."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     displayio_display_obj_t *self = native_display(self_in);
     displayio_group_t *group = NULL;
@@ -235,7 +258,12 @@ STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show);
 
-//|     def refresh(self, *, target_frames_per_second: Optional[int] = None, minimum_frames_per_second: int = 0) -> bool:
+//|     def refresh(
+//|         self,
+//|         *,
+//|         target_frames_per_second: Optional[int] = None,
+//|         minimum_frames_per_second: int = 0
+//|     ) -> bool:
 //|         """When auto_refresh is off, and :py:attr:`target_frames_per_second` is not `None` this waits
 //|         for the target frame rate and then refreshes the display,
 //|         returning `True`. If the call has taken too long since the last refresh call for the given
@@ -255,7 +283,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show
 //|             achieve. Set to `None` for immediate refresh.
 //|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_target_frames_per_second, ARG_minimum_frames_per_second };
     static const mp_arg_t allowed_args[] = {
@@ -287,7 +314,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_refresh_obj, 1, displayio_display_o
 
 //|     auto_refresh: bool
 //|     """True when the display is refreshed automatically."""
-//|
 STATIC mp_obj_t displayio_display_obj_get_auto_refresh(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return mp_obj_new_bool(common_hal_displayio_display_get_auto_refresh(self));
@@ -309,7 +335,6 @@ MP_PROPERTY_GETSET(displayio_display_auto_refresh_obj,
 
 //|     brightness: float
 //|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness."""
-//|
 STATIC mp_obj_t displayio_display_obj_get_brightness(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     mp_float_t brightness = common_hal_displayio_display_get_brightness(self);
@@ -340,7 +365,6 @@ MP_PROPERTY_GETSET(displayio_display_brightness_obj,
 
 //|     width: int
 //|     """Gets the width of the board"""
-//|
 STATIC mp_obj_t displayio_display_obj_get_width(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_width(self));
@@ -352,7 +376,6 @@ MP_PROPERTY_GETTER(displayio_display_width_obj,
 
 //|     height: int
 //|     """Gets the height of the board"""
-//|
 STATIC mp_obj_t displayio_display_obj_get_height(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_height(self));
@@ -364,7 +387,6 @@ MP_PROPERTY_GETTER(displayio_display_height_obj,
 
 //|     rotation: int
 //|     """The rotation of the display as an int in degrees."""
-//|
 STATIC mp_obj_t displayio_display_obj_get_rotation(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_rotation(self));
@@ -384,8 +406,6 @@ MP_PROPERTY_GETSET(displayio_display_rotation_obj,
 
 //|     bus: _DisplayBus
 //|     """The bus being used by the display"""
-//|
-//|
 STATIC mp_obj_t displayio_display_obj_get_bus(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return common_hal_displayio_display_get_bus(self);
@@ -397,8 +417,6 @@ MP_PROPERTY_GETTER(displayio_display_bus_obj,
 
 //|     root_group: Group
 //|     """The root group on the display."""
-//|
-//|
 STATIC mp_obj_t displayio_display_obj_get_root_group(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return common_hal_displayio_display_get_root_group(self);

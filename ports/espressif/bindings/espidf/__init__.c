@@ -73,6 +73,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_largest_free_block_obj, espidf_he
 //|
 //|     This is necessary when upgrading from CircuitPython 6.3.0 or earlier to CircuitPython 7.0.0, because the
 //|     layout of data in nvs has changed. The old data will be lost when you perform this operation."""
+//|
 STATIC mp_obj_t espidf_erase_nvs(void) {
     ESP_ERROR_CHECK(nvs_flash_deinit());
     ESP_ERROR_CHECK(nvs_flash_erase());
@@ -103,8 +104,10 @@ const mp_obj_type_t mp_type_espidf_IDFError = {
 
 
 //| import builtins
+//|
 //| class MemoryError(builtins.MemoryError):
 //|     """Raised when an ESP IDF memory allocation fails."""
+//|
 //|     ...
 //|
 NORETURN void mp_raise_espidf_MemoryError(void) {
@@ -122,6 +125,7 @@ const mp_obj_type_t mp_type_espidf_MemoryError = {
 
 //| def get_total_psram() -> int:
 //|     """Returns the number of bytes of psram detected, or 0 if psram is not present or not configured"""
+//|
 STATIC mp_obj_t espidf_get_total_psram(void) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_espidf_get_total_psram());
 }
@@ -129,6 +133,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(espidf_get_total_psram_obj, espidf_get_total_psram);
 
 //| def get_reserved_psram() -> int:
 //|     """Returns number of bytes of psram reserved for use by esp-idf, either a board-specific default value or the value defined in ``/.env``."""
+//|
 STATIC mp_obj_t espidf_get_reserved_psram(void) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_espidf_get_reserved_psram());
 }

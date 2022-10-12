@@ -49,21 +49,37 @@
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the startup and shutdown sequences at minimum."""
 //|
-//|     def __init__(self, display_bus: _DisplayBus,
-//|                  start_sequence: ReadableBuffer, stop_sequence: ReadableBuffer, *,
-//|                  width: int, height: int, ram_width: int, ram_height: int,
-//|                  colstart: int = 0, rowstart: int = 0, rotation: int = 0,
-//|                  set_column_window_command: Optional[int] = None,
-//|                  set_row_window_command: Optional[int] = None,
-//|                  set_current_column_command: Optional[int] = None,
-//|                  set_current_row_command: Optional[int] = None,
-//|                  write_black_ram_command: int, black_bits_inverted: bool = False,
-//|                  write_color_ram_command: Optional[int] = None,
-//|                  color_bits_inverted: bool = False, highlight_color: int = 0x000000,
-//|                  refresh_display_command: int, refresh_time: float = 40,
-//|                  busy_pin: Optional[microcontroller.Pin] = None, busy_state: bool = True,
-//|                  seconds_per_frame: float = 180, always_toggle_chip_select: bool = False,
-//|                  grayscale: bool = False, two_byte_sequence_length: bool = False) -> None:
+//|     def __init__(
+//|         self,
+//|         display_bus: _DisplayBus,
+//|         start_sequence: ReadableBuffer,
+//|         stop_sequence: ReadableBuffer,
+//|         *,
+//|         width: int,
+//|         height: int,
+//|         ram_width: int,
+//|         ram_height: int,
+//|         colstart: int = 0,
+//|         rowstart: int = 0,
+//|         rotation: int = 0,
+//|         set_column_window_command: Optional[int] = None,
+//|         set_row_window_command: Optional[int] = None,
+//|         set_current_column_command: Optional[int] = None,
+//|         set_current_row_command: Optional[int] = None,
+//|         write_black_ram_command: int,
+//|         black_bits_inverted: bool = False,
+//|         write_color_ram_command: Optional[int] = None,
+//|         color_bits_inverted: bool = False,
+//|         highlight_color: int = 0x000000,
+//|         refresh_display_command: int,
+//|         refresh_time: float = 40,
+//|         busy_pin: Optional[microcontroller.Pin] = None,
+//|         busy_state: bool = True,
+//|         seconds_per_frame: float = 180,
+//|         always_toggle_chip_select: bool = False,
+//|         grayscale: bool = False,
+//|         two_byte_sequence_length: bool = False
+//|     ) -> None:
 //|         """Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `paralleldisplay.ParallelBus`).
 //|
 //|         The ``start_sequence`` and ``stop_sequence`` are bitpacked to minimize the ram impact. Every
@@ -103,7 +119,6 @@
 //|         :param bool grayscale: When true, the color ram is the low bit of 2-bit grayscale
 //|         :param bool two_byte_sequence_length: When true, use two bytes to define sequence length"""
 //|         ...
-//|
 STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_display_bus, ARG_start_sequence, ARG_stop_sequence, ARG_width, ARG_height,
            ARG_ram_width, ARG_ram_height, ARG_colstart, ARG_rowstart, ARG_rotation,
@@ -203,7 +218,6 @@ static displayio_epaperdisplay_obj_t *native_display(mp_obj_t display_obj) {
 //|
 //|         :param Group group: The group to show."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
     displayio_group_t *group = NULL;
@@ -219,10 +233,11 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t grou
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_show_obj, displayio_epaperdisplay_obj_show);
 
-//|     def update_refresh_mode(self, start_sequence: ReadableBuffer, seconds_per_frame: float = 180) -> None:
+//|     def update_refresh_mode(
+//|         self, start_sequence: ReadableBuffer, seconds_per_frame: float = 180
+//|     ) -> None:
 //|         """Updates the ``start_sequence`` and ``seconds_per_frame`` parameters to enable
 //|         varying the refresh mode of the display."""
-//|
 STATIC mp_obj_t displayio_epaperdisplay_update_refresh_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_start_sequence, ARG_seconds_per_frame };
     static const mp_arg_t allowed_args[] = {
@@ -248,7 +263,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(displayio_epaperdisplay_update_refresh_mode_obj, 1, d
 //|         """Refreshes the display immediately or raises an exception if too soon. Use
 //|         ``time.sleep(display.time_to_refresh)`` to sleep until a refresh can occur."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_epaperdisplay_obj_refresh(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
     bool ok = common_hal_displayio_epaperdisplay_refresh(self);
@@ -261,7 +275,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_refresh_obj, displayio_epaperd
 
 //|     time_to_refresh: float
 //|     """Time, in fractional seconds, until the ePaper display can be refreshed."""
-//|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_time_to_refresh(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
     return mp_obj_new_float(common_hal_displayio_epaperdisplay_get_time_to_refresh(self) / 1000.0);
@@ -274,7 +287,6 @@ MP_PROPERTY_GETTER(displayio_epaperdisplay_time_to_refresh_obj,
 //|     busy: bool
 //|     """True when the display is refreshing. This uses the ``busy_pin`` when available or the
 //|        ``refresh_time`` otherwise."""
-//|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_busy(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
     return mp_obj_new_bool(common_hal_displayio_epaperdisplay_get_busy(self));
@@ -286,7 +298,6 @@ MP_PROPERTY_GETTER(displayio_epaperdisplay_busy_obj,
 
 //|     width: int
 //|     """Gets the width of the display in pixels"""
-//|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_width(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_epaperdisplay_get_width(self));
@@ -298,7 +309,6 @@ MP_PROPERTY_GETTER(displayio_epaperdisplay_width_obj,
 
 //|     height: int
 //|     """Gets the height of the display in pixels"""
-//|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_height(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_epaperdisplay_get_height(self));
@@ -310,7 +320,6 @@ MP_PROPERTY_GETTER(displayio_epaperdisplay_height_obj,
 
 //|     rotation: int
 //|     """The rotation of the display as an int in degrees."""
-//|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_rotation(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_epaperdisplay_get_rotation(self));

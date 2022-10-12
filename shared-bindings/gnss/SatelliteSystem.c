@@ -9,7 +9,6 @@
 //|
 //|     def __init__(self) -> None:
 //|         """Enum-like class to define the satellite system type."""
-//|
 //|     GPS: SatelliteSystem
 //|     """Global Positioning System."""
 //|

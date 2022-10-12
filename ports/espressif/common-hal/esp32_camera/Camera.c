@@ -24,12 +24,15 @@
  * THE SOFTWARE.
  */
 
+#include "py/mperrno.h"
 #include "py/runtime.h"
 
 #include "bindings/esp32_camera/Camera.h"
 #include "bindings/espidf/__init__.h"
 #include "common-hal/esp32_camera/Camera.h"
+#include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/util.h"
 #include "common-hal/microcontroller/Pin.h"
 
 #include "esp32-camera/driver/private_include/cam_hal.h"
@@ -37,6 +40,19 @@
 #if !CONFIG_SPIRAM
 #error esp32_camera only works on boards configured with spiram, disable it in mpconfigboard.mk
 #endif
+
+static void i2c_lock(esp32_camera_camera_obj_t *self) {
+    if (common_hal_busio_i2c_deinited(self->i2c)) {
+        raise_deinited_error();
+    }
+    if (!common_hal_busio_i2c_try_lock(self->i2c)) {
+        mp_raise_OSError(MP_EWOULDBLOCK);
+    }
+}
+
+static void i2c_unlock(esp32_camera_camera_obj_t *self) {
+    common_hal_busio_i2c_unlock(self->i2c);
+}
 
 static void maybe_claim_pin(const mcu_pin_obj_t *pin) {
     if (pin) {
@@ -53,7 +69,7 @@ void common_hal_esp32_camera_camera_construct(
     const mcu_pin_obj_t *href_pin,
     const mcu_pin_obj_t *powerdown_pin,
     const mcu_pin_obj_t *reset_pin,
-    const busio_i2c_obj_t *i2c,
+    busio_i2c_obj_t *i2c,
     mp_int_t external_clock_frequency,
     pixformat_t pixel_format,
     framesize_t frame_size,
@@ -77,6 +93,8 @@ void common_hal_esp32_camera_camera_construct(
     maybe_claim_pin(reset_pin);
 
     common_hal_pwmio_pwmout_construct(&self->pwm, external_clock_pin, 1, external_clock_frequency, true);
+
+    self->i2c = i2c;
 
     self->camera_config.pin_pwdn = common_hal_mcu_pin_number(powerdown_pin);
     self->camera_config.pin_reset = common_hal_mcu_pin_number(reset_pin);
@@ -112,7 +130,11 @@ void common_hal_esp32_camera_camera_construct(
 
     self->camera_config.sccb_i2c_port = i2c->i2c_num;
 
-    CHECK_ESP_RESULT(esp_camera_init(&self->camera_config));
+    i2c_lock(self);
+    esp_err_t result = esp_camera_init(&self->camera_config);
+    i2c_unlock(self);
+
+    CHECK_ESP_RESULT(result);
 }
 
 extern void common_hal_esp32_camera_camera_deinit(esp32_camera_camera_obj_t *self) {
@@ -165,7 +187,9 @@ camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self
 
 #define SENSOR_GET(type, name, status_field_name, setter_function_name) \
     type common_hal_esp32_camera_camera_get_##name(esp32_camera_camera_obj_t * self) { \
+        i2c_lock(self); \
         sensor_t *sensor = esp_camera_sensor_get(); \
+        i2c_unlock(self); \
         if (!sensor->setter_function_name) { \
             mp_raise_AttributeError(translate("no such attribute")); \
         } \
@@ -174,7 +198,9 @@ camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self
 
 #define SENSOR_SET(type, name, setter_function_name) \
     void common_hal_esp32_camera_camera_set_##name(esp32_camera_camera_obj_t * self, type value) { \
+        i2c_lock(self); \
         sensor_t *sensor = esp_camera_sensor_get(); \
+        i2c_unlock(self); \
         if (!sensor->setter_function_name) { \
             mp_raise_AttributeError(translate("no such attribute")); \
         } \
@@ -191,8 +217,6 @@ framesize_t common_hal_esp32_camera_camera_get_frame_size(esp32_camera_camera_ob
     return self->camera_config.frame_size;
 }
 
-#include "esp_log.h"
-
 void common_hal_esp32_camera_camera_reconfigure(esp32_camera_camera_obj_t *self, framesize_t frame_size, pixformat_t pixel_format, camera_grab_mode_t grab_mode, mp_int_t framebuffer_count) {
     sensor_t *sensor = esp_camera_sensor_get();
     camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);
@@ -205,6 +229,7 @@ void common_hal_esp32_camera_camera_reconfigure(esp32_camera_camera_obj_t *self,
         frame_size = sensor_info->max_size;
     }
 
+    i2c_lock(self);
     cam_deinit();
     self->camera_config.pixel_format = pixel_format;
     self->camera_config.frame_size = frame_size;
@@ -214,6 +239,7 @@ void common_hal_esp32_camera_camera_reconfigure(esp32_camera_camera_obj_t *self,
     sensor->set_framesize(sensor, self->camera_config.frame_size);
     cam_init(&self->camera_config);
     cam_config(&self->camera_config, frame_size, sensor_info->pid);
+    i2c_unlock(self);
     cam_start();
 }
 

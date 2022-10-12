@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-11 17:18+0000\n"
+"PO-Revision-Date: 2022-09-30 08:18+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: main.c
 msgid ""
@@ -67,6 +67,11 @@ msgstr " utdata:\n"
 msgid "%%c requires int or char"
 msgstr "%%c kräver int eller char"
 
+#: main.c
+#, c-format
+msgid "%02X"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -74,13 +79,16 @@ msgid ""
 msgstr ""
 "%d adresspinnar, %d rgb-pinnar och %d brickor anger en höjd på %d, inte %d"
 
+#: ports/atmel-samd/common-hal/alarm/__init__.c
 #: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
 #: ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c
+#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/alarm/__init__.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
+#: ports/stm/common-hal/rtc/RTC.c
 msgid "%q"
 msgstr "%q"
 
@@ -100,6 +108,7 @@ msgstr "%q innehåller dubblettstift"
 msgid "%q failure: %d"
 msgstr "%q-fel: %d"
 
+#: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q används redan"
@@ -156,13 +165,12 @@ msgstr "%q måste vara <= %d"
 msgid "%q must be >= %d"
 msgstr "%q måste vara >= %d"
 
-#: py/argcheck.c
-msgid "%q must be >= 0"
-msgstr "%q måste vara >= 0"
-
-#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
-msgid "%q must be >= 1"
-msgstr "%q måste vara >= 1"
+#: shared-bindings/analogbufio/BufferedIn.c
+#: shared-bindings/audiocore/RawSample.c
+msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
+msgstr ""
+"%q måste vara en bytearray eller en array av typen \"h\", \"H\", \"b\" eller "
+"\"B\""
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -302,7 +310,7 @@ msgstr "Objektet '%s' stöder inte tilldelning"
 msgid "'%s' object doesn't support item deletion"
 msgstr "Objektet '%s' stöder inte borttagning"
 
-#: py/runtime.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "Objektet '%s' har inget attribut '%q'"
 
@@ -488,6 +496,7 @@ msgid "Already running"
 msgstr "Kör redan"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Skannar redan efter wifi-nätverk"
 
@@ -914,16 +923,20 @@ msgstr "Fel i regex"
 msgid "Error: Failure to bind"
 msgstr "Fel: Bind misslyckades"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c py/enum.c
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
+#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
 msgstr "Förväntade %q"
 
+#: ports/raspberrypi/bindings/cyw43/__init__.c
+msgid "Expected a %q or %q"
+msgstr "Förväntade %q eller %q"
+
 #: shared-bindings/alarm/__init__.c
-msgid "Expected an alarm"
-msgstr "Förväntade ett larm"
+msgid "Expected an %q"
+msgstr "Förväntade en %q"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1188,7 +1201,7 @@ msgstr "Internt fel #%d"
 msgid "Internal watchdog timer expired."
 msgstr "Intern watchdog-timer har löpt ut."
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid %q"
 msgstr "Ogiltig %q"
 
@@ -1248,6 +1261,7 @@ msgid "Invalid size"
 msgstr "Ogiltig storlek"
 
 #: ports/espressif/common-hal/ssl/SSLContext.c
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr "Ogiltig socket för TLS"
 
@@ -1577,10 +1591,12 @@ msgid "Only 8 or 16 bit mono with "
 msgstr "Endast 8 eller 16 bitars mono med "
 
 #: ports/espressif/common-hal/wifi/__init__.c
+#: ports/raspberrypi/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Endast IPv4-adresser stöds"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
+#: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr "Endast IPv4-socket stöds"
 
@@ -1653,6 +1669,7 @@ msgid "Out of memory"
 msgstr "Slut på minne"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
+#: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "Slut på sockets"
 
@@ -1709,7 +1726,6 @@ msgid "Pin interrupt already in use"
 msgstr "Pinnavbrott används redan"
 
 #: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
-#: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Pinnen är enbart ingång"
 
@@ -1934,6 +1950,7 @@ msgid "Slices not supported"
 msgstr "Slice stöds inte"
 
 #: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/raspberrypi/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
 msgstr "SocketPool kan endast användas med wifi.radio"
 
@@ -1956,10 +1973,6 @@ msgstr "Vänster stereokanal måste använda PWM kanal A"
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
 msgstr "Höger stereokanal måste använda PWM kanal B"
-
-#: shared-bindings/multiterminal/__init__.c
-msgid "Stream missing readinto() or write() method."
-msgstr "Stream saknar readinto() eller write() metod."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
@@ -2114,6 +2127,10 @@ msgstr "UART omstart"
 msgid "UART write"
 msgstr "UART-skrivning"
 
+#: main.c
+msgid "UID:"
+msgstr ""
+
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
 msgstr "USB upptaget"
@@ -2236,6 +2253,11 @@ msgstr "Okänt systemfirmwarefel: %04x"
 #, c-format
 msgid "Unknown system firmware error: %d"
 msgstr "Okänt fel i systemets firmware: %d"
+
+#: ports/raspberrypi/common-hal/wifi/__init__.c
+#, c-format
+msgid "Unkown error code %d"
+msgstr "Okänd felkod %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -2373,10 +2395,6 @@ msgstr "__new__ arg måste vara en användartyp"
 #: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "ett bytesliknande objekt krävs"
-
-#: shared-bindings/i2ctarget/I2CTarget.c
-msgid "address out of bounds"
-msgstr "adress utanför gränsen"
 
 #: shared-bindings/i2ctarget/I2CTarget.c
 msgid "addresses is empty"
@@ -2570,8 +2588,7 @@ msgstr "kan inte tilldela uttryck"
 msgid "can't cancel self"
 msgstr "kan inte avbryta sig själv"
 
-#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kan inte konvertera %q till %q"
 
@@ -2760,10 +2777,6 @@ msgstr "färgbuffert måste vara en bytearray eller matris av typ 'b' eller 'B'"
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "färg måste vara mellan 0x000000 och 0xffffff"
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr "color ska vara en int"
-
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr "jämförelse av int och uint"
@@ -2857,10 +2870,6 @@ msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
 msgstr ""
 "destinationsbufferten måste vara en matris av typen 'H' för bit_depth = 16"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "destination_length must be an int >= 0"
-msgstr "destination_length måste vara ett heltal >= 0"
-
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
 msgstr "uppdateringssekvensen för dict har fel längd"
@@ -2918,10 +2927,6 @@ msgstr "tom sekvens"
 msgid "end of format while looking for conversion specifier"
 msgstr "slut på format vid sökning efter konverteringsspecificerare"
 
-#: shared-bindings/displayio/Shape.c
-msgid "end_x should be an int"
-msgstr "color ska vara en int"
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
 msgstr "epoch_time stöds inte av detta kort"
@@ -2936,6 +2941,8 @@ msgid ""
 "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
 msgstr ""
+"esp32_camera.Camera kräver reserverad PSRAM att konfigureras. Se "
+"dokumentationen för instruktioner."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -3288,6 +3295,10 @@ msgstr "ogiltig arkitektur"
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr "ogiltig bits_per_pixel %d, måste vara, 1, 2, 4, 8, 16, 24 eller 32"
 
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+msgid "invalid cert"
+msgstr "ogiltigt certifikat"
+
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element size %d for bits_per_pixel %d\n"
@@ -3313,6 +3324,10 @@ msgstr "ogiltig formatspecificerare"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "Ogiltigt värdnamn"
+
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+msgid "invalid key"
+msgstr "ogiltig nyckel"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -3791,10 +3806,6 @@ msgstr "pack förväntade %d stycken för packning (fick %d)"
 msgid "palette must be 32 bytes long"
 msgstr "palette måste vara 32 bytes lång"
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr "palette_index ska vara en int"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parametrarna måste registreras i följd a2-a5"
@@ -3859,7 +3870,9 @@ msgstr "genom att trycka på VOLUME-knappen vid start.\n"
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
 #: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n8r2/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
+#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: supervisor/shared/safe_mode.c
 msgid "pressing boot button at start up.\n"
 msgstr "trycka på startknappen vid start.\n"
@@ -3930,14 +3943,6 @@ msgstr "argumentet roll måste vara en ndarray"
 #: py/objstr.c
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
-
-#: shared-bindings/audiocore/RawSample.c
-msgid ""
-"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
-"'B'"
-msgstr ""
-"sample_source buffert måste vara en bytearray eller matris av typ 'h', 'H', "
-"'b' eller 'B'"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
@@ -4039,10 +4044,6 @@ msgstr "source_bitmap måste ha value_count av 8"
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "start-/slutindex"
-
-#: shared-bindings/displayio/Shape.c
-msgid "start_x should be an int"
-msgstr "start_x ska vara en int"
 
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
@@ -4192,13 +4193,9 @@ msgstr "typ '%q' är inte en acceptabel bastyp"
 msgid "type is not an acceptable base type"
 msgstr "typ är inte en acceptabel bastyp"
 
-#: py/runtime.c
+#: py/objgenerator.c py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "typobjektet '%q' har inget attribut '%q'"
-
-#: py/objgenerator.c
-msgid "type object 'generator' has no attribute '__await__'"
-msgstr "typobjekt 'generator' har inget attribut '__await__'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
@@ -4258,7 +4255,6 @@ msgid "unreadable attribute"
 msgstr "attribut kan inte läsas"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "typ %q stöds inte"
 
@@ -4331,8 +4327,13 @@ msgid "width must be greater than zero"
 msgstr "width måste vara större än noll"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
 msgstr "wifi är inte aktiverat"
+
+#: ports/raspberrypi/common-hal/wifi/Monitor.c
+msgid "wifi.Monitor not available"
+msgstr "wifi.Monitor är inte tillgänglig"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
@@ -4388,10 +4389,6 @@ msgstr "x-värde utanför intervall"
 msgid "xTaskCreate failed"
 msgstr "xTaskCreate misslyckades"
 
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
-msgstr "y ska vara en int"
-
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
 msgstr "y-värde utanför intervall"
@@ -4411,6 +4408,54 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Stream missing readinto() or write() method."
+#~ msgstr "Stream saknar readinto() eller write() metod."
+
+#~ msgid "%q must be >= 0"
+#~ msgstr "%q måste vara >= 0"
+
+#~ msgid "%q must be >= 1"
+#~ msgstr "%q måste vara >= 1"
+
+#~ msgid "address out of bounds"
+#~ msgstr "adress utanför gränsen"
+
+#~ msgid "destination_length must be an int >= 0"
+#~ msgstr "destination_length måste vara ett heltal >= 0"
+
+#~ msgid "type object 'generator' has no attribute '__await__'"
+#~ msgstr "typobjekt 'generator' har inget attribut '__await__'"
+
+#~ msgid "color should be an int"
+#~ msgstr "color ska vara en int"
+
+#~ msgid "end_x should be an int"
+#~ msgstr "color ska vara en int"
+
+#~ msgid "palette_index should be an int"
+#~ msgstr "palette_index ska vara en int"
+
+#~ msgid "start_x should be an int"
+#~ msgstr "start_x ska vara en int"
+
+#~ msgid "y should be an int"
+#~ msgstr "y ska vara en int"
+
+#~ msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
+#~ msgstr ""
+#~ "%q ``måste`` vara en bytearray eller matris av typen 'h', 'H', 'b' eller "
+#~ "'B'"
+
+#~ msgid ""
+#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
+#~ "or 'B'"
+#~ msgstr ""
+#~ "sample_source buffert måste vara en bytearray eller matris av typ 'h', "
+#~ "'H', 'b' eller 'B'"
+
+#~ msgid "Expected an alarm"
+#~ msgstr "Förväntade ett larm"
 
 #~ msgid "All I2C targets are in use"
 #~ msgstr "Alla I2C-mål används"
@@ -5104,12 +5149,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 
 #~ msgid "can only save bytecode"
 #~ msgstr "kan bara spara bytecode"
-
-#~ msgid "invalid cert"
-#~ msgstr "ogiltigt certifikat"
-
-#~ msgid "invalid key"
-#~ msgstr "ogiltig nyckel"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "Viper-funktioner stöder för närvarande inte mer än fyra argument"

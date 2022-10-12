@@ -72,7 +72,7 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
         return mp_const_none;
     }
     // If we are scanning, wait and then load them.
-    if (self->scanning) {
+    if (self->channel_scan_in_progress) {
         // We may have to scan more than one channel to get a result.
         while (!self->done) {
             if (!wifi_scannednetworks_wait_for_scan(self)) {
@@ -81,7 +81,7 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
             }
 
             esp_wifi_scan_get_ap_num(&self->total_results);
-            self->scanning = false;
+            self->channel_scan_in_progress = false;
             if (self->total_results > 0) {
                 break;
             }
@@ -112,7 +112,7 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
             }
         }
         esp_wifi_scan_get_ap_records(&self->total_results, self->results);
-        self->scanning = false;
+        self->channel_scan_in_progress = false;
     }
 
     wifi_network_obj_t *entry = m_new_obj(wifi_network_obj_t);
@@ -132,40 +132,49 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
 }
 
 // We don't do a linear scan so that we look at a variety of spectrum up front.
-static uint8_t scan_pattern[] = {6, 1, 11, 3, 9, 13, 2, 4, 8, 12, 5, 7, 10, 14};
+static uint8_t scan_pattern[] = {6, 1, 11, 3, 9, 13, 2, 4, 8, 12, 5, 7, 10, 14, 0};
 
 void wifi_scannednetworks_scan_next_channel(wifi_scannednetworks_obj_t *self) {
-    uint8_t next_channel = sizeof(scan_pattern);
+    // There is no channel 0, so use that as a flag to indicate we've run out of channels to scan.
+    uint8_t next_channel = 0;
     while (self->current_channel_index < sizeof(scan_pattern)) {
         next_channel = scan_pattern[self->current_channel_index];
         self->current_channel_index++;
+        // Scan only channels that are in the specified range.
         if (self->start_channel <= next_channel && next_channel <= self->end_channel) {
             break;
         }
     }
     wifi_scan_config_t config = { 0 };
     config.channel = next_channel;
-    if (next_channel == sizeof(scan_pattern)) {
+    if (next_channel == 0) {
         wifi_scannednetworks_done(self);
     } else {
         esp_err_t result = esp_wifi_scan_start(&config, false);
         if (result != ESP_OK) {
             wifi_scannednetworks_done(self);
         } else {
-            self->scanning = true;
+            self->channel_scan_in_progress = true;
         }
     }
 }
 
 void wifi_scannednetworks_deinit(wifi_scannednetworks_obj_t *self) {
     // if a scan is active, make sure and clean up the idf's buffer of results.
-    if (self->scanning) {
+    if (self->channel_scan_in_progress) {
         esp_wifi_scan_stop();
         if (wifi_scannednetworks_wait_for_scan(self)) {
-            // Ignore the number of records since we're throwing them away.
-            uint16_t number = 0;
-            esp_wifi_scan_get_ap_records(&number, NULL);
-            self->scanning = false;
+            // Discard the scanned records, one at a time, to avoid memory leaks.
+            uint16_t number;
+            do {
+                number = 1;
+                wifi_ap_record_t record;
+                esp_wifi_scan_get_ap_records(&number, &record);
+            } while (number > 0);
+            // TODO: available in ESP-IDF v5.0; do instead of the above.
+            // Discard scan results.
+            // esp_wifi_clear_ap_list();
+            self->channel_scan_in_progress = false;
         }
     }
     wifi_scannednetworks_done(self);

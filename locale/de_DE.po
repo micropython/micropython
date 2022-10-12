@@ -66,6 +66,11 @@ msgstr " Ausgabe:\n"
 msgid "%%c requires int or char"
 msgstr "%%c erwartet Int oder Char"
 
+#: main.c
+#, c-format
+msgid "%02X"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -74,13 +79,16 @@ msgstr ""
 "%d Adress-Pins, %d RGB-Pins und %d Kacheln indizieren eine Höhe von %d, "
 "nicht %d"
 
+#: ports/atmel-samd/common-hal/alarm/__init__.c
 #: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
 #: ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c
+#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/alarm/__init__.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
+#: ports/stm/common-hal/rtc/RTC.c
 msgid "%q"
 msgstr "%q"
 
@@ -100,6 +108,7 @@ msgstr "%q enthält doppelte Pins"
 msgid "%q failure: %d"
 msgstr "%q Fehler: %d"
 
+#: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q in Benutzung"
@@ -156,13 +165,10 @@ msgstr "%q muss <= %d sein"
 msgid "%q must be >= %d"
 msgstr "%q muss >= %d sein"
 
-#: py/argcheck.c
-msgid "%q must be >= 0"
-msgstr "%q muss >= 0 sein"
-
-#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
-msgid "%q must be >= 1"
-msgstr "%q muss >= 1 sein"
+#: shared-bindings/analogbufio/BufferedIn.c
+#: shared-bindings/audiocore/RawSample.c
+msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -303,7 +309,7 @@ msgstr "'%s' Objekt unterstützt keine Element-Zuordnung"
 msgid "'%s' object doesn't support item deletion"
 msgstr "'%s' Objekt unterstützt keine Löschung von Elementen"
 
-#: py/runtime.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "'%s' Objekt hat kein Attribut '%q'"
 
@@ -489,6 +495,7 @@ msgid "Already running"
 msgstr "Läuft bereits"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Sucht bereits nach Wifi-Netzwerken"
 
@@ -918,16 +925,20 @@ msgstr "Fehler in regex"
 msgid "Error: Failure to bind"
 msgstr "Error: Bind Fehler"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c py/enum.c
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
+#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
 msgstr "Erwartet ein(e) %q"
 
+#: ports/raspberrypi/bindings/cyw43/__init__.c
+msgid "Expected a %q or %q"
+msgstr ""
+
 #: shared-bindings/alarm/__init__.c
-msgid "Expected an alarm"
-msgstr "Alarm erwartet"
+msgid "Expected an %q"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1197,7 +1208,7 @@ msgstr "Interner Fehler #%d"
 msgid "Internal watchdog timer expired."
 msgstr "Der Interne WatchDog Timer ist abgelaufen."
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid %q"
 msgstr "Ungültiger %q"
 
@@ -1257,6 +1268,7 @@ msgid "Invalid size"
 msgstr "Ungültige Größe"
 
 #: ports/espressif/common-hal/ssl/SSLContext.c
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr "Ungültiges Socket für TLS"
 
@@ -1586,10 +1598,12 @@ msgid "Only 8 or 16 bit mono with "
 msgstr "Nur 8 oder 16 bit mono mit "
 
 #: ports/espressif/common-hal/wifi/__init__.c
+#: ports/raspberrypi/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Nur IPv4-Adressen werden unterstützt"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
+#: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr "Nur IPv4-Sockets werden unterstützt"
 
@@ -1663,6 +1677,7 @@ msgid "Out of memory"
 msgstr "Kein Speicher mehr verfügbar"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
+#: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "Keine Sockets mehr verfügbar"
 
@@ -1717,7 +1732,6 @@ msgid "Pin interrupt already in use"
 msgstr "Pin-Interrupt wird bereits verwendet"
 
 #: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
-#: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Pin kann nur als Eingang verwendet werden"
 
@@ -1943,6 +1957,7 @@ msgid "Slices not supported"
 msgstr "Slices werden nicht unterstützt"
 
 #: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/raspberrypi/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
 msgstr "SocketPool kann nur mit wifi.radio verwendet werden"
 
@@ -1965,10 +1980,6 @@ msgstr "Stereo links muss sich auf PWM-Kanal A befinden"
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
 msgstr "Stereo rechts muss sich auf PWM-Kanal B befinden"
-
-#: shared-bindings/multiterminal/__init__.c
-msgid "Stream missing readinto() or write() method."
-msgstr "Stream fehlt readinto() oder write() Methode."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
@@ -2126,6 +2137,10 @@ msgstr "UART wird wieder Initialisiert"
 msgid "UART write"
 msgstr "UART wird geschrieben"
 
+#: main.c
+msgid "UID:"
+msgstr ""
+
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
 msgstr "USB beschäftigt"
@@ -2248,6 +2263,11 @@ msgstr "Unbekannter Systemfirmware Fehler: %04x"
 #, c-format
 msgid "Unknown system firmware error: %d"
 msgstr "Unbekannter System-Firmware-Fehler: %d"
+
+#: ports/raspberrypi/common-hal/wifi/__init__.c
+#, c-format
+msgid "Unkown error code %d"
+msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -2391,10 +2411,6 @@ msgstr "__new__ arg muss user-type sein"
 #: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "ein Byte-ähnliches Objekt ist erforderlich"
-
-#: shared-bindings/i2ctarget/I2CTarget.c
-msgid "address out of bounds"
-msgstr "Adresse außerhalb der Grenzen"
 
 #: shared-bindings/i2ctarget/I2CTarget.c
 msgid "addresses is empty"
@@ -2590,8 +2606,7 @@ msgstr "kann keinem Ausdruck zuweisen"
 msgid "can't cancel self"
 msgstr "kann self nicht abbrechen"
 
-#: py/obj.c py/objint.c shared-bindings/i2ctarget/I2CTarget.c
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kann %q nicht zu %q konvertieren"
 
@@ -2786,10 +2801,6 @@ msgstr ""
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "Farbe muss zwischen 0x000000 und 0xffffff liegen"
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr "Farbe sollte ein int sein"
-
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr "Vergleich von int und uint"
@@ -2882,10 +2893,6 @@ msgstr ""
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
 msgstr "Der Zielpuffer muss ein Array vom Typ 'H' für bit_depth = 16 sein"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "destination_length must be an int >= 0"
-msgstr "destination_length muss ein int >= 0 sein"
-
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
 msgstr "Die Wörterbuch-Aktualisierungssequenz hat eine falsche Länge"
@@ -2942,10 +2949,6 @@ msgstr "leere Sequenz"
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
 msgstr "Ende des Formats wärend der Suche nach einem conversion specifier"
-
-#: shared-bindings/displayio/Shape.c
-msgid "end_x should be an int"
-msgstr "end_x sollte ein int sein"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
@@ -3315,6 +3318,10 @@ msgstr "ungültige Architektur"
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr "ungültige Bits_pro_Pixel %d, muss 1, 2, 4, 8, 16, 24 oder 32 sein"
 
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+msgid "invalid cert"
+msgstr "ungültiges cert"
+
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element size %d for bits_per_pixel %d\n"
@@ -3340,6 +3347,10 @@ msgstr "ungültiger Formatbezeichner"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "ungültiger Hostname"
+
+#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+msgid "invalid key"
+msgstr "ungültiger Schlüssel"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -3826,10 +3837,6 @@ msgstr "pack erwartete %d Artikel zum Packen (erhalten %d)"
 msgid "palette must be 32 bytes long"
 msgstr "Die Palette muss 32 Byte lang sein"
 
-#: shared-bindings/displayio/Palette.c
-msgid "palette_index should be an int"
-msgstr "palette_index sollte ein int sein"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "Die Parameter müssen Register der Reihenfolge a2 bis a5 sein"
@@ -3893,7 +3900,9 @@ msgstr "VOLUME Taste wird beim Starten gedrückt.\n"
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
 #: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n8r2/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
+#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: supervisor/shared/safe_mode.c
 msgid "pressing boot button at start up.\n"
 msgstr "Drücken der Boot-Taste beim Start.\n"
@@ -3964,14 +3973,6 @@ msgstr "Roll-Argument muss ein ndarray sein"
 #: py/objstr.c
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
-
-#: shared-bindings/audiocore/RawSample.c
-msgid ""
-"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
-"'B'"
-msgstr ""
-"sample_source buffer muss ein Bytearray oder ein Array vom Typ 'h', 'H', 'b' "
-"oder 'B' sein"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
@@ -4073,10 +4074,6 @@ msgstr "source_bitmap muss value_count von 8 haben"
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "start/end Indizes"
-
-#: shared-bindings/displayio/Shape.c
-msgid "start_x should be an int"
-msgstr "start_x sollte ein int sein"
 
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
@@ -4227,13 +4224,9 @@ msgstr "Typ '%q' ist kein akzeptierter Basis-Typ"
 msgid "type is not an acceptable base type"
 msgstr "Typ ist kein akzeptierter Basis-Typ"
 
-#: py/runtime.c
+#: py/objgenerator.c py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "Typ vom Objekt '%q' hat kein Attribut '%q'"
-
-#: py/objgenerator.c
-msgid "type object 'generator' has no attribute '__await__'"
-msgstr "Das Typ-Objekt 'generator' hat kein Attribut '__await__'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
@@ -4295,7 +4288,6 @@ msgid "unreadable attribute"
 msgstr "nicht lesbares Attribut"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "Nicht unterstützter %q-Typ"
 
@@ -4368,8 +4360,13 @@ msgid "width must be greater than zero"
 msgstr "Breite muss größer als 0 sein"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
 msgstr "wifi ist nicht aktiviert"
+
+#: ports/raspberrypi/common-hal/wifi/Monitor.c
+msgid "wifi.Monitor not available"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
@@ -4425,10 +4422,6 @@ msgstr "x Wert außerhalb der Grenzen"
 msgid "xTaskCreate failed"
 msgstr "xTaskCreate fehlgeschlagen"
 
-#: shared-bindings/displayio/Shape.c
-msgid "y should be an int"
-msgstr "y sollte ein int sein"
-
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
 msgstr "y Wert außerhalb der Grenzen"
@@ -4448,6 +4441,49 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "Stream missing readinto() or write() method."
+#~ msgstr "Stream fehlt readinto() oder write() Methode."
+
+#~ msgid "%q must be >= 0"
+#~ msgstr "%q muss >= 0 sein"
+
+#~ msgid "%q must be >= 1"
+#~ msgstr "%q muss >= 1 sein"
+
+#~ msgid "address out of bounds"
+#~ msgstr "Adresse außerhalb der Grenzen"
+
+#~ msgid "destination_length must be an int >= 0"
+#~ msgstr "destination_length muss ein int >= 0 sein"
+
+#~ msgid "type object 'generator' has no attribute '__await__'"
+#~ msgstr "Das Typ-Objekt 'generator' hat kein Attribut '__await__'"
+
+#~ msgid "color should be an int"
+#~ msgstr "Farbe sollte ein int sein"
+
+#~ msgid "end_x should be an int"
+#~ msgstr "end_x sollte ein int sein"
+
+#~ msgid "palette_index should be an int"
+#~ msgstr "palette_index sollte ein int sein"
+
+#~ msgid "start_x should be an int"
+#~ msgstr "start_x sollte ein int sein"
+
+#~ msgid "y should be an int"
+#~ msgstr "y sollte ein int sein"
+
+#~ msgid ""
+#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
+#~ "or 'B'"
+#~ msgstr ""
+#~ "sample_source buffer muss ein Bytearray oder ein Array vom Typ 'h', 'H', "
+#~ "'b' oder 'B' sein"
+
+#~ msgid "Expected an alarm"
+#~ msgstr "Alarm erwartet"
 
 #~ msgid "All I2C targets are in use"
 #~ msgstr "Alle I2C-Ziele sind in Verwendung"
@@ -5063,12 +5099,6 @@ msgstr "zi muss die Form (n_section, 2) haben"
 
 #~ msgid "can only save bytecode"
 #~ msgstr "kann nur Bytecode speichern"
-
-#~ msgid "invalid cert"
-#~ msgstr "ungültiges cert"
-
-#~ msgid "invalid key"
-#~ msgstr "ungültiger Schlüssel"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "Viper-Funktionen unterstützen derzeit nicht mehr als 4 Argumente"

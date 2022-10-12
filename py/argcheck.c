@@ -189,7 +189,7 @@ mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t 
         ? default_for_null
         : mp_obj_get_float(float_in);
     if (f <= (mp_float_t)0.0) {
-        mp_raise_ValueError_varg(translate("%q must be >= 0"), arg_name);
+        mp_raise_ValueError_varg(translate("%q must be >= %d"), arg_name, 0);
     }
     return f;
 }

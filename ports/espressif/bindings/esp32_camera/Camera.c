@@ -46,17 +46,17 @@
 //|         self,
 //|         *,
 //|         data_pins: List[microcontroller.Pin],
-//|         pixel_clock: microcontroller.Pin,
-//|         vsync: microcontroller.Pin,
-//|         href: microcontroller.Pin,
+//|         pixel_clock_pin: microcontroller.Pin,
+//|         vsync_pin: microcontroller.Pin,
+//|         href_pin: microcontroller.Pin,
 //|         i2c: busio.I2C,
 //|         external_clock_pin: microcontroller.Pin,
 //|         external_clock_frequency: int,
 //|         powerdown_pin: Optional[microcontroller.Pin] = None,
 //|         reset_pin: Optional[microcontroller.Pin] = None,
-//|         pixel_format: PixelFormat=PixelFormat.RGB565,
-//|         frame_size: FrameSize=FrameSize.QQVGA,
-//|         jpeg_quality: int=15,
+//|         pixel_format: PixelFormat = PixelFormat.RGB565,
+//|         frame_size: FrameSize = FrameSize.QQVGA,
+//|         jpeg_quality: int = 15,
 //|         framebuffer_count: int = 1,
 //|         grab_mode: GrabMode = GrabMode.WHEN_EMPTY,
 //|     ) -> None:
@@ -79,12 +79,12 @@
 //|             that case.
 //|
 //|         :param data_pins: The 8 data data_pins used for image data transfer from the camera module, least significant bit first
-//|         :param pixel_clock: The pixel clock output from the camera module
-//|         :param vsync: The vertical sync pulse output from the camera module
-//|         :param href: The horizontal reference output from the camera module
+//|         :param pixel_clock_pin: The pixel clock output from the camera module
+//|         :param vsync_pin: The vertical sync pulse output from the camera module
+//|         :param href_pin: The horizontal reference output from the camera module
 //|         :param i2c: The I2C bus connected to the camera module
-//|         :param external_clock_frequency: The frequency generated on the external clock pin
 //|         :param external_clock_pin: The pin on which to generate the external clock
+//|         :param external_clock_frequency: The frequency generated on the external clock pin
 //|         :param powerdown_pin: The powerdown input to the camera module
 //|         :param reset_pin: The reset input to the camera module
 //|         :param pixel_format: The pixel format of the captured image
@@ -93,7 +93,6 @@
 //|         :param framebuffer_count: The number of framebuffers (1 for single-buffered and 2 for double-buffered)
 //|         :param grab_mode: When to grab a new frame
 //|         """
-//|
 STATIC mp_obj_t esp32_camera_camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_data_pins, ARG_pixel_clock_pin, ARG_vsync_pin, ARG_href_pin, ARG_i2c, ARG_external_clock_pin, ARG_external_clock_frequency, ARG_powerdown_pin, ARG_reset_pin, ARG_pixel_format, ARG_frame_size, ARG_jpeg_quality, ARG_framebuffer_count, ARG_grab_mode, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
@@ -125,7 +124,7 @@ STATIC mp_obj_t esp32_camera_camera_make_new(const mp_obj_type_t *type, size_t n
     const mcu_pin_obj_t *pixel_clock_pin = validate_obj_is_free_pin(args[ARG_pixel_clock_pin].u_obj);
     const mcu_pin_obj_t *vsync_pin = validate_obj_is_free_pin(args[ARG_vsync_pin].u_obj);
     const mcu_pin_obj_t *href_pin = validate_obj_is_free_pin(args[ARG_href_pin].u_obj);
-    const busio_i2c_obj_t *i2c = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c));
+    busio_i2c_obj_t *i2c = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c));
     const mcu_pin_obj_t *external_clock_pin = validate_obj_is_free_pin(args[ARG_external_clock_pin].u_obj);
     const mcu_pin_obj_t *powerdown_pin = validate_obj_is_free_pin_or_none(args[ARG_powerdown_pin].u_obj);
     const mcu_pin_obj_t *reset_pin = validate_obj_is_free_pin_or_none(args[ARG_reset_pin].u_obj);
@@ -161,7 +160,6 @@ STATIC mp_obj_t esp32_camera_camera_make_new(const mp_obj_type_t *type, size_t n
 //|     def deinit(self) -> None:
 //|         """Deinitialises the camera and releases all memory resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t esp32_camera_camera_deinit(mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_esp32_camera_camera_deinit(self);
@@ -178,14 +176,12 @@ STATIC void check_for_deinit(esp32_camera_camera_obj_t *self) {
 //|     def __enter__(self) -> Camera:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t esp32_camera_camera_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     return esp32_camera_camera_deinit(args[0]);
@@ -205,14 +201,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_frame_available_get_obj, es
 MP_PROPERTY_GETTER(esp32_camera_camera_frame_available_obj,
     (mp_obj_t)&esp32_camera_camera_frame_available_get_obj);
 
-//|     def take(self, timeout: Optional[float]=0.25) -> Optional[displayio.Bitmap | ReadableBuffer]:
+//|     def take(
+//|         self, timeout: Optional[float] = 0.25
+//|     ) -> Optional[displayio.Bitmap | ReadableBuffer]:
 //|         """Record a frame. Wait up to 'timeout' seconds for a frame to be captured.
 //|
 //|         In the case of timeout, `None` is returned.
 //|         If `pixel_format` is `PixelFormat.JPEG`, the returned value is a read-only `memoryview`.
 //|         Otherwise, the returned value is a read-only `displayio.Bitmap`.
 //|         """
-//|
 STATIC mp_obj_t esp32_camera_camera_take(size_t n_args, const mp_obj_t *args) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_float_t timeout = n_args < 2 ? MICROPY_FLOAT_CONST(0.25) : mp_obj_get_float(args[1]);
@@ -249,7 +246,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_camera_camera_take_obj, 1, 2, e
 //|         the other properties to set, they are set together in a single function call.
 //|
 //|         If an argument is unspecified or None, then the setting is unchanged."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_reconfigure(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -318,7 +314,6 @@ MP_PROPERTY_GETTER(esp32_camera_camera_frame_size_obj,
 
 //|     contrast: int
 //|     """The sensor contrast.  Positive values increase contrast, negative values lower it. The total range is device-specific but is often from -2 to +2 inclusive."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_contrast(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -340,7 +335,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_contrast_obj,
 
 //|     brightness: int
 //|     """The sensor brightness.  Positive values increase brightness, negative values lower it. The total range is device-specific but is often from -2 to +2 inclusive."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_brightness(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -362,7 +356,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_brightness_obj,
 
 //|     saturation: int
 //|     """The sensor saturation.  Positive values increase saturation (more vibrant colors), negative values lower it (more muted colors).  The total range is device-specific but the value is often from -2 to +2 inclusive."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_saturation(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -384,7 +377,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_saturation_obj,
 
 //|     sharpness: int
 //|     """The sensor sharpness.  Positive values increase sharpness (more defined edges), negative values lower it (softer edges).  The total range is device-specific but the value is often from -2 to +2 inclusive."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_sharpness(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -406,7 +398,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_sharpness_obj,
 
 //|     denoise: int
 //|     """The sensor 'denoise' setting.  Any camera sensor has inherent 'noise', especially in low brightness environments. Software algorithms can decrease noise at the expense of fine detail.  A larger value increases the amount of software noise removal.  The total range is device-specific but the value is often from 0 to 10."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_denoise(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -428,7 +419,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_denoise_obj,
 
 //|     gain_ceiling: GainCeiling
 //|     """The sensor 'gain ceiling' setting. "Gain" is an analog multiplier applied to the raw sensor data.  The 'ceiling' is the maximum gain value that the sensor will use. A higher gain means that the sensor has a greater response to light, but also makes sensor noise more visible."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_gain_ceiling(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -450,7 +440,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_gain_ceiling_obj,
 
 //|     quality: int
 //|     """The 'quality' setting when capturing JPEG images.  This is similar to the quality setting when exporting a jpeg image from photo editing software.  Typical values range from 5 to 40, with higher numbers leading to larger image sizes and better overall image quality. However, when the quality is set to a high number, the total size of the JPEG data can exceed the size of an internal buffer, causing image capture to fail."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_quality(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -472,7 +461,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_quality_obj,
 
 //|     colorbar: bool
 //|     """When `True`, a test pattern image is captured and the real sensor data is not used."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_colorbar(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -494,7 +482,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_colorbar_obj,
 
 //|     whitebal: bool
 //|     """When `True`, the camera attempts to automatically control white balance.  When `False`, the `wb_mode` setting is used instead."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_whitebal(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -516,7 +503,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_whitebal_obj,
 
 //|     gain_ctrl: bool
 //|     """When `True`, the camera attempts to automatically control the sensor gain, up to the value in the `gain_ceiling` property.  When `False`, the `agc_gain` setting is used instead."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_gain_ctrl(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -538,7 +524,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_gain_ctrl_obj,
 
 //|     exposure_ctrl: bool
 //|     """When `True` the camera attempts to automatically control the exposure. When `False`, the `aec_value` setting is used instead."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_exposure_ctrl(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -560,7 +545,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_exposure_ctrl_obj,
 
 //|     hmirror: bool
 //|     """When `True` the camera image is mirrored left-to-right"""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_hmirror(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -582,7 +566,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_hmirror_obj,
 
 //|     vflip: bool
 //|     """When `True` the camera image is flipped top-to-bottom"""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_vflip(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -604,7 +587,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_vflip_obj,
 
 //|     aec2: bool
 //|     """When `True` the sensor's "night mode" is enabled, extending the range of automatic gain control."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_aec2(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -626,7 +608,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_aec2_obj,
 
 //|     awb_gain: bool
 //|     """Access the awb_gain property of the camera sensor"""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_awb_gain(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -648,7 +629,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_awb_gain_obj,
 
 //|     agc_gain: int
 //|     """Access the gain level of the sensor. Higher values produce brighter images.  Typical settings range from 0 to 30. """
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_agc_gain(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -670,7 +650,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_agc_gain_obj,
 
 //|     aec_value: int
 //|     """Access the exposure value of the camera.  Higher values produce brighter images.  Typical settings range from 0 to 1200."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_aec_value(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -692,7 +671,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_aec_value_obj,
 
 //|     special_effect: int
 //|     """Enable a "special effect". Zero is no special effect.  On OV5640, special effects range from 0 to 6 inclusive and select various color modes."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_special_effect(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -714,7 +692,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_special_effect_obj,
 
 //|     wb_mode: int
 //|     """The white balance mode.  0 is automatic white balance.  Typical values range from 0 to 4 inclusive."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_wb_mode(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -736,7 +713,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_wb_mode_obj,
 
 //|     ae_level: int
 //|     """The exposure offset for automatic exposure.  Typical values range from -2 to +2."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_ae_level(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -758,7 +734,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_ae_level_obj,
 
 //|     dcw: bool
 //|     """When `True` an advanced white balance mode is selected."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_dcw(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -780,7 +755,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_dcw_obj,
 
 //|     bpc: bool
 //|     """When `True`, "black point compensation" is enabled. This can make black parts of the image darker."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_bpc(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -802,7 +776,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_bpc_obj,
 
 //|     wpc: bool
 //|     """When `True`, "white point compensation" is enabled.  This can make white parts of the image whiter."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_wpc(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -824,7 +797,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_wpc_obj,
 
 //|     raw_gma: bool
 //|     """When `True`, raw gamma mode is enabled."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_raw_gma(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -846,7 +818,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_raw_gma_obj,
 
 //|     lenc: bool
 //|     """Enable "lens correction". This can help compensate for light fall-off at the edge of the sensor area."""
-//|
 
 STATIC mp_obj_t esp32_camera_camera_get_lenc(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -868,7 +839,6 @@ MP_PROPERTY_GETSET(esp32_camera_camera_lenc_obj,
 
 //|     max_frame_size: FrameSize
 //|     """The maximum frame size that can be captured"""
-//|
 STATIC mp_obj_t esp32_camera_camera_get_max_frame_size(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -882,7 +852,6 @@ MP_PROPERTY_GETTER(esp32_camera_camera_max_frame_size_obj,
 
 //|     address: int
 //|     """The I2C (SCCB) address of the sensor"""
-//|
 STATIC mp_obj_t esp32_camera_camera_get_address(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -896,7 +865,6 @@ MP_PROPERTY_GETTER(esp32_camera_camera_address_obj,
 
 //|     sensor_name: str
 //|     """The name of the sensor"""
-//|
 STATIC mp_obj_t esp32_camera_camera_get_sensor_name(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -911,7 +879,6 @@ MP_PROPERTY_GETTER(esp32_camera_camera_sensor_name_obj,
 
 //|     supports_jpeg: bool
 //|     """True if the sensor can capture images in JPEG format"""
-//|
 STATIC mp_obj_t esp32_camera_camera_get_supports_jpeg(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -924,7 +891,6 @@ MP_PROPERTY_GETTER(esp32_camera_camera_supports_jpeg_obj,
 
 //|     height: int
 //|     """The height of the image being captured"""
-//|
 STATIC mp_obj_t esp32_camera_camera_get_height(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -937,7 +903,6 @@ MP_PROPERTY_GETTER(esp32_camera_camera_height_obj,
 
 //|     width: int
 //|     """The width of the image being captured"""
-//|
 STATIC mp_obj_t esp32_camera_camera_get_width(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -950,7 +915,6 @@ MP_PROPERTY_GETTER(esp32_camera_camera_width_obj,
 
 //|     grab_mode: GrabMode
 //|     """The grab mode of the camera"""
-//|
 STATIC mp_obj_t esp32_camera_camera_get_grab_mode(const mp_obj_t self_in) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

@@ -38,22 +38,21 @@
 //|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Create a OneWire object associated with the given pin.
 //|
-//|           The object implements the lowest level timing-sensitive bits of the protocol.
+//|         The object implements the lowest level timing-sensitive bits of the protocol.
 //|
-//|           :param ~microcontroller.Pin pin: Pin connected to the OneWire bus
+//|         :param ~microcontroller.Pin pin: Pin connected to the OneWire bus
 //|
-//|           Read a short series of pulses::
+//|         Read a short series of pulses::
 //|
-//|             import onewireio
-//|             import board
+//|           import onewireio
+//|           import board
 //|
-//|             onewire = onewireio.OneWire(board.D7)
-//|             onewire.reset()
-//|             onewire.write_bit(True)
-//|             onewire.write_bit(False)
-//|             print(onewire.read_bit())"""
+//|           onewire = onewireio.OneWire(board.D7)
+//|           onewire.reset()
+//|           onewire.write_bit(True)
+//|           onewire.write_bit(False)
+//|           print(onewire.read_bit())"""
 //|         ...
-//|
 STATIC mp_obj_t onewireio_onewire_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin };
     static const mp_arg_t allowed_args[] = {
@@ -73,7 +72,6 @@ STATIC mp_obj_t onewireio_onewire_make_new(const mp_obj_type_t *type, size_t n_a
 //|     def deinit(self) -> None:
 //|         """Deinitialize the OneWire bus and release any hardware resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t onewireio_onewire_deinit(mp_obj_t self_in) {
     onewireio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_onewireio_onewire_deinit(self);
@@ -90,14 +88,12 @@ STATIC void check_for_deinit(onewireio_onewire_obj_t *self) {
 //|     def __enter__(self) -> OneWire:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t onewireio_onewire_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_onewireio_onewire_deinit(args[0]);
@@ -111,7 +107,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(onewireio_onewire___exit___obj, 4, 4,
 //|         :returns: False when at least one device is present
 //|         :rtype: bool"""
 //|         ...
-//|
 STATIC mp_obj_t onewireio_onewire_obj_reset(mp_obj_t self_in) {
     onewireio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -126,7 +121,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(onewireio_onewire_reset_obj, onewireio_onewire_obj_res
 //|         :returns: bit state read
 //|         :rtype: bool"""
 //|         ...
-//|
 STATIC mp_obj_t onewireio_onewire_obj_read_bit(mp_obj_t self_in) {
     onewireio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

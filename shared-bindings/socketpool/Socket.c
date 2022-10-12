@@ -40,29 +40,26 @@
 
 //| class Socket:
 //|     """TCP, UDP and RAW socket. Cannot be created directly. Instead, call
-//|        `SocketPool.socket()`.
+//|     `SocketPool.socket()`.
 //|
-//|        Provides a subset of CPython's `socket.socket` API. It only implements the versions of
-//|        recv that do not allocate bytes objects."""
+//|     Provides a subset of CPython's `socket.socket` API. It only implements the versions of
+//|     recv that do not allocate bytes objects."""
 //|
 
 //|     def __hash__(self) -> int:
 //|         """Returns a hash for the Socket."""
 //|         ...
-//|
 // Provided by mp_generic_unary_op().
 
 //|     def __enter__(self) -> Socket:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically closes the Socket when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t socketpool_socket___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_socketpool_socket_close(args[0]);
@@ -74,7 +71,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket___exit___obj, 4, 4,
 //|         """Accept a connection on a listening socket of type SOCK_STREAM,
 //|         creating a new socket of type SOCK_STREAM.
 //|         Returns a tuple of (new_socket, remote_address)"""
-//|
 STATIC mp_obj_t _socketpool_socket_accept(mp_obj_t self_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t ip[4];
@@ -94,7 +90,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_accept_obj, _socketpool_socke
 //|
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
 //|         ...
-//|
 STATIC mp_obj_t socketpool_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -119,7 +114,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_bind_obj, socketpool_socket_b
 
 //|     def close(self) -> None:
 //|         """Closes this Socket and makes its resources available to its SocketPool."""
-//|
 STATIC mp_obj_t _socketpool_socket_close(mp_obj_t self_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_socketpool_socket_close(self);
@@ -132,7 +126,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_close_obj, _socketpool_socket
 //|
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
 //|         ...
-//|
 STATIC mp_obj_t socketpool_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -157,7 +150,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_connect_obj, socketpool_socke
 //|
 //|         :param ~int backlog: length of backlog queue for waiting connections"""
 //|         ...
-//|
 STATIC mp_obj_t socketpool_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -177,14 +169,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_listen_obj, socketpool_socket
 //|
 //|         :param object buffer: buffer to read into"""
 //|         ...
-//|
 STATIC mp_obj_t socketpool_socket_recvfrom_into(mp_obj_t self_in, mp_obj_t data_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_WRITE);
 
     byte ip[4];
-    mp_uint_t port;
+    uint32_t port;
     mp_int_t ret = common_hal_socketpool_socket_recvfrom_into(self,
         (byte *)bufinfo.buf, bufinfo.len, ip, &port);
     mp_obj_t tuple_contents[2];
@@ -207,7 +198,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_recvfrom_into_obj, socketpool
 //|         :param bytearray buffer: buffer to receive into
 //|         :param int bufsize: optionally, a maximum number of bytes to read."""
 //|         ...
-//|
 STATIC mp_obj_t _socketpool_socket_recv_into(size_t n_args, const mp_obj_t *args) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (common_hal_socketpool_socket_get_closed(self)) {
@@ -246,7 +236,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_recv_into_obj, 2, 3
 //|
 //|         :param ~bytes bytes: some bytes to send"""
 //|         ...
-//|
 STATIC mp_obj_t _socketpool_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (common_hal_socketpool_socket_get_closed(self)) {
@@ -273,7 +262,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_send_obj, _socketpool_socket_
 //|         :param ~bytes bytes: some bytes to send
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
 //|         ...
-//|
 STATIC mp_obj_t socketpool_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -302,7 +290,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(socketpool_socket_sendto_obj, socketpool_socket
 //|
 //|         :param ~bool flag: False means non-blocking, True means block indefinitely."""
 //|         ...
-//|
 // method socket.setblocking(flag)
 STATIC mp_obj_t socketpool_socket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);

@@ -35,7 +35,7 @@
 
 //| class Server:
 //|     """The MDNS Server responds to queries for this device's information and allows for querying
-//|        other devices."""
+//|     other devices."""
 //|
 
 //|     def __init__(self, network_interface: wifi.Radio) -> None:
@@ -44,7 +44,6 @@
 //|         may already be using it.) Only native interfaces are currently supported.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t mdns_server_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_network_interface };
     static const mp_arg_t allowed_args[] = {
@@ -64,7 +63,6 @@ STATIC mp_obj_t mdns_server_make_new(const mp_obj_type_t *type, size_t n_args, s
 //|     def deinit(self) -> None:
 //|         """Stops the server"""
 //|         ...
-//|
 STATIC mp_obj_t mdns_server_obj_deinit(mp_obj_t self_in) {
     mdns_server_obj_t *self = (mdns_server_obj_t *)self_in;
     common_hal_mdns_server_deinit(self);
@@ -78,12 +76,10 @@ STATIC void check_for_deinit(mdns_server_obj_t *self) {
     }
 }
 
-//|
 //|     hostname: str
 //|     """Hostname resolvable as ``<hostname>.local`` in addition to ``circuitpython.local``. Make
 //|        sure this is unique across all devices on the network. It defaults to ``cpy-######``
 //|        where ``######`` is the hex digits of the last three bytes of the mac address."""
-//|
 STATIC mp_obj_t mdns_server_get_hostname(mp_obj_t self) {
     check_for_deinit(self);
     const char *hostname = common_hal_mdns_server_get_hostname(self);
@@ -105,7 +101,6 @@ MP_PROPERTY_GETSET(mdns_server_hostname_obj,
 
 //|     instance_name: str
 //|     """Human readable name to describe the device."""
-//|
 STATIC mp_obj_t mdns_server_get_instance_name(mp_obj_t self) {
     check_for_deinit(self);
     const char *instance_name = common_hal_mdns_server_get_instance_name(self);
@@ -125,7 +120,9 @@ MP_PROPERTY_GETSET(mdns_server_instance_name_obj,
     (mp_obj_t)&mdns_server_set_instance_name_obj);
 
 
-//|     def find(self, service_type: str, protocol: str, *, timeout: float = 1) -> Tuple[RemoteService]:
+//|     def find(
+//|         self, service_type: str, protocol: str, *, timeout: float = 1
+//|     ) -> Tuple[RemoteService]:
 //|         """Find all locally available remote services with the given service type and protocol.
 //|
 //|         This doesn't allow for direct hostname lookup. To do that, use
@@ -135,7 +132,6 @@ MP_PROPERTY_GETSET(mdns_server_instance_name_obj,
 //|         :param str protocol: The service protocol such as "_tcp"
 //|         :param float/int timeout: Time to wait for responses"""
 //|         ...
-//|
 STATIC mp_obj_t _mdns_server_find(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mdns_server_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
@@ -158,7 +154,7 @@ STATIC mp_obj_t _mdns_server_find(mp_uint_t n_args, const mp_obj_t *pos_args, mp
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mdns_server_find_obj, 1, _mdns_server_find);
 
-//|     def advertise_service(self, *,  service_type: str, protocol: str, port: int) -> None:
+//|     def advertise_service(self, *, service_type: str, protocol: str, port: int) -> None:
 //|         """Respond to queries for the given service with the given port.
 //|
 //|         ``service_type`` and ``protocol`` can only occur on one port. Any call after the first

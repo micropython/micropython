@@ -46,7 +46,6 @@
 //|         :param int x: Initial x position within the parent.
 //|         :param int y: Initial y position within the parent."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_scale, ARG_x, ARG_y };
     static const mp_arg_t allowed_args[] = {
@@ -79,7 +78,6 @@ displayio_group_t *native_group(mp_obj_t group_obj) {
 //|     hidden: bool
 //|     """True when the Group and all of it's layers are not visible. When False, the Group's layers
 //|     are visible if they haven't been hidden."""
-//|
 STATIC mp_obj_t displayio_group_obj_get_hidden(mp_obj_t self_in) {
     displayio_group_t *self = native_group(self_in);
     return mp_obj_new_bool(common_hal_displayio_group_get_hidden(self));
@@ -101,7 +99,6 @@ MP_PROPERTY_GETSET(displayio_group_hidden_obj,
 //|     scale: int
 //|     """Scales each pixel within the Group in both directions. For example, when scale=2 each pixel
 //|     will be represented by 2x2 pixels."""
-//|
 STATIC mp_obj_t displayio_group_obj_get_scale(mp_obj_t self_in) {
     displayio_group_t *self = native_group(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_group_get_scale(self));
@@ -124,7 +121,6 @@ MP_PROPERTY_GETSET(displayio_group_scale_obj,
 
 //|     x: int
 //|     """X position of the Group in the parent."""
-//|
 STATIC mp_obj_t displayio_group_obj_get_x(mp_obj_t self_in) {
     displayio_group_t *self = native_group(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_group_get_x(self));
@@ -146,7 +142,6 @@ MP_PROPERTY_GETSET(displayio_group_x_obj,
 
 //|     y: int
 //|     """Y position of the Group in the parent."""
-//|
 STATIC mp_obj_t displayio_group_obj_get_y(mp_obj_t self_in) {
     displayio_group_t *self = native_group(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_group_get_y(self));
@@ -166,10 +161,12 @@ MP_PROPERTY_GETSET(displayio_group_y_obj,
     (mp_obj_t)&displayio_group_get_y_obj,
     (mp_obj_t)&displayio_group_set_y_obj);
 
-//|     def append(self, layer: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]) -> None:
+//|     def append(
+//|         self,
+//|         layer: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid],
+//|     ) -> None:
 //|         """Append a layer to the group. It will be drawn above other layers."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_group_obj_append(mp_obj_t self_in, mp_obj_t layer) {
     displayio_group_t *self = native_group(self_in);
     common_hal_displayio_group_insert(self, common_hal_displayio_group_get_len(self), layer);
@@ -177,10 +174,13 @@ STATIC mp_obj_t displayio_group_obj_append(mp_obj_t self_in, mp_obj_t layer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_append_obj, displayio_group_obj_append);
 
-//|     def insert(self, index: int, layer: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]) -> None:
+//|     def insert(
+//|         self,
+//|         index: int,
+//|         layer: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid],
+//|     ) -> None:
 //|         """Insert a layer into the group."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_group_obj_insert(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t layer) {
     displayio_group_t *self = native_group(self_in);
     if ((size_t)MP_OBJ_SMALL_INT_VALUE(index_obj) == common_hal_displayio_group_get_len(self)) {
@@ -193,10 +193,12 @@ STATIC mp_obj_t displayio_group_obj_insert(mp_obj_t self_in, mp_obj_t index_obj,
 MP_DEFINE_CONST_FUN_OBJ_3(displayio_group_insert_obj, displayio_group_obj_insert);
 
 
-//|     def index(self, layer: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]) -> int:
+//|     def index(
+//|         self,
+//|         layer: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid],
+//|     ) -> int:
 //|         """Returns the index of the first copy of layer. Raises ValueError if not found."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_group_obj_index(mp_obj_t self_in, mp_obj_t layer) {
     displayio_group_t *self = native_group(self_in);
     mp_int_t index = common_hal_displayio_group_index(self, layer);
@@ -207,10 +209,11 @@ STATIC mp_obj_t displayio_group_obj_index(mp_obj_t self_in, mp_obj_t layer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_index_obj, displayio_group_obj_index);
 
-//|     def pop(self, i: int = -1) -> Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]:
+//|     def pop(
+//|         self, i: int = -1
+//|     ) -> Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]:
 //|         """Remove the ith item and return it."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_group_obj_pop(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_i };
     static const mp_arg_t allowed_args[] = {
@@ -230,10 +233,12 @@ STATIC mp_obj_t displayio_group_obj_pop(size_t n_args, const mp_obj_t *pos_args,
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_group_pop_obj, 1, displayio_group_obj_pop);
 
 
-//|     def remove(self, layer: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]) -> None:
+//|     def remove(
+//|         self,
+//|         layer: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid],
+//|     ) -> None:
 //|         """Remove the first copy of layer. Raises ValueError if it is not present."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_group_obj_remove(mp_obj_t self_in, mp_obj_t layer) {
     mp_obj_t index = displayio_group_obj_index(self_in, layer);
     displayio_group_t *self = native_group(self_in);
@@ -243,13 +248,10 @@ STATIC mp_obj_t displayio_group_obj_remove(mp_obj_t self_in, mp_obj_t layer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_remove_obj, displayio_group_obj_remove);
 
-//|     def __bool__(self) -> bool:
-//|         ...
-//|
+//|     def __bool__(self) -> bool: ...
 //|     def __len__(self) -> int:
 //|         """Returns the number of layers in a Group"""
 //|         ...
-//|
 STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     displayio_group_t *self = native_group(self_in);
     uint16_t len = common_hal_displayio_group_get_len(self);
@@ -263,22 +265,26 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|     def __getitem__(self, index: int) -> Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]:
+//|     def __getitem__(
+//|         self, index: int
+//|     ) -> Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]:
 //|         """Returns the value at the given index.
 //|
 //|         This allows you to::
 //|
 //|           print(group[0])"""
 //|         ...
-//|
-//|     def __setitem__(self, index: int, value: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]) -> None:
+//|     def __setitem__(
+//|         self,
+//|         index: int,
+//|         value: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid],
+//|     ) -> None:
 //|         """Sets the value at the given index.
 //|
 //|         This allows you to::
 //|
 //|           group[0] = sprite"""
 //|         ...
-//|
 //|     def __delitem__(self, index: int) -> None:
 //|         """Deletes the value at the given index.
 //|
@@ -286,7 +292,6 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|
 //|           del group[0]"""
 //|         ...
-//|
 STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
     displayio_group_t *self = native_group(self_in);
 

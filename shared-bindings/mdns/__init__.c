@@ -38,7 +38,6 @@
 //| Basic use provides hostname resolution under the .local TLD. This module
 //| also supports DNS Service Discovery that allows for discovering other hosts
 //| that provide a desired service."""
-//|
 
 STATIC const mp_rom_map_elem_t mdns_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),             MP_ROM_QSTR(MP_QSTR_mdns) },

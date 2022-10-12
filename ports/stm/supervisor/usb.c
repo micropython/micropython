@@ -27,9 +27,7 @@
 
 
 #include "supervisor/usb.h"
-#include "shared/runtime/interrupt_char.h"
 #include "shared/readline/readline.h"
-#include "lib/tinyusb/src/device/usbd.h"
 
 #include "py/mpconfig.h"
 

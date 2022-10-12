@@ -44,9 +44,18 @@
 //|         and attached to a Characteristic by calling `add_to_characteristic()`.
 //|         Remote Descriptor objects are created by `Connection.discover_remote_services()`
 //|         as part of remote Characteristics in the remote Services that are discovered."""
-//|
 //|     @classmethod
-//|     def add_to_characteristic(cls, characteristic: Characteristic, uuid: UUID, *, read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN, max_length: int = 20, fixed_length: bool = False, initial_value: ReadableBuffer = b'') -> Descriptor:
+//|     def add_to_characteristic(
+//|         cls,
+//|         characteristic: Characteristic,
+//|         uuid: UUID,
+//|         *,
+//|         read_perm: int = Attribute.OPEN,
+//|         write_perm: int = Attribute.OPEN,
+//|         max_length: int = 20,
+//|         fixed_length: bool = False,
+//|         initial_value: ReadableBuffer = b""
+//|     ) -> Descriptor:
 //|         """Create a new Descriptor object, and add it to this Service.
 //|
 //|         :param Characteristic characteristic: The characteristic that will hold this descriptor
@@ -65,7 +74,6 @@
 //|
 //|         :return: the new Descriptor."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // class is arg[0], which we can ignore.
 
@@ -133,7 +141,6 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_descriptor_add_to_characteristic_ob
 
 //|     uuid: UUID
 //|     """The descriptor uuid. (read-only)"""
-//|
 STATIC mp_obj_t bleio_descriptor_get_uuid(mp_obj_t self_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -147,7 +154,6 @@ MP_PROPERTY_GETTER(bleio_descriptor_uuid_obj,
 
 //|     characteristic: Characteristic
 //|     """The Characteristic this Descriptor is a part of."""
-//|
 STATIC mp_obj_t bleio_descriptor_get_characteristic(mp_obj_t self_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
 

@@ -45,8 +45,8 @@
 #endif
 
 #define HAVE_ANALOGOUT ( \
-    (defined(PIN_PA02) && !defined(IGNORE_PA02)) || \
-    (defined(SAM_D5X_E5X) && defined(PIN_PA05) && !defined(IGNORE_PA05)) \
+    (defined(PIN_PA02) && !defined(IGNORE_PIN_PA02)) || \
+    (defined(SAM_D5X_E5X) && defined(PIN_PA05) && !defined(IGNORE_PIN_PA05)) \
     )
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,

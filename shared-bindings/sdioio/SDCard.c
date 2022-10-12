@@ -49,7 +49,13 @@
 //|     25MHz.  Usually an SDCard object is used with ``storage.VfsFat``
 //|     to allow file I/O to an SD card."""
 //|
-//|     def __init__(self, clock: microcontroller.Pin, command: microcontroller.Pin, data: Sequence[microcontroller.Pin], frequency: int) -> None:
+//|     def __init__(
+//|         self,
+//|         clock: microcontroller.Pin,
+//|         command: microcontroller.Pin,
+//|         data: Sequence[microcontroller.Pin],
+//|         frequency: int,
+//|     ) -> None:
 //|         """Construct an SDIO SD Card object with the given properties
 //|
 //|         :param ~microcontroller.Pin clock: the pin to use for the clock.
@@ -76,7 +82,6 @@
 //|             storage.mount(vfs, '/sd')
 //|             os.listdir('/sd')"""
 //|         ...
-//|
 
 STATIC mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     sdioio_sdcard_obj_t *self = m_new_obj(sdioio_sdcard_obj_t);
@@ -116,7 +121,6 @@ STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
 //|         :param int width: the number of data lines to use.  Must be 1 or 4 and must also not exceed the number of data lines at construction
 //|
 //|         .. note:: Leaving a value unspecified or 0 means the current setting is kept"""
-//|
 STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_frequency, ARG_width, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
@@ -148,7 +152,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(sdioio_sdcard_configure_obj, 1, sdioio_sdcard_configu
 //|         Due to technical limitations, this is a function and not a property.
 //|
 //|         :return: The number of 512-byte blocks, as a number"""
-//|
 STATIC mp_obj_t sdioio_sdcard_count(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -186,7 +189,6 @@ MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, sdioio_sdcard_readblocks
 //|         :param ~circuitpython_typing.ReadableBuffer buf: The buffer to read from.  Length must be multiple of 512.
 //|
 //|         :return: None"""
-//|
 STATIC mp_obj_t sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
@@ -201,12 +203,9 @@ STATIC mp_obj_t sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block
 
 MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_writeblocks_obj, sdioio_sdcard_writeblocks);
 
-//|     @property
-//|     def frequency(self) -> int:
-//|         """The actual SDIO bus frequency. This may not match the frequency
-//|         requested due to internal limitations."""
-//|         ...
-//|
+//|     frequency: int
+//|     """The actual SDIO bus frequency. This may not match the frequency
+//|     requested due to internal limitations."""
 STATIC mp_obj_t sdioio_sdcard_obj_get_frequency(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -217,11 +216,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_get_frequency_obj, sdioio_sdcard_obj_get
 MP_PROPERTY_GETTER(sdioio_sdcard_frequency_obj,
     (mp_obj_t)&sdioio_sdcard_get_frequency_obj);
 
-//|     @property
-//|     def width(self) -> int:
-//|         """The actual SDIO bus width, in bits"""
-//|         ...
-//|
+//|     width: int
+//|     """The actual SDIO bus width, in bits"""
 STATIC mp_obj_t sdioio_sdcard_obj_get_width(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -247,7 +243,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_deinit_obj, sdioio_sdcard_obj_deinit);
 //|         """No-op used by Context Managers.
 //|         Provided by context manager helper."""
 //|         ...
-//|
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See

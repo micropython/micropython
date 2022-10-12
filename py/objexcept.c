@@ -347,7 +347,6 @@ MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
 #if CIRCUITPY_ALARM
 MP_DEFINE_EXCEPTION(DeepSleepRequest, BaseException)
 #endif
-MP_DEFINE_EXCEPTION(MpyError, ValueError)
 /*
   MP_DEFINE_EXCEPTION(Warning, Exception)
     MP_DEFINE_EXCEPTION(DeprecationWarning, Warning)

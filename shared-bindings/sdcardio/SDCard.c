@@ -44,7 +44,9 @@
 //|     `busio.SPI`, not `bitbangio.SPI`.  Usually an SDCard object is used
 //|     with ``storage.VfsFat`` to allow file I/O to an SD card."""
 //|
-//|     def __init__(self, bus: busio.SPI, cs: microcontroller.Pin, baudrate: int = 8000000) -> None:
+//|     def __init__(
+//|         self, bus: busio.SPI, cs: microcontroller.Pin, baudrate: int = 8000000
+//|     ) -> None:
 //|         """Construct an SPI SD Card object with the given properties
 //|
 //|         :param busio.SPI spi: The SPI bus
@@ -105,7 +107,6 @@ STATIC mp_obj_t sdcardio_sdcard_make_new(const mp_obj_type_t *type, size_t n_arg
 //|         Due to technical limitations, this is a function and not a property.
 //|
 //|         :return: The number of 512-byte blocks, as a number"""
-//|
 STATIC mp_obj_t sdcardio_sdcard_count(mp_obj_t self_in) {
     sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t *)self_in;
     return mp_obj_new_int_from_ull(common_hal_sdcardio_sdcard_get_blockcount(self));
@@ -116,7 +117,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_count_obj, sdcardio_sdcard_count);
 //|         """Disable permanently.
 //|
 //|         :return: None"""
-//|
 STATIC mp_obj_t sdcardio_sdcard_deinit(mp_obj_t self_in) {
     sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t *)self_in;
     common_hal_sdcardio_sdcard_deinit(self);
@@ -133,7 +133,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_deinit_obj, sdcardio_sdcard_deinit);
 //|         :param ~circuitpython_typing.WriteableBuffer buf: The buffer to write into.  Length must be multiple of 512.
 //|
 //|         :return: None"""
-//|
 
 STATIC mp_obj_t sdcardio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);

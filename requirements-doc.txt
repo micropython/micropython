@@ -9,7 +9,7 @@ setuptools>=45
 setuptools_scm
 
 # For sphinx
-sphinx>=4.0.0
+sphinx!=5.2.0.post0
 sphinx-autoapi
 sphinx-rtd-theme
 sphinxcontrib-svg2pdfconverter

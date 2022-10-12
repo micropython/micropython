@@ -213,24 +213,20 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     // Init buffer for rx
     if (rx != NULL) {
-        self->allocated_ringbuf = true;
         // Use the provided buffer when given.
         if (receiver_buffer != NULL) {
-            self->ringbuf.buf = receiver_buffer;
-            self->ringbuf.size = receiver_buffer_size - 1;
-            self->ringbuf.iput = 0;
-            self->ringbuf.iget = 0;
-            self->allocated_ringbuf = false;
+            ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
+        } else {
             // Initially allocate the UART's buffer in the long-lived part of the
             // heap.  UARTs are generally long-lived objects, but the "make long-
             // lived" machinery is incapable of moving internal pointers like
             // self->buffer, so do it manually.  (However, as long as internal
             // pointers like this are NOT moved, allocating the buffer
             // in the long-lived pool is not strictly necessary)
-            // (This is a macro.)
-        } else if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
-            nrfx_uarte_uninit(self->uarte);
-            m_malloc_fail(receiver_buffer_size);
+            if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
+                nrfx_uarte_uninit(self->uarte);
+                m_malloc_fail(receiver_buffer_size);
+            }
         }
 
         self->rx_pin_number = rx->number;
@@ -282,9 +278,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         self->rx_pin_number = NO_PIN;
         self->rts_pin_number = NO_PIN;
         self->cts_pin_number = NO_PIN;
-        if (self->allocated_ringbuf) {
-            ringbuf_free(&self->ringbuf);
-        }
+        ringbuf_deinit(&self->ringbuf);
 
         for (size_t i = 0; i < MP_ARRAY_SIZE(nrfx_uartes); i++) {
             if (self->uarte == &nrfx_uartes[i]) {
@@ -305,7 +299,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
     // check removed to reduce code size
     /*
-    if (len > ringbuf_capacity(&self->ringbuf)) {
+    if (len > ringbuf_size(&self->ringbuf)) {
         mp_raise_ValueError(translate("Reading >receiver_buffer_size bytes is not supported"));
     }
     */
@@ -336,6 +330,11 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     }
 
     NVIC_EnableIRQ(nrfx_get_irq_number(self->uarte->p_reg));
+
+    if (rx_bytes == 0) {
+        *errcode = EAGAIN;
+        return MP_STREAM_ERROR;
+    }
 
     return rx_bytes;
 }

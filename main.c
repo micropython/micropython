@@ -779,11 +779,12 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH > 0
         uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
         common_hal_mcu_processor_get_uid(raw_id);
-        mp_printf(&mp_plat_print, "UID:");
-        for (uint8_t i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
-            mp_printf(&mp_plat_print, "%02X", raw_id[i]);
+        mp_cprintf(&mp_plat_print, translate("UID:"));
+        for (size_t i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
+            mp_cprintf(&mp_plat_print, translate("%02X"), raw_id[i]);
         }
         mp_printf(&mp_plat_print, "\n");
+        port_boot_info();
         #endif
 
         bool found_boot = maybe_run_list(boot_py_filenames);
@@ -967,14 +968,14 @@ int __attribute__((used)) main(void) {
         safe_mode = NO_CIRCUITPY;
     }
 
-    // displays init after filesystem, since they could share the flash SPI
-    board_init();
-
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
     // Port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
     reset_board();
+
+    // displays init after filesystem, since they could share the flash SPI
+    board_init();
 
     // This is first time we are running CircuitPython after a reset or power-up.
     supervisor_set_run_reason(RUN_REASON_STARTUP);
