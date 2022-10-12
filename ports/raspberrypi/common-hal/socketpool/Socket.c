@@ -1080,6 +1080,9 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *socket,
             ret = lwip_raw_udp_receive(socket, (byte *)buf, len, NULL, NULL, &_errno);
             break;
     }
+    if (ret < 0) {
+        return -_errno;
+    }
     return ret;
 }
 
