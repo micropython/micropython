@@ -100,7 +100,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t *)ctx;
 
     // mp_uint_t out_sz = sock_stream->write(sock, buf, len, &err);
-    mp_int_t out_sz = common_hal_socketpool_socket_send(sock, buf, len);
+    mp_int_t out_sz = socketpool_socket_send(sock, buf, len);
     DEBUG("socket_send() -> %d", out_sz);
     if (out_sz < 0) {
         int err = -out_sz;
@@ -118,7 +118,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
 STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t *)ctx;
 
-    mp_int_t out_sz = common_hal_socketpool_socket_recv_into(sock, buf, len);
+    mp_int_t out_sz = socketpool_socket_recv_into(sock, buf, len);
     DEBUG("socket_recv() -> %d", out_sz);
     if (out_sz < 0) {
         int err = -out_sz;
