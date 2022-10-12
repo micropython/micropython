@@ -299,8 +299,7 @@ void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
     mbedtls_entropy_free(&self->entropy);
 }
 
-void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port) {
-    common_hal_socketpool_socket_connect(self->sock, host, hostlen, port);
+STATIC void do_handshake(ssl_sslsocket_obj_t *self) {
     int ret;
     while ((ret = mbedtls_ssl_handshake(&self->ssl)) != 0) {
         if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
@@ -334,6 +333,11 @@ cleanup:
     } else {
         mbedtls_raise_error(ret);
     }
+}
+
+void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port) {
+    common_hal_socketpool_socket_connect(self->sock, host, hostlen, port);
+    do_handshake(self);
 }
 
 bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t *self) {
