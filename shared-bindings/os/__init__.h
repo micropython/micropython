@@ -45,6 +45,7 @@ void common_hal_os_rename(const char *old_path, const char *new_path);
 void common_hal_os_rmdir(const char *path);
 mp_obj_t common_hal_os_stat(const char *path);
 mp_obj_t common_hal_os_statvfs(const char *path);
+void common_hal_os_utime(const char *path, mp_obj_t times);
 
 // Returns true if data was correctly sourced from a true random number generator.
 bool common_hal_os_urandom(uint8_t *buffer, mp_uint_t length);
