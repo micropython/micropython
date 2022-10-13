@@ -57,11 +57,11 @@ typedef struct _machine_spi_obj_t {
 } machine_spi_obj_t;
 
 extern Sercom *sercom_instance[];
-void *sercom_table[SERCOM_INST_NUM] = {};
+MP_REGISTER_ROOT_POINTER(void *sercom_table[SERCOM_INST_NUM]);
 
 void common_spi_irq_handler(int spi_id) {
     // handle Sercom IRQ RXC
-    machine_spi_obj_t *self = sercom_table[spi_id];
+    machine_spi_obj_t *self = MP_STATE_PORT(sercom_table[spi_id]);
     // Handle IRQ
     if (self != NULL) {
         Sercom *spi = sercom_instance[self->id];
@@ -246,7 +246,7 @@ STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, s
     self->sck = 0xff;
 
     self->new = true;
-    sercom_table[spi_id] = self;
+    MP_STATE_PORT(sercom_table[spi_id]) = self;
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -261,7 +261,7 @@ STATIC void machine_sercom_deinit(mp_obj_base_t *self_in) {
     spi->SPI.INTENCLR.reg = 0xff;
     sercom_enable(spi, 0);
     // clear table entry of spi
-    sercom_table[self->id] = NULL;
+    MP_STATE_PORT(sercom_table[self->id]) = NULL;
 }
 
 void sercom_deinit_all(void) {
@@ -270,7 +270,7 @@ void sercom_deinit_all(void) {
         spi->SPI.INTENCLR.reg = 0xff;
         sercom_register_irq(i, NULL);
         sercom_enable(spi, 0);
-        sercom_table[i] = NULL;
+        MP_STATE_PORT(sercom_table[i]) = NULL;
     }
 }
 
