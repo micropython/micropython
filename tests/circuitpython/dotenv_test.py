@@ -25,3 +25,7 @@ print(f"quoted_then_comment={dotenv.get_key(FILE, 'quoted_then_comment')}")
 print(f"hash_with_spaces={dotenv.get_key(FILE, 'hash_with_spaces')}")
 print(f"aa🐍bb={dotenv.get_key(FILE, 'aa🐍bb')}")
 print(f"value_with_emoji={dotenv.get_key(FILE, 'value_with_emoji')}")
+
+for i in range(12):
+    key = f"sz{i}"
+    print(f"len({key})={len(dotenv.get_key(FILE, key))}")
