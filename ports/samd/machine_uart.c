@@ -59,7 +59,6 @@ typedef struct _machine_uart_obj_t {
 } machine_uart_obj_t;
 
 Sercom *sercom_instance[] = SERCOM_INSTS;
-extern void *sercom_table[SERCOM_INST_NUM];
 
 STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
 
@@ -82,7 +81,7 @@ STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self, Sercom *uart) {
 }
 
 void common_uart_irq_handler(int uart_id) {
-    machine_uart_obj_t *self = sercom_table[uart_id];
+    machine_uart_obj_t *self = MP_STATE_PORT(sercom_table[uart_id]);
     // Handle IRQ
     if (self != NULL) {
         Sercom *uart = sercom_instance[self->id];
@@ -333,7 +332,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->tx = 0xff;
     self->rx = 0xff;
     self->new = true;
-    sercom_table[uart_id] = self;
+    MP_STATE_PORT(sercom_table[uart_id]) = self;
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -352,7 +351,7 @@ STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
     // Disable interrupts
     uart->USART.INTENCLR.reg = 0xff;
     // clear table entry of uart
-    sercom_table[self->id] = NULL;
+    MP_STATE_PORT(sercom_table[self->id]) = NULL;
     MP_STATE_PORT(samd_uart_rx_buffer[self->id]) = NULL;
     #if MICROPY_HW_UART_TXBUF
     MP_STATE_PORT(samd_uart_tx_buffer[self->id]) = NULL;
