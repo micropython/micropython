@@ -39,11 +39,11 @@
 //| ...
 
 STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *print, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_etype, ARG_value, ARG_tb, ARG_limit, ARG_file, ARG_chain };
+    enum { ARG_exc, ARG_value, ARG_tb, ARG_limit, ARG_file, ARG_chain };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_etype, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_value, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_tb,    MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_,      MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_value, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_tb,    MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_limit, MP_ARG_OBJ,  {.u_obj = mp_const_none} },
         { MP_QSTR_file,  MP_ARG_OBJ,  {.u_obj = mp_const_none} },
         { MP_QSTR_chain, MP_ARG_BOOL, {.u_bool = true} },
@@ -53,6 +53,9 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t value = args[ARG_value].u_obj;
+    if (value == MP_OBJ_NULL) {
+        value = args[ARG_exc].u_obj;
+    }
     mp_obj_t tb_obj = args[ARG_tb].u_obj;
     mp_obj_t limit_obj = args[ARG_limit].u_obj;
 
@@ -88,7 +91,9 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
     mp_obj_exception_t *exc = mp_obj_exception_get_native(value);
     mp_obj_traceback_t *trace_backup = exc->traceback;
 
-    if (tb_obj != mp_const_none && print_tb) {
+    if (tb_obj == MP_OBJ_NULL) {
+        /* Print the traceback's exception as is */
+    } else if (tb_obj != mp_const_none && print_tb) {
         exc->traceback = mp_arg_validate_type(tb_obj, &mp_type_traceback, MP_QSTR_tb);
     } else {
         exc->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
