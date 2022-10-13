@@ -30,12 +30,12 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: "3.x"
     - name: Get CP deps
@@ -92,25 +92,25 @@ jobs:
       working-directory: tests
     - name: Build mpy-cross.static-aarch64
       run: make -C mpy-cross -j2 -f Makefile.static-aarch64
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross.static-aarch64
         path: mpy-cross/mpy-cross.static-aarch64
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross.static-raspbian
         path: mpy-cross/mpy-cross.static-raspbian
     - name: Build mpy-cross.static
       run: make -C mpy-cross -j2 -f Makefile.static
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross.static-amd64-linux
         path: mpy-cross/mpy-cross.static
     - name: Build mpy-cross.static-mingw
       run: make -C mpy-cross -j2 -f Makefile.static-mingw
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross.static-x64-windows
         path: mpy-cross/mpy-cross.static.exe
@@ -149,12 +149,12 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: "3.x"
     - name: Get CP deps
@@ -174,19 +174,19 @@ jobs:
         msgfmt --version
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross-macos-11-x64
         path: mpy-cross/mpy-cross
     - name: Build mpy-cross (arm64)
       run: make -C mpy-cross -j2 -f Makefile.m1 V=2
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross-macos-11-arm64
         path: mpy-cross/mpy-cross-arm64
     - name: Make universal binary
       run: lipo -create -output mpy-cross-macos-universal mpy-cross/mpy-cross mpy-cross/mpy-cross-arm64
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross-macos-11-universal
         path: mpy-cross-macos-universal
@@ -207,7 +207,7 @@ jobs:
     needs: test
     if: ${{ needs.test.outputs.build-doc == 'True' }}
     steps:
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
@@ -218,7 +218,7 @@ jobs:
         tools/describe || git log --parents HEAD~4..
         echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: "3.x"
     - name: Install dependencies
@@ -229,20 +229,20 @@ jobs:
         pip install -r requirements-ci.txt -r requirements-doc.txt
     - name: Build and Validate Stubs
       run: make check-stubs -j2
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: stubs
         path: circuitpython-stubs/dist/*
     - name: Test Documentation Build (HTML)
       run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: docs
         path: _build/html
     - name: Test Documentation Build (LaTeX/PDF)
       run: |
         make latexpdf
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: docs
         path: _build/latex
@@ -276,10 +276,10 @@ jobs:
     if: ${{ needs.test.outputs.boards-arm != '[]' }}
     steps:
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
@@ -306,7 +306,7 @@ jobs:
       working-directory: tools
       env:
         BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
@@ -329,10 +329,10 @@ jobs:
     if: ${{ needs.test.outputs.boards-riscv != '[]' }}
     steps:
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
@@ -358,7 +358,7 @@ jobs:
       working-directory: tools
       env:
         BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
@@ -385,7 +385,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
@@ -395,7 +395,7 @@ jobs:
       run: |
         tools/describe || git log --parents HEAD~4..
         echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
-    - uses: actions/cache@v2
+    - uses: actions/cache@v3
       name: Fetch IDF tool cache
       id: idf-cache
       with:
@@ -449,7 +449,7 @@ jobs:
         IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
         BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
@@ -471,10 +471,10 @@ jobs:
     if: ${{ needs.test.outputs.boards-aarch != '[]' }}
     steps:
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
@@ -514,7 +514,7 @@ jobs:
       working-directory: tools
       env:
         BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}

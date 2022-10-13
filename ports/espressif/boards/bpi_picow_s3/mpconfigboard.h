@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2022 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +24,14 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+// Micropython setup
 
-#include "py/obj.h"
-#include "mbedtls/ssl.h"
+#define MICROPY_HW_BOARD_NAME       "BPI-PicoW-S3"
+#define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-typedef struct {
-    mp_obj_base_t base;
-    bool check_name, use_global_ca_store;
-    const unsigned char *cacert_buf;
-    size_t cacert_bytes;
-    int (*crt_bundle_attach)(mbedtls_ssl_config *conf);
-    mp_buffer_info_t cert_buf, key_buf;
-} ssl_sslcontext_obj_t;
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO48)
+
+#define DEFAULT_UART_BUS_RX (&pin_GPIO44)
+#define DEFAULT_UART_BUS_TX (&pin_GPIO43)
+
+#define DOUBLE_TAP_PIN (&pin_GPIO34)

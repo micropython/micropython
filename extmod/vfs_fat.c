@@ -225,22 +225,7 @@ STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_
     const char *old_path = mp_obj_str_get_str(path_in);
     const char *new_path = mp_obj_str_get_str(path_out);
 
-    // Check to see if we're moving a directory into itself. This occurs when we're moving a
-    // directory where the old path is a prefix of the new and the next character is a "/" and thus
-    // preserves the original directory name.
-    FILINFO fno;
-    FRESULT res = f_stat(&self->fatfs, old_path, &fno);
-    if (res != FR_OK) {
-        mp_raise_OSError_fresult(res);
-    }
-    if ((fno.fattrib & AM_DIR) != 0 &&
-        strlen(new_path) > strlen(old_path) &&
-        new_path[strlen(old_path)] == '/' &&
-        strncmp(old_path, new_path, strlen(old_path)) == 0) {
-        mp_raise_OSError(MP_EINVAL);
-    }
-
-    res = f_rename(&self->fatfs, old_path, new_path);
+    FRESULT res = f_rename(&self->fatfs, old_path, new_path);
     if (res == FR_EXIST) {
         // if new_path exists then try removing it (but only if it's a file)
         fat_vfs_remove_internal(vfs_in, path_out, 0); // 0 == file attribute

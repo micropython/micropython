@@ -39,12 +39,10 @@ void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t *self) {
 
 void common_hal_ssl_sslcontext_load_verify_locations(ssl_sslcontext_obj_t *self,
     const char *cadata) {
-    mp_raise_NotImplementedError(NULL);
-
-    // self->crt_bundle_attach = NULL;
-    // self->use_global_ca_store = false;
-    // self->cacert_buf = (const unsigned char *)cadata;
-    // self->cacert_bytes = strlen(cadata) + 1;
+    self->crt_bundle_attach = NULL;
+    self->use_global_ca_store = false;
+    self->cacert_buf = (const unsigned char *)cadata;
+    self->cacert_bytes = *cadata ? strlen(cadata) + 1 : 0;
 }
 
 void common_hal_ssl_sslcontext_set_default_verify_paths(ssl_sslcontext_obj_t *self) {
@@ -60,4 +58,9 @@ bool common_hal_ssl_sslcontext_get_check_hostname(ssl_sslcontext_obj_t *self) {
 
 void common_hal_ssl_sslcontext_set_check_hostname(ssl_sslcontext_obj_t *self, bool value) {
     self->check_name = value;
+}
+
+void common_hal_ssl_sslcontext_load_cert_chain(ssl_sslcontext_obj_t *self, mp_buffer_info_t *cert_buf, mp_buffer_info_t *key_buf) {
+    self->cert_buf = *cert_buf;
+    self->key_buf = *key_buf;
 }

@@ -100,7 +100,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t *)ctx;
 
     // mp_uint_t out_sz = sock_stream->write(sock, buf, len, &err);
-    mp_int_t out_sz = common_hal_socketpool_socket_send(sock, buf, len);
+    mp_int_t out_sz = socketpool_socket_send(sock, buf, len);
     DEBUG("socket_send() -> %d", out_sz);
     if (out_sz < 0) {
         int err = -out_sz;
@@ -118,7 +118,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
 STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t *)ctx;
 
-    mp_int_t out_sz = common_hal_socketpool_socket_recv_into(sock, buf, len);
+    mp_int_t out_sz = socketpool_socket_recv_into(sock, buf, len);
     DEBUG("socket_recv() -> %d", out_sz);
     if (out_sz < 0) {
         int err = -out_sz;
@@ -174,7 +174,14 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     if (self->crt_bundle_attach != NULL) {
         mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
         self->crt_bundle_attach(&o->conf);
-        // } else if(self->cacert_buf && self->cacert_bytes) { // TODO: user bundle
+    } else if (self->cacert_buf && self->cacert_bytes) {
+        ret = mbedtls_x509_crt_parse(&o->cacert, self->cacert_buf, self->cacert_bytes);
+        if (ret != 0) {
+            goto cleanup;
+        }
+        mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+        mbedtls_ssl_conf_ca_chain(&o->conf, &o->cacert, NULL);
+
     } else {
         mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
     }
@@ -197,6 +204,21 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
 
     mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
 
+    if (self->cert_buf.buf != NULL) {
+        ret = mbedtls_pk_parse_key(&o->pkey, self->key_buf.buf, self->key_buf.len + 1, NULL, 0);
+        if (ret != 0) {
+            goto cleanup;
+        }
+        ret = mbedtls_x509_crt_parse(&o->cert, self->cert_buf.buf, self->cert_buf.len + 1);
+        if (ret != 0) {
+            goto cleanup;
+        }
+
+        ret = mbedtls_ssl_conf_own_cert(&o->conf, &o->cert, &o->pkey);
+        if (ret != 0) {
+            goto cleanup;
+        }
+    }
     return o;
 cleanup:
     mbedtls_pk_free(&o->pkey);
@@ -208,7 +230,7 @@ cleanup:
     mbedtls_entropy_free(&o->entropy);
 
     if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
-        mp_raise_OSError(MP_ENOMEM);
+        mp_raise_type(&mp_type_MemoryError);
     } else if (ret == MBEDTLS_ERR_PK_BAD_INPUT_DATA) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid key"));
     } else if (ret == MBEDTLS_ERR_X509_BAD_INPUT_DATA) {
@@ -277,8 +299,7 @@ void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
     mbedtls_entropy_free(&self->entropy);
 }
 
-void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port) {
-    common_hal_socketpool_socket_connect(self->sock, host, hostlen, port);
+STATIC void do_handshake(ssl_sslsocket_obj_t *self) {
     int ret;
     while ((ret = mbedtls_ssl_handshake(&self->ssl)) != 0) {
         if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
@@ -304,7 +325,7 @@ cleanup:
     mbedtls_entropy_free(&self->entropy);
 
     if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
-        mp_raise_OSError(MP_ENOMEM);
+        mp_raise_type(&mp_type_MemoryError);
     } else if (ret == MBEDTLS_ERR_PK_BAD_INPUT_DATA) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid key"));
     } else if (ret == MBEDTLS_ERR_X509_BAD_INPUT_DATA) {
@@ -312,6 +333,11 @@ cleanup:
     } else {
         mbedtls_raise_error(ret);
     }
+}
+
+void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port) {
+    common_hal_socketpool_socket_connect(self->sock, host, hostlen, port);
+    do_handshake(self);
 }
 
 bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t *self) {

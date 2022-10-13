@@ -67,6 +67,11 @@ msgstr " utdata:\n"
 msgid "%%c requires int or char"
 msgstr "%%c kräver int eller char"
 
+#: main.c
+#, c-format
+msgid "%02X"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -2121,6 +2126,10 @@ msgstr "UART omstart"
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write"
 msgstr "UART-skrivning"
+
+#: main.c
+msgid "UID:"
+msgstr ""
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"

@@ -1,6 +1,7 @@
 True
 True
 True
+True
 b'data in file'
 True
 [('sub_file.txt', 32768, 0, 11), ('file.txt', 32768, 0, 12)]
