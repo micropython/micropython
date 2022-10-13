@@ -117,6 +117,10 @@ msgstr ""
 msgid "%q init failed"
 msgstr ""
 
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q length must be %d"
 msgstr ""
@@ -211,7 +215,7 @@ msgstr ""
 msgid "%q, %q, and %q must all be the same length"
 msgstr ""
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr ""
 
