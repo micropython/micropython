@@ -1080,7 +1080,7 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *socket,
             ret = lwip_raw_udp_receive(socket, (byte *)buf, len, NULL, NULL, &_errno);
             break;
     }
-    if (ret < 0) {
+    if (ret == (unsigned)-1) {
         return -_errno;
     }
     return ret;
@@ -1089,7 +1089,7 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *socket,
 mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len) {
     int received = socketpool_socket_recv_into(self, buf, len);
     if (received < 0) {
-        mp_raise_OSError(received);
+        mp_raise_OSError(-received);
     }
     return received;
 }
