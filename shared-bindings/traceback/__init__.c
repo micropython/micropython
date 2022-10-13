@@ -110,7 +110,7 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
 //|     tb: Optional[TracebackType] = None,
 //|     limit: Optional[int] = None,
 //|     chain: Optional[bool] = True,
-//| ) -> str:
+//| ) -> List[str]:
 //|     """Format a stack trace and the exception information.
 //|
 //|     If the exception value is passed in ``exc``, then this exception value and its
@@ -143,7 +143,8 @@ STATIC mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_ar
     vstr_t vstr;
     vstr_init_print(&vstr, 0, &print);
     traceback_exception_common(false, &print, n_args, pos_args, kw_args);
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    mp_obj_t output = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return mp_obj_new_list(1, &output);
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 0, traceback_format_exception);
