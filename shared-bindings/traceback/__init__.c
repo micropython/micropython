@@ -104,13 +104,23 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
 }
 
 //| def format_exception(
-//|     etype: Type[BaseException],
-//|     value: BaseException,
-//|     tb: TracebackType,
+//|     exc: BaseException | Type[BaseException],
+//|     /,
+//|     value: Optional[BaseException] = None,
+//|     tb: Optional[TracebackType] = None,
 //|     limit: Optional[int] = None,
 //|     chain: Optional[bool] = True,
-//| ) -> None:
+//| ) -> str:
 //|     """Format a stack trace and the exception information.
+//|
+//|     If the exception value is passed in ``exc``, then this exception value and its
+//|     associated traceback are used. This is compatible with CPython 3.10 and newer.
+//|
+//|     If the exception value is passed in ``value``, then any value passed in for
+//|     ``exc`` is ignored.  ``value`` is used as the exception value and the
+//|     traceback in the ``tb`` argument is used.  In this case, if ``tb`` is None,
+//|     no traceback will be shown. This is compatible with CPython 3.5 and
+//|     newer.
 //|
 //|     The arguments have the same meaning as the corresponding arguments
 //|     to print_exception().  The return value is a list of strings, each
@@ -120,15 +130,13 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
 //|
 //|     .. note:: Setting ``chain`` will have no effect as chained exceptions are not yet implemented.
 //|
-//|     :param Type[BaseException] etype: This is ignored and inferred from the type of ``value``.
-//|     :param BaseException value: The exception. Must be an instance of `BaseException`.
-//|     :param TracebackType tb: The traceback object. If `None`, the traceback will not be printed.
+//|     :param exc: The exception. Must be an instance of `BaseException`. Unused if value is specified.
+//|     :param value: If specified, is used in place of ``exc``.
+//|     :param TracebackType tb: When value is alsp specified, ``tb`` is used in place of the exception's own traceback. If `None`, the traceback will not be printed.
 //|     :param int limit: Print up to limit stack trace entries (starting from the caller’s frame) if limit is positive.
 //|                       Otherwise, print the last ``abs(limit)`` entries. If limit is omitted or None, all entries are printed.
 //|     :param bool chain: If `True` then chained exceptions will be printed (note: not yet implemented).
-//|
 //|     """
-//|     ...
 //|
 STATIC mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_print_t print;
@@ -141,21 +149,30 @@ STATIC mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_ar
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 0, traceback_format_exception);
 
 //| def print_exception(
-//|     etype: Type[BaseException],
-//|     value: BaseException,
-//|     tb: TracebackType,
+//|     exc: BaseException | Type[BaseException],
+//|     /,
+//|     value: Optional[BaseException] = None,
+//|     tb: Optional[TracebackType] = None,
 //|     limit: Optional[int] = None,
 //|     file: Optional[io.FileIO] = None,
 //|     chain: Optional[bool] = True,
 //| ) -> None:
-//|
 //|     """Prints exception information and stack trace entries.
+//|
+//|     If the exception value is passed in ``exc``, then this exception value and its
+//|     associated traceback are used. This is compatible with CPython 3.10 and newer.
+//|
+//|     If the exception value is passed in ``value``, then any value passed in for
+//|     ``exc`` is ignored.  ``value`` is used as the exception value and the
+//|     traceback in the ``tb`` argument is used.  In this case, if ``tb`` is None,
+//|     no traceback will be shown. This is compatible with CPython 3.5 and
+//|     newer.
 //|
 //|     .. note:: Setting ``chain`` will have no effect as chained exceptions are not yet implemented.
 //|
-//|     :param Type[BaseException] etype: This is ignored and inferred from the type of ``value``.
-//|     :param BaseException value: The exception. Must be an instance of `BaseException`.
-//|     :param TracebackType tb: The traceback object. If `None`, the traceback will not be printed.
+//|     :param exc: The exception. Must be an instance of `BaseException`. Unused if value is specified.
+//|     :param value: If specified, is used in place of ``exc``.
+//|     :param tb: When value is alsp specified, ``tb`` is used in place of the exception's own traceback. If `None`, the traceback will not be printed.
 //|     :param int limit: Print up to limit stack trace entries (starting from the caller’s frame) if limit is positive.
 //|                       Otherwise, print the last ``abs(limit)`` entries. If limit is omitted or None, all entries are printed.
 //|     :param io.FileIO file: If file is omitted or `None`, the output goes to `sys.stderr`; otherwise it should be an open
