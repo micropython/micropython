@@ -15,7 +15,7 @@ except Exception as exc:
     print("\nNo Trace:")
     traceback.print_exception(None, exc, None)
     print("\nDefault Trace:")
-    traceback.print_exception(None, exc, exc.__traceback__)
+    traceback.print_exception(exc)
     print("\nLimit=1 Trace:")
     traceback.print_exception(None, exc, exc.__traceback__, limit=1)
     print("\nLimit=0 Trace:")
