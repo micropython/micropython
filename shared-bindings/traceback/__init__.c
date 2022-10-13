@@ -38,7 +38,42 @@
 //| """
 //| ...
 
-STATIC void traceback_exception_common(mp_print_t *print, mp_obj_t value, mp_obj_t tb_obj, mp_obj_t limit_obj) {
+STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *print, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_etype, ARG_value, ARG_tb, ARG_limit, ARG_file, ARG_chain };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_etype, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_value, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_tb,    MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_limit, MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+        { MP_QSTR_file,  MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+        { MP_QSTR_chain, MP_ARG_BOOL, {.u_bool = true} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t value = args[ARG_value].u_obj;
+    mp_obj_t tb_obj = args[ARG_tb].u_obj;
+    mp_obj_t limit_obj = args[ARG_limit].u_obj;
+
+    if (args[ARG_file].u_obj != mp_const_none) {
+        if (!is_print_exception) {
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+            mp_arg_error_terse_mismatch();
+            #else
+            mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("unexpected keyword argument '%q'"), MP_QSTR_file);
+            #endif
+
+        }
+        #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
+        mp_get_stream_raise(args[ARG_file].u_obj, MP_STREAM_OP_WRITE);
+        print->data = MP_OBJ_TO_PTR(args[ARG_file].u_obj);
+        print->print_strn = mp_stream_write_adaptor;
+        #else
+        mp_raise_NotImplementedError(translate("file write is not available"));
+        #endif
+    }
+
     if (!mp_obj_is_exception_instance(value)) {
         mp_raise_TypeError(translate("invalid exception"));
     }
@@ -91,22 +126,10 @@ STATIC void traceback_exception_common(mp_print_t *print, mp_obj_t value, mp_obj
 //|     ...
 //|
 STATIC mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_etype, ARG_value, ARG_tb, ARG_limit, ARG_chain };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_etype, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_value, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_tb,    MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_limit, MP_ARG_OBJ,  {.u_obj = mp_const_none} },
-        { MP_QSTR_chain, MP_ARG_BOOL, {.u_bool = true} },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
     mp_print_t print;
     vstr_t vstr;
     vstr_init_print(&vstr, 0, &print);
-    traceback_exception_common(&print, args[ARG_value].u_obj, args[ARG_tb].u_obj, args[ARG_limit].u_obj);
+    traceback_exception_common(false, &print, n_args, pos_args, kw_args);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 
@@ -139,31 +162,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 0, traceback_f
 //|
 
 STATIC mp_obj_t traceback_print_exception(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_etype, ARG_value, ARG_tb, ARG_limit, ARG_file, ARG_chain };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_etype, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_value, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_tb,    MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_limit, MP_ARG_OBJ,  {.u_obj = mp_const_none} },
-        { MP_QSTR_file,  MP_ARG_OBJ,  {.u_obj = mp_const_none} },
-        { MP_QSTR_chain, MP_ARG_BOOL, {.u_bool = true} },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
     mp_print_t print = mp_plat_print;
-    if (args[ARG_file].u_obj != mp_const_none) {
-        #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-        mp_get_stream_raise(args[ARG_file].u_obj, MP_STREAM_OP_WRITE);
-        print.data = MP_OBJ_TO_PTR(args[ARG_file].u_obj);
-        print.print_strn = mp_stream_write_adaptor;
-        #else
-        mp_raise_NotImplementedError(translate("file write is not available"));
-        #endif
-    }
-
-    traceback_exception_common(&print, args[ARG_value].u_obj, args[ARG_tb].u_obj, args[ARG_limit].u_obj);
+    traceback_exception_common(true, &print, n_args, pos_args, kw_args);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_print_exception_obj, 0, traceback_print_exception);
