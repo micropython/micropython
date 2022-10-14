@@ -22,6 +22,12 @@ async def main():
     await uasyncio.sleep_ms(1)
     print(utime.ticks_diff(utime.ticks_ms(), t0) < 100)
 
+    try:
+        # Sleep 1ms beyond maximum allowed sleep value
+        await uasyncio.sleep_ms(utime.ticks_add(0, -1) // 2 + 1)
+    except OverflowError:
+        print("OverflowError")
+
     # When task finished before the timeout
     print(await uasyncio.wait_for_ms(task(1, 5), 50))
 
