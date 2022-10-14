@@ -91,19 +91,19 @@ def set_boards_to_build(build_all):
         port_to_boards[port].add(board_id)
         board_to_port[board_id] = port
 
-    def compute_board_settings():
-        if board_settings:
+    def compute_board_settings(boards):
+        need = set(boards) - set(board_settings.keys())
+        if not need:
             return
 
-        def get_settings(arg):
-            board = arg[1].name
+        def get_settings(board):
             return (
                 board,
                 get_settings_from_makefile(str(top_dir / "ports" / board_to_port[board]), board),
             )
 
         with ThreadPoolExecutor(max_workers=os.cpu_count()) as ex:
-            board_settings.update(ex.map(get_settings, all_ports_all_boards()))
+            board_settings.update(ex.map(get_settings, need))
 
     boards_to_build = all_board_ids
 
@@ -142,8 +142,13 @@ def set_boards_to_build(build_all):
             # As a (nearly) last resort, for some certain files, we compute the settings from the
             # makefile for each board and determine whether to build them that way.
             if p.startswith("frozen") or p.startswith("supervisor") or module_matches:
-                compute_board_settings()
-                for board in all_board_ids:
+                if port_matches:
+                    port = port_matches.group(1)
+                    board_ids = port_to_boards[port]
+                else:
+                    board_ids = all_board_ids
+                compute_board_settings(board_ids)
+                for board in board_ids:
                     settings = board_settings[board]
 
                     # Check frozen files to see if they are in each board.
