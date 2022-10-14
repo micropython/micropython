@@ -870,8 +870,14 @@ the last matching regex is used:
 
     if not args.keep_path:
         # clear search path to make sure tests use only builtin modules and those in extmod
-        os.environ["MICROPYPATH"] = os.pathsep + ".frozen" + os.pathsep + base_path("../extmod")
-
+        os.environ["MICROPYPATH"] = os.pathsep.join(
+            [
+                "",
+                ".frozen",
+                base_path("../frozen/Adafruit_CircuitPython_asyncio"),
+                base_path("../frozen/Adafruit_CircuitPython_Ticks"),
+            ]
+        )
     try:
         os.makedirs(args.result_dir, exist_ok=True)
         res = run_tests(pyb, tests, args, args.result_dir, args.jobs)
