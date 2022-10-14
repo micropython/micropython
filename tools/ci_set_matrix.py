@@ -53,7 +53,7 @@ def set_output(name, value):
         with open(os.environ["GITHUB_OUTPUT"], "at") as f:
             print(f"{name}={value}", file=f)
     else:
-        print(f"Would set GitHub actions output {name} to '{value}'")
+        print("Would set GitHub actions output {name} to '{value}'")
 
 
 def set_boards_to_build(build_all):
@@ -80,7 +80,9 @@ def set_boards_to_build(build_all):
         boards_to_build = set()
         board_pattern = re.compile(r"^ports/[^/]+/boards/([^/]+)/")
         port_pattern = re.compile(r"^ports/([^/]+)/")
-        module_pattern = re.compile(r"^(ports/[^/]+/shared-bindings|shared-module)/([^/]+)/")
+        module_pattern = re.compile(
+            r"^(ports/[^/]+/common-hal|shared-bindings|shared-module)/([^/]+)/"
+        )
         for p in changed_files:
             # See if it is board specific
             board_matches = board_pattern.search(p)
