@@ -351,6 +351,7 @@ static void mp_machine_adc_deinit(machine_adc_obj_t *self) {
         #if defined(MCU_SAMD51)
         if (self->dma_channel == device_mgmt[self->adc_config.device].dma_channel) {
             device_mgmt[self->adc_config.device].dma_channel = -1;
+            device_mgmt[self->adc_config.device].busy = 0;
         }
         #endif
         dac_stop_dma(self->dma_channel, true);
@@ -361,6 +362,12 @@ static void mp_machine_adc_deinit(machine_adc_obj_t *self) {
         free_tc_instance(self->tc_index);
         self->tc_index = -1;
     }
+}
+
+// busy() : Report, if  the ADC device is busy
+static mp_int_t machine_adc_busy(mp_obj_t self_in) {
+    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return device_mgmt[self->adc_config.device].busy ? true : false;
 }
 
 void adc_deinit_all(void) {
