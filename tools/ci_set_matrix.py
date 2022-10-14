@@ -12,6 +12,13 @@ on the event that triggered run. Pull request runs will compare to the
 base branch while pushes will compare to the current ref. We override this
 for the adafruit/circuitpython repo so we build all docs/boards for pushes.
 
+When making changes to the script it is useful to manually test it.
+You can for instance run
+```shell
+tools/ci_set_matrix ports/raspberrypi/common-hal/socket/SSLSocket.c
+```
+and (at the time this comment was written) get a series of messages indicating
+that only the single board raspberry_pi_pico_w would be built.
 """
 
 import re
@@ -112,7 +119,7 @@ def set_boards_to_build(build_all):
         board_pattern = re.compile(r"^ports/[^/]+/boards/([^/]+)/")
         port_pattern = re.compile(r"^ports/([^/]+)/")
         module_pattern = re.compile(
-            r"^(ports/[^/]+/common-hal|shared-bindings|shared-module)/([^/]+)/"
+            r"^(ports/[^/]+/(?:common-hal|bindings)|shared-bindings|shared-module)/([^/]+)/"
         )
         for p in changed_files:
             # See if it is board specific
