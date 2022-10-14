@@ -174,7 +174,7 @@ def do_edit(state, args):
             os.close(dest_fd)
             state.pyb.fs_touch(src)
             state.pyb.fs_get(src, dest, progress_callback=show_progress_bar)
-            if os.system("$EDITOR '%s'" % (dest,)) == 0:
+            if os.system('%s "%s"' % (os.getenv("EDITOR"), dest)) == 0:
                 state.pyb.fs_put(dest, src, progress_callback=show_progress_bar)
         finally:
             os.unlink(dest)
