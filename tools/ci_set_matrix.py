@@ -19,6 +19,13 @@ import os
 import sys
 import json
 import yaml
+import pathlib
+
+tools_dir = pathlib.Path(__file__).resolve().parent
+top_dir = tools_dir.parent
+
+sys.path.insert(0, str(tools_dir / "adabot"))
+sys.path.insert(0, str(top_dir / "docs"))
 
 import build_board_info
 from shared_bindings_matrix import get_settings_from_makefile
@@ -40,12 +47,17 @@ IGNORE = [
     "tools/ci_check_duplicate_usb_vid_pid.py",
 ]
 
-changed_files = {}
-try:
-    changed_files = json.loads(os.environ["CHANGED_FILES"])
-except json.decoder.JSONDecodeError as exc:
-    if exc.msg != "Expecting value":
-        raise
+if len(sys.argv) > 1:
+    print("Using files list on commandline")
+    changed_files = sys.argv[1:]
+else:
+    c = os.environ["CHANGED_FILES"]
+    if c == "":
+        print("CHANGED_FILES is in environment, but value is empty")
+        changed_files = []
+    else:
+        print("Using files list in CHANGED_FILES")
+        changed_files = json.loads(os.environ["CHANGED_FILES"])
 
 
 def set_output(name, value):
@@ -53,7 +65,7 @@ def set_output(name, value):
         with open(os.environ["GITHUB_OUTPUT"], "at") as f:
             print(f"{name}={value}", file=f)
     else:
-        print("Would set GitHub actions output {name} to '{value}'")
+        print(f"Would set GitHub actions output {name} to '{value}'")
 
 
 def set_boards_to_build(build_all):
@@ -114,7 +126,7 @@ def set_boards_to_build(build_all):
                 for board in all_board_ids:
                     if board not in board_settings:
                         board_settings[board] = get_settings_from_makefile(
-                            "../ports/" + board_to_port[board], board
+                            str(top_dir / "ports" / board_to_port[board]), board
                         )
                     settings = board_settings[board]
 
