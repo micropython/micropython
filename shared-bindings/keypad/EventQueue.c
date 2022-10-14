@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/ioctl.h"
+#include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -147,8 +147,8 @@ STATIC mp_uint_t eventqueue_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t
         case MP_STREAM_POLL: {
             mp_uint_t flags = arg;
             mp_uint_t ret = 0;
-            if ((flags & MP_IOCTL_POLL_RD) && common_hal_keypad_eventqueue_get_length(self)) {
-                ret |= MP_IOCTL_POLL_RD;
+            if ((flags & MP_STREAM_POLL_RD) && common_hal_keypad_eventqueue_get_length(self)) {
+                ret |= MP_STREAM_POLL_RD;
             }
             return ret;
         }

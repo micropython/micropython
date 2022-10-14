@@ -33,7 +33,7 @@
 #include "shared/runtime/context_manager_helpers.h"
 #include "shared/runtime/interrupt_char.h"
 
-#include "py/ioctl.h"
+#include "py/stream.h"
 #include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
@@ -276,14 +276,14 @@ STATIC mp_uint_t busio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t
     busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
     mp_uint_t ret;
-    if (request == MP_IOCTL_POLL) {
+    if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        if ((flags & MP_IOCTL_POLL_RD) && common_hal_busio_uart_rx_characters_available(self) > 0) {
-            ret |= MP_IOCTL_POLL_RD;
+        if ((flags & MP_STREAM_POLL_RD) && common_hal_busio_uart_rx_characters_available(self) > 0) {
+            ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_IOCTL_POLL_WR) && common_hal_busio_uart_ready_to_tx(self)) {
-            ret |= MP_IOCTL_POLL_WR;
+        if ((flags & MP_STREAM_POLL_WR) && common_hal_busio_uart_ready_to_tx(self)) {
+            ret |= MP_STREAM_POLL_WR;
         }
     } else {
         *errcode = MP_EINVAL;
