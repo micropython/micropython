@@ -20,6 +20,7 @@ import sys
 import json
 import yaml
 import pathlib
+from concurrent.futures import ThreadPoolExecutor
 
 tools_dir = pathlib.Path(__file__).resolve().parent
 top_dir = tools_dir.parent
@@ -28,7 +29,11 @@ sys.path.insert(0, str(tools_dir / "adabot"))
 sys.path.insert(0, str(top_dir / "docs"))
 
 import build_board_info
-from shared_bindings_matrix import get_settings_from_makefile
+from shared_bindings_matrix import (
+    get_settings_from_makefile,
+    SUPPORTED_PORTS,
+    all_ports_all_boards,
+)
 
 PORT_TO_ARCH = {
     "atmel-samd": "arm",
@@ -86,6 +91,20 @@ def set_boards_to_build(build_all):
         port_to_boards[port].add(board_id)
         board_to_port[board_id] = port
 
+    def compute_board_settings():
+        if board_settings:
+            return
+
+        def get_settings(arg):
+            board = arg[1].name
+            return (
+                board,
+                get_settings_from_makefile(str(top_dir / "ports" / board_to_port[board]), board),
+            )
+
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as ex:
+            board_settings.update(ex.map(get_settings, all_ports_all_boards()))
+
     boards_to_build = all_board_ids
 
     if not build_all:
@@ -123,11 +142,8 @@ def set_boards_to_build(build_all):
             # As a (nearly) last resort, for some certain files, we compute the settings from the
             # makefile for each board and determine whether to build them that way.
             if p.startswith("frozen") or p.startswith("supervisor") or module_matches:
+                compute_board_settings()
                 for board in all_board_ids:
-                    if board not in board_settings:
-                        board_settings[board] = get_settings_from_makefile(
-                            str(top_dir / "ports" / board_to_port[board]), board
-                        )
                     settings = board_settings[board]
 
                     # Check frozen files to see if they are in each board.
