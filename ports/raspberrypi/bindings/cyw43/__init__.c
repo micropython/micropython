@@ -35,6 +35,12 @@
 
 static int power_management_value = PM_DISABLED;
 
+void cyw43_enter_deep_sleep(void) {
+#define WL_REG_ON 23
+    gpio_set_dir(WL_REG_ON, GPIO_OUT);
+    gpio_put(WL_REG_ON, false);
+}
+
 void bindings_cyw43_wifi_enforce_pm() {
     cyw43_wifi_pm(&cyw43_state, power_management_value);
 }
