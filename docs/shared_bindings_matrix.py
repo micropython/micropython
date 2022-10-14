@@ -27,6 +27,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import functools
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -275,6 +276,7 @@ def lookup_setting(settings, key, default=''):
         key = value[2:-1]
     return value
 
+@functools.cache
 def all_ports_all_boards(ports=SUPPORTED_PORTS):
     for port in ports:
 
