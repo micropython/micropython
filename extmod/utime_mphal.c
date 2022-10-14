@@ -95,6 +95,19 @@ STATIC mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
     // we assume that first argument come from ticks_xx so is small int
     mp_uint_t ticks = MP_OBJ_SMALL_INT_VALUE(ticks_in);
     mp_uint_t delta = mp_obj_get_int(delta_in);
+
+    // Check that delta does not overflow the range that ticks_diff can handle.
+    // This ensures the following:
+    //  - ticks_diff(ticks_add(T, delta), T) == delta
+    //  - ticks_diff(T, ticks_add(T, delta)) == -delta
+    // The latter requires excluding delta=-TICKS_PERIOD/2.
+    //
+    // This unsigned comparison is equivalent to a signed comparison of:
+    //   delta <= TICKS_PERIOD/2 || delta >= TICKS_PERIOD/2
+    if (delta + MICROPY_PY_UTIME_TICKS_PERIOD / 2 - 1 >= MICROPY_PY_UTIME_TICKS_PERIOD - 1) {
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("ticks interval overflow"));
+    }
+
     return MP_OBJ_NEW_SMALL_INT((ticks + delta) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_add_obj, time_ticks_add);
