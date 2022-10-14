@@ -131,9 +131,9 @@ def set_boards_to_build(build_all):
 
             # See if it is port specific
             port_matches = port_pattern.search(p)
+            port = port_matches.group(1) if port_matches else None
             module_matches = module_pattern.search(p)
-            if port_matches and not module_matches:
-                port = port_matches.group(1)
+            if port and not module_matches:
                 if port != "unix":
                     boards_to_build.update(port_to_boards[port])
                 continue
@@ -149,8 +149,7 @@ def set_boards_to_build(build_all):
             # As a (nearly) last resort, for some certain files, we compute the settings from the
             # makefile for each board and determine whether to build them that way.
             if p.startswith("frozen") or p.startswith("supervisor") or module_matches:
-                if port_matches:
-                    port = port_matches.group(1)
+                if port:
                     board_ids = port_to_boards[port]
                 else:
                     board_ids = all_board_ids
