@@ -27,6 +27,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import functools
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -80,12 +81,11 @@ This is the same list as in the preprocess_frozen_modules script."""
 repository_urls = {}
 """Cache of repository URLs for frozen modules."""
 
+root_dir = pathlib.Path(__file__).resolve().parent.parent
+
 def get_circuitpython_root_dir():
     """ The path to the root './circuitpython' directory.
     """
-    file_path = pathlib.Path(__file__).resolve()
-    root_dir = file_path.parent.parent
-
     return root_dir
 
 def get_shared_bindings():
@@ -102,7 +102,7 @@ def get_board_mapping():
     """
     boards = {}
     for port in SUPPORTED_PORTS:
-        board_path = os.path.join("../ports", port, "boards")
+        board_path = root_dir / "ports" / port / "boards"
         for board_path in os.scandir(board_path):
             if board_path.is_dir():
                 board_files = os.listdir(board_path.path)
@@ -276,6 +276,7 @@ def lookup_setting(settings, key, default=''):
         key = value[2:-1]
     return value
 
+@functools.cache
 def all_ports_all_boards(ports=SUPPORTED_PORTS):
     for port in ports:
 
