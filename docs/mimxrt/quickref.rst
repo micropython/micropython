@@ -56,20 +56,17 @@ Use the :mod:`time <time>` module::
 Timers
 ------
 
-The i.MXRT port has three hardware timers. Use the :ref:`machine.Timer <machine.Timer>` class
-with a timer ID from 0 to 2 (inclusive)::
+The i.MXRT port supports virtual Timers. Example of usage::
 
     from machine import Timer
 
-    tim0 = Timer(0)
+    tim0 = Timer(-1)
     tim0.init(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(0))
 
-    tim1 = Timer(1)
+    tim1 = Timer(-1)
     tim1.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(1))
 
 The period is in milliseconds.
-
-Virtual timers are not currently supported on this port.
 
 .. _mimxrt_Pins_and_GPIO:
 

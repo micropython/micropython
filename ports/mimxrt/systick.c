@@ -28,6 +28,9 @@
 #include "py/mphal.h"
 #include "systick.h"
 
+#include "pendsv.h"
+#include "shared/runtime/softtimer.h"
+
 volatile uint32_t systick_ms = 0;
 
 systick_dispatch_t systick_dispatch_table[SYSTICK_DISPATCH_NUM_SLOTS];
@@ -43,6 +46,10 @@ void SysTick_Handler(void) {
     systick_dispatch_t f = systick_dispatch_table[uw_tick & (SYSTICK_DISPATCH_NUM_SLOTS - 1)];
     if (f != NULL) {
         f(uw_tick);
+    }
+
+    if (soft_timer_next == uw_tick) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
     }
 }
 

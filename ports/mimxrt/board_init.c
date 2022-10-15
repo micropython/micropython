@@ -89,9 +89,6 @@ void board_init(void) {
     // ADC
     machine_adc_init();
 
-    // PIT
-    machine_timer_init_PIT();
-
     // SDCard
     #if MICROPY_PY_MACHINE_SDCARD
     machine_sdcard_init0();
