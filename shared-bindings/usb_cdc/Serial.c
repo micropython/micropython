@@ -29,7 +29,7 @@
 #include "shared-bindings/usb_cdc/Serial.h"
 #include "shared-bindings/util.h"
 
-#include "py/ioctl.h"
+#include "py/stream.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
@@ -114,14 +114,14 @@ STATIC mp_uint_t usb_cdc_serial_ioctl_stream(mp_obj_t self_in, mp_uint_t request
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret = 0;
     switch (request) {
-        case MP_IOCTL_POLL: {
+        case MP_STREAM_POLL: {
             mp_uint_t flags = arg;
             ret = 0;
-            if ((flags & MP_IOCTL_POLL_RD) && common_hal_usb_cdc_serial_get_in_waiting(self) > 0) {
-                ret |= MP_IOCTL_POLL_RD;
+            if ((flags & MP_STREAM_POLL_RD) && common_hal_usb_cdc_serial_get_in_waiting(self) > 0) {
+                ret |= MP_STREAM_POLL_RD;
             }
-            if ((flags & MP_IOCTL_POLL_WR) && common_hal_usb_cdc_serial_get_out_waiting(self) == 0) {
-                ret |= MP_IOCTL_POLL_WR;
+            if ((flags & MP_STREAM_POLL_WR) && common_hal_usb_cdc_serial_get_out_waiting(self) == 0) {
+                ret |= MP_STREAM_POLL_WR;
             }
             break;
         }
