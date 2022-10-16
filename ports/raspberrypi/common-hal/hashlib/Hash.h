@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H
+#pragma once
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "mbedtls/sha1.h"
 
-#include "py/objtuple.h"
-
-extern const mp_rom_obj_tuple_t common_hal_os_uname_info_obj;
-
-mp_obj_t common_hal_os_uname(void);
-void common_hal_os_chdir(const char *path);
-mp_obj_t common_hal_os_getcwd(void);
-mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_);
-mp_obj_t common_hal_os_listdir(const char *path);
-void common_hal_os_mkdir(const char *path);
-void common_hal_os_remove(const char *path);
-void common_hal_os_rename(const char *old_path, const char *new_path);
-void common_hal_os_rmdir(const char *path);
-mp_obj_t common_hal_os_stat(const char *path);
-mp_obj_t common_hal_os_statvfs(const char *path);
-void common_hal_os_utime(const char *path, mp_obj_t times);
-
-// Returns true if data was correctly sourced from a true random number generator.
-bool common_hal_os_urandom(uint8_t *buffer, mp_uint_t length);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H
+typedef struct {
+    mp_obj_base_t base;
+    union {
+        mbedtls_sha1_context sha1;
+    };
+    // Of MBEDTLS_SSL_HASH_*
+    uint8_t hash_type;
+} hashlib_hash_obj_t;

@@ -25,7 +25,7 @@
  */
 
 #include "py/mperrno.h"
-#include "py/ioctl.h"
+#include "py/stream.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"

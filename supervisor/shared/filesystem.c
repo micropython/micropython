@@ -143,15 +143,21 @@ bool filesystem_init(bool create_allowed, bool force_create) {
     } else if (res != FR_OK) {
         return false;
     }
+
     vfs->str = "/";
     vfs->len = 1;
     vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
     vfs->next = NULL;
+
     MP_STATE_VM(vfs_mount_table) = vfs;
 
     // The current directory is used as the boot up directory.
     // It is set to the internal flash filesystem by default.
     MP_STATE_PORT(vfs_cur) = vfs;
+
+    #if CIRCUITPY_STORAGE_EXTEND
+    supervisor_flash_update_extended();
+    #endif
 
     return true;
 }

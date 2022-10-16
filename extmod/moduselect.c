@@ -9,7 +9,7 @@
 
 #include <stdio.h>
 
-#include "py/ioctl.h"
+#include "py/stream.h"
 #include "py/runtime.h"
 #include "py/obj.h"
 #include "py/objlist.h"

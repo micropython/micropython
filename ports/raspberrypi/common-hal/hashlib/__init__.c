@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_PY_IOCTL_H
-#define MICROPY_INCLUDED_PY_IOCTL_H
 
-#define MP_IOCTL_POLL (0x100 | 1)
+#include "shared-bindings/hashlib/__init__.h"
 
-// These values are compatible with Linux, which are in turn
-// compatible with iBCS2 spec.
-#define MP_IOCTL_POLL_RD  (0x0001)
-#define MP_IOCTL_POLL_WR  (0x0004)
-#define MP_IOCTL_POLL_ERR (0x0008)
-#define MP_IOCTL_POLL_HUP (0x0010)
+#include "mbedtls/ssl.h"
 
-#endif  // MICROPY_INCLUDED_PY_IOCTL_H
+
+bool common_hal_hashlib_new(hashlib_hash_obj_t *self, const char *algorithm) {
+    if (strcmp(algorithm, "sha1") == 0) {
+        self->hash_type = MBEDTLS_SSL_HASH_SHA1;
+        mbedtls_sha1_init(&self->sha1);
+        mbedtls_sha1_starts_ret(&self->sha1);
+        return true;
+    }
+    return false;
+}

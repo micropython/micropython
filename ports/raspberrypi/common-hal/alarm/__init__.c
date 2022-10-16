@@ -38,6 +38,10 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 
+#if CIRCUITPY_CYW43
+#include "bindings/cyw43/__init__.h"
+#endif
+
 #include "supervisor/port.h"
 #include "supervisor/shared/workflow.h"
 
@@ -203,6 +207,10 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     bool timealarm_set = alarm_time_timealarm_is_set();
+
+    #if CIRCUITPY_CYW43
+    cyw43_enter_deep_sleep();
+    #endif
 
     // If there's a timealarm, just enter a very deep light sleep
     if (timealarm_set) {

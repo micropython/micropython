@@ -12,6 +12,13 @@ on the event that triggered run. Pull request runs will compare to the
 base branch while pushes will compare to the current ref. We override this
 for the adafruit/circuitpython repo so we build all docs/boards for pushes.
 
+When making changes to the script it is useful to manually test it.
+You can for instance run
+```shell
+tools/ci_set_matrix ports/raspberrypi/common-hal/socket/SSLSocket.c
+```
+and (at the time this comment was written) get a series of messages indicating
+that only the single board raspberry_pi_pico_w would be built.
 """
 
 import re
@@ -19,9 +26,21 @@ import os
 import sys
 import json
 import yaml
+import pathlib
+from concurrent.futures import ThreadPoolExecutor
+
+tools_dir = pathlib.Path(__file__).resolve().parent
+top_dir = tools_dir.parent
+
+sys.path.insert(0, str(tools_dir / "adabot"))
+sys.path.insert(0, str(top_dir / "docs"))
 
 import build_board_info
-from shared_bindings_matrix import get_settings_from_makefile
+from shared_bindings_matrix import (
+    get_settings_from_makefile,
+    SUPPORTED_PORTS,
+    all_ports_all_boards,
+)
 
 PORT_TO_ARCH = {
     "atmel-samd": "arm",
@@ -40,12 +59,17 @@ IGNORE = [
     "tools/ci_check_duplicate_usb_vid_pid.py",
 ]
 
-changed_files = {}
-try:
-    changed_files = json.loads(os.environ["CHANGED_FILES"])
-except json.decoder.JSONDecodeError as exc:
-    if exc.msg != "Expecting value":
-        raise
+if len(sys.argv) > 1:
+    print("Using files list on commandline")
+    changed_files = sys.argv[1:]
+else:
+    c = os.environ["CHANGED_FILES"]
+    if c == "":
+        print("CHANGED_FILES is in environment, but value is empty")
+        changed_files = []
+    else:
+        print("Using files list in CHANGED_FILES")
+        changed_files = json.loads(os.environ["CHANGED_FILES"])
 
 
 def set_output(name, value):
@@ -53,7 +77,7 @@ def set_output(name, value):
         with open(os.environ["GITHUB_OUTPUT"], "at") as f:
             print(f"{name}={value}", file=f)
     else:
-        print("Would set GitHub actions output {name} to '{value}'")
+        print(f"Would set GitHub actions output {name} to '{value}'")
 
 
 def set_boards_to_build(build_all):
@@ -74,6 +98,20 @@ def set_boards_to_build(build_all):
         port_to_boards[port].add(board_id)
         board_to_port[board_id] = port
 
+    def compute_board_settings(boards):
+        need = set(boards) - set(board_settings.keys())
+        if not need:
+            return
+
+        def get_settings(board):
+            return (
+                board,
+                get_settings_from_makefile(str(top_dir / "ports" / board_to_port[board]), board),
+            )
+
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as ex:
+            board_settings.update(ex.map(get_settings, need))
+
     boards_to_build = all_board_ids
 
     if not build_all:
@@ -81,7 +119,7 @@ def set_boards_to_build(build_all):
         board_pattern = re.compile(r"^ports/[^/]+/boards/([^/]+)/")
         port_pattern = re.compile(r"^ports/([^/]+)/")
         module_pattern = re.compile(
-            r"^(ports/[^/]+/common-hal|shared-bindings|shared-module)/([^/]+)/"
+            r"^(ports/[^/]+/(?:common-hal|bindings)|shared-bindings|shared-module)/([^/]+)/"
         )
         for p in changed_files:
             # See if it is board specific
@@ -93,9 +131,9 @@ def set_boards_to_build(build_all):
 
             # See if it is port specific
             port_matches = port_pattern.search(p)
+            port = port_matches.group(1) if port_matches else None
             module_matches = module_pattern.search(p)
-            if port_matches and not module_matches:
-                port = port_matches.group(1)
+            if port and not module_matches:
                 if port != "unix":
                     boards_to_build.update(port_to_boards[port])
                 continue
@@ -111,11 +149,12 @@ def set_boards_to_build(build_all):
             # As a (nearly) last resort, for some certain files, we compute the settings from the
             # makefile for each board and determine whether to build them that way.
             if p.startswith("frozen") or p.startswith("supervisor") or module_matches:
-                for board in all_board_ids:
-                    if board not in board_settings:
-                        board_settings[board] = get_settings_from_makefile(
-                            "../ports/" + board_to_port[board], board
-                        )
+                if port:
+                    board_ids = port_to_boards[port]
+                else:
+                    board_ids = all_board_ids
+                compute_board_settings(board_ids)
+                for board in board_ids:
                     settings = board_settings[board]
 
                     # Check frozen files to see if they are in each board.

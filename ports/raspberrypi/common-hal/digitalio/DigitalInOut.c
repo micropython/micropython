@@ -50,6 +50,12 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
     self->output = false;
     self->open_drain = false;
 
+    #if CIRCUITPY_CYW43
+    if (IS_CYW(self)) {
+        return DIGITALINOUT_OK;
+    }
+    #endif
+
     // Set to input. No output value.
     gpio_init(pin->number);
     return DIGITALINOUT_OK;

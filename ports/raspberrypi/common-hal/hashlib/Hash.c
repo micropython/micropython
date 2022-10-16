@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H
+#include "shared-bindings/hashlib/Hash.h"
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "mbedtls/ssl.h"
 
-#include "py/objtuple.h"
+void common_hal_hashlib_hash_update(hashlib_hash_obj_t *self, const uint8_t *data, size_t datalen) {
+    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
+        mbedtls_sha1_update_ret(&self->sha1, data, datalen);
+        return;
+    }
+}
 
-extern const mp_rom_obj_tuple_t common_hal_os_uname_info_obj;
+void common_hal_hashlib_hash_digest(hashlib_hash_obj_t *self, uint8_t *data, size_t datalen) {
+    if (datalen < common_hal_hashlib_hash_get_digest_size(self)) {
+        return;
+    }
+    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
+        // We copy the sha1 state so we can continue to update if needed or get
+        // the digest a second time.
+        mbedtls_sha1_context copy;
+        mbedtls_sha1_clone(&copy, &self->sha1);
+        mbedtls_sha1_finish_ret(&self->sha1, data);
+        mbedtls_sha1_clone(&self->sha1, &copy);
+    }
+}
 
-mp_obj_t common_hal_os_uname(void);
-void common_hal_os_chdir(const char *path);
-mp_obj_t common_hal_os_getcwd(void);
-mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_);
-mp_obj_t common_hal_os_listdir(const char *path);
-void common_hal_os_mkdir(const char *path);
-void common_hal_os_remove(const char *path);
-void common_hal_os_rename(const char *old_path, const char *new_path);
-void common_hal_os_rmdir(const char *path);
-mp_obj_t common_hal_os_stat(const char *path);
-mp_obj_t common_hal_os_statvfs(const char *path);
-void common_hal_os_utime(const char *path, mp_obj_t times);
-
-// Returns true if data was correctly sourced from a true random number generator.
-bool common_hal_os_urandom(uint8_t *buffer, mp_uint_t length);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H
+size_t common_hal_hashlib_hash_get_digest_size(hashlib_hash_obj_t *self) {
+    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
+        return 20;
+    }
+    return 0;
+}
