@@ -44,7 +44,7 @@ void mp_hal_set_interrupt_char(int c);
 // Define an alias fo systick_ms, because the shared softtimer.c uses
 // the symbol uwTick for the systick ms counter.
 #define uwTick systick_ms
-
+#define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
 #define mp_hal_delay_us_fast  mp_hal_delay_us
 
 static inline uint64_t mp_hal_ticks_ms_64(void) {
