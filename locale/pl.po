@@ -122,6 +122,10 @@ msgstr "%q indeks musi być liczbą całkowitą, a nie %s"
 msgid "%q init failed"
 msgstr ""
 
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q length must be %d"
 msgstr ""
@@ -216,7 +220,7 @@ msgstr "%q() bierze %d argumentów pozycyjnych, lecz podano %d"
 msgid "%q, %q, and %q must all be the same length"
 msgstr ""
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr ""
 
@@ -1010,7 +1014,15 @@ msgid "Filters too complex"
 msgstr ""
 
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Firmware image is invalid"
+msgid "Firmware is duplicate"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is too big"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -4164,7 +4176,7 @@ msgstr "złe wcięcie"
 msgid "unexpected keyword argument"
 msgstr "zły argument nazwany"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "zły argument nazwany '%q'"
 

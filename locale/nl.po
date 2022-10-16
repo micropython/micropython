@@ -120,6 +120,10 @@ msgstr "%q indexen moeten integers zijn, niet %s"
 msgid "%q init failed"
 msgstr ""
 
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q length must be %d"
 msgstr ""
@@ -214,7 +218,7 @@ msgstr "%q() verwacht %d positionele argumenten maar kreeg %d"
 msgid "%q, %q, and %q must all be the same length"
 msgstr ""
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr ""
 
@@ -1009,8 +1013,16 @@ msgid "Filters too complex"
 msgstr "Filters zijn te complex"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Firmware image is invalid"
-msgstr "Firmware image is ongeldig"
+msgid "Firmware is duplicate"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is too big"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -4188,7 +4200,7 @@ msgstr "onverwachte inspringing"
 msgid "unexpected keyword argument"
 msgstr "onverwacht trefwoordargument"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "onverwacht trefwoordargument '%q'"
 
@@ -4379,6 +4391,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "Firmware image is ongeldig"
 
 #~ msgid "Stream missing readinto() or write() method."
 #~ msgstr "Stream mist readinto() of write() methode."

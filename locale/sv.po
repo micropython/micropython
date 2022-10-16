@@ -125,6 +125,10 @@ msgstr "Indexet %q måste vara ett heltal, inte %s"
 msgid "%q init failed"
 msgstr "%q init misslyckades"
 
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q length must be %d"
 msgstr "längden på %q måste vara %d"
@@ -221,7 +225,7 @@ msgstr "% q() tar %d positionsargument men %d gavs"
 msgid "%q, %q, and %q must all be the same length"
 msgstr "%q, %q och %q måste vara lika långa"
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr "%q=%q"
 
@@ -1017,8 +1021,16 @@ msgid "Filters too complex"
 msgstr "Filter för komplexa"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Firmware image is invalid"
-msgstr "Firmware-avbilden är ogiltig"
+msgid "Firmware is duplicate"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is too big"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -4217,7 +4229,7 @@ msgstr "oväntat indrag"
 msgid "unexpected keyword argument"
 msgstr "oväntat nyckelordsargument"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "oväntat nyckelordsargument '%q'"
 
@@ -4408,6 +4420,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "Firmware-avbilden är ogiltig"
 
 #~ msgid "Stream missing readinto() or write() method."
 #~ msgstr "Stream saknar readinto() eller write() metod."

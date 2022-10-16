@@ -123,6 +123,10 @@ msgstr "indeks %q harus bilangan bulat, bukan %s"
 msgid "%q init failed"
 msgstr ""
 
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q length must be %d"
 msgstr ""
@@ -217,7 +221,7 @@ msgstr "%q() mengambil posisi argumen %d tapi %d yang diberikan"
 msgid "%q, %q, and %q must all be the same length"
 msgstr "%q, %q, dan %q semuanya harus memiliki panjang yang sama"
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr ""
 
@@ -1014,7 +1018,15 @@ msgid "Filters too complex"
 msgstr ""
 
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Firmware image is invalid"
+msgid "Firmware is duplicate"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is too big"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -4183,7 +4195,7 @@ msgstr ""
 msgid "unexpected keyword argument"
 msgstr "argumen keyword tidak diharapkan"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "keyword argumen '%q' tidak diharapkan"
 

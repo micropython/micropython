@@ -124,6 +124,10 @@ msgstr "Indexy %q musí být celá čísla, nikoli %s"
 msgid "%q init failed"
 msgstr "Inicializace %q selhala"
 
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q length must be %d"
 msgstr "Délka %q musí být %d"
@@ -218,7 +222,7 @@ msgstr "%q() vyžaduje %d pozičních argumentů, ale %d jich bylo zadáno"
 msgid "%q, %q, and %q must all be the same length"
 msgstr "%q, %q, a %q musí mít všechny shodnou délku"
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr ""
 
@@ -1012,8 +1016,16 @@ msgid "Filters too complex"
 msgstr ""
 
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Firmware image is invalid"
-msgstr "Obraz firmwaru je nevalidní"
+msgid "Firmware is duplicate"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is too big"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -4169,7 +4181,7 @@ msgstr ""
 msgid "unexpected keyword argument"
 msgstr ""
 
-#: py/bc.c py/objnamedtuple.c
+#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr ""
 
@@ -4360,6 +4372,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "Obraz firmwaru je nevalidní"
 
 #~ msgid "%q must be >= 0"
 #~ msgstr "%q musí být >= 0"
