@@ -88,7 +88,8 @@ void usb_init(void) {
 
 void usb_tx_strn(const char *str, size_t len) {
     // Write out the data to the CDC interface, but only while the USB host is connected.
-    while (usb_cdc_connected && len) {
+    uint64_t timeout = esp_timer_get_time() + (uint64_t)(MICROPY_HW_USB_CDC_TX_TIMEOUT * 1000);
+    while (usb_cdc_connected && len && esp_timer_get_time() < timeout) {
         size_t l = tinyusb_cdcacm_write_queue(CDC_ITF, (uint8_t *)str, len);
         str += l;
         len -= l;
