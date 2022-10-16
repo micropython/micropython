@@ -33,6 +33,7 @@
 #include "RP2040.h" // cmsis, for __WFI
 
 #define SYSTICK_MAX (0xffffff)
+#define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
 
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
