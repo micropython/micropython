@@ -36,6 +36,7 @@
 #define MICROPY_HAL_VERSION             "2.8.0"
 
 #define MP_HAL_PIN_FMT                  "%q"
+#define MICROPY_HW_USB_CDC_TX_TIMEOUT   (500)
 extern ringbuf_t stdin_ringbuf;
 
 // Define an alias fo systick_ms, because the shared softtimer.c uses

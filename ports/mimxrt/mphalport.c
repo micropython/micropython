@@ -116,9 +116,15 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             if (n > CFG_TUD_CDC_EP_BUFSIZE) {
                 n = CFG_TUD_CDC_EP_BUFSIZE;
             }
-            while (n > tud_cdc_write_available()) {
-                __WFE();
+            uint64_t timeout = ticks_us64() + (uint64_t)(MICROPY_HW_USB_CDC_TX_TIMEOUT * 1000);
+            // Wait with a max of USC_CDC_TIMEOUT ms
+            while (n > tud_cdc_write_available() && ticks_us64() < timeout) {
+                MICROPY_EVENT_POLL_HOOK
             }
+            if (ticks_us64() >= timeout) {
+                break;
+            }
+
             uint32_t n2 = tud_cdc_write(str + i, n);
             tud_cdc_write_flush();
             i += n2;
