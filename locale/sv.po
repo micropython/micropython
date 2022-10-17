@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-09-30 08:18+0000\n"
+"PO-Revision-Date: 2022-10-13 06:43+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: main.c
 msgid ""
@@ -70,7 +70,7 @@ msgstr "%%c kräver int eller char"
 #: main.c
 #, c-format
 msgid "%02X"
-msgstr ""
+msgstr "%02X"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -124,6 +124,10 @@ msgstr "Indexet %q måste vara ett heltal, inte %s"
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr "%q init misslyckades"
+
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q length must be %d"
@@ -221,7 +225,7 @@ msgstr "% q() tar %d positionsargument men %d gavs"
 msgid "%q, %q, and %q must all be the same length"
 msgstr "%q, %q och %q måste vara lika långa"
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr "%q=%q"
 
@@ -1017,8 +1021,16 @@ msgid "Filters too complex"
 msgstr "Filter för komplexa"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Firmware image is invalid"
-msgstr "Firmware-avbilden är ogiltig"
+msgid "Firmware is duplicate"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is too big"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -2129,7 +2141,7 @@ msgstr "UART-skrivning"
 
 #: main.c
 msgid "UID:"
-msgstr ""
+msgstr "UID:"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
@@ -4217,7 +4229,7 @@ msgstr "oväntat indrag"
 msgid "unexpected keyword argument"
 msgstr "oväntat nyckelordsargument"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "oväntat nyckelordsargument '%q'"
 
@@ -4408,6 +4420,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "Firmware-avbilden är ogiltig"
 
 #~ msgid "Stream missing readinto() or write() method."
 #~ msgstr "Stream saknar readinto() eller write() metod."

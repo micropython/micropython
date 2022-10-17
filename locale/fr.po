@@ -129,6 +129,10 @@ msgstr "les indices %q doivent être des entiers, pas %s"
 msgid "%q init failed"
 msgstr "échec de l'initialisation %q"
 
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q length must be %d"
 msgstr "La longeur de %q doit être %d"
@@ -223,7 +227,7 @@ msgstr "%q() prend %d paramètres positionnels mais %d ont été donnés"
 msgid "%q, %q, and %q must all be the same length"
 msgstr "%q, %q, et %q doivent tous être de la même longueur"
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr "%q=%q"
 
@@ -1036,8 +1040,16 @@ msgid "Filters too complex"
 msgstr "Filtres trop complexe"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Firmware image is invalid"
-msgstr "Image du microprogramme est invalide"
+msgid "Firmware is duplicate"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is too big"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -4278,7 +4290,7 @@ msgstr "indentation inattendue"
 msgid "unexpected keyword argument"
 msgstr "paramètre nommé inattendu"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "paramètre nommé '%q' inattendu"
 
@@ -4469,6 +4481,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "Image du microprogramme est invalide"
 
 #~ msgid "Stream missing readinto() or write() method."
 #~ msgstr "Il manque une méthode readinto() ou write() au flux."

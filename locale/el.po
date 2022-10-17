@@ -129,6 +129,10 @@ msgstr "%q δείκτες πρέπει να είναι ακέραιοι, όχι 
 msgid "%q init failed"
 msgstr "%q εκκίνηση απέτυχε"
 
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q length must be %d"
 msgstr "%q μήκος πρέπει να είναι %d"
@@ -223,7 +227,7 @@ msgstr "%q() παίρνει %d ορίσματα θέσεως αλλά %d δόθ�
 msgid "%q, %q, and %q must all be the same length"
 msgstr "%q, %q, και %q πρέπει να είναι όλα του ιδίου μήκους"
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr "%q=%q"
 
@@ -1026,7 +1030,15 @@ msgid "Filters too complex"
 msgstr ""
 
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Firmware image is invalid"
+msgid "Firmware is duplicate"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is too big"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -4178,7 +4190,7 @@ msgstr ""
 msgid "unexpected keyword argument"
 msgstr ""
 
-#: py/bc.c py/objnamedtuple.c
+#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr ""
 

@@ -129,6 +129,10 @@ msgstr "%q indices deben ser enteros, no %s"
 msgid "%q init failed"
 msgstr "%q inicializado fallido"
 
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q length must be %d"
 msgstr "%q tamaño debe ser %d"
@@ -223,7 +227,7 @@ msgstr "%q() toma %d argumentos posicionales pero %d fueron dados"
 msgid "%q, %q, and %q must all be the same length"
 msgstr ""
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr ""
 
@@ -1025,8 +1029,16 @@ msgid "Filters too complex"
 msgstr "Filtros muy complejos"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Firmware image is invalid"
-msgstr "La imagen de firmware es inválida"
+msgid "Firmware is duplicate"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is too big"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -4236,7 +4248,7 @@ msgstr "sangría inesperada"
 msgid "unexpected keyword argument"
 msgstr "argumento por palabra clave inesperado"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "argumento por palabra clave inesperado '%q'"
 
@@ -4427,6 +4439,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "La imagen de firmware es inválida"
 
 #~ msgid "Stream missing readinto() or write() method."
 #~ msgstr "A Stream le falta el método readinto() o write()."

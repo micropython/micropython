@@ -124,6 +124,10 @@ msgstr "gli indici %q devono essere interi, non %s"
 msgid "%q init failed"
 msgstr ""
 
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q length must be %d"
 msgstr ""
@@ -218,7 +222,7 @@ msgstr "%q() prende %d argomenti posizionali ma ne sono stati forniti %d"
 msgid "%q, %q, and %q must all be the same length"
 msgstr ""
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr ""
 
@@ -1016,7 +1020,15 @@ msgid "Filters too complex"
 msgstr ""
 
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Firmware image is invalid"
+msgid "Firmware is duplicate"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is too big"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -4201,7 +4213,7 @@ msgstr "indentazione inaspettata"
 msgid "unexpected keyword argument"
 msgstr "argomento nominato inaspettato"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "argomento nominato '%q' inaspettato"
 

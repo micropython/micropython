@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-09-30 08:18+0000\n"
+"PO-Revision-Date: 2022-10-13 06:43+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: main.c
 msgid ""
@@ -70,7 +70,7 @@ msgstr "%%c requer int ou char"
 #: main.c
 #, c-format
 msgid "%02X"
-msgstr ""
+msgstr "%02X"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -125,6 +125,10 @@ msgstr "Os índices %q devem ser inteiros, e não %s"
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr "a inicialização do %q falhou"
+
+#: shared-bindings/dualbank/__init__.c
+msgid "%q is %q"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q length must be %d"
@@ -220,7 +224,7 @@ msgstr "%q() recebe %d argumentos posicionais, porém %d foram informados"
 msgid "%q, %q, and %q must all be the same length"
 msgstr "todos os %q, %q, e %q devem ter mesmo comprimento"
 
-#: py/objint.c
+#: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr "%q=%q"
 
@@ -1028,8 +1032,16 @@ msgid "Filters too complex"
 msgstr "Os filtros são muito complexos"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
-msgid "Firmware image is invalid"
-msgstr "A imagem do firmware é invalida"
+msgid "Firmware is duplicate"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/dualbank/__init__.c
+msgid "Firmware is too big"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -2153,7 +2165,7 @@ msgstr "Escrita UART"
 
 #: main.c
 msgid "UID:"
-msgstr ""
+msgstr "UID:"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
@@ -4256,7 +4268,7 @@ msgstr "recuo inesperado"
 msgid "unexpected keyword argument"
 msgstr "argumento inesperado da palavra-chave"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "argumento inesperado da palavra-chave '%q'"
 
@@ -4447,6 +4459,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "A imagem do firmware é invalida"
 
 #~ msgid "Stream missing readinto() or write() method."
 #~ msgstr "Transmita o método ausente readinto() ou write()."
