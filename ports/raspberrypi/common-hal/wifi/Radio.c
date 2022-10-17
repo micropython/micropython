@@ -202,42 +202,42 @@ mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_gateway(wifi_radio_obj_t *self) {
-    if (!netif_is_up(NETIF_STA)) {
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
         return mp_const_none;
     }
     return common_hal_ipaddress_new_ipv4address(NETIF_STA->gw.addr);
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_gateway_ap(wifi_radio_obj_t *self) {
-    if (!netif_is_up(NETIF_AP)) {
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_UP) {
         return mp_const_none;
     }
     return common_hal_ipaddress_new_ipv4address(NETIF_AP->gw.addr);
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_subnet(wifi_radio_obj_t *self) {
-    if (!netif_is_up(NETIF_STA)) {
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
         return mp_const_none;
     }
     return common_hal_ipaddress_new_ipv4address(NETIF_STA->netmask.addr);
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self) {
-    if (!netif_is_up(NETIF_AP)) {
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_UP) {
         return mp_const_none;
     }
     return common_hal_ipaddress_new_ipv4address(NETIF_AP->netmask.addr);
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
-    if (!netif_is_up(NETIF_STA)) {
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
         return mp_const_none;
     }
     return common_hal_ipaddress_new_ipv4address(NETIF_STA->ip_addr.addr);
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_address_ap(wifi_radio_obj_t *self) {
-    if (!netif_is_up(NETIF_AP)) {
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_UP) {
         return mp_const_none;
     }
     return common_hal_ipaddress_new_ipv4address(NETIF_AP->ip_addr.addr);
@@ -245,7 +245,7 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_address_ap(wifi_radio_obj_t *self) {
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
     uint32_t addr = dns_getserver(0)->addr;
-    if (!netif_is_up(NETIF_STA) || addr == 0) {
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP || addr == 0) {
         return mp_const_none;
     }
     return common_hal_ipaddress_new_ipv4address(addr);
