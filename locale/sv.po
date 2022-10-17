@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-10-13 06:43+0000\n"
+"PO-Revision-Date: 2022-10-18 11:12+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -127,7 +127,7 @@ msgstr "%q init misslyckades"
 
 #: shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
-msgstr ""
+msgstr "%q är %q"
 
 #: py/argcheck.c
 msgid "%q length must be %d"
@@ -1022,15 +1022,15 @@ msgstr "Filter för komplexa"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is duplicate"
-msgstr ""
+msgstr "Firmware är en dubblett"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is invalid"
-msgstr ""
+msgstr "Firmware är ogiltig"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
-msgstr ""
+msgstr "Firmware är för stor"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
