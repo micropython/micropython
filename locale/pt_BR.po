@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-10-13 06:43+0000\n"
+"PO-Revision-Date: 2022-10-18 11:12+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -128,7 +128,7 @@ msgstr "a inicialização do %q falhou"
 
 #: shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
-msgstr ""
+msgstr "%q é %q"
 
 #: py/argcheck.c
 msgid "%q length must be %d"
@@ -1033,15 +1033,15 @@ msgstr "Os filtros são muito complexos"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is duplicate"
-msgstr ""
+msgstr "O firmware está duplicado"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is invalid"
-msgstr ""
+msgstr "O firmware é inválido"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
-msgstr ""
+msgstr "O firmware é muito grande"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
