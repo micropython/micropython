@@ -53,3 +53,11 @@ try:
         raise RuntimeError() from None
 except Exception as e:
     print_exc_info(e)
+
+try:
+    try:
+        raise RuntimeError()
+    except Exception as inner:
+        1 / 0
+except Exception as e:
+    print_exc_info(e)

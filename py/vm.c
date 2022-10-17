@@ -1456,10 +1456,19 @@ unwind_loop:
                 // catch exception and pass to byte code
                 code_state->ip = exc_sp->handler;
                 mp_obj_t *sp = MP_TAGPTR_PTR(exc_sp->val_sp);
+                #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+                mp_obj_t active_exception = get_active_exception(exc_sp, exc_stack);
+                #endif
                 // save this exception in the stack so it can be used in a reraise, if needed
                 exc_sp->prev_exc = nlr.ret_val;
+                mp_obj_t obj = MP_OBJ_FROM_PTR(nlr.ret_val);
+                #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+                if (active_exception != MP_OBJ_NULL) {
+                    mp_store_attr(obj, MP_QSTR___context__, active_exception);
+                }
+                #endif
                 // push exception object so it can be handled by bytecode
-                PUSH(MP_OBJ_FROM_PTR(nlr.ret_val));
+                PUSH(obj);
                 code_state->sp = sp;
 
             #if MICROPY_STACKLESS

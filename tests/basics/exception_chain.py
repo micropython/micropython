@@ -5,7 +5,7 @@ except AttributeError:
     raise SystemExit
 
 def print_exc_info(e):
-    print("exception", type(e), repr(e))
+    print("exception", type(e), e.args)
     print("context", type(e.__context__), e.__suppress_context__)
     print("cause", type(e.__cause__))
 
@@ -42,5 +42,13 @@ try:
         1/0
     except Exception as inner:
         raise RuntimeError() from None
+except Exception as e:
+    print_exc_info(e)
+
+try:
+    try:
+        raise RuntimeError()
+    except Exception as inner:
+        1/0
 except Exception as e:
     print_exc_info(e)
