@@ -92,4 +92,13 @@
 
 #define LWIP_NO_CTYPE_H 1
 
+#define X8_F  "02x"
+#define U16_F "u"
+#define U32_F "lu"
+#define S32_F "ld"
+#define X32_F "lx"
+
+#define S16_F "d"
+#define X16_F "x"
+#define SZT_F "u"
 #endif /* __LWIPOPTS_H__ */
