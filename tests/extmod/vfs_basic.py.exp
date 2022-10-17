@@ -41,6 +41,7 @@ OSError
 1 rmdir test_dir
 1 stat test_file
 (1,)
+1 utime test_file (31536000, 63072000)
 1 statvfs /
 (1,)
 1 open test_file r

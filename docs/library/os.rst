@@ -84,6 +84,14 @@ Filesystem access
 
    Get the status of a file or directory.
 
+.. function:: utime(path, times=None)
+
+   Set the access and modification times of a file or directory, where ``times``
+   is:
+
+        * ``(atime, mtime)``: a tuple of timestamps as integers; or
+        * ``None``: atime and mtime will be set to the current system time.
+
 .. function:: statvfs(path)
 
    Get the status of a fileystem.

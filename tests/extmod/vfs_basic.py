@@ -49,6 +49,9 @@ class Filesystem:
         print(self.id, "stat", path)
         return (self.id,)
 
+    def utime(self, path, times):
+        print(self.id, "utime", path, times)
+
     def statvfs(self, path):
         print(self.id, "statvfs", path)
         return (self.id,)
@@ -134,6 +137,7 @@ uos.remove("test_file")
 uos.rename("test_file", "test_file2")
 uos.rmdir("test_dir")
 print(uos.stat("test_file"))
+uos.utime("test_file", (365 * 24 * 60 * 60, 2 * 365 * 24 * 60 * 60))
 print(uos.statvfs("/test_mnt"))
 open("test_file")
 open("test_file", "wb")
