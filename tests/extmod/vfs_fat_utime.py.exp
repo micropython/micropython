@@ -1,0 +1,5 @@
+test <class 'VfsFat'>
+True True True
+OSError
+TypeError
+TypeError
