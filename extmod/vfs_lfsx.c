@@ -445,6 +445,39 @@ STATIC mp_obj_t MP_VFS_LFSx(statvfs)(mp_obj_t self_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(statvfs_obj), MP_VFS_LFSx(statvfs));
 
+STATIC mp_obj_t MP_VFS_LFSx(utime)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t times_in) {
+    #if LFS_BUILD_VERSION == 2
+    MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
+    const char *path = MP_VFS_LFSx(make_path)(self, path_in);
+
+    if (self->enable_mtime) {
+        mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(times_in);
+        if (!mp_obj_is_type(times_in, &mp_type_tuple) || tuple->len != 2) {
+            mp_raise_OSError(MP_EINVAL);
+        }
+        // times_in = (atime, mtime). Ignore atime and just set mtime
+        uint64_t mtime = ((uint64_t)mp_obj_get_int(tuple->items[1])) * 1000000000ULL;
+        uint64_t ns = timeutils_nanoseconds_since_epoch_to_nanoseconds_since_1970(mtime);
+        // Store "ns" to "buf" in little-endian format (essentially htole64).
+        uint8_t mtime_buf[8];
+        for (size_t i = 0; i < 8; ++i) {
+            mtime_buf[i] = ns;
+            ns >>= 8;
+        }
+        int ret = lfs2_setattr(&self->lfs, path, LFS_ATTR_MTIME, &mtime_buf, sizeof(mtime_buf));
+        if (ret < 0) {
+            mp_raise_OSError(-ret);
+        }
+    } else {
+        mp_raise_OSError(MP_EPERM);
+    }
+    #else
+    mp_raise_OSError(MP_EPERM);
+    #endif
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(MP_VFS_LFSx(utime_obj), MP_VFS_LFSx(utime));
+
 STATIC mp_obj_t MP_VFS_LFSx(mount)(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     (void)mkfs;
@@ -480,6 +513,7 @@ STATIC const mp_rom_map_elem_t MP_VFS_LFSx(locals_dict_table)[] = {
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&MP_VFS_LFSx(rename_obj)) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&MP_VFS_LFSx(stat_obj)) },
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&MP_VFS_LFSx(statvfs_obj)) },
+    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&MP_VFS_LFSx(utime_obj)) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&MP_VFS_LFSx(mount_obj)) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&MP_VFS_LFSx(umount_obj)) },
 };
