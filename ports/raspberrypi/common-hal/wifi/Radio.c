@@ -187,40 +187,23 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             break;
         }
 
-        int result = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
+        int result = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
 
-        // While the async connection is running, it will return CYW43_LINK_JOIN.
-
-        int done = 0;
         switch (result) {
             case CYW43_LINK_UP:
-                done = 1;
-                break;
-            case (unsigned int)CYW43_LINK_FAIL:
+                bindings_cyw43_wifi_enforce_pm();
+                return WIFI_RADIO_ERROR_NONE;
+            case CYW43_LINK_FAIL:
                 return WIFI_RADIO_ERROR_CONNECTION_FAIL;
-            case (unsigned int)CYW43_LINK_NONET:
+            case CYW43_LINK_NONET:
                 return WIFI_RADIO_ERROR_NO_AP_FOUND;
-            case (unsigned int)CYW43_LINK_BADAUTH:
+            case CYW43_LINK_BADAUTH:
                 return WIFI_RADIO_ERROR_AUTH_FAIL;
-        }
-
-        if (done == 1) {
-            break;
         }
     }
 
     // Being here means we either timed out or got interrupted.
-    int result = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
-    switch (result) {
-        case CYW43_LINK_UP:
-        case CYW43_LINK_JOIN:
-            // If CYW43_LINK_JOIN wasn't here, it wouldn't work even though we have ip.
-            bindings_cyw43_wifi_enforce_pm();
-            return WIFI_RADIO_ERROR_NONE;
-
-        default:
-            return WIFI_RADIO_ERROR_UNSPECIFIED;
-    }
+    return WIFI_RADIO_ERROR_UNSPECIFIED;
 }
 
 mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
