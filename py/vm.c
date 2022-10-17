@@ -1391,7 +1391,10 @@ unwind_loop:
             // - constant GeneratorExit object, because it's const
             // - exceptions re-raised by END_FINALLY
             // - exceptions re-raised explicitly by "raise"
-            if (nlr.ret_val != &mp_const_GeneratorExit_obj
+            if ( true
+                #if MICROPY_CONST_GENERATOREXIT_OBJ
+                && nlr.ret_val != &mp_static_GeneratorExit_obj
+                #endif
                 && *code_state->ip != MP_BC_END_FINALLY
                 && *code_state->ip != MP_BC_RAISE_LAST) {
                 const byte *ip = code_state->fun_bc->bytecode;

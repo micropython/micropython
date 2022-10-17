@@ -773,6 +773,16 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_WARNINGS (0)
 #endif
 
+// Whether to support chained exceptions
+#ifndef MICROPY_CPYTHON_EXCEPTION_CHAIN
+#define MICROPY_CPYTHON_EXCEPTION_CHAIN (0)
+#endif
+
+// Whether the statically allocated GeneratorExit exception may be const
+#ifndef MICROPY_CONST_GENERATOREXIT_OBJ
+#define MICROPY_CONST_GENERATOREXIT_OBJ (!MICROPY_CPYTHON_EXCEPTION_CHAIN)
+#endif
+
 // Whether to support warning categories
 #ifndef MICROPY_WARNINGS_CATEGORY
 #define MICROPY_WARNINGS_CATEGORY (0)
