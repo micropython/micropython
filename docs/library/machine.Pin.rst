@@ -162,6 +162,10 @@ Methods
 
    Set pin to "0" output level.
 
+.. method:: Pin.toggle()
+
+   Toggle pin from "0" to "1" or viceversa.
+
 .. method:: Pin.irq(handler=None, trigger=(Pin.IRQ_FALLING | Pin.IRQ_RISING), *, priority=1, wake=None, hard=False)
 
    Configure an interrupt handler to be called when the trigger source of the
