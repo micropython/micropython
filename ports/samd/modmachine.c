@@ -32,6 +32,7 @@
 #include "extmod/machine_signal.h"
 #include "extmod/machine_spi.h"
 #include "drivers/dht/dht.h"
+#include "shared/runtime/pyexec.h"
 #include "modmachine.h"
 #include "samd_soc.h"
 
@@ -56,6 +57,12 @@
 
 extern bool EIC_occured;
 extern uint32_t _dbl_tap_addr;
+
+STATIC mp_obj_t machine_soft_reset(void) {
+    pyexec_system_exit = PYEXEC_FORCED_EXIT;
+    mp_raise_type(&mp_type_SystemExit);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 STATIC mp_obj_t machine_reset(void) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_RESET;
@@ -219,6 +226,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR_soft_reset),          MP_ROM_PTR(&machine_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_bootloader),          MP_ROM_PTR(&machine_bootloader_obj) },
     { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) },
