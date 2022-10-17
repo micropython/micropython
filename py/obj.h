@@ -173,6 +173,10 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
 
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
 
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_NONE
+#error "MICROPY_OBJ_REPR_C requires float to be enabled."
+#endif
+
 static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
     return (((mp_int_t)(o)) & 1) != 0;
 }
@@ -189,6 +193,9 @@ static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
 #endif
 
 static inline bool mp_obj_is_float(mp_const_obj_t o) {
+    // Ensure that 32-bit arch can only use single precision.
+    MP_STATIC_ASSERT(sizeof(mp_float_t) <= sizeof(mp_obj_t));
+
     return (((mp_uint_t)(o)) & 3) == 2 && (((mp_uint_t)(o)) & 0xff800007) != 0x00000006;
 }
 static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
