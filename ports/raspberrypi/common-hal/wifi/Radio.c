@@ -173,28 +173,37 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
     }
-    unsigned timeout_ms = timeout <= 0 ? 8000 : (unsigned)MAX(0, MICROPY_FLOAT_C_FUN(ceil)(timeout * 1000));
-    // TODO use connect_async so we can service bg tasks & check for ctrl-c during
-    // connect
-    int result = cyw43_arch_wifi_connect_timeout_ms((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK, timeout_ms);
-    bindings_cyw43_wifi_enforce_pm();
-    switch (result) {
-        case 0:
-            return WIFI_RADIO_ERROR_NONE;
-        // case CYW43_LINK_DOWN:
-        // case CYW43_LINK_JOIN:
-        // case CYW43_LINK_NOIP:
-        // case CYW43_LINK_UP:
-        case CYW43_LINK_FAIL:
-            return WIFI_RADIO_ERROR_CONNECTION_FAIL;
-        case CYW43_LINK_NONET:
-            return WIFI_RADIO_ERROR_NO_AP_FOUND;
-        case CYW43_LINK_BADAUTH:
-            return WIFI_RADIO_ERROR_AUTH_FAIL;
 
-        default:
-            return WIFI_RADIO_ERROR_UNSPECIFIED;
+    size_t timeout_ms = timeout <= 0 ? 8000 : (size_t)MICROPY_FLOAT_C_FUN(ceil)(timeout * 1000);
+    uint64_t start = port_get_raw_ticks(NULL);
+    uint64_t deadline = start + timeout_ms;
+
+    // connect
+    cyw43_arch_wifi_connect_async((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK);
+
+    while (port_get_raw_ticks(NULL) < deadline) {
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            break;
+        }
+
+        int result = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
+
+        switch (result) {
+            case CYW43_LINK_UP:
+                bindings_cyw43_wifi_enforce_pm();
+                return WIFI_RADIO_ERROR_NONE;
+            case CYW43_LINK_FAIL:
+                return WIFI_RADIO_ERROR_CONNECTION_FAIL;
+            case CYW43_LINK_NONET:
+                return WIFI_RADIO_ERROR_NO_AP_FOUND;
+            case CYW43_LINK_BADAUTH:
+                return WIFI_RADIO_ERROR_AUTH_FAIL;
+        }
     }
+
+    // Being here means we either timed out or got interrupted.
+    return WIFI_RADIO_ERROR_UNSPECIFIED;
 }
 
 mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
