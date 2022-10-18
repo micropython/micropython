@@ -199,6 +199,10 @@ if (MICROPY_PY_LWIP)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_PY_LWIP=1
     )
+else()
+	target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_PY_LWIP=0
+    )
 endif()
 
 if(MICROPY_PY_BLUETOOTH)

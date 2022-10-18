@@ -368,15 +368,6 @@ STATIC void wiz_dhcp_conflict(void) {
 }
 
 STATIC void wiznet5k_init(void) {
-    // Configure wiznet provided TCP / socket interface
-
-    reg_dhcp_cbfunc(wiz_dhcp_assign, wiz_dhcp_update, wiz_dhcp_conflict);
-
-    uint8_t sn_size[16] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};         // 2k buffer for each socket
-    ctlwizchip(CW_INIT_WIZCHIP, sn_size);
-
-    ctlnetwork(CN_SET_NETINFO, (void *)&wiznet5k_obj.netinfo);
-
     // set some sensible default values; they are configurable using ifconfig method
     wiz_NetInfo netinfo = {
         .mac = {0, 0, 0, 0, 0, 0},
@@ -387,6 +378,17 @@ STATIC void wiznet5k_init(void) {
         .dhcp = NETINFO_STATIC,
     };
     wiznet5k_obj.netinfo = netinfo;
+
+    // Configure wiznet provided TCP / socket interface
+
+    reg_dhcp_cbfunc(wiz_dhcp_assign, wiz_dhcp_update, wiz_dhcp_conflict);
+
+    uint8_t sn_size[16] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};         // 2k buffer for each socket
+    ctlwizchip(CW_INIT_WIZCHIP, sn_size);
+
+    ctlnetwork(CN_SET_NETINFO, (void *)&wiznet5k_obj.netinfo);
+
+
 
     // register with network module
     mod_network_register_nic(&wiznet5k_obj);
@@ -671,7 +673,9 @@ STATIC void wiznet5k_dhcp_init(wiznet5k_obj_t *self) {
     }
 
     if (ret == DHCP_IP_LEASED) {
+//		NETUNLOCK();
         ctlnetwork(CN_GET_NETINFO, &self->netinfo);
+	//	NETLOCK();
     }
 }
 
@@ -766,7 +770,13 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
 STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
     (void)self_in;
     printf("Wiz CREG:");
+	#if _WIZCHIP_ == 5500
     for (int i = 0; i < 0x50; ++i) {
+	#elif _WIZCHIP_ == 5105
+    for (int i = 0; i < 0x90; ++i) {	
+	#else
+    for (int i = 0; i < 0x60; ++i) {
+	#endif
         if (i % 16 == 0) {
             printf("\n  %04x:", i);
         }
@@ -896,12 +906,12 @@ STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
         self->netinfo.dhcp = NETINFO_STATIC;
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
-        netutils_parse_ipv4_addr(items[0], netinfo.ip, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[1], netinfo.sn, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[2], netinfo.gw, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[3], netinfo.dns, NETUTILS_BIG);
-        ctlnetwork(CN_SET_NETINFO, &netinfo);
-        return mp_const_none;
+        netutils_parse_ipv4_addr(items[0], self->netinfo.ip, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[1], self->netinfo.sn, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[2], self->netinfo.gw, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[3], self->netinfo.dns, NETUTILS_BIG);
+        ctlnetwork(CN_SET_NETINFO, &self->netinfo);
+		return mp_const_none;
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k_ifconfig);

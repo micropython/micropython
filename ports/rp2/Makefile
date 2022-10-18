@@ -6,9 +6,14 @@ BOARD ?= PICO
  
 BUILD ?= build-$(BOARD)
 
+LWIP ?= 0
+
+MICROPY_PY_WIZNET5K ?= 5105
+
 $(VERBOSE)MAKESILENT = -s
 
 CMAKE_ARGS = -DMICROPY_BOARD=$(BOARD)
+CMAKE_ARGS += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K)
 
 ifdef USER_C_MODULES
 CMAKE_ARGS += -DUSER_C_MODULES=${USER_C_MODULES}
@@ -26,6 +31,7 @@ ifdef BOARD_VARIANT
 CMAKE_ARGS += -DBOARD_VARIANT=${BOARD_VARIANT}
 endif
 
+CMAKE_ARGS += -DMICROPY_PY_LWIP=${LWIP}
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 
 all:
@@ -34,6 +40,7 @@ all:
 
 clean:
 	$(RM) -rf $(BUILD)
+	$(RM) -rf out.log
 
 # First ensure that pico-sdk is initialised, then use cmake to pick everything
 # else (including board-specific dependencies).
