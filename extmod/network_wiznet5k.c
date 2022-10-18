@@ -771,11 +771,11 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
     #if _WIZCHIP_ == 5500
     for (int i = 0; i < 0x50; ++i) {
     #elif _WIZCHIP_ == 5105
-    for (int i = 0; i < 0x90; ++i) {	
+    for (int i = 0; i < 0x90; ++i) {
     #else
     for (int i = 0; i < 0x60; ++i) {
     #endif
-        if (i % 16 == 0) {
+       if (i % 16 == 0) {
             printf("\n  %04x:", i);
         }
         #if _WIZCHIP_ == 5500
@@ -909,7 +909,7 @@ STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
         netutils_parse_ipv4_addr(items[2], self->netinfo.gw, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[3], self->netinfo.dns, NETUTILS_BIG);
         ctlnetwork(CN_SET_NETINFO, &self->netinfo);
-	return mp_const_none;
+        return mp_const_none;
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k_ifconfig);
