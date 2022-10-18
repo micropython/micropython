@@ -673,9 +673,7 @@ STATIC void wiznet5k_dhcp_init(wiznet5k_obj_t *self) {
     }
 
     if (ret == DHCP_IP_LEASED) {
-//		NETUNLOCK();
         ctlnetwork(CN_GET_NETINFO, &self->netinfo);
-	//	NETLOCK();
     }
 }
 
