@@ -775,7 +775,7 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
     #else
     for (int i = 0; i < 0x60; ++i) {
     #endif
-       if (i % 16 == 0) {
+        if (i % 16 == 0) {
             printf("\n  %04x:", i);
         }
         #if _WIZCHIP_ == 5500
