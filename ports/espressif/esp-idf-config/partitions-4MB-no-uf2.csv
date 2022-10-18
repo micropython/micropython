@@ -3,5 +3,7 @@
 # bootloader.bin,,          0x1000, 32K
 # partition table,,         0x8000, 4K
 nvs,      data, nvs,      0x9000,  20K,
-app,      app,  factory, 0x10000,  2048K,
-user_fs,  data, fat,    0x210000,  1984K,
+otadata,  data, ota,      0xe000,  8K,
+ota_0,    0,    ota_0,   0x10000,  1408K,
+ota_1,    0,    ota_1,  0x170000,  1408K,
+user_fs,  data, fat,    0x2d0000,  1216K,
