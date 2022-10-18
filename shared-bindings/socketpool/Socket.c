@@ -255,6 +255,39 @@ STATIC mp_obj_t _socketpool_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_send_obj, _socketpool_socket_send);
 
+//|     def sendall(self, bytes: ReadableBuffer) -> None:
+//|         """Send some bytes to the connected remote address.
+//|         Suits sockets of type SOCK_STREAM
+//|
+//|         This calls send() repeatedly until all the data is sent or an error
+//|         occurs. If an error occurs, it's impossible to tell how much data
+//|         has been sent.
+//|
+//|         :param ~bytes bytes: some bytes to send"""
+//|         ...
+STATIC mp_obj_t _socketpool_socket_sendall(mp_obj_t self_in, mp_obj_t buf_in) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (common_hal_socketpool_socket_get_closed(self)) {
+        // Bad file number.
+        mp_raise_OSError(MP_EBADF);
+    }
+    if (!common_hal_socketpool_socket_get_connected(self)) {
+        mp_raise_BrokenPipeError();
+    }
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+    while (bufinfo.len > 0) {
+        mp_int_t ret = common_hal_socketpool_socket_send(self, bufinfo.buf, bufinfo.len);
+        if (ret == -1) {
+            mp_raise_BrokenPipeError();
+        }
+        bufinfo.len -= ret;
+        bufinfo.buf += ret;
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_sendall_obj, _socketpool_socket_sendall);
+
 //|     def sendto(self, bytes: ReadableBuffer, address: Tuple[str, int]) -> int:
 //|         """Send some bytes to a specific address.
 //|         Suits sockets of type SOCK_DGRAM
@@ -372,6 +405,7 @@ STATIC const mp_rom_map_elem_t socketpool_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_recvfrom_into), MP_ROM_PTR(&socketpool_socket_recvfrom_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_recv_into), MP_ROM_PTR(&socketpool_socket_recv_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socketpool_socket_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendall), MP_ROM_PTR(&socketpool_socket_sendall_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socketpool_socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socketpool_socket_setblocking_obj) },
     // { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socketpool_socket_setsockopt_obj) },
