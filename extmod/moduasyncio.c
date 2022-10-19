@@ -70,24 +70,13 @@ STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
 /******************************************************************************/
 // Ticks for task ordering in pairing heap
 
-#if !CIRCUITPY || (defined(__unix__) || defined(__APPLE__))
-STATIC mp_obj_t ticks(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
-}
-
-STATIC mp_int_t ticks_diff(mp_obj_t t1_in, mp_obj_t t0_in) {
-    mp_uint_t t0 = MP_OBJ_SMALL_INT_VALUE(t0_in);
-    mp_uint_t t1 = MP_OBJ_SMALL_INT_VALUE(t1_in);
-    mp_int_t diff = ((t1 - t0 + MICROPY_PY_UTIME_TICKS_PERIOD / 2) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1))
-        - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
-    return diff;
-}
-#else
 #define _TICKS_PERIOD (1lu << 29)
 #define _TICKS_MAX (_TICKS_PERIOD - 1)
 #define _TICKS_HALFPERIOD (_TICKS_PERIOD >> 1)
 
-#define ticks() supervisor_ticks_ms()
+STATIC mp_obj_t ticks(void) {
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & _TICKS_MAX);
+}
 
 STATIC mp_int_t ticks_diff(mp_obj_t t1_in, mp_obj_t t0_in) {
     mp_uint_t t0 = MP_OBJ_SMALL_INT_VALUE(t0_in);
@@ -95,7 +84,6 @@ STATIC mp_int_t ticks_diff(mp_obj_t t1_in, mp_obj_t t0_in) {
     mp_int_t diff = ((t1 - t0 + _TICKS_HALFPERIOD) & _TICKS_MAX) - _TICKS_HALFPERIOD;
     return diff;
 }
-#endif
 
 STATIC int task_lt(mp_pairheap_t *n1, mp_pairheap_t *n2) {
     mp_obj_task_t *t1 = (mp_obj_task_t *)n1;
@@ -302,8 +290,13 @@ STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
 STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
     if (TASK_IS_DONE(self)) {
-        // Task finished, raise return value to caller so it can continue.
-        nlr_raise(self->data);
+        if (self->data == mp_const_none) {
+            // Task finished but has already been sent to the loop's exception handler.
+            mp_raise_StopIteration(MP_OBJ_NULL);
+        } else {
+            // Task finished, raise return value to caller so it can continue.
+            nlr_raise(self->data);
+        }
     } else {
         // Put calling task on waiting queue.
         mp_obj_t cur_task = mp_obj_dict_get(uasyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
