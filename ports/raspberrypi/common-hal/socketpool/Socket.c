@@ -504,6 +504,11 @@ STATIC mp_uint_t lwip_tcp_send(socketpool_socket_obj_t *socket, const byte *buf,
         if (err != ERR_MEM) {
             break;
         }
+        if (err == ERR_MEM && write_len > TCP_MSS) {
+            // Decreasing the amount sent to the next lower number of MSS
+            write_len = (write_len - 1) / TCP_MSS * TCP_MSS;
+            continue;
+        }
         err = tcp_output(socket->pcb.tcp);
         if (err != ERR_OK) {
             break;
