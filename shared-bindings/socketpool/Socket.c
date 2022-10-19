@@ -37,6 +37,7 @@
 #include "py/mperrno.h"
 
 #include "shared/netutils/netutils.h"
+#include "shared/runtime/interrupt_char.h"
 
 //| class Socket:
 //|     """TCP, UDP and RAW socket. Cannot be created directly. Instead, call
@@ -283,6 +284,13 @@ STATIC mp_obj_t _socketpool_socket_sendall(mp_obj_t self_in, mp_obj_t buf_in) {
         }
         bufinfo.len -= ret;
         bufinfo.buf += ret;
+        if (bufinfo.len > 0) {
+            RUN_BACKGROUND_TASKS;
+            // Allow user to break out of sendall with a KeyboardInterrupt.
+            if (mp_hal_is_interrupted()) {
+                return 0;
+            }
+        }
     }
     return mp_const_none;
 }
