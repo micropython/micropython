@@ -167,6 +167,9 @@ endif
 ifeq ($(CIRCUITPY_CANIO),1)
 SRC_PATTERNS += canio/%
 endif
+ifeq ($(CIRCUITPY_COPROC),1)
+SRC_PATTERNS += coproc/%
+endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
 endif
@@ -419,6 +422,9 @@ SRC_COMMON_HAL_ALL = \
 	canio/CAN.c \
 	canio/Listener.c \
 	canio/__init__.c \
+	coproc/__init__.c \
+	coproc/Coproc.c \
+	coproc/CoprocMemory.c \
 	countio/Counter.c \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
