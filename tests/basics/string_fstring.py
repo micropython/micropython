@@ -56,3 +56,8 @@ try:
 except (ValueError, SyntaxError):
     # MicroPython incorrectly raises ValueError here.
     print('SyntaxError')
+
+# Allow literal tuples
+print(f"a {1,} b")
+print(f"a {x,y,} b")
+print(f"a {x,1} b")
