@@ -28,9 +28,8 @@
 #define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER___INIT___H
 
 #include "src/rp2040/hardware_regs/include/hardware/platform_defs.h"
+#include "peripherals/pins.h"
 
-#define TOTAL_GPIO_COUNT NUM_BANK0_GPIOS
-
-extern const mp_rom_map_elem_t mcu_pin_global_dict_table[TOTAL_GPIO_COUNT];
+const mcu_pin_obj_t *mcu_get_pin_by_number(int);
 
 #endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER___INIT___H

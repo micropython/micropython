@@ -111,7 +111,7 @@ void alarm_pin_pinalarm_reset(void) {
     }
 
     // Reset pins and pin IRQs
-    for (size_t i = 0; i < TOTAL_GPIO_COUNT; i++) {
+    for (size_t i = 0; i < NUM_BANK0_GPIOS; i++) {
         if (alarm_reserved_pins & (1 << i)) {
             gpio_set_irq_enabled(i, GPIO_IRQ_ALL_EVENTS, false);
             reset_pin_number(i);
