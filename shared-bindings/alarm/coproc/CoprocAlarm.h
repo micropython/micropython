@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,15 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_COPROC___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_COPROC___INIT___H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_COPROC_COPROCALARM_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_COPROC_COPROCALARM_H
 
-#include "py/obj.h"
-#include "common-hal/coproc/Coproc.h"
+#include "common-hal/alarm/coproc/CoprocAlarm.h"
 
-extern void common_hal_coproc_run(coproc_coproc_obj_t *self);
-extern void common_hal_coproc_halt(coproc_coproc_obj_t *self);
-extern void common_hal_coproc_load(coproc_coproc_obj_t *self);
-extern mp_obj_t common_hal_coproc_memory(coproc_coproc_obj_t *self);
+extern const mp_obj_type_t alarm_coproc_coprocalarm_type;
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_COPROC___INIT___H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_COPROC_COPROCALARM_H
