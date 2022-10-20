@@ -1,13 +1,14 @@
 # MicroPython uasyncio module
 # MIT license; Copyright (c) 2019-2020 Damien P. George
 
-from . import core
+from . import core, lock
 
 
 class Stream:
     def __init__(self, s, e={}):
         self.s = s
         self.e = e
+        self.l = lock.Lock()
         self.out_buf = b""
 
     def get_extra_info(self, v):
@@ -65,26 +66,28 @@ class Stream:
 
     def write(self, buf):
         if not self.out_buf:
-            # Try to write immediately to the underlying stream.
-            ret = self.s.write(buf)
-            if ret == len(buf):
-                return
-            if ret is not None:
-                buf = buf[ret:]
+            # Try to write immediately to the underlying stream if no other coroutine is draining buffer.
+            if not self.l.locked() :
+                ret = self.s.write(buf)
+                if ret == len(buf):
+                    return
+                if ret is not None:
+                    buf = buf[ret:]
         self.out_buf += buf
 
     async def drain(self):
         if not self.out_buf:
             # Drain must always yield, so a tight loop of write+drain can't block the scheduler.
             return await core.sleep_ms(0)
-        mv = memoryview(self.out_buf)
-        off = 0
-        while off < len(mv):
-            yield core._io_queue.queue_write(self.s)
-            ret = self.s.write(mv[off:])
-            if ret is not None:
-                off += ret
-        self.out_buf = b""
+        async with self.l:
+            mv = memoryview(self.out_buf)
+            off = 0
+            while off < len(mv):
+                yield core._io_queue.queue_write(self.s)
+                ret = self.s.write(mv[off:])
+                if ret is not None:
+                    off += ret
+            self.out_buf = b""
 
 
 # Stream can be used for both reading and writing to save code size
