@@ -517,7 +517,8 @@ msgstr "Another send is already active"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "Array must contain halfwords (type 'H')"
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Array values should be single bytes."
 
@@ -927,6 +928,7 @@ msgstr "Error: Failure to bind"
 
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
+#: shared-bindings/coproc/Coproc.c shared-bindings/coproc/__init__.c
 #: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
@@ -1026,6 +1028,7 @@ msgstr ""
 msgid "Firmware is invalid"
 msgstr ""
 
+#: ports/espressif/common-hal/coproc/__init__.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
 msgstr ""
@@ -1939,7 +1942,8 @@ msgstr "Size not supported"
 msgid "Sleep Memory not available"
 msgstr "Sleep Memory not available"
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Slice and value different lengths."
 
@@ -2188,6 +2192,10 @@ msgstr "Unable to read colour palette data"
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
+msgstr ""
+
+#: shared-bindings/coproc/CoprocMemory.c
+msgid "Unable to write"
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
@@ -2441,7 +2449,7 @@ msgid "array has too many dimensions"
 msgstr ""
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/coproc/CoprocMemory.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "array/bytes required on right side"
 
@@ -3719,7 +3727,8 @@ msgid "only sample_rate=16000 is supported"
 msgstr "only sample_rate=16000 is supported"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "only slices with step=1 (aka None) are supported"
 
