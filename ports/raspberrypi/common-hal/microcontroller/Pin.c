@@ -46,7 +46,7 @@ void reset_pin_number_cyw(uint8_t pin_no) {
 STATIC uint32_t never_reset_pins;
 
 void reset_all_pins(void) {
-    for (size_t i = 0; i < TOTAL_GPIO_COUNT; i++) {
+    for (size_t i = 0; i < NUM_BANK0_GPIOS; i++) {
         if ((never_reset_pins & (1 << i)) != 0) {
             continue;
         }
@@ -54,16 +54,17 @@ void reset_all_pins(void) {
     }
     #if CIRCUITPY_CYW43
     if (cyw_ever_init) {
-        for (size_t i = 0; i < 1; i++) {
-            cyw43_arch_gpio_put(i, 0);
-        }
+        // reset LED and SMPS_MODE to Low; don't touch VBUS_SENSE
+        // otherwise it is switched to output mode forever!
+        cyw43_arch_gpio_put(0, 0);
+        cyw43_arch_gpio_put(1, 0);
     }
     cyw_pin_claimed = 0;
     #endif
 }
 
 void never_reset_pin_number(uint8_t pin_number) {
-    if (pin_number >= TOTAL_GPIO_COUNT) {
+    if (pin_number >= NUM_BANK0_GPIOS) {
         return;
     }
 
@@ -71,7 +72,7 @@ void never_reset_pin_number(uint8_t pin_number) {
 }
 
 void reset_pin_number(uint8_t pin_number) {
-    if (pin_number >= TOTAL_GPIO_COUNT) {
+    if (pin_number >= NUM_BANK0_GPIOS) {
         return;
     }
 
@@ -110,7 +111,7 @@ void claim_pin(const mcu_pin_obj_t *pin) {
 }
 
 bool pin_number_is_free(uint8_t pin_number) {
-    if (pin_number >= TOTAL_GPIO_COUNT) {
+    if (pin_number >= NUM_BANK0_GPIOS) {
         return false;
     }
 
