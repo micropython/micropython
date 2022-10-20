@@ -337,6 +337,75 @@ STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_rmt_write_pulses_obj, 2, 3, esp32_rmt_write_pulses);
 
+// RMT.store_pulses(self, item_list:list[int32]) -> None
+STATIC mp_obj_t esp32_rmt_store_pulses(size_t n_args, const mp_obj_t *args) {
+    esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_t item_list_obj = args[1];
+
+    size_t num_items = 0;
+    mp_obj_t *item_list_ptr = NULL;
+    mp_obj_get_array(item_list_obj, &num_items, &item_list_ptr);
+
+    if (num_items > self->num_items) {
+        self->items = (rmt_item32_t *)m_realloc(self->items, num_items * sizeof(rmt_item32_t *));
+        self->num_items = num_items;
+    }
+
+    for (mp_uint_t item_index = 0; item_index < num_items; item_index++) {
+        self->items[item_index].val = mp_obj_get_int(item_list_ptr[item_index]);
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_rmt_store_pulses_obj, 2, 2, esp32_rmt_store_pulses);
+
+#include "py/gc.h"
+#include "py/mpthread.h"
+#include "py/stackctrl.h"
+
+// called from esp32 RMT system ISR provided by rmt_driver_install()
+STATIC void esp32_rmt_private_tx_end_callback(rmt_channel_t channel, void *arg) {
+
+    void *state_past = mp_thread_get_state();
+    mp_state_thread_t state_next;
+    mp_thread_set_state(&state_next);
+
+    mp_stack_set_top(&state_next + 1);
+    mp_stack_set_limit(1024);
+
+    mp_locals_set(mp_state_ctx.thread.dict_locals);
+    mp_globals_set(mp_state_ctx.thread.dict_globals);
+
+    mp_sched_lock();
+    gc_lock();
+
+    mp_obj_t *tx_ready_fn = (mp_obj_t *)arg;
+    mp_call_function_0(tx_ready_fn);
+
+    gc_unlock();
+    mp_sched_unlock();
+    mp_thread_set_state(state_past);
+
+}
+
+// RMT.issue_pulses(self, tx_ready_func:callable, item_index:int, item_count:int, clock_div:int) -> None
+STATIC mp_obj_t esp32_rmt_issue_pulses(size_t n_args, const mp_obj_t *args) {
+    esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_t *tx_ready_fn = MP_OBJ_TO_PTR(args[1]);
+    mp_uint_t item_index = mp_obj_get_int(args[2]);
+    mp_uint_t item_count = mp_obj_get_int(args[3]);
+    self->clock_div = mp_obj_get_int(args[4]);
+
+    check_esp_err(rmt_set_clk_div(self->channel_id, self->clock_div));
+
+    rmt_register_tx_end_callback(esp32_rmt_private_tx_end_callback, tx_ready_fn);
+
+    check_esp_err(rmt_write_items(self->channel_id, self->items + item_index, item_count, false));
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_rmt_issue_pulses_obj, 5, 5, esp32_rmt_issue_pulses);
+
 STATIC mp_obj_t esp32_rmt_bitstream_channel(size_t n_args, const mp_obj_t *args) {
     if (n_args > 0) {
         if (args[0] == mp_const_none) {
@@ -366,6 +435,8 @@ STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wait_done), MP_ROM_PTR(&esp32_rmt_wait_done_obj) },
     { MP_ROM_QSTR(MP_QSTR_loop), MP_ROM_PTR(&esp32_rmt_loop_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_pulses), MP_ROM_PTR(&esp32_rmt_write_pulses_obj) },
+    { MP_ROM_QSTR(MP_QSTR_store_pulses), MP_ROM_PTR(&esp32_rmt_store_pulses_obj) },
+    { MP_ROM_QSTR(MP_QSTR_issue_pulses), MP_ROM_PTR(&esp32_rmt_issue_pulses_obj) },
 
     // Static methods
     { MP_ROM_QSTR(MP_QSTR_bitstream_channel), MP_ROM_PTR(&esp32_rmt_bitstream_channel_obj) },
