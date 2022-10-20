@@ -512,7 +512,8 @@ msgstr "他のsendがすでにアクティブ"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "array のタイプは16ビット ('H') でなければなりません"
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Arrayの各値は1バイトでなければなりません"
 
@@ -922,6 +923,7 @@ msgstr ""
 
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
+#: shared-bindings/coproc/Coproc.c shared-bindings/coproc/__init__.c
 #: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
@@ -1021,6 +1023,7 @@ msgstr ""
 msgid "Firmware is invalid"
 msgstr ""
 
+#: ports/espressif/common-hal/coproc/__init__.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
 msgstr ""
@@ -1928,7 +1931,8 @@ msgstr "サイズは対応していません"
 msgid "Sleep Memory not available"
 msgstr ""
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "スライスと値の長さが一致しません"
 
@@ -2171,6 +2175,10 @@ msgstr "カラーパレットデータを読み込めません"
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
+msgstr ""
+
+#: shared-bindings/coproc/CoprocMemory.c
+msgid "Unable to write"
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
@@ -2421,7 +2429,7 @@ msgid "array has too many dimensions"
 msgstr ""
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/coproc/CoprocMemory.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "右辺にはarray/bytesが必要"
 
@@ -3701,7 +3709,8 @@ msgid "only sample_rate=16000 is supported"
 msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 

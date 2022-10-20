@@ -520,7 +520,8 @@ msgstr "Outro envio já está ativo"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "Array deve conter meias palavras (tipo 'H')"
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Os valores das matrizes devem ser bytes simples."
 
@@ -940,6 +941,7 @@ msgstr "Erro: Falha na vinculação"
 
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
+#: shared-bindings/coproc/Coproc.c shared-bindings/coproc/__init__.c
 #: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
@@ -1039,6 +1041,7 @@ msgstr "O firmware está duplicado"
 msgid "Firmware is invalid"
 msgstr "O firmware é inválido"
 
+#: ports/espressif/common-hal/coproc/__init__.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
 msgstr "O firmware é muito grande"
@@ -1971,7 +1974,8 @@ msgstr "O tamanho não é suportado"
 msgid "Sleep Memory not available"
 msgstr "Sleep memory não está disponível"
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Fatie e avalie os diferentes comprimentos."
 
@@ -2228,6 +2232,10 @@ msgstr "Não foi possível ler os dados da paleta de cores"
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr "Não é possível iniciar a consulta mDNS"
+
+#: shared-bindings/coproc/CoprocMemory.c
+msgid "Unable to write"
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -2490,7 +2498,7 @@ msgid "array has too many dimensions"
 msgstr "a matriz possui muitas dimensões"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/coproc/CoprocMemory.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "matriz/bytes são necessários no lado direito"
 
@@ -3782,7 +3790,8 @@ msgid "only sample_rate=16000 is supported"
 msgstr "apenas sample_rate = 16000 é compatível"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 "apenas fatias com a etapa=1 (também conhecida como Nenhuma) são compatíveis"
