@@ -1676,7 +1676,7 @@ def merge_mpy(compiled_modules, output_file):
         header = bytearray(4)
         header[0] = ord("M")
         header[1] = config.MPY_VERSION
-        header[2] = config.native_arch << 2 | config.MPY_SUB_VERSION
+        header[2] = config.native_arch << 2 | config.MPY_SUB_VERSION if config.native_arch else 0
         header[3] = config.mp_small_int_bits
         merged_mpy.extend(header)
 
