@@ -168,7 +168,10 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode, uint8_t max_connections) {
-    mp_raise_NotImplementedError(NULL);
+    if (!common_hal_wifi_radio_get_enabled(self)) {
+        mp_raise_RuntimeError(translate("wifi is not enabled"));
+    }
+    cyw43_arch_enable_ap_mode((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK);
     bindings_cyw43_wifi_enforce_pm();
 }
 
