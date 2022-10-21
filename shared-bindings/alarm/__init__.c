@@ -144,6 +144,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OB
 //|
 //|     On some microcontrollers, some pins cannot remain in their original state for hardware reasons.
 //|
+//|     **Limitations:** ``preserve_dios`` is currently only available on Espressif.
+//|
 //|     .. note::
 //|       On Espressif chips, preserving pin settings during deep sleep may consume extra current.
 //|       On ESP32, this was measured to be 250 uA or more.
