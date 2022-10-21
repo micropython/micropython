@@ -81,7 +81,10 @@
 //|         :param ~microcontroller.Pin clock: the pin to use for the clock.
 //|         :param ~microcontroller.Pin MOSI: the Main Out Selected In pin.
 //|         :param ~microcontroller.Pin MISO: the Main In Selected Out pin.
-//|         :param bool half_duplex: True when MOSI is used for bidirectional data. False when SPI is full-duplex or simplex."""
+//|         :param bool half_duplex: True when MOSI is used for bidirectional data. False when SPI is full-duplex or simplex.
+//|
+//|         **Limitations:** ``half_duplex`` is available only on STM; other chips do not have the hardware support.
+//|         """
 //|         ...
 
 
