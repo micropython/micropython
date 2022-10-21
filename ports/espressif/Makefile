@@ -163,12 +163,9 @@ ifeq ($(DEBUG), 1)
   # CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -DNDEBUG -ggdb3
-	ifeq ($(IDF_TARGET_ARCH),xtensa)
-	  OPTIMIZATION_FLAGS ?= -O2
-	else
-		# RISC-V is larger than xtensa so do -Os for it
-	  OPTIMIZATION_FLAGS ?= -Os
-	endif
+  OPTIMIZATION_FLAGS ?= -O2
+  # RISC-V is larger than xtensa
+  # Use -Os for RISC-V when it overflows
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
@@ -178,6 +175,8 @@ CFLAGS += $(INC) -Werror -Wall -std=gnu11 -Wl,--gc-sections $(BASE_CFLAGS) $(C_D
 
 ifeq ($(IDF_TARGET_ARCH),xtensa)
 CFLAGS += -mlongcalls
+else ifeq ($(IDF_TARGET_ARCH),riscv)
+CFLAGS += -march=rv32imc
 endif
 
 LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-Map=$@.map -Wl,-cref -Wl,--undefined=uxTopUsedPriority
