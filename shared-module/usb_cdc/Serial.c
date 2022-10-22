@@ -38,7 +38,10 @@ size_t common_hal_usb_cdc_serial_read(usb_cdc_serial_obj_t *self, uint8_t *data,
 
     // Read up to len bytes immediately.
     // The number of bytes read will not be larger than what is already in the TinyUSB FIFO.
-    uint32_t total_num_read = tud_cdc_n_read(self->idx, data, len);
+    uint32_t total_num_read = 0;
+    if (tud_cdc_n_connected(self->idx)) {
+        total_num_read = tud_cdc_n_read(self->idx, data, len);
+    }
 
     if (wait_forever || wait_for_timeout) {
         // Continue filling the buffer past what we already read.
@@ -65,7 +68,9 @@ size_t common_hal_usb_cdc_serial_read(usb_cdc_serial_obj_t *self, uint8_t *data,
             data += num_read;
 
             // Try to read another batch of bytes.
-            num_read = tud_cdc_n_read(self->idx, data, len);
+            if (tud_cdc_n_connected(self->idx)) {
+                num_read = tud_cdc_n_read(self->idx, data, len);
+            }
             total_num_read += num_read;
         }
     }
