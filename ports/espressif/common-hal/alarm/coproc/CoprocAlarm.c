@@ -27,9 +27,16 @@
 #include "shared-bindings/alarm/coproc/CoprocAlarm.h"
 #include "shared-bindings/coproc/__init__.h"
 
+#if CIRCUITPY_COPROC
+
+#include "supervisor/port.h"
+
+#include "driver/rtc_cntl.h"
+#include "soc/rtc_cntl_reg.h"
+
 #include "esp_sleep.h"
 
-#if CIRCUITPY_COPROC
+static volatile bool woke_up = false;
 
 mp_obj_t alarm_coproc_coprocalarm_find_triggered_alarm(const size_t n_alarms, const mp_obj_t *alarms) {
     for (size_t i = 0; i < n_alarms; i++) {
@@ -45,6 +52,13 @@ mp_obj_t alarm_coproc_coprocalarm_create_wakeup_alarm(void) {
     alarm_coproc_coprocalarm_obj_t *alarm = m_new_obj(alarm_coproc_coprocalarm_obj_t);
     alarm->base.type = &alarm_coproc_coprocalarm_type;
     return alarm;
+}
+
+// This is used to wake the main CircuitPython task.
+STATIC void coproc_interrupt(void *arg) {
+    (void)arg;
+    woke_up = true;
+    port_wake_main_task_from_isr();
 }
 
 void alarm_coproc_coprocalarm_set_alarm(const bool deep_sleep, const size_t n_alarms, const mp_obj_t *alarms) {
@@ -65,13 +79,18 @@ void alarm_coproc_coprocalarm_set_alarm(const bool deep_sleep, const size_t n_al
         return;
     }
 
-    // load coproc program
-    common_hal_coproc_load(coproc_alarm->coproc);
+    // enable coproc interrupt
+    rtc_isr_register(&coproc_interrupt, NULL, RTC_CNTL_COCPU_INT_ST);
+    REG_SET_BIT(RTC_CNTL_INT_ENA_REG, RTC_CNTL_COCPU_INT_ENA);
+
+    // start coproc program
+    common_hal_coproc_run(coproc_alarm->coproc);
 }
 
 void alarm_coproc_coprocalarm_prepare_for_deep_sleep(void) {
-    // start coproc program
-    common_hal_coproc_run(NULL);
+    // disbale coproc interrupt
+    rtc_isr_deregister(&coproc_interrupt, NULL);
+    REG_CLR_BIT(RTC_CNTL_INT_ENA_REG, RTC_CNTL_COCPU_INT_ENA);
 
     // enable coproc wakeup
     esp_sleep_enable_ulp_wakeup();
@@ -79,10 +98,11 @@ void alarm_coproc_coprocalarm_prepare_for_deep_sleep(void) {
 }
 
 bool alarm_coproc_coprocalarm_woke_this_cycle(void) {
-    return false;
+    return woke_up;
 }
 
 void alarm_coproc_coprocalarm_reset(void) {
+    woke_up = false;
 }
 
 #else // CIRCUITPY_COPROC
