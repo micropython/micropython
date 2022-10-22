@@ -171,12 +171,17 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
     }
+    // Is there a better way?
+    common_hal_wifi_radio_stop_station(self);
+
     cyw43_arch_enable_ap_mode((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK);
+    // TODO: Implement authmode check like in espressif
     bindings_cyw43_wifi_enforce_pm();
 }
 
 void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
-    mp_raise_NotImplementedError(NULL);
+    common_hal_wifi_radio_stop_station(self);
+    // I mean, since it already does both..
 }
 
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
@@ -188,8 +193,12 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     uint64_t start = port_get_raw_ticks(NULL);
     uint64_t deadline = start + timeout_ms;
 
+    // disconnect
+    common_hal_wifi_radio_stop_station(self);
+
     // connect
     cyw43_arch_wifi_connect_async((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK);
+    // TODO: Implement authmode check like in espressif
 
     while (port_get_raw_ticks(NULL) < deadline) {
         RUN_BACKGROUND_TASKS;
