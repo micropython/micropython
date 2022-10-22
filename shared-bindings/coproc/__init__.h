@@ -32,7 +32,6 @@
 
 extern void common_hal_coproc_run(coproc_coproc_obj_t *self);
 extern void common_hal_coproc_halt(coproc_coproc_obj_t *self);
-extern void common_hal_coproc_load(coproc_coproc_obj_t *self);
 extern mp_obj_t common_hal_coproc_memory(coproc_coproc_obj_t *self);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_COPROC___INIT___H
