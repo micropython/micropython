@@ -218,6 +218,9 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] != MP_OBJ_NULL) {
         // store/delete attribute
+        if (self == &mp_const_GeneratorExit_obj) {
+            mp_raise_AttributeError(MP_ERROR_TEXT("can't set attribute"));
+        }
         if (attr == MP_QSTR___traceback__) {
             if (dest[1] == mp_const_none) {
                 self->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
