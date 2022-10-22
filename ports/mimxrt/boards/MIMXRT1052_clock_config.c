@@ -465,4 +465,5 @@ void BOARD_BootClockRUN(void) {
     IOMUXC_GPR->GPR5 &= ~IOMUXC_GPR_GPR5_VREF_1M_CLK_GPT2_MASK;
     /* Set SystemCoreClock variable. */
     SystemCoreClock = BOARD_BOOTCLOCKRUN_CORE_CLOCK;
+    CLOCK_SetMode(kCLOCK_ModeRun);
 }
