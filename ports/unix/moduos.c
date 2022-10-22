@@ -94,7 +94,7 @@ STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     vstr_t vstr;
     vstr_init_len(&vstr, n);
     mp_hal_get_random(n, vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_urandom_obj, mp_uos_urandom);
 

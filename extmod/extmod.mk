@@ -1,55 +1,66 @@
 # This makefile fragment adds the source code files for the core extmod modules
 # and provides rules to build 3rd-party components for extmod modules.
 
-PY_EXTMOD_O_BASENAME = \
-	extmod/moduasyncio.o \
-	extmod/moductypes.o \
-	extmod/modujson.o \
-	extmod/moduos.o \
-	extmod/modure.o \
-	extmod/moduzlib.o \
-	extmod/moduheapq.o \
-	extmod/modutimeq.o \
-	extmod/moduhashlib.o \
-	extmod/moducryptolib.o \
-	extmod/modubinascii.o \
-	extmod/virtpin.o \
-	extmod/machine_bitstream.o \
-	extmod/machine_mem.o \
-	extmod/machine_pinbase.o \
-	extmod/machine_signal.o \
-	extmod/machine_pulse.o \
-	extmod/machine_pwm.o \
-	extmod/machine_i2c.o \
-	extmod/machine_spi.o \
-	extmod/modbluetooth.o \
-	extmod/modlwip.o \
-	extmod/modussl_axtls.o \
-	extmod/modussl_mbedtls.o \
-	extmod/moduplatform.o\
-	extmod/modurandom.o \
-	extmod/moduselect.o \
-	extmod/moduwebsocket.o \
-	extmod/modwebrepl.o \
-	extmod/modframebuf.o \
-	extmod/vfs.o \
-	extmod/vfs_blockdev.o \
-	extmod/vfs_reader.o \
-	extmod/vfs_posix.o \
-	extmod/vfs_posix_file.o \
-	extmod/vfs_fat.o \
-	extmod/vfs_fat_diskio.o \
-	extmod/vfs_fat_file.o \
-	extmod/vfs_lfs.o \
-	extmod/utime_mphal.o \
-	extmod/uos_dupterm.o \
-	shared/libc/abort_.o \
-	shared/libc/printf.o \
+SRC_EXTMOD_C += \
+	extmod/machine_bitstream.c \
+	extmod/machine_i2c.c \
+	extmod/machine_mem.c \
+	extmod/machine_pinbase.c \
+	extmod/machine_pulse.c \
+	extmod/machine_pwm.c \
+	extmod/machine_signal.c \
+	extmod/machine_spi.c \
+	extmod/modbluetooth.c \
+	extmod/modbtree.c \
+	extmod/modframebuf.c \
+	extmod/modlwip.c \
+	extmod/modnetwork.c \
+	extmod/modonewire.c \
+	extmod/moduasyncio.c \
+	extmod/modubinascii.c \
+	extmod/moducryptolib.c \
+	extmod/moductypes.c \
+	extmod/moduhashlib.c \
+	extmod/moduheapq.c \
+	extmod/modujson.c \
+	extmod/moduos.c \
+	extmod/moduplatform.c\
+	extmod/modurandom.c \
+	extmod/modure.c \
+	extmod/moduselect.c \
+	extmod/modusocket.c \
+	extmod/modussl_axtls.c \
+	extmod/modussl_mbedtls.c \
+	extmod/modutimeq.c \
+	extmod/moduwebsocket.c \
+	extmod/moduzlib.c \
+	extmod/modwebrepl.c \
+	extmod/network_cyw43.c \
+	extmod/network_ninaw10.c \
+	extmod/network_wiznet5k.c \
+	extmod/uos_dupterm.c \
+	extmod/utime_mphal.c \
+	extmod/vfs.c \
+	extmod/vfs_blockdev.c \
+	extmod/vfs_fat.c \
+	extmod/vfs_fat_diskio.c \
+	extmod/vfs_fat_file.c \
+	extmod/vfs_lfs.c \
+	extmod/vfs_posix.c \
+	extmod/vfs_posix_file.c \
+	extmod/vfs_reader.c \
+	extmod/virtpin.c \
+	shared/libc/abort_.c \
+	shared/libc/printf.c \
 
-PY_EXTMOD_O = $(addprefix $(BUILD)/, $(PY_EXTMOD_O_BASENAME))
+SRC_THIRDPARTY_C += \
 
-PY_O += $(PY_EXTMOD_O)
-SRC_QSTR += $(PY_EXTMOD_O_BASENAME:.o=.c)
+PY_O += $(addprefix $(BUILD)/, $(SRC_EXTMOD_C:.c=.o))
+PY_O += $(addprefix $(BUILD)/, $(SRC_THIRDPARTY_C:.c=.o))
+SRC_QSTR += $(SRC_EXTMOD_C)
+
+CFLAGS += $(CFLAGS_EXTMOD) $(CFLAGS_THIRDPARTY)
+LDFLAGS += $(LDFLAGS_EXTMOD) $(LDFLAGS_THIRDPARTY)
 
 ################################################################################
 # VFS FAT FS
@@ -57,11 +68,11 @@ SRC_QSTR += $(PY_EXTMOD_O_BASENAME:.o=.c)
 OOFATFS_DIR = lib/oofatfs
 
 # this sets the config file for FatFs
-CFLAGS_MOD += -DFFCONF_H=\"$(OOFATFS_DIR)/ffconf.h\"
+CFLAGS_THIRDPARTY += -DFFCONF_H=\"$(OOFATFS_DIR)/ffconf.h\"
 
 ifeq ($(MICROPY_VFS_FAT),1)
-CFLAGS_MOD += -DMICROPY_VFS_FAT=1
-SRC_MOD += $(addprefix $(OOFATFS_DIR)/,\
+CFLAGS_EXTMOD += -DMICROPY_VFS_FAT=1
+SRC_THIRDPARTY_C += $(addprefix $(OOFATFS_DIR)/,\
 	ff.c \
 	ffunicode.c \
 	)
@@ -73,18 +84,18 @@ endif
 LITTLEFS_DIR = lib/littlefs
 
 ifeq ($(MICROPY_VFS_LFS1),1)
-CFLAGS_MOD += -DMICROPY_VFS_LFS1=1
-CFLAGS_MOD += -DLFS1_NO_MALLOC -DLFS1_NO_DEBUG -DLFS1_NO_WARN -DLFS1_NO_ERROR -DLFS1_NO_ASSERT
-SRC_MOD += $(addprefix $(LITTLEFS_DIR)/,\
+CFLAGS_EXTMOD += -DMICROPY_VFS_LFS1=1
+CFLAGS_THIRDPARTY += -DLFS1_NO_MALLOC -DLFS1_NO_DEBUG -DLFS1_NO_WARN -DLFS1_NO_ERROR -DLFS1_NO_ASSERT
+SRC_THIRDPARTY_C += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs1.c \
 	lfs1_util.c \
 	)
 endif
 
 ifeq ($(MICROPY_VFS_LFS2),1)
-CFLAGS_MOD += -DMICROPY_VFS_LFS2=1
-CFLAGS_MOD += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
-SRC_MOD += $(addprefix $(LITTLEFS_DIR)/,\
+CFLAGS_EXTMOD += -DMICROPY_VFS_LFS2=1
+CFLAGS_THIRDPARTY += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
+SRC_THIRDPARTY_C += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs2.c \
 	lfs2_util.c \
 	)
@@ -96,12 +107,13 @@ endif
 # ussl
 
 ifeq ($(MICROPY_PY_USSL),1)
-CFLAGS_MOD += -DMICROPY_PY_USSL=1
+CFLAGS_EXTMOD += -DMICROPY_PY_USSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
-CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I$(TOP)/lib/axtls/ssl -I$(TOP)/lib/axtls/crypto -I$(TOP)/extmod/axtls-include
 AXTLS_DIR = lib/axtls
+GIT_SUBMODULES += $(AXTLS_DIR)
+CFLAGS_EXTMOD += -DMICROPY_SSL_AXTLS=1 -I$(TOP)/lib/axtls/ssl -I$(TOP)/lib/axtls/crypto -I$(TOP)/extmod/axtls-include
 $(BUILD)/$(AXTLS_DIR)/%.o: CFLAGS += -Wno-all -Wno-unused-parameter -Wno-uninitialized -Wno-sign-compare -Wno-old-style-definition -Dmp_stream_errno=errno $(AXTLS_DEFS_EXTRA)
-SRC_MOD += $(addprefix $(AXTLS_DIR)/,\
+SRC_THIRDPARTY_C += $(addprefix $(AXTLS_DIR)/,\
 	ssl/asn1.c \
 	ssl/loader.c \
 	ssl/tls1.c \
@@ -118,9 +130,10 @@ SRC_MOD += $(addprefix $(AXTLS_DIR)/,\
 	)
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
 MBEDTLS_DIR = lib/mbedtls
-CFLAGS_MOD += -DMICROPY_SSL_MBEDTLS=1 -I$(TOP)/$(MBEDTLS_DIR)/include
-SRC_MOD += lib/mbedtls_errors/mp_mbedtls_errors.c
-SRC_MOD += $(addprefix $(MBEDTLS_DIR)/library/,\
+GIT_SUBMODULES += $(MBEDTLS_DIR)
+CFLAGS_EXTMOD += -DMICROPY_SSL_MBEDTLS=1 -I$(TOP)/$(MBEDTLS_DIR)/include
+SRC_THIRDPARTY_C += lib/mbedtls_errors/mp_mbedtls_errors.c
+SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	aes.c \
 	aesni.c \
 	arc4.c \
@@ -199,13 +212,14 @@ endif
 # lwip
 
 ifeq ($(MICROPY_PY_LWIP),1)
+GIT_SUBMODULES += lib/lwip
 # A port should add an include path where lwipopts.h can be found (eg extmod/lwip-include)
 LWIP_DIR = lib/lwip/src
 INC += -I$(TOP)/$(LWIP_DIR)/include
-CFLAGS_MOD += -DMICROPY_PY_LWIP=1
-$(BUILD)/$(LWIP_DIR)/core/ipv4/dhcp.o: CFLAGS_MOD += -Wno-address
-SRC_MOD += shared/netutils/netutils.c
-SRC_MOD += $(addprefix $(LWIP_DIR)/,\
+CFLAGS_EXTMOD += -DMICROPY_PY_LWIP=1
+$(BUILD)/$(LWIP_DIR)/core/ipv4/dhcp.o: CFLAGS += -Wno-address
+SRC_THIRDPARTY_C += shared/netutils/netutils.c
+SRC_THIRDPARTY_C += $(addprefix $(LWIP_DIR)/,\
 	apps/mdns/mdns.c \
 	core/def.c \
 	core/dns.c \
@@ -244,8 +258,8 @@ SRC_MOD += $(addprefix $(LWIP_DIR)/,\
 	netif/ethernet.c \
 	)
 ifeq ($(MICROPY_PY_LWIP_SLIP),1)
-CFLAGS_MOD += -DMICROPY_PY_LWIP_SLIP=1
-SRC_MOD += $(LWIP_DIR)/netif/slipif.c
+CFLAGS_EXTMOD += -DMICROPY_PY_LWIP_SLIP=1
+SRC_THIRDPARTY_C += $(LWIP_DIR)/netif/slipif.c
 endif
 endif
 
@@ -256,8 +270,7 @@ ifeq ($(MICROPY_PY_BTREE),1)
 BTREE_DIR = lib/berkeley-db-1.xx
 BTREE_DEFS = -D__DBINTERFACE_PRIVATE=1 -Dmpool_error=printf -Dabort=abort_ "-Dvirt_fd_t=void*" $(BTREE_DEFS_EXTRA)
 INC += -I$(TOP)/$(BTREE_DIR)/PORT/include
-SRC_MOD += extmod/modbtree.c
-SRC_MOD += $(addprefix $(BTREE_DIR)/,\
+SRC_THIRDPARTY_C += $(addprefix $(BTREE_DIR)/,\
 	btree/bt_close.c \
 	btree/bt_conv.c \
 	btree/bt_debug.c \
@@ -273,10 +286,67 @@ SRC_MOD += $(addprefix $(BTREE_DIR)/,\
 	btree/bt_utils.c \
 	mpool/mpool.c \
 	)
-CFLAGS_MOD += -DMICROPY_PY_BTREE=1
+CFLAGS_EXTMOD += -DMICROPY_PY_BTREE=1
 # we need to suppress certain warnings to get berkeley-db to compile cleanly
 # and we have separate BTREE_DEFS so the definitions don't interfere with other source code
 $(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter $(BTREE_DEFS)
 $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
+################################################################################
+# networking
+
+ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
+CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_CYW43=1
+DRIVERS_SRC_C += drivers/cyw43/cyw43_ctrl.c drivers/cyw43/cyw43_lwip.c
+LIBS += $(TOP)/drivers/cyw43/libcyw43.a
+endif
+
+ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),)
+ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),0)
+WIZNET5K_DIR=lib/wiznet5k
+GIT_SUBMODULES += lib/wiznet5k
+INC += -I$(TOP)/$(WIZNET5K_DIR) -I$(TOP)/$(WIZNET5K_DIR)/Ethernet
+CFLAGS += -DMICROPY_PY_NETWORK_WIZNET5K=$(MICROPY_PY_NETWORK_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_NETWORK_WIZNET5K)
+CFLAGS_THIRDPARTY += -DWIZCHIP_PREFIXED_EXPORTS=1
+ifeq ($(MICROPY_PY_LWIP),1)
+# When using MACRAW mode (with lwIP), maximum buffer space must be used for the raw socket
+CFLAGS_THIRDPARTY += -DWIZCHIP_USE_MAX_BUFFER
+endif
+SRC_THIRDPARTY_C += $(addprefix $(WIZNET5K_DIR)/,\
+	Ethernet/W$(MICROPY_PY_NETWORK_WIZNET5K)/w$(MICROPY_PY_NETWORK_WIZNET5K).c \
+	Ethernet/wizchip_conf.c \
+	Ethernet/socket.c \
+	Internet/DNS/dns.c \
+	Internet/DHCP/dhcp.c \
+	)
+endif
+endif
+
+################################################################################
+# bluetooth
+
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+CFLAGS_EXTMOD += -DMICROPY_PY_BLUETOOTH=1
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+$(error Cannot enable both NimBLE and BTstack at the same time)
+endif
+endif
+
+ifneq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+ifneq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+$(error Must enable one of MICROPY_BLUETOOTH_NIMBLE or MICROPY_BLUETOOTH_BTSTACK)
+endif
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+include $(TOP)/extmod/nimble/nimble.mk
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+include $(TOP)/extmod/btstack/btstack.mk
+endif
+
+endif

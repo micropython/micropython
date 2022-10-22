@@ -641,15 +641,16 @@ STATIC const mp_pin_p_t pin_pin_p = {
     .ioctl = pin_ioctl,
 };
 
-const mp_obj_type_t machine_pin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Pin,
-    .print = machine_pin_print,
-    .make_new = mp_pin_make_new,
-    .call = machine_pin_call,
-    .protocol = &pin_pin_p,
-    .locals_dict = (mp_obj_t)&machine_pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_pin_make_new,
+    print, machine_pin_print,
+    call, machine_pin_call,
+    protocol, &pin_pin_p,
+    locals_dict, &machine_pin_locals_dict
+    );
 
 STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);

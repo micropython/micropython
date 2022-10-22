@@ -229,7 +229,7 @@ STATIC mp_obj_t pyb_spi_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     if (o_ret != MP_OBJ_NULL) {
         return o_ret;
     } else {
-        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+        return mp_obj_new_bytes_from_vstr(&vstr);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_recv_obj, 1, pyb_spi_recv);
@@ -298,7 +298,7 @@ STATIC mp_obj_t pyb_spi_send_recv(size_t n_args, const mp_obj_t *pos_args, mp_ma
     if (o_ret != MP_OBJ_NULL) {
         return o_ret;
     } else {
-        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr_recv);
+        return mp_obj_new_bytes_from_vstr(&vstr_recv);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_send_recv_obj, 1, pyb_spi_send_recv);
@@ -350,11 +350,12 @@ STATIC const mp_machine_spi_p_t pyb_spi_p = {
     .transfer = spi_transfer_machine,
 };
 
-const mp_obj_type_t pyb_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .print = pyb_spi_print,
-    .make_new = pyb_spi_make_new,
-    .protocol = &pyb_spi_p,
-    .locals_dict = (mp_obj_dict_t *)&pyb_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_spi_type,
+    MP_QSTR_SPI,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_spi_make_new,
+    print, pyb_spi_print,
+    protocol, &pyb_spi_p,
+    locals_dict, &pyb_spi_locals_dict
+    );

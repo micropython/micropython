@@ -38,7 +38,7 @@
 #include "irq.h"
 #include "pendsv.h"
 
-#if defined(STM32F4)
+#if defined(STM32F4) || defined(STM32L1)
 #define UART_RXNE_IS_SET(uart) ((uart)->SR & USART_SR_RXNE)
 #else
 #if defined(STM32G0) || defined(STM32H7) || defined(STM32WL)
@@ -100,6 +100,11 @@
 #define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
 #define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
 #define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_WUFIE)
+
+#elif defined(STM32L1)
+#define USART_CR1_IE_ALL (USART_CR1_IE_BASE)
+#define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE)
 
 #elif defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 #define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
@@ -580,7 +585,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
     huart.FifoMode = UART_FIFOMODE_ENABLE;
     #endif
 
-    #if !defined(STM32F4)
+    #if !defined(STM32F4) && !defined(STM32L1)
     huart.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
     #endif
 
@@ -1016,7 +1021,7 @@ STATIC bool uart_wait_flag_set(pyb_uart_obj_t *self, uint32_t flag, uint32_t tim
     // an interrupt and the flag can be set quickly if the baudrate is large.
     uint32_t start = HAL_GetTick();
     for (;;) {
-        #if defined(STM32F4)
+        #if defined(STM32F4) || defined(STM32L1)
         if (self->uartx->SR & flag) {
             return true;
         }
@@ -1071,7 +1076,7 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
         } else {
             data = *src++;
         }
-        #if defined(STM32F4)
+        #if defined(STM32F4) || defined(STM32L1)
         uart->DR = data;
         #else
         uart->TDR = data;
@@ -1109,7 +1114,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
     }
 
     // Capture IRQ status flags.
-    #if defined(STM32F4)
+    #if defined(STM32F4) || defined(STM32L1)
     self->mp_irq_flags = self->uartx->SR;
     bool rxne_is_set = self->mp_irq_flags & USART_SR_RXNE;
     bool did_clear_sr = false;
@@ -1153,7 +1158,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
     }
 
     // Clear other interrupt flags that can trigger this IRQ handler.
-    #if defined(STM32F4)
+    #if defined(STM32F4) || defined(STM32L1)
     if (did_clear_sr) {
         // SR was cleared above.  Re-enable IDLE if it should be enabled.
         if (self->mp_irq_trigger & UART_FLAG_IDLE) {

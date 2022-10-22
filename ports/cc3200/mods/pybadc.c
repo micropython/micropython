@@ -233,13 +233,14 @@ STATIC const mp_rom_map_elem_t adc_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
 
-const mp_obj_type_t pyb_adc_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ADC,
-    .print = adc_print,
-    .make_new = adc_make_new,
-    .locals_dict = (mp_obj_t)&adc_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_adc_type,
+    MP_QSTR_ADC,
+    MP_TYPE_FLAG_NONE,
+    make_new, adc_make_new,
+    print, adc_print,
+    locals_dict, &adc_locals_dict
+    );
 
 STATIC void adc_channel_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_adc_channel_obj_t *self = self_in;
@@ -300,10 +301,11 @@ STATIC const mp_rom_map_elem_t adc_channel_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(adc_channel_locals_dict, adc_channel_locals_dict_table);
 
-STATIC const mp_obj_type_t pyb_adc_channel_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ADCChannel,
-    .print = adc_channel_print,
-    .call = adc_channel_call,
-    .locals_dict = (mp_obj_t)&adc_channel_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_adc_channel_type,
+    MP_QSTR_ADCChannel,
+    MP_TYPE_FLAG_NONE,
+    print, adc_channel_print,
+    call, adc_channel_call,
+    locals_dict, &adc_channel_locals_dict
+    );

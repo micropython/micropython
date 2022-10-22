@@ -91,7 +91,7 @@ STATIC mp_obj_t scan_entry_get_scan_data(mp_obj_t self_in) {
 
         mp_obj_t description = mp_const_none;
 
-        mp_map_t *constant_map = mp_obj_dict_get_map(ubluepy_constants_ad_types_type.locals_dict);
+        mp_map_t *constant_map = mp_obj_dict_get_map(MP_OBJ_TYPE_GET_SLOT(&ubluepy_constants_ad_types_type, locals_dict));
         mp_map_elem_t *ad_types_table = MP_OBJ_TO_PTR(constant_map->table);
 
         uint16_t num_of_elements = constant_map->used;
@@ -136,11 +136,12 @@ STATIC const mp_rom_map_elem_t ubluepy_scan_entry_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_scan_entry_locals_dict, ubluepy_scan_entry_locals_dict_table);
 
-const mp_obj_type_t ubluepy_scan_entry_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ScanEntry,
-    .print = ubluepy_scan_entry_print,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_scan_entry_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ubluepy_scan_entry_type,
+    MP_QSTR_ScanEntry,
+    MP_TYPE_FLAG_NONE,
+    print, ubluepy_scan_entry_print,
+    locals_dict, &ubluepy_scan_entry_locals_dict
+    );
 
 #endif // MICROPY_PY_UBLUEPY_CENTRAL

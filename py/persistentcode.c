@@ -202,7 +202,11 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
         read_bytes(reader, (byte *)vstr.buf, len);
         if (obj_type == MP_PERSISTENT_OBJ_STR || obj_type == MP_PERSISTENT_OBJ_BYTES) {
             read_byte(reader); // skip null terminator
-            return mp_obj_new_str_from_vstr(obj_type == MP_PERSISTENT_OBJ_STR ? &mp_type_str : &mp_type_bytes, &vstr);
+            if (obj_type == MP_PERSISTENT_OBJ_STR) {
+                return mp_obj_new_str_from_utf8_vstr(&vstr);
+            } else {
+                return mp_obj_new_bytes_from_vstr(&vstr);
+            }
         } else if (obj_type == MP_PERSISTENT_OBJ_INT) {
             return mp_parse_num_integer(vstr.buf, vstr.len, 10, NULL);
         } else {
@@ -389,16 +393,22 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
 mp_compiled_module_t mp_raw_code_load(mp_reader_t *reader, mp_module_context_t *context) {
     byte header[4];
     read_bytes(reader, header, sizeof(header));
+    byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
     if (header[0] != 'M'
         || header[1] != MPY_VERSION
-        || MPY_FEATURE_DECODE_FLAGS(header[2]) != MPY_FEATURE_FLAGS
+        || (arch != MP_NATIVE_ARCH_NONE && MPY_FEATURE_DECODE_SUB_VERSION(header[2]) != MPY_SUB_VERSION)
         || header[3] > MP_SMALL_INT_BITS) {
         mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
     }
     if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
-        byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
         if (!MPY_FEATURE_ARCH_TEST(arch)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy arch"));
+            if (MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_NONE)) {
+                // On supported ports this can be resolved by enabling feature, eg
+                // mpconfigboard.h: MICROPY_EMIT_THUMB (1)
+                mp_raise_ValueError(MP_ERROR_TEXT("native code in .mpy unsupported"));
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy arch"));
+            }
         }
     }
 
@@ -586,7 +596,7 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
     byte header[4] = {
         'M',
         MPY_VERSION,
-        MPY_FEATURE_ENCODE_FLAGS(MPY_FEATURE_FLAGS_DYNAMIC),
+        MPY_FEATURE_ENCODE_SUB_VERSION(MPY_SUB_VERSION),
         #if MICROPY_DYNAMIC_COMPILER
         mp_dynamic_compiler.small_int_bits,
         #else
@@ -634,6 +644,9 @@ void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename) {
     MP_THREAD_GIL_EXIT();
     int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     MP_THREAD_GIL_ENTER();
+    if (fd < 0) {
+        mp_raise_OSError_with_filename(errno, filename);
+    }
     mp_print_t fd_print = {(void *)(intptr_t)fd, fd_print_strn};
     mp_raw_code_save(cm, &fd_print);
     MP_THREAD_GIL_EXIT();

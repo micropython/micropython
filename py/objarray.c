@@ -443,7 +443,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 size_t src_len;
                 void *src_items;
                 size_t item_sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
-                if (mp_obj_is_obj(value) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(value))->type->subscr == array_subscr) {
+                if (mp_obj_is_obj(value) && MP_OBJ_TYPE_GET_SLOT_OR_NULL(((mp_obj_base_t *)MP_OBJ_TO_PTR(value))->type, subscr) == array_subscr) {
                     // value is array, bytearray or memoryview
                     mp_obj_array_t *src_slice = MP_OBJ_TO_PTR(value);
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
@@ -571,55 +571,64 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
 }
 
 #if MICROPY_PY_ARRAY
-const mp_obj_type_t mp_type_array = {
-    { &mp_type_type },
-    .name = MP_QSTR_array,
-    .print = array_print,
-    .make_new = array_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
-    .locals_dict = (mp_obj_dict_t *)&mp_obj_array_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_array,
+    MP_QSTR_array,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, array_make_new,
+    print, array_print,
+    iter, array_iterator_new,
+    unary_op, array_unary_op,
+    binary_op, array_binary_op,
+    subscr, array_subscr,
+    buffer, array_get_buffer,
+    locals_dict, &mp_obj_array_locals_dict
+    );
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
-const mp_obj_type_t mp_type_bytearray = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
-    .name = MP_QSTR_bytearray,
-    .print = array_print,
-    .make_new = bytearray_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
-    .locals_dict = (mp_obj_dict_t *)&mp_obj_bytearray_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bytearray,
+    MP_QSTR_bytearray,
+    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, bytearray_make_new,
+    print, array_print,
+    iter, array_iterator_new,
+    unary_op, array_unary_op,
+    binary_op, array_binary_op,
+    subscr, array_subscr,
+    buffer, array_get_buffer,
+    locals_dict, &mp_obj_bytearray_locals_dict
+    );
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
-const mp_obj_type_t mp_type_memoryview = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
-    .name = MP_QSTR_memoryview,
-    .make_new = memoryview_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
-    .attr = memoryview_attr,
-    #endif
-    #if MICROPY_PY_BUILTINS_BYTES_HEX
-    .locals_dict = (mp_obj_dict_t *)&mp_obj_memoryview_locals_dict,
-    #endif
-    .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
-};
+#if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+#define MEMORYVIEW_TYPE_ATTR attr, memoryview_attr,
+#else
+#define MEMORYVIEW_TYPE_ATTR
 #endif
+
+#if MICROPY_PY_BUILTINS_BYTES_HEX
+#define MEMORYVIEW_TYPE_LOCALS_DICT locals_dict, &mp_obj_memoryview_locals_dict,
+#else
+#define MEMORYVIEW_TYPE_LOCALS_DICT
+#endif
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_memoryview,
+    MP_QSTR_memoryview,
+    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, memoryview_make_new,
+    iter, array_iterator_new,
+    unary_op, array_unary_op,
+    binary_op, array_binary_op,
+    MEMORYVIEW_TYPE_LOCALS_DICT
+    MEMORYVIEW_TYPE_ATTR
+    subscr, array_subscr,
+    buffer, array_get_buffer
+    );
+#endif // MICROPY_PY_BUILTINS_MEMORYVIEW
 
 /* unused
 size_t mp_obj_array_len(mp_obj_t self_in) {
@@ -664,12 +673,12 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_array_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = array_it_iternext,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_array_it,
+    MP_QSTR_iterator,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, array_it_iternext
+    );
 
 STATIC mp_obj_t array_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_array_t) <= sizeof(mp_obj_iter_buf_t));

@@ -91,6 +91,15 @@ STATIC bool rtc_need_init_finalise = false;
 #define RCC_BDCR_LSEON RCC_CSR_LSEON
 #define RCC_BDCR_LSERDY RCC_CSR_LSERDY
 #define RCC_BDCR_LSEBYP RCC_CSR_LSEBYP
+#elif defined(STM32L1)
+#define BDCR CR
+#define RCC_BDCR_RTCEN RCC_CSR_RTCEN
+#define RCC_BDCR_RTCSEL RCC_CSR_RTCSEL
+#define RCC_BDCR_RTCSEL_0 RCC_CSR_RTCSEL_0
+#define RCC_BDCR_RTCSEL_1 RCC_CSR_RTCSEL_1
+#define RCC_BDCR_LSEON RCC_CSR_LSEON
+#define RCC_BDCR_LSERDY RCC_CSR_LSERDY
+#define RCC_BDCR_LSEBYP RCC_CSR_LSEBYP
 #endif
 
 void rtc_init_start(bool force_init) {
@@ -664,7 +673,15 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
                 wucksel -= 1;
             }
             if (div <= 16) {
+                #if defined(STM32L1)
+                if (rtc_use_lse) {
+                    wut = LSE_VALUE / div * ms / 1000;
+                } else {
+                    wut = LSI_VALUE / div * ms / 1000;
+                }
+                #else
                 wut = 32768 / div * ms / 1000;
+                #endif
             } else {
                 // use 1Hz clock
                 wucksel = 4;
@@ -837,9 +854,10 @@ STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
-const mp_obj_type_t pyb_rtc_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RTC,
-    .make_new = pyb_rtc_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_rtc_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_rtc_type,
+    MP_QSTR_RTC,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_rtc_make_new,
+    locals_dict, &pyb_rtc_locals_dict
+    );

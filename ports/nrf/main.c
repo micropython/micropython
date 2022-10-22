@@ -170,7 +170,7 @@ soft_reset:
             MP_OBJ_NEW_SMALL_INT(0),
             MP_OBJ_NEW_SMALL_INT(115200),
         };
-        MP_STATE_PORT(board_stdio_uart) = machine_hard_uart_type.make_new((mp_obj_t)&machine_hard_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        MP_STATE_PORT(board_stdio_uart) = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
     #endif
 

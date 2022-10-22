@@ -17,60 +17,263 @@ MicroPython device over a serial connection.  Commands supported are:
     mpremote repl                    -- enter REPL
 """
 
+import argparse
 import os, sys
 from collections.abc import Mapping
 from textwrap import dedent
 
-import serial.tools.list_ports
-
-from . import pyboardextended as pyboard
-from .console import Console, ConsolePosix
+from .commands import (
+    CommandError,
+    do_connect,
+    do_disconnect,
+    do_edit,
+    do_filesystem,
+    do_mount,
+    do_umount,
+    do_exec,
+    do_eval,
+    do_run,
+    do_resume,
+    do_soft_reset,
+)
+from .mip import do_mip
+from .repl import do_repl
 
 _PROG = "mpremote"
 
+
+def do_help(state, _args=None):
+    def print_commands_help(cmds, help_key):
+        max_command_len = max(len(cmd) for cmd in cmds.keys())
+        for cmd in sorted(cmds.keys()):
+            help_message_lines = dedent(help_key(cmds[cmd])).split("\n")
+            help_message = help_message_lines[0]
+            for line in help_message_lines[1:]:
+                help_message = "{}\n{}{}".format(help_message, " " * (max_command_len + 4), line)
+            print("  ", cmd, " " * (max_command_len - len(cmd) + 2), help_message, sep="")
+
+    print(_PROG, "-- MicroPython remote control")
+    print("See https://docs.micropython.org/en/latest/reference/mpremote.html")
+
+    print("\nList of commands:")
+    print_commands_help(
+        _COMMANDS, lambda x: x[1]().description
+    )  # extract description from argparse
+
+    print("\nList of shortcuts:")
+    print_commands_help(_command_expansions, lambda x: x[2])  # (args, sub, help_message)
+
+    sys.exit(0)
+
+
+def do_version(state, _args=None):
+    from . import __version__
+
+    print(f"{_PROG} {__version__}")
+    sys.exit(0)
+
+
+def _bool_flag(cmd_parser, name, short_name, default, description):
+    # In Python 3.9+ this can be replaced with argparse.BooleanOptionalAction.
+    group = cmd_parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--" + name,
+        "-" + short_name,
+        action="store_true",
+        default=default,
+        help=description,
+    )
+    group.add_argument(
+        "--no-" + name,
+        action="store_false",
+        dest=name,
+    )
+
+
+def argparse_connect():
+    cmd_parser = argparse.ArgumentParser(description="connect to given device")
+    cmd_parser.add_argument(
+        "device", nargs=1, help="Either list, auto, id:x, port:x, or any valid device name/path"
+    )
+    return cmd_parser
+
+
+def argparse_edit():
+    cmd_parser = argparse.ArgumentParser(description="edit files on the device")
+    cmd_parser.add_argument("files", nargs="+", help="list of remote paths")
+    return cmd_parser
+
+
+def argparse_mount():
+    cmd_parser = argparse.ArgumentParser(description="mount local directory on device")
+    _bool_flag(
+        cmd_parser,
+        "unsafe-links",
+        "l",
+        False,
+        "follow symbolic links pointing outside of local directory",
+    )
+    cmd_parser.add_argument("path", nargs=1, help="local path to mount")
+    return cmd_parser
+
+
+def argparse_repl():
+    cmd_parser = argparse.ArgumentParser(description="connect to given device")
+    cmd_parser.add_argument(
+        "--capture",
+        type=str,
+        required=False,
+        help="saves a copy of the REPL session to the specified path",
+    )
+    cmd_parser.add_argument(
+        "--inject-code", type=str, required=False, help="code to be run when Ctrl-J is pressed"
+    )
+    cmd_parser.add_argument(
+        "--inject-file",
+        type=str,
+        required=False,
+        help="path to file to be run when Ctrl-K is pressed",
+    )
+    return cmd_parser
+
+
+def argparse_eval():
+    cmd_parser = argparse.ArgumentParser(description="evaluate and print the string")
+    cmd_parser.add_argument("expr", nargs=1, help="expression to execute")
+    return cmd_parser
+
+
+def argparse_exec():
+    cmd_parser = argparse.ArgumentParser(description="execute the string")
+    _bool_flag(
+        cmd_parser, "follow", "f", True, "follow output until the expression completes (default)"
+    )
+    cmd_parser.add_argument("expr", nargs=1, help="expression to execute")
+    return cmd_parser
+
+
+def argparse_run():
+    cmd_parser = argparse.ArgumentParser(description="run the given local script")
+    _bool_flag(
+        cmd_parser, "follow", "f", True, "follow output until the script completes (default)"
+    )
+    cmd_parser.add_argument("path", nargs=1, help="path to script to execute")
+    return cmd_parser
+
+
+def argparse_filesystem():
+    cmd_parser = argparse.ArgumentParser(description="execute filesystem commands on the device")
+    _bool_flag(cmd_parser, "recursive", "r", False, "recursive copy (for cp command only)")
+    _bool_flag(
+        cmd_parser,
+        "verbose",
+        "v",
+        None,
+        "enable verbose output (defaults to True for all commands except cat)",
+    )
+    cmd_parser.add_argument(
+        "command", nargs=1, help="filesystem command (e.g. cat, cp, ls, rm, touch)"
+    )
+    cmd_parser.add_argument("path", nargs="+", help="local and remote paths")
+    return cmd_parser
+
+
+def argparse_mip():
+    cmd_parser = argparse.ArgumentParser(
+        description="install packages from micropython-lib or third-party sources"
+    )
+    _bool_flag(cmd_parser, "mpy", "m", True, "download as compiled .mpy files (default)")
+    cmd_parser.add_argument(
+        "--target", type=str, required=False, help="destination direction on the device"
+    )
+    cmd_parser.add_argument(
+        "--index",
+        type=str,
+        required=False,
+        help="package index to use (defaults to micropython-lib)",
+    )
+    cmd_parser.add_argument("command", nargs=1, help="mip command (e.g. install)")
+    cmd_parser.add_argument(
+        "packages",
+        nargs="+",
+        help="list package specifications, e.g. name, name@version, github:org/repo, github:org/repo@branch",
+    )
+    return cmd_parser
+
+
+def argparse_none(description):
+    return lambda: argparse.ArgumentParser(description=description)
+
+
+# Map of "command" to tuple of (handler_func, argparse_func).
 _COMMANDS = {
     "connect": (
-        False,
-        False,
-        1,
-        """\
-        connect to given device
-        device may be: list, auto, id:x, port:x
-        or any valid device name/path""",
+        do_connect,
+        argparse_connect,
     ),
-    "disconnect": (False, False, 0, "disconnect current device"),
-    "resume": (False, False, 0, "resume a previous mpremote session (will not auto soft-reset)"),
-    "soft-reset": (False, True, 0, "perform a soft-reset of the device"),
+    "disconnect": (
+        do_disconnect,
+        argparse_none("disconnect current device"),
+    ),
+    "edit": (
+        do_edit,
+        argparse_edit,
+    ),
+    "resume": (
+        do_resume,
+        argparse_none("resume a previous mpremote session (will not auto soft-reset)"),
+    ),
+    "soft-reset": (
+        do_soft_reset,
+        argparse_none("perform a soft-reset of the device"),
+    ),
     "mount": (
-        True,
-        False,
-        1,
-        """\
-        mount local directory on device
-        options:
-            --unsafe-links, -l
-                follow symbolic links pointing outside of local directory""",
+        do_mount,
+        argparse_mount,
     ),
-    "umount": (True, False, 0, "unmount the local directory"),
+    "umount": (
+        do_umount,
+        argparse_none("unmount the local directory"),
+    ),
     "repl": (
-        False,
-        True,
-        0,
-        """\
-        enter REPL
-        options:
-            --capture <file>
-            --inject-code <string>
-            --inject-file <file>""",
+        do_repl,
+        argparse_repl,
     ),
-    "eval": (True, True, 1, "evaluate and print the string"),
-    "exec": (True, True, 1, "execute the string"),
-    "run": (True, True, 1, "run the given local script"),
-    "fs": (True, True, 1, "execute filesystem commands on the device"),
-    "help": (False, False, 0, "print help and exit"),
-    "version": (False, False, 0, "print version and exit"),
+    "eval": (
+        do_eval,
+        argparse_eval,
+    ),
+    "exec": (
+        do_exec,
+        argparse_exec,
+    ),
+    "run": (
+        do_run,
+        argparse_run,
+    ),
+    "fs": (
+        do_filesystem,
+        argparse_filesystem,
+    ),
+    "mip": (
+        do_mip,
+        argparse_mip,
+    ),
+    "help": (
+        do_help,
+        argparse_none("print help and exit"),
+    ),
+    "version": (
+        do_version,
+        argparse_none("print version and exit"),
+    ),
 }
 
+# Additional commands aliases.
+# The value can either be:
+#   - A command string.
+#   - A list of command strings, each command will be executed sequentially.
+#   - A dict of command: { [], help: ""}
 _BUILTIN_COMMAND_EXPANSIONS = {
     # Device connection shortcuts.
     "devs": {
@@ -82,6 +285,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
     "ls": "fs ls",
     "cp": "fs cp",
     "rm": "fs rm",
+    "touch": "fs touch",
     "mkdir": "fs mkdir",
     "rmdir": "fs rmdir",
     "df": [
@@ -113,6 +317,8 @@ _BUILTIN_COMMAND_EXPANSIONS = {
     "--version": "version",
 }
 
+# Add "a0", "a1", ..., "u0", "u1", ..., "c0", "c1", ... as aliases
+# for "connect /dev/ttyACMn" (and /dev/ttyUSBn, COMn) etc.
 for port_num in range(4):
     for prefix, port in [("a", "/dev/ttyACM"), ("u", "/dev/ttyUSB"), ("c", "COM")]:
         _BUILTIN_COMMAND_EXPANSIONS["{}{}".format(prefix, port_num)] = {
@@ -209,377 +415,103 @@ def do_command_expansion(args):
         # Extra unknown arguments given.
         arg = args[last_arg_idx].split("=", 1)[0]
         usage_error(cmd, exp_args, f"given unexpected argument {arg}")
-        sys.exit(1)
 
     # Insert expansion with optional setting of arguments.
     if pre:
         args[0:0] = ["exec", ";".join(pre)]
 
 
-def do_connect(args):
-    dev = args.pop(0)
-    try:
-        if dev == "list":
-            # List attached devices.
-            for p in sorted(serial.tools.list_ports.comports()):
-                print(
-                    "{} {} {:04x}:{:04x} {} {}".format(
-                        p.device,
-                        p.serial_number,
-                        p.vid if isinstance(p.vid, int) else 0,
-                        p.pid if isinstance(p.pid, int) else 0,
-                        p.manufacturer,
-                        p.product,
-                    )
-                )
-            return None
-        elif dev == "auto":
-            # Auto-detect and auto-connect to the first available device.
-            for p in sorted(serial.tools.list_ports.comports()):
-                try:
-                    return pyboard.PyboardExtended(p.device, baudrate=115200)
-                except pyboard.PyboardError as er:
-                    if not er.args[0].startswith("failed to access"):
-                        raise er
-            raise pyboard.PyboardError("no device found")
-        elif dev.startswith("id:"):
-            # Search for a device with the given serial number.
-            serial_number = dev[len("id:") :]
-            dev = None
-            for p in serial.tools.list_ports.comports():
-                if p.serial_number == serial_number:
-                    return pyboard.PyboardExtended(p.device, baudrate=115200)
-            raise pyboard.PyboardError("no device with serial number {}".format(serial_number))
-        else:
-            # Connect to the given device.
-            if dev.startswith("port:"):
-                dev = dev[len("port:") :]
-            return pyboard.PyboardExtended(dev, baudrate=115200)
-    except pyboard.PyboardError as er:
-        msg = er.args[0]
-        if msg.startswith("failed to access"):
-            msg += " (it may be in use by another program)"
-        print(msg)
-        sys.exit(1)
+class State:
+    def __init__(self):
+        self.pyb = None
+        self._did_action = False
+        self._auto_soft_reset = True
 
+    def did_action(self):
+        self._did_action = True
 
-def do_disconnect(pyb):
-    try:
-        if pyb.mounted:
-            if not pyb.in_raw_repl:
-                pyb.enter_raw_repl(soft_reset=False)
-            pyb.umount_local()
-        if pyb.in_raw_repl:
-            pyb.exit_raw_repl()
-    except OSError:
-        # Ignore any OSError exceptions when shutting down, eg:
-        # - pyboard.filesystem_command will close the connecton if it had an error
-        # - umounting will fail if serial port disappeared
-        pass
-    pyb.close()
+    def run_repl_on_completion(self):
+        return not self._did_action
 
+    def ensure_connected(self):
+        if self.pyb is None:
+            do_connect(self)
 
-def show_progress_bar(size, total_size):
-    if not sys.stdout.isatty():
-        return
-    verbose_size = 2048
-    bar_length = 20
-    if total_size < verbose_size:
-        return
-    elif size >= total_size:
-        # Clear progress bar when copy completes
-        print("\r" + " " * (20 + bar_length) + "\r", end="")
-    else:
-        progress = size / total_size
-        bar = round(progress * bar_length)
-        print(
-            "\r ... copying {:3.0f}% [{}{}]".format(
-                progress * 100, "#" * bar, "-" * (bar_length - bar)
-            ),
-            end="",
-        )
+    def ensure_raw_repl(self, soft_reset=None):
+        self.ensure_connected()
+        soft_reset = self._auto_soft_reset if soft_reset is None else soft_reset
+        if soft_reset or not self.pyb.in_raw_repl:
+            self.pyb.enter_raw_repl(soft_reset=soft_reset)
+            self._auto_soft_reset = False
 
-
-def do_filesystem(pyb, args):
-    def _list_recursive(files, path):
-        if os.path.isdir(path):
-            for entry in os.listdir(path):
-                _list_recursive(files, "/".join((path, entry)))
-        else:
-            files.append(os.path.split(path))
-
-    # Don't be verbose when using cat, so output can be redirected to something.
-    verbose = args[0] != "cat"
-
-    if args[0] == "cp" and args[1] == "-r":
-        args.pop(0)
-        args.pop(0)
-        assert args[-1] == ":"
-        args.pop()
-        src_files = []
-        for path in args:
-            _list_recursive(src_files, path)
-        known_dirs = {""}
-        pyb.exec_("import uos")
-        for dir, file in src_files:
-            dir_parts = dir.split("/")
-            for i in range(len(dir_parts)):
-                d = "/".join(dir_parts[: i + 1])
-                if d not in known_dirs:
-                    pyb.exec_("try:\n uos.mkdir('%s')\nexcept OSError as e:\n print(e)" % d)
-                    known_dirs.add(d)
-            pyboard.filesystem_command(
-                pyb,
-                ["cp", "/".join((dir, file)), ":" + dir + "/"],
-                progress_callback=show_progress_bar,
-                verbose=verbose,
-            )
-    else:
-        pyboard.filesystem_command(pyb, args, progress_callback=show_progress_bar, verbose=verbose)
-    args.clear()
-
-
-def do_repl_main_loop(pyb, console_in, console_out_write, *, code_to_inject, file_to_inject):
-    while True:
-        console_in.waitchar(pyb.serial)
-        c = console_in.readchar()
-        if c:
-            if c == b"\x1d":  # ctrl-], quit
-                break
-            elif c == b"\x04":  # ctrl-D
-                # special handling needed for ctrl-D if filesystem is mounted
-                pyb.write_ctrl_d(console_out_write)
-            elif c == b"\x0a" and code_to_inject is not None:  # ctrl-j, inject code
-                pyb.serial.write(code_to_inject)
-            elif c == b"\x0b" and file_to_inject is not None:  # ctrl-k, inject script
-                console_out_write(bytes("Injecting %s\r\n" % file_to_inject, "utf8"))
-                pyb.enter_raw_repl(soft_reset=False)
-                with open(file_to_inject, "rb") as f:
-                    pyfile = f.read()
-                try:
-                    pyb.exec_raw_no_follow(pyfile)
-                except pyboard.PyboardError as er:
-                    console_out_write(b"Error:\r\n")
-                    console_out_write(er)
-                pyb.exit_raw_repl()
-            else:
-                pyb.serial.write(c)
-
-        try:
-            n = pyb.serial.inWaiting()
-        except OSError as er:
-            if er.args[0] == 5:  # IO error, device disappeared
-                print("device disconnected")
-                break
-
-        if n > 0:
-            c = pyb.serial.read(1)
-            if c is not None:
-                # pass character through to the console
-                oc = ord(c)
-                if oc in (8, 9, 10, 13, 27) or 32 <= oc <= 126:
-                    console_out_write(c)
-                else:
-                    console_out_write(b"[%02x]" % ord(c))
-
-
-def do_repl(pyb, args):
-    capture_file = None
-    code_to_inject = None
-    file_to_inject = None
-
-    while len(args):
-        if args[0] == "--capture":
-            args.pop(0)
-            capture_file = args.pop(0)
-        elif args[0] == "--inject-code":
-            args.pop(0)
-            code_to_inject = bytes(args.pop(0).replace("\\n", "\r\n"), "utf8")
-        elif args[0] == "--inject-file":
-            args.pop(0)
-            file_to_inject = args.pop(0)
-        else:
-            break
-
-    print("Connected to MicroPython at %s" % pyb.device_name)
-    print("Use Ctrl-] to exit this shell")
-    if capture_file is not None:
-        print('Capturing session to file "%s"' % capture_file)
-        capture_file = open(capture_file, "wb")
-    if code_to_inject is not None:
-        print("Use Ctrl-J to inject", code_to_inject)
-    if file_to_inject is not None:
-        print('Use Ctrl-K to inject file "%s"' % file_to_inject)
-
-    console = Console()
-    console.enter()
-
-    def console_out_write(b):
-        console.write(b)
-        if capture_file is not None:
-            capture_file.write(b)
-            capture_file.flush()
-
-    try:
-        do_repl_main_loop(
-            pyb,
-            console,
-            console_out_write,
-            code_to_inject=code_to_inject,
-            file_to_inject=file_to_inject,
-        )
-    finally:
-        console.exit()
-        if capture_file is not None:
-            capture_file.close()
-
-
-def execbuffer(pyb, buf, follow):
-    ret_val = 0
-    try:
-        pyb.exec_raw_no_follow(buf)
-        if follow:
-            ret, ret_err = pyb.follow(timeout=None, data_consumer=pyboard.stdout_write_bytes)
-            if ret_err:
-                pyboard.stdout_write_bytes(ret_err)
-                ret_val = 1
-    except pyboard.PyboardError as er:
-        print(er)
-        ret_val = 1
-    except KeyboardInterrupt:
-        ret_val = 1
-    return ret_val
-
-
-def print_help():
-    def print_commands_help(cmds, help_idx):
-        max_command_len = max(len(cmd) for cmd in cmds.keys())
-        for cmd in sorted(cmds.keys()):
-            help_message_lines = dedent(cmds[cmd][help_idx]).split("\n")
-            help_message = help_message_lines[0]
-            for line in help_message_lines[1:]:
-                help_message = "{}\n{}{}".format(help_message, " " * (max_command_len + 4), line)
-            print("  ", cmd, " " * (max_command_len - len(cmd) + 2), help_message, sep="")
-
-    print(_PROG, "-- MicroPython remote control")
-    print("See https://docs.micropython.org/en/latest/reference/mpremote.html")
-
-    print("\nList of commands:")
-    print_commands_help(_COMMANDS, 3)
-
-    print("\nList of shortcuts:")
-    print_commands_help(_command_expansions, 2)
-
-
-def print_version():
-    from . import __version__
-
-    print(f"{_PROG} {__version__}")
+    def ensure_friendly_repl(self):
+        self.ensure_connected()
+        if self.pyb.in_raw_repl:
+            self.pyb.exit_raw_repl()
 
 
 def main():
     config = load_user_config()
     prepare_command_expansions(config)
 
-    args = sys.argv[1:]
-    pyb = None
-    auto_soft_reset = True
-    did_action = False
+    remaining_args = sys.argv[1:]
+    state = State()
 
     try:
-        while args:
-            do_command_expansion(args)
-            cmd = args.pop(0)
+        while remaining_args:
+            # Skip the terminator.
+            if remaining_args[0] == "+":
+                remaining_args.pop(0)
+                continue
+
+            # Rewrite the front of the list with any matching expansion.
+            do_command_expansion(remaining_args)
+
+            # The (potentially rewritten) command must now be a base command.
+            cmd = remaining_args.pop(0)
             try:
-                need_raw_repl, is_action, num_args_min, _ = _COMMANDS[cmd]
+                handler_func, parser_func = _COMMANDS[cmd]
             except KeyError:
-                print(f"{_PROG}: '{cmd}' is not a command")
-                return 1
+                raise CommandError(f"'{cmd}' is not a command")
 
-            if len(args) < num_args_min:
-                print(f"{_PROG}: '{cmd}' neads at least {num_args_min} argument(s)")
-                return 1
+            # If this command (or any down the chain) has a terminator, then
+            # limit the arguments passed for this command. They will be added
+            # back after processing this command.
+            try:
+                terminator = remaining_args.index("+")
+                command_args = remaining_args[:terminator]
+                extra_args = remaining_args[terminator:]
+            except ValueError:
+                command_args = remaining_args
+                extra_args = []
 
-            if cmd == "connect":
-                if pyb is not None:
-                    do_disconnect(pyb)
-                pyb = do_connect(args)
-                if pyb is None:
-                    did_action = True
-                continue
-            elif cmd == "help":
-                print_help()
-                sys.exit(0)
-            elif cmd == "version":
-                print_version()
-                sys.exit(0)
-            elif cmd == "resume":
-                auto_soft_reset = False
-                continue
+            # Special case: "fs ls" allowed have no path specified.
+            if cmd == "fs" and len(command_args) == 1 and command_args[0] == "ls":
+                command_args.append("")
 
-            # The following commands need a connection, and either a raw or friendly REPL.
+            # Use the command-specific argument parser.
+            cmd_parser = parser_func()
+            cmd_parser.prog = cmd
+            # Catch all for unhandled positional arguments (this is the next command).
+            cmd_parser.add_argument(
+                "next_command", nargs=argparse.REMAINDER, help=f"Next {_PROG} command"
+            )
+            args = cmd_parser.parse_args(command_args)
 
-            if pyb is None:
-                pyb = do_connect(["auto"])
+            # Execute command.
+            handler_func(state, args)
 
-            if need_raw_repl:
-                if not pyb.in_raw_repl:
-                    pyb.enter_raw_repl(soft_reset=auto_soft_reset)
-                    auto_soft_reset = False
-            else:
-                if pyb.in_raw_repl:
-                    pyb.exit_raw_repl()
-            if is_action:
-                did_action = True
+            # Get any leftover unprocessed args.
+            remaining_args = args.next_command + extra_args
 
-            if cmd == "disconnect":
-                do_disconnect(pyb)
-                pyb = None
-                auto_soft_reset = True
-            elif cmd == "soft-reset":
-                pyb.enter_raw_repl(soft_reset=True)
-                auto_soft_reset = False
-            elif cmd == "mount":
-                unsafe_links = False
-                if args[0] == "--unsafe-links" or args[0] == "-l":
-                    args.pop(0)
-                    unsafe_links = True
-                path = args.pop(0)
-                pyb.mount_local(path, unsafe_links=unsafe_links)
-                print(f"Local directory {path} is mounted at /remote")
-            elif cmd == "umount":
-                pyb.umount_local()
-            elif cmd in ("exec", "eval", "run"):
-                follow = True
-                if args[0] == "--no-follow":
-                    args.pop(0)
-                    follow = False
-                if cmd == "exec":
-                    buf = args.pop(0)
-                elif cmd == "eval":
-                    buf = "print(" + args.pop(0) + ")"
-                else:
-                    filename = args.pop(0)
-                    try:
-                        with open(filename, "rb") as f:
-                            buf = f.read()
-                    except OSError:
-                        print(f"{_PROG}: could not read file '{filename}'")
-                        return 1
-                ret = execbuffer(pyb, buf, follow)
-                if ret:
-                    return ret
-            elif cmd == "fs":
-                do_filesystem(pyb, args)
-            elif cmd == "repl":
-                do_repl(pyb, args)
+        # If no commands were "actions" then implicitly finish with the REPL
+        # using default args.
+        if state.run_repl_on_completion():
+            do_repl(state, argparse_repl().parse_args([]))
 
-        if not did_action:
-            if pyb is None:
-                pyb = do_connect(["auto"])
-            if pyb.in_raw_repl:
-                pyb.exit_raw_repl()
-            do_repl(pyb, args)
+        return 0
+    except CommandError as e:
+        print(f"{_PROG}: {e}", file=sys.stderr)
+        return 1
     finally:
-        if pyb is not None:
-            do_disconnect(pyb)
+        do_disconnect(state)

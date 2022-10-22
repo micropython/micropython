@@ -132,8 +132,9 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     }
 
     // If the mounted object has the VFS protocol, call its import_stat helper
-    const mp_vfs_proto_t *proto = mp_obj_get_type(vfs->obj)->protocol;
-    if (proto != NULL) {
+    const mp_obj_type_t *type = mp_obj_get_type(vfs->obj);
+    if (MP_OBJ_TYPE_HAS_SLOT(type, protocol)) {
+        const mp_vfs_proto_t *proto = MP_OBJ_TYPE_GET_SLOT(type, protocol);
         return proto->import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
     }
 
@@ -172,7 +173,7 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
             #if MICROPY_VFS_LFS1
             if (memcmp(&buf[32], "littlefs", 8) == 0) {
                 // LFS1
-                mp_obj_t vfs = mp_type_vfs_lfs1.make_new(&mp_type_vfs_lfs1, 1, 0, &bdev_obj);
+                mp_obj_t vfs = MP_OBJ_TYPE_GET_SLOT(&mp_type_vfs_lfs1, make_new)(&mp_type_vfs_lfs1, 1, 0, &bdev_obj);
                 nlr_pop();
                 return vfs;
             }
@@ -180,7 +181,7 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
             #if MICROPY_VFS_LFS2
             if (memcmp(&buf[0], "littlefs", 8) == 0) {
                 // LFS2
-                mp_obj_t vfs = mp_type_vfs_lfs2.make_new(&mp_type_vfs_lfs2, 1, 0, &bdev_obj);
+                mp_obj_t vfs = MP_OBJ_TYPE_GET_SLOT(&mp_type_vfs_lfs2, make_new)(&mp_type_vfs_lfs2, 1, 0, &bdev_obj);
                 nlr_pop();
                 return vfs;
             }
@@ -193,7 +194,7 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
     #endif
 
     #if MICROPY_VFS_FAT
-    return mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, 0, &bdev_obj);
+    return MP_OBJ_TYPE_GET_SLOT(&mp_fat_vfs_type, make_new)(&mp_fat_vfs_type, 1, 0, &bdev_obj);
     #endif
 
     // no filesystem found
@@ -360,7 +361,7 @@ mp_obj_t mp_vfs_getcwd(void) {
     if (!(cwd[0] == '/' && cwd[1] == 0)) {
         vstr_add_str(&vstr, cwd);
     }
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return mp_obj_new_str_from_vstr(&vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_vfs_getcwd_obj, mp_vfs_getcwd);
 

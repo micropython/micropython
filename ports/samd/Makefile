@@ -9,14 +9,15 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
+MCU_SERIES_LOWER = $(shell echo $(MCU_SERIES) | tr '[:upper:]' '[:lower:]')
+
 include ../../py/mkenv.mk
 include $(BOARD_DIR)/mpconfigboard.mk
+include mcu/$(MCU_SERIES_LOWER)/mpconfigmcu.mk
 
 # Qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
-QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
-
-MCU_SERIES_LOWER = $(shell echo $(MCU_SERIES) | tr '[:upper:]' '[:lower:]')
+QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h mcu/$(MCU_SERIES_LOWER)/mpconfigmcu.h
 
 FROZEN_MANIFEST ?= boards/manifest.py
 
@@ -30,6 +31,7 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
+INC += -Imcu/$(MCU_SERIES_LOWER)
 INC += -I$(TOP)/lib/cmsis/inc
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/utils/include
@@ -45,16 +47,25 @@ INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include/pio
 INC += -I$(TOP)/lib/tinyusb/src
 
+MAKE_PIN_AF = boards/make-pin-af.py
+PIN_AF_TABLE_CSV = mcu/$(MCU_SERIES_LOWER)/pin-af-table.csv
+GEN_PIN_AF = pin_af_table.c
+
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = $(BOARD_DIR)/pins.csv
+GEN_PINS_SRC = $(BUILD)/pins.c
+GEN_PINS_HDR = $(BUILD)/pins.h
+
 CFLAGS_MCU_SAMD21 = -mtune=cortex-m0plus -mcpu=cortex-m0plus -msoft-float
 CFLAGS_MCU_SAMD51 = -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
-CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant -Wdouble-promotion
+CFLAGS += $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
-CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += $(CFLAGS_EXTRA)
+CFLAGS += -DMPCONFIG_MCU_H='<boards/mpconfig_$(MCU_SERIES_LOWER).h>'
 
-LDFLAGS = -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
-LDFLAGS += $(LDFLAGS_MOD)
+LDFLAGS += -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
 
-LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Tune for Debugging or Optimization
 CFLAGS += -g  # always include debug info in the ELF
@@ -68,75 +79,89 @@ endif
 
 # Flags for optional C++ source code
 CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
-CXXFLAGS += $(CXXFLAGS_MOD)
-ifneq ($(SRC_CXX)$(SRC_MOD_CXX),)
+
+# TODO make this common -- shouldn't be using these "private" vars from py.mk
+ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
 LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
 LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
-SRC_C = \
-	main.c \
+SRC_C += \
+	mcu/$(MCU_SERIES_LOWER)/clock_config.c \
 	help.c \
+	machine_adc.c \
+	machine_bitstream.c \
+	machine_dac.c \
+	machine_i2c.c \
+	machine_led.c \
+	machine_pin.c \
+	machine_spi.c \
+	machine_timer.c \
+	machine_uart.c \
+	machine_wdt.c \
+	main.c \
 	modutime.c \
 	modmachine.c \
-	$(BOARD_DIR)/pins.c \
-	machine_pin.c \
-	machine_led.c \
 	modsamd.c \
-	samd_flash.c \
 	mphalport.c \
+	pendsv.c \
+	pin_af.c \
+	samd_flash.c \
 	samd_isr.c \
 	samd_soc.c \
 	tusb_port.c \
-	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_atomic.c \
-	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_flash.c \
-	lib/asf4/$(MCU_SERIES_LOWER)/hpl/nvmctrl/hpl_nvmctrl.c \
-	lib/libm/ef_sqrt.c \
-	lib/libm/fmodf.c \
-	lib/libm/math.c \
-	lib/libm/nearbyintf.c \
-	lib/tinyusb/src/class/cdc/cdc_device.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/device/usbd_control.c \
-	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
-	lib/tinyusb/src/tusb.c \
+
+SHARED_SRC_C += \
+	shared/runtime/mpirq.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_native.c \
+	shared/runtime/interrupt_char.c \
 	shared/runtime/pyexec.c \
+	shared/runtime/softtimer.c \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
 
-SRC_C += $(SRC_MOD)
+ASF4_SRC_C += $(addprefix lib/asf4/$(MCU_SERIES_LOWER)/,\
+	hal/src/hal_atomic.c \
+	hal/src/hal_flash.c \
+	hpl/nvmctrl/hpl_nvmctrl.c \
+	)
 
-SRC_CXX += $(SRC_MOD_CXX)
+LIBM_SRC_C += $(addprefix lib/libm/,\
+	ef_sqrt.c \
+	fmodf.c \
+	math.c \
+	nearbyintf.c \
+	)
 
-ifeq ($(MCU_SERIES),SAMD21)
-SRC_S = shared/runtime/gchelper_m0.s
-else
-SRC_S = shared/runtime/gchelper_m3.s
-endif
+TINYUSB_SRC_C += $(addprefix lib/tinyusb/src/,\
+	class/cdc/cdc_device.c \
+	common/tusb_fifo.c \
+	device/usbd.c \
+	device/usbd_control.c \
+	portable/microchip/samd/dcd_samd.c \
+	tusb.c \
+	)
+
+DRIVERS_SRC_C += \
+	drivers/bus/softspi.c \
 
 # List of sources for qstr extraction
-SRC_QSTR += \
-	modutime.c \
-	modmachine.c \
-	machine_pin.c \
-	machine_led.c \
-	modsamd.c \
-	samd_flash.c \
-	shared/readline/readline.c \
-
-SRC_QSTR += $(SRC_MOD) $(SRC_CXX)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(SRC_CXX) $(GEN_PINS_SRC)
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(ASF4_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
@@ -159,5 +184,20 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(UF2CONV) -b $(TEXT0) -c -o $@ $<
+
+pin_af.c: $(BUILD)/$(GEN_PIN_AF)
+
+$(BUILD)/$(GEN_PIN_AF): $(PIN_AF_TABLE_CSV) | $(HEADER_BUILD)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(MAKE_PIN_AF) --csv $(PIN_AF_TABLE_CSV) --table $(BUILD)/$(GEN_PIN_AF) --mcu $(MCU_SERIES)
+
+machine_led.c machine_pin.c modsamd.c: $(GEN_PINS_HDR)
+
+$(GEN_PINS_SRC) $(GEN_PINS_HDR): $(BOARD_PINS) | $(HEADER_BUILD)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --pins $(GEN_PINS_SRC) --inc $(GEN_PINS_HDR)
+
+$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
+	$(call compile_c)
 
 include $(TOP)/py/mkrules.mk

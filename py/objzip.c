@@ -66,10 +66,10 @@ STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
     return MP_OBJ_FROM_PTR(tuple);
 }
 
-const mp_obj_type_t mp_type_zip = {
-    { &mp_type_type },
-    .name = MP_QSTR_zip,
-    .make_new = zip_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = zip_iternext,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_zip,
+    MP_QSTR_zip,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    make_new, zip_make_new,
+    iter, zip_iternext
+    );

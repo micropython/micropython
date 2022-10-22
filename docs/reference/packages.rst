@@ -1,314 +1,153 @@
 .. _packages:
 
-Distribution packages, package management, and deploying applications
-=====================================================================
-
-Just as the "big" Python, MicroPython supports creation of "third party"
-packages, distributing them, and easily installing them in each user's
-environment. This chapter discusses how these actions are achieved.
-Some familiarity with Python packaging is recommended.
-
-Overview
---------
-
-Steps below represent a high-level workflow when creating and consuming
-packages:
-
-1. Python modules and packages are turned into distribution package
-   archives, and published at the Python Package Index (PyPI).
-2. :term:`upip` package manager can be used to install a distribution package
-   on a :term:`MicroPython port` with networking capabilities (for example,
-   on the Unix port).
-3. For ports without networking capabilities, an "installation image"
-   can be prepared on the Unix port, and transferred to a device by
-   suitable means.
-4. For low-memory ports, the installation image can be frozen as the
-   bytecode into MicroPython executable, thus minimizing the memory
-   storage overheads.
-
-The sections below describe this process in details.
-
-Distribution packages
----------------------
-
-Python modules and packages can be packaged into archives suitable for
-transfer between systems, storing at the well-known location (PyPI),
-and downloading on demand for deployment. These archives are known as
-*distribution packages* (to differentiate them from Python packages
-(means to organize Python source code)).
-
-The MicroPython distribution package format is a well-known tar.gz
-format, with some adaptations however. The Gzip compressor, used as
-an external wrapper for TAR archives, by default uses 32KB dictionary
-size, which means that to uncompress a compressed stream, 32KB of
-contiguous memory needs to be allocated. This requirement may be not
-satisfiable on low-memory devices, which may have total memory available
-less than that amount, and even if not, a contiguous block like that
-may be hard to allocate due to memory fragmentation. To accommodate
-these constraints, MicroPython distribution packages use Gzip compression
-with the dictionary size of 4K, which should be a suitable compromise
-with still achieving some compression while being able to uncompressed
-even by the smallest devices.
-
-Besides the small compression dictionary size, MicroPython distribution
-packages also have other optimizations, like removing any files from
-the archive which aren't used by the installation process. In particular,
-:term:`upip` package manager doesn't execute ``setup.py`` during installation
-(see below), and thus that file is not included in the archive.
-
-At the same time, these optimizations make MicroPython distribution
-packages not compatible with :term:`CPython`'s package manager, ``pip``.
-This isn't considered a big problem, because:
-
-1. Packages can be installed with :term:`upip`, and then can be used with
-   CPython (if they are compatible with it).
-2. In the other direction, majority of CPython packages would be
-   incompatible with MicroPython by various reasons, first of all,
-   the reliance on features not implemented by MicroPython.
-
-Summing up, the MicroPython distribution package archives are highly
-optimized for MicroPython's target environments, which are highly
-resource constrained devices.
-
-
-``upip`` package manager
-------------------------
-
-MicroPython distribution packages are intended to be installed using
-the :term:`upip` package manager. :term:`upip` is a Python application which is
-usually distributed (as frozen bytecode) with network-enabled
-:term:`MicroPython ports <MicroPython port>`. At the very least,
-:term:`upip` is available in the :term:`MicroPython Unix port`.
-
-On any :term:`MicroPython port` providing :term:`upip`, it can be accessed as
-following::
-
-    import upip
-    upip.help()
-    upip.install(package_or_package_list, [path])
-
-Where *package_or_package_list* is the name of a distribution
-package to install, or a list of such names to install multiple
-packages. Optional *path* parameter specifies filesystem
-location to install under and defaults to the standard library
-location (see below).
-
-An example of installing a specific package and then using it::
-
-    >>> import upip
-    >>> upip.install("micropython-pystone_lowmem")
-    [...]
-    >>> import pystone_lowmem
-    >>> pystone_lowmem.main()
-
-Note that the name of Python package and the name of distribution
-package for it in general don't have to match, and oftentimes they
-don't. This is because PyPI provides a central package repository
-for all different Python implementations and versions, and thus
-distribution package names may need to be namespaced for a particular
-implementation. For example, all packages from `micropython-lib`
-follow this naming convention: for a Python module or package named
-``foo``, the distribution package name is ``micropython-foo``.
-
-For the ports which run MicroPython executable from the OS command
-prompts (like the Unix port), `upip` can be (and indeed, usually is)
-run from the command line instead of MicroPython's own REPL. The
-commands which corresponds to the example above are::
-
-    micropython -m upip -h
-    micropython -m upip install [-p <path>] <packages>...
-    micropython -m upip install micropython-pystone_lowmem
-
-[TODO: Describe installation path.]
-
-
-Cross-installing packages
--------------------------
-
-For :term:`MicroPython ports <MicroPython port>` without native networking
-capabilities, the recommend process is "cross-installing" them into a
-"directory image" using the :term:`MicroPython Unix port`, and then
-transferring this image to a device by suitable means.
-
-Installing to a directory image involves using ``-p`` switch to :term:`upip`::
-
-    micropython -m upip install -p install_dir micropython-pystone_lowmem
-
-After this command, the package content (and contents of every dependency
-packages) will be available in the ``install_dir/`` subdirectory. You
-would need to transfer contents of this directory (without the
-``install_dir/`` prefix) to the device, at the suitable location, where
-it can be found by the Python ``import`` statement (see discussion of
-the :term:`upip` installation path above).
-
-
-Cross-installing packages with freezing
----------------------------------------
-
-For the low-memory :term:`MicroPython ports <MicroPython port>`, the process
-described in the previous section does not provide the most efficient
-resource usage,because the packages are installed in the source form,
-so need to be compiled to the bytecome on each import. This compilation
-requires RAM, and the resulting bytecode is also stored in RAM, reducing
-its amount available for storing application data. Moreover, the process
-above requires presence of the filesystem on a device, and the most
-resource-constrained devices may not even have it.
-
-The bytecode freezing is a process which resolves all the issues
-mentioned above:
-
-* The source code is pre-compiled into bytecode and store as such.
-* The bytecode is stored in ROM, not RAM.
-* Filesystem is not required for frozen packages.
-
-Using frozen bytecode requires building the executable (firmware)
-for a given :term:`MicroPython port` from the C source code. Consequently,
-the process is:
-
-1. Follow the instructions for a particular port on setting up a
-   toolchain and building the port. For example, for ESP8266 port,
-   study instructions in ``ports/esp8266/README.md`` and follow them.
-   Make sure you can build the port and deploy the resulting
-   executable/firmware successfully before proceeding to the next steps.
-2. Build :term:`MicroPython Unix port` and make sure it is in your PATH and
-   you can execute ``micropython``.
-3. Change to port's directory (e.g. ``ports/esp8266/`` for ESP8266).
-4. Run ``make clean-frozen``. This step cleans up any previous
-   modules which were installed for freezing (consequently, you need
-   to skip this step to add additional modules, instead of starting
-   from scratch).
-5. Run ``micropython -m upip install -p modules <packages>...`` to
-   install packages you want to freeze.
-6. Run ``make clean``.
-7. Run ``make``.
-
-After this, you should have the executable/firmware with modules as
-the bytecode inside, which you can deploy the usual way.
-
-Few notes:
-
-1. Step 5 in the sequence above assumes that the distribution package
-   is available from PyPI. If that is not the case, you would need
-   to copy Python source files manually to ``modules/`` subdirectory
-   of the port directory. (Note that upip does not support
-   installing from e.g. version control repositories).
-2. The firmware for baremetal devices usually has size restrictions,
-   so adding too many frozen modules may overflow it. Usually, you
-   would get a linking error if this happens. However, in some cases,
-   an image may be produced, which is not runnable on a device. Such
-   cases are in general bugs, and should be reported and further
-   investigated. If you face such a situation, as an initial step,
-   you may want to decrease the amount of frozen modules included.
-
-
-Creating distribution packages
-------------------------------
-
-Distribution packages for MicroPython are created in the same manner
-as for CPython or any other Python implementation, see references at
-the end of chapter. Setuptools (instead of distutils) should be used,
-because distutils do not support dependencies and other features. "Source
-distribution" (``sdist``) format is used for packaging. The post-processing
-discussed above, (and pre-processing discussed in the following section)
-is achieved by using custom ``sdist`` command for setuptools. Thus, packaging
-steps remain the same as for the standard setuptools, the user just
-needs to override ``sdist`` command implementation by passing the
-appropriate argument to ``setup()`` call::
-
-    from setuptools import setup
-    import sdist_upip
-
-    setup(
-        ...,
-        cmdclass={'sdist': sdist_upip.sdist}
-    )
-
-The sdist_upip.py module as referenced above can be found in
-`micropython-lib`:
-https://github.com/micropython/micropython-lib/blob/master/sdist_upip.py
-
-
-Application resources
----------------------
-
-A complete application, besides the source code, oftentimes also consists
-of data files, e.g. web page templates, game images, etc. It's clear how
-to deal with those when application is installed manually - you just put
-those data files in the filesystem at some location and use the normal
-file access functions.
-
-The situation is different when deploying applications from packages - this
-is more advanced, streamlined and flexible way, but also requires more
-advanced approach to accessing data files. This approach is treating
-the data files as "resources", and abstracting away access to them.
-
-Python supports resource access using its "setuptools" library, using
-``pkg_resources`` module. MicroPython, following its usual approach,
-implements subset of the functionality of that module, specifically
-``pkg_resources.resource_stream(package, resource)`` function.
-The idea is that an application calls this function, passing a
-resource identifier, which is a relative path to data file within
-the specified package (usually top-level application package). It
-returns a stream object which can be used to access resource contents.
-Thus, the ``resource_stream()`` emulates interface of the standard
-`open()` function.
-
-Implementation-wise, ``resource_stream()`` uses file operations
-underlyingly, if distribution package is install in the filesystem.
-However, it also supports functioning without the underlying filesystem,
-e.g. if the package is frozen as the bytecode. This however requires
-an extra intermediate step when packaging application - creation of
-"Python resource module".
-
-The idea of this module is to convert binary data to a Python bytes
-object, and put it into the dictionary, indexed by the resource name.
-This conversion is done automatically using overridden ``sdist`` command
-described in the previous section.
-
-Let's trace the complete process using the following example. Suppose
-your application has the following structure::
-
-    my_app/
-        __main__.py
-        utils.py
-        data/
-            page.html
-            image.png
-
-``__main__.py`` and ``utils.py`` should access resources using the
-following calls::
-
-    import pkg_resources
-
-    pkg_resources.resource_stream(__name__, "data/page.html")
-    pkg_resources.resource_stream(__name__, "data/image.png")
-
-You can develop and debug using the :term:`MicroPython Unix port` as usual.
-When time comes to make a distribution package out of it, just use
-overridden "sdist" command from sdist_upip.py module as described in
-the previous section.
-
-This will create a Python resource module named ``R.py``, based on the
-files declared in ``MANIFEST`` or ``MANIFEST.in`` files (any non-``.py``
-file will be considered a resource and added to ``R.py``) - before
-proceeding with the normal packaging steps.
-
-Prepared like this, your application will work both when deployed to
-filesystem and as frozen bytecode.
-
-If you would like to debug ``R.py`` creation, you can run::
-
-    python3 setup.py sdist --manifest-only
-
-Alternatively, you can use tools/mpy_bin2res.py script from the
-MicroPython distribution, in which can you will need to pass paths
-to all resource files::
-
-    mpy_bin2res.py data/page.html data/image.png
-
-References
-----------
-
-* Python Packaging User Guide: https://packaging.python.org/
-* Setuptools documentation: https://setuptools.readthedocs.io/
-* Distutils documentation: https://docs.python.org/3/library/distutils.html
+Package management
+==================
+
+Installing packages with ``mip``
+--------------------------------
+
+Network-capable boards include the ``mip`` module, which can install packages
+from :term:`micropython-lib` and from third-party sites (including GitHub).
+
+``mip`` ("mip installs packages") is similar in concept to Python's ``pip`` tool,
+however it does not use the PyPI index, rather it uses :term:`micropython-lib`
+as its index by default. ``mip`` will automatically fetch compiled
+:term:`.mpy file` when downloading from micropython-lib.
+
+The most common way to use ``mip`` is from the REPL::
+
+    >>> import mip
+    >>> mip.install("pkgname")  # Installs the latest version of "pkgname" (and dependencies)
+    >>> mip.install("pkgname", version="x.y")  # Installs version x.y of "pkgname"
+    >>> mip.install("pkgname", mpy=False)  # Installs the source version (i.e. .py rather than .mpy files)
+
+``mip`` will detect an appropriate location on the filesystem by searching
+``sys.path`` for the first entry ending in ``/lib``. You can override the
+destination using ``target``, but note that this path must be in ``sys.path`` to be
+able to subsequently import it.::
+
+    >>> mip.install("pkgname", target="third-party")
+    >>> sys.path.append("third-party")
+
+As well as downloading packages from the micropython-lib index, ``mip`` can also
+install third-party libraries. The simplest way is to download a file directly::
+
+    >>> mip.install("http://example.com/x/y/foo.py")
+    >>> mip.install("http://example.com/x/y/foo.mpy")
+
+When installing a file directly, the ``target`` argument is still supported to set
+the destination path, but ``mpy`` and ``version`` are ignored.
+
+The URL can also start with ``github:`` as a simple way of pointing to content
+hosted on GitHub::
+
+    >>> mip.install("github:org/repo/path/foo.py")  # Uses default branch
+    >>> mip.install("github:org/repo/path/foo.py", version="branch-or-tag")  # Optionally specify the branch or tag
+
+More sophisticated packages (i.e. with more than one file, or with dependencies)
+can be downloaded by specifying the path to their ``package.json``.
+
+    >>> mip.install("http://example.com/x/package.json")
+    >>> mip.install("github:org/user/path/package.json")
+
+If no json file is specified, then "package.json" is implicitly added::
+
+    >>> mip.install("http://example.com/x/")
+    >>> mip.install("github:org/repo")
+    >>> mip.install("github:org/repo", version="branch-or-tag")
+
+
+Using ``mip`` on the Unix port
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On the Unix port, ``mip`` can be used at the REPL as above, and also by using ``-m``::
+
+    $ ./micropython -m mip install pkgname-or-url
+    $ ./micropython -m mip install pkgname-or-url@version
+
+The ``--target=path``, ``--no-mpy``, and ``--index`` arguments can be set::
+
+    $ ./micropython -m mip install --target=third-party pkgname
+    $ ./micropython -m mip install --no-mpy pkgname
+    $ ./micropython -m mip install --index https://host/pi pkgname
+
+Installing packages with ``mpremote``
+-------------------------------------
+
+The :term:`mpremote` tool also includes the same functionality as ``mip`` and
+can be used from a host PC to install packages to a locally connected device
+(e.g. via USB or UART)::
+
+    $ mpremote mip install pkgname
+    $ mpremote mip install pkgname@x.y
+    $ mpremote mip install http://example.com/x/y/foo.py
+    $ mpremote mip install github:org/repo
+    $ mpremote mip install github:org/repo@branch-or-tag
+
+The ``--target=path``, ``--no-mpy``, and ``--index`` arguments can be set::
+
+    $ mpremote mip install --target=/flash/third-party pkgname
+    $ mpremote mip install --no-mpy pkgname
+    $ mpremote mip install --index https://host/pi pkgname
+
+Installing packages manually
+----------------------------
+
+Packages can also be installed (in either .py or .mpy form) by manually copying
+the files to the device. Depending on the board this might be via USB Mass Storage,
+the :term:`mpremote` tool (e.g. ``mpremote fs cp path/to/package.py :package.py``),
+:term:`webrepl`, etc.
+
+Writing & publishing packages
+-----------------------------
+
+Publishing to :term:`micropython-lib` is the easiest way to make your package
+broadly accessible to MicroPython users, and automatically available via
+``mip`` and ``mpremote`` and compiled to bytecode. See
+https://github.com/micropython/micropython-lib for more information.
+
+To write a "self-hosted" package that can be downloaded by ``mip`` or
+``mpremote``, you need a static webserver (or GitHub) to host either a
+single .py file, or a package.json file alongside your .py files.
+
+A typical package.json for an example ``mlx90640`` library looks like::
+
+    {
+      "urls": [
+        ["mlx90640/__init__.py", "github:org/micropython-mlx90640/mlx90640/__init__.py"],
+        ["mlx90640/utils.py", "github:org/micropython-mlx90640/mlx90640/utils.py"]
+      ],
+      "deps": [
+        ["collections-defaultdict", "latest"],
+        ["os-path", "latest"]
+      ],
+      "version": "0.2"
+    }
+
+This includes two files, hosted at a GitHub repo named
+``org/micropython-mlx90640``, which install into the ``mlx90640`` directory on
+the device. It depends on ``collections-defaultdict`` and ``os-path`` which will
+be installed automatically.
+
+Freezing packages
+-----------------
+
+When a Python module or package is imported from the device filesystem, it is
+compiled into :term:`bytecode` in RAM, ready to be executed by the VM. For
+a :term:`.mpy file`, this conversion has been done already, but the bytecode
+still ends up in RAM.
+
+For low-memory devices, or for large applications, it can be advantageous to
+instead run the bytecode from ROM (i.e. flash memory). This can be done
+by "freezing" the bytecode into the MicroPython firmware, which is then flashed
+to the device. The runtime performance is the same (although importing is
+faster), but it can free up significant amounts of RAM for your program to
+use.
+
+The downside of this approach is that it's much slower to develop, because you
+have to flash the firmware each time, but it can be still useful to freeze
+dependencies that don't change often.
+
+Freezing is done by writing a manifest file and using it in the build, often as
+part of a custom board definition. See the :ref:`manifest` guide for more
+information.

@@ -79,13 +79,7 @@ uint32_t hal_time_ms(void) {
 }
 
 void mp_bluetooth_btstack_port_init(void) {
-    static bool run_loop_init = false;
-    if (!run_loop_init) {
-        run_loop_init = true;
-        btstack_run_loop_init(btstack_run_loop_embedded_get_instance());
-    } else {
-        btstack_run_loop_embedded_get_instance()->init();
-    }
+    btstack_run_loop_init(btstack_run_loop_embedded_get_instance());
 
     // hci_dump_open(NULL, HCI_DUMP_STDOUT);
 

@@ -87,9 +87,21 @@ Methods
        When no pins are given, then the default set of TX and RX pins is taken, and hardware
        flow control will be disabled. If *pins* is ``None``, no pin assignment will be made.
 
+   .. note::
+     It is possible to call ``init()`` multiple times on the same object in
+     order to reconfigure  UART on the fly. That allows using single UART
+     peripheral to serve different devices attached to different GPIO pins.
+     Only one device can be served at a time in that case.
+     Also do not call ``deinit()`` as it will prevent calling ``init()``
+     again.
+
 .. method:: UART.deinit()
 
    Turn off the UART bus.
+
+   .. note::
+     You will not be able to call ``init()`` on the object after ``deinit()``.
+     A new instance needs to be created in that case.
 
 .. method:: UART.any()
 
@@ -164,6 +176,32 @@ Methods
    Returns an irq object.
 
    Availability: WiPy.
+
+.. method:: UART.flush()
+
+   Waits until all data has been sent. In case of a timeout, an exception is raised. The timeout
+   duration depends on the tx buffer size and the baud rate. Unless flow control is enabled, a timeout
+   should not occur.
+
+   .. note::
+
+       For the rp2, esp8266 and nrf ports the call returns while the last byte is sent.
+       If required, a one character wait time has to be added in the calling script.
+
+   Availability: rp2, esp32, esp8266, mimxrt, cc3200, stm32, nrf ports
+
+.. method:: UART.txdone()
+
+   Tells whether all data has been sent or no data transfer is happening. In this case,
+   it returns ``True``. If a data transmission is ongoing it returns ``False``.
+
+   .. note::
+
+       For the rp2, esp8266 and nrf ports the call may return ``True`` even if the last byte
+       of a transfer is still being sent. If required, a one character wait time has to be
+       added in the calling script.
+
+   Availability: rp2, esp32, esp8266, mimxrt, cc3200, stm32, nrf ports
 
 Constants
 ---------

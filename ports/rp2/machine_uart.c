@@ -435,17 +435,31 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
 
+STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (ringbuf_avail(&self->write_buffer) == 0 &&
+        uart_get_hw(self->uart)->fr & UART_UARTFR_TXFE_BITS) {
+        return mp_const_true;
+    } else {
+        return mp_const_false;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
+
 STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
+    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) },
     { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) },
@@ -538,6 +552,19 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
         if ((flags & MP_STREAM_POLL_WR) && ringbuf_free(&self->write_buffer) > 0) {
             ret |= MP_STREAM_POLL_WR;
         }
+    } else if (request == MP_STREAM_FLUSH) {
+        // The timeout is estimated using the buffer size and the baudrate.
+        // Take the worst case assumptions at 13 bit symbol size times 2.
+        uint64_t timeout = time_us_64() +
+            (uint64_t)(33 + self->write_buffer.size) * 13000000ll * 2 / self->baudrate;
+        do {
+            if (machine_uart_txdone((mp_obj_t)self) == mp_const_true) {
+                return 0;
+            }
+            MICROPY_EVENT_POLL_HOOK
+        } while (time_us_64() < timeout);
+        *errcode = MP_ETIMEDOUT;
+        ret = MP_STREAM_ERROR;
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
@@ -552,16 +579,15 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .is_text = false,
 };
 
-const mp_obj_type_t machine_uart_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_UART,
-    .print = machine_uart_print,
-    .make_new = machine_uart_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&machine_uart_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    make_new, machine_uart_make_new,
+    print, machine_uart_print,
+    protocol, &uart_stream_p,
+    locals_dict, &machine_uart_locals_dict
+    );
 
 MP_REGISTER_ROOT_POINTER(void *rp2_uart_rx_buffer[2]);
 MP_REGISTER_ROOT_POINTER(void *rp2_uart_tx_buffer[2]);

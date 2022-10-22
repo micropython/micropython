@@ -281,11 +281,12 @@ STATIC const mp_rom_map_elem_t pyb_accel_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_accel_locals_dict, pyb_accel_locals_dict_table);
 
-const mp_obj_type_t pyb_accel_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Accel,
-    .make_new = pyb_accel_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_accel_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_accel_type,
+    MP_QSTR_Accel,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_accel_make_new,
+    locals_dict, &pyb_accel_locals_dict
+    );
 
 #endif // MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3

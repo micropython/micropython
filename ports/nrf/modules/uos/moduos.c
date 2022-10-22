@@ -108,7 +108,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
     for (int i = 0; i < n; i++) {
         vstr.buf[i] = (uint8_t)(rng_generate_random_word() & 0xFF);
     }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
@@ -126,7 +126,7 @@ STATIC mp_obj_t os_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
     } else {
         if (args[0] == mp_const_none) {
             MP_STATE_PORT(board_stdio_uart) = NULL;
-        } else if (mp_obj_get_type(args[0]) == &machine_hard_uart_type) {
+        } else if (mp_obj_get_type(args[0]) == &machine_uart_type) {
             MP_STATE_PORT(board_stdio_uart) = args[0];
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("need a UART object"));

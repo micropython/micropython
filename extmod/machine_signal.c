@@ -51,7 +51,7 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 
     if (n_args > 0 && mp_obj_is_obj(args[0])) {
         mp_obj_base_t *pin_base = (mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
-        pin_p = (mp_pin_p_t *)pin_base->type->protocol;
+        pin_p = (mp_pin_p_t *)MP_OBJ_TYPE_GET_SLOT_OR_NULL(pin_base->type, protocol);
     }
 
     if (pin_p == NULL) {
@@ -172,13 +172,14 @@ STATIC const mp_pin_p_t signal_pin_p = {
     .ioctl = signal_ioctl,
 };
 
-const mp_obj_type_t machine_signal_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Signal,
-    .make_new = signal_make_new,
-    .call = signal_call,
-    .protocol = &signal_pin_p,
-    .locals_dict = (void *)&signal_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_signal_type,
+    MP_QSTR_Signal,
+    MP_TYPE_FLAG_NONE,
+    make_new, signal_make_new,
+    call, signal_call,
+    protocol, &signal_pin_p,
+    locals_dict, &signal_locals_dict
+    );
 
 #endif // MICROPY_PY_MACHINE

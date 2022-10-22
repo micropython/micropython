@@ -72,6 +72,7 @@ typedef unsigned int uint;
 #define m_new_obj(type) (m_new(type, 1))
 #define m_new_obj_maybe(type) (m_new_maybe(type, 1))
 #define m_new_obj_var(obj_type, var_type, var_num) ((obj_type *)m_malloc(sizeof(obj_type) + sizeof(var_type) * (var_num)))
+#define m_new_obj_var0(obj_type, var_type, var_num) ((obj_type *)m_malloc0(sizeof(obj_type) + sizeof(var_type) * (var_num)))
 #define m_new_obj_var_maybe(obj_type, var_type, var_num) ((obj_type *)m_malloc_maybe(sizeof(obj_type) + sizeof(var_type) * (var_num)))
 #if MICROPY_ENABLE_FINALISER
 #define m_new_obj_with_finaliser(type) ((type *)(m_malloc_with_finaliser(sizeof(type))))
@@ -178,7 +179,7 @@ typedef struct _vstr_t {
     size_t alloc;
     size_t len;
     char *buf;
-    bool fixed_buf : 1;
+    bool fixed_buf;
 } vstr_t;
 
 // convenience macro to declare a vstr with a fixed size buffer on the stack

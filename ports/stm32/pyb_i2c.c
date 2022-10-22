@@ -472,7 +472,17 @@ void i2c_ev_irq_handler(mp_uint_t i2c_id) {
 
     #if defined(STM32F4)
 
-    if (hi2c->Instance->SR1 & I2C_FLAG_BTF && hi2c->State == HAL_I2C_STATE_BUSY_TX) {
+    if (hi2c->Instance->SR1 & I2C_FLAG_SB) {
+        if (hi2c->State == HAL_I2C_STATE_BUSY_TX) {
+            hi2c->Instance->DR = I2C_7BIT_ADD_WRITE(hi2c->Devaddress);
+        } else {
+            hi2c->Instance->DR = I2C_7BIT_ADD_READ(hi2c->Devaddress);
+        }
+    } else if (hi2c->Instance->SR1 & I2C_FLAG_ADDR) {
+        __IO uint32_t tmp_sr2;
+        tmp_sr2 = hi2c->Instance->SR2;
+        UNUSED(tmp_sr2);
+    } else if (hi2c->Instance->SR1 & I2C_FLAG_BTF && hi2c->State == HAL_I2C_STATE_BUSY_TX) {
         if (hi2c->XferCount != 0U) {
             hi2c->Instance->DR = *hi2c->pBuffPtr++;
             hi2c->XferCount--;
@@ -926,7 +936,7 @@ STATIC mp_obj_t pyb_i2c_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     if (o_ret != MP_OBJ_NULL) {
         return o_ret;
     } else {
-        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+        return mp_obj_new_bytes_from_vstr(&vstr);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_recv_obj, 1, pyb_i2c_recv);
@@ -1002,7 +1012,7 @@ STATIC mp_obj_t pyb_i2c_mem_read(size_t n_args, const mp_obj_t *pos_args, mp_map
     if (o_ret != MP_OBJ_NULL) {
         return o_ret;
     } else {
-        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+        return mp_obj_new_bytes_from_vstr(&vstr);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_mem_read_obj, 1, pyb_i2c_mem_read);
@@ -1094,12 +1104,13 @@ STATIC const mp_rom_map_elem_t pyb_i2c_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_i2c_locals_dict, pyb_i2c_locals_dict_table);
 
-const mp_obj_type_t pyb_i2c_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2C,
-    .print = pyb_i2c_print,
-    .make_new = pyb_i2c_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_i2c_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_i2c_type,
+    MP_QSTR_I2C,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_i2c_make_new,
+    print, pyb_i2c_print,
+    locals_dict, &pyb_i2c_locals_dict
+    );
 
 #endif // MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C

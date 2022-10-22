@@ -43,7 +43,7 @@
 
 STATIC mp_obj_t machine_spi_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)MP_OBJ_TYPE_GET_SLOT(s->type, protocol);
     spi_p->init(s, n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
@@ -51,7 +51,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_spi_init_obj, 1, machine_spi_init);
 
 STATIC mp_obj_t machine_spi_deinit(mp_obj_t self) {
     mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(self);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)MP_OBJ_TYPE_GET_SLOT(s->type, protocol);
     if (spi_p->deinit != NULL) {
         spi_p->deinit(s);
     }
@@ -61,7 +61,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_deinit_obj, machine_spi_deinit);
 
 STATIC void mp_machine_spi_transfer(mp_obj_t self, size_t len, const void *src, void *dest) {
     mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(self);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)MP_OBJ_TYPE_GET_SLOT(s->type, protocol);
     spi_p->transfer(s, len, src, dest);
 }
 
@@ -70,7 +70,7 @@ STATIC mp_obj_t mp_machine_spi_read(size_t n_args, const mp_obj_t *args) {
     vstr_init_len(&vstr, mp_obj_get_int(args[1]));
     memset(vstr.buf, n_args == 3 ? mp_obj_get_int(args[2]) : 0, vstr.len);
     mp_machine_spi_transfer(args[0], vstr.len, vstr.buf, vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_read_obj, 2, 3, mp_machine_spi_read);
 
@@ -251,13 +251,14 @@ const mp_machine_spi_p_t mp_machine_soft_spi_p = {
     .transfer = mp_machine_soft_spi_transfer,
 };
 
-const mp_obj_type_t mp_machine_soft_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SoftSPI,
-    .print = mp_machine_soft_spi_print,
-    .make_new = mp_machine_soft_spi_make_new,
-    .protocol = &mp_machine_soft_spi_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_machine_soft_spi_type,
+    MP_QSTR_SoftSPI,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_machine_soft_spi_make_new,
+    print, mp_machine_soft_spi_print,
+    protocol, &mp_machine_soft_spi_p,
+    locals_dict, &mp_machine_spi_locals_dict
+    );
 
 #endif // MICROPY_PY_MACHINE_SOFTSPI

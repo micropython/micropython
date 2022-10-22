@@ -58,7 +58,7 @@ INC += -I../$(USBDEV_DIR)/core/inc -I../$(USBDEV_DIR)/class/inc
 # the compiler does not optimise these functions in terms of themselves.
 CFLAGS_BUILTIN ?= -ffreestanding -fno-builtin -fno-lto
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -Werror -std=gnu99 -nostdlib $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
@@ -75,8 +75,8 @@ CFLAGS += -DMICROPY_HW_STM32WB_FLASH_SYNCRONISATION=0
 CFLAGS += -DBOOTLOADER_DFU_USB_VID=$(BOOTLOADER_DFU_USB_VID) -DBOOTLOADER_DFU_USB_PID=$(BOOTLOADER_DFU_USB_PID)
 
 MBOOT_LD_FILES ?= stm32_memory.ld stm32_sections.ld
-LDFLAGS = -nostdlib -L . $(addprefix -T,$(MBOOT_LD_FILES)) -Map=$(@:.elf=.map) --cref
-LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+LDFLAGS += -nostdlib -L . $(addprefix -T,$(MBOOT_LD_FILES)) -Map=$(@:.elf=.map) --cref
+LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections

@@ -159,7 +159,7 @@ STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
                     MP_OBJ_NEW_QSTR(MP_QSTR_freq), MP_OBJ_NEW_SMALL_INT(10),
                     MP_OBJ_NEW_QSTR(MP_QSTR_callback), MP_OBJ_FROM_PTR(&network_ninaw10_timer_callback_obj),
                 };
-                MP_STATE_PORT(mp_wifi_timer) = machine_timer_type.make_new((mp_obj_t)&machine_timer_type, 0, 2, timer_args);
+                MP_STATE_PORT(mp_wifi_timer) = MP_OBJ_TYPE_GET_SLOT(&machine_timer_type, make_new)((mp_obj_t)&machine_timer_type, 0, 2, timer_args);
             }
         } else {
             nina_deinit();
@@ -774,13 +774,16 @@ static const mp_rom_map_elem_t nina_locals_dict_table[] = {
 
 static MP_DEFINE_CONST_DICT(nina_locals_dict, nina_locals_dict_table);
 
+STATIC MP_DEFINE_CONST_OBJ_FULL_TYPE(
+    mod_network_nic_type_nina_base,
+    MP_QSTR_nina,
+    MP_TYPE_FLAG_NONE,
+    make_new, network_ninaw10_make_new,
+    locals_dict, &nina_locals_dict
+    );
+
 const mod_network_nic_type_t mod_network_nic_type_nina = {
-    .base = {
-        { &mp_type_type },
-        .name = MP_QSTR_nina,
-        .make_new = network_ninaw10_make_new,
-        .locals_dict = (mp_obj_t)&nina_locals_dict,
-    },
+    .base = mod_network_nic_type_nina_base,
     .gethostbyname = network_ninaw10_gethostbyname,
     .socket = network_ninaw10_socket_socket,
     .close = network_ninaw10_socket_close,

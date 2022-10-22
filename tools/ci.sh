@@ -75,8 +75,8 @@ function ci_mpy_format_setup {
 
 function ci_mpy_format_test {
     # Test mpy-tool.py dump feature on bytecode
-    python2 ./tools/mpy-tool.py -xd ports/minimal/frozentest.mpy
-    python3 ./tools/mpy-tool.py -xd ports/minimal/frozentest.mpy
+    python2 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
+    python3 ./tools/mpy-tool.py -xd tests/frozen/frozentest.mpy
 
     # Test mpy-tool.py dump feature on native code
     make -C examples/natmod/features1
@@ -172,21 +172,21 @@ function ci_esp8266_build {
 }
 
 ########################################################################################
-# ports/javascript
+# ports/webassembly
 
-function ci_javascript_setup {
+function ci_webassembly_setup {
     git clone https://github.com/emscripten-core/emsdk.git
     (cd emsdk && ./emsdk install latest && ./emsdk activate latest)
 }
 
-function ci_javascript_build {
+function ci_webassembly_build {
     source emsdk/emsdk_env.sh
-    make ${MAKEOPTS} -C ports/javascript
+    make ${MAKEOPTS} -C ports/webassembly
 }
 
-function ci_javascript_run_tests {
+function ci_webassembly_run_tests {
     # This port is very slow at running, so only run a few of the tests.
-    (cd tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests.py -j1 basics/builtin_*.py)
+    (cd tests && MICROPY_MICROPYTHON=../ports/webassembly/node_run.sh ./run-tests.py -j1 basics/builtin_*.py)
 }
 
 ########################################################################################
@@ -198,8 +198,9 @@ function ci_mimxrt_setup {
 
 function ci_mimxrt_build {
     make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/mimxrt submodules
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK submodules
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40 submodules
     make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40
 }
 
@@ -309,10 +310,11 @@ function ci_stm32_setup {
 
 function ci_stm32_pyb_build {
     make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/stm32 submodules
+    make ${MAKEOPTS} -C ports/stm32 MICROPY_PY_NETWORK_WIZNET5K=5200 submodules
+    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2 submodules
     git submodule update --init lib/btstack
     git submodule update --init lib/mynewt-nimble
-    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_NETWORK_WIZNET5K=5200 MICROPY_PY_CC3K=1 USER_C_MODULES=../../examples/usercmodule
+    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_NETWORK_WIZNET5K=5200 USER_C_MODULES=../../examples/usercmodule
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF6 NANBOX=1 MICROPY_BLUETOOTH_NIMBLE=0 MICROPY_BLUETOOTH_BTSTACK=1
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBV10 CFLAGS_EXTRA='-DMBOOT_FSLOAD=1 -DMBOOT_VFS_LFS2=1'
@@ -326,7 +328,7 @@ function ci_stm32_pyb_build {
 
 function ci_stm32_nucleo_build {
     make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/stm32 submodules
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI submodules
     git submodule update --init lib/mynewt-nimble
 
     # Test building various MCU families, some with additional options.
@@ -452,14 +454,6 @@ function ci_unix_standard_build {
 
 function ci_unix_standard_run_tests {
     ci_unix_run_tests_full_helper standard
-}
-
-function ci_unix_dev_build {
-    ci_unix_build_helper VARIANT=dev
-}
-
-function ci_unix_dev_run_tests {
-    ci_unix_run_tests_helper VARIANT=dev
 }
 
 function ci_unix_coverage_setup {
@@ -602,8 +596,6 @@ function ci_unix_macos_build {
     #make ${MAKEOPTS} -C ports/unix deplibs
     make ${MAKEOPTS} -C ports/unix
     # check for additional compiler errors/warnings
-    make ${MAKEOPTS} -C ports/unix VARIANT=dev submodules
-    make ${MAKEOPTS} -C ports/unix VARIANT=dev
     make ${MAKEOPTS} -C ports/unix VARIANT=coverage submodules
     make ${MAKEOPTS} -C ports/unix VARIANT=coverage
 }
@@ -632,7 +624,7 @@ function ci_unix_qemu_mips_run_tests {
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     # - ffi tests do not work
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.py' --exclude 'ffi_(callback|float|float2).py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.*\.py' --exclude 'ffi_(callback|float|float2).py')
 }
 
 function ci_unix_qemu_arm_setup {
@@ -652,7 +644,7 @@ function ci_unix_qemu_arm_run_tests {
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     export QEMU_LD_PREFIX=/usr/arm-linux-gnueabi
     file ./ports/unix/build-coverage/micropython
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython ./run-tests.py --exclude 'vfs_posix.*\.py')
 }
 
 ########################################################################################

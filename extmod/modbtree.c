@@ -67,7 +67,7 @@ void __dbpanic(DB *db) {
 }
 
 STATIC mp_obj_btree_t *btree_new(DB *db, mp_obj_t stream) {
-    mp_obj_btree_t *o = mp_obj_malloc(mp_obj_btree_t, &btree_type);
+    mp_obj_btree_t *o = mp_obj_malloc(mp_obj_btree_t, (mp_obj_type_t *)&btree_type);
     o->stream = stream;
     o->db = db;
     o->start_key = mp_const_none;
@@ -319,17 +319,22 @@ STATIC const mp_rom_map_elem_t btree_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
 
-STATIC const mp_obj_type_t btree_type = {
-    { &mp_type_type },
-    // Save on qstr's, reuse same as for module
-    .name = MP_QSTR_btree,
-    .print = btree_print,
+STATIC const mp_getiter_iternext_custom_t btree_getiter_iternext = {
     .getiter = btree_getiter,
     .iternext = btree_iternext,
-    .binary_op = btree_binary_op,
-    .subscr = btree_subscr,
-    .locals_dict = (void *)&btree_locals_dict,
 };
+
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    btree_type,
+    MP_QSTR_btree,
+    MP_TYPE_FLAG_ITER_IS_CUSTOM,
+    // Save on qstr's, reuse same as for module
+    print, btree_print,
+    iter, &btree_getiter_iternext,
+    binary_op, btree_binary_op,
+    subscr, btree_subscr,
+    locals_dict, &btree_locals_dict
+    );
 #endif
 
 STATIC const FILEVTABLE btree_stream_fvtable = {

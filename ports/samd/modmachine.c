@@ -25,9 +25,13 @@
  */
 
 #include "py/runtime.h"
+#include "extmod/machine_bitstream.h"
 #include "extmod/machine_mem.h"
-#include "samd_soc.h"
+#include "extmod/machine_pulse.h"
+#include "extmod/machine_i2c.h"
+#include "extmod/machine_spi.h"
 #include "modmachine.h"
+#include "samd_soc.h"
 
 // ASF 4
 #include "hal_flash.h"
@@ -45,9 +49,6 @@
 #define DBL_TAP_MAGIC_LOADER 0xf01669ef
 #define DBL_TAP_MAGIC_RESET 0xf02669ef
 
-MP_DEFINE_CONST_FUN_OBJ_0(machine_uart_init_obj, machine_uart_init);
-MP_DEFINE_CONST_FUN_OBJ_0(machine_uart_deinit_obj, machine_uart_deinit);
-
 STATIC mp_obj_t machine_reset(void) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_RESET;
     NVIC_SystemReset();
@@ -62,10 +63,21 @@ STATIC mp_obj_t machine_bootloader(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
 
-STATIC mp_obj_t machine_freq(void) {
-    return MP_OBJ_NEW_SMALL_INT(CPU_FREQ);
+STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return MP_OBJ_NEW_SMALL_INT(get_cpu_freq());
+    } else {
+        #if defined(MCU_SAMD51)
+        uint32_t freq = mp_obj_get_int(args[0]);
+        if (freq >= 48000000 && freq <= 200000000) {
+            set_cpu_freq(freq);
+            SysTick_Config(freq / 1000);
+        }
+        #endif
+        return mp_const_none;
+    }
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
 STATIC mp_obj_t machine_unique_id(void) {
     // Each device has a unique 128-bit serial number which is a concatenation of four 32-bit
@@ -110,6 +122,25 @@ STATIC mp_obj_t machine_unique_id(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
+STATIC mp_obj_t machine_idle(void) {
+    MICROPY_EVENT_POLL_HOOK;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
+
+STATIC mp_obj_t machine_disable_irq(void) {
+    uint32_t state = MICROPY_BEGIN_ATOMIC_SECTION();
+    return mp_obj_new_int(state);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
+
+STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
+    uint32_t state = mp_obj_get_int(state_in);
+    MICROPY_END_ATOMIC_SECTION(state);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
@@ -119,10 +150,25 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem16),               MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32),               MP_ROM_PTR(&machine_mem32_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uart_init),           MP_ROM_PTR(&machine_uart_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uart_deinit),         MP_ROM_PTR(&machine_uart_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) },
+
+    { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) },
+    { MP_ROM_QSTR(MP_QSTR_DAC),                 MP_ROM_PTR(&machine_dac_type) },
     { MP_ROM_QSTR(MP_QSTR_LED),                 MP_ROM_PTR(&machine_led_type) },
+    { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) },
+    { MP_ROM_QSTR(MP_QSTR_PWM),                 MP_ROM_PTR(&machine_pwm_type) },
+    { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) },
+    { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) },
+    { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&machine_wdt_type) },
+
+    { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 

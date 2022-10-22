@@ -161,7 +161,7 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     bool first_init = false;
     if (self->base.type == NULL) {
         // Created for the first time, set default pins
-        self->base.type = &machine_hw_i2c_type;
+        self->base.type = &machine_i2c_type;
         self->port = i2c_id;
         if (self->port == I2C_NUM_0) {
             self->scl = MICROPY_HW_I2C0_SCL;
@@ -192,11 +192,12 @@ STATIC const mp_machine_i2c_p_t machine_hw_i2c_p = {
     .transfer = machine_hw_i2c_transfer,
 };
 
-const mp_obj_type_t machine_hw_i2c_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2C,
-    .print = machine_hw_i2c_print,
-    .make_new = machine_hw_i2c_make_new,
-    .protocol = &machine_hw_i2c_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_i2c_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_i2c_type,
+    MP_QSTR_I2C,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_hw_i2c_make_new,
+    print, machine_hw_i2c_print,
+    protocol, &machine_hw_i2c_p,
+    locals_dict, &mp_machine_i2c_locals_dict
+    );

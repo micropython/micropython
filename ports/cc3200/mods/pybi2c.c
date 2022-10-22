@@ -392,7 +392,7 @@ STATIC mp_obj_t pyb_i2c_readfrom(size_t n_args, const mp_obj_t *pos_args, mp_map
     pyb_i2c_read_into(args, &vstr);
 
     // return the received data
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_readfrom_obj, 3, pyb_i2c_readfrom);
 
@@ -456,7 +456,7 @@ STATIC mp_obj_t pyb_i2c_readfrom_mem(size_t n_args, const mp_obj_t *pos_args, mp
 
     vstr_t vstr;
     pyb_i2c_readmem_into (args, &vstr);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_readfrom_mem_obj, 1, pyb_i2c_readfrom_mem);
 
@@ -521,10 +521,11 @@ STATIC const mp_rom_map_elem_t pyb_i2c_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_i2c_locals_dict, pyb_i2c_locals_dict_table);
 
-const mp_obj_type_t pyb_i2c_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2C,
-    .print = pyb_i2c_print,
-    .make_new = pyb_i2c_make_new,
-    .locals_dict = (mp_obj_t)&pyb_i2c_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_i2c_type,
+    MP_QSTR_I2C,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_i2c_make_new,
+    print, pyb_i2c_print,
+    locals_dict, &pyb_i2c_locals_dict
+    );

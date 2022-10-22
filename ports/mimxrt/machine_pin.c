@@ -58,17 +58,19 @@ enum {
 };
 
 // Pin mapping dictionaries
-const mp_obj_type_t machine_pin_cpu_pins_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_cpu,
-    .locals_dict = (mp_obj_t)&machine_pin_cpu_pins_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_cpu_pins_obj_type,
+    MP_QSTR_cpu,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &machine_pin_cpu_pins_locals_dict
+    );
 
-const mp_obj_type_t machine_pin_board_pins_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_board,
-    .locals_dict = (mp_obj_t)&machine_pin_board_pins_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_board_pins_obj_type,
+    MP_QSTR_board,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &machine_pin_board_pins_locals_dict
+    );
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
 
@@ -396,7 +398,6 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
-
 STATIC mp_uint_t machine_pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     machine_pin_obj_t *self = self_in;
@@ -417,24 +418,26 @@ STATIC const mp_pin_p_t machine_pin_obj_protocol = {
     .ioctl = machine_pin_ioctl,
 };
 
-const mp_obj_type_t machine_pin_type = {
-    {&mp_type_type},
-    .name = MP_QSTR_Pin,
-    .print = machine_pin_obj_print,
-    .call = machine_pin_obj_call,
-    .make_new = mp_pin_make_new,
-    .protocol = &machine_pin_obj_protocol,
-    .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_pin_make_new,
+    print, machine_pin_obj_print,
+    call, machine_pin_obj_call,
+    protocol, &machine_pin_obj_protocol,
+    locals_dict, &machine_pin_locals_dict
+    );
 
 // FIXME: Create actual pin_af type!!!
-const mp_obj_type_t machine_pin_af_type = {
-    {&mp_type_type},
-    .name = MP_QSTR_PinAF,
-    .print = machine_pin_obj_print,
-    .make_new = mp_pin_make_new,
-    .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_af_type,
+    MP_QSTR_PinAF,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_pin_make_new,
+    print, machine_pin_obj_print,
+    locals_dict, &machine_pin_locals_dict
+    );
 
 STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);

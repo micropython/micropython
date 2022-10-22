@@ -61,6 +61,8 @@ const mp_obj_module_t mp_module___main__ = {
 
 MP_REGISTER_MODULE(MP_QSTR___main__, mp_module___main__);
 
+#define TYPE_HAS_ITERNEXT(type) (type->flags & (MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_ITER_IS_CUSTOM | MP_TYPE_FLAG_ITER_IS_STREAM))
+
 void mp_init(void) {
     qstr_init();
 
@@ -307,8 +309,8 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
         return MP_OBJ_NEW_SMALL_INT(h);
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(arg);
-        if (type->unary_op != NULL) {
-            mp_obj_t result = type->unary_op(op, arg);
+        if (MP_OBJ_TYPE_HAS_SLOT(type, unary_op)) {
+            mp_obj_t result = MP_OBJ_TYPE_GET_SLOT(type, unary_op)(op, arg);
             if (result != MP_OBJ_NULL) {
                 return result;
             }
@@ -613,8 +615,8 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
     const mp_obj_type_t *type;
 generic_binary_op:
     type = mp_obj_get_type(lhs);
-    if (type->binary_op != NULL) {
-        mp_obj_t result = type->binary_op(op, lhs, rhs);
+    if (MP_OBJ_TYPE_HAS_SLOT(type, binary_op)) {
+        mp_obj_t result = MP_OBJ_TYPE_GET_SLOT(type, binary_op)(op, lhs, rhs);
         if (result != MP_OBJ_NULL) {
             return result;
         }
@@ -689,8 +691,8 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, cons
     const mp_obj_type_t *type = mp_obj_get_type(fun_in);
 
     // do the call
-    if (type->call != NULL) {
-        return type->call(fun_in, n_args, n_kw, args);
+    if (MP_OBJ_TYPE_HAS_SLOT(type, call)) {
+        return MP_OBJ_TYPE_GET_SLOT(type, call)(fun_in, n_args, n_kw, args);
     }
 
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
@@ -1070,12 +1072,12 @@ STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     return mp_call_function_n_kw(self->fun, n_args, n_kw, args);
 }
 
-STATIC const mp_obj_type_t mp_type_checked_fun = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF,
-    .name = MP_QSTR_function,
-    .call = checked_fun_call,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_checked_fun,
+    MP_QSTR_function,
+    MP_TYPE_FLAG_BINDS_SELF,
+    call, checked_fun_call
+    );
 
 STATIC mp_obj_t mp_obj_new_checked_fun(const mp_obj_type_t *type, mp_obj_t fun) {
     mp_obj_checked_fun_t *o = mp_obj_malloc(mp_obj_checked_fun_t, &mp_type_checked_fun);
@@ -1166,14 +1168,14 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     }
     #endif
 
-    if (attr == MP_QSTR___next__ && type->iternext != NULL) {
+    if (attr == MP_QSTR___next__ && TYPE_HAS_ITERNEXT(type)) {
         dest[0] = MP_OBJ_FROM_PTR(&mp_builtin_next_obj);
         dest[1] = obj;
         return;
     }
-    if (type->attr != NULL) {
+    if (MP_OBJ_TYPE_HAS_SLOT(type, attr)) {
         // this type can do its own load, so call it
-        type->attr(obj, attr, dest);
+        MP_OBJ_TYPE_GET_SLOT(type, attr)(obj, attr, dest);
         // If type->attr has set dest[1] = MP_OBJ_SENTINEL, we should proceed
         // with lookups below (i.e. in locals_dict). If not, return right away.
         if (dest[1] != MP_OBJ_SENTINEL) {
@@ -1182,11 +1184,11 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
         // Clear the fail flag set by type->attr so it's like it never ran.
         dest[1] = MP_OBJ_NULL;
     }
-    if (type->locals_dict != NULL) {
+    if (MP_OBJ_TYPE_HAS_SLOT(type, locals_dict)) {
         // generic method lookup
         // this is a lookup in the object (ie not class or type)
-        assert(type->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
-        mp_map_t *locals_map = &type->locals_dict->map;
+        assert(MP_OBJ_TYPE_GET_SLOT(type, locals_dict)->base.type == &mp_type_dict); // MicroPython restriction, for now
+        mp_map_t *locals_map = &MP_OBJ_TYPE_GET_SLOT(type, locals_dict)->map;
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             mp_convert_member_lookup(obj, type, elem->value, dest);
@@ -1238,9 +1240,9 @@ void mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catc
 void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), value);
     const mp_obj_type_t *type = mp_obj_get_type(base);
-    if (type->attr != NULL) {
+    if (MP_OBJ_TYPE_HAS_SLOT(type, attr)) {
         mp_obj_t dest[2] = {MP_OBJ_SENTINEL, value};
-        type->attr(base, attr, dest);
+        MP_OBJ_TYPE_GET_SLOT(type, attr)(base, attr, dest);
         if (dest[0] == MP_OBJ_NULL) {
             // success
             return;
@@ -1259,20 +1261,26 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     assert(o_in);
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
 
-    // Check for native getiter which is the identity.  We handle this case explicitly
+    // Most types that use iternext just use the identity getiter. We handle this case explicitly
     // so we don't unnecessarily allocate any RAM for the iter_buf, which won't be used.
-    if (type->getiter == mp_identity_getiter) {
+    if ((type->flags & MP_TYPE_FLAG_ITER_IS_ITERNEXT) == MP_TYPE_FLAG_ITER_IS_ITERNEXT || (type->flags & MP_TYPE_FLAG_ITER_IS_STREAM) == MP_TYPE_FLAG_ITER_IS_STREAM) {
         return o_in;
     }
 
-    // check for native getiter (corresponds to __iter__)
-    if (type->getiter != NULL) {
-        if (iter_buf == NULL && type->getiter != mp_obj_instance_getiter) {
+    if (MP_OBJ_TYPE_HAS_SLOT(type, iter)) {
+        // check for native getiter (corresponds to __iter__)
+        if (iter_buf == NULL && MP_OBJ_TYPE_GET_SLOT(type, iter) != mp_obj_instance_getiter) {
             // if caller did not provide a buffer then allocate one on the heap
             // mp_obj_instance_getiter is special, it will allocate only if needed
             iter_buf = m_new_obj(mp_obj_iter_buf_t);
         }
-        mp_obj_t iter = type->getiter(o_in, iter_buf);
+        mp_getiter_fun_t getiter;
+        if (type->flags & MP_TYPE_FLAG_ITER_IS_CUSTOM) {
+            getiter = ((mp_getiter_iternext_custom_t *)MP_OBJ_TYPE_GET_SLOT(type, iter))->getiter;
+        } else {
+            getiter = (mp_getiter_fun_t)MP_OBJ_TYPE_GET_SLOT(type, iter);
+        }
+        mp_obj_t iter = getiter(o_in, iter_buf);
         if (iter != MP_OBJ_NULL) {
             return iter;
         }
@@ -1300,13 +1308,26 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
 
 }
 
+STATIC mp_fun_1_t type_get_iternext(const mp_obj_type_t *type) {
+    if ((type->flags & MP_TYPE_FLAG_ITER_IS_STREAM) == MP_TYPE_FLAG_ITER_IS_STREAM) {
+        mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
+        return mp_stream_unbuffered_iter;
+    } else if (type->flags & MP_TYPE_FLAG_ITER_IS_ITERNEXT) {
+        return (mp_fun_1_t)MP_OBJ_TYPE_GET_SLOT(type, iter);
+    } else if (type->flags & MP_TYPE_FLAG_ITER_IS_CUSTOM) {
+        return ((mp_getiter_iternext_custom_t *)MP_OBJ_TYPE_GET_SLOT(type, iter))->iternext;
+    } else {
+        return NULL;
+    }
+}
+
 // may return MP_OBJ_STOP_ITERATION as an optimisation instead of raise StopIteration()
 // may also raise StopIteration()
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
-    if (type->iternext != NULL) {
+    if (TYPE_HAS_ITERNEXT(type)) {
         MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
-        return type->iternext(o_in);
+        return type_get_iternext(type)(o_in);
     } else {
         // check for __next__ method
         mp_obj_t dest[2];
@@ -1330,9 +1351,9 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
 mp_obj_t mp_iternext(mp_obj_t o_in) {
     MP_STACK_CHECK(); // enumerate, filter, map and zip can recursively call mp_iternext
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
-    if (type->iternext != NULL) {
+    if (TYPE_HAS_ITERNEXT(type)) {
         MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
-        return type->iternext(o_in);
+        return type_get_iternext(type)(o_in);
     } else {
         // check for __next__ method
         mp_obj_t dest[2];
@@ -1370,9 +1391,9 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         return mp_obj_gen_resume(self_in, send_value, throw_value, ret_val);
     }
 
-    if (type->iternext != NULL && send_value == mp_const_none) {
+    if (TYPE_HAS_ITERNEXT(type) && send_value == mp_const_none) {
         MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
-        mp_obj_t ret = type->iternext(self_in);
+        mp_obj_t ret = type_get_iternext(type)(self_in);
         *ret_val = ret;
         if (ret != MP_OBJ_STOP_ITERATION) {
             return MP_VM_RETURN_YIELD;
@@ -1669,6 +1690,15 @@ NORETURN void mp_raise_StopIteration(mp_obj_t arg) {
 
 NORETURN void mp_raise_OSError(int errno_) {
     mp_raise_type_arg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_));
+}
+
+NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename) {
+    vstr_t vstr;
+    vstr_init(&vstr, 32);
+    vstr_printf(&vstr, "can't open %s", filename);
+    mp_obj_t o_str = mp_obj_new_str_from_vstr(&vstr);
+    mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(errno_), MP_OBJ_FROM_PTR(o_str)};
+    nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
 }
 
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK

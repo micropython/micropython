@@ -453,13 +453,14 @@ STATIC const mp_rom_map_elem_t pyb_flash_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_flash_locals_dict, pyb_flash_locals_dict_table);
 
-const mp_obj_type_t pyb_flash_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Flash,
-    .print = pyb_flash_print,
-    .make_new = pyb_flash_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_flash_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_flash_type,
+    MP_QSTR_Flash,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_flash_make_new,
+    print, pyb_flash_print,
+    locals_dict, &pyb_flash_locals_dict
+    );
 
 void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;

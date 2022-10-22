@@ -54,7 +54,7 @@
 
 // this function inits the switch GPIO so that it can be used
 void switch_init0(void) {
-    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, GPIO_LOW_POWER, 0);
+    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, MP_HAL_PIN_DRIVE_0, 0);
 }
 
 int switch_get(void) {
@@ -135,14 +135,15 @@ STATIC const mp_rom_map_elem_t pyb_switch_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_switch_locals_dict, pyb_switch_locals_dict_table);
 
-const mp_obj_type_t pyb_switch_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Switch,
-    .print = pyb_switch_print,
-    .make_new = pyb_switch_make_new,
-    .call = pyb_switch_call,
-    .locals_dict = (mp_obj_dict_t *)&pyb_switch_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_switch_type,
+    MP_QSTR_Switch,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_switch_make_new,
+    locals_dict, &pyb_switch_locals_dict,
+    print, pyb_switch_print,
+    call, pyb_switch_call
+    );
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_switch_callback);
 

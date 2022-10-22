@@ -244,12 +244,6 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         LPUART_EnableTx(self->lpuart, false);
         self->lpuart->STAT |= 1 << LPUART_STAT_BRK13_SHIFT;
         LPUART_EnableTx(self->lpuart, true);
-
-        // Allocate the TX ring buffer. Not used yet, but maybe later.
-
-        // ringbuf_alloc(&(self->write_buffer), txbuf_len + 1);
-        // MP_STATE_PORT(rp2_uart_tx_buffer[uart_id]) = self->write_buffer.buf;
-
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -308,17 +302,30 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
 
+STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->tx_status == kStatus_LPUART_TxIdle) {
+        return mp_const_true;
+    } else {
+        return mp_const_false;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
+
 STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
+    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) },
     { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) },
@@ -388,7 +395,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
 
         // Wait at least the number of character times for this chunk.
         t = ticks_us64() + (uint64_t)xfer.dataSize * (13000000 / self->config.baudRate_Bps + 1000);
-        while (self->handle.txDataSize) {
+        while (self->tx_status != kStatus_LPUART_TxIdle) {
             // Wait for the first/next character to be sent.
             if (ticks_us64() > t) { // timed out
                 if (self->handle.txDataSize >= size) {
@@ -430,9 +437,24 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
                 ret |= MP_STREAM_POLL_RD;
             }
         }
-        if ((flags & MP_STREAM_POLL_WR)) {
+        if ((flags & MP_STREAM_POLL_WR) && (self->tx_status == kStatus_LPUART_TxIdle)) {
             ret |= MP_STREAM_POLL_WR;
         }
+    } else if (request == MP_STREAM_FLUSH) {
+        // The timeout is estimated using the buffer size and the baudrate.
+        // Take the worst case assumptions at 13 bit symbol size times 2.
+        uint64_t timeout = (uint64_t)(3 + self->txbuf_len) * 13000000ll * 2 /
+            self->config.baudRate_Bps + ticks_us64();
+
+        do {
+            if (machine_uart_txdone((mp_obj_t)self) == mp_const_true) {
+                return 0;
+            }
+            MICROPY_EVENT_POLL_HOOK
+        } while (ticks_us64() < timeout);
+
+        *errcode = MP_ETIMEDOUT;
+        ret = MP_STREAM_ERROR;
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
@@ -447,13 +469,12 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .is_text = false,
 };
 
-const mp_obj_type_t machine_uart_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_UART,
-    .print = machine_uart_print,
-    .make_new = machine_uart_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&machine_uart_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    make_new, machine_uart_make_new,
+    print, machine_uart_print,
+    protocol, &uart_stream_p,
+    locals_dict, &machine_uart_locals_dict
+    );

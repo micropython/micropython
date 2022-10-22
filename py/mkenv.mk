@@ -45,6 +45,7 @@ PYTHON = python3
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
+CPP = $(CC) -E
 CXX = $(CROSS_COMPILE)g++
 GDB = $(CROSS_COMPILE)gdb
 LD = $(CROSS_COMPILE)ld

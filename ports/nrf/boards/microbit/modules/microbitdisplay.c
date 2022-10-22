@@ -542,21 +542,12 @@ STATIC const mp_rom_map_elem_t microbit_display_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(microbit_display_locals_dict, microbit_display_locals_dict_table);
 
-const mp_obj_type_t microbit_display_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MicroBitDisplay,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = NULL,
-    .getiter = NULL,
-    .iternext = NULL,
-    .buffer_p = {NULL},
-    .locals_dict = (mp_obj_dict_t*)&microbit_display_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    microbit_display_type,
+    MP_QSTR_MicroBitDisplay,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &microbit_display_locals_dict
+    );
 
 microbit_display_obj_t microbit_display_obj = {
     {&microbit_display_type},

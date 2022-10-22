@@ -399,42 +399,46 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // Save settings
-    uart_word_length_t word_length;
-    uart_parity_t parity;
-    uart_get_word_length(self->uart_num, &word_length);
-    uart_get_parity(self->uart_num, &parity);
+    uint32_t baudrate;
+    uart_get_baudrate(self->uart_num, &baudrate);
 
-    // Synthesise the break condition by either a longer word or using even parity
+    // Synthesise the break condition by reducing the baud rate,
+    // and cater for the worst case of 5 data bits, no parity.
     uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
-    if (word_length != UART_DATA_8_BITS) {
-        uart_set_word_length(self->uart_num, UART_DATA_8_BITS);
-    } else if (parity == UART_PARITY_DISABLE) {
-        uart_set_parity(self->uart_num, UART_PARITY_EVEN);
-    } else {
-        // Cannot synthesise break
-        mp_raise_OSError(MP_EPERM);
-    }
+    uart_set_baudrate(self->uart_num, baudrate * 6 / 15);
     char buf[1] = {0};
     uart_write_bytes(self->uart_num, buf, 1);
     uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
 
-    // Restore original settings
-    uart_set_word_length(self->uart_num, word_length);
-    uart_set_parity(self->uart_num, parity);
+    // Restore original setting
+    uart_set_baudrate(self->uart_num, baudrate);
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
 
+STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (uart_wait_tx_done(self->uart_num, 0) == ESP_OK) {
+        return mp_const_true;
+    } else {
+        return mp_const_false;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
+
 STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
+    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INV_TX) },
     { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INV_RX) },
@@ -500,6 +504,18 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr
         if ((flags & MP_STREAM_POLL_WR) && 1) { // FIXME: uart_tx_any_room(self->uart_num)
             ret |= MP_STREAM_POLL_WR;
         }
+    } else if (request == MP_STREAM_FLUSH) {
+        // The timeout is estimated using the buffer size and the baudrate.
+        // Take the worst case assumptions at 13 bit symbol size times 2.
+        uint32_t baudrate;
+        uart_get_baudrate(self->uart_num, &baudrate);
+        uint32_t timeout = (3 + self->txbuf) * 13000 * 2 / baudrate;
+        if (uart_wait_tx_done(self->uart_num, timeout) == ESP_OK) {
+            ret = 0;
+        } else {
+            *errcode = MP_ETIMEDOUT;
+            ret = MP_STREAM_ERROR;
+        }
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
@@ -514,13 +530,12 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .is_text = false,
 };
 
-const mp_obj_type_t machine_uart_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_UART,
-    .print = machine_uart_print,
-    .make_new = machine_uart_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&machine_uart_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    make_new, machine_uart_make_new,
+    print, machine_uart_print,
+    protocol, &uart_stream_p,
+    locals_dict, &machine_uart_locals_dict
+    );

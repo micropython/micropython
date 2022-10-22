@@ -70,7 +70,7 @@ typedef struct _machine_hard_spi_obj_t {
 STATIC machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     #if defined(MICROPY_HW_SPI0_RSPCK)
     {
-        {&machine_hard_spi_type}, 0,
+        {&machine_spi_type}, 0,
         DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE, DEFAULT_SPI_BITS,
         DEFAULT_SPI_FIRSTBIT, DEFAULT_SPI_BAUDRATE,
         MICROPY_HW_SPI0_RSPCK, MICROPY_HW_SPI0_MOSI, MICROPY_HW_SPI0_MISO,
@@ -78,7 +78,7 @@ STATIC machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     #endif
     #if defined(MICROPY_HW_SPI1_RSPCK)
     {
-        {&machine_hard_spi_type}, 1,
+        {&machine_spi_type}, 1,
         DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE, DEFAULT_SPI_BITS,
         DEFAULT_SPI_FIRSTBIT, DEFAULT_SPI_BAUDRATE,
         MICROPY_HW_SPI1_RSPCK, MICROPY_HW_SPI1_MOSI, MICROPY_HW_SPI1_MISO,
@@ -297,14 +297,15 @@ STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
     .transfer = machine_hard_spi_transfer,
 };
 
-const mp_obj_type_t machine_hard_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .print = machine_hard_spi_print,
-    .make_new = machine_hard_spi_make_new,
-    .protocol = &machine_hard_spi_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_spi_type,
+    MP_QSTR_SPI,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_hard_spi_make_new,
+    locals_dict, &mp_machine_spi_locals_dict,
+    print, machine_hard_spi_print,
+    protocol, &machine_hard_spi_p
+    );
 
 void spi_init0(void) {
 }

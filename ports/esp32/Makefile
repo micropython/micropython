@@ -34,8 +34,10 @@ ifdef FROZEN_MANIFEST
        IDFPY_FLAGS += -D MICROPY_FROZEN_MANIFEST=$(FROZEN_MANIFEST)
 endif
 
+HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
+
 all:
-	idf.py $(IDFPY_FLAGS) build
+	idf.py $(IDFPY_FLAGS) build || (echo -e $(HELP_BUILD_ERROR); false)
 	@$(PYTHON) makeimg.py \
 		$(BUILD)/sdkconfig \
 		$(BUILD)/bootloader/bootloader.bin \

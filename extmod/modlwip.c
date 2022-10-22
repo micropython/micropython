@@ -177,12 +177,13 @@ STATIC const mp_rom_map_elem_t lwip_slip_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(lwip_slip_locals_dict, lwip_slip_locals_dict_table);
 
-STATIC const mp_obj_type_t lwip_slip_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_slip,
-    .make_new = lwip_slip_make_new,
-    .locals_dict = (mp_obj_dict_t *)&lwip_slip_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    lwip_slip_type,
+    MP_QSTR_slip,
+    MP_TYPE_FLAG_NONE,
+    make_new, lwip_slip_make_new,
+    locals_dict, &lwip_slip_locals_dict
+    );
 
 #endif // MICROPY_PY_LWIP_SLIP
 
@@ -1198,7 +1199,7 @@ STATIC mp_obj_t lwip_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
         return mp_const_empty_bytes;
     }
     vstr.len = ret;
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_recv_obj, lwip_socket_recv);
 
@@ -1271,7 +1272,7 @@ STATIC mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
         tuple[0] = mp_const_empty_bytes;
     } else {
         vstr.len = ret;
-        tuple[0] = mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+        tuple[0] = mp_obj_new_bytes_from_vstr(&vstr);
     }
     tuple[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
     return mp_obj_new_tuple(2, tuple);
@@ -1594,14 +1595,15 @@ STATIC const mp_stream_p_t lwip_socket_stream_p = {
     .ioctl = lwip_socket_ioctl,
 };
 
-STATIC const mp_obj_type_t lwip_socket_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_socket,
-    .print = lwip_socket_print,
-    .make_new = lwip_socket_make_new,
-    .protocol = &lwip_socket_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&lwip_socket_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    lwip_socket_type,
+    MP_QSTR_socket,
+    MP_TYPE_FLAG_NONE,
+    make_new, lwip_socket_make_new,
+    print, lwip_socket_print,
+    protocol, &lwip_socket_stream_p,
+    locals_dict, &lwip_socket_locals_dict
+    );
 
 /******************************************************************************/
 // Support functions for memory protection. lwIP has its own memory management

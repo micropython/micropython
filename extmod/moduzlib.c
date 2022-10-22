@@ -140,13 +140,14 @@ STATIC const mp_stream_p_t decompio_stream_p = {
 };
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_obj_type_t decompio_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_DecompIO,
-    .make_new = decompio_make_new,
-    .protocol = &decompio_stream_p,
-    .locals_dict = (void *)&decompio_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    decompio_type,
+    MP_QSTR_DecompIO,
+    MP_TYPE_FLAG_NONE,
+    make_new, decompio_make_new,
+    protocol, &decompio_stream_p,
+    locals_dict, &decompio_locals_dict
+    );
 #endif
 
 STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {

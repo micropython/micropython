@@ -49,9 +49,17 @@ A MicroPython user C module is a directory with the following files:
   in your ``micropython.mk`` to a local make variable,
   eg ``EXAMPLE_MOD_DIR := $(USERMOD_DIR)``
 
-  Your ``micropython.mk`` must add your modules source files relative to your
-  expanded copy of ``$(USERMOD_DIR)`` to ``SRC_USERMOD``, eg
-  ``SRC_USERMOD += $(EXAMPLE_MOD_DIR)/example.c``
+  Your ``micropython.mk`` must add your modules source files to the
+  ``SRC_USERMOD_C`` or ``SRC_USERMOD_LIB_C`` variables. The former will be
+  processed for ``MP_QSTR_`` and ``MP_REGISTER_MODULE`` definitions, the latter
+  will not (e.g. helpers and library code that isn't MicroPython-specific).
+  These paths should include your expaned copy of ``$(USERMOD_DIR)``, e.g.::
+
+    SRC_USERMOD_C += $(EXAMPLE_MOD_DIR)/modexample.c
+    SRC_USERMOD_LIB_C += $(EXAMPLE_MOD_DIR)/utils/algorithm.c
+
+  Similarly, use ``SRC_USERMOD_CXX`` and ``SRC_USERMOD_LIB_CXX`` for C++
+  source files.
 
   If you have custom compiler options (like ``-I`` to add directories to search
   for header files), these should be added to ``CFLAGS_USERMOD`` for C code

@@ -11,8 +11,8 @@ class FrameBuffer
 -----------------
 
 The FrameBuffer class provides a pixel buffer which can be drawn upon with
-pixels, lines, rectangles, text and even other FrameBuffer's. It is useful
-when generating output for displays.
+pixels, lines, rectangles, ellipses, polygons, text and even other
+FrameBuffers. It is useful when generating output for displays.
 
 For example::
 
@@ -77,12 +77,37 @@ The following methods draw shapes onto the FrameBuffer.
     methods draw horizontal and vertical lines respectively up to
     a given length.
 
-.. method:: FrameBuffer.rect(x, y, w, h, c)
-.. method:: FrameBuffer.fill_rect(x, y, w, h, c)
+.. method:: FrameBuffer.rect(x, y, w, h, c[, f])
 
-    Draw a rectangle at the given location, size and color. The `rect`
-    method draws only a 1 pixel outline whereas the `fill_rect` method
-    draws both the outline and interior.
+    Draw a rectangle at the given location, size and color.
+
+    The optional *f* parameter can be set to ``True`` to fill the rectangle.
+    Otherwise just a one pixel outline is drawn.
+
+.. method:: FrameBuffer.ellipse(x, y, xr, yr, c[, f, m])
+
+    Draw an ellipse at the given location. Radii *xr* and *yr* define the
+    geometry; equal values cause a circle to be drawn. The *c* parameter
+    defines the color.
+
+    The optional *f* parameter can be set to ``True`` to fill the ellipse.
+    Otherwise just a one pixel outline is drawn.
+
+    The optional *m* parameter enables drawing to be restricted to certain
+    quadrants of the ellipse. The LS four bits determine which quadrants are
+    to be drawn, with bit 0 specifying Q1, b1 Q2, b2 Q3 and b3 Q4. Quadrants
+    are numbered counterclockwise with Q1 being top right.
+
+.. method:: FrameBuffer.poly(x, y, coords, c[, f])
+
+    Given a list of coordinates, draw an arbitrary (convex or concave) closed
+    polygon at the given x, y location using the given color.
+
+    The *coords* must be specified as a :mod:`array` of integers, e.g.
+    ``array('h', [x0, y0, x1, y1, ... xn, yn])``.
+
+    The optional *f* parameter can be set to ``True`` to fill the polygon.
+    Otherwise just a one pixel outline is drawn.
 
 Drawing text
 ------------

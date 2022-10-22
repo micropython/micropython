@@ -46,7 +46,7 @@ typedef struct _mp_obj_vfs_posix_file_t {
     int fd;
 } mp_obj_vfs_posix_file_t;
 
-#ifdef MICROPY_CPYTHON_COMPAT
+#if MICROPY_CPYTHON_COMPAT
 STATIC void check_fd_is_open(const mp_obj_vfs_posix_file_t *o) {
     if (o->fd < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("I/O operation on closed file"));
@@ -63,7 +63,7 @@ STATIC void vfs_posix_file_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 }
 
 mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_obj_t mode_in) {
-    mp_obj_vfs_posix_file_t *o = m_new_obj(mp_obj_vfs_posix_file_t);
+    mp_obj_vfs_posix_file_t *o = m_new_obj_with_finaliser(mp_obj_vfs_posix_file_t);
     const char *mode_s = mp_obj_str_get_str(mode_in);
 
     int mode_rw = 0, mode_x = 0;
@@ -83,15 +83,12 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
             case '+':
                 mode_rw = O_RDWR;
                 break;
-                #if MICROPY_PY_IO_FILEIO
-            // If we don't have io.FileIO, then files are in text mode implicitly
             case 'b':
                 type = &mp_type_vfs_posix_fileio;
                 break;
             case 't':
                 type = &mp_type_vfs_posix_textio;
                 break;
-                #endif
         }
     }
 
@@ -188,12 +185,12 @@ STATIC mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
             return 0;
         }
         case MP_STREAM_CLOSE:
-            MP_THREAD_GIL_EXIT();
-            close(o->fd);
-            MP_THREAD_GIL_ENTER();
-            #ifdef MICROPY_CPYTHON_COMPAT
+            if (o->fd >= 0) {
+                MP_THREAD_GIL_EXIT();
+                close(o->fd);
+                MP_THREAD_GIL_ENTER();
+            }
             o->fd = -1;
-            #endif
             return 0;
         case MP_STREAM_GET_FILENO:
             return o->fd;
@@ -240,29 +237,27 @@ STATIC const mp_rom_map_elem_t vfs_posix_rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&vfs_posix_file___exit___obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(vfs_posix_rawfile_locals_dict, vfs_posix_rawfile_locals_dict_table);
 
-#if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t vfs_posix_fileio_stream_p = {
     .read = vfs_posix_file_read,
     .write = vfs_posix_file_write,
     .ioctl = vfs_posix_file_ioctl,
 };
 
-const mp_obj_type_t mp_type_vfs_posix_fileio = {
-    { &mp_type_type },
-    .name = MP_QSTR_FileIO,
-    .print = vfs_posix_file_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_posix_fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
-};
-#endif
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_posix_fileio,
+    MP_QSTR_FileIO,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, vfs_posix_file_print,
+    protocol, &vfs_posix_fileio_stream_p,
+    locals_dict, &vfs_posix_rawfile_locals_dict
+    );
 
 STATIC const mp_stream_p_t vfs_posix_textio_stream_p = {
     .read = vfs_posix_file_read,
@@ -271,15 +266,14 @@ STATIC const mp_stream_p_t vfs_posix_textio_stream_p = {
     .is_text = true,
 };
 
-const mp_obj_type_t mp_type_vfs_posix_textio = {
-    { &mp_type_type },
-    .name = MP_QSTR_TextIOWrapper,
-    .print = vfs_posix_file_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_posix_textio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_posix_textio,
+    MP_QSTR_TextIOWrapper,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, vfs_posix_file_print,
+    protocol, &vfs_posix_textio_stream_p,
+    locals_dict, &vfs_posix_rawfile_locals_dict
+    );
 
 const mp_obj_vfs_posix_file_t mp_sys_stdin_obj = {{&mp_type_vfs_posix_textio}, STDIN_FILENO};
 const mp_obj_vfs_posix_file_t mp_sys_stdout_obj = {{&mp_type_vfs_posix_textio}, STDOUT_FILENO};

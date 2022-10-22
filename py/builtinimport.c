@@ -467,7 +467,7 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     return module_obj;
 }
 
-mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
+mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
     #if DEBUG_PRINT
     DEBUG_printf("__import__:\n");
     for (size_t i = 0; i < n_args; i++) {
@@ -566,7 +566,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
 #else // MICROPY_ENABLE_EXTERNAL_IMPORT
 
-mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
+mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
     // Check that it's not a relative import
     if (n_args >= 5 && MP_OBJ_SMALL_INT_VALUE(args[4]) != 0) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("relative import"));

@@ -283,9 +283,11 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
 #define MP_OBJ_FROM_PTR(p) ((mp_obj_t)((uintptr_t)(p)))
 
 // rom object storage needs special handling to widen 32-bit pointer to 64-bits
-typedef union _mp_rom_obj_t { uint64_t u64;
-                              struct { const void *lo, *hi;
-                              } u32;
+typedef union _mp_rom_obj_t {
+    uint64_t u64;
+    struct {
+        const void *lo, *hi;
+    } u32;
 } mp_rom_obj_t;
 #define MP_ROM_INT(i) {MP_OBJ_NEW_SMALL_INT(i)}
 #define MP_ROM_QSTR(q) {MP_OBJ_NEW_QSTR(q)}
@@ -505,12 +507,22 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 // Flags for type behaviour (mp_obj_type_t.flags)
 // If MP_TYPE_FLAG_EQ_NOT_REFLEXIVE is clear then __eq__ is reflexive (A==A returns True).
 // If MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE is clear then the type can't be equal to an
-// instance of any different class that also clears this flag.  If this flag is set
-// then the type may check for equality against a different type.
+//   instance of any different class that also clears this flag.  If this flag is set
+//   then the type may check for equality against a different type.
 // If MP_TYPE_FLAG_EQ_HAS_NEQ_TEST is clear then the type only implements the __eq__
-// operator and not the __ne__ operator.  If it's set then __ne__ may be implemented.
+//   operator and not the __ne__ operator.  If it's set then __ne__ may be implemented.
 // If MP_TYPE_FLAG_BINDS_SELF is set then the type as a method binds self as the first arg.
 // If MP_TYPE_FLAG_BUILTIN_FUN is set then the type is a built-in function type.
+// MP_TYPE_FLAG_ITER_IS_GETITER is a no-op flag that means the default behaviour for the
+//   iter slot and it's the getiter function.
+// If MP_TYPE_FLAG_ITER_IS_ITERNEXT is set then the "iter" slot is the iternext
+//   function and getiter will be automatically implemented as "return self".
+// If MP_TYPE_FLAG_ITER_IS_CUSTOM is set then the "iter" slot is a pointer to a
+//   mp_getiter_iternext_custom_t struct instance (with both .getiter and .iternext set).
+// If MP_TYPE_FLAG_ITER_IS_STREAM is set then the type implicitly gets a "return self"
+//   getiter, and mp_stream_unbuffered_iter for iternext.
+// If MP_TYPE_FLAG_INSTANCE_TYPE is set then this is an instance type (i.e. defined in Python).
+#define MP_TYPE_FLAG_NONE (0x0000)
 #define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
 #define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
 #define MP_TYPE_FLAG_EQ_NOT_REFLEXIVE (0x0004)
@@ -518,6 +530,11 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 #define MP_TYPE_FLAG_EQ_HAS_NEQ_TEST (0x0010)
 #define MP_TYPE_FLAG_BINDS_SELF (0x0020)
 #define MP_TYPE_FLAG_BUILTIN_FUN (0x0040)
+#define MP_TYPE_FLAG_ITER_IS_GETITER (0x0000)
+#define MP_TYPE_FLAG_ITER_IS_ITERNEXT (0x0080)
+#define MP_TYPE_FLAG_ITER_IS_CUSTOM (0x0100)
+#define MP_TYPE_FLAG_ITER_IS_STREAM (MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_ITER_IS_CUSTOM)
+#define MP_TYPE_FLAG_INSTANCE_TYPE (0x0200)
 
 typedef enum {
     PRINT_STR = 0,
@@ -545,6 +562,13 @@ typedef mp_obj_t (*mp_binary_op_fun_t)(mp_binary_op_t op, mp_obj_t, mp_obj_t);
 typedef void (*mp_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 typedef mp_obj_t (*mp_getiter_fun_t)(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
+typedef mp_fun_1_t mp_iternext_fun_t;
+
+// For MP_TYPE_FLAG_ITER_IS_CUSTOM, the "getiter" slot points to an instance of this type.
+typedef struct _mp_getiter_iternext_custom_t {
+    mp_getiter_fun_t getiter;
+    mp_iternext_fun_t iternext;
+} mp_getiter_iternext_custom_t;
 
 // Buffer protocol
 typedef struct _mp_buffer_info_t {
@@ -555,12 +579,13 @@ typedef struct _mp_buffer_info_t {
 #define MP_BUFFER_READ  (1)
 #define MP_BUFFER_WRITE (2)
 #define MP_BUFFER_RW (MP_BUFFER_READ | MP_BUFFER_WRITE)
-typedef struct _mp_buffer_p_t {
-    mp_int_t (*get_buffer)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
-} mp_buffer_p_t;
+typedef mp_int_t (*mp_buffer_fun_t)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
+// This struct will be updated to become a variable sized struct. In order to
+// use this as a member, or allocate dynamically, use the mp_obj_empty_type_t
+// or mp_obj_full_type_t structs below (which must be kept in sync).
 struct _mp_obj_type_t {
     // A type is an object so must start with this entry, which points to mp_type_type.
     mp_obj_base_t base;
@@ -571,19 +596,25 @@ struct _mp_obj_type_t {
     // The name of this type, a qstr.
     uint16_t name;
 
-    // Corresponds to __repr__ and __str__ special methods.
-    mp_print_fun_t print;
+    // Slots: For the rest of the fields, the slot index points to the
+    // relevant function in the variable-length "slots" field. Ideally these
+    // would be only 4 bits, but the extra overhead of accessing them adds
+    // more code, and we also need to be able to take the address of them for
+    // mp_obj_class_lookup.
 
     // Corresponds to __new__ and __init__ special methods, to make an instance of the type.
-    mp_make_new_fun_t make_new;
+    uint8_t slot_index_make_new;
+
+    // Corresponds to __repr__ and __str__ special methods.
+    uint8_t slot_index_print;
 
     // Corresponds to __call__ special method, ie T(...).
-    mp_call_fun_t call;
+    uint8_t slot_index_call;
 
     // Implements unary and binary operations.
     // Can return MP_OBJ_NULL if the operation is not supported.
-    mp_unary_op_fun_t unary_op;
-    mp_binary_op_fun_t binary_op;
+    uint8_t slot_index_unary_op;
+    uint8_t slot_index_binary_op;
 
     // Implements load, store and delete attribute.
     //
@@ -597,39 +628,147 @@ struct _mp_obj_type_t {
     // dest[0,1] = {MP_OBJ_SENTINEL, object} means store
     //  return: for fail, do nothing
     //          for success set dest[0] = MP_OBJ_NULL
-    mp_attr_fun_t attr;
+    uint8_t slot_index_attr;
 
     // Implements load, store and delete subscripting:
     //  - value = MP_OBJ_SENTINEL means load
     //  - value = MP_OBJ_NULL means delete
     //  - all other values mean store the value
     // Can return MP_OBJ_NULL if operation not supported.
-    mp_subscr_fun_t subscr;
+    uint8_t slot_index_subscr;
 
-    // Corresponds to __iter__ special method.
-    // Can use the given mp_obj_iter_buf_t to store iterator object,
-    // otherwise can return a pointer to an object on the heap.
-    mp_getiter_fun_t getiter;
-
-    // Corresponds to __next__ special method.  May return MP_OBJ_STOP_ITERATION
-    // as an optimisation instead of raising StopIteration() with no args.
-    mp_fun_1_t iternext;
+    // This slot's behaviour depends on the MP_TYPE_FLAG_ITER_IS_* flags above.
+    // - If MP_TYPE_FLAG_ITER_IS_GETITER flag is set, then this corresponds to the __iter__
+    //   special method (of type mp_getiter_fun_t). Can use the given mp_obj_iter_buf_t
+    //   to store the iterator object, otherwise can return a pointer to an object on the heap.
+    // - If MP_TYPE_FLAG_ITER_IS_ITERNEXT is set, then this corresponds to __next__ special method.
+    //   May return MP_OBJ_STOP_ITERATION as an optimisation instead of raising StopIteration()
+    //   with no args. The type will implicitly implement getiter as "return self".
+    // - If MP_TYPE_FLAG_ITER_IS_CUSTOM is set, then this slot must point to an
+    //   mp_getiter_iternext_custom_t instance with both the getiter and iternext fields set.
+    // - If MP_TYPE_FLAG_ITER_IS_STREAM is set, this this slot should be unset.
+    uint8_t slot_index_iter;
 
     // Implements the buffer protocol if supported by this type.
-    mp_buffer_p_t buffer_p;
+    uint8_t slot_index_buffer;
 
     // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
-    const void *protocol;
+    uint8_t slot_index_protocol;
 
     // A pointer to the parents of this type:
     //  - 0 parents: pointer is NULL (object is implicitly the single parent)
     //  - 1 parent: a pointer to the type of that parent
     //  - 2 or more parents: pointer to a tuple object containing the parent types
-    const void *parent;
+    uint8_t slot_index_parent;
 
     // A dict mapping qstrs to objects local methods/constants/etc.
-    struct _mp_obj_dict_t *locals_dict;
+    uint8_t slot_index_locals_dict;
+
+    const void *slots[];
 };
+
+// Non-variable sized versions of mp_obj_type_t to be used as a member
+// in other structs or for dynamic allocation. The fields are exactly
+// as in mp_obj_type_t, but with a fixed size for the flexible array
+// members.
+typedef struct _mp_obj_empty_type_t {
+    mp_obj_base_t base;
+    uint16_t flags;
+    uint16_t name;
+
+    uint8_t slot_index_make_new;
+    uint8_t slot_index_print;
+    uint8_t slot_index_call;
+    uint8_t slot_index_unary_op;
+    uint8_t slot_index_binary_op;
+    uint8_t slot_index_attr;
+    uint8_t slot_index_subscr;
+    uint8_t slot_index_iter;
+    uint8_t slot_index_buffer;
+    uint8_t slot_index_protocol;
+    uint8_t slot_index_parent;
+    uint8_t slot_index_locals_dict;
+
+    // No slots member.
+} mp_obj_empty_type_t;
+
+typedef struct _mp_obj_full_type_t {
+    mp_obj_base_t base;
+    uint16_t flags;
+    uint16_t name;
+
+    uint8_t slot_index_make_new;
+    uint8_t slot_index_print;
+    uint8_t slot_index_call;
+    uint8_t slot_index_unary_op;
+    uint8_t slot_index_binary_op;
+    uint8_t slot_index_attr;
+    uint8_t slot_index_subscr;
+    uint8_t slot_index_iter;
+    uint8_t slot_index_buffer;
+    uint8_t slot_index_protocol;
+    uint8_t slot_index_parent;
+    uint8_t slot_index_locals_dict;
+
+    // Explicitly add 12 slots.
+    const void *slots[11];
+} mp_obj_full_type_t;
+
+#define _MP_OBJ_TYPE_SLOT_TYPE_make_new (mp_make_new_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_print (mp_print_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_call (mp_call_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_unary_op (mp_unary_op_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_binary_op (mp_binary_op_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_attr (mp_attr_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_subscr (mp_subscr_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_iter (const void *)
+#define _MP_OBJ_TYPE_SLOT_TYPE_buffer (mp_buffer_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_protocol (const void *)
+#define _MP_OBJ_TYPE_SLOT_TYPE_parent (const void *)
+#define _MP_OBJ_TYPE_SLOT_TYPE_locals_dict (struct _mp_obj_dict_t *)
+
+// Implementation of MP_DEFINE_CONST_OBJ_TYPE for each number of arguments.
+// Do not use these directly, instead use MP_DEFINE_CONST_OBJ_TYPE.
+// Generated with:
+// for i in range(13):
+//     print(f"#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_{i}(_struct_type, _typename, _name, _flags{''.join(f', f{j+1}, v{j+1}' for j in range(i))}) const _struct_type _typename = {{ .base = {{ &mp_type_type }}, .name = _name, .flags = _flags{''.join(f', .slot_index_##f{j+1} = {j+1}' for j in range(i))}{', .slots = { ' + ''.join(f'v{j+1}, ' for j in range(i)) + '}' if i else '' } }}")
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_0(_struct_type, _typename, _name, _flags) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_1(_struct_type, _typename, _name, _flags, f1, v1) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slots = { v1, } }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_2(_struct_type, _typename, _name, _flags, f1, v1, f2, v2) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slots = { v1, v2, } }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_3(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slots = { v1, v2, v3, } }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_4(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3, f4, v4) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slots = { v1, v2, v3, v4, } }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_5(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slots = { v1, v2, v3, v4, v5, } }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_6(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slots = { v1, v2, v3, v4, v5, v6, } }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_7(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slots = { v1, v2, v3, v4, v5, v6, v7, } }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_8(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slots = { v1, v2, v3, v4, v5, v6, v7, v8, } }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_9(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slot_index_##f9 = 9, .slots = { v1, v2, v3, v4, v5, v6, v7, v8, v9, } }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_10(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slot_index_##f9 = 9, .slot_index_##f10 = 10, .slots = { v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, } }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_11(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slot_index_##f9 = 9, .slot_index_##f10 = 10, .slot_index_##f11 = 11, .slots = { v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, } }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_12(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11, f12, v12) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slot_index_##f9 = 9, .slot_index_##f10 = 10, .slot_index_##f11 = 11, .slot_index_##f12 = 12, .slots = { v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, } }
+
+#define MP_OBJ_TYPE_HAS_SLOT(t, f) ((t)->slot_index_##f)
+#define MP_OBJ_TYPE_GET_SLOT(t, f) (_MP_OBJ_TYPE_SLOT_TYPE_##f(t)->slots[(t)->slot_index_##f - 1])
+#define MP_OBJ_TYPE_GET_SLOT_OR_NULL(t, f) (_MP_OBJ_TYPE_SLOT_TYPE_##f(MP_OBJ_TYPE_HAS_SLOT(t, f) ? MP_OBJ_TYPE_GET_SLOT(t, f) : NULL))
+#define MP_OBJ_TYPE_SET_SLOT(t, f, v, n) ((t)->slot_index_##f = (n) + 1, (t)->slots[(t)->slot_index_##f - 1] = (void *)v)
+#define MP_OBJ_TYPE_OFFSETOF_SLOT(f) (offsetof(mp_obj_type_t, slot_index_##f))
+#define MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(t, offset) (*(uint8_t *)((char *)(t) + (offset)) != 0)
+
+// Workaround for https://docs.microsoft.com/en-us/cpp/preprocessor/preprocessor-experimental-overview?view=msvc-160#macro-arguments-are-unpacked
+#define MP_DEFINE_CONST_OBJ_TYPE_EXPAND(x) x
+
+// This macro evaluates to MP_DEFINE_CONST_OBJ_TYPE_NARGS_##N, where N is the value
+// of the 29th argument (29 is 13*2 + 3).
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, N, ...) MP_DEFINE_CONST_OBJ_TYPE_NARGS_##N
+
+// These macros are used to define a object type in ROM.
+// Invoke as MP_DEFINE_CONST_OBJ_TYPE(_typename, _name, _flags, _make_new [, slot, func]*)
+// They use the number of arguments to select which MP_DEFINE_CONST_OBJ_TYPE_*
+// macro to use based on the number of arguments. It works by shifting the
+// numeric values 12, 11, ... 0 by the number of arguments, such that the
+// 29th argument ends up being the number to use. The _INV values are
+// placeholders because the slot arguments come in pairs.
+#define MP_DEFINE_CONST_OBJ_TYPE(...) MP_DEFINE_CONST_OBJ_TYPE_EXPAND(MP_DEFINE_CONST_OBJ_TYPE_NARGS(__VA_ARGS__, _INV, 12, _INV, 11, _INV, 10, _INV, 9, _INV, 8, _INV, 7, _INV, 6, _INV, 5, _INV, 4, _INV, 3, _INV, 2, _INV, 1, _INV, 0)(mp_obj_type_t, __VA_ARGS__))
+#define MP_DEFINE_CONST_OBJ_FULL_TYPE(...) MP_DEFINE_CONST_OBJ_TYPE_EXPAND(MP_DEFINE_CONST_OBJ_TYPE_NARGS(__VA_ARGS__, _INV, 12, _INV, 11, _INV, 10, _INV, 9, _INV, 8, _INV, 7, _INV, 6, _INV, 5, _INV, 4, _INV, 3, _INV, 2, _INV, 1, _INV, 0)(mp_obj_full_type_t, __VA_ARGS__))
 
 // Constant types, globally accessible
 extern const mp_obj_type_t mp_type_type;
@@ -675,6 +814,9 @@ extern const mp_obj_type_t mp_type_stringio;
 extern const mp_obj_type_t mp_type_bytesio;
 extern const mp_obj_type_t mp_type_reversed;
 extern const mp_obj_type_t mp_type_polymorph_iter;
+#if MICROPY_ENABLE_FINALISER
+extern const mp_obj_type_t mp_type_polymorph_iter_with_finaliser;
+#endif
 
 // Exceptions
 extern const mp_obj_type_t mp_type_BaseException;
@@ -773,8 +915,8 @@ void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
 #endif
 #define mp_obj_is_int(o) (mp_obj_is_small_int(o) || mp_obj_is_exact_type(o, &mp_type_int))
 #define mp_obj_is_str(o) (mp_obj_is_qstr(o) || mp_obj_is_exact_type(o, &mp_type_str))
-#define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->binary_op == mp_obj_str_binary_op))
-#define mp_obj_is_dict_or_ordereddict(o) (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->make_new == mp_obj_dict_make_new)
+#define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && MP_OBJ_TYPE_GET_SLOT_OR_NULL(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type, binary_op) == mp_obj_str_binary_op))
+bool mp_obj_is_dict_or_ordereddict(mp_obj_t o);
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
@@ -787,9 +929,15 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value);
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base);
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val); // this must return a multi-precision integer object (or raise an overflow exception)
-mp_obj_t mp_obj_new_str(const char *data, size_t len);
-mp_obj_t mp_obj_new_str_via_qstr(const char *data, size_t len);
-mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr);
+mp_obj_t mp_obj_new_str(const char *data, size_t len); // will check utf-8 (raises UnicodeError)
+mp_obj_t mp_obj_new_str_via_qstr(const char *data, size_t len); // input data must be valid utf-8
+mp_obj_t mp_obj_new_str_from_vstr(vstr_t *vstr); // will check utf-8 (raises UnicodeError)
+#if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+mp_obj_t mp_obj_new_str_from_utf8_vstr(vstr_t *vstr); // input data must be valid utf-8
+#else
+#define mp_obj_new_str_from_utf8_vstr mp_obj_new_str_from_vstr
+#endif
+mp_obj_t mp_obj_new_bytes_from_vstr(vstr_t *vstr);
 mp_obj_t mp_obj_new_bytes(const byte *data, size_t len);
 mp_obj_t mp_obj_new_bytearray(size_t n, const void *items);
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
@@ -884,7 +1032,7 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in);
 mp_uint_t mp_obj_int_get_uint_checked(mp_const_obj_t self_in);
 
 // exception
-#define mp_obj_is_native_exception_instance(o) (mp_obj_get_type(o)->make_new == mp_obj_exception_make_new)
+bool mp_obj_is_native_exception_instance(mp_obj_t self_in);
 bool mp_obj_is_exception_type(mp_obj_t self_in);
 bool mp_obj_is_exception_instance(mp_obj_t self_in);
 bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type);
@@ -896,7 +1044,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type_in, size_t n_args, 
 mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
 void mp_init_emergency_exception_buf(void);
 static inline mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
-    assert(exc_type->make_new == mp_obj_exception_make_new);
+    assert(MP_OBJ_TYPE_GET_SLOT_OR_NULL(exc_type, make_new) == mp_obj_exception_make_new);
     return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
 
@@ -1033,7 +1181,6 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun);
 
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);
-mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf);
 
 // module
 typedef struct _mp_obj_module_t {

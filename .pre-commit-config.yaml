@@ -1,0 +1,13 @@
+repos:
+  - repo: local
+    hooks:
+      - id: codeformat
+        name: MicroPython codeformat.py for changed files
+        entry: tools/codeformat.py -v -f
+        language: python
+      - id: verifygitlog
+        name: MicroPython git commit message format checker
+        entry: tools/verifygitlog.py --check-file --ignore-rebase
+        language: python
+        verbose: true
+        stages: [commit-msg]

@@ -77,7 +77,7 @@ static const iomux_table_t iomux_table[] = {
     IOMUX_TABLE_SPI
 };
 
-bool lpspi_set_iomux(int8_t spi, uint8_t drive, uint8_t cs) {
+bool lpspi_set_iomux(int8_t spi, uint8_t drive, int8_t cs) {
     int index = (spi - 1) * 5;
 
     if (SCK.muxRegister != 0) {
@@ -93,7 +93,7 @@ bool lpspi_set_iomux(int8_t spi, uint8_t drive, uint8_t cs) {
             IOMUXC_SetPinMux(CS1.muxRegister, CS1.muxMode, CS1.inputRegister, CS1.inputDaisy, CS1.configRegister, 0U);
             IOMUXC_SetPinConfig(CS1.muxRegister, CS1.muxMode, CS1.inputRegister, CS1.inputDaisy, CS1.configRegister,
                 pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, drive, CS1.configRegister));
-        } else {
+        } else if (cs != -1) {
             mp_raise_ValueError(MP_ERROR_TEXT("The chosen CS is not available"));
         }
 
@@ -131,7 +131,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
         { MP_QSTR_gap_ns,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_drive,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_DRIVE} },
-        { MP_QSTR_cs,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_cs,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
     // Parse the arguments.
@@ -173,8 +173,11 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
     self->master_config->lastSckToPcsDelayInNanoSec = self->master_config->betweenTransferDelayInNanoSec;
     self->master_config->pcsToSckDelayInNanoSec = self->master_config->betweenTransferDelayInNanoSec;
-    uint8_t cs = args[ARG_cs].u_int;
-    if (cs <= 1) {
+    int8_t cs = args[ARG_cs].u_int;
+    // In the SPI master_config for automatic CS the value cs=0 is set already,
+    // so only cs=1 has to be addressed here. The case cs == -1 for manual CS is handled
+    // in the function spi_set_iomux() and the value in the master_config can stay at 0.
+    if (cs == 1) {
         self->master_config->whichPcs = cs;
     }
     LPSPI_MasterInit(self->spi_inst, self->master_config, BOARD_BOOTCLOCKRUN_LPSPI_CLK_ROOT);
@@ -248,11 +251,12 @@ STATIC const mp_machine_spi_p_t machine_spi_p = {
     .transfer = machine_spi_transfer,
 };
 
-const mp_obj_type_t machine_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .print = machine_spi_print,
-    .make_new = machine_spi_make_new,
-    .protocol = &machine_spi_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_spi_type,
+    MP_QSTR_SPI,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_spi_make_new,
+    print, machine_spi_print,
+    protocol, &machine_spi_p,
+    locals_dict, &mp_machine_spi_locals_dict
+    );

@@ -1137,15 +1137,14 @@ STATIC const mp_stream_p_t i2s_stream_p = {
     .is_text = false,
 };
 
-const mp_obj_type_t machine_i2s_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2S,
-    .print = machine_i2s_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &i2s_stream_p,
-    .make_new = machine_i2s_make_new,
-    .locals_dict = (mp_obj_dict_t *)&machine_i2s_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_i2s_type,
+    MP_QSTR_I2S,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    make_new, machine_i2s_make_new,
+    print, machine_i2s_print,
+    protocol, &i2s_stream_p,
+    locals_dict, &machine_i2s_locals_dict
+    );
 
 MP_REGISTER_ROOT_POINTER(void *machine_i2s_obj[2]);

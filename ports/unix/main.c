@@ -43,6 +43,7 @@
 #include "py/builtin.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/objstr.h"
 #include "py/stackctrl.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
@@ -61,6 +62,11 @@ STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
 long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
+#endif
+
+// Number of heaps to assign by default if MICROPY_GC_SPLIT_HEAP=1
+#ifndef MICROPY_GC_SPLIT_HEAP_N_HEAPS
+#define MICROPY_GC_SPLIT_HEAP_N_HEAPS (1)
 #endif
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
@@ -430,6 +436,17 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
     }
 }
 
+#if MICROPY_PY_SYS_EXECUTABLE
+extern mp_obj_str_t mp_sys_executable_obj;
+STATIC char executable_path[MICROPY_ALLOC_PATH_MAX];
+
+STATIC void sys_set_excecutable(char *argv0) {
+    if (realpath(argv0, executable_path)) {
+        mp_obj_str_set_data(&mp_sys_executable_obj, (byte *)executable_path, strlen(executable_path));
+    }
+}
+#endif
+
 #ifdef _WIN32
 #define PATHLIST_SEP_CHAR ';'
 #else
@@ -513,7 +530,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     {
         // Mount the host FS at the root of our internal VFS
         mp_obj_t args[2] = {
-            mp_type_vfs_posix.make_new(&mp_type_vfs_posix, 0, 0, NULL),
+            MP_OBJ_TYPE_GET_SLOT(&mp_type_vfs_posix, make_new)(&mp_type_vfs_posix, 0, 0, NULL),
             MP_OBJ_NEW_QSTR(MP_QSTR__slash_),
         };
         mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
@@ -554,7 +571,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
                 vstr_add_strn(&vstr, home, home_l);
                 vstr_add_strn(&vstr, p + 1, p1 - p - 1);
-                path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+                path_items[i] = mp_obj_new_str_from_vstr(&vstr);
             } else {
                 path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
             }
@@ -592,6 +609,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
     printf("    cur   %d\n", m_get_current_bytes_allocated());
     printf("    peak  %d\n", m_get_peak_bytes_allocated());
     */
+
+    #if MICROPY_PY_SYS_EXECUTABLE
+    sys_set_excecutable(argv[0]);
+    #endif
 
     const int NOTHING_EXECUTED = -2;
     int ret = NOTHING_EXECUTED;
@@ -650,7 +671,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     vstr_init(&vstr, len + sizeof(".__main__"));
                     vstr_add_strn(&vstr, argv[a + 1], len);
                     vstr_add_strn(&vstr, ".__main__", sizeof(".__main__") - 1);
-                    import_args[0] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+                    import_args[0] = mp_obj_new_str_from_vstr(&vstr);
                     goto reimport;
                 }
 

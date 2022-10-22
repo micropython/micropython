@@ -529,15 +529,16 @@ STATIC const mp_pin_p_t pin_pin_p = {
     .ioctl = pin_ioctl,
 };
 
-const mp_obj_type_t machine_pin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Pin,
-    .print = machine_pin_print,
-    .make_new = mp_pin_make_new,
-    .call = machine_pin_call,
-    .protocol = &pin_pin_p,
-    .locals_dict = (mp_obj_t)&machine_pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_pin_make_new,
+    print, machine_pin_print,
+    call, machine_pin_call,
+    protocol, &pin_pin_p,
+    locals_dict, &machine_pin_locals_dict
+    );
 
 /******************************************************************************/
 // Pin IRQ object
@@ -723,11 +724,12 @@ STATIC const mp_rom_map_elem_t machine_pin_irq_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_irq_locals_dict, machine_pin_irq_locals_dict_table);
 
-STATIC const mp_obj_type_t machine_pin_irq_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_IRQ,
-    .call = machine_pin_irq_call,
-    .locals_dict = (mp_obj_dict_t *)&machine_pin_irq_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_irq_type,
+    MP_QSTR_IRQ,
+    MP_TYPE_FLAG_NONE,
+    call, machine_pin_irq_call,
+    locals_dict, &machine_pin_irq_locals_dict
+    );
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t machine_pin_irq_handler[40]);

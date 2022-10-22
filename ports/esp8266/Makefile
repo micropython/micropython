@@ -57,12 +57,12 @@ CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-Wl,-EL -mlongcalls -mtext-section-literals -mforce-l32 \
 	-DLWIP_OPEN_SRC
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
-	$(CFLAGS_XTENSA) $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA) -I$(BOARD_DIR)
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
+	$(CFLAGS_XTENSA) $(COPT) $(CFLAGS_EXTRA) -I$(BOARD_DIR)
 
 LD_FILES ?= boards/esp8266_2m.ld
-LDFLAGS = -nostdlib -T $(LD_FILES) -Map=$(@:.elf=.map) --cref
-LIBS = -L$(ESP_SDK)/lib -lmain -ljson -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211 $(LDFLAGS_MOD)
+LDFLAGS += -nostdlib -T $(LD_FILES) -Map=$(@:.elf=.map) --cref
+LIBS += -L$(ESP_SDK)/lib -lmain -ljson -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
@@ -107,11 +107,6 @@ SRC_C = \
 	posix_helpers.c \
 	hspi.c \
 	$(wildcard $(BOARD_DIR)/*.c) \
-	$(SRC_MOD)
-
-EXTMOD_SRC_C = $(addprefix extmod/,\
-	modonewire.c \
-        )
 
 LIB_SRC_C = $(addprefix lib/,\
 	libm/math.c \
@@ -163,17 +158,15 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 SRC_S = \
 	gchelper.s \
 
-OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
-OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(SHARED_SRC_C) $(DRIVERS_SRC_C)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 

@@ -62,10 +62,11 @@ ime
 utime           utimeq
 
 argv            atexit          byteorder       exc_info
-exit            getsizeof       implementation  maxsize
-modules         path            platform        print_exception
-ps1             ps2             stderr          stdin
-stdout          tracebacklimit  version         version_info
+executable      exit            getsizeof       implementation
+maxsize         modules         path            platform
+print_exception                 ps1             ps2
+stderr          stdin           stdout          tracebacklimit
+version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
@@ -199,3 +200,13 @@ X
 '\x1b'
 b'\x00\xff'
 NULL
+uPy
+a long string that is not interned
+a string that has unicode αβγ chars
+b'bytes 1234\x01'
+123456789
+0
+1
+2
+3
+frozentest.py

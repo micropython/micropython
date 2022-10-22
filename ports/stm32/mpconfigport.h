@@ -200,13 +200,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_HW_NIC_WIZNET5K
 #endif
 
-#if MICROPY_PY_CC3K
-extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
-#define MICROPY_HW_NIC_CC3K                 { MP_ROM_QSTR(MP_QSTR_CC3K), MP_ROM_PTR(&mod_network_nic_type_cc3k) },
-#else
-#define MICROPY_HW_NIC_CC3K
-#endif
-
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
     MACHINE_BUILTIN_MODULE_CONSTANTS \
@@ -221,7 +214,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
     MICROPY_HW_NIC_ETH  \
     MICROPY_HW_NIC_CYW43 \
     MICROPY_HW_NIC_WIZNET5K \
-    MICROPY_HW_NIC_CC3K \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 #define MP_STATE_PORT MP_STATE_VM
@@ -315,6 +307,14 @@ static inline mp_uint_t disable_irq(void) {
 #define MICROPY_PY_BLUETOOTH_HCI_READ_MODE MICROPY_PY_BLUETOOTH_HCI_READ_MODE_PACKET
 #else
 #define MICROPY_PY_BLUETOOTH_HCI_READ_MODE MICROPY_PY_BLUETOOTH_HCI_READ_MODE_BYTE
+#endif
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#endif
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
 #endif
 
 // We need an implementation of the log2 function which is not a macro

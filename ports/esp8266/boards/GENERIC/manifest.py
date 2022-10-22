@@ -2,20 +2,18 @@
 include("$(PORT_DIR)/boards/manifest.py")
 
 # uasyncio
-include("$(MPY_DIR)/extmod/uasyncio/manifest.py")
+include("$(MPY_DIR)/extmod/uasyncio")
 
 # drivers
-freeze("$(MPY_DIR)/drivers/display", "ssd1306.py")
+require("ssd1306")
 
-# Libraries from micropython-lib, include only if the library directory exists
-if os.path.isdir(convert_path("$(MPY_LIB_DIR)")):
-    # file utilities
-    freeze("$(MPY_LIB_DIR)/micropython/upysh", "upysh.py")
+# micropython-lib: file utilities
+require("upysh")
 
-    # requests
-    freeze("$(MPY_LIB_DIR)/python-ecosys/urequests", "urequests.py")
-    freeze("$(MPY_LIB_DIR)/micropython/urllib.urequest", "urllib/urequest.py")
+# micropython-lib: requests
+require("urequests")
+require("urllib.urequest")
 
-    # umqtt
-    freeze("$(MPY_LIB_DIR)/micropython/umqtt.simple", "umqtt/simple.py")
-    freeze("$(MPY_LIB_DIR)/micropython/umqtt.robust", "umqtt/robust.py")
+# micropython-lib: umqtt
+require("umqtt.simple")
+require("umqtt.robust")

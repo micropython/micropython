@@ -216,9 +216,10 @@ They each have default GPIO assigned to them, however depending on your
 ESP32 variant and board, these pins may conflict with embedded flash,
 onboard PSRAM or peripherals.
 
-Any GPIO can be used for hardware UARTs using the GPIO matrix, so to avoid
-conflicts simply provide ``tx`` and ``rx`` pins when constructing. The default
-pins listed below.
+Any GPIO can be used for hardware UARTs using the GPIO matrix, except for
+input-only pins 34-39 that can be used as ``rx``. To avoid conflicts simply
+provide ``tx`` and ``rx`` pins when constructing. The default pins listed
+below.
 
 =====  =====  =====  =====
 \      UART0  UART1  UART2

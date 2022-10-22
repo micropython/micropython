@@ -101,12 +101,13 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     }
 }
 
-const mp_obj_type_t machine_mem_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_mem,
-    .print = machine_mem_print,
-    .subscr = machine_mem_subscr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_mem_type,
+    MP_QSTR_mem,
+    MP_TYPE_FLAG_NONE,
+    print, machine_mem_print,
+    subscr, machine_mem_subscr
+    );
 
 const machine_mem_obj_t machine_mem8_obj = {{&machine_mem_type}, 1};
 const machine_mem_obj_t machine_mem16_obj = {{&machine_mem_type}, 2};

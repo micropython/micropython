@@ -7,7 +7,7 @@ BOARD_DIR ?= boards/$(BOARD)
 BUILD ?= build-$(BOARD)
 PORT ?= /dev/ttyACM0
 CROSS_COMPILE ?= arm-none-eabi-
-GIT_SUBMODULES += lib/tinyusb lib/nxp_driver lib/lwip lib/mbedtls
+GIT_SUBMODULES += lib/tinyusb lib/nxp_driver
 
 # MicroPython feature configurations
 FROZEN_MANIFEST ?= boards/manifest.py
@@ -15,7 +15,7 @@ MICROPY_VFS_LFS2 ?= 1
 MICROPY_VFS_FAT ?= 1
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
+QSTR_DEFS += qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
 # Generation scripts
@@ -49,7 +49,6 @@ GEN_FLEXRAM_CONFIG_SRC = $(BUILD)/flexram_config.s
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
 
 # =============================================================================
@@ -128,7 +127,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_trng.c \
 	$(MCU_DIR)/drivers/fsl_wdog.c \
 	$(MCU_DIR)/system_$(MCU_SERIES).c \
-	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
+	hal/fsl_flexspi_nor_boot.c \
 
 ifeq ($(MICROPY_HW_SDRAM_AVAIL),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_semc.c
@@ -151,10 +150,6 @@ SRC_C += \
 	drivers/bus/softspi.c \
 	drivers/dht/dht.c \
 	eth.c \
-	extmod/modnetwork.c \
-	extmod/modonewire.c \
-	extmod/modusocket.c \
-	extmod/uos_dupterm.c \
 	fatfs_port.c \
 	hal/pwm_backport.c \
 	led.c \
@@ -183,6 +178,11 @@ SRC_C += \
 	pendsv.c \
 	pin.c \
 	sdcard.c \
+	systick.c \
+	ticks.c \
+	tusb_port.c \
+
+SHARED_SRC_C += \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
 	shared/netutils/dhcpserver.c \
@@ -196,23 +196,17 @@ SRC_C += \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
-	systick.c \
-	ticks.c \
-	tusb_port.c \
-	$(SRC_TINYUSB_C) \
-	$(SRC_HAL_IMX_C) \
-	$(SRC_ETH_C)
 
 # Add sources for respective board flash type
 ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash qspi_hyper_flash))
     # Add hal/flexspi_nor_flash.c or hal/flashspi_hyper_flash.c respectively
-    SRC_C += hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).c
+    SRC_HAL_C += hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).c
     #
     # Add custom (board specific) or default configuration
     ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
-        SRC_C += $(BOARD_DIR)/$(MICROPY_HW_FLASH_TYPE)_config.c
+        SRC_HAL_C += $(BOARD_DIR)/$(MICROPY_HW_FLASH_TYPE)_config.c
     else
-        SRC_C += hal/$(MICROPY_HW_FLASH_TYPE)_config.c
+        SRC_HAL_C += hal/$(MICROPY_HW_FLASH_TYPE)_config.c
     endif
 else
     $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
@@ -258,40 +252,8 @@ SRC_S += shared/runtime/gchelper_m3.s \
 # QSTR Sources
 # =============================================================================
 
-# All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
-ifeq ($(MICROPY_PY_LWIP),1)
-SRC_QSTR += \
-	extmod/modlwip.c \
-	extmod/modnetwork.c \
-	extmod/modusocket.c \
-	extmod/moduwebsocket.c \
-	network_lan.c
-endif
-
 # List of sources for qstr extraction
-SRC_QSTR += \
-	extmod/modonewire.c \
-	extmod/uos_dupterm.c \
-	machine_adc.c \
-	machine_i2s.c \
-	machine_led.c \
-	machine_pin.c \
-	machine_pwm.c \
-	machine_rtc.c \
-	machine_sdcard.c \
-	machine_spi.c \
-	machine_timer.c \
-	machine_uart.c \
-	machine_wdt.c \
-	mimxrt_flash.c \
-	modmachine.c \
-	modmimxrt.c \
-	modutime.c \
-	pin.c \
-	shared/readline/readline.c \
-	shared/runtime/mpirq.c \
-	shared/runtime/sys_stdio_mphal.c \
-	$(GEN_PINS_SRC)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 
 # =============================================================================
 # Compiler Flags
@@ -387,13 +349,13 @@ CFLAGS += \
 	-DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
 endif
 
-CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += $(CFLAGS_EXTRA)
 
 # =============================================================================
 # Linker Flags
 # =============================================================================
 
-LDFLAGS = \
+LDFLAGS += \
 	--cref \
 	--gc-sections \
 	--print-memory-usage \
@@ -428,14 +390,17 @@ ifeq ($(MICROPY_FLOAT_IMPL),double)
 $(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
-
 OBJ += $(PY_O)
 OBJ += $(LIBM_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
-OBJ += $(BUILD)/pins_gen.o
+OBJ += $(addprefix $(BUILD)/, $(SRC_TINYUSB_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_HAL_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_HAL_IMX_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_ETH_C:.c=.o))
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 # Workaround for bug in older gcc, warning on "static usbd_device_t _usbd_dev = { 0 };"
 $(BUILD)/lib/tinyusb/src/device/usbd.o: CFLAGS += -Wno-missing-braces
@@ -486,7 +451,7 @@ $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h: $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PR
 		--iomux $(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h) \
 		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
 
-$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
+$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
 	$(call compile_c)
 
 include $(TOP)/py/mkrules.mk

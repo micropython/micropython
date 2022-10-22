@@ -83,7 +83,6 @@
 #ifndef MICROPY_PY_BUILTINS_HELP_TEXT
 #define MICROPY_PY_BUILTINS_HELP_TEXT ra_help_text
 #endif
-#define MICROPY_PY_IO_FILEIO        (MICROPY_VFS_FAT || MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 #ifndef MICROPY_PY_SYS_PLATFORM     // let boards override it if they want
 #define MICROPY_PY_SYS_PLATFORM     "renesas-ra"
 #endif

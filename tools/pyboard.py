@@ -476,6 +476,13 @@ class Pyboard:
         t = str(self.eval("pyb.RTC().datetime()"), encoding="utf8")[1:-1].split(", ")
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
+    def fs_exists(self, src):
+        try:
+            self.exec_("import uos\nuos.stat(%s)" % (("'%s'" % src) if src else ""))
+            return True
+        except PyboardError:
+            return False
+
     def fs_ls(self, src):
         cmd = (
             "import uos\nfor f in uos.ilistdir(%s):\n"
@@ -490,6 +497,20 @@ class Pyboard:
             "  b=f.read(%u)\n  if not b:break\n  print(b,end='')" % (src, chunk_size)
         )
         self.exec_(cmd, data_consumer=stdout_write_bytes)
+
+    def fs_cp(self, src, dest, chunk_size=256, progress_callback=None):
+        if progress_callback:
+            src_size = int(self.exec_("import os\nprint(os.stat('%s')[6])" % src))
+            written = 0
+        self.exec_("fr=open('%s','rb')\nr=fr.read\nfw=open('%s','wb')\nw=fw.write" % (src, dest))
+        while True:
+            data_len = int(self.exec_("d=r(%u)\nw(d)\nprint(len(d))" % chunk_size))
+            if not data_len:
+                break
+            if progress_callback:
+                written += data_len
+                progress_callback(written, src_size)
+        self.exec_("fr.close()\nfw.close()")
 
     def fs_get(self, src, dest, chunk_size=256, progress_callback=None):
         if progress_callback:
@@ -543,6 +564,9 @@ class Pyboard:
     def fs_rm(self, src):
         self.exec_("import uos\nuos.remove('%s')" % src)
 
+    def fs_touch(self, src):
+        self.exec_("f=open('%s','a')\nf.close()" % src)
+
 
 # in Python2 exec is a keyword so one must use "exec_"
 # but for Python3 we want to provide the nicer version "exec"
@@ -565,12 +589,12 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
         return src
 
     def fname_cp_dest(src, dest):
-        src = src.rsplit("/", 1)[-1]
+        _, src = os.path.split(src)
         if dest is None or dest == "":
             dest = src
         elif dest == ".":
-            dest = "./" + src
-        elif dest.endswith("/"):
+            dest = os.path.join(".", src)
+        elif dest.endswith(os.path.sep):
             dest += src
         return dest
 
@@ -580,36 +604,45 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
         if cmd == "cp":
             srcs = args[:-1]
             dest = args[-1]
-            if srcs[0].startswith("./") or dest.startswith(":"):
-                op = pyb.fs_put
-                fmt = "cp %s :%s"
-                dest = fname_remote(dest)
+            if dest.startswith(":"):
+                op_remote_src = pyb.fs_cp
+                op_local_src = pyb.fs_put
             else:
-                op = pyb.fs_get
-                fmt = "cp :%s %s"
+                op_remote_src = pyb.fs_get
+                op_local_src = lambda src, dest, **_: __import__("shutil").copy(src, dest)
             for src in srcs:
-                src = fname_remote(src)
-                dest2 = fname_cp_dest(src, dest)
                 if verbose:
-                    print(fmt % (src, dest2))
-                op(src, dest2, progress_callback=progress_callback)
+                    print("cp %s %s" % (src, dest))
+                if src.startswith(":"):
+                    op = op_remote_src
+                else:
+                    op = op_local_src
+                src2 = fname_remote(src)
+                dest2 = fname_cp_dest(src2, fname_remote(dest))
+                op(src2, dest2, progress_callback=progress_callback)
         else:
-            op = {
-                "ls": pyb.fs_ls,
+            ops = {
                 "cat": pyb.fs_cat,
+                "ls": pyb.fs_ls,
                 "mkdir": pyb.fs_mkdir,
-                "rmdir": pyb.fs_rmdir,
                 "rm": pyb.fs_rm,
-            }[cmd]
+                "rmdir": pyb.fs_rmdir,
+                "touch": pyb.fs_touch,
+            }
+            if cmd not in ops:
+                raise PyboardError("'{}' is not a filesystem command".format(cmd))
             if cmd == "ls" and not args:
                 args = [""]
             for src in args:
                 src = fname_remote(src)
                 if verbose:
                     print("%s :%s" % (cmd, src))
-                op(src)
+                ops[cmd](src)
     except PyboardError as er:
-        print(str(er.args[2], "ascii"))
+        if len(er.args) > 1:
+            print(str(er.args[2], "ascii"))
+        else:
+            print(er)
         pyb.exit_raw_repl()
         pyb.close()
         sys.exit(1)

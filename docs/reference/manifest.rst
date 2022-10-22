@@ -1,35 +1,177 @@
+.. _manifest:
+
 MicroPython manifest files
 ==========================
 
-When building firmware for a device the following components are included in
-the compilation process:
+Summary
+-------
 
-- the core MicroPython virtual machine and runtime
-- port-specific system code and drivers to interface with the
-  microcontroller/device that the firmware is targeting
-- standard built-in modules, like ``sys``
-- extended built-in modules, like ``json`` and ``machine``
-- extra modules written in C/C++
-- extra modules written in Python
+MicroPython has a feature that allows Python code to be "frozen" into the
+firmware, as an alternative to loading code from the filesystem.
 
-All the modules included in the firmware are available via ``import`` from
-Python code.  The extra modules written in Python that are included in a build
-(the last point above) are called *frozen modules*, and are specified by a
-``manifest.py`` file.  Changing this manifest requires rebuilding the firmware.
+This has the following benefits:
 
-It's also possible to add additional modules to the filesystem of the device
-once it is up and running.  Adding and removing modules to/from the filesystem
-does not require rebuilding the firmware so is a simpler process than rebuilding
-firmware.  The benefit of using a manifest is that frozen modules are more
-efficient: they are faster to import and take up less RAM once imported.
+- the code is pre-compiled to bytecode, avoiding the need for the Python
+  source to be compiled at load-time.
+- the bytecode can be executed directly from ROM (i.e. flash memory) rather than
+  being copied into RAM. Similarly any constant objects (strings, tuples, etc)
+  are loaded from ROM also. This can lead to significantly more memory being
+  available for your application.
+- on devices that do not have a filesystem, this is the only way to
+  load Python code.
 
-MicroPython manifest files are Python files and can contain arbitrary Python
-code.  There are also a set of commands (predefined functions) which are used
-to specify the Python source files to include.  These commands are described
-below.
+During development, freezing is generally not recommended as it will
+significantly slow down your development cycle, as each update will require
+re-flashing the entire firmware. However, it can still be useful to
+selectively freeze some rarely-changing dependencies (such as third-party
+libraries).
 
-Freezing source code
---------------------
+The way to list the Python files to be be frozen into the firmware is via
+a "manifest", which is a Python file that will be interpreted by the build
+process. Typically you would write a manifest file as part of a board
+definition, but you can also write a stand-alone manifest file and use it with
+an existing board definition.
+
+Manifest files can define dependencies on libraries from :term:`micropython-lib`
+as well as Python files on the filesystem, and also on other manifest files.
+
+Writing manifest files
+----------------------
+
+A manifest file is a Python file containing a series of function calls. See the
+available functions defined below.
+
+Any paths used in manifest files can include the following variables. These all
+resolve to absolute paths.
+
+- ``$(MPY_DIR)`` -- path to the micropython repo.
+- ``$(MPY_LIB_DIR)`` -- path to the micropython-lib submodule. Prefer to use
+  ``require()``.
+- ``$(PORT_DIR)`` -- path to the current port (e.g. ``ports/stm32``)
+- ``$(BOARD_DIR)`` -- path to the current board
+  (e.g. ``ports/stm32/boards/PYBV11``)
+
+Custom manifest files should not live in the main MicroPython repository. You
+should keep them in version control with the rest of your project.
+
+Typically a manifest used for compiling firmware will need to include the port
+manifest, which might include frozen modules that are required for the board to
+function. If you just want to add additional modules to an existing board, then
+include the board manifest (which will in turn include the port manifest).
+
+Building with a custom manifest
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Your manifest can be specified on the ``make`` command line with:
+
+.. code-block:: bash
+
+    $ make BOARD=MYBOARD FROZEN_MANIFEST=/path/to/my/project/manifest.py
+
+This applies to all ports, including CMake-based ones (e.g. esp32, rp2), as the
+Makefile wrapper that will pass this into the CMake build.
+
+Adding a manifest to a board definition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you have a custom board definition, you can make it include your custom
+manifest automatically. On make-based ports (most ports), in your
+``mpconfigboard.mk`` set the ``FROZEN_MANIFEST`` variable.
+
+.. code-block:: makefile
+
+    FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py
+
+On CMake-based ports (e.g. esp32, rp2), instead use ``mpconfigboard.cmake``
+
+.. code-block:: cmake
+
+    set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)
+
+High-level functions
+~~~~~~~~~~~~~~~~~~~~
+
+Note: The ``opt`` keyword argument can be set on the various functions, this controls
+the optimisation level used by the cross-compiler.
+See :func:`micropython.opt_level`.
+
+.. function:: package(package_path, files=None, base_path=".", opt=None)
+
+    This is equivalent to copying the "package_path" directory to the device
+    (except as frozen code).
+
+    In the simplest case, to freeze a package "foo" in the current directory:
+
+    .. code-block:: python3
+
+        package("foo")
+
+    will recursively include all .py files in foo, and will be frozen as
+    ``foo/**/*.py``.
+
+    If the package isn't in the same directory as the manifest file, use ``base_path``:
+
+    .. code-block:: python3
+
+        package("foo", base_path="path/to/libraries")
+
+    You can use the variables above, such as ``$(PORT_DIR)`` in ``base_path``.
+
+    To restrict to certain files in the package use ``files`` (note: paths
+    should be relative to the package): ``package("foo", files=["bar/baz.py"])``.
+
+.. function:: module(module_path, base_path=".", opt=None)
+
+    Include a single Python file as a module.
+
+    If the file is in the current directory:
+
+    .. code-block:: python3
+
+        module("foo.py")
+
+    Otherwise use base_path to locate the file:
+
+    .. code-block:: python3
+
+        module("foo.py", base_path="src/drivers")
+
+    You can use the variables above, such as ``$(PORT_DIR)`` in ``base_path``.
+
+.. function:: require(name, unix_ffi=False)
+
+    Require a package by name (and its dependencies) from :term:`micropython-lib`.
+
+    Optionally specify unix_ffi=True to use a module from the unix-ffi directory.
+
+.. function:: include(manifest_path)
+
+    Include another manifest.
+
+    Typically a manifest used for compiling firmware will need to include the
+    port manifest, which might include frozen modules that are required for
+    the board to function.
+
+    The *manifest* argument can be a string (filename) or an iterable of
+    strings.
+
+    Relative paths are resolved with respect to the current manifest file.
+
+    If the path is to a directory, then it implicitly includes the
+    manifest.py file inside that directory.
+
+    You can use the variables above, such as ``$(PORT_DIR)`` in ``manifest_path``.
+
+.. function:: metadata(description=None, version=None, license=None, author=None)
+
+    Define metadata for this manifest file. This is useful for manifests for
+    micropython-lib packages.
+
+Low-level functions
+~~~~~~~~~~~~~~~~~~~
+
+These functions are documented for completeness, but with the exception of
+``freeze_as_str`` all functionality can be accessed via the high-level functions.
 
 .. function:: freeze(path, script=None, opt=0)
 
@@ -42,9 +184,7 @@ Freezing source code
     module will start after *path*, i.e. *path* is excluded from the module
     name.
 
-    If *path* is relative, it is resolved to the current ``manifest.py``.  Use
-    ``$(MPY_DIR)``, ``$(MPY_LIB_DIR)``, ``$(PORT_DIR)``, ``$(BOARD_DIR)`` if you
-    need to access specific paths.
+    If *path* is relative, it is resolved to the current ``manifest.py``.
 
     If *script* is None, all files in *path* will be frozen.
 
@@ -75,71 +215,48 @@ Freezing source code
     Freeze the input, which must be ``.mpy`` files that are frozen directly.
     See ``freeze()`` for further details on the arguments.
 
-
-Including other manifest files
-------------------------------
-
-.. function:: include(manifest, **kwargs)
-
-    Include another manifest.
-
-    The *manifest* argument can be a string (filename) or an iterable of
-    strings.
-
-    Relative paths are resolved with respect to the current manifest file.
-
-    Optional *kwargs* can be provided which will be available to the included
-    script via the *options* variable.
-
-    For example:
-
-    .. code-block:: python3
-
-        include("path.py", extra_features=True)
-
-    then in path.py:
-
-    .. code-block:: python3
-
-            options.defaults(standard_features=True)
-            # freeze minimal modules.
-            if options.standard_features:
-                # freeze standard modules.
-            if options.extra_features:
-                # freeze extra modules.
-
-
 Examples
 --------
 
-To freeze a single file which is available as ``import mydriver``, use:
+To freeze a single file from the current directory which will be available as
+``import mydriver``, use:
 
 .. code-block:: python3
 
-    freeze(".", "mydriver.py")
+    module("mydriver.py")
 
-To freeze a set of files which are available as ``import test1`` and
-``import test2``, and which are compiled with optimisation level 3, use:
-
-.. code-block:: python3
-
-    freeze("/path/to/tests", ("test1.py", "test2.py"), opt=3)
-
-To freeze a module which can be imported as ``import mymodule``, use:
+To freeze a directory of files in a subdirectory "mydriver" of the current
+directory which will be available as ``import mydriver``, use:
 
 .. code-block:: python3
 
-    freeze(
-        "../relative/path",
-        (
-            "mymodule/__init__.py",
-            "mymodule/core.py",
-            "mymodule/extra.py",
-        ),
-    )
+    package("mydriver")
 
-To include a manifest from the MicroPython repository, use:
+To freeze the "hmac" library from :term:`micropython-lib`, use:
 
 .. code-block:: python3
 
-    include("$(MPY_DIR)/extmod/uasyncio/manifest.py")
+    require("hmac")
+
+A more complete example of a custom ``manifest.py`` file for the ``PYBD_SF2``
+board is:
+
+.. code-block:: python3
+
+    # Include the board's default manifest.
+    include("$(BOARD_DIR)/manifest.py")
+    # Add a custom driver
+    module("mydriver.py")
+    # Add aiorepl from micropython-lib
+    require("aiorepl")
+
+Then the board can be compiled with
+
+.. code-block:: bash
+
+    $ cd ports/stm32
+    $ make BOARD=PYBD_SF2 FROZEN_MANIFEST=~/src/myproject/manifest.py
+
+Note that most boards do not have their own ``manifest.py``, rather they use the
+port one directly, in which case your manifest should just
+``include("$(PORT_DIR)/boards/manifest.py")`` instead.
