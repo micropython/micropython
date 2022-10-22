@@ -241,6 +241,7 @@ extern const struct _mp_obj_type_t network_lan_type;
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
+        __WFE(); \
     } while (0);
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
