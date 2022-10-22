@@ -701,6 +701,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 mp_printf(&mp_stderr_print, "%s: can't open file '%s': [Errno %d] %s\n", argv[0], argv[a], errno, strerror(errno));
                 // CPython exits with 2 in such case
                 free(pathbuf);
+                pathbuf = NULL;
+
                 ret = 2;
                 break;
             }
@@ -709,6 +711,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             char *p = strrchr(basedir, '/');
             path_items[0] = mp_obj_new_str_via_qstr(basedir, p - basedir);
             free(pathbuf);
+            pathbuf = NULL;
 
             set_sys_argv(argv, argc, a);
             ret = do_file(argv[a]);
