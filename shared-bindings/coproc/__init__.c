@@ -68,9 +68,7 @@ STATIC coproc_coproc_obj_t *get_coproc_obj(mp_obj_t *self_in) {
 //|     ...
 //|
 STATIC mp_obj_t coproc_run(mp_obj_t self_in) {
-    coproc_coproc_obj_t *self = get_coproc_obj(&self_in);
-    common_hal_coproc_load(self);
-    common_hal_coproc_run(self);
+    common_hal_coproc_run(get_coproc_obj(&self_in));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(coproc_run_obj, coproc_run);
