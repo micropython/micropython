@@ -27,12 +27,33 @@
 #include "shared-bindings/coproc/Coproc.h"
 #include "shared-bindings/coproc/CoprocMemory.h"
 
+#include "py/runtime.h"
+
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#include "esp32s2/ulp.h"
+#define ULP_COPROC_RESERVE_MEM (CONFIG_ESP32S2_ULP_COPROC_RESERVE_MEM)
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#include "esp32s3/ulp.h"
+#define ULP_COPROC_RESERVE_MEM (CONFIG_ESP32S3_ULP_COPROC_RESERVE_MEM)
+#endif
+
+#define RTC_SLOW_MEM_END ((uint32_t)RTC_SLOW_MEM + ULP_COPROC_RESERVE_MEM)
+
 void common_hal_coproc_coproc_construct(coproc_coproc_obj_t *self,
     const uint8_t *buf, const size_t buf_len, coproc_memory_obj_t *coproc_memory) {
     // set CoprocMemory object
+    if (coproc_memory != NULL) {
+        if (coproc_memory->address < ((uint32_t)RTC_SLOW_MEM + buf_len) ||
+            coproc_memory->address > (RTC_SLOW_MEM_END - coproc_memory->len)) {
+            mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_CoprocMemory);
+        }
+    }
     self->coproc_memory = coproc_memory;
 
     // load buffer
+    if (buf_len > ULP_COPROC_RESERVE_MEM) {
+        mp_raise_RuntimeError(translate("Firmware is too big"));
+    }
     self->buf_len = buf_len;
     self->buf = (uint8_t *)m_malloc(self->buf_len, false);
     memcpy(self->buf, buf, self->buf_len);
