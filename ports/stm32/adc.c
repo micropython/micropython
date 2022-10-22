@@ -216,6 +216,14 @@ static inline uint32_t adc_get_internal_channel(uint32_t channel) {
     if (channel == 16) {
         channel = ADC_CHANNEL_TEMPSENSOR;
     }
+    #elif defined(STM32L4)
+    if (channel == 0) {
+        channel = ADC_CHANNEL_VREFINT;
+    } else if (channel == 17) {
+        channel = ADC_CHANNEL_TEMPSENSOR;
+    } else if (channel == 18) {
+        channel = ADC_CHANNEL_VBAT;
+    }
     #endif
     return channel;
 }
