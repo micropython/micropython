@@ -97,7 +97,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         return MP_OBJ_FROM_PTR(&lan_obj);
     }
 
-    enum { ARG_id, ARG_mdc, ARG_mdio, ARG_power, ARG_phy_addr, ARG_phy_type };
+    enum { ARG_id, ARG_mdc, ARG_mdio, ARG_power, ARG_phy_addr, ARG_phy_type, ARG_clock_out, };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,           MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_mdc,          MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -105,6 +105,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         { MP_QSTR_power,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_phy_addr,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_phy_type,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_clock_out,    MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -138,6 +139,27 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
     mac_config.smi_mdc_gpio_num = self->mdc_pin;
     mac_config.smi_mdio_gpio_num = self->mdio_pin;
+
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+    int8_t clock_out_pin = args[ARG_clock_out].u_obj == mp_const_none ? -1 : machine_pin_get_id(args[ARG_clock_out].u_obj);
+    if (clock_out_pin != -1) {
+        mac_config.clock_config.rmii.clock_mode = EMAC_CLK_OUT;
+        switch (clock_out_pin) {
+            case 0:
+                mac_config.clock_config.rmii.clock_gpio = EMAC_APPL_CLK_OUT_GPIO;
+                break;
+            case 16:
+                mac_config.clock_config.rmii.clock_gpio = EMAC_CLK_OUT_GPIO;
+                break;
+            case 17:
+                mac_config.clock_config.rmii.clock_gpio = EMAC_CLK_OUT_180_GPIO;
+                break;
+            default:
+                mp_raise_ValueError(MP_ERROR_TEXT("unknown clock output pin"));
+        }
+    }
+    #endif
+
     esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&mac_config);
 
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
