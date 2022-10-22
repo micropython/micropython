@@ -852,9 +852,9 @@ float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
         return 0;
     }
     #else
-    #if defined(STM32L1)
+    #if defined(STM32L1) || defined(STM32L4)
     // Update the reference correction factor before reading tempsensor
-    // because TS_CAL1 and TS_CAL2 of STM32L1 are at VDDA=3.0V
+    // because TS_CAL1 and TS_CAL2 of STM32L1/L4 are at VDDA=3.0V
     adc_read_core_vref(adcHandle);
     #endif
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
