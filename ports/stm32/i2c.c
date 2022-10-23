@@ -268,11 +268,14 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
     return num_acks;
 }
 
-#elif defined(STM32F0) || defined(STM32F7) || defined(STM32H7)
+#elif defined(STM32F0) || defined(STM32F7) || defined(STM32H7) || defined(STM32L4)
 
 #if defined(STM32H7)
 #define APB1ENR            APB1LENR
 #define RCC_APB1ENR_I2C1EN RCC_APB1LENR_I2C1EN
+#elif defined(STM32L4)
+#define APB1ENR            APB1ENR1
+#define RCC_APB1ENR_I2C1EN RCC_APB1ENR1_I2C1EN
 #endif
 
 STATIC uint16_t i2c_timeout_ms[MICROPY_HW_MAX_I2C];
@@ -302,6 +305,18 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
     i2c->OAR1 = 0;
     i2c->OAR2 = 0;
 
+    #if defined(STM32L4)
+    // These timing values are with f_I2CCLK=80MHz and are only approximate
+    if (freq >= 1000000) {
+        i2c->TIMINGR = 0x00300F33;
+    } else if (freq >= 400000) {
+        i2c->TIMINGR = 0x00702991;
+    } else if (freq >= 100000) {
+        i2c->TIMINGR = 0x10909CEC;
+    } else {
+        return -MP_EINVAL;
+    }
+    #else
     // These timing values are for f_I2CCLK=54MHz and are only approximate
     if (freq >= 1000000) {
         i2c->TIMINGR = 0x50100103;
@@ -312,6 +327,7 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
     } else {
         return -MP_EINVAL;
     }
+    #endif
 
     i2c->TIMEOUTR = 0;
 
