@@ -61,6 +61,9 @@ Methods
          frequency of the channel.
 
      - ``period`` - The timer period, in milliseconds.
+     
+     - ``freq`` - The timer freq, recommended less than 10 MHz. Theoretical
+        upper bound is 46.875 MHz.
 
      - ``callback`` - The callable to call upon expiration of the timer period.
        The callback must take one argument, which is passed the Timer object.
