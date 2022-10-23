@@ -31,7 +31,7 @@
 
 #if MICROPY_HW_ENABLE_HW_I2C
 
-#if defined(STM32F4)
+#if defined(STM32F4) || defined(STM32L1)
 
 STATIC uint16_t i2c_timeout_ms[MICROPY_HW_MAX_I2C];
 
