@@ -62,8 +62,8 @@ Methods
 
      - ``period`` - The timer period, in milliseconds.
      
-     - ``freq`` - The timer freq, recommended less than 10 MHz. Theoretical
-        upper bound is 46.875 MHz.
+     - ``freq`` - The timer freq, the upper bound of frequency is dependent on
+	 port. Please refer to specific microcontroller datasheet.
 
      - ``callback`` - The callable to call upon expiration of the timer period.
        The callback must take one argument, which is passed the Timer object.
