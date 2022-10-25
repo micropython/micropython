@@ -41,9 +41,14 @@ The :mod:`machine` module::
     machine.freq()            # get the current frequency of the CPU
     machine.freq(96_000_000)  # set the CPU frequency to 96 MHz
 
-Setting the CPU frequency is only supported on SAMD51 devices. The range accepted
-by the function call is 48_000_000 to 200_000_000 (48 MHz to 200 MHz). The safe
-range according to the data sheet is 96 MHz to 120 MHz.
+The range accepted by the function call is 1_000_000 to 200_000_000 (1 MHz to 200 MHz)
+for SAMD51 and 1_000_000 to 48_000_000 (1 MHz to 48 MHz) for SAMD21. The safe
+range for SAMD51 according to the data sheet is 96 MHz to 120 MHz.
+At frequencies below 8 MHz USB will be disabled. Changing the frequency below 48 MHz
+impacts the baud rates of UART, I2C and SPI. These have to be set again after
+changing the CPU frequency. The ms and µs timers are not affected by the frequency
+change.
+
 
 Delay and timing
 ----------------
@@ -57,6 +62,40 @@ Use the :mod:`time <time>` module::
     time.sleep_us(10)       # sleep for 10 microseconds
     start = time.ticks_ms() # get millisecond counter
     delta = time.ticks_diff(time.ticks_ms(), start) # compute time difference
+
+
+Clock and time
+--------------
+
+Two groups of functions are provided for time information. All boards have the
+datetime(), mktime() and time() functions. Boards with a 32kHz crystal also
+provide an RTC() module. The epoch start date is 1.1.2000.
+
+Use the :mod:`time <time>` module::
+
+    import time
+
+    date_time = time.localtime()         # Show the actual date/time information
+    date_time = time.localtime(seconds)  # decode the date/time form the seconds value
+    seconds = time.mktime(date_time_tuple)  # Convert seconds to a datetime tuple
+    second = time.time()                # Return the actual system time.
+
+The format of the date_time tuple follows the standard. The µs value of the date_time
+tuple is ignored. On boards without the RTC module, time.localtime(seconds) sets the
+system time. Use of the Use the :mod:`RTC <RTC>` module::
+
+    from machine import RTC
+    rtc = RTC()
+    date_time = rtc.datetime()      # return the actual date & time.
+    rtc.datetime(date_time_tuple)   # Set date & time, ignoring weekday
+    date_time = rtc.now()           # Return date & time in Unix order.
+    rtc.calibration(value)          # Set a calibration factor
+
+The weekday value set will be ignored and calculated in the returned tuple from the
+actual date. rtc.now() is only provided at SAMD51 boards. The value used in the
+rtc.calibration() call has a range from -127 - 127. It defines roughly a
+ppm quantity, by which the clock can run faster or slower.
+
 
 Timers
 ------
@@ -91,9 +130,20 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     print(p2.value())       # get value, 0 or 1
 
     p4 = Pin('D4', Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
-    p7 = Pin(7, Pin.OUT, value=1) # set pin high on creation
+    p7 = Pin("PA07", Pin.OUT, value=1) # set pin high on creation
 
-Available Pins follow the ranges and labelling of the respective board.
+Pins can be denoted by a string or a number. The string is either the
+pin label of the respective board, like "D0" or "SDA", or in the form
+"Pxnn", where x is A,B,C or D, and nn a two digit number in the range 0-31.
+
+Examples: "PA03", PD31".
+
+Pin numbers are the MCU port numbers in the range:
+
+PA0..PA31:  0..31
+PB0..PB31: 32..63
+PC0..PC31: 64..95
+PD0..PD31: 96..127
 
 Notes:
 
@@ -240,7 +290,7 @@ Software SPI (using bit-banging) works on all pins, and is accessed via the
     # phase=0 means sample on the first edge of SCK, phase=1 means the second
     spi = SoftSPI(baudrate=100000, polarity=1, phase=0, sck=Pin(7), mosi=Pin(9), miso=Pin(10))
 
-    spi.init(baudrate=200000) # set the baudrate
+    spi.init(baudrate=200000) # set the baud rate
 
     spi.read(10)            # read 10 bytes on MISO
     spi.read(10, 0xff)      # read 10 bytes while outputting 0xff on MOSI
