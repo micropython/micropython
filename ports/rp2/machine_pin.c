@@ -58,6 +58,26 @@
 #define MICROPY_HW_PIN_RESERVED(i) (0)
 #endif
 
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_af_type,
+    MP_QSTR_PinAF,
+    MP_TYPE_FLAG_NONE
+    );
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_cpu_pins_obj_type,
+    MP_QSTR_cpu,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &pin_cpu_pins_locals_dict
+    );
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_board_pins_obj_type,
+    MP_QSTR_board,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &pin_board_pins_locals_dict
+    );
+
 typedef struct _machine_pin_irq_obj_t {
     mp_irq_obj_t base;
     uint32_t flags;
@@ -65,63 +85,7 @@ typedef struct _machine_pin_irq_obj_t {
 } machine_pin_irq_obj_t;
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
-
-STATIC const machine_pin_obj_t machine_pin_obj[NUM_BANK0_GPIOS] = {
-    {{&machine_pin_type}, 0},
-    {{&machine_pin_type}, 1},
-    {{&machine_pin_type}, 2},
-    {{&machine_pin_type}, 3},
-    {{&machine_pin_type}, 4},
-    {{&machine_pin_type}, 5},
-    {{&machine_pin_type}, 6},
-    {{&machine_pin_type}, 7},
-    {{&machine_pin_type}, 8},
-    {{&machine_pin_type}, 9},
-    {{&machine_pin_type}, 10},
-    {{&machine_pin_type}, 11},
-    {{&machine_pin_type}, 12},
-    {{&machine_pin_type}, 13},
-    {{&machine_pin_type}, 14},
-    {{&machine_pin_type}, 15},
-    {{&machine_pin_type}, 16},
-    {{&machine_pin_type}, 17},
-    {{&machine_pin_type}, 18},
-    {{&machine_pin_type}, 19},
-    {{&machine_pin_type}, 20},
-    {{&machine_pin_type}, 21},
-    {{&machine_pin_type}, 22},
-    {{&machine_pin_type}, 23},
-    {{&machine_pin_type}, 24},
-    {{&machine_pin_type}, 25},
-    {{&machine_pin_type}, 26},
-    {{&machine_pin_type}, 27},
-    {{&machine_pin_type}, 28},
-    {{&machine_pin_type}, 29},
-};
-
-#define LED_PIN_NAME "LED"
-
-#ifndef MICROPY_HW_PIN_ENABLE_LED_PIN
-#if defined(MICROPY_HW_PIN_EXT_LED_PIN_NUM) || defined(PICO_DEFAULT_LED_PIN)
-#define MICROPY_HW_PIN_ENABLE_LED_PIN 1
-#endif
-#endif
-
-#if MICROPY_HW_PIN_EXT_COUNT
-extern machine_pin_obj_t ext_pin_obj[MICROPY_HW_PIN_EXT_COUNT];
-#endif
-
-#ifdef MICROPY_HW_PIN_ENABLE_LED_PIN
-#ifdef MICROPY_HW_PIN_EXT_LED_PIN_NUM
-STATIC machine_pin_obj_t *led_pin_obj = &ext_pin_obj[MICROPY_HW_PIN_EXT_LED_PIN_NUM];
-#elif defined(MICROPY_HW_PIN_LED_PIN_NUM)
-STATIC machine_pin_obj_t *led_pin_obj = &machine_pin_obj[MICROPY_HW_PIN_LED_PIN_NUM];
-#elif defined(PICO_DEFAULT_LED_PIN)
-STATIC const machine_pin_obj_t *led_pin_obj = &machine_pin_obj[PICO_DEFAULT_LED_PIN];
-#else
-#error MICROPY_HW_PIN_ENABLE_LED_PIN defined but there is no LED pin
-#endif
-#endif
+extern const machine_pin_obj_t *machine_pin_cpu_pins[NUM_BANK0_GPIOS];
 
 // Mask with "1" indicating that the corresponding pin is in simulated open-drain mode.
 uint32_t machine_pin_open_drain_mask;
@@ -173,6 +137,35 @@ void machine_pin_deinit(void) {
     irq_remove_handler(IO_IRQ_BANK0, gpio_irq);
 }
 
+const machine_pin_obj_t *machine_pin_find_named(const mp_obj_dict_t *named_pins, mp_obj_t name) {
+    const mp_map_t *named_map = &named_pins->map;
+    mp_map_elem_t *named_elem = mp_map_lookup((mp_map_t *)named_map, name, MP_MAP_LOOKUP);
+    if (named_elem != NULL && named_elem->value != NULL) {
+        return MP_OBJ_TO_PTR(named_elem->value);
+    }
+    return NULL;
+}
+
+const machine_pin_af_obj_t *machine_pin_find_alt(const machine_pin_obj_t *pin, uint8_t fn) {
+    const machine_pin_af_obj_t *af = pin->af;
+    for (mp_uint_t i = 0; i < pin->af_num; i++, af++) {
+        if (af->fn == fn) {
+            return af;
+        }
+    }
+    return NULL;
+}
+
+const machine_pin_af_obj_t *machine_pin_find_alt_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx) {
+    const machine_pin_af_obj_t *af = pin->af;
+    for (mp_uint_t i = 0; i < pin->af_num; i++, af++) {
+        if (af->idx == af_idx) {
+            return af;
+        }
+    }
+    return NULL;
+}
+
 STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
     uint funcsel = GPIO_GET_FUNCSEL(self->id);
@@ -189,7 +182,7 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         } else {
             mode_qst = MP_QSTR_ALT;
         }
-        mp_printf(print, "Pin(%u, mode=%q", self->id, mode_qst);
+        mp_printf(print, "Pin(%q, mode=%q", self->name, mode_qst);
         bool pull_up = false;
         if (GPIO_IS_PULL_UP(self->id)) {
             mp_printf(print, ", pull=%q", MP_QSTR_PULL_UP);
@@ -203,12 +196,17 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
             }
         }
         if (funcsel != GPIO_FUNC_SIO) {
-            mp_printf(print, ", alt=%u", funcsel);
+            const machine_pin_af_obj_t *af = machine_pin_find_alt_by_index(self, funcsel);
+            if (af == NULL) {
+                mp_printf(print, ", alt=%u", funcsel);
+            } else {
+                mp_printf(print, ", alt=%q", af->name);
+            }
         }
     } else {
         #if MICROPY_HW_PIN_EXT_COUNT
-        mode_qst = self->is_output ? MP_QSTR_OUT : MP_QSTR_IN;
-        mp_printf(print, "Pin(%s%u, mode=%q", MICROPY_HW_PIN_EXT_PREFIX,  self->id, mode_qst);
+        mode_qst = (self->is_output) ? MP_QSTR_OUT : MP_QSTR_IN;
+        mp_printf(print, "Pin(%q, mode=%q", self->name, mode_qst);
         #endif
     }
     mp_printf(print, ")");
@@ -231,11 +229,11 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (is_ext_pin(self) && args[ARG_pull].u_obj != mp_const_none) {
-        mp_raise_ValueError("Pulls are not supported for external pins.");
+        mp_raise_ValueError("pulls are not supported for external pins");
     }
 
     if (is_ext_pin(self) && args[ARG_alt].u_int != GPIO_FUNC_SIO) {
-        mp_raise_ValueError("Alternate functions are not supported for external pins.");
+        mp_raise_ValueError("alternate functions are not supported for external pins");
     }
 
     int value = -1;
@@ -264,7 +262,11 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
             mp_hal_pin_open_drain(self->id);
         } else {
             // Configure alternate function.
-            gpio_set_function(self->id, args[ARG_alt].u_int);
+            mp_uint_t af = args[ARG_alt].u_int;
+            if (machine_pin_find_alt(self, af) == NULL) {
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin af: %d"), af);
+            }
+            gpio_set_function(self->id, af);
             machine_pin_open_drain_mask &= ~(1 << self->id);
         }
     }
@@ -283,35 +285,29 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 // constructor(id, ...)
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-
     const machine_pin_obj_t *self = NULL;
+
     if (mp_obj_is_str(args[0])) {
         const char *name = mp_obj_str_get_str(args[0]);
-        #if MICROPY_HW_PIN_ENABLE_LED_PIN
-        if (!strcmp(name, LED_PIN_NAME)) {
-            self = led_pin_obj;
-        }
-        #endif
-        #if MICROPY_HW_PIN_EXT_COUNT
-        static_assert(MICROPY_HW_PIN_EXT_COUNT < 10, ""); // makes parsing name easy!
-        if (!self && !strncmp(name, MICROPY_HW_PIN_EXT_PREFIX, strlen(MICROPY_HW_PIN_EXT_PREFIX)) && strlen(name) == strlen(MICROPY_HW_PIN_EXT_PREFIX) + 1) {
-            int num = name[strlen(MICROPY_HW_PIN_EXT_PREFIX)] - '0';
-            if (num < MICROPY_HW_PIN_EXT_COUNT) {
-                self = &ext_pin_obj[num];
-            }
-        }
-        #endif
+        // Try to find the pin in the board pins first.
+        self = machine_pin_find_named(&pin_board_pins_locals_dict, args[0]);
         if (!self) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Unknown named pin \"%s\""), name);
+            // If not found, try to find the pin in the cpu pins which include
+            // CPU and and externally controlled pins (if any).
+            self = machine_pin_find_named(&pin_cpu_pins_locals_dict, args[0]);
+        }
+        if (!self) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unknown named pin \"%s\""), name);
+        }
+    } else if (mp_obj_is_int(args[0])) {
+        // get the wanted pin object
+        int wanted_pin = mp_obj_get_int(args[0]);
+        if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_cpu_pins)) {
+            self = machine_pin_cpu_pins[wanted_pin];
         }
     }
     if (!self) {
-        // get the wanted pin object
-        int wanted_pin = mp_obj_get_int(args[0]);
-        if (!(0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj))) {
-            mp_raise_ValueError("invalid pin");
-        }
-        self = &machine_pin_obj[wanted_pin];
+        mp_raise_ValueError("invalid pin");
     }
 
     if (n_args > 1 || n_kw > 0) {
@@ -427,7 +423,7 @@ STATIC machine_pin_irq_obj_t *machine_pin_get_irq(mp_hal_pin_obj_t pin) {
         irq = m_new_obj(machine_pin_irq_obj_t);
         irq->base.base.type = &mp_irq_type;
         irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
-        irq->base.parent = MP_OBJ_FROM_PTR(&machine_pin_obj[pin]);
+        irq->base.parent = MP_OBJ_FROM_PTR(&machine_pin_cpu_pins[pin]);
         irq->base.handler = mp_const_none;
         irq->base.ishard = false;
         MP_STATE_PORT(machine_pin_irq_obj[pin]) = irq;
@@ -493,6 +489,10 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&machine_pin_toggle_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
 
+    // class attributes
+    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&pin_board_pins_obj_type) },
+    { MP_ROM_QSTR(MP_QSTR_cpu), MP_ROM_PTR(&pin_cpu_pins_obj_type) },
+
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(MACHINE_PIN_MODE_IN) },
     { MP_ROM_QSTR(MP_QSTR_OUT), MP_ROM_INT(MACHINE_PIN_MODE_OUT) },
@@ -502,6 +502,17 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_IRQ_EDGE_RISE) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_IRQ_EDGE_FALL) },
+
+    // Pins alternate functions
+    { MP_ROM_QSTR(MP_QSTR_ALT_SPI), MP_ROM_INT(GPIO_FUNC_SPI) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_UART), MP_ROM_INT(GPIO_FUNC_UART) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_I2C), MP_ROM_INT(GPIO_FUNC_I2C) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_PWM), MP_ROM_INT(GPIO_FUNC_PWM) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_SIO), MP_ROM_INT(GPIO_FUNC_SIO) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_PIO0), MP_ROM_INT(GPIO_FUNC_PIO0) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_PIO1), MP_ROM_INT(GPIO_FUNC_PIO1) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_GPCK), MP_ROM_INT(GPIO_FUNC_GPCK) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_USB), MP_ROM_INT(GPIO_FUNC_USB) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 

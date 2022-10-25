@@ -36,14 +36,7 @@
 #include "machine_pin.h"
 #include "lib/cyw43-driver/src/cyw43.h"
 
-machine_pin_obj_t ext_pin_obj[MICROPY_HW_PIN_EXT_COUNT];
-
 void machine_pin_ext_init(void) {
-    for (uint i = 0; i < count_of(ext_pin_obj); i++) {
-        ext_pin_obj[i].id = i;
-        ext_pin_obj[i].base.type = &machine_pin_type;
-        ext_pin_obj[i].is_ext = true;
-    }
 }
 
 void machine_pin_ext_set(machine_pin_obj_t *self, bool value) {
