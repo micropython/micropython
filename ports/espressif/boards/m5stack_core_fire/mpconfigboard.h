@@ -35,8 +35,9 @@
 #define CIRCUITPY_BOARD_SPI         (1)
 #define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO18, .mosi = &pin_GPIO23, .miso = &pin_GPIO19}}
 
-#define CIRCUITPY_BOARD_UART        (1)
-#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO17, .rx = &pin_GPIO16}}
+// GPIO16 & GPIO17 are used for PSRAM
+// #define CIRCUITPY_BOARD_UART        (1)
+// #define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO17, .rx = &pin_GPIO16}}
 
 // UART pins attached to the USB-serial converter chip
 #define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)

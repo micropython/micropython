@@ -6,41 +6,6 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     // External pins are in silkscreen order, from top to bottom, left side, then right side
 
-    { MP_ROM_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_GPIO3) },
-    { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_GPIO1) },
-
-    { MP_ROM_QSTR(MP_QSTR_RX2), MP_ROM_PTR(&pin_GPIO16) },
-    { MP_ROM_QSTR(MP_QSTR_D16), MP_ROM_PTR(&pin_GPIO16) },
-
-    { MP_ROM_QSTR(MP_QSTR_TX2), MP_ROM_PTR(&pin_GPIO17) },
-    { MP_ROM_QSTR(MP_QSTR_D17), MP_ROM_PTR(&pin_GPIO17) },
-
-    { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_GPIO2) },
-    { MP_ROM_QSTR(MP_QSTR_D2), MP_ROM_PTR(&pin_GPIO2) },
-
-    { MP_ROM_QSTR(MP_QSTR_D5), MP_ROM_PTR(&pin_GPIO5) },
-
-    { MP_ROM_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_GPIO25) },
-    { MP_ROM_QSTR(MP_QSTR_D25), MP_ROM_PTR(&pin_GPIO25) },
-    { MP_ROM_QSTR(MP_QSTR_SPEAKER), MP_ROM_PTR(&pin_GPIO25) },
-
-    { MP_ROM_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_GPIO26) },
-    { MP_ROM_QSTR(MP_QSTR_D26), MP_ROM_PTR(&pin_GPIO26) },
-
-    { MP_ROM_QSTR(MP_QSTR_A3), MP_ROM_PTR(&pin_GPIO35) },
-    { MP_ROM_QSTR(MP_QSTR_D35), MP_ROM_PTR(&pin_GPIO35) },
-
-    { MP_ROM_QSTR(MP_QSTR_A4), MP_ROM_PTR(&pin_GPIO36) },
-    { MP_ROM_QSTR(MP_QSTR_D36), MP_ROM_PTR(&pin_GPIO36) },
-
-    { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_GPIO21) },
-    { MP_ROM_QSTR(MP_QSTR_PORTA_SDA), MP_ROM_PTR(&pin_GPIO21) },
-    { MP_ROM_QSTR(MP_QSTR_D21), MP_ROM_PTR(&pin_GPIO21) },
-
-    { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_GPIO22) },
-    { MP_ROM_QSTR(MP_QSTR_PORTA_SCL), MP_ROM_PTR(&pin_GPIO22) },
-    { MP_ROM_QSTR(MP_QSTR_D22), MP_ROM_PTR(&pin_GPIO22) },
-
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_GPIO23) },
     { MP_ROM_QSTR(MP_QSTR_D23), MP_ROM_PTR(&pin_GPIO23) },
 
@@ -50,6 +15,62 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_GPIO18) },
     { MP_ROM_QSTR(MP_QSTR_D18), MP_ROM_PTR(&pin_GPIO18) },
 
+    { MP_ROM_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_GPIO3) },
+
+    // GPIO16 & GPIO17 are used for PSRAM
+    // { MP_ROM_QSTR(MP_QSTR_RX2), MP_ROM_PTR(&pin_GPIO16) },
+    // { MP_ROM_QSTR(MP_QSTR_D16), MP_ROM_PTR(&pin_GPIO16) },
+
+    { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_GPIO21) },
+    { MP_ROM_QSTR(MP_QSTR_PORTA_SDA), MP_ROM_PTR(&pin_GPIO21) },
+    { MP_ROM_QSTR(MP_QSTR_D21), MP_ROM_PTR(&pin_GPIO21) },
+
+    { MP_ROM_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_GPIO2) },
+    { MP_ROM_QSTR(MP_QSTR_D2), MP_ROM_PTR(&pin_GPIO2) },
+
+    { MP_ROM_QSTR(MP_QSTR_A12), MP_ROM_PTR(&pin_GPIO12) },
+    { MP_ROM_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_GPIO12) },
+
+    { MP_ROM_QSTR(MP_QSTR_A15), MP_ROM_PTR(&pin_GPIO15) },
+    { MP_ROM_QSTR(MP_QSTR_D15), MP_ROM_PTR(&pin_GPIO15) },
+    { MP_ROM_QSTR(MP_QSTR_LED_BAR), MP_ROM_PTR(&pin_GPIO15) },
+
+    { MP_ROM_QSTR(MP_QSTR_A35), MP_ROM_PTR(&pin_GPIO35) },
+    { MP_ROM_QSTR(MP_QSTR_D35), MP_ROM_PTR(&pin_GPIO35) },
+
+    { MP_ROM_QSTR(MP_QSTR_A36), MP_ROM_PTR(&pin_GPIO36) },
+    { MP_ROM_QSTR(MP_QSTR_D36), MP_ROM_PTR(&pin_GPIO36) },
+    { MP_ROM_QSTR(MP_QSTR_PORTB_IN), MP_ROM_PTR(&pin_GPIO36) },
+
+    { MP_ROM_QSTR(MP_QSTR_A25), MP_ROM_PTR(&pin_GPIO25) },
+    { MP_ROM_QSTR(MP_QSTR_D25), MP_ROM_PTR(&pin_GPIO25) },
+    { MP_ROM_QSTR(MP_QSTR_SPEAKER), MP_ROM_PTR(&pin_GPIO25) },
+
+    { MP_ROM_QSTR(MP_QSTR_A26), MP_ROM_PTR(&pin_GPIO26) },
+    { MP_ROM_QSTR(MP_QSTR_D26), MP_ROM_PTR(&pin_GPIO26) },
+    { MP_ROM_QSTR(MP_QSTR_PORTB_OUT), MP_ROM_PTR(&pin_GPIO26) },
+
+    { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_GPIO1) },
+
+    // GPIO16 & GPIO17 are used for PSRAM
+    // { MP_ROM_QSTR(MP_QSTR_TX2), MP_ROM_PTR(&pin_GPIO17) },
+    // { MP_ROM_QSTR(MP_QSTR_D17), MP_ROM_PTR(&pin_GPIO17) },
+
+    { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_GPIO22) },
+    { MP_ROM_QSTR(MP_QSTR_PORTA_SCL), MP_ROM_PTR(&pin_GPIO22) },
+    { MP_ROM_QSTR(MP_QSTR_D22), MP_ROM_PTR(&pin_GPIO22) },
+
+    { MP_ROM_QSTR(MP_QSTR_D5), MP_ROM_PTR(&pin_GPIO5) },
+
+    { MP_ROM_QSTR(MP_QSTR_A13), MP_ROM_PTR(&pin_GPIO13) },
+    { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_GPIO13) },
+
+    { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_GPIO0) },
+    { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_GPIO0) },
+
+    { MP_ROM_QSTR(MP_QSTR_A34), MP_ROM_PTR(&pin_GPIO34) },
+    { MP_ROM_QSTR(MP_QSTR_D34), MP_ROM_PTR(&pin_GPIO34) },
+    { MP_ROM_QSTR(MP_QSTR_MIC), MP_ROM_PTR(&pin_GPIO34) },
 
     // buttons
     { MP_ROM_QSTR(MP_QSTR_BTN_A), MP_ROM_PTR(&pin_GPIO39) },
