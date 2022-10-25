@@ -31,17 +31,13 @@
 #include "py/mphal.h"
 #include "shared/runtime/mpirq.h"
 #include "modmachine.h"
+#include "machine_pin.h"
 #include "extmod/virtpin.h"
 
 #include "hardware/irq.h"
 #include "hardware/regs/intctrl.h"
 #include "hardware/structs/iobank0.h"
 #include "hardware/structs/padsbank0.h"
-
-#define GPIO_MODE_IN (0)
-#define GPIO_MODE_OUT (1)
-#define GPIO_MODE_OPEN_DRAIN (2)
-#define GPIO_MODE_ALT (3)
 
 // These can be or'd together.
 #define GPIO_PULL_UP (1)
@@ -61,16 +57,6 @@
 #ifndef MICROPY_HW_PIN_RESERVED
 #define MICROPY_HW_PIN_RESERVED(i) (0)
 #endif
-
-typedef struct _machine_pin_obj_t {
-    mp_obj_base_t base;
-    uint8_t id;
-    #if MICROPY_HW_PIN_CYW43_COUNT
-    bool is_cyw43;
-    bool is_output;
-    bool last_output_value;
-    #endif
-} machine_pin_obj_t;
 
 typedef struct _machine_pin_irq_obj_t {
     mp_irq_obj_t base;
@@ -113,23 +99,21 @@ STATIC const machine_pin_obj_t machine_pin_obj[NUM_BANK0_GPIOS] = {
     {{&machine_pin_type}, 29},
 };
 
-#if MICROPY_HW_PIN_CYW43_COUNT
-#include "lib/cyw43-driver/src/cyw43.h"
-#define CYW43_PIN_NAME_PREFIX "WL_GPIO"
-STATIC machine_pin_obj_t cyw43_pin_obj[MICROPY_HW_PIN_CYW43_COUNT];
-#endif
-
 #define LED_PIN_NAME "LED"
 
 #ifndef MICROPY_HW_PIN_ENABLE_LED_PIN
-#if defined(MICROPY_HW_PIN_CYW43_LED_PIN_NUM) || defined(PICO_DEFAULT_LED_PIN)
+#if defined(MICROPY_HW_PIN_EXT_LED_PIN_NUM) || defined(PICO_DEFAULT_LED_PIN)
 #define MICROPY_HW_PIN_ENABLE_LED_PIN 1
 #endif
 #endif
 
+#if MICROPY_HW_PIN_EXT_COUNT
+extern machine_pin_obj_t ext_pin_obj[MICROPY_HW_PIN_EXT_COUNT];
+#endif
+
 #ifdef MICROPY_HW_PIN_ENABLE_LED_PIN
-#ifdef MICROPY_HW_PIN_CYW43_LED_PIN_NUM
-STATIC machine_pin_obj_t *led_pin_obj = &cyw43_pin_obj[MICROPY_HW_PIN_CYW43_LED_PIN_NUM];
+#ifdef MICROPY_HW_PIN_EXT_LED_PIN_NUM
+STATIC machine_pin_obj_t *led_pin_obj = &ext_pin_obj[MICROPY_HW_PIN_EXT_LED_PIN_NUM];
 #elif defined(MICROPY_HW_PIN_LED_PIN_NUM)
 STATIC machine_pin_obj_t *led_pin_obj = &machine_pin_obj[MICROPY_HW_PIN_LED_PIN_NUM];
 #elif defined(PICO_DEFAULT_LED_PIN)
@@ -142,29 +126,12 @@ STATIC const machine_pin_obj_t *led_pin_obj = &machine_pin_obj[PICO_DEFAULT_LED_
 // Mask with "1" indicating that the corresponding pin is in simulated open-drain mode.
 uint32_t machine_pin_open_drain_mask;
 
-#if MICROPY_HW_PIN_CYW43_COUNT
-STATIC inline bool is_cyw43_pin(__unused const machine_pin_obj_t *self) {
-    return self->is_cyw43;
+#if MICROPY_HW_PIN_EXT_COUNT
+STATIC inline bool is_ext_pin(__unused const machine_pin_obj_t *self) {
+    return self->is_ext;
 }
 #else
-#define is_cyw43_pin(x) false
-#endif
-
-#if MICROPY_HW_PIN_CYW43_COUNT
-STATIC inline void update_cyw43_value(__unused machine_pin_obj_t *self, bool value) {
-    if (value != self->last_output_value || !self->is_output) {
-        cyw43_gpio_set(&cyw43_state, self->id, value);
-    }
-    self->last_output_value = value;
-}
-#endif
-
-#if MICROPY_HW_PIN_CYW43_COUNT
-STATIC inline bool get_cyw43_value(__unused machine_pin_obj_t *self) {
-    bool value = false;
-    cyw43_gpio_get(&cyw43_state, self->id, &value);
-    return value;
-}
+#define is_ext_pin(x) false
 #endif
 
 STATIC void gpio_irq(void) {
@@ -191,12 +158,8 @@ void machine_pin_init(void) {
     memset(MP_STATE_PORT(machine_pin_irq_obj), 0, sizeof(MP_STATE_PORT(machine_pin_irq_obj)));
     irq_add_shared_handler(IO_IRQ_BANK0, gpio_irq, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
     irq_set_enabled(IO_IRQ_BANK0, true);
-    #if MICROPY_HW_PIN_CYW43_COUNT
-    for (uint i = 0; i < count_of(cyw43_pin_obj); i++) {
-        cyw43_pin_obj[i].id = i;
-        cyw43_pin_obj[i].base.type = &machine_pin_type;
-        cyw43_pin_obj[i].is_cyw43 = true;
-    }
+    #if MICROPY_HW_PIN_EXT_COUNT
+    machine_pin_ext_init();
     #endif
 }
 
@@ -214,7 +177,7 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     machine_pin_obj_t *self = self_in;
     uint funcsel = GPIO_GET_FUNCSEL(self->id);
     qstr mode_qst;
-    if (!is_cyw43_pin(self)) {
+    if (!is_ext_pin(self)) {
         if (funcsel == GPIO_FUNC_SIO) {
             if (GPIO_IS_OPEN_DRAIN(self->id)) {
                 mode_qst = MP_QSTR_OPEN_DRAIN;
@@ -243,9 +206,9 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
             mp_printf(print, ", alt=%u", funcsel);
         }
     } else {
-        #if MICROPY_HW_PIN_CYW43_COUNT
+        #if MICROPY_HW_PIN_EXT_COUNT
         mode_qst = self->is_output ? MP_QSTR_OUT : MP_QSTR_IN;
-        mp_printf(print, "Pin(%s%u, mode=%q", CYW43_PIN_NAME_PREFIX,  self->id, mode_qst);
+        mp_printf(print, "Pin(%s%u, mode=%q", MICROPY_HW_PIN_EXT_PREFIX,  self->id, mode_qst);
         #endif
     }
     mp_printf(print, ")");
@@ -261,104 +224,65 @@ static const mp_arg_t allowed_args[] = {
     {MP_QSTR_alt,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GPIO_FUNC_SIO}},
 };
 
-#if MICROPY_HW_PIN_CYW43_COUNT
-// pin.init(mode, pull=None, *, value=None, alt=FUNC_SIO)
-STATIC mp_obj_t machine_pin_cyw43_obj_init_helper(machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    if (args[ARG_pull].u_obj != mp_const_none) {
-        int pull = mp_obj_get_int(args[ARG_pull].u_obj);
-        if (pull) {
-            mp_raise_ValueError("Pulls are not supported for this pin");
-        }
-    }
-
-    if (args[ARG_alt].u_int != GPIO_FUNC_SIO) {
-        mp_raise_ValueError("Alternate functions are not supported for this pin");
-    }
-
-    int value = -1;
-    if (args[ARG_value].u_obj != mp_const_none) {
-        value = mp_obj_is_true(args[ARG_value].u_obj);
-    }
-
-    if (args[ARG_mode].u_obj != mp_const_none) {
-        mp_int_t mode = mp_obj_get_int(args[ARG_mode].u_obj);
-        if (mode == GPIO_MODE_IN) {
-            if (self->is_output) {
-                // todo need to disable output
-            }
-            self->is_output = false;
-        } else if (mode == GPIO_MODE_OUT) {
-            if (!self->is_output) {
-                // todo need to enable output
-                // for now we just set the value
-                if (value == -1) {
-                    value = self->last_output_value;
-                }
-                self->last_output_value = !self->last_output_value; // defeat shortcircuit
-                update_cyw43_value(self, value);
-                self->is_output = true;
-            }
-        } else {
-            mp_raise_ValueError("only Pin.OUT and Pin.IN are supported for this pin");
-        }
-    }
-
-    if (value != -1) {
-        if (self->is_output) {
-            update_cyw43_value(self, value);
-        } else {
-            // figure if you pass a value to IN it should still remember it (this is what regular GPIO does)
-            self->last_output_value = value;
-        }
-    }
-
-    return mp_const_none;
-}
-#endif
-
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // set initial value (do this before configuring mode/pull)
+    if (is_ext_pin(self) && args[ARG_pull].u_obj != mp_const_none) {
+        mp_raise_ValueError("Pulls are not supported for external pins.");
+    }
+
+    if (is_ext_pin(self) && args[ARG_alt].u_int != GPIO_FUNC_SIO) {
+        mp_raise_ValueError("Alternate functions are not supported for external pins.");
+    }
+
+    int value = -1;
     if (args[ARG_value].u_obj != mp_const_none) {
-        gpio_put(self->id, mp_obj_is_true(args[ARG_value].u_obj));
+        value = mp_obj_is_true(args[ARG_value].u_obj);
+        // set initial value (do this before configuring mode/pull)
+        if (!is_ext_pin(self)) {
+            gpio_put(self->id, value);
+        }
     }
 
     // configure mode
     if (args[ARG_mode].u_obj != mp_const_none) {
         mp_int_t mode = mp_obj_get_int(args[ARG_mode].u_obj);
-        if (mode == GPIO_MODE_IN) {
+        if (is_ext_pin(self)) {
+            #if MICROPY_HW_PIN_EXT_COUNT
+            // The regular Pins are const, but the external pins are mutable.
+            machine_pin_obj_t *mutable_self = (machine_pin_obj_t *)self;
+            machine_pin_ext_config(mutable_self, mode, value);
+            #endif
+        } else if (mode == MACHINE_PIN_MODE_IN) {
             mp_hal_pin_input(self->id);
-        } else if (mode == GPIO_MODE_OUT) {
+        } else if (mode == MACHINE_PIN_MODE_OUT) {
             mp_hal_pin_output(self->id);
-        } else if (mode == GPIO_MODE_OPEN_DRAIN) {
+        } else if (mode == MACHINE_PIN_MODE_OPEN_DRAIN) {
             mp_hal_pin_open_drain(self->id);
         } else {
-            // Alternate function.
+            // Configure alternate function.
             gpio_set_function(self->id, args[ARG_alt].u_int);
             machine_pin_open_drain_mask &= ~(1 << self->id);
         }
     }
 
-    // configure pull (unconditionally because None means no-pull)
-    uint32_t pull = 0;
-    if (args[ARG_pull].u_obj != mp_const_none) {
-        pull = mp_obj_get_int(args[ARG_pull].u_obj);
+    if (!is_ext_pin(self)) {
+        // Configure pull (unconditionally because None means no-pull).
+        uint32_t pull = 0;
+        if (args[ARG_pull].u_obj != mp_const_none) {
+            pull = mp_obj_get_int(args[ARG_pull].u_obj);
+        }
+        gpio_set_pulls(self->id, pull & GPIO_PULL_UP, pull & GPIO_PULL_DOWN);
     }
-    gpio_set_pulls(self->id, pull & GPIO_PULL_UP, pull & GPIO_PULL_DOWN);
     return mp_const_none;
 }
 
 // constructor(id, ...)
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-
 
     const machine_pin_obj_t *self = NULL;
     if (mp_obj_is_str(args[0])) {
@@ -368,12 +292,12 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
             self = led_pin_obj;
         }
         #endif
-        #if MICROPY_HW_PIN_CYW43_COUNT
-        static_assert(MICROPY_HW_PIN_CYW43_COUNT < 10, ""); // makes parsing name easy!
-        if (!self && !strncmp(name, CYW43_PIN_NAME_PREFIX, strlen(CYW43_PIN_NAME_PREFIX)) && strlen(name) == strlen(CYW43_PIN_NAME_PREFIX) + 1) {
-            int num = name[strlen(CYW43_PIN_NAME_PREFIX)] - '0';
-            if (num < MICROPY_HW_PIN_CYW43_COUNT) {
-                self = &cyw43_pin_obj[num];
+        #if MICROPY_HW_PIN_EXT_COUNT
+        static_assert(MICROPY_HW_PIN_EXT_COUNT < 10, ""); // makes parsing name easy!
+        if (!self && !strncmp(name, MICROPY_HW_PIN_EXT_PREFIX, strlen(MICROPY_HW_PIN_EXT_PREFIX)) && strlen(name) == strlen(MICROPY_HW_PIN_EXT_PREFIX) + 1) {
+            int num = name[strlen(MICROPY_HW_PIN_EXT_PREFIX)] - '0';
+            if (num < MICROPY_HW_PIN_EXT_COUNT) {
+                self = &ext_pin_obj[num];
             }
         }
         #endif
@@ -389,27 +313,14 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
         }
         self = &machine_pin_obj[wanted_pin];
     }
-    // note we have different init args based on the type of pin. so Pin("LED", Pin.OUT) may not always make sense
-    if (!is_cyw43_pin(self)) {
-        if (n_args > 1 || n_kw > 0) {
-            // pin mode given, so configure this GPIO
-            mp_map_t kw_args;
-            mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-            machine_pin_obj_init_helper(self, n_args - 1, args + 1, &kw_args);
-        }
-        return MP_OBJ_FROM_PTR(self);
-    }
-    #if MICROPY_HW_PIN_CYW43_COUNT
+
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        // The regular Pins are const, but the CYW43 pins are mutable.
-        machine_pin_obj_t *mutable_self = (machine_pin_obj_t *)self;
-        machine_pin_cyw43_obj_init_helper(mutable_self, n_args - 1, args + 1, &kw_args);
+        machine_pin_obj_init_helper(self, n_args - 1, args + 1, &kw_args);
     }
     return MP_OBJ_FROM_PTR(self);
-    #endif
 }
 
 // fast method for getting/setting pin value
@@ -418,39 +329,33 @@ STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     machine_pin_obj_t *self = self_in;
     if (n_args == 0) {
         // get pin
-        if (!is_cyw43_pin(self)) {
+        if (is_ext_pin(self)) {
+            #if MICROPY_HW_PIN_EXT_COUNT
+            return MP_OBJ_NEW_SMALL_INT(machine_pin_ext_get(self));
+            #endif
+        } else {
             return MP_OBJ_NEW_SMALL_INT(gpio_get(self->id));
         }
-        #if MICROPY_HW_PIN_CYW43_COUNT
-        return MP_OBJ_NEW_SMALL_INT(get_cyw43_value(self));
-        #endif
     } else {
         // set pin
         bool value = mp_obj_is_true(args[0]);
-        if (!is_cyw43_pin(self)) {
-            if (GPIO_IS_OPEN_DRAIN(self->id)) {
-                MP_STATIC_ASSERT(GPIO_IN == 0 && GPIO_OUT == 1);
-                gpio_set_dir(self->id, 1 - value);
-            } else {
-                gpio_put(self->id, value);
-            }
-            return mp_const_none;
+        if (is_ext_pin(self)) {
+            #if MICROPY_HW_PIN_EXT_COUNT
+            machine_pin_ext_set(self, value);
+            #endif
+        } else if (GPIO_IS_OPEN_DRAIN(self->id)) {
+            MP_STATIC_ASSERT(GPIO_IN == 0 && GPIO_OUT == 1);
+            gpio_set_dir(self->id, 1 - value);
+        } else {
+            gpio_put(self->id, value);
         }
-        #if MICROPY_HW_PIN_CYW43_COUNT
-        update_cyw43_value(self, value);
-        #endif
     }
     return mp_const_none;
 }
 
 // pin.init(mode, pull)
 STATIC mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    if (!is_cyw43_pin(args[0])) {
-        return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
-    }
-    #if MICROPY_HW_PIN_CYW43_COUNT
-    return machine_pin_cyw43_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
-    #endif
+    return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_init_obj, 1, machine_pin_obj_init);
 
@@ -463,36 +368,32 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_
 // pin.low()
 STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (!is_cyw43_pin(self)) {
-        if (GPIO_IS_OPEN_DRAIN(self->id)) {
-            gpio_set_dir(self->id, GPIO_OUT);
-        } else {
-            gpio_clr_mask(1u << self->id);
-        }
-        return mp_const_none;
+    if (is_ext_pin(self)) {
+        #if MICROPY_HW_PIN_EXT_COUNT
+        machine_pin_ext_set(self, 0);
+        #endif
+    } else if (GPIO_IS_OPEN_DRAIN(self->id)) {
+        gpio_set_dir(self->id, GPIO_OUT);
+    } else {
+        gpio_clr_mask(1u << self->id);
     }
-    #if MICROPY_HW_PIN_CYW43_COUNT
-    update_cyw43_value(self, 0);
     return mp_const_none;
-    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
 
 // pin.high()
 STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (!is_cyw43_pin(self)) {
-        if (GPIO_IS_OPEN_DRAIN(self->id)) {
-            gpio_set_dir(self->id, GPIO_IN);
-        } else {
-            gpio_set_mask(1u << self->id);
-        }
-        return mp_const_none;
+    if (is_ext_pin(self)) {
+        #if MICROPY_HW_PIN_EXT_COUNT
+        machine_pin_ext_set(self, 1);
+        #endif
+    } else if (GPIO_IS_OPEN_DRAIN(self->id)) {
+        gpio_set_dir(self->id, GPIO_IN);
+    } else {
+        gpio_set_mask(1u << self->id);
     }
-    #if MICROPY_HW_PIN_CYW43_COUNT
-    update_cyw43_value(self, 1);
     return mp_const_none;
-    #endif
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
@@ -500,22 +401,20 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
 // pin.toggle()
 STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (!is_cyw43_pin(self)) {
-        if (GPIO_IS_OPEN_DRAIN(self->id)) {
-            if (GPIO_IS_OUT(self->id)) {
-                gpio_set_dir(self->id, GPIO_IN);
-            } else {
-                gpio_set_dir(self->id, GPIO_OUT);
-            }
+    if (is_ext_pin(self)) {
+        #if MICROPY_HW_PIN_EXT_COUNT
+        machine_pin_ext_set(self, self->last_output_value ^ 1);
+        #endif
+    } else if (GPIO_IS_OPEN_DRAIN(self->id)) {
+        if (GPIO_IS_OUT(self->id)) {
+            gpio_set_dir(self->id, GPIO_IN);
         } else {
-            gpio_xor_mask(1u << self->id);
+            gpio_set_dir(self->id, GPIO_OUT);
         }
-        return mp_const_none;
+    } else {
+        gpio_xor_mask(1u << self->id);
     }
-    #if MICROPY_HW_PIN_CYW43_COUNT
-    update_cyw43_value(self, self->last_output_value ^ 1);
     return mp_const_none;
-    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
 
@@ -563,7 +462,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
     };
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    if (is_cyw43_pin(self)) {
+    if (is_ext_pin(self)) {
         mp_raise_ValueError(MP_ERROR_TEXT("expecting a regular GPIO Pin"));
     }
 
@@ -595,10 +494,10 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(GPIO_MODE_IN) },
-    { MP_ROM_QSTR(MP_QSTR_OUT), MP_ROM_INT(GPIO_MODE_OUT) },
-    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_OPEN_DRAIN) },
-    { MP_ROM_QSTR(MP_QSTR_ALT), MP_ROM_INT(GPIO_MODE_ALT) },
+    { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(MACHINE_PIN_MODE_IN) },
+    { MP_ROM_QSTR(MP_QSTR_OUT), MP_ROM_INT(MACHINE_PIN_MODE_OUT) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(MACHINE_PIN_MODE_OPEN_DRAIN) },
+    { MP_ROM_QSTR(MP_QSTR_ALT), MP_ROM_INT(MACHINE_PIN_MODE_ALT) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(GPIO_PULL_UP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_IRQ_EDGE_RISE) },
@@ -610,31 +509,28 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
     (void)errcode;
     machine_pin_obj_t *self = self_in;
 
-    if (!is_cyw43_pin(self)) {
-        switch (request) {
-            case MP_PIN_READ: {
-                return gpio_get(self->id);
-            }
-            case MP_PIN_WRITE: {
-                gpio_put(self->id, arg);
-                return 0;
-            }
-        }
-        return -1;
-    }
-
-    #if MICROPY_HW_PIN_CYW43_COUNT
     switch (request) {
         case MP_PIN_READ: {
-            return get_cyw43_value(self);
+            if (is_ext_pin(self)) {
+                #if MICROPY_HW_PIN_EXT_COUNT
+                return machine_pin_ext_get(self);
+                #endif
+            } else {
+                return gpio_get(self->id);
+            }
         }
         case MP_PIN_WRITE: {
-            update_cyw43_value(self, arg);
+            if (is_ext_pin(self)) {
+                #if MICROPY_HW_PIN_EXT_COUNT
+                machine_pin_ext_set(self, arg);
+                #endif
+            } else {
+                gpio_put(self->id, arg);
+            }
             return 0;
         }
     }
     return -1;
-    #endif
 }
 
 STATIC const mp_pin_p_t pin_pin_p = {
@@ -683,7 +579,7 @@ mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
         mp_raise_ValueError(MP_ERROR_TEXT("expecting a Pin"));
     }
     machine_pin_obj_t *pin = MP_OBJ_TO_PTR(obj);
-    if (is_cyw43_pin(pin)) {
+    if (is_ext_pin(pin)) {
         mp_raise_ValueError(MP_ERROR_TEXT("expecting a regular GPIO Pin"));
     }
     return pin->id;

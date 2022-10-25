@@ -261,6 +261,10 @@ if (MICROPY_PY_NETWORK_CYW43)
         ${MICROPY_DIR}/extmod/network_cyw43.c
     )
 
+    list(APPEND MICROPY_SOURCE_PORT
+        machine_pin_cyw43.c
+    )
+
     target_link_libraries(${MICROPY_TARGET}
         cyw43_driver_picow
         cmsis_core
