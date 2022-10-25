@@ -287,6 +287,7 @@ if (MICROPY_PY_NETWORK_NINAW10)
         ${MICROPY_DIR}/drivers/ninaw10/nina_bt_hci.c
         ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_drv.c
         ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_bsp.c
+        ${MICROPY_DIR}/drivers/ninaw10/machine_pin_nina.c
     )
 
     list(APPEND MICROPY_SOURCE_EXTMOD
