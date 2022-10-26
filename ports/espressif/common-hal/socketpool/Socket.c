@@ -483,7 +483,7 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *self,
 mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len) {
     int received = socketpool_socket_recv_into(self, buf, len);
     if (received < 0) {
-        mp_raise_OSError(received);
+        mp_raise_OSError(-received);
     }
     return received;
 }
