@@ -215,6 +215,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
             if (esp_sleep_enable_ext1_wakeup(high_alarms, ESP_EXT1_WAKEUP_ANY_HIGH) != ESP_OK) {
                 mp_raise_ValueError(translate("Can only alarm on RTC IO from deep sleep."));
             }
+            esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
         }
         size_t low_pins[2];
         size_t j = 0;
@@ -231,6 +232,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
             if (esp_sleep_enable_ext1_wakeup(1ull << low_pins[1], ESP_EXT1_WAKEUP_ALL_LOW) != ESP_OK) {
                 mp_raise_ValueError(translate("Can only alarm on RTC IO from deep sleep."));
             }
+            esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
         }
         if (low_count > 0) {
             if (esp_sleep_enable_ext0_wakeup(low_pins[0], 0) != ESP_OK) {
@@ -273,16 +275,14 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[i], PIN_FUNC_GPIO);
         if (pull) {
             gpio_set_pull_mode(i, pull_mode);
-            size_t j = 0;
-            while (gpio_get_level(i) == false) {
-                j++;
-            }
         }
         never_reset_pin_number(i);
         // Sets interrupt type and wakeup bits.
         gpio_wakeup_enable(i, interrupt_mode);
         gpio_intr_enable(i);
     }
+    // Wait for any pulls to settle.
+    mp_hal_delay_ms(50);
 }
 
 
