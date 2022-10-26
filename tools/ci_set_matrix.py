@@ -25,7 +25,6 @@ import re
 import os
 import sys
 import json
-import yaml
 import pathlib
 from concurrent.futures import ThreadPoolExecutor
 
@@ -62,6 +61,7 @@ IGNORE = [
 if len(sys.argv) > 1:
     print("Using files list on commandline")
     changed_files = sys.argv[1:]
+    last_failed_jobs = {}
 else:
     c = os.environ["CHANGED_FILES"]
     if c == "":
@@ -69,7 +69,14 @@ else:
         changed_files = []
     else:
         print("Using files list in CHANGED_FILES")
-        changed_files = json.loads(os.environ["CHANGED_FILES"])
+        changed_files = json.loads(c)
+
+    j = os.environ["LAST_FAILED_JOBS"]
+    if j == "":
+        print("LAST_FAILED_JOBS is in environment, but value is empty")
+        last_failed_jobs = {}
+    else:
+        last_failed_jobs = json.loads(j)
 
 
 def set_output(name, value):
@@ -196,7 +203,7 @@ def set_boards_to_build(build_all):
     # Split boards by architecture.
     print("Building boards:")
     arch_to_boards = {"aarch": [], "arm": [], "riscv": [], "espressif": []}
-    for board in sorted(boards_to_build):
+    for board in boards_to_build:
         print(" ", board)
         port = board_to_port.get(board)
         # A board can appear due to its _deletion_ (rare)
@@ -208,10 +215,20 @@ def set_boards_to_build(build_all):
 
     # Set the step outputs for each architecture
     for arch in arch_to_boards:
+        # Append previous failed jobs
+        if f"build-{arch}" in last_failed_jobs:
+            failed_boards = last_failed_jobs[f"build-{arch}"]
+            for board in failed_boards:
+                if not board in arch_to_boards[arch]:
+                    arch_to_boards[arch].append(board)
+        # Set Output
         set_output(f"boards-{arch}", json.dumps(sorted(arch_to_boards[arch])))
 
 
 def set_docs_to_build(build_all):
+    if "build-doc" in last_failed_jobs:
+        build_all = True
+
     doc_match = build_all
     if not build_all:
         doc_pattern = re.compile(
@@ -224,7 +241,7 @@ def set_docs_to_build(build_all):
 
     # Set the step outputs
     print("Building docs:", doc_match)
-    set_output(f"build-doc", doc_match)
+    set_output("build-doc", doc_match)
 
 
 def check_changed_files():
