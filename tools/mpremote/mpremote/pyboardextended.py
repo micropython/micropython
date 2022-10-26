@@ -428,12 +428,11 @@ class PyboardCommand:
         path = self.root + self.rd_str()
         try:
             self.path_check(path)
+            self.data_ilistdir[0] = path
+            self.data_ilistdir[1] = os.listdir(path)
             self.wr_s8(0)
         except OSError as er:
             self.wr_s8(-abs(er.errno))
-        else:
-            self.data_ilistdir[0] = path
-            self.data_ilistdir[1] = os.listdir(path)
 
     def do_ilistdir_next(self):
         if self.data_ilistdir[1]:
