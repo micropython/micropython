@@ -1,0 +1,77 @@
+# SPDX-FileCopyrightText: 2017 Scott Shawcroft, written for Adafruit Industries
+#
+# SPDX-License-Identifier: MIT
+
+name: Build CI
+
+on: [pull_request, push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+    - name: Translate Repo Name For Build Tools filename_prefix
+      id: repo-name
+      run: |
+        echo ::set-output name=repo-name::$(
+        echo ${{ github.repository }} |
+        awk -F '\/' '{ print tolower($2) }' |
+        tr '_' '-'
+        )
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.x"
+    - name: Versions
+      run: |
+        python3 --version
+    - name: Checkout Current Repo
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Checkout tools repo
+      uses: actions/checkout@v2
+      with:
+        repository: adafruit/actions-ci-circuitpython-libs
+        path: actions-ci
+    - name: Install dependencies
+      # (e.g. - apt-get: gettext, etc; pip: circuitpython-build-tools, requirements.txt; etc.)
+      run: |
+        source actions-ci/install.sh
+    - name: Pip install Sphinx, pre-commit
+      run: |
+        pip install --force-reinstall Sphinx sphinx-rtd-theme pre-commit
+    - name: Library version
+      run: git describe --dirty --always --tags
+    - name: Setup problem matchers
+      uses: adafruit/circuitpython-action-library-ci-problem-matchers@v1
+    - name: Pre-commit hooks
+      run: |
+        pre-commit run --all-files
+    - name: Build assets
+      run: circuitpython-build-bundles --filename_prefix ${{ steps.repo-name.outputs.repo-name }} --library_location .
+    - name: Archive bundles
+      uses: actions/upload-artifact@v2
+      with:
+        name: bundles
+        path: ${{ github.workspace }}/bundles/
+    - name: Build docs
+      working-directory: docs
+      run: sphinx-build -E -W -b html . _build/html
+    - name: Check For pyproject.toml
+      id: need-pypi
+      run: |
+        echo ::set-output name=pyproject-toml::$( find . -wholename './pyproject.toml' )
+    - name: Build Python package
+      if: contains(steps.need-pypi.outputs.pyproject-toml, 'pyproject.toml')
+      run: |
+        pip install --upgrade build twine
+        for file in $(find -not -path "./.*" -not -path "./docs*" \( -name "*.py" -o -name "*.toml" \) ); do
+            sed -i -e "s/0.0.0+auto.0/1.2.3/" $file;
+        done;
+        python -m build
+        twine check dist/*

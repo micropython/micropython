@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: 2020 Diego Elio Pettenò
+#
+# SPDX-License-Identifier: Unlicense
+
+repos:
+  - repo: https://github.com/python/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+  - repo: https://github.com/fsfe/reuse-tool
+    rev: v0.14.0
+    hooks:
+      - id: reuse
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/pycqa/pylint
+    rev: v2.11.1
+    hooks:
+      - id: pylint
+        name: pylint (library code)
+        types: [python]
+        args:
+          - --disable=consider-using-f-string
+        exclude: "^(docs/|examples/|tests/|setup.py$)"
+      - id: pylint
+        name: pylint (example code)
+        description: Run pylint rules on "examples/*.py" files
+        types: [python]
+        files: "^examples/"
+        args:
+          - --disable=missing-docstring,invalid-name,consider-using-f-string,duplicate-code
+      - id: pylint
+        name: pylint (test code)
+        description: Run pylint rules on "tests/*.py" files
+        types: [python]
+        files: "^tests/"
+        args:
+          - --disable=missing-docstring,consider-using-f-string,duplicate-code
