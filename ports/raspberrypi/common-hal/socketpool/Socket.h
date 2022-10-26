@@ -37,6 +37,7 @@ typedef struct _lwip_socket_obj_t {
     mp_obj_base_t base;
 
     volatile union {
+        struct tcp_pcb *ip;
         struct tcp_pcb *tcp;
         struct udp_pcb *udp;
         struct raw_pcb *raw;
