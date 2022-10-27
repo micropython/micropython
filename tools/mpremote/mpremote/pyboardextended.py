@@ -143,6 +143,15 @@ class RemoteFile(uio.IOBase):
     def __exit__(self, a, b, c):
         self.close()
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        l = self.readline()
+        if not l:
+            raise StopIteration
+        return l
+
     def ioctl(self, request, arg):
         if request == 1:  # FLUSH
             self.flush()
