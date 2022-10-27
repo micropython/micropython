@@ -30,7 +30,6 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared/runtime/pyexec.h"
-#include "drivers/dht/dht.h"
 #include "stm32_it.h"
 #include "irq.h"
 #include "led.h"
@@ -190,9 +189,6 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&mp_uos_sync_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     #endif
-
-    // This function is not intended to be public and may be moved elsewhere
-    { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&pyb_timer_type) },
 
