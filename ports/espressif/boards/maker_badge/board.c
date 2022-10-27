@@ -49,7 +49,7 @@ void board_init(void) {
 
 }
 
-//busio_spi_obj_t *spi = common_hal_board_create_spi();
+//  busio_spi_obj_t *spi = common_hal_board_create_spi();
 
 bool board_requests_safe_mode(void) {
     return false;
