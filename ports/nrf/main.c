@@ -156,7 +156,7 @@ soft_reset:
     rtc_init0();
     #endif
 
-    #if MICROPY_PY_MACHINE_TIMER
+    #if MICROPY_PY_MACHINE_TIMER_NRF
     timer_init0();
     #endif
 
