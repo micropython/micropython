@@ -73,10 +73,18 @@ STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
 #define _TICKS_PERIOD (1lu << 29)
 #define _TICKS_MAX (_TICKS_PERIOD - 1)
 #define _TICKS_HALFPERIOD (_TICKS_PERIOD >> 1)
-
+#if !CIRCUITPY || (defined(__unix__) || defined(__APPLE__))
 STATIC mp_obj_t ticks(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & _TICKS_MAX);
 }
+#else
+// We don't share the implementation above because our supervisor_ticks_ms
+// starts the epoch about 65 seconds before the first overflow (see
+// shared-bindings/supervisor/__init__.c). We assume/require that
+// supervisor.ticks_ms is picked as the ticks implementation under
+// CircuitPython for the Python-coded bits of asyncio.
+#define ticks() MP_OBJ_NEW_SMALL_INT(supervisor_ticks_ms())
+#endif
 
 STATIC mp_int_t ticks_diff(mp_obj_t t1_in, mp_obj_t t0_in) {
     mp_uint_t t0 = MP_OBJ_SMALL_INT_VALUE(t0_in);
