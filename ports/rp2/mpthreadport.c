@@ -29,6 +29,8 @@
 #include "py/mpthread.h"
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
+#include "hardware/clocks.h"
+#include "RP2040.h"
 
 #if MICROPY_PY_THREAD
 
@@ -45,6 +47,11 @@ STATIC size_t core1_stack_num_words = 0;
 
 // Thread mutex.
 STATIC mp_thread_mutex_t atomic_mutex;
+
+// SysTick is enabled for core1 to periodically interrupt it, to ensure
+// that it wakes up from a __WFI(), if no other interrupt is enabled.
+void SysTick_Handler(void) {
+}
 
 uint32_t mp_thread_begin_atomic_section(void) {
     if (core1_entry) {
@@ -109,6 +116,9 @@ STATIC void core1_entry_wrapper(void) {
     multicore_lockout_victim_init();
 
     if (core1_entry) {
+        // SysTick is enabled for core1 to periodically interrupt it, to ensure
+        // that it wakes up from a __WFI(), if no other interrupt is enabled.
+        SysTick_Config(clock_get_hz(clk_sys) / 1000);
         core1_entry(core1_arg);
     }
 
