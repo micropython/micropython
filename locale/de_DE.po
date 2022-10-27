@@ -128,7 +128,7 @@ msgstr "%q Initialisierung ist gescheitert"
 
 #: shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
-msgstr ""
+msgstr "%q ist %q"
 
 #: py/argcheck.c
 msgid "%q length must be %d"
@@ -173,7 +173,7 @@ msgstr "%q muss >= %d sein"
 #: shared-bindings/analogbufio/BufferedIn.c
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
-msgstr ""
+msgstr "%q muss ein Byte-Array oder ein array vom Typ 'h', 'H', 'b', oder 'B' sein"
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -1030,16 +1030,16 @@ msgstr "Filter zu komplex"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is duplicate"
-msgstr ""
+msgstr "Die Firmware ist doppelt vorhanden"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is invalid"
-msgstr ""
+msgstr "Die Firmware ist ungültig"
 
 #: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
-msgstr ""
+msgstr "Die Firmware ist zu groß"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -1657,7 +1657,7 @@ msgstr ""
 #: ports/espressif/common-hal/alarm/coproc/CoprocAlarm.c
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one %q can be set in deep sleep."
-msgstr ""
+msgstr "Nur ein %q kann im Deep-Sleep gesetzt werden."
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
@@ -2224,7 +2224,7 @@ msgstr "mDNS-Abfrage kann nicht gestartet werden"
 
 #: shared-bindings/coproc/CoprocMemory.c
 msgid "Unable to write"
-msgstr ""
+msgstr "Schreiben nicht möglich"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -2987,7 +2987,8 @@ msgstr "Fehler = 0x%08lX"
 msgid ""
 "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
-msgstr ""
+msgstr "esp32_camera.Camera benötigt reservierten PSRAM um konfiguriert werden zu können. "
+"Sieh in der Dokumentation für eine Anleitung nach."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -4391,7 +4392,7 @@ msgstr "wifi ist nicht aktiviert"
 
 #: ports/raspberrypi/common-hal/wifi/Monitor.c
 msgid "wifi.Monitor not available"
-msgstr ""
+msgstr "wifi.Monitor nicht verfügbar"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
@@ -4510,7 +4511,7 @@ msgstr "zi muss die Form (n_section, 2) haben"
 #~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
 #~ "or 'B'"
 #~ msgstr ""
-#~ "sample_source buffer muss ein Bytearray oder ein Array vom Typ 'h', 'H', "
+#~ "sample_source buffer muss ein Byte-Array oder ein Array vom Typ 'h', 'H', "
 #~ "'b' oder 'B' sein"
 
 #~ msgid "Expected an alarm"
