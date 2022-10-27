@@ -62,21 +62,27 @@ def get_version_info_from_git():
     return git_tag, git_hash
 
 
-def get_version_info_from_docs_conf():
-    with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "docs", "conf.py")) as f:
+def get_version_info_from_mpconfig():
+    with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "py", "mpconfig.h")) as f:
         for line in f:
-            if line.startswith("version = release = '"):
-                ver = line.strip().split(" = ")[2].strip("'")
-                git_tag = "v" + ver
+            if line.startswith("#define MICROPY_VERSION_MAJOR "):
+                ver_major = int(line.strip().split()[2])
+            elif line.startswith("#define MICROPY_VERSION_MINOR "):
+                ver_minor = int(line.strip().split()[2])
+            elif line.startswith("#define MICROPY_VERSION_MICRO "):
+                ver_micro = int(line.strip().split()[2])
+                git_tag = "v%d.%d" % (ver_major, ver_minor)
+                if ver_micro != 0:
+                    git_tag += ".%d" % (ver_micro,)
                 return git_tag, "<no hash>"
     return None
 
 
 def make_version_header(filename):
-    # Get version info using git, with fallback to docs/conf.py
+    # Get version info using git, with fallback to py/mpconfig.h
     info = get_version_info_from_git()
     if info is None:
-        info = get_version_info_from_docs_conf()
+        info = get_version_info_from_mpconfig()
 
     git_tag, git_hash = info
 
