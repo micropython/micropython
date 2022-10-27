@@ -162,7 +162,6 @@ SRC_C += \
 	machine_rtc.c \
 	machine_sdcard.c \
 	machine_spi.c \
-	machine_timer.c \
 	machine_uart.c \
 	machine_wdt.c \
 	main.c \
