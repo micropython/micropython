@@ -31,6 +31,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared/runtime/pyexec.h"
+#include "drivers/dht/dht.h"
 
 // This needs to be set before we include the RTOS headers
 #define USE_US_TIMER 1
@@ -435,6 +436,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_hspi_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI), MP_ROM_PTR(&mp_machine_soft_spi_type) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
 
     // wake abilities
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP), MP_ROM_INT(MACHINE_WAKE_DEEPSLEEP) },
