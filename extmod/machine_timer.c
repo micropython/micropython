@@ -28,6 +28,8 @@
 #include "py/mphal.h"
 #include "shared/runtime/softtimer.h"
 
+#if MICROPY_PY_MACHINE_TIMER
+
 typedef soft_timer_entry_t machine_timer_obj_t;
 
 const mp_obj_type_t machine_timer_type;
@@ -144,3 +146,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, machine_timer_print,
     locals_dict, &machine_timer_locals_dict
     );
+
+#endif // MICROPY_PY_MACHINE_TIMER
