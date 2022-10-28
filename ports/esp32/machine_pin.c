@@ -732,4 +732,4 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_pin_irq_locals_dict
     );
 
-MP_REGISTER_ROOT_POINTER(mp_obj_t machine_pin_irq_handler[GPIO_NUM_MAX]);
+MP_REGISTER_ROOT_POINTER(mp_obj_t machine_pin_irq_handler[MP_ARRAY_SIZE(machine_pin_obj)]);
