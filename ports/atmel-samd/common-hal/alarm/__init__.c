@@ -48,6 +48,13 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
     },
 };
 
+// Static alarm object recording alarm (if any) that woke up CircuitPython after light or deep sleep.
+// This object lives across VM instantiations, so none of these objects can contain references to the heap.
+static union {
+    alarm_pin_pinalarm_obj_t pin_alarm;
+    alarm_time_timealarm_obj_t time_alarm;
+} wake_alarm;
+
 void alarm_reset(void) {
     // Reset the alarm flag
     alarm_pin_pinalarm_reset();
@@ -57,7 +64,7 @@ void alarm_reset(void) {
 void alarm_get_wakeup_cause(void) {
     // Called from rtc_init, just before SWRST of RTC.  It is called
     // at an early stage of main(), to save TAMPID from SWRST.  Later,
-    // common_hal_alarm_create_wake_alarm is called to make a wakeup
+    // common_hal_alarm_record_wake_alarm is called to make a wakeup
     // alarm from the deep sleep.
 
     TAMPID = RTC->MODE0.TAMPID.reg;
@@ -67,7 +74,7 @@ bool common_hal_alarm_woken_from_sleep(void) {
     return alarm_pin_pinalarm_woke_this_cycle() || alarm_time_timealarm_woke_this_cycle();
 }
 
-mp_obj_t common_hal_alarm_create_wake_alarm(void) {
+mp_obj_t common_hal_alarm_record_wake_alarm(void) {
     // Called from main.c on the first start up, just before alarm_reset.
     // Return a copy of wakeup alarm from deep sleep / fake deep sleep.
     // In case of fake sleep, status should be left in TimeAlarm/PinAlarm.
@@ -76,13 +83,13 @@ mp_obj_t common_hal_alarm_create_wake_alarm(void) {
     if (alarm_pin_pinalarm_woke_this_cycle()) {
         TAMPID = RTC->MODE0.TAMPID.reg;
         RTC->MODE0.TAMPID.reg = TAMPID;         // clear register
-        return alarm_pin_pinalarm_create_wakeup_alarm(TAMPID);
+        return alarm_pin_pinalarm_record_wakeup_alarm(&wake_alarm.pin_alarm, TAMPID);
     }
     if (alarm_time_timealarm_woke_this_cycle() || (true_deep && TAMPID == 0)) {
-        return alarm_time_timealarm_create_wakeup_alarm();
+        return alarm_time_timealarm_record_wakeup_alarm(&wake_alarm.time_alarm);
     }
     if (true_deep) {
-        return alarm_pin_pinalarm_create_wakeup_alarm(TAMPID);
+        return alarm_pin_pinalarm_record_wakeup_alarm(&wake_alarm.pin_alarm, TAMPID);
     }
     return mp_const_none;
 }

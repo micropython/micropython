@@ -41,6 +41,10 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 
+#if CIRCUITPY_ALARM
+#include "common-hal/alarm/__init__.h"
+#endif
+
 #if CIRCUITPY_SSL
 #include "common-hal/ssl/__init__.h"
 #endif
@@ -154,6 +158,10 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
+    #if CIRCUITPY_ALARM
+    alarm_reset();
+    #endif
+
     #if CIRCUITPY_BUSIO
     reset_i2c();
     reset_spi();

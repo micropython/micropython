@@ -111,7 +111,7 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
     return mp_const_none;
 }
 
-mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void) {
+mp_obj_t alarm_pin_pinalarm_record_wakeup_alarm(alarm_pin_pinalarm_obj_t *alarm) {
     esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
 
     // Pin status will persist into a fake deep sleep
@@ -135,7 +135,6 @@ mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void) {
         }
     }
 
-    alarm_pin_pinalarm_obj_t *alarm = m_new_obj(alarm_pin_pinalarm_obj_t);
     alarm->base.type = &alarm_pin_pinalarm_type;
     alarm->pin = NULL;
     // Map the pin number back to a pin object.

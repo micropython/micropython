@@ -128,12 +128,11 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
     return mp_const_none;
 }
 
-mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(uint32_t TAMPID) {
+mp_obj_t alarm_pin_pinalarm_record_wakeup_alarm(alarm_pin_pinalarm_obj_t *alarm, uint32_t TAMPID) {
     // Create tamper alarm that caused wakeup from deep sleep
 
     for (samd_tamper_pin_t *t = TAMPER_PINS; t->n >= 0; t++) {
         if (TAMPID & (1 << t->n)) {
-            alarm_pin_pinalarm_obj_t *alarm = m_new_obj(alarm_pin_pinalarm_obj_t);
             alarm->base.type = &alarm_pin_pinalarm_type;
             alarm->pin = t->pin;
             return alarm;

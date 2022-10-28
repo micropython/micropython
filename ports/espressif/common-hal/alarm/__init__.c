@@ -58,6 +58,15 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
     },
 };
 
+// Static alarm object recording alarm (if any) that woke up CircuitPython after light or deep sleep.
+// This object lives across VM instantiations, so none of these objects can contain references to the heap.
+static union {
+    alarm_pin_pinalarm_obj_t pin_alarm;
+    alarm_time_timealarm_obj_t time_alarm;
+    alarm_touch_touchalarm_obj_t touch_alarm;
+    alarm_coproc_coprocalarm_obj_t coproc_alarm;
+} wake_alarm;
+
 void alarm_reset(void) {
     alarm_sleep_memory_reset();
     alarm_pin_pinalarm_reset();
@@ -90,27 +99,27 @@ bool common_hal_alarm_woken_from_sleep(void) {
     return _get_wakeup_cause() != ESP_SLEEP_WAKEUP_UNDEFINED;
 }
 
-mp_obj_t common_hal_alarm_create_wake_alarm(void) {
+mp_obj_t common_hal_alarm_record_wake_alarm(void) {
     // If woken from deep sleep, create a copy alarm similar to what would have
     // been passed in originally. Otherwise, just return none
     esp_sleep_wakeup_cause_t cause = _get_wakeup_cause();
     switch (cause) {
         case ESP_SLEEP_WAKEUP_TIMER: {
-            return alarm_time_timealarm_create_wakeup_alarm();
+            return alarm_time_timealarm_record_wakeup_alarm(&wake_alarm.time_alarm);
         }
 
         case ESP_SLEEP_WAKEUP_GPIO:
         case ESP_SLEEP_WAKEUP_EXT0:
         case ESP_SLEEP_WAKEUP_EXT1: {
-            return alarm_pin_pinalarm_create_wakeup_alarm();
+            return alarm_pin_pinalarm_record_wakeup_alarm(&wake_alarm.pin_alarm);
         }
 
         case ESP_SLEEP_WAKEUP_TOUCHPAD: {
-            return alarm_touch_touchalarm_create_wakeup_alarm();
+            return alarm_touch_touchalarm_record_wakeup_alarm(&wake_alarm.touch_alarm);
         }
 
         case ESP_SLEEP_WAKEUP_ULP: {
-            return alarm_coproc_coprocalarm_create_wakeup_alarm();
+            return alarm_coproc_coprocalarm_record_wakeup_alarm(&wake_alarm.coproc_alarm);
         }
 
         case ESP_SLEEP_WAKEUP_UNDEFINED:

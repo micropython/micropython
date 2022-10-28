@@ -36,7 +36,7 @@ typedef struct {
 } alarm_touch_touchalarm_obj_t;
 
 mp_obj_t alarm_touch_touchalarm_find_triggered_alarm(const size_t n_alarms, const mp_obj_t *alarms);
-mp_obj_t alarm_touch_touchalarm_create_wakeup_alarm(void);
+mp_obj_t alarm_touch_touchalarm_record_wakeup_alarm(alarm_touch_touchalarm_obj_t *alarm);
 
 void alarm_touch_touchalarm_prepare_for_deep_sleep(void);
 void alarm_touch_touchalarm_reset(void);

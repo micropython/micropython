@@ -39,7 +39,7 @@ mp_obj_t alarm_touch_touchalarm_find_triggered_alarm(const size_t n_alarms, cons
     return mp_const_none;
 }
 
-mp_obj_t alarm_touch_touchalarm_create_wakeup_alarm(void) {
+mp_obj_t alarm_touch_touchalarm_record_wakeup_alarm(alarm_touch_touchalarm_obj_t *alarm) {
     return mp_const_none;
 }
 

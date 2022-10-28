@@ -47,9 +47,7 @@ mp_obj_t alarm_coproc_coprocalarm_find_triggered_alarm(const size_t n_alarms, co
     return mp_const_none;
 }
 
-mp_obj_t alarm_coproc_coprocalarm_create_wakeup_alarm(void) {
-    // Create CoprocAlarm object.
-    alarm_coproc_coprocalarm_obj_t *alarm = m_new_obj(alarm_coproc_coprocalarm_obj_t);
+mp_obj_t alarm_coproc_coprocalarm_record_wakeup_alarm(alarm_coproc_coprocalarm_obj_t *alarm) {
     alarm->base.type = &alarm_coproc_coprocalarm_type;
     return alarm;
 }
@@ -111,7 +109,7 @@ mp_obj_t alarm_coproc_coprocalarm_find_triggered_alarm(const size_t n_alarms, co
     return mp_const_none;
 }
 
-mp_obj_t alarm_coproc_coprocalarm_create_wakeup_alarm(void) {
+mp_obj_t alarm_coproc_coprocalarm_record_wakeup_alarm(void) {
     return mp_const_none;
 }
 

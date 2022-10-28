@@ -33,7 +33,10 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-#ifdef CIRCUITPY_AUDIOPWMIO
+#if CIRCUITPY_ALARM
+#include "common-hal/alarm/__init__.h"
+#endif
+#if CIRCUITPY_AUDIOPWMIO
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 #if CIRCUITPY_BUSIO
@@ -56,9 +59,6 @@
 #endif
 #if CIRCUITPY_PULSEIO || CIRCUITPY_ALARM
 #include "peripherals/exti.h"
-#endif
-#if CIRCUITPY_ALARM
-#include "common-hal/alarm/__init__.h"
 #endif
 #if CIRCUITPY_RTC
 #include "shared-bindings/rtc/__init__.h"
@@ -243,6 +243,10 @@ void SysTick_Handler(void) {
 
 void reset_port(void) {
     reset_all_pins();
+
+    #if CIRCUITPY_ALARM
+    alarm_reset();
+    #endif
 
     #if CIRCUITPY_RTC
     rtc_reset();

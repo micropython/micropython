@@ -37,7 +37,7 @@ extern void port_disable_interrupt_after_ticks_ch(uint32_t channel);
 extern void port_interrupt_after_ticks_ch(uint32_t channel, uint32_t ticks);
 
 mp_obj_t alarm_time_timealarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms);
-mp_obj_t alarm_time_timealarm_create_wakeup_alarm(void);
+mp_obj_t alarm_time_timealarm_record_wakeup_alarm(alarm_time_timealarm_obj_t *alarm);
 
 bool alarm_time_timealarm_woke_this_cycle(void);
 void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);

@@ -38,7 +38,7 @@ typedef struct {
 } alarm_coproc_coprocalarm_obj_t;
 
 mp_obj_t alarm_coproc_coprocalarm_find_triggered_alarm(const size_t n_alarms, const mp_obj_t *alarms);
-mp_obj_t alarm_coproc_coprocalarm_create_wakeup_alarm(void);
+mp_obj_t alarm_coproc_coprocalarm_record_wakeup_alarm(void);
 
 void alarm_coproc_coprocalarm_prepare_for_deep_sleep(void);
 void alarm_coproc_coprocalarm_reset(void);

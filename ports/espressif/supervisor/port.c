@@ -60,6 +60,10 @@
 #include "peripherals/rmt.h"
 #include "peripherals/timer.h"
 
+#if CIRCUITPY_ALARM
+#include "common-hal/alarm/__init__.h"
+#endif
+
 #if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
 #include "peripherals/pcnt.h"
 #endif
@@ -338,6 +342,10 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
+    #if CIRCUITPY_ALARM
+    alarm_reset();
+    #endif
+
     // TODO deinit for esp32-camera
     #if CIRCUITPY_ESP32_CAMERA
     esp_camera_deinit();

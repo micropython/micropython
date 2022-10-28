@@ -49,12 +49,11 @@ mp_obj_t alarm_time_timealarm_find_triggered_alarm(size_t n_alarms, const mp_obj
     return mp_const_none;
 }
 
-mp_obj_t alarm_time_timealarm_create_wakeup_alarm(void) {
-    alarm_time_timealarm_obj_t *timer = m_new_obj(alarm_time_timealarm_obj_t);
-    timer->base.type = &alarm_time_timealarm_type;
+mp_obj_t alarm_time_timealarm_record_wakeup_alarm(alarm_time_timealarm_obj_t *alarm) {
+    alarm->base.type = &alarm_time_timealarm_type;
     // TODO: Set monotonic_time based on the RTC state.
-    timer->monotonic_time = 0.0f;
-    return timer;
+    alarm->monotonic_time = 0.0f;
+    return alarm;
 }
 
 bool alarm_time_timealarm_woke_this_cycle(void) {
