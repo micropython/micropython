@@ -37,6 +37,7 @@
 #define MICROPY_ENABLE_COMPILER     (1)
 
 #define MICROPY_ALLOC_PATH_MAX      (256)
+#define MICROPY_READER_VFS          (MICROPY_VFS)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_PYSTACK      (1)
 #define MICROPY_STACK_CHECK         (0)
@@ -48,6 +49,10 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_USE_INTERNAL_PRINTF (0)
+#ifndef MICROPY_VFS
+#define MICROPY_VFS                 (1)
+#endif
+#define MICROPY_VFS_POSIX           (MICROPY_VFS)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_SYS_PLATFORM     "webassembly"
 #define MICROPY_PY_SYS_STDFILES     (0)
@@ -86,3 +91,8 @@ typedef long mp_off_t;
 #define MICROPY_HW_MCU_NAME "Emscripten"
 
 #define MP_STATE_PORT MP_STATE_VM
+
+#if MICROPY_VFS
+// _GNU_SOURCE must be defined to get definitions of DT_xxx symbols from dirent.h.
+#define _GNU_SOURCE
+#endif
