@@ -173,7 +173,8 @@ msgstr "%q muss >= %d sein"
 #: shared-bindings/analogbufio/BufferedIn.c
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
-msgstr "%q muss ein Byte-Array oder ein array vom Typ 'h', 'H', 'b', oder 'B' sein"
+msgstr ""
+"%q muss ein Byte-Array oder ein array vom Typ 'h', 'H', 'b', oder 'B' sein"
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -2717,7 +2718,7 @@ msgstr ""
 msgid "can't set 512 block size"
 msgstr "Kann Blockgröße von 512 nicht setzen"
 
-#: py/objnamedtuple.c
+#: py/objexcept.c py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr "kann Attribut nicht setzen"
 
@@ -2987,8 +2988,9 @@ msgstr "Fehler = 0x%08lX"
 msgid ""
 "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
-msgstr "esp32_camera.Camera benötigt reservierten PSRAM um konfiguriert werden zu können. "
-"Sieh in der Dokumentation für eine Anleitung nach."
+msgstr ""
+"esp32_camera.Camera benötigt reservierten PSRAM um konfiguriert werden zu "
+"können. Sieh in der Dokumentation für eine Anleitung nach."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -3940,6 +3942,11 @@ msgstr "Drücken der Boot-Taste beim Start.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "Drücken Sie beim Start beide Tasten.\n"
+
+#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
+#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+msgid "pressing button A at start up.\n"
+msgstr ""
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "pressing the left button at start up\n"

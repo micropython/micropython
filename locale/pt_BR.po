@@ -2727,7 +2727,7 @@ msgstr ""
 msgid "can't set 512 block size"
 msgstr "não é possível definir o tamanho de 512 blocos"
 
-#: py/objnamedtuple.c
+#: py/objexcept.c py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr "não é possível definir o atributo"
 
@@ -3948,6 +3948,11 @@ msgstr "pressionando o botão de boot na inicialização.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "pressionando ambos os botões durante a inicialização.\n"
+
+#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
+#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+msgid "pressing button A at start up.\n"
+msgstr ""
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "pressing the left button at start up\n"
