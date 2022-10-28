@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "hal/gpio_types.h"
 #include "driver/gpio.h"
 #include "driver/rtc_io.h"
 
