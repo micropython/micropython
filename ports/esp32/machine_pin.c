@@ -225,7 +225,7 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
 };
 
 // forward declaration
-STATIC const machine_pin_irq_obj_t machine_pin_irq_object[];
+STATIC const machine_pin_irq_obj_t machine_pin_irq_object[MP_ARRAY_SIZE(machine_pin_obj)];
 
 void machine_pins_init(void) {
     static bool did_install = false;
@@ -732,4 +732,4 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_pin_irq_locals_dict
     );
 
-MP_REGISTER_ROOT_POINTER(mp_obj_t machine_pin_irq_handler[MP_ARRAY_SIZE(machine_pin_obj)]);
+MP_REGISTER_ROOT_POINTER(mp_obj_t machine_pin_irq_handler[MP_ARRAY_SIZE(machine_pin_irq_object)]);
