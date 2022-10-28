@@ -70,17 +70,17 @@ SAMD21 UART assignments
 ```````````````````````
 The UART devices and signals must be chosen according to the following rules:
 
-- The TX signal must be at a Pin with pad numbers 2 or 0, like Pin 1 with serial
+- The TX signal must be at a Pin with pad numbers 2 or 0, like Pin D1 with serial
   device 0 or 2.
 - The RX pin may be assigned to one of the other pads.
 
 Examples for Adafruit ItsyBitsy M0 Express:
 
-- uart 0 at pins 0/1  This is the default UART at the RX/TX labelled pins
-- uart 1 at pins 12/10
-- uart 2 at pins 0/1
-- uart 3 at pins 11/13
-- uart 4 at pins 2/5
+- uart 0 at pins D0/D1  This is the default UART at the RX/TX labelled pins
+- uart 1 at pins D12/D10
+- uart 2 at pins D0/D1
+- uart 3 at pins D11/D13
+- uart 4 at pins D2/D5
 - uart 5 at pins SCL/SDA
 
 or other combinations.
@@ -95,8 +95,8 @@ The I2C devices and signals must be chosen according to the following rules:
 Examples for Adafruit ItsyBitsy M0 Express:
 
 - I2C 0 at Pin A3/A4
-- I2C 1 at pins 11/13
-- I2C 2 at the pins 4/3
+- I2C 1 at pins D11/D13
+- I2C 2 at the pins D4/D3
 - I2C 3 at the pins SDA/SCL This is the default I2C device at the SDA/SCl labelled pin
 - I2C 4 at the pins A1/A2
 - I2C 5 at the pins SDA/SCL,
@@ -112,10 +112,10 @@ The I2C devices and signals must be chosen according to the following rules:
 
 Examples for Adafruit ItsyBitsy M0 Express:
 
-- SPI 0 at pins 0/4/1
-- SPI 1 at pins 11/12/13
-- SPI 2 at pins 0/4/1
-- SPI 3 at pins 11/12/13
+- SPI 0 at pins D0/D4/D1
+- SPI 1 at pins D11/D12/D13
+- SPI 2 at pins D0/D4/D1
+- SPI 3 at pins D11/D12/D13
 - SPI 4 at Pin MOSI/MISO/SCK This is the default SPI device at the MOSI/MISO/SCK labelled pins.
 
 or other combinations.
@@ -201,16 +201,16 @@ SAMD51 UART assignments
 ```````````````````````
 The UART devices and signals must be chosen according to the following rules:
 
-- The TX signal must be at a Pin with pad numbers 0, like Pin 1 with serial
+- The TX signal must be at a Pin with pad numbers 0, like Pin D1 with serial
   device 3.
 - The RX pin may be assigned to one of the other pads.
 
 Examples for Adafruit ItsyBitsy 4 Express:
 
 - uart 0 at pins A4/A1
-- uart 1 at pins 1/0   This is the default UART at the RX/TX labelled pins
+- uart 1 at pins D1/D0   This is the default UART at the RX/TX labelled pins
 - uart 2 at pins SCL/SDA  This is the default I2C device at the SDA/SCl labelled pin
-- uart 3 at pins 0/1
+- uart 3 at pins D0/D1
 - uart 4 at pins SDA/SCL
 - uart 5 at pins D12/D13
 
@@ -226,11 +226,11 @@ The I2C devices and signals must be chosen according to the following rules:
 Examples for Adafruit ItsyBitsy M0 Express:
 
 - I2C 0 at pins A3/A4
-- I2C 1 at pins 0/1
+- I2C 1 at pins D0/D1
 - I2C 2 at the pins SDA/SCL
-- I2C 3 at the pins 1/0
+- I2C 3 at the pins D1/D0
 - I2C 4 at the pins A2/A3
-- I2C 5 at the pins 12/13
+- I2C 5 at the pins D12/D13
 
 or other combinations.
 
@@ -244,8 +244,8 @@ The SPI devices and signals must be chosen according to the following rules:
 Examples for Adafruit ItsyBitsy M0 Express:
 
 - SPI 1 at Pin MOSI/MISO/SCK  This is the default SPI device at the MOSI/MISO/SCK labelled pins.
-- SPI 3 at pins 13/11/12
-- SPI 5 at pins 12/3/13
+- SPI 3 at pins D13/D11/D12
+- SPI 5 at pins D12/D3/D13
 
 or other combinations.
 
@@ -325,10 +325,10 @@ Adafruit ItsyBitsy M4 Express :ref:`samd51_pinout_table`.
 
 The default devices at the board are:
 
-- UART 5 at pins 0/1, labelled RX/TX
-- I2C 2 at pins 21/20, labelled SDA/SCL
-- SPI 1 at pins 22/23/24, labelled MOSI, MISO and SCK
-- DAC output on pins 14 and 15, labelled A0 and A1
+- UART 5 at pins D0/D1, labelled RX/TX
+- I2C 2 at pins PA12/PA13, labelled SDA/SCL
+- SPI 1 at pins PA23/PA22/PA17, labelled MOSI, MISO and SCK
+- DAC output on pins PA02 and PA05, labelled A0 and A1
 
 SEEED XIAO pin assignment table
 -------------------------------
@@ -381,10 +381,10 @@ Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
 
 The default devices at the board are:
 
-- UART 4 at pins 7/6, labelled A6_D6/A7_D7
-- I2C 2 at pins 4/5, labelled A4_D4/A5_D5
-- SPI 0 at pins 10/9/8, labelled A10_D10, A9_D9 and A8_D8
-- DAC output on pin 0, labelled A0_D0
+- UART 4 at pins PB08/PB09, labelled A6_D6/A7_D7
+- I2C 2 at pins PA08/PA09, labelled A4_D4/A5_D5
+- SPI 0 at pins PA06/PA05/PA07, labelled A10_D10, A9_D9 and A8_D8
+- DAC output on pin PA02, labelled A0_D0
 
 Adafruit Feather M0 Express pin assignment table
 ------------------------------------------------
@@ -437,10 +437,10 @@ Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
 
 The default devices at the board are:
 
-- UART 5 at pins 21/20, labelled RX/TX
-- I2C 3 at pins 22/23, labelled SDA/SCL
-- SPI 4 at pins 24/25/26, labelled MOSI, MISO and SCK
-- DAC output on pin 14, labelled A0
+- UART 5 at pins PB23/PB22, labelled RX/TX
+- I2C 3 at pins PA22/PA23, labelled SDA/SCL
+- SPI 4 at pins PA10/PA12/PA11, labelled MOSI, MISO and SCK
+- DAC output on pin PA02, labelled A0
 
 Adafruit Trinket M0 pin assignment table
 ------------------------------------------------
@@ -481,10 +481,10 @@ Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
 
 The default devices at the board are:
 
-- UART 0 at pins 3/4, labelled D3/D4
-- I2C 2 at pins 0/2, labelled D0/D2
-- SPI 0 at pins 4/2/3, labelled D4, D2 and D0
-- DAC output on pin 1, labelled D1
+- UART 0 at pins PA07/PA06, labelled D3/D4
+- I2C 2 at pins PA08/PA09, labelled D0/D2
+- SPI 0 at pins PA06/PA09/PA08, labelled D4, D2 and D0
+- DAC output on pin PA02, labelled D1
 
 SAMD21 Xplained PRO pin assignment table
 ----------------------------------------
@@ -550,7 +550,7 @@ For the definition of the table columns see the explanation at the table for
 Adafruit ItsyBitsy M0 Express :ref:`samd21_pinout_table`.
 
 There are no pins labelled for default devices on this board. DAC output
-is on pin 32, labelled EXT3_PIN3
+is on pin PA02, labelled EXT3_PIN3
 
 Minisam M4 pin assignment table
 -------------------------------
@@ -602,10 +602,10 @@ Adafruit ItsyBitsy M4 Express :ref:`samd51_pinout_table`.
 
 The default devices at the board are:
 
-- UART 1 at pins 6/7, labelled D0/D1
-- I2C 2 at pins 14/15, labelled SDA/SCL
-- SPI 1 at pins 16/17/18, labelled MOSI, MISO and SCK
-- DAC output on pins 0 and 4, labelled A0_D9 and A4_D13
+- UART 1 at pins PA16/PA17, labelled D0/D1
+- I2C 2 at pins PA12/PA13, labelled SDA/SCL
+- SPI 1 at pins PB22/PB23/PA01, labelled MOSI, MISO and SCK
+- DAC output on pins PA02 and PA05, labelled A0_D9 and A4_D13
 
 Seeed WIO Terminal pin assignment table
 ---------------------------------------
@@ -717,6 +717,12 @@ Pin GPIO Pin name     IRQ  ADC  ADC  Serial Serial  TC    PWM   PWM
 For the definition of the table columns see the explanation at the table for
 Adafruit ItsyBitsy M4 Express :ref:`samd51_pinout_table`.
 
+Default pin assignments:
+- UART 2 at pins PB27 and PB26, labelled RX and TX
+- I2C 4 at pins PA12 and PA13, labelled SCL0 and SDA0
+- I2C 3 at pins PA16 and PA17, labelled SCL1 and SDA1
+- SPI 5 at pins PB00, PB02 and PB03, labelle MISO, MOSI and SCK
+
 There seems to be no default pin assignment for this board.
 
 Sparkfun SAMD51 Thing Plus pin assignment table
@@ -783,10 +789,10 @@ Adafruit ItsyBitsy M4 Express :ref:`samd51_pinout_table`.
 
 The default devices at the board are:
 
-- UART 1 at pins 2/3, labelled RXD/TXD
-- I2C 5 at pins 20/21, labelled SDA/SCL
-- SPI 4 at pins 22/23/24, labelled MOSI, MISO and SCK
-- DAC output on pins 14 and 18, labelled A0 and A4
+- UART 1 at pins PB23/PB22, labelled RXD/TXD
+- I2C 5 at pins PA22/PA23, labelled SDA/SCL
+- SPI 4 at pins PB12/PB11/PB13, labelled MOSI, MISO and SCK
+- DAC output on pins PA02 and PA05, labelled A0 and A4
 
 Scripts for creating the pin assignment tables
 ----------------------------------------------
