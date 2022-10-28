@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2022 CDarius
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,12 @@
 // GPIO16 & GPIO17 are used for PSRAM
 // #define CIRCUITPY_BOARD_UART        (1)
 // #define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO17, .rx = &pin_GPIO16}}
+
+// For entering safe mode
+#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO39)
+
+// Explanation of how a user got into safe mode
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing button A at start up.\n")
 
 // UART pins attached to the USB-serial converter chip
 #define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)
