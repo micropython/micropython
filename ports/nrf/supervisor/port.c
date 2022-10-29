@@ -64,15 +64,11 @@
 
 #include "lib/tinyusb/src/device/usbd.h"
 
-#if CIRCUITPY_ALARM
-#include "common-hal/alarm/__init__.h"
-#endif
-
-#ifdef CIRCUITPY_AUDIOBUSIO
+#if CIRCUITPY_AUDIOBUSIO
 #include "common-hal/audiobusio/I2SOut.h"
 #endif
 
-#ifdef CIRCUITPY_AUDIOPWMIO
+#if CIRCUITPY_AUDIOPWMIO
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 
@@ -216,10 +212,6 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-    #if CIRCUITPY_ALARM
-    alarm_reset();
-    #endif
-
     #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();

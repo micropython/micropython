@@ -30,10 +30,9 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "common-hal/alarm/__init__.h"
 
 #include "nrfx.h"
 #include "nrf_gpio.h"
@@ -101,7 +100,9 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
     return mp_const_none;
 }
 
-mp_obj_t alarm_pin_pinalarm_record_wakeup_alarm(alarm_pin_pinalarm_obj_t *alarm) {
+mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
+    alarm_pin_pinalarm_obj_t *const alarm = &alarm_wake_alarm.pin_alarm;
+
     alarm->base.type = &alarm_pin_pinalarm_type;
     alarm->pin = NULL;
     // Map the pin number back to a pin object.

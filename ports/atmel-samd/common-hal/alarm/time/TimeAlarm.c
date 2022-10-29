@@ -27,9 +27,9 @@
 #include "py/runtime.h"
 #include "hpl/pm/hpl_pm_base.h"
 
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/time/__init__.h"
-#include "common-hal/alarm/__init__.h"
 #include "supervisor/port.h"
 
 STATIC volatile bool woke_up = false;
@@ -58,7 +58,9 @@ mp_obj_t alarm_time_timealarm_find_triggered_alarm(size_t n_alarms, const mp_obj
     return mp_const_none;
 }
 
-mp_obj_t alarm_time_timealarm_record_wakeup_alarm(alarm_time_timealarm_obj_t *alarm) {
+mp_obj_t alarm_time_timealarm_record_wake_alarm(void) {
+    alarm_time_timealarm_obj_t *const alarm = &alarm_wake_alarm.time_alarm;
+
     alarm->base.type = &alarm_time_timealarm_type;
     // TODO: Set monotonic_time based on the RTC state.
     //       Or don't, most of the other ports don't have this either.

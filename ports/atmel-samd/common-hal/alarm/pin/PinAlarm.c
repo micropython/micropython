@@ -31,9 +31,9 @@
 #include "hal/include/hal_gpio.h"
 // #include <stdio.h>
 
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
-#include "shared-bindings/microcontroller/Pin.h"
 #include "common-hal/alarm/__init__.h"
 
 // This variable stores whether a PinAlarm woke in light sleep or fake deep sleep
@@ -128,8 +128,8 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
     return mp_const_none;
 }
 
-mp_obj_t alarm_pin_pinalarm_record_wakeup_alarm(alarm_pin_pinalarm_obj_t *alarm, uint32_t TAMPID) {
-    // Create tamper alarm that caused wakeup from deep sleep
+mp_obj_t alarm_pin_pinalarm_record_wake_alarm(uint32_t TAMPID) {
+    alarm_pin_pinalarm_obj_t *const alarm = &alarm_wake_alarm.pin_alarm;
 
     for (samd_tamper_pin_t *t = TAMPER_PINS; t->n >= 0; t++) {
         if (TAMPID & (1 << t->n)) {

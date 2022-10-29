@@ -747,8 +747,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     supervisor_allocation *heap = allocate_remaining_memory();
 
-    // true means this is the first set of VM's after a hard reset.
-    start_mp(heap, true);
+    start_mp(heap);
 
     #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
@@ -964,6 +963,9 @@ int __attribute__((used)) main(void) {
     // Record which alarm woke us up, if any.
     // common_hal_alarm_record_wake_alarm() should return a static, non-heap object
     shared_alarm_save_wake_alarm(common_hal_alarm_record_wake_alarm());
+    // Then reset the alarm system. It's not reset in reset_port(), because that's also called
+    // on VM teardown, which would clear any alarm setup.
+    alarm_reset();
     #endif
 
     // Reset everything and prep MicroPython to run boot.py.
@@ -1010,6 +1012,9 @@ int __attribute__((used)) main(void) {
                 serial_write_compressed(translate("soft reboot\n"));
             }
             if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+                // If code.py did a fake deep sleep, pretend that we
+                // are running code.py for the first time after a hard
+                // reset. This will preserve any alarm information.
                 skip_repl = run_code_py(safe_mode, &simulate_reset);
             } else {
                 skip_repl = false;
@@ -1018,14 +1023,10 @@ int __attribute__((used)) main(void) {
             break;
         }
 
-        // Either the REPL or code.py has run and finished.
-        // If code.py did a fake deep sleep, pretend that we are running code.py for
-        // the first time after a hard reset. This will preserve any alarm information.
-        if (!simulate_reset) {
-            #if CIRCUITPY_ALARM
-            shared_alarm_save_wake_alarm(mp_const_none);
-            #endif
-        }
+        #if CIRCUITPY_ALARM
+        shared_alarm_save_wake_alarm(simulate_reset ? common_hal_alarm_record_wake_alarm() : mp_const_none);
+        alarm_reset();
+        #endif
     }
     mp_deinit();
     return 0;

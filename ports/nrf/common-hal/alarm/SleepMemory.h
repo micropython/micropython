@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM_SLEEPMEMORY_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM_SLEEPMEMORY_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -37,5 +36,3 @@ typedef struct {
 
 extern void set_memory_retention(void);
 extern void alarm_sleep_memory_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM_SLEEPMEMORY_H

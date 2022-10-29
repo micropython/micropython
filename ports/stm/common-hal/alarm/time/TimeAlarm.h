@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM_TIMEALARM_H
-#define MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM_TIMEALARM_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -35,12 +34,10 @@ typedef struct {
 } alarm_time_timealarm_obj_t;
 
 mp_obj_t alarm_time_timealarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms);
-mp_obj_t alarm_time_timealarm_record_wakeup_alarm(alarm_time_timealarm_obj_t *alarm);
+mp_obj_t alarm_time_timealarm_record_wake_alarm(void);
 
 bool alarm_time_timealarm_woke_this_cycle(void);
 void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
 void alarm_time_timealarm_reset(void);
 
 void alarm_time_timealarm_prepare_for_deep_sleep(void);
-
-#endif  // MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM_TIMEALARM_H

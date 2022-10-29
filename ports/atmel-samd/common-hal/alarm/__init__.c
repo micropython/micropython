@@ -48,12 +48,9 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
     },
 };
 
-// Static alarm object recording alarm (if any) that woke up CircuitPython after light or deep sleep.
+// Non-heap alarm object recording alarm (if any) that woke up CircuitPython after light or deep sleep.
 // This object lives across VM instantiations, so none of these objects can contain references to the heap.
-static union {
-    alarm_pin_pinalarm_obj_t pin_alarm;
-    alarm_time_timealarm_obj_t time_alarm;
-} wake_alarm;
+alarm_wake_alarm_union_t alarm_wake_alarm;
 
 void alarm_reset(void) {
     // Reset the alarm flag
@@ -83,13 +80,13 @@ mp_obj_t common_hal_alarm_record_wake_alarm(void) {
     if (alarm_pin_pinalarm_woke_this_cycle()) {
         TAMPID = RTC->MODE0.TAMPID.reg;
         RTC->MODE0.TAMPID.reg = TAMPID;         // clear register
-        return alarm_pin_pinalarm_record_wakeup_alarm(&wake_alarm.pin_alarm, TAMPID);
+        return alarm_pin_pinalarm_record_wake_alarm(TAMPID);
     }
     if (alarm_time_timealarm_woke_this_cycle() || (true_deep && TAMPID == 0)) {
-        return alarm_time_timealarm_record_wakeup_alarm(&wake_alarm.time_alarm);
+        return alarm_time_timealarm_record_wake_alarm();
     }
     if (true_deep) {
-        return alarm_pin_pinalarm_record_wakeup_alarm(&wake_alarm.pin_alarm, TAMPID);
+        return alarm_pin_pinalarm_record_wake_alarm(TAMPID);
     }
     return mp_const_none;
 }

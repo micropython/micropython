@@ -24,10 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM__INIT__H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM__INIT__H
+#pragma once
 
 #include "common-hal/alarm/SleepMemory.h"
+#include "common-hal/alarm/pin/PinAlarm.h"
+#include "common-hal/alarm/time/TimeAlarm.h"
 
 extern const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
 
@@ -53,8 +54,13 @@ typedef enum {
     SAMD_WAKEUP_RTC
 } samd_sleep_source_t;
 
-extern void alarm_set_wakeup_reason(samd_sleep_source_t reason);
-void alarm_get_wakeup_cause(void);
-extern void alarm_reset(void);
+typedef union {
+    alarm_pin_pinalarm_obj_t pin_alarm;
+    alarm_time_timealarm_obj_t time_alarm;
+} alarm_wake_alarm_union_t;
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM__INIT__H
+extern alarm_wake_alarm_union_t alarm_wake_alarm;
+
+extern void alarm_set_wakeup_reason(samd_sleep_source_t reason);
+extern void alarm_get_wakeup_cause(void);
+extern void alarm_reset(void);

@@ -25,10 +25,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM__INIT__H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM__INIT__H
+#pragma once
 
 #include "common-hal/alarm/SleepMemory.h"
+#include "common-hal/alarm/pin/PinAlarm.h"
+#include "common-hal/alarm/time/TimeAlarm.h"
+#include "common-hal/alarm/touch/TouchAlarm.h"
 
 typedef enum {
     NRF_SLEEP_WAKEUP_UNDEFINED,
@@ -40,6 +42,13 @@ typedef enum {
     NRF_SLEEP_WAKEUP_ZZZ
 } nrf_sleep_source_t;
 
+typedef union {
+    alarm_pin_pinalarm_obj_t pin_alarm;
+    alarm_time_timealarm_obj_t time_alarm;
+    alarm_touch_touchalarm_obj_t touch_alarm;
+} alarm_wake_alarm_union_t;
+
+extern alarm_wake_alarm_union_t alarm_wake_alarm;
 extern const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
 
 enum {
@@ -52,5 +61,3 @@ extern uint8_t sleepmem_wakeup_event;
 extern uint8_t sleepmem_wakeup_pin;
 
 extern void alarm_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM__INIT__H
