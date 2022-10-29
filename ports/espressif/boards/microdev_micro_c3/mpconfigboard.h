@@ -50,6 +50,3 @@
 
 // For entering safe mode
 #define CIRCUITPY_BOOT_BUTTON           (&pin_GPIO9)
-
-// Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
