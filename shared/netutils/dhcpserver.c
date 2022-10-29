@@ -33,7 +33,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 
-#if MICROPY_PY_LWIP
+#if LWIP_UDP
 
 #include "shared/netutils/dhcpserver.h"
 #include "lwip/udp.h"
