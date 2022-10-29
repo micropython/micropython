@@ -174,6 +174,10 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     // Is there a better way?
     common_hal_wifi_radio_stop_station(self);
 
+    // Channel can only be changed after inital powerup and config of ap.
+    // Defaults to 1 if not set or invalid (i.e. 13)
+    cyw43_wifi_ap_set_channel(&cyw43_state, (const uint32_t)channel);
+
     cyw43_arch_enable_ap_mode((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK);
     // TODO: Implement authmode check like in espressif
     bindings_cyw43_wifi_enforce_pm();
