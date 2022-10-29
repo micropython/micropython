@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-10-29 18:16+0000\n"
+"PO-Revision-Date: 2022-10-29 22:00+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -3951,7 +3951,7 @@ msgstr "pressionando ambos os botões durante a inicialização.\n"
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "pressing central button at start up.\n"
-msgstr ""
+msgstr "pressionando o botão central na inicialização.\n"
 
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
