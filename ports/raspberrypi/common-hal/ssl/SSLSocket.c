@@ -284,7 +284,7 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t
 }
 
 bool common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port) {
-    mp_raise_NotImplementedError(NULL);
+    return common_hal_socketpool_socket_bind(self->sock, host, hostlen, port);
 }
 
 void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
@@ -349,11 +349,14 @@ bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t *self) {
 }
 
 bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog) {
-    mp_raise_NotImplementedError(NULL);
+    return common_hal_socketpool_socket_listen(self->sock, backlog);
 }
 
 ssl_sslsocket_obj_t *common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self, uint8_t *ip, uint32_t *port) {
-    mp_raise_NotImplementedError(NULL);
+    socketpool_socket_obj_t *sock = common_hal_socketpool_socket_accept(self->sock, ip, port);
+    ssl_sslsocket_obj_t *sslsock = common_hal_ssl_sslcontext_wrap_socket(self->ssl_context, sock, true, NULL);
+    do_handshake(sslsock);
+    return sslsock;
 }
 
 void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, uint32_t timeout_ms) {

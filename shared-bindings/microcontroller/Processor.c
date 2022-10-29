@@ -107,7 +107,7 @@ MP_PROPERTY_GETTER(mcu_processor_reset_reason_obj,
 //|     Is `None` if the temperature is not available.
 //|
 //|     **Limitations:** Not available on ESP32 or ESP32-S3. On small SAMD21 builds without external flash,
-//|       the reported temperature has reduced accuracy and precision, to save code space.
+//|     the reported temperature has reduced accuracy and precision, to save code space.
 //|     """
 STATIC mp_obj_t mcu_processor_get_temperature(mp_obj_t self) {
     float temperature = common_hal_mcu_processor_get_temperature();

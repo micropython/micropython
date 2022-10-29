@@ -2700,7 +2700,7 @@ msgstr "wúfǎ xiàng gānggāng qǐdòng de shēngchéng qì fāsòng fēi zhí
 msgid "can't set 512 block size"
 msgstr "wúfǎ shèzhì 512 kuài dàxiǎo"
 
-#: py/objnamedtuple.c
+#: py/objexcept.c py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr "wúfǎ shèzhì shǔxìng"
 
@@ -3908,6 +3908,11 @@ msgstr "Zài qǐdòng shí àn qǐdòng ànniǔ.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "zài qǐdòng shí tóngshí àn xià liǎng gè ànniǔ.\n"
+
+#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
+#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+msgid "pressing button A at start up.\n"
+msgstr ""
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "pressing the left button at start up\n"

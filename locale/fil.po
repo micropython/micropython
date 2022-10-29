@@ -2664,7 +2664,7 @@ msgstr "hindi mapadala ang non-None value sa isang kaka umpisang generator"
 msgid "can't set 512 block size"
 msgstr ""
 
-#: py/objnamedtuple.c
+#: py/objexcept.c py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr "hindi ma i-set ang attribute"
 
@@ -3879,6 +3879,11 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
+msgstr ""
+
+#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
+#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+msgid "pressing button A at start up.\n"
 msgstr ""
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h

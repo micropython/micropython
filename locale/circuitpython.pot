@@ -3848,6 +3848,11 @@ msgstr ""
 msgid "pressing central button at start up.\n"
 msgstr ""
 
+#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
+#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+msgid "pressing button A at start up.\n"
+msgstr ""
+
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "pressing the left button at start up\n"
 msgstr ""
