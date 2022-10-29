@@ -3881,6 +3881,10 @@ msgstr "pressing boot button at start up.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "pressing both buttons at start up.\n"
 
+#: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
+msgid "pressing central button at start up.\n"
+msgstr ""
+
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 msgid "pressing button A at start up.\n"
