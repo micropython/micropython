@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-10-22 18:28+0000\n"
+"PO-Revision-Date: 2022-10-29 22:00+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -3900,7 +3900,7 @@ msgstr "genom att trycka på VOLUME-knappen vid start.\n"
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: supervisor/shared/safe_mode.c
 msgid "pressing boot button at start up.\n"
-msgstr "trycka på startknappen vid start.\n"
+msgstr "genom att trycka på startknappen vid start.\n"
 
 #: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
 #: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
@@ -3908,16 +3908,20 @@ msgstr "trycka på startknappen vid start.\n"
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
-msgstr "trycka båda knapparna vid uppstart.\n"
+msgstr "genom att trycka båda knapparna vid uppstart.\n"
+
+#: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
+msgid "pressing central button at start up.\n"
+msgstr "trycka på mittknappen vid start.\n"
 
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 msgid "pressing button A at start up.\n"
-msgstr ""
+msgstr "genom att tryck på knappen A vid start.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "pressing the left button at start up\n"
-msgstr "håll ner vänster knapp vid start\n"
+msgstr "genom att håll ner vänster knapp vid start\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
