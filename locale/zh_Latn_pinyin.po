@@ -596,6 +596,13 @@ msgstr "yǐndǎo shèbèi bìxū shì dìyī tái shèbèi (interface #0)."
 msgid "Both RX and TX required for flow control"
 msgstr "RX hé TX dōu xū yào liúliàng kòngzhì"
 
+#: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
+#: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
+msgid "Both buttons were pressed at start up.\n"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
 msgstr "liǎnggè yǐnjiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
@@ -660,6 +667,11 @@ msgstr "huǎnchōng qū bìxū dàxiǎo xiāngtóng"
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Zǒngxiàn yǐnjiǎo %d yǐjīng zài shǐyòng zhōng"
+
+#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
+#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+msgid "Button A was pressed at start up.\n"
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -2015,12 +2027,24 @@ msgid "Temperature read timed out"
 msgstr "Wēndù dòu qǔ chāoshí"
 
 #: supervisor/shared/safe_mode.c
+msgid "The BOOT button was pressed at start up.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Increase the stack size if you know how. If not:"
 msgstr ""
 "diàn lù dàn duī bèi sǔn huài, yīn wéi duī zhàn tài xiǎo.\n"
 "rú guǒ nín zhī dào rú hé zēng jiā duī zhàn dà xiǎo. rú guǒ méi yǒu:"
+
+#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
+msgid "The SW38 button was pressed at start up.\n"
+msgstr ""
+
+#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+msgid "The VOLUME button was pressed at start up.\n"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2029,6 +2053,14 @@ msgid ""
 msgstr ""
 "`wēi kòng zhì qì` mó kuài yòng yú qǐ dòng dào ān quán mó shì. àn chóng zhì "
 "tuì chū ān quán mó shì."
+
+#: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
+msgid "The central button was pressed at start up.\n"
+msgstr ""
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "The left button was pressed at start up.\n"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2095,8 +2127,8 @@ msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Chāoshí shíjiān tài zhǎng: Zuìdà chāoshí shíjiān wèi%d miǎo"
 
 #: supervisor/shared/safe_mode.c
-msgid "To exit, please reset the board without "
-msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
+msgid "To exit, please reset the board without requesting safe mode."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample"
@@ -2402,10 +2434,6 @@ msgid ""
 msgstr ""
 "zài qǐ dòng guò chéng zhōng, nín àn xià le chóng zhì àn niǔ. zài cì àn xià "
 "yǐ tuì chū ān quán mó shì."
-
-#: supervisor/shared/safe_mode.c
-msgid "You requested starting safe mode by "
-msgstr "Nín qǐngqiú qǐdòng ānquán móshì "
 
 #: py/objtype.c
 msgid "__init__() should return None"
@@ -3880,48 +3908,6 @@ msgstr "pow() 3 cān shǔ bùnéng wéi 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 
-#: ports/espressif/boards/adafruit_qtpy_esp32_pico/mpconfigboard.h
-msgid "pressing BOOT button at start up.\n"
-msgstr "zài qǐdòng shí àn BOOT ànniǔ.\n"
-
-#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
-msgid "pressing SW38 button at start up.\n"
-msgstr "zài qǐdòng shí àn SW38 ànniǔ.\n"
-
-#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
-msgid "pressing VOLUME button at start up.\n"
-msgstr "zài qǐdòng shí àn SW38 ànniǔ.\n"
-
-#: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
-#: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n8r2/mpconfigboard.h
-#: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
-#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
-#: supervisor/shared/safe_mode.c
-msgid "pressing boot button at start up.\n"
-msgstr "Zài qǐdòng shí àn qǐdòng ànniǔ.\n"
-
-#: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
-#: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
-#: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
-#: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
-#: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
-msgid "pressing both buttons at start up.\n"
-msgstr "zài qǐdòng shí tóngshí àn xià liǎng gè ànniǔ.\n"
-
-#: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
-msgid "pressing central button at start up.\n"
-msgstr ""
-
-#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
-#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
-msgid "pressing button A at start up.\n"
-msgstr ""
-
-#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
-msgid "pressing the left button at start up\n"
-msgstr "qǐ dòng shí àn xià zuǒ àn niǔ\n"
-
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
 msgstr "lā kǒu zhào yǔ fāng xiàng miàn mó chōng tū"
@@ -4444,6 +4430,30 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "To exit, please reset the board without "
+#~ msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
+
+#~ msgid "You requested starting safe mode by "
+#~ msgstr "Nín qǐngqiú qǐdòng ānquán móshì "
+
+#~ msgid "pressing BOOT button at start up.\n"
+#~ msgstr "zài qǐdòng shí àn BOOT ànniǔ.\n"
+
+#~ msgid "pressing SW38 button at start up.\n"
+#~ msgstr "zài qǐdòng shí àn SW38 ànniǔ.\n"
+
+#~ msgid "pressing VOLUME button at start up.\n"
+#~ msgstr "zài qǐdòng shí àn SW38 ànniǔ.\n"
+
+#~ msgid "pressing boot button at start up.\n"
+#~ msgstr "Zài qǐdòng shí àn qǐdòng ànniǔ.\n"
+
+#~ msgid "pressing both buttons at start up.\n"
+#~ msgstr "zài qǐdòng shí tóngshí àn xià liǎng gè ànniǔ.\n"
+
+#~ msgid "pressing the left button at start up\n"
+#~ msgstr "qǐ dòng shí àn xià zuǒ àn niǔ\n"
 
 #~ msgid "Only one TouchAlarm can be set in deep sleep."
 #~ msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mián."
