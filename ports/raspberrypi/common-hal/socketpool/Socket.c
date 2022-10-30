@@ -852,6 +852,8 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
         mp_raise_OSError(EHOSTUNREACH);
     }
 
+    ip_set_option(socket->pcb.ip, SOF_REUSEADDR);
+
     err_t err = ERR_ARG;
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM: {

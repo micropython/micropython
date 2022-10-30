@@ -39,6 +39,9 @@
 //| class AnalogOut:
 //|     """Output analog values (a specific voltage).
 //|
+//|     **Limitations:** Not available on nRF, RP2040, Spresense, as there is no on-chip DAC.
+//|     On Espressif, available only on ESP32 and ESP32-S2; other chips do not have a DAC.
+//|
 //|     Example usage::
 //|
 //|         import analogio
@@ -52,8 +55,6 @@
 //|
 //|         :param ~microcontroller.Pin pin: the pin to output to
 //|
-//|         **Limitations:** Not available on nRF, RP2040, Spresense: there is no on-chip DAC.
-//|          Espressif: available only on ESP32 and ESP32-S2; other chips do not have a DAC.
 //|         """
 //|         ...
 STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t n_args, size_t n_kw, const mp_obj_t *args) {

@@ -24,8 +24,12 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
 #include "py/obj.h"
 #include "py/objtuple.h"
+
+#include "shared-bindings/microcontroller/Pin.h"
 
 typedef struct {
     mp_obj_base_t base;
@@ -36,7 +40,7 @@ typedef struct {
 } alarm_pin_pinalarm_obj_t;
 
 mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms);
-mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void);
+mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void);
 
 void alarm_pin_pinalarm_reset(void);
 void alarm_pin_pinalarm_light_reset(void);

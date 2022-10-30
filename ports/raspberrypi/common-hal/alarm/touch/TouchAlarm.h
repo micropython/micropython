@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H
+#pragma once
 
 #include "py/obj.h"
 #include "common-hal/microcontroller/Pin.h"
@@ -34,5 +33,3 @@ typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
 } alarm_touch_touchalarm_obj_t;
-
-#endif  // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H

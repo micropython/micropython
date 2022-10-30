@@ -128,7 +128,7 @@ msgstr "%q Initialisierung ist gescheitert"
 
 #: shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
-msgstr ""
+msgstr "%q ist %q"
 
 #: py/argcheck.c
 msgid "%q length must be %d"
@@ -174,6 +174,7 @@ msgstr "%q muss >= %d sein"
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
+"%q muss ein Byte-Array oder ein array vom Typ 'h', 'H', 'b', oder 'B' sein"
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -594,6 +595,13 @@ msgstr "Boot-Gerät muss erstes Gerät sein (interface #0)."
 msgid "Both RX and TX required for flow control"
 msgstr "Sowohl RX als auch TX sind zu Flusssteuerung erforderlich"
 
+#: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
+#: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
+msgid "Both buttons were pressed at start up.\n"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
 msgstr "Beide Pins müssen Hardware-Interrupts unterstützen"
@@ -658,6 +666,11 @@ msgstr "Buffers müssen gleiche Größe haben"
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Bus-Pin %d wird schon benutzt"
+
+#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
+#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+msgid "Button A was pressed at start up.\n"
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -1030,16 +1043,16 @@ msgstr "Filter zu komplex"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is duplicate"
-msgstr ""
+msgstr "Die Firmware ist doppelt vorhanden"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is invalid"
-msgstr ""
+msgstr "Die Firmware ist ungültig"
 
 #: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
-msgstr ""
+msgstr "Die Firmware ist zu groß"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -1657,7 +1670,7 @@ msgstr ""
 #: ports/espressif/common-hal/alarm/coproc/CoprocAlarm.c
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one %q can be set in deep sleep."
-msgstr ""
+msgstr "Nur ein %q kann im Deep-Sleep gesetzt werden."
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
@@ -2018,12 +2031,24 @@ msgid "Temperature read timed out"
 msgstr "Zeitüberschreitung beim Auslesen der Temperatur"
 
 #: supervisor/shared/safe_mode.c
+msgid "The BOOT button was pressed at start up.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Increase the stack size if you know how. If not:"
 msgstr ""
 "Der Heap von CircuitPython wurde beschädigt, weil der Stack zu klein war.\n"
 "Vergrößern Sie den Stack, wenn Sie wissen, wie. Wenn nicht:"
+
+#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
+msgid "The SW38 button was pressed at start up.\n"
+msgstr ""
+
+#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+msgid "The VOLUME button was pressed at start up.\n"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2032,6 +2057,14 @@ msgid ""
 msgstr ""
 "Das Modul `microcontroller` wurde zum Booten in den abgesicherten Modus "
 "verwendet. Drücken Sie Reset, um den abgesicherten Modus zu verlassen."
+
+#: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
+msgid "The central button was pressed at start up.\n"
+msgstr ""
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "The left button was pressed at start up.\n"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2102,8 +2135,8 @@ msgstr ""
 "Zeitbeschränkung ist zu groß: Maximale Zeitbeschränkung ist %d Sekunden"
 
 #: supervisor/shared/safe_mode.c
-msgid "To exit, please reset the board without "
-msgstr "Zum beenden, resette bitte das board ohne "
+msgid "To exit, please reset the board without requesting safe mode."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample"
@@ -2224,7 +2257,7 @@ msgstr "mDNS-Abfrage kann nicht gestartet werden"
 
 #: shared-bindings/coproc/CoprocMemory.c
 msgid "Unable to write"
-msgstr ""
+msgstr "Schreiben nicht möglich"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -2415,10 +2448,6 @@ msgid ""
 msgstr ""
 "Du hast beim Booten die Reset-Taste gedrückt. Drücke sie erneut, um den "
 "abgesicherten Modus zu beenden."
-
-#: supervisor/shared/safe_mode.c
-msgid "You requested starting safe mode by "
-msgstr "Du hast das Starten im abgesicherten Modus ausgelöst durch "
 
 #: py/objtype.c
 msgid "__init__() should return None"
@@ -2717,7 +2746,7 @@ msgstr ""
 msgid "can't set 512 block size"
 msgstr "Kann Blockgröße von 512 nicht setzen"
 
-#: py/objnamedtuple.c
+#: py/objexcept.c py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr "kann Attribut nicht setzen"
 
@@ -2988,6 +3017,8 @@ msgid ""
 "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
 msgstr ""
+"esp32_camera.Camera benötigt reservierten PSRAM um konfiguriert werden zu "
+"können. Sieh in der Dokumentation für eine Anleitung nach."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -3911,39 +3942,6 @@ msgstr "pow() drittes Argument darf nicht 0 sein"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() mit 3 Argumenten erfordert Integer"
 
-#: ports/espressif/boards/adafruit_qtpy_esp32_pico/mpconfigboard.h
-msgid "pressing BOOT button at start up.\n"
-msgstr "BOOT Taste wird beim Starten gedrückt.\n"
-
-#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
-msgid "pressing SW38 button at start up.\n"
-msgstr "SW38 Taste wird beim Starten gedrückt.\n"
-
-#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
-msgid "pressing VOLUME button at start up.\n"
-msgstr "VOLUME Taste wird beim Starten gedrückt.\n"
-
-#: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
-#: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n8r2/mpconfigboard.h
-#: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
-#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
-#: supervisor/shared/safe_mode.c
-msgid "pressing boot button at start up.\n"
-msgstr "Drücken der Boot-Taste beim Start.\n"
-
-#: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
-#: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
-#: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
-#: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
-#: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
-msgid "pressing both buttons at start up.\n"
-msgstr "Drücken Sie beim Start beide Tasten.\n"
-
-#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
-msgid "pressing the left button at start up\n"
-msgstr "Drücken der linken Taste beim Einschalten\n"
-
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
 msgstr "Pull-Masken kollidieren mit Richtungsmasken"
@@ -4391,7 +4389,7 @@ msgstr "wifi ist nicht aktiviert"
 
 #: ports/raspberrypi/common-hal/wifi/Monitor.c
 msgid "wifi.Monitor not available"
-msgstr ""
+msgstr "wifi.Monitor nicht verfügbar"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
@@ -4467,6 +4465,30 @@ msgstr "zi muss eine Gleitkommazahl sein"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
 
+#~ msgid "To exit, please reset the board without "
+#~ msgstr "Zum beenden, resette bitte das board ohne "
+
+#~ msgid "You requested starting safe mode by "
+#~ msgstr "Du hast das Starten im abgesicherten Modus ausgelöst durch "
+
+#~ msgid "pressing BOOT button at start up.\n"
+#~ msgstr "BOOT Taste wird beim Starten gedrückt.\n"
+
+#~ msgid "pressing SW38 button at start up.\n"
+#~ msgstr "SW38 Taste wird beim Starten gedrückt.\n"
+
+#~ msgid "pressing VOLUME button at start up.\n"
+#~ msgstr "VOLUME Taste wird beim Starten gedrückt.\n"
+
+#~ msgid "pressing boot button at start up.\n"
+#~ msgstr "Drücken der Boot-Taste beim Start.\n"
+
+#~ msgid "pressing both buttons at start up.\n"
+#~ msgstr "Drücken Sie beim Start beide Tasten.\n"
+
+#~ msgid "pressing the left button at start up\n"
+#~ msgstr "Drücken der linken Taste beim Einschalten\n"
+
 #~ msgid "Only one TouchAlarm can be set in deep sleep."
 #~ msgstr "Nur ein TouchAlarm kann in Deep Sleep gesetzt werden."
 
@@ -4510,7 +4532,7 @@ msgstr "zi muss die Form (n_section, 2) haben"
 #~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
 #~ "or 'B'"
 #~ msgstr ""
-#~ "sample_source buffer muss ein Bytearray oder ein Array vom Typ 'h', 'H', "
+#~ "sample_source buffer muss ein Byte-Array oder ein Array vom Typ 'h', 'H', "
 #~ "'b' oder 'B' sein"
 
 #~ msgid "Expected an alarm"

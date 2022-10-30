@@ -35,5 +35,3 @@
 
 #define DEFAULT_UART_BUS_RX         (&pin_GPIO44)
 #define DEFAULT_UART_BUS_TX         (&pin_GPIO43)
-
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")

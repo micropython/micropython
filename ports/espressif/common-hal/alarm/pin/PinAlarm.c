@@ -26,10 +26,10 @@
  */
 
 #include "py/runtime.h"
-
 #include "supervisor/port.h"
+
+#include "common-hal/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
-#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
 #include "esp_sleep.h"
@@ -111,7 +111,7 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
     return mp_const_none;
 }
 
-mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void) {
+mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
     esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
 
     // Pin status will persist into a fake deep sleep
@@ -135,7 +135,8 @@ mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void) {
         }
     }
 
-    alarm_pin_pinalarm_obj_t *alarm = m_new_obj(alarm_pin_pinalarm_obj_t);
+    alarm_pin_pinalarm_obj_t *const alarm = &alarm_wake_alarm.pin_alarm;
+
     alarm->base.type = &alarm_pin_pinalarm_type;
     alarm->pin = NULL;
     // Map the pin number back to a pin object.
@@ -215,6 +216,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
             if (esp_sleep_enable_ext1_wakeup(high_alarms, ESP_EXT1_WAKEUP_ANY_HIGH) != ESP_OK) {
                 mp_raise_ValueError(translate("Can only alarm on RTC IO from deep sleep."));
             }
+            esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
         }
         size_t low_pins[2];
         size_t j = 0;
@@ -231,6 +233,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
             if (esp_sleep_enable_ext1_wakeup(1ull << low_pins[1], ESP_EXT1_WAKEUP_ALL_LOW) != ESP_OK) {
                 mp_raise_ValueError(translate("Can only alarm on RTC IO from deep sleep."));
             }
+            esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
         }
         if (low_count > 0) {
             if (esp_sleep_enable_ext0_wakeup(low_pins[0], 0) != ESP_OK) {
@@ -273,16 +276,14 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[i], PIN_FUNC_GPIO);
         if (pull) {
             gpio_set_pull_mode(i, pull_mode);
-            size_t j = 0;
-            while (gpio_get_level(i) == false) {
-                j++;
-            }
         }
         never_reset_pin_number(i);
         // Sets interrupt type and wakeup bits.
         gpio_wakeup_enable(i, interrupt_mode);
         gpio_intr_enable(i);
     }
+    // Wait for any pulls to settle.
+    mp_hal_delay_ms(50);
 }
 
 
