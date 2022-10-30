@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/coproc/CoprocAlarm.h"
 #include "shared-bindings/coproc/__init__.h"
 
@@ -47,9 +48,9 @@ mp_obj_t alarm_coproc_coprocalarm_find_triggered_alarm(const size_t n_alarms, co
     return mp_const_none;
 }
 
-mp_obj_t alarm_coproc_coprocalarm_create_wakeup_alarm(void) {
-    // Create CoprocAlarm object.
-    alarm_coproc_coprocalarm_obj_t *alarm = m_new_obj(alarm_coproc_coprocalarm_obj_t);
+mp_obj_t alarm_coproc_coprocalarm_record_wake_alarm(void) {
+    alarm_coproc_coprocalarm_obj_t *const alarm = &alarm_wake_alarm.coproc_alarm;
+
     alarm->base.type = &alarm_coproc_coprocalarm_type;
     return alarm;
 }
@@ -111,7 +112,7 @@ mp_obj_t alarm_coproc_coprocalarm_find_triggered_alarm(const size_t n_alarms, co
     return mp_const_none;
 }
 
-mp_obj_t alarm_coproc_coprocalarm_create_wakeup_alarm(void) {
+mp_obj_t alarm_coproc_coprocalarm_record_wake_alarm(void) {
     return mp_const_none;
 }
 

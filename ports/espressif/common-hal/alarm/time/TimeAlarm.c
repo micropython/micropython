@@ -31,6 +31,7 @@
 
 #include "components/esp_timer/include/esp_timer.h"
 
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/time/__init__.h"
 
@@ -51,12 +52,13 @@ mp_obj_t alarm_time_timealarm_find_triggered_alarm(size_t n_alarms, const mp_obj
     return mp_const_none;
 }
 
-mp_obj_t alarm_time_timealarm_create_wakeup_alarm(void) {
-    alarm_time_timealarm_obj_t *timer = m_new_obj(alarm_time_timealarm_obj_t);
-    timer->base.type = &alarm_time_timealarm_type;
+mp_obj_t alarm_time_timealarm_record_wake_alarm(void) {
+    alarm_time_timealarm_obj_t *const alarm = &alarm_wake_alarm.time_alarm;
+
+    alarm->base.type = &alarm_time_timealarm_type;
     // TODO: Set monotonic_time based on the RTC state.
-    timer->monotonic_time = 0.0f;
-    return timer;
+    alarm->monotonic_time = 0.0f;
+    return alarm;
 }
 
 esp_timer_handle_t pretend_sleep_timer;

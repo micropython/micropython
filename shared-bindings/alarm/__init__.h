@@ -55,7 +55,7 @@ extern void common_hal_alarm_pretending_deep_sleep(void);
 extern mp_obj_t shared_alarm_get_wake_alarm(void);
 
 // Creates a new alarm object after exiting deep sleep (real or fake)
-extern mp_obj_t common_hal_alarm_create_wake_alarm(void);
+extern mp_obj_t common_hal_alarm_record_wake_alarm(void);
 
 // Saves alarm to global array
 void shared_alarm_save_wake_alarm(mp_obj_t alarm);

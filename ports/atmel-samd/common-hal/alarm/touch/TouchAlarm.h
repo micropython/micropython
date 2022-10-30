@@ -24,12 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_TOUCHALARM_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_TOUCHALARM_H
+#pragma once
 
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
 } alarm_touch_touchalarm_obj_t;
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_TOUCHALARM_H

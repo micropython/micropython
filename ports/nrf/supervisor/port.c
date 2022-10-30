@@ -64,11 +64,11 @@
 
 #include "lib/tinyusb/src/device/usbd.h"
 
-#ifdef CIRCUITPY_AUDIOBUSIO
+#if CIRCUITPY_AUDIOBUSIO
 #include "common-hal/audiobusio/I2SOut.h"
 #endif
 
-#ifdef CIRCUITPY_AUDIOPWMIO
+#if CIRCUITPY_AUDIOPWMIO
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 
