@@ -592,6 +592,13 @@ msgstr "Bootovací zařízení musí být první (rozhraní #0)."
 msgid "Both RX and TX required for flow control"
 msgstr "RX a TX jsou vyžadovány pro kontrolu toku"
 
+#: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
+#: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
+msgid "Both buttons were pressed at start up.\n"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
 msgstr "Oba piny musí podporovat hardwarové přerušení"
@@ -656,6 +663,11 @@ msgstr "Buffery musí mít stejnou velikost"
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Sběrnicový pin %d je již používán"
+
+#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
+#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+msgid "Button A was pressed at start up.\n"
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -1994,15 +2006,35 @@ msgid "Temperature read timed out"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
+msgid "The BOOT button was pressed at start up.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Increase the stack size if you know how. If not:"
+msgstr ""
+
+#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
+msgid "The SW38 button was pressed at start up.\n"
+msgstr ""
+
+#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+msgid "The VOLUME button was pressed at start up.\n"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode."
+msgstr ""
+
+#: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
+msgid "The central button was pressed at start up.\n"
+msgstr ""
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "The left button was pressed at start up.\n"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
@@ -2065,7 +2097,7 @@ msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "To exit, please reset the board without "
+msgid "To exit, please reset the board without requesting safe mode."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
@@ -2361,10 +2393,6 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "You pressed the reset button during boot. Press again to exit safe mode."
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "You requested starting safe mode by "
 msgstr ""
 
 #: py/objtype.c
@@ -3831,48 +3859,6 @@ msgstr ""
 
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
-msgstr ""
-
-#: ports/espressif/boards/adafruit_qtpy_esp32_pico/mpconfigboard.h
-msgid "pressing BOOT button at start up.\n"
-msgstr ""
-
-#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
-msgid "pressing SW38 button at start up.\n"
-msgstr ""
-
-#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
-msgid "pressing VOLUME button at start up.\n"
-msgstr ""
-
-#: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
-#: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n8r2/mpconfigboard.h
-#: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
-#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
-#: supervisor/shared/safe_mode.c
-msgid "pressing boot button at start up.\n"
-msgstr ""
-
-#: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
-#: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
-#: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
-#: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
-#: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
-msgid "pressing both buttons at start up.\n"
-msgstr ""
-
-#: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
-msgid "pressing central button at start up.\n"
-msgstr ""
-
-#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
-#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
-msgid "pressing button A at start up.\n"
-msgstr ""
-
-#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
-msgid "pressing the left button at start up\n"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
