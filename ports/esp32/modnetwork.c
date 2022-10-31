@@ -136,9 +136,10 @@ STATIC mp_obj_t esp_initialize() {
     static int initialized = 0;
     if (!initialized) {
         ESP_LOGD("modnetwork", "Initializing TCP/IP");
-        tcpip_adapter_init();
+        esp_netif_init();
         ESP_LOGD("modnetwork", "Initializing Event Loop");
-        esp_exceptions(esp_event_loop_init(event_handler, NULL));
+        esp_exceptions(esp_event_loop_create_default());
+		esp_exceptions(esp_event_handler_register(ESP_EVENT_ANY_BASE, ESP_EVENT_ANY_ID, event_handler, NULL));
         ESP_LOGD("modnetwork", "esp_event_loop_init done");
         initialized = 1;
     }
