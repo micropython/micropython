@@ -732,4 +732,4 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_pin_irq_locals_dict
     );
 
-MP_REGISTER_ROOT_POINTER(mp_obj_t machine_pin_irq_handler[49]); // 49 is the biggest of GPIO_NUM_MAX's
+MP_REGISTER_ROOT_POINTER(mp_obj_t machine_pin_irq_handler[GPIO_PIN_COUNT]);
