@@ -23,18 +23,20 @@
 # THE SOFTWARE.
 
 # Select the board to build for.
-define boardlist
-
-$(foreach dir,$(filter-out %.*,$(wildcard boards/*)),$(notdir $(dir)))
-
-
+define show_board_error
+boardlist =
+$(info Valid boards:)
+$(shell printf '%s\n' $(patsubst boards/%/mpconfigboard.mk,%,$(wildcard boards/*/mpconfigboard.mk)) | column -xc $$(tput cols || echo 80) 1>&2)
+$(error Rerun with $(MAKE) BOARD=<board>)
 endef
 
 ifeq ($(BOARD),)
-  $(error You must provide a BOARD parameter: $(boardlist)Rerun with $(MAKE) BOARD=<board>)
+    $(info No BOARD specified)
+    $(call show_board_error)
 else
   ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD specified)
+    $(info Invalid BOARD specified)
+    $(call show_board_error)
   endif
 endif
 
