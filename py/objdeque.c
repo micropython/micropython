@@ -64,6 +64,8 @@ STATIC mp_obj_t deque_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
 
     if (n_args > 2) {
         o->flags = mp_obj_get_int(args[2]);
+    } else {
+        o->flags = 0;
     }
 
     return MP_OBJ_FROM_PTR(o);
