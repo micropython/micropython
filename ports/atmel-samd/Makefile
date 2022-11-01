@@ -24,7 +24,7 @@
 
 # Select the board to build for.
 ifeq ($(BOARD),)
-  $(error You must provide a BOARD parameter)
+  $(error You must provide a BOARD parameter: $(basename $(wildcard boards/*)))
 else
   ifeq ($(wildcard boards/$(BOARD)/.),)
     $(error Invalid BOARD specified)
