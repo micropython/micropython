@@ -188,11 +188,11 @@ STATIC mp_obj_t esp32_raw_temperature(void) {
     	.dac_offset = TSENS_DAC_L2,
     	.clk_div = 6,
 	};
-	temp_sensor_set_config(temp_sensor);
-	temp_sensor_start();
-	float tsens_out;
-	temp_sensor_read_celsius(&tsens_out);
-	temp_sensor_stop();
+    temp_sensor_set_config(temp_sensor);
+    temp_sensor_start();
+    float tsens_out;
+    temp_sensor_read_celsius(&tsens_out);
+    temp_sensor_stop();
 
     return mp_obj_new_float(tsens_out);
 }
