@@ -23,8 +23,15 @@
 # THE SOFTWARE.
 
 # Select the board to build for.
+define boardlist
+
+$(foreach dir,$(filter-out %.*,$(wildcard boards/*)),$(notdir $(dir)))
+
+
+endef
+
 ifeq ($(BOARD),)
-  $(error You must provide a BOARD parameter: $(basename $(wildcard boards/*)))
+  $(error You must provide a BOARD parameter: $(boardlist)Rerun with $(MAKE) BOARD=<board>)
 else
   ifeq ($(wildcard boards/$(BOARD)/.),)
     $(error Invalid BOARD specified)
