@@ -1,5 +1,5 @@
-#define MICROPY_HW_BOARD_NAME       "NUCLEO_G474RE"
-#define MICROPY_HW_MCU_NAME         "STM32G474"
+#define MICROPY_HW_BOARD_NAME       "NUCLEO_G491RE"
+#define MICROPY_HW_MCU_NAME         "STM32G491"
 
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
@@ -47,7 +47,7 @@
 // #define MICROPY_HW_UART4_TX       (pin_)    // C10
 // #define MICROPY_HW_UART4_RX       (pin_)    // C11
 
-#define MICROPY_HW_UART_REPL        (PYB_LPUART_1) // default on Nucleo G474
+#define MICROPY_HW_UART_REPL        (PYB_LPUART_1) // default on Nucleo G491
 #define MICROPY_HW_UART_REPL_BAUD   (115200)
 
 // I2C buses
