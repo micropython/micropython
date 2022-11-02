@@ -3,15 +3,6 @@ USB_PID = 0x2030
 USB_PRODUCT = "Maker badge"
 USB_MANUFACTURER = "Czech maker"
 
-IDF_TARGET = esp32s2
-
-INTERNAL_FLASH_FILESYSTEM = 1
-LONGINT_IMPL = MPZ
-
-# The default queue depth of 16 overflows on release builds,
-# so increase it to 32.
-CFLAGS += -DCFG_TUD_TASK_QUEUE_SZ=32
-
 CIRCUITPY_ESP32_CAMERA = 0
 
 CIRCUITPY_ESP_FLASH_MODE=dio
