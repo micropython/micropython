@@ -86,7 +86,9 @@ int main(int argc, char **argv) {
     #endif
 
     #if MICROPY_HW_ENABLE_USBDEV
+    #if MICROPY_HW_USB_CDC
     bi_decl(bi_program_feature("USB REPL"))
+    #endif
     tusb_init();
     #endif
 
