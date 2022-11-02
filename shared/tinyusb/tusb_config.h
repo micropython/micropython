@@ -46,28 +46,40 @@
 
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE)
 
+#if MICROPY_HW_USB_CDC
 #define CFG_TUD_CDC             (1)
+#else
+#define CFG_TUD_CDC             (0)
+#endif
+
+#if MICROPY_HW_USB_MSC
+#define CFG_TUD_MSC             (1)
+#else
+#define CFG_TUD_MSC             (0)
+#endif
+
+// CDC Configuration
+#if CFG_TUD_CDC
 #define CFG_TUD_CDC_EP_BUFSIZE  (256)
 #define CFG_TUD_CDC_RX_BUFSIZE  (256)
 #define CFG_TUD_CDC_TX_BUFSIZE  (256)
+#endif
 
 // MSC Configuration
 #if CFG_TUD_MSC
 #ifndef MICROPY_HW_USB_MSC_INTERFACE_STRING
 #define MICROPY_HW_USB_MSC_INTERFACE_STRING "Board MSC"
 #endif
-#define CFG_TUD_MSC             (1)
 // Set MSC EP buffer size to FatFS block size to avoid partial read/writes (offset arg).
-#define CFG_TUD_MSC_BUFSIZE     (MICROPY_FATFS_MAX_SS)
+#define CFG_TUD_MSC_BUFSIZE (MICROPY_FATFS_MAX_SS)
 #endif
 
 // Define static descriptor size and interface count based on the above config
 
-#if CFG_TUD_MSC
-#define USBD_STATIC_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_MSC_DESC_LEN)
-#else
-#define USBD_STATIC_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN)
-#endif
+#define USBD_STATIC_DESC_LEN (TUD_CONFIG_DESC_LEN +                     \
+    (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) +  \
+    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0)    \
+    )
 
 #define USBD_STR_0 (0x00)
 #define USBD_STR_MANUF (0x01)
@@ -80,27 +92,41 @@
 
 #define USBD_DESC_STR_MAX (20)
 
+#if CFG_TUD_CDC
 #define USBD_ITF_CDC (0) // needs 2 interfaces
-
 #define USBD_CDC_EP_CMD (0x81)
 #define USBD_CDC_EP_OUT (0x02)
 #define USBD_CDC_EP_IN (0x82)
+#endif // CFG_TUD_CDC
 
 #if CFG_TUD_MSC
+// Interface & Endpoint numbers for MSC come after CDC, if it is enabled
+#if CFG_TUD_CDC
 #define USBD_ITF_MSC (2)
-#define EPNUM_MSC_OUT    (0x03)
-#define EPNUM_MSC_IN     (0x83)
-#endif
+#define EPNUM_MSC_OUT (0x03)
+#define EPNUM_MSC_IN (0x83)
+#else
+#define USBD_ITF_MSC (0)
+#define EPNUM_MSC_OUT (0x01)
+#define EPNUM_MSC_IN (0x81)
+#endif // CFG_TUD_CDC
+#endif // CFG_TUD_MSC
 
 /* Limits of statically defined USB interfaces, endpoints, strings */
 #if CFG_TUD_MSC
-#define USBD_ITF_STATIC_MAX (3)
+#define USBD_ITF_STATIC_MAX (USBD_ITF_MSC + 1)
 #define USBD_STR_STATIC_MAX (USBD_STR_MSC + 1)
-#define USBD_EP_STATIC_MAX (0x04) // ignoring the IN EP flag 0x80
-#else
-#define USBD_ITF_STATIC_MAX (2)
+#define USBD_EP_STATIC_MAX (EPNUM_MSC_OUT + 1)
+#elif CFG_TUD_CDC
+#define USBD_ITF_STATIC_MAX (USBD_ITF_CDC + 1)
 #define USBD_STR_STATIC_MAX (USBD_STR_CDC + 1)
-#define USBD_EP_STATIC_MAX (0x03) // ignoring the IN EP flag 0x80
+#define USBD_EP_STATIC_MAX (((EPNUM_CDC_EP_IN)&~TUSB_DIR_IN_MASK) + 1)
+#else // !CFG_TUD_MSC && !CFG_TUD_CDC
+#define USBD_ITF_STATIC_MAX (0)
+#define USBD_STR_STATIC_MAX (0)
+#define USBD_EP_STATIC_MAX (0)
 #endif
+
+#endif // MICROPY_HW_ENABLE_USBDEV
 
 #endif // MICROPY_INCLUDED_SHARED_TINYUSB_TUSB_CONFIG_H

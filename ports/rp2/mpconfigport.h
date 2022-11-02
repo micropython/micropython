@@ -27,19 +27,28 @@
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
 
 #include <stdint.h>
+#include "hardware/flash.h"
 #include "hardware/spi.h"
 #include "hardware/sync.h"
 #include "pico/binary_info.h"
 #include "pico/multicore.h"
 #include "mpconfigboard.h"
-#if MICROPY_HW_USB_MSC
-#include "hardware/flash.h"
-#endif
 
 // Board and hardware specific configuration
 #define MICROPY_HW_MCU_NAME                     "RP2040"
 #define MICROPY_HW_ENABLE_UART_REPL             (0) // useful if there is no USB
 #define MICROPY_HW_ENABLE_USBDEV                (1)
+
+#if MICROPY_HW_ENABLE_USBDEV
+// Enable USB-CDC serial port
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC (1)
+#endif
+// Enable USB Mass Storage with FatFS filesystem.
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC (0)
+#endif
+#endif
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
