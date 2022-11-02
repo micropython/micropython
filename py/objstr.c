@@ -34,10 +34,6 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
-#if MICROPY_PY_BUILTINS_STR_OP_MODULO
-STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict);
-#endif
-
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 
@@ -339,7 +335,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         } else if (mp_obj_is_type(rhs_in, &mp_type_dict)) {
             dict = rhs_in;
         }
-        return str_modulo_format(lhs_in, n_args, args, dict);
+        return mp_obj_str_modulo_format(lhs_in, n_args, args, dict);
         #else
         return MP_OBJ_NULL;
         #endif
@@ -1436,7 +1432,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 MP_DEFINE_CONST_FUN_OBJ_KW(str_format_obj, 1, mp_obj_str_format);
 
 #if MICROPY_PY_BUILTINS_STR_OP_MODULO
-STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict) {
+mp_obj_t mp_obj_str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict) {
     check_is_str_or_bytes(pattern);
 
     GET_STR_DATA_LEN(pattern, str, len);
