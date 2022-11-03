@@ -33,7 +33,7 @@ var mainProgram = function()
   mp_js_init_repl = Module.cwrap('mp_js_init_repl', 'null', ['null']);
   mp_js_process_char = Module.cwrap('mp_js_process_char', 'number', ['number']);
 
-  MP_JS_EPOCH = (new Date()).getTime();
+  MP_JS_EPOCH = Date.now();
 
   if (typeof window === 'undefined' && require.main === module) {
       var fs = require('fs');
