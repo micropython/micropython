@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-10-29 22:00+0000\n"
+"PO-Revision-Date: 2022-11-02 09:33+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -608,7 +608,7 @@ msgstr "Ambos os RX e TX são necessários para o controle do fluxo"
 #: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "Both buttons were pressed at start up.\n"
-msgstr ""
+msgstr "Ambos os botões foram pressionados na inicialização.\n"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -678,7 +678,7 @@ msgstr "O pino bus %d já está em uso"
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 msgid "Button A was pressed at start up.\n"
-msgstr ""
+msgstr "O botão A foi pressionado na inicialização.\n"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -2045,7 +2045,7 @@ msgstr "A leitura da temperatura expirou"
 
 #: supervisor/shared/safe_mode.c
 msgid "The BOOT button was pressed at start up.\n"
-msgstr ""
+msgstr "O botão BOOT foi pressionado na inicialização.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2058,11 +2058,11 @@ msgstr ""
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "The SW38 button was pressed at start up.\n"
-msgstr ""
+msgstr "O botão SW38 foi pressionado na inicialização.\n"
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "The VOLUME button was pressed at start up.\n"
-msgstr ""
+msgstr "O botão VOLUME foi pressionado na inicialização.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2074,11 +2074,11 @@ msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
-msgstr ""
+msgstr "O botão central foi pressionado na inicialização.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "The left button was pressed at start up.\n"
-msgstr ""
+msgstr "O botão esquerdo foi pressionado na inicialização.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2149,7 +2149,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without requesting safe mode."
-msgstr ""
+msgstr "Para sair, reinicie a placa sem solicitar o modo de segurança."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample"

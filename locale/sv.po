@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-10-29 22:00+0000\n"
+"PO-Revision-Date: 2022-10-31 13:02+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -600,7 +600,7 @@ msgstr "Både RX och TX krävs för handskakning"
 #: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "Both buttons were pressed at start up.\n"
-msgstr ""
+msgstr "Båda knapparna trycktes ned vid start.\n"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -670,7 +670,7 @@ msgstr "Busspinne %d används redan"
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 msgid "Button A was pressed at start up.\n"
-msgstr ""
+msgstr "Knapp A trycktes ned vid start.\n"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -2024,7 +2024,7 @@ msgstr "Temperaturavläsning tog för lång tid"
 
 #: supervisor/shared/safe_mode.c
 msgid "The BOOT button was pressed at start up.\n"
-msgstr ""
+msgstr "BOOT-knappen trycktes ner vid start.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2036,11 +2036,11 @@ msgstr ""
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "The SW38 button was pressed at start up.\n"
-msgstr ""
+msgstr "SW38-knappen trycktes ned vid start.\n"
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "The VOLUME button was pressed at start up.\n"
-msgstr ""
+msgstr "VOLUME-knappen trycktes ned vid start.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2052,11 +2052,11 @@ msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
-msgstr ""
+msgstr "Mittknappen trycktes in vid start.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "The left button was pressed at start up.\n"
-msgstr ""
+msgstr "Den vänstra knappen trycktes ned vid start.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2125,7 +2125,7 @@ msgstr "Åtgärden tog för lång tid: Max väntetid är %d sekunder"
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without requesting safe mode."
-msgstr ""
+msgstr "För att avsluta, återställ kortet utan att begära säkert läge."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample"
