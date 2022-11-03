@@ -38,8 +38,6 @@
 //| The `adafruit_pixelbuf` module provides the :py:class:`PixelBuf` class to accelerate
 //| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel.
 //|
-//| Also available as ``_pixelbuf``. This usage has been deprecated.
-//|
 //| Byteorders are configured with strings, such as "RGB" or "RGBD"."""
 // TODO: Pull in docs from adafruit_pixelbuf.
 
