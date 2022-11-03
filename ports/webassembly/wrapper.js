@@ -56,6 +56,12 @@ var mainProgram = function()
               repl = false;;
           }
       }
+
+      if (process.stdin.isTTY === false) {
+          contents = fs.readFileSync(0, 'utf8');
+          repl = 0;
+      }
+
       mp_js_init(heap_size);
 
       if (repl) {
