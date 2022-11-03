@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-10-13 06:43+0000\n"
+"PO-Revision-Date: 2022-11-04 15:05+0000\n"
 "Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.14.2-dev\n"
 
 #: main.c
 msgid ""
@@ -69,7 +69,7 @@ msgstr "%%c erwartet Int oder Char"
 #: main.c
 #, c-format
 msgid "%02X"
-msgstr ""
+msgstr "%02X"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -600,7 +600,7 @@ msgstr "Sowohl RX als auch TX sind zu Flusssteuerung erforderlich"
 #: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "Both buttons were pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurden beide Tasten gedrückt.\n"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -670,7 +670,7 @@ msgstr "Bus-Pin %d wird schon benutzt"
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 msgid "Button A was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde Taste A gedrückt.\n"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -960,7 +960,7 @@ msgstr "Erwartete ein %q oder %q"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an %q"
-msgstr ""
+msgstr "Erwartet ein %q"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -2032,7 +2032,7 @@ msgstr "Zeitüberschreitung beim Auslesen der Temperatur"
 
 #: supervisor/shared/safe_mode.c
 msgid "The BOOT button was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde die Taste BOOT gedrückt.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2044,11 +2044,11 @@ msgstr ""
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "The SW38 button was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde die Taste SW38 gedrückt.\n"
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "The VOLUME button was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde die Taste VOLUME gedrückt.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2060,11 +2060,11 @@ msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde die zentrale Taste gedrückt.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "The left button was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde die linke Taste gedrückt.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2192,7 +2192,7 @@ msgstr "UART wird geschrieben"
 
 #: main.c
 msgid "UID:"
-msgstr ""
+msgstr "UID:"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
