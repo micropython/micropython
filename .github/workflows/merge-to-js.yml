@@ -26,7 +26,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Trigger Javascript port build
-        uses: benc-uk/workflow-dispatch@v1
+        uses: benc-uk/workflow-dispatch@a69ac85ea87587e76bb4f262eb868205dfcab8e8
         with:
           workflow: Build Javascript v9 port
+          ref: ${{ github.event.ref }}
           token: ${{ secrets.LVGL_BOT_TOKEN }}
