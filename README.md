@@ -9,7 +9,7 @@
 
 To quickly run Micropython + LVGL from your web browser you can also use the [Online Simulator](https://sim.lvgl.io/).
 
-**For information abound Micropython lvgl bindings please refer to [lv_binding_micropython/README.md](https://github.com/lvgl/lv_binding_micropython/blob/master/README.md)**
+**For information about Micropython lvgl bindings please refer to [lv_binding_micropython/README.md](https://github.com/lvgl/lv_binding_micropython/blob/master/README.md)**
 
 See also [Micropython + LittlevGL](https://blog.lvgl.io/2019-02-20/micropython-bindings) blog post. (LittlevGL is LVGL's previous name.)  
 For questions and discussions - please use the forum: https://forum.lvgl.io/c/micropython
