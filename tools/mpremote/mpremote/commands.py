@@ -1,6 +1,9 @@
 import os
 import sys
 import tempfile
+import re
+import datetime
+import time
 
 import serial.tools.list_ports
 
@@ -180,10 +183,24 @@ def do_edit(state, args):
             os.unlink(dest)
 
 
-def _do_execbuffer(state, buf, follow):
+def _do_execbuffer(state, buf, follow, eval_mode=False):
     state.ensure_raw_repl()
     state.did_action()
-
+    if eval_mode:
+        _globals = {
+            "os": os,
+            "sys": sys,
+            "datetime": datetime,
+            "time": time,
+            "device_name": state.pyb.device_name,
+        }
+        # loop though all re matches in the input string and replace them with the result of the python code
+        for match in re.finditer(r"\{\{(.*?)\}\}", buf):
+            try:
+                buf = buf.replace(match.group(0), str(eval(match.group(1), _globals, {})))
+            except Exception as e:
+                print("Error: %s" % e)
+        # log.debug(f"do_exec: `{buf}`")
     try:
         state.pyb.exec_raw_no_follow(buf)
         if follow:
@@ -199,12 +216,12 @@ def _do_execbuffer(state, buf, follow):
 
 
 def do_exec(state, args):
-    _do_execbuffer(state, args.expr[0], args.follow)
+    _do_execbuffer(state, args.expr[0], args.follow, args.eval)
 
 
 def do_eval(state, args):
     buf = "print(" + args.expr[0] + ")"
-    _do_execbuffer(state, buf, True)
+    _do_execbuffer(state, buf, True, args.eval)
 
 
 def do_run(state, args):

@@ -140,6 +140,9 @@ def argparse_repl():
 def argparse_eval():
     cmd_parser = argparse.ArgumentParser(description="evaluate and print the string")
     cmd_parser.add_argument("expr", nargs=1, help="expression to execute")
+    cmd_parser.add_argument(
+        "-e", "--eval", action="store_true", help="evaluate expressions between {{ }}"
+    )
     return cmd_parser
 
 
@@ -149,6 +152,9 @@ def argparse_exec():
         cmd_parser, "follow", "f", True, "follow output until the expression completes (default)"
     )
     cmd_parser.add_argument("expr", nargs=1, help="expression to execute")
+    cmd_parser.add_argument(
+        "-e", "--eval", action="store_true", help="evaluate expressions between {{ }}"
+    )
     return cmd_parser
 
 
@@ -311,7 +317,9 @@ _BUILTIN_COMMAND_EXPANSIONS = {
     },
     "setrtc": [
         "exec",
-        "import machine; machine.RTC().datetime((2020, 1, 1, 0, 10, 0, 0, 0))",
+        "--eval",
+        # transpose cpython datetime to micropython RTC datetime
+        "import machine; machine.RTC().datetime({{time.localtime()[0:3]+(time.localtime().tm_wday,)+time.localtime()[3:6]+(datetime.datetime.now().timetuple()[6],)}})",
     ],
     "--help": "help",
     "--version": "version",
