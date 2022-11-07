@@ -57,11 +57,11 @@ typedef struct _machine_spi_obj_t {
 } machine_spi_obj_t;
 
 extern Sercom *sercom_instance[];
-void *sercom_table[SERCOM_INST_NUM] = {};
+MP_REGISTER_ROOT_POINTER(void *sercom_table[SERCOM_INST_NUM]);
 
 void common_spi_irq_handler(int spi_id) {
     // handle Sercom IRQ RXC
-    machine_spi_obj_t *self = sercom_table[spi_id];
+    machine_spi_obj_t *self = MP_STATE_PORT(sercom_table[spi_id]);
     // Handle IRQ
     if (self != NULL) {
         Sercom *spi = sercom_instance[self->id];
@@ -82,7 +82,7 @@ void common_spi_irq_handler(int spi_id) {
 
 STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "SPI(%u), baudrate=%u, firstbit=%u, polarity=%u, phase=%u, bits=8",
+    mp_printf(print, "SPI(%u, baudrate=%u, firstbit=%u, polarity=%u, phase=%u, bits=8)",
         self->id, self->baudrate, self->firstbit, self->polarity, self->phase);
 }
 
@@ -246,7 +246,7 @@ STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, s
     self->sck = 0xff;
 
     self->new = true;
-    sercom_table[spi_id] = self;
+    MP_STATE_PORT(sercom_table[spi_id]) = self;
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -254,17 +254,23 @@ STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, s
     return self;
 }
 
+STATIC void machine_sercom_deinit(mp_obj_base_t *self_in) {
+    machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    Sercom *spi = sercom_instance[self->id];
+    // Disable interrupts (if any)
+    spi->SPI.INTENCLR.reg = 0xff;
+    sercom_enable(spi, 0);
+    // clear table entry of spi
+    MP_STATE_PORT(sercom_table[self->id]) = NULL;
+}
+
 void sercom_deinit_all(void) {
     for (int i = 0; i < SERCOM_INST_NUM; i++) {
-        if (sercom_table[i] != NULL) {
-            machine_spi_obj_t *self = sercom_table[i];
-            Sercom *spi = sercom_instance[self->id];
-            // Disable interrupts (if any)
-            spi->SPI.INTENCLR.reg = 0xff;
-            // clear table entry of spi
-            sercom_table[i] = NULL;
-            sercom_enable(spi, 0);
-        }
+        Sercom *spi = sercom_instance[i];
+        spi->SPI.INTENCLR.reg = 0xff;
+        sercom_register_irq(i, NULL);
+        sercom_enable(spi, 0);
+        MP_STATE_PORT(sercom_table[i]) = NULL;
     }
 }
 
@@ -316,6 +322,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
 STATIC const mp_machine_spi_p_t machine_spi_p = {
     .init = machine_spi_init,
+    .deinit = machine_sercom_deinit,
     .transfer = machine_spi_transfer,
 };
 

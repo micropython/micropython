@@ -10,6 +10,7 @@ SRC_EXTMOD_C += \
 	extmod/machine_pwm.c \
 	extmod/machine_signal.c \
 	extmod/machine_spi.c \
+	extmod/machine_timer.c \
 	extmod/modbluetooth.c \
 	extmod/modbtree.c \
 	extmod/modframebuf.c \

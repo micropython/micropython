@@ -59,7 +59,6 @@ typedef struct _machine_uart_obj_t {
 } machine_uart_obj_t;
 
 Sercom *sercom_instance[] = SERCOM_INSTS;
-machine_uart_obj_t *uart_table[SERCOM_INST_NUM] = {};
 
 STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
 
@@ -82,7 +81,7 @@ STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self, Sercom *uart) {
 }
 
 void common_uart_irq_handler(int uart_id) {
-    machine_uart_obj_t *self = uart_table[uart_id];
+    machine_uart_obj_t *self = MP_STATE_PORT(sercom_table[uart_id]);
     // Handle IRQ
     if (self != NULL) {
         Sercom *uart = sercom_instance[self->id];
@@ -116,9 +115,17 @@ void sercom_enable(Sercom *uart, int state) {
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
-        "timeout=%u, timeout_char=%u, rxbuf=%d)",
+        "timeout=%u, timeout_char=%u, rxbuf=%d"
+        #if MICROPY_HW_UART_TXBUF
+        ", txbuf=%d"
+        #endif
+        ")",
         self->id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop + 1, self->timeout, self->timeout_char, self->read_buffer.size - 1);
+        self->stop + 1, self->timeout, self->timeout_char, self->read_buffer.size - 1
+        #if MICROPY_HW_UART_TXBUF
+        , self->write_buffer.size - 1
+        #endif
+        );
 }
 
 STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -314,7 +321,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     }
 
     // Create the UART object and fill it with defaults.
-    machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
+    machine_uart_obj_t *self = m_new_obj_with_finaliser(machine_uart_obj_t);
+    self->base.type = &machine_uart_type;
     self->id = uart_id;
     self->baudrate = DEFAULT_UART_BAUDRATE;
     self->bits = 8;
@@ -324,7 +332,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->tx = 0xff;
     self->rx = 0xff;
     self->new = true;
-    uart_table[uart_id] = self;
+    MP_STATE_PORT(sercom_table[uart_id]) = self;
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -340,10 +348,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_uart_init_obj, 1, machine_uart_init);
 STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     Sercom *uart = sercom_instance[self->id];
-    // clear table entry of uart
-    uart_table[self->id] = NULL;
     // Disable interrupts
     uart->USART.INTENCLR.reg = 0xff;
+    // clear table entry of uart
+    MP_STATE_PORT(sercom_table[self->id]) = NULL;
     MP_STATE_PORT(samd_uart_rx_buffer[self->id]) = NULL;
     #if MICROPY_HW_UART_TXBUF
     MP_STATE_PORT(samd_uart_tx_buffer[self->id]) = NULL;
@@ -385,13 +393,21 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
 
-void uart_deinit_all(void) {
-    for (int i = 0; i < SERCOM_INST_NUM; i++) {
-        if (uart_table[i] != NULL) {
-            machine_uart_deinit((mp_obj_t)uart_table[i]);
-        }
+STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    Sercom *uart = sercom_instance[self->id];
+
+    if (uart->USART.INTFLAG.bit.DRE
+        #if MICROPY_HW_UART_TXBUF
+        && ringbuf_avail(&self->write_buffer) == 0
+        #endif
+        && uart->USART.INTFLAG.bit.TXC) {
+        return mp_const_true;
+    } else {
+        return mp_const_false;
     }
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
 
 STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
@@ -399,11 +415,14 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
+    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_uart_deinit_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
 
@@ -414,7 +433,6 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     uint8_t *dest = buf_in;
     Sercom *uart = sercom_instance[self->id];
 
-    // t.b.d. Cater timeout for timer wrap after 50 days.
     for (size_t i = 0; i < size; i++) {
         // Wait for the first/next character
         while (ringbuf_avail(&self->read_buffer) == 0) {
@@ -488,9 +506,29 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
         if ((flags & MP_STREAM_POLL_RD) && (uart->USART.INTFLAG.bit.RXC != 0 || ringbuf_avail(&self->read_buffer) > 0)) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && (uart->USART.INTFLAG.bit.DRE != 0)) {
+        if ((flags & MP_STREAM_POLL_WR) && (uart->USART.INTFLAG.bit.DRE != 0
+                                            #if MICROPY_HW_UART_TXBUF
+                                            || ringbuf_avail(&self->write_buffer) > 0
+                                            #endif
+                                            )) {
             ret |= MP_STREAM_POLL_WR;
         }
+    } else if (request == MP_STREAM_FLUSH) {
+        // The timeout is defined by the buffer size and the baudrate.
+        // Take the worst case assumtions at 13 bit symbol size times 2.
+        uint64_t timeout = mp_hal_ticks_ms_64() + (3
+            #if MICROPY_HW_UART_TXBUF
+            + self->write_buffer.size
+            #endif
+            ) * 13000 * 2 / self->baudrate;
+        do {
+            if (machine_uart_txdone((mp_obj_t)self) == mp_const_true) {
+                return 0;
+            }
+            MICROPY_EVENT_POLL_HOOK
+        } while (mp_hal_ticks_ms_64() < timeout);
+        *errcode = MP_ETIMEDOUT;
+        ret = MP_STREAM_ERROR;
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;

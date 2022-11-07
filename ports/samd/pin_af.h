@@ -30,15 +30,17 @@
 
 #if defined(MCU_SAMD21)
 
-typedef struct {
+typedef struct _machine_pin_obj_t {
+    mp_obj_base_t base;
     uint8_t pin_id;
+    char *name;
     uint8_t eic;
     uint8_t adc0;
     uint8_t sercom1;
     uint8_t sercom2;
     uint8_t tcc1;
     uint8_t tcc2;
-} pin_af_t;
+} machine_pin_obj_t;
 
 #define ALT_FCT_TC        4
 #define ALT_FCT_TCC1      4
@@ -46,8 +48,10 @@ typedef struct {
 
 #elif defined(MCU_SAMD51)
 
-typedef struct {
+typedef struct _machine_pin_obj_t {
+    mp_obj_base_t base;
     uint8_t pin_id;
+    char *name;
     uint8_t eic;
     uint8_t adc0;
     uint8_t adc1;
@@ -56,7 +60,7 @@ typedef struct {
     uint8_t tc;
     uint8_t tcc1;
     uint8_t tcc2;
-} pin_af_t;
+} machine_pin_obj_t;
 
 #define ALT_FCT_TC        4
 #define ALT_FCT_TCC1      5
@@ -85,7 +89,11 @@ typedef struct _pwm_config_t {
 #define ALT_FCT_SERCOM1   2
 #define ALT_FCT_SERCOM2   3
 
+extern const machine_pin_obj_t pin_af_table[];
+
 sercom_pad_config_t get_sercom_config(int pin_id, uint8_t sercom);
 adc_config_t get_adc_config(int pin_id, int32_t flag);
 pwm_config_t get_pwm_config(int pin_id, int wanted_dev, uint8_t used_dev[]);
-const pin_af_t *get_pin_af_info(int pin_id);
+const machine_pin_obj_t *get_pin_obj_ptr(int pin_id);
+const char *pin_name(int id);
+const machine_pin_obj_t *pin_find(mp_obj_t pin);

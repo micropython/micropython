@@ -204,7 +204,7 @@ def main():
                             extra_args=args.mpy_cross_flags.split(),
                         )
                     except mpy_cross.CrossCompileError as ex:
-                        print("error compiling {}:".format(target_path))
+                        print("error compiling {}:".format(result.target_path))
                         print(ex.args[0])
                         raise SystemExit(1)
                 ts_outfile = get_timestamp(outfile)

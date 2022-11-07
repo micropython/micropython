@@ -5,6 +5,9 @@
 # Rows for empty entries have to start with '-'
 # Empty lines and lines starting with # are ignored
 
+PIN_PA27,LED_TX
+PIN_PB03,LED_RX
+
 PIN_PA11,D0
 PIN_PA10,D1
 PIN_PA14,D2
@@ -35,6 +38,8 @@ PIN_PB11,SCK
 PIN_PA06,NEOPIXEL
 PIN_PA13,FLASH_CS
 
-LED_PA17,LED
-LED_PA27,LED_TX
-LED_PB03,LED_RX
+PIN_PA24,USB_DM
+PIN_PA25,USB_DP
+
+PIN_PA30,SWCLK
+PIN_PA31,SWDIO

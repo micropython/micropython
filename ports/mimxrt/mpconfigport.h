@@ -147,6 +147,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
+#define MICROPY_PY_MACHINE_TIMER            (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_UPLATFORM                (1)
@@ -241,6 +242,7 @@ extern const struct _mp_obj_type_t network_lan_type;
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
+        __WFE(); \
     } while (0);
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))

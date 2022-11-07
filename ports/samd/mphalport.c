@@ -37,6 +37,8 @@
 #define MICROPY_HW_STDIN_BUFFER_LEN 128
 #endif
 
+extern volatile uint32_t ticks_us64_upper;
+
 STATIC uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0 };
 
@@ -111,17 +113,45 @@ void mp_hal_delay_ms(mp_uint_t ms) {
 
 void mp_hal_delay_us(mp_uint_t us) {
     if (us > 0) {
-        uint32_t start = mp_hal_ticks_us();
         #if defined(MCU_SAMD21)
-        // SAMD21 counter has effective 32 bit width
+        uint32_t start = mp_hal_ticks_us();
         while ((mp_hal_ticks_us() - start) < us) {
         }
-        #elif defined(MCU_SAMD51)
-        // SAMD51 counter has effective 29 bit width
-        while (((mp_hal_ticks_us() - start) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1)) < us) {
+        #else
+        uint64_t stop = mp_hal_ticks_us_64() + us;
+        while (mp_hal_ticks_us_64() < stop) {
         }
         #endif
     }
+}
+
+uint64_t mp_hal_ticks_us_64(void) {
+    uint32_t us64_upper = ticks_us64_upper;
+    uint32_t us64_lower;
+    uint8_t intflag;
+    __disable_irq();
+    #if defined(MCU_SAMD21)
+    us64_lower = REG_TC4_COUNT32_COUNT;
+    intflag = TC4->COUNT32.INTFLAG.reg;
+    #elif defined(MCU_SAMD51)
+    TC0->COUNT32.CTRLBSET.reg = TC_CTRLBSET_CMD_READSYNC;
+    while (TC0->COUNT32.CTRLBSET.reg != 0) {
+    }
+    us64_lower = REG_TC0_COUNT32_COUNT;
+    intflag = TC0->COUNT32.INTFLAG.reg;
+    #endif
+    __enable_irq();
+    if ((intflag & TC_INTFLAG_OVF) && us64_lower < 0x10000000) {
+        // The timer counter overflowed before reading it but the IRQ handler
+        // has not yet been called, so perform the IRQ arithmetic now.
+        us64_upper++;
+    }
+    #if defined(MCU_SAMD21)
+    return ((uint64_t)us64_upper << 32) | us64_lower;
+    #elif defined(MCU_SAMD51)
+    return ((uint64_t)us64_upper << 28) | (us64_lower >> 4);
+    #endif
+
 }
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {

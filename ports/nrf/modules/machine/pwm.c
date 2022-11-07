@@ -77,11 +77,11 @@ STATIC machine_pwm_config_t hard_configs[MP_ARRAY_SIZE(machine_hard_pwm_instance
 
 STATIC const machine_hard_pwm_obj_t machine_hard_pwm_obj[] = {
 #if defined(NRF52_SERIES)
-    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[0], .p_config = &hard_configs[0]},
-    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[1], .p_config = &hard_configs[1]},
-    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[2], .p_config = &hard_configs[2]},
+    {{&machine_pwm_type}, .p_pwm = &machine_hard_pwm_instances[0], .p_config = &hard_configs[0]},
+    {{&machine_pwm_type}, .p_pwm = &machine_hard_pwm_instances[1], .p_config = &hard_configs[1]},
+    {{&machine_pwm_type}, .p_pwm = &machine_hard_pwm_instances[2], .p_config = &hard_configs[2]},
 #if NRF52840
-    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[3], .p_config = &hard_configs[3]},
+    {{&machine_pwm_type}, .p_pwm = &machine_hard_pwm_instances[3], .p_config = &hard_configs[3]},
 #endif
 #endif
 };
@@ -155,7 +155,7 @@ STATIC mp_obj_t machine_pwm_init(size_t n_args, const mp_obj_t *pos_args, mp_map
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // dispatch to specific implementation
-    if (mp_obj_get_type(self) == &machine_hard_pwm_type) {
+    if (mp_obj_get_type(self) == &machine_pwm_type) {
         machine_hard_pwm_init(self, args);
     }
 
@@ -165,7 +165,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pwm_init_obj, 1, machine_pwm_init);
 
 STATIC mp_obj_t machine_pwm_deinit(mp_obj_t self) {
     // dispatch to specific implementation
-    if (mp_obj_get_type(self) == &machine_hard_pwm_type) {
+    if (mp_obj_get_type(self) == &machine_pwm_type) {
         machine_hard_pwm_deinit(self);
     }
     return mp_const_none;
@@ -182,7 +182,7 @@ STATIC mp_obj_t machine_pwm_freq(size_t n_args, const mp_obj_t *pos_args, mp_map
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (mp_obj_get_type(self) == &machine_hard_pwm_type) {
+    if (mp_obj_get_type(self) == &machine_pwm_type) {
         machine_hard_pwm_freq(self, args);
     } else {
         // soft pwm
@@ -340,7 +340,7 @@ STATIC mp_obj_t machine_hard_pwm_freq(mp_obj_t self_in, mp_arg_val_t *args) {
 }
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    machine_hard_pwm_type,
+    machine_pwm_type,
     MP_QSTR_PWM,
     MP_TYPE_FLAG_NONE,
     make_new, machine_pwm_make_new,

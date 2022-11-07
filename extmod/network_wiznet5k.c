@@ -774,7 +774,7 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
     for (int i = 0; i < 0x90; ++i) {
     #else
     for (int i = 0; i < 0x60; ++i) {
-#endif
+    #endif
         if (i % 16 == 0) {
             printf("\n  %04x:", i);
         }

@@ -162,7 +162,6 @@ SRC_C += \
 	machine_rtc.c \
 	machine_sdcard.c \
 	machine_spi.c \
-	machine_timer.c \
 	machine_uart.c \
 	machine_wdt.c \
 	main.c \
@@ -193,6 +192,7 @@ SHARED_SRC_C += \
 	shared/runtime/interrupt_char.c \
 	shared/runtime/mpirq.c \
 	shared/runtime/pyexec.c \
+	shared/runtime/softtimer.c \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \

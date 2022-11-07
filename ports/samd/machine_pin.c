@@ -34,7 +34,6 @@
 #include "extmod/virtpin.h"
 #include "modmachine.h"
 #include "samd_soc.h"
-#include "pins.h"
 #include "pin_af.h"
 
 #include "hal_gpio.h"
@@ -57,6 +56,8 @@ typedef struct _machine_pin_irq_obj_t {
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
 
+bool EIC_occured;
+
 uint32_t machine_pin_open_drain_mask[4];
 
 // Open drain behaviour is simulated.
@@ -66,42 +67,23 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     machine_pin_obj_t *self = self_in;
     char *mode_str;
     char *pull_str[] = {"PULL_OFF", "PULL_UP", "PULL_DOWN"};
-    if (GPIO_IS_OPEN_DRAIN(self->id)) {
+    if (GPIO_IS_OPEN_DRAIN(self->pin_id)) {
         mode_str = "OPEN_DRAIN";
     } else {
-        mode_str = (mp_hal_get_pin_direction(self->id) == GPIO_DIRECTION_OUT) ? "OUT" : "IN";
+        mode_str = (mp_hal_get_pin_direction(self->pin_id) == GPIO_DIRECTION_OUT) ? "OUT" : "IN";
     }
 
     mp_printf(print, "Pin(\"%s\", mode=%s, pull=%s, GPIO=P%c%02u)",
-        self->name,
+        pin_name(self->pin_id),
         mode_str,
-        pull_str[mp_hal_get_pull_mode(self->id)],
-        "ABCD"[self->id / 32], self->id % 32);
+        pull_str[mp_hal_get_pull_mode(self->pin_id)],
+        "ABCD"[self->pin_id / 32], self->pin_id % 32);
 }
 
 STATIC void pin_validate_drive(bool strength) {
     if (strength != GPIO_STRENGTH_2MA && strength != GPIO_STRENGTH_8MA) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
-}
-
-int pin_find(mp_obj_t pin, const machine_pin_obj_t machine_pin_obj[], int table_size) {
-    int wanted_pin = -1;
-    if (mp_obj_is_small_int(pin)) {
-        // Pin defined by the index of pin table
-        wanted_pin = mp_obj_get_int(pin);
-    } else if (mp_obj_is_str(pin)) {
-        // Search by name
-        size_t slen;
-        const char *s = mp_obj_str_get_data(pin, &slen);
-        for (wanted_pin = 0; wanted_pin < table_size; wanted_pin++) {
-            if (slen == strlen(machine_pin_obj[wanted_pin].name) &&
-                strncmp(s, machine_pin_obj[wanted_pin].name, slen) == 0) {
-                break;
-            }
-        }
-    }
-    return wanted_pin;
 }
 
 // Pin.init(mode, pull=None, *, value=None, drive=0). No 'alt' yet.
@@ -118,32 +100,34 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    // clear any existing mux setting
+    mp_hal_clr_pin_mux(self->pin_id);
     // set initial value (do this before configuring mode/pull)
     if (args[ARG_value].u_obj != mp_const_none) {
-        mp_hal_pin_write(self->id, mp_obj_is_true(args[ARG_value].u_obj));
+        mp_hal_pin_write(self->pin_id, mp_obj_is_true(args[ARG_value].u_obj));
     }
 
     // configure mode
     if (args[ARG_mode].u_obj != mp_const_none) {
         mp_int_t mode = mp_obj_get_int(args[ARG_mode].u_obj);
         if (mode == GPIO_MODE_IN) {
-            mp_hal_pin_input(self->id);
+            mp_hal_pin_input(self->pin_id);
         } else if (mode == GPIO_MODE_OUT) {
-            mp_hal_pin_output(self->id);
+            mp_hal_pin_output(self->pin_id);
         } else if (mode == GPIO_MODE_OPEN_DRAIN) {
-            mp_hal_pin_open_drain(self->id);
+            mp_hal_pin_open_drain(self->pin_id);
         } else {
-            mp_hal_pin_input(self->id); // If no args are given, the Pin is 'input'.
+            mp_hal_pin_input(self->pin_id); // If no args are given, the Pin is 'input'.
         }
     }
     // configure pull. Only to be used with IN mode. The function sets the pin to INPUT.
     uint32_t pull = 0;
-    mp_int_t dir = mp_hal_get_pin_direction(self->id);
+    mp_int_t dir = mp_hal_get_pin_direction(self->pin_id);
     if (dir == GPIO_DIRECTION_OUT && args[ARG_pull].u_obj != mp_const_none) {
         mp_raise_ValueError(MP_ERROR_TEXT("OUT incompatible with pull"));
     } else if (args[ARG_pull].u_obj != mp_const_none) {
         pull = mp_obj_get_int(args[ARG_pull].u_obj);
-        gpio_set_pin_pull_mode(self->id, pull); // hal_gpio.h
+        gpio_set_pin_pull_mode(self->pin_id, pull); // hal_gpio.h
     }
 
     // get the strength
@@ -156,18 +140,10 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 // constructor(id, ...)
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+    const machine_pin_obj_t *self;
 
     // get the wanted pin object
-    int wanted_pin = pin_find(args[0], machine_pin_obj, MP_ARRAY_SIZE(machine_pin_obj));
-
-    const machine_pin_obj_t *self = NULL;
-    if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj)) {
-        self = (machine_pin_obj_t *)&machine_pin_obj[wanted_pin];
-    }
-
-    if (self == NULL || self->base.type == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
-    }
+    self = pin_find(args[0]);
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
@@ -185,18 +161,18 @@ mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
     machine_pin_obj_t *self = self_in;
     if (n_args == 0) {
         // get pin
-        return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self->id));
+        return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self->pin_id));
     } else {
         // set pin
         bool value = mp_obj_is_true(args[0]);
-        if (GPIO_IS_OPEN_DRAIN(self->id)) {
+        if (GPIO_IS_OPEN_DRAIN(self->pin_id)) {
             if (value == 0) {
-                mp_hal_pin_od_low(self->id);
+                mp_hal_pin_od_low(self->pin_id);
             } else {
-                mp_hal_pin_od_high(self->id);
+                mp_hal_pin_od_high(self->pin_id);
             }
         } else {
-            mp_hal_pin_write(self->id, value);
+            mp_hal_pin_write(self->pin_id, value);
         }
         return mp_const_none;
     }
@@ -217,7 +193,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_
 // Pin.disable(pin)
 STATIC mp_obj_t machine_pin_disable(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    gpio_set_pin_direction(self->id, GPIO_DIRECTION_OFF); // Disables the pin (low power state)
+    gpio_set_pin_direction(self->pin_id, GPIO_DIRECTION_OFF); // Disables the pin (low power state)
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_disable_obj, machine_pin_disable);
@@ -225,10 +201,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_disable_obj, machine_pin_disable);
 // Pin.low() Totem-pole (push-pull)
 STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (GPIO_IS_OPEN_DRAIN(self->id)) {
-        mp_hal_pin_od_low(self->id);
+    if (GPIO_IS_OPEN_DRAIN(self->pin_id)) {
+        mp_hal_pin_od_low(self->pin_id);
     } else {
-        mp_hal_pin_low(self->id);
+        mp_hal_pin_low(self->pin_id);
     }
     return mp_const_none;
 }
@@ -237,10 +213,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
 // Pin.high() Totem-pole (push-pull)
 STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (GPIO_IS_OPEN_DRAIN(self->id)) {
-        mp_hal_pin_od_high(self->id);
+    if (GPIO_IS_OPEN_DRAIN(self->pin_id)) {
+        mp_hal_pin_od_high(self->pin_id);
     } else {
-        mp_hal_pin_high(self->id);
+        mp_hal_pin_high(self->pin_id);
     }
     return mp_const_none;
 }
@@ -253,16 +229,16 @@ STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
     // Determine DIRECTION of PIN.
     bool pin_dir;
 
-    if (GPIO_IS_OPEN_DRAIN(self->id)) {
-        pin_dir = mp_hal_get_pin_direction(self->id);
+    if (GPIO_IS_OPEN_DRAIN(self->pin_id)) {
+        pin_dir = mp_hal_get_pin_direction(self->pin_id);
         if (pin_dir) {
             // Pin is output, thus low, switch to high
-            mp_hal_pin_od_high(self->id);
+            mp_hal_pin_od_high(self->pin_id);
         } else {
-            mp_hal_pin_od_low(self->id);
+            mp_hal_pin_od_low(self->pin_id);
         }
     } else {
-        gpio_toggle_pin_level(self->id);
+        gpio_toggle_pin_level(self->pin_id);
     }
     return mp_const_none;
 }
@@ -278,8 +254,8 @@ STATIC mp_obj_t machine_pin_drive(size_t n_args, const mp_obj_t *args) {
         pin_validate_drive(strength);
         // Set the DRVSTR bit (ASF hri/hri_port_dxx.h
         hri_port_write_PINCFG_DRVSTR_bit(PORT,
-            (enum gpio_port)GPIO_PORT(self->id),
-            GPIO_PIN(self->id),
+            (enum gpio_port)GPIO_PORT(self->pin_id),
+            GPIO_PIN(self->pin_id),
             strength);
         return mp_const_none;
     }
@@ -299,9 +275,9 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Get the IRQ object.
-    uint8_t eic_id = get_pin_af_info(self->id)->eic;
+    uint8_t eic_id = get_pin_obj_ptr(self->pin_id)->eic;
     machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[eic_id]);
-    if (irq != NULL && irq->pin_id != self->id) {
+    if (irq != NULL && irq->pin_id != self->pin_id) {
         mp_raise_ValueError(MP_ERROR_TEXT("IRQ already used"));
     }
 
@@ -320,7 +296,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     if (n_args > 1 || kw_args->used != 0) {
 
         // set the mux config of the pin.
-        mp_hal_set_pin_mux(self->id, ALT_FCT_EIC);
+        mp_hal_set_pin_mux(self->pin_id, ALT_FCT_EIC);
 
         // Configure IRQ.
         #if defined(MCU_SAMD21)
@@ -360,7 +336,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         irq->base.ishard = args[ARG_hard].u_bool;
         irq->flags = 0;
         irq->trigger = args[ARG_trigger].u_int;
-        irq->pin_id = self->id;
+        irq->pin_id = self->pin_id;
 
         // Enable IRQ if a handler is given.
         if (args[ARG_handler].u_obj != mp_const_none) {
@@ -410,6 +386,7 @@ void EIC_Handler() {
     for (int eic_id = 0; eic_id < 16; eic_id++, mask <<= 1) {
         // Did the ISR fire?
         if (isr & mask) {
+            EIC_occured = true;
             EIC->INTFLAG.reg |= mask; // clear the ISR flag
             machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[eic_id]);
             if (irq != NULL) {
@@ -454,10 +431,10 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
 
     switch (request) {
         case MP_PIN_READ: {
-            return mp_hal_pin_read(self->id);
+            return mp_hal_pin_read(self->pin_id);
         }
         case MP_PIN_WRITE: {
-            mp_hal_pin_write(self->id, arg);
+            mp_hal_pin_write(self->pin_id, arg);
             return 0;
         }
     }
@@ -491,7 +468,7 @@ static uint8_t find_eic_id(int pin) {
 
 STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint8_t eic_id = find_eic_id(self->id);
+    uint8_t eic_id = find_eic_id(self->pin_id);
     if (eic_id != 0xff) {
         machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[eic_id]);
         EIC->INTENCLR.reg |= (1 << eic_id);
@@ -504,7 +481,7 @@ STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger
 
 STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint8_t eic_id = find_eic_id(self->id);
+    uint8_t eic_id = find_eic_id(self->pin_id);
     if (eic_id != 0xff) {
         machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[eic_id]);
         if (info_type == MP_IRQ_INFO_FLAGS) {
@@ -522,11 +499,8 @@ STATIC const mp_irq_methods_t machine_pin_irq_methods = {
 };
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
-    if (!mp_obj_is_type(obj, &machine_pin_type)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("expecting a Pin"));
-    }
-    machine_pin_obj_t *pin = MP_OBJ_TO_PTR(obj);
-    return pin->id;
+    const machine_pin_obj_t *pin = pin_find(obj);
+    return pin->pin_id;
 }
 
 MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_objects[16]);

@@ -173,6 +173,10 @@ static inline bool mp_obj_is_obj(mp_const_obj_t o) {
 
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
 
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_NONE
+#error "MICROPY_OBJ_REPR_C requires float to be enabled."
+#endif
+
 static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
     return (((mp_int_t)(o)) & 1) != 0;
 }
@@ -189,6 +193,9 @@ static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
 #endif
 
 static inline bool mp_obj_is_float(mp_const_obj_t o) {
+    // Ensure that 32-bit arch can only use single precision.
+    MP_STATIC_ASSERT(sizeof(mp_float_t) <= sizeof(mp_obj_t));
+
     return (((mp_uint_t)(o)) & 3) == 2 && (((mp_uint_t)(o)) & 0xff800007) != 0x00000006;
 }
 static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
@@ -746,10 +753,16 @@ typedef struct _mp_obj_full_type_t {
 #define MP_DEFINE_CONST_OBJ_TYPE_NARGS_11(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slot_index_##f9 = 9, .slot_index_##f10 = 10, .slot_index_##f11 = 11, .slots = { v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, } }
 #define MP_DEFINE_CONST_OBJ_TYPE_NARGS_12(_struct_type, _typename, _name, _flags, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11, f12, v12) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slot_index_##f9 = 9, .slot_index_##f10 = 10, .slot_index_##f11 = 11, .slot_index_##f12 = 12, .slots = { v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, } }
 
+// Because the mp_obj_type_t instances are in (zero-initialised) ROM, we take
+// slot_index_foo=0 to mean that the slot is unset. This also simplifies checking
+// if the slot is set. That means that we need to store index+1 in slot_index_foo
+// though and then access it as slots[slot_index_foo - 1]. This is an implementation
+// detail, the user of these macros doesn't need to be aware of it, and when using
+// MP_OBJ_TYPE_OFFSETOF_SLOT you should use zero-based indexing.
 #define MP_OBJ_TYPE_HAS_SLOT(t, f) ((t)->slot_index_##f)
 #define MP_OBJ_TYPE_GET_SLOT(t, f) (_MP_OBJ_TYPE_SLOT_TYPE_##f(t)->slots[(t)->slot_index_##f - 1])
 #define MP_OBJ_TYPE_GET_SLOT_OR_NULL(t, f) (_MP_OBJ_TYPE_SLOT_TYPE_##f(MP_OBJ_TYPE_HAS_SLOT(t, f) ? MP_OBJ_TYPE_GET_SLOT(t, f) : NULL))
-#define MP_OBJ_TYPE_SET_SLOT(t, f, v, n) ((t)->slot_index_##f = (n) + 1, (t)->slots[(t)->slot_index_##f - 1] = (void *)v)
+#define MP_OBJ_TYPE_SET_SLOT(t, f, v, n) ((t)->slot_index_##f = (n) + 1, (t)->slots[(n)] = (void *)v)
 #define MP_OBJ_TYPE_OFFSETOF_SLOT(f) (offsetof(mp_obj_type_t, slot_index_##f))
 #define MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(t, offset) (*(uint8_t *)((char *)(t) + (offset)) != 0)
 

@@ -29,7 +29,7 @@
 #include "timer.h"
 #include "nrfx_timer.h"
 
-#if MICROPY_PY_MACHINE_TIMER
+#if MICROPY_PY_MACHINE_TIMER_NRF
 
 enum {
     TIMER_MODE_ONESHOT,
@@ -243,4 +243,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_timer_locals_dict
     );
 
-#endif // MICROPY_PY_MACHINE_TIMER
+#endif // MICROPY_PY_MACHINE_TIMER_NRF

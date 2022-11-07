@@ -37,7 +37,7 @@ extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_adcblock_type;
 extern const mp_obj_type_t machine_dac_type;
 extern const mp_obj_type_t machine_i2c_type;
-extern const mp_obj_type_t machine_hard_spi_type;
+extern const mp_obj_type_t machine_spi_type;
 extern const mp_obj_type_t machine_i2s_type;
 extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_rtc_type;

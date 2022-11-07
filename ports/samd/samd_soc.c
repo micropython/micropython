@@ -38,15 +38,19 @@
 #include "tusb.h"
 #include "mphalport.h"
 
+#if MICROPY_PY_MACHINE_RTC
+extern void machine_rtc_start(bool force);
+#endif
+
 static void usb_init(void) {
     // Init USB clock
     #if defined(MCU_SAMD21)
-    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID_USB;
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK5 | GCLK_CLKCTRL_ID_USB;
     PM->AHBMASK.bit.USB_ = 1;
     PM->APBBMASK.bit.USB_ = 1;
     uint8_t alt = 6; // alt G, USB
     #elif defined(MCU_SAMD51)
-    GCLK->PCHCTRL[USB_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK2;
+    GCLK->PCHCTRL[USB_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK5;
     while (GCLK->PCHCTRL[USB_GCLK_ID].bit.CHEN == 0) {
     }
     MCLK->AHBMASK.bit.USB_ = 1;
@@ -64,7 +68,7 @@ static void usb_init(void) {
     tusb_init();
 }
 
-// Initialize the microsecond counter on TC 0/1
+// Initialize the µs counter on TC 0/1 or TC4/5
 void init_us_counter(void) {
     #if defined(MCU_SAMD21)
 
@@ -85,6 +89,9 @@ void init_us_counter(void) {
     TC4->COUNT32.READREQ.reg = TC_READREQ_RREQ | TC_READREQ_RCONT | 0x10;
     while (TC4->COUNT32.STATUS.bit.SYNCBUSY) {
     }
+    // Enable the IRQ
+    TC4->COUNT32.INTENSET.reg = TC_INTENSET_OVF;
+    NVIC_EnableIRQ(TC4_IRQn);
 
     #elif defined(MCU_SAMD51)
 
@@ -103,16 +110,21 @@ void init_us_counter(void) {
     while (TC0->COUNT32.SYNCBUSY.bit.ENABLE) {
     }
 
+    // Enable the IRQ
+    TC0->COUNT32.INTENSET.reg = TC_INTENSET_OVF;
+    NVIC_EnableIRQ(TC0_IRQn);
     #endif
 }
 
 void samd_init(void) {
     init_clocks(get_cpu_freq());
-    SysTick_Config(get_cpu_freq() / 1000);
     init_us_counter();
     usb_init();
     check_usb_recovery_mode();
     #if defined(MCU_SAMD51)
     mp_hal_ticks_cpu_enable();
+    #endif
+    #if MICROPY_PY_MACHINE_RTC
+    machine_rtc_start(false);
     #endif
 }

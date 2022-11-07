@@ -69,7 +69,6 @@ typedef struct _machine_i2c_obj_t {
 } machine_i2c_obj_t;
 
 extern Sercom *sercom_instance[];
-extern void *sercom_table[SERCOM_INST_NUM];
 
 STATIC void i2c_send_command(Sercom *i2c, uint8_t command) {
     i2c->I2CM.CTRLB.bit.CMD = command;
@@ -79,7 +78,7 @@ STATIC void i2c_send_command(Sercom *i2c, uint8_t command) {
 
 void common_i2c_irq_handler(int i2c_id) {
     // handle Sercom I2C IRQ
-    machine_i2c_obj_t *self = sercom_table[i2c_id];
+    machine_i2c_obj_t *self = MP_STATE_PORT(sercom_table[i2c_id]);
     // Handle IRQ
     if (self != NULL) {
         Sercom *i2c = self->instance;
@@ -144,7 +143,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
 
     // Get the peripheral object.
-    machine_i2c_obj_t *self = mp_obj_malloc(machine_i2c_obj_t, &machine_hw_i2c_type);
+    machine_i2c_obj_t *self = mp_obj_malloc(machine_i2c_obj_t, &machine_i2c_type);
     self->id = id;
     self->instance = sercom_instance[self->id];
 
@@ -159,7 +158,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     if (sda_pad_config.pad_nr != 0 || scl_pad_config.pad_nr != 1) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid pin for sda or scl"));
     }
-    sercom_table[self->id] = self;
+    MP_STATE_PORT(sercom_table[self->id]) = self;
     self->freq = args[ARG_freq].u_int;
 
     // Configure the Pin mux.
@@ -260,7 +259,7 @@ STATIC const mp_machine_i2c_p_t machine_i2c_p = {
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    machine_hw_i2c_type,
+    machine_i2c_type,
     MP_QSTR_I2C,
     MP_TYPE_FLAG_NONE,
     make_new, machine_i2c_make_new,

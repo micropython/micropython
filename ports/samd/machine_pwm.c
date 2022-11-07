@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "modmachine.h"
@@ -46,6 +47,8 @@ typedef struct _machine_pwm_obj_t {
     uint8_t output;
     uint16_t prescaler;
     uint32_t period;  // full period count ticks
+    uint32_t duty_ns; // just for reporting
+    uint16_t duty_u16; // just for reporting
 } machine_pwm_obj_t;
 
 #define PWM_NOT_INIT    (0)
@@ -53,6 +56,7 @@ typedef struct _machine_pwm_obj_t {
 #define PWM_TCC_ENABLED (2)
 #define PWM_MASTER_CLK  (get_peripheral_freq())
 #define PWM_FULL_SCALE  (65536)
+#define PWM_UPDATE_TIMEOUT (2000)
 
 static Tcc *tcc_instance[] = TCC_INSTS;
 
@@ -107,8 +111,8 @@ STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "PWM P%c%02u device=%u channel=%u output=%u",
-        "ABCD"[self->pin_id / 32], self->pin_id % 32, self->device, self->channel, self->output);
+    mp_printf(print, "PWM(%s, device=%u, channel=%u, output=%u)",
+        pin_name(self->pin_id), self->device, self->channel, self->output);
 }
 
 // PWM(pin)
@@ -148,6 +152,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->output = config.device_channel & 0x0f;
     self->prescaler = 1;
     self->period = 1; // Use an invalid but safe value
+    self->duty_u16 = self->duty_ns = 0;
     put_duty_value(self->device, self->channel, 0);
 
     Tcc *tcc = self->instance;
@@ -240,6 +245,7 @@ void pwm_deinit_all(void) {
         device_status[i] = PWM_NOT_INIT;
         duty_type_flags[i] = 0;
         output_active[i] = 0;
+        memset(pwm_duty_values, 0, sizeof(pwm_duty_values));
     }
 }
 
@@ -256,8 +262,25 @@ STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     }
 }
 
+STATIC void wait_for_register_update(Tcc *tcc) {
+    // Wait for a period's end (may be long) to have the change settled
+    // Each loop cycle takes at least 1 ms, giving an implicit timeout.
+    for (int i = 0; i < PWM_UPDATE_TIMEOUT; i++) {
+        if (tcc->INTFLAG.reg & TCC_INTFLAG_OVF) {
+            break;
+        }
+        MICROPY_EVENT_POLL_HOOK
+    }
+    // Clear the flag, telling that a cycle has been handled.
+    tcc->INTFLAG.reg = TCC_INTFLAG_OVF;
+}
+
 STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
-    return MP_OBJ_NEW_SMALL_INT(PWM_MASTER_CLK / self->prescaler / self->period);
+    if (self->instance->CTRLA.reg & TCC_CTRLA_ENABLE) {
+        return MP_OBJ_NEW_SMALL_INT(PWM_MASTER_CLK / self->prescaler / self->period);
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(0);
+    }
 }
 
 STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
@@ -267,7 +290,8 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
 
     Tcc *tcc = self->instance;
     if (freq < 1) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid freq"));
+        pwm_stop_device(self->device);
+        return;
     }
 
     // Get the actual settings of prescaler & period from the unit
@@ -287,6 +311,11 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     uint32_t period = PWM_MASTER_CLK / self->prescaler / freq;
     if (period < 2) {
         mp_raise_ValueError(MP_ERROR_TEXT("freq too large"));
+    }
+    // If the PWM is running, ensure that a cycle has passed since the
+    // previous setting before setting a new frequency/duty value
+    if (tcc->CTRLA.reg & TCC_CTRLA_ENABLE) {
+        wait_for_register_update(tcc);
     }
     // Check, if the prescaler has to be changed and stop the device if so.
     if (index != tcc->CTRLA.bit.PRESCALER) {
@@ -339,25 +368,37 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
-    return MP_OBJ_NEW_SMALL_INT(self->instance->CC[self->channel].reg * PWM_FULL_SCALE / (self->instance->PER.reg + 1));
+    return MP_OBJ_NEW_SMALL_INT(self->duty_u16);
 }
 
 STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
+    // Remember the values for update & reporting
     put_duty_value(self->device, self->channel, duty_u16);
+    self->duty_u16 = duty_u16;
+    self->duty_ns = 0;
     // If the device is enabled, than the period is set and we get a reasonable value for
     // the duty cycle, set to the CCBUF register. Otherwise, PWM does not start.
     if (self->instance->CTRLA.reg & TCC_CTRLA_ENABLE) {
-        self->instance->CCBUF[self->channel].reg = (uint64_t)duty_u16 * (self->instance->PER.reg + 1) / PWM_FULL_SCALE;
+        // Ensure that a cycle has passed updating the registers
+        // since the previous setting before setting a new duty value
+        wait_for_register_update(self->instance);
+        self->instance->CCBUF[self->channel].reg = (uint64_t)duty_u16 * (self->period) / PWM_FULL_SCALE;
     }
     duty_type_flags[self->device] |= 1 << self->channel;
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
-    return MP_OBJ_NEW_SMALL_INT(1000000000ULL * self->instance->CC[self->channel].reg * self->prescaler / PWM_MASTER_CLK);
+    return MP_OBJ_NEW_SMALL_INT(self->duty_ns);
 }
 
 STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
+    // Remember the values for update & reporting
     put_duty_value(self->device, self->channel, duty_ns);
+    self->duty_ns = duty_ns;
+    self->duty_u16 = 0;
+    // Ensure that a cycle has passed updating the registers
+    // since the previous setting before setting a new duty value
+    wait_for_register_update(self->instance);
     self->instance->CCBUF[self->channel].reg = (uint64_t)duty_ns * PWM_MASTER_CLK / self->prescaler / 1000000000ULL;
     duty_type_flags[self->device] &= ~(1 << self->channel);
 }

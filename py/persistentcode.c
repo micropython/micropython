@@ -591,21 +591,18 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
     // header contains:
     //  byte  'M'
     //  byte  version
-    //  byte  feature flags
+    //  byte  native arch (and sub-version if native)
     //  byte  number of bits in a small int
     byte header[4] = {
         'M',
         MPY_VERSION,
-        MPY_FEATURE_ENCODE_SUB_VERSION(MPY_SUB_VERSION),
+        cm->has_native ? MPY_FEATURE_ENCODE_SUB_VERSION(MPY_SUB_VERSION) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH_DYNAMIC) : 0,
         #if MICROPY_DYNAMIC_COMPILER
         mp_dynamic_compiler.small_int_bits,
         #else
         MP_SMALL_INT_BITS,
         #endif
     };
-    if (cm->has_native) {
-        header[2] |= MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH_DYNAMIC);
-    }
     mp_print_bytes(print, header, sizeof(header));
 
     // Number of entries in constant table.

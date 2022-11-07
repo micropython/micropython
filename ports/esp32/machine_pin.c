@@ -64,7 +64,7 @@ typedef struct _machine_pin_irq_obj_t {
     gpio_num_t id;
 } machine_pin_irq_obj_t;
 
-STATIC const machine_pin_obj_t machine_pin_obj[] = {
+STATIC const machine_pin_obj_t machine_pin_obj[GPIO_NUM_MAX] = {
     #if CONFIG_IDF_TARGET_ESP32
 
     {{&machine_pin_type}, GPIO_NUM_0},
@@ -225,7 +225,7 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
 };
 
 // forward declaration
-STATIC const machine_pin_irq_obj_t machine_pin_irq_object[];
+STATIC const machine_pin_irq_obj_t machine_pin_irq_object[GPIO_NUM_MAX];
 
 void machine_pins_init(void) {
     static bool did_install = false;
@@ -545,7 +545,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 STATIC const mp_obj_type_t machine_pin_irq_type;
 
-STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
+STATIC const machine_pin_irq_obj_t machine_pin_irq_object[GPIO_NUM_MAX] = {
     #if CONFIG_IDF_TARGET_ESP32
 
     {{&machine_pin_irq_type}, GPIO_NUM_0},
@@ -732,4 +732,4 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_pin_irq_locals_dict
     );
 
-MP_REGISTER_ROOT_POINTER(mp_obj_t machine_pin_irq_handler[40]);
+MP_REGISTER_ROOT_POINTER(mp_obj_t machine_pin_irq_handler[49]); // 49 is the biggest of GPIO_NUM_MAX's

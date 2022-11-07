@@ -8,24 +8,47 @@
 #define MICROPY_EMIT_INLINE_THUMB       (1)
 
 #define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
+
+#ifndef MICROPY_PY_BUILTINS_COMPLEX
 #define MICROPY_PY_BUILTINS_COMPLEX     (0)
+#endif
+
+#ifndef MICROPY_PY_MATH
 #define MICROPY_PY_MATH                 (1)
 #define MP_NEED_LOG2                    (1)
-#define MICROPY_PY_CMATH                (0)
+#endif
 
+#ifndef MICROPY_PY_CMATH
+#define MICROPY_PY_CMATH                (0)
+#endif
+
+#define MICROPY_PY_MACHINE_DHT_READINTO (1)
+#define MICROPY_PY_ONEWIRE              (1)
 #define MICROPY_PY_UOS_URANDOM          (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC (trng_random_u32())
 unsigned long trng_random_u32(void);
 
-// Due to a limitation in the TC counter for us, the ticks period is 2**29
-#define MICROPY_PY_UTIME_TICKS_PERIOD   (0x20000000)
+#ifndef MICROPY_PY_MACHINE_RTC
+#if MICROPY_HW_XOSC32K
+#define MICROPY_PY_MACHINE_RTC          (1)
+#endif
+#endif
+
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN            (1)
+#define MICROPY_FATFS_RPATH                 (2)
+#define MICROPY_FATFS_MAX_SS                (4096)
+#define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
 #define VFS_BLOCK_SIZE_BYTES            (1536) //
 
+#ifndef MICROPY_HW_UART_TXBUF
 #define MICROPY_HW_UART_TXBUF           (1)
+#endif
 
 #define CPU_FREQ                        (120000000)
 #define DFLL48M_FREQ                    (48000000)
+#define MAX_CPU_FREQ                    (200000000)
 #define DPLLx_REF_FREQ                  (32768)
 
 #define NVIC_PRIORITYGROUP_4            ((uint32_t)0x00000003)

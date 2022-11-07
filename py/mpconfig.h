@@ -1631,6 +1631,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_SOFTSPI (0)
 #endif
 
+// Whether to provide the "machine.Timer" class
+#ifndef MICROPY_PY_MACHINE_TIMER
+#define MICROPY_PY_MACHINE_TIMER (0)
+#endif
+
 // The default backlog value for socket.listen(backlog)
 #ifndef MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT
 #define MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT (2)

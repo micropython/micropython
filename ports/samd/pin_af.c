@@ -29,7 +29,9 @@
  */
 
 #include <stdint.h>
+#include "string.h"
 
+#include "modmachine.h"
 #include "py/runtime.h"
 #include "py/misc.h"
 #include "pin_af.h"
@@ -43,13 +45,65 @@ extern const uint8_t tcc_channel_count[];
 // Just look for an table entry for a given pin and raise an error
 // in case of no match (which should not happen).
 
-const pin_af_t *get_pin_af_info(int pin_id) {
+const machine_pin_obj_t *get_pin_obj_ptr(int pin_id) {
     for (int i = 0; i < MP_ARRAY_SIZE(pin_af_table); i++) {
         if (pin_af_table[i].pin_id == pin_id) { // Pin match
             return &pin_af_table[i];
         }
     }
-    mp_raise_ValueError(MP_ERROR_TEXT("wrong pin"));
+    mp_raise_ValueError(MP_ERROR_TEXT("not a Pin"));
+}
+
+const machine_pin_obj_t *pin_find(mp_obj_t pin) {
+    const machine_pin_obj_t *self = NULL;
+    // Is already a object of the proper type
+    if (mp_obj_is_type(pin, &machine_pin_type)) {
+        return pin;
+    }
+    if (mp_obj_is_small_int(pin)) {
+        // Pin defined by pin number for PAnn, PBnn, etc.
+        self = get_pin_obj_ptr(mp_obj_get_int(pin));
+    } else if (mp_obj_is_str(pin)) {
+        // Search by name
+        size_t slen;
+        const char *s = mp_obj_str_get_data(pin, &slen);
+        // Check for a string like PA02 or PD12
+        if (slen == 4 && s[0] == 'P' && strchr("ABCD", s[1]) != NULL &&
+            strchr("0123456789", s[2]) != NULL && strchr("0123456789", s[2]) != NULL) {
+            int num = (s[1] - 'A') * 32 + (s[2] - '0') * 10 + (s[3] - '0');
+            self = get_pin_obj_ptr(num);
+        } else {
+            for (int i = 0; i < MP_ARRAY_SIZE(pin_af_table); i++) {
+                if (slen == strlen(pin_af_table[i].name) &&
+                    strncmp(s, pin_af_table[i].name, slen) == 0) {
+                    self = &pin_af_table[i];
+                }
+            }
+        }
+    }
+    if (self != NULL) {
+        return self;
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("not a Pin"));
+    }
+}
+
+const char *pin_name(int id) {
+    static char board_name[5] = "Pxnn";
+    for (int i = 0; i < sizeof(pin_af_table); i++) {
+        if (pin_af_table[i].pin_id == id) {
+            if (pin_af_table[i].name[0] != '-') {
+                return pin_af_table[i].name;
+            } else {
+                board_name[1] = "ABCD"[id / 32];
+                id %= 32;
+                board_name[2] = '0' + id / 10;
+                board_name[3] = '0' + id % 10;
+                return board_name;
+            }
+        }
+    }
+    return "-";
 }
 
 // Test, wether the given pin is defined and has signals for sercom.
@@ -57,7 +111,7 @@ const pin_af_t *get_pin_af_info(int pin_id) {
 // If not, an error will be raised.
 
 sercom_pad_config_t get_sercom_config(int pin_id, uint8_t sercom_nr) {
-    const pin_af_t *pct_ptr = get_pin_af_info(pin_id);
+    const machine_pin_obj_t *pct_ptr = get_pin_obj_ptr(pin_id);
     if ((pct_ptr->sercom1 >> 4) == sercom_nr) {
         return (sercom_pad_config_t) {ALT_FCT_SERCOM1, pct_ptr->sercom1 & 0x0f};
     } else if ((pct_ptr->sercom2 >> 4) == sercom_nr) {
@@ -72,7 +126,12 @@ sercom_pad_config_t get_sercom_config(int pin_id, uint8_t sercom_nr) {
 // If not, an error will be raised.
 
 adc_config_t get_adc_config(int pin_id, int32_t flag) {
-    const pin_af_t *pct_ptr = get_pin_af_info(pin_id);
+    const machine_pin_obj_t *pct_ptr = get_pin_obj_ptr(pin_id);
+    #if defined(MCU_SAMD51)
+    if (pct_ptr->adc1 != 0xff && (flag & (1 << (pct_ptr->adc1 + 16))) == 0) {
+        return (adc_config_t) {1, pct_ptr->adc1};
+    } else
+    #endif
     if (pct_ptr->adc0 != 0xff && (flag & (1 << pct_ptr->adc0)) == 0) {
         return (adc_config_t) {0, pct_ptr->adc0};
     #if defined(MUC_SAMD51)
@@ -91,7 +150,7 @@ adc_config_t get_adc_config(int pin_id, int32_t flag) {
 // tries to provide an unused device, if available.
 
 pwm_config_t get_pwm_config(int pin_id, int wanted_dev, uint8_t device_status[]) {
-    const pin_af_t *pct_ptr = get_pin_af_info(pin_id);
+    const machine_pin_obj_t *pct_ptr = get_pin_obj_ptr(pin_id);
     uint8_t tcc1 = pct_ptr->tcc1;
     uint8_t tcc2 = pct_ptr->tcc2;
 

@@ -117,12 +117,12 @@ STATIC const nrfx_spi_t machine_spi_instances[] = {
 STATIC nrfx_spi_config_t configs[MP_ARRAY_SIZE(machine_spi_instances)];
 
 STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
-    {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[0], .p_config = &configs[0]},
-    {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[1], .p_config = &configs[1]},
+    {{&machine_spi_type}, .p_spi = &machine_spi_instances[0], .p_config = &configs[0]},
+    {{&machine_spi_type}, .p_spi = &machine_spi_instances[1], .p_config = &configs[1]},
 #if defined(NRF52_SERIES)
-    {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[2], .p_config = &configs[2]},
+    {{&machine_spi_type}, .p_spi = &machine_spi_instances[2], .p_config = &configs[2]},
 #if defined(NRF52840_XXAA) && NRFX_SPIM_ENABLED
-    {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[3], .p_config = &configs[3]},
+    {{&machine_spi_type}, .p_spi = &machine_spi_instances[3], .p_config = &configs[3]},
 #endif // NRF52840_XXAA && NRFX_SPIM_ENABLED
 #endif // NRF52_SERIES
 };
@@ -235,7 +235,7 @@ STATIC mp_obj_t machine_spi_init(size_t n_args, const mp_obj_t *pos_args, mp_map
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // dispatch to specific implementation
-    if (mp_obj_get_type(self) == &machine_hard_spi_type) {
+    if (mp_obj_get_type(self) == &machine_spi_type) {
         machine_hard_spi_init(self, args);
     }
 
@@ -245,7 +245,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_spi_init_obj, 1, machine_spi_init);
 
 STATIC mp_obj_t machine_spi_deinit(mp_obj_t self) {
     // dispatch to specific implementation
-    if (mp_obj_get_type(self) == &machine_hard_spi_type) {
+    if (mp_obj_get_type(self) == &machine_spi_type) {
         machine_hard_spi_deinit(self);
     }
     return mp_const_none;
@@ -428,7 +428,7 @@ STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    machine_hard_spi_type,
+    machine_spi_type,
     MP_QSTR_SPI,
     MP_TYPE_FLAG_NONE,
     make_new, machine_spi_make_new,

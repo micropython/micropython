@@ -258,6 +258,7 @@ def main():
     cmd_parser.add_argument(
         "--emit", default="bytecode", help="MicroPython emitter to use (bytecode or native)"
     )
+    cmd_parser.add_argument("--heapsize", help="heapsize to use (use default if not specified)")
     cmd_parser.add_argument("--via-mpy", action="store_true", help="compile code to .mpy first")
     cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
     cmd_parser.add_argument(
@@ -285,6 +286,8 @@ def main():
         target.enter_raw_repl()
     else:
         target = [MICROPYTHON, "-X", "emit=" + args.emit]
+        if args.heapsize is not None:
+            target.extend(["-X", "heapsize=" + args.heapsize])
 
     if len(args.files) == 0:
         tests_skip = ("benchrun.py",)

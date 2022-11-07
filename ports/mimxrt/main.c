@@ -33,6 +33,7 @@
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/softtimer.h"
 #include "ticks.h"
 #include "tusb.h"
 #include "led.h"
@@ -120,6 +121,7 @@ int main(void) {
         mod_network_deinit();
         #endif
         machine_pwm_deinit_all();
+        soft_timer_deinit();
         gc_sweep_all();
         mp_deinit();
     }
