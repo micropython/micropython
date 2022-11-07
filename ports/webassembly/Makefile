@@ -15,7 +15,7 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 
 CFLAGS += -std=c99 -Wall -Werror -Wdouble-promotion -Wfloat-conversion
-CFLAGS += -O3 -DNDEBUG
+CFLAGS += -Os -DNDEBUG
 CFLAGS += $(INC)
 
 SRC_SHARED = $(addprefix shared/,\
