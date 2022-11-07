@@ -315,12 +315,6 @@ STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
     netif_set_default(&self->netif);
     dns_setserver(0, &ipconfig[3]);
     dhcp_set_struct(&self->netif, &self->dhcp_struct);
-    // Setting NETIF_FLAG_UP then clearing it is a workaround for dhcp_start and the
-    // LWIP_DHCP_CHECK_LINK_UP option, so that the DHCP client schedules itself to
-    // automatically start when the interface later goes up.
-    self->netif.flags |= NETIF_FLAG_UP;
-    dhcp_start(&self->netif);
-    self->netif.flags &= ~NETIF_FLAG_UP;
 }
 
 void wiznet5k_poll(void) {
