@@ -931,9 +931,20 @@ STATIC mp_obj_t lwip_socket_listen(size_t n_args, const mp_obj_t *args) {
         mp_raise_OSError(MP_EOPNOTSUPP);
     }
 
-    struct tcp_pcb *new_pcb = tcp_listen_with_backlog(socket->pcb.tcp, (u8_t)backlog);
+    struct tcp_pcb *new_pcb;
+    #if LWIP_VERSION_MACRO < 0x02000100
+    new_pcb = tcp_listen_with_backlog(socket->pcb.tcp, (u8_t)backlog);
+    #else
+    err_t error;
+    new_pcb = tcp_listen_with_backlog_and_err(socket->pcb.tcp, (u8_t)backlog, &error);
+    #endif
+
     if (new_pcb == NULL) {
+        #if LWIP_VERSION_MACRO < 0x02000100
         mp_raise_OSError(MP_ENOMEM);
+        #else
+        mp_raise_OSError(error_lookup_table[-error]);
+        #endif
     }
     socket->pcb.tcp = new_pcb;
 
