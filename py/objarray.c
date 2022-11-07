@@ -192,6 +192,14 @@ STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
         return MP_OBJ_FROM_PTR(o);
     } else {
         // 1 arg: construct the bytearray from that
+        if (mp_obj_is_str(args[0]) && n_args == 1) {
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+            // Match bytes_make_new.
+            mp_raise_TypeError(MP_ERROR_TEXT("wrong number of arguments"));
+            #else
+            mp_raise_TypeError(MP_ERROR_TEXT("string argument without an encoding"));
+            #endif
+        }
         return array_construct(BYTEARRAY_TYPECODE, args[0]);
     }
 }
