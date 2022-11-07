@@ -121,10 +121,6 @@ msgstr "%q zhèngzài bèi shǐyòng"
 msgid "%q index out of range"
 msgstr "%q suǒyǐn chāochū fànwéi"
 
-#: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
-
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr "%q chūshǐhuà shībài"
@@ -2392,10 +2388,6 @@ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
 "Yīdàn shèzhì wèi WatchDogMode.RESET, zé bùnéng gēnggǎi WatchDogTimer.Mode"
 
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr "WatchDogTimer.Timeout bìxū dàyú 0"
-
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -3230,10 +3222,6 @@ msgstr "suǒyǐn chāochū fànwéi"
 msgid "index out of range"
 msgstr "suǒyǐn chāochū fànwéi"
 
-#: py/obj.c
-msgid "indices must be integers"
-msgstr "suǒyǐn bìxū shì zhěngshù"
-
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr "suǒyǐn bìxū shì zhěngshù, qiēpiàn huò bù'ěr zhí lièbiǎo"
@@ -3651,10 +3639,6 @@ msgstr "SD kǎ wú huíyīng"
 msgid "no such attribute"
 msgstr "méiyǒu cǐ shǔxìng"
 
-#: shared-bindings/usb_hid/__init__.c
-msgid "non-Device in %q"
-msgstr "fēi shè bèi zài %q"
-
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3928,11 +3912,6 @@ msgstr "shí bù hé xū bù bìxū děng zhǎng"
 msgid "relative import"
 msgstr "xiāngduì dǎorù"
 
-#: py/obj.c
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr "qǐngqiú chángdù %d dàn duìxiàng chángdù %d"
-
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
 msgstr "wú fǎ jiāng jié guǒ qiáng zhì zhuǎn huàn dào zhǐ dìng lèi xíng"
@@ -3995,10 +3974,6 @@ msgstr "zìfú chuàn géshì shuōmíng fú zhōng bù yǔnxǔ shǐyòng fúhà
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "zhěngshù géshì shuōmíng fú 'c' bù yǔnxǔ shǐyòng fúhào"
-
-#: py/objstr.c
-msgid "single '}' encountered in format string"
-msgstr "zài géshì zìfú chuàn zhōng yù dào de dāngè '}'"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
@@ -4115,10 +4090,6 @@ msgstr "JSON yǔfǎ cuòwù"
 msgid "syntax error in uctypes descriptor"
 msgstr "uctypes miáoshù fú zhōng de yǔfǎ cuòwù"
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr "yùzhí bìxū zài fànwéi 0-65536"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() xūyào 9 xùliè"
@@ -4129,10 +4100,6 @@ msgstr "time.struct_time() xūyào 9 xùliè"
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "chāoshí shíjiān chāoguò zuìdà zhīchí zhí"
-
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
-msgstr "Chāo shí shíjiān bìxū wèi 0.0 Dào 100.0 Miǎo"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
@@ -4186,10 +4153,6 @@ msgstr "Trapz shì wèi děng zhǎng de 1D shùzǔ dìngyì de"
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr "tī xíng dìng yì wéi yì wéi kě dié dài duì xiàng"
-
-#: py/obj.c
-msgid "tuple/list has wrong length"
-msgstr "yuán zǔ/lièbiǎo chángdù cuòwù"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4269,8 +4232,9 @@ msgid "unknown type '%q'"
 msgstr "wèizhī lèixíng '%q'"
 
 #: py/objstr.c
-msgid "unmatched '{' in format"
-msgstr "géshì wèi pǐpèi '{'"
+#, c-format
+msgid "unmatched '%c' in format"
+msgstr ""
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4339,10 +4303,6 @@ msgstr "zhí jìshù bìxū wèi > 0"
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "wèi chū shǐ huà jiān shì qì"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
-msgstr "kān mén gǒu chāoshí bìxū dàyú 0"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4430,6 +4390,40 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
+
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.Timeout bìxū dàyú 0"
+
+#~ msgid "indices must be integers"
+#~ msgstr "suǒyǐn bìxū shì zhěngshù"
+
+#~ msgid "non-Device in %q"
+#~ msgstr "fēi shè bèi zài %q"
+
+#, c-format
+#~ msgid "requested length %d but object has length %d"
+#~ msgstr "qǐngqiú chángdù %d dàn duìxiàng chángdù %d"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "zài géshì zìfú chuàn zhōng yù dào de dāngè '}'"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "yùzhí bìxū zài fànwéi 0-65536"
+
+#~ msgid "timeout must be 0.0-100.0 seconds"
+#~ msgstr "Chāo shí shíjiān bìxū wèi 0.0 Dào 100.0 Miǎo"
+
+#~ msgid "tuple/list has wrong length"
+#~ msgstr "yuán zǔ/lièbiǎo chángdù cuòwù"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "géshì wèi pǐpèi '{'"
+
+#~ msgid "watchdog timeout must be greater than 0"
+#~ msgstr "kān mén gǒu chāoshí bìxū dàyú 0"
 
 #~ msgid "To exit, please reset the board without "
 #~ msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "

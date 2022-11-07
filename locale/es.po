@@ -122,10 +122,6 @@ msgstr "%q está siendo utilizado"
 msgid "%q index out of range"
 msgstr "%q indice fuera de rango"
 
-#: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "%q indices deben ser enteros, no %s"
-
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr "%q inicializado fallido"
@@ -2409,10 +2405,6 @@ msgstr ""
 "WatchDogTimer.mode no se puede modificar luego de configurar WatchDogMode."
 "RESET"
 
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr "WatchDogTimer.timeout debe ser mayor a 0"
-
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -3243,10 +3235,6 @@ msgstr "el índice está fuera de límites"
 msgid "index out of range"
 msgstr "index fuera de rango"
 
-#: py/obj.c
-msgid "indices must be integers"
-msgstr "indices deben ser enteros"
-
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr "los índices deben ser enteros, particiones o listas de booleanos"
@@ -3667,10 +3655,6 @@ msgstr "no hay respuesta de la tarjeta SD"
 msgid "no such attribute"
 msgstr "no hay tal atributo"
 
-#: shared-bindings/usb_hid/__init__.c
-msgid "non-Device in %q"
-msgstr "hay un no-Device en %q"
-
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3947,11 +3931,6 @@ msgstr "las partes reales e imaginarias deben ser de igual longitud"
 msgid "relative import"
 msgstr "import relativo"
 
-#: py/obj.c
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr "longitud solicitada %d pero el objeto tiene longitud %d"
-
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
 msgstr "resultados no pueden aplicar cast a un tipo específico"
@@ -4014,10 +3993,6 @@ msgstr "signo no permitido en el espeficador de string format"
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "signo no permitido con el especificador integer format 'c'"
-
-#: py/objstr.c
-msgid "single '}' encountered in format string"
-msgstr "un solo '}' encontrado en format string"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
@@ -4131,10 +4106,6 @@ msgstr "error de sintaxis en JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "error de sintaxis en el descriptor uctypes"
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr "limite debe ser en el rango 0-65536"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() toma un sequencio 9"
@@ -4146,10 +4117,6 @@ msgstr "time.struct_time() toma un sequencio 9"
 msgid "timeout duration exceeded the maximum supported value"
 msgstr ""
 "la duración de tiempo de espera ha excedido la capacidad máxima del valor"
-
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
-msgstr "el tiempo de espera debe ser 0.0-100.0 segundos"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
@@ -4203,10 +4170,6 @@ msgstr "trapz está definido para arreglos 1D de igual tamaño"
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr "trapz está definido para iterables 1D"
-
-#: py/obj.c
-msgid "tuple/list has wrong length"
-msgstr "tupla/lista tiene una longitud incorrecta"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4286,8 +4249,9 @@ msgid "unknown type '%q'"
 msgstr "tipo desconocido '%q'"
 
 #: py/objstr.c
-msgid "unmatched '{' in format"
-msgstr "No coinciden '{' en format"
+#, c-format
+msgid "unmatched '%c' in format"
+msgstr ""
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4356,10 +4320,6 @@ msgstr "value_count debe ser > 0"
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "watchdog no inicializado"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
-msgstr "el tiempo de espera del perro guardián debe ser mayor a 0"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4447,6 +4407,40 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "%q indices deben ser enteros, no %s"
+
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.timeout debe ser mayor a 0"
+
+#~ msgid "indices must be integers"
+#~ msgstr "indices deben ser enteros"
+
+#~ msgid "non-Device in %q"
+#~ msgstr "hay un no-Device en %q"
+
+#, c-format
+#~ msgid "requested length %d but object has length %d"
+#~ msgstr "longitud solicitada %d pero el objeto tiene longitud %d"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "un solo '}' encontrado en format string"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "limite debe ser en el rango 0-65536"
+
+#~ msgid "timeout must be 0.0-100.0 seconds"
+#~ msgstr "el tiempo de espera debe ser 0.0-100.0 segundos"
+
+#~ msgid "tuple/list has wrong length"
+#~ msgstr "tupla/lista tiene una longitud incorrecta"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "No coinciden '{' en format"
+
+#~ msgid "watchdog timeout must be greater than 0"
+#~ msgstr "el tiempo de espera del perro guardián debe ser mayor a 0"
 
 #~ msgid "To exit, please reset the board without "
 #~ msgstr "Para salir, por favor reinicia la tarjeta sin "
