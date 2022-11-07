@@ -488,14 +488,7 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
 void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
     size_t seq_len;
     mp_obj_get_array(o, &seq_len, items);
-    if (seq_len != len) {
-        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_ValueError(MP_ERROR_TEXT("tuple/list has wrong length"));
-        #else
-        mp_raise_ValueError_varg(
-            MP_ERROR_TEXT("requested length %d but object has length %d"), (int)len, (int)seq_len);
-        #endif
-    }
+    mp_arg_validate_length(seq_len, len, mp_obj_get_type(o)->name);
 }
 
 // is_slice determines whether the index is a slice index
@@ -504,13 +497,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
     if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError(MP_ERROR_TEXT("indices must be integers"));
-        #else
-        mp_raise_TypeError_varg(
-            MP_ERROR_TEXT("%q indices must be integers, not %s"),
-            type->name, mp_obj_get_type_str(index));
-        #endif
+        mp_raise_TypeError_varg(translate("%q must be of type %q"), MP_QSTR_index, MP_QSTR_int);
     }
 
     if (i < 0) {
@@ -523,14 +510,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
             i = len;
         }
     } else {
-        if (i < 0 || (mp_uint_t)i >= len) {
-            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_IndexError(MP_ERROR_TEXT("index out of range"));
-            #else
-            mp_raise_msg_varg(&mp_type_IndexError,
-                MP_ERROR_TEXT("%q index out of range"), type->name);
-            #endif
-        }
+        mp_arg_validate_index_range(i, 0, len - 1, MP_QSTR_index);
     }
 
     // By this point 0 <= i <= len and so fits in a size_t
