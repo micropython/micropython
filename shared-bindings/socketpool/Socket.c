@@ -30,13 +30,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "shared/runtime/context_manager_helpers.h"
-#include "py/objtuple.h"
-#include "py/objlist.h"
-#include "py/runtime.h"
 #include "py/mperrno.h"
+#include "py/objlist.h"
+#include "py/objtuple.h"
+#include "py/runtime.h"
+#include "py/stream.h"
 
 #include "shared/netutils/netutils.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "shared/runtime/interrupt_char.h"
 
 //| class Socket:
@@ -422,6 +423,31 @@ STATIC const mp_rom_map_elem_t socketpool_socket_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(socketpool_socket_locals_dict, socketpool_socket_locals_dict_table);
 
+STATIC mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_uint_t ret;
+    if (request == MP_STREAM_POLL) {
+        mp_uint_t flags = arg;
+        ret = 0;
+        if ((flags & MP_STREAM_POLL_RD) && common_hal_socketpool_readable(self) > 0) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        if ((flags & MP_STREAM_POLL_WR) && common_hal_socketpool_writable(self)) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+    } else {
+        *errcode = MP_EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+    return ret;
+}
+
+STATIC const mp_stream_p_t socket_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
+    .ioctl = socket_ioctl,
+    .is_text = false,
+};
+
 const mp_obj_type_t socketpool_socket_type = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
@@ -429,5 +455,6 @@ const mp_obj_type_t socketpool_socket_type = {
     .locals_dict = (mp_obj_dict_t *)&socketpool_socket_locals_dict,
     MP_TYPE_EXTENDED_FIELDS(
         .unary_op = mp_generic_unary_op,
+        .protocol = &socket_stream_p,
         )
 };
