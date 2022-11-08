@@ -239,7 +239,7 @@ mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_
 
 mp_obj_t mp_arg_validate_type_string(mp_obj_t obj, qstr arg_name) {
     if (!mp_obj_is_str(obj)) {
-        mp_raise_TypeError_varg(translate("%q must be a string"), arg_name);
+        mp_raise_TypeError_varg(translate("%q must be of type %q"), arg_name, MP_QSTR_str);
     }
     return obj;
 }
@@ -247,7 +247,7 @@ mp_obj_t mp_arg_validate_type_string(mp_obj_t obj, qstr arg_name) {
 mp_int_t mp_arg_validate_type_int(mp_obj_t obj, qstr arg_name) {
     mp_int_t an_int;
     if (!mp_obj_get_int_maybe(obj, &an_int)) {
-        mp_raise_TypeError_varg(translate("%q must be an int"), arg_name);
+        mp_raise_TypeError_varg(translate("%q must be of type %q"), arg_name, MP_QSTR_int);
     }
     return an_int;
 }
