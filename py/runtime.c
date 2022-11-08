@@ -631,7 +631,7 @@ unsupported_op:
     #endif
 
 zero_division:
-    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("division by zero"));
+    mp_raise_ZeroDivisionError();
 }
 
 mp_obj_t mp_call_function_0(mp_obj_t fun) {
@@ -1765,3 +1765,7 @@ NORETURN void mp_raise_recursion_depth(void) {
     mp_raise_RuntimeError(MP_ERROR_TEXT("maximum recursion depth exceeded"));
 }
 #endif
+
+NORETURN void mp_raise_ZeroDivisionError(void) {
+    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("division by zero"));
+}

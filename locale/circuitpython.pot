@@ -118,7 +118,7 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
 
@@ -130,12 +130,8 @@ msgstr ""
 msgid "%q length must be <= %d"
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/busio/I2C.c
 msgid "%q length must be >= %d"
-msgstr ""
-
-#: shared-bindings/busio/I2C.c
-msgid "%q length must be >= 1"
 msgstr ""
 
 #: py/argcheck.c
@@ -161,14 +157,6 @@ msgstr ""
 #: shared-bindings/analogbufio/BufferedIn.c
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
-msgstr ""
-
-#: py/argcheck.c
-msgid "%q must be a string"
-msgstr ""
-
-#: py/argcheck.c
-msgid "%q must be an int"
 msgstr ""
 
 #: py/argcheck.c py/obj.c
@@ -199,10 +187,6 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
-msgstr ""
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q with a report ID of 0 must be of length 1"
 msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
@@ -509,10 +493,6 @@ msgstr ""
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
-msgstr ""
-
-#: shared-bindings/microcontroller/Pin.c
-msgid "At most %d %q may be specified (not %d)"
 msgstr ""
 
 #: shared-module/memorymonitor/AllocationAlarm.c
@@ -1260,10 +1240,6 @@ msgstr ""
 msgid "Invalid multicast MAC address"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "Invalid pins"
-msgstr ""
-
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr ""
@@ -1499,11 +1475,6 @@ msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
-msgstr ""
-
-#: shared-module/usb_hid/__init__.c
-#, c-format
-msgid "No more than %d HID devices allowed"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -2545,10 +2516,6 @@ msgstr ""
 msgid "buffer too small for requested bytes"
 msgstr ""
 
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
-msgstr ""
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr ""
@@ -2590,12 +2557,8 @@ msgstr ""
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
-msgstr ""
-
-#: py/runtime.c
-msgid "can't convert %q to int"
 msgstr ""
 
 #: py/obj.c
@@ -2781,10 +2744,6 @@ msgstr ""
 msgid "comparison of int and uint"
 msgstr ""
 
-#: py/objcomplex.c
-msgid "complex division by zero"
-msgstr ""
-
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr ""
@@ -2887,12 +2846,7 @@ msgstr ""
 msgid "div/mod not implemented for uint"
 msgstr ""
 
-#: py/objfloat.c py/objint_mpz.c
-msgid "divide by zero"
-msgstr ""
-
-#: py/modmath.c py/objint_longlong.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: py/runtime.c shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr ""
 
@@ -4041,10 +3995,6 @@ msgstr ""
 
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
-msgstr ""
-
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
