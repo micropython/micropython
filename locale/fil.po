@@ -111,10 +111,6 @@ msgstr "%q ay ginagamit"
 msgid "%q index out of range"
 msgstr "%q indeks wala sa sakop"
 
-#: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "%q indeks ay dapat integers, hindi %s"
-
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr ""
@@ -2360,10 +2356,6 @@ msgstr ""
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
 
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr ""
-
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -3197,10 +3189,6 @@ msgstr ""
 msgid "index out of range"
 msgstr "index wala sa sakop"
 
-#: py/obj.c
-msgid "indices must be integers"
-msgstr "ang mga indeks ay dapat na integer"
-
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
@@ -3621,10 +3609,6 @@ msgstr ""
 msgid "no such attribute"
 msgstr "walang ganoon na attribute"
 
-#: shared-bindings/usb_hid/__init__.c
-msgid "non-Device in %q"
-msgstr ""
-
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3900,11 +3884,6 @@ msgstr ""
 msgid "relative import"
 msgstr "relative import"
 
-#: py/obj.c
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr "hiniling ang haba %d ngunit may haba ang object na %d"
-
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
 msgstr ""
@@ -3967,10 +3946,6 @@ msgstr "sign hindi maaring string format specifier"
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "sign hindi maari sa integer format specifier 'c'"
-
-#: py/objstr.c
-msgid "single '}' encountered in format string"
-msgstr "isang '}' nasalubong sa format string"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
@@ -4084,10 +4059,6 @@ msgstr "sintaks error sa JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "may pagkakamali sa sintaks sa uctypes descriptor"
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr "ang threshold ay dapat sa range 0-65536"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kumukuha ng 9-sequence"
@@ -4097,10 +4068,6 @@ msgstr "time.struct_time() kumukuha ng 9-sequence"
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
-msgstr ""
-
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -4155,10 +4122,6 @@ msgstr ""
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr ""
-
-#: py/obj.c
-msgid "tuple/list has wrong length"
-msgstr "mali ang haba ng tuple/list"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4238,8 +4201,9 @@ msgid "unknown type '%q'"
 msgstr "hindi malaman ang type '%q'"
 
 #: py/objstr.c
-msgid "unmatched '{' in format"
-msgstr "hindi tugma ang '{' sa format"
+#, c-format
+msgid "unmatched '%c' in format"
+msgstr ""
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4307,10 +4271,6 @@ msgstr ""
 
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4401,6 +4361,28 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "%q indeks ay dapat integers, hindi %s"
+
+#~ msgid "indices must be integers"
+#~ msgstr "ang mga indeks ay dapat na integer"
+
+#, c-format
+#~ msgid "requested length %d but object has length %d"
+#~ msgstr "hiniling ang haba %d ngunit may haba ang object na %d"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "isang '}' nasalubong sa format string"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "ang threshold ay dapat sa range 0-65536"
+
+#~ msgid "tuple/list has wrong length"
+#~ msgstr "mali ang haba ng tuple/list"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "hindi tugma ang '{' sa format"
 
 #~ msgid "To exit, please reset the board without "
 #~ msgstr "Para lumabas, paki-reset ang board na wala ang "

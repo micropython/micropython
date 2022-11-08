@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-10-13 06:43+0000\n"
+"PO-Revision-Date: 2022-11-04 15:05+0000\n"
 "Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.14.2-dev\n"
 
 #: main.c
 msgid ""
@@ -69,7 +69,7 @@ msgstr "%%c erwartet Int oder Char"
 #: main.c
 #, c-format
 msgid "%02X"
-msgstr ""
+msgstr "%02X"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -117,10 +117,6 @@ msgstr "%q in Benutzung"
 #: py/obj.c py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "Der Index %q befindet sich außerhalb des Bereiches"
-
-#: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "%q Indizes müssen Integer sein, nicht %s"
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
@@ -600,7 +596,7 @@ msgstr "Sowohl RX als auch TX sind zu Flusssteuerung erforderlich"
 #: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "Both buttons were pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurden beide Tasten gedrückt.\n"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -670,7 +666,7 @@ msgstr "Bus-Pin %d wird schon benutzt"
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 msgid "Button A was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde Taste A gedrückt.\n"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -960,7 +956,7 @@ msgstr "Erwartete ein %q oder %q"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an %q"
-msgstr ""
+msgstr "Erwartet ein %q"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -2032,7 +2028,7 @@ msgstr "Zeitüberschreitung beim Auslesen der Temperatur"
 
 #: supervisor/shared/safe_mode.c
 msgid "The BOOT button was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde die Taste BOOT gedrückt.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2044,11 +2040,11 @@ msgstr ""
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "The SW38 button was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde die Taste SW38 gedrückt.\n"
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "The VOLUME button was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde die Taste VOLUME gedrückt.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2060,11 +2056,11 @@ msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde die zentrale Taste gedrückt.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "The left button was pressed at start up.\n"
-msgstr ""
+msgstr "Beim Starten wurde die linke Taste gedrückt.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2192,7 +2188,7 @@ msgstr "UART wird geschrieben"
 
 #: main.c
 msgid "UID:"
-msgstr ""
+msgstr "UID:"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
@@ -2405,10 +2401,6 @@ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
 "WatchDogTimer.mode kann nicht geändert werden, nachdem er auf WatchDogMode."
 "RESET gesetzt wurde"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr "WatchDogTimer.timeout muss größer als 0 sein"
 
 #: py/builtinhelp.c
 #, c-format
@@ -3254,10 +3246,6 @@ msgstr "Index ist außerhalb der Grenzen"
 msgid "index out of range"
 msgstr "index außerhalb der Reichweite"
 
-#: py/obj.c
-msgid "indices must be integers"
-msgstr "Indizes müssen Integer sein"
-
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr "Indizes müssen Integer, Slices oder Boolesche Listen sein"
@@ -3680,10 +3668,6 @@ msgstr "keine Antwort von der SD-Karte"
 msgid "no such attribute"
 msgstr "kein solches Attribut"
 
-#: shared-bindings/usb_hid/__init__.c
-msgid "non-Device in %q"
-msgstr "Nicht-Gerät in %q"
-
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3962,11 +3946,6 @@ msgstr "Real- und Imaginärteile müssen gleich lang sein"
 msgid "relative import"
 msgstr "relativer Import"
 
-#: py/obj.c
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr "die ersuchte Länge ist %d, aber das Objekt hat eine Länge von %d"
-
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
 msgstr "Ergebnisse können nicht in den angegebenen Typ umgewandelt werden"
@@ -4029,10 +4008,6 @@ msgstr "Vorzeichen nicht erlaubt in einem String formatierungs specifier"
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "Vorzeichen mit ganzzahligem Formatbezeichner 'c' nicht erlaubt"
-
-#: py/objstr.c
-msgid "single '}' encountered in format string"
-msgstr "einzelne '}' in Formatierungs-String gefunden"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
@@ -4147,10 +4122,6 @@ msgstr "Syntaxfehler in JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "Syntaxfehler in uctypes Deskriptor"
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr "threshold muss im Intervall 0-65536 liegen"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() nimmt eine 9-Sequenz an"
@@ -4161,10 +4132,6 @@ msgstr "time.struct_time() nimmt eine 9-Sequenz an"
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "Das Zeitlimit hat den maximal zulässigen Wert überschritten"
-
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
-msgstr "Das Zeitlimit muss 0,0-100,0 Sekunden betragen"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
@@ -4218,10 +4185,6 @@ msgstr "trapz ist für 1D-Arrays gleicher Länge definiert"
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr "trapz ist für 1D-Iterables definiert"
-
-#: py/obj.c
-msgid "tuple/list has wrong length"
-msgstr "tupel/list hat falsche Länge"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4303,8 +4266,9 @@ msgid "unknown type '%q'"
 msgstr "unbekannter Typ '%q'"
 
 #: py/objstr.c
-msgid "unmatched '{' in format"
-msgstr "'{' ohne passende Zuordnung im Format"
+#, c-format
+msgid "unmatched '%c' in format"
+msgstr ""
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4373,10 +4337,6 @@ msgstr "value_count muss größer als 0 sein"
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "watchdog nicht initialisiert"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
-msgstr "watchdog Zeitlimit muss größer als 0 sein"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4464,6 +4424,40 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "%q Indizes müssen Integer sein, nicht %s"
+
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.timeout muss größer als 0 sein"
+
+#~ msgid "indices must be integers"
+#~ msgstr "Indizes müssen Integer sein"
+
+#~ msgid "non-Device in %q"
+#~ msgstr "Nicht-Gerät in %q"
+
+#, c-format
+#~ msgid "requested length %d but object has length %d"
+#~ msgstr "die ersuchte Länge ist %d, aber das Objekt hat eine Länge von %d"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "einzelne '}' in Formatierungs-String gefunden"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "threshold muss im Intervall 0-65536 liegen"
+
+#~ msgid "timeout must be 0.0-100.0 seconds"
+#~ msgstr "Das Zeitlimit muss 0,0-100,0 Sekunden betragen"
+
+#~ msgid "tuple/list has wrong length"
+#~ msgstr "tupel/list hat falsche Länge"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "'{' ohne passende Zuordnung im Format"
+
+#~ msgid "watchdog timeout must be greater than 0"
+#~ msgstr "watchdog Zeitlimit muss größer als 0 sein"
 
 #~ msgid "To exit, please reset the board without "
 #~ msgstr "Zum beenden, resette bitte das board ohne "
