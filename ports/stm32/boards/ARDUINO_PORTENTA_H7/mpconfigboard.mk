@@ -25,3 +25,4 @@ MICROPY_PY_USSL = 1
 MICROPY_SSL_MBEDTLS = 1
 
 FROZEN_MANIFEST = $(BOARD_DIR)/manifest.py
+MBEDTLS_CONFIG_FILE = '"$(BOARD_DIR)/mbedtls_config_board.h"'
