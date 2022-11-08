@@ -9,7 +9,7 @@ CIRCUITPY_ESP_FLASH_MODE=dio
 CIRCUITPY_ESP_FLASH_FREQ=40m
 CIRCUITPY_ESP_FLASH_SIZE=4MB
 
-CIRCUITPY_MODULE=wroom
+IDF_TARGET = esp32s2
 
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
