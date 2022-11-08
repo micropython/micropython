@@ -345,7 +345,7 @@ STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *p
     const int32_t in_end = args[ARG_in_end].u_int;
     normalize_buffer_bounds(&in_start, in_end, &in_length);
     if (in_length == 0) {
-        mp_raise_ValueError_varg(translate("%q length must be >= 1"), MP_QSTR_out_buffer);
+        mp_raise_ValueError_varg(translate("%q length must be >= %d"), MP_QSTR_out_buffer, 1);
     }
 
     uint8_t status = common_hal_busio_i2c_write_read(self, args[ARG_address].u_int,
