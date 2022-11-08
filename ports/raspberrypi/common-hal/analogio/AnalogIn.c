@@ -26,6 +26,7 @@
 
 #include "common-hal/analogio/AnalogIn.h"
 #include "shared-bindings/analogio/AnalogIn.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate/translate.h"
@@ -81,6 +82,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
         uint32_t old_ctrl = iobank0_hw->io[self->pin->number].ctrl;
         adc_gpio_init(self->pin->number);
         adc_select_input(self->pin->number - ADC_FIRST_PIN_NUMBER);
+        common_hal_mcu_delay_us(100);
         value = adc_read();
         gpio_init(self->pin->number);
         padsbank0_hw->io[self->pin->number] = old_pad;
