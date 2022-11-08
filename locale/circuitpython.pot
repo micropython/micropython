@@ -130,7 +130,7 @@ msgstr ""
 msgid "%q length must be <= %d"
 msgstr ""
 
-#: py/argcheck.c shared-bindings/busio/I2C.c
+#: py/argcheck.c
 msgid "%q length must be >= %d"
 msgstr ""
 
@@ -159,7 +159,7 @@ msgstr ""
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 
-#: py/argcheck.c py/obj.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q"
 msgstr ""
 
@@ -3947,10 +3947,6 @@ msgstr ""
 
 #: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
-msgstr ""
-
-#: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
 msgstr ""
 
 #: py/stream.c
