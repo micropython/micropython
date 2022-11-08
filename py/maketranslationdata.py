@@ -146,7 +146,10 @@ def iter_substrings(s, minlen, maxlen):
             yield s[begin : begin + n]
 
 
-def compute_huffman_coding(translations, f):
+translation_requires_uint16 = {"cs", "el", "fr", "ja", "ko", "pl", "ru", "tr", "zh_Latn_pinyin"}
+
+
+def compute_huffman_coding(translation_name, translations, f):
     texts = [t[1] for t in translations]
     words = []
 
@@ -163,6 +166,12 @@ def compute_huffman_coding(translations, f):
 
     bits_per_codepoint = 16 if max_ord > 255 else 8
     values_type = "uint16_t" if max_ord > 255 else "uint8_t"
+    translation_name = translation_name.split("/")[-1].split(".")[0]
+    if max_ord > 255 and translation_name not in translation_requires_uint16:
+        raise ValueError(
+            f"Translation {translation_name} expected to fit in 8 bits but required 16 bits"
+        )
+
     while len(words) < max_words:
         # Until the dictionary is filled to capacity, use a heuristic to find
         # the best "word" (2- to 11-gram) to add to it.
@@ -522,5 +531,7 @@ if __name__ == "__main__":
     i18ns = parse_input_headers(args.infiles)
     i18ns = sorted(i18ns)
     translations = translate(args.translation, i18ns)
-    encoding_table = compute_huffman_coding(translations, args.compression_filename)
+    encoding_table = compute_huffman_coding(
+        args.translation, translations, args.compression_filename
+    )
     output_translation_data(encoding_table, translations, args.translation_filename)
