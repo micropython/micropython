@@ -189,6 +189,10 @@ msgstr ""
 msgid "%q pin invalid"
 msgstr ""
 
+#: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
+msgid "%q step cannot be zero"
+msgstr ""
+
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr ""
@@ -2846,7 +2850,7 @@ msgstr ""
 msgid "div/mod not implemented for uint"
 msgstr ""
 
-#: py/runtime.c shared-bindings/math/__init__.c
+#: py/runtime.c
 msgid "division by zero"
 msgstr ""
 
@@ -3218,10 +3222,6 @@ msgstr ""
 msgid "inputs are not iterable"
 msgstr ""
 
-#: py/parsenum.c
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr ""
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
@@ -3357,10 +3357,6 @@ msgstr ""
 
 #: py/vm.c
 msgid "local variable referenced before assignment"
-msgstr ""
-
-#: py/objint.c
-msgid "long int not supported in this build"
 msgstr ""
 
 #: ports/espressif/common-hal/canio/CAN.c
@@ -3897,10 +3893,6 @@ msgstr ""
 msgid "slice step can't be zero"
 msgstr ""
 
-#: py/objslice.c
-msgid "slice step cannot be zero"
-msgstr ""
-
 #: py/nativeglue.c
 msgid "slice unsupported"
 msgstr ""
@@ -3947,10 +3939,6 @@ msgstr ""
 
 #: py/objstr.c
 msgid "start/end indices"
-msgstr ""
-
-#: shared-bindings/random/__init__.c
-msgid "step must be non-zero"
 msgstr ""
 
 #: shared-bindings/random/__init__.c
@@ -4276,10 +4264,6 @@ msgstr ""
 
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
-msgstr ""
-
-#: py/objrange.c
-msgid "zero step"
 msgstr ""
 
 #: extmod/ulab/code/scipy/signal/signal.c
