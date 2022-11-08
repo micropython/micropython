@@ -38,7 +38,9 @@ extern const mp_obj_type_t digitalio_digitalinout_type;
 typedef enum {
     DIGITALINOUT_OK,
     DIGITALINOUT_PIN_BUSY,
+    #if CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY
     DIGITALINOUT_INPUT_ONLY,
+    #endif
     #if CIRCUITPY_DIGITALIO_HAVE_INVALID_PULL
     DIGITALINOUT_INVALID_PULL,
     #endif
