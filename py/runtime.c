@@ -310,7 +310,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
         }
         #else
         if (op == MP_UNARY_OP_INT) {
-            mp_raise_TypeError_varg(MP_ERROR_TEXT("can't convert %q to int"), mp_obj_get_type_qstr(arg));
+            mp_raise_TypeError_varg(MP_ERROR_TEXT("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_int);
         } else {
             mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported type for %q: '%q'"),
                 mp_unary_op_method_name[op], mp_obj_get_type_qstr(arg));
