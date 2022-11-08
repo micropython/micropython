@@ -47,8 +47,15 @@
 #define CYW43_THREAD_EXIT               MICROPY_PY_LWIP_EXIT
 #define CYW43_THREAD_LOCK_CHECK
 
-#define CYW43_SDPCM_SEND_COMMON_WAIT    __WFI();
-#define CYW43_DO_IOCTL_WAIT             __WFI();
+#define CYW43_SDPCM_SEND_COMMON_WAIT \
+    if (get_core_num() == 0) { \
+        __WFI(); \
+    } \
+
+#define CYW43_DO_IOCTL_WAIT \
+    if (get_core_num() == 0) { \
+        __WFI(); \
+    } \
 
 #define CYW43_ARRAY_SIZE(a)             MP_ARRAY_SIZE(a)
 
