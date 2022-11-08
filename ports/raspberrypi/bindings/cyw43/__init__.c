@@ -123,6 +123,14 @@ const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj) {
     return MP_OBJ_TO_PTR(obj);
 }
 
+const mcu_pin_obj_t *validate_obj_is_free_pin_or_gpio29(mp_obj_t obj) {
+    const mcu_pin_obj_t *pin = validate_obj_is_pin(obj);
+    if (obj != &pin_GPIO29) {
+        assert_pin_free(pin);
+    }
+    return pin;
+}
+
 const mcu_pin_obj_t *validate_obj_is_free_pin_including_cyw43(mp_obj_t obj) {
     const mcu_pin_obj_t *pin = validate_obj_is_pin_including_cyw43(obj);
     assert_pin_free(pin);
