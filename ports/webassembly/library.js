@@ -33,8 +33,7 @@ mergeInto(LibraryManager.library, {
                 process.stdout.write(b);
             } else {
                 var c = String.fromCharCode(getValue(ptr + i, 'i8'));
-                var printEvent = new CustomEvent('micropython-print');
-                printEvent.data = c;
+                var printEvent = new CustomEvent('micropython-print', { detail: c });
                 document.dispatchEvent(printEvent);
             }
         }
