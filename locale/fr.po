@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-29 18:20+0000\n"
-"Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
+"PO-Revision-Date: 2022-11-09 19:20+0000\n"
+"Last-Translator: Neradoc <weblate@ri1.fr>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: main.c
 msgid ""
@@ -73,7 +73,7 @@ msgstr "%%c nécessite un chiffre entier 'int' ou un caractère 'char'"
 #: main.c
 #, c-format
 msgid "%02X"
-msgstr ""
+msgstr "%02X"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1693,7 +1693,7 @@ msgstr ""
 #: ports/espressif/common-hal/alarm/coproc/CoprocAlarm.c
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one %q can be set in deep sleep."
-msgstr ""
+msgstr "Une seul %q autorisée en sommeil profond."
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
@@ -2058,7 +2058,7 @@ msgstr "Délais de lecture de température dépassée"
 
 #: supervisor/shared/safe_mode.c
 msgid "The BOOT button was pressed at start up.\n"
-msgstr ""
+msgstr "Le bouton BOOT était pressé au démarrage.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2070,11 +2070,11 @@ msgstr ""
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "The SW38 button was pressed at start up.\n"
-msgstr ""
+msgstr "Le bouton SW38 était pressé au démarrage.\n"
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "The VOLUME button was pressed at start up.\n"
-msgstr ""
+msgstr "Le bouton VOLUME était pressé au démarrage.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2086,11 +2086,11 @@ msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
-msgstr ""
+msgstr "Le bouton central était pressé au démarrage.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "The left button was pressed at start up.\n"
-msgstr ""
+msgstr "Le bouton gauche était pressé au démarrage.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2160,7 +2160,7 @@ msgstr "Le délai est trop long : le délai maximal est de %d secondes"
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without requesting safe mode."
-msgstr ""
+msgstr "Pour le quitter, redémarrez sans demander le mode sans-échec."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample"
@@ -2215,8 +2215,9 @@ msgid "UART write"
 msgstr "Écriture UART"
 
 #: main.c
+#, fuzzy
 msgid "UID:"
-msgstr ""
+msgstr "UID:"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
@@ -2284,7 +2285,7 @@ msgstr "Impossible de lancer la requête mDNS"
 
 #: shared-bindings/coproc/CoprocMemory.c
 msgid "Unable to write"
-msgstr ""
+msgstr "Écriture impossible"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -2346,12 +2347,12 @@ msgstr "Faute inconnue du logiciel systême : %04x"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %d"
-msgstr "Erreur du firmware système inconnue : %d"
+msgstr "Erreur du logiciel système inconnue : %d"
 
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
 msgid "Unkown error code %d"
-msgstr ""
+msgstr "Erreur inconnue %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -3039,6 +3040,8 @@ msgid ""
 "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
 msgstr ""
+"esp32_camera.Camera nécessite la configuration de PSRAM réservée. Se référer "
+"à la documentation."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -4293,7 +4296,7 @@ msgstr "type '%q' inconnu"
 #: py/objstr.c
 #, c-format
 msgid "unmatched '%c' in format"
-msgstr ""
+msgstr "'%c' sans correspondance dans le format"
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4374,7 +4377,7 @@ msgstr "wifi n’est pas activé"
 
 #: ports/raspberrypi/common-hal/wifi/Monitor.c
 msgid "wifi.Monitor not available"
-msgstr ""
+msgstr "wifi.Monitor non disponible"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
