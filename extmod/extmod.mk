@@ -131,7 +131,9 @@ SRC_THIRDPARTY_C += $(addprefix $(AXTLS_DIR)/,\
 	)
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
 MBEDTLS_DIR = lib/mbedtls
+MBEDTLS_CONFIG_FILE ?= \"mbedtls/mbedtls_config.h\"
 GIT_SUBMODULES += $(MBEDTLS_DIR)
+CFLAGS_EXTMOD += -DMBEDTLS_CONFIG_FILE=$(MBEDTLS_CONFIG_FILE)
 CFLAGS_EXTMOD += -DMICROPY_SSL_MBEDTLS=1 -I$(TOP)/$(MBEDTLS_DIR)/include
 SRC_THIRDPARTY_C += lib/mbedtls_errors/mp_mbedtls_errors.c
 SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
