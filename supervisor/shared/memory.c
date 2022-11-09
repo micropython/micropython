@@ -58,6 +58,9 @@ enum {
         #endif
 
         + CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS
+        #if CIRCUITPY_AUDIOBUSIO_PDMIN
+        + 1
+        #endif
     ,
 
     CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT =
