@@ -283,7 +283,7 @@ msgstr "'%s' verwacht op zijn meest r%d"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr "'%s' verwacht {r0, r1, …}"
+msgstr "'%s' verwacht {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
