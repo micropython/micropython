@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2022-11-09 19:20+0000\n"
-"Last-Translator: Neradoc <weblate@ri1.fr>\n"
+"Last-Translator: Deleted User <noreply+52049@weblate.org>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -173,7 +173,7 @@ msgstr "%q doit être >= %d"
 #: shared-bindings/analogbufio/BufferedIn.c
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
-msgstr ""
+msgstr "%q doit être a bytearray ou array de type 'h', 'H', 'b', ou 'B'"
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -602,7 +602,7 @@ msgstr "RX et TX requis pour le contrôle de flux"
 #: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "Both buttons were pressed at start up.\n"
-msgstr ""
+msgstr "Les deux boutons étaient pressés au démarrage.\n"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -672,7 +672,7 @@ msgstr "La broche %d du bus est déjà utilisée"
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 msgid "Button A was pressed at start up.\n"
-msgstr ""
+msgstr "Le bouton A était pressé au démarrage.\n"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -967,7 +967,7 @@ msgstr "Attendu un %q"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c
 msgid "Expected a %q or %q"
-msgstr ""
+msgstr "Attendu un %q ou %q"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an %q"
@@ -1054,16 +1054,16 @@ msgstr "Filtres trop complexe"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is duplicate"
-msgstr ""
+msgstr "Le logiciel est identique"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is invalid"
-msgstr ""
+msgstr "Logiciel invalide"
 
 #: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
-msgstr ""
+msgstr "Logiciel trop volumineux"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -1597,11 +1597,11 @@ msgstr "Aucun minuteur disponible"
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic system firmware failure assertion."
-msgstr "Assertion échouée du logiciel systême Nordic."
+msgstr "Assertion échouée du logiciel système Nordic."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
-msgstr "Logiciel systême Nordic hors de mémoire"
+msgstr "Logiciel système Nordic n'a plus de mémoire"
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
@@ -1729,7 +1729,7 @@ msgstr "Timeout de l'opération"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
-msgstr "Hors de mémoire"
+msgstr "Mémoire insuffisante"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 #: ports/raspberrypi/common-hal/socketpool/Socket.c
@@ -2337,12 +2337,12 @@ msgstr "Erreur de sécurité inconnue : 0x%04x"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error at %s:%d: %d"
-msgstr "Erreur du firmware système inconnue à %s:%d : %d"
+msgstr "Erreur du logiciel système inconnue à %s:%d : %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
-msgstr "Faute inconnue du logiciel systême : %04x"
+msgstr "Faute inconnue du logiciel système : %04x"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
@@ -2509,7 +2509,7 @@ msgstr "Le paramêtre argsort doit être un ndarray"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "argsort is not implemented for flattened arrays"
-msgstr "argsort n'est pas mis en œuvre pour les matrices aplatis"
+msgstr "argsort n'est pas implémenté pour les matrices aplaties"
 
 #: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
