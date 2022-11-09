@@ -147,7 +147,7 @@ def iter_substrings(s, minlen, maxlen):
             yield s[begin : begin + n]
 
 
-translation_requires_uint16 = {"cs", "fr", "ja", "ko", "pl", "tr", "zh_Latn_pinyin"}
+translation_requires_uint16 = {"cs", "ja", "ko", "pl", "tr", "zh_Latn_pinyin"}
 
 
 def compute_unicode_offset(texts):
