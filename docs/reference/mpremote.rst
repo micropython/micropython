@@ -99,17 +99,46 @@ The full list of supported commands are:
   - ``--inject-file <file>``, to specify a file to inject at the REPL when
     Ctrl-K is pressed
 
-- evaluate and print the result of a Python expression:
+- evaluate and print the result of a Python expression on the connected device:
 
   .. code-block:: bash
 
-      $ mpremote eval <string>
+      $ mpremote eval [-e] <string>
 
-- execute the given Python code:
+- execute the given Python code on the connected device:
 
   .. code-block:: bash
 
-      $ mpremote exec <string>
+      $ mpremote exec [-e] <string>
+
+  If the -e option is used, the string can contain one or more expressions enclosed in ``{{ }}``. These {{expressions}} are evaluated on the 
+  host, and replaced by the result(s) before sending the command to the device. 
+  This is used by the setrtc command to set the RTC from the host system time, but can also be used for other purposes.
+
+  The eval is executed with a limited scope, so that the following variables are available:
+    - os, sys, time, datetime
+    - device_name, the name  of the serial port used to connect to the device 
+    - mount_dir, the local directory mounted to the device (if any)
+
+  .. code-block:: bash
+
+      $ mpremote mount ./data  exec -e "import os; print(f'port {{device_name}} connects to {os.uname()[1:3]}, mounted directory: {{host_dir}}')"
+      # prints the host port and the hosts's mounted directory 
+      # import os; print(f'port COM6 connects to {os.uname()}.\nHost directory: ./data')
+      # port COM6 connects to ('pyboard', '1.19.1'), mounted directory: ./data
+
+      $ mpremote exec -e "import time,os; print(os.uname()[1:3],'\n', time.localtime(),'\n', {{time.localtime()[0:8] }})"
+      # compare local time with RTC time
+
+  .. code-block:: bash
+
+      $ mpremote eval -e "f'port {{device_name}} is connected'"      
+
+- set the real time clock (machine.RTC) to the hosts's current time:
+
+  .. code-block:: bash
+
+      $ mpremote setrtc
 
 - run a script from the local filesystem:
 
