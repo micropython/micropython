@@ -10,6 +10,7 @@ supervisor/shared/translate/translate.h
 from __future__ import print_function
 
 import bisect
+from dataclasses import dataclass
 import re
 import sys
 
@@ -146,7 +147,40 @@ def iter_substrings(s, minlen, maxlen):
             yield s[begin : begin + n]
 
 
-translation_requires_uint16 = {"cs", "el", "fr", "ja", "ko", "pl", "ru", "tr", "zh_Latn_pinyin"}
+translation_requires_uint16 = {"cs", "fr", "ja", "ko", "pl", "tr", "zh_Latn_pinyin"}
+
+
+def compute_unicode_offset(texts):
+    all_ch = set(" ".join(texts))
+    ch_160 = sorted(c for c in all_ch if 160 <= ord(c) < 255)
+    ch_256 = sorted(c for c in all_ch if 255 < ord(c))
+    if not ch_256:
+        return 0, 0
+    min_256 = ord(min(ch_256))
+    span = ord(max(ch_256)) - ord(min(ch_256)) + 1
+
+    if ch_160:
+        max_160 = ord(max(ch_160)) + 1
+    else:
+        max_160 = max(160, 255 - span)
+
+    if max_160 + span > 256:
+        return 0, 0
+
+    offstart = max_160
+    offset = min_256 - max_160
+    return offstart, offset
+
+
+@dataclass
+class EncodingTable:
+    values: object
+    lengths: object
+    words: object
+    canonical: object
+    extractor: object
+    apply_offset: object
+    remove_offset: object
 
 
 def compute_huffman_coding(translation_name, translations, f):
@@ -156,8 +190,26 @@ def compute_huffman_coding(translation_name, translations, f):
     start_unused = 0x80
     end_unused = 0xFF
     max_ord = 0
+    offstart, offset = compute_unicode_offset(texts)
+
+    def apply_offset(c):
+        oc = ord(c)
+        if oc >= offstart:
+            oc += offset
+        return chr(oc)
+
+    def remove_offset(c):
+        oc = ord(c)
+        if oc >= offstart:
+            oc = oc - offset
+        try:
+            return chr(oc)
+        except Exception as e:
+            raise ValueError(f"remove_offset {offstart=} {oc=}") from e
+
     for text in texts:
         for c in text:
+            c = remove_offset(c)
             ord_c = ord(c)
             max_ord = max(ord_c, max_ord)
             if 0x80 <= ord_c < 0xFF:
@@ -276,15 +328,17 @@ def compute_huffman_coding(translation_name, translations, f):
         length_count[length] += 1
         if last_length:
             renumbered <<= length - last_length
-        canonical[atom] = "{0:0{width}b}".format(renumbered, width=length)
         # print(f"atom={repr(atom)} code={code}", file=sys.stderr)
+        canonical[atom] = "{0:0{width}b}".format(renumbered, width=length)
         if len(atom) > 1:
             o = words.index(atom) + 0x80
             s = "".join(C_ESCAPES.get(ch1, ch1) for ch1 in atom)
+            f.write(f"// {o} {s} {counter[atom]} {canonical[atom]} {renumbered}\n")
         else:
             s = C_ESCAPES.get(atom, atom)
+            canonical[atom] = "{0:0{width}b}".format(renumbered, width=length)
             o = ord(atom)
-        f.write(f"// {o} {s} {counter[atom]} {canonical[atom]} {renumbered}\n")
+            f.write(f"// {o} {s} {counter[atom]} {canonical[atom]} {renumbered}\n")
         renumbered += 1
         last_length = length
     lengths = bytearray()
@@ -306,7 +360,11 @@ def compute_huffman_coding(translation_name, translations, f):
 
     f.write("typedef {} mchar_t;\n".format(values_type))
     f.write("const uint8_t lengths[] = {{ {} }};\n".format(", ".join(map(str, lengths))))
-    f.write("const mchar_t values[] = {{ {} }};\n".format(", ".join(str(ord(u)) for u in values)))
+    f.write(
+        "const mchar_t values[] = {{ {} }};\n".format(
+            ", ".join(str(ord(remove_offset(u))) for u in values)
+        )
+    )
     f.write(
         "#define compress_max_length_bits ({})\n".format(
             max_translation_encoded_length.bit_length()
@@ -314,7 +372,7 @@ def compute_huffman_coding(translation_name, translations, f):
     )
     f.write(
         "const mchar_t words[] = {{ {} }};\n".format(
-            ", ".join(str(ord(c)) for w in words for c in w)
+            ", ".join(str(ord(remove_offset(c))) for w in words for c in w)
         )
     )
     f.write("const uint8_t wlencount[] = {{ {} }};\n".format(", ".join(str(p) for p in wlencount)))
@@ -322,12 +380,17 @@ def compute_huffman_coding(translation_name, translations, f):
     f.write("#define word_end {}\n".format(word_end))
     f.write("#define minlen {}\n".format(minlen))
     f.write("#define maxlen {}\n".format(maxlen))
+    f.write("#define offstart {}\n".format(offstart))
+    f.write("#define offset {}\n".format(offset))
 
-    return (values, lengths, words, canonical, extractor)
+    return EncodingTable(values, lengths, words, canonical, extractor, apply_offset, remove_offset)
 
 
 def decompress(encoding_table, encoded, encoded_length_bits):
-    (values, lengths, words, _, _) = encoding_table
+    values = encoding_table.values
+    lengths = encoding_table.lengths
+    words = encoding_table.words
+
     dec = []
     this_byte = 0
     this_bit = 7
@@ -385,7 +448,8 @@ def decompress(encoding_table, encoded, encoded_length_bits):
 def compress(encoding_table, decompressed, encoded_length_bits, len_translation_encoded):
     if not isinstance(decompressed, str):
         raise TypeError()
-    (_, _, _, canonical, extractor) = encoding_table
+    canonical = encoding_table.canonical
+    extractor = encoding_table.extractor
 
     enc = bytearray(len(decompressed) * 3)
     current_bit = 7
