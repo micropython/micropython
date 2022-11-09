@@ -234,6 +234,17 @@ SRC_C += \
 	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/periph.c \
 	packages/$(MCU_PACKAGE).c
 
+ifneq ($(CIRCUITPY_AUDIOBUSIO_PDMIN),0)
+	SRC_C += \
+		common-hal/audiobusio/MEMS_Audio.c \
+		common-hal/audiobusio/MEMS_Audio_ll_stm32l4.c \
+		common-hal/audiobusio/OpenPDMFilter.c
+
+	SRC_STM32 += \
+		$(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_hal_sai.c
+
+endif
+
 ifneq ($(CIRCUITPY_USB),0)
 SRC_C += lib/tinyusb/src/portable/st/synopsys/dcd_synopsys.c
 endif
