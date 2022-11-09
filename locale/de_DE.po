@@ -1142,8 +1142,8 @@ msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-"Inkompatible .mpy-Datei. Bitte aktualisiere alle .mpy-Dateien. Siehe "
-"http://adafru.it/mpy-update für weitere Informationen."
+"Inkompatible .mpy-Datei. Bitte aktualisiere alle .mpy-Dateien. Siehe http://"
+"adafru.it/mpy-update für weitere Informationen."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -3795,10 +3795,20 @@ msgid "offset out of bounds"
 msgstr "offset außerhalb der Grenzen"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
 msgstr "nur eine bit_depth=16 wird unterstützt"
 
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only mono is supported"
+msgstr ""
+
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only oversample=64 is supported"
+msgstr ""
+
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr "nur eine sample_rate=16000 wird unterstützt"
 
