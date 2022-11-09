@@ -109,6 +109,7 @@
 #define MICROPY_VFS_FAT                         (1)
 #define MICROPY_SSL_MBEDTLS                     (1)
 #define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
+#define MICROPY_HW_USB_HID                      (1)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (1)
@@ -197,6 +198,13 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
+
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID (0x2E8A) // Raspberry Pi
+#endif
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID (0x0005) // RP2 MicroPython
+#endif
 
 // Entering a critical section.
 extern uint32_t mp_thread_begin_atomic_section(void);
