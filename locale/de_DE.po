@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-11-04 15:05+0000\n"
+"PO-Revision-Date: 2022-11-09 19:20+0000\n"
 "Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.2-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: main.c
 msgid ""
@@ -38,7 +38,7 @@ msgid ""
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
 "\n"
-"Bitte melden Sie ein Problem mit dem Inhalt Ihres CIRCUITPY-Laufwerks unter\n"
+"Bitte melde ein Problem mit dem Inhalt Ihres CIRCUITPY-Laufwerks unter\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
 #: py/obj.c
@@ -555,8 +555,8 @@ msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
-"Automatisches Neuladen ist aktiv. Speichere Dateien über USB um sie "
-"auszuführen oder verbinde dich mit der REPL zum Deaktivieren.\n"
+"Automatisches Neuladen ist aktiviert. Speichere Dateien einfach über USB, um "
+"sie auszuführen, oder gib REPL ein, um sie zu deaktivieren.\n"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
@@ -820,8 +820,8 @@ msgid ""
 "Connection has been disconnected and can no longer be used. Create a new "
 "connection."
 msgstr ""
-"Die Verbindung wurde getrennt und kann nicht mehr verwendet werden. "
-"Erstellen Sie eine neue Verbindung."
+"Die Verbindung wurde getrennt und kann nicht mehr verwendet werden. Erstelle "
+"eine neue Verbindung."
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
@@ -857,7 +857,7 @@ msgstr "DAC-Kanal-Initialisierungsfehler"
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Device Init Error"
-msgstr "DAC Device Initialisierungs-Fehler"
+msgstr "DAC-Gerät-Initialisierungsfehler"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "DAC already in use"
@@ -1082,7 +1082,7 @@ msgstr "Die Funktion erwartet, dass der 'lock'-Befehl zuvor ausgeführt wurde"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "GNSS init"
-msgstr "GNSS Initialisierung"
+msgstr "GNSS-Initialisierung"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
@@ -1105,7 +1105,7 @@ msgstr "Hald-Duplex SPI is tnicht implementiert"
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
-msgstr "Hardware beschäftigt, versuchen Sie alternative Pins"
+msgstr "Hardware beschäftigt, versuche alternative Pins"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
@@ -1117,7 +1117,7 @@ msgstr "Lese/Schreibe-operation an geschlossener Datei"
 
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C init error"
-msgstr "I2C Initialisierungsfehler"
+msgstr "I2C-Initialisierungsfehler"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
@@ -1142,8 +1142,8 @@ msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-"Inkompatible mpy-Datei. Bitte aktualisieren Sie alle mpy-Dateien. Siehe "
-"http://adafru.it/mpy-update für weitere Informationen."
+"Inkompatible .mpy-Datei. Bitte aktualisiere alle .mpy-Dateien. Siehe http://"
+"adafru.it/mpy-update für weitere Informationen."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1779,8 +1779,8 @@ msgid ""
 "constructor"
 msgstr ""
 "Pinbelegung verwendet %d Bytes pro Element, was mehr als die idealen %d "
-"Bytes verbraucht. Wenn dies nicht vermieden werden kann, übergeben Sie "
-"allow_inefficient = True an den Konstruktor"
+"Bytes verbraucht. Wenn dies nicht vermieden werden kann, übergib "
+"allow_inefficient=True an den Konstruktor"
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"
@@ -1919,7 +1919,7 @@ msgstr "SD-Card CSD-Format nicht unterstützt"
 
 #: ports/cxd56/common-hal/sdioio/SDCard.c
 msgid "SDCard init"
-msgstr "SDCard Initialisierung"
+msgstr "SDCard-Initialisierung"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
@@ -1937,7 +1937,7 @@ msgstr "SPI-Konfiguration fehlgeschlagen"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI init error"
-msgstr "SPI Initialisierungsfehler"
+msgstr "SPI-Initialisierungsfehler"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
@@ -1954,7 +1954,7 @@ msgstr "Maßstabs-Abmeßungen müssen durch 3 teilbar sein"
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
-msgstr "Scannen Sie bereits in Bearbeitung. Stoppen Sie mit stop_scan."
+msgstr "Scannen bereits in Bearbeitung. Stoppe mit stop_scan."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1996,7 +1996,7 @@ msgstr "Quell- und Zielbuffer müssen gleich lang sein"
 
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Specify exactly one of data0 or data_pins"
-msgstr "Geben Sie genau einen von data0 oder data_pins an"
+msgstr "Gib genau einen von data0 oder data_pins an"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -2012,11 +2012,11 @@ msgstr "Stereo rechts muss sich auf PWM-Kanal B befinden"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
-msgstr "Geben Sie mindestens einen UART-Pin an"
+msgstr "Gib mindestens einen UART-Pin an"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
-msgstr "Geben Sie entweder monotonic_time oder epoch_time an"
+msgstr "Gib entweder monotonic_time oder epoch_time an"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
@@ -2036,7 +2036,7 @@ msgid ""
 "Increase the stack size if you know how. If not:"
 msgstr ""
 "Der Heap von CircuitPython wurde beschädigt, weil der Stack zu klein war.\n"
-"Vergrößern Sie den Stack, wenn Sie wissen, wie. Wenn nicht:"
+"Vergrößere den Stack, wenn du weißt, wie. Wenn nicht:"
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "The SW38 button was pressed at start up.\n"
@@ -2052,7 +2052,7 @@ msgid ""
 "exit safe mode."
 msgstr ""
 "Das Modul `microcontroller` wurde zum Booten in den abgesicherten Modus "
-"verwendet. Drücken Sie Reset, um den abgesicherten Modus zu verlassen."
+"verwendet. Drücke Reset, um den abgesicherten Modus zu verlassen."
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
@@ -2072,10 +2072,9 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY)."
 msgstr ""
-"Der Mikrocontroller hatte einen Stromausfall. Vergewissern Sie sich, dass "
-"die\n"
-"Stromversorgung genügend Strom für die gesamte Schaltung liefert und drücken "
-"Sie Reset (nach dem Auswerfen von CIRCUITPY)."
+"Der Mikrocontroller hatte einen Stromausfall. Vergewisser dich, dass die\n"
+"Stromversorgung genügend Strom für die gesamte Schaltung liefert und\n"
+"drücke Reset (nach dem Auswerfen von CIRCUITPY)."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2133,6 +2132,8 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without requesting safe mode."
 msgstr ""
+"Zum Beenden setze bitte das Board zurück, ohne den abgesicherten Modus "
+"aufzurufen."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample"
@@ -2176,11 +2177,11 @@ msgstr "UART wird de-initialisiert"
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "UART init"
-msgstr "UART Initialisierung"
+msgstr "UART-Initialisierung"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
-msgstr "UART wird wieder Initialisiert"
+msgstr "UART wird erneut Initialisiert"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write"
@@ -2432,7 +2433,7 @@ msgstr "Schreiben nicht unterstüzt für diese Charakteristik"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode because:\n"
-msgstr "Du bist im abgesicherten Modus weil:\n"
+msgstr "Du befindest dich im abgesicherten Modus, weil:\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2521,7 +2522,7 @@ msgstr "Versuch (arg)min/(arg)max einer leeren Sequenz zu holen"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
-msgstr "Sie haben versucht argmin/argmax einer leeren Sequenz zu erhalten"
+msgstr "Versuch, argmin/argmax einer leeren Sequenz zu ermitteln"
 
 #: py/objstr.c
 msgid "attributes not supported yet"
@@ -3449,8 +3450,8 @@ msgstr ""
 #: py/argcheck.c
 msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr ""
-"Schlüsselwort-Argument(e) noch nicht implementiert - verwenden Sie "
-"stattdessen normale Argumente"
+"Schlüsselwort-Argument(e) noch nicht implementiert - verwende stattdessen "
+"normale Argumente"
 
 #: py/bc.c
 msgid "keywords must be strings"
@@ -3794,10 +3795,20 @@ msgid "offset out of bounds"
 msgstr "offset außerhalb der Grenzen"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
 msgstr "nur eine bit_depth=16 wird unterstützt"
 
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only mono is supported"
+msgstr ""
+
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only oversample=64 is supported"
+msgstr ""
+
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr "nur eine sample_rate=16000 wird unterstützt"
 
@@ -4091,8 +4102,7 @@ msgstr "String Indizes müssen Integer sein, nicht %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
-msgstr ""
-"Zeichenfolgen werden nicht unterstützt; Verwenden Sie bytes oder bytearray"
+msgstr "Zeichenfolgen werden nicht unterstützt; verwende bytes oder bytearray"
 
 #: extmod/moductypes.c
 msgid "struct: can't index"
@@ -4147,7 +4157,7 @@ msgstr "Zeitlimit beim warten auf v2 Karte"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "timer re-init"
-msgstr "Timer wird neu initialisiert"
+msgstr "Timer wird erneut initialisiert"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
