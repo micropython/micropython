@@ -57,8 +57,8 @@ STATIC void get_word(int n, const mchar_t **pos, const mchar_t **end) {
 }
 
 STATIC int put_utf8(char *buf, int u) {
-    if (u >= offstart) {
-        u += offset;
+    if (u >= translation_offstart) {
+        u += translation_offset;
     }
     if (u <= 0x7f) {
         *buf = u;

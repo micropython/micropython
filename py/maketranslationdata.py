@@ -380,8 +380,8 @@ def compute_huffman_coding(translation_name, translations, f):
     f.write("#define word_end {}\n".format(word_end))
     f.write("#define minlen {}\n".format(minlen))
     f.write("#define maxlen {}\n".format(maxlen))
-    f.write("#define offstart {}\n".format(offstart))
-    f.write("#define offset {}\n".format(offset))
+    f.write("#define translation_offstart {}\n".format(offstart))
+    f.write("#define translation_offset {}\n".format(offset))
 
     return EncodingTable(values, lengths, words, canonical, extractor, apply_offset, remove_offset)
 
