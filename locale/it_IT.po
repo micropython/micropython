@@ -117,10 +117,6 @@ msgstr "%q in uso"
 msgid "%q index out of range"
 msgstr "indice %q fuori intervallo"
 
-#: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "gli indici %q devono essere interi, non %s"
-
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr ""
@@ -2370,10 +2366,6 @@ msgstr ""
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
 
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr ""
-
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -3205,10 +3197,6 @@ msgstr ""
 msgid "index out of range"
 msgstr "indice fuori intervallo"
 
-#: py/obj.c
-msgid "indices must be integers"
-msgstr "gli indici devono essere interi"
-
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
@@ -3630,10 +3618,6 @@ msgstr ""
 msgid "no such attribute"
 msgstr "attributo inesistente"
 
-#: shared-bindings/usb_hid/__init__.c
-msgid "non-Device in %q"
-msgstr ""
-
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3761,10 +3745,20 @@ msgid "offset out of bounds"
 msgstr "indirizzo fuori limite"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
 msgstr ""
 
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only mono is supported"
+msgstr ""
+
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only oversample=64 is supported"
+msgstr ""
+
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr ""
 
@@ -3913,11 +3907,6 @@ msgstr ""
 msgid "relative import"
 msgstr "importazione relativa"
 
-#: py/obj.c
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr "lunghezza %d richiesta ma l'oggetto ha lunghezza %d"
-
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
 msgstr ""
@@ -3980,10 +3969,6 @@ msgstr "segno non permesso nello spcificatore di formato della stringa"
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "segno non permesso nello spcificatore di formato 'c' della stringa"
-
-#: py/objstr.c
-msgid "single '}' encountered in format string"
-msgstr "'}' singolo presente nella stringa di formattazione"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
@@ -4097,10 +4082,6 @@ msgstr "errore di sintassi nel JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "errore di sintassi nel descrittore uctypes"
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr "la soglia deve essere nell'intervallo 0-65536"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
@@ -4110,10 +4091,6 @@ msgstr ""
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
-msgstr ""
-
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -4168,10 +4145,6 @@ msgstr ""
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr ""
-
-#: py/obj.c
-msgid "tuple/list has wrong length"
-msgstr "tupla/lista ha la lunghezza sbagliata"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4251,8 +4224,9 @@ msgid "unknown type '%q'"
 msgstr "tipo '%q' sconosciuto"
 
 #: py/objstr.c
-msgid "unmatched '{' in format"
-msgstr "'{' spaiato nella stringa di formattazione"
+#, c-format
+msgid "unmatched '%c' in format"
+msgstr ""
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4320,10 +4294,6 @@ msgstr ""
 
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4414,6 +4384,28 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "gli indici %q devono essere interi, non %s"
+
+#~ msgid "indices must be integers"
+#~ msgstr "gli indici devono essere interi"
+
+#, c-format
+#~ msgid "requested length %d but object has length %d"
+#~ msgstr "lunghezza %d richiesta ma l'oggetto ha lunghezza %d"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "'}' singolo presente nella stringa di formattazione"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "la soglia deve essere nell'intervallo 0-65536"
+
+#~ msgid "tuple/list has wrong length"
+#~ msgstr "tupla/lista ha la lunghezza sbagliata"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "'{' spaiato nella stringa di formattazione"
 
 #~ msgid "To exit, please reset the board without "
 #~ msgstr "Per uscire resettare la scheda senza "

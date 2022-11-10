@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-10-31 13:02+0000\n"
+"PO-Revision-Date: 2022-11-09 10:48+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.2-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: main.c
 msgid ""
@@ -117,10 +117,6 @@ msgstr "%q används redan"
 #: py/obj.c py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "Index %q ligger utanför intervallet"
-
-#: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "Indexet %q måste vara ett heltal, inte %s"
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
@@ -2389,10 +2385,6 @@ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
 "WatchDogTimer.mode kan inte ändras när den är inställd på WatchDogMode.RESET"
 
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr "WatchDogTimer.timeout måste vara större än 0"
-
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -3228,10 +3220,6 @@ msgstr "index är utanför gränserna"
 msgid "index out of range"
 msgstr "index utanför intervallet"
 
-#: py/obj.c
-msgid "indices must be integers"
-msgstr "index måste vara heltal"
-
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr "index måste vara heltal, slices, eller Boolean-listor"
@@ -3651,10 +3639,6 @@ msgstr "inget svar från SD-kort"
 msgid "no such attribute"
 msgstr "inget sådant attribut"
 
-#: shared-bindings/usb_hid/__init__.c
-msgid "non-Device in %q"
-msgstr "icke-enhet i %q"
-
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3779,10 +3763,20 @@ msgid "offset out of bounds"
 msgstr "offset utanför gränserna"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
 msgstr "bara bit_depth=16 stöds"
 
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only mono is supported"
+msgstr ""
+
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only oversample=64 is supported"
+msgstr ""
+
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr "enbart sample_rate=16000 stöds"
 
@@ -3929,11 +3923,6 @@ msgstr "verkliga och imaginära delar måste ha samma längd"
 msgid "relative import"
 msgstr "relativ import"
 
-#: py/obj.c
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr "begärd längd %d men objektet har längden %d"
-
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
 msgstr "resultaten kan inte castas till angiven typ"
@@ -3996,10 +3985,6 @@ msgstr "tecknet tillåts inte i strängformatspecificerare"
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "tecken tillåts inte med heltalsformatspecificeraren 'c'"
-
-#: py/objstr.c
-msgid "single '}' encountered in format string"
-msgstr "Enkelt '}' påträffades i formatsträngen"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
@@ -4113,10 +4098,6 @@ msgstr "syntaxfel i JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "syntaxfel i uctypes deskriptor"
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kräver en 9-sekvens"
@@ -4127,10 +4108,6 @@ msgstr "time.struct_time() kräver en 9-sekvens"
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "timeout-längd överskred det maximala värde som stöds"
-
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
-msgstr "timeout måste vara 0.0-100.0 sekunder"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
@@ -4184,10 +4161,6 @@ msgstr "trapz är definierad för 1D-matriser med samma längd"
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr "trapz är definierat för 1D-iterabla"
-
-#: py/obj.c
-msgid "tuple/list has wrong length"
-msgstr "tupel/lista har fel längd"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4267,8 +4240,9 @@ msgid "unknown type '%q'"
 msgstr "okänd typ '%q'"
 
 #: py/objstr.c
-msgid "unmatched '{' in format"
-msgstr "omatchad '{' i format"
+#, c-format
+msgid "unmatched '%c' in format"
+msgstr "Omatchad '%c' i format"
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4337,10 +4311,6 @@ msgstr "value_count måste vara > 0"
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "watchdog är inte initierad"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
-msgstr "watchdog timeout måste vara större än 0"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4428,6 +4398,40 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "Indexet %q måste vara ett heltal, inte %s"
+
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.timeout måste vara större än 0"
+
+#~ msgid "indices must be integers"
+#~ msgstr "index måste vara heltal"
+
+#~ msgid "non-Device in %q"
+#~ msgstr "icke-enhet i %q"
+
+#, c-format
+#~ msgid "requested length %d but object has length %d"
+#~ msgstr "begärd längd %d men objektet har längden %d"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "Enkelt '}' påträffades i formatsträngen"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
+
+#~ msgid "timeout must be 0.0-100.0 seconds"
+#~ msgstr "timeout måste vara 0.0-100.0 sekunder"
+
+#~ msgid "tuple/list has wrong length"
+#~ msgstr "tupel/lista har fel längd"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "omatchad '{' i format"
+
+#~ msgid "watchdog timeout must be greater than 0"
+#~ msgstr "watchdog timeout måste vara större än 0"
 
 #~ msgid "To exit, please reset the board without "
 #~ msgstr "För att avsluta, gör reset på kortet utan "

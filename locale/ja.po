@@ -115,10 +115,6 @@ msgstr "%qは使用中"
 msgid "%q index out of range"
 msgstr "%q インデックスは範囲外"
 
-#: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr ""
-
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr ""
@@ -2355,10 +2351,6 @@ msgstr "WatchDogTimerは現在動作していません"
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr "WatchDogTimer.modeはいったんWatchDogMode.RESETに設定すると変更不可"
 
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr "WatchDogTimer.timeoutは0以上でなければなりません"
-
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -3184,10 +3176,6 @@ msgstr ""
 msgid "index out of range"
 msgstr "インデクスが範囲外"
 
-#: py/obj.c
-msgid "indices must be integers"
-msgstr "インデクスは整数でなければなりません"
-
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
@@ -3605,10 +3593,6 @@ msgstr "SDカードからの応答がありません"
 msgid "no such attribute"
 msgstr "指定の属性はありません"
 
-#: shared-bindings/usb_hid/__init__.c
-msgid "non-Device in %q"
-msgstr ""
-
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3733,10 +3717,20 @@ msgid "offset out of bounds"
 msgstr ""
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
 msgstr "bit_depth=16のみ対応しています"
 
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only mono is supported"
+msgstr ""
+
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only oversample=64 is supported"
+msgstr ""
+
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr ""
 
@@ -3884,11 +3878,6 @@ msgstr "実数部と虚数部は同じ長さでなければなりません"
 msgid "relative import"
 msgstr "相対インポート"
 
-#: py/obj.c
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr "必要な長さは%dですがオブジェクトの長さは%d"
-
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
 msgstr ""
@@ -3951,10 +3940,6 @@ msgstr "文字列フォーマット指定子で符号は使えません"
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "整数フォーマット指定子'c'で符号は使えません"
-
-#: py/objstr.c
-msgid "single '}' encountered in format string"
-msgstr "文字列フォーマット中に孤立した '}' があります"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
@@ -4068,10 +4053,6 @@ msgstr "JSONに構文エラーがあります"
 msgid "syntax error in uctypes descriptor"
 msgstr "uctypedディスクリプタの構文エラー"
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr "threshouldは0から65536まで"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time()は9要素のシーケンスを受け取ります"
@@ -4082,10 +4063,6 @@ msgstr "time.struct_time()は9要素のシーケンスを受け取ります"
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "タイムアウト長は対応する最大値を超えています"
-
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
-msgstr "timeoutは0.0〜100.0秒でなければなりません"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
@@ -4139,10 +4116,6 @@ msgstr "trapzは同じ長さの1次元arrayに対して定義されています"
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr ""
-
-#: py/obj.c
-msgid "tuple/list has wrong length"
-msgstr "タプル/リストの長さが正しくありません"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4222,8 +4195,9 @@ msgid "unknown type '%q'"
 msgstr "不明な型 '%q'"
 
 #: py/objstr.c
-msgid "unmatched '{' in format"
-msgstr "書式中にマッチしない '{' があります"
+#, c-format
+msgid "unmatched '%c' in format"
+msgstr ""
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4292,10 +4266,6 @@ msgstr "value_countは0より大きくなければなりません"
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
-msgstr "watchdogのtimeoutは0以上でなければなりません"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4383,6 +4353,34 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.timeoutは0以上でなければなりません"
+
+#~ msgid "indices must be integers"
+#~ msgstr "インデクスは整数でなければなりません"
+
+#, c-format
+#~ msgid "requested length %d but object has length %d"
+#~ msgstr "必要な長さは%dですがオブジェクトの長さは%d"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "文字列フォーマット中に孤立した '}' があります"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "threshouldは0から65536まで"
+
+#~ msgid "timeout must be 0.0-100.0 seconds"
+#~ msgstr "timeoutは0.0〜100.0秒でなければなりません"
+
+#~ msgid "tuple/list has wrong length"
+#~ msgstr "タプル/リストの長さが正しくありません"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "書式中にマッチしない '{' があります"
+
+#~ msgid "watchdog timeout must be greater than 0"
+#~ msgstr "watchdogのtimeoutは0以上でなければなりません"
 
 #~ msgid "Stream missing readinto() or write() method."
 #~ msgstr "ストリームにreadinto()またはwrite()メソッドがありません"

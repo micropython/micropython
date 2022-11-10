@@ -113,10 +113,6 @@ msgstr "%q in gebruik"
 msgid "%q index out of range"
 msgstr "%q index buiten bereik"
 
-#: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "%q indexen moeten integers zijn, niet %s"
-
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr ""
@@ -2371,10 +2367,6 @@ msgstr ""
 "WatchDogTimer.mode kan niet worden gewijzigd zodra de modus is ingesteld op "
 "WatchDogMode.RESET"
 
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr "WatchDogTimer.timeout moet groter dan 0 zijn"
-
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -3200,10 +3192,6 @@ msgstr "index is buiten bereik"
 msgid "index out of range"
 msgstr "index is buiten bereik"
 
-#: py/obj.c
-msgid "indices must be integers"
-msgstr "indices moeten integers zijn"
-
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr "indices moeten integers, segmenten (slices) of Boolean lijsten zijn"
@@ -3623,10 +3611,6 @@ msgstr "geen antwoord van SD kaart"
 msgid "no such attribute"
 msgstr "niet zo'n attribuut"
 
-#: shared-bindings/usb_hid/__init__.c
-msgid "non-Device in %q"
-msgstr ""
-
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3751,10 +3735,20 @@ msgid "offset out of bounds"
 msgstr "offset buiten bereik"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
 msgstr "alleen bit_depth=16 wordt ondersteund"
 
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only mono is supported"
+msgstr ""
+
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only oversample=64 is supported"
+msgstr ""
+
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr "alleen sample_rate=16000 wordt ondersteund"
 
@@ -3900,11 +3894,6 @@ msgstr "reëel en imaginair deel moeten gelijke lengte hebben"
 msgid "relative import"
 msgstr "relatieve import"
 
-#: py/obj.c
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr "gevraagde lengte is %d maar object heeft lengte %d"
-
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
 msgstr "resultaat kan niet naar gespecificeerd type geconverteerd worden"
@@ -3967,10 +3956,6 @@ msgstr "teken niet toegestaan in string formaatspecificatie"
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "teken niet toegestaan bij integer formaatspecificatie 'c'"
-
-#: py/objstr.c
-msgid "single '}' encountered in format string"
-msgstr "enkele '}' aangetroffen in formaat tekenreeks (string)"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
@@ -4084,10 +4069,6 @@ msgstr "syntaxisfout in JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "syntaxisfout in uctypes aanduiding"
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr "drempelwaarde moet in het bereik 0-65536 liggen"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() accepteert een 9-rij"
@@ -4098,10 +4079,6 @@ msgstr "time.struct_time() accepteert een 9-rij"
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "time-outduur is groter dan de ondersteunde maximale waarde"
-
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
-msgstr "timeout moet tussen 0.0 en 100.0 seconden zijn"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
@@ -4155,10 +4132,6 @@ msgstr "trapz is gedefinieerd voor eendimensionale arrays van gelijke lengte"
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr ""
-
-#: py/obj.c
-msgid "tuple/list has wrong length"
-msgstr "tuple of lijst heeft onjuiste lengte"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4238,8 +4211,9 @@ msgid "unknown type '%q'"
 msgstr "onbekend type '%q'"
 
 #: py/objstr.c
-msgid "unmatched '{' in format"
-msgstr "'{' zonder overeenkomst in formaat"
+#, c-format
+msgid "unmatched '%c' in format"
+msgstr ""
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4308,10 +4282,6 @@ msgstr "value_count moet groter dan 0 zijn"
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "watchdog niet geïnitialiseerd"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
-msgstr "watchdog time-out moet groter zijn dan 0"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4399,6 +4369,37 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "%q indexen moeten integers zijn, niet %s"
+
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.timeout moet groter dan 0 zijn"
+
+#~ msgid "indices must be integers"
+#~ msgstr "indices moeten integers zijn"
+
+#, c-format
+#~ msgid "requested length %d but object has length %d"
+#~ msgstr "gevraagde lengte is %d maar object heeft lengte %d"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "enkele '}' aangetroffen in formaat tekenreeks (string)"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "drempelwaarde moet in het bereik 0-65536 liggen"
+
+#~ msgid "timeout must be 0.0-100.0 seconds"
+#~ msgstr "timeout moet tussen 0.0 en 100.0 seconden zijn"
+
+#~ msgid "tuple/list has wrong length"
+#~ msgstr "tuple of lijst heeft onjuiste lengte"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "'{' zonder overeenkomst in formaat"
+
+#~ msgid "watchdog timeout must be greater than 0"
+#~ msgstr "watchdog time-out moet groter zijn dan 0"
 
 #~ msgid "To exit, please reset the board without "
 #~ msgstr "Om te beëindigen, reset het bord zonder "
