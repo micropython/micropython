@@ -105,6 +105,7 @@ msgstr ""
 msgid "%q failure: %d"
 msgstr "%q 失敗: %d"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -113,10 +114,6 @@ msgstr "%qは使用中"
 #: py/obj.c py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "%q インデックスは範囲外"
-
-#: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
@@ -197,6 +194,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
@@ -489,6 +487,7 @@ msgstr "すでにアドバータイズ中"
 msgid "Already have all-matches listener"
 msgstr ""
 
+#: ports/espressif/common-hal/coproc/__init__.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
@@ -587,6 +586,13 @@ msgstr ""
 msgid "Both RX and TX required for flow control"
 msgstr "フロー制御のためRXとTXの両方が必要"
 
+#: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
+#: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
+msgid "Both buttons were pressed at start up.\n"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
 msgstr "両方のピンにハードウェア割り込み対応が必要"
@@ -651,6 +657,11 @@ msgstr ""
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Busピン%dはすでに使用中"
+
+#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
+#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+msgid "Button A was pressed at start up.\n"
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -922,9 +933,9 @@ msgid "Error: Failure to bind"
 msgstr ""
 
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
-#: shared-bindings/coproc/Coproc.c shared-bindings/coproc/__init__.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/alarm/__init__.c shared-bindings/alarm/coproc/CoprocAlarm.c
+#: shared-bindings/busio/SPI.c shared-bindings/coproc/Coproc.c
+#: shared-bindings/coproc/__init__.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
 msgstr "%qが必要"
@@ -1023,7 +1034,7 @@ msgstr ""
 msgid "Firmware is invalid"
 msgstr ""
 
-#: ports/espressif/common-hal/coproc/__init__.c
+#: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
 msgstr ""
@@ -1628,8 +1639,9 @@ msgid ""
 "%d bpp given"
 msgstr ""
 
+#: ports/espressif/common-hal/alarm/coproc/CoprocAlarm.c
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
-msgid "Only one TouchAlarm can be set in deep sleep."
+msgid "Only one %q can be set in deep sleep."
 msgstr ""
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
@@ -1985,15 +1997,35 @@ msgid "Temperature read timed out"
 msgstr "温度読み取りがタイムアウトしました"
 
 #: supervisor/shared/safe_mode.c
+msgid "The BOOT button was pressed at start up.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Increase the stack size if you know how. If not:"
+msgstr ""
+
+#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
+msgid "The SW38 button was pressed at start up.\n"
+msgstr ""
+
+#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+msgid "The VOLUME button was pressed at start up.\n"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode."
+msgstr ""
+
+#: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
+msgid "The central button was pressed at start up.\n"
+msgstr ""
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "The left button was pressed at start up.\n"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
@@ -2056,7 +2088,7 @@ msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "タイムアウトが長すぎです。最大のタイムアウト長は%d秒"
 
 #: supervisor/shared/safe_mode.c
-msgid "To exit, please reset the board without "
+msgid "To exit, please reset the board without requesting safe mode."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
@@ -2319,10 +2351,6 @@ msgstr "WatchDogTimerは現在動作していません"
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr "WatchDogTimer.modeはいったんWatchDogMode.RESETに設定すると変更不可"
 
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr "WatchDogTimer.timeoutは0以上でなければなりません"
-
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -2353,10 +2381,6 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "You pressed the reset button during boot. Press again to exit safe mode."
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "You requested starting safe mode by "
 msgstr ""
 
 #: py/objtype.c
@@ -2652,7 +2676,7 @@ msgstr ""
 msgid "can't set 512 block size"
 msgstr ""
 
-#: py/objnamedtuple.c
+#: py/objexcept.c py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr ""
 
@@ -3152,10 +3176,6 @@ msgstr ""
 msgid "index out of range"
 msgstr "インデクスが範囲外"
 
-#: py/obj.c
-msgid "indices must be integers"
-msgstr "インデクスは整数でなければなりません"
-
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
@@ -3573,10 +3593,6 @@ msgstr "SDカードからの応答がありません"
 msgid "no such attribute"
 msgstr "指定の属性はありません"
 
-#: shared-bindings/usb_hid/__init__.c
-msgid "non-Device in %q"
-msgstr ""
-
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3701,10 +3717,20 @@ msgid "offset out of bounds"
 msgstr ""
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
 msgstr "bit_depth=16のみ対応しています"
 
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only mono is supported"
+msgstr ""
+
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only oversample=64 is supported"
+msgstr ""
+
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr ""
 
@@ -3832,39 +3858,6 @@ msgstr "pow()の3つ目の引数は0にできません"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow()の第3引数には整数が必要"
 
-#: ports/espressif/boards/adafruit_qtpy_esp32_pico/mpconfigboard.h
-msgid "pressing BOOT button at start up.\n"
-msgstr ""
-
-#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
-msgid "pressing SW38 button at start up.\n"
-msgstr ""
-
-#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
-msgid "pressing VOLUME button at start up.\n"
-msgstr ""
-
-#: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
-#: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n8r2/mpconfigboard.h
-#: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
-#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
-#: supervisor/shared/safe_mode.c
-msgid "pressing boot button at start up.\n"
-msgstr ""
-
-#: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
-#: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
-#: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
-#: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
-#: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
-msgid "pressing both buttons at start up.\n"
-msgstr ""
-
-#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
-msgid "pressing the left button at start up\n"
-msgstr ""
-
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
 msgstr ""
@@ -3884,11 +3877,6 @@ msgstr "実数部と虚数部は同じ長さでなければなりません"
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "相対インポート"
-
-#: py/obj.c
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr "必要な長さは%dですがオブジェクトの長さは%d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
@@ -3952,10 +3940,6 @@ msgstr "文字列フォーマット指定子で符号は使えません"
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "整数フォーマット指定子'c'で符号は使えません"
-
-#: py/objstr.c
-msgid "single '}' encountered in format string"
-msgstr "文字列フォーマット中に孤立した '}' があります"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
@@ -4069,10 +4053,6 @@ msgstr "JSONに構文エラーがあります"
 msgid "syntax error in uctypes descriptor"
 msgstr "uctypedディスクリプタの構文エラー"
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr "threshouldは0から65536まで"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time()は9要素のシーケンスを受け取ります"
@@ -4083,10 +4063,6 @@ msgstr "time.struct_time()は9要素のシーケンスを受け取ります"
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "タイムアウト長は対応する最大値を超えています"
-
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
-msgstr "timeoutは0.0〜100.0秒でなければなりません"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
@@ -4140,10 +4116,6 @@ msgstr "trapzは同じ長さの1次元arrayに対して定義されています"
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr ""
-
-#: py/obj.c
-msgid "tuple/list has wrong length"
-msgstr "タプル/リストの長さが正しくありません"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4223,8 +4195,9 @@ msgid "unknown type '%q'"
 msgstr "不明な型 '%q'"
 
 #: py/objstr.c
-msgid "unmatched '{' in format"
-msgstr "書式中にマッチしない '{' があります"
+#, c-format
+msgid "unmatched '%c' in format"
+msgstr ""
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4293,10 +4266,6 @@ msgstr "value_countは0より大きくなければなりません"
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
-msgstr "watchdogのtimeoutは0以上でなければなりません"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4384,6 +4353,34 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.timeoutは0以上でなければなりません"
+
+#~ msgid "indices must be integers"
+#~ msgstr "インデクスは整数でなければなりません"
+
+#, c-format
+#~ msgid "requested length %d but object has length %d"
+#~ msgstr "必要な長さは%dですがオブジェクトの長さは%d"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "文字列フォーマット中に孤立した '}' があります"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "threshouldは0から65536まで"
+
+#~ msgid "timeout must be 0.0-100.0 seconds"
+#~ msgstr "timeoutは0.0〜100.0秒でなければなりません"
+
+#~ msgid "tuple/list has wrong length"
+#~ msgstr "タプル/リストの長さが正しくありません"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "書式中にマッチしない '{' があります"
+
+#~ msgid "watchdog timeout must be greater than 0"
+#~ msgstr "watchdogのtimeoutは0以上でなければなりません"
 
 #~ msgid "Stream missing readinto() or write() method."
 #~ msgstr "ストリームにreadinto()またはwrite()メソッドがありません"

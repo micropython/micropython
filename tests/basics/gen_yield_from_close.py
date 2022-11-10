@@ -37,8 +37,12 @@ def gen4():
     yield -1
     try:
         print((yield from gen3()))
-    except GeneratorExit:
+    except GeneratorExit as e:
         print("delegating caught GeneratorExit")
+        try:
+            e.__traceback__ = None
+        except AttributeError:
+            pass # generated in micropython, not in python3
         raise
     yield 10
     yield 11
@@ -121,3 +125,20 @@ def gen9():
 g = gen9()
 print(next(g))
 g.close()
+
+# Test that, when chaining to a GeneratorExit exception generated internally,
+# no exception or crash occurs
+def gen10():
+    try:
+        yield 1/0
+    except Exception as e:
+        yield 1
+        yield 2
+        yield 3
+g = gen10()
+print(next(g))
+g.close()
+try:
+    print(next(g))
+except StopIteration:
+    print("StopIteration")

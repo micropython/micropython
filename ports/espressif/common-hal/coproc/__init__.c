@@ -40,11 +40,14 @@
 #include "soc/rtc_cntl_reg.h"
 
 void common_hal_coproc_run(coproc_coproc_obj_t *self) {
-    if (ulp_riscv_load_binary(self->buf, self->buf_len) != ESP_OK) {
-        mp_raise_RuntimeError(translate("Firmware is too big"));
+    if (GET_PERI_REG_MASK(RTC_CNTL_ULP_CP_TIMER_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN)) {
+        mp_raise_RuntimeError(translate("Already running"));
     }
+
+    ulp_riscv_load_binary(self->buf, self->buf_len);
     m_free(self->buf);
     self->buf = (uint8_t *)RTC_SLOW_MEM;
+
     ulp_riscv_run();
 }
 
@@ -60,7 +63,7 @@ void common_hal_coproc_halt(coproc_coproc_obj_t *self) {
     CLEAR_PERI_REG_MASK(RTC_CNTL_ULP_CP_TIMER_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
     // suspends the ulp operation
     SET_PERI_REG_MASK(RTC_CNTL_COCPU_CTRL_REG, RTC_CNTL_COCPU_DONE);
-    // Resets the processor
+    // resets the processor
     SET_PERI_REG_MASK(RTC_CNTL_COCPU_CTRL_REG, RTC_CNTL_COCPU_SHUT_RESET_EN);
 }
 

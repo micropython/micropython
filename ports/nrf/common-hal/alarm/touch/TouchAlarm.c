@@ -25,6 +25,7 @@
  */
 
 #include "py/runtime.h"
+
 #include "shared-bindings/alarm/touch/TouchAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
@@ -39,7 +40,7 @@ mp_obj_t alarm_touch_touchalarm_find_triggered_alarm(const size_t n_alarms, cons
     return mp_const_none;
 }
 
-mp_obj_t alarm_touch_touchalarm_create_wakeup_alarm(void) {
+mp_obj_t alarm_touch_touchalarm_record_wake_alarm(void) {
     return mp_const_none;
 }
 

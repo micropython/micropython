@@ -65,31 +65,32 @@
 //|         :param int oversample: Number of single bit samples to decimate into a final sample. Must be divisible by 8
 //|         :param float startup_delay: seconds to wait after starting microphone clock
 //|          to allow microphone to turn on. Most require only 0.01s; some require 0.1s. Longer is safer.
-//|          Must be in range 0.0-1.0 seconds."""
-
-//|     """Record 8-bit unsigned samples to buffer::
+//|          Must be in range 0.0-1.0 seconds.
 //|
-//|       import audiobusio
-//|       import board
+//|         **Limitations:** On SAMD and RP2040, supports only 8 or 16 bit mono input, with 64x oversampling.
+//|         On nRF52840, supports only 16 bit mono input at 16 kHz; oversampling is fixed at 64x. Not provided
+//|         on nRF52833 for space reasons. Not available on Espressif.
 //|
-//|       # Prep a buffer to record into
-//|       b = bytearray(200)
-//|       with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, sample_rate=16000) as mic:
-//|           mic.record(b, len(b))
+//|         For example, to record 8-bit unsigned samples to a buffer::
 //|
-//|     Record 16-bit unsigned samples to buffer::
+//|           import audiobusio
+//|           import board
 //|
-//|       import audiobusio
-//|       import board
+//|           # Prep a buffer to record into
+//|           b = bytearray(200)
+//|           with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, sample_rate=16000) as mic:
+//|               mic.record(b, len(b))
 //|
-//|       # Prep a buffer to record into. The array interface doesn't allow for
-//|       # constructing with a set size so we append to it until we have the size
-//|       # we want.
-//|       b = array.array("H")
-//|       for i in range(200):
-//|           b.append(0)
-//|       with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, sample_rate=16000, bit_depth=16) as mic:
-//|           mic.record(b, len(b))"""
+//|         To record 16-bit unsigned samples to a buffer::
+//|
+//|           import audiobusio
+//|           import board
+//|
+//|           # Prep a buffer to record into.
+//|           b = array.array("H", [0] * 200)
+//|           with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, sample_rate=16000, bit_depth=16) as mic:
+//|               mic.record(b, len(b))
+//|         """
 //|     ...
 STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if !CIRCUITPY_AUDIOBUSIO_PDMIN

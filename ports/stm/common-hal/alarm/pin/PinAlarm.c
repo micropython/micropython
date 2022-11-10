@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 
 #include "peripherals/exti.h"
@@ -100,8 +101,9 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
     return mp_const_none;
 }
 
-mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void) {
-    alarm_pin_pinalarm_obj_t *alarm = m_new_obj(alarm_pin_pinalarm_obj_t);
+mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
+    alarm_pin_pinalarm_obj_t *const alarm = &alarm_wake_alarm.pin_alarm;
+
     alarm->base.type = &alarm_pin_pinalarm_type;
     // TODO: replace this if/when other WKUP pins are supported
     alarm->pin = &pin_PA00;

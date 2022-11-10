@@ -200,10 +200,6 @@ Exceptions
 
 .. exception:: MemoryError
 
-.. exception:: MpyError
-
-    Not a part of the CPython standard library
-
 .. exception:: NameError
 
 .. exception:: NotImplementedError

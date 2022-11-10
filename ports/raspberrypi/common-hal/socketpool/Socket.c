@@ -852,6 +852,8 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
         mp_raise_OSError(EHOSTUNREACH);
     }
 
+    ip_set_option(socket->pcb.ip, SOF_REUSEADDR);
+
     err_t err = ERR_ARG;
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM: {
@@ -1160,4 +1162,47 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *socket,
 
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint32_t timeout_ms) {
     self->timeout = timeout_ms;
+}
+
+bool common_hal_socketpool_readable(socketpool_socket_obj_t *self) {
+
+    MICROPY_PY_LWIP_ENTER;
+
+    bool result = self->incoming.pbuf != NULL;
+
+    if (self->state == STATE_PEER_CLOSED) {
+        result = true;
+    }
+
+    if (self->type == SOCKETPOOL_SOCK_STREAM && self->pcb.tcp->state == LISTEN) {
+        struct tcp_pcb *volatile *incoming_connection = &lwip_socket_incoming_array(self)[self->incoming.connection.iget];
+        result = (incoming_connection != NULL);
+    }
+
+    MICROPY_PY_LWIP_EXIT;
+
+    return result;
+}
+
+bool common_hal_socketpool_writable(socketpool_socket_obj_t *self) {
+    bool result = false;
+
+    MICROPY_PY_LWIP_ENTER;
+
+    switch (self->type) {
+        case SOCKETPOOL_SOCK_STREAM: {
+            result = tcp_sndbuf(self->pcb.tcp) != 0;
+            break;
+        }
+        case SOCKETPOOL_SOCK_DGRAM:
+        #if MICROPY_PY_LWIP_SOCK_RAW
+        case SOCKETPOOL_SOCK_RAW:
+        #endif
+            result = true;
+            break;
+    }
+
+    MICROPY_PY_LWIP_EXIT;
+
+    return result;
 }

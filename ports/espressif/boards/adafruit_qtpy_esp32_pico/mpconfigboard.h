@@ -41,9 +41,6 @@
 
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO0)
 
-// Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing BOOT button at start up.\n")
-
 // UART pins attached to the USB-serial converter chip
 #define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)
 #define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO3)

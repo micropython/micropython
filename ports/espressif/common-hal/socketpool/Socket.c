@@ -483,7 +483,7 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *self,
 mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len) {
     int received = socketpool_socket_recv_into(self, buf, len);
     if (received < 0) {
-        mp_raise_OSError(received);
+        mp_raise_OSError(-received);
     }
     return received;
 }
@@ -552,4 +552,28 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
 
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint32_t timeout_ms) {
     self->timeout_ms = timeout_ms;
+}
+
+bool common_hal_socketpool_readable(socketpool_socket_obj_t *self) {
+    struct timeval immediate = {0, 0};
+
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(self->num, &fds);
+    int num_triggered = select(self->num + 1, &fds, NULL, &fds, &immediate);
+
+    // including returning true in the error case
+    return num_triggered != 0;
+}
+
+bool common_hal_socketpool_writable(socketpool_socket_obj_t *self) {
+    struct timeval immediate = {0, 0};
+
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(self->num, &fds);
+    int num_triggered = select(self->num + 1, NULL, &fds, &fds, &immediate);
+
+    // including returning true in the error case
+    return num_triggered != 0;
 }
