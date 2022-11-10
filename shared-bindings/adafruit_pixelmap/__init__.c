@@ -29,16 +29,14 @@
 #include "py/runtime.h"
 #include "py/objproperty.h"
 
-#include "shared-bindings/adafruit_pixelbuf/__init__.h"
-#include "shared-bindings/adafruit_pixelbuf/PixelBuf.h"
+#include "shared-bindings/adafruit_pixelmap/__init__.h"
+#include "shared-bindings/adafruit_pixelmap/PixelMap.h"
 
 
-//| """A fast RGB(W) pixel buffer library for like NeoPixel and DotStar
+//| """A fast pixel mapping library
 //|
-//| The `adafruit_pixelbuf` module provides the :py:class:`PixelBuf` class to accelerate
-//| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel.
-//|
-//| Byteorders are configured with strings, such as "RGB" or "RGBD"."""
+//| The `adafruit_pixelmap` module provides the :py:class:`PixelMap` class to accelerate
+//| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel."""
 //|
 //| # The types accepted when getting a pixel value
 //| PixelReturnType = Union[
@@ -48,18 +46,17 @@
 //| # The types returned when getting a pixel value
 //| PixelType = Union[int, PixelReturnType]
 //| PixelSequence = Union[Tuple[PixelType], List[PixelType]]
-// TODO: Pull in docs from adafruit_pixelbuf.
 
-STATIC const mp_rom_map_elem_t pixelbuf_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_adafruit_pixelbuf) },
-    { MP_ROM_QSTR(MP_QSTR_PixelBuf), MP_ROM_PTR(&pixelbuf_pixelbuf_type) },
+STATIC const mp_rom_map_elem_t pixelmap_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_adafruit_pixelmap) },
+    { MP_ROM_QSTR(MP_QSTR_PixelMap), MP_ROM_PTR(&pixelmap_pixelmap_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pixelbuf_module_globals, pixelbuf_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(pixelmap_module_globals, pixelmap_module_globals_table);
 
-const mp_obj_module_t pixelbuf_module = {
+const mp_obj_module_t pixelmap_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&pixelbuf_module_globals,
+    .globals = (mp_obj_dict_t *)&pixelmap_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_adafruit_pixelbuf, pixelbuf_module, CIRCUITPY_PIXELBUF);
+MP_REGISTER_MODULE(MP_QSTR_adafruit_pixelmap, pixelmap_module, CIRCUITPY_PIXELMAP);
