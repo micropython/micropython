@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-11-09 10:48+0000\n"
+"PO-Revision-Date: 2022-11-11 18:49+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -3804,11 +3804,11 @@ msgstr "apenas bit_depth = 16 é compatível"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only mono is supported"
-msgstr ""
+msgstr "Apenas o mono é compatível"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only oversample=64 is supported"
-msgstr ""
+msgstr "apenas oversample=64 é compatível"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 #: ports/stm/common-hal/audiobusio/PDMIn.c
