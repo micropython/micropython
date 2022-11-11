@@ -61,7 +61,7 @@
 #endif
 
 #ifdef LWIP_DEBUG
-static u32_t ping_time;
+static uint32_t ping_time;
 #endif
 
 
