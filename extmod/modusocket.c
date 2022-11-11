@@ -32,10 +32,11 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
-#include "shared/netutils/netutils.h"
-#include "modnetwork.h"
 
 #if MICROPY_PY_NETWORK && MICROPY_PY_USOCKET && !MICROPY_PY_LWIP
+
+#include "shared/netutils/netutils.h"
+#include "modnetwork.h"
 
 /******************************************************************************/
 // socket class

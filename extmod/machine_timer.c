@@ -26,9 +26,10 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "shared/runtime/softtimer.h"
 
 #if MICROPY_PY_MACHINE_TIMER
+
+#include "shared/runtime/softtimer.h"
 
 typedef soft_timer_entry_t machine_timer_obj_t;
 

@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+// This file should be compiled when included from vfs_lfs.c.
+#if defined(LFS_BUILD_VERSION)
+
 #include <stdio.h>
 #include <string.h>
 
@@ -518,3 +521,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 #undef VFS_LFSx_QSTR
+
+#endif // defined(LFS_BUILD_VERSION)
