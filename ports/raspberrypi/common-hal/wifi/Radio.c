@@ -46,6 +46,7 @@
 #include "components/mdns/include/mdns.h"
 #endif
 
+#include "lwip/sys.h"
 #include "lwip/dns.h"
 #include "lwip/icmp.h"
 #include "lwip/raw.h"
@@ -54,6 +55,15 @@
 #ifndef PING_ID
 #define PING_ID        0xAFAF
 #endif
+
+#ifndef PING_DEBUG
+#define PING_DEBUG     LWIP_DBG_ON
+#endif
+
+#ifdef LWIP_DEBUG
+static u32_t ping_time;
+#endif
+
 
 #define MAC_ADDRESS_LENGTH 6
 
