@@ -754,9 +754,11 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     wiznet5k_obj.pin_intn = pin_intn;
     wiznet5k_obj.use_interrupt = use_interrupt;
     wiznet5k_obj.trace_flags = 0;
+    printf("LWIP");
     #else // WIZNET5K_PROVIDED_STACK
     wiznet5k_obj.active = false;
     wiznet5k_obj.socket_used = 0;
+    printf("WIZNET");
     #endif
 
     // Return wiznet5k object
@@ -769,12 +771,13 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
     (void)self_in;
     printf("Wiz CREG:");
     #if _WIZCHIP_ == 5500
-    for (int i = 0; i < 0x50; ++i) {
+    int reg_num = 0x50;
     #elif _WIZCHIP_ == 5105
-    for (int i = 0; i < 0x90; ++i) {
+    int reg_num = 0x90;
     #else
-    for (int i = 0; i < 0x60; ++i) {
+    int reg_num = 0x60;
     #endif
+    for (int i = 0; i < reg_num; ++i) {
         if (i % 16 == 0) {
             printf("\n  %04x:", i);
         }
