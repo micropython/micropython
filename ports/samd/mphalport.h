@@ -35,6 +35,8 @@
 #include "hpl_time_measure.h"
 #include "sam.h"
 
+#define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
+
 extern int mp_interrupt_char;
 extern volatile uint32_t systick_ms;
 uint64_t mp_hal_ticks_us_64(void);

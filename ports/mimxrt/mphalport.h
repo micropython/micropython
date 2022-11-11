@@ -35,6 +35,8 @@
 
 #define MICROPY_HAL_VERSION             "2.8.0"
 
+#define MICROPY_HW_USB_CDC_TX_TIMEOUT   (500)
+
 #define MP_HAL_PIN_FMT                  "%q"
 extern ringbuf_t stdin_ringbuf;
 

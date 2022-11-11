@@ -1,1 +1,1 @@
-require("mip")
+require("mip-cmdline")

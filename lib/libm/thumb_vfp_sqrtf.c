@@ -3,7 +3,7 @@
 #include <math.h>
 
 float sqrtf(float x) {
-    asm volatile (
+    __asm__ volatile (
             "vsqrt.f32  %[r], %[x]\n"
             : [r] "=t" (x)
             : [x] "t"  (x));
