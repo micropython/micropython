@@ -125,7 +125,7 @@ __attribute__((always_inline)) static inline uint32_t disable_irq(void) {
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
-        __WFI(); \
+        __WFE(); \
     } while (0);
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
