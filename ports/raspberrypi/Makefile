@@ -120,8 +120,8 @@ SRC_LWIP :=
 endif
 
 INC += \
-	-I. \
-	-Ilwip_inc \
+        -I. \
+        -Ilwip_inc \
         -I../.. \
         -I../lib/mp-readline \
         -I../shared/timeutils \
