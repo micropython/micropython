@@ -118,7 +118,7 @@ MP_PROPERTY_GETSET(vectorio_polygon_color_index_obj,
 //|     y: int
 //|     """Y position of the 0,0 origin in the points list."""
 //|
-//|     hidden: boolean
+//|     hidden: bool
 //|     """Hide the polygon or not."""
 //|
 //|     location: Tuple[int, int]

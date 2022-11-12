@@ -109,7 +109,7 @@ MP_PROPERTY_GETSET(vectorio_circle_color_index_obj,
 //|     y: int
 //|     """Y position of the center point of the circle in the parent."""
 //|
-//|     hidden: boolean
+//|     hidden: bool
 //|     """Hide the circle or not."""
 //|
 //|     location: Tuple[int, int]

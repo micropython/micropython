@@ -139,7 +139,7 @@ const mp_obj_property_t vectorio_rectangle_color_index_obj = {
 //|     y: int
 //|     """Y position of the top left corner of the rectangle in the parent."""
 //|
-//|     hidden: boolean
+//|     hidden: bool
 //|     """Hide the rectangle or not."""
 //|
 //|     location: Tuple[int, int]
