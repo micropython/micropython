@@ -234,6 +234,9 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
 
     // Reset uses the watchdog. Use scratch registers to store wake reason
     watchdog_hw->scratch[RP_WKUP_SCRATCH_REG] = _get_wakeup_cause();
+
+    // Just before reset, enable the pinalarm interrupt.
+    alarm_pin_pinalarm_entering_deep_sleep();
     reset_cpu();
 }
 
