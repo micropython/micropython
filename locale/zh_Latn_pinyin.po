@@ -7,15 +7,15 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-20 14:09+0000\n"
-"Last-Translator: hexthat <hexthat@gmail.com>\n"
+"PO-Revision-Date: 2022-11-14 15:47+0000\n"
+"Last-Translator: River Wang <urfdvw@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: main.c
 msgid ""
@@ -740,6 +740,7 @@ msgid "Cannot get temperature"
 msgstr "Wúfǎ huòqǔ wēndù"
 
 #: shared-bindings/_bleio/Adapter.c
+#, fuzzy
 msgid "Cannot have scan responses for extended, connectable advertisements."
 msgstr "Nín wúfǎ sǎomiáo kuòzhǎn de, kě liánjiē de guǎnggào."
 
