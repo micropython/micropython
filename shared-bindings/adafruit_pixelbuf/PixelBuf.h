@@ -31,6 +31,13 @@
 
 extern const mp_obj_type_t pixelbuf_pixelbuf_type;
 
+typedef union {
+    struct {
+        uint8_t r, g, b, w;
+    };
+    uint32_t rgbw;
+} color_u;
+
 void common_hal_adafruit_pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size_t n,
     pixelbuf_byteorder_details_t *byteorder, mp_float_t brightness, bool auto_write, uint8_t *header,
     size_t header_len, uint8_t *trailer, size_t trailer_len);

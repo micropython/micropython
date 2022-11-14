@@ -152,50 +152,56 @@ STATIC uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
         translate("can't convert %q to %q"), mp_obj_get_type_qstr(obj), MP_QSTR_int);
 }
 
-STATIC void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t *self, mp_obj_t color, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *w) {
+STATIC color_u _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t *self, mp_obj_t color) {
+    color_u result;
     pixelbuf_byteorder_details_t *byteorder = &self->byteorder;
     // w is shared between white in NeoPixels and brightness in dotstars (so that DotStars can have
     // per-pixel brightness). Set the defaults here in case it isn't set below.
     if (byteorder->is_dotstar) {
-        *w = 255;
+        result.w = 255;
     } else {
-        *w = 0;
+        result.w = 0;
     }
 
     if (mp_obj_is_int(color) || mp_obj_is_float(color)) {
         mp_int_t value = mp_obj_is_int(color) ? mp_obj_get_int_truncated(color) : (mp_int_t)mp_obj_get_float(color);
-        *r = value >> 16 & 0xff;
-        *g = (value >> 8) & 0xff;
-        *b = value & 0xff;
+        result.r = value >> 16 & 0xff;
+        result.g = (value >> 8) & 0xff;
+        result.b = value & 0xff;
     } else {
         mp_obj_t *items;
         size_t len;
         mp_obj_get_array(color, &len, &items);
         mp_arg_validate_length_range(len, 3, 4, MP_QSTR_color);
 
-        *r = _pixelbuf_get_as_uint8(items[PIXEL_R]);
-        *g = _pixelbuf_get_as_uint8(items[PIXEL_G]);
-        *b = _pixelbuf_get_as_uint8(items[PIXEL_B]);
+        result.r = _pixelbuf_get_as_uint8(items[PIXEL_R]);
+        result.g = _pixelbuf_get_as_uint8(items[PIXEL_G]);
+        result.b = _pixelbuf_get_as_uint8(items[PIXEL_B]);
         if (len > 3) {
             if (mp_obj_is_float(items[PIXEL_W])) {
-                *w = 255 * mp_obj_get_float(items[PIXEL_W]);
+                result.w = 255 * mp_obj_get_float(items[PIXEL_W]);
             } else {
-                *w = mp_obj_get_int_truncated(items[PIXEL_W]);
+                result.w = mp_obj_get_int_truncated(items[PIXEL_W]);
             }
-            return;
+            return result;
         }
     }
     // Int colors can't set white directly so convert to white when all components are equal.
     // Also handles RGBW values assigned an RGB tuple.
-    if (!byteorder->is_dotstar && byteorder->bpp == 4 && byteorder->has_white && *r == *g && *r == *b) {
-        *w = *r;
-        *r = 0;
-        *g = 0;
-        *b = 0;
+    if (!byteorder->is_dotstar && byteorder->bpp == 4 && byteorder->has_white && result.r == result.g && result.r == result.b) {
+        result.w = result.r;
+        result.r = 0;
+        result.g = 0;
+        result.b = 0;
     }
+    return result;
 }
 
-STATIC void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t *self, size_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
+STATIC void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t *self, size_t index, color_u rgbw) {
+    int r = rgbw.r;
+    int g = rgbw.g;
+    int b = rgbw.b;
+    int w = rgbw.w;
     // DotStars don't have white, instead they have 5 bit brightness so pack it into w. Shift right
     // by three to leave the top five bits.
     if (self->bytes_per_pixel == 4 && self->byteorder.is_dotstar) {
@@ -234,12 +240,8 @@ STATIC void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t *self, size_t inde
 }
 
 STATIC void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t *self, size_t index, mp_obj_t value) {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t w;
-    _pixelbuf_parse_color(self, value, &r, &g, &b, &w);
-    _pixelbuf_set_pixel_color(self, index, r, g, b, w);
+    color_u rgbw = _pixelbuf_parse_color(self, value);
+    _pixelbuf_set_pixel_color(self, index, rgbw);
 }
 
 void common_hal_adafruit_pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t *values,
@@ -318,14 +320,10 @@ void common_hal_adafruit_pixelbuf_pixelbuf_show(mp_obj_t self_in) {
 void common_hal_adafruit_pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t fill_color) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
 
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t w;
-    _pixelbuf_parse_color(self, fill_color, &r, &g, &b, &w);
+    color_u rgbw = _pixelbuf_parse_color(self, fill_color);
 
     for (size_t i = 0; i < self->pixel_count; i++) {
-        _pixelbuf_set_pixel_color(self, i, r, g, b, w);
+        _pixelbuf_set_pixel_color(self, i, rgbw);
     }
     if (self->auto_write) {
         common_hal_adafruit_pixelbuf_pixelbuf_show(self_in);
