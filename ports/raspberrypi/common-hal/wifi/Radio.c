@@ -50,7 +50,6 @@
 #include "lwip/dns.h"
 #include "lwip/icmp.h"
 #include "lwip/raw.h"
-#include "lwip_src/ping.h"
 
 #ifndef PING_ID
 #define PING_ID        0xAFAF
@@ -59,11 +58,6 @@
 #ifndef PING_DEBUG
 #define PING_DEBUG     LWIP_DBG_ON
 #endif
-
-#ifdef LWIP_DEBUG
-static uint32_t ping_time;
-#endif
-
 
 #define MAC_ADDRESS_LENGTH 6
 
@@ -305,6 +299,10 @@ void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv
 }
 
 volatile bool ping_received;
+u16_t ping_seq_num;
+
+void ping_set_target(const ip_addr_t *ping_addr);
+int ping_send(struct raw_pcb *raw, const ip_addr_t *addr);
 
 static u8_t
 ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr) {
@@ -313,6 +311,7 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
 
     if ((p->tot_len >= (PBUF_IP_HLEN + sizeof(struct icmp_echo_hdr))) &&
         pbuf_remove_header(p, PBUF_IP_HLEN) == 0) {
+        uint32_t ping_time = sys_now();
         iecho = (struct icmp_echo_hdr *)p->payload;
 
         if ((iecho->id == PING_ID) && (iecho->seqno == lwip_htons(ping_seq_num))) {
