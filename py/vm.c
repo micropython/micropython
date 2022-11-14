@@ -1441,8 +1441,12 @@ unwind_loop:
                 POP_EXC_BLOCK();
             }
 
-            if (exc_sp >= exc_stack) {
-                // catch exception and pass to byte code
+            if (exc_sp >= exc_stack
+            #if MICROPY_ENABLE_SYSTEM_ABORT
+            && !mp_obj_exception_match(MP_OBJ_FROM_PTR(nlr.ret_val), MP_OBJ_FROM_PTR(&mp_type_SystemAbort))
+            #endif
+            ) {
+                // catch exception (but not SystemAbort) and pass to byte code
                 code_state->ip = exc_sp->handler;
                 mp_obj_t *sp = MP_TAGPTR_PTR(exc_sp->val_sp);
                 // save this exception in the stack so it can be used in a reraise, if needed

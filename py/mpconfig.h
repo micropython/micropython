@@ -658,6 +658,12 @@
 #define MICROPY_KBD_EXCEPTION (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to provide the SystemAbort exception, used to exit MicroPython
+// even if user code catches all exceptions.
+#ifndef MICROPY_ENABLE_SYSTEM_ABORT
+#define MICROPY_ENABLE_SYSTEM_ABORT (0)
+#endif
+
 // Prefer to raise KeyboardInterrupt asynchronously (from signal or interrupt
 // handler) - if supported by a particular port.
 #ifndef MICROPY_ASYNC_KBD_INTR

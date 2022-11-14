@@ -860,6 +860,9 @@ extern const mp_obj_type_t mp_type_UnicodeError;
 extern const mp_obj_type_t mp_type_ValueError;
 extern const mp_obj_type_t mp_type_ViperTypeError;
 extern const mp_obj_type_t mp_type_ZeroDivisionError;
+#if MICROPY_ENABLE_SYSTEM_ABORT
+extern const mp_obj_type_t mp_type_SystemAbort;
+#endif
 
 // Constant objects, globally accessible: None, False, True
 // These should always be accessed via the below macros.
