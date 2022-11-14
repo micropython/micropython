@@ -135,9 +135,6 @@ ifeq ($(MICROPY_PY_USSL),1)
 ifeq ($(MICROPY_SSL_AXTLS),1)
 
 endif
-ifeq ($(MICROPY_SSL_MBEDTLS),1)
-CFLAGS += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
-endif
 endif
 
 # If the variant enables it, enable modbluetooth.

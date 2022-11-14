@@ -31,7 +31,6 @@
 #include "py/persistentcode.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "drivers/dht/dht.h"
 #include "uart.h"
 #include "user_interface.h"
 #include "mem.h"
@@ -355,7 +354,6 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     #if MICROPY_ESP8266_APA102
     { MP_ROM_QSTR(MP_QSTR_apa102_write), MP_ROM_PTR(&esp_apa102_write_obj) },
     #endif
-    { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_freemem), MP_ROM_PTR(&esp_freemem_obj) },
     { MP_ROM_QSTR(MP_QSTR_meminfo), MP_ROM_PTR(&esp_meminfo_obj) },
     { MP_ROM_QSTR(MP_QSTR_check_fw), MP_ROM_PTR(&esp_check_fw_obj) },

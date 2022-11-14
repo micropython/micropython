@@ -345,8 +345,7 @@ endif
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
 ifeq ($(MICROPY_PY_LWIP),1)
 CFLAGS += \
-	-DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1 \
-	-DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
+	-DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1
 endif
 
 CFLAGS += $(CFLAGS_EXTRA)

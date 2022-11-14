@@ -1527,6 +1527,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                             break;
                         }
                         #endif
+                        need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add index to base
                         reg_base = reg_index;
@@ -1544,6 +1545,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                             break;
                         }
                         #endif
+                        need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
                         reg_base = reg_index;
@@ -1561,6 +1563,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                             break;
                         }
                         #endif
+                        need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 2);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 4*index to base
                         reg_base = reg_index;
