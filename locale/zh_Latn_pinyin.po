@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-11-14 15:47+0000\n"
-"Last-Translator: River Wang <urfdvw@gmail.com>\n"
+"PO-Revision-Date: 2022-11-14 22:15+0000\n"
+"Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
 "MIME-Version: 1.0\n"
@@ -127,7 +127,7 @@ msgstr "%q chūshǐhuà shībài"
 
 #: shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
-msgstr ""
+msgstr "%q shì %q"
 
 #: py/argcheck.c
 msgid "%q length must be %d"
@@ -173,6 +173,7 @@ msgstr "%q bìxū >= %d"
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
+"%q bì xū shì zì jié shù zǔ huò lèi xíng wéi 'h', 'H', 'b', huò 'B' de shù zǔ"
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -597,7 +598,7 @@ msgstr "RX hé TX dōu xū yào liúliàng kòngzhì"
 #: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "Both buttons were pressed at start up.\n"
-msgstr ""
+msgstr "qǐ dòng shí àn xià le liǎng gè àn niǔ.\n"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -667,7 +668,7 @@ msgstr "Zǒngxiàn yǐnjiǎo %d yǐjīng zài shǐyòng zhōng"
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 msgid "Button A was pressed at start up.\n"
-msgstr ""
+msgstr "qǐ dòng shí àn xià àn niǔ A.\n"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -947,15 +948,15 @@ msgstr "cuò wù: bǎng dìng shī bài"
 #: shared-bindings/coproc/__init__.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
-msgstr "Yùqí %q"
+msgstr "Yù qí %q"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c
 msgid "Expected a %q or %q"
-msgstr ""
+msgstr "yù qī wéi %q huò %q"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an %q"
-msgstr ""
+msgstr "yù qī wéi %q"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1037,16 +1038,16 @@ msgstr "guò lǜ qì tài fù zá"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is duplicate"
-msgstr ""
+msgstr "gù jiàn chóng fù"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is invalid"
-msgstr ""
+msgstr "gù jiàn wú xiào"
 
 #: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
-msgstr ""
+msgstr "gù jiàn tài dà"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -1664,7 +1665,7 @@ msgstr ""
 #: ports/espressif/common-hal/alarm/coproc/CoprocAlarm.c
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one %q can be set in deep sleep."
-msgstr ""
+msgstr "zài shēn dù shuì mián zhōng zhǐ néng shè zhì yí gè %q."
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
@@ -2025,7 +2026,7 @@ msgstr "Wēndù dòu qǔ chāoshí"
 
 #: supervisor/shared/safe_mode.c
 msgid "The BOOT button was pressed at start up.\n"
-msgstr ""
+msgstr "qǐ dòng shí àn xià le yǐn dǎo àn niǔ.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2037,11 +2038,11 @@ msgstr ""
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "The SW38 button was pressed at start up.\n"
-msgstr ""
+msgstr "qǐ dòng shí àn xià le SW38 àn niǔ .\n"
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "The VOLUME button was pressed at start up.\n"
-msgstr ""
+msgstr "qǐ dòng shí àn xià yīn liàng àn niǔ.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2053,11 +2054,11 @@ msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
-msgstr ""
+msgstr "qǐ dòng shí àn xià zhōng yāng àn niǔ.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "The left button was pressed at start up.\n"
-msgstr ""
+msgstr "qǐ dòng shí àn xià zuǒ àn niǔ.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2126,6 +2127,8 @@ msgstr "Chāoshí shíjiān tài zhǎng: Zuìdà chāoshí shíjiān wèi%d miǎ
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without requesting safe mode."
 msgstr ""
+"yào tuì chū, qǐng zài bù qǐng qiú ān quán mó shì de qíng kuàng xià chóng zhì "
+"zhǔ bǎn."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample"
@@ -2246,7 +2249,7 @@ msgstr "wú fǎ qǐ dòng mDNS chá xún"
 
 #: shared-bindings/coproc/CoprocMemory.c
 msgid "Unable to write"
-msgstr ""
+msgstr "wú fǎ xiě rù"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -2313,7 +2316,7 @@ msgstr "wèi zhī de xì tǒng gù jiàn cuò wù: %d"
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
 msgid "Unkown error code %d"
-msgstr ""
+msgstr "wèi zhī cuò wù dài %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -2990,6 +2993,8 @@ msgid ""
 "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
 msgstr ""
+"esp32_camera. shè xiàng jī xū yào pèi zhì yù liú de PSRAM. yǒu guān shuō "
+"míng, qǐng cān yuè wén dàng."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -3770,11 +3775,11 @@ msgstr "Jǐn zhīchí wèi shēndù = 16"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only mono is supported"
-msgstr ""
+msgstr "jǐn zhī chí dān shēng dào"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only oversample=64 is supported"
-msgstr ""
+msgstr "jǐn zhī chí guò cǎi yàng =64"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 #: ports/stm/common-hal/audiobusio/PDMIn.c
@@ -4245,7 +4250,7 @@ msgstr "wèizhī lèixíng '%q'"
 #: py/objstr.c
 #, c-format
 msgid "unmatched '%c' in format"
-msgstr ""
+msgstr "gé shì bù pǐ pèi de '%c'"
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4326,7 +4331,7 @@ msgstr "wèi qǐ yòng WIFI"
 
 #: ports/raspberrypi/common-hal/wifi/Monitor.c
 msgid "wifi.Monitor not available"
-msgstr ""
+msgstr "wú xiàn wǎng luò xiǎn shì qì bù kě yòng"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
