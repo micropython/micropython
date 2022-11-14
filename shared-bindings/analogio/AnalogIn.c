@@ -36,6 +36,10 @@
 #include "shared-bindings/analogio/AnalogIn.h"
 #include "shared-bindings/util.h"
 
+#if CIRCUITPY_CYW43
+#include "bindings/cyw43/__init__.h"
+#endif
+
 //| class AnalogIn:
 //|     """Read analog voltage levels
 //|
@@ -60,8 +64,11 @@ STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // 1st argument is the pin
+    #if CIRCUITPY_CYW43
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin_or_gpio29(args[0]);
+    #else
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
-
+    #endif
     analogio_analogin_obj_t *self = m_new_obj(analogio_analogin_obj_t);
     self->base.type = &analogio_analogin_type;
     common_hal_analogio_analogin_construct(self, pin);
