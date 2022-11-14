@@ -5,6 +5,7 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.usb
     boards/sdkconfig.ble
     boards/sdkconfig.240mhz
-    boards/sdkconfig.spiram_sx
-    boards/GENERIC_S3_SPIRAM/sdkconfig.board
+    boards/LOLIN_S3/sdkconfig.board
 )
+
+set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)

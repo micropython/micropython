@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "./deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "BLE",
+        "WiFi",
+        "USB-C",
+        "SPIRAM"
+    ],
+    "images": [
+        "lolin_s3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "LOLIN S3",
+    "thumbnail": "",
+    "url": "https://www.wemos.cc/en/latest/s3/s3.html",
+    "vendor": "Wemos"
+}
