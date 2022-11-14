@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2022-11-14 22:15+0000\n"
-"Last-Translator: hexthat <hexthat@gmail.com>\n"
+"Last-Translator: River Wang <urfdvw@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
 "MIME-Version: 1.0\n"
@@ -747,7 +747,7 @@ msgstr "Nín wúfǎ sǎomiáo kuòzhǎn de, kě liánjiē de guǎnggào."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
-msgstr "wú fǎ lā dòng jǐn shū rù yǐn jiǎo."
+msgstr "wúfǎ lādòng jǐn shūrù yǐnjiǎo."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Cannot record to a file"
