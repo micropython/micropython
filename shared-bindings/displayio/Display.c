@@ -439,8 +439,8 @@ STATIC mp_obj_t displayio_display_obj_set_root_group(mp_obj_t self_in, mp_obj_t 
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_set_root_group_obj, displayio_display_obj_set_root_group);
 
 MP_PROPERTY_GETSET(displayio_display_root_group_obj,
-(mp_obj_t)&displayio_display_get_root_group_obj,
-(mp_obj_t)&displayio_display_set_root_group_obj);
+    (mp_obj_t)&displayio_display_get_root_group_obj,
+    (mp_obj_t)&displayio_display_set_root_group_obj);
 
 
 //|     def fill_row(self, y: int, buffer: WriteableBuffer) -> WriteableBuffer:
