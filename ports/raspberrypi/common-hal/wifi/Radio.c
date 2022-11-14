@@ -50,14 +50,7 @@
 #include "lwip/dns.h"
 #include "lwip/icmp.h"
 #include "lwip/raw.h"
-
-#ifndef PING_ID
-#define PING_ID        0xAFAF
-#endif
-
-#ifndef PING_DEBUG
-#define PING_DEBUG     LWIP_DBG_ON
-#endif
+#include "lwip_src/ping.h"
 
 #define MAC_ADDRESS_LENGTH 6
 
@@ -299,8 +292,6 @@ void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv
 }
 
 volatile bool ping_received;
-int ping_send(struct raw_pcb *raw, const ip_addr_t *addr);
-uint16_t ping_seq_num;
 uint32_t ping_time;
 
 static u8_t
