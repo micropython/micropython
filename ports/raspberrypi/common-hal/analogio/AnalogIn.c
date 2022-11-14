@@ -40,7 +40,12 @@
 // voltage monitor function and the wifi function. Special handling is required
 // to read the analog voltage.
 #if CIRCUITPY_CYW43
+#include "bindings/cyw43/__init__.h"
 #define SPECIAL_PIN(pin) (pin->number == 29)
+
+const mcu_pin_obj_t *common_hal_analogio_analogin_validate_pin(mp_obj_t obj) {
+    return validate_obj_is_free_pin_or_gpio29(obj);
+}
 #else
 #define SPECIAL_PIN(pin) false
 #endif
