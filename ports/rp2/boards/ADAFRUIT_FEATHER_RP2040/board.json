@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "Breadboard Friendly",
+        "Feather",
+        "RGB LED",
+        "SPI Flash",
+        "STEMMA QT/QWIIC",
+        "USB-C"
+    ],
+    "images": [
+        "4884-06.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Feather RP2040",
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/4884",
+    "vendor": "Adafruit"
+}

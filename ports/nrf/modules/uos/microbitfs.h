@@ -27,6 +27,7 @@
 #ifndef __MICROPY_INCLUDED_FILESYSTEM_H__
 #define __MICROPY_INCLUDED_FILESYSTEM_H__
 
+#include "py/builtin.h"
 #include "py/obj.h"
 #include "py/lexer.h"
 

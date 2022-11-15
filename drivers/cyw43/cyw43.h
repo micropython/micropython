@@ -28,7 +28,7 @@
 
 #include "lwip/netif.h"
 #include "lwip/dhcp.h"
-#include "lib/netutils/dhcpserver.h"
+#include "shared/netutils/dhcpserver.h"
 #include "drivers/cyw43/cyw43_ll.h"
 
 // For trace_flags
@@ -46,6 +46,14 @@
 #define CYW43_LINK_FAIL         (-1)
 #define CYW43_LINK_NONET        (-2)
 #define CYW43_LINK_BADAUTH      (-3)
+
+#ifndef MICROPY_BOARD_HOSTNAME
+#define MICROPY_BOARD_HOSTNAME  "PYBD"
+#endif
+
+#ifndef MICROPY_BOARD_HOSTNAME_LENGTH
+#define MICROPY_BOARD_HOSTNAME_LENGTH 16
+#endif
 
 typedef struct _cyw43_t {
     cyw43_ll_t cyw43_ll;
@@ -76,6 +84,7 @@ typedef struct _cyw43_t {
     struct netif netif[2];
     struct dhcp dhcp_client;
     dhcp_server_t dhcp_server;
+    char hostname[MICROPY_BOARD_HOSTNAME_LENGTH];
 } cyw43_t;
 
 extern cyw43_t cyw43_state;

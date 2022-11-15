@@ -23,7 +23,7 @@ convertor to make the UART available to your PC.
 The minimum requirement for flash size is 1Mbyte. There is also a special
 build for boards with 512KB, but it is highly limited comparing to the
 normal build: there is no support for filesystem, and thus features which
-depend on it won't work (WebREPL, upip, etc.). As such, 512KB build will
+depend on it won't work (WebREPL, mip, etc.). As such, 512KB build will
 be more interesting for users who build from source and fine-tune parameters
 for their particular application.
 
@@ -41,8 +41,8 @@ Please refer to the documentation for your board for further details.
 Getting the firmware
 --------------------
 
-The first thing you need to do is download the most recent MicroPython firmware 
-.bin file to load onto your ESP8266 device. You can download it from the  
+The first thing you need to do is download the most recent MicroPython firmware
+.bin file to load onto your ESP8266 device. You can download it from the
 `MicroPython downloads page <http://micropython.org/download#esp8266>`_.
 From here, you have 3 main choices
 
@@ -64,7 +64,7 @@ such, only daily builds for 512kb modules are provided.
 Deploying the firmware
 ----------------------
 
-Once you have the MicroPython firmware (compiled code), you need to load it onto 
+Once you have the MicroPython firmware (compiled code), you need to load it onto
 your ESP8266 device.  There are two main steps to do this: first you
 need to put your device in boot-loader mode, and second you need to copy across
 the firmware.  The exact procedure for these steps is highly dependent on the
@@ -109,10 +109,12 @@ PC.  You may also need to reduce the baudrate if you get errors when flashing
 that you have.
 
 For some boards with a particular FlashROM configuration (e.g. some variants of
-a NodeMCU board) you may need to use the following command to deploy
-the firmware (note the ``-fm dio`` option)::
+a NodeMCU board) you may need to manually set a compatible
+`SPI Flash Mode <https://github.com/espressif/esptool/wiki/SPI-Flash-Modes>`_.
+You'd usually pick the fastest option that is compatible with your device, but
+the ``-fm dout`` option (the slowest option) should have the best compatibility::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dio 0 esp8266-20170108-v1.8.7.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dout 0 esp8266-20170108-v1.8.7.bin
 
 If the above commands run without error then MicroPython should be installed on
 your board!

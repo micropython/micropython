@@ -17,7 +17,6 @@ if platform.python_version_tuple()[0] == "2":
     def convert_bytes_to_str(b):
         return b
 
-
 elif platform.python_version_tuple()[0] == "3":
 
     def convert_bytes_to_str(b):
@@ -65,7 +64,7 @@ class Lexer:
         (
             "#define typedef",
             re.compile(
-                r"#define +(?P<id>[A-Z0-9_]+(ext)?) +\(\([A-Za-z0-9_]+_TypeDef \*\) (?P<id2>[A-Za-z0-9_]+)\)($| +/\*)"
+                r"#define +(?P<id>[A-Z0-9_]+(ext)?) +\(\([A-Za-z0-9_]+_(Global)?TypeDef \*\) (?P<id2>[A-Za-z0-9_]+)\)($| +/\*)"
             ),
         ),
         ("typedef struct", re.compile(r"typedef struct$")),
@@ -73,7 +72,7 @@ class Lexer:
         ("}", re.compile(r"}$")),
         (
             "} TypeDef",
-            re.compile(r"} *(?P<id>[A-Z][A-Za-z0-9_]+)_(?P<global>([A-Za-z0-9_]+)?)TypeDef;$"),
+            re.compile(r"} *(?P<id>[A-Z][A-Za-z0-9_]*)_(?P<global>([A-Za-z0-9_]+)?)TypeDef;$"),
         ),
         (
             "IO reg",
@@ -282,6 +281,7 @@ def main():
         #'CAN_FIFOMailBox',
         #'CAN_FilterRegister',
         #'CAN',
+        "FDCAN",
         "CRC",
         "DAC",
         "DBGMCU",

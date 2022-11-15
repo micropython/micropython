@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -64,6 +64,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
     <CustomPropsFile Condition="'$(CustomPropsFile)'==''">msvc/user.props</CustomPropsFile>
+    <TargetName>$(PyProg)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile />
@@ -85,16 +86,16 @@
   <ItemGroup>
     <ClCompile Include="@(PyCoreSource)" />
     <ClCompile Include="@(PyExtModSource)" />
-    <ClCompile Include="$(PyBaseDir)lib\mp-readline\*.c" />
-    <ClCompile Include="$(PyBaseDir)lib\utils\gchelper_generic.c" />
+    <ClCompile Include="$(PyBaseDir)shared\readline\*.c" />
+    <ClCompile Include="$(PyBaseDir)shared\runtime\gchelper_generic.c" />
     <ClCompile Include="$(PyBaseDir)ports\windows\*.c" />
     <ClCompile Include="$(PyBaseDir)ports\windows\msvc\*.c" />
     <ClCompile Include="$(PyBaseDir)ports\unix\gccollect.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\input.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\main.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\modos.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\modtime.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\modmachine.c" />
+    <ClCompile Include="$(PyVariantDir)*.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="@(PyCoreInclude)" />

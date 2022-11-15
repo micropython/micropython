@@ -11,7 +11,7 @@ accel_addr = 76
 
 pyb.Accel()  # this will init the MMA for us
 
-i2c = I2C(1, I2C.MASTER, baudrate=400000)
+i2c = I2C(1, I2C.CONTROLLER, baudrate=400000)
 
 print(i2c.scan())
 print(i2c.is_ready(accel_addr))

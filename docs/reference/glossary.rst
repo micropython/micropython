@@ -52,7 +52,7 @@ Glossary
     cross-compiler
         Also known as ``mpy-cross``. This tool runs on your PC and converts a
         :term:`.py file` containing MicroPython code into a :term:`.mpy file`
-        containing MicroPython bytecode. This means it loads faster (the board
+        containing MicroPython :term:`bytecode`. This means it loads faster (the board
         doesn't have to compile the code), and uses less space on flash (the
         bytecode is more space efficient).
 
@@ -128,7 +128,7 @@ Glossary
 
         Unlike the :term:`CPython` stdlib, micropython-lib modules are
         intended to be installed individually - either using manual copying or
-        using :term:`upip`.
+        using :term:`mip`.
 
     MicroPython port
         MicroPython supports different :term:`boards <board>`, RTOSes, and
@@ -151,16 +151,26 @@ Glossary
         machine-independent features. It can also function in a similar way to
         :term:`CPython`'s ``python`` executable.
 
+    mip
+        A package installer for MicroPython (mip - "mip installs packages"). It
+        installs MicroPython packages either from :term:`micropython-lib`,
+        GitHub, or arbitrary URLs.  mip can be used on-device on
+        network-capable boards, and internally by tools such
+        as :term:`mpremote`.
+
+    mpremote
+        A tool for interacting with a MicroPython device. See :ref:`mpremote`.
+
     .mpy file
         The output of the :term:`cross-compiler`. A compiled form of a
-        :term:`.py file` that contains MicroPython bytecode instead of Python
-        source code.
+        :term:`.py file` that contains MicroPython :term:`bytecode` instead of
+        Python source code.
 
     native
         Usually refers to "native code", i.e. machine code for the target
         microcontroller (such as ARM Thumb, Xtensa, x86/x64). The ``@native``
         decorator can be applied to a MicroPython function to generate native
-        code instead of bytecode for that function, which will likely be
+        code instead of :term:`bytecode` for that function, which will likely be
         faster but use more RAM.
 
     port
@@ -184,7 +194,7 @@ Glossary
         ``close()``, etc. A stream is an important concept in MicroPython;
         many I/O objects implement the stream interface, and thus can be used
         consistently and interchangeably in different contexts. For more
-        information on streams in MicroPython, see the `uio` module.
+        information on streams in MicroPython, see the `io` module.
 
     UART
         Acronym for "Universal Asynchronous Receiver/Transmitter". This is a
@@ -193,8 +203,10 @@ Glossary
         as a serial port over USB.
 
     upip
-        (Literally, "micro pip"). A package manager for MicroPython, inspired
+        A now-obsolete package manager for MicroPython, inspired
         by :term:`CPython`'s pip, but much smaller and with reduced
-        functionality.
-        upip runs both on the :term:`Unix port <MicroPython Unix port>` and on
-        :term:`baremetal` ports which offer filesystem and networking support.
+        functionality. See its replacement, :term:`mip`.
+
+    webrepl
+        A way of connecting to the REPL (and transferring files) on a device
+        over the internet from a browser. See https://micropython.org/webrepl

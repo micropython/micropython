@@ -28,11 +28,13 @@
 
 #include <stdint.h>
 
+typedef void (*rfcore_ble_msg_callback_t)(void *, const uint8_t *, size_t);
+
 void rfcore_init(void);
 
 void rfcore_ble_init(void);
 void rfcore_ble_hci_cmd(size_t len, const uint8_t *src);
-void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env);
+size_t rfcore_ble_check_msg(rfcore_ble_msg_callback_t cb, void *env);
 void rfcore_ble_set_txpower(uint8_t level);
 
 void rfcore_start_flash_erase(void);

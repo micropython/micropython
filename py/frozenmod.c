@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2015 Paul Sokolovsky
  * Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2021 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +32,13 @@
 #include "py/lexer.h"
 #include "py/frozenmod.h"
 
+#if MICROPY_MODULE_FROZEN
+
+// Null-separated frozen file names. All string-type entries are listed first,
+// followed by mpy-type entries. Use mp_frozen_str_sizes to determine how
+// many string entries.
+extern const char mp_frozen_names[];
+
 #if MICROPY_MODULE_FROZEN_STR
 
 #ifndef MICROPY_MODULE_FROZEN_LEXER
@@ -39,118 +47,89 @@
 mp_lexer_t *MICROPY_MODULE_FROZEN_LEXER(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len);
 #endif
 
-extern const char mp_frozen_str_names[];
+// Size in bytes of each string entry, followed by a zero (terminator).
 extern const uint32_t mp_frozen_str_sizes[];
+// Null-separated string content.
 extern const char mp_frozen_str_content[];
-
-// On input, *len contains size of name, on output - size of content
-const char *mp_find_frozen_str(const char *str, size_t *len) {
-    const char *name = mp_frozen_str_names;
-
-    size_t offset = 0;
-    for (int i = 0; *name != 0; i++) {
-        size_t l = strlen(name);
-        if (l == *len && !memcmp(str, name, l)) {
-            *len = mp_frozen_str_sizes[i];
-            return mp_frozen_str_content + offset;
-        }
-        name += l + 1;
-        offset += mp_frozen_str_sizes[i] + 1;
-    }
-    return NULL;
-}
-
-STATIC mp_lexer_t *mp_lexer_frozen_str(const char *str, size_t len) {
-    size_t name_len = len;
-    const char *content = mp_find_frozen_str(str, &len);
-
-    if (content == NULL) {
-        return NULL;
-    }
-
-    qstr source = qstr_from_strn(str, name_len);
-    mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(source, content, len, 0);
-    return lex;
-}
-
-#endif
+#endif // MICROPY_MODULE_FROZEN_STR
 
 #if MICROPY_MODULE_FROZEN_MPY
 
 #include "py/emitglue.h"
 
-extern const char mp_frozen_mpy_names[];
-extern const mp_raw_code_t *const mp_frozen_mpy_content[];
+extern const mp_frozen_module_t *const mp_frozen_mpy_content[];
 
-STATIC const mp_raw_code_t *mp_find_frozen_mpy(const char *str, size_t len) {
-    const char *name = mp_frozen_mpy_names;
-    for (size_t i = 0; *name != 0; i++) {
-        size_t l = strlen(name);
-        if (l == len && !memcmp(str, name, l)) {
-            return mp_frozen_mpy_content[i];
-        }
-        name += l + 1;
-    }
-    return NULL;
-}
+#endif // MICROPY_MODULE_FROZEN_MPY
 
-#endif
-
-#if MICROPY_MODULE_FROZEN
-
-STATIC mp_import_stat_t mp_frozen_stat_helper(const char *name, const char *str) {
+// Search for "str" as a frozen entry, returning the stat result
+// (no-exist/file/dir), as well as the type (none/str/mpy) and data.
+// frozen_type can be NULL if its value isn't needed (and then data is assumed to be NULL).
+mp_import_stat_t mp_find_frozen_module(const char *str, int *frozen_type, void **data) {
     size_t len = strlen(str);
+    const char *name = mp_frozen_names;
 
-    for (int i = 0; *name != 0; i++) {
-        size_t l = strlen(name);
-        if (l >= len && !memcmp(str, name, len)) {
-            if (name[len] == 0) {
+    if (frozen_type != NULL) {
+        *frozen_type = MP_FROZEN_NONE;
+    }
+
+    // Count the number of str lengths we have to find how many str entries.
+    size_t num_str = 0;
+    #if MICROPY_MODULE_FROZEN_STR && MICROPY_MODULE_FROZEN_MPY
+    for (const uint32_t *s = mp_frozen_str_sizes; *s != 0; ++s) {
+        ++num_str;
+    }
+    #endif
+
+    for (size_t i = 0; *name != 0; i++) {
+        size_t entry_len = strlen(name);
+        if (entry_len >= len && memcmp(str, name, len) == 0) {
+            // Query is a prefix of the current entry.
+            if (entry_len == len) {
+                // Exact match --> file.
+
+                if (frozen_type != NULL) {
+                    #if MICROPY_MODULE_FROZEN_STR
+                    if (i < num_str) {
+                        *frozen_type = MP_FROZEN_STR;
+                        // Use the size table to figure out where this index starts.
+                        size_t offset = 0;
+                        for (size_t j = 0; j < i; ++j) {
+                            offset += mp_frozen_str_sizes[j] + 1;
+                        }
+                        size_t content_len = mp_frozen_str_sizes[i];
+                        const char *content = &mp_frozen_str_content[offset];
+
+                        // Note: str & len have been updated by find_frozen_entry to strip
+                        // the ".frozen/" prefix (to avoid this being a distinct qstr to
+                        // the original path QSTR in frozen_content.c).
+                        qstr source = qstr_from_strn(str, len);
+                        mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(source, content, content_len, 0);
+                        *data = lex;
+                    }
+                    #endif
+
+                    #if MICROPY_MODULE_FROZEN_MPY
+                    if (i >= num_str) {
+                        *frozen_type = MP_FROZEN_MPY;
+                        // Load the corresponding index as a raw_code, taking
+                        // into account any string entries to offset by.
+                        *data = (void *)mp_frozen_mpy_content[i - num_str];
+                    }
+                    #endif
+                }
+
                 return MP_IMPORT_STAT_FILE;
             } else if (name[len] == '/') {
+                // Matches up to directory separator, this is a valid
+                // directory path.
                 return MP_IMPORT_STAT_DIR;
             }
         }
-        name += l + 1;
+        // Skip null separator.
+        name += entry_len + 1;
     }
-    return MP_IMPORT_STAT_NO_EXIST;
-}
-
-mp_import_stat_t mp_frozen_stat(const char *str) {
-    mp_import_stat_t stat;
-
-    #if MICROPY_MODULE_FROZEN_STR
-    stat = mp_frozen_stat_helper(mp_frozen_str_names, str);
-    if (stat != MP_IMPORT_STAT_NO_EXIST) {
-        return stat;
-    }
-    #endif
-
-    #if MICROPY_MODULE_FROZEN_MPY
-    stat = mp_frozen_stat_helper(mp_frozen_mpy_names, str);
-    if (stat != MP_IMPORT_STAT_NO_EXIST) {
-        return stat;
-    }
-    #endif
 
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
-int mp_find_frozen_module(const char *str, size_t len, void **data) {
-    #if MICROPY_MODULE_FROZEN_STR
-    mp_lexer_t *lex = mp_lexer_frozen_str(str, len);
-    if (lex != NULL) {
-        *data = lex;
-        return MP_FROZEN_STR;
-    }
-    #endif
-    #if MICROPY_MODULE_FROZEN_MPY
-    const mp_raw_code_t *rc = mp_find_frozen_mpy(str, len);
-    if (rc != NULL) {
-        *data = (void *)rc;
-        return MP_FROZEN_MPY;
-    }
-    #endif
-    return MP_FROZEN_NONE;
-}
-
-#endif
+#endif // MICROPY_MODULE_FROZEN

@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "Breadboard Friendly",
+        "Castellated Pads",
+        "SPI Flash",
+        "STEMMA QT/QWIIC",
+        "USB-C"
+    ],
+    "images": [
+        "PimoroniPicoLipo_1of3_1024x1024.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Pico LiPo (16MiB)",
+    "thumbnail": "",
+    "url": "https://shop.pimoroni.com/products/pimoroni-pico-lipo",
+    "vendor": "Pimoroni"
+}

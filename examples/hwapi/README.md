@@ -116,7 +116,7 @@ For example, one may invent a "configuration manager" helper module which will
 try to detect current board (among well-known ones), and load appropriate
 `hwconfig_*.py` - this assumes that a user would lazily deploy them all
 (or that application will be automatically installed, e.g. using MicroPython's
-`upip` package manager). The key point in this case remains the same as
+`mip` package manager). The key point in this case remains the same as
 elaborated above - always assume there can, and will be a custom configuration,
 and it should be well supported. So, any automatic detection should be
 overridable by a user, and instructions how to do so are among the most

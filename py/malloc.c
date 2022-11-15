@@ -207,6 +207,99 @@ void m_free(void *ptr)
     #endif
 }
 
+#if MICROPY_TRACKED_ALLOC
+
+#define MICROPY_TRACKED_ALLOC_STORE_SIZE (!MICROPY_ENABLE_GC)
+
+typedef struct _m_tracked_node_t {
+    struct _m_tracked_node_t *prev;
+    struct _m_tracked_node_t *next;
+    #if MICROPY_TRACKED_ALLOC_STORE_SIZE
+    uintptr_t size;
+    #endif
+    uint8_t data[];
+} m_tracked_node_t;
+
+#if MICROPY_DEBUG_VERBOSE
+STATIC size_t m_tracked_count_links(size_t *nb) {
+    m_tracked_node_t *node = MP_STATE_VM(m_tracked_head);
+    size_t n = 0;
+    *nb = 0;
+    while (node != NULL) {
+        ++n;
+        #if MICROPY_TRACKED_ALLOC_STORE_SIZE
+        *nb += node->size;
+        #else
+        *nb += gc_nbytes(node);
+        #endif
+        node = node->next;
+    }
+    return n;
+}
+#endif
+
+void *m_tracked_calloc(size_t nmemb, size_t size) {
+    m_tracked_node_t *node = m_malloc_maybe(sizeof(m_tracked_node_t) + nmemb * size);
+    if (node == NULL) {
+        return NULL;
+    }
+    #if MICROPY_DEBUG_VERBOSE
+    size_t nb;
+    size_t n = m_tracked_count_links(&nb);
+    DEBUG_printf("m_tracked_calloc(%u, %u) -> (%u;%u) %p\n", (int)nmemb, (int)size, (int)n, (int)nb, node);
+    #endif
+    if (MP_STATE_VM(m_tracked_head) != NULL) {
+        MP_STATE_VM(m_tracked_head)->prev = node;
+    }
+    node->prev = NULL;
+    node->next = MP_STATE_VM(m_tracked_head);
+    MP_STATE_VM(m_tracked_head) = node;
+    #if MICROPY_TRACKED_ALLOC_STORE_SIZE
+    node->size = nmemb * size;
+    #endif
+    #if !MICROPY_GC_CONSERVATIVE_CLEAR
+    memset(&node->data[0], 0, nmemb * size);
+    #endif
+    return &node->data[0];
+}
+
+void m_tracked_free(void *ptr_in) {
+    if (ptr_in == NULL) {
+        return;
+    }
+    m_tracked_node_t *node = (m_tracked_node_t *)((uint8_t *)ptr_in - sizeof(m_tracked_node_t));
+    #if MICROPY_DEBUG_VERBOSE
+    size_t data_bytes;
+    #if MICROPY_TRACKED_ALLOC_STORE_SIZE
+    data_bytes = node->size;
+    #else
+    data_bytes = gc_nbytes(node);
+    #endif
+    size_t nb;
+    size_t n = m_tracked_count_links(&nb);
+    DEBUG_printf("m_tracked_free(%p, [%p, %p], nbytes=%u, links=%u;%u)\n", node, node->prev, node->next, (int)data_bytes, (int)n, (int)nb);
+    #endif
+    if (node->next != NULL) {
+        node->next->prev = node->prev;
+    }
+    if (node->prev != NULL) {
+        node->prev->next = node->next;
+    } else {
+        MP_STATE_VM(m_tracked_head) = node->next;
+    }
+    m_free(node
+        #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+        #if MICROPY_TRACKED_ALLOC_STORE_SIZE
+        , node->size
+        #else
+        , gc_nbytes(node)
+        #endif
+        #endif
+        );
+}
+
+#endif // MICROPY_TRACKED_ALLOC
+
 #if MICROPY_MEM_STATS
 size_t m_get_total_bytes_allocated(void) {
     return MP_STATE_MEM(total_bytes_allocated);

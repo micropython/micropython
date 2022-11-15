@@ -53,8 +53,7 @@ STATIC mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    ubluepy_descriptor_obj_t * s = m_new_obj(ubluepy_descriptor_obj_t);
-    s->base.type = type;
+    ubluepy_descriptor_obj_t * s = mp_obj_malloc(ubluepy_descriptor_obj_t, type);
 
     mp_obj_t uuid_obj = args[ARG_NEW_UUID].u_obj;
 
@@ -71,12 +70,13 @@ STATIC const mp_rom_map_elem_t ubluepy_descriptor_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_descriptor_locals_dict, ubluepy_descriptor_locals_dict_table);
 
-const mp_obj_type_t ubluepy_descriptor_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Descriptor,
-    .print = ubluepy_descriptor_print,
-    .make_new = ubluepy_descriptor_make_new,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_descriptor_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ubluepy_descriptor_type,
+    MP_QSTR_Descriptor,
+    MP_TYPE_FLAG_NONE,
+    make_new, ubluepy_descriptor_make_new,
+    print, ubluepy_descriptor_print,
+    locals_dict, &ubluepy_descriptor_locals_dict
+    );
 
 #endif // MICROPY_PY_UBLUEPY

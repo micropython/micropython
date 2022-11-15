@@ -1,6 +1,6 @@
 NameError name 'name' isn't defined
-KeyError pop from an empty set
+TypeError exceptions must derive from BaseException
 name 'name' isn't defined
-pop from an empty set
+exceptions must derive from BaseException
 NameError
-KeyError
+TypeError

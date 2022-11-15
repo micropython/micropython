@@ -34,7 +34,7 @@ An example is the ``gc`` module discussed in :ref:`memorymanagement`.
    >>> gc.enable()
    >>>
 
-MicroPython has several other builtin standard/core modules like ``io``, ``uarray`` etc.
+MicroPython has several other builtin standard/core modules like ``io``, ``array`` etc.
 Adding a new core module involves several modifications.
 
 First, create the ``C`` file in the ``py/`` directory. In this example we are adding a
@@ -64,7 +64,7 @@ hypothetical new module ``subsystem`` in the file ``modsubsystem.c``:
        .globals = (mp_obj_dict_t *)&mp_module_subsystem_globals,
    };
 
-   MP_REGISTER_MODULE(MP_QSTR_subsystem, mp_module_subsystem, MICROPY_PY_SUBSYSTEM);
+   MP_REGISTER_MODULE(MP_QSTR_subsystem, mp_module_subsystem);
 
    #endif
 

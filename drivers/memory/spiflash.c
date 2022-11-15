@@ -123,9 +123,9 @@ STATIC void mp_spiflash_read_data(mp_spiflash_t *self, uint32_t addr, size_t len
     const mp_spiflash_config_t *c = self->config;
     uint8_t cmd;
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
-        cmd = MP_SPI_ADDR_IS_32B(addr) ? CMD_READ_32 : CMD_READ;
+        cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_READ_32 : CMD_READ;
     } else {
-        cmd = MP_SPI_ADDR_IS_32B(addr) ? CMD_C4READ_32 : CMD_C4READ;
+        cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_C4READ_32 : CMD_C4READ;
     }
     mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, NULL, dest);
 }
@@ -218,7 +218,7 @@ STATIC int mp_spiflash_erase_block_internal(mp_spiflash_t *self, uint32_t addr) 
     }
 
     // erase the sector
-    uint8_t cmd = MP_SPI_ADDR_IS_32B(addr) ? CMD_SEC_ERASE_32 : CMD_SEC_ERASE;
+    uint8_t cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_SEC_ERASE_32 : CMD_SEC_ERASE;
     mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, 0, NULL, NULL);
 
     // wait WIP=0
@@ -236,7 +236,7 @@ STATIC int mp_spiflash_write_page(mp_spiflash_t *self, uint32_t addr, size_t len
     }
 
     // write the page
-    uint8_t cmd = MP_SPI_ADDR_IS_32B(addr) ? CMD_WRITE_32 : CMD_WRITE;
+    uint8_t cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_WRITE_32 : CMD_WRITE;
     mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, src, NULL);
 
     // wait WIP=0

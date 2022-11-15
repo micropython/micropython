@@ -1,3 +1,6 @@
 freeze("$(PORT_DIR)/modules")
-freeze("$(MPY_DIR)/drivers/onewire")
-include("$(MPY_DIR)/extmod/uasyncio/manifest.py")
+include("$(MPY_DIR)/extmod/uasyncio")
+require("onewire")
+require("ds18x20")
+require("dht")
+require("neopixel")

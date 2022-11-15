@@ -106,14 +106,14 @@ STATIC mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
         #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
         e |= u.i[MP_ENDIANNESS_BIG] != 0;
         #endif
-        if ((e & ~(1 << MP_FLOAT_SIGN_SHIFT_I32)) == 0) {
+        if ((e & ~(1U << MP_FLOAT_SIGN_SHIFT_I32)) == 0) {
             // handle case of -0 (when sign is set but rest of bits are zero)
             e = 0;
         } else {
-            e += ((1 << MP_FLOAT_EXP_BITS) - 1) << MP_FLOAT_EXP_SHIFT_I32;
+            e += ((1U << MP_FLOAT_EXP_BITS) - 1) << MP_FLOAT_EXP_SHIFT_I32;
         }
     } else {
-        e &= ~((1 << MP_FLOAT_EXP_SHIFT_I32) - 1);
+        e &= ~((1U << MP_FLOAT_EXP_SHIFT_I32) - 1);
     }
     // 8 * sizeof(uintptr_t) counts the number of bits for a small int
     // TODO provide a way to configure this properly
@@ -232,7 +232,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
         // A small int; get the integer value to format.
         num = MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        assert(mp_obj_is_type(self_in, &mp_type_int));
+        assert(mp_obj_is_exact_type(self_in, &mp_type_int));
         // Not a small int.
         #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
         const mp_obj_int_t *self = self_in;
@@ -446,7 +446,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
         mp_binary_set_int(l, big_endian, data + (big_endian ? (len - l) : 0), val);
     }
 
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 3, 4, int_to_bytes);
 
@@ -457,12 +457,13 @@ STATIC const mp_rom_map_elem_t int_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(int_locals_dict, int_locals_dict_table);
 
-const mp_obj_type_t mp_type_int = {
-    { &mp_type_type },
-    .name = MP_QSTR_int,
-    .print = mp_obj_int_print,
-    .make_new = mp_obj_int_make_new,
-    .unary_op = mp_obj_int_unary_op,
-    .binary_op = mp_obj_int_binary_op,
-    .locals_dict = (mp_obj_dict_t *)&int_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_int,
+    MP_QSTR_int,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_obj_int_make_new,
+    print, mp_obj_int_print,
+    unary_op, mp_obj_int_unary_op,
+    binary_op, mp_obj_int_binary_op,
+    locals_dict, &int_locals_dict
+    );

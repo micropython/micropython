@@ -11,8 +11,9 @@ value, a database also supports efficient ordered range scans (retrieval
 of values with the keys in a given range). On the application interface
 side, BTree database work as close a possible to a way standard `dict`
 type works, one notable difference is that both keys and values must
-be `bytes` objects (so, if you want to store objects of other types, you
-need to serialize them to `bytes` first).
+be `bytes`-like objects (so, if you want to store objects of other types, you
+need to first serialize them to `str` or `bytes` or another type that supports
+the buffer protocol).
 
 The module is based on the well-known BerkelyDB library, version 1.xx.
 
@@ -22,7 +23,7 @@ Example::
 
     # First, we need to open a stream which holds a database
     # This is usually a file, but can be in-memory database
-    # using uio.BytesIO, a raw flash partition, etc.
+    # using io.BytesIO, a raw flash partition, etc.
     # Oftentimes, you want to create a database file if it doesn't
     # exist and open if it exists. Idiom below takes care of this.
     # DO NOT open database with "a+b" access mode.

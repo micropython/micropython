@@ -51,16 +51,16 @@
 #define MICROPY_HW_USRSW_PRESSED    (0)
 
 // LEDs
-#define MICROPY_HW_LED1             (pin_B1) // red
+#define MICROPY_HW_LED1             (pin_B5) // blue
 #define MICROPY_HW_LED2             (pin_B0) // green
-#define MICROPY_HW_LED3             (pin_B5) // blue
+#define MICROPY_HW_LED3             (pin_B1) // red
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // USB config
 #define MICROPY_HW_USB_FS           (1)
-#define USBD_CDC_RX_DATA_SIZE       (512)
-#define USBD_CDC_TX_DATA_SIZE       (512)
+#define MICROPY_HW_USB_CDC_RX_DATA_SIZE (512)
+#define MICROPY_HW_USB_CDC_TX_DATA_SIZE (512)
 
 // Bluetooth config
 #define MICROPY_HW_BLE_UART_ID       (0)

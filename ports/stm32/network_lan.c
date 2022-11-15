@@ -26,7 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 #include "eth.h"
 
 #if defined(MICROPY_HW_ETH_MDC)
@@ -134,6 +134,10 @@ STATIC mp_obj_t network_lan_config(size_t n_args, const mp_obj_t *args, mp_map_t
                         eth_set_trace(self->eth, mp_obj_get_int(e->value));
                         break;
                     }
+                    case MP_QSTR_low_power: {
+                        eth_low_power_mode(self->eth, mp_obj_get_int(e->value));
+                        break;
+                    }
                     default:
                         mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }
@@ -154,12 +158,13 @@ STATIC const mp_rom_map_elem_t network_lan_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(network_lan_locals_dict, network_lan_locals_dict_table);
 
-const mp_obj_type_t network_lan_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_LAN,
-    .print = network_lan_print,
-    .make_new = network_lan_make_new,
-    .locals_dict = (mp_obj_dict_t *)&network_lan_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    network_lan_type,
+    MP_QSTR_LAN,
+    MP_TYPE_FLAG_NONE,
+    make_new, network_lan_make_new,
+    print, network_lan_print,
+    locals_dict, &network_lan_locals_dict
+    );
 
 #endif // defined(MICROPY_HW_ETH_MDC)

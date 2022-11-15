@@ -60,4 +60,6 @@ const mp_obj_module_t stm_module = {
     .globals = (mp_obj_dict_t *)&stm_module_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_stm, stm_module);
+
 #endif // MICROPY_PY_STM

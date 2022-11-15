@@ -15,7 +15,7 @@ class GVector(object):
         self.z = z
 
     def Mag(self):
-        return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
+        return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
     def dist(self, other):
         return math.sqrt(
@@ -217,6 +217,10 @@ class Chaosgame(object):
 
 ###########################################################################
 # Benchmark interface
+
+if not hasattr(random, "randrange"):
+    print("SKIP")
+    raise SystemExit
 
 bm_params = {
     (100, 50): (0.25, 100, 50, 50, 50, 1234),

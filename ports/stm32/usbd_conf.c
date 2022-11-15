@@ -59,6 +59,7 @@ PCD_HandleTypeDef pcd_hs_handle;
   * @retval None
   */
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
+    #if MICROPY_HW_USB_FS
     if (hpcd->Instance == USB_OTG_FS) {
         #if defined(STM32H7)
         const uint32_t otg_alt = GPIO_AF10_OTG1_FS;
@@ -125,12 +126,18 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         NVIC_SetPriority(OTG_FS_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
         #endif
+
+        return;
     }
+    #endif
+
     #if MICROPY_HW_USB_HS
-    else if (hpcd->Instance == USB_OTG_HS) {
+    if (hpcd->Instance == USB_OTG_HS) {
         #if MICROPY_HW_USB_HS_IN_FS
 
-        #if defined(STM32H7)
+        #if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+        const uint32_t otg_alt = GPIO_AF10_OTG1_FS;
+        #elif defined(STM32H7)
         const uint32_t otg_alt = GPIO_AF12_OTG2_FS;
         #else
         const uint32_t otg_alt = GPIO_AF12_OTG_HS_FS;
@@ -204,16 +211,18 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd) {
     __HAL_RCC_USB_CLK_DISABLE();
     #else
 
+    #if MICROPY_HW_USB_FS
     if (hpcd->Instance == USB_OTG_FS) {
         /* Disable USB FS Clocks */
         __USB_OTG_FS_CLK_DISABLE();
-        __SYSCFG_CLK_DISABLE();
+        return;
     }
+    #endif
+
     #if MICROPY_HW_USB_HS
-    else if (hpcd->Instance == USB_OTG_HS) {
+    if (hpcd->Instance == USB_OTG_HS) {
         /* Disable USB FS Clocks */
         __USB_OTG_HS_CLK_DISABLE();
-        __SYSCFG_CLK_DISABLE();
     }
     #endif
 
@@ -380,10 +389,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
         pcd_fs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
         pcd_fs_handle.Init.Sof_enable = 0;
         pcd_fs_handle.Init.speed = PCD_SPEED_FULL;
-        #if defined(STM32L4)
         pcd_fs_handle.Init.lpm_enable = DISABLE;
         pcd_fs_handle.Init.battery_charging_enable = DISABLE;
-        #endif
         #if MICROPY_HW_USB_IS_MULTI_OTG
         pcd_fs_handle.Init.use_dedicated_ep1 = 0;
         pcd_fs_handle.Init.dma_enable = 0;

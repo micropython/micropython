@@ -93,8 +93,7 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
     }
 
     // Create ADC object.
-    machine_adc_obj_t *o = m_new_obj(machine_adc_obj_t);
-    o->base.type = &machine_adc_type;
+    machine_adc_obj_t *o = mp_obj_malloc(machine_adc_obj_t, &machine_adc_type);
     o->channel = channel;
 
     return MP_OBJ_FROM_PTR(o);
@@ -114,10 +113,11 @@ STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(machine_adc_locals_dict, machine_adc_locals_dict_table);
 
-const mp_obj_type_t machine_adc_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ADC,
-    .print = machine_adc_print,
-    .make_new = machine_adc_make_new,
-    .locals_dict = (mp_obj_dict_t *)&machine_adc_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_adc_type,
+    MP_QSTR_ADC,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_adc_make_new,
+    print, machine_adc_print,
+    locals_dict, &machine_adc_locals_dict
+    );

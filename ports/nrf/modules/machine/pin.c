@@ -37,6 +37,12 @@
 #include "nrf_gpio.h"
 #include "nrfx_gpiote.h"
 
+#if defined(NRF52840_XXAA)
+#define NUM_OF_PINS 48
+#else
+#define NUM_OF_PINS 32
+#endif
+
 extern const pin_obj_t machine_board_pin_obj[];
 extern const uint8_t machine_pin_num_of_board_pins;
 
@@ -590,14 +596,15 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
 
-const mp_obj_type_t pin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Pin,
-    .print = pin_print,
-    .make_new = pin_make_new,
-    .call = pin_call,
-    .locals_dict = (mp_obj_dict_t*)&pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    make_new, pin_make_new,
+    print, pin_print,
+    call, pin_call,
+    locals_dict, &pin_locals_dict
+    );
 
 /// \moduleref machine
 /// \class PinAF - Pin Alternate Functions
@@ -665,9 +672,14 @@ STATIC const mp_rom_map_elem_t pin_af_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pin_af_locals_dict, pin_af_locals_dict_table);
 
-const mp_obj_type_t pin_af_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PinAF,
-    .print = pin_af_obj_print,
-    .locals_dict = (mp_obj_dict_t*)&pin_af_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_af_type,
+    MP_QSTR_PinAF,
+    MP_TYPE_FLAG_NONE,
+    print, pin_af_obj_print,
+    locals_dict, &pin_af_locals_dict
+    );
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t pin_class_mapper);
+MP_REGISTER_ROOT_POINTER(mp_obj_t pin_class_map_dict);
+MP_REGISTER_ROOT_POINTER(mp_obj_t pin_irq_handlers[NUM_OF_PINS]);

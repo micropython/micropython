@@ -1,4 +1,4 @@
-import os, re, serial, struct, time
+import io, os, re, serial, struct, time
 from errno import EPERM
 from .console import VT_ENABLED
 
@@ -21,29 +21,23 @@ fs_hook_cmds = {
     "CMD_SEEK": 8,
     "CMD_REMOVE": 9,
     "CMD_RENAME": 10,
+    "CMD_MKDIR": 11,
+    "CMD_RMDIR": 12,
 }
 
 fs_hook_code = """\
-import uos, uio, ustruct, micropython, usys
+import uos, uio, ustruct, micropython
 
+SEEK_SET = 0
 
 class RemoteCommand:
-    def __init__(self, use_second_port):
+    def __init__(self):
+        import uselect, usys
         self.buf4 = bytearray(4)
-        try:
-            import pyb
-            self.fout = pyb.USB_VCP()
-            if use_second_port:
-                self.fin = pyb.USB_VCP(1)
-            else:
-                self.fin = pyb.USB_VCP()
-        except:
-            import usys
-            self.fout = usys.stdout.buffer
-            self.fin = usys.stdin.buffer
-        import select
-        self.poller = select.poll()
-        self.poller.register(self.fin, select.POLLIN)
+        self.fout = usys.stdout.buffer
+        self.fin = usys.stdin.buffer
+        self.poller = uselect.poll()
+        self.poller.register(self.fin, uselect.POLLIN)
 
     def poll_in(self):
         for _ in self.poller.ipoll(1000):
@@ -149,8 +143,23 @@ class RemoteFile(uio.IOBase):
     def __exit__(self, a, b, c):
         self.close()
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        l = self.readline()
+        if not l:
+            raise StopIteration
+        return l
+
     def ioctl(self, request, arg):
-        if request == 4:  # CLOSE
+        if request == 1:  # FLUSH
+            self.flush()
+        elif request == 2:  # SEEK
+            # This assumes a 32-bit bare-metal machine.
+            import machine
+            machine.mem32[arg] = self.seek(machine.mem32[arg], machine.mem32[arg + 4])
+        elif request == 4:  # CLOSE
             self.close()
         return 0
 
@@ -213,13 +222,16 @@ class RemoteFile(uio.IOBase):
         c.end()
         return n
 
-    def seek(self, n):
+    def seek(self, n, whence=SEEK_SET):
         c = self.cmd
         c.begin(CMD_SEEK)
         c.wr_s8(self.fd)
         c.wr_s32(n)
+        c.wr_s8(whence)
         n = c.rd_s32()
         c.end()
+        if n < 0:
+            raise OSError(n)
         return n
 
 
@@ -259,6 +271,24 @@ class RemoteFS:
         c.begin(CMD_RENAME)
         c.wr_str(self.path + old)
         c.wr_str(self.path + new)
+        res = c.rd_s32()
+        c.end()
+        if res < 0:
+            raise OSError(-res)
+
+    def mkdir(self, path):
+        c = self.cmd
+        c.begin(CMD_MKDIR)
+        c.wr_str(self.path + path)
+        res = c.rd_s32()
+        c.end()
+        if res < 0:
+            raise OSError(-res)
+
+    def rmdir(self, path):
+        c = self.cmd
+        c.begin(CMD_RMDIR)
+        c.wr_str(self.path + path)
         res = c.rd_s32()
         c.end()
         if res < 0:
@@ -313,8 +343,8 @@ class RemoteFS:
         return RemoteFile(c, fd, mode.find('b') == -1)
 
 
-def __mount(use_second_port):
-    uos.mount(RemoteFS(RemoteCommand(use_second_port)), '/remote')
+def __mount():
+    uos.mount(RemoteFS(RemoteCommand()), '/remote')
     uos.chdir('/remote')
 """
 
@@ -330,12 +360,13 @@ fs_hook_code = re.sub("buf4", "b4", fs_hook_code)
 
 
 class PyboardCommand:
-    def __init__(self, fin, fout, path):
+    def __init__(self, fin, fout, path, unsafe_links=False):
         self.fin = fin
         self.fout = fout
         self.root = path + "/"
         self.data_ilistdir = ["", []]
         self.data_files = []
+        self.unsafe_links = unsafe_links
 
     def rd_s8(self):
         return struct.unpack("<b", self.fin.read(1))[0]
@@ -376,8 +407,12 @@ class PyboardCommand:
         print(f"[{msg}]", end="\r\n")
 
     def path_check(self, path):
-        parent = os.path.realpath(self.root)
-        child = os.path.realpath(path)
+        if not self.unsafe_links:
+            parent = os.path.realpath(self.root)
+            child = os.path.realpath(path)
+        else:
+            parent = os.path.abspath(self.root)
+            child = os.path.abspath(path)
         if parent != os.path.commonpath([parent, child]):
             raise OSError(EPERM, "")  # File is outside mounted dir
 
@@ -402,12 +437,11 @@ class PyboardCommand:
         path = self.root + self.rd_str()
         try:
             self.path_check(path)
+            self.data_ilistdir[0] = path
+            self.data_ilistdir[1] = os.listdir(path)
             self.wr_s8(0)
         except OSError as er:
             self.wr_s8(-abs(er.errno))
-        else:
-            self.data_ilistdir[0] = path
-            self.data_ilistdir[1] = os.listdir(path)
 
     def do_ilistdir_next(self):
         if self.data_ilistdir[1]:
@@ -459,8 +493,12 @@ class PyboardCommand:
     def do_seek(self):
         fd = self.rd_s8()
         n = self.rd_s32()
+        whence = self.rd_s8()
         # self.log_cmd(f"seek {fd} {n}")
-        self.data_files[fd][0].seek(n)
+        try:
+            n = self.data_files[fd][0].seek(n, whence)
+        except io.UnsupportedOperation:
+            n = -1
         self.wr_s32(n)
 
     def do_write(self):
@@ -496,6 +534,28 @@ class PyboardCommand:
             ret = -abs(er.errno)
         self.wr_s32(ret)
 
+    def do_mkdir(self):
+        path = self.root + self.rd_str()
+        # self.log_cmd(f"mkdir {path}")
+        try:
+            self.path_check(path)
+            os.mkdir(path)
+            ret = 0
+        except OSError as er:
+            ret = -abs(er.errno)
+        self.wr_s32(ret)
+
+    def do_rmdir(self):
+        path = self.root + self.rd_str()
+        # self.log_cmd(f"rmdir {path}")
+        try:
+            self.path_check(path)
+            os.rmdir(path)
+            ret = 0
+        except OSError as er:
+            ret = -abs(er.errno)
+        self.wr_s32(ret)
+
     cmd_table = {
         fs_hook_cmds["CMD_STAT"]: do_stat,
         fs_hook_cmds["CMD_ILISTDIR_START"]: do_ilistdir_start,
@@ -507,6 +567,8 @@ class PyboardCommand:
         fs_hook_cmds["CMD_SEEK"]: do_seek,
         fs_hook_cmds["CMD_REMOVE"]: do_remove,
         fs_hook_cmds["CMD_RENAME"]: do_rename,
+        fs_hook_cmds["CMD_MKDIR"]: do_mkdir,
+        fs_hook_cmds["CMD_RMDIR"]: do_rmdir,
     }
 
 
@@ -563,59 +625,102 @@ class PyboardExtended(Pyboard):
         self.device_name = dev
         self.mounted = False
 
-    def mount_local(self, path, dev_out=None):
+    def mount_local(self, path, unsafe_links=False):
         fout = self.serial
-        if dev_out is not None:
-            try:
-                fout = serial.Serial(dev_out)
-            except serial.SerialException:
-                port = list(serial.tools.list_ports.grep(dev_out))
-                if not port:
-                    raise
-                for p in port:
-                    try:
-                        fout = serial.Serial(p.device)
-                        break
-                    except serial.SerialException:
-                        pass
-        self.mounted = True
         if self.eval('"RemoteFS" in globals()') == b"False":
             self.exec_(fs_hook_code)
-        self.exec_("__mount(%s)" % (dev_out is not None))
-        self.cmd = PyboardCommand(self.serial, fout, path)
+        self.exec_("__mount()")
+        self.mounted = True
+        self.cmd = PyboardCommand(self.serial, fout, path, unsafe_links=unsafe_links)
         self.serial = SerialIntercept(self.serial, self.cmd)
-        self.dev_out = dev_out
 
-    def soft_reset_with_mount(self, out_callback):
+    def write_ctrl_d(self, out_callback):
         self.serial.write(b"\x04")
         if not self.mounted:
             return
 
-        # Wait for a response to the soft-reset command.
-        for i in range(10):
-            if self.serial.inWaiting():
-                break
-            time.sleep(0.05)
-        else:
-            # Device didn't respond so it wasn't in a state to do a soft reset.
+        # Read response from the device until it is quiet (with a timeout).
+        INITIAL_TIMEOUT = 0.5
+        BANNER_TIMEOUT = 2
+        QUIET_TIMEOUT = 0.1
+        FULL_TIMEOUT = 5
+        t_start = t_last_activity = time.monotonic()
+        data_all = b""
+        soft_reboot_started = False
+        soft_reboot_banner = False
+        while True:
+            t = time.monotonic()
+            n = self.serial.inWaiting()
+            if n > 0:
+                data = self.serial.read(n)
+                out_callback(data)
+                data_all += data
+                t_last_activity = t
+            else:
+                if len(data_all) == 0:
+                    if t - t_start > INITIAL_TIMEOUT:
+                        return
+                else:
+                    if t - t_start > FULL_TIMEOUT:
+                        if soft_reboot_started:
+                            break
+                        return
+
+                    next_data_timeout = QUIET_TIMEOUT
+
+                    if not soft_reboot_started and data_all.find(b"MPY: soft reboot") != -1:
+                        soft_reboot_started = True
+
+                    if soft_reboot_started and not soft_reboot_banner:
+                        # Once soft reboot has been initiated, give some more time for the startup
+                        # banner to be shown
+                        if data_all.find(b"\nMicroPython ") != -1:
+                            soft_reboot_banner = True
+                        elif data_all.find(b"\nraw REPL; CTRL-B to exit\r\n") != -1:
+                            soft_reboot_banner = True
+                        else:
+                            next_data_timeout = BANNER_TIMEOUT
+
+                    if t - t_last_activity > next_data_timeout:
+                        break
+
+        if not soft_reboot_started:
             return
 
-        out_callback(self.serial.read(1))
+        if not soft_reboot_banner:
+            out_callback(b"Warning: Could not remount local filesystem\r\n")
+            return
+
+        # Determine type of prompt
+        if data_all.endswith(b">"):
+            in_friendly_repl = False
+            prompt = b">"
+        else:
+            in_friendly_repl = True
+            prompt = data_all.rsplit(b"\r\n", 1)[-1]
+
+        # Clear state while board remounts, it will be re-set once mounted.
+        self.mounted = False
         self.serial = self.serial.orig_serial
-        n = self.serial.inWaiting()
-        while n > 0:
-            buf = self.serial.read(n)
-            out_callback(buf)
-            time.sleep(0.1)
-            n = self.serial.inWaiting()
+
+        # Provide a message about the remount.
+        out_callback(bytes(f"\r\nRemount local directory {self.cmd.root} at /remote\r\n", "utf8"))
+
+        # Enter raw REPL and re-mount the remote filesystem.
         self.serial.write(b"\x01")
         self.exec_(fs_hook_code)
-        self.exec_("__mount(%s)" % (self.dev_out is not None))
-        self.exit_raw_repl()
-        self.read_until(4, b">>> ")
+        self.exec_("__mount()")
+        self.mounted = True
+
+        # Exit raw REPL if needed, and wait for the friendly REPL prompt.
+        if in_friendly_repl:
+            self.exit_raw_repl()
+        self.read_until(len(prompt), prompt)
+        out_callback(prompt)
         self.serial = SerialIntercept(self.serial, self.cmd)
 
     def umount_local(self):
         if self.mounted:
             self.exec_('uos.umount("/remote")')
             self.mounted = False
+            self.serial = self.serial.orig_serial

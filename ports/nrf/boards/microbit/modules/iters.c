@@ -43,25 +43,15 @@ static mp_obj_t microbit_repeat_iter_next(mp_obj_t iter_in) {
     return mp_obj_subscr(iter->iterable, MP_OBJ_NEW_SMALL_INT(iter->index), MP_OBJ_SENTINEL);
 }
 
-const mp_obj_type_t microbit_repeat_iterator_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = NULL,
-    .getiter = mp_identity_getiter,
-    .iternext = microbit_repeat_iter_next,
-    .buffer_p = {NULL},
-    MP_OBJ_NULL
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    microbit_repeat_iterator_type,
+    MP_QSTR_iterator,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, microbit_repeat_iter_next
+    );
 
 mp_obj_t microbit_repeat_iterator(mp_obj_t iterable) {
-    repeat_iterator_t *result = m_new_obj(repeat_iterator_t);
-    result->base.type = &microbit_repeat_iterator_type;
+    repeat_iterator_t *result = mp_obj_malloc(repeat_iterator_t, &microbit_repeat_iterator_type);
     result->iterable = iterable;
     result->index = -1;
     return result;

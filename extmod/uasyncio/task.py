@@ -99,19 +99,18 @@ class TaskQueue:
     def peek(self):
         return self.heap
 
-    def push_sorted(self, v, key):
+    def push(self, v, key=None):
+        assert v.ph_child is None
+        assert v.ph_next is None
         v.data = None
-        v.ph_key = key
-        v.ph_child = None
-        v.ph_next = None
+        v.ph_key = key if key is not None else core.ticks()
         self.heap = ph_meld(v, self.heap)
 
-    def push_head(self, v):
-        self.push_sorted(v, core.ticks())
-
-    def pop_head(self):
+    def pop(self):
         v = self.heap
-        self.heap = ph_pairing(self.heap.ph_child)
+        assert v.ph_next is None
+        self.heap = ph_pairing(v.ph_child)
+        v.ph_child = None
         return v
 
     def remove(self, v):
@@ -123,6 +122,7 @@ class Task:
     def __init__(self, coro, globals=None):
         self.coro = coro  # Coroutine of this Task
         self.data = None  # General data for queue it is waiting on
+        self.state = True  # None, False, True, a callable, or a TaskQueue instance
         self.ph_key = 0  # Pairing heap
         self.ph_child = None  # Paring heap
         self.ph_child_last = None  # Paring heap
@@ -130,30 +130,33 @@ class Task:
         self.ph_rightmost_parent = None  # Paring heap
 
     def __iter__(self):
-        if self.coro is self:
-            # Signal that the completed-task has been await'ed on.
-            self.waiting = None
-        elif not hasattr(self, "waiting"):
-            # Lazily allocated head of linked list of Tasks waiting on completion of this task.
-            self.waiting = TaskQueue()
+        if not self.state:
+            # Task finished, signal that is has been await'ed on.
+            self.state = False
+        elif self.state is True:
+            # Allocated head of linked list of Tasks waiting on completion of this task.
+            self.state = TaskQueue()
+        elif type(self.state) is not TaskQueue:
+            # Task has state used for another purpose, so can't also wait on it.
+            raise RuntimeError("can't wait")
         return self
 
     def __next__(self):
-        if self.coro is self:
+        if not self.state:
             # Task finished, raise return value to caller so it can continue.
             raise self.data
         else:
             # Put calling task on waiting queue.
-            self.waiting.push_head(core.cur_task)
+            self.state.push(core.cur_task)
             # Set calling task's data to this task that it waits on, to double-link it.
             core.cur_task.data = self
 
     def done(self):
-        return self.coro is self
+        return not self.state
 
     def cancel(self):
         # Check if task is already finished.
-        if self.coro is self:
+        if not self.state:
             return False
         # Can't cancel self (not supported yet).
         if self is core.cur_task:
@@ -165,20 +168,10 @@ class Task:
         if hasattr(self.data, "remove"):
             # Not on the main running queue, remove the task from the queue it's on.
             self.data.remove(self)
-            core._task_queue.push_head(self)
+            core._task_queue.push(self)
         elif core.ticks_diff(self.ph_key, core.ticks()) > 0:
             # On the main running queue but scheduled in the future, so bring it forward to now.
             core._task_queue.remove(self)
-            core._task_queue.push_head(self)
+            core._task_queue.push(self)
         self.data = core.CancelledError
         return True
-
-    def throw(self, value):
-        # This task raised an exception which was uncaught; handle that now.
-        # Set the data because it was cleared by the main scheduling loop.
-        self.data = value
-        if not hasattr(self, "waiting"):
-            # Nothing await'ed on the task so call the exception handler.
-            core._exc_context["exception"] = value
-            core._exc_context["future"] = self
-            core.Loop.call_exception_handler(core._exc_context)

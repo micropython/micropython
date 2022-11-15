@@ -28,3 +28,5 @@ const mp_obj_module_t wipy_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&wipy_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_wipy, wipy_module);

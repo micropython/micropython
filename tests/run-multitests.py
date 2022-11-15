@@ -3,6 +3,11 @@
 # This file is part of the MicroPython project, http://micropython.org/
 # The MIT License (MIT)
 # Copyright (c) 2020 Damien P. George
+#
+# run-multitests.py
+# Runs a test suite that relies on two micropython instances/devices
+# interacting in some way. Typically used to test networking / bluetooth etc.
+
 
 import sys, os, time, re, select
 import argparse
@@ -10,15 +15,24 @@ import itertools
 import subprocess
 import tempfile
 
-sys.path.append("../tools")
+test_dir = os.path.abspath(os.path.dirname(__file__))
+
+if os.path.abspath(sys.path[0]) == test_dir:
+    # remove the micropython/tests dir from path to avoid
+    # accidentally importing tests like micropython/const.py
+    sys.path.pop(0)
+
+sys.path.insert(0, test_dir + "/../tools")
 import pyboard
 
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3.exe")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/windows/micropython.exe")
+    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", test_dir + "/../ports/windows/micropython.exe")
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/unix/micropython")
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", test_dir + "/../ports/unix/build-standard/micropython"
+    )
 
 # For diff'ing test output
 DIFF = os.getenv("MICROPY_DIFF", "diff -u")
@@ -46,6 +60,16 @@ class multitest:
         print("NEXT")
         multitest.flush()
     @staticmethod
+    def broadcast(msg):
+        print("BROADCAST", msg)
+        multitest.flush()
+    @staticmethod
+    def wait(msg):
+        msg = "BROADCAST " + msg
+        while True:
+            if sys.stdin.readline().rstrip() == msg:
+                return
+    @staticmethod
     def globals(**gs):
         for g in gs:
             print("SET {{}} = {{!r}}".format(g, gs[g]))
@@ -53,10 +77,16 @@ class multitest:
     @staticmethod
     def get_network_ip():
         try:
-            import network
-            ip = network.WLAN().ifconfig()[0]
+            ip = nic.ifconfig()[0]
         except:
-            ip = "127.0.0.1"
+            try:
+                import network
+                if hasattr(network, "WLAN"):
+                    ip = network.WLAN().ifconfig()[0]
+                else:
+                    ip = network.LAN().ifconfig()[0]
+            except:
+                ip = HOST_IP
         return ip
 
 {}
@@ -66,13 +96,29 @@ multitest.flush()
 """
 
 # The btstack implementation on Unix generates some spurious output that we
-# can't control.
+# can't control.  Also other platforms may output certain warnings/errors that
+# can be safely ignored.
 IGNORE_OUTPUT_MATCHES = (
     "libusb: error ",  # It tries to open devices that it doesn't have access to (libusb prints unconditionally).
     "hci_transport_h2_libusb.c",  # Same issue. We enable LOG_ERROR in btstack.
     "USB Path: ",  # Hardcoded in btstack's libusb transport.
     "hci_number_completed_packet",  # Warning from btstack.
+    "lld_pdu_get_tx_flush_nb HCI packet count mismatch (",  # From ESP-IDF, see https://github.com/espressif/esp-idf/issues/5105
 )
+
+
+def get_host_ip(_ip_cache=[]):
+    if not _ip_cache:
+        try:
+            import socket
+
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            _ip_cache.append(s.getsockname()[0])
+            s.close()
+        except:
+            _ip_cache.append("127.0.0.1")
+    return _ip_cache[0]
 
 
 class PyInstance:
@@ -126,14 +172,12 @@ class PyInstanceSubProcess(PyInstance):
 
     def start_script(self, script):
         self.popen = subprocess.Popen(
-            self.argv,
+            self.argv + ["-c", script],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             env=self.env,
         )
-        self.popen.stdin.write(script)
-        self.popen.stdin.close()
         self.finished = False
 
     def stop(self):
@@ -141,7 +185,7 @@ class PyInstanceSubProcess(PyInstance):
             self.popen.terminate()
 
     def readline(self):
-        sel = select.select([self.popen.stdout.raw], [], [], 0.1)
+        sel = select.select([self.popen.stdout.raw], [], [], 0.001)
         if not sel[0]:
             self.finished = self.popen.poll() is not None
             return None, None
@@ -151,6 +195,10 @@ class PyInstanceSubProcess(PyInstance):
             return None, None
         else:
             return str(out.rstrip(), "ascii"), None
+
+    def write(self, data):
+        self.popen.stdin.write(data)
+        self.popen.stdin.flush()
 
     def is_finished(self):
         return self.finished
@@ -220,6 +268,9 @@ class PyInstancePyboard(PyInstance):
             err = None
         return str(out.rstrip(), "ascii"), err
 
+    def write(self, data):
+        self.pyb.serial.write(data)
+
     def is_finished(self):
         return self.finished
 
@@ -256,6 +307,13 @@ def run_test_on_instances(test_file, num_instances, instances):
     skip = False
     injected_globals = ""
     output = [[] for _ in range(num_instances)]
+
+    # If the test calls get_network_ip() then inject HOST_IP so that devices can know
+    # the IP address of the host.  Do this lazily to not require a TCP/IP connection
+    # on the host if it's not needed.
+    with open(test_file, "rb") as f:
+        if b"get_network_ip" in f.read():
+            injected_globals += "HOST_IP = '" + get_host_ip() + "'\n"
 
     if cmd_args.trace_output:
         print("TRACE {}:".format("|".join(str(i) for i in instances)))
@@ -318,7 +376,12 @@ def run_test_on_instances(test_file, num_instances, instances):
                 last_read_time[idx] = time.time()
                 if out is not None and not any(m in out for m in IGNORE_OUTPUT_MATCHES):
                     trace_instance_output(idx, out)
-                    output[idx].append(out)
+                    if out.startswith("BROADCAST "):
+                        for instance2 in instances:
+                            if instance2 is not instance:
+                                instance2.write(bytes(out, "ascii") + b"\r\n")
+                    else:
+                        output[idx].append(out)
                 if err is not None:
                     trace_instance_output(idx, err)
                     output[idx].append(err)
@@ -422,7 +485,10 @@ def run_tests(test_files, instances_truth, instances_test):
 def main():
     global cmd_args
 
-    cmd_parser = argparse.ArgumentParser(description="Run network tests for MicroPython")
+    cmd_parser = argparse.ArgumentParser(
+        description="Run network tests for MicroPython",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     cmd_parser.add_argument(
         "-s", "--show-output", action="store_true", help="show test output after running"
     )
@@ -439,11 +505,19 @@ def main():
         default=1,
         help="repeat the test with this many permutations of the instance order",
     )
+    cmd_parser.epilog = (
+        "Supported instance types:\r\n"
+        " -i pyb:<port>   physical device (eg. pyboard) on provided repl port.\n"
+        " -i micropython  unix micropython instance, path customised with MICROPY_MICROPYTHON env.\n"
+        " -i cpython      desktop python3 instance, path customised with MICROPY_CPYTHON3 env.\n"
+        " -i exec:<path>  custom program run on provided path.\n"
+        "Each instance arg can optionally have custom env provided, eg. <cmd>,ENV=VAR,ENV=VAR...\n"
+    )
     cmd_parser.add_argument("files", nargs="+", help="input test files")
     cmd_args = cmd_parser.parse_args()
 
     # clear search path to make sure tests use only builtin modules and those in extmod
-    os.environ["MICROPYPATH"] = os.pathsep + "../extmod"
+    os.environ["MICROPYPATH"] = os.pathsep.join(("", ".frozen", "../extmod"))
 
     test_files = prepare_test_file_list(cmd_args.files)
     max_instances = max(t[1] for t in test_files)

@@ -10,7 +10,7 @@ This class provides a driver for WiFi network processors.  Example usage::
     # enable station interface and connect to WiFi access point
     nic = network.WLAN(network.STA_IF)
     nic.active(True)
-    nic.connect('your-ssid', 'your-password')
+    nic.connect('your-ssid', 'your-key')
     # now use sockets as usual
 
 Constructors
@@ -32,9 +32,9 @@ Methods
     argument is passed. Otherwise, query current state if no argument is
     provided. Most other methods require active interface.
 
-.. method:: WLAN.connect(ssid=None, password=None, *, bssid=None)
+.. method:: WLAN.connect(ssid=None, key=None, *, bssid=None)
 
-    Connect to the specified wireless network, using the specified password.
+    Connect to the specified wireless network, using the specified key.
     If *bssid* is given then the connection will be restricted to the
     access-point with that MAC address (the *ssid* must also be specified
     in this case).
@@ -46,16 +46,18 @@ Methods
 .. method:: WLAN.scan()
 
     Scan for the available wireless networks.
+    Hidden networks -- where the SSID is not broadcast -- will also be scanned
+    if the WLAN interface allows it.
 
     Scanning is only possible on STA interface. Returns list of tuples with
     the information about WiFi access points:
 
-        (ssid, bssid, channel, RSSI, authmode, hidden)
+        (ssid, bssid, channel, RSSI, security, hidden)
 
     *bssid* is hardware address of an access point, in binary form, returned as
-    bytes object. You can use `ubinascii.hexlify()` to convert it to ASCII form.
+    bytes object. You can use `binascii.hexlify()` to convert it to ASCII form.
 
-    There are five values for authmode:
+    There are five values for security:
 
         * 0 -- open
         * 1 -- WEP
@@ -110,10 +112,10 @@ Methods
    multiple parameters can be set at once. For querying, parameters name should
    be quoted as a string, and only one parameter can be queries at time::
 
-    # Set WiFi access point name (formally known as ESSID) and WiFi channel
-    ap.config(essid='My AP', channel=11)
+    # Set WiFi access point name (formally known as SSID) and WiFi channel
+    ap.config(ssid='My AP', channel=11)
     # Query params one by one
-    print(ap.config('essid'))
+    print(ap.config('ssid'))
     print(ap.config('channel'))
 
    Following are commonly supported parameters (availability of a specific parameter
@@ -123,10 +125,12 @@ Methods
    Parameter      Description
    =============  ===========
    mac            MAC address (bytes)
-   essid          WiFi access point name (string)
+   ssid           WiFi access point name (string)
    channel        WiFi channel (integer)
-   hidden         Whether ESSID is hidden (boolean)
-   authmode       Authentication mode supported (enumeration, see module constants)
-   password       Access password (string)
-   dhcp_hostname  The DHCP hostname to use
+   hidden         Whether SSID is hidden (boolean)
+   security       Security protocol supported (enumeration, see module constants)
+   key            Access key (string)
+   hostname       The hostname that will be sent to DHCP (STA interfaces) and mDNS (if supported, both STA and AP)
+   reconnects     Number of reconnect attempts to make (integer, 0=none, -1=unlimited)
+   txpower        Maximum transmit power in dBm (integer or float)
    =============  ===========

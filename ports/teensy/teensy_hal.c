@@ -77,3 +77,5 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
 void extint_register_pin(const void *pin, uint32_t mode, int hard_irq, mp_obj_t callback_obj) {
     mp_raise_NotImplementedError(NULL);
 }
+
+MP_REGISTER_ROOT_POINTER(struct _pyb_uart_obj_t *pyb_stdio_uart);

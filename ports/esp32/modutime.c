@@ -31,7 +31,7 @@
 #include <sys/time.h>
 
 #include "py/runtime.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "extmod/utime_mphal.h"
 
 STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
@@ -106,3 +106,5 @@ const mp_obj_module_t utime_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&time_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_utime, utime_module);

@@ -35,8 +35,8 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
-#include "lib/timeutils/timeutils.h"
-#include "lib/netutils/netutils.h"
+#include "shared/timeutils/timeutils.h"
+#include "shared/netutils/netutils.h"
 #include "modnetwork.h"
 #include "modusocket.h"
 #include "modwlan.h"
@@ -641,8 +641,8 @@ STATIC void wlan_set_security (uint8_t auth, const char *key, uint8_t len) {
     if (key != NULL) {
         memcpy(&wlan_obj.key, key, len);
         wlan_obj.key[len] = '\0';
+        _u8 wep_key[32];
         if (auth == SL_SEC_TYPE_WEP) {
-            _u8 wep_key[32];
             wlan_wep_key_unhexlify(key, (char *)&wep_key);
             key = (const char *)&wep_key;
             len /= 2;
@@ -1285,13 +1285,16 @@ STATIC const mp_rom_map_elem_t wlan_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
 
+STATIC MP_DEFINE_CONST_OBJ_FULL_TYPE(
+    mod_network_nic_type_wlan_base,
+    MP_QSTR_WLAN,
+    MP_TYPE_FLAG_NONE,
+    make_new, wlan_make_new,
+    locals_dict, &wlan_locals_dict
+    );
+
 const mod_network_nic_type_t mod_network_nic_type_wlan = {
-    .base = {
-        { &mp_type_type },
-        .name = MP_QSTR_WLAN,
-        .make_new = wlan_make_new,
-        .locals_dict = (mp_obj_t)&wlan_locals_dict,
-    },
+    .base = mod_network_nic_type_wlan_base,
 };
 
 STATIC const mp_irq_methods_t wlan_irq_methods = {

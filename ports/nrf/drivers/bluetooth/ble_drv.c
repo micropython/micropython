@@ -929,7 +929,7 @@ void ble_drv_discover_descriptors(void) {
 
 static void sd_evt_handler(uint32_t evt_id) {
     switch (evt_id) {
-#if MICROPY_MBFS
+#if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE || MICROPY_MBFS
         case NRF_EVT_FLASH_OPERATION_SUCCESS:
             flash_operation_finished(FLASH_STATE_SUCCESS);
             break;
@@ -1134,6 +1134,24 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
         case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
             BLE_DRIVER_LOG("BLE GAP EVT DATA LENGTH UPDATE REQUEST\n");
             sd_ble_gap_data_length_update(p_ble_evt->evt.gap_evt.conn_handle, NULL, NULL);
+            break;
+
+        case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
+            BLE_DRIVER_LOG("BLE_GAP_EVT_PHY_UPDATE_REQUEST\n");
+            ble_gap_phys_t const phys =
+            {
+                BLE_GAP_PHY_AUTO,
+                BLE_GAP_PHY_AUTO,
+            };
+            sd_ble_gap_phy_update(p_ble_evt->evt.gap_evt.conn_handle, &phys);
+            break;
+
+        case BLE_GAP_EVT_PHY_UPDATE:
+            BLE_DRIVER_LOG("BLE_GAP_EVT_PHY_UPDATE -- unhandled!\n");
+            break;
+
+        case BLE_GAP_EVT_DATA_LENGTH_UPDATE:
+            BLE_DRIVER_LOG("BLE_GAP_EVT_DATA_LENGTH_UPDATE -- unhandled!\n");
             break;
 
 #endif // (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)

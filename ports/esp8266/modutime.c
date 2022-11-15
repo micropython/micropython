@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/smallint.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "modmachine.h"
 #include "user_interface.h"
 #include "extmod/utime_mphal.h"
@@ -129,3 +129,5 @@ const mp_obj_module_t utime_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&time_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_utime, utime_module);

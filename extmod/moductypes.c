@@ -95,8 +95,7 @@ STATIC NORETURN void syntax_error(void) {
 
 STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 3, false);
-    mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-    o->base.type = type;
+    mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, type);
     o->addr = (void *)(uintptr_t)mp_obj_int_get_truncated(args[0]);
     o->desc = args[1];
     o->flags = LAYOUT_NATIVE;
@@ -463,8 +462,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
 
     switch (agg_type) {
         case STRUCT: {
-            mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-            o->base.type = &uctypes_struct_type;
+            mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
             o->desc = sub->items[1];
             o->addr = self->addr + offset;
             o->flags = self->flags;
@@ -479,8 +477,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             MP_FALLTHROUGH
         }
         case PTR: {
-            mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-            o->base.type = &uctypes_struct_type;
+            mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
             o->desc = MP_OBJ_FROM_PTR(sub);
             o->addr = self->addr + offset;
             o->flags = self->flags;
@@ -552,8 +549,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
             } else if (value == MP_OBJ_SENTINEL) {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[2], self->flags, &dummy);
-                mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-                o->base.type = &uctypes_struct_type;
+                mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
                 o->desc = t->items[2];
                 o->addr = self->addr + size * index;
                 o->flags = self->flags;
@@ -570,8 +566,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
             } else {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[1], self->flags, &dummy);
-                mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-                o->base.type = &uctypes_struct_type;
+                mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
                 o->desc = t->items[1];
                 o->addr = p + size * index;
                 o->flags = self->flags;
@@ -639,16 +634,17 @@ STATIC mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
 
-STATIC const mp_obj_type_t uctypes_struct_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_struct,
-    .print = uctypes_struct_print,
-    .make_new = uctypes_struct_make_new,
-    .attr = uctypes_struct_attr,
-    .subscr = uctypes_struct_subscr,
-    .unary_op = uctypes_struct_unary_op,
-    .buffer_p = { .get_buffer = uctypes_get_buffer },
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    uctypes_struct_type,
+    MP_QSTR_struct,
+    MP_TYPE_FLAG_NONE,
+    make_new, uctypes_struct_make_new,
+    print, uctypes_struct_print,
+    attr, uctypes_struct_attr,
+    subscr, uctypes_struct_subscr,
+    unary_op, uctypes_struct_unary_op,
+    buffer, uctypes_get_buffer
+    );
 
 STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uctypes) },
@@ -721,5 +717,7 @@ const mp_obj_module_t mp_module_uctypes = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_uctypes_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_uctypes, mp_module_uctypes);
 
 #endif

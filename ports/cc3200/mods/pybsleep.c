@@ -125,10 +125,11 @@ STATIC pybsleep_data_t   pybsleep_data = {NULL, NULL, NULL};
 volatile arm_cm4_core_regs_t vault_arm_registers;
 STATIC pybsleep_reset_cause_t pybsleep_reset_cause = PYB_SLP_PWRON_RESET;
 STATIC pybsleep_wake_reason_t pybsleep_wake_reason = PYB_SLP_WAKED_PWRON;
-STATIC const mp_obj_type_t pyb_sleep_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_sleep,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_sleep_type,
+    MP_QSTR_sleep,
+    MP_TYPE_FLAG_NONE
+    );
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
@@ -210,8 +211,7 @@ void pyb_sleep_signal_soft_reset (void) {
 }
 
 void pyb_sleep_add (const mp_obj_t obj, WakeUpCB_t wakeup) {
-    pyb_sleep_obj_t *sleep_obj = m_new_obj(pyb_sleep_obj_t);
-    sleep_obj->base.type = &pyb_sleep_type;
+    pyb_sleep_obj_t *sleep_obj = mp_obj_malloc(pyb_sleep_obj_t, &pyb_sleep_type);
     sleep_obj->obj = obj;
     sleep_obj->wakeup = wakeup;
     // remove it in case it was already registered
@@ -653,3 +653,4 @@ STATIC bool setup_timer_hibernate_wake (void) {
     return false;
 }
 
+MP_REGISTER_ROOT_POINTER(mp_obj_list_t pyb_sleep_obj_list);

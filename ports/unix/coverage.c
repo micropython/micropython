@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "py/obj.h"
+#include "py/objfun.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -105,11 +106,13 @@ STATIC const mp_stream_p_t fileio_stream_p = {
     .ioctl = stest_ioctl,
 };
 
-STATIC const mp_obj_type_t mp_type_stest_fileio = {
-    { &mp_type_type },
-    .protocol = &fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_stest_fileio,
+    MP_QSTR_stest_fileio,
+    MP_TYPE_FLAG_NONE,
+    protocol, &fileio_stream_p,
+    locals_dict, &rawfile_locals_dict
+    );
 
 // stream read returns non-blocking error
 STATIC mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
@@ -132,11 +135,13 @@ STATIC const mp_stream_p_t textio_stream_p2 = {
     .is_text = true,
 };
 
-STATIC const mp_obj_type_t mp_type_stest_textio2 = {
-    { &mp_type_type },
-    .protocol = &textio_stream_p2,
-    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict2,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_stest_textio2,
+    MP_QSTR_stest_textio2,
+    MP_TYPE_FLAG_NONE,
+    protocol, &textio_stream_p2,
+    locals_dict, &rawfile_locals_dict2
+    );
 
 // str/bytes objects without a valid hash
 STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte *)"0123456789"};
@@ -153,7 +158,7 @@ STATIC void pairheap_test(size_t nops, int *ops) {
         mp_pairheap_init_node(pairheap_lt, &node[i]);
     }
     mp_pairheap_t *heap = mp_pairheap_new(pairheap_lt);
-    printf("create:");
+    mp_printf(&mp_plat_print, "create:");
     for (size_t i = 0; i < nops; ++i) {
         if (ops[i] >= 0) {
             heap = mp_pairheap_push(pairheap_lt, heap, &node[ops[i]]);
@@ -167,13 +172,13 @@ STATIC void pairheap_test(size_t nops, int *ops) {
             ;
         }
     }
-    printf("\npop all:");
+    mp_printf(&mp_plat_print, "\npop all:");
     while (!mp_pairheap_is_empty(pairheap_lt, heap)) {
         mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);
         ;
         heap = mp_pairheap_pop(pairheap_lt, heap);
     }
-    printf("\n");
+    mp_printf(&mp_plat_print, "\n");
 }
 
 // function to run extra tests for things that can't be checked by scripts
@@ -217,6 +222,55 @@ STATIC mp_obj_t extra_coverage(void) {
 
         // calling gc_nbytes with a non-heap pointer
         mp_printf(&mp_plat_print, "%p\n", gc_nbytes(NULL));
+    }
+
+    // tracked allocation
+    {
+        #define NUM_PTRS (8)
+        #define NUM_BYTES (128)
+        #define FLIP_POINTER(p) ((uint8_t *)((uintptr_t)(p) ^ 0x0f))
+
+        mp_printf(&mp_plat_print, "# tracked allocation\n");
+        mp_printf(&mp_plat_print, "m_tracked_head = %p\n", MP_STATE_VM(m_tracked_head));
+
+        uint8_t *ptrs[NUM_PTRS];
+
+        // allocate memory blocks
+        for (size_t i = 0; i < NUM_PTRS; ++i) {
+            ptrs[i] = m_tracked_calloc(1, NUM_BYTES);
+            bool all_zero = true;
+            for (size_t j = 0; j < NUM_BYTES; ++j) {
+                if (ptrs[i][j] != 0) {
+                    all_zero = false;
+                    break;
+                }
+                ptrs[i][j] = j;
+            }
+            mp_printf(&mp_plat_print, "%d %d\n", i, all_zero);
+
+            // hide the pointer from the GC and collect
+            ptrs[i] = FLIP_POINTER(ptrs[i]);
+            gc_collect();
+        }
+
+        // check the memory blocks have the correct content
+        for (size_t i = 0; i < NUM_PTRS; ++i) {
+            bool correct_contents = true;
+            for (size_t j = 0; j < NUM_BYTES; ++j) {
+                if (FLIP_POINTER(ptrs[i])[j] != j) {
+                    correct_contents = false;
+                    break;
+                }
+            }
+            mp_printf(&mp_plat_print, "%d %d\n", i, correct_contents);
+        }
+
+        // free the memory blocks
+        for (size_t i = 0; i < NUM_PTRS; ++i) {
+            m_tracked_free(FLIP_POINTER(ptrs[i]));
+        }
+
+        mp_printf(&mp_plat_print, "m_tracked_head = %p\n", MP_STATE_VM(m_tracked_head));
     }
 
     // vstr
@@ -449,7 +503,10 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# VM\n");
 
         // call mp_execute_bytecode with invalide bytecode (should raise NotImplementedError)
+        mp_module_context_t context;
         mp_obj_fun_bc_t fun_bc;
+        fun_bc.context = &context;
+        fun_bc.child_table = NULL;
         fun_bc.bytecode = (const byte *)"\x01"; // just needed for n_state
         mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, mp_obj_t, 1);
         code_state->fun_bc = &fun_bc;
@@ -635,14 +692,12 @@ STATIC mp_obj_t extra_coverage(void) {
 
     mp_printf(&mp_plat_print, "# end coverage.c\n");
 
-    mp_obj_streamtest_t *s = m_new_obj(mp_obj_streamtest_t);
-    s->base.type = &mp_type_stest_fileio;
+    mp_obj_streamtest_t *s = mp_obj_malloc(mp_obj_streamtest_t, &mp_type_stest_fileio);
     s->buf = NULL;
     s->len = 0;
     s->pos = 0;
     s->error_code = 0;
-    mp_obj_streamtest_t *s2 = m_new_obj(mp_obj_streamtest_t);
-    s2->base.type = &mp_type_stest_textio2;
+    mp_obj_streamtest_t *s2 = mp_obj_malloc(mp_obj_streamtest_t, &mp_type_stest_textio2);
 
     // return a tuple of data for testing on the Python side
     mp_obj_t items[] = {(mp_obj_t)&str_no_hash_obj, (mp_obj_t)&bytes_no_hash_obj, MP_OBJ_FROM_PTR(s), MP_OBJ_FROM_PTR(s2)};

@@ -206,7 +206,7 @@ static int mboot_pack_handle_firmware(void) {
     }
 }
 
-int mboot_pack_write(uint32_t addr, const uint8_t *src8, size_t len) {
+int mboot_pack_write(uint32_t addr, const uint8_t *src8, size_t len, bool dry_run) {
     if (addr == APPLICATION_ADDR) {
         // Base address of main firmware, reset any previous state
         firmware_chunk_base_addr = 0;
@@ -274,6 +274,9 @@ int mboot_pack_write(uint32_t addr, const uint8_t *src8, size_t len) {
     }
 
     // Signature passed, we have valid chunk.
+    if (dry_run) {
+        return 0;
+    }
 
     if (firmware_chunk_buf.header.format == MBOOT_PACK_CHUNK_META) {
         // Ignore META chunks.
@@ -281,7 +284,7 @@ int mboot_pack_write(uint32_t addr, const uint8_t *src8, size_t len) {
     } else if (firmware_chunk_buf.header.format == MBOOT_PACK_CHUNK_FULL_SIG) {
         return mboot_pack_handle_full_sig();
     } else if (firmware_chunk_buf.header.format == MBOOT_PACK_CHUNK_FW_RAW
-        || firmware_chunk_buf.header.format == MBOOT_PACK_CHUNK_FW_GZIP) {
+               || firmware_chunk_buf.header.format == MBOOT_PACK_CHUNK_FW_GZIP) {
         return mboot_pack_handle_firmware();
     } else {
         // Unsupported contents.

@@ -29,7 +29,7 @@ We will start by using the accelerometer to turn on a light if it is not flat. :
 
     while True:
         x = accel.x()
-        if abs(x) > SENSITIVITY: 
+        if abs(x) > SENSITIVITY:
             light.on()
         else:
             light.off()
@@ -61,7 +61,7 @@ use the ``y()`` value and more LEDs we can turn the pyboard into a spirit level.
 
     while True:
         x = accel.x()
-        if x > SENSITIVITY: 
+        if x > SENSITIVITY:
             xlights[0].on()
             xlights[1].off()
         elif x < -SENSITIVITY:
@@ -72,7 +72,7 @@ use the ``y()`` value and more LEDs we can turn the pyboard into a spirit level.
             xlights[1].off()
 
         y = accel.y()
-        if y > SENSITIVITY: 
+        if y > SENSITIVITY:
             ylights[0].on()
             ylights[1].off()
         elif y < -SENSITIVITY:

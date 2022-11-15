@@ -57,6 +57,11 @@
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 #endif
 
+// If internal flash storage is enabled, whether to use a second segment of flash.
+#ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE_SEGMENT2 (0)
+#endif
+
 // Whether to enable the RTC, exposed as pyb.RTC
 #ifndef MICROPY_HW_ENABLE_RTC
 #define MICROPY_HW_ENABLE_RTC (0)
@@ -178,6 +183,87 @@
 #endif
 
 /*****************************************************************************/
+// USB configuration
+
+// The USBD_xxx macros have been renamed to MICROPY_HW_USB_xxx.
+#if defined(USBD_VID) \
+    || defined(USBD_LANGID_STRING) \
+    || defined(USBD_MANUFACTURER_STRING) \
+    || defined(USBD_PRODUCT_HS_STRING) \
+    || defined(USBD_PRODUCT_FS_STRING) \
+    || defined(USBD_CONFIGURATION_HS_STRING) \
+    || defined(USBD_INTERFACE_HS_STRING) \
+    || defined(USBD_CONFIGURATION_FS_STRING) \
+    || defined(USBD_INTERFACE_FS_STRING) \
+    || defined(USBD_CDC_RX_DATA_SIZE) \
+    || defined(USBD_CDC_TX_DATA_SIZE)
+#error "Old USBD_xxx configuration option used, renamed to MICROPY_HW_USB_xxx"
+#endif
+
+// Default VID and PID values to use for the USB device.  If MICROPY_HW_USB_VID
+// is defined by a board then all needed PID options must also be defined.  The
+// VID and PID can also be set dynamically in pyb.usb_mode().
+// Windows needs a different PID to distinguish different device configurations.
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID              (0xf055)
+#define MICROPY_HW_USB_PID_CDC_MSC      (0x9800)
+#define MICROPY_HW_USB_PID_CDC_HID      (0x9801)
+#define MICROPY_HW_USB_PID_CDC          (0x9802)
+#define MICROPY_HW_USB_PID_MSC          (0x9803)
+#define MICROPY_HW_USB_PID_CDC2_MSC     (0x9804)
+#define MICROPY_HW_USB_PID_CDC2         (0x9805)
+#define MICROPY_HW_USB_PID_CDC3         (0x9806)
+#define MICROPY_HW_USB_PID_CDC3_MSC     (0x9807)
+#define MICROPY_HW_USB_PID_CDC_MSC_HID  (0x9808)
+#define MICROPY_HW_USB_PID_CDC2_MSC_HID (0x9809)
+#define MICROPY_HW_USB_PID_CDC3_MSC_HID (0x980a)
+#endif
+
+#ifndef MICROPY_HW_USB_LANGID_STRING
+#define MICROPY_HW_USB_LANGID_STRING            0x409
+#endif
+
+#ifndef MICROPY_HW_USB_MANUFACTURER_STRING
+#define MICROPY_HW_USB_MANUFACTURER_STRING      "MicroPython"
+#endif
+
+#ifndef MICROPY_HW_USB_PRODUCT_HS_STRING
+#define MICROPY_HW_USB_PRODUCT_HS_STRING        "Pyboard Virtual Comm Port in HS Mode"
+#endif
+
+#ifndef MICROPY_HW_USB_PRODUCT_FS_STRING
+#define MICROPY_HW_USB_PRODUCT_FS_STRING        "Pyboard Virtual Comm Port in FS Mode"
+#endif
+
+#ifndef MICROPY_HW_USB_CONFIGURATION_HS_STRING
+#define MICROPY_HW_USB_CONFIGURATION_HS_STRING  "Pyboard Config"
+#endif
+
+#ifndef MICROPY_HW_USB_INTERFACE_HS_STRING
+#define MICROPY_HW_USB_INTERFACE_HS_STRING      "Pyboard Interface"
+#endif
+
+#ifndef MICROPY_HW_USB_CONFIGURATION_FS_STRING
+#define MICROPY_HW_USB_CONFIGURATION_FS_STRING  "Pyboard Config"
+#endif
+
+#ifndef MICROPY_HW_USB_INTERFACE_FS_STRING
+#define MICROPY_HW_USB_INTERFACE_FS_STRING      "Pyboard Interface"
+#endif
+
+// Amount of incoming buffer space for each CDC instance.
+// This must be 2 or greater, and a power of 2.
+#ifndef MICROPY_HW_USB_CDC_RX_DATA_SIZE
+#define MICROPY_HW_USB_CDC_RX_DATA_SIZE (1024)
+#endif
+
+// Amount of outgoing buffer space for each CDC instance.
+// This must be a power of 2 and no greater than 16384.
+#ifndef MICROPY_HW_USB_CDC_TX_DATA_SIZE
+#define MICROPY_HW_USB_CDC_TX_DATA_SIZE (1024)
+#endif
+
+/*****************************************************************************/
 // General configuration
 
 // Heap start / end definitions
@@ -233,6 +319,37 @@
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (0)
 
+// Configuration for STM32G0 series
+#elif defined(STM32G0)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (22) // previously 23
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (6)
+#define MICROPY_HW_MAX_LPUART (2)
+
+// Configuration for STM32G4 series
+#elif defined(STM32G4)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (42) // up to 42 event/interrupt requests: 28 configurable lines, 14 direct lines
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (20) // TIM1-8, 20
+#define MICROPY_HW_MAX_UART (5) // UART1-5 + LPUART1
+#define MICROPY_HW_MAX_LPUART (1)
+
+// Configuration for STM32H7A3/B3 series
+#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x08fff800)
+#define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_I2C (4)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (10)
+#define MICROPY_HW_MAX_LPUART (1)
+
 // Configuration for STM32H7 series
 #elif defined(STM32H7)
 
@@ -252,6 +369,16 @@
 #define MICROPY_HW_MAX_TIMER (22)
 #define MICROPY_HW_MAX_UART (5)
 #define MICROPY_HW_MAX_LPUART (1)
+
+// Configuration for STM32L1 series
+#elif defined(STM32L1)
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_I2C (2)
+// TODO: L1 has 9 timers but tim0 and tim1 don't exist.
+#define MICROPY_HW_MAX_TIMER (11)
+#define MICROPY_HW_MAX_UART (5)
+#define MICROPY_HW_MAX_LPUART (0)
 
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
@@ -297,6 +424,16 @@
 #define MICROPY_HW_RFCORE_BLE_LL_ONLY                   (1) // use LL only, we provide the rest of the BLE stack
 #endif
 
+// Configuration for STM32WL series
+#elif defined(STM32WL)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (21) // up to RTC_WKUP
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (2)
+#define MICROPY_HW_MAX_LPUART (1)
+
 #else
 #error Unsupported MCU series
 #endif
@@ -313,7 +450,12 @@
 #else
 // Use HSE as a clock source (bypass or oscillator)
 #define MICROPY_HW_CLK_VALUE (HSE_VALUE)
+#if defined(STM32G4)
+// enable HSI48 to run RNG on this clock
+#define MICROPY_HW_RCC_OSCILLATOR_TYPE (RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_HSI48)
+#else
 #define MICROPY_HW_RCC_OSCILLATOR_TYPE (RCC_OSCILLATORTYPE_HSE)
+#endif
 #define MICROPY_HW_RCC_PLL_SRC (RCC_PLLSOURCE_HSE)
 #define MICROPY_HW_RCC_CR_HSxON (RCC_CR_HSEON)
 #define MICROPY_HW_RCC_HSI_STATE (RCC_HSI_OFF)
@@ -383,7 +525,7 @@
 // Enable CAN if there are any peripherals defined
 #if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_ENABLE_CAN (1)
-#if defined(STM32H7)
+#if defined(STM32G0) || defined(STM32G4) || defined(STM32H7)
 #define MICROPY_HW_ENABLE_FDCAN (1) // define for MCUs with FDCAN
 #endif
 #else
@@ -396,6 +538,15 @@
 #define MICROPY_HW_MAX_CAN (2)
 #elif defined(MICROPY_HW_CAN1_TX)
 #define MICROPY_HW_MAX_CAN (1)
+#endif
+
+// Enable I2S if there are any peripherals defined
+#if defined(MICROPY_HW_I2S1) || defined(MICROPY_HW_I2S2)
+#define MICROPY_HW_ENABLE_I2S (1)
+#define MICROPY_HW_MAX_I2S (2)
+#else
+#define MICROPY_HW_ENABLE_I2S (0)
+#define MICROPY_HW_MAX_I2S (0)
 #endif
 
 // Define MICROPY_HW_SDMMCx_CK values if that peripheral is used, so that make-pins.py

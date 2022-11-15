@@ -55,8 +55,8 @@ Methods
       `PIO.SHIFT_LEFT` or `PIO.SHIFT_RIGHT`.
     - *push_thresh* is the threshold in bits before auto-push or conditional
       re-pushing is triggered.
-    - *pull_thresh* is the threshold in bits before auto-push or conditional
-      re-pushing is triggered.
+    - *pull_thresh* is the threshold in bits before auto-pull or conditional
+      re-pulling is triggered.
 
 .. method:: StateMachine.active([value])
 

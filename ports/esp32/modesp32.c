@@ -30,7 +30,6 @@
 #include <time.h>
 #include <sys/time.h>
 #include "soc/rtc_cntl_reg.h"
-#include "soc/sens_reg.h"
 #include "driver/gpio.h"
 #include "driver/adc.h"
 #include "esp_heap_caps.h"
@@ -40,7 +39,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "modmachine.h"
 #include "machine_rtc.h"
 #include "modesp32.h"
@@ -109,7 +108,7 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     // Check that all pins are allowed
     if (args[ARG_pins].u_obj != mp_const_none) {
-        mp_uint_t len = 0;
+        size_t len = 0;
         mp_obj_t *elem;
         mp_obj_get_array(args[ARG_pins].u_obj, &len, &elem);
         ext1_pins = 0;
@@ -132,7 +131,28 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext1_obj, 0, esp32_wake_on_ext1);
 
+STATIC mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
+    if (machine_rtc_config.ext0_pin != -1) {
+        mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
+    }
+    machine_rtc_config.wake_on_ulp = mp_obj_is_true(wake);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_ulp_obj, esp32_wake_on_ulp);
+
+STATIC mp_obj_t esp32_gpio_deep_sleep_hold(const mp_obj_t enable) {
+    if (mp_obj_is_true(enable)) {
+        gpio_deep_sleep_hold_en();
+    } else {
+        gpio_deep_sleep_hold_dis();
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_gpio_deep_sleep_hold_obj, esp32_gpio_deep_sleep_hold);
+
 #if CONFIG_IDF_TARGET_ESP32
+
+#include "soc/sens_reg.h"
 
 STATIC mp_obj_t esp32_raw_temperature(void) {
     SET_PERI_REG_BITS(SENS_SAR_MEAS_WAIT2_REG, SENS_FORCE_XPD_SAR, 3, SENS_FORCE_XPD_SAR_S);
@@ -186,6 +206,8 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wake_on_touch), MP_ROM_PTR(&esp32_wake_on_touch_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext0), MP_ROM_PTR(&esp32_wake_on_ext0_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wake_on_ulp), MP_ROM_PTR(&esp32_wake_on_ulp_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gpio_deep_sleep_hold), MP_ROM_PTR(&esp32_gpio_deep_sleep_hold_obj) },
     #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
     { MP_ROM_QSTR(MP_QSTR_hall_sensor), MP_ROM_PTR(&esp32_hall_sensor_obj) },
@@ -212,3 +234,5 @@ const mp_obj_module_t esp32_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&esp32_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_esp32, esp32_module);

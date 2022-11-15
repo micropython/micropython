@@ -25,7 +25,7 @@
  */
 
 #include "py/builtin.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 #include "py/runtime.h"
 #include "py/obj.h"
 #include "led.h"
@@ -53,3 +53,5 @@ const mp_obj_module_t board_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&board_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_board, board_module);

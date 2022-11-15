@@ -29,26 +29,27 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 #ifdef CONFIG_NETWORKING
-#include <net/net_context.h>
+#include <zephyr/net/net_context.h>
 #endif
 
-#ifdef CONFIG_USB
-#include <usb/usb_device.h>
+#ifdef CONFIG_USB_DEVICE_STACK
+#include <zephyr/usb/usb_device.h>
 #endif
 
-#include <storage/flash_map.h>
+#include <zephyr/storage/flash_map.h>
 
 #include "py/mperrno.h"
+#include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/stackctrl.h"
-#include "lib/utils/pyexec.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/runtime/pyexec.h"
+#include "shared/readline/readline.h"
 #include "extmod/modbluetooth.h"
 
 #if MICROPY_VFS
@@ -59,9 +60,9 @@
 #include "modzephyr.h"
 
 #ifdef TEST
-#include "lib/upytesthelper/upytesthelper.h"
+#include "shared/upytesthelper/upytesthelper.h"
 #include "lib/tinytest/tinytest.c"
-#include "lib/upytesthelper/upytesthelper.c"
+#include "shared/upytesthelper/upytesthelper.c"
 #include TEST
 #endif
 
@@ -103,11 +104,11 @@ STATIC void vfs_init(void) {
 
     #ifdef CONFIG_DISK_DRIVER_SDMMC
     mp_obj_t args[] = { mp_obj_new_str(CONFIG_SDMMC_VOLUME_NAME, strlen(CONFIG_SDMMC_VOLUME_NAME)) };
-    bdev = zephyr_disk_access_type.make_new(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
+    bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_disk_access_type, make_new)(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/sd";
     #elif defined(CONFIG_FLASH_MAP) && FLASH_AREA_LABEL_EXISTS(storage)
     mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FLASH_AREA_ID(storage)), MP_OBJ_NEW_SMALL_INT(4096) };
-    bdev = zephyr_flash_area_type.make_new(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
+    bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_flash_area_type, make_new)(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/flash";
     #endif
 
@@ -139,11 +140,8 @@ soft_reset:
     gc_init(heap, heap + sizeof(heap));
     #endif
     mp_init();
-    mp_obj_list_init(mp_sys_path, 0);
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
-    mp_obj_list_init(mp_sys_argv, 0);
 
-    #ifdef CONFIG_USB
+    #ifdef CONFIG_USB_DEVICE_STACK
     usb_enable(NULL);
     #endif
 
@@ -197,22 +195,16 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
 }
 #endif
 
+#if !MICROPY_VFS
 mp_import_stat_t mp_import_stat(const char *path) {
-    #if MICROPY_VFS
-    return mp_vfs_import_stat(path);
-    #else
     return MP_IMPORT_STAT_NO_EXIST;
-    #endif
 }
 
 mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    #if MICROPY_VFS
-    return mp_vfs_open(n_args, args, kwargs);
-    #else
     return mp_const_none;
-    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
+#endif
 
 NORETURN void nlr_jump_fail(void *val) {
     while (1) {

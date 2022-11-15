@@ -36,7 +36,7 @@ Algorithms
 ~~~~~~~~~~
 
 The most important aspect of designing any routine for performance is ensuring that
-the best algorithm is employed. This is a topic for textbooks rather than for a 
+the best algorithm is employed. This is a topic for textbooks rather than for a
 MicroPython guide but spectacular performance gains can sometimes be achieved
 by adopting algorithms known for their efficiency.
 
@@ -91,9 +91,11 @@ code these should be pre-allocated and passed as arguments or as bound objects.
 
 When passing slices of objects such as `bytearray` instances, Python creates
 a copy which involves allocation of the size proportional to the size of slice.
-This can be alleviated using a `memoryview` object. `memoryview` itself
-is allocated on heap, but is a small, fixed-size object, regardless of the size
-of slice it points too.
+This can be alleviated using a `memoryview` object. The `memoryview` itself
+is allocated on the heap, but is a small, fixed-size object, regardless of the size
+of slice it points too. Slicing a `memoryview` creates a new `memoryview`, so this
+cannot be done in an interrupt service routine. Further, the slice syntax ``a:b``
+causes further allocation by instantiating a ``slice(a, b)`` object.
 
 .. code:: python
 
@@ -123,7 +125,7 @@ This is a process known as profiling and is covered in textbooks and
 (for standard Python) supported by various software tools. For the type of
 smaller embedded application likely to be running on MicroPython platforms
 the slowest function or method can usually be established by judicious use
-of the timing ``ticks`` group of functions documented in `utime`.
+of the timing ``ticks`` group of functions documented in `time`.
 Code execution time can be measured in ms, us, or CPU cycles.
 
 The following enables any function or method to be timed by adding an
@@ -134,9 +136,9 @@ The following enables any function or method to be timed by adding an
     def timed_function(f, *args, **kwargs):
         myname = str(f).split(' ')[1]
         def new_func(*args, **kwargs):
-            t = utime.ticks_us()
+            t = time.ticks_us()
             result = f(*args, **kwargs)
-            delta = utime.ticks_diff(utime.ticks_us(), t)
+            delta = time.ticks_diff(time.ticks_us(), t)
             print('Function {} Time = {:6.3f}ms'.format(myname, delta/1000))
             return result
         return new_func
@@ -208,7 +210,7 @@ no adaptation (but see below). It is invoked by means of a function decorator:
         buf = self.linebuf # Cached object
         # code
 
-There are certain limitations in the current implementation of the native code emitter. 
+There are certain limitations in the current implementation of the native code emitter.
 
 * Context managers are not supported (the ``with`` statement).
 * Generators are not supported.
@@ -220,7 +222,7 @@ increase in compiled code size.
 The Viper code emitter
 ----------------------
 
-The optimisations discussed above involve standards-compliant Python code. The 
+The optimisations discussed above involve standards-compliant Python code. The
 Viper code emitter is not fully compliant. It supports special Viper native data types
 in pursuit of performance. Integer processing is non-compliant because it uses machine
 words: arithmetic on 32 bit hardware is performed modulo 2**32.
@@ -235,7 +237,7 @@ bit manipulations. It is invoked using a decorator:
     def foo(self, arg: int) -> int:
         # code
 
-As the above fragment illustrates it is beneficial to use Python type hints to assist the Viper optimiser. 
+As the above fragment illustrates it is beneficial to use Python type hints to assist the Viper optimiser.
 Type hints provide information on the data types of arguments and of the return value; these
 are a standard Python language feature formally defined here `PEP0484 <https://www.python.org/dev/peps/pep-0484/>`_.
 Viper supports its own set of types namely ``int``, ``uint`` (unsigned integer), ``ptr``, ``ptr8``,

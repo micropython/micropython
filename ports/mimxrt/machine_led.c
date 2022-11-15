@@ -44,7 +44,7 @@ STATIC mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // Check led id is in range
     if (!(1 <= led_id && led_id <= NUM_LEDS)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LED(%d) doesn't exist", led_id));
+        mp_raise_msg_varg(&mp_type_ValueError, "LED(%d) doesn't exist", led_id);
     }
 
     // Return reference to static object
@@ -80,12 +80,13 @@ STATIC const mp_rom_map_elem_t led_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(led_locals_dict, led_locals_dict_table);
 
-const mp_obj_type_t machine_led_type = {
-    {&mp_type_type},
-    .name = MP_QSTR_LED,
-    .print = led_obj_print,
-    .make_new = led_obj_make_new,
-    .locals_dict = (mp_obj_dict_t *)&led_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_led_type,
+    MP_QSTR_LED,
+    MP_TYPE_FLAG_NONE,
+    make_new, led_obj_make_new,
+    print, led_obj_print,
+    locals_dict, &led_locals_dict
+    );
 
 #endif

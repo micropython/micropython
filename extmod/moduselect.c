@@ -107,6 +107,7 @@ STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, size_t *rwx_num) {
     return n_ready;
 }
 
+#if MICROPY_PY_USELECT_SELECT
 // select(rlist, wlist, xlist[, timeout])
 STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
     // get array data from tuple/list arguments
@@ -173,6 +174,7 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_select_obj, 3, 4, select_select);
+#endif // MICROPY_PY_USELECT_SELECT
 
 typedef struct _mp_obj_poll_t {
     mp_obj_base_t base;
@@ -334,18 +336,17 @@ STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
-STATIC const mp_obj_type_t mp_type_poll = {
-    { &mp_type_type },
-    .name = MP_QSTR_poll,
-    .getiter = mp_identity_getiter,
-    .iternext = poll_iternext,
-    .locals_dict = (void *)&poll_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_poll,
+    MP_QSTR_poll,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, poll_iternext,
+    locals_dict, &poll_locals_dict
+    );
 
 // poll()
 STATIC mp_obj_t select_poll(void) {
-    mp_obj_poll_t *poll = m_new_obj(mp_obj_poll_t);
-    poll->base.type = &mp_type_poll;
+    mp_obj_poll_t *poll = mp_obj_malloc(mp_obj_poll_t, &mp_type_poll);
     mp_map_init(&poll->poll_map, 0);
     poll->iter_cnt = 0;
     poll->ret_tuple = MP_OBJ_NULL;
@@ -355,7 +356,9 @@ MP_DEFINE_CONST_FUN_OBJ_0(mp_select_poll_obj, select_poll);
 
 STATIC const mp_rom_map_elem_t mp_module_select_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uselect) },
+    #if MICROPY_PY_USELECT_SELECT
     { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_select_select_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&mp_select_poll_obj) },
     { MP_ROM_QSTR(MP_QSTR_POLLIN), MP_ROM_INT(MP_STREAM_POLL_RD) },
     { MP_ROM_QSTR(MP_QSTR_POLLOUT), MP_ROM_INT(MP_STREAM_POLL_WR) },
@@ -369,5 +372,7 @@ const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_uselect, mp_module_uselect);
 
 #endif // MICROPY_PY_USELECT

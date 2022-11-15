@@ -25,7 +25,7 @@
  */
 
 #include "py/obj.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "lib/oofatfs/ff.h"
 #include "modmachine.h"
 

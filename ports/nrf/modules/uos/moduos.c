@@ -36,6 +36,7 @@
 #include "modules/uos/microbitfs.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+#include "extmod/vfs_lfs.h"
 #include "genhdr/mpversion.h"
 #include "uart.h"
 
@@ -85,10 +86,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 /// \function sync()
 /// Sync all filesystems.
 STATIC mp_obj_t os_sync(void) {
+    #if MICROPY_VFS_FAT
     for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
         // this assumes that vfs->obj is fs_user_mount_t with block device functions
         disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
     }
+    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mod_os_sync_obj, os_sync);
@@ -105,7 +108,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
     for (int i = 0; i < n; i++) {
         vstr.buf[i] = (uint8_t)(rng_generate_random_word() & 0xFF);
     }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
@@ -123,7 +126,7 @@ STATIC mp_obj_t os_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
     } else {
         if (args[0] == mp_const_none) {
             MP_STATE_PORT(board_stdio_uart) = NULL;
-        } else if (mp_obj_get_type(args[0]) == &machine_hard_uart_type) {
+        } else if (mp_obj_get_type(args[0]) == &machine_uart_type) {
             MP_STATE_PORT(board_stdio_uart) = args[0];
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("need a UART object"));
@@ -142,6 +145,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 #if MICROPY_VFS
     { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&mp_vfs_chdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&mp_vfs_getcwd_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mp_vfs_ilistdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&mp_vfs_listdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mp_vfs_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mp_vfs_remove_obj) },
@@ -174,7 +178,15 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 #if MICROPY_VFS
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
+    #if MICROPY_VFS_FAT
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
+    #endif
+    #if MICROPY_VFS_LFS1
+    { MP_ROM_QSTR(MP_QSTR_VfsLfs1), MP_ROM_PTR(&mp_type_vfs_lfs1) },
+    #endif
+    #if MICROPY_VFS_LFS2
+    { MP_ROM_QSTR(MP_QSTR_VfsLfs2), MP_ROM_PTR(&mp_type_vfs_lfs2) },
+    #endif
 #endif
 };
 
@@ -184,3 +196,5 @@ const mp_obj_module_t mp_module_uos = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&os_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_uos, mp_module_uos);

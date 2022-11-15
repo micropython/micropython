@@ -86,6 +86,7 @@ STATIC int btstack_uart_open(void) {
 
 STATIC int btstack_uart_close(void) {
     mp_bluetooth_hci_controller_deinit();
+    mp_bluetooth_hci_uart_deinit();
     return 0;
 }
 
@@ -158,6 +159,12 @@ const btstack_uart_block_t mp_bluetooth_btstack_hci_uart_block = {
     &btstack_uart_get_supported_sleep_modes,
     &btstack_uart_set_sleep,
     &btstack_uart_set_wakeup_handler,
+
+    // The following are needed for H5 mode only.
+    NULL, // set_frame_received
+    NULL, // set_frame_sent,
+    NULL, // receive_frame,
+    NULL, // send_frame,
 };
 
 void mp_bluetooth_btstack_hci_uart_process(void) {

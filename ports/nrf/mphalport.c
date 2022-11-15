@@ -150,6 +150,10 @@ mp_uint_t mp_hal_ticks_ms(void) {
 
 #endif
 
+uint64_t mp_hal_time_ns(void) {
+    return 0;
+}
+
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
@@ -168,7 +172,7 @@ void mp_hal_set_interrupt_char(int c) {
 }
 #endif
 
-#if !MICROPY_PY_BLE_NUS
+#if !MICROPY_PY_BLE_NUS && !MICROPY_HW_USB_CDC
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
     if ((poll_flags & MP_STREAM_POLL_RD) && MP_STATE_PORT(board_stdio_uart) != NULL
@@ -177,9 +181,7 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     }
     return ret;
 }
-#endif
 
-#if !MICROPY_PY_BLE_NUS && !MICROPY_HW_USB_CDC
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         if (MP_STATE_PORT(board_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(board_stdio_uart))) {
@@ -372,3 +374,5 @@ const char *nrfx_error_code_lookup(uint32_t err_code) {
 }
 
 #endif // NRFX_LOG_ENABLED
+
+MP_REGISTER_ROOT_POINTER(struct _machine_hard_uart_obj_t *board_stdio_uart);

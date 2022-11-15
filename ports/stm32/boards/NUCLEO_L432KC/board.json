@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_l432kc.jpg"
+    ],
+    "mcu": "stm32l4",
+    "product": "Nucleo L432KC",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

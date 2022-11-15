@@ -5,6 +5,4 @@ set(SDKCONFIG_DEFAULTS
     boards/M5STACK_ATOM/sdkconfig.board
 )
 
-if(NOT MICROPY_FROZEN_MANIFEST)
-    set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)
-endif()
+set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)

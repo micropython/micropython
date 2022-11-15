@@ -10,7 +10,7 @@ print(pyb.freq())
 print(type(pyb.rng()))
 
 # test HAL error specific to F405
-i2c = pyb.I2C(2, pyb.I2C.MASTER)
+i2c = pyb.I2C(2, pyb.I2C.CONTROLLER)
 try:
     i2c.recv(1, 1)
 except OSError as e:

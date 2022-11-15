@@ -2,6 +2,31 @@
 #include STM32_HAL_H
 #include "pin.h"
 
+// F0-1.9.0+F4-1.16.0+F7-1.7.0+G0-1.5.1+G4-1.3.0+H7-1.6.0+L0-1.11.2+L4-1.17.0+WB-1.10.0+WL-1.1.0
+#if defined(STM32F0)
+#define MICROPY_PLATFORM_VERSION "HAL1.9.0"
+#elif defined(STM32F4)
+#define MICROPY_PLATFORM_VERSION "HAL1.16.0"
+#elif defined(STM32F7)
+#define MICROPY_PLATFORM_VERSION "HAL1.7.0"
+#elif defined(STM32G0)
+#define MICROPY_PLATFORM_VERSION "HAL1.5.1"
+#elif defined(STM32G4)
+#define MICROPY_PLATFORM_VERSION "HAL1.3.0"
+#elif defined(STM32H7)
+#define MICROPY_PLATFORM_VERSION "HAL1.6.0"
+#elif defined(STM32L0)
+#define MICROPY_PLATFORM_VERSION "HAL1.11.2"
+#elif defined(STM32L1)
+#define MICROPY_PLATFORM_VERSION "HAL1.10.3"
+#elif defined(STM32L4)
+#define MICROPY_PLATFORM_VERSION "HAL1.17.0"
+#elif defined(STM32WB)
+#define MICROPY_PLATFORM_VERSION "HAL1.10.0"
+#elif defined(STM32WL)
+#define MICROPY_PLATFORM_VERSION "HAL1.1.0"
+#endif
+
 extern const unsigned char mp_hal_status_to_errno_table[4];
 
 static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
@@ -73,11 +98,21 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #define mp_hal_pin_od_high(p)   mp_hal_pin_high(p)
 #define mp_hal_pin_read(p)      (((p)->gpio->IDR >> (p)->pin) & 1)
 #define mp_hal_pin_write(p, v)  ((v) ? mp_hal_pin_high(p) : mp_hal_pin_low(p))
+#define mp_hal_pin_interrupt(pin, handler, trigger, hard) extint_register_pin(pin, trigger, hard, handler)
+
+enum mp_hal_pin_interrupt_trigger {
+    MP_HAL_PIN_TRIGGER_NONE,
+    MP_HAL_PIN_TRIGGER_FALL = GPIO_MODE_IT_FALLING,
+    MP_HAL_PIN_TRIGGER_RISE = GPIO_MODE_IT_RISING,
+};
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
 void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint32_t alt);
 bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit);
 void mp_hal_pin_config_speed(mp_hal_pin_obj_t pin_obj, uint32_t speed);
+void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_obj_t callback_obj);
+
+mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t spi_in);
 
 enum {
     MP_HAL_MAC_WLAN0 = 0,

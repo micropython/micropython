@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/readline/readline.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "extmod/vfs.h"
@@ -49,8 +49,8 @@
 #include "pybuart.h"
 #include "pybpin.h"
 #include "pybrtc.h"
-#include "lib/utils/pyexec.h"
-#include "lib/utils/gchelper.h"
+#include "shared/runtime/pyexec.h"
+#include "shared/runtime/gchelper.h"
 #include "gccollect.h"
 #include "mperror.h"
 #include "simplelink.h"
@@ -99,8 +99,8 @@ OsiTaskHandle svTaskHandle;
 static fs_user_mount_t *sflash_vfs_fat;
 
 static const char fresh_main_py[] = "# main.py -- put your code here!\r\n";
-static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
-    "# can run arbitrary Python, but best to keep it minimal\r\n"
+static const char fresh_boot_py[] = "# boot.py -- run on boot to configure USB and filesystem\r\n"
+    "# Put app code in main.py\r\n"
                                     #if MICROPY_STDIO_UART
     "import os, machine\r\n"
     "os.dupterm(machine.UART(0, " MP_STRINGIFY(MICROPY_STDIO_UART_BAUD) "))\r\n"
@@ -139,9 +139,6 @@ soft_reset:
 
     // MicroPython init
     mp_init();
-    mp_obj_list_init(mp_sys_path, 0);
-    mp_obj_list_init(mp_sys_argv, 0);
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
 
     // execute all basic initializations
     mp_irq_init0();

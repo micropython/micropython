@@ -6,6 +6,7 @@
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
+#define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_SDCARD    (1) // works with no SD card too
 
 // SD card detect switch
@@ -16,10 +17,10 @@
 #endif
 
 // HSE is 8MHz
-#define MICROPY_HW_CLK_PLLM (8) //divide external clock by this to get 1MHz
-#define MICROPY_HW_CLK_PLLN (384) //this number is the PLL clock in MHz
-#define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2) //divide PLL clock by this to get core clock
-#define MICROPY_HW_CLK_PLLQ (8) //divide core clock by this to get 48MHz
+#define MICROPY_HW_CLK_PLLM (8) // divide external clock by this to get 1MHz
+#define MICROPY_HW_CLK_PLLN (384) // this number is the PLL clock in MHz
+#define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2) // divide PLL clock by this to get core clock
+#define MICROPY_HW_CLK_PLLQ (8) // divide core clock by this to get 48MHz
 
 // USB config
 #define MICROPY_HW_USB_FS (1)
@@ -61,18 +62,18 @@
 #define MICROPY_HW_SPI3_SCK     (pin_E12)
 #define MICROPY_HW_SPI3_MISO    (pin_E13)
 #define MICROPY_HW_SPI3_MOSI    (pin_E14)
-//#define MICROPY_HW_SPI4_NSS     (pin_E11)
-//#define MICROPY_HW_SPI4_SCK     (pin_E12)
-//#define MICROPY_HW_SPI4_MISO    (pin_E13)
-//#define MICROPY_HW_SPI4_MOSI    (pin_E14)
-//#define MICROPY_HW_SPI5_NSS     (pin_F6)
-//#define MICROPY_HW_SPI5_SCK     (pin_F7)
-//#define MICROPY_HW_SPI5_MISO    (pin_F8)
-//#define MICROPY_HW_SPI5_MOSI    (pin_F9)
-//#define MICROPY_HW_SPI6_NSS     (pin_G8)
-//#define MICROPY_HW_SPI6_SCK     (pin_G13)
-//#define MICROPY_HW_SPI6_MISO    (pin_G12)
-//#define MICROPY_HW_SPI6_MOSI    (pin_G14)
+// #define MICROPY_HW_SPI4_NSS     (pin_E11)
+// #define MICROPY_HW_SPI4_SCK     (pin_E12)
+// #define MICROPY_HW_SPI4_MISO    (pin_E13)
+// #define MICROPY_HW_SPI4_MOSI    (pin_E14)
+// #define MICROPY_HW_SPI5_NSS     (pin_F6)
+// #define MICROPY_HW_SPI5_SCK     (pin_F7)
+// #define MICROPY_HW_SPI5_MISO    (pin_F8)
+// #define MICROPY_HW_SPI5_MOSI    (pin_F9)
+// #define MICROPY_HW_SPI6_NSS     (pin_G8)
+// #define MICROPY_HW_SPI6_SCK     (pin_G13)
+// #define MICROPY_HW_SPI6_MISO    (pin_G12)
+// #define MICROPY_HW_SPI6_MOSI    (pin_G14)
 
 // CAN buses
 #define MICROPY_HW_CAN1_TX (pin_B9)
@@ -85,4 +86,3 @@
 #define MICROPY_HW_USRSW_PULL       (GPIO_NOPULL)
 #define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_RISING)
 #define MICROPY_HW_USRSW_PRESSED    (1)
-

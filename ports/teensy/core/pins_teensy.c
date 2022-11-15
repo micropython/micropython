@@ -181,7 +181,7 @@ void portb_isr(void)
 
 void portc_isr(void)
 {
-	// TODO: these are inefficent.  Use CLZ somehow....
+	// TODO: these are inefficient.  Use CLZ somehow....
 	uint32_t isfr = PORTC_ISFR;
 	PORTC_ISFR = isfr;
 	if ((isfr & CORE_PIN9_BITMASK) && intFunc[9]) intFunc[9]();

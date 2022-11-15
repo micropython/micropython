@@ -35,7 +35,9 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 
-#include "lib/netutils/netutils.h"
+#if MICROPY_PY_LWIP
+
+#include "shared/netutils/netutils.h"
 
 #include "lwip/init.h"
 #include "lwip/tcp.h"
@@ -64,6 +66,7 @@
 // All socket options should be globally distinct,
 // because we ignore option levels for efficiency.
 #define IP_ADD_MEMBERSHIP 0x400
+#define IP_DROP_MEMBERSHIP 0x401
 
 // For compatibilily with older lwIP versions.
 #ifndef ip_set_option
@@ -174,12 +177,13 @@ STATIC const mp_rom_map_elem_t lwip_slip_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(lwip_slip_locals_dict, lwip_slip_locals_dict_table);
 
-STATIC const mp_obj_type_t lwip_slip_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_slip,
-    .make_new = lwip_slip_make_new,
-    .locals_dict = (mp_obj_dict_t *)&lwip_slip_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    lwip_slip_type,
+    MP_QSTR_slip,
+    MP_TYPE_FLAG_NONE,
+    make_new, lwip_slip_make_new,
+    locals_dict, &lwip_slip_locals_dict
+    );
 
 #endif // MICROPY_PY_LWIP_SLIP
 
@@ -911,9 +915,14 @@ STATIC mp_obj_t lwip_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_bind_obj, lwip_socket_bind);
 
-STATIC mp_obj_t lwip_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
-    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
-    mp_int_t backlog = mp_obj_get_int(backlog_in);
+STATIC mp_obj_t lwip_socket_listen(size_t n_args, const mp_obj_t *args) {
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(args[0]);
+
+    mp_int_t backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    if (n_args > 1) {
+        backlog = mp_obj_get_int(args[1]);
+        backlog = (backlog < 0) ? 0 : backlog;
+    }
 
     if (socket->pcb.tcp == NULL) {
         mp_raise_OSError(MP_EBADF);
@@ -922,9 +931,20 @@ STATIC mp_obj_t lwip_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
         mp_raise_OSError(MP_EOPNOTSUPP);
     }
 
-    struct tcp_pcb *new_pcb = tcp_listen_with_backlog(socket->pcb.tcp, (u8_t)backlog);
+    struct tcp_pcb *new_pcb;
+    #if LWIP_VERSION_MACRO < 0x02000100
+    new_pcb = tcp_listen_with_backlog(socket->pcb.tcp, (u8_t)backlog);
+    #else
+    err_t error;
+    new_pcb = tcp_listen_with_backlog_and_err(socket->pcb.tcp, (u8_t)backlog, &error);
+    #endif
+
     if (new_pcb == NULL) {
+        #if LWIP_VERSION_MACRO < 0x02000100
         mp_raise_OSError(MP_ENOMEM);
+        #else
+        mp_raise_OSError(error_lookup_table[-error]);
+        #endif
     }
     socket->pcb.tcp = new_pcb;
 
@@ -946,7 +966,7 @@ STATIC mp_obj_t lwip_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_listen_obj, lwip_socket_listen);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_socket_listen_obj, 1, 2, lwip_socket_listen);
 
 STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
@@ -1190,7 +1210,7 @@ STATIC mp_obj_t lwip_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
         return mp_const_empty_bytes;
     }
     vstr.len = ret;
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_recv_obj, lwip_socket_recv);
 
@@ -1263,7 +1283,7 @@ STATIC mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
         tuple[0] = mp_const_empty_bytes;
     } else {
         vstr.len = ret;
-        tuple[0] = mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+        tuple[0] = mp_obj_new_bytes_from_vstr(&vstr);
     }
     tuple[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
     return mp_obj_new_tuple(2, tuple);
@@ -1369,7 +1389,8 @@ STATIC mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
         }
 
         // level: IPPROTO_IP
-        case IP_ADD_MEMBERSHIP: {
+        case IP_ADD_MEMBERSHIP:
+        case IP_DROP_MEMBERSHIP: {
             mp_buffer_info_t bufinfo;
             mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
             if (bufinfo.len != sizeof(ip_addr_t) * 2) {
@@ -1377,7 +1398,12 @@ STATIC mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
             }
 
             // POSIX setsockopt has order: group addr, if addr, lwIP has it vice-versa
-            err_t err = igmp_joingroup((ip_addr_t *)bufinfo.buf + 1, bufinfo.buf);
+            err_t err;
+            if (opt == IP_ADD_MEMBERSHIP) {
+                err = igmp_joingroup((ip_addr_t *)bufinfo.buf + 1, bufinfo.buf);
+            } else {
+                err = igmp_leavegroup((ip_addr_t *)bufinfo.buf + 1, bufinfo.buf);
+            }
             if (err != ERR_OK) {
                 mp_raise_OSError(error_lookup_table[-err]);
             }
@@ -1502,16 +1528,16 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             return 0;
         }
 
-        // Deregister callback (pcb.tcp is set to NULL below so must deregister now)
-        tcp_arg(socket->pcb.tcp, NULL);
-        tcp_err(socket->pcb.tcp, NULL);
-        tcp_recv(socket->pcb.tcp, NULL);
-
         // Free any incoming buffers or connections that are stored
         lwip_socket_free_incoming(socket);
 
         switch (socket->type) {
             case MOD_NETWORK_SOCK_STREAM: {
+                // Deregister callback (pcb.tcp is set to NULL below so must deregister now)
+                tcp_arg(socket->pcb.tcp, NULL);
+                tcp_err(socket->pcb.tcp, NULL);
+                tcp_recv(socket->pcb.tcp, NULL);
+
                 if (socket->pcb.tcp->state != LISTEN) {
                     // Schedule a callback to abort the connection if it's not cleanly closed after
                     // the given timeout.  The callback must be set before calling tcp_close since
@@ -1525,10 +1551,12 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
                 break;
             }
             case MOD_NETWORK_SOCK_DGRAM:
+                udp_recv(socket->pcb.udp, NULL, NULL);
                 udp_remove(socket->pcb.udp);
                 break;
             #if MICROPY_PY_LWIP_SOCK_RAW
             case MOD_NETWORK_SOCK_RAW:
+                raw_recv(socket->pcb.raw, NULL, NULL);
                 raw_remove(socket->pcb.raw);
                 break;
             #endif
@@ -1578,14 +1606,15 @@ STATIC const mp_stream_p_t lwip_socket_stream_p = {
     .ioctl = lwip_socket_ioctl,
 };
 
-STATIC const mp_obj_type_t lwip_socket_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_socket,
-    .print = lwip_socket_print,
-    .make_new = lwip_socket_make_new,
-    .protocol = &lwip_socket_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&lwip_socket_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    lwip_socket_type,
+    MP_QSTR_socket,
+    MP_TYPE_FLAG_NONE,
+    make_new, lwip_socket_make_new,
+    print, lwip_socket_print,
+    protocol, &lwip_socket_stream_p,
+    locals_dict, &lwip_socket_locals_dict
+    );
 
 /******************************************************************************/
 // Support functions for memory protection. lwIP has its own memory management
@@ -1734,8 +1763,6 @@ STATIC mp_obj_t lwip_print_pcbs() {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(lwip_print_pcbs_obj, lwip_print_pcbs);
 
-#if MICROPY_PY_LWIP
-
 STATIC const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_lwip) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&mod_lwip_reset_obj) },
@@ -1762,6 +1789,7 @@ STATIC const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(0) },
     { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
+    { MP_ROM_QSTR(MP_QSTR_IP_DROP_MEMBERSHIP), MP_ROM_INT(IP_DROP_MEMBERSHIP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_lwip_globals, mp_module_lwip_globals_table);
@@ -1770,5 +1798,12 @@ const mp_obj_module_t mp_module_lwip = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_lwip_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_lwip, mp_module_lwip);
+
+// On LWIP-ports, this is the usocket module (replaces extmod/modusocket.c).
+MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_lwip);
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t lwip_slip_stream);
 
 #endif // MICROPY_PY_LWIP

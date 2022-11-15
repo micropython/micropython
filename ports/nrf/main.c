@@ -38,7 +38,7 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/compile.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 #include "readline.h"
 #include "gccollect.h"
 #include "modmachine.h"
@@ -76,6 +76,13 @@
 #include "usb_cdc.h"
 #endif
 
+#if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+#include "extmod/vfs_fat.h"
+#include "lib/oofatfs/ff.h"
+#include "extmod/vfs.h"
+#include "flashbdev.h"
+#endif
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -100,9 +107,14 @@ extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 
 int main(int argc, char **argv) {
+    // Hook for a board to run code at start up, for example check if a
+    // bootloader should be entered instead of the main application.
+    MICROPY_BOARD_STARTUP();
 
+    MICROPY_BOARD_EARLY_INIT();
 
 soft_reset:
+
     #if MICROPY_PY_TIME_TICKS
     rtc1_init_time_ticks();
     #endif
@@ -122,12 +134,7 @@ soft_reset:
     gc_init(&_heap_start, &_heap_end);
 
     mp_init();
-    mp_obj_list_init(mp_sys_path, 0);
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
-    mp_obj_list_init(mp_sys_argv, 0);
-
     readline_init0();
-
 
     #if MICROPY_PY_MACHINE_HW_SPI
     spi_init0();
@@ -149,7 +156,7 @@ soft_reset:
     rtc_init0();
     #endif
 
-    #if MICROPY_PY_MACHINE_TIMER
+    #if MICROPY_PY_MACHINE_TIMER_NRF
     timer_init0();
     #endif
 
@@ -163,11 +170,28 @@ soft_reset:
             MP_OBJ_NEW_SMALL_INT(0),
             MP_OBJ_NEW_SMALL_INT(115200),
         };
-        MP_STATE_PORT(board_stdio_uart) = machine_hard_uart_type.make_new((mp_obj_t)&machine_hard_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        MP_STATE_PORT(board_stdio_uart) = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
     #endif
 
     pin_init0();
+
+    #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+    flashbdev_init();
+
+    // Try to mount the flash on "/flash" and chdir to it for the boot-up directory.
+    mp_obj_t mount_point = MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash);
+    int ret = mp_vfs_mount_and_chdir_protected((mp_obj_t)&nrf_flash_obj, mount_point);
+
+    if ((ret == -MP_ENODEV) || (ret == -MP_EIO)) {
+        pyexec_frozen_module("_mkfs.py"); // Frozen script for formatting flash filesystem.
+        ret = mp_vfs_mount_and_chdir_protected((mp_obj_t)&nrf_flash_obj, mount_point);
+    }
+
+    if (ret != 0) {
+        printf("MPY: can't mount flash\n");
+    }
+    #endif
 
     #if MICROPY_MBFS
     microbit_filesystem_init();
@@ -233,14 +257,14 @@ soft_reset:
 
     led_state(1, 0);
 
+    #if MICROPY_HW_USB_CDC
+    usb_cdc_init();
+    #endif
+
     #if MICROPY_VFS || MICROPY_MBFS || MICROPY_MODULE_FROZEN
     // run boot.py and main.py if they exist.
     pyexec_file_if_exists("boot.py");
     pyexec_file_if_exists("main.py");
-    #endif
-
-    #if MICROPY_HW_USB_CDC
-    usb_cdc_init();
     #endif
 
     for (;;) {

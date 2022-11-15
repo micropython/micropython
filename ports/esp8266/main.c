@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
@@ -39,8 +40,8 @@
 #define USE_US_TIMER 1
 
 #include "extmod/misc.h"
-#include "lib/mp-readline/readline.h"
-#include "lib/utils/pyexec.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/pyexec.h"
 #include "gccollect.h"
 #include "user_interface.h"
 
@@ -52,11 +53,8 @@ STATIC void mp_reset(void) {
     mp_hal_init();
     gc_init(heap, heap + sizeof(heap));
     mp_init();
-    mp_obj_list_init(mp_sys_path, 0);
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
-    mp_obj_list_init(mp_sys_argv, 0);
     #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
     extern void esp_native_code_init(void);
     esp_native_code_init();
@@ -70,10 +68,9 @@ STATIC void mp_reset(void) {
         mp_obj_t args[2];
         args[0] = MP_OBJ_NEW_SMALL_INT(0);
         args[1] = MP_OBJ_NEW_SMALL_INT(115200);
-        args[0] = pyb_uart_type.make_new(&pyb_uart_type, 2, 0, args);
+        args[0] = MP_OBJ_TYPE_GET_SLOT(&pyb_uart_type, make_new)(&pyb_uart_type, 2, 0, args);
         args[1] = MP_OBJ_NEW_SMALL_INT(1);
-        extern mp_obj_t os_dupterm(size_t n_args, const mp_obj_t *args);
-        os_dupterm(2, args);
+        mp_uos_dupterm_obj.fun.var(2, args);
     }
 
     #if MICROPY_MODULE_FROZEN

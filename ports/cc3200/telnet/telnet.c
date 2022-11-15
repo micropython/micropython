@@ -28,7 +28,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "telnet.h"
 #include "simplelink.h"
 #include "modnetwork.h"

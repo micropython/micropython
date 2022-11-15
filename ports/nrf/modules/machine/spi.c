@@ -46,18 +46,18 @@
 #endif
 
 /// \moduleref machine
-/// \class SPI - a master-driven serial protocol
+/// \class SPI - a controller-driven serial protocol
 ///
-/// SPI is a serial protocol that is driven by a master.  At the physical level
+/// SPI is a serial protocol that is driven by a controller.  At the physical level
 /// there are 3 lines: SCK, MOSI, MISO.
 ///
 /// See usage model of I2C; SPI is very similar.  Main difference is
 /// parameters to init the SPI bus:
 ///
 ///     from machine import SPI
-///     spi = SPI(1, SPI.MASTER, baudrate=600000, polarity=1, phase=0, crc=0x7)
+///     spi = SPI(1, baudrate=600000, polarity=1, phase=0, crc=0x7)
 ///
-/// Only required parameter is mode, SPI.MASTER or SPI.SLAVE.  Polarity can be
+/// Polarity can be
 /// 0 or 1, and is the level the idle clock line sits at.  Phase can be 0 or 1
 /// to sample data on the first or second clock edge respectively.  Crc can be
 /// None for no CRC, or a polynomial specifier.
@@ -117,12 +117,12 @@ STATIC const nrfx_spi_t machine_spi_instances[] = {
 STATIC nrfx_spi_config_t configs[MP_ARRAY_SIZE(machine_spi_instances)];
 
 STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
-    {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[0], .p_config = &configs[0]},
-    {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[1], .p_config = &configs[1]},
+    {{&machine_spi_type}, .p_spi = &machine_spi_instances[0], .p_config = &configs[0]},
+    {{&machine_spi_type}, .p_spi = &machine_spi_instances[1], .p_config = &configs[1]},
 #if defined(NRF52_SERIES)
-    {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[2], .p_config = &configs[2]},
+    {{&machine_spi_type}, .p_spi = &machine_spi_instances[2], .p_config = &configs[2]},
 #if defined(NRF52840_XXAA) && NRFX_SPIM_ENABLED
-    {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[3], .p_config = &configs[3]},
+    {{&machine_spi_type}, .p_spi = &machine_spi_instances[3], .p_config = &configs[3]},
 #endif // NRF52840_XXAA && NRFX_SPIM_ENABLED
 #endif // NRF52_SERIES
 };
@@ -235,7 +235,7 @@ STATIC mp_obj_t machine_spi_init(size_t n_args, const mp_obj_t *pos_args, mp_map
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // dispatch to specific implementation
-    if (mp_obj_get_type(self) == &machine_hard_spi_type) {
+    if (mp_obj_get_type(self) == &machine_spi_type) {
         machine_hard_spi_init(self, args);
     }
 
@@ -245,7 +245,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_spi_init_obj, 1, machine_spi_init);
 
 STATIC mp_obj_t machine_spi_deinit(mp_obj_t self) {
     // dispatch to specific implementation
-    if (mp_obj_get_type(self) == &machine_hard_spi_type) {
+    if (mp_obj_get_type(self) == &machine_spi_type) {
         machine_hard_spi_deinit(self);
     }
     return mp_const_none;
@@ -388,7 +388,7 @@ STATIC mp_obj_t mp_machine_spi_read(size_t n_args, const mp_obj_t *args) {
     vstr_init_len(&vstr, mp_obj_get_int(args[1]));
     memset(vstr.buf, n_args == 3 ? mp_obj_get_int(args[2]) : 0, vstr.len);
     spi_transfer(args[0], vstr.len, vstr.buf, vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_read_obj, 2, 3, mp_machine_spi_read);
 
@@ -427,13 +427,14 @@ STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
     .transfer = machine_hard_spi_transfer,
 };
 
-const mp_obj_type_t machine_hard_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .print = machine_hard_spi_print,
-    .make_new = machine_spi_make_new,
-    .protocol = &machine_hard_spi_p,
-    .locals_dict = (mp_obj_dict_t*)&machine_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_spi_type,
+    MP_QSTR_SPI,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_spi_make_new,
+    print, machine_hard_spi_print,
+    protocol, &machine_hard_spi_p,
+    locals_dict, &machine_spi_locals_dict
+    );
 
 #endif // MICROPY_PY_MACHINE_HW_SPI

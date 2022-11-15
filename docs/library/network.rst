@@ -9,7 +9,7 @@ This module provides network drivers and routing configuration. To use this
 module, a MicroPython variant/build with network capabilities must be installed.
 Network drivers for specific hardware are available within this module and are
 used to configure hardware network interface(s). Network services provided
-by configured interfaces are then available for use via the :mod:`usocket`
+by configured interfaces are then available for use via the :mod:`socket`
 module.
 
 For example::
@@ -17,17 +17,17 @@ For example::
     # connect/ show IP config a specific network interface
     # see below for examples of specific drivers
     import network
-    import utime
+    import time
     nic = network.Driver(...)
     if not nic.isconnected():
         nic.connect()
         print("Waiting for connection...")
         while not nic.isconnected():
-            utime.sleep(1)
+            time.sleep(1)
     print(nic.ifconfig())
 
-    # now use usocket as usual
-    import usocket as socket
+    # now use socket as usual
+    import socket
     addr = socket.getaddrinfo('micropython.org', 80)[0][-1]
     s = socket.socket()
     s.connect(addr)
@@ -89,7 +89,7 @@ parameter should be `id`.
        network media, there are different variants of predefined/
        recommended tuple formats, among them:
 
-       * WiFi: (ssid, bssid, channel, RSSI, authmode, hidden). There
+       * WiFi: (ssid, bssid, channel, RSSI, security, hidden). There
          may be further fields, specific to a particular device.
 
        The function may accept additional keyword arguments to filter scan
@@ -133,10 +133,10 @@ parameter should be `id`.
        querying, a parameter name should be quoted as a string, and only one
        parameter can be queried at a time::
 
-        # Set WiFi access point name (formally known as ESSID) and WiFi channel
-        ap.config(essid='My AP', channel=11)
+        # Set WiFi access point name (formally known as SSID) and WiFi channel
+        ap.config(ssid='My AP', channel=11)
         # Query params one by one
-        print(ap.config('essid'))
+        print(ap.config('ssid'))
         print(ap.config('channel'))
 
 Specific network class implementations
@@ -150,8 +150,8 @@ provide a way to control networking interfaces of various kinds.
 
    network.WLAN.rst
    network.WLANWiPy.rst
-   network.CC3K.rst
    network.WIZNET5K.rst
+   network.LAN.rst
 
 Network functions
 =================

@@ -5,6 +5,7 @@ QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 # potato or lpc_serial
 UART ?= potato
@@ -20,26 +21,28 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
-CFLAGS = $(INC) -g -Wall -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
+CFLAGS += $(INC) -g -Wall -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
 CFLAGS += -mno-string -mno-multiple -mno-vsx -mno-altivec -nostdlib
 CFLAGS += -mlittle-endian -mstrict-align -msoft-float
 CFLAGS += -Os
 CFLAGS += -fdata-sections -ffunction-sections -fno-stack-protector -ffreestanding
 CFLAGS += -U_FORTIFY_SOURCE
 
-LDFLAGS = -N -T powerpc.lds -nostdlib
+LDFLAGS += -N -T powerpc.lds -nostdlib
 
 LIBS =
 
 SRC_C = \
 	main.c \
 	uart_$(UART).c \
-	lib/utils/printf.c \
-	lib/utils/stdout_helpers.c \
-	lib/utils/pyexec.c \
-	lib/libc/string0.c \
-	lib/mp-readline/readline.c \
+	shared/libc/printf.c \
+	shared/libc/string0.c \
+	shared/readline/readline.c \
+	shared/runtime/pyexec.c \
+	shared/runtime/stdout_helpers.c \
 	$(BUILD)/_frozen_mpy.c \
+
+SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c
 
 OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -47,7 +50,7 @@ OBJ += $(BUILD)/head.o
 
 all: $(BUILD)/firmware.elf $(BUILD)/firmware.map $(BUILD)/firmware.bin
 
-$(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
+$(BUILD)/_frozen_mpy.c: $(TOP)/tests/frozen/frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
 	$(Q)$(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl=mpz $< > $@
 

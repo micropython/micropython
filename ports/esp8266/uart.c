@@ -111,6 +111,15 @@ void uart_tx_one_char(uint8 uart, uint8 TxChar) {
     WRITE_PERI_REG(UART_FIFO(uart), TxChar);
 }
 
+int uart_txdone(uint8 uart) {
+    uint32 fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT << UART_TXFIFO_CNT_S);
+    if ((fifo_cnt >> UART_TXFIFO_CNT_S & UART_TXFIFO_CNT) == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void uart_flush(uint8 uart) {
     while (true) {
         uint32 fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT << UART_TXFIFO_CNT_S);
@@ -285,7 +294,7 @@ void ICACHE_FLASH_ATTR uart0_set_rxbuf(uint8 *buf, int len) {
 // Task-based UART interface
 
 #include "py/obj.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 
 #if MICROPY_REPL_EVENT_DRIVEN
 void ICACHE_FLASH_ATTR uart_task_handler(os_event_t *evt) {

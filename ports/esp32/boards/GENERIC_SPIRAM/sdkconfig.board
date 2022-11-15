@@ -1,0 +1,2 @@
+# SPIRAM increases the size of the firmware, use -Os to reduce it again to fit in iram
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y

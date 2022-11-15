@@ -46,6 +46,10 @@
 #include "py/builtin.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
+#include "extmod/vfs.h"
+#include <poll.h>
+
+#if MICROPY_PY_SOCKET
 
 /*
   The idea of this module is to implement reasonable minimum of
@@ -78,8 +82,7 @@ static inline mp_obj_t mp_obj_from_sockaddr(const struct sockaddr *addr, socklen
 }
 
 STATIC mp_obj_socket_t *socket_new(int fd) {
-    mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
-    o->base.type = &mp_type_socket;
+    mp_obj_socket_t *o = mp_obj_malloc(mp_obj_socket_t, &mp_type_socket);
     o->fd = fd;
     o->blocking = true;
     return o;
@@ -144,6 +147,29 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
         case MP_STREAM_GET_FILENO:
             return self->fd;
 
+        #if MICROPY_PY_USELECT
+        case MP_STREAM_POLL: {
+            mp_uint_t ret = 0;
+            uint8_t pollevents = 0;
+            if (arg & MP_STREAM_POLL_RD) {
+                pollevents |= POLLIN;
+            }
+            if (arg & MP_STREAM_POLL_WR) {
+                pollevents |= POLLOUT;
+            }
+            struct pollfd pfd = { .fd = self->fd, .events = pollevents };
+            if (poll(&pfd, 1, 0) > 0) {
+                if (pfd.revents & POLLIN) {
+                    ret |= MP_STREAM_POLL_RD;
+                }
+                if (pfd.revents & POLLOUT) {
+                    ret |= MP_STREAM_POLL_WR;
+                }
+            }
+            return ret;
+        }
+        #endif
+
         default:
             *errcode = MP_EINVAL;
             return MP_STREAM_ERROR;
@@ -198,15 +224,23 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 
-STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
-    mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
+// method socket.listen([backlog])
+STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
+    mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    int backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    if (n_args > 1) {
+        backlog = (int)mp_obj_get_int(args[1]);
+        backlog = (backlog < 0) ? 0 : backlog;
+    }
+
     MP_THREAD_GIL_EXIT();
-    int r = listen(self->fd, MP_OBJ_SMALL_INT_VALUE(backlog_in));
+    int r = listen(self->fd, backlog);
     MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(r, errno);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_listen_obj, 1, 2, socket_listen);
 
 STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
@@ -370,7 +404,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
-    struct timeval tv = {0,};
+    struct timeval tv = {0, };
     bool new_blocking = true;
 
     // Timeout of None means no timeout, which in POSIX is signified with 0 timeout,
@@ -421,7 +455,7 @@ STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
     mp_obj_t *new_args = alloca(n_args * sizeof(mp_obj_t));
     memcpy(new_args + 1, args + 1, (n_args - 1) * sizeof(mp_obj_t));
     new_args[0] = MP_OBJ_NEW_SMALL_INT(self->fd);
-    return mp_builtin_open(n_args, new_args, (mp_map_t *)&mp_const_empty_map);
+    return mp_vfs_open(n_args, new_args, (mp_map_t *)&mp_const_empty_map);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
@@ -482,16 +516,15 @@ STATIC const mp_stream_p_t usocket_stream_p = {
     .ioctl = socket_ioctl,
 };
 
-const mp_obj_type_t mp_type_socket = {
-    { &mp_type_type },
-    .name = MP_QSTR_socket,
-    .print = socket_print,
-    .make_new = socket_make_new,
-    .getiter = NULL,
-    .iternext = NULL,
-    .protocol = &usocket_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&usocket_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_socket,
+    MP_QSTR_socket,
+    MP_TYPE_FLAG_NONE,
+    make_new, socket_make_new,
+    print, socket_print,
+    protocol, &usocket_stream_p,
+    locals_dict, &usocket_locals_dict
+    );
 
 #define BINADDR_MAX_LEN sizeof(struct in6_addr)
 STATIC mp_obj_t mod_socket_inet_pton(mp_obj_t family_in, mp_obj_t addr_in) {
@@ -525,12 +558,11 @@ STATIC mp_obj_t mod_socket_inet_ntop(mp_obj_t family_in, mp_obj_t binaddr_in) {
         mp_raise_OSError(errno);
     }
     vstr.len = strlen(vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return mp_obj_new_str_from_utf8_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_socket_inet_ntop_obj, mod_socket_inet_ntop);
 
 STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
-    // TODO: Implement 5th and 6th args
 
     const char *host = mp_obj_str_get_str(args[0]);
     const char *serv = NULL;
@@ -566,6 +598,12 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         hints.ai_family = MP_OBJ_SMALL_INT_VALUE(args[2]);
         if (n_args > 3) {
             hints.ai_socktype = MP_OBJ_SMALL_INT_VALUE(args[3]);
+            if (n_args > 4) {
+                hints.ai_protocol = MP_OBJ_SMALL_INT_VALUE(args[4]);
+                if (n_args > 5) {
+                    hints.ai_flags = MP_OBJ_SMALL_INT_VALUE(args[5]);
+                }
+            }
         }
     }
 
@@ -599,7 +637,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     freeaddrinfo(addr_list);
     return list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 4, mod_socket_getaddrinfo);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 6, mod_socket_getaddrinfo);
 
 STATIC mp_obj_t mod_socket_sockaddr(mp_obj_t sockaddr_in) {
     mp_buffer_info_t bufinfo;
@@ -669,3 +707,7 @@ const mp_obj_module_t mp_module_socket = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_socket_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_socket);
+
+#endif // MICROPY_PY_SOCKET

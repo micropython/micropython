@@ -31,7 +31,7 @@
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "genhdr/mpversion.h"
@@ -116,7 +116,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
     for (int i = 0; i < n; i++) {
         vstr.buf[i] = rng_get();
     }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
@@ -179,3 +179,5 @@ const mp_obj_module_t mp_module_uos = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&os_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_uos, mp_module_uos);

@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "py/builtin.h"
 #include "py/lexer.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"

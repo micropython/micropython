@@ -27,11 +27,16 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "nimble/ble.h"
+#include "extmod/nimble/modbluetooth_nimble.h"
 #include "extmod/nimble/hal/hal_uart.h"
 #include "extmod/nimble/nimble/nimble_npl_os.h"
 #include "extmod/mpbthci.h"
 
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
+
+#ifndef MICROPY_PY_BLUETOOTH_HCI_READ_MODE
+#define MICROPY_PY_BLUETOOTH_HCI_READ_MODE MICROPY_PY_BLUETOOTH_HCI_READ_MODE_BYTE
+#endif
 
 #define HCI_TRACE (0)
 
@@ -74,21 +79,39 @@ void hal_uart_start_tx(uint32_t port) {
     #endif
 
     mp_bluetooth_hci_uart_write(mp_bluetooth_hci_cmd_buf, len);
+
+    if (len > 0) {
+        // Allow modbluetooth bindings to hook "sent packet" (e.g. to unstall l2cap channels).
+        mp_bluetooth_nimble_sent_hci_packet();
+    }
 }
 
 int hal_uart_close(uint32_t port) {
     return 0; // success
 }
 
+STATIC void mp_bluetooth_hci_uart_char_cb(uint8_t chr) {
+    #if HCI_TRACE
+    printf("> %02x\n", chr);
+    #endif
+    hal_uart_rx_cb(hal_uart_rx_arg, chr);
+}
+
 void mp_bluetooth_nimble_hci_uart_process(bool run_events) {
     bool host_wake = mp_bluetooth_hci_controller_woken();
 
-    int chr;
-    while ((chr = mp_bluetooth_hci_uart_readchar()) >= 0) {
-        #if HCI_TRACE
-        printf("> %02x\n", chr);
+    for (;;) {
+        #if MICROPY_PY_BLUETOOTH_HCI_READ_MODE == MICROPY_PY_BLUETOOTH_HCI_READ_MODE_BYTE
+        int chr = mp_bluetooth_hci_uart_readchar();
+        if (chr < 0) {
+            break;
+        }
+        mp_bluetooth_hci_uart_char_cb(chr);
+        #elif MICROPY_PY_BLUETOOTH_HCI_READ_MODE == MICROPY_PY_BLUETOOTH_HCI_READ_MODE_PACKET
+        if (mp_bluetooth_hci_uart_readpacket(mp_bluetooth_hci_uart_char_cb) < 0) {
+            break;
+        }
         #endif
-        hal_uart_rx_cb(hal_uart_rx_arg, chr);
 
         // Incoming data may result in events being enqueued. If we're in
         // scheduler context then we can run those events immediately.

@@ -42,8 +42,6 @@
 #define MICROPY_EMIT_X86            (1)
 #define MICROPY_EMIT_THUMB          (1)
 #define MICROPY_EMIT_INLINE_THUMB   (1)
-#define MICROPY_EMIT_INLINE_THUMB_ARMV7M (1)
-#define MICROPY_EMIT_INLINE_THUMB_FLOAT (1)
 #define MICROPY_EMIT_ARM            (1)
 #define MICROPY_EMIT_XTENSA         (1)
 #define MICROPY_EMIT_INLINE_XTENSA  (1)
@@ -57,12 +55,12 @@
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
 #define MICROPY_COMP_RETURN_IF_EXPR (1)
 
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
-
 #define MICROPY_READER_POSIX        (1)
 #define MICROPY_ENABLE_RUNTIME      (0)
 #define MICROPY_ENABLE_GC           (1)
+#ifndef __EMSCRIPTEN__
 #define MICROPY_STACK_CHECK         (1)
+#endif
 #define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
@@ -74,6 +72,7 @@
 #define MICROPY_CPYTHON_COMPAT      (1)
 #define MICROPY_USE_INTERNAL_PRINTF (0)
 
+#define MICROPY_PY_FSTRINGS         (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 
 #if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
@@ -120,7 +119,7 @@ typedef long mp_off_t;
 #define MP_PLAT_PRINT_STRN(str, len) (void)0
 
 // We need to provide a declaration/definition of alloca()
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 #include <stdlib.h>
 #elif defined(_WIN32)
 #include <malloc.h>
@@ -136,9 +135,10 @@ typedef long mp_off_t;
 #define MP_ENDIANNESS_LITTLE        (1)
 #define NORETURN                    __declspec(noreturn)
 #define MP_NOINLINE                 __declspec(noinline)
+#define MP_ALWAYSINLINE             __forceinline
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
-#define MICROPY_PORT_CONSTANTS      { "dummy", 0 }
+#define MICROPY_PORT_CONSTANTS      { MP_ROM_QSTR(MP_QSTR_dummy), MP_ROM_PTR(NULL) }
 #ifdef _WIN64
 #define MP_SSIZE_MAX                _I64_MAX
 #else

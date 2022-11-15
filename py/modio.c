@@ -37,9 +37,6 @@
 
 #if MICROPY_PY_IO
 
-extern const mp_obj_type_t mp_type_fileio;
-extern const mp_obj_type_t mp_type_textio;
-
 #if MICROPY_PY_IO_IOBASE
 
 STATIC const mp_obj_type_t mp_type_iobase;
@@ -100,12 +97,13 @@ STATIC const mp_stream_p_t iobase_p = {
     .ioctl = iobase_ioctl,
 };
 
-STATIC const mp_obj_type_t mp_type_iobase = {
-    { &mp_type_type },
-    .name = MP_QSTR_IOBase,
-    .make_new = iobase_make_new,
-    .protocol = &iobase_p,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_iobase,
+    MP_QSTR_IOBase,
+    MP_TYPE_FLAG_NONE,
+    make_new, iobase_make_new,
+    protocol, &iobase_p
+    );
 
 #endif // MICROPY_PY_IO_IOBASE
 
@@ -121,8 +119,7 @@ typedef struct _mp_obj_bufwriter_t {
 STATIC mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
     size_t alloc = mp_obj_get_int(args[1]);
-    mp_obj_bufwriter_t *o = m_new_obj_var(mp_obj_bufwriter_t, byte, alloc);
-    o->base.type = type;
+    mp_obj_bufwriter_t *o = mp_obj_malloc_var(mp_obj_bufwriter_t, byte, alloc, type);
     o->stream = args[0];
     o->alloc = alloc;
     o->len = 0;
@@ -195,58 +192,15 @@ STATIC const mp_stream_p_t bufwriter_stream_p = {
     .write = bufwriter_write,
 };
 
-STATIC const mp_obj_type_t mp_type_bufwriter = {
-    { &mp_type_type },
-    .name = MP_QSTR_BufferedWriter,
-    .make_new = bufwriter_make_new,
-    .protocol = &bufwriter_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&bufwriter_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bufwriter,
+    MP_QSTR_BufferedWriter,
+    MP_TYPE_FLAG_NONE,
+    make_new, bufwriter_make_new,
+    protocol, &bufwriter_stream_p,
+    locals_dict, &bufwriter_locals_dict
+    );
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
-
-#if MICROPY_PY_IO_RESOURCE_STREAM
-STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
-    VSTR_FIXED(path_buf, MICROPY_ALLOC_PATH_MAX);
-    size_t len;
-
-    // As an extension to pkg_resources.resource_stream(), we support
-    // package parameter being None, the path_in is interpreted as a
-    // raw path.
-    if (package_in != mp_const_none) {
-        // Pass "True" as sentinel value in fromlist to force returning of leaf module
-        mp_obj_t pkg = mp_import_name(mp_obj_str_get_qstr(package_in), mp_const_true, MP_OBJ_NEW_SMALL_INT(0));
-
-        mp_obj_t dest[2];
-        mp_load_method_maybe(pkg, MP_QSTR___path__, dest);
-        if (dest[0] == MP_OBJ_NULL) {
-            mp_raise_TypeError(NULL);
-        }
-
-        const char *path = mp_obj_str_get_data(dest[0], &len);
-        vstr_add_strn(&path_buf, path, len);
-        vstr_add_byte(&path_buf, '/');
-    }
-
-    const char *path = mp_obj_str_get_data(path_in, &len);
-    vstr_add_strn(&path_buf, path, len);
-
-    len = path_buf.len;
-    const char *data = mp_find_frozen_str(path_buf.buf, &len);
-    if (data != NULL) {
-        mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
-        o->base.type = &mp_type_bytesio;
-        o->vstr = m_new_obj(vstr_t);
-        vstr_init_fixed_buf(o->vstr, len + 1, (char *)data);
-        o->vstr->len = len;
-        o->pos = 0;
-        return MP_OBJ_FROM_PTR(o);
-    }
-
-    mp_obj_t path_out = mp_obj_new_str(path_buf.buf, path_buf.len);
-    return mp_builtin_open(1, &path_out, (mp_map_t *)&mp_const_empty_map);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(resource_stream_obj, resource_stream);
-#endif
 
 STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uio) },
@@ -255,15 +209,6 @@ STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
     #if MICROPY_PY_IO_IOBASE
     { MP_ROM_QSTR(MP_QSTR_IOBase), MP_ROM_PTR(&mp_type_iobase) },
-    #endif
-    #if MICROPY_PY_IO_RESOURCE_STREAM
-    { MP_ROM_QSTR(MP_QSTR_resource_stream), MP_ROM_PTR(&resource_stream_obj) },
-    #endif
-    #if MICROPY_PY_IO_FILEIO
-    { MP_ROM_QSTR(MP_QSTR_FileIO), MP_ROM_PTR(&mp_type_fileio) },
-    #if MICROPY_CPYTHON_COMPAT
-    { MP_ROM_QSTR(MP_QSTR_TextIOWrapper), MP_ROM_PTR(&mp_type_textio) },
-    #endif
     #endif
     { MP_ROM_QSTR(MP_QSTR_StringIO), MP_ROM_PTR(&mp_type_stringio) },
     #if MICROPY_PY_IO_BYTESIO
@@ -280,5 +225,7 @@ const mp_obj_module_t mp_module_io = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_io_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_uio, mp_module_io);
 
 #endif

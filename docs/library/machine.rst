@@ -19,6 +19,44 @@ This is true for both physical devices with IDs >= 0 and "virtual" devices
 with negative IDs like -1 (these "virtual" devices are still thin shims on
 top of real hardware and real hardware interrupts). See :ref:`isr_rules`.
 
+Memory access
+-------------
+
+The module exposes three objects used for raw memory access.
+
+.. data:: mem8
+
+    Read/write 8 bits of memory.
+
+.. data:: mem16
+
+    Read/write 16 bits of memory.
+
+.. data:: mem32
+
+    Read/write 32 bits of memory.
+
+Use subscript notation ``[...]`` to index these objects with the address of
+interest. Note that the address is the byte address, regardless of the size of
+memory being accessed.
+
+Example use (registers are specific to an stm32 microcontroller):
+
+.. code-block:: python3
+
+    import machine
+    from micropython import const
+
+    GPIOA = const(0x48000000)
+    GPIO_BSRR = const(0x18)
+    GPIO_IDR = const(0x10)
+
+    # set PA2 high
+    machine.mem32[GPIOA + GPIO_BSRR] = 1 << 2
+
+    # read PA3
+    value = (machine.mem32[GPIOA + GPIO_IDR] >> 3) & 1
+
 Reset related functions
 -----------------------
 
@@ -47,6 +85,23 @@ Reset related functions
 
 Interrupt related functions
 ---------------------------
+
+The following functions allow control over interrupts.  Some systems require
+interrupts to operate correctly so disabling them for long periods may
+compromise core functionality, for example watchdog timers may trigger
+unexpectedly.  Interrupts should only be disabled for a minimum amount of time
+and then re-enabled to their previous state.  For example::
+
+    import machine
+
+    # Disable interrupts
+    state = machine.disable_irq()
+
+    # Do a small amount of time-critical work here
+
+    # Enable interrupts
+    machine.enable_irq(state)
+
 
 .. function:: disable_irq()
 
@@ -137,6 +192,28 @@ Miscellaneous functions
    above. The timeout is the same for both cases and given by *timeout_us* (which
    is in microseconds).
 
+.. function:: bitstream(pin, encoding, timing, data, /)
+
+   Transmits *data* by bit-banging the specified *pin*. The *encoding* argument
+   specifies how the bits are encoded, and *timing* is an encoding-specific timing
+   specification.
+
+   The supported encodings are:
+
+     - ``0`` for "high low" pulse duration modulation. This will transmit 0 and
+       1 bits as timed pulses, starting with the most significant bit.
+       The *timing* must be a four-tuple of nanoseconds in the format
+       ``(high_time_0, low_time_0, high_time_1, low_time_1)``. For example,
+       ``(400, 850, 800, 450)`` is the timing specification for WS2812 RGB LEDs
+       at 800kHz.
+
+   The accuracy of the timing varies between ports. On Cortex M0 at 48MHz, it is
+   at best +/- 120ns, however on faster MCUs (ESP8266, ESP32, STM32, Pyboard), it
+   will be closer to +/-30ns.
+
+   .. note:: For controlling WS2812 / NeoPixel strips, see the :mod:`neopixel`
+      module for a higher-level API.
+
 .. function:: rng()
 
    Return a 24-bit software generated random number.
@@ -177,10 +254,12 @@ Classes
    machine.Pin.rst
    machine.Signal.rst
    machine.ADC.rst
+   machine.ADCBlock.rst
    machine.PWM.rst
    machine.UART.rst
    machine.SPI.rst
    machine.I2C.rst
+   machine.I2S.rst
    machine.RTC.rst
    machine.Timer.rst
    machine.WDT.rst

@@ -1,0 +1,27 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "RGB LED",
+        "SPIRAM",
+        "USB-C",
+        "WiFi",
+        "BLE",
+        "STEMMA QT/QWIIC",
+        "Feather"
+    ],
+    "features_non_filterable": [
+    ],
+    "id": "pros3",
+    "images": [
+        "unexpectedmaker_pros3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "ProS3",
+    "thumbnail": "",
+    "url": "https://pros3.io",
+    "vendor": "Unexpected Maker"
+}

@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "olimex_h407.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "H407",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "OLIMEX"
+}

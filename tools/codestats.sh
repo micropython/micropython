@@ -23,7 +23,7 @@ AWK=awk
 MAKE="make -j2"
 
 # these are the binaries that are built; some have 2 or 3 depending on version
-bin_unix=ports/unix/micropython
+bin_unix=ports/unix/build-standard/micropython
 bin_stm32=ports/stm32/build-PYBV10/firmware.elf
 bin_barearm_1=ports/bare-arm/build/flash.elf
 bin_barearm_2=ports/bare-arm/build/firmware.elf

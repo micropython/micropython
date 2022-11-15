@@ -267,8 +267,12 @@ typedef struct _USBD_HandleTypeDef
    with the DMA during the transaction process should be 4-bytes aligned */
 
 #if defined   (__GNUC__)        /* GNU Compiler */
-  #define __ALIGN_END    __attribute__ ((aligned (4)))
-  #define __ALIGN_BEGIN
+  #ifndef __ALIGN_END
+    #define __ALIGN_END    __attribute__ ((aligned (4)))
+  #endif /* __ALIGN_END */
+  #ifndef __ALIGN_BEGIN
+    #define __ALIGN_BEGIN
+  #endif /* __ALIGN_BEGIN */
 #else
   #define __ALIGN_END
   #if defined   (__CC_ARM)      /* ARM Compiler */

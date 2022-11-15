@@ -33,10 +33,19 @@
 
 #if MICROPY_VFS_POSIX
 
+#if !MICROPY_ENABLE_FINALISER
+#error "MICROPY_VFS_POSIX requires MICROPY_ENABLE_FINALISER"
+#endif
+
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <dirent.h>
+#ifdef _MSC_VER
+#include <direct.h> // For mkdir etc.
+#endif
 
 typedef struct _mp_obj_vfs_posix_t {
     mp_obj_base_t base;
@@ -95,8 +104,7 @@ STATIC mp_import_stat_t mp_vfs_posix_import_stat(void *self_in, const char *path
 STATIC mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
-    mp_obj_vfs_posix_t *vfs = m_new_obj(mp_obj_vfs_posix_t);
-    vfs->base.type = type;
+    mp_obj_vfs_posix_t *vfs = mp_obj_malloc(mp_obj_vfs_posix_t, type);
     vstr_init(&vfs->root, 0);
     if (n_args == 1) {
         vstr_add_str(&vfs->root, mp_obj_str_get_str(args[0]));
@@ -136,7 +144,7 @@ STATIC mp_obj_t vfs_posix_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
     if (!mp_obj_is_small_int(path_in)) {
         path_in = vfs_posix_get_path_obj(self, path_in);
     }
-    return mp_vfs_posix_file_open(&mp_type_textio, path_in, mode_in);
+    return mp_vfs_posix_file_open(&mp_type_vfs_posix_textio, path_in, mode_in);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(vfs_posix_open_obj, vfs_posix_open);
 
@@ -160,6 +168,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(vfs_posix_getcwd_obj, vfs_posix_getcwd);
 typedef struct _vfs_posix_ilistdir_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
+    mp_fun_1_t finaliser;
     bool is_str;
     DIR *dir;
 } vfs_posix_ilistdir_it_t;
@@ -224,11 +233,22 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
     }
 }
 
+STATIC mp_obj_t vfs_posix_ilistdir_it_del(mp_obj_t self_in) {
+    vfs_posix_ilistdir_it_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->dir != NULL) {
+        MP_THREAD_GIL_EXIT();
+        closedir(self->dir);
+        MP_THREAD_GIL_ENTER();
+    }
+    return mp_const_none;
+}
+
 STATIC mp_obj_t vfs_posix_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
-    vfs_posix_ilistdir_it_t *iter = m_new_obj(vfs_posix_ilistdir_it_t);
-    iter->base.type = &mp_type_polymorph_iter;
+    vfs_posix_ilistdir_it_t *iter = m_new_obj_with_finaliser(vfs_posix_ilistdir_it_t);
+    iter->base.type = &mp_type_polymorph_iter_with_finaliser;
     iter->iternext = vfs_posix_ilistdir_it_iternext;
+    iter->finaliser = vfs_posix_ilistdir_it_del;
     iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;
     const char *path = vfs_posix_get_path_str(self, path_in);
     if (path[0] == '\0') {
@@ -254,7 +274,11 @@ STATIC mp_obj_t vfs_posix_mkdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     const char *path = vfs_posix_get_path_str(self, path_in);
     MP_THREAD_GIL_EXIT();
+    #ifdef _WIN32
+    int ret = mkdir(path);
+    #else
     int ret = mkdir(path, 0777);
+    #endif
     MP_THREAD_GIL_ENTER();
     if (ret != 0) {
         mp_raise_OSError(errno);
@@ -308,6 +332,8 @@ STATIC mp_obj_t vfs_posix_stat(mp_obj_t self_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_stat_obj, vfs_posix_stat);
 
+#if MICROPY_PY_UOS_STATVFS
+
 #ifdef __ANDROID__
 #define USE_STATFS 1
 #endif
@@ -349,6 +375,8 @@ STATIC mp_obj_t vfs_posix_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_statvfs_obj, vfs_posix_statvfs);
 
+#endif
+
 STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&vfs_posix_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&vfs_posix_umount_obj) },
@@ -362,7 +390,9 @@ STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&vfs_posix_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&vfs_posix_rmdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&vfs_posix_stat_obj) },
+    #if MICROPY_PY_UOS_STATVFS
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&vfs_posix_statvfs_obj) },
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(vfs_posix_locals_dict, vfs_posix_locals_dict_table);
 
@@ -370,12 +400,13 @@ STATIC const mp_vfs_proto_t vfs_posix_proto = {
     .import_stat = mp_vfs_posix_import_stat,
 };
 
-const mp_obj_type_t mp_type_vfs_posix = {
-    { &mp_type_type },
-    .name = MP_QSTR_VfsPosix,
-    .make_new = vfs_posix_make_new,
-    .protocol = &vfs_posix_proto,
-    .locals_dict = (mp_obj_dict_t *)&vfs_posix_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_posix,
+    MP_QSTR_VfsPosix,
+    MP_TYPE_FLAG_NONE,
+    make_new, vfs_posix_make_new,
+    protocol, &vfs_posix_proto,
+    locals_dict, &vfs_posix_locals_dict
+    );
 
 #endif // MICROPY_VFS_POSIX

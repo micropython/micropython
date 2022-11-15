@@ -31,14 +31,14 @@
 #include "py/stream.h"
 
 #include <stdio.h>
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 // Zephyr's generated version header
 #include <version.h>
-#include <net/net_context.h>
-#include <net/net_pkt.h>
-#include <net/dns_resolve.h>
+#include <zephyr/net/net_context.h>
+#include <zephyr/net/net_pkt.h>
+#include <zephyr/net/dns_resolve.h>
 #ifdef CONFIG_NET_SOCKETS
-#include <net/socket.h>
+#include <zephyr/net/socket.h>
 #endif
 
 #define DEBUG_PRINT 0
@@ -185,17 +185,23 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
-STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
-    socket_obj_t *socket = self_in;
+// method socket.listen([backlog])
+STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
+    socket_obj_t *socket = args[0];
     socket_check_closed(socket);
 
-    mp_int_t backlog = mp_obj_get_int(backlog_in);
+    mp_int_t backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    if (n_args > 1) {
+        backlog = mp_obj_get_int(args[1]);
+        backlog = (backlog < 0) ? 0 : backlog;
+    }
+
     int res = zsock_listen(socket->ctx, backlog);
     RAISE_SOCK_ERRNO(res);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_listen_obj, 1, 2, socket_listen);
 
 STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket_obj_t *socket = self_in;
@@ -283,7 +289,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     }
 
     vstr.len = len;
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
@@ -347,14 +353,15 @@ STATIC const mp_stream_p_t socket_stream_p = {
     .ioctl = sock_ioctl,
 };
 
-STATIC const mp_obj_type_t socket_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_socket,
-    .print = socket_print,
-    .make_new = socket_make_new,
-    .protocol = &socket_stream_p,
-    .locals_dict = (mp_obj_t)&socket_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    socket_type,
+    MP_QSTR_socket,
+    MP_TYPE_FLAG_NONE,
+    make_new, socket_make_new,
+    print, socket_print,
+    protocol, &socket_stream_p,
+    locals_dict, &socket_locals_dict
+    );
 
 //
 // getaddrinfo() implementation
@@ -465,5 +472,7 @@ const mp_obj_module_t mp_module_usocket = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_usocket_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_usocket);
 
 #endif // MICROPY_PY_USOCKET

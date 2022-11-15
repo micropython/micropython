@@ -197,8 +197,7 @@ static const mp_obj_type_t servo_obj_type = {
 
 mp_obj_t pyb_Servo(void) {
     uint16_t mask;
-    pyb_servo_obj_t *self = m_new_obj(pyb_servo_obj_t);
-    self->base.type = &servo_obj_type;
+    pyb_servo_obj_t *self = mp_obj_malloc(pyb_servo_obj_t, &servo_obj_type);
     self->min_usecs = MIN_PULSE_WIDTH;
     self->max_usecs = MAX_PULSE_WIDTH;
 

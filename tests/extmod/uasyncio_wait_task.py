@@ -54,8 +54,8 @@ async def main():
     print("----")
 
     # Create 2 tasks
-    ts1 = asyncio.create_task(delay_print(0.04, "hello"))
-    ts2 = asyncio.create_task(delay_print(0.08, "world"))
+    ts1 = asyncio.create_task(delay_print(0.2, "hello"))
+    ts2 = asyncio.create_task(delay_print(0.4, "world"))
 
     # Time how long the tasks take to finish, they should execute in parallel
     print("start")
@@ -64,7 +64,7 @@ async def main():
     t1 = ticks()
     await ts2
     t2 = ticks()
-    print("took {} {}".format(round(ticks_diff(t1, t0), -1), round(ticks_diff(t2, t1), -1)))
+    print("took {} {}".format(round(ticks_diff(t1, t0), -2), round(ticks_diff(t2, t1), -2)))
 
     # Wait on a task that raises an exception
     t = asyncio.create_task(task_raise())

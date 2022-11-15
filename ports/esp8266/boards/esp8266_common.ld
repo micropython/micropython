@@ -134,24 +134,23 @@ SECTIONS
         *lib/berkeley-db-1.xx/*.o(.literal*, .text*)
         *lib/libm/*.o*(.literal*, .text*)
         *lib/littlefs/*.o*(.literal*, .text*)
-        *lib/mp-readline/*.o(.literal*, .text*)
-        *lib/netutils/*.o*(.literal*, .text*)
-        *lib/timeutils/*.o*(.literal*, .text*)
-        *lib/utils/printf.o*(.literal*, .text*)
-        *lib/utils/sys_stdio_mphal.o*(.literal*, .text*)
-        *lib/utils/pyexec.o*(.literal*, .text*)
-        *lib/utils/stdout_helpers.o*(.literal*, .text*)
-        *lib/utils/interrupt_char.o*(.literal*, .text*)
+        *shared/libc/printf.o*(.literal*, .text*)
+        *shared/netutils/*.o*(.literal*, .text*)
+        *shared/readline/*.o(.literal*, .text*)
+        *shared/runtime/interrupt_char.o*(.literal*, .text*)
+        *shared/runtime/pyexec.o*(.literal*, .text*)
+        *shared/runtime/stdout_helpers.o*(.literal*, .text*)
+        *shared/runtime/sys_stdio_mphal.o*(.literal*, .text*)
+        *shared/timeutils/*.o*(.literal*, .text*)
         *drivers/bus/*.o(.literal* .text*)
 
-        build-*/main.o(.literal* .text*)
+        */main.o(.literal* .text*)
         *fatfs_port.o(.literal* .text*)
         *gccollect.o(.literal* .text*)
         *gchelper.o(.literal* .text*)
         *help.o(.literal* .text*)
         *lexerstr32.o(.literal* .text*)
         *utils.o(.literal* .text*)
-        *modpyb.o(.literal*, .text*)
         *machine_pin.o(.literal*, .text*)
         *machine_pwm.o(.literal*, .text*)
         *machine_rtc.o(.literal*, .text*)
@@ -182,7 +181,7 @@ SECTIONS
         */frozen.o(.rodata.mp_frozen_content) /* frozen modules */
 
         /* for -mforce-l32 */
-        build-*/*.o(.rodata*)
+        */*.o(.rodata*)
 
         _irom0_text_end = ABSOLUTE(.);
     } >irom0_0_seg :irom0_0_phdr

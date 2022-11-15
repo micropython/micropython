@@ -99,6 +99,8 @@ const mp_obj_module_t mp_module_uerrno = {
     .globals = (mp_obj_dict_t *)&mp_module_uerrno_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_uerrno, mp_module_uerrno);
+
 qstr mp_errno_to_str(mp_obj_t errno_val) {
     #if MICROPY_PY_UERRNO_ERRORCODE
     // We have the errorcode dict so can do a lookup using the hash map

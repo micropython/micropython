@@ -314,8 +314,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, uint n_args, uint n
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // create object
-    pyb_uart_obj_t *o = m_new_obj(pyb_uart_obj_t);
-    o->base.type = &pyb_uart_type;
+    pyb_uart_obj_t *o = mp_obj_malloc(pyb_uart_obj_t, &pyb_uart_type);
 
     // work out port
     o->uart_id = 0;
@@ -484,10 +483,11 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
 
-const mp_obj_type_t pyb_uart_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_UART,
-    .print = pyb_uart_print,
-    .make_new = pyb_uart_make_new,
-    .locals_dict = (mp_obj_t)&pyb_uart_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_uart_make_new,
+    print, pyb_uart_print,
+    locals_dict, &pyb_uart_locals_dict
+    );

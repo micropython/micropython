@@ -9,6 +9,7 @@ UNAME_S := $(shell uname -s)
 
 # include py core make definitions
 include $(MPTOP)/py/py.mk
+include $(MPTOP)/extmod/extmod.mk
 
 INC +=  -I.
 INC +=  -I..
@@ -19,7 +20,7 @@ INC += -I$(BUILD)
 # compiler settings
 CWARN = -Wall -Werror
 CWARN += -Wpointer-arith -Wuninitialized
-CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
+CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
 # Some systems (eg MacOS) need -fno-common so that mp_state_ctx is placed in the BSS.
 CFLAGS += -fno-common
@@ -69,7 +70,7 @@ else
 # Use gcc syntax for map file
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref
 endif
-LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
+LDFLAGS += $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 # Note: you may need to install i386 versions of dependency packages,
@@ -82,9 +83,9 @@ endif
 endif
 
 ifeq ($(MICROPY_USE_READLINE),1)
-INC +=  -I$(MPTOP)/lib/mp-readline
+INC += -I$(MPTOP)/shared/readline
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
-LIB_SRC_C_EXTRA += mp-readline/readline.c
+SHARED_SRC_C_EXTRA += readline/readline.c
 endif
 ifeq ($(MICROPY_USE_READLINE),2)
 CFLAGS_MOD += -DMICROPY_USE_READLINE=2
@@ -137,7 +138,6 @@ SRC_C = $(addprefix ports/unix/,\
 	unix_mphal.c \
 	input.c \
 	modmachine.c \
-	modos.c \
 	moduselect.c \
 	alloc.c \
 	coverage.c \
@@ -145,19 +145,19 @@ SRC_C = $(addprefix ports/unix/,\
 	$(SRC_MOD) \
 	)
 
-LIB_SRC_C = $(addprefix lib/,\
-	$(LIB_SRC_C_EXTRA) \
-	utils/printf.c \
-	utils/gchelper_generic.c \
+SHARED_SRC_C = $(addprefix shared/,\
+	libc/printf.c \
+	runtime/gchelper_generic.c \
 	timeutils/timeutils.c \
+	$(SHARED_SRC_C_EXTRA) \
 	)
 
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
@@ -172,7 +172,7 @@ else
 CROSS_COMPILE_HOST =
 endif
 
-deplibs: libffi axtls
+deplibs: libffi
 
 # install-exec-recursive & install-data-am targets are used to avoid building
 # docs and depending on makeinfo
@@ -182,13 +182,3 @@ libffi:
 	mkdir -p $(MPTOP)/lib/libffi/build_dir; cd $(MPTOP)/lib/libffi/build_dir; \
 	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; \
 	make install-exec-recursive; make -C include install-data-am
-
-axtls: $(MPTOP)/lib/axtls/README
-	cd $(MPTOP)/lib/axtls; cp config/upyconfig config/.config
-	cd $(MPTOP)/lib/axtls; make oldconfig -B
-	cd $(MPTOP)/lib/axtls; make clean
-	cd $(MPTOP)/lib/axtls; make all CC="$(CC)" LD="$(LD)"
-
-$(MPTOP)/lib/axtls/README:
-	@echo "You cloned without --recursive, fetching submodules for you."
-	(cd $(MPTOP); git submodule update --init --recursive)

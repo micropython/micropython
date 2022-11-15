@@ -42,7 +42,7 @@ Usage Model::
 Constructors
 ------------
 
-.. class:: Pin(id, mode=-1, pull=-1, *, value, drive, alt)
+.. class:: Pin(id, mode=-1, pull=-1, *, value=None, drive=0, alt=-1)
 
    Access the pin peripheral (GPIO pin) associated with the given ``id``.  If
    additional arguments are given in the constructor then they are used to initialise
@@ -74,6 +74,8 @@ Constructors
        - ``Pin.ALT_OPEN_DRAIN`` - The Same as ``Pin.ALT``, but the pin is configured as
          open-drain.  Not all ports implement this mode.
 
+       - ``Pin.ANALOG`` - Pin is configured for analog input, see the :class:`ADC` class.
+
      - ``pull`` specifies if the pin has a (weak) pull resistor attached, and can be
        one of:
 
@@ -85,9 +87,9 @@ Constructors
        output pin value if given, otherwise the state of the pin peripheral remains
        unchanged.
 
-     - ``drive`` specifies the output power of the pin and can be one of: ``Pin.LOW_POWER``,
-       ``Pin.MED_POWER`` or ``Pin.HIGH_POWER``.  The actual current driving capabilities
-       are port dependent.  Not all ports implement this argument.
+     - ``drive`` specifies the output power of the pin and can be one of: ``Pin.DRIVE_0``,
+       ``Pin.DRIVE_1``, etc., increasing in drive strength.  The actual current driving
+       capabilities are port dependent.  Not all ports implement this argument.
 
      - ``alt`` specifies an alternate function for the pin and the values it can take are
        port dependent.  This argument is valid only for ``Pin.ALT`` and ``Pin.ALT_OPEN_DRAIN``
@@ -106,7 +108,7 @@ Constructors
 Methods
 -------
 
-.. method:: Pin.init(mode=-1, pull=-1, *, value, drive, alt)
+.. method:: Pin.init(mode=-1, pull=-1, *, value=None, drive=0, alt=-1)
 
    Re-initialise the pin using the given parameters.  Only those arguments that
    are specified will be set.  The rest of the pin peripheral state will remain
@@ -247,6 +249,7 @@ not all constants are available on all ports.
           Pin.OPEN_DRAIN
           Pin.ALT
           Pin.ALT_OPEN_DRAIN
+          Pin.ANALOG
 
    Selects the pin mode.
 
@@ -257,11 +260,13 @@ not all constants are available on all ports.
    Selects whether there is a pull up/down resistor.  Use the value
    ``None`` for no pull.
 
-.. data:: Pin.LOW_POWER
-          Pin.MED_POWER
-          Pin.HIGH_POWER
+.. data:: Pin.DRIVE_0
+          Pin.DRIVE_1
+          Pin.DRIVE_2
 
-   Selects the pin drive strength.
+   Selects the pin drive strength.  A port may define additional drive
+   constants with increasing number corresponding to increasing drive
+   strength.
 
 .. data:: Pin.IRQ_FALLING
           Pin.IRQ_RISING

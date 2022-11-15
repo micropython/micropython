@@ -79,6 +79,7 @@ exclude_tests = (
     "float/float_divmod.py",
     # requires double precision floating point to work
     "float/float2int_doubleprec_intbig.py",
+    "float/float_format_ints_doubleprec.py",
     "float/float_parse_doubleprec.py",
     # inline asm FP tests (require Cortex-M4)
     "inlineasm/asmfpaddsub.py",
@@ -99,6 +100,9 @@ exclude_tests = (
     "misc/sys_settrace_loop.py",
     "misc/sys_settrace_generator.py",
     "misc/sys_settrace_features.py",
+    # don't have f-string
+    "basics/string_fstring.py",
+    "basics/string_fstring_debug.py",
 )
 
 output = []

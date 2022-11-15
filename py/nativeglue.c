@@ -300,9 +300,9 @@ const mp_fun_table_t mp_fun_table = {
     mp_unpack_ex,
     mp_delete_name,
     mp_delete_global,
-    mp_make_closure_from_raw_code,
+    mp_obj_new_closure,
     mp_arg_check_num_sig,
-    mp_setup_code_state,
+    mp_setup_code_state_native,
     mp_small_int_floor_divide,
     mp_small_int_modulo,
     mp_native_yield_from,
@@ -343,5 +343,9 @@ const mp_fun_table_t mp_fun_table = {
     &mp_stream_unbuffered_readline_obj,
     &mp_stream_write_obj,
 };
+
+#elif MICROPY_EMIT_NATIVE && MICROPY_DYNAMIC_COMPILER
+
+const int mp_fun_table;
 
 #endif // MICROPY_EMIT_NATIVE

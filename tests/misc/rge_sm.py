@@ -52,12 +52,12 @@ class RungeKutta(object):
 # couplings are: g1, g2, g3 of U(1), SU(2), SU(3); yt (top Yukawa), lambda (Higgs quartic)
 # see arxiv.org/abs/0812.4950, eqs 10-15
 sysSM = (
-    lambda *a: 41.0 / 96.0 / math.pi ** 2 * a[1] ** 3,  # g1
-    lambda *a: -19.0 / 96.0 / math.pi ** 2 * a[2] ** 3,  # g2
-    lambda *a: -42.0 / 96.0 / math.pi ** 2 * a[3] ** 3,  # g3
+    lambda *a: 41.0 / 96.0 / math.pi**2 * a[1] ** 3,  # g1
+    lambda *a: -19.0 / 96.0 / math.pi**2 * a[2] ** 3,  # g2
+    lambda *a: -42.0 / 96.0 / math.pi**2 * a[3] ** 3,  # g3
     lambda *a: 1.0
     / 16.0
-    / math.pi ** 2
+    / math.pi**2
     * (
         9.0 / 2.0 * a[4] ** 3
         - 8.0 * a[3] ** 2 * a[4]
@@ -66,7 +66,7 @@ sysSM = (
     ),  # yt
     lambda *a: 1.0
     / 16.0
-    / math.pi ** 2
+    / math.pi**2
     * (
         24.0 * a[5] ** 2
         + 12.0 * a[4] ** 2 * a[5]
@@ -137,5 +137,5 @@ def singleTraj(system, trajStart, h=0.02, tend=1.0):
 
 # initial conditions at M_Z
 singleTraj(
-    sysSM, [0.354, 0.654, 1.278, 0.983, 0.131], h=0.5, tend=math.log(10 ** 17)
+    sysSM, [0.354, 0.654, 1.278, 0.983, 0.131], h=0.5, tend=math.log(10**17)
 )  # true values

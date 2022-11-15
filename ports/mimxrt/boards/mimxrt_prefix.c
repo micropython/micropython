@@ -4,12 +4,14 @@
 #include "py/mphal.h"
 #include "pin.h"
 
-#define PIN_AF(_name, _af_mode, _instance, _pad_config) \
+#define PIN_AF(_name, _af_mode, _input_daisy, _instance, _input_register, _pad_config) \
     { \
         .base = { &machine_pin_af_type }, \
         .name = MP_QSTR_##_name, \
         .af_mode = (uint32_t)(_af_mode), \
+        .input_daisy = (uint8_t)(_input_daisy), \
         .instance = (void *)(_instance), \
+        .input_register = (uint32_t)(_input_register), \
         .pad_config = (uint32_t)(_pad_config), \
     } \
 
@@ -32,3 +34,4 @@
         .af_list = (_af_list), \
         .adc_list = (_adc_list), \
     } \
+

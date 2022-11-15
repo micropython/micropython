@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+	"UART",
+	"SPI",
+	"I2C",
+	"ADC"
+    ],
+    "id": "EK-RA4W1",
+    "images": [
+        "ek_ra4w1_board.jpg"
+    ],
+    "mcu": "RA4W1",
+    "product": "EK-RA4W1",
+    "thumbnail": "",
+    "url": "https://www.renesas.com/products/microcontrollers-microprocessors/ra-cortex-m-mcus/ek-ra4w1-evaluation-kit-ra4w1-mcu-group",
+    "vendor": "Renesas Electronics"
+}

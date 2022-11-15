@@ -17,14 +17,13 @@ for bus in (-1, 0, 1, 3):
         print("ValueError", bus)
 CAN(1).deinit()
 
-CAN.initfilterbanks(14)
 can = CAN(1)
 print(can)
 
 # Test state when de-init'd
 print(can.state() == can.STOPPED)
 
-can.init(CAN.LOOPBACK)
+can.init(CAN.LOOPBACK, num_filter_banks=14)
 print(can)
 print(can.any(0))
 
@@ -61,7 +60,7 @@ else:
 # Test that recv can work without allocating memory on the heap
 
 buf = bytearray(10)
-l = [0, 0, 0, memoryview(buf)]
+l = [0, 0, 0, 0, memoryview(buf)]
 l2 = None
 
 micropython.heap_lock()
@@ -69,30 +68,30 @@ micropython.heap_lock()
 can.send("", 42)
 l2 = can.recv(0, l)
 assert l is l2
-print(l, len(l[3]), buf)
+print(l, len(l[4]), buf)
 
 can.send("1234", 42)
 l2 = can.recv(0, l)
 assert l is l2
-print(l, len(l[3]), buf)
+print(l, len(l[4]), buf)
 
 can.send("01234567", 42)
 l2 = can.recv(0, l)
 assert l is l2
-print(l, len(l[3]), buf)
+print(l, len(l[4]), buf)
 
 can.send("abc", 42)
 l2 = can.recv(0, l)
 assert l is l2
-print(l, len(l[3]), buf)
+print(l, len(l[4]), buf)
 
 micropython.heap_unlock()
 
 # Test that recv can work with different arrays behind the memoryview
 can.send("abc", 1)
-print(bytes(can.recv(0, [0, 0, 0, memoryview(array("B", range(8)))])[3]))
+print(bytes(can.recv(0, [0, 0, 0, 0, memoryview(array("B", range(8)))])[4]))
 can.send("def", 1)
-print(bytes(can.recv(0, [0, 0, 0, memoryview(array("b", range(8)))])[3]))
+print(bytes(can.recv(0, [0, 0, 0, 0, memoryview(array("b", range(8)))])[4]))
 
 # Test for non-list passed as second arg to recv
 can.send("abc", 1)
@@ -111,7 +110,7 @@ except ValueError:
 # Test for non-memoryview passed as 4th element to recv
 can.send("abc", 1)
 try:
-    can.recv(0, [0, 0, 0, 0])
+    can.recv(0, [0, 0, 0, 0, 0])
 except TypeError:
     print("TypeError")
 
@@ -132,19 +131,21 @@ except ValueError:
 del can
 
 # Testing extended IDs
-can = CAN(1, CAN.LOOPBACK, extframe=True)
-# Catch all filter
-can.setfilter(0, CAN.MASK32, 0, (0, 0))
+print("==== TEST extframe=True ====")
+
+can = CAN(1, CAN.LOOPBACK)
+# Catch all filter, but only for extframe's
+can.setfilter(0, CAN.MASK32, 0, (0, 0), extframe=True)
 
 print(can)
 
 try:
-    can.send("abcde", 0x7FF + 1, timeout=5000)
+    can.send("abcde", 0x7FF + 1, timeout=5000, extframe=True)
 except ValueError:
     print("failed")
 else:
     r = can.recv(0)
-    if r[0] == 0x7FF + 1 and r[3] == b"abcde":
+    if r[0] == 0x7FF + 1 and r[4] == b"abcde":
         print("passed")
     else:
         print("failed, wrong data received")
@@ -156,22 +157,24 @@ for n in [0, 8, 16, 24]:
     id_ok = 0b00001010 << n
     id_fail = 0b00011010 << n
 
-    can.clearfilter(0)
-    can.setfilter(0, pyb.CAN.MASK32, 0, (filter_id, filter_mask))
+    can.clearfilter(0, extframe=True)
+    can.setfilter(0, pyb.CAN.MASK32, 0, (filter_id, filter_mask), extframe=True)
 
-    can.send("ok", id_ok, timeout=3)
+    can.send("ok", id_ok, timeout=3, extframe=True)
     if can.any(0):
         msg = can.recv(0)
-        print((hex(filter_id), hex(filter_mask), hex(msg[0]), msg[3]))
+        print((hex(filter_id), hex(filter_mask), hex(msg[0]), msg[1], msg[4]))
 
-    can.send("fail", id_fail, timeout=3)
+    can.send("fail", id_fail, timeout=3, extframe=True)
     if can.any(0):
         msg = can.recv(0)
-        print((hex(filter_id), hex(filter_mask), hex(msg[0]), msg[3]))
+        print((hex(filter_id), hex(filter_mask), hex(msg[0]), msg[1], msg[4]))
 
 del can
 
 # Test RxCallbacks
+print("==== TEST rx callbacks ====")
+
 can = CAN(1, CAN.LOOPBACK)
 can.setfilter(0, CAN.LIST16, 0, (1, 2, 3, 4))
 can.setfilter(1, CAN.LIST16, 1, (5, 6, 7, 8))
@@ -248,6 +251,8 @@ print(can.recv(1))
 del can
 
 # Testing asynchronous send
+print("==== TEST async send ====")
+
 can = CAN(1, CAN.LOOPBACK)
 can.setfilter(0, CAN.MASK16, 0, (0, 0, 0, 0))
 
@@ -277,6 +282,8 @@ while can.any(0):
     print(can.recv(0))
 
 # Testing rtr messages
+print("==== TEST rtr messages ====")
+
 bus1 = CAN(1, CAN.LOOPBACK)
 while bus1.any(0):
     bus1.recv(0)
@@ -298,6 +305,8 @@ bus1.send("", 32, rtr=True)
 print(bus1.recv(0))
 
 # test HAL error, timeout
+print("==== TEST errors ====")
+
 can = pyb.CAN(1, pyb.CAN.NORMAL)
 try:
     can.send("1", 1, timeout=50)

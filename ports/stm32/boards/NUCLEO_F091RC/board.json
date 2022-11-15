@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_f091rc.jpg"
+    ],
+    "mcu": "stm32f0",
+    "product": "Nucleo F091RC",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

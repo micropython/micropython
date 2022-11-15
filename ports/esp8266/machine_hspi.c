@@ -159,8 +159,7 @@ mp_obj_t machine_hspi_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
         mp_raise_ValueError(NULL);
     }
 
-    machine_hspi_obj_t *self = m_new_obj(machine_hspi_obj_t);
-    self->base.type = &machine_hspi_type;
+    machine_hspi_obj_t *self = mp_obj_malloc(machine_hspi_obj_t, &machine_hspi_type);
     // set defaults
     self->baudrate = 80000000L;
     self->polarity = 0;
@@ -176,13 +175,14 @@ STATIC const mp_machine_spi_p_t machine_hspi_p = {
     .transfer = machine_hspi_transfer,
 };
 
-const mp_obj_type_t machine_hspi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_HSPI,
-    .print = machine_hspi_print,
-    .make_new = machine_hspi_make_new,
-    .protocol = &machine_hspi_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_hspi_type,
+    MP_QSTR_HSPI,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_hspi_make_new,
+    print, machine_hspi_print,
+    protocol, &machine_hspi_p,
+    locals_dict, &mp_machine_spi_locals_dict
+    );
 
 #endif // MICROPY_PY_MACHINE_SPI

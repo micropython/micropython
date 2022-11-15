@@ -30,7 +30,7 @@
 #include "py/mphal.h"
 #include "py/objtype.h"
 #include "py/stream.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "modmachine.h"
 
 #include "netif/ppp/ppp.h"
@@ -278,8 +278,9 @@ STATIC const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(ppp_if_locals_dict, ppp_if_locals_dict_table);
 
-const mp_obj_type_t ppp_if_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PPP,
-    .locals_dict = (mp_obj_dict_t *)&ppp_if_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ppp_if_type,
+    MP_QSTR_PPP,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &ppp_if_locals_dict
+    );

@@ -96,6 +96,19 @@ static volatile uint8_t *sdmmc_buf_top;
 #define MICROPY_HW_SDIO_CMD     (pin_D2)
 #endif
 
+#if defined(STM32H7)
+static uint32_t safe_divide(uint32_t denom) {
+    uint32_t num = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SDMMC);
+    uint32_t divres;
+
+    divres = num / (2U * denom);
+    if ((num % (2U * denom)) > denom) {
+        divres++;
+    }
+    return divres;
+}
+#endif
+
 void sdio_init(uint32_t irq_pri) {
     // configure IO pins
     mp_hal_pin_config_alt_static(MICROPY_HW_SDIO_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D0);
@@ -110,6 +123,8 @@ void sdio_init(uint32_t irq_pri) {
     SDMMC_TypeDef *SDIO = SDMMC;
     #if defined(STM32F7)
     SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_PWRSAV | (120 - 2); // 1-bit, 400kHz
+    #elif defined(STM32H7)
+    SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_PWRSAV | safe_divide(400000U); // 1-bit, 400kHz
     #else
     SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_PWRSAV | (120 / 2); // 1-bit, 400kHz
     #endif
@@ -134,9 +149,6 @@ void sdio_init(uint32_t irq_pri) {
 
 void sdio_deinit(void) {
     SDMMC_CLK_DISABLE();
-    #if defined(STM32F7)
-    __HAL_RCC_DMA2_CLK_DISABLE();
-    #endif
 }
 
 void sdio_reenable(void) {
@@ -160,6 +172,8 @@ void sdio_enable_high_speed_4bit(void) {
     mp_hal_delay_us(10);
     #if defined(STM32F7)
     SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_WIDBUS_0 | SDMMC_CLKCR_BYPASS /*| SDMMC_CLKCR_PWRSAV*/; // 4-bit, 48MHz
+    #elif defined(STM32H7)
+    SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_WIDBUS_0 | safe_divide(48000000U); // 4-bit, 48MHz
     #else
     SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_WIDBUS_0; // 4-bit, 48MHz
     #endif
@@ -451,9 +465,11 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
             #else
             printf("sdio_transfer_cmd53: timeout wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC->STA, (uint)SDMMC->DCOUNT, (uint)SDMMC->DCTRL, (uint)SDMMC->IDMACTRL);
             #endif
+            #if defined(STM32F7)
             if (sdmmc_dma) {
                 dma_nohal_deinit(&dma_SDIO_0);
             }
+            #endif
             return -MP_ETIMEDOUT;
         }
     }
@@ -466,9 +482,11 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
         #else
         printf("sdio_transfer_cmd53: error=%08lx wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", sdmmc_error, write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC->STA, (uint)SDMMC->DCOUNT, (uint)SDMMC->DCTRL, (uint)SDMMC->IDMACTRL);
         #endif
+        #if defined(STM32F7)
         if (sdmmc_dma) {
             dma_nohal_deinit(&dma_SDIO_0);
         }
+        #endif
         return -(0x1000000 | sdmmc_error);
     }
 
@@ -478,7 +496,9 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
             return -MP_EIO;
         }
     } else {
+        #if defined(STM32F7)
         dma_nohal_deinit(&dma_SDIO_0);
+        #endif
     }
 
     return 0;

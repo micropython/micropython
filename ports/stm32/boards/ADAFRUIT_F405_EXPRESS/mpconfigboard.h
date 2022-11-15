@@ -11,6 +11,7 @@
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_SDCARD    (1)
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 
 // HSE is 12MHz
 #define MICROPY_HW_CLK_PLLM (12)
@@ -23,6 +24,30 @@
 #define MICROPY_HW_RTC_USE_LSE      (1)
 #define MICROPY_HW_RTC_USE_US       (0)
 #define MICROPY_HW_RTC_USE_CALOUT   (1)
+
+// External SPI Flash config
+#if !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+
+#define MICROPY_HW_SPIFLASH_SIZE_BITS (16 * 1024 * 1024) // 16 Mbit (2 MByte)
+
+#define MICROPY_HW_SPIFLASH_CS      (MICROPY_HW_SPI1_NSS)
+#define MICROPY_HW_SPIFLASH_SCK     (MICROPY_HW_SPI1_SCK)
+#define MICROPY_HW_SPIFLASH_MISO    (MICROPY_HW_SPI1_MISO)
+#define MICROPY_HW_SPIFLASH_MOSI    (MICROPY_HW_SPI1_MOSI)
+
+extern const struct _mp_spiflash_config_t spiflash_config;
+extern struct _spi_bdev_t spi_bdev;
+#define MICROPY_HW_SPIFLASH_ENABLE_CACHE (1)
+#define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
+    (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE) : \
+    (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
+    spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
+    )
+#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(&spi_bdev, (dest), (bl), (n))
+#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
+#define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev) // for extended block protocol
+
+#endif // !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
 // UART config
 #define MICROPY_HW_UART3_NAME   "UART3"    // on RX / TX
@@ -50,9 +75,9 @@
 // SPI buses
 #define MICROPY_HW_SPI1_NAME "SPIFLASH"
 #define MICROPY_HW_SPI1_NSS  (pin_A15) // FLASH CS
-#define MICROPY_HW_SPI1_SCK  (pin_B3) // FLASH CLK
-#define MICROPY_HW_SPI1_MISO (pin_B4) // FLASH MISO
-#define MICROPY_HW_SPI1_MOSI (pin_B5) // FLASH MOSI
+#define MICROPY_HW_SPI1_SCK  (pin_B3)  // FLASH CLK
+#define MICROPY_HW_SPI1_MISO (pin_B4)  // FLASH MISO
+#define MICROPY_HW_SPI1_MOSI (pin_B5)  // FLASH MOSI
 #define MICROPY_HW_SPI2_NAME "SPI1"
 #define MICROPY_HW_SPI2_NSS  (pin_B12) // SD DETECT
 #define MICROPY_HW_SPI2_SCK  (pin_B13) // SCK

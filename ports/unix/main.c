@@ -43,10 +43,12 @@
 #include "py/builtin.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/objstr.h"
 #include "py/stackctrl.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "extmod/misc.h"
+#include "extmod/moduplatform.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
@@ -60,6 +62,11 @@ STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
 long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
+#endif
+
+// Number of heaps to assign by default if MICROPY_GC_SPLIT_HEAP=1
+#ifndef MICROPY_GC_SPLIT_HEAP_N_HEAPS
+#define MICROPY_GC_SPLIT_HEAP_N_HEAPS (1)
 #endif
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
@@ -159,7 +166,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 }
 
 #if MICROPY_USE_READLINE == 1
-#include "lib/mp-readline/readline.h"
+#include "shared/readline/readline.h"
 #else
 STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
@@ -177,8 +184,9 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 #endif
 
 STATIC int do_repl(void) {
-    mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; "
-        MICROPY_PY_SYS_PLATFORM " version\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
+    mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
+    mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
+    mp_hal_stdout_tx_str("\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
 
     #if MICROPY_USE_READLINE == 1
 
@@ -191,7 +199,7 @@ STATIC int do_repl(void) {
 
     input_restart:
         vstr_reset(&line);
-        int ret = readline(&line, ">>> ");
+        int ret = readline(&line, mp_repl_get_ps1());
         mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
 
         if (ret == CHAR_CTRL_C) {
@@ -238,7 +246,7 @@ STATIC int do_repl(void) {
             // got a line with non-zero length, see if it needs continuing
             while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
                 vstr_add_byte(&line, '\n');
-                ret = readline(&line, "... ");
+                ret = readline(&line, mp_repl_get_ps2());
                 if (ret == CHAR_CTRL_C) {
                     // cancel everything
                     printf("\n");
@@ -263,13 +271,13 @@ STATIC int do_repl(void) {
     // use simple readline
 
     for (;;) {
-        char *line = prompt(">>> ");
+        char *line = prompt((char *)mp_repl_get_ps1());
         if (line == NULL) {
             // EOF
             return 0;
         }
         while (mp_repl_continue_with_input(line)) {
-            char *line2 = prompt("... ");
+            char *line2 = prompt((char *)mp_repl_get_ps2());
             if (line2 == NULL) {
                 break;
             }
@@ -324,6 +332,10 @@ STATIC void print_help(char **argv) {
     printf(
         "  heapsize=<n>[w][K|M] -- set the heap size for the GC (default %ld)\n"
         , heap_size);
+    impl_opts_cnt++;
+    #endif
+    #if defined(__APPLE__)
+    printf("  realtime -- set thread priority to realtime\n");
     impl_opts_cnt++;
     #endif
 
@@ -397,6 +409,15 @@ STATIC void pre_process_options(int argc, char **argv) {
                         goto invalid_arg;
                     }
                 #endif
+                #if defined(__APPLE__)
+                } else if (strcmp(argv[a + 1], "realtime") == 0) {
+                    #if MICROPY_PY_THREAD
+                    mp_thread_is_realtime_enabled = true;
+                    #endif
+                    // main thread was already intialized before the option
+                    // was parsed, so we have to enable realtime here.
+                    mp_thread_set_realtime();
+                #endif
                 } else {
                 invalid_arg:
                     exit(invalid_args());
@@ -414,6 +435,17 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
         mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
     }
 }
+
+#if MICROPY_PY_SYS_EXECUTABLE
+extern mp_obj_str_t mp_sys_executable_obj;
+STATIC char executable_path[MICROPY_ALLOC_PATH_MAX];
+
+STATIC void sys_set_excecutable(char *argv0) {
+    if (realpath(argv0, executable_path)) {
+        mp_obj_str_set_data(&mp_sys_executable_obj, (byte *)executable_path, strlen(executable_path));
+    }
+}
+#endif
 
 #ifdef _WIN32
 #define PATHLIST_SEP_CHAR ';'
@@ -462,8 +494,22 @@ MP_NOINLINE int main_(int argc, char **argv) {
     pre_process_options(argc, argv);
 
     #if MICROPY_ENABLE_GC
+    #if !MICROPY_GC_SPLIT_HEAP
     char *heap = malloc(heap_size);
     gc_init(heap, heap + heap_size);
+    #else
+    assert(MICROPY_GC_SPLIT_HEAP_N_HEAPS > 0);
+    char *heaps[MICROPY_GC_SPLIT_HEAP_N_HEAPS];
+    long multi_heap_size = heap_size / MICROPY_GC_SPLIT_HEAP_N_HEAPS;
+    for (size_t i = 0; i < MICROPY_GC_SPLIT_HEAP_N_HEAPS; i++) {
+        heaps[i] = malloc(multi_heap_size);
+        if (i == 0) {
+            gc_init(heaps[i], heaps[i] + multi_heap_size);
+        } else {
+            gc_add(heaps[i], heaps[i] + multi_heap_size);
+        }
+    }
+    #endif
     #endif
 
     #if MICROPY_ENABLE_PYSTACK
@@ -484,7 +530,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     {
         // Mount the host FS at the root of our internal VFS
         mp_obj_t args[2] = {
-            mp_type_vfs_posix.make_new(&mp_type_vfs_posix, 0, 0, NULL),
+            MP_OBJ_TYPE_GET_SLOT(&mp_type_vfs_posix, make_new)(&mp_type_vfs_posix, 0, 0, NULL),
             MP_OBJ_NEW_QSTR(MP_QSTR__slash_),
         };
         mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
@@ -495,11 +541,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");
     if (path == NULL) {
-        #ifdef MICROPY_PY_SYS_PATH_DEFAULT
         path = MICROPY_PY_SYS_PATH_DEFAULT;
-        #else
-        path = "~/.micropython/lib:/usr/lib/micropython";
-        #endif
     }
     size_t path_num = 1; // [0] is for current dir (or base dir of the script)
     if (*path == PATHLIST_SEP_CHAR) {
@@ -529,7 +571,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
                 vstr_add_strn(&vstr, home, home_l);
                 vstr_add_strn(&vstr, p + 1, p1 - p - 1);
-                path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+                path_items[i] = mp_obj_new_str_from_vstr(&vstr);
             } else {
                 path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
             }
@@ -567,6 +609,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
     printf("    cur   %d\n", m_get_current_bytes_allocated());
     printf("    peak  %d\n", m_get_peak_bytes_allocated());
     */
+
+    #if MICROPY_PY_SYS_EXECUTABLE
+    sys_set_excecutable(argv[0]);
+    #endif
 
     const int NOTHING_EXECUTED = -2;
     int ret = NOTHING_EXECUTED;
@@ -625,7 +671,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     vstr_init(&vstr, len + sizeof(".__main__"));
                     vstr_add_strn(&vstr, argv[a + 1], len);
                     vstr_add_strn(&vstr, ".__main__", sizeof(".__main__") - 1);
-                    import_args[0] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+                    import_args[0] = mp_obj_new_str_from_vstr(&vstr);
                     goto reimport;
                 }
 
@@ -658,7 +704,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 break;
             }
 
-            // Set base dir of the script as first entry in sys.path
+            // Set base dir of the script as first entry in sys.path.
             char *p = strrchr(basedir, '/');
             path_items[0] = mp_obj_new_str_via_qstr(basedir, p - basedir);
             free(pathbuf);
@@ -718,46 +764,23 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #if MICROPY_ENABLE_GC && !defined(NDEBUG)
     // We don't really need to free memory since we are about to exit the
     // process, but doing so helps to find memory leaks.
+    #if !MICROPY_GC_SPLIT_HEAP
     free(heap);
+    #else
+    for (size_t i = 0; i < MICROPY_GC_SPLIT_HEAP_N_HEAPS; i++) {
+        free(heaps[i]);
+    }
+    #endif
     #endif
 
     // printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;
 }
 
-#if !MICROPY_VFS
-uint mp_import_stat(const char *path) {
-    struct stat st;
-    if (stat(path, &st) == 0) {
-        if (S_ISDIR(st.st_mode)) {
-            return MP_IMPORT_STAT_DIR;
-        } else if (S_ISREG(st.st_mode)) {
-            return MP_IMPORT_STAT_FILE;
-        }
-    }
-    return MP_IMPORT_STAT_NO_EXIST;
-}
-
-#if MICROPY_PY_IO
-// Factory function for I/O stream classes, only needed if generic VFS subsystem isn't used.
-// Note: buffering and encoding are currently ignored.
-mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kwargs) {
-    enum { ARG_file, ARG_mode };
-    STATIC const mp_arg_t allowed_args[] = {
-        { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_QSTR(MP_QSTR_r)} },
-        { MP_QSTR_buffering, MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_encoding, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-    };
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kwargs, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    return mp_vfs_posix_file_open(&mp_type_textio, args[ARG_file].u_obj, args[ARG_mode].u_obj);
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
-#endif
-#endif
-
 void nlr_jump_fail(void *val) {
+    #if MICROPY_USE_READLINE == 1
+    mp_hal_stdio_mode_orig();
+    #endif
     fprintf(stderr, "FATAL: uncaught NLR %p\n", val);
     exit(1);
 }

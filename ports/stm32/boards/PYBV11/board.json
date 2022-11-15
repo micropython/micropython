@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../PYBV10/deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "id": "pybv11",
+    "images": [
+        "PYBv1_1.jpg",
+        "PYBv1_1-C.jpg",
+        "PYBv1_1-E.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "Pyboard v1.1",
+    "thumbnail": "",
+    "url": "https://store.micropython.org/product/PYBv1.1",
+    "variants": {
+        "dp": "Double-precision float",
+        "dp-thread": "Double precision float + Threads",
+        "network": "Wiznet 5200 Driver",
+        "thread": "Threading"
+    },
+    "vendor": "George Robotics"
+}

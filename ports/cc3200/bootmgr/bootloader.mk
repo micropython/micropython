@@ -65,14 +65,14 @@ BOOT_PY_SRC_C = $(addprefix py/,\
 	mpprint.c \
 	)
 
-BOOT_LIB_SRC_C = $(addprefix lib/,\
+BOOT_SHARED_SRC_C = $(addprefix shared/,\
+	libc/printf.c \
 	libc/string0.c \
-	utils/printf.c \
 	)
 
 OBJ  = $(addprefix $(BUILD)/, $(BOOT_HAL_SRC_C:.c=.o) $(BOOT_SL_SRC_C:.c=.o) $(BOOT_CC3100_SRC_C:.c=.o) $(BOOT_UTIL_SRC_C:.c=.o) $(BOOT_MISC_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(BOOT_MAIN_SRC_C:.c=.o) $(BOOT_MAIN_SRC_S:.s=.o) $(BOOT_PY_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(BOOT_LIB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(BOOT_SHARED_SRC_C:.c=.o))
 
 # Add the linker script
 LINKER_SCRIPT = bootmgr/bootmgr.lds
@@ -129,4 +129,12 @@ $(HEADER_BUILD)/qstrdefs.generated.h: | $(HEADER_BUILD)
 
 # Create an empty "mpversion.h" needed by py/mkrules.mk
 $(HEADER_BUILD)/mpversion.h: | $(HEADER_BUILD)
+	touch $@
+
+# Create an empty "moduledefs.h" needed by py/mkrules.mk
+$(HEADER_BUILD)/moduledefs.h: | $(HEADER_BUILD)
+	touch $@
+
+# Create an empty "root_pointers.h" needed by py/mkrules.mk
+$(HEADER_BUILD)/root_pointers.h: | $(HEADER_BUILD)
 	touch $@

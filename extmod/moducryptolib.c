@@ -228,8 +228,7 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
             mp_raise_ValueError(MP_ERROR_TEXT("mode"));
     }
 
-    mp_obj_aes_t *o = m_new_obj_var(mp_obj_aes_t, struct ctr_params, !!is_ctr_mode(block_mode));
-    o->base.type = type;
+    mp_obj_aes_t *o = mp_obj_malloc_var(mp_obj_aes_t, struct ctr_params, !!is_ctr_mode(block_mode), type);
 
     o->block_mode = block_mode;
     o->key_type = AES_KEYTYPE_NONE;
@@ -330,7 +329,7 @@ STATIC mp_obj_t aes_process(size_t n_args, const mp_obj_t *args, bool encrypt) {
     if (out_buf != MP_OBJ_NULL) {
         return out_buf;
     }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
 STATIC mp_obj_t ucryptolib_aes_encrypt(size_t n_args, const mp_obj_t *args) {
@@ -349,12 +348,13 @@ STATIC const mp_rom_map_elem_t ucryptolib_aes_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(ucryptolib_aes_locals_dict, ucryptolib_aes_locals_dict_table);
 
-STATIC const mp_obj_type_t ucryptolib_aes_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_aes,
-    .make_new = ucryptolib_aes_make_new,
-    .locals_dict = (void *)&ucryptolib_aes_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    ucryptolib_aes_type,
+    MP_QSTR_aes,
+    MP_TYPE_FLAG_NONE,
+    make_new, ucryptolib_aes_make_new,
+    locals_dict, &ucryptolib_aes_locals_dict
+    );
 
 STATIC const mp_rom_map_elem_t mp_module_ucryptolib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ucryptolib) },
@@ -374,5 +374,7 @@ const mp_obj_module_t mp_module_ucryptolib = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_ucryptolib_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_ucryptolib, mp_module_ucryptolib);
 
 #endif // MICROPY_PY_UCRYPTOLIB

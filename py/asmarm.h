@@ -109,6 +109,7 @@ void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs);
 // memory
 void asm_arm_ldr_reg_reg(asm_arm_t *as, uint rd, uint rn, uint byte_offset);
 void asm_arm_ldrh_reg_reg(asm_arm_t *as, uint rd, uint rn);
+void asm_arm_ldrh_reg_reg_offset(asm_arm_t *as, uint rd, uint rn, uint byte_offset);
 void asm_arm_ldrb_reg_reg(asm_arm_t *as, uint rd, uint rn);
 void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm, uint byte_offset);
 void asm_arm_strh_reg_reg(asm_arm_t *as, uint rd, uint rm);
@@ -203,6 +204,7 @@ void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
 #define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base), 4 * (word_offset))
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_arm_ldrb_reg_reg((as), (reg_dest), (reg_base))
 #define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_arm_ldrh_reg_reg((as), (reg_dest), (reg_base))
+#define ASM_LOAD16_REG_REG_OFFSET(as, reg_dest, reg_base, uint16_offset) asm_arm_ldrh_reg_reg_offset((as), (reg_dest), (reg_base), 2 * (uint16_offset))
 #define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base), 0)
 
 #define ASM_STORE_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base), 0)

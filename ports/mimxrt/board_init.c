@@ -37,10 +37,9 @@
 #include "fsl_clock.h"
 #include "fsl_lpuart.h"
 
-#include "clock_config.h"
+#include CLOCK_CONFIG_H
 #include "modmachine.h"
 
-volatile uint32_t systick_ms = 0;
 
 const uint8_t dcd_data[] = { 0x00 };
 
@@ -52,8 +51,15 @@ void board_init(void) {
     // Enable IOCON clock
     CLOCK_EnableClock(kCLOCK_Iomuxc);
 
-    // ------------- USB0 ------------- //
+    // ------------- SDRAM ------------ //
+    #if MICROPY_HW_SDRAM_AVAIL
+    mimxrt_sdram_init();
+    #endif
 
+    // 1ms tick timer
+    SysTick_Config(SystemCoreClock / 1000);
+
+    // ------------- USB0 ------------- //
     // Clock
     CLOCK_EnableUsbhs0PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
     CLOCK_EnableUsbhs0Clock(kCLOCK_Usb480M, 480000000U);
@@ -83,8 +89,16 @@ void board_init(void) {
     // ADC
     machine_adc_init();
 
-    // PIT
-    machine_timer_init_PIT();
+    // SDCard
+    #if MICROPY_PY_MACHINE_SDCARD
+    machine_sdcard_init0();
+    #endif
+
+    #if MICROPY_PY_MACHINE_I2S
+    machine_i2s_init0();
+    #endif
+    // RTC
+    machine_rtc_start();
 }
 
 void USB_OTG1_IRQHandler(void) {

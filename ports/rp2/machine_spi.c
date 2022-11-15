@@ -38,16 +38,38 @@
 #define DEFAULT_SPI_PHASE       (0)
 #define DEFAULT_SPI_BITS        (8)
 #define DEFAULT_SPI_FIRSTBIT    (SPI_MSB_FIRST)
-#define DEFAULT_SPI0_SCK        (6)
-#define DEFAULT_SPI0_MOSI       (7)
-#define DEFAULT_SPI0_MISO       (4)
-#define DEFAULT_SPI1_SCK        (10)
-#define DEFAULT_SPI1_MOSI       (11)
-#define DEFAULT_SPI1_MISO       (8)
 
+#ifndef MICROPY_HW_SPI0_SCK
+#if PICO_DEFAULT_SPI == 0
+#define MICROPY_HW_SPI0_SCK     (PICO_DEFAULT_SPI_SCK_PIN)
+#define MICROPY_HW_SPI0_MOSI    (PICO_DEFAULT_SPI_TX_PIN)
+#define MICROPY_HW_SPI0_MISO    (PICO_DEFAULT_SPI_RX_PIN)
+#else
+#define MICROPY_HW_SPI0_SCK     (6)
+#define MICROPY_HW_SPI0_MOSI    (7)
+#define MICROPY_HW_SPI0_MISO    (4)
+#endif
+#endif
+
+#ifndef MICROPY_HW_SPI1_SCK
+#if PICO_DEFAULT_SPI == 1
+#define MICROPY_HW_SPI1_SCK     (PICO_DEFAULT_SPI_SCK_PIN)
+#define MICROPY_HW_SPI1_MOSI    (PICO_DEFAULT_SPI_TX_PIN)
+#define MICROPY_HW_SPI1_MISO    (PICO_DEFAULT_SPI_RX_PIN)
+#else
+#define MICROPY_HW_SPI1_SCK     (10)
+#define MICROPY_HW_SPI1_MOSI    (11)
+#define MICROPY_HW_SPI1_MISO    (8)
+#endif
+#endif
+
+// SPI0 can be GP{0..7,16..23}, SPI1 can be GP{8..15,24..29}.
 #define IS_VALID_PERIPH(spi, pin)   ((((pin) & 8) >> 3) == (spi))
+// GP{2,6,10,14,...}
 #define IS_VALID_SCK(spi, pin)      (((pin) & 3) == 2 && IS_VALID_PERIPH(spi, pin))
+// GP{3,7,11,15,...}
 #define IS_VALID_MOSI(spi, pin)     (((pin) & 3) == 3 && IS_VALID_PERIPH(spi, pin))
+// GP{0,4,8,10,...}
 #define IS_VALID_MISO(spi, pin)     (((pin) & 3) == 0 && IS_VALID_PERIPH(spi, pin))
 
 typedef struct _machine_spi_obj_t {
@@ -68,13 +90,13 @@ STATIC machine_spi_obj_t machine_spi_obj[] = {
     {
         {&machine_spi_type}, spi0, 0,
         DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE, DEFAULT_SPI_BITS, DEFAULT_SPI_FIRSTBIT,
-        DEFAULT_SPI0_SCK, DEFAULT_SPI0_MOSI, DEFAULT_SPI0_MISO,
+        MICROPY_HW_SPI0_SCK, MICROPY_HW_SPI0_MOSI, MICROPY_HW_SPI0_MISO,
         0,
     },
     {
         {&machine_spi_type}, spi1, 1,
         DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE, DEFAULT_SPI_BITS, DEFAULT_SPI_FIRSTBIT,
-        DEFAULT_SPI1_SCK, DEFAULT_SPI1_MOSI, DEFAULT_SPI1_MISO,
+        MICROPY_HW_SPI1_SCK, MICROPY_HW_SPI1_MOSI, MICROPY_HW_SPI1_MISO,
         0,
     },
 };
@@ -268,11 +290,26 @@ STATIC const mp_machine_spi_p_t machine_spi_p = {
     .transfer = machine_spi_transfer,
 };
 
-const mp_obj_type_t machine_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .print = machine_spi_print,
-    .make_new = machine_spi_make_new,
-    .protocol = &machine_spi_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_spi_type,
+    MP_QSTR_SPI,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_spi_make_new,
+    print, machine_spi_print,
+    protocol, &machine_spi_p,
+    locals_dict, &mp_machine_spi_locals_dict
+    );
+
+mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t o) {
+    if (mp_obj_is_type(o, &machine_spi_type)) {
+        return MP_OBJ_TO_PTR(o);
+    }
+    #if MICROPY_PY_MACHINE_SOFTSPI
+    else if (mp_obj_is_type(o, &mp_machine_soft_spi_type)) {
+        return MP_OBJ_TO_PTR(o);
+    }
+    #endif
+    else {
+        mp_raise_TypeError(MP_ERROR_TEXT("expecting an SPI object"));
+    }
+}

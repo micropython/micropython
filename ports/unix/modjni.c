@@ -24,14 +24,16 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+#include "py/binary.h"
+
+#if MICROPY_PY_JNI
+
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
 #include <dlfcn.h>
 #include <ctype.h>
-
-#include "py/runtime.h"
-#include "py/binary.h"
 
 #include <jni.h>
 
@@ -102,9 +104,9 @@ STATIC void check_exception(void) {
         mp_obj_t py_e = new_jobject(exc);
         JJ1(ExceptionClear);
         if (JJ(IsInstanceOf, exc, IndexException_class)) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, py_e));
+            mp_raise_type_arg(&mp_type_IndexError, py_e);
         }
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_Exception, py_e));
+        mp_raise_type_arg(&mp_type_Exception, py_e);
     }
 }
 
@@ -145,8 +147,7 @@ STATIC void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
         // JJ1(ExceptionDescribe);
         JJ1(ExceptionClear);
 
-        mp_obj_jmethod_t *o = m_new_obj(mp_obj_jmethod_t);
-        o->base.type = &jmethod_type;
+        mp_obj_jmethod_t *o = mp_obj_malloc(mp_obj_jmethod_t, &jmethod_type);
         o->name = attr_in;
         o->meth = NULL;
         o->obj = self->cls;
@@ -173,18 +174,18 @@ STATIC const mp_rom_map_elem_t jclass_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(jclass_locals_dict, jclass_locals_dict_table);
 
-STATIC const mp_obj_type_t jclass_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_jclass,
-    .print = jclass_print,
-    .attr = jclass_attr,
-    .call = jclass_call,
-    .locals_dict = (mp_obj_dict_t *)&jclass_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    jclass_type,
+    MP_QSTR_jclass,
+    MP_TYPE_FLAG_NONE,
+    print, jclass_print,
+    attr, jclass_attr,
+    call, jclass_call,
+    locals_dict, &jclass_locals_dict
+    );
 
 STATIC mp_obj_t new_jclass(jclass jc) {
-    mp_obj_jclass_t *o = m_new_obj(mp_obj_jclass_t);
-    o->base.type = &jclass_type;
+    mp_obj_jclass_t *o = mp_obj_malloc(mp_obj_jclass_t, &jclass_type);
     o->cls = jc;
     return MP_OBJ_FROM_PTR(o);
 }
@@ -223,8 +224,7 @@ STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
         // JJ1(ExceptionDescribe);
         JJ1(ExceptionClear);
 
-        mp_obj_jmethod_t *o = m_new_obj(mp_obj_jmethod_t);
-        o->base.type = &jmethod_type;
+        mp_obj_jmethod_t *o = mp_obj_malloc(mp_obj_jmethod_t, &jmethod_type);
         o->name = attr_in;
         o->meth = NULL;
         o->obj = self->obj;
@@ -321,16 +321,17 @@ STATIC mp_obj_t subscr_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     return mp_obj_new_getitem_iter(dest, iter_buf);
 }
 
-STATIC const mp_obj_type_t jobject_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_jobject,
-    .print = jobject_print,
-    .unary_op = jobject_unary_op,
-    .attr = jobject_attr,
-    .subscr = jobject_subscr,
-    .getiter = subscr_getiter,
-//    .locals_dict = (mp_obj_dict_t*)&jobject_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    jobject_type,
+    MP_QSTR_jobject,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    print, jobject_print,
+    unary_op, jobject_unary_op,
+    attr, jobject_attr,
+    subscr, jobject_subscr,
+    iter, subscr_getiter,
+    //    .locals_dict = &jobject_locals_dict,
+    );
 
 STATIC mp_obj_t new_jobject(jobject jo) {
     if (jo == NULL) {
@@ -343,8 +344,7 @@ STATIC mp_obj_t new_jobject(jobject jo) {
     } else if (JJ(IsInstanceOf, jo, Class_class)) {
         return new_jclass(jo);
     } else {
-        mp_obj_jobject_t *o = m_new_obj(mp_obj_jobject_t);
-        o->base.type = &jobject_type;
+        mp_obj_jobject_t *o = mp_obj_malloc(mp_obj_jobject_t, &jobject_type);
         o->obj = jo;
         return MP_OBJ_FROM_PTR(o);
     }
@@ -378,7 +378,7 @@ STATIC const char *strprev(const char *s, char c) {
 
 STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
     const char *arg_type = *jtypesig;
-    mp_obj_type_t *type = mp_obj_get_type(arg);
+    const mp_obj_type_t *type = mp_obj_get_type(arg);
 
     if (type == &mp_type_str) {
         if (IMATCH(arg_type, "java.lang.String") || IMATCH(arg_type, "java.lang.Object")) {
@@ -569,14 +569,15 @@ STATIC mp_obj_t jmethod_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     return call_method(self->obj, name, methods, false, n_args, args);
 }
 
-STATIC const mp_obj_type_t jmethod_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_jmethod,
-    .print = jmethod_print,
-    .call = jmethod_call,
-//    .attr = jobject_attr,
-//    .locals_dict = (mp_obj_dict_t*)&jobject_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    jmethod_type,
+    MP_QSTR_jmethod,
+    MP_TYPE_FLAG_NONE,
+    print, jmethod_print,
+    call, jmethod_call,
+    //    .attr = jobject_attr,
+    //    .locals_dict = &jobject_locals_dict,
+    );
 
 #ifdef __ANDROID__
 #define LIBJVM_SO "libdvm.so"
@@ -644,8 +645,7 @@ STATIC mp_obj_t mod_jni_cls(mp_obj_t cls_name_in) {
     }
     jclass cls = JJ(FindClass, cls_name);
 
-    mp_obj_jclass_t *o = m_new_obj(mp_obj_jclass_t);
-    o->base.type = &jclass_type;
+    mp_obj_jclass_t *o = mp_obj_malloc(mp_obj_jclass_t, &jclass_type);
     o->cls = cls;
     return MP_OBJ_FROM_PTR(o);
 }
@@ -717,3 +717,7 @@ const mp_obj_module_t mp_module_jni = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_jni_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_jni, mp_module_jni);
+
+#endif // MICROPY_PY_JNI

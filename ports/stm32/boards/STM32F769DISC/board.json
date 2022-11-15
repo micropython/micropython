@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "stm32f769disc.jpg"
+    ],
+    "mcu": "stm32f7",
+    "product": "Discovery F769",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

@@ -50,24 +50,30 @@
 ///     val = adc.read_core_vbat()      # read MCU VBAT
 ///     val = adc.read_core_vref()      # read MCU VREF
 
-/* ADC defintions */
-
-#if defined(STM32H7)
-#define ADCx                    (ADC3)
-#define PIN_ADC_MASK            PIN_ADC3
-#define pin_adc_table           pin_adc3
-#else
+/* ADC definitions */
 #define ADCx                    (ADC1)
 #define PIN_ADC_MASK            PIN_ADC1
 #define pin_adc_table           pin_adc1
+
+#if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+#define ADCALLx                 (ADC2)
+#define pin_adcall_table        pin_adc2
+#elif defined(STM32H7)
+// On the H7 ADC3 is used for ADCAll to be able to read internal
+// channels. For all other GPIO channels, ADC12 is used instead.
+#define ADCALLx                 (ADC3)
+#define pin_adcall_table        pin_adc3
+#else
+// Use ADC1 for ADCAll instance by default for all other MCUs.
+#define ADCALLx                 (ADC1)
+#define pin_adcall_table        pin_adc1
 #endif
 
 #define ADCx_CLK_ENABLE         __HAL_RCC_ADC1_CLK_ENABLE
 
 #if defined(STM32F0)
 
-#define ADC_FIRST_GPIO_CHANNEL  (0)
-#define ADC_LAST_GPIO_CHANNEL   (15)
 #define ADC_SCALE_V             (3.3f)
 #define ADC_CAL_ADDRESS         (0x1ffff7ba)
 #define ADC_CAL1                ((uint16_t *)0x1ffff7b8)
@@ -76,8 +82,6 @@
 
 #elif defined(STM32F4)
 
-#define ADC_FIRST_GPIO_CHANNEL  (0)
-#define ADC_LAST_GPIO_CHANNEL   (15)
 #define ADC_SCALE_V             (3.3f)
 #define ADC_CAL_ADDRESS         (0x1fff7a2a)
 #define ADC_CAL1                ((uint16_t *)(ADC_CAL_ADDRESS + 2))
@@ -86,8 +90,6 @@
 
 #elif defined(STM32F7)
 
-#define ADC_FIRST_GPIO_CHANNEL  (0)
-#define ADC_LAST_GPIO_CHANNEL   (15)
 #define ADC_SCALE_V             (3.3f)
 #if defined(STM32F722xx) || defined(STM32F723xx) || \
     defined(STM32F732xx) || defined(STM32F733xx)
@@ -100,20 +102,32 @@
 #define ADC_CAL2                ((uint16_t *)(ADC_CAL_ADDRESS + 4))
 #define ADC_CAL_BITS            (12)
 
+#elif defined(STM32G0) || defined(STM32G4)
+
+#define ADC_SCALE_V             (((float)VREFINT_CAL_VREF) / 1000.0f)
+#define ADC_CAL_ADDRESS         VREFINT_CAL_ADDR
+#define ADC_CAL1                TEMPSENSOR_CAL1_ADDR
+#define ADC_CAL2                TEMPSENSOR_CAL2_ADDR
+#define ADC_CAL_BITS            (12) // UM2319/UM2570, __HAL_ADC_CALC_TEMPERATURE: 'corresponds to a resolution of 12 bits'
+
 #elif defined(STM32H7)
 
-#define ADC_FIRST_GPIO_CHANNEL  (0)
-#define ADC_LAST_GPIO_CHANNEL   (16)
 #define ADC_SCALE_V             (3.3f)
 #define ADC_CAL_ADDRESS         (0x1FF1E860)
 #define ADC_CAL1                ((uint16_t *)(0x1FF1E820))
 #define ADC_CAL2                ((uint16_t *)(0x1FF1E840))
 #define ADC_CAL_BITS            (16)
 
+#elif defined(STM32L1)
+
+#define ADC_SCALE_V             (VREFINT_CAL_VREF / 1000.0f)
+#define ADC_CAL_ADDRESS         (VREFINT_CAL_ADDR)
+#define ADC_CAL1                (TEMPSENSOR_CAL1_ADDR)
+#define ADC_CAL2                (TEMPSENSOR_CAL2_ADDR)
+#define ADC_CAL_BITS            (12)
+
 #elif defined(STM32L4) || defined(STM32WB)
 
-#define ADC_FIRST_GPIO_CHANNEL  (1)
-#define ADC_LAST_GPIO_CHANNEL   (16)
 #define ADC_SCALE_V             (VREFINT_CAL_VREF / 1000.0f)
 #define ADC_CAL_ADDRESS         (VREFINT_CAL_ADDR)
 #define ADC_CAL1                (TEMPSENSOR_CAL1_ADDR)
@@ -135,14 +149,21 @@
 #elif defined(STM32F411xE) || defined(STM32F412Zx) || \
     defined(STM32F413xx) || defined(STM32F427xx) || \
     defined(STM32F429xx) || defined(STM32F437xx) || \
-    defined(STM32F439xx) || defined(STM32F446xx)
+    defined(STM32F439xx) || defined(STM32F446xx) || \
+    defined(STM32F479xx)
 #define VBAT_DIV (4)
 #elif defined(STM32F722xx) || defined(STM32F723xx) || \
     defined(STM32F732xx) || defined(STM32F733xx) || \
+    defined(STM32F745xx) || \
     defined(STM32F746xx) || defined(STM32F765xx) || \
     defined(STM32F767xx) || defined(STM32F769xx)
 #define VBAT_DIV (4)
-#elif defined(STM32H743xx)
+#elif defined(STM32G0) || defined(STM32G4)
+#define VBAT_DIV (3)
+#elif defined(STM32H743xx) || defined(STM32H747xx) || \
+    defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ) || \
+    defined(STM32H750xx)
 #define VBAT_DIV (4)
 #elif defined(STM32L432xx) || \
     defined(STM32L451xx) || defined(STM32L452xx) || \
@@ -150,6 +171,8 @@
     defined(STM32L476xx) || defined(STM32L496xx) || \
     defined(STM32WB55xx)
 #define VBAT_DIV (3)
+#elif defined(STM32L152xE)
+// STM32L152xE does not have vbat.
 #else
 #error Unsupported processor
 #endif
@@ -158,24 +181,30 @@
 #define EOC_TIMEOUT (10)
 
 /* Core temperature sensor definitions */
-#define CORE_TEMP_V25          (943)  /* (0.76v/3.3v)*(2^ADC resoultion) */
-#define CORE_TEMP_AVG_SLOPE    (3)    /* (2.5mv/3.3v)*(2^ADC resoultion) */
+#define CORE_TEMP_V25          (943)  /* (0.76v/3.3v)*(2^ADC resolution) */
+#define CORE_TEMP_AVG_SLOPE    (3)    /* (2.5mv/3.3v)*(2^ADC resolution) */
 
 // scale and calibration values for VBAT and VREF
 #define ADC_SCALE (ADC_SCALE_V / ((1 << ADC_CAL_BITS) - 1))
 #define VREFIN_CAL ((uint16_t *)ADC_CAL_ADDRESS)
 
 #ifndef __HAL_ADC_IS_CHANNEL_INTERNAL
+#if defined(STM32L1)
+#define __HAL_ADC_IS_CHANNEL_INTERNAL(channel) \
+    (channel == ADC_CHANNEL_VREFINT \
+    || channel == ADC_CHANNEL_TEMPSENSOR)
+#else
 #define __HAL_ADC_IS_CHANNEL_INTERNAL(channel) \
     (channel == ADC_CHANNEL_VBAT \
     || channel == ADC_CHANNEL_VREFINT \
     || channel == ADC_CHANNEL_TEMPSENSOR)
 #endif
+#endif
 
 typedef struct _pyb_obj_adc_t {
     mp_obj_base_t base;
     mp_obj_t pin_name;
-    int channel;
+    uint32_t channel;
     ADC_HandleTypeDef handle;
 } pyb_obj_adc_t;
 
@@ -197,14 +226,14 @@ STATIC bool is_adcx_channel(int channel) {
     return IS_ADC_CHANNEL(channel) || channel == ADC_CHANNEL_TEMPSENSOR;
     #elif defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
     return IS_ADC_CHANNEL(channel);
-    #elif defined(STM32H7)
+    #elif defined(STM32L1)
+    // The HAL of STM32L1 defines some channels those may not be available on package
+    return __HAL_ADC_IS_CHANNEL_INTERNAL(channel)
+           || (channel < MP_ARRAY_SIZE(pin_adcall_table) && pin_adcall_table[channel]);
+    #elif defined(STM32G0) || defined(STM32H7)
     return __HAL_ADC_IS_CHANNEL_INTERNAL(channel)
            || IS_ADC_CHANNEL(__HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel));
-    #elif defined(STM32L4)
-    ADC_HandleTypeDef handle;
-    handle.Instance = ADCx;
-    return IS_ADC_CHANNEL(&handle, channel);
-    #elif defined(STM32WB)
+    #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
     ADC_HandleTypeDef handle;
     handle.Instance = ADCx;
     return __HAL_ADC_IS_CHANNEL_INTERNAL(channel)
@@ -214,12 +243,12 @@ STATIC bool is_adcx_channel(int channel) {
     #endif
 }
 
-STATIC void adc_wait_for_eoc_or_timeout(int32_t timeout) {
+STATIC void adc_wait_for_eoc_or_timeout(ADC_HandleTypeDef *adcHandle, int32_t timeout) {
     uint32_t tickstart = HAL_GetTick();
-    #if defined(STM32F4) || defined(STM32F7)
-    while ((ADCx->SR & ADC_FLAG_EOC) != ADC_FLAG_EOC) {
-    #elif defined(STM32F0) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
-    while (READ_BIT(ADCx->ISR, ADC_FLAG_EOC) != ADC_FLAG_EOC) {
+    #if defined(STM32F4) || defined(STM32F7) || defined(STM32L1)
+    while ((adcHandle->Instance->SR & ADC_FLAG_EOC) != ADC_FLAG_EOC) {
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    while (READ_BIT(adcHandle->Instance->ISR, ADC_FLAG_EOC) != ADC_FLAG_EOC) {
     #else
     #error Unsupported processor
         #endif
@@ -229,11 +258,22 @@ STATIC void adc_wait_for_eoc_or_timeout(int32_t timeout) {
     }
 }
 
-STATIC void adcx_clock_enable(void) {
-    #if defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
+STATIC void adcx_clock_enable(ADC_HandleTypeDef *adch) {
+    #if defined(STM32F0) || defined(STM32F4) || defined(STM32F7) || defined(STM32L1)
     ADCx_CLK_ENABLE();
+    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    __HAL_RCC_ADC12_CLK_ENABLE();
+    __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_CLKP);
+    #elif defined(STM32G0)
+    __HAL_RCC_ADC_CLK_ENABLE();
+    #elif defined(STM32G4)
+    __HAL_RCC_ADC12_CLK_ENABLE();
     #elif defined(STM32H7)
-    __HAL_RCC_ADC3_CLK_ENABLE();
+    if (adch->Instance == ADC3) {
+        __HAL_RCC_ADC3_CLK_ENABLE();
+    } else {
+        __HAL_RCC_ADC12_CLK_ENABLE();
+    }
     __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_CLKP);
     #elif defined(STM32L4) || defined(STM32WB)
     if (__HAL_RCC_GET_ADC_SOURCE() == RCC_ADCCLKSOURCE_NONE) {
@@ -246,14 +286,15 @@ STATIC void adcx_clock_enable(void) {
 }
 
 STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
-    adcx_clock_enable();
+    adcx_clock_enable(adch);
 
-    adch->Instance = ADCx;
     adch->Init.Resolution = resolution;
     adch->Init.ContinuousConvMode = DISABLE;
     adch->Init.DiscontinuousConvMode = DISABLE;
-    #if !defined(STM32F0)
+    #if !defined(STM32F0) && !defined(STM32G0)
     adch->Init.NbrOfDiscConversion = 0;
+    #endif
+    #if !defined(STM32F0)
     adch->Init.NbrOfConversion = 1;
     #endif
     adch->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
@@ -278,7 +319,13 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adch->Init.OversamplingMode = DISABLE;
     adch->Init.LeftBitShift = ADC_LEFTBITSHIFT_NONE;
     adch->Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
-    #elif defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32L1)
+    adch->Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+    adch->Init.ScanConvMode = ADC_SCAN_DISABLE;
+    adch->Init.LowPowerAutoWait = DISABLE;
+    adch->Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    adch->Init.DMAContinuousRequests = DISABLE;
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
     adch->Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
     adch->Init.ScanConvMode = ADC_SCAN_DISABLE;
     adch->Init.LowPowerAutoWait = DISABLE;
@@ -295,22 +342,18 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     #if defined(STM32H7)
     HAL_ADCEx_Calibration_Start(adch, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
     #endif
-    #if defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32G0)
+    HAL_ADCEx_Calibration_Start(adch);
+    #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
     HAL_ADCEx_Calibration_Start(adch, ADC_SINGLE_ENDED);
     #endif
 }
 
 STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
-
-    if (ADC_FIRST_GPIO_CHANNEL <= adc_obj->channel && adc_obj->channel <= ADC_LAST_GPIO_CHANNEL) {
-        // Channels 0-16 correspond to real pins. Configure the GPIO pin in ADC mode.
-        const pin_obj_t *pin = pin_adc_table[adc_obj->channel];
-        mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
-    }
-
+    adc_obj->handle.Instance = ADCx;
     adcx_init_periph(&adc_obj->handle, ADC_RESOLUTION_12B);
 
-    #if defined(STM32L4) && defined(ADC_DUALMODE_REGSIMULT_INJECSIMULT)
+    #if (defined(STM32G4) || defined(STM32L4)) && defined(ADC_DUALMODE_REGSIMULT_INJECSIMULT)
     ADC_MultiModeTypeDef multimode;
     multimode.Mode = ADC_MODE_INDEPENDENT;
     if (HAL_ADCEx_MultiModeConfigChannel(&adc_obj->handle, &multimode) != HAL_OK) {
@@ -322,7 +365,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) {
     ADC_ChannelConfTypeDef sConfig;
 
-    #if defined(STM32H7) || defined(STM32WB)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
     sConfig.Rank = ADC_REGULAR_RANK_1;
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel) == 0) {
         channel = __HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel);
@@ -335,7 +378,11 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     #if defined(STM32F0)
     sConfig.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;
     #elif defined(STM32F4) || defined(STM32F7)
-    sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+    if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
+        sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+    } else {
+        sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+    }
     #elif defined(STM32H7)
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
         sConfig.SamplingTime = ADC_SAMPLETIME_810CYCLES_5;
@@ -346,7 +393,19 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
     sConfig.OffsetRightShift = DISABLE;
     sConfig.OffsetSignedSaturation = DISABLE;
-    #elif defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32L1)
+    if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
+        sConfig.SamplingTime = ADC_SAMPLETIME_384CYCLES;
+    } else {
+        sConfig.SamplingTime = ADC_SAMPLETIME_384CYCLES;
+    }
+    #elif defined(STM32G0)
+    if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
+        sConfig.SamplingTime = ADC_SAMPLETIME_160CYCLES_5;
+    } else {
+        sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+    }
+    #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
         sConfig.SamplingTime = ADC_SAMPLETIME_247CYCLES_5;
     } else {
@@ -370,8 +429,8 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
 
 STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
     HAL_ADC_Start(adcHandle);
-    adc_wait_for_eoc_or_timeout(EOC_TIMEOUT);
-    uint32_t value = ADCx->DR;
+    adc_wait_for_eoc_or_timeout(adcHandle, EOC_TIMEOUT);
+    uint32_t value = adcHandle->Instance->DR;
     HAL_ADC_Stop(adcHandle);
     return value;
 }
@@ -419,8 +478,8 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     } else {
         const pin_obj_t *pin = pin_find(pin_obj);
         if ((pin->adc_num & PIN_ADC_MASK) == 0) {
-            // No ADC1 function on that pin
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("pin %q does not have ADC capabilities"), pin->name);
+            // No ADC function on the given pin.
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) doesn't have ADC capabilities"), pin->name);
         }
         channel = pin->adc_channel;
     }
@@ -429,11 +488,11 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("not a valid ADC Channel: %d"), channel);
     }
 
-
-    if (ADC_FIRST_GPIO_CHANNEL <= channel && channel <= ADC_LAST_GPIO_CHANNEL) {
-        // these channels correspond to physical GPIO ports so make sure they exist
-        if (pin_adc_table[channel] == NULL) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("channel %d not available on this board"), channel);
+    // If this channel corresponds to a pin then configure the pin in ADC mode.
+    if (channel < MP_ARRAY_SIZE(pin_adc_table)) {
+        const pin_obj_t *pin = pin_adc_table[channel];
+        if (pin != NULL) {
+            mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
         }
     }
 
@@ -528,20 +587,20 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
             HAL_ADC_Start(&self->handle);
         } else {
             // for subsequent samples we can just set the "start sample" bit
-            #if defined(STM32F4) || defined(STM32F7)
-            ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
-            #elif defined(STM32F0) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
-            SET_BIT(ADCx->CR, ADC_CR_ADSTART);
+            #if defined(STM32F4) || defined(STM32F7) || defined(STM32L1)
+            self->handle.Instance->CR2 |= (uint32_t)ADC_CR2_SWSTART;
+            #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+            SET_BIT(self->handle.Instance->CR, ADC_CR_ADSTART);
             #else
             #error Unsupported processor
             #endif
         }
 
         // wait for sample to complete
-        adc_wait_for_eoc_or_timeout(EOC_TIMEOUT);
+        adc_wait_for_eoc_or_timeout(&self->handle, EOC_TIMEOUT);
 
         // read value
-        uint value = ADCx->DR;
+        uint value = self->handle.Instance->DR;
 
         // store value in buffer
         if (typesize == 1) {
@@ -608,9 +667,9 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
     adc_config_channel(&adc0->handle, adc0->channel);
     HAL_ADC_Start(&adc0->handle);
     // Wait for sample to complete and discard
-    adc_wait_for_eoc_or_timeout(EOC_TIMEOUT);
+    adc_wait_for_eoc_or_timeout(&adc0->handle, EOC_TIMEOUT);
     // Read (and discard) value
-    uint value = ADCx->DR;
+    uint value = adc0->handle.Instance->DR;
 
     // Ensure first sample is on a timer tick
     __HAL_TIM_CLEAR_FLAG(tim, TIM_FLAG_UPDATE);
@@ -638,18 +697,18 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
             adc_config_channel(&adc->handle, adc->channel);
             // for the first sample we need to turn the ADC on
             // ADC is started: set the "start sample" bit
-            #if defined(STM32F4) || defined(STM32F7)
-            ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
-            #elif defined(STM32F0) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
-            SET_BIT(ADCx->CR, ADC_CR_ADSTART);
+            #if defined(STM32F4) || defined(STM32F7) || defined(STM32L1)
+            adc->handle.Instance->CR2 |= (uint32_t)ADC_CR2_SWSTART;
+            #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+            SET_BIT(adc->handle.Instance->CR, ADC_CR_ADSTART);
             #else
             #error Unsupported processor
             #endif
             // wait for sample to complete
-            adc_wait_for_eoc_or_timeout(EOC_TIMEOUT);
+            adc_wait_for_eoc_or_timeout(&adc->handle, EOC_TIMEOUT);
 
             // read value
-            value = ADCx->DR;
+            value = adc->handle.Instance->DR;
 
             // store values in buffer
             if (typesize == 1) {
@@ -676,13 +735,14 @@ STATIC const mp_rom_map_elem_t adc_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
 
-const mp_obj_type_t pyb_adc_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ADC,
-    .print = adc_print,
-    .make_new = adc_make_new,
-    .locals_dict = (mp_obj_dict_t *)&adc_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_adc_type,
+    MP_QSTR_ADC,
+    MP_TYPE_FLAG_NONE,
+    make_new, adc_make_new,
+    print, adc_print,
+    locals_dict, &adc_locals_dict
+    );
 
 /******************************************************************************/
 /* adc all object                                                             */
@@ -691,6 +751,8 @@ typedef struct _pyb_adc_all_obj_t {
     mp_obj_base_t base;
     ADC_HandleTypeDef handle;
 } pyb_adc_all_obj_t;
+
+float adc_read_core_vref(ADC_HandleTypeDef *adcHandle);
 
 void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_mask) {
 
@@ -718,23 +780,27 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("resolution %d not supported"), resolution);
     }
 
-    for (uint32_t channel = ADC_FIRST_GPIO_CHANNEL; channel <= ADC_LAST_GPIO_CHANNEL; ++channel) {
+    for (uint32_t channel = 0; channel < MP_ARRAY_SIZE(pin_adcall_table); ++channel) {
         // only initialise those channels that are selected with the en_mask
         if (en_mask & (1 << channel)) {
-            // Channels 0-16 correspond to real pins. Configure the GPIO pin in
-            // ADC mode.
-            const pin_obj_t *pin = pin_adc_table[channel];
+            // If this channel corresponds to a pin then configure the pin in ADC mode.
+            const pin_obj_t *pin = pin_adcall_table[channel];
             if (pin) {
                 mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
             }
         }
     }
 
+    adc_all->handle.Instance = ADCALLx;
     adcx_init_periph(&adc_all->handle, resolution);
 }
 
 int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
+    #if defined(STM32L1)
+    uint32_t res_reg = adcHandle->Instance->CR1 & ADC_CR1_RES_Msk;
+    #else
     uint32_t res_reg = ADC_GET_RESOLUTION(adcHandle);
+    #endif
 
     switch (res_reg) {
         #if !defined(STM32H7)
@@ -760,7 +826,16 @@ STATIC uint32_t adc_config_and_read_ref(ADC_HandleTypeDef *adcHandle, uint32_t c
 }
 
 int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
+    #if defined(STM32G4)
+    int32_t raw_value = 0;
+    if (adcHandle->Instance == ADC1) {
+        raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR_ADC1);
+    } else {
+        return 0;
+    }
+    #else
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
+    #endif
     return ((raw_value - CORE_TEMP_V25) / CORE_TEMP_AVG_SLOPE) + 25;
 }
 
@@ -769,14 +844,32 @@ int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
 STATIC volatile float adc_refcor = 1.0f;
 
 float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
+    #if defined(STM32G4)
+    int32_t raw_value = 0;
+    if (adcHandle->Instance == ADC1) {
+        raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR_ADC1);
+    } else {
+        return 0;
+    }
+    #else
+    #if defined(STM32L1)
+    // Update the reference correction factor before reading tempsensor
+    // because TS_CAL1 and TS_CAL2 of STM32L1 are at VDDA=3.0V
+    adc_read_core_vref(adcHandle);
+    #endif
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
+    #endif
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 80.0f;
     return (((float)raw_value * adc_refcor - *ADC_CAL1) / core_temp_avg_slope) + 30.0f;
 }
 
 float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
+    #if defined(STM32L152xE)
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("read_core_vbat not supported"));
+    #else
     uint32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_VBAT);
     return raw_value * VBAT_DIV * ADC_SCALE * adc_refcor;
+    #endif
 }
 
 float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
@@ -797,8 +890,7 @@ STATIC mp_obj_t adc_all_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     // make ADCAll object
-    pyb_adc_all_obj_t *o = m_new_obj(pyb_adc_all_obj_t);
-    o->base.type = &pyb_adc_all_type;
+    pyb_adc_all_obj_t *o = mp_obj_malloc(pyb_adc_all_obj_t, &pyb_adc_all_type);
     mp_int_t res = mp_obj_get_int(args[0]);
     uint32_t en_mask = 0xffffffff;
     if (n_args > 1) {
@@ -812,6 +904,9 @@ STATIC mp_obj_t adc_all_make_new(const mp_obj_type_t *type, size_t n_args, size_
 STATIC mp_obj_t adc_all_read_channel(mp_obj_t self_in, mp_obj_t channel) {
     pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t chan = adc_get_internal_channel(mp_obj_get_int(channel));
+    if (!is_adcx_channel(chan)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("not a valid ADC Channel: %d"), chan);
+    }
     uint32_t data = adc_config_and_read_channel(&self->handle, chan);
     return mp_obj_new_int(data);
 }
@@ -864,11 +959,12 @@ STATIC const mp_rom_map_elem_t adc_all_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(adc_all_locals_dict, adc_all_locals_dict_table);
 
-const mp_obj_type_t pyb_adc_all_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ADCAll,
-    .make_new = adc_all_make_new,
-    .locals_dict = (mp_obj_dict_t *)&adc_all_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_adc_all_type,
+    MP_QSTR_ADCAll,
+    MP_TYPE_FLAG_NONE,
+    make_new, adc_all_make_new,
+    locals_dict, &adc_all_locals_dict
+    );
 
 #endif // MICROPY_HW_ENABLE_ADC

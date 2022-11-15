@@ -54,6 +54,14 @@ typedef struct _mp_obj_float_t {
 
 const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, (mp_float_t)M_E};
 const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, (mp_float_t)M_PI};
+#if MICROPY_PY_MATH_CONSTANTS
+#ifndef NAN
+#error NAN macro is not defined
+#endif
+const mp_obj_float_t mp_const_float_tau_obj = {{&mp_type_float}, (mp_float_t)(2.0 * M_PI)};
+const mp_obj_float_t mp_const_float_inf_obj = {{&mp_type_float}, (mp_float_t)INFINITY};
+const mp_obj_float_t mp_const_float_nan_obj = {{&mp_type_float}, (mp_float_t)NAN};
+#endif
 
 #endif
 
@@ -129,7 +137,7 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
             mp_buffer_info_t bufinfo;
             if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
                 // a textual representation, parse it
-                return mp_parse_num_decimal(bufinfo.buf, bufinfo.len, false, false, NULL);
+                return mp_parse_num_float(bufinfo.buf, bufinfo.len, false, NULL);
             } else if (mp_obj_is_float(args[0])) {
                 // a float, just return it
                 return args[0];
@@ -174,20 +182,19 @@ STATIC mp_obj_t float_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
     return mp_obj_float_binary_op(op, lhs_val, rhs_in);
 }
 
-const mp_obj_type_t mp_type_float = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
-    .name = MP_QSTR_float,
-    .print = float_print,
-    .make_new = float_make_new,
-    .unary_op = float_unary_op,
-    .binary_op = float_binary_op,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_float, MP_QSTR_float, MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    make_new, float_make_new,
+    print, float_print,
+    unary_op, float_unary_op,
+    binary_op, float_binary_op
+    );
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 
 mp_obj_t mp_obj_new_float(mp_float_t value) {
-    mp_obj_float_t *o = m_new(mp_obj_float_t, 1);
+    // Don't use mp_obj_malloc here to avoid extra function call overhead.
+    mp_obj_float_t *o = m_new_obj(mp_obj_float_t);
     o->base.type = &mp_type_float;
     o->value = value;
     return MP_OBJ_FROM_PTR(o);

@@ -25,17 +25,19 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+#include "py/binary.h"
+#include "py/mperrno.h"
+#include "py/objint.h"
+#include "py/gc.h"
+
+#if MICROPY_PY_FFI
+
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
 #include <dlfcn.h>
 #include <ffi.h>
-#include <stdint.h>
-
-#include "py/runtime.h"
-#include "py/binary.h"
-#include "py/mperrno.h"
-#include "py/objint.h"
 
 /*
  * modffi uses character codes to encode a value type, based on "struct"
@@ -100,6 +102,7 @@ typedef struct _mp_obj_fficallback_t {
     void *func;
     ffi_closure *clo;
     char rettype;
+    mp_obj_t pyfunc;
     ffi_cif cif;
     ffi_type *params[];
 } mp_obj_fficallback_t;
@@ -224,8 +227,7 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
     const char *argtypes = mp_obj_str_get_str(argtypes_in);
 
     mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(argtypes_in));
-    mp_obj_ffifunc_t *o = m_new_obj_var(mp_obj_ffifunc_t, ffi_type *, nparams);
-    o->base.type = &ffifunc_type;
+    mp_obj_ffifunc_t *o = mp_obj_malloc_var(mp_obj_ffifunc_t, ffi_type *, nparams, &ffifunc_type);
 
     o->func = func;
     o->rettype = *rettype;
@@ -266,28 +268,78 @@ STATIC mp_obj_t mod_ffi_func(mp_obj_t rettype, mp_obj_t addr_in, mp_obj_t argtyp
 }
 MP_DEFINE_CONST_FUN_OBJ_3(mod_ffi_func_obj, mod_ffi_func);
 
-STATIC void call_py_func(ffi_cif *cif, void *ret, void **args, void *func) {
+STATIC void call_py_func(ffi_cif *cif, void *ret, void **args, void *user_data) {
     mp_obj_t pyargs[cif->nargs];
+    mp_obj_fficallback_t *o = user_data;
+    mp_obj_t pyfunc = o->pyfunc;
+
     for (uint i = 0; i < cif->nargs; i++) {
         pyargs[i] = mp_obj_new_int(*(mp_int_t *)args[i]);
     }
-    mp_obj_t res = mp_call_function_n_kw(MP_OBJ_FROM_PTR(func), cif->nargs, 0, pyargs);
+    mp_obj_t res = mp_call_function_n_kw(pyfunc, cif->nargs, 0, pyargs);
 
     if (res != mp_const_none) {
         *(ffi_arg *)ret = mp_obj_int_get_truncated(res);
     }
 }
 
-STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t paramtypes_in) {
+STATIC void call_py_func_with_lock(ffi_cif *cif, void *ret, void **args, void *user_data) {
+    mp_obj_t pyargs[cif->nargs];
+    mp_obj_fficallback_t *o = user_data;
+    mp_obj_t pyfunc = o->pyfunc;
+    nlr_buf_t nlr;
+
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_lock();
+    #endif
+    gc_lock();
+
+    if (nlr_push(&nlr) == 0) {
+        for (uint i = 0; i < cif->nargs; i++) {
+            pyargs[i] = mp_obj_new_int(*(mp_int_t *)args[i]);
+        }
+        mp_obj_t res = mp_call_function_n_kw(pyfunc, cif->nargs, 0, pyargs);
+
+        if (res != mp_const_none) {
+            *(ffi_arg *)ret = mp_obj_int_get_truncated(res);
+        }
+        nlr_pop();
+    } else {
+        // Uncaught exception
+        mp_printf(MICROPY_ERROR_PRINTER, "Uncaught exception in FFI callback\n");
+        mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
+    }
+
+    gc_unlock();
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_unlock();
+    #endif
+}
+
+STATIC mp_obj_t mod_ffi_callback(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // first 3 args are positional: retttype, func, paramtypes.
+    mp_obj_t rettype_in = pos_args[0];
+    mp_obj_t func_in = pos_args[1];
+    mp_obj_t paramtypes_in = pos_args[2];
+
+    // arg parsing is used only for additional kwargs
+    enum { ARG_lock };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_lock,        MP_ARG_KW_ONLY | MP_ARG_BOOL,  {.u_bool = false} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 3, pos_args + 3, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    bool lock_in = args[ARG_lock].u_bool;
+
     const char *rettype = mp_obj_str_get_str(rettype_in);
 
     mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(paramtypes_in));
-    mp_obj_fficallback_t *o = m_new_obj_var(mp_obj_fficallback_t, ffi_type *, nparams);
-    o->base.type = &fficallback_type;
+    mp_obj_fficallback_t *o = mp_obj_malloc_var(mp_obj_fficallback_t, ffi_type *, nparams, &fficallback_type);
 
     o->clo = ffi_closure_alloc(sizeof(ffi_closure), &o->func);
 
     o->rettype = *rettype;
+    o->pyfunc = func_in;
 
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(paramtypes_in, &iter_buf);
@@ -302,14 +354,15 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
         mp_raise_ValueError(MP_ERROR_TEXT("error in ffi_prep_cif"));
     }
 
-    res = ffi_prep_closure_loc(o->clo, &o->cif, call_py_func, MP_OBJ_TO_PTR(func_in), o->func);
+    res = ffi_prep_closure_loc(o->clo, &o->cif,
+        lock_in? call_py_func_with_lock: call_py_func, o, o->func);
     if (res != FFI_OK) {
         mp_raise_ValueError(MP_ERROR_TEXT("ffi_prep_closure_loc"));
     }
 
     return MP_OBJ_FROM_PTR(o);
 }
-MP_DEFINE_CONST_FUN_OBJ_3(mod_ffi_callback_obj, mod_ffi_callback);
+MP_DEFINE_CONST_FUN_OBJ_KW(mod_ffi_callback_obj, 3, mod_ffi_callback);
 
 STATIC mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symname_in) {
     mp_obj_ffimod_t *self = MP_OBJ_TO_PTR(self_in);
@@ -320,8 +373,7 @@ STATIC mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symna
     if (sym == NULL) {
         mp_raise_OSError(MP_ENOENT);
     }
-    mp_obj_ffivar_t *o = m_new_obj(mp_obj_ffivar_t);
-    o->base.type = &ffivar_type;
+    mp_obj_ffivar_t *o = mp_obj_malloc(mp_obj_ffivar_t, &ffivar_type);
 
     o->var = sym;
     o->type = *rettype;
@@ -354,8 +406,7 @@ STATIC mp_obj_t ffimod_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     if (mod == NULL) {
         mp_raise_OSError(errno);
     }
-    mp_obj_ffimod_t *o = m_new_obj(mp_obj_ffimod_t);
-    o->base.type = type;
+    mp_obj_ffimod_t *o = mp_obj_malloc(mp_obj_ffimod_t, type);
     o->handle = mod;
     return MP_OBJ_FROM_PTR(o);
 }
@@ -369,13 +420,14 @@ STATIC const mp_rom_map_elem_t ffimod_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ffimod_locals_dict, ffimod_locals_dict_table);
 
-STATIC const mp_obj_type_t ffimod_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ffimod,
-    .print = ffimod_print,
-    .make_new = ffimod_make_new,
-    .locals_dict = (mp_obj_dict_t *)&ffimod_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    ffimod_type,
+    MP_QSTR_ffimod,
+    MP_TYPE_FLAG_NONE,
+    make_new, ffimod_make_new,
+    print, ffimod_print,
+    locals_dict, &ffimod_locals_dict
+    );
 
 // FFI function
 
@@ -453,10 +505,10 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         } else if (mp_obj_is_str(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i].ffi = (ffi_arg)(intptr_t)s;
-        } else if (((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type->buffer_p.get_buffer != NULL) {
+        } else if (MP_OBJ_TYPE_HAS_SLOT(((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type, buffer)) {
             mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(a);
             mp_buffer_info_t bufinfo;
-            int ret = o->type->buffer_p.get_buffer(MP_OBJ_FROM_PTR(o), &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
+            int ret = MP_OBJ_TYPE_GET_SLOT(o->type, buffer)(MP_OBJ_FROM_PTR(o), &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
             if (ret != 0) {
                 goto error;
             }
@@ -478,12 +530,13 @@ error:
     mp_raise_TypeError(MP_ERROR_TEXT("don't know how to pass object to native function"));
 }
 
-STATIC const mp_obj_type_t ffifunc_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ffifunc,
-    .print = ffifunc_print,
-    .call = ffifunc_call,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    ffifunc_type,
+    MP_QSTR_ffifunc,
+    MP_TYPE_FLAG_NONE,
+    print, ffifunc_print,
+    call, ffifunc_call
+    );
 
 // FFI callback for Python function
 
@@ -493,11 +546,24 @@ STATIC void fficallback_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     mp_printf(print, "<fficallback %p>", self->func);
 }
 
-STATIC const mp_obj_type_t fficallback_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_fficallback,
-    .print = fficallback_print,
+STATIC mp_obj_t fficallback_cfun(mp_obj_t self_in) {
+    mp_obj_fficallback_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_int_from_ull((uintptr_t)self->func);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(fficallback_cfun_obj, fficallback_cfun);
+
+STATIC const mp_rom_map_elem_t fficallback_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_cfun), MP_ROM_PTR(&fficallback_cfun_obj) }
 };
+STATIC MP_DEFINE_CONST_DICT(fficallback_locals_dict, fficallback_locals_dict_table);
+
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    fficallback_type,
+    MP_QSTR_fficallback,
+    MP_TYPE_FLAG_NONE,
+    print, fficallback_print,
+    locals_dict, &fficallback_locals_dict
+    );
 
 // FFI variable
 
@@ -528,21 +594,23 @@ STATIC const mp_rom_map_elem_t ffivar_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ffivar_locals_dict, ffivar_locals_dict_table);
 
-STATIC const mp_obj_type_t ffivar_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ffivar,
-    .print = ffivar_print,
-    .locals_dict = (mp_obj_dict_t *)&ffivar_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    ffivar_type,
+    MP_QSTR_ffivar,
+    MP_TYPE_FLAG_NONE,
+    print, ffivar_print,
+    locals_dict, &ffivar_locals_dict
+    );
 
 // Generic opaque storage object (unused)
 
 /*
-STATIC const mp_obj_type_t opaque_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_opaqueval,
-//    .print = opaque_print,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    opaque_type,
+    MP_QSTR_opaqueval,
+    MP_TYPE_FLAG_NONE,
+    make_new, //    .print = opaque_print,
+    );
 */
 
 STATIC mp_obj_t mod_ffi_open(size_t n_args, const mp_obj_t *args) {
@@ -569,3 +637,7 @@ const mp_obj_module_t mp_module_ffi = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_ffi_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_ffi, mp_module_ffi);
+
+#endif // MICROPY_PY_FFI

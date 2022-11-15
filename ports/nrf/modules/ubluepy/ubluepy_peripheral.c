@@ -114,8 +114,7 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    ubluepy_peripheral_obj_t *s = m_new_obj(ubluepy_peripheral_obj_t);
-    s->base.type = type;
+    ubluepy_peripheral_obj_t *s = mp_obj_malloc(ubluepy_peripheral_obj_t, type);
 
     s->delegate      = mp_const_none;
     s->conn_handler  = mp_const_none;
@@ -194,9 +193,8 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
     memset(&adv_data, 0, sizeof(ubluepy_advertise_data_t));
 
     if (device_name_obj != mp_const_none && mp_obj_is_str(device_name_obj)) {
-        GET_STR_DATA_LEN(device_name_obj, str_data, str_len);
-
-        adv_data.p_device_name = (uint8_t *)str_data;
+        size_t str_len;
+        adv_data.p_device_name = (uint8_t *)mp_obj_str_get_data(device_name_obj, &str_len);
         adv_data.device_name_len = str_len;
     }
 
@@ -291,11 +289,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_get_services_obj, peripheral
 #if MICROPY_PY_UBLUEPY_CENTRAL
 
 void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_data) {
-    ubluepy_service_obj_t * p_service = m_new_obj(ubluepy_service_obj_t);
-    p_service->base.type = &ubluepy_service_type;
+    ubluepy_service_obj_t * p_service = mp_obj_malloc(ubluepy_service_obj_t, &ubluepy_service_type);
 
-    ubluepy_uuid_obj_t * p_uuid = m_new_obj(ubluepy_uuid_obj_t);
-    p_uuid->base.type = &ubluepy_uuid_type;
+    ubluepy_uuid_obj_t * p_uuid = mp_obj_malloc(ubluepy_uuid_obj_t, &ubluepy_uuid_type);
 
     p_service->p_uuid = p_uuid;
 
@@ -314,11 +310,9 @@ void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_d
 
 void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data) {
     ubluepy_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
-    ubluepy_characteristic_obj_t * p_char = m_new_obj(ubluepy_characteristic_obj_t);
-    p_char->base.type = &ubluepy_characteristic_type;
+    ubluepy_characteristic_obj_t * p_char = mp_obj_malloc(ubluepy_characteristic_obj_t, &ubluepy_characteristic_type);
 
-    ubluepy_uuid_obj_t * p_uuid = m_new_obj(ubluepy_uuid_obj_t);
-    p_uuid->base.type = &ubluepy_uuid_type;
+    ubluepy_uuid_obj_t * p_uuid = mp_obj_malloc(ubluepy_uuid_obj_t, &ubluepy_uuid_type);
 
     p_char->p_uuid = p_uuid;
 
@@ -362,7 +356,8 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
     ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
 
     if (mp_obj_is_str(dev_addr)) {
-        GET_STR_DATA_LEN(dev_addr, str_data, str_len);
+        size_t str_len;
+        const byte *str_data = (const byte *)mp_obj_str_get_data(dev_addr, &str_len);
         if (str_len == 17) { // Example "11:22:33:aa:bb:cc"
 
             uint8_t * p_addr = m_new(uint8_t, 6);
@@ -487,12 +482,13 @@ STATIC const mp_rom_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_peripheral_locals_dict, ubluepy_peripheral_locals_dict_table);
 
-const mp_obj_type_t ubluepy_peripheral_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Peripheral,
-    .print = ubluepy_peripheral_print,
-    .make_new = ubluepy_peripheral_make_new,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_peripheral_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ubluepy_peripheral_type,
+    MP_QSTR_Peripheral,
+    MP_TYPE_FLAG_NONE,
+    make_new, ubluepy_peripheral_make_new,
+    print, ubluepy_peripheral_print,
+    locals_dict, &ubluepy_peripheral_locals_dict
+    );
 
 #endif // MICROPY_PY_UBLUEPY

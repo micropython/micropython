@@ -3,7 +3,7 @@ Hints and tips
 
 The following are some examples of the use of the inline assembler and some
 information on how to work around its limitations. In this document the term
-"assembler function" refers to a function declared in Python with the 
+"assembler function" refers to a function declared in Python with the
 ``@micropython.asm_thumb`` decorator, whereas "subroutine" refers to assembler
 code called from within an assembler function.
 
@@ -106,8 +106,8 @@ function can return multiple values by assigning them to array elements.
 Assembler functions have no means of determining the length of an array:
 this will need to be passed to the function.
 
-This use of arrays can be extended to enable more than three arrays to be used. 
-This is done using indirection: the ``uctypes`` module supports ``addressof()`` 
+This use of arrays can be extended to enable more than three arrays to be used.
+This is done using indirection: the ``uctypes`` module supports ``addressof()``
 which will return the address of an array passed as its argument. Thus you can
 populate an integer array with the addresses of other arrays:
 

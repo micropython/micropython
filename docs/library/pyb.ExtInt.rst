@@ -51,7 +51,7 @@ usrsw.h for an example of using this.
 Constructors
 ------------
 
-.. class:: pyb.ExtInt(pin, mode, pull, callback)
+.. class:: ExtInt(pin, mode, pull, callback)
 
    Create an ExtInt object:
 

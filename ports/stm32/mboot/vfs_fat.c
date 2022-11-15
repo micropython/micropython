@@ -41,8 +41,9 @@
 DRESULT disk_read(void *pdrv, BYTE *buf, DWORD sector, UINT count) {
     vfs_fat_context_t *ctx = pdrv;
 
-    if (0 <= sector && sector < ctx->bdev_byte_len / 512) {
-        hw_read(ctx->bdev_base_addr + sector * SECSIZE, count * SECSIZE, buf);
+    if (0 <= sector && sector < ctx->bdev_num_blocks) {
+        mboot_addr_t addr = ctx->bdev_base_addr + (mboot_addr_t)sector * (mboot_addr_t)SECSIZE;
+        hw_read(addr, count * SECSIZE, buf);
         return RES_OK;
     }
 
@@ -57,20 +58,20 @@ DRESULT disk_ioctl(void *pdrv, BYTE cmd, void *buf) {
             return RES_OK;
 
         case GET_SECTOR_COUNT:
-            *((DWORD*)buf) = ctx->bdev_byte_len / SECSIZE;
+            *((DWORD *)buf) = ctx->bdev_num_blocks;
             return RES_OK;
 
         case GET_SECTOR_SIZE:
-            *((WORD*)buf) = SECSIZE;
+            *((WORD *)buf) = SECSIZE;
             return RES_OK;
 
         case GET_BLOCK_SIZE:
-            *((DWORD*)buf) = 1; // erase block size in units of sector size
+            *((DWORD *)buf) = 1; // erase block size in units of sector size
             return RES_OK;
 
         case IOCTL_INIT:
         case IOCTL_STATUS:
-            *((DSTATUS*)buf) = STA_PROTECT;
+            *((DSTATUS *)buf) = STA_PROTECT;
             return RES_OK;
 
         default:
@@ -78,9 +79,9 @@ DRESULT disk_ioctl(void *pdrv, BYTE cmd, void *buf) {
     }
 }
 
-int vfs_fat_mount(vfs_fat_context_t *ctx, uint32_t base_addr, uint32_t byte_len) {
+int vfs_fat_mount(vfs_fat_context_t *ctx, mboot_addr_t base_addr, mboot_addr_t byte_len) {
     ctx->bdev_base_addr = base_addr;
-    ctx->bdev_byte_len = byte_len;
+    ctx->bdev_num_blocks = byte_len / SECSIZE;
     ctx->fatfs.drv = ctx;
     FRESULT res = f_mount(&ctx->fatfs);
     if (res != FR_OK) {

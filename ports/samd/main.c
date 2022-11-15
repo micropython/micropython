@@ -29,10 +29,16 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
-#include "lib/utils/gchelper.h"
-#include "lib/utils/pyexec.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/gchelper.h"
+#include "shared/runtime/pyexec.h"
+#include "shared/runtime/softtimer.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
+extern void adc_deinit_all(void);
+extern void pin_irq_deinit_all(void);
+extern void pwm_deinit_all(void);
+extern void sercom_deinit_all(void);
 
 void samd_main(void) {
     mp_stack_set_top(&_estack);
@@ -41,9 +47,25 @@ void samd_main(void) {
     for (;;) {
         gc_init(&_sheap, &_eheap);
         mp_init();
-        mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
-        mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
+
+        // Initialise sub-systems.
+        readline_init0();
+
+        // Execute _boot.py to set up the filesystem.
+        pyexec_frozen_module("_boot.py");
+
+        // Execute user scripts.
+        int ret = pyexec_file_if_exists("boot.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset_exit;
+        }
+        // Do not execute main.py if boot.py failed
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
+            ret = pyexec_file_if_exists("main.py");
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset_exit;
+            }
+        }
 
         for (;;) {
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -57,7 +79,13 @@ void samd_main(void) {
             }
         }
 
+    soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        adc_deinit_all();
+        pin_irq_deinit_all();
+        pwm_deinit_all();
+        sercom_deinit_all();
+        soft_timer_deinit();
         gc_sweep_all();
         mp_deinit();
     }
@@ -69,20 +97,12 @@ void gc_collect(void) {
     gc_collect_end();
 }
 
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    mp_raise_OSError(MP_ENOENT);
-}
-
-mp_import_stat_t mp_import_stat(const char *path) {
-    return MP_IMPORT_STAT_NO_EXIST;
-}
-
-mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
-
 void nlr_jump_fail(void *val) {
+    for (;;) {
+    }
+}
+
+void abort(void) {
     for (;;) {
     }
 }

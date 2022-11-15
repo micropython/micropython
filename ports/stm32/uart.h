@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_UART_H
 #define MICROPY_INCLUDED_STM32_UART_H
 
-#include "lib/utils/mpirq.h"
+#include "shared/runtime/mpirq.h"
 
 typedef enum {
     PYB_UART_NONE = 0,
@@ -42,6 +42,9 @@ typedef enum {
     PYB_UART_10 = 10,
     #ifdef LPUART1
     PYB_LPUART_1 = MICROPY_HW_MAX_UART + 1,
+    #endif
+    #ifdef LPUART2
+    PYB_LPUART_2 = MICROPY_HW_MAX_UART + 2,
     #endif
 } pyb_uart_t;
 
@@ -88,6 +91,7 @@ void uart_deinit(pyb_uart_obj_t *uart_obj);
 void uart_irq_handler(mp_uint_t uart_id);
 
 void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached);
+uint32_t uart_get_source_freq(pyb_uart_obj_t *self);
 uint32_t uart_get_baudrate(pyb_uart_obj_t *self);
 void uart_set_baudrate(pyb_uart_obj_t *self, uint32_t baudrate);
 
@@ -99,9 +103,9 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
 
 static inline bool uart_tx_avail(pyb_uart_obj_t *self) {
-    #if defined(STM32F4)
+    #if defined(STM32F4) || defined(STM32L1)
     return self->uartx->SR & USART_SR_TXE;
-    #elif defined(STM32H7)
+    #elif defined(STM32G0) || defined(STM32H7) || defined(STM32WL)
     return self->uartx->ISR & USART_ISR_TXE_TXFNF;
     #else
     return self->uartx->ISR & USART_ISR_TXE;

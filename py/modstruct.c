@@ -220,7 +220,7 @@ STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     byte *p = (byte *)vstr.buf;
     memset(p, 0, size);
     struct_pack_into_internal(args[0], p, n_args - 1, &args[1]);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
 
@@ -265,5 +265,7 @@ const mp_obj_module_t mp_module_ustruct = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_struct_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_ustruct, mp_module_ustruct);
 
 #endif

@@ -33,24 +33,18 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#if CONFIG_IDF_TARGET_ESP32
-#include "esp32/rom/uart.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/uart.h"
-#elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/rom/uart.h"
-#endif
-
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/stream.h"
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "extmod/misc.h"
-#include "lib/timeutils/timeutils.h"
-#include "lib/utils/pyexec.h"
+#include "shared/timeutils/timeutils.h"
+#include "shared/runtime/pyexec.h"
 #include "mphalport.h"
 #include "usb.h"
+#include "usb_serial_jtag.h"
+#include "uart.h"
 
 TaskHandle_t mp_main_task_handle;
 
@@ -104,15 +98,10 @@ int mp_hal_stdin_rx_chr(void) {
             return c;
         }
         MICROPY_EVENT_POLL_HOOK
-        ulTaskNotifyTake(pdFALSE, 1);
     }
 }
 
-void mp_hal_stdout_tx_str(const char *str) {
-    mp_hal_stdout_tx_strn(str, strlen(str));
-}
-
-void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
+void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     // Only release the GIL if many characters are being sent
     bool release_gil = len > 20;
     if (release_gil) {
@@ -120,35 +109,16 @@ void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
     }
     #if CONFIG_USB_ENABLED
     usb_tx_strn(str, len);
-    #else
-    for (uint32_t i = 0; i < len; ++i) {
-        uart_tx_one_char(str[i]);
-    }
+    #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    usb_serial_jtag_tx_strn(str, len);
+    #endif
+    #if MICROPY_HW_ENABLE_UART_REPL
+    uart_stdout_tx_strn(str, len);
     #endif
     if (release_gil) {
         MP_THREAD_GIL_ENTER();
     }
     mp_uos_dupterm_tx_strn(str, len);
-}
-
-// Efficiently convert "\n" to "\r\n"
-void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
-    const char *last = str;
-    while (len--) {
-        if (*str == '\n') {
-            if (str > last) {
-                mp_hal_stdout_tx_strn(last, str - last);
-            }
-            mp_hal_stdout_tx_strn("\r\n", 2);
-            ++str;
-            last = str;
-        } else {
-            ++str;
-        }
-    }
-    if (str > last) {
-        mp_hal_stdout_tx_strn(last, str - last);
-    }
 }
 
 uint32_t mp_hal_ticks_ms(void) {
@@ -160,18 +130,26 @@ uint32_t mp_hal_ticks_us(void) {
 }
 
 void mp_hal_delay_ms(uint32_t ms) {
-    uint64_t us = ms * 1000;
+    uint64_t us = (uint64_t)ms * 1000ULL;
     uint64_t dt;
     uint64_t t0 = esp_timer_get_time();
     for (;;) {
+        mp_handle_pending(true);
+        MICROPY_PY_USOCKET_EVENTS_HANDLER
+        MP_THREAD_GIL_EXIT();
         uint64_t t1 = esp_timer_get_time();
         dt = t1 - t0;
-        if (dt + portTICK_PERIOD_MS * 1000 >= us) {
+        if (dt + portTICK_PERIOD_MS * 1000ULL >= us) {
             // doing a vTaskDelay would take us beyond requested delay time
+            taskYIELD();
+            MP_THREAD_GIL_ENTER();
+            t1 = esp_timer_get_time();
+            dt = t1 - t0;
             break;
+        } else {
+            ulTaskNotifyTake(pdFALSE, 1);
+            MP_THREAD_GIL_ENTER();
         }
-        MICROPY_EVENT_POLL_HOOK
-        ulTaskNotifyTake(pdFALSE, 1);
     }
     if (dt < us) {
         // do the remaining delay accurately

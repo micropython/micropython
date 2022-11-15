@@ -1,0 +1,16 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "WiFi"
+    ],
+    "id": "esp8266-1m",
+    "images": [],
+    "mcu": "esp8266",
+    "product": "ESP8266 with 1MiB flash",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "vendor": "Espressif"
+}

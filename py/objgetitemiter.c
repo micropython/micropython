@@ -48,7 +48,6 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
         // an exception was raised
         mp_obj_type_t *t = (mp_obj_type_t *)((mp_obj_base_t *)nlr.ret_val)->type;
         if (t == &mp_type_StopIteration || t == &mp_type_IndexError) {
-            // return MP_OBJ_STOP_ITERATION instead of raising
             return MP_OBJ_STOP_ITERATION;
         } else {
             // re-raise exception
@@ -57,12 +56,12 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = it_iternext,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_it,
+    MP_QSTR_iterator,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, it_iternext
+    );
 
 // args are those returned from mp_load_method_maybe (ie either an attribute or a method)
 mp_obj_t mp_obj_new_getitem_iter(mp_obj_t *args, mp_obj_iter_buf_t *iter_buf) {

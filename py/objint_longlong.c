@@ -58,7 +58,7 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
 }
 
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
     long long val = self->val;
     if (big_endian) {
@@ -131,13 +131,13 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     if (mp_obj_is_small_int(lhs_in)) {
         lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs_in);
     } else {
-        assert(mp_obj_is_type(lhs_in, &mp_type_int));
+        assert(mp_obj_is_exact_type(lhs_in, &mp_type_int));
         lhs_val = ((mp_obj_int_t *)lhs_in)->val;
     }
 
     if (mp_obj_is_small_int(rhs_in)) {
         rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs_in);
-    } else if (mp_obj_is_type(rhs_in, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(rhs_in, &mp_type_int)) {
         rhs_val = ((mp_obj_int_t *)rhs_in)->val;
     } else {
         // delegate to generic function to check for extra cases
@@ -243,8 +243,7 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
 }
 
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
-    mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &mp_type_int;
+    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     o->val = val;
     return o;
 }
@@ -254,8 +253,7 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     if (val >> (sizeof(unsigned long long) * 8 - 1) != 0) {
         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("ulonglong too large"));
     }
-    mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &mp_type_int;
+    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     o->val = val;
     return o;
 }
@@ -263,8 +261,7 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
     // TODO this does not honor the given length of the string, but it all cases it should anyway be null terminated
     // TODO check overflow
-    mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &mp_type_int;
+    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     char *endptr;
     o->val = strtoll(*str, &endptr, base);
     *str = endptr;
@@ -287,7 +284,7 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
     return self->val;
 }

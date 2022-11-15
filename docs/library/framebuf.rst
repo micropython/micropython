@@ -11,19 +11,19 @@ class FrameBuffer
 -----------------
 
 The FrameBuffer class provides a pixel buffer which can be drawn upon with
-pixels, lines, rectangles, text and even other FrameBuffer's. It is useful
-when generating output for displays.
+pixels, lines, rectangles, ellipses, polygons, text and even other
+FrameBuffers. It is useful when generating output for displays.
 
 For example::
 
     import framebuf
 
     # FrameBuffer needs 2 bytes for every RGB565 pixel
-    fbuf = framebuf.FrameBuffer(bytearray(10 * 100 * 2), 10, 100, framebuf.RGB565)
+    fbuf = framebuf.FrameBuffer(bytearray(100 * 10 * 2), 100, 10, framebuf.RGB565)
 
     fbuf.fill(0)
     fbuf.text('MicroPython!', 0, 0, 0xffff)
-    fbuf.hline(0, 10, 96, 0xffff)
+    fbuf.hline(0, 9, 96, 0xffff)
 
 Constructors
 ------------
@@ -77,12 +77,37 @@ The following methods draw shapes onto the FrameBuffer.
     methods draw horizontal and vertical lines respectively up to
     a given length.
 
-.. method:: FrameBuffer.rect(x, y, w, h, c)
-.. method:: FrameBuffer.fill_rect(x, y, w, h, c)
+.. method:: FrameBuffer.rect(x, y, w, h, c[, f])
 
-    Draw a rectangle at the given location, size and color. The `rect`
-    method draws only a 1 pixel outline whereas the `fill_rect` method
-    draws both the outline and interior.
+    Draw a rectangle at the given location, size and color.
+
+    The optional *f* parameter can be set to ``True`` to fill the rectangle.
+    Otherwise just a one pixel outline is drawn.
+
+.. method:: FrameBuffer.ellipse(x, y, xr, yr, c[, f, m])
+
+    Draw an ellipse at the given location. Radii *xr* and *yr* define the
+    geometry; equal values cause a circle to be drawn. The *c* parameter
+    defines the color.
+
+    The optional *f* parameter can be set to ``True`` to fill the ellipse.
+    Otherwise just a one pixel outline is drawn.
+
+    The optional *m* parameter enables drawing to be restricted to certain
+    quadrants of the ellipse. The LS four bits determine which quadrants are
+    to be drawn, with bit 0 specifying Q1, b1 Q2, b2 Q3 and b3 Q4. Quadrants
+    are numbered counterclockwise with Q1 being top right.
+
+.. method:: FrameBuffer.poly(x, y, coords, c[, f])
+
+    Given a list of coordinates, draw an arbitrary (convex or concave) closed
+    polygon at the given x, y location using the given color.
+
+    The *coords* must be specified as a :mod:`array` of integers, e.g.
+    ``array('h', [x0, y0, x1, y1, ... xn, yn])``.
+
+    The optional *f* parameter can be set to ``True`` to fill the polygon.
+    Otherwise just a one pixel outline is drawn.
 
 Drawing text
 ------------
@@ -103,16 +128,23 @@ Other methods
     Shift the contents of the FrameBuffer by the given vector. This may
     leave a footprint of the previous colors in the FrameBuffer.
 
-.. method:: FrameBuffer.blit(fbuf, x, y[, key])
+.. method:: FrameBuffer.blit(fbuf, x, y, key=-1, palette=None)
 
     Draw another FrameBuffer on top of the current one at the given coordinates.
     If *key* is specified then it should be a color integer and the
     corresponding color will be considered transparent: all pixels with that
     color value will not be drawn.
 
-    This method works between FrameBuffer instances utilising different formats,
-    but the resulting colors may be unexpected due to the mismatch in color
-    formats.
+    The *palette* argument enables blitting between FrameBuffers with differing
+    formats. Typical usage is to render a monochrome or grayscale glyph/icon to
+    a color display. The *palette* is a FrameBuffer instance whose format is
+    that of the current FrameBuffer. The *palette* height is one pixel and its
+    pixel width is the number of colors in the source FrameBuffer. The *palette*
+    for an N-bit source needs 2**N pixels; the *palette* for a monochrome source
+    would have 2 pixels representing background and foreground colors. The
+    application assigns a color to each pixel in the *palette*. The color of the
+    current pixel will be that of that *palette* pixel whose x position is the
+    color of the corresponding source pixel.
 
 Constants
 ---------

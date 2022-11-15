@@ -23,7 +23,7 @@ Example::
 Constructors
 ------------
 
-.. class:: pyb.Switch()
+.. class:: Switch()
 
    Create and return a switch object.
 

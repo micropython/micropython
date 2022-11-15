@@ -32,8 +32,8 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "lib/utils/interrupt_char.h"
-#include "lib/utils/mpirq.h"
+#include "shared/runtime/interrupt_char.h"
+#include "shared/runtime/mpirq.h"
 #include "uart.h"
 #include "irq.h"
 #include "pendsv.h"
@@ -76,9 +76,13 @@
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!self->is_enabled) {
-        #ifdef LPUART1
+        #if defined(LPUART1)
         if (self->uart_id == PYB_LPUART_1) {
             mp_printf(print, "UART('LP1')");
+        } else
+        #elif defined(LPUART2)
+        if (self->uart_id == PYB_LPUART_2) {
+            mp_printf(print, "UART('LP2')");
         } else
         #endif
         {
@@ -105,9 +109,15 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         if (cr1 & USART_CR1_PCE) {
             bits -= 1;
         }
-        #ifdef LPUART1
+        #if defined(LPUART1)
         if (self->uart_id == PYB_LPUART_1) {
             mp_printf(print, "UART('LP1', baudrate=%u, bits=%u, parity=",
+                uart_get_baudrate(self), bits);
+        } else
+        #endif
+        #if defined(LPUART2)
+        if (self->uart_id == PYB_LPUART_2) {
+            mp_printf(print, "UART('LP2', baudrate=%u, bits=%u, parity=",
                 uart_get_baudrate(self), bits);
         } else
         #endif
@@ -354,9 +364,17 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
         } else if (strcmp(port, MICROPY_HW_LPUART1_NAME) == 0) {
             uart_id = PYB_LPUART_1;
         #endif
+        #ifdef MICROPY_HW_LPUART2_NAME
+        } else if (strcmp(port, MICROPY_HW_LPUART2_NAME) == 0) {
+            uart_id = PYB_LPUART_2;
+        #endif
         #ifdef LPUART1
         } else if (strcmp(port, "LP1") == 0 && uart_exists(PYB_LPUART_1)) {
             uart_id = PYB_LPUART_1;
+        #endif
+        #ifdef LPUART2
+        } else if (strcmp(port, "LP2") == 0 && uart_exists(PYB_LPUART_2)) {
+            uart_id = PYB_LPUART_2;
         #endif
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%s) doesn't exist"), port);
@@ -459,7 +477,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 // uart.sendbreak()
 STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    #if defined(STM32F0) || defined(STM32F7) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+    #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     self->uartx->RQR = USART_RQR_SBKRQ; // write-only register
     #else
     self->uartx->CR1 |= USART_CR1_SBK;
@@ -505,6 +523,12 @@ STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_irq_obj, 1, pyb_uart_irq);
 
+// Since uart.write() waits up to the last byte, uart.txdone() always returns True.
+STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
+    return mp_const_true;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
+
 STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
 
@@ -520,11 +544,13 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     /// \method write(buf)
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_uart_irq_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_writechar), MP_ROM_PTR(&pyb_uart_writechar_obj) },
     { MP_ROM_QSTR(MP_QSTR_readchar), MP_ROM_PTR(&pyb_uart_readchar_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&pyb_uart_sendbreak_obj) },
+    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) },
@@ -617,6 +643,9 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t a
         if ((flags & MP_STREAM_POLL_WR) && uart_tx_avail(self)) {
             ret |= MP_STREAM_POLL_WR;
         }
+    } else if (request == MP_STREAM_FLUSH) {
+        // Since uart.write() waits up to the last byte, uart.flush() always succeds.
+        ret = 0;
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
@@ -631,13 +660,12 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .is_text = false,
 };
 
-const mp_obj_type_t pyb_uart_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_UART,
-    .print = pyb_uart_print,
-    .make_new = pyb_uart_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&pyb_uart_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    make_new, pyb_uart_make_new,
+    print, pyb_uart_print,
+    protocol, &uart_stream_p,
+    locals_dict, &pyb_uart_locals_dict
+    );

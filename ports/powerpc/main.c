@@ -26,13 +26,14 @@
 
 #include <stdio.h>
 
+#include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 
 void __stack_chk_fail(void);
 void __stack_chk_fail(void) {

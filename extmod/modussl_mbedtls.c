@@ -63,6 +63,8 @@ struct ssl_args {
     mp_arg_val_t cert;
     mp_arg_val_t server_side;
     mp_arg_val_t server_hostname;
+    mp_arg_val_t cert_reqs;
+    mp_arg_val_t cadata;
     mp_arg_val_t do_handshake;
 };
 
@@ -72,7 +74,7 @@ STATIC const mp_obj_type_t ussl_socket_type;
 STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
     (void)ctx;
     (void)level;
-    printf("DBG:%s:%04d: %s\n", file, line, str);
+    mp_printf(&mp_plat_print, "DBG:%s:%04d: %s\n", file, line, str);
 }
 #endif
 
@@ -173,7 +175,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     mbedtls_ctr_drbg_init(&o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
-    mbedtls_debug_set_threshold(0);
+    mbedtls_debug_set_threshold(3);
     #endif
 
     mbedtls_entropy_init(&o->entropy);
@@ -191,7 +193,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         goto cleanup;
     }
 
-    mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
+    mbedtls_ssl_conf_authmode(&o->conf, args->cert_reqs.u_int);
     mbedtls_ssl_conf_rng(&o->conf, mbedtls_ctr_drbg_random, &o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&o->conf, mbedtls_debug, NULL);
@@ -237,11 +239,27 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         }
     }
 
+    if (args->cadata.u_obj != mp_const_none) {
+        size_t cacert_len;
+        const byte *cacert = (const byte *)mp_obj_str_get_data(args->cadata.u_obj, &cacert_len);
+        // len should include terminating null
+        ret = mbedtls_x509_crt_parse(&o->cacert, cacert, cacert_len + 1);
+        if (ret != 0) {
+            ret = MBEDTLS_ERR_X509_BAD_INPUT_DATA; // use general error for all cert errors
+            goto cleanup;
+        }
+
+        mbedtls_ssl_conf_ca_chain(&o->conf, &o->cacert, NULL);
+    }
+
     if (args->do_handshake.u_bool) {
         while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
             if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
                 goto cleanup;
             }
+            #ifdef MICROPY_EVENT_POLL_HOOK
+            MICROPY_EVENT_POLL_HOOK
+            #endif
         }
     }
 
@@ -374,16 +392,15 @@ STATIC const mp_stream_p_t ussl_socket_stream_p = {
     .ioctl = socket_ioctl,
 };
 
-STATIC const mp_obj_type_t ussl_socket_type = {
-    { &mp_type_type },
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    ussl_socket_type,
+    MP_QSTR_ussl,
+    MP_TYPE_FLAG_NONE,
     // Save on qstr's, reuse same as for module
-    .name = MP_QSTR_ussl,
-    .print = socket_print,
-    .getiter = NULL,
-    .iternext = NULL,
-    .protocol = &ussl_socket_stream_p,
-    .locals_dict = (void *)&ussl_socket_locals_dict,
-};
+    print, socket_print,
+    protocol, &ussl_socket_stream_p,
+    locals_dict, &ussl_socket_locals_dict
+    );
 
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: Implement more args
@@ -392,6 +409,8 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_cert_reqs, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MBEDTLS_SSL_VERIFY_NONE}},
+        { MP_QSTR_cadata, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
 
@@ -409,6 +428,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socke
 STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ussl) },
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&mod_ssl_wrap_socket_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CERT_NONE), MP_ROM_INT(MBEDTLS_SSL_VERIFY_NONE) },
+    { MP_ROM_QSTR(MP_QSTR_CERT_OPTIONAL), MP_ROM_INT(MBEDTLS_SSL_VERIFY_OPTIONAL) },
+    { MP_ROM_QSTR(MP_QSTR_CERT_REQUIRED), MP_ROM_INT(MBEDTLS_SSL_VERIFY_REQUIRED) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ssl_globals, mp_module_ssl_globals_table);
@@ -418,4 +440,6 @@ const mp_obj_module_t mp_module_ussl = {
     .globals = (mp_obj_dict_t *)&mp_module_ssl_globals,
 };
 
-#endif // MICROPY_PY_USSL
+MP_REGISTER_MODULE(MP_QSTR_ussl, mp_module_ussl);
+
+#endif // MICROPY_PY_USSL && MICROPY_SSL_MBEDTLS

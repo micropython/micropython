@@ -1,5 +1,50 @@
 #!/usr/bin/env python
-"""Creates the pin file for the STM32F4xx."""
+
+"""
+Generates pin source files based on an MCU alternate-function definition (eg
+stm32f405_af.csv) and a board-specific pin definition file, pins.csv.
+
+The pins.csv file can contain empty lines, comments (a line beginning with "#")
+or pin definition lines.  Pin definition lines must be of the form:
+
+    board,cpu
+
+Where "board" is the user-facing name of the pin as specified by the particular
+board layout and markings, and "cpu" is the corresponding name of the CPU/MCU
+pin.
+
+The "board" entry may be absent if the CPU pin has no additional name, and both
+entries may start with "-" to hide them from the corresponding Python dict of
+pins, and hence hide them from the user (but they are still accessible in C).
+
+For example, take the following pins.csv file:
+
+    X1,PA0
+    -X2,PA1
+    X3,-PA2
+    -X4,-PA3
+    ,PA4
+    ,-PA5
+
+The first row here configures:
+- The CPU pin PA0 is labelled X1.
+- The Python user can access both by the names Pin("X1") and Pin("A0").
+- The Python user can access both by the members Pin.board.X1 and Pin.cpu.A0.
+- In C code they are available as pyb_pin_X1 and pin_A0.
+
+Prefixing the names with "-" hides them from the user.  The following table
+summarises the various possibilities:
+
+    pins.csv entry | board name | cpu name | C board name | C cpu name
+    ---------------+------------+----------+--------------+-----------
+    X1,PA0           "X1"         "A0"       pyb_pin_X1     pin_A0
+    -X2,PA1          -            "A1"       pyb_pin_X2     pin_A1
+    X3,-PA2          "X3"         -          pyb_pin_X3     pin_A2
+    -X4,-PA3         -            -          pyb_pin_X4     pin_A3
+    ,PA4             -            "A4"       -              pin_A4
+    ,-PA5            -            -          -              pin_A5
+
+"""
 
 from __future__ import print_function
 
@@ -22,7 +67,7 @@ SUPPORTED_FN = {
 
 CONDITIONAL_VAR = {
     "I2C": "MICROPY_HW_I2C{num}_SCL",
-    "I2S": "MICROPY_HW_ENABLE_I2S{num}",
+    "I2S": "MICROPY_HW_I2S{num}",
     "SPI": "MICROPY_HW_SPI{num}_SCK",
     "UART": "MICROPY_HW_UART{num}_TX",
     "LPUART": "MICROPY_HW_LPUART{num}_TX",
@@ -174,23 +219,24 @@ class Pin(object):
     def parse_adc(self, adc_str):
         if adc_str[:3] != "ADC":
             return
+        adc, channel = None, None
 
         if adc_str.find("_INP") != -1:
             # STM32H7xx, entries have the form: ADCxx_IN[PN]yy/...
-            # for now just pick the entry with the most ADC periphs
-            adc, channel = None, None
-            for ss in adc_str.split("/"):
-                if ss.find("_INP") != -1:
-                    a, c = ss.split("_")
-                    if adc is None or len(a) > len(adc):
-                        adc, channel = a, c
-            if adc is None:
-                return
-            channel = channel[3:]
+            sep = "_INP"
         else:
             # all other MCUs, entries have the form: ADCxx_INyy
-            adc, channel = adc_str.split("_")
-            channel = channel[2:]
+            sep = "_IN"
+
+        # Pick the entry with the most ADC peripherals
+        for ss in adc_str.split("/"):
+            if ss.find(sep) != -1:
+                a, c = ss.split("_")
+                if adc is None or len(a) > len(adc):
+                    adc, channel = a, c
+        if adc is None:
+            return
+        channel = channel[len(sep) - 1 :]
 
         for idx in range(3, len(adc)):
             adc_num = int(adc[idx])  # 1, 2, or 3
@@ -273,6 +319,9 @@ class NamedPin(object):
             self._name = name
         self._pin = pin
 
+    def set_hidden(self, value):
+        self._is_hidden = value
+
     def is_hidden(self):
         return self._is_hidden
 
@@ -287,12 +336,13 @@ class Pins(object):
     def __init__(self):
         self.cpu_pins = []  # list of NamedPin objects
         self.board_pins = []  # list of NamedPin objects
+        self.adc_table_size = {}  # maps ADC number X to size of pin_adcX table
 
     def find_pin(self, port_num, pin_num):
         for named_pin in self.cpu_pins:
             pin = named_pin.pin()
             if pin.port == port_num and pin.pin == pin_num:
-                return pin
+                return named_pin
 
     def parse_af_file(self, filename, pinname_col, af_col):
         with open(filename, "r") as csvfile:
@@ -314,12 +364,25 @@ class Pins(object):
         with open(filename, "r") as csvfile:
             rows = csv.reader(csvfile)
             for row in rows:
+                if len(row) == 0 or row[0].startswith("#"):
+                    # Skip empty lines, and lines starting with "#"
+                    continue
+                if len(row) != 2:
+                    raise ValueError("Expecting two entries in a row")
+
+                cpu_pin_name = row[1]
+                cpu_pin_hidden = False
+                if cpu_pin_name.startswith("-"):
+                    cpu_pin_name = cpu_pin_name[1:]
+                    cpu_pin_hidden = True
                 try:
-                    (port_num, pin_num) = parse_port_pin(row[1])
+                    (port_num, pin_num) = parse_port_pin(cpu_pin_name)
                 except:
                     continue
-                pin = self.find_pin(port_num, pin_num)
-                if pin:
+                named_pin = self.find_pin(port_num, pin_num)
+                if named_pin:
+                    named_pin.set_hidden(cpu_pin_hidden)
+                    pin = named_pin.pin()
                     pin.set_is_board_pin()
                     if row[0]:  # Only add board pins that have a name
                         self.board_pins.append(NamedPin(row[0], pin))
@@ -353,26 +416,29 @@ class Pins(object):
         self.print_named("board", self.board_pins)
 
     def print_adc(self, adc_num):
+        adc_pins = {}
+        for named_pin in self.cpu_pins:
+            pin = named_pin.pin()
+            if (
+                pin.is_board_pin()
+                and not named_pin.is_hidden()
+                and (pin.adc_num & (1 << (adc_num - 1)))
+            ):
+                adc_pins[pin.adc_channel] = pin
+        if adc_pins:
+            table_size = max(adc_pins) + 1
+        else:
+            # If ADCx pins are hidden, print an empty table to prevent linker errors.
+            table_size = 0
+        self.adc_table_size[adc_num] = table_size
         print("")
-        print("const pin_obj_t * const pin_adc{:d}[] = {{".format(adc_num))
-        for channel in range(17):
-            if channel == 16:
-                print("#if defined(STM32L4)")
-            adc_found = False
-            for named_pin in self.cpu_pins:
-                pin = named_pin.pin()
-                if (
-                    pin.is_board_pin()
-                    and (pin.adc_num & (1 << (adc_num - 1)))
-                    and (pin.adc_channel == channel)
-                ):
-                    print("  &pin_{:s}_obj, // {:d}".format(pin.cpu_pin_name(), channel))
-                    adc_found = True
-                    break
-            if not adc_found:
-                print("  NULL,    // {:d}".format(channel))
-            if channel == 16:
-                print("#endif")
+        print("const pin_obj_t * const pin_adc{:d}[{:d}] = {{".format(adc_num, table_size))
+        for channel in range(table_size):
+            if channel in adc_pins:
+                obj = "&pin_{:s}_obj".format(adc_pins[channel].cpu_pin_name())
+            else:
+                obj = "NULL"
+            print("  [{:d}] = {},".format(channel, obj))
         print("};")
 
     def print_header(self, hdr_filename, obj_decls):
@@ -382,9 +448,12 @@ class Pins(object):
                     pin = named_pin.pin()
                     if pin.is_board_pin():
                         pin.print_header(hdr_file)
-                hdr_file.write("extern const pin_obj_t * const pin_adc1[];\n")
-                hdr_file.write("extern const pin_obj_t * const pin_adc2[];\n")
-                hdr_file.write("extern const pin_obj_t * const pin_adc3[];\n")
+                for adc_num, table_size in self.adc_table_size.items():
+                    hdr_file.write(
+                        "extern const pin_obj_t * const pin_adc{:d}[{:d}];\n".format(
+                            adc_num, table_size
+                        )
+                    )
             # provide #define's mapping board to cpu name
             for named_pin in self.board_pins:
                 hdr_file.write(
@@ -439,7 +508,7 @@ class Pins(object):
         with open(af_defs_filename, "wt") as af_defs_file:
 
             STATIC_AF_TOKENS = {}
-            for named_pin in self.board_pins:
+            for named_pin in self.cpu_pins:
                 for af in named_pin.pin().alt_fn:
                     func = "%s%d" % (af.func, af.fn_num) if af.fn_num else af.func
                     pin_type = (af.pin_type or "NULL").split("(")[0]
@@ -569,9 +638,8 @@ def main():
         with open(args.prefix_filename, "r") as prefix_file:
             print(prefix_file.read())
     pins.print()
-    pins.print_adc(1)
-    pins.print_adc(2)
-    pins.print_adc(3)
+    for i in range(1, 4):
+        pins.print_adc(i)
     pins.print_header(args.hdr_filename, args.hdr_obj_decls)
     pins.print_qstr(args.qstr_filename)
     pins.print_af_hdr(args.af_const_filename)

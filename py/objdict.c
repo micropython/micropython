@@ -33,6 +33,10 @@
 #include "py/objtype.h"
 #include "py/objstr.h"
 
+bool mp_obj_is_dict_or_ordereddict(mp_obj_t o) {
+    return mp_obj_is_obj(o) && MP_OBJ_TYPE_GET_SLOT_OR_NULL(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type, make_new) == mp_obj_dict_make_new;
+}
+
 const mp_obj_dict_t mp_const_empty_dict_obj = {
     .base = { .type = &mp_type_dict },
     .map = {
@@ -69,8 +73,15 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
 STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     bool first = true;
+    const char *item_separator = ", ";
+    const char *key_separator = ": ";
     if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
+    } else {
+        #if MICROPY_PY_UJSON_SEPARATORS
+        item_separator = MP_PRINT_GET_EXT(print)->item_separator;
+        key_separator = MP_PRINT_GET_EXT(print)->key_separator;
+        #endif
     }
     if (MICROPY_PY_COLLECTIONS_ORDEREDDICT && self->base.type != &mp_type_dict && kind != PRINT_JSON) {
         mp_printf(print, "%q(", self->base.type->name);
@@ -80,7 +91,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     mp_map_elem_t *next = NULL;
     while ((next = dict_iter_next(self, &cur)) != NULL) {
         if (!first) {
-            mp_print_str(print, ", ");
+            mp_print_str(print, item_separator);
         }
         first = false;
         bool add_quote = MICROPY_PY_UJSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
@@ -91,7 +102,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
         if (add_quote) {
             mp_print_str(print, "\"");
         }
-        mp_print_str(print, ": ");
+        mp_print_str(print, key_separator);
         mp_obj_print_helper(print, next->value, kind);
     }
     mp_print_str(print, "}");
@@ -190,7 +201,7 @@ mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
     if (elem == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, index));
+        mp_raise_type_arg(&mp_type_KeyError, index);
     } else {
         return elem->value;
     }
@@ -206,7 +217,7 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
         mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
         if (elem == NULL) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, index));
+            mp_raise_type_arg(&mp_type_KeyError, index);
         } else {
             return elem->value;
         }
@@ -295,7 +306,7 @@ STATIC mp_obj_t dict_get_helper(size_t n_args, const mp_obj_t *args, mp_map_look
     if (elem == NULL || elem->value == MP_OBJ_NULL) {
         if (n_args == 2) {
             if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-                nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, args[1]));
+                mp_raise_type_arg(&mp_type_KeyError, args[1]);
             } else {
                 value = mp_const_none;
             }
@@ -454,12 +465,12 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_dict_view_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = dict_view_it_iternext,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_dict_view_it,
+    MP_QSTR_iterator,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, dict_view_it_iternext
+    );
 
 STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_dict_view_it_t) <= sizeof(mp_obj_iter_buf_t));
@@ -505,17 +516,17 @@ STATIC mp_obj_t dict_view_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t
     return dict_binary_op(op, o->dict, rhs_in);
 }
 
-STATIC const mp_obj_type_t mp_type_dict_view = {
-    { &mp_type_type },
-    .name = MP_QSTR_dict_view,
-    .print = dict_view_print,
-    .binary_op = dict_view_binary_op,
-    .getiter = dict_view_getiter,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_dict_view,
+    MP_QSTR_dict_view,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    print, dict_view_print,
+    binary_op, dict_view_binary_op,
+    iter, dict_view_getiter
+    );
 
 STATIC mp_obj_t mp_obj_new_dict_view(mp_obj_t dict, mp_dict_view_kind_t kind) {
-    mp_obj_dict_view_t *o = m_new_obj(mp_obj_dict_view_t);
-    o->base.type = &mp_type_dict_view;
+    mp_obj_dict_view_t *o = mp_obj_malloc(mp_obj_dict_view_t, &mp_type_dict_view);
     o->dict = dict;
     o->kind = kind;
     return MP_OBJ_FROM_PTR(o);
@@ -579,31 +590,33 @@ STATIC const mp_rom_map_elem_t dict_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(dict_locals_dict, dict_locals_dict_table);
 
-const mp_obj_type_t mp_type_dict = {
-    { &mp_type_type },
-    .name = MP_QSTR_dict,
-    .print = dict_print,
-    .make_new = mp_obj_dict_make_new,
-    .unary_op = dict_unary_op,
-    .binary_op = dict_binary_op,
-    .subscr = dict_subscr,
-    .getiter = dict_getiter,
-    .locals_dict = (mp_obj_dict_t *)&dict_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_dict,
+    MP_QSTR_dict,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, mp_obj_dict_make_new,
+    print, dict_print,
+    unary_op, dict_unary_op,
+    binary_op, dict_binary_op,
+    subscr, dict_subscr,
+    iter, dict_getiter,
+    locals_dict, &dict_locals_dict
+    );
 
 #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
-const mp_obj_type_t mp_type_ordereddict = {
-    { &mp_type_type },
-    .name = MP_QSTR_OrderedDict,
-    .print = dict_print,
-    .make_new = mp_obj_dict_make_new,
-    .unary_op = dict_unary_op,
-    .binary_op = dict_binary_op,
-    .subscr = dict_subscr,
-    .getiter = dict_getiter,
-    .parent = &mp_type_dict,
-    .locals_dict = (mp_obj_dict_t *)&dict_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_ordereddict,
+    MP_QSTR_OrderedDict,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, mp_obj_dict_make_new,
+    print, dict_print,
+    unary_op, dict_unary_op,
+    binary_op, dict_binary_op,
+    subscr, dict_subscr,
+    iter, dict_getiter,
+    parent, &mp_type_dict,
+    locals_dict, &dict_locals_dict
+    );
 #endif
 
 void mp_obj_dict_init(mp_obj_dict_t *dict, size_t n_args) {

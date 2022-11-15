@@ -113,8 +113,7 @@ mp_int_t imageHeight(microbit_image_obj_t * p_image) {
 }
 
 STATIC greyscale_t *greyscale_new(mp_int_t w, mp_int_t h) {
-    greyscale_t *result = m_new_obj_var(greyscale_t, uint8_t, (w*h+1)>>1);
-    result->base.type = &microbit_image_type;
+    greyscale_t *result = mp_obj_malloc_var(greyscale_t, uint8_t, (w*h+1)>>1, &microbit_image_type);
     result->five = 0;
     result->width = w;
     result->height = h;
@@ -679,21 +678,15 @@ STATIC mp_obj_t image_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
 }
 
 
-const mp_obj_type_t microbit_image_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MicroBitImage,
-    .print = microbit_image_print,
-    .make_new = microbit_image_make_new,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = image_binary_op,
-    .attr = NULL,
-    .subscr = NULL,
-    .getiter = NULL,
-    .iternext = NULL,
-    .buffer_p = {NULL},
-    .locals_dict = (mp_obj_dict_t*)&microbit_image_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    microbit_image_type,
+    MP_QSTR_MicroBitImage,
+    MP_TYPE_FLAG_NONE,
+    make_new, microbit_image_make_new,
+    print, microbit_image_print,
+    binary_op, image_binary_op,
+    locals_dict, &microbit_image_locals_dict
+    );
 
 typedef struct _scrolling_string_t {
     mp_obj_base_t base;
@@ -722,8 +715,7 @@ extern const mp_obj_type_t microbit_scrolling_string_type;
 extern const mp_obj_type_t microbit_scrolling_string_iterator_type;
 
 mp_obj_t scrolling_string_image_iterable(const char* str, mp_uint_t len, mp_obj_t ref, bool monospace, bool repeat) {
-    scrolling_string_t *result = m_new_obj(scrolling_string_t);
-    result->base.type = &microbit_scrolling_string_type;
+    scrolling_string_t *result = mp_obj_malloc(scrolling_string_t, &microbit_scrolling_string_type);
     result->str = str;
     result->len = len;
     result->ref = ref;
@@ -771,8 +763,7 @@ static void restart(scrolling_string_iterator_t *iter) {
 STATIC mp_obj_t get_microbit_scrolling_string_iter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;
     scrolling_string_t *str = (scrolling_string_t *)o_in;
-    scrolling_string_iterator_t *result = m_new_obj(scrolling_string_iterator_t);
-    result->base.type = &microbit_scrolling_string_iterator_type;
+    scrolling_string_iterator_t *result = mp_obj_malloc(scrolling_string_iterator_t, &microbit_scrolling_string_iterator_type);
     result->img = greyscale_new(5,5);
     result->start = str->str;
     result->ref = str->ref;
@@ -830,37 +821,19 @@ STATIC mp_obj_t microbit_scrolling_string_iter_next(mp_obj_t o_in) {
     return iter->img;
 }
 
-const mp_obj_type_t microbit_scrolling_string_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ScrollingString,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = NULL,
-    .getiter = get_microbit_scrolling_string_iter,
-    .iternext = NULL,
-    .buffer_p = {NULL},
-    .locals_dict = NULL,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    microbit_scrolling_string_type,
+    MP_QSTR_ScrollingString,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    iter, get_microbit_scrolling_string_iter
+    );
 
-const mp_obj_type_t microbit_scrolling_string_iterator_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = NULL,
-    .getiter = mp_identity_getiter,
-    .iternext = microbit_scrolling_string_iter_next,
-    .buffer_p = {NULL},
-    .locals_dict = NULL,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    microbit_scrolling_string_iterator_type,
+    MP_QSTR_iterator,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, microbit_scrolling_string_iter_next
+    );
 
 /** Facade types to present a string as a sequence of images.
  * These are necessary to avoid allocation during iteration,
@@ -898,21 +871,14 @@ static mp_obj_t facade_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 
 static mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in, mp_obj_iter_buf_t *iter_buf);
 
-const mp_obj_type_t string_image_facade_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Facade,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = facade_unary_op,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = string_image_facade_subscr,
-    .getiter = microbit_facade_iterator,
-    .iternext = NULL,
-    .buffer_p = {NULL},
-    NULL
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    string_image_facade_type,
+    MP_QSTR_Facade,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    unary_op, facade_unary_op,
+    subscr, string_image_facade_subscr,
+    iter, microbit_facade_iterator
+    );
 
 
 typedef struct _facade_iterator_t {
@@ -923,8 +889,7 @@ typedef struct _facade_iterator_t {
 } facade_iterator_t;
 
 mp_obj_t microbit_string_facade(mp_obj_t string) {
-    string_image_facade_t *result = m_new_obj(string_image_facade_t);
-    result->base.type = &string_image_facade_type;
+    string_image_facade_t *result = mp_obj_malloc(string_image_facade_t, &string_image_facade_type);
     result->string = string;
     result->image = greyscale_new(5,5);
     return result;
@@ -942,21 +907,12 @@ static mp_obj_t microbit_facade_iter_next(mp_obj_t iter_in) {
     return iter->image;
 }
 
-const mp_obj_type_t microbit_facade_iterator_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = NULL,
-    .getiter = mp_identity_getiter,
-    .iternext = microbit_facade_iter_next,
-    .buffer_p = {NULL},
-    NULL
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    microbit_facade_iterator_type,
+    MP_QSTR_iterator,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, microbit_facade_iter_next
+    );
 
 mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;

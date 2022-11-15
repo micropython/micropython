@@ -30,21 +30,23 @@
 #include "modmachine.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-#include "py/objstr.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "drivers/dht/dht.h"
+#include "extmod/machine_bitstream.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_spi.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "gccollect.h"
 #include "irq.h"
 #include "powerctrl.h"
+#include "boardctrl.h"
 #include "pybthread.h"
 #include "rng.h"
 #include "storage.h"
@@ -62,9 +64,15 @@
 #define RCC_CSR_BORRSTF RCC_CSR_PORRSTF
 #endif
 
-#if defined(STM32L4) || defined(STM32WB)
+#if defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 // L4 does not have a POR, so use BOR instead
 #define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
+#endif
+
+#if defined(STM32G0)
+// G0 has BOR and POR combined
+#define RCC_CSR_BORRSTF RCC_CSR_PWRRSTF
+#define RCC_CSR_PORRSTF RCC_CSR_PWRRSTF
 #endif
 
 #if defined(STM32H7)
@@ -118,6 +126,12 @@ void machine_init(void) {
         reset_cause = PYB_RESET_DEEPSLEEP;
         PWR->SCR |= PWR_SCR_CSBF;
     } else
+    #elif defined(STM32WB)
+    if (PWR->EXTSCR & PWR_EXTSCR_C1SBF) {
+        // came out of standby
+        reset_cause = PYB_RESET_DEEPSLEEP;
+        PWR->EXTSCR |= PWR_EXTSCR_C1CSSF;
+    } else
     #endif
     {
         // get reset cause from RCC flags
@@ -125,7 +139,7 @@ void machine_init(void) {
         if (state & RCC_SR_IWDGRSTF || state & RCC_SR_WWDGRSTF) {
             reset_cause = PYB_RESET_WDT;
         } else if (state & RCC_SR_PORRSTF
-                   #if !defined(STM32F0) && !defined(STM32F412Zx)
+                   #if !defined(STM32F0) && !defined(STM32F412Zx) && !defined(STM32L1)
                    || state & RCC_SR_BORRSTF
                    #endif
                    ) {
@@ -160,7 +174,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
-        #if defined(STM32F0)
+        #if defined(STM32F0) || defined(STM32G0)
         printf("S=%u\nH=%u\nP1=%u\n",
             (unsigned int)HAL_RCC_GetSysClockFreq(),
             (unsigned int)HAL_RCC_GetHCLKFreq(),
@@ -257,7 +271,7 @@ STATIC mp_obj_t machine_soft_reset(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 // Activate the bootloader without BOOT* pins.
-STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
     #endif
@@ -267,21 +281,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
 
     __disable_irq();
 
-    #if MICROPY_HW_USES_BOOTLOADER
-    if (n_args == 0 || !mp_obj_is_true(args[0])) {
-        // By default, with no args given, we enter the custom bootloader (mboot)
-        powerctrl_enter_bootloader(0x70ad0000, MBOOT_VTOR);
-    }
-
-    if (n_args == 1 && mp_obj_is_str_or_bytes(args[0])) {
-        // With a string/bytes given, pass its data to the custom bootloader
-        size_t len;
-        const char *data = mp_obj_str_get_data(args[0], &len);
-        void *mboot_region = (void *)*((volatile uint32_t *)MBOOT_VTOR);
-        memmove(mboot_region, data, len);
-        powerctrl_enter_bootloader(0x70ad0080, MBOOT_VTOR);
-    }
-    #endif
+    MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
 
     #if defined(STM32F7) || defined(STM32H7)
     powerctrl_enter_bootloader(0, 0x1ff00000);
@@ -303,14 +303,14 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
             mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
             mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
             mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
-            #if !defined(STM32F0)
+            #if !defined(STM32F0) && !defined(STM32G0)
             mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
             #endif
         };
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4)
+        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32G0)
         mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
@@ -340,8 +340,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         if (ret == -MP_EINVAL) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid freq"));
         } else if (ret < 0) {
-            void NORETURN __fatal_error(const char *msg);
-            __fatal_error("can't change freq");
+            MICROPY_BOARD_FATAL_ERROR("can't change freq");
         }
         return mp_const_none;
         #endif
@@ -383,6 +382,8 @@ STATIC mp_obj_t machine_reset_cause(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
+#if MICROPY_PY_MACHINE
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
     { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) },
@@ -406,9 +407,13 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
 
+    #if MICROPY_PY_MACHINE_BITSTREAM
+    { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
+    #endif
     #if MICROPY_PY_MACHINE_PULSE
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_dht_readinto),        MP_ROM_PTR(&dht_readinto_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_mem8),                MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16),               MP_ROM_PTR(&machine_mem16_obj) },
@@ -421,15 +426,18 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) },
     #if MICROPY_PY_MACHINE_I2C
     #if MICROPY_HW_ENABLE_HW_I2C
-    { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_hard_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
     #else
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&mp_machine_soft_i2c_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
     #endif
     #if MICROPY_PY_MACHINE_SPI
-    { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_hard_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
+    #endif
+    #if MICROPY_HW_ENABLE_I2S
+    { MP_ROM_QSTR(MP_QSTR_I2S),                 MP_ROM_PTR(&machine_i2s_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&pyb_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&pyb_wdt_type) },
@@ -457,8 +465,11 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 
-const mp_obj_module_t machine_module = {
+const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+
+#endif // MICROPY_PY_MACHINE

@@ -54,18 +54,11 @@ typedef struct _machine_hard_spi_obj_t {
     const spi_t *spi;
 } machine_hard_spi_obj_t;
 
-extern SPI_HandleTypeDef SPIHandle1;
-extern SPI_HandleTypeDef SPIHandle2;
-extern SPI_HandleTypeDef SPIHandle3;
-extern SPI_HandleTypeDef SPIHandle4;
-extern SPI_HandleTypeDef SPIHandle5;
-extern SPI_HandleTypeDef SPIHandle6;
-
 extern const spi_t spi_obj[6];
 
 extern const mp_spi_proto_t spi_proto;
 extern const mp_obj_type_t pyb_spi_type;
-extern const mp_obj_type_t machine_hard_spi_type;
+extern const mp_obj_type_t machine_spi_type;
 
 // A transfer of "len" bytes should take len*8*1000/baudrate milliseconds.
 // To simplify the calculation we assume the baudrate is never less than 8kHz

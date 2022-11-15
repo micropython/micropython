@@ -28,8 +28,8 @@
 
 #include "py/runtime.h"
 
-#include <zephyr.h>
-#include <drivers/sensor.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/sensor.h>
 
 #if MICROPY_PY_ZSENSOR
 
@@ -40,8 +40,7 @@ typedef struct _mp_obj_sensor_t {
 
 STATIC mp_obj_t sensor_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
-    mp_obj_sensor_t *o = m_new_obj(mp_obj_sensor_t);
-    o->base.type = type;
+    mp_obj_sensor_t *o = mp_obj_malloc(mp_obj_sensor_t, type);
     o->dev = device_get_binding(mp_obj_str_get_str(args[0]));
     if (o->dev == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("dev not found"));
@@ -106,12 +105,13 @@ STATIC const mp_rom_map_elem_t sensor_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(sensor_locals_dict, sensor_locals_dict_table);
 
-STATIC const mp_obj_type_t sensor_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Sensor,
-    .make_new = sensor_make_new,
-    .locals_dict = (void *)&sensor_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    sensor_type,
+    MP_QSTR_Sensor,
+    MP_TYPE_FLAG_NONE,
+    make_new, sensor_make_new,
+    locals_dict, &sensor_locals_dict
+    );
 
 STATIC const mp_rom_map_elem_t mp_module_zsensor_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zsensor) },
@@ -142,5 +142,7 @@ const mp_obj_module_t mp_module_zsensor = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_zsensor_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_zsensor, mp_module_zsensor);
 
 #endif // MICROPY_PY_UHASHLIB

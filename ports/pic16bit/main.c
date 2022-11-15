@@ -29,13 +29,14 @@
 #include <string.h>
 #include <p33Fxxxx.h>
 
+#include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "lib/utils/pyexec.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/runtime/pyexec.h"
+#include "shared/readline/readline.h"
 #include "board.h"
 #include "modpyb.h"
 

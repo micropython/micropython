@@ -11,13 +11,15 @@
           |- ports/windows [PyWinDir]
                     |- ...
                     |- micropython.exe
-                    |- build [PyBuildDir]
+                    |- build-standard [PyBuildDir]
                         |- Debugx64 [PyOutDir]
                         |   |- ...
                         |   |- micropython.exe
                         |   |- micropython.map
                         |   |- obj [PyIntDir]
                         |- genhdr
+                    |- variants
+                        |- standard [PyVariantDir]
 
          Note that the micropython executable will be copied from PyOutDir
          to PyWinDir after each build. -->
@@ -25,11 +27,12 @@
     <!-- Start from project root -->
     <PyBaseDir>$([System.IO.Path]::GetFullPath(`$(MSBuildThisFileDirectory)..\..\..`))\</PyBaseDir>
     <PyWinDir>$(PyBaseDir)ports\windows\</PyWinDir>
-    <PyBuildDir Condition="'$(PyBuildDir)' == ''">$(PyWinDir)build\</PyBuildDir>
+    <PyBuildDir Condition="'$(PyBuildDir)' == ''">$(PyWinDir)$(PyBuild)\</PyBuildDir>
+    <PyVariantDir Condition="'$(PyVariantDir)' == ''">$(PyWinDir)variants\$(PyVariant)\</PyVariantDir>
     <PyTargetDir Condition="'$(PyTargetDir)' == ''">$(PyWinDir)</PyTargetDir>
 
     <!-- All include directories needed for uPy -->
-    <PyIncDirs>$(PyIncDirs);$(PyBaseDir);$(PyWinDir);$(PyBuildDir);$(PyWinDir)msvc</PyIncDirs>
+    <PyIncDirs>$(PyIncDirs);$(PyBaseDir);$(PyWinDir);$(PyBuildDir);$(PyWinDir)msvc;$(PyVariantDir)</PyIncDirs>
 
     <!-- Within PyBuildDir different subdirectories are used based on configuration and platform.
          By default these are chosen based on the Configuration and Platform properties, but

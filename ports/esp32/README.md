@@ -28,11 +28,11 @@ manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 The ESP-IDF changes quickly and MicroPython only supports certain versions.
-Currently MicroPython supports v4.0.2, v4.1.1 and v4.2,
+Currently MicroPython supports v4.0.2, v4.1.1, v4.2.2, v4.3.2 and v4.4,
 although other IDF v4 versions may also work.
 
 To install the ESP-IDF the full instructions can be found at the
-[Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/v4.0.2/get-started/index.html#installation-step-by-step).
+[Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation-step-by-step).
 
 If you are on a Windows machine then the [Windows Subsystem for
 Linux](https://msdn.microsoft.com/en-au/commandline/wsl/install_guide) is the
@@ -50,9 +50,18 @@ To check out a copy of the IDF use git clone:
 $ git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
 ```
 
-You can replace `v4.0.2` with `v4.1.1` or any other supported version.
+You can replace `v4.0.2` with `v4.2.2` or `v4.4` or any other supported version.
 (You don't need a full recursive clone; see the `ci_esp32_setup` function in
 `tools/ci.sh` in this repository for more detailed set-up commands.)
+
+If you already have a copy of the IDF then checkout a version compatible with
+MicroPython and update the submodules using:
+
+```bash
+$ cd esp-idf
+$ git checkout v4.2
+$ git submodule update --init --recursive
+```
 
 After you've cloned and checked out the IDF to the correct version, run the
 `install.sh` script:
@@ -65,6 +74,11 @@ $ source export.sh   # (or export.bat on Windows)
 
 The `install.sh` step only needs to be done once. You will need to source
 `export.sh` for every new session.
+
+**Note:** If you are building MicroPython for the ESP32-S2, ESP32-C3 or ESP32-S3,
+please ensure you are using the following required IDF versions:
+- ESP32-S3 currently requires `v4.4` or later.
+- ESP32-S2 and ESP32-C3 require `v4.3.1` or later.
 
 Building the firmware
 ---------------------

@@ -78,4 +78,3 @@ mp_uint_t mp_hal_ticks_ms(void);
 #define mp_hal_ticks_cpu() (0)
 
 #endif
-
