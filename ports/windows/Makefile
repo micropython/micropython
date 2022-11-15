@@ -102,3 +102,9 @@ test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 test_full: test
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) $(PYTHON) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) $(RUN_TESTS_SKIP) -d basics float micropython
+
+$(BUILD)/$(PROG): $(BUILD)/micropython.res
+
+$(BUILD)/%.res: %.rc
+	$(ECHO) "WINDRES $<"
+	$(Q)$(WINDRES) $< -O coff -o $@

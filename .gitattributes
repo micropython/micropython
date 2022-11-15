@@ -8,6 +8,7 @@
 
 # These are binary so should never be modified by git.
 *.a binary
+*.ico binary
 *.png binary
 *.jpg binary
 *.dxf binary
