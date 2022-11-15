@@ -143,8 +143,10 @@ void common_hal_adafruit_pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_f
 STATIC uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
     if (mp_obj_is_small_int(obj)) {
         return MP_OBJ_SMALL_INT_VALUE(obj);
+    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     } else if (mp_obj_is_int(obj)) {
         return mp_obj_get_int_truncated(obj);
+    #endif
     } else if (mp_obj_is_float(obj)) {
         return (uint8_t)mp_obj_get_float(obj);
     }
