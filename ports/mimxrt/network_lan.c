@@ -75,12 +75,12 @@ STATIC void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 STATIC mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_phy_type, ARG_phy_addr, ARG_phy_clock};
+    enum { ARG_id, ARG_phy_type, ARG_phy_addr, ARG_ref_clk_mode};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_phy_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phy_addr, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_phy_clock, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_ref_clk_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
     // Parse args.
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -125,8 +125,8 @@ STATIC mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, s
         phy_addr = args[ARG_phy_addr].u_int;
     }
 
-    if (args[ARG_phy_clock].u_int != -1) {
-        phy_clock = args[ARG_phy_clock].u_int;
+    if (args[ARG_ref_clk_mode].u_int != -1) {
+        phy_clock = args[ARG_ref_clk_mode].u_int;
     }
 
     // Prepare for two ETH interfaces.
