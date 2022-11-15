@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-11-14 22:15+0000\n"
+"PO-Revision-Date: 2022-11-15 04:35+0000\n"
 "Last-Translator: River Wang <urfdvw@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -755,7 +755,7 @@ msgstr "Wúfǎ jìlù dào wénjiàn"
 
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when visible via USB."
-msgstr "tōng guò USB kě jiàn shí wú fǎ chóng xīn ān zhuāng '/'."
+msgstr "tōngguò USB kějiàn shí wúfǎ chóngxīn ānzhuāng '/'."
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -774,31 +774,31 @@ msgstr "Dāng fāngxiàng wéi shūrù shí, bùnéng shèzhì zhí."
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Cannot specify RTS or CTS in RS485 mode"
-msgstr "wú fǎ zài RS485 mó shì xià zhǐ dìng RTS huò CTS"
+msgstr "wúfǎ zài RS485 móshì xià zhǐdìng RTS huò CTS"
 
 #: py/objslice.c
 msgid "Cannot subclass slice"
-msgstr "bùnéng zi lèi huà qiēpiàn"
+msgstr "bùnéng zǐlèihuà qiēpiàn"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins"
-msgstr "méiyǒu MOSI hé MISO yǐn jiǎo wúfǎ chuánshū"
+msgstr "méiyǒu MOSI hé MISO yǐnjiǎo, wúfǎ chuánshū"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
-msgstr "Wúfǎ gēnggǎi yǐ zài shǐyòng de jìshí qì shàng de pínlǜ"
+msgstr "Wúfǎ zài shǐyòng zhōng de jìshí qì shàng gēnggǎi pínlǜ"
 
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge, only level"
-msgstr "wúfǎ zài yǐn jiǎo biānyuán huànxǐng, zhǐ néng diàn píng"
+msgstr "wúfǎ shǐyòng biānyuán huànxǐng, zhǐnéng shǐyòng diànpíng"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
-msgstr "wú fǎ zài yǐn jiǎo biān yuán huàn xǐng. jǐn jí bié."
+msgstr "wúfǎ shǐyòng biānyuán huànxǐng. zhǐnéng shǐyòng diànpíng"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
-msgstr "Wèi tígōng zìfú huǎncún xiě rù"
+msgstr "Wèi tígōng zìfú huǎncún xiěrù"
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython core code crashed hard. Whoops!\n"
@@ -810,11 +810,11 @@ msgstr "CircuitPython wúfǎ fēnpèi duī."
 
 #: shared-module/bitbangio/I2C.c
 msgid "Clock stretch too long"
-msgstr "Shízhōng shēnzhǎn tài zhǎng"
+msgstr "shízhōng yánzhǎn guòcháng"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
-msgstr "Shǐyòng shízhōng dānwèi"
+msgstr "shízhōng dānyuán zhèngzài shǐyòng zhōng"
 
 #: shared-bindings/_bleio/Connection.c
 msgid ""
@@ -832,7 +832,7 @@ msgstr "wúfǎ jiǎnsuǒ shízhōng"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
-msgstr "wú fǎ shè zhì dì zhǐ"
+msgstr "wúfǎ shèzhì dìzhǐ"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
@@ -844,11 +844,11 @@ msgstr "Wúfǎ qǐdòng zhōngduàn,RX máng"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate decoder"
-msgstr "Zhǎo bù dào jiěmǎ qì"
+msgstr "wúfǎ fēnpèi jiěmǎ qì"
 
 #: supervisor/shared/safe_mode.c
 msgid "Crash into the HardFault_Handler."
-msgstr "Zhuìhuǐ. Shūrù HardFault_Handler."
+msgstr "gu4zhang4, jin4ru4 HardFault_Handler."
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Channel Init Error"
@@ -860,10 +860,11 @@ msgstr "DAC shèbèi chūshǐhuà cuòwù"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "DAC already in use"
-msgstr "Fā yuán huì yǐjīng shǐyòng"
+msgstr "DAC zhèngzài bèi shǐyòng"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
+#, fuzzy
 msgid "Data 0 pin must be byte aligned"
 msgstr "Shùjù 0 de yǐn jiǎo bìxū shì zì jié duìqí"
 
@@ -873,6 +874,7 @@ msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
+#, fuzzy
 msgid "Data not supported with directed advertising"
 msgstr "bù zhī chí dìng xiàng guǎng gào de shù jù"
 
