@@ -198,10 +198,10 @@ STATIC color_u _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t *self, mp_obj_t col
 }
 
 STATIC void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t *self, size_t index, color_u rgbw) {
-    int r = rgbw.r;
-    int g = rgbw.g;
-    int b = rgbw.b;
-    int w = rgbw.w;
+    uint8_t r = rgbw.r;
+    uint8_t g = rgbw.g;
+    uint8_t b = rgbw.b;
+    uint8_t w = rgbw.w;
     // DotStars don't have white, instead they have 5 bit brightness so pack it into w. Shift right
     // by three to leave the top five bits.
     if (self->bytes_per_pixel == 4 && self->byteorder.is_dotstar) {
