@@ -769,12 +769,13 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
     (void)self_in;
     printf("Wiz CREG:");
     #if _WIZCHIP_ == 5500
-    for (int i = 0; i < 0x50; ++i) {
+    int reg_num = 0x50;
     #elif _WIZCHIP_ == 5105
-    for (int i = 0; i < 0x90; ++i) {
+    int reg_num = 0x90;
     #else
-    for (int i = 0; i < 0x60; ++i) {
+    int reg_num = 0x60;
     #endif
+    for (int i = 0; i < reg_num; ++i) {
         if (i % 16 == 0) {
             printf("\n  %04x:", i);
         }
