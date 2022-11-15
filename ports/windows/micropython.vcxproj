@@ -103,6 +103,9 @@
     <ClInclude Include="$(PyBaseDir)ports\windows\*.h" />
     <ClInclude Include="$(PyBaseDir)ports\windows\msvc\*.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="micropython.rc" />
+  </ItemGroup>
   <Import Project="msvc/genhdr.targets" />
   <Import Project="$(CustomPropsFile)" Condition="exists('$(CustomPropsFile)')" />
   <Target Name="GenerateMicroPythonSources" BeforeTargets="BuildGenerateSources" DependsOnTargets="GenerateHeaders;FreezeModules">
