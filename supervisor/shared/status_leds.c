@@ -179,27 +179,15 @@ void status_led_init() {
 
     #elif CIRCUITPY_PWM_RGB_LED
     if (common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_R)) {
-        pwmout_result_t red_result = common_hal_pwmio_pwmout_construct(&rgb_status_r, CIRCUITPY_RGB_STATUS_R, 0, 50000, false);
-
-        if (PWMOUT_OK == red_result) {
-            common_hal_pwmio_pwmout_never_reset(&rgb_status_r);
-        }
+        common_hal_pwmio_pwmout_construct(&rgb_status_r, CIRCUITPY_RGB_STATUS_R, 0, 50000, false);
     }
 
     if (common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_G)) {
-        pwmout_result_t green_result = common_hal_pwmio_pwmout_construct(&rgb_status_g, CIRCUITPY_RGB_STATUS_G, 0, 50000, false);
-
-        if (PWMOUT_OK == green_result) {
-            common_hal_pwmio_pwmout_never_reset(&rgb_status_g);
-        }
+        common_hal_pwmio_pwmout_construct(&rgb_status_g, CIRCUITPY_RGB_STATUS_G, 0, 50000, false);
     }
 
     if (common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_B)) {
-        pwmout_result_t blue_result = common_hal_pwmio_pwmout_construct(&rgb_status_b, CIRCUITPY_RGB_STATUS_B, 0, 50000, false);
-
-        if (PWMOUT_OK == blue_result) {
-            common_hal_pwmio_pwmout_never_reset(&rgb_status_b);
-        }
+        common_hal_pwmio_pwmout_construct(&rgb_status_b, CIRCUITPY_RGB_STATUS_B, 0, 50000, false);
     }
 
     #elif defined(MICROPY_HW_LED_STATUS)
