@@ -93,6 +93,7 @@ if(MICROPY_PY_BTREE)
     )
 
     list(APPEND MICROPY_DEF_CORE
+        MICROPY_PY_BTREE=1
         __DBINTERFACE_PRIVATE=1
         "virt_fd_t=void*"
     )
