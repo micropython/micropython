@@ -1,3 +1,5 @@
+CFLAGS_MCU += -mtune=cortex-m0plus -mcpu=cortex-m0plus -msoft-float
+
 SRC_S += shared/runtime/gchelper_m0.s
 
 LIBM_SRC_C +=  $(addprefix lib/libm/,\

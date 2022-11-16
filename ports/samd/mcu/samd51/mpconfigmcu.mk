@@ -1,3 +1,5 @@
+CFLAGS_MCU += -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+
 MICROPY_VFS_LFS2 ?= 1
 MICROPY_VFS_FAT ?= 1
 FROZEN_MANIFEST ?= mcu/$(MCU_SERIES_LOWER)/manifest.py
