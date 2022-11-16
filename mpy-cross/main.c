@@ -203,19 +203,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     // set default compiler configuration
     mp_dynamic_compiler.small_int_bits = 31;
-    #if defined(__i386__)
-    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
-    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
-    #elif defined(__x86_64__)
-    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
-    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
-    #elif defined(__arm__) && !defined(__thumb2__)
-    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
-    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
-    #else
+    // don't support native emitter unless -march is specified
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
     mp_dynamic_compiler.nlr_buf_num_regs = 0;
-    #endif
 
     const char *input_file = NULL;
     const char *output_file = NULL;
@@ -292,6 +282,20 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "xtensawin") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSAWIN;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSAWIN;
+                } else if (strcmp(arch, "host") == 0) {
+                    #if defined(__i386__)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
+                    #elif defined(__x86_64__)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
+                    #elif defined(__arm__) && !defined(__thumb2__)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+                    #else
+                    mp_printf(&mp_stderr_print, "unable to determine host architecture for -march=host\n");
+                    exit(1);
+                    #endif
                 } else {
                     return usage(argv);
                 }
