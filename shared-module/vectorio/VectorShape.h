@@ -30,7 +30,6 @@ typedef struct {
     mp_obj_t pixel_shader;
     int16_t x;
     int16_t y;
-    bool hidden : 1;
     displayio_buffer_transform_t *absolute_transform;
     // Tracks current shape footprint and expands outward as the shape dirties and changes.
     // This is suboptimal if you move your shape far.  Could add more state to only redraw
@@ -38,6 +37,7 @@ typedef struct {
     displayio_area_t ephemeral_dirty_area;
     displayio_area_t current_area;
     bool current_area_dirty;
+    bool hidden;
 } vectorio_vector_shape_t;
 
 displayio_area_t *vectorio_vector_shape_get_refresh_areas(vectorio_vector_shape_t *self, displayio_area_t *tail);
