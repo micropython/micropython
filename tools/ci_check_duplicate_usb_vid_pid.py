@@ -60,6 +60,7 @@ DEFAULT_CLUSTERLIST = {
         "espressif_esp32s2_devkitc_1_n4r2",
         "espressif_esp32s2_devkitc_1_n8r2",
     ],
+    "0x239A:0x102E": ["weact_studio_pico", "weact_studio_pico_16mb"],
 }
 
 cli_parser = argparse.ArgumentParser(
