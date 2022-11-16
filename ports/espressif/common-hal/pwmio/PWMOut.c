@@ -170,7 +170,7 @@ void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
     // Otherwise, we clear never_reset for the timer as well.
     bool other_never_reset = false;
     for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
-        if (i != self->tim_handle.timer_num &&
+        if (i != self->chan_handle.channel &&
             reserved_channels[i] == self->tim_handle.timer_num &&
             never_reset_chan[i]) {
             other_never_reset = true;
