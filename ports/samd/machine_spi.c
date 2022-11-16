@@ -208,7 +208,13 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
 
         // SPI is driven by the clock of GCLK Generator 2, freq by get_peripheral_freq()
         // baud = bus_freq / (2 * baudrate) - 1
-        uint32_t baud = get_peripheral_freq() / (2 * self->baudrate) - 1;
+        uint32_t baud = get_peripheral_freq() / (2 * self->baudrate);
+        if (baud > 0) {  // Avoid underflow
+            baud -= 1;
+        }
+        if (baud > 255) { // Avoid overflow
+            baud = 255;
+        }
         spi->SPI.BAUD.reg = baud; // Set Baud
 
         // Enable RXC interrupt only if miso is defined

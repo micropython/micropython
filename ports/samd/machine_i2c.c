@@ -35,7 +35,7 @@
 #include "clock_config.h"
 
 #define DEFAULT_I2C_FREQ  (400000)
-#define RISETIME_NS       (300)
+#define RISETIME_NS       (200)
 #define I2C_TIMEOUT       (100)
 
 #define IS_BUS_BUSY       (i2c->I2CM.STATUS.bit.BUSSTATE == 3)
@@ -184,7 +184,14 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     // baud = peripheral_freq / (2 * baudrate) - 5 - (rise_time * peripheral_freq) / 2
     // Just set the minimal configuration for standard and fast mode.
     // Set Baud. Assume ~300ns rise time. Maybe set later by a keyword argument.
-    i2c->I2CM.BAUD.reg = get_peripheral_freq() / (2 * self->freq) - 5 - (get_peripheral_freq() / 1000000) * RISETIME_NS / 2000;
+    int32_t baud = get_peripheral_freq() / (2 * self->freq) - 5 - (get_peripheral_freq() / 1000000) * RISETIME_NS / 2000;
+    if (baud < 0) {
+        baud = 0;
+    }
+    if (baud > 255) {
+        baud = 255;
+    }
+    i2c->I2CM.BAUD.reg = baud;
 
     // Enable interrupts
     sercom_register_irq(self->id, &common_i2c_irq_handler);
