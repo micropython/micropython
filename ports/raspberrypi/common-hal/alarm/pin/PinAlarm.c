@@ -38,7 +38,7 @@
 STATIC bool woke_up;
 STATIC uint64_t alarm_triggered_pins; // 36 actual pins
 STATIC uint64_t alarm_reserved_pins; // 36 actual pins
-STATIC bool _pinalarm_set = false;
+STATIC bool _not_yet_deep_sleeping = false;
 
 #define GPIO_IRQ_ALL_EVENTS 0x15u
 
@@ -46,12 +46,21 @@ STATIC void gpio_callback(uint gpio, uint32_t events) {
     alarm_triggered_pins |= (1 << gpio);
     woke_up = true;
 
-    // does this need to be called, to prevent IRQ from constantly going off?
-    gpio_acknowledge_irq(gpio, events);
+    // gpio_acknowledge_irq(gpio, events) is called automatically, before this callback is called.
 
-    // Disable IRQ automatically
-    gpio_set_irq_enabled(gpio, events, false);
-    gpio_set_dormant_irq_enabled(gpio, events, false);
+    if (_not_yet_deep_sleeping) {
+        // Event went off prematurely, before we went to sleep, so set it again.
+        gpio_set_irq_enabled(gpio, events, false);
+    } else {
+        // Went off during sleep.
+        // Disable IRQ automatically.
+        gpio_set_irq_enabled(gpio, events, false);
+        gpio_set_dormant_irq_enabled(gpio, events, false);
+    }
+}
+
+void alarm_pin_pinalarm_entering_deep_sleep() {
+    _not_yet_deep_sleeping = false;
 }
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
@@ -156,11 +165,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
                 gpio_set_dormant_irq_enabled((uint)alarm->pin->number, event, true);
             }
 
-            _pinalarm_set = true;
+            _not_yet_deep_sleeping = true;
         }
     }
-}
-
-bool alarm_pin_pinalarm_is_set(void) {
-    return _pinalarm_set;
 }

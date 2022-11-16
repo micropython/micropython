@@ -55,6 +55,7 @@ typedef enum {
     DIGITALINOUT_REG_TOGGLE,
 } digitalinout_reg_op_t;
 
+const mcu_pin_obj_t *common_hal_digitalio_validate_pin(mp_obj_t obj);
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin);
 void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self);
 bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t *self);

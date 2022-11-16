@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2022 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,20 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+// Micropython setup
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#define MICROPY_HW_BOARD_NAME       "CRCibernetica IdeaBoard"
+#define MICROPY_HW_MCU_NAME         "ESP32"
 
-#include "shared-bindings/microcontroller/Pin.h"
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO22, .sda = &pin_GPIO21}}
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    bool value;
-    bool pull;
-    bool edge;
-} alarm_pin_pinalarm_obj_t;
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO18, .mosi = &pin_GPIO23, .miso = &pin_GPIO19}}
 
-mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms);
-mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void);
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO17, .rx = &pin_GPIO16}}
 
-void alarm_pin_pinalarm_reset(void);
-void alarm_pin_pinalarm_light_reset(void);
-void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
-bool alarm_pin_pinalarm_woke_this_cycle(void);
-void alarm_pin_pinalarm_entering_deep_sleep(void);
+// UART pins attached to the USB-serial converter chip
+#define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)
+#define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO3)

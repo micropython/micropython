@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,38 @@
  * THE SOFTWARE.
  */
 
-#pragma once
-
-#include "py/obj.h"
-#include "py/objtuple.h"
-
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-module/displayio/__init__.h"
+#include "supervisor/shared/board.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    bool value;
-    bool pull;
-    bool edge;
-} alarm_pin_pinalarm_obj_t;
+#include "components/log/include/esp_log.h"
 
-mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms);
-mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void);
+#define DELAY 0x80
 
-void alarm_pin_pinalarm_reset(void);
-void alarm_pin_pinalarm_light_reset(void);
-void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
-bool alarm_pin_pinalarm_woke_this_cycle(void);
-void alarm_pin_pinalarm_entering_deep_sleep(void);
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
+
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif /* DEBUG */
+
+}
+
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
+
+}
+
+void board_deinit(void) {
+}

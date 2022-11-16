@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,30 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+// Micropython setup
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#define MICROPY_HW_BOARD_NAME       "Maker badge by Czech maker"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#include "shared-bindings/microcontroller/Pin.h"
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
+#define MICROPY_HW_NEOPIXEL_COUNT (4)
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    bool value;
-    bool pull;
-    bool edge;
-} alarm_pin_pinalarm_obj_t;
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 
-mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms);
-mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void);
+#define AUTORESET_DELAY_MS 500
 
-void alarm_pin_pinalarm_reset(void);
-void alarm_pin_pinalarm_light_reset(void);
-void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
-bool alarm_pin_pinalarm_woke_this_cycle(void);
-void alarm_pin_pinalarm_entering_deep_sleep(void);
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
+
+#define DEFAULT_UART_BUS_RX (&pin_GPIO44)
+#define DEFAULT_UART_BUS_TX (&pin_GPIO43)
+
+// USB is always used internally so skip the pin objects for it.
+#define IGNORE_PIN_GPIO18     1
+#define IGNORE_PIN_GPIO19     1
+
+#define DOUBLE_TAP_PIN (&pin_GPIO38)
