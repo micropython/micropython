@@ -283,10 +283,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSAWIN;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSAWIN;
                 } else if (strcmp(arch, "host") == 0) {
-                    #if defined(__i386__)
+                    #if defined(__i386__) || defined(_M_IX86)
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
-                    #elif defined(__x86_64__)
+                    #elif defined(__x86_64__) || defined(_M_X64)
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
                     mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
                     #elif defined(__arm__) && !defined(__thumb2__)
