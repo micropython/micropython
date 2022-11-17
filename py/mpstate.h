@@ -165,6 +165,11 @@ typedef struct _mp_state_vm_t {
     mp_obj_exception_t mp_kbd_exception;
     #endif
 
+    #if MICROPY_ENABLE_SYSTEM_ABORT
+    // exception object of type SystemExit or SystemAbort
+    mp_obj_exception_t mp_system_exception;
+    #endif
+
     // dictionary with loaded modules (may be exposed as sys.modules)
     mp_obj_dict_t mp_loaded_modules_dict;
 

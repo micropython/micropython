@@ -659,7 +659,8 @@
 #endif
 
 // Whether to provide the SystemAbort exception, used to exit MicroPython
-// even if user code catches all exceptions.
+// even if user code catches all exceptions. This also provides
+// mp_sched_system_exit_or_abort() to schedule the mp_system_exception object.
 #ifndef MICROPY_ENABLE_SYSTEM_ABORT
 #define MICROPY_ENABLE_SYSTEM_ABORT (0)
 #endif

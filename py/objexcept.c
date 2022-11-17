@@ -377,8 +377,9 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     */
 
 #if MICROPY_ENABLE_SYSTEM_ABORT
-// Exception that can't be raised or caught by user code, not even with a
-// bare except. Can be used to force MicroPython to exit from C code.
+// Exception that can't be raised or caught by user code, not even with a bare
+// except. Do not raise directly but use mp_sched_system_exit_or_abort(true) to
+// schedule it on the main thread.
 MP_DEFINE_EXCEPTION(SystemAbort, BaseException)
 #endif
 

@@ -51,6 +51,17 @@ void MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(mp_sched_keyboard_interrupt)(void)
 }
 #endif
 
+#if MICROPY_ENABLE_SYSTEM_ABORT
+// Schedules SystemExit or SystemAbort on the main thread. Can be used by
+// async sources to exit MicroPython. Use abort=true if the MicroPython script
+// must not be able to catch it, not even with a bare except.
+void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_system_exit_or_abort)(bool abort) {
+    MP_STATE_VM(mp_system_exception).base.type = abort ?
+        &mp_type_SystemAbort : &mp_type_SystemExit;
+    mp_sched_exception(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_system_exception)));
+}
+#endif
+
 #if MICROPY_ENABLE_SCHEDULER
 
 #define IDX_MASK(i) ((i) & (MICROPY_SCHEDULER_DEPTH - 1))
