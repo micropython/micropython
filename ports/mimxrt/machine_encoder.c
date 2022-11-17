@@ -42,6 +42,7 @@ typedef struct _machine_encoder_obj_t {
     mp_obj_base_t base;
     ENC_Type *instance;
     int8_t id;
+    bool active;
     uint8_t input_a;
     uint8_t input_b;
     uint8_t mode;
@@ -69,13 +70,6 @@ typedef struct _encoder_xbar_signal_t {
 #define ENCODER_TRIGGER_ROLL_UNDER (kENC_PositionRollUnderFlag)
 #define ENCODER_ALL_INTERRUPTS     (0x7f)
 
-#if !defined(XBAR_ENC_DIR_OFFSET)
-#define XBAR_ENC_DIR_OFFSET        (12)
-#define XBAR_ENC_DIR_REGISTER      GPR6
-#define XBAR_OUT_MIN               (4)
-#define XBAR_OUT_MAX               (19)
-#endif
-
 #define XBAR_IN                    (1)
 #define XBAR_OUT                   (0)
 
@@ -85,6 +79,58 @@ typedef struct _encoder_xbar_signal_t {
 #define MODE_COUNTER               (1)
 
 STATIC void encoder_deinit_single(machine_encoder_obj_t *self);
+
+#if defined MIMXRT117x_SERIES
+
+#define XBAR_ENC_DIR_OFFSET_1      (4)
+#define XBAR_ENC_DIR_REGISTER_1    GPR20
+#define XBAR_ENC_DIR_OFFSET_2      (32)
+#define XBAR_ENC_DIR_REGISTER_2    GPR21
+#define XBAR_OUT_MIN               (4)
+#define XBAR_OUT_MAX               (42)
+#define XBAR_STRING                "XBAR1_INOUT"
+#define XBAR_STRING_LEN            strlen(XBAR_STRING)
+
+static encoder_xbar_signal_t xbar_signal_table[FSL_FEATURE_SOC_ENC_COUNT] = {
+    { kXBARA1_OutputDec1Phasea,
+      kXBARA1_OutputDec1Phaseb,
+      kXBARA1_OutputDec1Index,
+      kXBARA1_OutputDec1Home,
+      kXBARA1_OutputDec1Trigger,
+      kXBARA1_InputDec1PosMatch },
+
+    { kXBARA1_OutputDec2Phasea,
+      kXBARA1_OutputDec2Phaseb,
+      kXBARA1_OutputDec2Index,
+      kXBARA1_OutputDec2Home,
+      kXBARA1_OutputDec2Trigger,
+      kXBARA1_InputDec2PosMatch },
+
+    { kXBARA1_OutputDec3Phasea,
+      kXBARA1_OutputDec3Phaseb,
+      kXBARA1_OutputDec3Index,
+      kXBARA1_OutputDec3Home,
+      kXBARA1_OutputDec3Trigger,
+      kXBARA1_InputDec3PosMatch },
+
+    { kXBARA1_OutputDec4Phasea,
+      kXBARA1_OutputDec4Phaseb,
+      kXBARA1_OutputDec4Index,
+      kXBARA1_OutputDec4Home,
+      kXBARA1_OutputDec4Trigger,
+      kXBARA1_InputDec4PosMatch },
+};
+
+#else // defined MIMXRT117x_SERIES
+
+#if !defined(XBAR_ENC_DIR_OFFSET)
+#define XBAR_ENC_DIR_OFFSET        (12)
+#define XBAR_ENC_DIR_REGISTER      GPR6
+#define XBAR_OUT_MIN               (4)
+#define XBAR_OUT_MAX               (19)
+#endif
+#define XBAR_STRING                "XBAR_INOUT"
+#define XBAR_STRING_LEN            strlen(XBAR_STRING)
 
 static encoder_xbar_signal_t xbar_signal_table[FSL_FEATURE_SOC_ENC_COUNT] = {
     { kXBARA1_OutputEnc1PhaseAInput,
@@ -122,6 +168,7 @@ static encoder_xbar_signal_t xbar_signal_table[FSL_FEATURE_SOC_ENC_COUNT] = {
     #endif
     #endif
 };
+#endif // defined MIMXRT117x_SERIES
 
 static machine_encoder_obj_t *encoder_table[FSL_FEATURE_SOC_ENC_COUNT];
 static ENC_Type *enc_instances[] = ENC_BASE_PTRS;
@@ -172,7 +219,7 @@ STATIC void mp_machine_encoder_print(const mp_print_t *print, mp_obj_t self_in, 
         self->id, self->cpc, self->enc_config.positionCompareValue, self->filter);
 }
 
-// Utililty functions
+// Utility functions
 //
 
 STATIC void encoder_set_iomux(const machine_pin_obj_t *pin, const machine_pin_af_obj_t *af) {
@@ -185,13 +232,14 @@ STATIC const machine_pin_af_obj_t *af_name_decode_xbar(const machine_pin_af_obj_
     xbar_input_signal_t *io_number) {
     const char *str;
     size_t len;
+    size_t xlen = XBAR_STRING_LEN;
     str = (char *)qstr_data(af_obj->name, &len);
-    // test for the name starting with XBAR_INOUT
-    if (len < 12 || strncmp(str, "XBAR_INOUT", 10) != 0) {
+    // test for the name starting with XBAR
+    if (len < (xlen + 2) || strncmp(str, XBAR_STRING, xlen) != 0) {
         return NULL;
     }
     // Get I/O number, e.g. XBAR_INOUT03
-    *io_number = (str[10] - '0') * 10 + (str[11] - '0');
+    *io_number = (str[xlen] - '0') * 10 + (str[xlen + 1] - '0');
     return af_obj;
 }
 
@@ -215,12 +263,26 @@ STATIC uint8_t connect_pin_to_encoder(mp_obj_t desc, xbar_output_signal_t encode
         XBARA_SetSignalsConnection(XBARA1, xbar_pin, encoder_signal);
     } else {
         // No API here, so do basic Register access.
+        #if defined MIMXRT117x_SERIES
+        if (xbar_pin >= XBAR_OUT_MIN && xbar_pin <= XBAR_OUT_MAX) {
+            if (xbar_pin < XBAR_ENC_DIR_OFFSET_2) {
+                IOMUXC_GPR->XBAR_ENC_DIR_REGISTER_1 |= 1 << (xbar_pin - XBAR_ENC_DIR_OFFSET_1);
+                XBARA_SetSignalsConnection(XBARA1, encoder_signal, xbar_pin);
+            } else {
+                IOMUXC_GPR->XBAR_ENC_DIR_REGISTER_2 |= 1 << (xbar_pin - XBAR_ENC_DIR_OFFSET_2);
+                XBARA_SetSignalsConnection(XBARA1, encoder_signal, xbar_pin);
+            }
+        } else {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid match Pin"));
+        }
+        #else
         if (xbar_pin >= XBAR_OUT_MIN && xbar_pin <= XBAR_OUT_MAX) {
             IOMUXC_GPR->XBAR_ENC_DIR_REGISTER |= 1 << (xbar_pin + XBAR_ENC_DIR_OFFSET); // Compare the offset 12 with other MCU
             XBARA_SetSignalsConnection(XBARA1, encoder_signal, xbar_pin);
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid match Pin"));
         }
+        #endif  // defined MIMXRT117x_SERIES
     }
     return xbar_pin;
 }
@@ -239,7 +301,12 @@ STATIC void clear_encoder_registers(machine_encoder_obj_t *self) {
 //
 STATIC uint32_t calc_filter(uint32_t filter_ns, uint16_t *count, uint16_t *period) {
 
+    #if defined MIMXRT117x_SERIES
+    uint32_t freq_khz = CLOCK_GetRootClockFreq(kCLOCK_Root_Bus) / 1000;
+    #else
     uint32_t freq_khz = CLOCK_GetIpgFreq() / 1000;
+    #endif
+
     uint32_t cycles = (filter_ns * (freq_khz / 1000)) / 1000;
     if (cycles == 0) {
         // Set filter off
@@ -277,7 +344,15 @@ STATIC void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
             self->match_pin = connect_pin_to_encoder(args[ARG_match_pin].u_obj, xbar_signal_table[self->id].enc_match, XBAR_OUT);
         } else {
             // Disconnect the XBAR from the output by switching it to an input.
+            #if defined MIMXRT117x_SERIES
+            if (self->match_pin < XBAR_ENC_DIR_OFFSET_2) {
+                IOMUXC_GPR->XBAR_ENC_DIR_REGISTER_1 &= ~(1 << (self->match_pin - XBAR_ENC_DIR_OFFSET_1));
+            } else {
+                IOMUXC_GPR->XBAR_ENC_DIR_REGISTER_2 &= ~(1 << (self->match_pin - XBAR_ENC_DIR_OFFSET_2));
+            }
+            #else
             IOMUXC_GPR->XBAR_ENC_DIR_REGISTER &= ~(1 << (self->match_pin + XBAR_ENC_DIR_OFFSET));
+            #endif
         }
     }
 
@@ -321,6 +396,7 @@ STATIC void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
     ENC_Init(self->instance, enc_config);
     clear_encoder_registers(self);
     ENC_ClearStatusFlags(self->instance, 0xff); // Clear all status flags
+    self->active = true;
 }
 
 STATIC void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
@@ -420,15 +496,26 @@ STATIC mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_
 }
 
 STATIC void encoder_deinit_single(machine_encoder_obj_t *self) {
-    if (self->irq->handler) {
-        DisableIRQ(enc_irqn[self->id + 1]);
-        ENC_DisableInterrupts(self->instance, ENCODER_ALL_INTERRUPTS);
+    if (self->active) {
+        if (self->irq && self->irq->handler) {
+            DisableIRQ(enc_irqn[self->id + 1]);
+            ENC_DisableInterrupts(self->instance, ENCODER_ALL_INTERRUPTS);
+        }
+        if (self->match_pin != 0) {
+            // Disconnect the XBAR from the output by switching it to an input.
+            #if defined MIMXRT117x_SERIES
+            if (self->match_pin < XBAR_ENC_DIR_OFFSET_2) {
+                IOMUXC_GPR->XBAR_ENC_DIR_REGISTER_1 &= ~(1 << (self->match_pin - XBAR_ENC_DIR_OFFSET_1));
+            } else {
+                IOMUXC_GPR->XBAR_ENC_DIR_REGISTER_2 &= ~(1 << (self->match_pin - XBAR_ENC_DIR_OFFSET_2));
+            }
+            #else
+            IOMUXC_GPR->XBAR_ENC_DIR_REGISTER &= ~(1 << (self->match_pin + XBAR_ENC_DIR_OFFSET));
+            #endif
+        }
+        ENC_Deinit(self->instance);
     }
-    if (self->match_pin != 0) {
-        // Disconnect the XBAR from the output by switching it to an input.
-        IOMUXC_GPR->XBAR_ENC_DIR_REGISTER &= ~(1 << (self->match_pin + XBAR_ENC_DIR_OFFSET));
-    }
-    ENC_Deinit(self->instance);
+    self->active = false;
 }
 
 // encoder_deinit_all()
@@ -458,6 +545,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_encoder_status_obj, machine_encoder_sta
 // encoder.value([value])
 STATIC mp_obj_t machine_encoder_value(size_t n_args, const mp_obj_t *args) {
     machine_encoder_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (!self->active) {
+        mp_raise_ValueError(MP_ERROR_TEXT("device stopped"));
+    }
     uint32_t actual_value = ENC_GetPositionValue(self->instance);
     if (n_args > 1) {
         // Set the encoder position value and clear the rev counter.
@@ -481,6 +571,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_encoder_value_obj, 1, 2, mach
 // encoder.cycles([value])
 STATIC mp_obj_t machine_encoder_cycles(size_t n_args, const mp_obj_t *args) {
     machine_encoder_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (!self->active) {
+        mp_raise_ValueError(MP_ERROR_TEXT("device stopped"));
+    }
+
     int16_t cycles = (int16_t)ENC_GetRevolutionValue(self->instance);
     if (n_args > 1) {
         // Set the revolution value
@@ -502,6 +596,9 @@ STATIC mp_obj_t machine_encoder_irq(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     machine_encoder_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    if (!self->active) {
+        mp_raise_ValueError(MP_ERROR_TEXT("device stopped"));
+    }
 
     if (self->irq == NULL) {
         self->irq = m_new_obj(mp_irq_obj_t);
