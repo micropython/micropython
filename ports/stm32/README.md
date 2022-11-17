@@ -1,5 +1,4 @@
-MicroPython port to STM32 MCUs
-==============================
+# MicroPython port to STM32 MCUs
 
 This directory contains the port of MicroPython to ST's line of STM32
 microcontrollers.  Supported MCU series are: STM32F0, STM32F4, STM32F7,
@@ -22,8 +21,7 @@ not work and none of the advanced features of the STM32H7 are yet supported,
 such as the clock tree.  At this point the STM32H7 should be considered as a
 fast version of the STM32F7.
 
-Build instructions
-------------------
+## Build instructions
 
 Before building the firmware for a given board the MicroPython cross-compiler
 must be built; it will be used to pre-compile some of the built-in scripts to
@@ -85,6 +83,19 @@ To disable LTO, pass `LTO=0` in the same way.
 
 Note that `make clean BOARD=boardname` will be needed before changing the `LTO`
 setting of a firmware that is already built.
+
+## Container builds
+
+An alternative to building directly on your host computer is to use containers.
+Docker is a popular containerization system and can be used to build MicroPython
+without the need to install anything - except Docker - on your host system.
+
+Create a clone of MicroPython on your host but build, in a similar way to the
+description above, inside the container:
+
+```bash
+$ docker run -ti --rm -v /your/micropython/clone:/code -w /code micropython/build-micropython-arm bash -c "make -C mpy-cross && make -C ports/samd submodules all BOARD=PYBV11"
+```
 
 ### Flashing the Firmware using DFU mode
 

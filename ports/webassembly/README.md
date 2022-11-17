@@ -25,6 +25,18 @@ To generate the minified file micropython.min.js, run:
 
     $ make min
 
+Container builds
+----------------
+
+An alternative to building directly on your host computer is to use containers.
+Docker is a popular containerization system and can be used to build MicroPython
+without the need to install anything - except Docker - on your host system.
+
+Create a clone of MicroPython on your host but build, in a similar way to the
+description above, inside the container:
+
+    $ docker run -ti --rm -v /your/micropython/clone:/code -w /code emscripten/emsdk bash -c "make -C ports/webassembly all"
+
 Running with Node.js
 --------------------
 
@@ -51,6 +63,14 @@ var mp_js = require('./build/micropython.js');
 mp_js_init(64 * 1024);
 mp_js_do_str("print('hello world')\n");
 ```
+
+Running with Node.js in a container
+-----------------------------------
+
+As above but execute the command inside the container, for example:
+
+    $ docker run -ti --rm -v /your/micropython/clone:/code -w /code emscripten/emsdk node ports/webassembly/build/micropython.js
+
 
 Running with HTML
 -----------------

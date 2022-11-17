@@ -58,6 +58,19 @@ passed as the argument to `BOARD=`; for example `RA4M1_CLICKER`, `RA4M1_EK`,
 The above command should produce binary images `firmware.hex` in the
 build-RA6M2_EK/` subdirectory (or the equivalent directory for the board specified).
 
+## Container builds
+
+An alternative to building directly on your host computer is to use containers.
+Docker is a popular containerization system and can be used to build MicroPython
+without the need to install anything - except Docker - on your host system.
+
+Create a clone of MicroPython on your host but build, in a similar way to the
+description above, inside the container:
+
+```bash
+$ docker run -ti --rm -v /your/micropython/clone:/code -w /code micropython/build-micropython-arm bash -c "make -C mpy-cross && make -C ports/renesas-ra submodules all BOARD=RA6M2_EK"
+```
+
 ## Supported/Unsupprted funtions
 Please refer to the `renesas-ra` quick reference.
 

@@ -1,5 +1,4 @@
-MicroPython port to the ESP32
-=============================
+# MicroPython port to the ESP32
 
 This is a port of MicroPython to the Espressif ESP32 series of
 microcontrollers.  It uses the ESP-IDF framework and MicroPython runs as
@@ -19,8 +18,9 @@ Supported features include:
 
 Initial development of this ESP32 port was sponsored in part by Microbric Pty Ltd.
 
-Setting up ESP-IDF and the build environment
---------------------------------------------
+## Build instructions
+
+### Setting up ESP-IDF and the build environment
 
 MicroPython on ESP32 requires the Espressif IDF version 4 (IoT development
 framework, aka SDK).  The ESP-IDF includes the libraries and RTOS needed to
@@ -80,8 +80,7 @@ please ensure you are using the following required IDF versions:
 - ESP32-S3 currently requires `v4.4` or later.
 - ESP32-S2 and ESP32-C3 require `v4.3.1` or later.
 
-Building the firmware
----------------------
+### Building the firmware
 
 The MicroPython cross-compiler must be built to pre-compile some of the
 built-in scripts to bytecode.  This can be done by (from the root of
@@ -147,8 +146,20 @@ $ idf.py -D MICROPY_BOARD=GENERIC_SPIRAM build
 $ idf.py flash
 ```
 
-Getting a Python prompt on the device
--------------------------------------
+### Container builds
+
+An alternative to building directly on your host computer is to use containers.
+Docker is a popular containerization system and can be used to build MicroPython
+without the need to install anything - except Docker - on your host system.
+
+Create a clone of MicroPython on your host but build, in a similar way to the
+description above, inside the container:
+
+```bash
+$ docker run -ti --rm -v /your/micropython/clone:/code -w /code espressif/idf:release-v4.4 bash -c "make -C mpy-cross && make -C ports/esp32 submodules all BOARD=GENERIC_SPIRAM"
+```
+
+## Getting a Python prompt on the device
 
 You can get a prompt via the serial port, via UART0, which is the same UART
 that is used for programming the firmware.  The baudrate for the REPL is
@@ -166,8 +177,7 @@ $ miniterm.py /dev/ttyUSB0 115200
 
 You can also use `idf.py monitor`.
 
-Configuring the WiFi and using the board
-----------------------------------------
+## Configuring the WiFi and using the board
 
 The ESP32 port is designed to be (almost) equivalent to the ESP8266 in
 terms of the modules and user-facing API.  There are some small differences,
@@ -205,8 +215,7 @@ import machine
 antenna = machine.Pin(16, machine.Pin.OUT, value=0)
 ```
 
-Defining a custom ESP32 board
------------------------------
+## Defining a custom ESP32 board
 
 The default ESP-IDF configuration settings are provided by the `GENERIC`
 board definition in the directory `boards/GENERIC`. For a custom configuration
@@ -222,9 +231,7 @@ also define custom ones in your board directory.
 
 See existing board definitions for further examples of configuration.
 
-Configuration
-Troubleshooting
----------------
+## Configuration Troubleshooting
 
 * Continuous reboots after programming: Ensure `CONFIG_ESPTOOLPY_FLASHMODE` is
   correct for your board (e.g. ESP-WROOM-32 should be DIO). Then perform a

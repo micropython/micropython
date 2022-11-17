@@ -129,6 +129,19 @@ For example:
 
     make BOARD=pca10056 MICROPY_VFS_LFS2=1
 
+## Container builds
+
+An alternative to building directly on your host computer is to use containers.
+Docker is a popular containerization system and can be used to build MicroPython
+without the need to install anything - except Docker - on your host system.
+
+Create a clone of MicroPython on your host but build, in a similar way to the
+description above, inside the container:
+
+```bash
+$ docker run -ti --rm -v /your/micropython/clone:/code -w /code micropython/build-micropython-arm bash -c "make -C mpy-cross && make -C ports/nrf submodules all BOARD=pca10040"
+```
+
 ## Set file system size
 
 The size of the file system on the internal flash is configured by the linker

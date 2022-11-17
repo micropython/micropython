@@ -44,6 +44,19 @@ pass the board name to the build; e.g. for Raspberry Pi Pico W:
     $ make BOARD=PICO_W clean
     $ make BOARD=PICO_W
 
+## Container builds
+
+An alternative to building directly on your host computer is to use containers.
+Docker is a popular containerization system and can be used to build MicroPython
+without the need to install anything - except Docker - on your host system.
+
+Create a clone of MicroPython on your host but build, in a similar way to the
+description above, inside the container:
+
+```bash
+$ docker run -ti --rm -v /your/micropython/clone:/code -w /code micropython/build-micropython-arm bash -c "make -C mpy-cross && make -C ports/rp2 submodules all BOARD=PICO_W"
+```
+
 ## Deploying firmware to the device
 
 Firmware can be deployed to the device by putting it into bootloader mode

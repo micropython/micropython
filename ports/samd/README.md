@@ -52,6 +52,19 @@ The above command produces binary images in the
 `build-ADAFRUIT_ITSYBITSY_M4_EXPRESS/` subdirectory (or the equivalent
 directory for the board specified).
 
+## Container builds
+
+An alternative to building directly on your host computer is to use containers.
+Docker is a popular containerization system and can be used to build MicroPython
+without the need to install anything - except Docker - on your host system.
+
+Create a clone of MicroPython on your host but build, in a similar way to the
+description above, inside the container:
+
+```bash
+$ docker run -ti --rm -v /your/micropython/clone:/code -w /code micropython/build-micropython-arm bash -c "make -C mpy-cross && make -C ports/samd submodules all BOARD=ADAFRUIT_ITSYBITSY_M4_EXPRESS"
+```
+
 ### Flashing the Firmware
 
 Most SAMD21 and SAMD51 boards have a built in firmware loader. To start it, push

@@ -69,6 +69,19 @@ Then to build the board's firmware run:
 The above command should produce binary images in the `build-SEEED_ARCH_MIX/`
 subdirectory (or the equivalent directory for the board specified).
 
+## Container builds
+
+An alternative to building directly on your host computer is to use containers.
+Docker is a popular containerization system and can be used to build MicroPython
+without the need to install anything - except Docker - on your host system.
+
+Create a clone of MicroPython on your host but build, in a similar way to the
+description above, inside the container:
+
+```bash
+$ docker run -ti --rm -v /your/micropython/clone:/code -w /code micropython/build-micropython-arm bash -c "make -C mpy-cross && make -C ports/mimxrt submodules all BOARD=SEEED_ARCH_MIX"
+```
+
 ## Flashing
 
 Deploy the firmware following the instructions here
