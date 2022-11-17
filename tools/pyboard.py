@@ -268,7 +268,7 @@ class Pyboard:
             import serial
 
             # Set options, and exclusive if pyserial supports it
-            serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1}
+            serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1, "timeout": 10}
             if serial.__version__ >= "3.3":
                 serial_kwargs["exclusive"] = exclusive
 
