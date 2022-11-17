@@ -32,17 +32,17 @@
 void flash_init(void) {
     // Upload the custom flash configuration
     // This should be performed by the boot ROM but for some reason it is not.
-    FLEXSPI_UpdateLUT(FLEXSPI, 0,
+    FLEXSPI_UpdateLUT(BOARD_FLEX_SPI, 0,
         qspiflash_config.memConfig.lookupTable,
         ARRAY_SIZE(qspiflash_config.memConfig.lookupTable));
 
     // Configure FLEXSPI IP FIFO access.
-    FLEXSPI->MCR0 &= ~(FLEXSPI_MCR0_ARDFEN_MASK);
-    FLEXSPI->MCR0 &= ~(FLEXSPI_MCR0_ATDFEN_MASK);
-    FLEXSPI->MCR0 |= FLEXSPI_MCR0_ARDFEN(0);
-    FLEXSPI->MCR0 |= FLEXSPI_MCR0_ATDFEN(0);
+    BOARD_FLEX_SPI->MCR0 &= ~(FLEXSPI_MCR0_ARDFEN_MASK);
+    BOARD_FLEX_SPI->MCR0 &= ~(FLEXSPI_MCR0_ATDFEN_MASK);
+    BOARD_FLEX_SPI->MCR0 |= FLEXSPI_MCR0_ARDFEN(0);
+    BOARD_FLEX_SPI->MCR0 |= FLEXSPI_MCR0_ATDFEN(0);
 
-    FLEXSPI_EnableIPParallelMode(FLEXSPI, true);
+    FLEXSPI_EnableIPParallelMode(BOARD_FLEX_SPI, true);
 }
 
 // flash_erase_block(erase_addr)
@@ -54,7 +54,7 @@ status_t flash_erase_block(uint32_t erase_addr) {
     SCB_DisableDCache();
     __disable_irq();
 
-    status = flexspi_nor_flash_erase_block(FLEXSPI, erase_addr);
+    status = flexspi_nor_flash_erase_block(BOARD_FLEX_SPI, erase_addr);
 
     __enable_irq();
     SCB_EnableDCache();
@@ -71,7 +71,7 @@ status_t flash_erase_sector(uint32_t erase_addr) {
     SCB_DisableDCache();
     __disable_irq();
 
-    status = flexspi_nor_flash_erase_sector(FLEXSPI, erase_addr);
+    status = flexspi_nor_flash_erase_sector(BOARD_FLEX_SPI, erase_addr);
 
     __enable_irq();
     SCB_EnableDCache();
@@ -83,7 +83,7 @@ status_t flash_erase_sector(uint32_t erase_addr) {
 // read length_byte data to the source address
 // It is just a shim to provide the same structure for read_block and write_block.
 void inline flash_read_block(uint32_t src_addr, uint8_t *dest, uint32_t length) {
-    memcpy(dest, (uint8_t *)(FlexSPI_AMBA_BASE + src_addr), length);
+    memcpy(dest, (uint8_t *)(BOARD_FLEX_SPI_ADDR_BASE + src_addr), length);
 }
 
 // flash_write_block(flash_dest_addr_bytes, data_source, length_bytes)
@@ -114,7 +114,7 @@ status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t leng
 
             __disable_irq();
 
-            status = flexspi_nor_flash_page_program(FLEXSPI, dest_addr, (uint32_t *)src, size);
+            status = flexspi_nor_flash_page_program(BOARD_FLEX_SPI, dest_addr, (uint32_t *)src, size);
 
             __enable_irq();
 

@@ -3,6 +3,8 @@
 
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-1070evk"
 
+#define MICROPY_HW_USB_MSC    (1)
+
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
