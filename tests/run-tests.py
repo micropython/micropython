@@ -918,8 +918,15 @@ the last matching regex is used:
         "renesas-ra",
         "rp2",
     )
-    if args.target in LOCAL_TARGETS or args.list_tests:
+    if args.list_tests:
         pyb = None
+    elif args.target in LOCAL_TARGETS:
+        pyb = None
+        if not args.mpy_cross_flags:
+            if args.target == "unix":
+                args.mpy_cross_flags = "-march=host"
+            elif args.target == "qemu-arm":
+                args.mpy_cross_flags = "-march=armv7m"
     elif args.target in EXTERNAL_TARGETS:
         global pyboard
         sys.path.append(base_path("../tools"))
