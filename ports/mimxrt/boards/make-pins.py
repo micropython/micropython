@@ -329,7 +329,7 @@ def module_instance_factory(pins, output_file, name):
         if name == "FLEXPWM":
             output_file.write(f"#define {k} {k[-4:]}\n")
         if name == "XBAR":
-            output_file.write(f"#define {k} {k}A1\n")
+            output_file.write(f"#define {k} {k[:4]}A1\n")
         for i in v:
             output_file.write(i + "\n")
 
