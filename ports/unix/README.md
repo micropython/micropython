@@ -72,3 +72,16 @@ deplibs`. To actually enable/disable use of dependencies, edit the
 `ports/unix/mpconfigport.mk` file, which has inline descriptions of the
 options. For example, to build the SSL module, `MICROPY_PY_USSL` should be
 set to 1.
+
+## Container builds
+
+An alternative to building directly on your host computer is to use containers.
+Docker is a popular containerization system and can be used to build MicroPython
+without the need to install anything - except Docker - on your host system.
+
+Create a clone of MicroPython on your host but build, in a similar way to the
+description above, inside the container:
+
+```bash
+$ docker run -ti --rm -v /your/micropython/clone:/code -w /code micropython/build-micropython-unix bash -c "make -C mpy-cross && make -C ports/unix submodules all -j4"
+```
