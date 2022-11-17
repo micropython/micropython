@@ -10,6 +10,7 @@ on:
       - 'extmod/**'
       - 'lib/**'
       - 'examples/**'
+      - 'mpy-cross/**'
       - 'ports/unix/**'
       - 'tests/**'
 
