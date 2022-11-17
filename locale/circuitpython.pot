@@ -106,7 +106,7 @@ msgstr ""
 msgid "%q in use"
 msgstr ""
 
-#: py/obj.c py/objstr.c py/objstrunicode.c
+#: py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr ""
 
@@ -171,7 +171,7 @@ msgstr ""
 msgid "%q must be an int"
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c py/obj.c
 msgid "%q must be of type %q"
 msgstr ""
 
@@ -397,6 +397,10 @@ msgstr ""
 msgid "ADC2 is being used by WiFi"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP cannot be stopped."
+msgstr ""
+
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
@@ -478,8 +482,16 @@ msgstr ""
 msgid "Already advertising."
 msgstr ""
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Already connected to station."
+msgstr ""
+
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "Already have all-matches listener"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Already in access point mode."
 msgstr ""
 
 #: ports/espressif/common-hal/coproc/__init__.c
@@ -3153,7 +3165,7 @@ msgid "index is out of bounds"
 msgstr ""
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr ""
