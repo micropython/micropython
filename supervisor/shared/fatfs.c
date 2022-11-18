@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,13 @@
  * THE SOFTWARE.
  */
 
+#include "supervisor/fatfs.h"
+
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 #include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "shared-bindings/time/__init__.h"
-#include "supervisor/fatfs_port.h"
 
 DWORD _time_override = 0;
 DWORD get_fattime(void) {

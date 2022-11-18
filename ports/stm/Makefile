@@ -221,7 +221,6 @@ SRC_STM32 += boards/system_stm32$(MCU_SERIES_LOWER)xx.c
 
 SRC_C += \
 	background.c \
-	fatfs_port.c \
 	mphalport.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \

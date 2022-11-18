@@ -42,7 +42,7 @@
 
 #include "common-hal/_bleio/__init__.h"
 
-#include "supervisor/fatfs_port.h"
+#include "supervisor/fatfs.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/bluetooth/file_transfer.h"

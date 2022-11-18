@@ -73,13 +73,12 @@ NORETURN static void ro_attribute(int attr) {
 }
 
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
-    return true;
+    return self->enabled;
 }
 
 void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
-    if (!enabled) {
-        ro_attribute(MP_QSTR_enabled);
-    }
+    self->enabled = enabled;
+    // TODO: Actually enable and disable the WiFi module at this point.
 }
 
 mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self) {
@@ -240,6 +239,13 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self) {
         return mp_const_none;
     }
     return common_hal_ipaddress_new_ipv4address(NETIF_AP->netmask.addr);
+}
+
+uint32_t wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
+        return 0;
+    }
+    return NETIF_STA->ip_addr.addr;
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {

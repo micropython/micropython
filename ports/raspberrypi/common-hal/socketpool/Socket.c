@@ -166,6 +166,7 @@ static inline void exec_user_callback(socketpool_socket_obj_t *socket) {
         mp_sched_schedule(socket->callback, MP_OBJ_FROM_PTR(socket));
     }
     #endif
+    supervisor_workflow_request_background();
 }
 
 #if MICROPY_PY_LWIP_SOCK_RAW
@@ -745,57 +746,47 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     return socket;
 }
 
-int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port) {
-    return -MP_EBADF;
-}
-
-socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *socket,
-    uint8_t *ip, uint32_t *port) {
-    if (socket->type != MOD_NETWORK_SOCK_STREAM) {
-        mp_raise_OSError(MP_EOPNOTSUPP);
+int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port, socketpool_socket_obj_t *accepted) {
+    if (self->type != MOD_NETWORK_SOCK_STREAM) {
+        return -MP_EOPNOTSUPP;
     }
 
-    // Create new socket object, do it here because we must not raise an out-of-memory
-    // exception when the LWIP concurrency lock is held
-    socketpool_socket_obj_t *socket2 = m_new_ll_obj_with_finaliser(socketpool_socket_obj_t);
-    socket2->base.type = &socketpool_socket_type;
+    if (common_hal_socketpool_socket_get_closed(self)) {
+        return -MP_EBADF;
+    }
 
     MICROPY_PY_LWIP_ENTER
 
-    if (socket->pcb.tcp == NULL) {
+    if (self->pcb.tcp == NULL) {
         MICROPY_PY_LWIP_EXIT
-        m_del_obj(socketpool_socket_obj_t, socket2);
-        mp_raise_OSError(MP_EBADF);
+        return -MP_EBADF;
     }
 
     // I need to do this because "tcp_accepted", later, is a macro.
-    struct tcp_pcb *listener = socket->pcb.tcp;
+    struct tcp_pcb *listener = self->pcb.tcp;
     if (listener->state != LISTEN) {
         MICROPY_PY_LWIP_EXIT
-        m_del_obj(socketpool_socket_obj_t, socket2);
-        mp_raise_OSError(MP_EINVAL);
+        return -MP_EINVAL;
     }
 
     // accept incoming connection
-    struct tcp_pcb *volatile *incoming_connection = &lwip_socket_incoming_array(socket)[socket->incoming.connection.iget];
+    struct tcp_pcb *volatile *incoming_connection = &lwip_socket_incoming_array(self)[self->incoming.connection.iget];
     if (*incoming_connection == NULL) {
-        if (socket->timeout == 0) {
+        if (self->timeout == 0) {
             MICROPY_PY_LWIP_EXIT
-            m_del_obj(socketpool_socket_obj_t, socket2);
-            mp_raise_OSError(MP_EAGAIN);
-        } else if (socket->timeout != (unsigned)-1) {
-            mp_uint_t retries = socket->timeout / 100;
-            while (*incoming_connection == NULL) {
+            return -MP_EAGAIN;
+        } else if (self->timeout != (unsigned)-1) {
+            mp_uint_t retries = self->timeout / 100;
+            while (*incoming_connection == NULL && !mp_hal_is_interrupted()) {
                 MICROPY_PY_LWIP_EXIT
                 if (retries-- == 0) {
-                    m_del_obj(socketpool_socket_obj_t, socket2);
-                    mp_raise_OSError(MP_ETIMEDOUT);
+                    return -MP_ETIMEDOUT;
                 }
                 mp_hal_delay_ms(100);
                 MICROPY_PY_LWIP_REENTER
             }
         } else {
-            while (*incoming_connection == NULL) {
+            while (*incoming_connection == NULL && !mp_hal_is_interrupted()) {
                 MICROPY_PY_LWIP_EXIT
                 poll_sockets();
                 MICROPY_PY_LWIP_REENTER
@@ -803,43 +794,75 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
         }
     }
 
+    if (*incoming_connection == NULL) {
+        // We were interrupted.
+        return 0;
+    }
+
+    // Close the accepted socket because we have another we accepted.
+    if (!common_hal_socketpool_socket_get_closed(accepted)) {
+        common_hal_socketpool_socket_close(accepted);
+    }
+
     // We get a new pcb handle...
-    socket2->pcb.tcp = *incoming_connection;
-    if (++socket->incoming.connection.iget >= socket->incoming.connection.alloc) {
-        socket->incoming.connection.iget = 0;
+    accepted->pcb.tcp = *incoming_connection;
+    if (++self->incoming.connection.iget >= self->incoming.connection.alloc) {
+        self->incoming.connection.iget = 0;
     }
     *incoming_connection = NULL;
 
     // ...and set up the new socket for it.
-    socket2->domain = MOD_NETWORK_AF_INET;
-    socket2->type = MOD_NETWORK_SOCK_STREAM;
-    socket2->incoming.pbuf = NULL;
-    socket2->timeout = socket->timeout;
-    socket2->state = STATE_CONNECTED;
-    socket2->recv_offset = 0;
-    socket2->callback = MP_OBJ_NULL;
-    tcp_arg(socket2->pcb.tcp, (void *)socket2);
-    tcp_err(socket2->pcb.tcp, _lwip_tcp_error);
-    tcp_recv(socket2->pcb.tcp, _lwip_tcp_recv);
+    accepted->domain = MOD_NETWORK_AF_INET;
+    accepted->type = MOD_NETWORK_SOCK_STREAM;
+    accepted->incoming.pbuf = NULL;
+    accepted->timeout = self->timeout;
+    accepted->state = STATE_CONNECTED;
+    accepted->recv_offset = 0;
+    accepted->callback = MP_OBJ_NULL;
+    tcp_arg(accepted->pcb.tcp, (void *)accepted);
+    tcp_err(accepted->pcb.tcp, _lwip_tcp_error);
+    tcp_recv(accepted->pcb.tcp, _lwip_tcp_recv);
 
     tcp_accepted(listener);
 
     MICROPY_PY_LWIP_EXIT
 
+    // output values
+    memcpy(ip, &(accepted->pcb.tcp->remote_ip), NETUTILS_IPV4ADDR_BUFSIZE);
+    *port = (mp_uint_t)accepted->pcb.tcp->remote_port;
+
+    return 1;
+}
+
+socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *socket,
+    uint8_t *ip, uint32_t *port) {
+    // Create new socket object, do it here because we must not raise an out-of-memory
+    // exception when the LWIP concurrency lock is held
+    socketpool_socket_obj_t *accepted = m_new_ll_obj_with_finaliser(socketpool_socket_obj_t);
+    socketpool_socket_reset(accepted);
+
+    int ret = socketpool_socket_accept(socket, ip, port, accepted);
+
+    if (ret <= 0) {
+        m_del_obj(socketpool_socket_obj_t, accepted);
+        if (ret == 0) {
+            // Interrupted.
+            return mp_const_none;
+        }
+        mp_raise_OSError(-ret);
+    }
+
     DEBUG_printf("registering socket in socketpool_socket_accept()\n");
-    if (!register_open_socket(socket2)) {
+    if (!register_open_socket(accepted)) {
         DEBUG_printf("collecting garbage to open socket\n");
         gc_collect();
-        if (!register_open_socket(socket2)) {
+        if (!register_open_socket(accepted)) {
             mp_raise_RuntimeError(translate("Out of sockets"));
         }
     }
-    mark_user_socket(socket2);
+    mark_user_socket(accepted);
 
-    // output values
-    memcpy(ip, &(socket2->pcb.tcp->remote_ip), NETUTILS_IPV4ADDR_BUFSIZE);
-    *port = (mp_uint_t)socket2->pcb.tcp->remote_port;
-    return MP_OBJ_FROM_PTR(socket2);
+    return MP_OBJ_FROM_PTR(accepted);
 }
 
 bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
@@ -847,21 +870,26 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
 
     // get address
     ip_addr_t bind_addr;
-    int error = socketpool_resolve_host(socket->pool, host, &bind_addr);
-    if (error != 0) {
-        mp_raise_OSError(EHOSTUNREACH);
-    }
+    const ip_addr_t *bind_addr_ptr = &bind_addr;
+    if (hostlen > 0) {
+        int error = socketpool_resolve_host(socket->pool, host, &bind_addr);
+        if (error != 0) {
+            mp_raise_OSError(EHOSTUNREACH);
+        }
 
+    } else {
+        bind_addr_ptr = IP_ANY_TYPE;
+    }
     ip_set_option(socket->pcb.ip, SOF_REUSEADDR);
 
     err_t err = ERR_ARG;
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM: {
-            err = tcp_bind(socket->pcb.tcp, &bind_addr, port);
+            err = tcp_bind(socket->pcb.tcp, bind_addr_ptr, port);
             break;
         }
         case MOD_NETWORK_SOCK_DGRAM: {
-            err = udp_bind(socket->pcb.udp, &bind_addr, port);
+            err = udp_bind(socket->pcb.udp, bind_addr_ptr, port);
             break;
         }
     }
@@ -1164,6 +1192,20 @@ void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint
     self->timeout = timeout_ms;
 }
 
+int common_hal_socketpool_socket_setsockopt(socketpool_socket_obj_t *self, int level, int optname, const void *value, size_t optlen) {
+    if (level == SOCKETPOOL_IPPROTO_TCP && optname == SOCKETPOOL_TCP_NODELAY) {
+        int one = 1;
+        bool enable = optlen == sizeof(&one) && memcmp(value, &one, optlen);
+        if (enable) {
+            tcp_set_flags(self->pcb.tcp, TF_NODELAY);
+        } else {
+            tcp_clear_flags(self->pcb.tcp, TF_NODELAY);
+        }
+        return 0;
+    }
+    return -MP_EOPNOTSUPP;
+}
+
 bool common_hal_socketpool_readable(socketpool_socket_obj_t *self) {
 
     MICROPY_PY_LWIP_ENTER;
@@ -1205,4 +1247,33 @@ bool common_hal_socketpool_writable(socketpool_socket_obj_t *self) {
     MICROPY_PY_LWIP_EXIT;
 
     return result;
+}
+
+void socketpool_socket_move(socketpool_socket_obj_t *self, socketpool_socket_obj_t *sock) {
+    *sock = *self;
+    self->state = _ERR_BADF;
+
+    // Reregister the callbacks with the new socket copy.
+    MICROPY_PY_LWIP_ENTER;
+
+    tcp_arg(self->pcb.tcp, NULL);
+    tcp_err(self->pcb.tcp, NULL);
+    tcp_recv(self->pcb.tcp, NULL);
+
+    self->pcb.tcp = NULL;
+
+    tcp_arg(sock->pcb.tcp, (void *)sock);
+    tcp_err(sock->pcb.tcp, _lwip_tcp_error);
+    tcp_recv(sock->pcb.tcp, _lwip_tcp_recv);
+
+    MICROPY_PY_LWIP_EXIT;
+}
+
+void socketpool_socket_reset(socketpool_socket_obj_t *self) {
+    if (self->base.type == &socketpool_socket_type) {
+        return;
+    }
+    self->base.type = &socketpool_socket_type;
+    self->pcb.tcp = NULL;
+    self->state = _ERR_BADF;
 }

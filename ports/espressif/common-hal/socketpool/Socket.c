@@ -240,7 +240,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     return sock;
 }
 
-int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port) {
+int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port, socketpool_socket_obj_t *accepted) {
     struct sockaddr_in accept_addr;
     socklen_t socklen = sizeof(accept_addr);
     int newsoc = -1;
@@ -274,12 +274,25 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         lwip_close(newsoc);
         return -MP_EBADF;
     }
+
+
+    if (accepted != NULL) {
+        // Close the active socket because we have another we accepted.
+        if (!common_hal_socketpool_socket_get_closed(accepted)) {
+            common_hal_socketpool_socket_close(accepted);
+        }
+        // Create the socket
+        accepted->num = newsoc;
+        accepted->pool = self->pool;
+        accepted->connected = true;
+    }
+
     return newsoc;
 }
 
 socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *self,
     uint8_t *ip, uint32_t *port) {
-    int newsoc = socketpool_socket_accept(self, ip, port);
+    int newsoc = socketpool_socket_accept(self, ip, port, NULL);
 
     if (newsoc > 0) {
         mark_user_socket(newsoc);
@@ -554,6 +567,15 @@ void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint
     self->timeout_ms = timeout_ms;
 }
 
+
+int common_hal_socketpool_socket_setsockopt(socketpool_socket_obj_t *self, int level, int optname, const void *value, size_t optlen) {
+    int err = lwip_setsockopt(self->num, level, optname, value, optlen);
+    if (err != 0) {
+        return -errno;
+    }
+    return 0;
+}
+
 bool common_hal_socketpool_readable(socketpool_socket_obj_t *self) {
     struct timeval immediate = {0, 0};
 
@@ -576,4 +598,19 @@ bool common_hal_socketpool_writable(socketpool_socket_obj_t *self) {
 
     // including returning true in the error case
     return num_triggered != 0;
+}
+
+void socketpool_socket_move(socketpool_socket_obj_t *self, socketpool_socket_obj_t *sock) {
+    *sock = *self;
+    self->connected = false;
+    self->num = -1;
+}
+
+void socketpool_socket_reset(socketpool_socket_obj_t *self) {
+    if (self->base.type == &socketpool_socket_type) {
+        return;
+    }
+    self->base.type = &socketpool_socket_type;
+    self->connected = false;
+    self->num = -1;
 }

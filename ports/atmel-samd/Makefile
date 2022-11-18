@@ -322,7 +322,6 @@ SRC_C += \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	eic_handler.c \
-	fatfs_port.c \
 	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	mphalport.c \
 	reset.c \

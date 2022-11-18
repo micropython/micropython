@@ -117,7 +117,6 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_VALENTYUSB_EPTRI -DCFG_TUD_CDC_RX_BUFSIZE=1024 
 
 SRC_C += \
 	background.c \
-	fatfs_port.c \
 	mphalport.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c

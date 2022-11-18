@@ -52,7 +52,6 @@
 //|             returned by :py:attr:`wifi.radio`
 //|         """
 //|         ...
-
 STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -65,12 +64,6 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
     return MP_OBJ_FROM_PTR(s);
 }
 
-//|     AF_INET: int
-//|     AF_INET6: int
-//|     SOCK_STREAM: int
-//|     SOCK_DGRAM: int
-//|     SOCK_RAW: int
-//|
 //|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM) -> socketpool.Socket:
 //|         """Create a new socket
 //|
@@ -114,7 +107,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_socket_obj, 1, socketpool_socke
 //|         address information to call socket.socket() and socket.connect() with,
 //|         as a tuple."""
 //|         ...
-//|
 STATIC mp_obj_t socketpool_socketpool_getaddrinfo(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_host, ARG_port, ARG_family, ARG_type, ARG_proto, ARG_flags };
     static const mp_arg_t allowed_args[] = {
@@ -164,12 +156,28 @@ STATIC const mp_rom_map_elem_t socketpool_socketpool_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getaddrinfo), MP_ROM_PTR(&socketpool_socketpool_getaddrinfo_obj) },
 
     // class constants
+//|     AF_INET: int
     { MP_ROM_QSTR(MP_QSTR_AF_INET), MP_ROM_INT(SOCKETPOOL_AF_INET) },
+//|     AF_INET6: int
     { MP_ROM_QSTR(MP_QSTR_AF_INET6), MP_ROM_INT(SOCKETPOOL_AF_INET6) },
+//|
 
+//|     SOCK_STREAM: int
     { MP_ROM_QSTR(MP_QSTR_SOCK_STREAM), MP_ROM_INT(SOCKETPOOL_SOCK_STREAM) },
+//|     SOCK_DGRAM: int
     { MP_ROM_QSTR(MP_QSTR_SOCK_DGRAM), MP_ROM_INT(SOCKETPOOL_SOCK_DGRAM) },
+//|     SOCK_RAW: int
     { MP_ROM_QSTR(MP_QSTR_SOCK_RAW), MP_ROM_INT(SOCKETPOOL_SOCK_RAW) },
+//|
+
+//|     TCP_NODELAY: int
+    { MP_ROM_QSTR(MP_QSTR_TCP_NODELAY), MP_ROM_INT(SOCKETPOOL_TCP_NODELAY) },
+//|
+
+//|     IPPROTO_TCP: int
+//|
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_TCP), MP_ROM_INT(SOCKETPOOL_IPPROTO_TCP) },
+//|
 };
 
 STATIC MP_DEFINE_CONST_DICT(socketpool_socketpool_locals_dict, socketpool_socketpool_locals_dict_table);
