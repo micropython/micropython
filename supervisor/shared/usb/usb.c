@@ -359,4 +359,10 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     }
 }
 
+void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms) {
+    if (usb_cdc_console_enabled() && mp_interrupt_char != -1 && itf == 0 && duration_ms > 0) {
+        mp_sched_keyboard_interrupt();
+    }
+}
+
 #endif
