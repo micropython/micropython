@@ -48,6 +48,9 @@ bool common_hal_displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t *s
 
 bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t *self, displayio_group_t *root_group);
 
+mp_obj_t common_hal_displayio_epaperdisplay_get_root_group(displayio_epaperdisplay_obj_t *self);
+bool common_hal_displayio_epaperdisplay_set_root_group(displayio_epaperdisplay_obj_t *self, displayio_group_t *root_group);
+
 // Returns time in milliseconds.
 uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaperdisplay_obj_t *self);
 bool common_hal_displayio_epaperdisplay_get_busy(displayio_epaperdisplay_obj_t *self);

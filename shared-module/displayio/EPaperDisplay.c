@@ -106,6 +106,10 @@ bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t *self
     return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
+bool common_hal_displayio_epaperdisplay_set_root_group(displayio_epaperdisplay_obj_t *self, displayio_group_t *root_group) {
+    return displayio_display_core_set_root_group(&self->core, root_group);
+}
+
 STATIC const displayio_area_t *displayio_epaperdisplay_get_refresh_areas(displayio_epaperdisplay_obj_t *self) {
     if (self->core.full_refresh) {
         self->core.area.next = NULL;
@@ -239,6 +243,9 @@ uint16_t common_hal_displayio_epaperdisplay_get_rotation(displayio_epaperdisplay
     return self->core.rotation;
 }
 
+mp_obj_t common_hal_displayio_epaperdisplay_get_root_group(displayio_epaperdisplay_obj_t *self) {
+    return self->core.current_group;
+}
 
 STATIC bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t *self, const displayio_area_t *area) {
     uint16_t buffer_size = 128; // In uint32_ts
