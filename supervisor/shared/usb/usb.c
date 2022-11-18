@@ -341,7 +341,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
 #endif // CIRCUITPY_USB_VENDOR
 
 
-#if MICROPY_KBD_EXCEPTION
+#if MICROPY_KBD_EXCEPTION && CIRCUITPY_USB_CDC
 
 /**
  * Callback invoked when received an "wanted" char.
