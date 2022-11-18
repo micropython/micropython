@@ -24,14 +24,8 @@
 
 include ../../py/circuitpy_mkenv.mk
 
-SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
-
 ifneq ($(SD), )
 	include bluetooth/bluetooth_common.mk
-	ifeq ($(BUILD), build-$(BOARD))
-		# Build directory with SD if it's different from the default.
-		BUILD = build-$(BOARD)-$(SD_LOWER)
-	endif
 endif
 
 CROSS_COMPILE = arm-none-eabi-
