@@ -190,7 +190,7 @@ void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
     }
 
     if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_DOWN) {
-        mp_raise_NotImplementedError(translate("AP cannot be stopped."));
+        mp_raise_NotImplementedError(translate("Stopping AP is not supported."));
     }
 
     /*

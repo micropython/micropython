@@ -397,10 +397,6 @@ msgstr ""
 msgid "ADC2 is being used by WiFi"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "AP cannot be stopped."
-msgstr ""
-
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
@@ -1977,6 +1973,10 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Stopping AP is not supported."
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
