@@ -103,7 +103,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t 
 }
 
 bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t *self, displayio_group_t *root_group) {
-    return displayio_display_core_show(&self->core, root_group);
+    return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
 STATIC const displayio_area_t *displayio_epaperdisplay_get_refresh_areas(displayio_epaperdisplay_obj_t *self) {

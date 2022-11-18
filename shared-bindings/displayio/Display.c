@@ -430,10 +430,7 @@ STATIC mp_obj_t displayio_display_obj_set_root_group(mp_obj_t self_in, mp_obj_t 
         group = MP_OBJ_TO_PTR(native_group(group_in));
     }
 
-    bool ok = common_hal_displayio_display_show(self, group);
-    if (!ok) {
-        mp_raise_ValueError(translate("Group already used"));
-    }
+    common_hal_displayio_display_set_root_group(self, group);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_set_root_group_obj, displayio_display_obj_set_root_group);

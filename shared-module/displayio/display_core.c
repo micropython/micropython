@@ -162,7 +162,7 @@ void displayio_display_core_set_rotation(displayio_display_core_t *self,
     }
 }
 
-bool displayio_display_core_show(displayio_display_core_t *self, displayio_group_t *root_group) {
+bool displayio_display_core_set_root_group(displayio_display_core_t *self, displayio_group_t *root_group) {
 
     if (root_group == NULL) { // set the display to the REPL, reset REPL position and size
         circuitpython_splash.in_group = false;

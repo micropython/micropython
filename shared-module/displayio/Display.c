@@ -141,7 +141,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
 }
 
 bool common_hal_displayio_display_show(displayio_display_obj_t *self, displayio_group_t *root_group) {
-    return displayio_display_core_show(&self->core, root_group);
+    return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
 uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t *self) {
@@ -396,6 +396,14 @@ void common_hal_displayio_display_set_auto_refresh(displayio_display_obj_t *self
         }
     }
     self->auto_refresh = auto_refresh;
+}
+
+mp_obj_t common_hal_displayio_display_set_root_group(displayio_display_obj_t *self, displayio_group_t *root_group) {
+    bool ok = displayio_display_core_set_root_group(&self->core, root_group);
+    if (!ok) {
+        mp_raise_ValueError(translate("Group already used"));
+    }
+    return mp_const_none;
 }
 
 void displayio_display_background(displayio_display_obj_t *self) {

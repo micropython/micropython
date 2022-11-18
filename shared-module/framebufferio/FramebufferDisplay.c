@@ -102,7 +102,7 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 }
 
 bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
-    return displayio_display_core_show(&self->core, root_group);
+    return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
 uint16_t common_hal_framebufferio_framebufferdisplay_get_width(framebufferio_framebufferdisplay_obj_t *self) {
