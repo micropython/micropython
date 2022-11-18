@@ -1,11 +1,18 @@
 # Select the board to build for.
-BOARD?=raspberrypi_pi4b
+define show_board_error
+boardlist =
+$(info Valid boards:)
+$(shell printf '%s\n' $(patsubst boards/%/mpconfigboard.mk,%,$(wildcard boards/*/mpconfigboard.mk)) | column -xc $$(tput cols || echo 80) 1>&2)
+$(error Rerun with $(MAKE) BOARD=<board>)
+endef
 
 ifeq ($(BOARD),)
-  $(error You must provide a BOARD parameter)
+    $(info No BOARD specified)
+    $(call show_board_error)
 else
   ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD "$(BOARD)" specified)
+    $(info Invalid BOARD specified)
+    $(call show_board_error)
   endif
 endif
 

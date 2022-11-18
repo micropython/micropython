@@ -23,14 +23,20 @@
 # THE SOFTWARE.
 
 # Select the board to build for.
+define show_board_error
+boardlist =
+$(info Valid boards:)
+$(shell printf '%s\n' $(patsubst boards/%/mpconfigboard.mk,%,$(wildcard boards/*/mpconfigboard.mk)) | column -xc $$(tput cols || echo 80) 1>&2)
+$(error Rerun with $(MAKE) BOARD=<board>)
+endef
+
 ifeq ($(BOARD),)
-  $(info You must provide a BOARD parameter with 'BOARD=')
-  $(info Possible values are:)
-  $(info $(sort $(subst /.,,$(subst boards/,,$(wildcard boards/*/.)))))
-  $(error BOARD not defined)
+    $(info No BOARD specified)
+    $(call show_board_error)
 else
   ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD specified)
+    $(info Invalid BOARD specified)
+    $(call show_board_error)
   endif
 endif
 
