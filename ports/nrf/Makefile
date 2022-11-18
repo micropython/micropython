@@ -22,51 +22,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Select the board to build for.
-define show_board_error
-boardlist =
-$(info Valid boards:)
-$(shell printf '%s\n' $(patsubst boards/%/mpconfigboard.mk,%,$(wildcard boards/*/mpconfigboard.mk)) | column -xc $$(tput cols || echo 80) 1>&2)
-$(error Rerun with $(MAKE) BOARD=<board>)
-endef
+include ../../py/circuitpy_mkenv.mk
 
-ifeq ($(BOARD),)
-    $(info No BOARD specified)
-    $(call show_board_error)
-else
-  ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(info Invalid BOARD specified)
-    $(call show_board_error)
-  endif
-endif
-
-CLI_SD := $(SD)
 SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
-
-# Build directory with SD if it's different from the default.
-BUILD ?= $(if $(CLI_SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
-
-include ../../py/mkenv.mk
-# Board-specific
-include boards/$(BOARD)/mpconfigboard.mk
-# Port-specific
-include mpconfigport.mk
-# CircuitPython-specific
-include $(TOP)/py/circuitpy_mpconfig.mk
-
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-
-# include py core make definitions
-include $(TOP)/py/py.mk
-
-include $(TOP)/supervisor/supervisor.mk
-
-# Include make rules and variables common across CircuitPython builds.
-include $(TOP)/py/circuitpy_defns.mk
 
 ifneq ($(SD), )
 	include bluetooth/bluetooth_common.mk
+	ifeq ($(BUILD), build-$(BOARD))
+		# Build directory with SD if it's different from the default.
+		BUILD = build-$(BOARD)-$(SD_LOWER)
+	endif
 endif
 
 CROSS_COMPILE = arm-none-eabi-

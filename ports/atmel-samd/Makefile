@@ -22,45 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Select the board to build for.
-define show_board_error
-boardlist =
-$(info Valid boards:)
-$(shell printf '%s\n' $(patsubst boards/%/mpconfigboard.mk,%,$(wildcard boards/*/mpconfigboard.mk)) | column -xc $$(tput cols || echo 80) 1>&2)
-$(error Rerun with $(MAKE) BOARD=<board>)
-endef
-
-ifeq ($(BOARD),)
-    $(info No BOARD specified)
-    $(call show_board_error)
-else
-  ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(info Invalid BOARD specified)
-    $(call show_board_error)
-  endif
-endif
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
-include ../../py/mkenv.mk
-# Board-specific
-include boards/$(BOARD)/mpconfigboard.mk
-# Port-specific
-include mpconfigport.mk
-# CircuitPython-specific
-include $(TOP)/py/circuitpy_mpconfig.mk
-
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-
-# include py core make definitions
-include $(TOP)/py/py.mk
-
-include $(TOP)/supervisor/supervisor.mk
-
-# Include make rules and variables common across CircuitPython builds.
-include $(TOP)/py/circuitpy_defns.mk
+include ../../py/circuitpy_mkenv.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
