@@ -28,6 +28,7 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/keypad/__init__.h"
 #include "shared-bindings/keypad/Event.h"
 #include "shared-bindings/keypad/KeyMatrix.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -36,7 +37,14 @@
 //| class KeyMatrix:
 //|     """Manage a 2D matrix of keys with row and column pins."""
 //|
-//|     def __init__(self, row_pins: Sequence[microcontroller.Pin], column_pins: Sequence[microcontroller.Pin], columns_to_anodes: bool = True, interval: float = 0.020, max_events: int = 64) -> None:
+//|     def __init__(
+//|         self,
+//|         row_pins: Sequence[microcontroller.Pin],
+//|         column_pins: Sequence[microcontroller.Pin],
+//|         columns_to_anodes: bool = True,
+//|         interval: float = 0.020,
+//|         max_events: int = 64,
+//|     ) -> None:
 //|         """
 //|         Create a `Keys` object that will scan the key matrix attached to the given row and column pins.
 //|         There should not be any external pull-ups or pull-downs on the matrix:
@@ -111,7 +119,6 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
 //|     def deinit(self) -> None:
 //|         """Stop scanning and release the pins."""
 //|         ...
-//|
 STATIC mp_obj_t keypad_keymatrix_deinit(mp_obj_t self_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_keypad_keymatrix_deinit(self);
@@ -122,14 +129,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_keymatrix_deinit_obj, keypad_keymatrix_deinit);
 //|     def __enter__(self) -> KeyMatrix:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t keypad_keymatrix___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_keypad_keymatrix_deinit(args[0]);
@@ -138,7 +143,7 @@ STATIC mp_obj_t keypad_keymatrix___exit__(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_keymatrix___exit___obj, 4, 4, keypad_keymatrix___exit__);
 
 STATIC void check_for_deinit(keypad_keymatrix_obj_t *self) {
-    if (common_hal_keypad_keymatrix_deinited(self)) {
+    if (common_hal_keypad_deinited(self)) {
         raise_deinited_error();
     }
 }
@@ -149,36 +154,12 @@ STATIC void check_for_deinit(keypad_keymatrix_obj_t *self) {
 //|         a new key-pressed event to occur.
 //|         """
 //|         ...
-//|
-STATIC mp_obj_t keypad_keymatrix_reset(mp_obj_t self_in) {
-    keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    common_hal_keypad_keymatrix_reset(self);
-    return MP_ROM_NONE;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_keymatrix_reset_obj, keypad_keymatrix_reset);
 
 //|     key_count: int
 //|     """The number of keys that are being scanned. (read-only)
 //|     """
-//|
-STATIC mp_obj_t keypad_keymatrix_get_key_count(mp_obj_t self_in) {
-    keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
 
-    return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_keymatrix_get_key_count(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_keymatrix_get_key_count_obj, keypad_keymatrix_get_key_count);
-
-const mp_obj_property_t keypad_keymatrix_key_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_keymatrix_get_key_count_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
-
-//|     def key_number_to_row_column(self, row: int, column: int) -> Tuple[int]:
+//|     def key_number_to_row_column(self, key_number: int) -> Tuple[int]:
 //|         """Return the row and column for the given key number.
 //|         The row is ``key_number // len(column_pins)``.
 //|         The column is ``key_number % len(column_pins)``.
@@ -187,14 +168,13 @@ const mp_obj_property_t keypad_keymatrix_key_count_obj = {
 //|         :rtype: Tuple[int]
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t keypad_keymatrix_key_number_to_row_column(mp_obj_t self_in, mp_obj_t key_number_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
     const mp_uint_t key_number = (mp_uint_t)mp_arg_validate_int_range(
         mp_obj_get_int(key_number_in),
-        0, (mp_int_t)common_hal_keypad_keymatrix_get_key_count(self),
+        0, (mp_int_t)common_hal_keypad_generic_get_key_count(self),
         MP_QSTR_key_number);
 
     mp_uint_t row;
@@ -214,7 +194,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(keypad_keymatrix_key_number_to_row_column_obj, keypad_
 //|         The key number is ``row * len(column_pins) + column``.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t keypad_keymatrix_row_column_to_key_number(mp_obj_t self_in, mp_obj_t row_in, mp_obj_t column_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -234,29 +213,15 @@ MP_DEFINE_CONST_FUN_OBJ_3(keypad_keymatrix_row_column_to_key_number_obj, keypad_
 //|     """The `EventQueue` associated with this `Keys` object. (read-only)
 //|     """
 //|
-STATIC mp_obj_t keypad_keymatrix_get_events(mp_obj_t self_in) {
-    keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    return common_hal_keypad_keymatrix_get_events(self);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_keymatrix_get_events_obj, keypad_keymatrix_get_events);
-
-const mp_obj_property_t keypad_keymatrix_events_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_keymatrix_get_events_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
 
 STATIC const mp_rom_map_elem_t keypad_keymatrix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),                   MP_ROM_PTR(&keypad_keymatrix_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),                MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),                 MP_ROM_PTR(&keypad_keymatrix___exit___obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_events),                   MP_ROM_PTR(&keypad_keymatrix_events_obj) },
-    { MP_ROM_QSTR(MP_QSTR_key_count),                MP_ROM_PTR(&keypad_keymatrix_key_count_obj) },
-    { MP_ROM_QSTR(MP_QSTR_reset),                    MP_ROM_PTR(&keypad_keymatrix_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_events),                   MP_ROM_PTR(&keypad_generic_events_obj) },
+    { MP_ROM_QSTR(MP_QSTR_key_count),                MP_ROM_PTR(&keypad_generic_key_count_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset),                    MP_ROM_PTR(&keypad_generic_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_key_number_to_row_column), MP_ROM_PTR(&keypad_keymatrix_key_number_to_row_column_obj) },
     { MP_ROM_QSTR(MP_QSTR_row_column_to_key_number), MP_ROM_PTR(&keypad_keymatrix_row_column_to_key_number_obj) },
 };

@@ -37,7 +37,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "supervisor/shared/safe_mode.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #define DBL_TAP_REG              SNVS->LPGPR[3]
 
@@ -70,7 +70,7 @@ void common_hal_mcu_enable_interrupts(void) {
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
     if (runmode == RUNMODE_BOOTLOADER) {
         if (!bootloader_available()) {
-            mp_raise_ValueError(translate("Cannot reset into bootloader because no bootloader is present."));
+            mp_raise_ValueError(translate("Cannot reset into bootloader because no bootloader is present"));
         }
         // Pretend to be the first of the two reset presses needed to enter the
         // bootloader. That way one reset will end in the bootloader.
@@ -286,6 +286,12 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B1_09), MP_ROM_PTR(&pin_GPIO_SD_B1_09) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B1_10), MP_ROM_PTR(&pin_GPIO_SD_B1_10) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B1_11), MP_ROM_PTR(&pin_GPIO_SD_B1_11) },
+    #ifdef MIMXRT1062_SERIES
+    { MP_ROM_QSTR(MP_QSTR_USB_OTG1_DN), MP_ROM_PTR(&pin_USB_OTG1_DN) },
+    { MP_ROM_QSTR(MP_QSTR_USB_OTG1_DP), MP_ROM_PTR(&pin_USB_OTG1_DP) },
+    { MP_ROM_QSTR(MP_QSTR_USB_OTG2_DN), MP_ROM_PTR(&pin_USB_OTG2_DN) },
+    { MP_ROM_QSTR(MP_QSTR_USB_OTG2_DP), MP_ROM_PTR(&pin_USB_OTG2_DP) },
+    #endif
     #endif
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_global_dict_table);

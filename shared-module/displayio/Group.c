@@ -66,6 +66,14 @@ void common_hal_displayio_group_set_hidden(displayio_group_t *self, bool hidden)
             displayio_group_set_hidden_by_parent(layer, hidden);
             continue;
         }
+        #if CIRCUITPY_VECTORIO
+        const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
+        if (draw_protocol != NULL) {
+            layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
+            draw_protocol->draw_protocol_impl->draw_set_dirty(layer);
+            continue;
+        }
+        #endif
     }
 }
 
@@ -92,6 +100,14 @@ void displayio_group_set_hidden_by_parent(displayio_group_t *self, bool hidden) 
             displayio_group_set_hidden_by_parent(layer, hidden);
             continue;
         }
+        #if CIRCUITPY_VECTORIO
+        const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
+        if (draw_protocol != NULL) {
+            layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
+            draw_protocol->draw_protocol_impl->draw_set_dirty(layer);
+            continue;
+        }
+        #endif
     }
 }
 
@@ -252,7 +268,7 @@ static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
     if (native_layer != MP_OBJ_NULL) {
         displayio_tilegrid_t *tilegrid = native_layer;
         if (tilegrid->in_group) {
-            mp_raise_ValueError(translate("Layer already in a group."));
+            mp_raise_ValueError(translate("Layer already in a group"));
         } else {
             tilegrid->in_group = true;
         }
@@ -265,7 +281,7 @@ static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
     if (native_layer != MP_OBJ_NULL) {
         displayio_group_t *group = native_layer;
         if (group->in_group) {
-            mp_raise_ValueError(translate("Layer already in a group."));
+            mp_raise_ValueError(translate("Layer already in a group"));
         } else {
             group->in_group = true;
         }
@@ -274,7 +290,7 @@ static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
             group, self->hidden || self->hidden_by_parent);
         return;
     }
-    mp_raise_ValueError(translate("Layer must be a Group or TileGrid subclass."));
+    mp_raise_ValueError(translate("Layer must be a Group or TileGrid subclass"));
 }
 
 static void _remove_layer(displayio_group_t *self, size_t index) {
@@ -358,33 +374,35 @@ void displayio_group_construct(displayio_group_t *self, mp_obj_list_t *members, 
 bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorspace_t *colorspace, const displayio_area_t *area, uint32_t *mask, uint32_t *buffer) {
     // Track if any of the layers finishes filling in the given area. We can ignore any remaining
     // layers at that point.
-    for (int32_t i = self->members->len - 1; i >= 0; i--) {
-        mp_obj_t layer;
-        #if CIRCUITPY_VECTORIO
-        const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
-        if (draw_protocol != NULL) {
-            layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
-            if (draw_protocol->draw_protocol_impl->draw_fill_area(layer, colorspace, area, mask, buffer)) {
-                return true;
+    if (self->hidden == false) {
+        for (int32_t i = self->members->len - 1; i >= 0; i--) {
+            mp_obj_t layer;
+            #if CIRCUITPY_VECTORIO
+            const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
+            if (draw_protocol != NULL) {
+                layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
+                if (draw_protocol->draw_protocol_impl->draw_fill_area(layer, colorspace, area, mask, buffer)) {
+                    return true;
+                }
+                continue;
             }
-            continue;
-        }
-        #endif
-        layer = mp_obj_cast_to_native_base(
-            self->members->items[i], &displayio_tilegrid_type);
-        if (layer != MP_OBJ_NULL) {
-            if (displayio_tilegrid_fill_area(layer, colorspace, area, mask, buffer)) {
-                return true;
+            #endif
+            layer = mp_obj_cast_to_native_base(
+                self->members->items[i], &displayio_tilegrid_type);
+            if (layer != MP_OBJ_NULL) {
+                if (displayio_tilegrid_fill_area(layer, colorspace, area, mask, buffer)) {
+                    return true;
+                }
+                continue;
             }
-            continue;
-        }
-        layer = mp_obj_cast_to_native_base(
-            self->members->items[i], &displayio_group_type);
-        if (layer != MP_OBJ_NULL) {
-            if (displayio_group_fill_area(layer, colorspace, area, mask, buffer)) {
-                return true;
+            layer = mp_obj_cast_to_native_base(
+                self->members->items[i], &displayio_group_type);
+            if (layer != MP_OBJ_NULL) {
+                if (displayio_group_fill_area(layer, colorspace, area, mask, buffer)) {
+                    return true;
+                }
+                continue;
             }
-            continue;
         }
     }
     return false;

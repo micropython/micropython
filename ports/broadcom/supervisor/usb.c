@@ -35,7 +35,7 @@
 uint32_t SystemCoreClock = 700 * 1000 * 1000;
 
 void USB_IRQHandler(void) {
-    usb_irq_handler();
+    usb_irq_handler(0);
 }
 
 void init_usb_hardware(void) {

@@ -28,6 +28,13 @@ SECTIONS
         _sfixed = .;
         KEEP(*(.vectors)) /* isr vector table */
 
+        __property_getter_start = .;
+        *(.property_getter)
+        __property_getter_end = .;
+        __property_getset_start = .;
+        *(.property_getset)
+        __property_getset_end = .;
+
         /* Sort text sections so that they have fewer *fill* bytes needed. */
         *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.text)))           /* .text sections (code) */
         *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.text*)))          /* .text* sections (code) */

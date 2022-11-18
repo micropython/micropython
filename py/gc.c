@@ -138,7 +138,6 @@ void gc_init(void *start, void *end) {
     MP_STATE_MEM(gc_alloc_table_start) = (byte *)start;
 
     #if MICROPY_ENABLE_FINALISER
-    size_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
     MP_STATE_MEM(gc_finaliser_table_start) = MP_STATE_MEM(gc_alloc_table_start) + MP_STATE_MEM(gc_alloc_table_byte_len) + 1;
     #endif
 
@@ -147,18 +146,16 @@ void gc_init(void *start, void *end) {
     MP_STATE_MEM(gc_pool_end) = end;
 
     #if MICROPY_ENABLE_FINALISER
+    size_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
+    (void)gc_finaliser_table_byte_len; // avoid unused variable diagnostic if asserts are disabled
     assert(MP_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
     #endif
 
-    // Clear ATBs plus one more byte. The extra byte might be read when we read the final ATB and
-    // then try to count its tail. Clearing the byte ensures it is 0 and ends the chain. Without an
-    // FTB, it'll just clear the pool byte early.
-    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_alloc_table_byte_len) + 1);
-
-    #if MICROPY_ENABLE_FINALISER
-    // clear FTBs
-    memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
-    #endif
+    // Clear ATBs & finalisers (if enabled). This also clears the extra byte
+    // which appears between ATBs and finalisers that ensures every chain in
+    // the ATB terminates, rather than erroneously using bits from the
+    // finalisers.
+    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_pool_start) - MP_STATE_MEM(gc_alloc_table_start));
 
     // Set first free ATB index to the start of the heap.
     for (size_t i = 0; i < MICROPY_ATB_INDICES; i++) {
@@ -238,6 +235,7 @@ STATIC void gc_mark_subtree(size_t block) {
     // Start with the block passed in the argument.
     size_t sp = 0;
     for (;;) {
+        MICROPY_GC_HOOK_LOOP
         // work out number of consecutive blocks in the chain starting with this one
         size_t n_blocks = 0;
         do {
@@ -247,6 +245,7 @@ STATIC void gc_mark_subtree(size_t block) {
         // check this block's children
         void **ptrs = (void **)PTR_FROM_BLOCK(block);
         for (size_t i = n_blocks * BYTES_PER_BLOCK / sizeof(void *); i > 0; i--, ptrs++) {
+            MICROPY_GC_HOOK_LOOP
             void *ptr = *ptrs;
             if (VERIFY_PTR(ptr)) {
                 // Mark and push this pointer
@@ -280,6 +279,7 @@ STATIC void gc_deal_with_stack_overflow(void) {
 
         // scan entire memory looking for blocks which have been marked but not their children
         for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
+            MICROPY_GC_HOOK_LOOP
             // trace (again) if mark bit set
             if (ATB_GET_KIND(block) == AT_MARK) {
                 gc_mark_subtree(block);
@@ -295,6 +295,7 @@ STATIC void gc_sweep(void) {
     // free unmarked heads and their tails
     int free_tail = 0;
     for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
+        MICROPY_GC_HOOK_LOOP
         switch (ATB_GET_KIND(block)) {
             case AT_HEAD:
                 #if MICROPY_ENABLE_FINALISER
@@ -407,6 +408,7 @@ static void *gc_get_ptr(void **ptrs, int i) {
 
 void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
+        MICROPY_GC_HOOK_LOOP
         void *ptr = gc_get_ptr(ptrs, i);
         gc_mark(ptr);
     }

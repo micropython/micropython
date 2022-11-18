@@ -27,7 +27,7 @@
 
 #include "common-hal/analogio/AnalogIn.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
 
@@ -51,7 +51,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
 
     // No ADC function on pin
     if (pin->adc_unit == 0x00) {
-        mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
+        raise_ValueError_invalid_pin();
     }
     // TODO: add ADC traits to structure?
 
@@ -65,7 +65,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
         LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC3);
         #endif
     } else {
-        mp_raise_ValueError(translate("Invalid ADC Unit value"));
+        mp_raise_RuntimeError(translate("Invalid ADC Unit value"));
     }
     common_hal_mcu_pin_claim(pin);
     self->pin = pin;
@@ -147,7 +147,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
         ADCx = ADC3;
         #endif
     } else {
-        mp_raise_ValueError(translate("Invalid ADC Unit value"));
+        mp_raise_RuntimeError(translate("Invalid ADC Unit value"));
     }
 
     LL_GPIO_SetPinMode(pin_port(self->pin->port), (uint32_t)pin_mask(self->pin->number), LL_GPIO_MODE_ANALOG);
@@ -204,8 +204,8 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     uint16_t value = (uint16_t)HAL_ADC_GetValue(&AdcHandle);
     HAL_ADC_Stop(&AdcHandle);
 
-    // // Shift the value to be 16 bit.
-    return value << 4;
+    // Stretch 12-bit ADC reading to 16-bit range
+    return (value << 4) | (value >> 8);
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {

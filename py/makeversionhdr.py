@@ -1,38 +1,32 @@
 """
 Generate header file with macros defining MicroPython version info.
 
-This script works with Python 2.6, 2.7, 3.3 and 3.4.
+This script works with Python 3.7 and newer
 """
 
 from __future__ import print_function
 
 import sys
 import os
+import pathlib
 import datetime
 import subprocess
 
+tools_describe = str(pathlib.Path(__file__).parent.parent / "tools/describe")
+
 
 def get_version_info_from_git():
-    # Python 2.6 doesn't have check_output, so check for that
-    try:
-        subprocess.check_output
-        subprocess.check_call
-    except AttributeError:
-        return None
-
     # Note: git describe doesn't work if no tag is available
     try:
         git_tag = subprocess.check_output(
-            ["git", "describe", "--tags", "--dirty", "--always", "--match", "[1-9].*"],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
+            [tools_describe], stderr=subprocess.STDOUT, universal_newlines=True, shell=True
         ).strip()
     except subprocess.CalledProcessError as er:
         if er.returncode == 128:
             # git exit code of 128 means no repository found
             return None
         git_tag = ""
-    except OSError:
+    except OSError as e:
         return None
     try:
         git_hash = subprocess.check_output(
@@ -65,29 +59,25 @@ def get_version_info_from_git():
     return git_tag, git_hash, ver
 
 
-def get_version_info_from_docs_conf():
-    with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "conf.py")) as f:
-        for line in f:
-            if line.startswith("version = release = '"):
-                ver = line.strip().split(" = ")[2].strip("'")
-                git_tag = "v" + ver
-                ver = ver.split(".")
-                if len(ver) == 2:
-                    ver.append("0")
-                return git_tag, "<no hash>", ver
-    return None
+def cannot_determine_version():
+    raise SystemExit(
+        """Cannot determine version.
+
+CircuitPython must be built from a git clone with tags.
+If you cloned from a fork, fetch the tags from adafruit/circuitpython as follows:
+
+    git fetch --tags --recurse-submodules=no --shallow-since="2021-07-01" https://github.com/adafruit/circuitpython HEAD"""
+    )
 
 
 def make_version_header(filename):
-    # Get version info using git, with fallback to docs/conf.py
+    # Get version info using git (required)
     info = get_version_info_from_git()
     if info is None:
-        info = get_version_info_from_docs_conf()
-
+        cannot_determine_version()
     git_tag, git_hash, ver = info
     if len(ver) < 3:
-        ver = ("0", "0", "0")
-        version_string = git_hash
+        cannot_determine_version()
     else:
         version_string = ".".join(ver)
 

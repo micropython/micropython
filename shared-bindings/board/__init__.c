@@ -43,6 +43,14 @@
 //| Common container for board base pin names. These will vary from board to
 //| board so don't expect portability when using this module.
 //|
+//| Another common use of this module is to use serial communciation buses with
+//| the default pins and settings.  For more information about serial communcication
+//| in CircuitPython, see the :mod:`busio`.
+//|
+//| For more information regarding the typical usage of :py:mod:`board`, refer to the `CircuitPython
+//| Essentials Learn guide
+//| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-pins-and-modules>`_
+//|
 //| .. warning:: The board module varies by board. The APIs documented here may or may not be
 //|              available on a specific board."""
 

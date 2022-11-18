@@ -39,7 +39,6 @@
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of :py:class:`~_bleio.Attribute`."""
 //|         ...
-//|
 
 STATIC const mp_rom_map_elem_t bleio_attribute_locals_dict_table[] = {
 

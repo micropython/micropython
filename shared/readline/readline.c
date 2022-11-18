@@ -177,6 +177,17 @@ int readline_process_char(int c) {
             vstr_cut_tail_bytes(rl.line, rl.line->len - rl.cursor_pos);
             // set redraw parameters
             redraw_from_cursor = true;
+        #endif
+        } else if (c == CHAR_CTRL_L) {
+            // CTRL-L is clear screen / redraw. This specific sequence is used
+            // (instead of a slightly more minimal sequence) for compatibility
+            // with the built-in Terminal class
+            mp_hal_stdout_tx_str("\x1b[;H\x1b[2J");
+            mp_hal_stdout_tx_str(rl.prompt);
+            mp_hal_stdout_tx_strn(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
+            // set redraw parameters
+            redraw_from_cursor = true;
+        #if MICROPY_REPL_EMACS_KEYS
         } else if (c == CHAR_CTRL_N) {
             // CTRL-N is go to next line in history
             goto down_arrow_key;

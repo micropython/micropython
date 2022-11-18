@@ -36,6 +36,10 @@
 #include "py/runtime.h"
 #include "shared-bindings/os/__init__.h"
 
+#if CIRCUITPY_DOTENV
+#include "shared-bindings/dotenv/__init__.h"
+#endif
+
 // This provides all VFS related OS functions so that ports can share the code
 // as needed. It does not provide uname.
 
@@ -105,6 +109,16 @@ void common_hal_os_chdir(const char *path) {
 
 mp_obj_t common_hal_os_getcwd(void) {
     return mp_vfs_getcwd();
+}
+
+mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_) {
+    #if CIRCUITPY_DOTENV
+    mp_obj_t env_obj = common_hal_dotenv_get_key("/.env", key);
+    if (env_obj != mp_const_none) {
+        return env_obj;
+    }
+    #endif
+    return default_;
 }
 
 mp_obj_t common_hal_os_listdir(const char *path) {
@@ -211,4 +225,11 @@ mp_obj_t common_hal_os_statvfs(const char *path) {
         path_out = MP_OBJ_NEW_QSTR(MP_QSTR__slash_);
     }
     return mp_vfs_proxy_call(vfs, MP_QSTR_statvfs, 1, &path_out);
+}
+
+void common_hal_os_utime(const char *path, mp_obj_t times) {
+    mp_obj_t args[2];
+    mp_vfs_mount_t *vfs = lookup_path(path, &args[0]);
+    args[1] = times;
+    mp_vfs_proxy_call(vfs, MP_QSTR_utime, 2, args);
 }

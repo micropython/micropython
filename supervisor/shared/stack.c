@@ -107,6 +107,10 @@ void set_next_stack_size(uint32_t size) {
     next_stack_size = size;
 }
 
+uint32_t get_next_stack_size(void) {
+    return next_stack_size;
+}
+
 uint32_t get_current_stack_size(void) {
     return current_stack_size;
 }

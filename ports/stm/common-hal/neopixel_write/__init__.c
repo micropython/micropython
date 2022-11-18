@@ -38,8 +38,8 @@ uint64_t next_start_raw_ticks = 0;
 
 // sysclock divisors
 #define MAGIC_800_INT  900000  // ~1.11 us  -> 1.2  field
-#define MAGIC_800_T0H  2800000  // ~0.36 us -> 0.44 field
-#define MAGIC_800_T1H  1350000  // ~0.74 us -> 0.84 field
+#define MAGIC_800_T0H  3500000  // 300ns actual; 880 low
+#define MAGIC_800_T1H  1350000  // 768ns actual; 412 low
 
 #pragma GCC push_options
 #pragma GCC optimize ("Os")

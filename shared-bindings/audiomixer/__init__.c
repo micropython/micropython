@@ -33,7 +33,6 @@
 #include "shared-bindings/audiomixer/Mixer.h"
 
 //| """Support for audio mixing"""
-//|
 
 STATIC const mp_rom_map_elem_t audiomixer_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiomixer) },

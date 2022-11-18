@@ -52,16 +52,17 @@
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
-#include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/reload.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/shared/traceback.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/workflow.h"
 #include "supervisor/usb.h"
 #include "supervisor/workflow.h"
+#include "supervisor/shared/external_flash/external_flash.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
@@ -100,6 +101,14 @@
 #include "shared-module/memorymonitor/__init__.h"
 #endif
 
+#if CIRCUITPY_SOCKETPOOL
+#include "shared-bindings/socketpool/__init__.h"
+#endif
+
+#if CIRCUITPY_STATUS_BAR
+#include "supervisor/shared/status_bar.h"
+#endif
+
 #if CIRCUITPY_USB_HID
 #include "shared-module/usb_hid/__init__.h"
 #endif
@@ -123,8 +132,7 @@ static void reset_devices(void) {
     #endif
 }
 
-STATIC void start_mp(supervisor_allocation *heap, bool first_run) {
-    autoreload_stop();
+STATIC void start_mp(supervisor_allocation *heap) {
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -162,20 +170,12 @@ STATIC void start_mp(supervisor_allocation *heap, bool first_run) {
     mp_obj_list_init((mp_obj_list_t *)mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
-    // Frozen modules are in their own pseudo-dir, e.g., ".frozen".
-    // Prioritize .frozen over /lib.
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR));
+    #if MICROPY_MODULE_FROZEN
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen));
+    #endif
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
 
     mp_obj_list_init((mp_obj_list_t *)mp_sys_argv, 0);
-
-    #if CIRCUITPY_ALARM
-    // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
-    // There is no alarm if this is not the first time code.py or the REPL has been run.
-    shared_alarm_save_wake_alarm(first_run ? common_hal_alarm_create_wake_alarm() : mp_const_none);
-    // Reset alarm module only after we retrieved the wakeup alarm.
-    alarm_reset();
-    #endif
 }
 
 STATIC void stop_mp(void) {
@@ -199,6 +199,25 @@ STATIC void stop_mp(void) {
     gc_deinit();
 }
 
+STATIC const char *_current_executing_filename = NULL;
+
+STATIC pyexec_result_t _exec_result = {0, MP_OBJ_NULL, 0};
+
+#if CIRCUITPY_STATUS_BAR
+void supervisor_execution_status(void) {
+    mp_obj_exception_t *exception = MP_OBJ_TO_PTR(_exec_result.exception);
+    if (_current_executing_filename != NULL) {
+        serial_write(_current_executing_filename);
+    } else if ((_exec_result.return_code & PYEXEC_EXCEPTION) != 0 &&
+               _exec_result.exception_line > 0 &&
+               exception != NULL) {
+        mp_printf(&mp_plat_print, "%d@%s %q", _exec_result.exception_line, _exec_result.exception_filename, exception->base.type->name);
+    } else {
+        serial_write_compressed(translate("Done"));
+    }
+}
+#endif
+
 #define STRING_LIST(...) {__VA_ARGS__, ""}
 
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
@@ -213,17 +232,33 @@ STATIC const char *first_existing_file_in_list(const char *const *filenames) {
     return NULL;
 }
 
-STATIC bool maybe_run_list(const char *const *filenames, pyexec_result_t *exec_result) {
-    const char *filename = first_existing_file_in_list(filenames);
-    if (filename == NULL) {
+STATIC bool maybe_run_list(const char *const *filenames) {
+    _exec_result.return_code = 0;
+    _exec_result.exception = MP_OBJ_NULL;
+    _exec_result.exception_line = 0;
+    _current_executing_filename = first_existing_file_in_list(filenames);
+    if (_current_executing_filename == NULL) {
         return false;
     }
-    mp_hal_stdout_tx_str(filename);
+    mp_hal_stdout_tx_str(_current_executing_filename);
     serial_write_compressed(translate(" output:\n"));
-    pyexec_file(filename, exec_result);
-    #if CIRCUITPY_ATEXIT
-    shared_module_atexit_execute(exec_result);
+
+    #if CIRCUITPY_STATUS_BAR
+    supervisor_status_bar_update();
     #endif
+
+    pyexec_file(_current_executing_filename, &_exec_result);
+
+    #if CIRCUITPY_ATEXIT
+    shared_module_atexit_execute(&_exec_result);
+    #endif
+
+    _current_executing_filename = NULL;
+
+    #if CIRCUITPY_STATUS_BAR
+    supervisor_status_bar_update();
+    #endif
+
     return true;
 }
 
@@ -277,10 +312,10 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     memorymonitor_reset();
     #endif
 
-    filesystem_flush();
-    stop_mp();
-    free_memory(heap);
-    supervisor_move_memory();
+    // Disable user related BLE state that uses the micropython heap.
+    #if CIRCUITPY_BLEIO
+    bleio_user_reset();
+    #endif
 
     #if CIRCUITPY_CANIO
     common_hal_canio_reset();
@@ -290,6 +325,16 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     keypad_reset();
     #endif
 
+    // Close user-initiated sockets.
+    #if CIRCUITPY_SOCKETPOOL
+    socketpool_user_reset();
+    #endif
+
+    // Turn off user initiated WiFi connections.
+    #if CIRCUITPY_WIFI
+    wifi_user_reset();
+    #endif
+
     // reset_board_buses() first because it may release pins from the never_reset state, so that
     // reset_port() can reset them.
     #if CIRCUITPY_BOARD
@@ -297,11 +342,21 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     #endif
     reset_port();
     reset_board();
+
+    // Free the heap last because other modules may reference heap memory and need to shut down.
+    filesystem_flush();
+    stop_mp();
+    free_memory(heap);
+    supervisor_move_memory();
+
+    // Let the workflows know we've reset in case they want to restart.
+    supervisor_workflow_reset();
 }
 
 STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     if (autoreload_is_enabled()) {
-        serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
+        serial_write_compressed(
+            translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
     } else {
         serial_write_compressed(translate("Auto-reload is off.\n"));
     }
@@ -310,7 +365,7 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_reset) {
+STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
     bool serial_connected_at_start = serial_connected();
     bool printed_safe_mode_message = false;
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
@@ -322,20 +377,20 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
     }
     #endif
 
-    pyexec_result_t result;
-
-    result.return_code = 0;
-    result.exception = MP_OBJ_NULL;
-    result.exception_line = 0;
-
-    bool skip_repl;
+    bool skip_repl = false;
     bool skip_wait = false;
     bool found_main = false;
     uint8_t next_code_options = 0;
     // Collects stickiness bits that apply in the current situation.
     uint8_t next_code_stickiness_situation = SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
 
+    // Do the filesystem flush check before reload in case another write comes
+    // in while we're doing the flush.
     if (safe_mode == NO_SAFE_MODE) {
+        stack_resize();
+        filesystem_flush();
+    }
+    if (safe_mode == NO_SAFE_MODE && !autoreload_pending()) {
         static const char *const supported_filenames[] = STRING_LIST(
             "code.txt", "code.py", "main.py", "main.txt");
         #if CIRCUITPY_FULL_BUILD
@@ -344,12 +399,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
         #endif
 
-        stack_resize();
-        filesystem_flush();
         supervisor_allocation *heap = allocate_remaining_memory();
 
-        // Prepare the VM state. Includes an alarm check/reset for sleep.
-        start_mp(heap, first_run);
+        // Prepare the VM state.
+        start_mp(heap);
 
         #if CIRCUITPY_USB
         usb_setup_with_vm();
@@ -362,7 +415,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             if (((next_code_info_t *)next_code_allocation->ptr)->filename[0] != '\0') {
                 const char *next_list[] = {((next_code_info_t *)next_code_allocation->ptr)->filename, ""};
                 // This is where the user's python code is actually executed:
-                found_main = maybe_run_list(next_list, &result);
+                found_main = maybe_run_list(next_list);
                 if (!found_main) {
                     serial_write(((next_code_info_t *)next_code_allocation->ptr)->filename);
                     serial_write_compressed(translate(" not found.\n"));
@@ -372,11 +425,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         // Otherwise, default to the standard list of filenames
         if (!found_main) {
             // This is where the user's python code is actually executed:
-            found_main = maybe_run_list(supported_filenames, &result);
+            found_main = maybe_run_list(supported_filenames);
             // If that didn't work, double check the extensions
             #if CIRCUITPY_FULL_BUILD
             if (!found_main) {
-                found_main = maybe_run_list(double_extension_filenames, &result);
+                found_main = maybe_run_list(double_extension_filenames);
                 if (found_main) {
                     serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
                 }
@@ -388,26 +441,35 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         // Print done before resetting everything so that we get the message over
         // BLE before it is reset and we have a delay before reconnect.
-        if (reload_requested && result.return_code == PYEXEC_EXCEPTION) {
-            serial_write_compressed(translate("\nCode stopped by auto-reload.\n"));
+        if ((_exec_result.return_code & PYEXEC_RELOAD) && supervisor_get_run_reason() == RUN_REASON_AUTO_RELOAD) {
+            serial_write_compressed(translate("\nCode stopped by auto-reload. Reloading soon.\n"));
         } else {
             serial_write_compressed(translate("\nCode done running.\n"));
         }
 
-        // Finished executing python code. Cleanup includes a board reset.
-        cleanup_after_vm(heap, result.exception);
+
+        // Finished executing python code. Cleanup includes filesystem flush and a board reset.
+        cleanup_after_vm(heap, _exec_result.exception);
+        _exec_result.exception = NULL;
 
         // If a new next code file was set, that is a reason to keep it (obviously). Stuff this into
         // the options because it can be treated like any other reason-for-stickiness bit. The
         // source is different though: it comes from the options that will apply to the next run,
         // while the rest of next_code_options is what applied to this run.
-        if (next_code_allocation != NULL && (((next_code_info_t *)next_code_allocation->ptr)->options & SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET)) {
+        if (next_code_allocation != NULL &&
+            (((next_code_info_t *)next_code_allocation->ptr)->options & SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET)) {
             next_code_options |= SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
         }
 
-        if (reload_requested) {
+        if (_exec_result.return_code & PYEXEC_RELOAD) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
-        } else if (result.return_code == 0) {
+            // Reload immediately unless the reload is due to autoreload. In that
+            // case, we wait below to see if any other writes occur.
+            if (supervisor_get_run_reason() != RUN_REASON_AUTO_RELOAD) {
+                skip_repl = true;
+                skip_wait = true;
+            }
+        } else if (_exec_result.return_code == 0) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS) {
                 skip_repl = true;
@@ -418,13 +480,13 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             // Deep sleep cannot be skipped
             // TODO: settings in deep sleep should persist, using a new sleep memory API
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_ERROR
-                && !(result.return_code & PYEXEC_DEEP_SLEEP)) {
+                && !(_exec_result.return_code & PYEXEC_DEEP_SLEEP)) {
                 skip_repl = true;
                 skip_wait = true;
             }
         }
-        if (result.return_code & PYEXEC_FORCED_EXIT) {
-            skip_repl = reload_requested;
+        if (_exec_result.return_code & PYEXEC_FORCED_EXIT) {
+            skip_repl = false;
             skip_wait = true;
         }
     }
@@ -441,12 +503,12 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
     uint8_t blink_count;
     bool led_active = false;
     #if CIRCUITPY_ALARM
-    if (result.return_code & PYEXEC_DEEP_SLEEP) {
+    if (_exec_result.return_code & PYEXEC_DEEP_SLEEP) {
         color = BLACK;
         blink_count = 0;
     } else
     #endif
-    if (result.return_code != PYEXEC_EXCEPTION) {
+    if (_exec_result.return_code != PYEXEC_EXCEPTION) {
         if (safe_mode == NO_SAFE_MODE) {
             color = ALL_DONE;
             blink_count = ALL_DONE_BLINKS;
@@ -464,27 +526,32 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
     size_t total_time = blink_time + LED_SLEEP_TIME_MS;
     #endif
 
+    // This loop is waits after code completes. It waits for fake sleeps to
+    // finish, user input or autoreloads.
     #if CIRCUITPY_ALARM
     bool fake_sleeping = false;
     #endif
     while (!skip_wait) {
         RUN_BACKGROUND_TASKS;
 
-        // If a reload was requested by the supervisor or autoreload, return
-        if (reload_requested) {
+        // If a reload was requested by the supervisor or autoreload, return.
+        if (autoreload_ready()) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
             // Should the STICKY_ON_SUCCESS and STICKY_ON_ERROR bits be cleared in
             // next_code_stickiness_situation? I can see arguments either way, but I'm deciding
             // "no" for now, mainly because it's a bit less code. At this point, we have both a
             // success or error and a reload, so let's have both of the respective options take
             // effect (in OR combination).
-            reload_requested = false;
             skip_repl = true;
+            // We're kicking off the autoreload process so reset now. If any
+            // other reloads trigger after this, then we'll want another wait
+            // period.
+            autoreload_reset();
             break;
         }
 
         // If interrupted by keyboard, return
-        if (serial_connected() && serial_bytes_available()) {
+        if (serial_connected() && serial_bytes_available() && !autoreload_pending()) {
             // Skip REPL if reload was requested.
             skip_repl = serial_read() == CHAR_CTRL_D;
             if (skip_repl) {
@@ -506,7 +573,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         #endif
 
         // If messages haven't been printed yet, print them
-        if (!printed_press_any_key && serial_connected()) {
+        if (!printed_press_any_key && serial_connected() && !autoreload_pending()) {
             if (!serial_connected_at_start) {
                 print_code_py_status_message(safe_mode);
             }
@@ -526,10 +593,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         // Sleep until our next interrupt.
         #if CIRCUITPY_ALARM
-        if (result.return_code & PYEXEC_DEEP_SLEEP) {
-            // Make sure we have been awake long enough for USB to connect (enumeration delay).
-            int64_t connecting_delay_ticks = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - port_get_raw_ticks(NULL);
-            // Until it's safe to decide whether we're real/fake sleeping
+        if (_exec_result.return_code & PYEXEC_DEEP_SLEEP) {
+            const bool awoke_from_true_deep_sleep =
+                common_hal_mcu_processor_get_reset_reason() == RESET_REASON_DEEP_SLEEP_ALARM;
+
             if (fake_sleeping) {
                 // This waits until a pretend deep sleep alarm occurs. They are set
                 // during common_hal_alarm_set_deep_sleep_alarms. On some platforms
@@ -537,18 +604,31 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
                 // for deep sleep alarms above. If it wasn't a deep sleep alarm,
                 // then we'll idle here again.
                 common_hal_alarm_pretending_deep_sleep();
-            } else if (connecting_delay_ticks < 0) {
-                // Entering deep sleep (may be fake or real.)
+            }
+            // The first time we go into a deep sleep, make sure we have been awake long enough
+            // for USB to connect (enumeration delay), or for the BLE workflow to start.
+            // We wait CIRCUITPY_WORKFLOW_CONNECTION_SLEEP_DELAY seconds after a restart.
+            // But if we woke up from a real deep sleep, don't wait for connection. The user will need to
+            // do a hard reset to get out of the real deep sleep.
+            else if (awoke_from_true_deep_sleep ||
+                     port_get_raw_ticks(NULL) > CIRCUITPY_WORKFLOW_CONNECTION_SLEEP_DELAY * 1024) {
+                // OK to start sleeping, real or fake.
+                #if CIRCUITPY_DISPLAYIO
+                common_hal_displayio_release_displays();
+                #endif
                 status_led_deinit();
                 deinit_rxtx_leds();
                 board_deinit();
-                if (!supervisor_workflow_active()) {
+
+                // Continue with true deep sleep even if workflow is available.
+                if (awoke_from_true_deep_sleep || !supervisor_workflow_active()) {
                     // Enter true deep sleep. When we wake up we'll be back at the
                     // top of main(), not in this loop.
                     common_hal_alarm_enter_deep_sleep();
                     // Does not return.
                 } else {
-                    serial_write_compressed(translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
+                    serial_write_compressed(
+                        translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
                     fake_sleeping = true;
                 }
             } else {
@@ -615,13 +695,20 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         }
     }
 
+    // Done waiting, start the board back up.
+
+    // We delay resetting BLE until after the wait in case we're transferring
+    // more files over.
+    #if CIRCUITPY_BLEIO
+    bleio_reset();
+    #endif
+
     // free code allocation if unused
     if ((next_code_options & next_code_stickiness_situation) == 0) {
         free_memory(next_code_allocation);
         next_code_allocation = NULL;
     }
 
-    // Done waiting, start the board back up.
     #if CIRCUITPY_STATUS_LED
     if (led_active) {
         new_status_color(BLACK);
@@ -643,6 +730,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 vstr_t *boot_output;
 
 STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
+    if (safe_mode == NO_HEAP) {
+        return;
+    }
+
     // If not in safe mode, run boot before initing USB and capture output in a file.
 
     // There is USB setup to do even if boot.py is not actually run.
@@ -656,18 +747,19 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     supervisor_allocation *heap = allocate_remaining_memory();
 
-    // true means this is the first set of VM's after a hard reset.
-    start_mp(heap, true);
+    start_mp(heap);
 
     #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
     usb_set_defaults();
     #endif
 
-    pyexec_result_t result = {0, MP_OBJ_NULL, 0};
-
     if (ok_to_run) {
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+        #if CIRCUITPY_STATUS_BAR
+        // Turn off status bar updates when writing out to boot_out.txt.
+        supervisor_status_bar_suspend();
+        #endif
         vstr_t boot_text;
         vstr_init(&boot_text, 512);
         boot_output = &boot_text;
@@ -675,8 +767,18 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
         // Write version info
         mp_printf(&mp_plat_print, "%s\nBoard ID:%s\n", MICROPY_FULL_VERSION_INFO, CIRCUITPY_BOARD_ID);
+        #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH > 0
+        uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
+        common_hal_mcu_processor_get_uid(raw_id);
+        mp_cprintf(&mp_plat_print, translate("UID:"));
+        for (size_t i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
+            mp_cprintf(&mp_plat_print, translate("%02X"), raw_id[i]);
+        }
+        mp_printf(&mp_plat_print, "\n");
+        port_boot_info();
+        #endif
 
-        bool found_boot = maybe_run_list(boot_py_filenames, &result);
+        bool found_boot = maybe_run_list(boot_py_filenames);
         (void)found_boot;
 
 
@@ -686,6 +788,9 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         FATFS *fs = &vfs->fatfs;
 
         boot_output = NULL;
+        #if CIRCUITPY_STATUS_BAR
+        supervisor_status_bar_resume();
+        #endif
         bool write_boot_output = true;
         FIL boot_output_file;
         if (f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
@@ -726,7 +831,12 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     usb_get_boot_py_data(usb_boot_py_data, size);
     #endif
 
-    cleanup_after_vm(heap, result.exception);
+    port_post_boot_py(true);
+
+    cleanup_after_vm(heap, _exec_result.exception);
+    _exec_result.exception = NULL;
+
+    port_post_boot_py(false);
 
     #if CIRCUITPY_USB
     // Now give back the data we saved from the heap going away.
@@ -734,18 +844,18 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     #endif
 }
 
-STATIC int run_repl(bool first_run) {
+STATIC int run_repl(void) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
     supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap, first_run);
+    start_mp(heap);
 
     #if CIRCUITPY_USB
     usb_setup_with_vm();
     #endif
 
-    autoreload_suspend(AUTORELOAD_LOCK_REPL);
+    autoreload_suspend(AUTORELOAD_SUSPEND_REPL);
 
     // Set the status LED to the REPL color before running the REPL. For
     // NeoPixels and DotStars this will be sticky but for PWM or single LED it
@@ -757,9 +867,23 @@ STATIC int run_repl(bool first_run) {
     status_led_deinit();
     #endif
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+        #if CIRCUITPY_STATUS_BAR
+        supervisor_status_bar_suspend();
+        #endif
         exit_code = pyexec_raw_repl();
+        #if CIRCUITPY_STATUS_BAR
+        supervisor_status_bar_resume();
+        #endif
     } else {
+        _current_executing_filename = "REPL";
+        #if CIRCUITPY_STATUS_BAR
+        supervisor_status_bar_update();
+        #endif
         exit_code = pyexec_friendly_repl();
+        _current_executing_filename = NULL;
+        #if CIRCUITPY_STATUS_BAR
+        supervisor_status_bar_update();
+        #endif
     }
     #if CIRCUITPY_ATEXIT
     pyexec_result_t result;
@@ -769,13 +893,20 @@ STATIC int run_repl(bool first_run) {
     }
     #endif
     cleanup_after_vm(heap, MP_OBJ_SENTINEL);
+
+    // Also reset bleio. The above call omits it in case workflows should continue. In this case,
+    // we're switching straight to another VM so we want to reset.
+    #if CIRCUITPY_BLEIO
+    bleio_reset();
+    #endif
+
     #if CIRCUITPY_STATUS_LED
     status_led_init();
     new_status_color(BLACK);
     status_led_deinit();
     #endif
 
-    autoreload_resume(AUTORELOAD_LOCK_REPL);
+    autoreload_resume(AUTORELOAD_SUSPEND_REPL);
     return exit_code;
 }
 
@@ -800,6 +931,10 @@ int __attribute__((used)) main(void) {
 
     stack_init();
 
+    #if CIRCUITPY_STATUS_BAR
+    supervisor_status_bar_init();
+    #endif
+
     #if CIRCUITPY_BLEIO
     // Early init so that a reset press can cause BLE public advertising.
     supervisor_bluetooth_init();
@@ -807,6 +942,12 @@ int __attribute__((used)) main(void) {
 
     // Start the debug serial
     serial_early_init();
+
+    #if !INTERNAL_FLASH_FILESYSTEM
+    // Set up anything that might need to get done before we try to use SPI flash
+    // This is needed for some boards where flash relies on GPIO setup to work
+    external_flash_setup();
+    #endif
 
     // Create a new filesystem only if we're not in a safe mode.
     // A power brownout here could make it appear as if there's
@@ -818,14 +959,23 @@ int __attribute__((used)) main(void) {
         safe_mode = NO_CIRCUITPY;
     }
 
-    // displays init after filesystem, since they could share the flash SPI
-    board_init();
+    #if CIRCUITPY_ALARM
+    // Record which alarm woke us up, if any.
+    // common_hal_alarm_record_wake_alarm() should return a static, non-heap object
+    shared_alarm_save_wake_alarm(common_hal_alarm_record_wake_alarm());
+    // Then reset the alarm system. It's not reset in reset_port(), because that's also called
+    // on VM teardown, which would clear any alarm setup.
+    alarm_reset();
+    #endif
 
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
     // Port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
     reset_board();
+
+    // displays init after filesystem, since they could share the flash SPI
+    board_init();
 
     // This is first time we are running CircuitPython after a reset or power-up.
     supervisor_set_run_reason(RUN_REASON_STARTUP);
@@ -842,38 +992,30 @@ int __attribute__((used)) main(void) {
 
     run_boot_py(safe_mode);
 
-    // Start USB after giving boot.py a chance to tweak behavior.
-    #if CIRCUITPY_USB
-    // Setup USB connection after heap is available.
-    // It needs the heap to build descriptors.
-    usb_init();
-    #endif
+    supervisor_workflow_start();
 
-    // Set up any other serial connection.
-    serial_init();
-
-    #if CIRCUITPY_BLEIO
-    supervisor_bluetooth_enable_workflow();
-    supervisor_start_bluetooth();
+    #if CIRCUITPY_STATUS_BAR
+    supervisor_status_bar_request_update(true);
     #endif
 
     // Boot script is finished, so now go into REPL or run code.py.
     int exit_code = PYEXEC_FORCED_EXIT;
     bool skip_repl = true;
-    bool first_run = true;
-    bool simulate_reset;
+    bool simulate_reset = true;
     for (;;) {
-        simulate_reset = false;
         if (!skip_repl) {
-            exit_code = run_repl(first_run);
+            exit_code = run_repl();
             supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
-            if (!first_run) {
+            if (!simulate_reset) {
                 serial_write_compressed(translate("soft reboot\n"));
             }
             if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-                skip_repl = run_code_py(safe_mode, first_run, &simulate_reset);
+                // If code.py did a fake deep sleep, pretend that we
+                // are running code.py for the first time after a hard
+                // reset. This will preserve any alarm information.
+                skip_repl = run_code_py(safe_mode, &simulate_reset);
             } else {
                 skip_repl = false;
             }
@@ -881,10 +1023,10 @@ int __attribute__((used)) main(void) {
             break;
         }
 
-        // Either the REPL or code.py has run and finished.
-        // If code.py did a fake deep sleep, pretend that we are running code.py for
-        // the first time after a hard reset. This will preserve any alarm information.
-        first_run = simulate_reset;
+        #if CIRCUITPY_ALARM
+        shared_alarm_save_wake_alarm(simulate_reset ? common_hal_alarm_record_wake_alarm() : mp_const_none);
+        alarm_reset();
+        #endif
     }
     mp_deinit();
     return 0;

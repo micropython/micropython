@@ -46,7 +46,6 @@
 //|         :param ~busio.I2C i2c: I2C bus the IS31FL3741 is on
 //|         :param int addr: device address"""
 //|         ...
-//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_i2c, ARG_addr };
     static const mp_arg_t allowed_args[] = {
@@ -144,6 +143,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(is31fl3741_IS31FL3741_set_led_obj, 4, 4, is3
 //|     :param ~Tuple[int, ...] mapping: map the pixels in the buffer to the order addressed by the driver chip
 //|     :param ~_typing.ReadableBuffer buf: The bytes to clock out. No assumption is made about color order"""
 //|     ...
+//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_write(mp_obj_t self_in, mp_obj_t mapping, mp_obj_t buffer) {
     is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!mp_obj_is_tuple_compatible(mapping)) {

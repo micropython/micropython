@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CircuitPython</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/welcome.js" defer=true></script>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="http://circuitpython.org/assets/css/webworkflow-8.css">
+</head>
+<body>
+
+    <h1><a href="/"><img src="/favicon.ico"/></a>&nbsp;Welcome!</h1>
+
+    <p>Welcome to CircuitPython's Web API. Go to the <a href="/fs/">file browser</a> to work with files in the CIRCUITPY drive. Go to the <a href="/code/">full code editor</a> for a more enriching experience which requires an active internet connection. Go to the <a href="/cp/serial/">serial terminal</a> to see code output and interact with the REPL. Make sure you've set <code>CIRCUITPY_WEB_API_PASSWORD='somepassword'</code> in <code>/.env</code>. Provide the password when the browser prompts for it. <strong>Leave the username blank.</strong></p>
+
+    <h2>Device Info:</h2>
+
+    <dl>
+        <dt>Board:</dt>
+        <dd><a id="board"></a></dd>
+        <dt>Version:</dt>
+        <dd><span id="version"></span></dd>
+        <dt>Hostname:</dt>
+        <dd><a id="hostname"></a></dd>
+        <dt>IP:</dt>
+        <dd><a id="ip"></a></dd>
+    </dl>
+
+    <h2>Here are other CircuitPython devices on your network:</h2>
+    <ul id="devices">
+    </ul>
+</body>
+</html>

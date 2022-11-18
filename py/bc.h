@@ -124,6 +124,11 @@
             D |= (z & 0x1) << n;                                    \
         }                                                           \
         S += 1;                                                     \
+        (void)E;                                                    \
+        (void)F;                                                    \
+        (void)A;                                                    \
+        (void)K;                                                    \
+        (void)D;                                                    \
     } while (0)
 
 #define MP_BC_PRELUDE_SIG_DECODE(ip) \

@@ -29,30 +29,62 @@
 #include "tusb.h"
 #include "supervisor/usb.h"
 
-void init_usb_hardware(void) {
-    CLOCK_EnableUsbhs0PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
-    CLOCK_EnableUsbhs0Clock(kCLOCK_Usb480M, 480000000U);
-
-    #ifdef USBPHY
-    USBPHY_Type *usb_phy = USBPHY;
+STATIC void init_usb_instance(mp_int_t instance) {
+    if (instance < 0) {
+        return;
+    }
+    USBPHY_Type *usb_phy;
+    #ifdef USBPHY2
+    if (instance == 0) {
+        usb_phy = USBPHY1;
     #else
-    USBPHY_Type *usb_phy = USBPHY1;
+    (void)instance;
+    usb_phy = USBPHY;
+        #endif
+        CLOCK_EnableUsbhs0PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
+        CLOCK_EnableUsbhs0Clock(kCLOCK_Usb480M, 480000000U);
+
+    #ifdef USBPHY2
+    } else if (instance == 1) {
+        CLOCK_EnableUsbhs1PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
+        CLOCK_EnableUsbhs1Clock(kCLOCK_Usb480M, 480000000U);
+        usb_phy = USBPHY2;
+    } else {
+        // Unsupported instance
+        return;
+    }
     #endif
 
-    // Enable PHY support for Low speed device + LS via FS Hub
-    usb_phy->CTRL |= USBPHY_CTRL_SET_ENUTMILEVEL2_MASK | USBPHY_CTRL_SET_ENUTMILEVEL3_MASK;
+        // Enable PHY support for Low speed device + LS via FS Hub
+        usb_phy->CTRL |= USBPHY_CTRL_SET_ENUTMILEVEL2_MASK | USBPHY_CTRL_SET_ENUTMILEVEL3_MASK;
 
-    // Enable all power for normal operation
-    usb_phy->PWD = 0;
+        // Enable all power for normal operation
+        usb_phy->PWD = 0;
 
-    // TX Timing
-    uint32_t phytx = usb_phy->TX;
-    phytx &= ~(USBPHY_TX_D_CAL_MASK | USBPHY_TX_TXCAL45DM_MASK | USBPHY_TX_TXCAL45DP_MASK);
-    phytx |= USBPHY_TX_D_CAL(0x0C) | USBPHY_TX_TXCAL45DP(0x06) | USBPHY_TX_TXCAL45DM(0x06);
-    usb_phy->TX = phytx;
-}
+        // TX Timing
+        uint32_t phytx = usb_phy->TX;
+        phytx &= ~(USBPHY_TX_D_CAL_MASK | USBPHY_TX_TXCAL45DM_MASK | USBPHY_TX_TXCAL45DP_MASK);
+        phytx |= USBPHY_TX_D_CAL(0x0C) | USBPHY_TX_TXCAL45DP(0x06) | USBPHY_TX_TXCAL45DM(0x06);
+        usb_phy->TX = phytx;
+    }
 
-void USB_OTG1_IRQHandler(void);
-void USB_OTG1_IRQHandler(void) {
-    usb_irq_handler();
-}
+    void init_usb_hardware(void) {
+        init_usb_instance(CIRCUITPY_USB_DEVICE_INSTANCE);
+        // We can't dynamically start the USB Host port at the moment, so do it
+        // up front.
+        init_usb_instance(CIRCUITPY_USB_HOST_INSTANCE);
+    }
+
+// Provide the prototypes for the interrupt handlers. The iMX RT SDK doesn't.
+// The SDK only links to them from assembly.
+    void USB_OTG1_IRQHandler(void);
+    void USB_OTG1_IRQHandler(void) {
+        usb_irq_handler(0);
+    }
+
+    #ifdef USBPHY2
+    void USB_OTG2_IRQHandler(void);
+    void USB_OTG2_IRQHandler(void) {
+        usb_irq_handler(1);
+    }
+    #endif

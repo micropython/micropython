@@ -24,11 +24,14 @@ import subprocess
 import sys
 import urllib.parse
 import time
+import pathlib
 from collections import defaultdict
 
 from sphinx.transforms import SphinxTransform
 from docutils import nodes
 from sphinx import addnodes
+
+tools_describe = str(pathlib.Path(__file__).parent / "tools/describe")
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -49,10 +52,14 @@ subprocess.check_output(["make", "stubs"])
 #modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
 modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
 modules_support_matrix_reverse = defaultdict(list)
-for board, modules in modules_support_matrix.items():
-    for module in modules:
+for board, matrix_info in modules_support_matrix.items():
+    for module in matrix_info["modules"]:
         modules_support_matrix_reverse[module].append(board)
-modules_support_matrix_reverse = dict((module, sorted(boards)) for module, boards in modules_support_matrix_reverse.items())
+
+modules_support_matrix_reverse = dict(
+    (module, sorted(boards))
+    for module, boards in modules_support_matrix_reverse.items()
+)
 
 html_context = {
     'support_matrix': modules_support_matrix,
@@ -80,7 +87,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['templates']
+templates_path = ['templates', "docs/templates"]
 
 # The suffix of source filenames.
 source_suffix = {
@@ -129,7 +136,7 @@ copyright = f'2014-{current_date.tm_year}, MicroPython & CircuitPython contribut
 
 final_version = ""
 git_describe = subprocess.run(
-    ["git", "describe", "--dirty", "--tags"],
+    [tools_describe],
     stdout=subprocess.PIPE,
     stderr=subprocess.STDOUT,
     encoding="utf-8"
@@ -192,6 +199,7 @@ exclude_patterns = ["**/build*",
                     "ports/cxd56/spresense-exported-sdk",
                     "ports/espressif/certificates",
                     "ports/espressif/esp-idf",
+                    "ports/espressif/esp32-camera",
                     "ports/espressif/.idf_tools",
                     "ports/espressif/peripherals",
                     "ports/litex/hw",
@@ -205,6 +213,7 @@ exclude_patterns = ["**/build*",
                     "ports/nrf/peripherals",
                     "ports/nrf/usb",
                     "ports/raspberrypi/sdk",
+                    "ports/raspberrypi/lib",
                     "ports/stm/st_driver",
                     "ports/stm/packages",
                     "ports/stm/peripherals",

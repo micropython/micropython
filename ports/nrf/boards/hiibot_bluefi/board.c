@@ -48,7 +48,7 @@ uint8_t display_init_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_P0_07, &pin_P1_08, NULL); // SCK, MOSI, MISO
+    common_hal_busio_spi_construct(spi, &pin_P0_07, &pin_P1_08, NULL, false); // SCK, MOSI, MISO, not half-duplex
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
@@ -85,22 +85,12 @@ void board_init(void) {
         sizeof(display_init_sequence),
         &pin_P1_13,  // backlight pin
         NO_BRIGHTNESS_COMMAND,
-        1.0f, // brightness (ignored)
-        true, // auto_brightness
+        1.0f, // brightness
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
         true, // backlight_on_high
-        false); // SH1107_addressing
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
-void board_deinit(void) {
+        false, // SH1107_addressing
+        50000); // backlight pwm frequency
 }

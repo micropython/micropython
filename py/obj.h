@@ -34,7 +34,7 @@
 #include "py/mpprint.h"
 #include "py/runtime0.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/compressed_string.h"
 
 // This is the definition of the opaque MicroPython object type.
 // All concrete objects have an encoding within this type and the
@@ -356,11 +356,7 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 
 #define MP_DEFINE_CONST_PROP_GET(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t fun_name##_obj = {{&mp_type_fun_builtin_1}, .fun._1 = fun_name}; \
-    const mp_obj_property_t obj_name = { \
-        .base.type = &mp_type_property, \
-        .proxy = {(mp_obj_t)&fun_name##_obj, \
-                  MP_ROM_NONE, \
-                  MP_ROM_NONE}, }
+    MP_PROPERTY_GETTER(obj_name, (mp_obj_t)&fun_name##_obj);
 
 // These macros are used to define constant or mutable map/dict objects
 // You can put "static" in front of the definition to make it local
@@ -617,6 +613,7 @@ struct _mp_obj_type_t {
     //
     // dest[0] = MP_OBJ_NULL means load
     //  return: for fail, do nothing
+    //          for fail but continue lookup in locals_dict, dest[1] = MP_OBJ_SENTINEL
     //          for attr, dest[0] = value
     //          for method, dest[0] = method, dest[1] = self
     //
@@ -745,7 +742,6 @@ extern const mp_obj_type_t mp_type_ReloadException;
 extern const mp_obj_type_t mp_type_KeyError;
 extern const mp_obj_type_t mp_type_LookupError;
 extern const mp_obj_type_t mp_type_MemoryError;
-extern const mp_obj_type_t mp_type_MpyError;
 extern const mp_obj_type_t mp_type_NameError;
 extern const mp_obj_type_t mp_type_NotImplementedError;
 extern const mp_obj_type_t mp_type_OSError;
@@ -1110,7 +1106,7 @@ typedef struct _mp_rom_obj_static_class_method_t {
 } mp_rom_obj_static_class_method_t;
 
 // property
-const mp_obj_t *mp_obj_property_get(mp_obj_t self_in);
+const mp_obj_t *mp_obj_property_get(mp_obj_t self_in, size_t *n_proxy);
 
 // sequence helpers
 

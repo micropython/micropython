@@ -29,10 +29,11 @@
 
 #include <stdint.h>
 
+#include "shared-bindings/displayio/TileGrid.h"
+
 #if CIRCUITPY_TERMINALIO
 
 #include "shared-bindings/displayio/Bitmap.h"
-#include "shared-bindings/displayio/TileGrid.h"
 #include "shared-bindings/fontio/BuiltinFont.h"
 #include "shared-bindings/terminalio/Terminal.h"
 
@@ -43,10 +44,13 @@ extern const fontio_builtinfont_t supervisor_terminal_font;
 
 // These will change so they must live in RAM.
 extern displayio_bitmap_t supervisor_terminal_font_bitmap;
-extern displayio_tilegrid_t supervisor_terminal_text_grid;
+extern displayio_tilegrid_t supervisor_terminal_scroll_area_text_grid;
+extern displayio_tilegrid_t supervisor_terminal_status_bar_text_grid;
 extern terminalio_terminal_obj_t supervisor_terminal;
-
 #endif
+
+// Always shown.
+extern displayio_tilegrid_t supervisor_blinka_sprite;
 
 void supervisor_start_terminal(uint16_t width_px, uint16_t height_px);
 void supervisor_stop_terminal(void);

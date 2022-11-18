@@ -171,9 +171,7 @@ STATIC void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t *self, mp_obj_t color,
         mp_obj_t *items;
         size_t len;
         mp_obj_get_array(color, &len, &items);
-        if (len < 3 || len > 4) {
-            mp_raise_ValueError_varg(translate("Expected tuple of length %d, got %d"), byteorder->bpp, len);
-        }
+        mp_arg_validate_length_range(len, 3, 4, MP_QSTR_color);
 
         *r = _pixelbuf_get_as_uint8(items[PIXEL_R]);
         *g = _pixelbuf_get_as_uint8(items[PIXEL_G]);

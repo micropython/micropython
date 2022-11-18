@@ -37,7 +37,7 @@
 #include "supervisor/serial.h"
 #include "supervisor/shared/rgb_led_colors.h"
 #include "supervisor/shared/status_leds.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 
 #define SAFE_MODE_DATA_GUARD 0xad0000af
@@ -146,12 +146,16 @@ void print_safe_mode_message(safe_mode_t reason) {
 
     switch (reason) {
         case USER_SAFE_MODE:
-            #ifdef BOARD_USER_SAFE_MODE_ACTION
-            // Output a user safe mode string if it's set.
-            serial_write_compressed(translate("You requested starting safe mode by "));
-            serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
-            serial_write_compressed(translate("To exit, please reset the board without "));
+            #if defined(BOARD_USER_SAFE_MODE_ACTION)
             message = BOARD_USER_SAFE_MODE_ACTION;
+            #elif defined(CIRCUITPY_BOOT_BUTTON)
+            message = translate("The BOOT button was pressed at start up.\n");
+            #endif
+            #if defined(BOARD_USER_SAFE_MODE_ACTION) || defined(CIRCUITPY_BOOT_BUTTON)
+            // Output a user safe mode string if it's set.
+            serial_write_compressed(message);
+            message = translate("To exit, please reset the board without requesting safe mode.");
+            // The final piece is printed below.
             #endif
             break;
         case MANUAL_SAFE_MODE:
@@ -173,7 +177,7 @@ void print_safe_mode_message(safe_mode_t reason) {
             message = translate("Boot device must be first device (interface #0).");
             break;
         case WATCHDOG_RESET:
-            message = translate("Watchdog timer expired.");
+            message = translate("Internal watchdog timer expired.");
             break;
         case NO_CIRCUITPY:
             message = translate("CIRCUITPY drive could not be found or created.");

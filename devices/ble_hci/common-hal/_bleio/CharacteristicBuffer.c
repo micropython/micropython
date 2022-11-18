@@ -93,6 +93,7 @@ bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer
 void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_obj_t *self) {
     if (!common_hal_bleio_characteristic_buffer_deinited(self)) {
         bleio_characteristic_clear_observer(self->characteristic);
+        ringbuf_deinit(&self->ringbuf);
     }
 }
 

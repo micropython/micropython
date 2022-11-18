@@ -47,13 +47,13 @@ void common_hal_audiomixer_mixer_construct(audiomixer_mixer_obj_t *self,
     self->first_buffer = m_malloc(self->len, false);
     if (self->first_buffer == NULL) {
         common_hal_audiomixer_mixer_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate first buffer"));
+        m_malloc_fail(self->len);
     }
 
     self->second_buffer = m_malloc(self->len, false);
     if (self->second_buffer == NULL) {
         common_hal_audiomixer_mixer_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate second buffer"));
+        m_malloc_fail(self->len);
     }
 
     self->bits_per_sample = bits_per_sample;

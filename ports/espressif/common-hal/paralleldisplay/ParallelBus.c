@@ -72,13 +72,6 @@ void common_hal_paralleldisplay_parallelbus_construct_nonsequential(paralleldisp
         .buffer_size = 512,
     };
 
-    if (reset != NULL) {
-        common_hal_never_reset_pin(reset);
-        self->reset_pin_number = reset->number;
-    } else {
-        self->reset_pin_number = NO_PIN;
-    }
-
     for (uint8_t i = 0; i < n_pins; i++) {
         common_hal_never_reset_pin(data_pins[i]);
         config.pin_data_num[i] = common_hal_mcu_pin_number(data_pins[i]);
@@ -98,10 +91,14 @@ void common_hal_paralleldisplay_parallelbus_construct_nonsequential(paralleldisp
         gpio_set_level(read->number, true);
     }
 
+    self->reset_pin_number = NO_PIN;
+    if (reset != NULL) {
+        common_hal_never_reset_pin(reset);
+        self->reset_pin_number = reset->number;
+    }
+
     common_hal_never_reset_pin(chip_select);
     common_hal_never_reset_pin(command);
-    common_hal_never_reset_pin(read);
-    common_hal_never_reset_pin(reset);
     common_hal_never_reset_pin(write);
 
     self->config = config;
@@ -140,8 +137,8 @@ void common_hal_paralleldisplay_parallelbus_deinit(paralleldisplay_parallelbus_o
 
     reset_pin_number(self->config.pin_num_cs);
     reset_pin_number(self->config.pin_num_wr);
-    reset_pin_number(self->read_pin_number);
     reset_pin_number(self->config.pin_num_rs);
+    reset_pin_number(self->read_pin_number);
     reset_pin_number(self->reset_pin_number);
 
     port_i2s_reset_instance(0);

@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_INIT_H
 #define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_INIT_H
 
+#include "FreeRTOS.h"
+
 void bleio_background(void);
 
 // typedef struct {
@@ -43,6 +45,10 @@ void bleio_background(void);
 
 void check_nimble_error(int rc, const char *file, size_t line);
 #define CHECK_NIMBLE_ERROR(rc) check_nimble_error(rc, __FILE__, __LINE__)
+void check_ble_error(int error_code, const char *file, size_t line);
+#define CHECK_BLE_ERROR(error_code) check_ble_error(error_code, __FILE__, __LINE__)
+void check_notify(BaseType_t result);
+#define CHECK_NOTIFY(result) check_notify(result)
 
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
 #define SEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000000) / (RESOLUTION))
@@ -51,6 +57,7 @@ void check_nimble_error(int rc, const char *file, size_t line);
 #define ADV_INTERVAL_UNIT_FLOAT_SECS (0.000625)
 // Microseconds is the base unit. The macros above know that.
 #define UNIT_0_625_MS (625)
+#define UNIT_1_MS  (1000)
 #define UNIT_1_25_MS  (1250)
 #define UNIT_10_MS    (10000)
 

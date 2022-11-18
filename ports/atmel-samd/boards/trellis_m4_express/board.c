@@ -33,13 +33,6 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/neopixel_write/__init__.h"
 
-void board_init(void) {
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
 void reset_board(void) {
     uint8_t zeroes[96];
     memset(zeroes, 0, 96);
@@ -50,5 +43,4 @@ void reset_board(void) {
     common_hal_digitalio_digitalinout_deinit(&neopixel);
 }
 
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

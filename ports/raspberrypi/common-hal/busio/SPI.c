@@ -54,8 +54,13 @@ void reset_spi(void) {
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
-    const mcu_pin_obj_t *miso) {
+    const mcu_pin_obj_t *miso, bool half_duplex) {
     size_t instance_index = NO_INSTANCE;
+
+    if (half_duplex) {
+        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+    }
+
     if (clock->number % 4 == 2) {
         instance_index = (clock->number / 8) % 2;
     }
@@ -77,7 +82,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // TODO: Check to see if we're sharing the SPI with a native APA102.
 
     if (instance_index > 1) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     if (instance_index == 0) {

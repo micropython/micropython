@@ -27,6 +27,8 @@
 
 #include <math.h>
 
+#include "py/runtime.h"
+
 #include "common-hal/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
@@ -49,6 +51,18 @@ float common_hal_mcu_processor_get_temperature(void) {
 
     return temp;
 }
+
+uint32_t common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self,
+    uint32_t frequency) {
+    uint32_t freq = frequency / 1000000;
+    if (freq != 24 && freq != 150 && freq != 396 && freq != 450 && freq != 528 && freq != 600 &&
+        freq != 720 && freq != 816 && freq != 912 && freq != 960 && freq != 1008) {
+        mp_raise_ValueError(translate("Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"));
+    }
+    SystemCoreClock = setarmclock(frequency);
+    return SystemCoreClock;
+}
+
 
 float common_hal_mcu_processor_get_voltage(void) {
     return NAN;

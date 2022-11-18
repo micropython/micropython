@@ -24,17 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_SLEEPMEMORY_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_SLEEPMEMORY_H
+#pragma once
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t *start_address;
-    uint8_t len;
 } alarm_sleep_memory_obj_t;
 
 extern void alarm_sleep_memory_reset(void);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_SLEEPMEMORY_H

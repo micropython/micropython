@@ -1,0 +1,17 @@
+USB_VID = 0x303A
+USB_PID = 0x80FC
+USB_PRODUCT = "MixGo CE"
+USB_MANUFACTURER = "Espressif"
+
+IDF_TARGET = esp32s2
+
+CIRCUITPY_ESP_FLASH_MODE = dio
+CIRCUITPY_ESP_FLASH_FREQ = 40m
+CIRCUITPY_ESP_FLASH_SIZE = 4MB
+
+CIRCUITPY_ESP32_CAMERA = 0
+
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
+FROZEN_MPY_DIRS += $(TOP)/frozen/mixgo_cp_lib/mixgoce_lib
+CIRCUITPY_ESP32_CAMERA = 0

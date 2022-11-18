@@ -33,7 +33,7 @@
 #include "py/objint.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>

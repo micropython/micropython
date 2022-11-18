@@ -35,6 +35,8 @@ Failing to install these will prevent from properly building.
 
     pip3 install -r requirements-dev.txt
 
+If you run into an error installing minify_html, you may need to install `rust`.
+
 ### mpy-cross
 
 As part of the build process, mpy-cross is needed to compile .py files into .mpy files.
@@ -70,7 +72,7 @@ The test suite in the top level `tests` directory.  It needs the unix port to ru
 Then you can run the test suite:
 
     cd ../../tests
-    ./run-tests
+    ./run-tests.py
 
 A successful run will say something like
 

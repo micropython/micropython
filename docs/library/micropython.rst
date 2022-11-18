@@ -76,7 +76,7 @@ Functions
 .. function:: heap_locked()
 
    Lock or unlock the heap.  When locked no memory allocation can occur and a
-   `MemoryError` will be raised if any heap allocation is attempted.
+   ``MemoryError`` will be raised if any heap allocation is attempted.
    `heap_locked()` returns a true value if the heap is currently locked.
 
    These functions can be nested, ie `heap_lock()` can be called multiple times

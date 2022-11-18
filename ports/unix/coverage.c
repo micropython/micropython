@@ -161,7 +161,7 @@ STATIC void pairheap_test(size_t nops, int *ops) {
         mp_pairheap_init_node(pairheap_lt, &node[i]);
     }
     mp_pairheap_t *heap = mp_pairheap_new(pairheap_lt);
-    printf("create:");
+    mp_printf(&mp_plat_print, "create:");
     for (size_t i = 0; i < nops; ++i) {
         if (ops[i] >= 0) {
             heap = mp_pairheap_push(pairheap_lt, heap, &node[ops[i]]);
@@ -175,13 +175,13 @@ STATIC void pairheap_test(size_t nops, int *ops) {
             ;
         }
     }
-    printf("\npop all:");
+    mp_printf(&mp_plat_print, "\npop all:");
     while (!mp_pairheap_is_empty(pairheap_lt, heap)) {
         mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);
         ;
         heap = mp_pairheap_pop(pairheap_lt, heap);
     }
-    printf("\n");
+    mp_printf(&mp_plat_print, "\n");
 }
 
 // function to run extra tests for things that can't be checked by scripts
@@ -526,7 +526,9 @@ STATIC mp_obj_t extra_coverage(void) {
 
     // ringbuf
     {
-        byte buf[100];
+        #define RINGBUF_SIZE 99
+
+        byte buf[RINGBUF_SIZE];
         ringbuf_t ringbuf;
         ringbuf_init(&ringbuf, &buf[0], sizeof(buf));
 
@@ -546,7 +548,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
 
         // Two-byte put with full ringbuf.
-        for (int i = 0; i < 99; ++i) {
+        for (int i = 0; i < RINGBUF_SIZE; ++i) {
             ringbuf_put(&ringbuf, i);
         }
         mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
@@ -558,16 +560,15 @@ STATIC mp_obj_t extra_coverage(void) {
         ringbuf_get(&ringbuf);
         mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
         mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0xcc99));
-        for (int i = 0; i < 97; ++i) {
+        for (int i = 0; i < RINGBUF_SIZE - 2; ++i) {
             ringbuf_get(&ringbuf);
         }
         mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
         mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
 
         // Two-byte put with wrap around on first byte:
-        ringbuf.iput = 0;
-        ringbuf.iget = 0;
-        for (int i = 0; i < 99; ++i) {
+        ringbuf_clear(&ringbuf);
+        for (int i = 0; i < RINGBUF_SIZE; ++i) {
             ringbuf_put(&ringbuf, i);
             ringbuf_get(&ringbuf);
         }
@@ -575,9 +576,8 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
 
         // Two-byte put with wrap around on second byte:
-        ringbuf.iput = 0;
-        ringbuf.iget = 0;
-        for (int i = 0; i < 98; ++i) {
+        ringbuf_clear(&ringbuf);
+        for (int i = 0; i < RINGBUF_SIZE - 1; ++i) {
             ringbuf_put(&ringbuf, i);
             ringbuf_get(&ringbuf);
         }
@@ -585,13 +585,11 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
 
         // Two-byte get from empty ringbuf.
-        ringbuf.iput = 0;
-        ringbuf.iget = 0;
+        ringbuf_clear(&ringbuf);
         mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
 
         // Two-byte get from ringbuf with one byte available.
-        ringbuf.iput = 0;
-        ringbuf.iget = 0;
+        ringbuf_clear(&ringbuf);
         ringbuf_put(&ringbuf, 0xaa);
         mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
     }

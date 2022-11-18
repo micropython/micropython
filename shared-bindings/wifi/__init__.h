@@ -31,7 +31,9 @@
 
 extern wifi_radio_obj_t common_hal_wifi_radio_obj;
 
-void common_hal_wifi_init(void);
+void common_hal_wifi_init(bool user_initiated);
 void common_hal_wifi_gc_collect(void);
+
+void wifi_user_reset(void);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H

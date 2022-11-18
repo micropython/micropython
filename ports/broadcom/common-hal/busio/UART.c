@@ -162,13 +162,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
 
-    if (bits > 8) {
-        mp_raise_ValueError(translate("Invalid word/bit length"));
-    }
-
-    if (receiver_buffer_size == 0) {
-        mp_raise_ValueError(translate("Invalid buffer size"));
-    }
+    mp_arg_validate_int_max(bits, 8, MP_QSTR_bits);
+    mp_arg_validate_int_min(receiver_buffer_size, 1, MP_QSTR_receiver_buffer_size);
 
     if ((rs485_dir != NULL) || (rs485_invert)) {
         mp_raise_NotImplementedError(translate("RS485 Not yet supported on this device"));
@@ -203,7 +198,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         break;
     }
     if (instance_index == NUM_UART) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     self->rx_pin = rx;
@@ -213,8 +208,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->sigint_enabled = sigint_enabled;
 
     if (rx != NULL) {
+        // Use the provided buffer when given.
         if (receiver_buffer != NULL) {
-            self->ringbuf = (ringbuf_t) { receiver_buffer, receiver_buffer_size };
+            ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
         } else {
             // Initially allocate the UART's buffer in the long-lived part of the
             // heap. UARTs are generally long-lived objects, but the "make long-
@@ -222,9 +218,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             // self->buffer, so do it manually.  (However, as long as internal
             // pointers like this are NOT moved, allocating the buffer
             // in the long-lived pool is not strictly necessary)
-            // (This is a macro.)
             if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
-                mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
+                m_malloc_fail(receiver_buffer_size);
             }
         }
     }
@@ -342,7 +337,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         pl011->CR = 0;
     }
     active_uart[self->uart_id] = NULL;
-    ringbuf_free(&self->ringbuf);
+    ringbuf_deinit(&self->ringbuf);
     uart_status[self->uart_id] = STATUS_FREE;
     common_hal_reset_pin(self->tx_pin);
     common_hal_reset_pin(self->rx_pin);

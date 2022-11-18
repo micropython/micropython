@@ -28,14 +28,17 @@
 #define SHARED_BINDINGS_KEYPAD_H
 
 #include "py/obj.h"
-#include "py/objtuple.h"
+#include "py/objproperty.h"
 #include "shared-module/keypad/__init__.h"
 
-extern mp_obj_tuple_t common_hal_keypad_devices;
+bool common_hal_keypad_deinited(void *self);
+void common_hal_keypad_generic_reset(void *self);
+size_t common_hal_keypad_generic_get_key_count(void *self);
+mp_obj_t common_hal_keypad_generic_get_events(void *self);
 
-void keypad_set_devices(mp_obj_t devices);
+MP_DECLARE_CONST_FUN_OBJ_1(keypad_generic_reset_obj);
 
-bool common_hal_keypad_disable(void);
-bool common_hal_keypad_enable(const mp_obj_t devices_seq);
+extern const mp_obj_property_t keypad_generic_events_obj;
+extern const mp_obj_property_t keypad_generic_key_count_obj;
 
 #endif // SHARED_BINDINGS_KEYPAD_H

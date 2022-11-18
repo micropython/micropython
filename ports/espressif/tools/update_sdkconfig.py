@@ -3,6 +3,7 @@
 
 import pathlib
 import click
+import copy
 
 OPT_SETTINGS = [
     "CONFIG_ESP_ERR_TO_NAME_LOOKUP",
@@ -50,6 +51,9 @@ TARGET_SETTINGS = [
     "ESP_SLEEP_GPIO_RESET_WORKAROUND",
     "CONFIG_ESP_PHY_ENABLE_USB",
     "CONFIG_BT_SOC_SUPPORT_5_0",
+    "CONFIG_NIMBLE_PINNED_TO_CORE",
+    "CONFIG_BT_NIMBLE_PINNED_TO_CORE",
+    "CONFIG_BT_CTRL_PINNED_TO_CORE",
 ]
 
 BOARD_SETTINGS = [
@@ -83,17 +87,18 @@ def matches_group(line, group):
 
 
 def add_group(lines, last_group, current_group):
-    # TODO: Properly handle nested groups
-    if last_group != current_group[-1]:
-        if last_group:
-            lines.append("# end of " + last_group)
+    if not current_group or last_group != current_group:
+        while last_group and last_group[-1] not in current_group:
+            lines.append("# end of " + last_group[-1])
             lines.append("")
-            return None
-        if current_group:
+            last_group.pop()
+        for category in current_group:
+            if last_group and category in last_group:
+                continue
             lines.append("#")
-            lines.append("# " + current_group[-1])
+            lines.append("# " + category)
             lines.append("#")
-            return current_group[-1]
+        return copy.copy(current_group)
     return last_group
 
 
@@ -107,7 +112,8 @@ def add_group(lines, last_group, current_group):
     help="Updates the sdkconfigs outside of the board directory.",
 )
 def update(debug, board, update_all):
-    """Simple program that greets NAME for a total of COUNT times."""
+    """Updates related sdkconfig files based on the build directory version that
+    was likely modified by menuconfig."""
 
     board_make = pathlib.Path(f"boards/{board}/mpconfigboard.mk")
     for line in board_make.read_text().split("\n"):
@@ -147,7 +153,16 @@ def update(debug, board, update_all):
     last_default_group = None
     current_group = []
     for line in input_config.read_text().split("\n"):
-        if line.startswith("# ") and "CONFIG_" not in line and len(line) > 3:
+        # Normalize the deprecated section labels.
+        if line == "# End of deprecated options":
+            line = "# end of Deprecated options for backward compatibility"
+        if (
+            line.startswith("# ")
+            and "CONFIG_" not in line
+            and "DO NOT EDIT" not in line
+            and "Project Configuration" not in line
+            and len(line) > 3
+        ):
             if line.startswith("# end of"):
                 current_group.pop()
             else:

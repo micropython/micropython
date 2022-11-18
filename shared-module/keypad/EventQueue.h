@@ -30,7 +30,7 @@
 #include "py/obj.h"
 #include "py/ringbuf.h"
 
-typedef struct {
+typedef struct _keypad_eventqueue_obj_t {
     mp_obj_base_t base;
     ringbuf_t encoded_events;
     bool overflowed;

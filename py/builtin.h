@@ -119,13 +119,8 @@ extern const mp_obj_module_t mp_module_utimeq;
 extern const mp_obj_module_t mp_module_machine;
 extern const mp_obj_module_t mp_module_framebuf;
 extern const mp_obj_module_t mp_module_btree;
-extern const mp_obj_module_t ulab_user_cmodule;
-extern mp_obj_module_t ulab_fft_module;
-extern mp_obj_module_t ulab_filter_module;
-extern mp_obj_module_t ulab_linalg_module;
-extern mp_obj_module_t ulab_numerical_module;
-extern mp_obj_module_t ulab_poly_module;
-
+extern const mp_obj_module_t mp_module_ubluetooth;
+extern const mp_obj_module_t mp_module_uplatform;
 
 extern const char MICROPY_PY_BUILTINS_HELP_TEXT[];
 

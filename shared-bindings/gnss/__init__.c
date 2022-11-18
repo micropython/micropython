@@ -13,7 +13,6 @@
 //| """Global Navigation Satellite System
 //|
 //| The `gnss` module contains classes to control the GNSS and acquire positioning information."""
-//|
 STATIC const mp_rom_map_elem_t gnss_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gnss) },
     { MP_ROM_QSTR(MP_QSTR_GNSS), MP_ROM_PTR(&gnss_type) },

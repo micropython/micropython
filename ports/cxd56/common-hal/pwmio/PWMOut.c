@@ -74,7 +74,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     self->variable_frequency = variable_frequency;
 
     if (ioctl(pwmout_dev[self->number].fd, PWMIOC_SETCHARACTERISTICS, (unsigned long)((uintptr_t)&self->info)) < 0) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     ioctl(pwmout_dev[self->number].fd, PWMIOC_START, 0);
 
@@ -116,7 +116,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t fr
     self->info.frequency = frequency;
 
     if (ioctl(pwmout_dev[self->number].fd, PWMIOC_SETCHARACTERISTICS, (unsigned long)((uintptr_t)&self->info)) < 0) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
 }
 

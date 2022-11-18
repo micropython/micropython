@@ -19,7 +19,7 @@
 
 #define DEFAULT_SPI_BUS_SCK (&pin_PA05)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PA04)
-#define DEFAULT_SPI_BUS_MISO (&pin_PB06)
+#define DEFAULT_SPI_BUS_MISO (&pin_PA06)
 
 #define DEFAULT_UART_BUS_RX (&pin_PB30)
 #define DEFAULT_UART_BUS_TX (&pin_PB31)
@@ -27,3 +27,7 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
+
+// The external flash chip has WP (write-protect) and hold pins we should ignore
+#define IGNORE_PIN_PB22
+#define IGNORE_PIN_PB23

@@ -138,7 +138,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
 
     if (self->sda == NULL || self->scl == NULL) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     } else {
         self->i2c = mcu_i2c_banks[self->sda->bank_idx - 1];
     }

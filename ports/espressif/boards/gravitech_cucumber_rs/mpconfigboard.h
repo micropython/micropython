@@ -31,11 +31,8 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
 
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
-
-#define AUTORESET_DELAY_MS 500
+#define MICROPY_HW_LED_STATUS (&pin_GPIO2)
+#define MICROPY_HW_LED_STATUS_INVERTED (1)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO40)
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO41)

@@ -24,13 +24,20 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+#include "shared-bindings/keypad/__init__.h"
+#include "shared-bindings/keypad/EventQueue.h"
 #include "shared-bindings/keypad/Keys.h"
 #include "shared-bindings/keypad/KeyMatrix.h"
 #include "shared-bindings/keypad/ShiftRegisterKeys.h"
+#include "shared-bindings/supervisor/__init__.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/lock.h"
 #include "supervisor/shared/tick.h"
 
 supervisor_lock_t keypad_scanners_linked_list_lock;
+static void keypad_scan_now(keypad_scanner_obj_t *self, uint64_t now);
+static void keypad_scan_maybe(keypad_scanner_obj_t *self, uint64_t now);
 
 void keypad_tick(void) {
     // Fast path. Return immediately there are no scanners.
@@ -40,16 +47,10 @@ void keypad_tick(void) {
 
     // Skip scanning if someone else has the lock. Don't wait for the lock.
     if (supervisor_try_lock(&keypad_scanners_linked_list_lock)) {
+        uint64_t now = port_get_raw_ticks(NULL);
         mp_obj_t scanner = MP_STATE_VM(keypad_scanners_linked_list);
         while (scanner) {
-            if (mp_obj_is_type(scanner, &keypad_keys_type)) {
-                keypad_keys_scan((keypad_keys_obj_t *)scanner);
-            } else if (mp_obj_is_type(scanner, &keypad_keymatrix_type)) {
-                keypad_keymatrix_scan((keypad_keymatrix_obj_t *)scanner);
-            } else if (mp_obj_is_type(scanner, &keypad_shiftregisterkeys_type)) {
-                keypad_shiftregisterkeys_scan((keypad_shiftregisterkeys_obj_t *)scanner);
-            }
-
+            keypad_scan_maybe(scanner, now);
             scanner = ((keypad_scanner_obj_t *)scanner)->next;
         }
         supervisor_release_lock(&keypad_scanners_linked_list_lock);
@@ -96,4 +97,61 @@ void keypad_deregister_scanner(keypad_scanner_obj_t *scanner) {
         }
     }
     supervisor_release_lock(&keypad_scanners_linked_list_lock);
+}
+
+void keypad_construct_common(keypad_scanner_obj_t *self, mp_float_t interval, size_t max_events) {
+    size_t key_count = common_hal_keypad_generic_get_key_count(self);
+    self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * key_count, false, false);
+    self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * key_count, false, false);
+
+    self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
+
+    keypad_eventqueue_obj_t *events = m_new_obj(keypad_eventqueue_obj_t);
+    events->base.type = &keypad_eventqueue_type;
+    common_hal_keypad_eventqueue_construct(events, max_events);
+    self->events = events;
+
+    // Add self to the list of active keypad scanners.
+    keypad_register_scanner(self);
+    keypad_scan_now(self, port_get_raw_ticks(NULL));
+}
+
+static void keypad_scan_now(keypad_scanner_obj_t *self, uint64_t now) {
+    self->next_scan_ticks = now + self->interval_ticks;
+    self->funcs->scan_now(self, supervisor_ticks_ms());
+}
+
+static void keypad_scan_maybe(keypad_scanner_obj_t *self, uint64_t now) {
+    if (now < self->next_scan_ticks) {
+        return;
+    }
+    keypad_scan_now(self, now);
+}
+
+void common_hal_keypad_generic_reset(void *self_in) {
+    keypad_scanner_obj_t *self = self_in;
+    size_t key_count = common_hal_keypad_generic_get_key_count(self);
+    memset(self->previously_pressed, false, key_count);
+    memset(self->currently_pressed, false, key_count);
+    keypad_scan_now(self, port_get_raw_ticks(NULL));
+}
+
+void common_hal_keypad_deinit_core(void *self_in) {
+    keypad_scanner_obj_t *self = self_in;
+    self->events = NULL;
+}
+
+bool common_hal_keypad_deinited(void *self_in) {
+    keypad_scanner_obj_t *self = self_in;
+    return !self->events;
+}
+
+size_t common_hal_keypad_generic_get_key_count(void *self_in) {
+    keypad_scanner_obj_t *self = self_in;
+    return self->funcs->get_key_count(self);
+}
+
+mp_obj_t common_hal_keypad_generic_get_events(void *self_in) {
+    keypad_scanner_obj_t *self = self_in;
+    return self->events;
 }

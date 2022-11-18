@@ -1,0 +1,13 @@
+#
+# PHY
+#
+CONFIG_ESP_PHY_ENABLE_USB=y
+# end of PHY
+
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="lolin-c3-mini"
+# end of LWIP
+
+

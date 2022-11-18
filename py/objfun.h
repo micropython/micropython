@@ -39,8 +39,6 @@ typedef struct _mp_obj_fun_bc_t {
     // the following extra_args array is allocated space to take (in order):
     //  - values of positional default args (if any)
     //  - a single slot for default kw args dict (if it has them)
-    //  - a single slot for var args tuple (if it takes them)
-    //  - a single slot for kw args dict (if it takes them)
     mp_obj_t extra_args[];
 } mp_obj_fun_bc_t;
 

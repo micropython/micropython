@@ -39,7 +39,17 @@
 //| The `_stage` module contains native code to speed-up the ```stage`` Library
 //| <https://github.com/python-ugame/circuitpython-stage>`_."""
 //|
-//| def render(x0: int, y0: int, x1: int, y1: int, layers: List[Layer], buffer: WriteableBuffer, display: displayio.Display, scale: int, background: int) -> None:
+//| def render(
+//|     x0: int,
+//|     y0: int,
+//|     x1: int,
+//|     y1: int,
+//|     layers: List[Layer],
+//|     buffer: WriteableBuffer,
+//|     display: displayio.Display,
+//|     scale: int,
+//|     background: int,
+//| ) -> None:
 //|     """Render and send to the display a fragment of the screen.
 //|
 //|     :param int x0: Left edge of the fragment.

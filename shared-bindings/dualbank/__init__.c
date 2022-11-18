@@ -26,6 +26,10 @@
 
 #include "shared-bindings/dualbank/__init__.h"
 
+#if CIRCUITPY_STORAGE_EXTEND
+#include "supervisor/flash.h"
+#endif
+
 //| """DUALBANK Module
 //|
 //| The `dualbank` module adds ability to update and switch
@@ -54,9 +58,16 @@
 //|     dualbank.switch()
 //| """
 //| ...
-//|
 
-//| def flash(*buffer: ReadableBuffer, offset: int=0) -> None:
+#if CIRCUITPY_STORAGE_EXTEND
+STATIC void raise_error_if_storage_extended(void) {
+    if (supervisor_flash_get_extended()) {
+        mp_raise_msg_varg(&mp_type_RuntimeError, translate("%q is %q"), MP_QSTR_storage, MP_QSTR_extended);
+    }
+}
+#endif
+
+//| def flash(buffer: ReadableBuffer, offset: int = 0) -> None:
 //|     """Writes one of two app partitions at the given offset.
 //|
 //|     This can be called multiple times when flashing the firmware
@@ -70,6 +81,10 @@ STATIC mp_obj_t dualbank_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_offset, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
     };
+
+    #if CIRCUITPY_STORAGE_EXTEND
+    raise_error_if_storage_extended();
+    #endif
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -95,6 +110,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dualbank_flash_obj, 0, dualbank_flash);
 //|     ...
 //|
 STATIC mp_obj_t dualbank_switch(void) {
+    #if CIRCUITPY_STORAGE_EXTEND
+    raise_error_if_storage_extended();
+    #endif
     common_hal_dualbank_switch();
     return mp_const_none;
 }

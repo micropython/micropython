@@ -112,7 +112,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
                     def get(required=False):
                         rv = b""
                         while True:
-                            ready = select.select([emulator], [], [], 0.02)
+                            ready = select.select([emulator], [], [emulator], 0.02)
                             if ready[0] == [emulator]:
                                 rv += os.read(emulator, 1024)
                             else:
@@ -150,8 +150,8 @@ def run_micropython(pyb, args, test_file, is_special=False):
                             p.kill()
                         except ProcessLookupError:
                             pass
-                        os.close(emulator)
                         os.close(subterminal)
+                        os.close(emulator)
                 else:
                     output_mupy = subprocess.check_output(
                         args + [test_file], stderr=subprocess.STDOUT
@@ -183,7 +183,17 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # run the actual test
             try:
-                output_mupy = subprocess.check_output(cmdlist, stderr=subprocess.STDOUT)
+                result = subprocess.run(
+                    cmdlist,
+                    stderr=subprocess.STDOUT,
+                    stdout=subprocess.PIPE,
+                    check=True,
+                    timeout=10,
+                )
+                output_mupy = result.stdout
+            except subprocess.TimeoutExpired as er:
+                had_crash = True
+                output_mupy = (er.output or b"") + b"TIMEOUT"
             except subprocess.CalledProcessError as er:
                 had_crash = True
                 output_mupy = er.output + b"CRASH"
@@ -426,6 +436,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if upy_float_precision < 64:
         skip_tests.add("float/float_divmod.py")  # tested by float/float_divmod_relaxed.py instead
         skip_tests.add("float/float2int_doubleprec_intbig.py")
+        skip_tests.add("float/float_format_ints_doubleprec.py")
         skip_tests.add("float/float_parse_doubleprec.py")
 
     if not has_complex:
@@ -757,9 +768,7 @@ the last matching regex is used:
     cmd_parser.add_argument(
         "--via-mpy", action="store_true", help="compile .py files to .mpy first"
     )
-    cmd_parser.add_argument(
-        "--mpy-cross-flags", default="-mcache-lookup-bc", help="flags to pass to mpy-cross"
-    )
+    cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
     cmd_parser.add_argument(
         "--keep-path", action="store_true", help="do not clear MICROPYPATH when running tests"
     )
@@ -870,9 +879,15 @@ the last matching regex is used:
         tests = args.files
 
     if not args.keep_path:
-        # clear search path to make sure tests use only builtin modules and those in extmod
-        os.environ["MICROPYPATH"] = os.pathsep + base_path("../extmod")
-
+        # clear search path to make sure tests use only builtin modules and those that can be frozen
+        os.environ["MICROPYPATH"] = os.pathsep.join(
+            [
+                "",
+                ".frozen",
+                base_path("../frozen/Adafruit_CircuitPython_asyncio"),
+                base_path("../frozen/Adafruit_CircuitPython_Ticks"),
+            ]
+        )
     try:
         os.makedirs(args.result_dir, exist_ok=True)
         res = run_tests(pyb, tests, args, args.result_dir, args.jobs)

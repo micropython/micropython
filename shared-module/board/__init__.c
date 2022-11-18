@@ -27,7 +27,7 @@
 #include "shared-bindings/board/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/board/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "mpconfigboard.h"
 #include "py/runtime.h"
 
@@ -131,7 +131,7 @@ mp_obj_t common_hal_board_create_spi(const mp_int_t instance) {
     assert_pin_free(spi_pin[instance].mosi);
     assert_pin_free(spi_pin[instance].miso);
 
-    common_hal_busio_spi_construct(self, spi_pin[instance].clock, spi_pin[instance].mosi, spi_pin[instance].miso);
+    common_hal_busio_spi_construct(self, spi_pin[instance].clock, spi_pin[instance].mosi, spi_pin[instance].miso, false);
 
     spi_obj_created[instance] = true;
     return &spi_obj[instance];

@@ -45,4 +45,6 @@ void filesystem_set_concurrent_write_protection(fs_user_mount_t *vfs, bool concu
 bool filesystem_is_writable_by_python(fs_user_mount_t *vfs);
 bool filesystem_is_writable_by_usb(fs_user_mount_t *vfs);
 
+FATFS *filesystem_circuitpy(void);
+
 #endif  // MICROPY_INCLUDED_SUPERVISOR_FILESYSTEM_H

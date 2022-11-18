@@ -28,12 +28,15 @@
 #include <stdint.h>
 #include <string.h>
 
+
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
+
+
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -65,7 +68,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
         self->channel = DAC_CHANNEL_2;
         self->dac_index = 1;
     } else {
-        mp_raise_ValueError(translate("Invalid DAC pin supplied"));
+        raise_ValueError_invalid_pin();
     }
 
     // Only init if the shared DAC is empty or reset

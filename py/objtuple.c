@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "py/objtype.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 
 /******************************************************************************/

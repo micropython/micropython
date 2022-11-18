@@ -45,7 +45,6 @@ typedef struct {
     mp_uint_t timeout_ms;
 } socketpool_socket_obj_t;
 
-void socket_reset(void);
-bool register_open_socket(socketpool_socket_obj_t *self);
+void socket_user_reset(void);
 
 #endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SOCKETPOOL_SOCKET_H

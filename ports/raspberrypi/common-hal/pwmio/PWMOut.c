@@ -32,7 +32,7 @@
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "src/rp2040/hardware_regs/include/hardware/platform_defs.h"
 #include "src/rp2_common/hardware_clocks/include/hardware/clocks.h"
@@ -259,7 +259,7 @@ void pwmio_pwmout_set_top(pwmio_pwmout_obj_t *self, uint16_t top) {
 
 void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t frequency) {
     if (frequency == 0 || frequency > (common_hal_mcu_processor_get_frequency() / 2)) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
 
     target_slice_frequencies[self->slice] = frequency;

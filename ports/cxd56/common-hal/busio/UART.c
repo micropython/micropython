@@ -40,6 +40,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/busio/UART.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 typedef struct {
     const char *devpath;
@@ -65,20 +66,12 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     struct termios tio;
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
-        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+        mp_raise_NotImplementedError(translate("RS485"));
     }
 
-    if (bits != 8) {
-        mp_raise_ValueError(translate("Could not initialize UART"));
-    }
-
-    if (parity != BUSIO_UART_PARITY_NONE) {
-        mp_raise_ValueError(translate("Could not initialize UART"));
-    }
-
-    if (stop != 1) {
-        mp_raise_ValueError(translate("Could not initialize UART"));
-    }
+    mp_arg_validate_int(bits, 8, MP_QSTR_bits);
+    mp_arg_validate_int(parity, BUSIO_UART_PARITY_NONE, MP_QSTR_parity);
+    mp_arg_validate_int(stop, 1, MP_QSTR_stop);
 
     self->number = -1;
 
@@ -91,13 +84,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (self->number < 0) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     if (busio_uart_dev[self->number].fd < 0) {
         busio_uart_dev[self->number].fd = open(busio_uart_dev[self->number].devpath, O_RDWR);
         if (busio_uart_dev[self->number].fd < 0) {
-            mp_raise_ValueError(translate("Could not initialize UART"));
+            mp_raise_RuntimeError(translate("UART init"));
         }
 
         // Wait to make sure the UART is ready

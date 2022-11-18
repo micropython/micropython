@@ -35,7 +35,6 @@
 
 
 //| """Stack information and analysis"""
-//|
 
 #if MICROPY_MAX_STACK_USAGE
 //| def max_stack_usage() -> int:

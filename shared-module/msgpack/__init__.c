@@ -36,7 +36,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/msgpack/ExtType.h"
 #include "shared-bindings/msgpack/__init__.h"
 #include "shared-module/msgpack/__init__.h"
@@ -497,6 +497,6 @@ void common_hal_msgpack_pack(mp_obj_t obj, mp_obj_t stream_obj, mp_obj_t default
 }
 
 mp_obj_t common_hal_msgpack_unpack(mp_obj_t stream_obj, mp_obj_t ext_hook, bool use_list) {
-    msgpack_stream_t stream = get_stream(stream_obj, MP_STREAM_OP_WRITE);
+    msgpack_stream_t stream = get_stream(stream_obj, MP_STREAM_OP_READ);
     return unpack(&stream, ext_hook, use_list);
 }

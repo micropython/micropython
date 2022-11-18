@@ -35,7 +35,7 @@
 #include "py/objfun.h"
 #include "py/stackctrl.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // Instance of GeneratorExit exception - needed by generator.close()
 const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
@@ -330,7 +330,8 @@ STATIC mp_obj_t gen_instance_await(mp_obj_t self_in) {
     if (!self->coroutine_generator) {
         // Pretend like a generator does not have this coroutine behavior.
         // Pay no attention to the dir() behind the curtain
-        mp_raise_AttributeError(MP_ERROR_TEXT("type object 'generator' has no attribute '__await__'"));
+        mp_raise_msg_varg(&mp_type_AttributeError, MP_ERROR_TEXT("type object '%q' has no attribute '%q'"),
+            MP_QSTR_generator, MP_QSTR___await__);
     }
     // You can directly call send on a coroutine generator or you can __await__ then send on the return of that.
     return self;

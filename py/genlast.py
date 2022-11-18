@@ -48,6 +48,7 @@ def preprocess(command, output_dir, fn):
         process_file(fn, output_dir, output)
     except Exception as e:
         print(e, file=sys.stderr)
+        raise
 
 
 def maybe_preprocess(command, output_dir, fn):
@@ -72,6 +73,18 @@ if __name__ == "__main__":
     # Mac and Windows use 'spawn'.  Uncomment this during testing to catch spawn-specific problems on Linux.
     # multiprocessing.set_start_method("spawn")
     executor = ProcessPoolExecutor(max_workers=multiprocessing.cpu_count() + 1)
-    executor.map(maybe_preprocess, itertools.repeat(command), itertools.repeat(output_dir), check)
-    executor.map(preprocess, itertools.repeat(command), itertools.repeat(output_dir), always)
+    results = []
+    try:
+        results.extend(
+            executor.map(
+                maybe_preprocess, itertools.repeat(command), itertools.repeat(output_dir), check
+            )
+        )
+        results.extend(
+            executor.map(
+                preprocess, itertools.repeat(command), itertools.repeat(output_dir), always
+            )
+        )
+    except subprocess.CalledProcessError:
+        raise SystemExit(1)
     executor.shutdown()

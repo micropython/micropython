@@ -125,6 +125,15 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_CAN_RX), MP_ROM_PTR(&pin_GPIO_AD_B0_15) },
     { MP_ROM_QSTR(MP_QSTR_CAN_STBY), MP_ROM_PTR(&pin_GPIO_AD_B0_05) },
 
+    // USB
+    #if CIRCUITPY_USB_HOST_INSTANCE == 0
+    { MP_ROM_QSTR(MP_QSTR_USB_HOST_DP), MP_ROM_PTR(&pin_USB_OTG1_DP) },
+    { MP_ROM_QSTR(MP_QSTR_USB_HOST_DM), MP_ROM_PTR(&pin_USB_OTG1_DN) },
+    #elif CIRCUITPY_USB_HOST_INSTANCE == 1
+    { MP_ROM_QSTR(MP_QSTR_USB_HOST_DP), MP_ROM_PTR(&pin_USB_OTG2_DP) },
+    { MP_ROM_QSTR(MP_QSTR_USB_HOST_DM), MP_ROM_PTR(&pin_USB_OTG2_DN) },
+    #endif
+
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
 };

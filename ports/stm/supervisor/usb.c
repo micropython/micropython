@@ -27,9 +27,7 @@
 
 
 #include "supervisor/usb.h"
-#include "shared/runtime/interrupt_char.h"
 #include "shared/readline/readline.h"
-#include "lib/tinyusb/src/device/usbd.h"
 
 #include "py/mpconfig.h"
 
@@ -149,5 +147,5 @@ void init_usb_hardware(void) {
 }
 
 void OTG_FS_IRQHandler(void) {
-    usb_irq_handler();
+    usb_irq_handler(0);
 }

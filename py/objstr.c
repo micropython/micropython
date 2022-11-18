@@ -35,7 +35,7 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_STR_OP_MODULO
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict);
@@ -986,7 +986,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             terse_str_format_value_error();
             #else
-            mp_raise_ValueError(MP_ERROR_TEXT("single '}' encountered in format string"));
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("unmatched '%c' in format"), '}');
             #endif
         }
         if (*str != '{') {
@@ -1063,7 +1063,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             terse_str_format_value_error();
             #else
-            mp_raise_ValueError(MP_ERROR_TEXT("unmatched '{' in format"));
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("unmatched '%c' in format"), '{');
             #endif
         }
         if (*str != '}') {

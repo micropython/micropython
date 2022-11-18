@@ -28,6 +28,7 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "driver/spi_common_internal.h"
 
@@ -73,7 +74,7 @@ static void set_spi_config(busio_spi_obj_t *self,
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
-    const mcu_pin_obj_t *miso) {
+    const mcu_pin_obj_t *miso, bool half_duplex) {
 
     const spi_bus_config_t bus_config = {
         .mosi_io_num = mosi != NULL ? mosi->number : -1,
@@ -82,6 +83,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
     };
+
+    if (half_duplex) {
+        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+    }
 
     for (spi_host_device_t host_id = SPI2_HOST; host_id < SOC_SPI_PERIPH_NUM; host_id++) {
         if (spi_bus_is_free(host_id)) {
@@ -97,7 +102,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     if (result == ESP_ERR_NO_MEM) {
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
     } else if (result == ESP_ERR_INVALID_ARG) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     set_spi_config(self, 250000, 0, 0, 8);
@@ -201,11 +206,10 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
     if (len == 0) {
         return true;
     }
-    // Other than the read special case, stop transfers that don't have a pin/array match
-    if (!self->MOSI && (data_out != data_in)) {
+    if (self->MOSI == NULL && data_out != NULL) {
         mp_raise_ValueError(translate("No MOSI Pin"));
     }
-    if (!self->MISO && data_in) {
+    if (self->MISO == NULL && data_in != NULL) {
         mp_raise_ValueError(translate("No MISO Pin"));
     }
 

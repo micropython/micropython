@@ -8,7 +8,6 @@ MCU_CHIP = nrf52840
 QSPI_FLASH_FILESYSTEM = 1
 EXTERNAL_FLASH_DEVICES = "GD25Q16C, W25Q128JVxQ"
 
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Register
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_ST7789
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Display_Shapes

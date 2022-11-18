@@ -9,7 +9,6 @@
 #define MICROPY_HW_NEOPIXEL (&pin_PB03)
 
 // BC needed?
-// #define AUTORESET_DELAY_MS 500
 
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code

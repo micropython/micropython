@@ -275,7 +275,7 @@ STATIC bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t *
     uint32_t mask[mask_length];
 
     uint8_t passes = 1;
-    if (self->core.colorspace.tricolor || self->grayscale) {
+    if (self->write_color_ram_command != NO_COMMAND) {
         passes = 2;
     }
     for (uint8_t pass = 0; pass < passes; pass++) {
@@ -318,11 +318,14 @@ STATIC bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t *
             if (pass == 1) {
                 if (self->grayscale) { // 4-color grayscale
                     self->core.colorspace.grayscale_bit = 6;
-                } else { // Tri-color
+                    displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
+                } else if (self->core.colorspace.tricolor) {
                     self->core.colorspace.grayscale = false;
+                    displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
                 }
+            } else {
+                displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
             }
-            displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
 
             // Invert it all.
             if ((pass == 1 && self->color_bits_inverted) ||

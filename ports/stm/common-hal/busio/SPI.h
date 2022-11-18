@@ -44,6 +44,7 @@ typedef struct {
     const mcu_periph_obj_t *nss;
     uint32_t baudrate;
     uint16_t prescaler;
+    bool half_duplex;
     uint8_t polarity;
     uint8_t phase;
     uint8_t bits;

@@ -60,7 +60,7 @@ uint8_t display_init_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_GPIO26, &pin_GPIO27, NULL);
+    common_hal_busio_spi_construct(spi, &pin_GPIO26, &pin_GPIO27, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
@@ -97,17 +97,13 @@ void board_init(void) {
         NULL,
         0x81,
         1.0f, // brightness
-        false, // auto_brightness
         true, // single_byte_bounds
         true, // data as commands
         true, // auto_refresh
         60, // native_frames_per_second
         true, // backlight_on_high
-        true); // SH1107_addressing
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
+        true, // SH1107_addressing
+        50000); // backlight pwm frequency
 }
 
 void reset_board(void) {
@@ -115,5 +111,4 @@ void reset_board(void) {
     board_reset_user_neopixels(&pin_GPIO19, 12);
 }
 
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

@@ -113,7 +113,7 @@ static mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t n
     return supervisor_flash_read_blocks(dest, block_num - PART1_START_BLOCK, num_blocks);
 }
 
-volatile bool filesystem_dirty = false;
+static volatile bool filesystem_dirty = false;
 
 static mp_uint_t flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html style="height: 100%;">
+<head>
+  <title>Simple client</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/serial.js" defer=true></script>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="http://circuitpython.org/assets/css/webworkflow-8.css">
+</head>
+<body style="flex-direction: column; display: flex; height: 100%; width: 100%; margin: 0; font-size: 1rem;">
+  <div style="flex: auto; display: flex; overflow: auto; flex-direction: column;">
+    <pre id="log" style="margin:0; margin-top: auto;"></pre>
+    <span style="height: 1px;"></span>
+  </div>
+  <div id="controls" style="flex: none; display: flex;">
+    <fieldset style="display: inline-block; padding: 0;">
+      <legend>Ctrl</legend>
+      <button id="c">C</button>
+      <button id="d">D</button>
+    </fieldset>
+    <textarea id="input" rows="1" spellcheck="false" wrap="off" style="resize: none; flex: auto; font-size: 1rem;" autocapitalize="none" autocomplete="off" autocorrect="off"></textarea>
+    <button onclick="onSubmit(); return false;">Send</button>
+  </div>
+</body>
+</html>

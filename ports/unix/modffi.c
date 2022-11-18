@@ -38,7 +38,7 @@
 #include "py/objint.h"
 #include "py/gc.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 /*
  * modffi uses character codes to encode a value type, based on "struct"

@@ -35,7 +35,7 @@
 
 //| class Characteristic:
 //|     """Stores information about a BLE service characteristic and allows reading
-//|        and writing of the characteristic's value."""
+//|     and writing of the characteristic's value."""
 //|
 //|     def __init__(self) -> None:
 //|         """There is no regular constructor for a Characteristic. A new local Characteristic can be created
@@ -43,13 +43,20 @@
 //|         Remote Characteristic objects are created by `Connection.discover_remote_services()`
 //|         as part of remote Services."""
 //|         ...
-//|
 
-//|     def add_to_service(self, service: Service, uuid: UUID, *, properties: int = 0,
-//|                        read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN,
-//|                        max_length: int = 20, fixed_length: bool = False,
-//|                        initial_value: Optional[ReadableBuffer] = None,
-//|                        user_description: Optional[str] = None) -> Characteristic:
+//|     def add_to_service(
+//|         self,
+//|         service: Service,
+//|         uuid: UUID,
+//|         *,
+//|         properties: int = 0,
+//|         read_perm: int = Attribute.OPEN,
+//|         write_perm: int = Attribute.OPEN,
+//|         max_length: int = 20,
+//|         fixed_length: bool = False,
+//|         initial_value: Optional[ReadableBuffer] = None,
+//|         user_description: Optional[str] = None
+//|     ) -> Characteristic:
 //|         """Create a new Characteristic object, and add it to this Service.
 //|
 //|         :param Service service: The service that will provide this characteristic
@@ -73,7 +80,6 @@
 //|
 //|         :return: the new Characteristic."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // class is arg[0], which we can ignore.
 
@@ -100,7 +106,7 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
 
     const bleio_characteristic_properties_t properties = args[ARG_properties].u_int;
     if (properties & ~CHAR_PROP_ALL) {
-        mp_raise_ValueError(translate("Invalid properties"));
+        mp_arg_error_invalid(MP_QSTR_properties);
     }
 
     const bleio_attribute_security_mode_t read_perm = args[ARG_read_perm].u_int;
@@ -109,10 +115,8 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     const bleio_attribute_security_mode_t write_perm = args[ARG_write_perm].u_int;
     common_hal_bleio_attribute_security_mode_check_valid(write_perm);
 
-    const mp_int_t max_length_int = args[ARG_max_length].u_int;
-    if (max_length_int < 0) {
-        mp_raise_ValueError(translate("max_length must be >= 0"));
-    }
+    const mp_int_t max_length_int = mp_arg_validate_int_min(args[ARG_max_length].u_int, 0, MP_QSTR_max_length);
+
     const size_t max_length = (size_t)max_length_int;
     const bool fixed_length = args[ARG_fixed_length].u_bool;
     mp_obj_t initial_value = args[ARG_initial_value].u_obj;
@@ -159,7 +163,6 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_characteristic_add_to_service_obj, 
 //|     """An int bitmask representing which properties are set, specified as bitwise or'ing of
 //|     of these possible values.
 //|     `BROADCAST`, `INDICATE`, `NOTIFY`, `READ`, `WRITE`, `WRITE_NO_RESPONSE`."""
-//|
 STATIC mp_obj_t bleio_characteristic_get_properties(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -167,18 +170,13 @@ STATIC mp_obj_t bleio_characteristic_get_properties(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_properties_obj, bleio_characteristic_get_properties);
 
-const mp_obj_property_t bleio_characteristic_properties_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_characteristic_get_properties_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_characteristic_properties_obj,
+    (mp_obj_t)&bleio_characteristic_get_properties_obj);
 
 //|     uuid: Optional[UUID]
 //|     """The UUID of this characteristic. (read-only)
 //|
 //|     Will be ``None`` if the 128-bit UUID for this characteristic is not known."""
-//|
 STATIC mp_obj_t bleio_characteristic_get_uuid(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -187,16 +185,11 @@ STATIC mp_obj_t bleio_characteristic_get_uuid(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_uuid_obj, bleio_characteristic_get_uuid);
 
-const mp_obj_property_t bleio_characteristic_uuid_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_characteristic_get_uuid_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_characteristic_uuid_obj,
+    (mp_obj_t)&bleio_characteristic_get_uuid_obj);
 
 //|     value: bytearray
 //|     """The value of this characteristic."""
-//|
 STATIC mp_obj_t bleio_characteristic_get_value(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -218,16 +211,12 @@ STATIC mp_obj_t bleio_characteristic_set_value(mp_obj_t self_in, mp_obj_t value_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_characteristic_set_value_obj, bleio_characteristic_set_value);
 
-const mp_obj_property_t bleio_characteristic_value_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_characteristic_get_value_obj,
-               (mp_obj_t)&bleio_characteristic_set_value_obj,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETSET(bleio_characteristic_value_obj,
+    (mp_obj_t)&bleio_characteristic_get_value_obj,
+    (mp_obj_t)&bleio_characteristic_set_value_obj);
 
 //|     max_length: int
 //|     """The max length of this characteristic."""
-//|
 STATIC mp_obj_t bleio_characteristic_get_max_length(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -235,16 +224,11 @@ STATIC mp_obj_t bleio_characteristic_get_max_length(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_max_length_obj, bleio_characteristic_get_max_length);
 
-const mp_obj_property_t bleio_characteristic_max_length_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_characteristic_get_max_length_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_characteristic_max_length_obj,
+    (mp_obj_t)&bleio_characteristic_get_max_length_obj);
 
 //|     descriptors: Descriptor
 //|     """A tuple of :py:class:`Descriptor` objects related to this characteristic. (read-only)"""
-//|
 STATIC mp_obj_t bleio_characteristic_get_descriptors(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // Return list as a tuple so user won't be able to change it.
@@ -253,16 +237,11 @@ STATIC mp_obj_t bleio_characteristic_get_descriptors(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_descriptors_obj, bleio_characteristic_get_descriptors);
 
-const mp_obj_property_t bleio_characteristic_descriptors_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_characteristic_get_descriptors_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_characteristic_descriptors_obj,
+    (mp_obj_t)&bleio_characteristic_get_descriptors_obj);
 
 //|     service: Service
 //|     """The Service this Characteristic is a part of."""
-//|
 STATIC mp_obj_t bleio_characteristic_get_service(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -270,12 +249,8 @@ STATIC mp_obj_t bleio_characteristic_get_service(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_service_obj, bleio_characteristic_get_service);
 
-const mp_obj_property_t bleio_characteristic_service_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_characteristic_get_service_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_characteristic_service_obj,
+    (mp_obj_t)&bleio_characteristic_get_service_obj);
 
 //|     def set_cccd(self, *, notify: bool = False, indicate: bool = False) -> None:
 //|         """Set the remote characteristic's CCCD to enable or disable notification and indication.
@@ -283,7 +258,6 @@ const mp_obj_property_t bleio_characteristic_service_obj = {
 //|         :param bool notify: True if Characteristic should receive notifications of remote writes
 //|         :param float indicate: True if Characteristic should receive indications of remote writes"""
 //|         ...
-//|
 STATIC mp_obj_t bleio_characteristic_set_cccd(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -304,6 +278,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_characteristic_set_cccd_obj, 1, bleio_ch
 
 STATIC const mp_rom_map_elem_t bleio_characteristic_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_add_to_service), MP_ROM_PTR(&bleio_characteristic_add_to_service_obj) },
+    { MP_ROM_QSTR(MP_QSTR_descriptors),    MP_ROM_PTR(&bleio_characteristic_descriptors_obj) },
     { MP_ROM_QSTR(MP_QSTR_properties),     MP_ROM_PTR(&bleio_characteristic_properties_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid),           MP_ROM_PTR(&bleio_characteristic_uuid_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),          MP_ROM_PTR(&bleio_characteristic_value_obj) },

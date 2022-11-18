@@ -29,6 +29,12 @@
 #include "py/pairheap.h"
 #include "py/mphal.h"
 
+#if CIRCUITPY && !(defined(__unix__) || defined(__APPLE__))
+#include "shared-bindings/supervisor/__init__.h"
+#endif
+
+#include "supervisor/shared/translate/translate.h"
+
 #if MICROPY_PY_UASYNCIO
 
 // Used when task cannot be guaranteed to be non-NULL.
@@ -59,19 +65,31 @@ STATIC const mp_obj_type_t task_queue_type;
 STATIC const mp_obj_type_t task_type;
 
 STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
 
 /******************************************************************************/
 // Ticks for task ordering in pairing heap
 
+#define _TICKS_PERIOD (1lu << 29)
+#define _TICKS_MAX (_TICKS_PERIOD - 1)
+#define _TICKS_HALFPERIOD (_TICKS_PERIOD >> 1)
+#if !CIRCUITPY || (defined(__unix__) || defined(__APPLE__))
 STATIC mp_obj_t ticks(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & _TICKS_MAX);
 }
+#else
+// We don't share the implementation above because our supervisor_ticks_ms
+// starts the epoch about 65 seconds before the first overflow (see
+// shared-bindings/supervisor/__init__.c). We assume/require that
+// supervisor.ticks_ms is picked as the ticks implementation under
+// CircuitPython for the Python-coded bits of asyncio.
+#define ticks() supervisor_ticks_ms()
+#endif
 
 STATIC mp_int_t ticks_diff(mp_obj_t t1_in, mp_obj_t t0_in) {
     mp_uint_t t0 = MP_OBJ_SMALL_INT_VALUE(t0_in);
     mp_uint_t t1 = MP_OBJ_SMALL_INT_VALUE(t1_in);
-    mp_int_t diff = ((t1 - t0 + MICROPY_PY_UTIME_TICKS_PERIOD / 2) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1))
-        - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
+    mp_int_t diff = ((t1 - t0 + _TICKS_HALFPERIOD) & _TICKS_MAX) - _TICKS_HALFPERIOD;
     return diff;
 }
 
@@ -225,6 +243,11 @@ STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_cancel_obj, task_cancel);
 
+STATIC mp_obj_t task_await(mp_obj_t self_in) {
+    return task_getiter(self_in, NULL);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_await_obj, task_await);
+
 STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
@@ -243,6 +266,9 @@ STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[1] = self_in;
         } else if (attr == MP_QSTR_ph_key) {
             dest[0] = self->ph_key;
+        } else if (attr == MP_QSTR___await__) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_await_obj);
+            dest[1] = self_in;
         }
     } else if (dest[1] != MP_OBJ_NULL) {
         // Store
@@ -272,8 +298,13 @@ STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
 STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
     if (TASK_IS_DONE(self)) {
-        // Task finished, raise return value to caller so it can continue.
-        nlr_raise(self->data);
+        if (self->data == mp_const_none) {
+            // Task finished but has already been sent to the loop's exception handler.
+            mp_raise_StopIteration(MP_OBJ_NULL);
+        } else {
+            // Task finished, raise return value to caller so it can continue.
+            nlr_raise(self->data);
+        }
     } else {
         // Put calling task on waiting queue.
         mp_obj_t cur_task = mp_obj_dict_get(uasyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
@@ -301,7 +332,11 @@ STATIC const mp_obj_type_t task_type = {
 // C-level uasyncio module
 
 STATIC const mp_rom_map_elem_t mp_module_uasyncio_globals_table[] = {
+    #if CIRCUITPY
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__asyncio) },
+    #else
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__uasyncio) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_TaskQueue), MP_ROM_PTR(&task_queue_type) },
     { MP_ROM_QSTR(MP_QSTR_Task), MP_ROM_PTR(&task_type) },
 };
@@ -311,5 +346,7 @@ const mp_obj_module_t mp_module_uasyncio = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_uasyncio_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR__asyncio, mp_module_uasyncio, MICROPY_PY_UASYNCIO);
 
 #endif // MICROPY_PY_UASYNCIO

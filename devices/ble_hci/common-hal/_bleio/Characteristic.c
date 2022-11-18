@@ -57,9 +57,9 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     self->value = mp_obj_new_bytes(initial_value_bufinfo->buf, initial_value_bufinfo->len);
 
     const mp_int_t max_length_max = 512;
-    if (max_length < 0 || max_length > max_length_max) {
-        mp_raise_ValueError(translate("max_length must be <= 512"));
-    }
+
+    mp_arg_validate_int_range(max_length, 0, max_length_max, MP_QSTR_max_length);
+
     self->max_length = max_length;
     self->fixed_length = fixed_length;
 

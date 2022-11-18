@@ -2,7 +2,7 @@
 
 #include "py/runtime.h"
 #include "py/mpstate.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "shared-bindings/countio/Edge.h"
 #include "shared-bindings/digitalio/Pull.h"
@@ -31,7 +31,6 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
         mp_raise_RuntimeError(translate("PWM slice already in use"));
     }
 
-    uint8_t ab_channel = pwm_gpio_to_channel(self->pin);
     if (!pwmio_claim_slice_ab_channels(self->slice_num)) {
         mp_raise_RuntimeError(translate("PWM slice channel A already in use"));
     }

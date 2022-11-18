@@ -36,7 +36,7 @@ class SingletonGenerator:
         self.state = None
         self.exc = StopIteration()
 
-    def __iter__(self):
+    def __await__(self):
         return self
 
     def __next__(self):

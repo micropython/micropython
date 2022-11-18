@@ -9,7 +9,6 @@
 //|
 //|     def __init__(self) -> None:
 //|         """Enum-like class to define the position fix mode."""
-//|
 //|     INVALID: PositionFix
 //|     """No measurement."""
 //|

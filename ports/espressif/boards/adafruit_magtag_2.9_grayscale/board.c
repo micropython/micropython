@@ -117,7 +117,7 @@ void board_init(void) {
     #endif /* DEBUG */
 
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL);
+    common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
@@ -164,12 +164,27 @@ void board_init(void) {
         false);  // two_byte_sequence_length
 }
 
-bool board_requests_safe_mode(void) {
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    // Pin 16 is speaker enable and it's pulled down on the board. We don't want
+    // to pull it high because then we'll compete with the external pull down.
+    // So, reset without any pulls internally.
+    if (pin_number == 16) {
+        gpio_config_t cfg = {
+            .pin_bit_mask = BIT64(16),
+            .mode = GPIO_MODE_DISABLE,
+            // The pin is externally pulled down, so we don't need to pull it.
+            .pull_up_en = false,
+            .pull_down_en = false,
+            .intr_type = GPIO_INTR_DISABLE,
+        };
+        gpio_config(&cfg);
+        return true;
+    }
+    // Pin 4 is used for voltage monitoring, so don't reset
+    if (pin_number == 4) {
+        return true;
+    }
     return false;
-}
-
-void reset_board(void) {
-
 }
 
 void board_deinit(void) {
@@ -186,3 +201,5 @@ void board_deinit(void) {
     }
     common_hal_displayio_release_displays();
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

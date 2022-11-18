@@ -95,9 +95,24 @@ const mp_obj_type_t mp_type_property = {
     .locals_dict = (mp_obj_dict_t *)&property_locals_dict,
 };
 
-const mp_obj_t *mp_obj_property_get(mp_obj_t self_in) {
+#if MICROPY_PY_OPTIMIZE_PROPERTY_FLASH_SIZE
+extern const mp_obj_property_t __property_getter_start, __property_getter_end, __property_getset_start, __property_getset_end;
+#endif
+
+const mp_obj_t *mp_obj_property_get(mp_obj_t self_in, size_t *n_proxy) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_property));
     mp_obj_property_t *self = MP_OBJ_TO_PTR(self_in);
+    #if MICROPY_PY_OPTIMIZE_PROPERTY_FLASH_SIZE
+    if (self >= &__property_getter_start && self < &__property_getter_end) {
+        *n_proxy = 1;
+    } else if (self >= &__property_getset_start && self < &__property_getset_end) {
+        *n_proxy = 2;
+    } else {
+        *n_proxy = 3;
+    }
+    #else
+    *n_proxy = 3;
+    #endif
     return self->proxy;
 }
 

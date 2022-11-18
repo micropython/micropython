@@ -38,7 +38,7 @@
 #include "hal/utils/include/utils_repeat_macro.h"
 #include "samd/pins.h"
 #include "samd/timers.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #undef ENABLE
 
@@ -377,7 +377,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self,
     uint32_t frequency) {
     uint32_t system_clock = common_hal_mcu_processor_get_frequency();
     if (frequency == 0 || frequency > system_clock / 2) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     const pin_timer_t *t = self->timer;
     uint8_t resolution;

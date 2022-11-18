@@ -72,11 +72,9 @@ void bleio_connection_ensure_connected(bleio_connection_obj_t *self) {
 //|         Connections may also be made when another device initiates a connection. To use a Connection
 //|         created by a peer, read the `Adapter.connections` property."""
 //|         ...
-//|
 //|     def disconnect(self) -> None:
 //|         """Disconnects from the remote peripheral. Does nothing if already disconnected."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_connection_disconnect(mp_obj_t self_in) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // common_hal_bleio_connection_disconnect() does nothing if already disconnected.
@@ -89,7 +87,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_disconnect_obj, bleio_connecti
 //|     def pair(self, *, bond: bool = True) -> None:
 //|         """Pair to the peer to improve security."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_connection_pair(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -108,7 +105,9 @@ STATIC mp_obj_t bleio_connection_pair(mp_uint_t n_args, const mp_obj_t *pos_args
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_pair_obj, 1, bleio_connection_pair);
 
-//|     def discover_remote_services(self, service_uuids_whitelist: Optional[Iterable[UUID]] = None) -> Tuple[Service, ...]:
+//|     def discover_remote_services(
+//|         self, service_uuids_whitelist: Optional[Iterable[UUID]] = None
+//|     ) -> Tuple[Service, ...]:
 //|         """Do BLE discovery for all services or for the given service UUIDS,
 //|         to find their handles and characteristics, and return the discovered services.
 //|         `Connection.connected` must be True.
@@ -131,7 +130,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_pair_obj, 1, bleio_connection
 //|
 //|         :return: A tuple of `_bleio.Service` objects provided by the remote peripheral."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_connection_discover_remote_services(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -153,7 +151,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_discover_remote_services_obj,
 
 //|     connected: bool
 //|     """True if connected to the remote peer."""
-//|
 STATIC mp_obj_t bleio_connection_get_connected(mp_obj_t self_in) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -161,17 +158,12 @@ STATIC mp_obj_t bleio_connection_get_connected(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_connected_obj, bleio_connection_get_connected);
 
-const mp_obj_property_t bleio_connection_connected_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_connection_get_connected_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_connection_connected_obj,
+    (mp_obj_t)&bleio_connection_get_connected_obj);
 
 
 //|     paired: bool
 //|     """True if paired to the remote peer."""
-//|
 STATIC mp_obj_t bleio_connection_get_paired(mp_obj_t self_in) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -179,12 +171,8 @@ STATIC mp_obj_t bleio_connection_get_paired(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_paired_obj, bleio_connection_get_paired);
 
-const mp_obj_property_t bleio_connection_paired_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_connection_get_paired_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_connection_paired_obj,
+    (mp_obj_t)&bleio_connection_get_paired_obj);
 
 
 //|     connection_interval: float
@@ -196,7 +184,6 @@ const mp_obj_property_t bleio_connection_paired_obj = {
 //|
 //|     Apple has additional guidelines that dictate should be a multiple of 15ms except if HID is
 //|     available. When HID is available Apple devices may accept 11.25ms intervals."""
-//|
 STATIC mp_obj_t bleio_connection_get_connection_interval(mp_obj_t self_in) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -235,19 +222,12 @@ STATIC mp_obj_t bleio_connection_set_connection_interval(mp_obj_t self_in, mp_ob
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_connection_set_connection_interval_obj, bleio_connection_set_connection_interval);
 
-const mp_obj_property_t bleio_connection_connection_interval_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_connection_get_connection_interval_obj,
-               (mp_obj_t)&bleio_connection_set_connection_interval_obj,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETSET(bleio_connection_connection_interval_obj,
+    (mp_obj_t)&bleio_connection_get_connection_interval_obj,
+    (mp_obj_t)&bleio_connection_set_connection_interval_obj);
 
-const mp_obj_property_t bleio_connection_max_packet_length_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_connection_get_max_packet_length_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETTER(bleio_connection_max_packet_length_obj,
+    (mp_obj_t)&bleio_connection_get_max_packet_length_obj);
 
 STATIC const mp_rom_map_elem_t bleio_connection_locals_dict_table[] = {
     // Methods

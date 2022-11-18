@@ -20,3 +20,5 @@ override undefine PROG
 endif
 
 include mpy-cross.mk
+CFLAGS += -g
+STRIP = :

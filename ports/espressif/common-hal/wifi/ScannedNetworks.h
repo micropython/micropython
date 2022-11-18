@@ -53,7 +53,7 @@ typedef struct {
     uint8_t end_channel; // Inclusive
 
     bool done;
-    bool scanning;
+    bool channel_scan_in_progress;
 } wifi_scannednetworks_obj_t;
 
 void wifi_scannednetworks_scan_next_channel(wifi_scannednetworks_obj_t *self);

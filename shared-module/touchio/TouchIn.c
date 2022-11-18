@@ -78,6 +78,7 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self, const mcu
 
     uint16_t raw_reading = get_raw_reading(self);
     if (raw_reading == TIMEOUT_TICKS) {
+        common_hal_touchio_touchin_deinit(self);
         mp_raise_ValueError(translate("No pulldown on pin; 1Mohm recommended"));
     }
     self->threshold = raw_reading * 1.05 + 100;

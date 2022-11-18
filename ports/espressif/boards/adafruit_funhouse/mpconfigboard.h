@@ -33,11 +33,7 @@
 #define MICROPY_HW_APA102_SCK (&pin_GPIO15)
 #define MICROPY_HW_APA102_COUNT (5)
 
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
-
-#define AUTORESET_DELAY_MS 500
+#define MICROPY_HW_LED_STATUS (&pin_GPIO37)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO33)
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO34)

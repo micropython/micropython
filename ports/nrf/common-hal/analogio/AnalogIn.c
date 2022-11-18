@@ -27,8 +27,9 @@
 
 #include "common-hal/analogio/AnalogIn.h"
 #include "shared-bindings/analogio/AnalogIn.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "nrf_saadc.h"
 #include "nrf_gpio.h"
@@ -48,7 +49,7 @@ void analogin_init(void) {
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const mcu_pin_obj_t *pin) {
     if (pin->adc_channel == 0) {
-        mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
+        raise_ValueError_invalid_pin();
     }
 
     nrf_gpio_cfg_default(pin->number);
@@ -76,7 +77,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // Something else might have used the ADC in a different way,
     // so we completely re-initialize it.
 
-    nrf_saadc_value_t value;
+    nrf_saadc_value_t value = -1;
 
     const nrf_saadc_channel_config_t config = {
         .resistor_p = NRF_SAADC_RESISTOR_DISABLED,
@@ -124,8 +125,8 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
         value = 0;
     }
 
-    // Map value to from 14 to 16 bits
-    return value << 2;
+    // Stretch 14-bit ADC reading to 16-bit range
+    return (value << 2) | (value >> 12);
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {

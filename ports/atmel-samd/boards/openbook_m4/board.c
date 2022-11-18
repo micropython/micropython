@@ -54,7 +54,7 @@ uint8_t stop_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL);
+    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
@@ -102,12 +102,4 @@ void board_init(void) {
         false); // two_byte_sequence_length
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

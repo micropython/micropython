@@ -6,12 +6,7 @@ include ../py/mkenv.mk
 
 # define main target
 
-ifeq ($(OS),Windows_NT)
-# Detect a MINGW32 build, and change the name of the final executable.
-PROG ?= mpy-cross.exe
-else
 PROG ?= mpy-cross
-endif
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -72,7 +67,7 @@ SRC_C += \
 	shared/runtime/gchelper_generic.c \
 	supervisor/stub/safe_mode.c \
 	supervisor/stub/stack.c \
-	supervisor/shared/translate.c
+	supervisor/shared/translate/translate.c
 
 # Add fmode when compiling with mingw gcc
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
@@ -83,6 +78,6 @@ endif
 OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-$(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compression.generated.h
 
 include $(TOP)/py/mkrules.mk

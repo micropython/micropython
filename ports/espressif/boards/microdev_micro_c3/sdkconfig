@@ -1,5 +1,70 @@
+# Automatically generated file. DO NOT EDIT.
+# Espressif IoT Development Framework (ESP-IDF) Project Configuration
+#
+# Bootloader config
+#
+CONFIG_BOOTLOADER_LOG_LEVEL_NONE=y
+# CONFIG_BOOTLOADER_LOG_LEVEL_INFO is not set
+CONFIG_BOOTLOADER_LOG_LEVEL=0
+# end of Bootloader config
+
+#
+# Serial flasher config
+#
+# CONFIG_ESPTOOLPY_FLASHFREQ_26M is not set
+# end of Serial flasher config
+
+#
+# Partition Table
+#
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="esp-idf-config/partitions-4MB-no-uf2.csv"
+CONFIG_PARTITION_TABLE_FILENAME="esp-idf-config/partitions-4MB-no-uf2.csv"
+# end of Partition Table
+
+#
+# Compiler options
+#
+# CONFIG_COMPILER_SAVE_RESTORE_LIBCALLS is not set
+# end of Compiler options
+
+#
+# Component config
+#
+#
+
+#
+# PHY
+#
+CONFIG_ESP_PHY_ENABLE_USB=y
+# end of PHY
+
+#
+# ESP System Settings
+#
+# CONFIG_ESP_SYSTEM_USE_EH_FRAME is not set
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+# CONFIG_ESP_CONSOLE_SECONDARY_USB_SERIAL_JTAG is not set
+# CONFIG_ESP_DEBUG_STUBS_ENABLE is not set
+# end of ESP System Settings
+
 #
 # LWIP
 #
 CONFIG_LWIP_LOCAL_HOSTNAME="MicroDev-microC3"
 # end of LWIP
+
+#
+# SPI Flash driver
+#
+# CONFIG_SPI_FLASH_AUTO_SUSPEND is not set
+# end of SPI Flash driver
+
+# end of Component config
+
+#
+# Deprecated options for backward compatibility
+#
+# CONFIG_LOG_BOOTLOADER_LEVEL_INFO is not set
+CONFIG_LOG_BOOTLOADER_LEVEL=0
+# CONFIG_COMPILER_OPTIMIZATION_LEVEL_DEBUG is not set
+# end of Deprecated options for backward compatibility

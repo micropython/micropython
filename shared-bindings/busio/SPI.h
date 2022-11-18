@@ -38,7 +38,7 @@ extern const mp_obj_type_t busio_spi_type;
 // Construct an underlying SPI object.
 extern void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
-    const mcu_pin_obj_t *miso);
+    const mcu_pin_obj_t *miso, bool half_duplex);
 
 extern void common_hal_busio_spi_deinit(busio_spi_obj_t *self);
 extern bool common_hal_busio_spi_deinited(busio_spi_obj_t *self);

@@ -30,20 +30,20 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: "3.10"
     - name: Get CP deps
       run: python tools/ci_fetch_deps.py test ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags || git log --parents HEAD~4..
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -72,32 +72,45 @@ jobs:
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --emit native
       working-directory: tests
     - name: mpy Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --mpy-cross-flags='-mcache-lookup-bc' --via-mpy -d basics float micropython
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --via-mpy -d basics float micropython
       working-directory: tests
     - name: Native mpy Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --mpy-cross-flags='-mcache-lookup-bc' --via-mpy --emit native -d basics float micropython
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --via-mpy --emit native -d basics float micropython
+      working-directory: tests
+    - name: Build native modules
+      run: |
+        make -C examples/natmod/features1
+        make -C examples/natmod/features2
+        make -C examples/natmod/btree
+        make -C examples/natmod/framebuf
+        make -C examples/natmod/uheapq
+        make -C examples/natmod/urandom
+        make -C examples/natmod/ure
+        make -C examples/natmod/uzlib
+    - name: Test native modules
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-natmodtests.py extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py
       working-directory: tests
     - name: Build mpy-cross.static-aarch64
       run: make -C mpy-cross -j2 -f Makefile.static-aarch64
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross.static-aarch64
         path: mpy-cross/mpy-cross.static-aarch64
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross.static-raspbian
         path: mpy-cross/mpy-cross.static-raspbian
     - name: Build mpy-cross.static
       run: make -C mpy-cross -j2 -f Makefile.static
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross.static-amd64-linux
         path: mpy-cross/mpy-cross.static
     - name: Build mpy-cross.static-mingw
       run: make -C mpy-cross -j2 -f Makefile.static-mingw
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross.static-x64-windows
         path: mpy-cross/mpy-cross.static.exe
@@ -112,44 +125,53 @@ jobs:
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-raspbian s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-raspbian-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-amd64-linux-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static.exe s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-x64-windows-${{ env.CP_VERSION }}.exe --no-progress --region us-east-1
-    - name: "Get changes"
+    - name: Get last commit with checks
+      id: get-last-commit-with-checks
       if: github.event_name == 'pull_request'
-      uses: dorny/paths-filter@v2
-      id: filter
+      working-directory: tools
+      env:
+        REPO: ${{ github.repository }}
+        PULL: ${{ github.event.number }}
+        GITHUB_TOKEN: ${{ github.token }}
+        EXCLUDE_COMMIT: ${{ github.event.after }}
+      run: python3 -u ci_changes_per_commit.py
+    - name: Get changes
+      id: get-changes
+      if: github.event_name == 'pull_request'
+      uses: tj-actions/changed-files@v34
       with:
-        list-files: json
-        filters: |
-          changed:
-            - '**'
-    - name: "Set matrix"
+        json: "true"
+        base_sha: ${{ steps.get-last-commit-with-checks.outputs.commit }}
+    - name: Set matrix
       id: set-matrix
       working-directory: tools
       env:
-        CHANGED_FILES: ${{ steps.filter.outputs.changed_files }}
+        CHANGED_FILES: ${{ toJSON(steps.get-changes.outputs.all_changed_and_modified_files) }}
+        LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.checkruns }}
       run: python3 -u ci_set_matrix.py
 
 
   mpy-cross-mac:
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
     - name: Dump GitHub context
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: "3.10"
     - name: Get CP deps
       run: python tools/ci_fetch_deps.py mpy-cross-mac ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Install dependencies
       run: |
         brew install gettext
@@ -161,29 +183,27 @@ jobs:
         msgfmt --version
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
-        name: mpy-cross-macos-catalina
+        name: mpy-cross-macos-11-x64
         path: mpy-cross/mpy-cross
-    - name: Select SDK for M1 build
-      run: sudo xcode-select -switch /Applications/Xcode_12.3.app
     - name: Build mpy-cross (arm64)
       run: make -C mpy-cross -j2 -f Makefile.m1 V=2
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
-        name: mpy-cross-macos-bigsur-arm64
+        name: mpy-cross-macos-11-arm64
         path: mpy-cross/mpy-cross-arm64
     - name: Make universal binary
       run: lipo -create -output mpy-cross-macos-universal mpy-cross/mpy-cross mpy-cross/mpy-cross-arm64
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
-        name: mpy-cross-macos-universal
+        name: mpy-cross-macos-11-universal
         path: mpy-cross-macos-universal
     - name: Upload mpy-cross build to S3
       run: |
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross-macos-universal s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-universal-${{ env.CP_VERSION }} --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-bigsur-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-catalina-${{ env.CP_VERSION }} --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross-macos-universal s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-universal --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-x64 --no-progress --region us-east-1
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -196,7 +216,7 @@ jobs:
     needs: test
     if: ${{ needs.test.outputs.build-doc == 'True' }}
     steps:
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
@@ -204,12 +224,12 @@ jobs:
       run: python tools/ci_fetch_deps.py docs ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: "3.10"
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -218,20 +238,20 @@ jobs:
         pip install -r requirements-ci.txt -r requirements-doc.txt
     - name: Build and Validate Stubs
       run: make check-stubs -j2
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: stubs
         path: circuitpython-stubs/dist/*
     - name: Test Documentation Build (HTML)
       run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: docs
         path: _build/html
     - name: Test Documentation Build (LaTeX/PDF)
       run: |
         make latexpdf
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: docs
         path: _build/latex
@@ -265,21 +285,22 @@ jobs:
     if: ${{ needs.test.outputs.boards-arm != '[]' }}
     steps:
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
-    - uses: actions/checkout@v2.2.0
+        python-version: "3.10"
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
       run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
+    - uses: carlosperate/arm-none-eabi-gcc-action@v1
+      with:
+        release: '10-2020-q4'
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
         pip install -r requirements-ci.txt -r requirements-dev.txt
-        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
-        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
     - name: Versions
       run: |
         gcc --version
@@ -294,7 +315,7 @@ jobs:
       working-directory: tools
       env:
         BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
@@ -317,10 +338,10 @@ jobs:
     if: ${{ needs.test.outputs.boards-riscv != '[]' }}
     steps:
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
-    - uses: actions/checkout@v2.2.0
+        python-version: "3.10"
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
@@ -346,7 +367,7 @@ jobs:
       working-directory: tools
       env:
         BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
@@ -369,23 +390,26 @@ jobs:
     if: ${{ needs.test.outputs.boards-espressif != '[]' }}
     steps:
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      id: py3
+      uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
-    - uses: actions/checkout@v2.2.0
+        python-version: "3.10"
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
       run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
     - name: CircuitPython version
-      run: git describe --dirty --tags
-    - uses: actions/cache@v2
+      run: |
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
+    - uses: actions/cache@v3
       name: Fetch IDF tool cache
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/espressif/esp-idf/HEAD') }}-20210923
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/espressif/esp-idf/HEAD') }}-${{ steps.py3.outputs.python-path }}-20220404
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)
@@ -434,7 +458,7 @@ jobs:
         IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
         BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
@@ -456,10 +480,10 @@ jobs:
     if: ${{ needs.test.outputs.boards-aarch != '[]' }}
     steps:
     - name: Set up Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
-    - uses: actions/checkout@v2.2.0
+        python-version: "3.10"
+    - uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
@@ -471,8 +495,9 @@ jobs:
         pip install -r requirements-ci.txt -r requirements-dev.txt
         wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
         sudo tar -C /usr --strip-components=1 -xaf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
-        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
-        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
+    - uses: carlosperate/arm-none-eabi-gcc-action@v1
+      with:
+        release: '10-2020-q4'
     - name: Install mkfs.fat
       run: |
         wget https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz
@@ -498,7 +523,7 @@ jobs:
       working-directory: tools
       env:
         BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}

@@ -35,13 +35,22 @@
 #include "shared/runtime/buffer_helper.h"
 #include "shared/runtime/context_manager_helpers.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 
 //| class SPIDevice:
 //|     """SPI Device Manager"""
 //|
-//|     def __init__(self, spi: busio.SPI, chip_select: microcontroller.Pin, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, extra_clocks : int = 0) -> None:
+//|     def __init__(
+//|         self,
+//|         spi: busio.SPI,
+//|         chip_select: digitalio.DigitalInOut,
+//|         *,
+//|         baudrate: int = 100000,
+//|         polarity: int = 0,
+//|         phase: int = 0,
+//|         extra_clocks: int = 0
+//|     ) -> None:
 //|
 //|         """
 //|         Represents a single SPI device and manages locking the bus and the device address.
@@ -70,7 +79,6 @@
 //|                 with device as spi:
 //|                     spi.write(bytes_read)"""
 //|     ...
-//|
 STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     adafruit_bus_device_spidevice_obj_t *self = m_new_obj(adafruit_bus_device_spidevice_obj_t);
     self->base.type = &adafruit_bus_device_spidevice_type;
@@ -89,6 +97,8 @@ STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type
 
     busio_spi_obj_t *spi = args[ARG_spi].u_obj;
 
+    mp_arg_validate_type(args[ARG_chip_select].u_obj, &digitalio_digitalinout_type, MP_QSTR_chip_select);
+
     common_hal_adafruit_bus_device_spidevice_construct(MP_OBJ_TO_PTR(self), spi, args[ARG_chip_select].u_obj, args[ARG_cs_active_value].u_bool, args[ARG_baudrate].u_int, args[ARG_polarity].u_int,
         args[ARG_phase].u_int, args[ARG_extra_clocks].u_int);
 
@@ -106,7 +116,6 @@ STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type
 //|     def __enter__(self) -> busio.SPI:
 //|         """Starts a SPI transaction by configuring the SPI and asserting chip select."""
 //|         ...
-//|
 STATIC mp_obj_t adafruit_bus_device_spidevice_obj___enter__(mp_obj_t self_in) {
     adafruit_bus_device_spidevice_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_adafruit_bus_device_spidevice_enter(self);

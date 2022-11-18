@@ -31,10 +31,11 @@
 #define COMMON_HAL_MCU_PROCESSOR_UID_LENGTH 16
 
 #include "py/obj.h"
+#include "clocks.h"
 
 typedef struct {
     mp_obj_base_t base;
-    // Stores no state currently.
+    uint32_t frequency;
 } mcu_processor_obj_t;
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H

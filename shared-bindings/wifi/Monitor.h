@@ -29,7 +29,7 @@
 
 #include "common-hal/wifi/Monitor.h"
 
-const mp_obj_type_t wifi_monitor_type;
+extern const mp_obj_type_t wifi_monitor_type;
 
 void common_hal_wifi_monitor_construct(wifi_monitor_obj_t *self,
     uint8_t channel, size_t queue);

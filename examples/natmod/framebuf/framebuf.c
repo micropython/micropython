@@ -8,7 +8,7 @@ void *memset(void *s, int c, size_t n) {
 }
 #endif
 
-mp_obj_type_t mp_type_framebuf;
+mp_obj_full_type_t mp_type_framebuf;
 
 #include "extmod/modframebuf.c"
 
@@ -19,9 +19,10 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     MP_DYNRUNTIME_INIT_ENTRY
 
     mp_type_framebuf.base.type = (void*)&mp_type_type;
+    mp_type_framebuf.flags = MP_TYPE_FLAG_EXTENDED;
     mp_type_framebuf.name = MP_QSTR_FrameBuffer;
     mp_type_framebuf.make_new = framebuf_make_new;
-    mp_type_framebuf.buffer_p.get_buffer = framebuf_get_buffer;
+    mp_type_framebuf.ext[0].buffer_p.get_buffer = framebuf_get_buffer;
     framebuf_locals_dict_table[0] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_fill), MP_OBJ_FROM_PTR(&framebuf_fill_obj) };
     framebuf_locals_dict_table[1] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_fill_rect), MP_OBJ_FROM_PTR(&framebuf_fill_rect_obj) };
     framebuf_locals_dict_table[2] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_pixel), MP_OBJ_FROM_PTR(&framebuf_pixel_obj) };

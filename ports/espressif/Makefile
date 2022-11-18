@@ -98,6 +98,8 @@ INC += \
 	-isystem esp-idf/components/bt/host/nimble/port/include \
 	-isystem esp-idf/components/driver/include \
 	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/efuse/include \
+	-isystem esp-idf/components/efuse/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/esp_adc_cal/include \
 	-isystem esp-idf/components/esp_common/include \
@@ -133,6 +135,8 @@ INC += \
 	-isystem esp-idf/components/soc/include \
 	-isystem esp-idf/components/soc/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/spi_flash/include \
+	-isystem esp-idf/components/ulp/include \
+	-isystem esp-idf/components/ulp/ulp_riscv/include \
 	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/include \
 	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/$(IDF_TARGET)/include
 
@@ -159,14 +163,9 @@ ifeq ($(DEBUG), 1)
   # CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -DNDEBUG -ggdb3
-	ifeq ($(IDF_TARGET_ARCH),xtensa)
-	  OPTIMIZATION_FLAGS ?= -O2
-	else
-		# RISC-V is larger than xtensa so do -Os for it
-	  OPTIMIZATION_FLAGS ?= -Os
-	endif
-  # TODO: Test with -flto
-  ### CFLAGS += -flto
+  OPTIMIZATION_FLAGS ?= -O2
+  # RISC-V is larger than xtensa
+  # Use -Os for RISC-V when it overflows
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
@@ -176,6 +175,8 @@ CFLAGS += $(INC) -Werror -Wall -std=gnu11 -Wl,--gc-sections $(BASE_CFLAGS) $(C_D
 
 ifeq ($(IDF_TARGET_ARCH),xtensa)
 CFLAGS += -mlongcalls
+else ifeq ($(IDF_TARGET_ARCH),riscv)
+CFLAGS += -march=rv32imc
 endif
 
 LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-Map=$@.map -Wl,-cref -Wl,--undefined=uxTopUsedPriority
@@ -196,7 +197,12 @@ LDFLAGS += \
 	-Wl,--build-id=none \
 	-fno-rtti
 
-ifeq ($(IDF_TARGET),esp32c3)
+ifeq ($(IDF_TARGET),esp32)
+LDFLAGS += \
+	-T$(IDF_TARGET).rom.newlib-data.ld \
+	-T$(IDF_TARGET).rom.newlib-funcs.ld \
+	-T$(IDF_TARGET).rom.spiflash.ld
+else ifeq ($(IDF_TARGET),esp32c3)
 LDFLAGS += \
 	-Tesp32c3.rom.newlib.ld \
 	-Tesp32c3.rom.version.ld \
@@ -221,8 +227,12 @@ endif
 
 # TinyUSB defines
 ifeq ($(CIRCUITPY_USB),1)
+ifeq ($(IDF_TARGET),esp32s2)
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_ESP32S2
+else ifeq ($(IDF_TARGET),esp32s3)
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_ESP32S3
+endif
 CFLAGS += \
-	-DCFG_TUSB_MCU=OPT_MCU_ESP32S2 \
 	-DCFG_TUSB_OS=OPT_OS_FREERTOS \
 	-DCFG_TUD_CDC_RX_BUFSIZE=1024 \
 	-DCFG_TUD_CDC_TX_BUFSIZE=1024 \
@@ -230,7 +240,8 @@ CFLAGS += \
 	-DCFG_TUD_MIDI_RX_BUFSIZE=128 \
 	-DCFG_TUD_MIDI_TX_BUFSIZE=128 \
 	-DCFG_TUD_VENDOR_RX_BUFSIZE=128 \
-	-DCFG_TUD_VENDOR_TX_BUFSIZE=128
+	-DCFG_TUD_VENDOR_TX_BUFSIZE=128 \
+	-DCFG_TUD_TASK_QUEUE_SZ=32
 endif
 
 ######################################
@@ -244,7 +255,6 @@ SRC_C += \
 	bindings/espidf/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
-	modules/$(CIRCUITPY_MODULE).c \
 	shared/netutils/netutils.c \
 	peripherals/i2c.c \
 	peripherals/rmt.c \
@@ -257,15 +267,34 @@ SRC_C += \
 	peripherals/touch.c
 ifeq ($(IDF_TARGET),esp32s2)
 SRC_C += \
-	cam.c \
 	i2s_lcd_esp32s2_driver.c
 endif
+endif
+
+ifeq ($(IDF_TARGET),esp32c3)
+SRC_C += \
+	supervisor/usb_serial_jtag.c
 endif
 
 $(BUILD)/i2s_lcd_esp32s2_driver.o: CFLAGS += -Wno-sign-compare
 
 ifneq ($(CIRCUITPY_USB),0)
 SRC_C += lib/tinyusb/src/portable/espressif/esp32sx/dcd_esp32sx.c
+endif
+
+ifneq ($(CIRCUITPY_BLEIO),0)
+SRC_C += common-hal/_bleio/ble_events.c
+endif
+
+SRC_C += $(wildcard common-hal/espidf/*.c)
+
+ifneq ($(CIRCUITPY_ESP32_CAMERA),0)
+SRC_CAMERA := \
+	$(wildcard common-hal/esp32_camera/*.c) \
+	$(wildcard bindings/esp32_camera/*.c)
+SRC_C += $(SRC_CAMERA)
+CFLAGS += -isystem esp32-camera/driver/include
+CFLAGS += -isystem esp32-camera/conversions/include
 endif
 
 SRC_COMMON_HAL_EXPANDED = \
@@ -307,7 +336,18 @@ $(BUILD)/esp-idf:
 	$(Q)$(MKDIR) -p $@
 
 TARGET_SDKCONFIG = esp-idf-config/sdkconfig-$(IDF_TARGET).defaults
-FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
+
+ifeq ($(CIRCUITPY_ESP_FLASH_SIZE), 2MB)
+	FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-ota-no-uf2.defaults
+else
+UF2_BOOTLOADER ?= $(CIRCUITPY_USB)
+ifeq ($(UF2_BOOTLOADER), 1)
+	FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
+else
+	FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
+endif
+endif
+
 ifeq ($(DEBUG), 1)
 	DEBUG_SDKCONFIG = esp-idf-config/sdkconfig-debug.defaults
 else
@@ -319,8 +359,10 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 	SDKCONFIGS := esp-idf-config/sdkconfig-ble.defaults;$(SDKCONFIGS)
 endif
 # create the config headers
-$(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig | $(BUILD)/esp-idf
-	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja
+.PHONY: do-sdkconfig
+do-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
+$(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig CMakeLists.txt | $(BUILD)/esp-idf
+	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja -DCIRCUITPY_ESP32_CAMERA=$(CIRCUITPY_ESP32_CAMERA)
 
 # build a lib
 # Adding -d explain -j 1 -v to the ninja line will output debug info
@@ -348,12 +390,18 @@ $(HEADER_BUILD)/qstr.split: | $(BUILD)/esp-idf/config/sdkconfig.h
 
 BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
 BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
+ifeq ($(IDF_TARGET),esp32)
+BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/librtc.a
+endif
 
-ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc_cal esp_common esp_event esp_hw_support esp_ipc esp_netif esp_pm esp_phy esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
+ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc_cal esp_common esp_event esp_hw_support esp_ipc esp_netif esp_pm esp_phy esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls mdns newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
 ifneq ($(CIRCUITPY_BLEIO),0)
 	ESP_IDF_COMPONENTS_LINK += bt
 	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
 	                esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
+endif
+ifneq ($(CIRCUITPY_COPROC),0)
+	ESP_IDF_COMPONENTS_LINK += ulp
 endif
 
 ESP_IDF_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
@@ -366,12 +414,22 @@ BINARY_BLOBS += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 ESP_IDF_COMPONENTS_EXPANDED += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 endif
 
-ifeq ($(IDF_TARGET),esp32c3)
+ifneq ($(CIRCUITPY_ESP32_CAMERA),0)
+ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/esp32-camera/libesp32-camera.a
+#$(error $(ESP_IDF_COMPONENTS_EXPANDED))
+endif
+
+# BOOTLOADER_OFFSET is determined by chip type, based on the ROM bootloader, and is not changeable.
+ifeq ($(IDF_TARGET),esp32)
+BOOTLOADER_OFFSET = 0x1000
+else ifeq ($(IDF_TARGET),esp32c3)
 BOOTLOADER_OFFSET = 0x0
 else ifeq ($(IDF_TARGET),esp32s3)
 BOOTLOADER_OFFSET = 0x0
-else
+else ifeq ($(IDF_TARGET),esp32s2)
 BOOTLOADER_OFFSET = 0x1000
+else
+$(error unknown IDF_TARGET $(IDF_TARGET))
 endif
 
 IDF_CMAKE_TARGETS = \
@@ -386,12 +444,12 @@ ESP_AUTOGEN_LD = $(BUILD)/esp-idf/esp-idf/$(IDF_TARGET)/$(IDF_TARGET)_out.ld $(B
 
 FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_ESP_FLASH_FREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
 
-ESPTOOL_FLAGS ?= --before=default_reset --after=no_reset
+ESPTOOL_FLAGS ?= --before=default_reset --after=no_reset --baud 921600
 
-ifeq ($(IDF_TARGET),esp32c3)
-all: $(BUILD)/firmware.bin
-else
+ifeq ($(UF2_BOOTLOADER),1)
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
+else
+all: $(BUILD)/firmware.bin
 endif
 
 .PHONY: esp-idf-stamp

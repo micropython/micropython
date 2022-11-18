@@ -163,7 +163,8 @@ void status_led_init() {
     common_hal_busio_spi_construct(&status_apa102,
         MICROPY_HW_APA102_SCK,
         MICROPY_HW_APA102_MOSI,
-        NULL);
+        NULL,
+        false);
     #endif
     #if CIRCUITPY_BITBANG_APA102
     shared_module_bitbangio_spi_try_lock(&status_apa102);
@@ -178,27 +179,15 @@ void status_led_init() {
 
     #elif CIRCUITPY_PWM_RGB_LED
     if (common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_R)) {
-        pwmout_result_t red_result = common_hal_pwmio_pwmout_construct(&rgb_status_r, CIRCUITPY_RGB_STATUS_R, 0, 50000, false);
-
-        if (PWMOUT_OK == red_result) {
-            common_hal_pwmio_pwmout_never_reset(&rgb_status_r);
-        }
+        common_hal_pwmio_pwmout_construct(&rgb_status_r, CIRCUITPY_RGB_STATUS_R, 0, 50000, false);
     }
 
     if (common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_G)) {
-        pwmout_result_t green_result = common_hal_pwmio_pwmout_construct(&rgb_status_g, CIRCUITPY_RGB_STATUS_G, 0, 50000, false);
-
-        if (PWMOUT_OK == green_result) {
-            common_hal_pwmio_pwmout_never_reset(&rgb_status_g);
-        }
+        common_hal_pwmio_pwmout_construct(&rgb_status_g, CIRCUITPY_RGB_STATUS_G, 0, 50000, false);
     }
 
     if (common_hal_mcu_pin_is_free(CIRCUITPY_RGB_STATUS_B)) {
-        pwmout_result_t blue_result = common_hal_pwmio_pwmout_construct(&rgb_status_b, CIRCUITPY_RGB_STATUS_B, 0, 50000, false);
-
-        if (PWMOUT_OK == blue_result) {
-            common_hal_pwmio_pwmout_never_reset(&rgb_status_b);
-        }
+        common_hal_pwmio_pwmout_construct(&rgb_status_b, CIRCUITPY_RGB_STATUS_B, 0, 50000, false);
     }
 
     #elif defined(MICROPY_HW_LED_STATUS)
@@ -323,12 +312,17 @@ uint32_t color_brightness(uint32_t color, uint8_t brightness) {
 void set_status_brightness(uint8_t level) {
     #if CIRCUITPY_STATUS_LED
     rgb_status_brightness = level;
-    uint32_t current_color = current_status_color;
-    // Temporarily change the current color global to force the new_status_color call to update the
-    // LED. Usually duplicate calls of the same color are ignored without regard to brightness
-    // changes.
-    current_status_color = 0;
-    new_status_color(current_color);
+    // This is only called by user code and we're never controlling the status
+    // LED when user code is running. So, we don't need to update the current
+    // state (there is none.)
+    #endif
+}
+
+uint8_t get_status_brightness(void) {
+    #if CIRCUITPY_STATUS_LED
+    return rgb_status_brightness;
+    #else
+    return 0;
     #endif
 }
 

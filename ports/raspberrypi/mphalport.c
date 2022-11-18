@@ -34,7 +34,6 @@
 #include "py/smallint.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/time/__init__.h"
-#include "supervisor/shared/autoreload.h"
 
 #include "mpconfigboard.h"
 #include "mphalport.h"

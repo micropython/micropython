@@ -45,7 +45,7 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -126,6 +126,15 @@ void mp_init(void) {
         sizeof(MP_STATE_VM(fs_user_mount)) - MICROPY_FATFS_NUM_PERSISTENT);
     #endif
 
+    #if MICROPY_PY_SYS_PATH_ARGV_DEFAULTS
+    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
+    #if MICROPY_MODULE_FROZEN
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen));
+    #endif
+    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
+    #endif
+
     #if MICROPY_PY_SYS_ATEXIT
     MP_STATE_VM(sys_exitfunc) = mp_const_none;
     #endif
@@ -157,7 +166,7 @@ void mp_deinit(void) {
     #endif
 }
 
-mp_obj_t mp_load_name(qstr qst) {
+mp_obj_t MICROPY_WRAP_MP_LOAD_NAME(mp_load_name)(qstr qst) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qst));
     // If we're at the outer scope (locals == globals), dispatch to load_global right away
@@ -170,7 +179,7 @@ mp_obj_t mp_load_name(qstr qst) {
     return mp_load_global(qst);
 }
 
-mp_obj_t mp_load_global(qstr qst) {
+mp_obj_t MICROPY_WRAP_MP_LOAD_GLOBAL(mp_load_global)(qstr qst) {
     // logic: search globals, builtins
     DEBUG_OP_printf("load global %s\n", qstr_str(qst));
     mp_map_elem_t *elem = mp_map_lookup(&mp_globals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
@@ -310,7 +319,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
     }
 }
 
-mp_obj_t PLACE_IN_ITCM(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
+mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     DEBUG_OP_printf("binary " UINT_FMT " %q %p %p\n", op, mp_binary_op_method_name[op], lhs, rhs);
 
     // TODO correctly distinguish inplace operators for mutable objects
@@ -1078,7 +1087,8 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
             // be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
-            const mp_obj_t *proxy = mp_obj_property_get(member);
+            size_t n_proxy;
+            const mp_obj_t *proxy = mp_obj_property_get(member, &n_proxy);
             if (proxy[0] == mp_const_none) {
                 mp_raise_AttributeError(MP_ERROR_TEXT("unreadable attribute"));
             } else {
@@ -1103,6 +1113,10 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     dest[0] = MP_OBJ_NULL;
     dest[1] = MP_OBJ_NULL;
 
+    // Note: the specific case of obj being an instance type is fast-path'ed in the VM
+    // for the MP_BC_LOAD_ATTR opcode. Instance types handle type->attr and look up directly
+    // in their member's map.
+
     // get the type
     const mp_obj_type_t *type = mp_obj_get_type(obj);
 
@@ -1124,7 +1138,14 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     if (attr_fun != NULL) {
         // this type can do its own load, so call it
         attr_fun(obj, attr, dest);
-        return;
+
+        // If type->attr has set dest[1] = MP_OBJ_SENTINEL, we should proceed
+        // with lookups below (i.e. in locals_dict). If not, return right away.
+        if (dest[1] != MP_OBJ_SENTINEL) {
+            return;
+        }
+        // Clear the fail flag set by type->attr so it's like it never ran.
+        dest[1] = MP_OBJ_NULL;
     }
     if (type->locals_dict != NULL) {
         // generic method lookup
@@ -1135,6 +1156,7 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
         if (elem != NULL) {
             mp_convert_member_lookup(obj, type, elem->value, dest);
         }
+        return;
     }
 }
 
@@ -1205,15 +1227,16 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
             // would be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
-            const mp_obj_t *proxy = mp_obj_property_get(elem->value);
+            size_t n_proxy;
+            const mp_obj_t *proxy = mp_obj_property_get(elem->value, &n_proxy);
             mp_obj_t dest[2] = {base, value};
             if (value == MP_OBJ_NULL) {
                 // delete attribute
-                if (proxy[2] != mp_const_none) {
+                if (n_proxy == 3 && proxy[2] != mp_const_none) {
                     mp_call_function_n_kw(proxy[2], 1, 0, dest);
                     return;
                 }
-            } else if (proxy[1] != mp_const_none) {
+            } else if (n_proxy > 1 && proxy[1] != mp_const_none) {
                 mp_call_function_n_kw(proxy[1], 2, 0, dest);
                 return;
             }
@@ -1426,8 +1449,10 @@ mp_obj_t mp_make_raise_obj(mp_obj_t o) {
         // create and return a new exception instance by calling o
         // TODO could have an option to disable traceback, then builtin exceptions (eg TypeError)
         // could have const instances in ROM which we return here instead
-        return mp_call_function_n_kw(o, 0, 0, NULL);
-    } else if (mp_obj_is_exception_instance(o)) {
+        o = mp_call_function_n_kw(o, 0, 0, NULL);
+    }
+
+    if (mp_obj_is_exception_instance(o)) {
         // o is an instance of an exception, so use it as the exception
         return o;
     } else {
@@ -1715,10 +1740,6 @@ NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
     va_start(argptr,fmt);
     mp_raise_msg_vlist(&mp_type_OverflowError, fmt, argptr);
     va_end(argptr);
-}
-
-NORETURN void mp_raise_MpyError(const compressed_string_t *msg) {
-    mp_raise_msg(&mp_type_MpyError, msg);
 }
 
 NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg) {

@@ -46,6 +46,7 @@
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
 #define MICROPY_PY_FUNCTION_ATTRS                   (0)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (0)
+#define MICROPY_PY_COLLECTIONS_DEQUE                (0)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
 #define MICROPY_PY_UERRNO_LIST \
     X(EPERM) \

@@ -45,7 +45,6 @@
 //|         """Enum-like class to define which direction the digital values are
 //|         going."""
 //|         ...
-//|
 //|     INPUT: Direction
 //|     """Read digital data in"""
 //|

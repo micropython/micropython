@@ -30,11 +30,11 @@
 #include "shared-bindings/bitops/__init__.h"
 
 //| """Routines for low-level manipulation of binary data"""
-//|
-//|
 
-//| def bit_transpose(input: ReadableBuffer, output: WriteableBuffer, width:int = 8) -> WriteableBuffer:
-//|     """"Transpose" a buffer by assembling each output byte with bits taken from each of ``width`` different input bytes.
+//| def bit_transpose(
+//|     input: ReadableBuffer, output: WriteableBuffer, width: int = 8
+//| ) -> WriteableBuffer:
+//|     """ "Transpose" a buffer by assembling each output byte with bits taken from each of ``width`` different input bytes.
 //|
 //|     This can be useful to convert a sequence of pixel values into a single
 //|     stream of bytes suitable for sending via a parallel conversion method.
@@ -53,6 +53,7 @@
 //|
 //|     Returns the output buffer."""
 //|     ...
+//|
 
 STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_input, ARG_output, ARG_width };
@@ -64,10 +65,7 @@ STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    int width = args[ARG_width].u_int;
-    if (width < 2 || width > 8) {
-        mp_raise_ValueError_varg(translate("width must be from 2 to 8 (inclusive), not %d"), width);
-    }
+    mp_int_t width = mp_arg_validate_int_range(args[ARG_width].u_int, 2, 8, MP_QSTR_width);
 
     mp_buffer_info_t input_bufinfo;
     mp_get_buffer_raise(args[ARG_input].u_obj, &input_bufinfo, MP_BUFFER_READ);
@@ -80,9 +78,9 @@ STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_get_buffer_raise(args[ARG_output].u_obj, &output_bufinfo, MP_BUFFER_WRITE);
     int avail = output_bufinfo.len;
     int outlen = 8 * (inlen / width);
-    if (avail < outlen) {
-        mp_raise_ValueError_varg(translate("Output buffer must be at least %d bytes"), outlen);
-    }
+
+    mp_arg_validate_length_min(avail, outlen, MP_QSTR_output);
+
     common_hal_bitops_bit_transpose(output_bufinfo.buf, input_bufinfo.buf, inlen, width);
     return args[ARG_output].u_obj;
 }

@@ -32,21 +32,21 @@
 #include "common-hal/microcontroller/Pin.h"
 
 void board_init(void) {
-    // Turn on I2C
-    common_hal_never_reset_pin(&pin_GPIO7);
-    gpio_set_direction(7, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(7, false);
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
+    reset_board();
 }
 
 void reset_board(void) {
     // Turn on I2C power by default.
+
+    // set pin to input to find 'rest state'
+    gpio_set_direction(7, GPIO_MODE_DEF_INPUT);
+    // wait 1 millis for pull to activate
+    mp_hal_delay_ms(1);
+    // read rest state (off)
+    bool restlevel = gpio_get_level(7);
     gpio_set_direction(7, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(7, false);
+    // flip it!
+    gpio_set_level(7, !restlevel);
 }
 
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

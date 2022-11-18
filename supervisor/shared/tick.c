@@ -34,7 +34,6 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/stack.h"
 
 #if CIRCUITPY_BLEIO_HCI
@@ -43,10 +42,6 @@
 
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
-#endif
-
-#if CIRCUITPY_GAMEPADSHIFT
-#include "shared-module/gamepadshift/__init__.h"
 #endif
 
 #if CIRCUITPY_KEYPAD
@@ -66,7 +61,9 @@ static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 
 static background_callback_t tick_callback;
 
-volatile uint64_t last_finished_tick = 0;
+static volatile uint64_t last_finished_tick = 0;
+
+static volatile size_t tick_enable_count = 0;
 
 static void supervisor_background_tasks(void *unused) {
     port_start_background_task();
@@ -101,17 +98,6 @@ void supervisor_tick(void) {
     filesystem_tick();
     #endif
 
-    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
-    autoreload_tick();
-    #endif
-
-    #ifdef CIRCUITPY_GAMEPAD_TICKS
-    if (!(port_get_raw_ticks(NULL) & CIRCUITPY_GAMEPAD_TICKS)) {
-        #if CIRCUITPY_GAMEPADSHIFT
-        gamepadshift_tick();
-        #endif
-    }
-    #endif
 
     #if CIRCUITPY_KEYPAD
     keypad_tick();
@@ -160,8 +146,7 @@ void mp_hal_delay_ms(mp_uint_t delay_ms) {
     }
 }
 
-volatile size_t tick_enable_count = 0;
-extern void supervisor_enable_tick(void) {
+void supervisor_enable_tick(void) {
     common_hal_mcu_disable_interrupts();
     if (tick_enable_count == 0) {
         port_enable_tick();
@@ -170,7 +155,7 @@ extern void supervisor_enable_tick(void) {
     common_hal_mcu_enable_interrupts();
 }
 
-extern void supervisor_disable_tick(void) {
+void supervisor_disable_tick(void) {
     common_hal_mcu_disable_interrupts();
     if (tick_enable_count > 0) {
         tick_enable_count--;

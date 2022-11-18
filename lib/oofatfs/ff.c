@@ -4816,6 +4816,21 @@ FRESULT f_rename (
     DEF_NAMBUF
 
 
+    // Check to see if we're moving a directory into itself. This occurs when we're moving a
+    // directory where the old path is a prefix of the new and the next character is a "/" and thus
+    // preserves the original directory name.
+    FILINFO fno;
+    res = f_stat(fs, path_old, &fno);
+    if (res != FR_OK) {
+        return res;
+    }
+    if ((fno.fattrib & AM_DIR) != 0 &&
+        strlen(path_new) > strlen(path_old) &&
+        path_new[strlen(path_old)] == '/' &&
+        strncmp(path_old, path_new, strlen(path_old)) == 0) {
+        return FR_INVALID_NAME;
+    }
+
     res = find_volume(fs, FA_WRITE);    /* Get logical drive of the old object */
     if (res == FR_OK) {
         djo.obj.fs = fs;

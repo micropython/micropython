@@ -35,14 +35,3 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO44);
     #endif /* DEBUG */
 }
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-
-}
-
-void board_deinit(void) {
-}

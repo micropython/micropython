@@ -30,20 +30,29 @@
 
 #include "py/runtime.h"
 
-void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t width,
-    uint32_t height, uint32_t bits_per_value) {
+enum { align_bits = 8 * sizeof(uint32_t) };
+
+static int stride(uint32_t width, uint32_t bits_per_value) {
     uint32_t row_width = width * bits_per_value;
     // align to uint32_t
-    uint8_t align_bits = 8 * sizeof(uint32_t);
-    if (row_width % align_bits != 0) {
-        self->stride = (row_width / align_bits + 1);
-    } else {
-        self->stride = row_width / align_bits;
-    }
+    return (row_width + align_bits - 1) / align_bits;
+}
+
+void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t width,
+    uint32_t height, uint32_t bits_per_value) {
+    common_hal_displayio_bitmap_construct_from_buffer(self, width, height, bits_per_value, NULL, false);
+}
+
+void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self, uint32_t width,
+    uint32_t height, uint32_t bits_per_value, uint32_t *data, bool read_only) {
     self->width = width;
     self->height = height;
-    self->data = m_malloc(self->stride * height * sizeof(uint32_t), false);
-    self->read_only = false;
+    self->stride = stride(width, bits_per_value);
+    if (!data) {
+        data = m_malloc(self->stride * height * sizeof(uint32_t), false);
+    }
+    self->data = data;
+    self->read_only = read_only;
     self->bits_per_value = bits_per_value;
 
     if (bits_per_value > 8 && bits_per_value != 16 && bits_per_value != 32) {
@@ -69,6 +78,7 @@ void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t wi
     self->dirty_area.y1 = 0;
     self->dirty_area.y2 = height;
 }
+
 
 uint16_t common_hal_displayio_bitmap_get_height(displayio_bitmap_t *self) {
     return self->height;

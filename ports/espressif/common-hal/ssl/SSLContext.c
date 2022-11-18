@@ -87,3 +87,10 @@ bool common_hal_ssl_sslcontext_get_check_hostname(ssl_sslcontext_obj_t *self) {
 void common_hal_ssl_sslcontext_set_check_hostname(ssl_sslcontext_obj_t *self, bool value) {
     self->ssl_config.skip_common_name = !value;
 }
+
+void common_hal_ssl_sslcontext_load_cert_chain(ssl_sslcontext_obj_t *self, mp_buffer_info_t *cert_buf, mp_buffer_info_t *key_buf) {
+    self->ssl_config.clientcert_buf = cert_buf->buf;
+    self->ssl_config.clientcert_bytes = cert_buf->len + 1;
+    self->ssl_config.clientkey_buf = key_buf->buf;
+    self->ssl_config.clientkey_bytes = key_buf->len + 1;
+}

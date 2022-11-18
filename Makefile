@@ -61,6 +61,7 @@ TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
+	@echo "  fetch-submodules	to fetch dependencies from submodules, run this right after you clone the repo"
 	@echo "  html       to make standalone HTML files"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"

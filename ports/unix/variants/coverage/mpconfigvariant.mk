@@ -12,14 +12,12 @@ CFLAGS += \
 
 LDFLAGS += -fprofile-arcs -ftest-coverage
 
+FROZEN_MANIFEST ?= $(VARIANT_DIR)/manifest.py
 USER_C_MODULES = $(TOP)/examples/usercmodule
 
 MICROPY_VFS_FAT = 1
 MICROPY_VFS_LFS1 = 1
 MICROPY_VFS_LFS2 = 1
-
-FROZEN_DIR=variants/coverage/frzstr
-FROZEN_MPY_DIR=variants/coverage/frzmpy
 
 SRC_QRIO := $(patsubst ../../%,%,$(wildcard ../../shared-bindings/qrio/*.c ../../shared-module/qrio/*.c ../../lib/quirc/lib/*.c))
 SRC_C += $(SRC_QRIO)
@@ -35,9 +33,11 @@ SRC_BITMAP := \
 	shared-bindings/aesio/__init__.c \
 	shared-bindings/bitmaptools/__init__.c \
 	shared-bindings/displayio/Bitmap.c \
+	shared-bindings/dotenv/__init__.c \
 	shared-bindings/rainbowio/__init__.c \
 	shared-bindings/traceback/__init__.c \
 	shared-bindings/util.c \
+	shared-bindings/zlib/__init__.c \
 	shared-module/aesio/aes.c \
 	shared-module/aesio/__init__.c \
 	shared-module/bitmaptools/__init__.c \
@@ -45,19 +45,22 @@ SRC_BITMAP := \
 	shared-module/displayio/Bitmap.c \
 	shared-module/displayio/ColorConverter.c \
 	shared-module/displayio/ColorConverter.c \
+	shared-module/dotenv/__init__.c \
 	shared-module/rainbowio/__init__.c \
-	shared-module/traceback/__init__.c
+	shared-module/traceback/__init__.c \
+	shared-module/zlib/__init__.c \
 
-$(info $(SRC_BITMAP))
 SRC_C += $(SRC_BITMAP)
 
 CFLAGS += \
 	-DCIRCUITPY_AESIO=1 \
 	-DCIRCUITPY_BITMAPTOOLS=1 \
 	-DCIRCUITPY_DISPLAYIO_UNIX=1 \
+	-DCIRCUITPY_DOTENV=1 \
 	-DCIRCUITPY_GIFIO=1 \
 	-DCIRCUITPY_RAINBOWIO=1 \
-	-DCIRCUITPY_TRACEBACK=1
+	-DCIRCUITPY_TRACEBACK=1 \
+	-DCIRCUITPY_ZLIB=1
 
 SRC_C += coverage.c
 SRC_CXX += coveragecpp.cpp

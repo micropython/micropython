@@ -2,7 +2,7 @@
 rm -rf test-stubs
 python3 -mvenv test-stubs
 . test-stubs/bin/activate
-pip install mypy isort black wheel
+pip install mypy isort black adafruit-circuitpython-typing wheel
 rm -rf circuitpython-stubs .mypy_cache
 make stubs
 pip install --force-reinstall circuitpython-stubs/dist/circuitpython-stubs-*.tar.gz

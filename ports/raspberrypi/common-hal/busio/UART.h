@@ -37,6 +37,8 @@ typedef struct {
     uint8_t tx_pin;
     uint8_t rx_pin;
     uint8_t cts_pin;
+    uint8_t rs485_dir_pin;
+    bool rs485_invert;
     uint8_t rts_pin;
     uint8_t uart_id;
     uint8_t uart_irq_id;

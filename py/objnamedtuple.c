@@ -33,7 +33,7 @@
 #include "py/objnamedtuple.h"
 #include "py/objtype.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_COLLECTIONS
 

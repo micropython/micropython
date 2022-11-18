@@ -50,7 +50,7 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
     }
     if (bytes_read != 138 ||
         memcmp(bmp_header, "BM", 2) != 0) {
-        mp_raise_ValueError(translate("Invalid BMP file"));
+        mp_arg_error_invalid(MP_QSTR_file);
     }
 
     // We can't cast because we're not aligned.

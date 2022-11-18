@@ -77,11 +77,16 @@ void reset_spi(void) {
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
-    const mcu_pin_obj_t *miso) {
+    const mcu_pin_obj_t *miso, bool half_duplex) {
     size_t instance_index = NUM_SPI;
     BP_Function_Enum clock_alt = 0;
     BP_Function_Enum mosi_alt = 0;
     BP_Function_Enum miso_alt = 0;
+
+    if (half_duplex) {
+        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+    }
+
     for (size_t i = 0; i < NUM_SPI; i++) {
         if (spi_in_use[i]) {
             continue;
@@ -99,7 +104,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         break;
     }
     if (instance_index == NUM_SPI) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     self->clock = clock;

@@ -33,10 +33,15 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *clock,
-    const mcu_pin_obj_t *mosi, const mcu_pin_obj_t *miso) {
+    const mcu_pin_obj_t *mosi, const mcu_pin_obj_t *miso, bool half_duplex) {
     int port = -1;
+
+    if (half_duplex) {
+        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+    }
 
     if (clock->number == PIN_SPI4_SCK &&
         (mosi == NULL || mosi->number == PIN_SPI4_MOSI) &&
@@ -51,7 +56,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     }
 
     if (port < 0) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     claim_pin(clock);

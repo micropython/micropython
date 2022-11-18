@@ -41,6 +41,14 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 
+#if CIRCUITPY_SSL
+#include "common-hal/ssl/__init__.h"
+#endif
+
+#if CIRCUITPY_WIFI
+#include "common-hal/wifi/__init__.h"
+#endif
+
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/busio/UART.h"
 
@@ -53,11 +61,19 @@
 #include "src/rp2_common/hardware_uart/include/hardware/uart.h"
 #include "src/rp2_common/hardware_sync/include/hardware/sync.h"
 #include "src/rp2_common/hardware_timer/include/hardware/timer.h"
+#if CIRCUITPY_CYW43
+#include "pico/cyw43_arch.h"
+#endif
 #include "src/common/pico_time/include/pico/time.h"
 #include "src/common/pico_binary_info/include/pico/binary_info.h"
 
 #include "pico/bootrom.h"
 #include "hardware/watchdog.h"
+
+#include "supervisor/serial.h"
+
+#include "tusb.h"
+#include <cmsis_compiler.h>
 
 extern volatile bool mp_msc_enabled;
 
@@ -122,6 +138,17 @@ safe_mode_t port_init(void) {
 
     // Check brownout.
 
+    #if CIRCUITPY_CYW43
+    never_reset_pin_number(23);
+    never_reset_pin_number(24);
+    never_reset_pin_number(25);
+    never_reset_pin_number(29);
+    if (cyw43_arch_init()) {
+        serial_write("WiFi init failed\n");
+    } else {
+        cyw_ever_init = true;
+    }
+    #endif
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
     }
@@ -157,6 +184,14 @@ void reset_port(void) {
     #endif
     #if CIRCUITPY_AUDIOCORE
     audio_dma_reset();
+    #endif
+
+    #if CIRCUITPY_SSL
+    ssl_reset();
+    #endif
+
+    #if CIRCUITPY_WIFI
+    wifi_reset();
     #endif
 
     reset_all_pins();
@@ -209,38 +244,48 @@ uint32_t port_get_saved_word(void) {
     return __scratch_x_start__;
 }
 
+static volatile bool ticks_enabled;
+
 uint64_t port_get_raw_ticks(uint8_t *subticks) {
     uint64_t microseconds = time_us_64();
     return 1024 * (microseconds / 1000000) + (microseconds % 1000000) / 977;
 }
 
 STATIC void _tick_callback(uint alarm_num) {
-    supervisor_tick();
-    hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), 977));
+    if (ticks_enabled) {
+        supervisor_tick();
+        hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), 977));
+    }
 }
 
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
+    ticks_enabled = true;
     hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), 977));
 }
 
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
-    // hardware_alarm_cancel(0);
+    // One additional _tick_callback may occur, but it will just return
+    // whenever !ticks_enabled. Cancel is not called just in case
+    // it could nuke a timeout set by port_interrupt_after_ticks.
+    ticks_enabled = false;
 }
 
 // This is called by sleep, we ignore it when our ticks are enabled because
 // they'll wake us up earlier. If we don't, we'll mess up ticks by overwriting
 // the next RTC wake up time.
 void port_interrupt_after_ticks(uint32_t ticks) {
+    if (!ticks_enabled) {
+        hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), ticks * 977));
+    }
 }
 
 void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
-    if (!background_callback_pending()) {
-        // TODO: Does not work when board is power-cycled.
-        // asm volatile ("dsb 0xF" ::: "memory");
-        // __wfi();
+    if (!background_callback_pending() && !tud_task_event_ready()) {
+        __DSB();
+        __WFI();
     }
     common_hal_mcu_enable_interrupts();
 }
@@ -260,4 +305,20 @@ __attribute__((used)) void HardFault_Handler(void) {
     while (true) {
         asm ("nop;");
     }
+}
+
+void port_yield() {
+    #if CIRCUITPY_CYW43
+    cyw43_arch_poll();
+    #endif
+}
+
+void port_boot_info(void) {
+    #if CIRCUITPY_CYW43
+    mp_printf(&mp_plat_print, "MAC");
+    for (int i = 0; i < 6; i++) {
+        mp_printf(&mp_plat_print, ":%02X", cyw43_state.mac[i]);
+    }
+    mp_printf(&mp_plat_print, "\n");
+    #endif
 }

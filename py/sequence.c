@@ -28,7 +28,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // Helpers for sequence types
 

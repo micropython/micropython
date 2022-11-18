@@ -81,8 +81,6 @@ ifeq ($(DEBUG), 1)
 else
   CFLAGS += -DNDEBUG -ggdb3
   OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
-  # TODO: Test with -flto
-  ### CFLAGS += -flto
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
@@ -99,7 +97,7 @@ LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -W
 LIBS := -lgcc -lc
 
 
-LDFLAGS += -flto -ffreestanding -nostartfiles -Wl,--gc-section -Wl,-Bstatic -Wl,-melf32lriscv -nostartfiles \
+LDFLAGS += -ffreestanding -nostartfiles -Wl,--gc-section -Wl,-Bstatic -Wl,-melf32lriscv -nostartfiles \
 			-Wl,--no-warn-mismatch \
 			-Wl,--build-id=none
 

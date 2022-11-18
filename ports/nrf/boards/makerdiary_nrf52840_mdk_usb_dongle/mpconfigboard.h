@@ -33,3 +33,8 @@
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
 #define BOARD_HAS_CRYSTAL 1  // according to the schematic we do
+
+#define CIRCUITPY_RGB_STATUS_INVERTED_PWM
+#define CIRCUITPY_RGB_STATUS_R      (&pin_P0_23)
+#define CIRCUITPY_RGB_STATUS_G      (&pin_P0_22)
+#define CIRCUITPY_RGB_STATUS_B      (&pin_P0_24)

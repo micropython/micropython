@@ -24,6 +24,7 @@
 MEMORY
 {
     FLASH_FIRMWARE (rx) : ORIGIN = 0x10000000, LENGTH = 1020k
+    /* Followed by: 4kB of NVRAM and at least 1024kB of CIRCUITPY */
     RAM (rwx) : ORIGIN =  0x20000000, LENGTH = 256k
     SCRATCH_X (rwx) : ORIGIN = 0x20040000, LENGTH = 4k
     SCRATCH_Y (rwx) : ORIGIN = 0x20041000, LENGTH = 4k
@@ -68,6 +69,14 @@ SECTIONS
         /* bit of a hack right now to exclude all floating point and time critical (e.g. memset, memcpy) code from
          * FLASH ... we will include any thing excluded here in .data below by default */
         *(.init)
+
+        __property_getter_start = .;
+        *(.property_getter)
+        __property_getter_end = .;
+        __property_getset_start = .;
+        *(.property_getset)
+        __property_getset_end = .;
+
         *(EXCLUDE_FILE(*libgcc.a: *libc.a:*lib_a-mem*.o *libm.a:) .text*)
         *(.fini)
         /* Pull all c'tors into .text */

@@ -130,7 +130,7 @@ class Task:
         self.ph_next = None  # Paring heap
         self.ph_rightmost_parent = None  # Paring heap
 
-    def __iter__(self):
+    def __await__(self):
         if not self.state:
             # Task finished, signal that is has been await'ed on.
             self.state = False
@@ -141,8 +141,12 @@ class Task:
 
     def __next__(self):
         if not self.state:
-            # Task finished, raise return value to caller so it can continue.
-            raise self.data
+            if self.data is None:
+                # Task finished but has already been sent to the loop's exception handler.
+                raise StopIteration
+            else:
+                # Task finished, raise return value to caller so it can continue.
+                raise self.data
         else:
             # Put calling task on waiting queue.
             self.state.push_head(core.cur_task)

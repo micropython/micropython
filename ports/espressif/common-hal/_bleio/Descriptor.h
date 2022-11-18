@@ -33,6 +33,8 @@
 
 #include "common-hal/_bleio/UUID.h"
 
+#include "host/ble_gatt.h"
+
 // Forward declare characteristic because it includes a Descriptor.
 struct _bleio_characteristic_obj;
 
@@ -45,6 +47,7 @@ typedef struct _bleio_descriptor_obj {
     uint16_t max_length;
     bool fixed_length;
     uint16_t handle;
+    struct ble_gatt_dsc_def def;
     bleio_attribute_security_mode_t read_perm;
     bleio_attribute_security_mode_t write_perm;
 } bleio_descriptor_obj_t;

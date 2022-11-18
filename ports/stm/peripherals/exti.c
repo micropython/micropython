@@ -26,9 +26,7 @@
 
 #include <stdbool.h>
 #include "py/mpconfig.h"
-#include "py/gc.h"
-#include "py/obj.h"
-#include "py/runtime.h"
+#include "py/misc.h"
 
 #include "peripherals/exti.h"
 

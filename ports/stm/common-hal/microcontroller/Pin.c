@@ -26,9 +26,7 @@
  */
 
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/digitalio/DigitalInOut.h"
 
-#include "py/mphal.h"
 #include "pins.h"
 
 #if defined(TFBGA216)

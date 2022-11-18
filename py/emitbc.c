@@ -560,9 +560,6 @@ void mp_emit_bc_load_global(emit_t *emit, qstr qst, int kind) {
     MP_STATIC_ASSERT(MP_BC_LOAD_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_BC_LOAD_GLOBAL);
     (void)qst;
     emit_write_bytecode_byte_qstr(emit, 1, MP_BC_LOAD_NAME + kind, qst);
-    if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
-        emit_write_bytecode_raw_byte(emit, 0);
-    }
 }
 
 void mp_emit_bc_load_method(emit_t *emit, qstr qst, bool is_super) {
@@ -595,9 +592,6 @@ void mp_emit_bc_attr(emit_t *emit, qstr qst, int kind) {
             mp_emit_bc_rot_two(emit);
         }
         emit_write_bytecode_byte_qstr(emit, -2, MP_BC_STORE_ATTR, qst);
-    }
-    if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
-        emit_write_bytecode_raw_byte(emit, 0);
     }
 }
 

@@ -182,7 +182,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
     }
 
     if (rwxa_count != 1 || plus_count > 1 || bt_count > 1 || bad_mode) {
-        mp_raise_ValueError(translate("Invalid mode"));
+        mp_arg_error_invalid(MP_QSTR_mode);
     }
 
     assert(vfs != NULL);

@@ -51,7 +51,7 @@ uint8_t display_init_sequence[] = {
     0xc1, 0x01, 0x10, // Power control SAP[2:0];BT[3:0]
     0xc5, 0x02, 0x3e, 0x28, // VCM control
     0xc7, 0x01, 0x86, // VCM control2
-    0x36, 0x01, 0x38, // Memory Access Control
+    0x36, 0x01, 0xe8, // Memory Access Control
     0x37, 0x01, 0x00, // Vertical scroll zero
     0x3a, 0x01, 0x55, // COLMOD: Pixel Format Set
     0xb1, 0x02, 0x00, 0x18, // Frame Rate Control (In Normal Mode/Full Colors)
@@ -66,7 +66,7 @@ uint8_t display_init_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_PB20, &pin_PB19, NULL);
+    common_hal_busio_spi_construct(spi, &pin_PB20, &pin_PB19, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
@@ -88,7 +88,7 @@ void board_init(void) {
         240, // Height
         0, // column start
         0, // row start
-        180, // rotation
+        0, // rotation
         16, // Color depth
         false, // Grayscale
         false, // pixels in a byte share a row. Only valid for depths < 8
@@ -102,14 +102,14 @@ void board_init(void) {
         sizeof(display_init_sequence),
         &pin_PC05,  // backlight pin
         NO_BRIGHTNESS_COMMAND,
-        1.0f, // brightness (ignored)
-        true, // auto_brightness
+        1.0f, // brightness
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
         true, // backlight_on_high
-        false); // SH1107_addressing
+        false, // SH1107_addressing
+        50000); // backlight pwm frequency
 
     // Enabling the Power of the 40-pin at the back
     CTR_5V.base.type = &digitalio_digitalinout_type;
@@ -129,14 +129,19 @@ void board_init(void) {
     common_hal_digitalio_digitalinout_never_reset(&CTR_3V3);
     common_hal_digitalio_digitalinout_never_reset(&USB_HOST_ENABLE);
 
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
+    // reset pin after fake deep sleep
+    reset_pin_number(pin_PA18.number);
 }
 
 void board_deinit(void) {
+    common_hal_displayio_release_displays();
+    common_hal_digitalio_digitalinout_deinit(&CTR_5V);
+    common_hal_digitalio_digitalinout_deinit(&CTR_3V3);
+    common_hal_digitalio_digitalinout_deinit(&USB_HOST_ENABLE);
+
+    // Turn off RTL8720DN before the deep sleep.
+    // Pin state is kept during BACKUP sleep.
+    gpio_set_pin_direction(pin_PA18.number, GPIO_DIRECTION_OUT);
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

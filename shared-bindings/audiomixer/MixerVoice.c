@@ -35,7 +35,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class MixerVoice:
 //|     """Voice objects used with Mixer
@@ -45,7 +45,6 @@
 //|     def __init__(self) -> None:
 //|         """MixerVoice instance object(s) created by `audiomixer.Mixer`."""
 //|         ...
-//|
 // TODO: support mono or stereo voices
 STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
@@ -65,7 +64,6 @@ STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t
 //|
 //|         The sample must match the `audiomixer.Mixer`'s encoding settings given in the constructor."""
 //|         ...
-//|
 STATIC mp_obj_t audiomixer_mixervoice_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
     static const mp_arg_t allowed_args[] = {
@@ -85,7 +83,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixervoice_play_obj, 1, audiomixer_mixervo
 //|     def stop(self) -> None:
 //|         """Stops playback of the sample on this voice."""
 //|         ...
-//|
 STATIC mp_obj_t audiomixer_mixervoice_obj_stop(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_voice };
     static const mp_arg_t allowed_args[] = {
@@ -103,7 +100,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixervoice_stop_obj, 1, audiomixer_mixervo
 
 //|     level: float
 //|     """The volume level of a voice, as a floating point number between 0 and 1."""
-//|
 STATIC mp_obj_t audiomixer_mixervoice_obj_get_level(mp_obj_t self_in) {
     return mp_obj_new_float(common_hal_audiomixer_mixervoice_get_level(self_in));
 }
@@ -130,12 +126,9 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_set_level(size_t n_args, const mp_obj_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixervoice_set_level_obj, 1, audiomixer_mixervoice_obj_set_level);
 
-const mp_obj_property_t audiomixer_mixervoice_level_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomixer_mixervoice_get_level_obj,
-              (mp_obj_t)&audiomixer_mixervoice_set_level_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(audiomixer_mixervoice_level_obj,
+    (mp_obj_t)&audiomixer_mixervoice_get_level_obj,
+    (mp_obj_t)&audiomixer_mixervoice_set_level_obj);
 
 //|     playing: bool
 //|     """True when this voice is being output. (read-only)"""
@@ -149,12 +142,8 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_get_playing(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixervoice_get_playing_obj, audiomixer_mixervoice_obj_get_playing);
 
-const mp_obj_property_t audiomixer_mixervoice_playing_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomixer_mixervoice_get_playing_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(audiomixer_mixervoice_playing_obj,
+    (mp_obj_t)&audiomixer_mixervoice_get_playing_obj);
 
 STATIC const mp_rom_map_elem_t audiomixer_mixervoice_locals_dict_table[] = {
     // Methods

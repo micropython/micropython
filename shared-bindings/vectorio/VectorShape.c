@@ -16,7 +16,7 @@
 #include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 
 // shape: The shape implementation to draw.
@@ -78,6 +78,7 @@ vectorio_draw_protocol_impl_t vectorio_vector_shape_draw_protocol_impl = {
     .draw_update_transform = (draw_update_transform_fun)vectorio_vector_shape_update_transform,
     .draw_finish_refresh = (draw_finish_refresh_fun)vectorio_vector_shape_finish_refresh,
     .draw_get_refresh_areas = (draw_get_refresh_areas_fun)vectorio_vector_shape_get_refresh_areas,
+    .draw_set_dirty = (draw_set_dirty_fun)common_hal_vectorio_vector_shape_set_dirty,
 };
 
 // Stub checker does not approve of these shared properties.
@@ -120,12 +121,9 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_x(mp_obj_t wrapper_shape, mp_obj_t
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_x_obj, vectorio_vector_shape_obj_set_x);
 
-const mp_obj_property_t vectorio_vector_shape_x_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&vectorio_vector_shape_get_x_obj,
-              (mp_obj_t)&vectorio_vector_shape_set_x_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(vectorio_vector_shape_x_obj,
+    (mp_obj_t)&vectorio_vector_shape_get_x_obj,
+    (mp_obj_t)&vectorio_vector_shape_set_x_obj);
 
 
 //     y: int
@@ -151,12 +149,9 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_y(mp_obj_t wrapper_shape, mp_obj_t
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_y_obj, vectorio_vector_shape_obj_set_y);
 
-const mp_obj_property_t vectorio_vector_shape_y_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&vectorio_vector_shape_get_y_obj,
-              (mp_obj_t)&vectorio_vector_shape_set_y_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(vectorio_vector_shape_y_obj,
+    (mp_obj_t)&vectorio_vector_shape_get_y_obj,
+    (mp_obj_t)&vectorio_vector_shape_set_y_obj);
 
 
 //     location: Tuple[int, int]
@@ -181,12 +176,36 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_location(mp_obj_t wrapper_shape, m
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_location_obj, vectorio_vector_shape_obj_set_location);
 
-const mp_obj_property_t vectorio_vector_shape_location_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&vectorio_vector_shape_get_location_obj,
-              (mp_obj_t)&vectorio_vector_shape_set_location_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(vectorio_vector_shape_location_obj,
+    (mp_obj_t)&vectorio_vector_shape_get_location_obj,
+    (mp_obj_t)&vectorio_vector_shape_set_location_obj);
+
+
+// Stub checker does not approve of these shared properties.
+//     hidden: bool
+//     """Hide the shape or not."""
+//
+STATIC mp_obj_t vectorio_vector_shape_obj_get_hidden(mp_obj_t wrapper_shape) {
+    // Relies on the fact that only vector_shape impl gets matched with a VectorShape.
+    const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, wrapper_shape);
+    vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
+    return mp_obj_new_bool(common_hal_vectorio_vector_shape_get_hidden(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(vectorio_vector_shape_get_hidden_obj, vectorio_vector_shape_obj_get_hidden);
+
+STATIC mp_obj_t vectorio_vector_shape_obj_set_hidden(mp_obj_t wrapper_shape, mp_obj_t hidden_obj) {
+    // Relies on the fact that only vector_shape impl gets matched with a VectorShape.
+    const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, wrapper_shape);
+    vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
+
+    common_hal_vectorio_vector_shape_set_hidden(self, mp_obj_is_true(hidden_obj));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_hidden_obj, vectorio_vector_shape_obj_set_hidden);
+
+MP_PROPERTY_GETSET(vectorio_vector_shape_hidden_obj,
+    (mp_obj_t)&vectorio_vector_shape_get_hidden_obj,
+    (mp_obj_t)&vectorio_vector_shape_set_hidden_obj);
 
 
 //     pixel_shader: Union[ColorConverter, Palette]
@@ -216,12 +235,9 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_pixel_shader(mp_obj_t wrapper_shap
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_pixel_shader_obj, vectorio_vector_shape_obj_set_pixel_shader);
 
-const mp_obj_property_t vectorio_vector_shape_pixel_shader_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&vectorio_vector_shape_get_pixel_shader_obj,
-              (mp_obj_t)&vectorio_vector_shape_set_pixel_shader_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(vectorio_vector_shape_pixel_shader_obj,
+    (mp_obj_t)&vectorio_vector_shape_get_pixel_shader_obj,
+    (mp_obj_t)&vectorio_vector_shape_set_pixel_shader_obj);
 
 
 STATIC const mp_rom_map_elem_t vectorio_vector_shape_locals_dict_table[] = {

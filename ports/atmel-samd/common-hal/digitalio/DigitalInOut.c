@@ -34,7 +34,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(
     digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin) {
@@ -66,11 +66,12 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self
     self->pin = NULL;
 }
 
-void common_hal_digitalio_digitalinout_switch_to_input(
+digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_input(
     digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
     self->output = false;
     // This also sets direction to input.
     common_hal_digitalio_digitalinout_set_pull(self, pull);
+    return DIGITALINOUT_OK;
 }
 
 digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
@@ -151,7 +152,7 @@ digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
     }
 }
 
-void common_hal_digitalio_digitalinout_set_pull(
+digitalinout_result_t common_hal_digitalio_digitalinout_set_pull(
     digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
     enum gpio_pull_mode asf_pull = GPIO_PULL_OFF;
     switch (pull) {
@@ -168,6 +169,7 @@ void common_hal_digitalio_digitalinout_set_pull(
     // Must set pull after setting direction.
     gpio_set_pin_direction(self->pin->number, GPIO_DIRECTION_IN);
     gpio_set_pin_pull_mode(self->pin->number, asf_pull);
+    return DIGITALINOUT_OK;
 }
 
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
@@ -185,5 +187,32 @@ digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
         } else {
             return PULL_DOWN;
         }
+    }
+}
+
+bool common_hal_digitalio_has_reg_op(digitalinout_reg_op_t op) {
+    return true;
+}
+
+volatile uint32_t *common_hal_digitalio_digitalinout_get_reg(digitalio_digitalinout_obj_t *self, digitalinout_reg_op_t op, uint32_t *mask) {
+    const uint8_t pin = self->pin->number;
+    int port = GPIO_PORT(pin);
+
+    *mask = 1u << GPIO_PIN(pin);
+
+
+    switch (op) {
+        case DIGITALINOUT_REG_READ:
+            return (volatile uint32_t *)&PORT->Group[port].IN.reg;
+        case DIGITALINOUT_REG_WRITE:
+            return &PORT->Group[port].OUT.reg;
+        case DIGITALINOUT_REG_SET:
+            return &PORT->Group[port].OUTSET.reg;
+        case DIGITALINOUT_REG_RESET:
+            return &PORT->Group[port].OUTCLR.reg;
+        case DIGITALINOUT_REG_TOGGLE:
+            return &PORT->Group[port].OUTTGL.reg;
+        default:
+            return NULL;
     }
 }

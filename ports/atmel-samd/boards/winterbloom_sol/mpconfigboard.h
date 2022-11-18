@@ -6,8 +6,6 @@
 #define MICROPY_HW_LED_STATUS (&pin_PA23)
 #define MICROPY_HW_NEOPIXEL (&pin_PB03)
 
-#define AUTORESET_DELAY_MS 500
-
 #define BOARD_HAS_CRYSTAL 1
 
 #define DEFAULT_SPI_BUS_SCK (&pin_PA17)

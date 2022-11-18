@@ -34,13 +34,12 @@
 #include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """time and timing related functions
 //|
-//| The `time` module is a strict subset of the CPython `cpython:time` module. So, code
-//| using `time` written in CircuitPython will work in CPython but not necessarily the other
-//| way around."""
+//| |see_cpython_module| :mod:`cpython:time`.
+//| """
 //|
 //| def monotonic() -> float:
 //|     """Returns an always increasing value of time with an unknown reference

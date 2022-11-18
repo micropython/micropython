@@ -34,6 +34,10 @@
 void init_usb_hardware(void) {
 }
 
+STATIC void _usb_irq_wrapper(void) {
+    usb_irq_handler(0);
+}
+
 void post_usb_init(void) {
     irq_set_enabled(USBCTRL_IRQ, false);
 
@@ -41,7 +45,7 @@ void post_usb_init(void) {
     if (usb_handler) {
         irq_remove_handler(USBCTRL_IRQ, usb_handler);
     }
-    irq_set_exclusive_handler(USBCTRL_IRQ, usb_irq_handler);
+    irq_set_exclusive_handler(USBCTRL_IRQ, _usb_irq_wrapper);
 
     irq_set_enabled(USBCTRL_IRQ, true);
 

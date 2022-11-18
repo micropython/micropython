@@ -40,10 +40,12 @@ void reset_all_pins(void) {
         claimed_pins[i] = never_reset_pins[i];
     }
     for (uint8_t i = 0; i < IOMUXC_SW_PAD_CTL_PAD_COUNT; i++) {
-        if (!never_reset_pins[i]) {
-            IOMUXC->SW_MUX_CTL_PAD[i] = ((mcu_pin_obj_t *)(mcu_pin_globals.map.table[i].value))->mux_reset;
-            IOMUXC->SW_PAD_CTL_PAD[i] = ((mcu_pin_obj_t *)(mcu_pin_globals.map.table[i].value))->pad_reset;
+        mcu_pin_obj_t *pin = mcu_pin_globals.map.table[i].value;
+        if (never_reset_pins[pin->mux_idx]) {
+            continue;
         }
+        *(uint32_t *)pin->mux_reg = pin->mux_reset;
+        *(uint32_t *)pin->cfg_reg = pin->pad_reset;
     }
 }
 
@@ -60,6 +62,9 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
 }
 
 void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
+    if (pin == NULL) {
+        return;
+    }
     never_reset_pins[pin->mux_idx] = true;
 }
 

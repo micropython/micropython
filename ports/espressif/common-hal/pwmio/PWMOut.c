@@ -55,18 +55,14 @@ STATIC uint32_t calculate_duty_cycle(uint32_t frequency) {
 
 void pwmout_reset(void) {
     for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
-        if (reserved_channels[i] != INDEX_EMPTY) {
+        if (reserved_channels[i] != INDEX_EMPTY && !never_reset_chan[i]) {
             ledc_stop(LEDC_LOW_SPEED_MODE, i, 0);
-        }
-        if (!never_reset_chan[i]) {
             reserved_channels[i] = INDEX_EMPTY;
         }
     }
     for (size_t i = 0; i < LEDC_TIMER_MAX; i++) {
-        if (reserved_timer_freq[i]) {
+        if (reserved_timer_freq[i] && !never_reset_tim[i]) {
             ledc_timer_rst(LEDC_LOW_SPEED_MODE, i);
-        }
-        if (!never_reset_tim[i]) {
             reserved_timer_freq[i] = 0;
             varfreq_timers[i] = false;
         }
@@ -170,7 +166,20 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
 
 void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
     never_reset_tim[self->tim_handle.timer_num] = false;
-    never_reset_chan[self->chan_handle.channel] = false;
+    // Search if any other channel is using the timer and is never reset.
+    // Otherwise, we clear never_reset for the timer as well.
+    bool other_never_reset = false;
+    for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
+        if (i != self->chan_handle.channel &&
+            reserved_channels[i] == self->tim_handle.timer_num &&
+            never_reset_chan[i]) {
+            other_never_reset = true;
+            break;
+        }
+    }
+    if (!other_never_reset) {
+        never_reset_chan[self->chan_handle.channel] = false;
+    }
 }
 
 bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t *self) {
@@ -186,11 +195,13 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
         ledc_stop(LEDC_LOW_SPEED_MODE, self->chan_handle.channel, 0);
     }
     reserved_channels[self->chan_handle.channel] = INDEX_EMPTY;
+    never_reset_chan[self->chan_handle.channel] = false;
     // Search if any other channel is using the timer
     bool taken = false;
     for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
         if (reserved_channels[i] == self->tim_handle.timer_num) {
             taken = true;
+            break;
         }
     }
     // Variable frequency means there's only one channel on the timer
@@ -199,6 +210,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
         reserved_timer_freq[self->tim_handle.timer_num] = 0;
         // if timer isn't varfreq this will be off aleady
         varfreq_timers[self->tim_handle.timer_num] = false;
+        never_reset_tim[self->tim_handle.timer_num] = false;
     }
     common_hal_reset_pin(self->pin);
     self->deinited = true;
@@ -217,7 +229,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t fr
     // Calculate duty cycle
     uint32_t duty_bits = calculate_duty_cycle(frequency);
     if (duty_bits == 0) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     self->duty_resolution = duty_bits;
     ledc_set_freq(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num, frequency);

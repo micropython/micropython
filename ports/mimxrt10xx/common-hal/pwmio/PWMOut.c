@@ -35,8 +35,12 @@
 
 #include "fsl_pwm.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "periph.h"
+
+// Debug print support set to zero to enable debug printing
+#define ENABLE_DEBUG_PRINTING 0
+
 
 static void config_periph_pin(const mcu_pwm_obj_t *periph) {
     IOMUXC_SetPinMux(
@@ -83,6 +87,33 @@ static int calculate_pulse_count(uint32_t frequency, uint8_t *prescaler) {
     return 0;
 }
 
+// ==========================================================
+// Debug code
+// ==========================================================
+#if ENABLE_DEBUG_PRINTING
+#define DBGPrintf mp_printf
+extern void debug_print_flexpwm_registers(PWM_Type *base);
+
+void debug_print_flexpwm_registers(PWM_Type *base) {
+    mp_printf(&mp_plat_print,
+        "\t\tPWM OUTEN:%x  MASK:%x  SWCOUT:%x DTSRCSEL:%x MCTRL:%x MCTRL2:%x FCTRL:%x FSTS:%x FFILT:%x FTST:%x FCTRL2:%x\n",
+        base->OUTEN, base->MASK, base->SWCOUT, base->DTSRCSEL, base->MCTRL, base->MCTRL2, base->FCTRL,
+        base->FSTS, base->FFILT, base->FTST, base->FCTRL2);
+    for (uint8_t i = 0; i < 4; i++) {
+        mp_printf(&mp_plat_print,
+            "\t\t(%u) INIT:%x CTRL2:%x CTRL:%x VAL0:%x VAL1:%x VAL2:%x VAL3:%x VAL4:%x VAL5:%x OCTRL:%x DTCNT0:%x DTCNT1:%x  DISMAP: %x %x\n", i,
+            base->SM[i].INIT, base->SM[i].CTRL2, base->SM[i].CTRL, base->SM[i].VAL0, base->SM[i].VAL1, base->SM[i].VAL2,
+            base->SM[i].VAL3, base->SM[i].VAL4, base->SM[i].VAL5, base->SM[i].OCTRL, base->SM[i].DTCNT0, base->SM[i].DTCNT1,
+            base->SM[i].DISMAP[0], base->SM[i].DISMAP[1]);
+    }
+
+}
+#else
+#define DBGPrintf(p,...)
+inline void debug_print_flexpwm_registers(PWM_Type *base) {
+}
+#endif
+
 pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     const mcu_pin_obj_t *pin,
     uint16_t duty,
@@ -92,6 +123,9 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     self->variable_frequency = variable_frequency;
 
     const uint32_t pwm_count = sizeof(mcu_pwm_list) / sizeof(mcu_pwm_obj_t);
+
+    DBGPrintf(&mp_plat_print, ">>> common_hal_pwmio_pwmout_construct called: pin: %p %u freq:%u duty:%u var:%u\n",
+        self->pin->gpio, self->pin->number, frequency, duty, variable_frequency);
 
     for (uint32_t i = 0; i < pwm_count; ++i) {
         if (mcu_pwm_list[i].pin != pin) {
@@ -106,6 +140,8 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     if (self->pwm == NULL) {
         return PWMOUT_INVALID_PIN;
     }
+
+    DBGPrintf(&mp_plat_print, "\tFound in PWM List\n");
 
     config_periph_pin(self->pwm);
 
@@ -138,33 +174,67 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
 
     pwmConfig.prescale = self->prescaler;
 
+    DBGPrintf(&mp_plat_print, "\tCall PWM_Init\n");
     if (PWM_Init(self->pwm->pwm, self->pwm->submodule, &pwmConfig) == kStatus_Fail) {
         return PWMOUT_INVALID_PIN;
     }
-
-    pwm_signal_param_t pwmSignal = {
-        .pwmChannel = self->pwm->channel,
-        .level = kPWM_HighTrue,
-        .dutyCyclePercent = 0, // avoid an initial transient
-        .deadtimeValue = 0, // allow 100% duty cycle
-    };
 
     // Disable all fault inputs
     self->pwm->pwm->SM[self->pwm->submodule].DISMAP[0] = 0;
     self->pwm->pwm->SM[self->pwm->submodule].DISMAP[1] = 0;
 
-    status_t status = PWM_SetupPwm(self->pwm->pwm, self->pwm->submodule, &pwmSignal, 1, kPWM_EdgeAligned, frequency, PWM_SRC_CLK_FREQ);
+    DBGPrintf(&mp_plat_print, "\tCall PWM_SetupPwm %p %x %u\n", self->pwm->pwm, self->pwm->submodule);
+    // ========================================================================================================
+    // Not calling the PWM_SetupPwm as it was setup to only work for PWM output on chan A and B but not X
+    // I have done some experimenting, probably could try others, but again they do not work with X.
+    // Most of the code checks to see if A if not, then it assume B.
+    //
+    // Instead I set it up to work similar to what the Teensy 4.x code does.
+    //
+    // That is we set the PWM_CTRL_FULL_MASK, which then uses  base->SM[submodule].VAL1  to control
+    // when the timer is reset, so it sets up your cycle/frequency.  But then this implies that X channel
+    // which uses 0, 1 has to be handled specially. So for the different channels:
+    //      A - Uses VAL2 to turn on (0) and VAL3=duty to turn off
+    //      B - Uses VAL4 to turn on (0) and VAL5 to turn off
+    //      X - As mentioned above VAL1 turns off, but it's set to the timing for frequency. so
+    //          VAL0 turns on, so we set it to VAL1 - duty
+    //
+    PWM_Type *base = self->pwm->pwm;
+    uint8_t submodule = self->pwm->submodule;
 
-    if (status != kStatus_Success) {
-        return PWMOUT_INITIALIZATION_ERROR;
+    uint32_t mask = 1 << submodule;
+    uint32_t olddiv = base->SM[submodule].VAL1 + 1;
+    if (self->pulse_count != olddiv) {
+        base->MCTRL |= PWM_MCTRL_CLDOK(mask);
+        base->SM[submodule].CTRL = PWM_CTRL_PRSC_MASK | PWM_CTRL_PRSC(self->prescaler);
+        base->SM[submodule].VAL1 = self->pulse_count - 1;
+        base->SM[submodule].CTRL2 = PWM_CTRL2_INDEP_MASK | PWM_CTRL2_WAITEN_MASK | PWM_CTRL2_DBGEN_MASK;
+
+        if (olddiv == 1) {
+            base->SM[submodule].CTRL = PWM_CTRL_FULL_MASK;
+            base->SM[submodule].VAL0 = 0;
+            base->SM[submodule].VAL2 = 0;
+            base->SM[submodule].VAL3 = 0;
+            base->SM[submodule].VAL4 = 0;
+            base->SM[submodule].VAL5 = 0;
+        } else {
+            base->SM[submodule].VAL0 = (base->SM[submodule].VAL0 * self->pulse_count) / olddiv;
+            base->SM[submodule].VAL3 = (base->SM[submodule].VAL3 * self->pulse_count) / olddiv;
+            base->SM[submodule].VAL5 = (base->SM[submodule].VAL5 * self->pulse_count) / olddiv;
+        }
+        base->MCTRL |= PWM_MCTRL_LDOK(mask);
     }
+    debug_print_flexpwm_registers(self->pwm->pwm);
+
     PWM_SetPwmLdok(self->pwm->pwm, 1 << self->pwm->submodule, true);
 
     PWM_StartTimer(self->pwm->pwm, 1 << self->pwm->submodule);
 
 
+    DBGPrintf(&mp_plat_print, "\tCall common_hal_pwmio_pwmout_set_duty_cycle\n");
     common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
 
+    DBGPrintf(&mp_plat_print, "\tReturn OK\n");
     return PWMOUT_OK;
 }
 
@@ -185,7 +255,16 @@ void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t d
     // we do not use PWM_UpdatePwmDutycycle because ...
     //  * it works in integer percents
     //  * it can't set the "X" duty cycle
+    // As mentioned in the setting up of the frequency code
+    //      A - Uses VAL2 to turn on (0) and VAL3=duty to turn off
+    //      B - Uses VAL4 to turn on (0) and VAL5 to turn off
+    //      X - As mentioned above VAL1 turns off, but it's set to the timing for frequency. so
+    //          VAL0 turns on, so we set it to VAL1 - duty
+
+    DBGPrintf(&mp_plat_print, "common_hal_pwmio_pwmout_set_duty_cycle %u\n", duty);
     self->duty_cycle = duty;
+    PWM_Type *base = self->pwm->pwm;
+    uint8_t mask = 1 << self->pwm->submodule;
     if (duty == 65535) {
         self->duty_scaled = self->pulse_count + 1;
     } else {
@@ -193,18 +272,21 @@ void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t d
     }
     switch (self->pwm->channel) {
         case kPWM_PwmX:
-            self->pwm->pwm->SM[self->pwm->submodule].VAL0 = 0;
-            self->pwm->pwm->SM[self->pwm->submodule].VAL1 = self->duty_scaled;
+            base->SM[self->pwm->submodule].VAL0 = self->pulse_count - self->duty_scaled;
+            base->OUTEN |= PWM_OUTEN_PWMX_EN(mask);
             break;
         case kPWM_PwmA:
-            self->pwm->pwm->SM[self->pwm->submodule].VAL2 = 0;
-            self->pwm->pwm->SM[self->pwm->submodule].VAL3 = self->duty_scaled;
+            base->SM[self->pwm->submodule].VAL3 = self->duty_scaled;
+            base->OUTEN |= PWM_OUTEN_PWMA_EN(mask);
             break;
         case kPWM_PwmB:
-            self->pwm->pwm->SM[self->pwm->submodule].VAL4 = 0;
-            self->pwm->pwm->SM[self->pwm->submodule].VAL5 = self->duty_scaled;
+            base->SM[self->pwm->submodule].VAL5 = self->duty_scaled;
+            base->OUTEN |= PWM_OUTEN_PWMB_EN(mask);
     }
     PWM_SetPwmLdok(self->pwm->pwm, 1 << self->pwm->submodule, true);
+
+    debug_print_flexpwm_registers(self->pwm->pwm);
+
 }
 
 uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {
@@ -219,7 +301,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self,
 
     int pulse_count = calculate_pulse_count(frequency, &self->prescaler);
     if (pulse_count == 0) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
 
     self->pulse_count = pulse_count;

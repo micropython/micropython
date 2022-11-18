@@ -588,3 +588,6 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
     }
     return 0; // success
 }
+
+void MP_WEAK external_flash_setup(void) {
+}

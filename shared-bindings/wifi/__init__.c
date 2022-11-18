@@ -38,11 +38,10 @@
 //| radio: Radio
 //| """Wifi radio used to manage both station and AP modes.
 //| This object is the sole instance of `wifi.Radio`."""
-//|
 
 // Called when wifi is imported.
 STATIC mp_obj_t wifi___init__(void) {
-    common_hal_wifi_init();
+    common_hal_wifi_init(true);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(wifi___init___obj, wifi___init__);

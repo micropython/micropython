@@ -34,7 +34,7 @@
 #include "py/objstr.h"
 
 #include "supervisor/linker.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 const mp_obj_dict_t mp_const_empty_dict_obj = {
     .base = { .type = &mp_type_dict },

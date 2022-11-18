@@ -36,7 +36,6 @@
 //|
 //|         :param system: satellite system to use"""
 //|         ...
-//|
 STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     gnss_obj_t *self = m_new_obj(gnss_obj_t);
     self->base.type = &gnss_type;
@@ -71,7 +70,6 @@ STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 //|     def deinit(self) -> None:
 //|         """Turn off the GNSS."""
 //|         ...
-//|
 STATIC mp_obj_t gnss_obj_deinit(mp_obj_t self_in) {
     gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_gnss_deinit(self);
@@ -88,7 +86,6 @@ STATIC void check_for_deinit(gnss_obj_t *self) {
 //|     def update(self) -> None:
 //|         """Update GNSS positioning information."""
 //|         ...
-//|
 STATIC mp_obj_t gnss_obj_update(mp_obj_t self_in) {
     gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -100,7 +97,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(gnss_update_obj, gnss_obj_update);
 
 //|     latitude: float
 //|     """Latitude of current position in degrees (float)."""
-//|
 STATIC mp_obj_t gnss_obj_get_latitude(mp_obj_t self_in) {
     gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -108,16 +104,11 @@ STATIC mp_obj_t gnss_obj_get_latitude(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_latitude_obj, gnss_obj_get_latitude);
 
-const mp_obj_property_t gnss_latitude_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&gnss_get_latitude_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(gnss_latitude_obj,
+    (mp_obj_t)&gnss_get_latitude_obj);
 
 //|     longitude: float
 //|     """Longitude of current position in degrees (float)."""
-//|
 STATIC mp_obj_t gnss_obj_get_longitude(mp_obj_t self_in) {
     gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -125,16 +116,11 @@ STATIC mp_obj_t gnss_obj_get_longitude(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_longitude_obj, gnss_obj_get_longitude);
 
-const mp_obj_property_t gnss_longitude_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&gnss_get_longitude_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(gnss_longitude_obj,
+    (mp_obj_t)&gnss_get_longitude_obj);
 
 //|     altitude: float
 //|     """Altitude of current position in meters (float)."""
-//|
 STATIC mp_obj_t gnss_obj_get_altitude(mp_obj_t self_in) {
     gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -142,16 +128,11 @@ STATIC mp_obj_t gnss_obj_get_altitude(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_altitude_obj, gnss_obj_get_altitude);
 
-const mp_obj_property_t gnss_altitude_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&gnss_get_altitude_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(gnss_altitude_obj,
+    (mp_obj_t)&gnss_get_altitude_obj);
 
 //|     timestamp: time.struct_time
 //|     """Time when the position data was updated."""
-//|
 STATIC mp_obj_t gnss_obj_get_timestamp(mp_obj_t self_in) {
     gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -161,12 +142,8 @@ STATIC mp_obj_t gnss_obj_get_timestamp(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_timestamp_obj, gnss_obj_get_timestamp);
 
-const mp_obj_property_t gnss_timestamp_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&gnss_get_timestamp_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(gnss_timestamp_obj,
+    (mp_obj_t)&gnss_get_timestamp_obj);
 
 //|     fix: PositionFix
 //|     """Fix mode."""
@@ -178,12 +155,8 @@ STATIC mp_obj_t gnss_obj_get_fix(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_fix_obj, gnss_obj_get_fix);
 
-const mp_obj_property_t gnss_fix_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&gnss_get_fix_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(gnss_fix_obj,
+    (mp_obj_t)&gnss_get_fix_obj);
 
 STATIC const mp_rom_map_elem_t gnss_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&gnss_deinit_obj) },

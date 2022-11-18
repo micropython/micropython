@@ -31,8 +31,10 @@
 #include "py/obj.h"
 
 #include "common-hal/supervisor/Runtime.h"
+#include "shared-module/supervisor/StatusBar.h"
 
 extern const super_runtime_obj_t common_hal_supervisor_runtime_obj;
+extern supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj;
 extern mp_obj_t supervisor_ticks_ms(void);
 
 

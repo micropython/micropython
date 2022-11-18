@@ -42,4 +42,9 @@ void never_reset_pin_number(uint8_t pin_number);
 void claim_pin(const mcu_pin_obj_t *pin);
 bool pin_number_is_free(uint8_t pin_number);
 
+#if CIRCUITPY_CYW43
+extern bool cyw_ever_init;
+void reset_pin_number_cyw(uint8_t pin_number);
+#endif
+
 #endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_MICROCONTROLLER_PIN_H
