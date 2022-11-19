@@ -362,3 +362,11 @@ void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj
 mp_obj_t common_hal_framebufferio_framebufferdisplay_get_root_group(framebufferio_framebufferdisplay_obj_t *self) {
     return self->core.current_group;
 }
+
+mp_obj_t common_hal_framebufferio_framebufferdisplay_set_root_group(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
+    bool ok = displayio_display_core_set_root_group(&self->core, root_group);
+    if (!ok) {
+        mp_raise_ValueError(translate("Group already used"));
+    }
+    return mp_const_none;
+}
