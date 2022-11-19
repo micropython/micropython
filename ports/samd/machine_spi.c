@@ -296,7 +296,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
         if (self->miso == 0xff) {
             mp_raise_ValueError(MP_ERROR_TEXT("read is not enabled"));
         }
-        spi->SPI.INTENSET.bit.RXC = 1;
+        spi->SPI.INTENSET.reg = SERCOM_SPI_INTENSET_RXC;
         self->dest = dest;
         self->rxlen = len;
     }
@@ -317,7 +317,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             timeout--;
             MICROPY_EVENT_POLL_HOOK
         }
-        spi->SPI.INTENCLR.bit.RXC = 1;
+        spi->SPI.INTENCLR.reg = SERCOM_SPI_INTENCLR_RXC;
     } else {
         // Wait for the data being shifted out.
         while (!spi->SPI.INTFLAG.bit.TXC) {

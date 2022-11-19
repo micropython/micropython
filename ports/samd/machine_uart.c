@@ -95,7 +95,7 @@ void common_uart_irq_handler(int uart_id) {
                 uart->USART.DATA.bit.DATA = ringbuf_get(&self->write_buffer);
             } else {
                 // Stop the interrupt if there is no more data
-                uart->USART.INTENCLR.bit.DRE = 1;
+                uart->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE;
             }
             #endif
         } else {
@@ -291,7 +291,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         sercom_register_irq(self->id, &common_uart_irq_handler);
 
         // Enable RXC interrupt
-        uart->USART.INTENSET.bit.RXC = 1;
+        uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
         #if defined(MCU_SAMD21)
         NVIC_EnableIRQ(SERCOM0_IRQn + self->id);
         #elif defined(MCU_SAMD51)
@@ -452,7 +452,7 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
             MICROPY_EVENT_POLL_HOOK
         }
         *dest++ = ringbuf_get(&(self->read_buffer));
-        t = mp_hal_ticks_ms() + timeout_char;
+        t = mp_hal_ticks_ms_64() + timeout_char;
     }
     return size;
 }
@@ -481,7 +481,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
         }
         ringbuf_put(&(self->write_buffer), *src++);
         i++;
-        uart->USART.INTENSET.bit.DRE = 1; // kick off the IRQ
+        uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_DRE; // kick off the IRQ
     }
 
     #else
