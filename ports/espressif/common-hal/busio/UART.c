@@ -49,8 +49,9 @@ static void uart_event_task(void *param) {
     while (true) {
         if (xQueueReceive(self->event_queue, &event, portMAX_DELAY)) {
             switch (event.type) {
+                case UART_BREAK:
                 case UART_PATTERN_DET:
-                    // When the console uart receives CTRL+C, wake the main task and schedule a keyboard interrupt
+                    // When the console uart receives CTRL+C or BREAK, wake the main task and schedule a keyboard interrupt
                     if (self->is_console) {
                         port_wake_main_task();
                         if (mp_interrupt_char == CHAR_CTRL_C) {
