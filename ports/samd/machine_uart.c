@@ -362,8 +362,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_deinit_obj, machine_uart_deinit);
 
 STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // get all bytes from the fifo first. May be obsolete.
-    uart_drain_rx_fifo(self, sercom_instance[self->id]);
     return MP_OBJ_NEW_SMALL_INT(ringbuf_avail(&self->read_buffer));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
@@ -431,16 +429,10 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     uint64_t t = mp_hal_ticks_ms_64() + self->timeout;
     uint64_t timeout_char = self->timeout_char;
     uint8_t *dest = buf_in;
-    Sercom *uart = sercom_instance[self->id];
 
     for (size_t i = 0; i < size; i++) {
         // Wait for the first/next character
         while (ringbuf_avail(&self->read_buffer) == 0) {
-            if (uart->USART.INTFLAG.bit.RXC != 0) {
-                // Force a few incoming bytes to the buffer
-                uart_drain_rx_fifo(self, uart);
-                break;
-            }
             if (mp_hal_ticks_ms_64() > t) {  // timed out
                 if (i <= 0) {
                     *errcode = MP_EAGAIN;
