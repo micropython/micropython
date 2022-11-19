@@ -141,6 +141,7 @@ jobs:
       uses: tj-actions/changed-files@v34
       with:
         json: "true"
+        sha: ${{ steps.get-last-commit-with-checks.outputs.commit && github.event.after }}
         base_sha: ${{ steps.get-last-commit-with-checks.outputs.commit }}
     - name: Set matrix
       id: set-matrix
