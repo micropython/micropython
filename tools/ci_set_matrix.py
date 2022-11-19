@@ -69,7 +69,7 @@ else:
         changed_files = []
     else:
         print("Using files list in CHANGED_FILES")
-        changed_files = json.loads(c)
+        changed_files = json.loads(c.replace("\\", ""))
 
     j = os.environ["LAST_FAILED_JOBS"]
     if j == "":
@@ -203,7 +203,7 @@ def set_boards_to_build(build_all):
     # Split boards by architecture.
     print("Building boards:")
     arch_to_boards = {"aarch": [], "arm": [], "riscv": [], "espressif": []}
-    for board in boards_to_build:
+    for board in sorted(boards_to_build):
         print(" ", board)
         port = board_to_port.get(board)
         # A board can appear due to its _deletion_ (rare)
@@ -220,6 +220,7 @@ def set_boards_to_build(build_all):
             failed_boards = last_failed_jobs[f"build-{arch}"]
             for board in failed_boards:
                 if not board in arch_to_boards[arch]:
+                    print(" ", board)
                     arch_to_boards[arch].append(board)
         # Set Output
         set_output(f"boards-{arch}", json.dumps(sorted(arch_to_boards[arch])))
