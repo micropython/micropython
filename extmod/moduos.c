@@ -48,6 +48,10 @@
 #include "genhdr/mpversion.h"
 #endif
 
+#if MICROPY_PY_USELECT || MICROPY_PY_USELECT_POSIX
+#include "py/stream.h"
+#endif
+
 #ifdef MICROPY_PY_UOS_INCLUDEFILE
 #include MICROPY_PY_UOS_INCLUDEFILE
 #endif
@@ -100,6 +104,21 @@ STATIC mp_obj_t mp_uos_uname(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_uos_uname_obj, mp_uos_uname);
 
+#endif
+
+#if MICROPY_PY_USELECT || MICROPY_PY_USELECT_POSIX
+STATIC mp_obj_t select_ioctl(mp_obj_t stream, mp_obj_t reg, mp_obj_t arg) {
+    const mp_stream_p_t *stream_p = mp_get_stream_raise(stream, MP_STREAM_OP_IOCTL);
+    int errcode = 0;
+    mp_int_t ret = stream_p->ioctl(stream, mp_obj_int_get_uint_checked(reg), (uintptr_t)mp_obj_int_get_uint_checked(arg), &errcode);
+    if (ret == -1) {
+        // error doing ioctl
+        mp_raise_OSError(errcode);
+    }
+
+    return mp_obj_new_int(ret);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(mp_select_ioctl_obj, select_ioctl);
 #endif
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
@@ -167,6 +186,27 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     #if MICROPY_VFS_POSIX
     { MP_ROM_QSTR(MP_QSTR_VfsPosix), MP_ROM_PTR(&mp_type_vfs_posix) },
     #endif
+    #endif
+
+    #if MICROPY_PY_USELECT || MICROPY_PY_USELECT_POSIX
+    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_select_ioctl_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_STREAM_FLUSH), MP_ROM_INT(MP_STREAM_FLUSH) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_SEEK), MP_ROM_INT(MP_STREAM_SEEK) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_POLL), MP_ROM_INT(MP_STREAM_POLL) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_CLOSE), MP_ROM_INT(MP_STREAM_CLOSE) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_TIMEOUT), MP_ROM_INT(MP_STREAM_TIMEOUT) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_GET_OPTS), MP_ROM_INT(MP_STREAM_GET_OPTS) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_SET_OPTS), MP_ROM_INT(MP_STREAM_SET_OPTS) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_GET_DATA_OPTS), MP_ROM_INT(MP_STREAM_GET_DATA_OPTS) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_SET_DATA_OPTS), MP_ROM_INT(MP_STREAM_SET_DATA_OPTS) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_GET_FILENO), MP_ROM_INT(MP_STREAM_GET_FILENO) },
+
+    { MP_ROM_QSTR(MP_QSTR_STREAM_POLL_RD), MP_ROM_INT(MP_STREAM_POLL_RD) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_POLL_WR), MP_ROM_INT(MP_STREAM_POLL_WR) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_POLL_ERR), MP_ROM_INT(MP_STREAM_POLL_ERR) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_POLL_HUP), MP_ROM_INT(MP_STREAM_POLL_HUP) },
+    { MP_ROM_QSTR(MP_QSTR_STREAM_POLL_NVAL), MP_ROM_INT(MP_STREAM_POLL_NVAL) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
