@@ -82,7 +82,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
     }
 }
 
-// This wrapper function is allows a subclass of a native type to call the
+// This wrapper function allows a subclass of a native type to call the
 // __init__() method (corresponding to type->make_new) of the native type.
 STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *args) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -170,6 +170,12 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
                     if (obj != NULL && mp_obj_is_native_type(type) && type != &mp_type_object /* object is not a real type */) {
                         // If we're dealing with native base class, then it applies to native sub-object
                         obj_obj = obj->subobj[0];
+                        #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
+                        if (obj_obj == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
+                            // But we shouldn't attempt lookups on object that is not yet instantiated.
+                            mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("call super().__init__() first"));
+                        }
+                        #endif // MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
                     } else {
                         obj_obj = MP_OBJ_FROM_PTR(obj);
                     }
