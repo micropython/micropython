@@ -134,7 +134,7 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, u
         mp_raise_RuntimeError(translate("Already scanning for wifi networks"));
     }
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
+        mp_raise_RuntimeError(translate("Wifi is not enabled"));
     }
     wifi_scannednetworks_obj_t *scan = m_new_obj(wifi_scannednetworks_obj_t);
     scan->base.type = &wifi_scannednetworks_type;
@@ -165,11 +165,11 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode, uint8_t max_connections) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
+        mp_raise_RuntimeError(translate("Wifi is not enabled"));
     }
 
     if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_DOWN) {
-        mp_raise_RuntimeError(translate("Already connected to station."));
+        mp_raise_RuntimeError(translate("Wifi is in station mode."));
     }
 
     common_hal_wifi_radio_stop_ap(self);
@@ -206,11 +206,11 @@ void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
 
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
+        mp_raise_RuntimeError(translate("Wifi is not enabled"));
     }
 
     if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_DOWN) {
-        mp_raise_RuntimeError(translate("Already in access point mode."));
+        mp_raise_RuntimeError(translate("Wifi is in access point mode."));
     }
 
 
