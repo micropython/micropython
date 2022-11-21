@@ -95,9 +95,12 @@ A MicroPython user C module is a directory with the following files:
 Basic example
 -------------
 
-This simple module named ``cexample`` provides a single function
-``cexample.add_ints(a, b)`` which adds the two integer args together and returns
-the result. It can be found in the MicroPython source tree
+The ``cexample`` module provides examples for a function and a class. The
+``cexample.add_ints(a, b)`` function adds two integer args together and returns
+the result. The ``cexample.Timer()`` type creates timers that can be used to
+measure the elapsed time since the object is instantiated.
+
+The module can be found in the MicroPython source tree
 `in the examples directory <https://github.com/micropython/micropython/tree/master/examples/usercmodule/cexample>`_
 and has a source file and a Makefile fragment with content as described above::
 
@@ -272,3 +275,13 @@ can now be accessed in Python just like any other builtin module, e.g.
     import cexample
     print(cexample.add_ints(1, 3))
     # should display 4
+
+.. code-block:: python
+
+    from cexample import Timer
+    from time import sleep_ms
+
+    watch = Timer()
+    sleep_ms(1000)
+    print(watch.time())
+    # should display approximately 1000
