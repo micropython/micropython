@@ -67,10 +67,10 @@ Or:
 
 """
 
+import ast
+import os
 import sys
 import time
-import os
-import ast
 
 try:
     stdout = sys.stdout.buffer
@@ -212,8 +212,9 @@ class ProcessPtyToTerminal:
     this PTY."""
 
     def __init__(self, cmd):
-        import subprocess
         import re
+        import subprocess
+
         import serial
 
         self.subp = subprocess.Popen(
@@ -323,13 +324,14 @@ class Pyboard:
         return data
 
     def enter_raw_repl(self, soft_reset=True):
-        self.serial.write(b"\r\x03\x03")  # ctrl-C twice: interrupt any running program
-
         # flush input (without relying on serial.flushInput())
         n = self.serial.inWaiting()
         while n > 0:
             self.serial.read(n)
             n = self.serial.inWaiting()
+        self.serial.write(b"\r\x03\x03")  # ctrl-C twice: interrupt any running program
+        self.exit_raw_repl()  # if device is already in raw_repl, b'>>>' won't be printed.
+        self.read_until(1, b">>>")
 
         self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
 
