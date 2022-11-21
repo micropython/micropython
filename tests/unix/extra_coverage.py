@@ -49,11 +49,6 @@ print(buf.write(bytearray(16)))
 # function defined in C++ code
 print("cpp", extra_cpp_coverage())
 
-# test user C module
-import cexample
-
-print(cexample.add_ints(3, 2))
-
 # test user C module mixed with C++ code
 import cppexample
 
