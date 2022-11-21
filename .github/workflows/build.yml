@@ -140,14 +140,14 @@ jobs:
       if: github.event_name == 'pull_request'
       uses: tj-actions/changed-files@v34
       with:
-        json: "true"
+        json: true
         sha: ${{ steps.get-last-commit-with-checks.outputs.commit && github.event.after }}
         base_sha: ${{ steps.get-last-commit-with-checks.outputs.commit }}
     - name: Set matrix
       id: set-matrix
       working-directory: tools
       env:
-        CHANGED_FILES: ${{ toJSON(steps.get-changes.outputs.all_changed_and_modified_files) }}
+        CHANGED_FILES: ${{ steps.get-changes.outputs.all_changed_and_modified_files }}
         LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.checkruns }}
       run: python3 -u ci_set_matrix.py
 
