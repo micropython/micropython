@@ -30,13 +30,13 @@
 #include "py/enum.h"
 
 typedef enum {
-    AUTHMODE_OPEN,
-    AUTHMODE_WEP,
-    AUTHMODE_WPA,
-    AUTHMODE_WPA2,
-    AUTHMODE_WPA3,
-    AUTHMODE_PSK,
-    AUTHMODE_ENTERPRISE
+    AUTHMODE_OPEN = 1 << 0,
+    AUTHMODE_WEP = 1 << 1,
+    AUTHMODE_WPA = 1 << 2,
+    AUTHMODE_WPA2 = 1 << 3,
+    AUTHMODE_WPA3 = 1 << 4,
+    AUTHMODE_PSK = 1 << 5,
+    AUTHMODE_ENTERPRISE = 1 << 6,
 } wifi_authmode_t;
 
 extern const mp_obj_type_t wifi_authmode_type;
