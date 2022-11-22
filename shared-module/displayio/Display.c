@@ -136,11 +136,28 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
+    mp_printf(&mp_plat_print, "Inside display make_new\n");
+    is_null(&circuitpython_splash);
+    //is_null(0);
+//    if(circuitpython_splash == mp_const_none) {
+//        mp_printf(&mp_plat_print, "Splash is NULL \n");
+//    }
+//    mp_printf(&mp_plat_print,  *circuitpython_splash);
+//    mp_printf(&mp_plat_print,  "\n");
     common_hal_displayio_display_show(self, &circuitpython_splash);
     common_hal_displayio_display_set_auto_refresh(self, auto_refresh);
 }
 
+void is_null(displayio_group_t *root_group){
+    if (root_group == NULL){
+        mp_printf(&mp_plat_print,  "root_group is null\n");
+    }
+}
+
 bool common_hal_displayio_display_show(displayio_display_obj_t *self, displayio_group_t *root_group) {
+    if(root_group == NULL){
+        mp_printf(&mp_plat_print,  "Its NULL fer flucks snakes\n");
+    }
     return displayio_display_core_set_root_group(&self->core, root_group);
 }
 

@@ -169,7 +169,7 @@ bool displayio_display_core_set_root_group(displayio_display_core_t *self, displ
         // force the circuit_python_splash out of any group (Note: could cause problems with the parent group)
         circuitpython_splash.x = 0; // reset position in case someone moved it.
         circuitpython_splash.y = 0;
-
+        mp_printf(&mp_plat_print, "Inside set root group NULL\n");
         supervisor_start_terminal(self->width, self->height);
 
         root_group = &circuitpython_splash;
