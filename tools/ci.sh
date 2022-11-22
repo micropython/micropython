@@ -512,7 +512,6 @@ function ci_unix_32bit_setup {
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     gcc --version
-    python2 --version
     python3 --version
 }
 
