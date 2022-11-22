@@ -32,14 +32,15 @@ def do_connect(state, args=None):
             # Don't do implicit REPL command.
             state.did_action()
         elif dev == "auto":
-            # Auto-detect and auto-connect to the first available device.
+            # Auto-detect and auto-connect to the first available USB serial port.
             for p in sorted(serial.tools.list_ports.comports()):
-                try:
-                    state.pyb = pyboard.PyboardExtended(p.device, baudrate=115200)
-                    return
-                except pyboard.PyboardError as er:
-                    if not er.args[0].startswith("failed to access"):
-                        raise er
+                if p.vid is not None and p.pid is not None:
+                    try:
+                        state.pyb = pyboard.PyboardExtended(p.device, baudrate=115200)
+                        return
+                    except pyboard.PyboardError as er:
+                        if not er.args[0].startswith("failed to access"):
+                            raise er
             raise pyboard.PyboardError("no device found")
         elif dev.startswith("id:"):
             # Search for a device with the given serial number.
