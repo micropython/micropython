@@ -120,13 +120,14 @@ SRC_LWIP :=
 endif
 
 INC += \
-	-I. \
-	-Ilwip_inc \
+        -I. \
+        -Ilwip_inc \
         -I../.. \
         -I../lib/mp-readline \
         -I../shared/timeutils \
         -Iboards/$(BOARD) \
         -Iboards/ \
+        -isystem ./../../lib/cmsis/inc \
         -isystem sdk/ \
         -isystem sdk/src/common/pico_base/include/ \
         -isystem sdk/src/common/pico_binary_info/include/ \

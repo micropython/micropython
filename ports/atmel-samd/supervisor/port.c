@@ -644,6 +644,10 @@ void port_disable_tick(void) {
     RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_PER2;
     #endif
     #ifdef SAMD21
+    if (_tick_event_channel == EVSYS_SYNCH_NUM) {
+        return;
+    }
+
     if (_tick_event_channel >= 8) {
         uint8_t value = 1 << (_tick_event_channel - 8);
         EVSYS->INTENCLR.reg = EVSYS_INTENSET_EVDp8(value);
@@ -651,6 +655,7 @@ void port_disable_tick(void) {
         uint8_t value = 1 << _tick_event_channel;
         EVSYS->INTENCLR.reg = EVSYS_INTENSET_EVD(value);
     }
+    disable_event_channel(_tick_event_channel);
     _tick_event_channel = EVSYS_SYNCH_NUM;
     #endif
 }

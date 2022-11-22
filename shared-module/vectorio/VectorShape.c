@@ -293,6 +293,16 @@ void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self
     }
 }
 
+mp_int_t common_hal_vectorio_vector_shape_get_hidden(vectorio_vector_shape_t *self) {
+    VECTORIO_SHAPE_DEBUG("%p get_hidden\n", self);
+    return self->hidden;
+}
+
+void common_hal_vectorio_vector_shape_set_hidden(vectorio_vector_shape_t *self, bool hidden) {
+    VECTORIO_SHAPE_DEBUG("%p set_hidden %d\n", self, x);
+    self->hidden = hidden;
+    common_hal_vectorio_vector_shape_set_dirty(self);
+}
 
 mp_obj_t common_hal_vectorio_vector_shape_get_pixel_shader(vectorio_vector_shape_t *self) {
     VECTORIO_SHAPE_DEBUG("%p get_pixel_shader\n", self);
@@ -315,6 +325,11 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
     uint64_t start = common_hal_time_monotonic_ns();
     uint64_t pixel_time = 0;
     #endif
+
+    if (self->hidden) {
+        return false;
+    }
+
     VECTORIO_SHAPE_DEBUG("%p fill_area: fill: {(%5d,%5d), (%5d,%5d)}",
         self,
         area->x1, area->y1, area->x2, area->y2

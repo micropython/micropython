@@ -46,14 +46,11 @@
 #include "components/mdns/include/mdns.h"
 #endif
 
+#include "lwip/sys.h"
 #include "lwip/dns.h"
 #include "lwip/icmp.h"
 #include "lwip/raw.h"
 #include "lwip_src/ping.h"
-
-#ifndef PING_ID
-#define PING_ID        0xAFAF
-#endif
 
 #define MAC_ADDRESS_LENGTH 6
 
@@ -295,6 +292,7 @@ void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv
 }
 
 volatile bool ping_received;
+uint32_t ping_time;
 
 static u8_t
 ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr) {
@@ -303,6 +301,7 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
 
     if ((p->tot_len >= (PBUF_IP_HLEN + sizeof(struct icmp_echo_hdr))) &&
         pbuf_remove_header(p, PBUF_IP_HLEN) == 0) {
+
         iecho = (struct icmp_echo_hdr *)p->payload;
 
         if ((iecho->id == PING_ID) && (iecho->seqno == lwip_htons(ping_seq_num))) {
@@ -322,6 +321,7 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
 }
 
 mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout) {
+    ping_time = sys_now();
     ip_addr_t ping_addr;
     ipaddress_ipaddress_to_lwip(ip_address, &ping_addr);
 

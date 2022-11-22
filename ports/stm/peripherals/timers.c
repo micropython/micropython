@@ -150,26 +150,65 @@ static size_t irq_map[] = {
 };
 
 // Get the frequency (in Hz) of the source clock for the given timer.
-// On STM32F405/407/415/417 there are 2 cases for how the clock freq is set.
-// If the APB prescaler is 1, then the timer clock is equal to its respective
-// APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
-// respective APB clock.  See DM00031020 Rev 4, page 115.
+//
+// From STM ref manual: DM00031020 Rev 19, section 7.2, page 217:
+//
+// The timer clock frequencies for STM32F405xx/07xx and STM32F415xx/17xx are
+// automatically set by hardware. There are two cases:
+// 1. If the APB prescaler is 1, the timer clock frequencies are set to the same frequency as
+// that of the APB domain to which the timers are connected.
+// 2. Otherwise, they are set to twice (×2) the frequency of the APB domain to which the
+// timers are connected.
+
+// From STM ref manual: DM00031020 Rev 19, section 6.2, page 153:
+//
+// The timer clock frequencies for STM32F42xxx and STM32F43xxx are automatically set by
+// hardware. There are two cases depending on the value of TIMPRE bit in RCC_CFGR [sic - should be RCC_DKCFGR]
+// register:
+// * If TIMPRE bit in RCC_DKCFGR register is reset:
+//   If the APB prescaler is configured to a division factor of 1, the timer clock frequencies
+//   (TIMxCLK) are set to PCLKx. Otherwise, the timer clock frequencies are twice the
+//   frequency of the APB domain to which the timers are connected: TIMxCLK = 2xPCLKx.
+// * If TIMPRE bit in RCC_DKCFGR register is set:
+//   If the APB prescaler is configured to a division factor of 1, 2 or 4, the timer clock
+//   frequencies (TIMxCLK) are set to HCLK. Otherwise, the timer clock frequencies is four
+//   times the frequency of the APB domain to which the timers are connected: TIMxCLK = 4xPCLKx.
+
 uint32_t stm_peripherals_timer_get_source_freq(TIM_TypeDef *timer) {
-    size_t tim_id = stm_peripherals_timer_get_index(timer);
+    // The timer index starts at 0, but the timer numbers start at TIM1.
+    size_t tim_id = stm_peripherals_timer_get_index(timer) + 1;
     uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
         source = HAL_RCC_GetPCLK2Freq();
-        clk_div = RCC->CFGR & RCC_CFGR_PPRE2;
+        // 0b0xx means not divided; 0b100 is divide by 2; 0b101 by 4; 0b110 by 8; 0b111 by 16.
+        clk_div = (RCC->CFGR & RCC_CFGR_PPRE2) >> RCC_CFGR_PPRE2_Pos;
     } else {
         // TIM{2,3,4,5,6,7,12,13,14} are on APB1
         source = HAL_RCC_GetPCLK1Freq();
-        clk_div = RCC->CFGR & RCC_CFGR_PPRE1;
+        // 0b0xx means not divided; 0b100 is divide by 2; 0b101 by 4; 0b110 by 8; 0b111 by 16.
+        clk_div = (RCC->CFGR & RCC_CFGR_PPRE1) >> RCC_CFGR_PPRE1_Pos;
     }
-    if (clk_div != 0) {
-        // APB prescaler for this timer is > 1
+
+    // Only some STM32's have TIMPRE.
+    #if defined(RCC_CFGR_TIMPRE)
+    uint32_t timpre = RCC->DCKCFGR & RCC_CFGR_TIMPRE;
+    if (timpre == 0) {
+        if (clk_div >= 0b100) {
+            source *= 2;
+        }
+    } else {
+        if (clk_div > 0b101) {
+            source *= 4;
+        } else {
+            source = HAL_RCC_GetHCLKFreq();
+        }
+    }
+    #else
+    if (clk_div >= 0b100) {
         source *= 2;
     }
+    #endif
     return source;
 }
 
@@ -271,6 +310,7 @@ bool stm_peripherals_timer_is_reserved(TIM_TypeDef *instance) {
     return stm_timer_reserved[tim_idx];
 }
 
+// Note this returns a timer index starting at zero, corresponding to TIM1.
 size_t stm_peripherals_timer_get_index(TIM_TypeDef *instance) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_tim_banks); i++) {
         if (instance == mcu_tim_banks[i]) {

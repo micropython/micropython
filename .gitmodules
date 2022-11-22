@@ -319,3 +319,9 @@
 [submodule "lib/mbedtls"]
 	path = lib/mbedtls
 	url = https://github.com/ARMmbed/mbedtls.git
+[submodule "frozen/Adafruit_CircuitPython_UC8151D"]
+	path = frozen/Adafruit_CircuitPython_UC8151D
+	url = https://github.com/adafruit/Adafruit_CircuitPython_UC8151D
+[submodule "frozen/Adafruit_CircuitPython_SSD1680"]
+	path = frozen/Adafruit_CircuitPython_SSD1680
+	url = https://github.com/adafruit/Adafruit_CircuitPython_SSD1680

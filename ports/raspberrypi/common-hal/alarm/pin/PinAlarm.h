@@ -46,4 +46,4 @@ void alarm_pin_pinalarm_reset(void);
 void alarm_pin_pinalarm_light_reset(void);
 void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
 bool alarm_pin_pinalarm_woke_this_cycle(void);
-bool alarm_pin_pinalarm_is_set(void);
+void alarm_pin_pinalarm_entering_deep_sleep(void);
