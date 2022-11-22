@@ -5,6 +5,8 @@ on:
   pull_request:
     paths:
       - '.github/workflows/*.yml'
+      - 'examples/**'
+      - 'tests/**'
       - 'tools/**'
 
 jobs:
