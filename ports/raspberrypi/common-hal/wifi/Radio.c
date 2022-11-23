@@ -164,7 +164,7 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
     bindings_cyw43_wifi_enforce_pm();
 }
 
-void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode, uint8_t max_connections) {
+void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint32_t authmodes, uint8_t max_connections) {
     mp_raise_NotImplementedError(NULL);
     bindings_cyw43_wifi_enforce_pm();
 }
