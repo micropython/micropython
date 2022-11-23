@@ -113,30 +113,31 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     // Maximum "top" is set at 65534 to be able to achieve 100% duty with 65535.
     #define TOP_MAX 65534
     uint32_t source_hz = clock_get_hz(clk_sys);
-    uint32_t div16_top = 16 * source_hz / freq;
-    uint32_t top = 1;
-    for (;;) {
-        // Try a few small prime factors to get close to the desired frequency.
-        if (div16_top >= 16 * 5 && div16_top % 5 == 0 && top * 5 <= TOP_MAX) {
-            div16_top /= 5;
-            top *= 5;
-        } else if (div16_top >= 16 * 3 && div16_top % 3 == 0 && top * 3 <= TOP_MAX) {
-            div16_top /= 3;
-            top *= 3;
-        } else if (div16_top >= 16 * 2 && top * 2 <= TOP_MAX) {
-            div16_top /= 2;
-            top *= 2;
-        } else {
-            break;
-        }
+    uint32_t div16;
+
+    if ((source_hz + freq / 2) / freq < TOP_MAX) {
+        // If possible (based on the formula for TOP below), use a DIV of 1.
+        // This also prevents overflow in the DIV calculation.
+        div16 = 16;
+    } else {
+        // Otherwise, choose the smallest possible DIV for maximum
+        // duty cycle resolution.
+        // Constraint: 16*F/(div16*freq) < TOP_MAX
+        // So: div16 = ceil(16*F/(TOP_MAX*freq))
+
+        div16 = (16 * source_hz + TOP_MAX * freq - 1) / (TOP_MAX * freq);
     }
-    if (div16_top < 16) {
+
+    // Set TOP as accurately as possible using rounding.
+    uint32_t top = (16 * source_hz + div16 * freq / 2) / (div16 * freq) - 1;
+
+    if (div16 < 16) {
         mp_raise_ValueError(MP_ERROR_TEXT("freq too large"));
-    } else if (div16_top >= 256 * 16) {
+    } else if (div16 >= 256 * 16) {
         mp_raise_ValueError(MP_ERROR_TEXT("freq too small"));
     }
-    pwm_hw->slice[self->slice].div = div16_top;
-    pwm_hw->slice[self->slice].top = top - 1;
+    pwm_hw->slice[self->slice].div = div16;
+    pwm_hw->slice[self->slice].top = top;
     if (self->duty_type == DUTY_U16) {
         mp_machine_pwm_duty_set_u16(self, self->duty);
     } else if (self->duty_type == DUTY_NS) {
@@ -148,12 +149,17 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     uint32_t top = pwm_hw->slice[self->slice].top;
     uint32_t cc = pwm_hw->slice[self->slice].cc;
     cc = (cc >> (self->channel ? PWM_CH0_CC_B_LSB : PWM_CH0_CC_A_LSB)) & 0xffff;
-    return MP_OBJ_NEW_SMALL_INT(cc * 65535 / (top + 1));
+
+    // Use rounding (instead of flooring) here to give as accurate an
+    // estimate as possible.
+    return MP_OBJ_NEW_SMALL_INT((cc * 65535 + (top + 1) / 2) / (top + 1));
 }
 
 STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     uint32_t top = pwm_hw->slice[self->slice].top;
-    uint32_t cc = duty_u16 * (top + 1) / 65535;
+
+    // Use rounding here to set it as accurately as possible.
+    uint32_t cc = (duty_u16 * (top + 1) + 65535 / 2) / 65535;
     pwm_set_chan_level(self->slice, self->channel, cc);
     pwm_set_enabled(self->slice, true);
     self->duty = duty_u16;
