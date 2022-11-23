@@ -472,7 +472,16 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
         time_to_wait = pdMS_TO_TICKS(self->timeout);
     }
 
+    bool release_gil = time_to_wait > 0;
+    if (release_gil) {
+        MP_THREAD_GIL_EXIT();
+    }
+
     int bytes_read = uart_read_bytes(self->uart_num, buf_in, size, time_to_wait);
+
+    if (release_gil) {
+        MP_THREAD_GIL_ENTER();
+    }
 
     if (bytes_read <= 0) {
         *errcode = MP_EAGAIN;
