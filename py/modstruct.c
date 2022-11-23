@@ -92,7 +92,9 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
             cnt = get_fmt_num(&fmt);
         }
 
-        if (*fmt == 's') {
+        if (*fmt == 'x') {
+            size += cnt;
+        } else if (*fmt == 's') {
             total_cnt += 1;
             size += cnt;
         } else {
@@ -159,7 +161,9 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
             cnt = get_fmt_num(&fmt);
         }
         mp_obj_t item;
-        if (*fmt == 's') {
+        if (*fmt == 'x') {
+            p += cnt;
+        } else if (*fmt == 's') {
             item = mp_obj_new_bytes(p, cnt);
             p += cnt;
             res->items[i++] = item;
@@ -192,7 +196,10 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
             cnt = get_fmt_num(&fmt);
         }
 
-        if (*fmt == 's') {
+        if (*fmt == 'x') {
+            memset(p, 0, cnt);
+            p += cnt;
+        } else if (*fmt == 's') {
             mp_buffer_info_t bufinfo;
             mp_get_buffer_raise(args[i++], &bufinfo, MP_BUFFER_READ);
             mp_uint_t to_copy = cnt;
