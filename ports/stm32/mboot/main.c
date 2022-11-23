@@ -108,8 +108,14 @@
 // These bits are used to detect valid application firmware at APPLICATION_ADDR
 #define APP_VALIDITY_BITS (0x00000003)
 
+// Symbol provided by the linker, at the address in flash where mboot can start erasing/writing.
+extern uint8_t _mboot_writable_flash_start;
+
 // For 1ms system ticker.
 volatile uint32_t systick_ms;
+
+// The sector number of the first sector that can be erased/written.
+int32_t first_writable_flash_sector;
 
 // Global dfu state
 dfu_context_t dfu_context SECTION_NOZERO_BSS;
@@ -403,7 +409,6 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #if defined(STM32WB)
 #define FLASH_END FLASH_END_ADDR
 #endif
-#define APPLICATION_FLASH_LENGTH (FLASH_END + 1 - APPLICATION_ADDR)
 
 #ifndef MBOOT_SPIFLASH_LAYOUT
 #define MBOOT_SPIFLASH_LAYOUT ""
@@ -431,7 +436,9 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 
 static int mboot_flash_mass_erase(void) {
     // Erase all flash pages after mboot.
-    int ret = flash_erase(APPLICATION_ADDR, APPLICATION_FLASH_LENGTH / sizeof(uint32_t));
+    uint32_t start_addr = (uint32_t)&_mboot_writable_flash_start;
+    uint32_t num_words = (FLASH_END + 1 - start_addr) / sizeof(uint32_t);
+    int ret = flash_erase(start_addr, num_words);
     return ret;
 }
 
@@ -439,7 +446,7 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     uint32_t sector_size = 0;
     uint32_t sector_start = 0;
     int32_t sector = flash_get_sector_info(addr, &sector_start, &sector_size);
-    if (sector <= 0) {
+    if (sector < first_writable_flash_sector) {
         // Don't allow to erase the sector with this bootloader in it, or invalid sectors
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
@@ -467,8 +474,8 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
 
 static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
     int32_t sector = flash_get_sector_info(addr, NULL, NULL);
-    if (sector <= 0) {
-        // Don't allow to write the sector with this bootloader in it
+    if (sector < first_writable_flash_sector) {
+        // Don't allow to write the sector with this bootloader in it, or invalid sectors.
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
                                           : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
@@ -1378,6 +1385,12 @@ enter_bootloader:
     pri <<= (8 - __NVIC_PRIO_BITS);
     __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
     #endif
+
+    // Compute the first erasable/writable internal flash sector.
+    first_writable_flash_sector = flash_get_sector_info((uint32_t)&_mboot_writable_flash_start, NULL, NULL);
+    if (first_writable_flash_sector < 0) {
+        first_writable_flash_sector = INT32_MAX;
+    }
 
     #if defined(MBOOT_SPIFLASH_ADDR)
     MBOOT_SPIFLASH_SPIFLASH->config = MBOOT_SPIFLASH_CONFIG;
