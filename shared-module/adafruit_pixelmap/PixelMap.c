@@ -32,12 +32,6 @@
 #include "shared-bindings/adafruit_pixelbuf/PixelBuf.h"
 #include "shared-module/adafruit_pixelmap/PixelMap.h"
 
-typedef union {
-    uint32_t rgbw;
-    struct {
-        uint8_t r, g, b, w;
-    };
-} color_u;
 
 static void pixelmap_set_pixel_rgbw(pixelmap_pixelmap_obj_t *self, size_t i, color_u rgbw) {
     mp_arg_validate_index_range(i, 0, self->len, MP_QSTR_index);
