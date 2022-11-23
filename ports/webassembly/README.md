@@ -70,7 +70,7 @@ something to stdout.  The following code demonstrates basic functionality:
     <script>
       document.addEventListener("micropython-print", function(e) {
         let output = document.getElementById("micropython-stdout");
-        output.innerText += e.detail;
+        output.innerText += new TextDecoder().decode(e.detail);
       }, false);
 
       var mp_js_startup = Module["onRuntimeInitialized"];

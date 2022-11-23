@@ -26,16 +26,12 @@
 
 mergeInto(LibraryManager.library, {
     mp_js_write: function(ptr, len) {
-        for (var i = 0; i < len; ++i) {
-            if (typeof window === 'undefined') {
-                var b = Buffer.alloc(1);
-                b.writeInt8(getValue(ptr + i, 'i8'));
-                process.stdout.write(b);
-            } else {
-                var c = String.fromCharCode(getValue(ptr + i, 'i8'));
-                var printEvent = new CustomEvent('micropython-print', { detail: c });
-                document.dispatchEvent(printEvent);
-            }
+        const buffer = HEAPU8.subarray(ptr, ptr + len)
+        if (typeof window === 'undefined') {
+            process.stdout.write(buffer);
+        } else {
+            const printEvent = new CustomEvent('micropython-print', { detail: buffer });
+            document.dispatchEvent(printEvent);
         }
     },
 
