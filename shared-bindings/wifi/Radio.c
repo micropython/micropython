@@ -140,11 +140,11 @@ MP_PROPERTY_GETSET(wifi_radio_hostname_obj,
 //|     mac_address: ReadableBuffer
 //|     """MAC address for the station. When the address is altered after interface is connected
 //|        the changes would only be reflected once the interface reconnects."""
-STATIC mp_obj_t wifi_radio_get_mac_address(mp_obj_t self_in) {
+STATIC mp_obj_t _wifi_radio_get_mac_address(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(common_hal_wifi_radio_get_mac_address(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_obj, wifi_radio_get_mac_address);
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_obj, _wifi_radio_get_mac_address);
 
 STATIC mp_obj_t wifi_radio_set_mac_address(mp_obj_t self_in, mp_obj_t mac_address_in) {
     mp_buffer_info_t mac_address;

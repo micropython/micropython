@@ -428,7 +428,6 @@ static bool _endswith(const char *str, const char *suffix) {
 }
 
 const char *ok_hosts[] = {
-    "code.circuitpython.org",
     "127.0.0.1",
     "localhost",
 };
@@ -1393,38 +1392,44 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
 
 
 void supervisor_web_workflow_background(void) {
-    // If we have a request in progress, continue working on it. Do this first
-    // so that we can accept another socket after finishing this request.
-    if (common_hal_socketpool_socket_get_connected(&active)) {
-        _process_request(&active, &active_request);
-    } else {
-        // Close the active socket if it is no longer connected.
-        common_hal_socketpool_socket_close(&active);
-    }
-
-    // Otherwise, see if we have another socket to accept.
-    if ((!common_hal_socketpool_socket_get_connected(&active) ||
-         (!active_request.in_progress && !active_request.new_socket)) &&
-        !common_hal_socketpool_socket_get_closed(&listening)) {
-        uint32_t ip;
-        uint32_t port;
-        int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port, &active);
-        if (newsoc == -EBADF) {
-            common_hal_socketpool_socket_close(&listening);
-            return;
+    // Track if we have more to do. For example, we should start processing a
+    // request immediately after we accept the socket.
+    bool more_to_do = true;
+    while (more_to_do) {
+        more_to_do = false;
+        // If we have a request in progress, continue working on it. Do this first
+        // so that we can accept another socket after finishing this request.
+        if (common_hal_socketpool_socket_get_connected(&active)) {
+            _process_request(&active, &active_request);
+        } else {
+            // Close the active socket if it is no longer connected.
+            common_hal_socketpool_socket_close(&active);
         }
-        if (newsoc > 0) {
-            common_hal_socketpool_socket_settimeout(&active, 0);
 
-            _reset_request(&active_request);
-            // Mark new sockets, otherwise we may accept another before the first
-            // could start its request.
-            active_request.new_socket = true;
+        // Otherwise, see if we have another socket to accept.
+        if ((!common_hal_socketpool_socket_get_connected(&active) ||
+             (!active_request.in_progress && !active_request.new_socket)) &&
+            !common_hal_socketpool_socket_get_closed(&listening)) {
+            uint32_t ip;
+            uint32_t port;
+            int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port, &active);
+            if (newsoc == -EBADF) {
+                common_hal_socketpool_socket_close(&listening);
+                return;
+            }
+            if (newsoc > 0) {
+                common_hal_socketpool_socket_settimeout(&active, 0);
+
+                _reset_request(&active_request);
+                // Mark new sockets, otherwise we may accept another before the first
+                // could start its request.
+                active_request.new_socket = true;
+                more_to_do = true;
+            }
         }
+
+        websocket_background();
     }
-
-
-    websocket_background();
 }
 
 void supervisor_stop_web_workflow(void) {
