@@ -29,9 +29,9 @@
 #include "py/objtype.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/adafruit_pixelmap/PixelMap.h"
+#include "shared-bindings/_pixelmap/PixelMap.h"
 #include "shared-bindings/adafruit_pixelbuf/PixelBuf.h"
-#include "shared-module/adafruit_pixelmap/PixelMap.h"
+#include "shared-module/_pixelmap/PixelMap.h"
 
 //| from adafruit_pixelbuf import PixelBuf, PixelReturnType, PixelSequence, PixelType
 //|

@@ -29,13 +29,13 @@
 #include "py/runtime.h"
 #include "py/objproperty.h"
 
-#include "shared-bindings/adafruit_pixelmap/__init__.h"
-#include "shared-bindings/adafruit_pixelmap/PixelMap.h"
+#include "shared-bindings/_pixelmap/__init__.h"
+#include "shared-bindings/_pixelmap/PixelMap.h"
 
 
 //| """A fast pixel mapping library
 //|
-//| The `adafruit_pixelmap` module provides the :py:class:`PixelMap` class to accelerate
+//| The `_pixelmap` module provides the :py:class:`PixelMap` class to accelerate
 //| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel."""
 //|
 //| # The types accepted when getting a pixel value
@@ -48,7 +48,7 @@
 //| PixelSequence = Union[Tuple[PixelType], List[PixelType]]
 
 STATIC const mp_rom_map_elem_t pixelmap_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_adafruit_pixelmap) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__pixelmap) },
     { MP_ROM_QSTR(MP_QSTR_PixelMap), MP_ROM_PTR(&pixelmap_pixelmap_type) },
 };
 
@@ -59,4 +59,4 @@ const mp_obj_module_t pixelmap_module = {
     .globals = (mp_obj_dict_t *)&pixelmap_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_adafruit_pixelmap, pixelmap_module, CIRCUITPY_PIXELMAP);
+MP_REGISTER_MODULE(MP_QSTR__pixelmap, pixelmap_module, CIRCUITPY_PIXELMAP);
