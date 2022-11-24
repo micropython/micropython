@@ -263,8 +263,11 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         #if defined(MCU_SAMD21)
         if (self->tx_pad_config.pad_nr == 2) { // Map pad 2 to TXPO = 1
             txpo = 1;
-        }
+        } else
         #endif
+        if (self->tx_pad_config.pad_nr != 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid tx pin"));
+        }
 
         uart->USART.CTRLA.reg =
             SERCOM_USART_CTRLA_DORD // Data order
