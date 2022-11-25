@@ -236,11 +236,9 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
 
         // Allocate the RX/TX buffers.
         ringbuf_alloc(&(self->read_buffer), rxbuf_len + 1);
-        MP_STATE_PORT(samd_uart_rx_buffer[self->id]) = self->read_buffer.buf;
 
         #if MICROPY_HW_UART_TXBUF
         ringbuf_alloc(&(self->write_buffer), txbuf_len + 1);
-        MP_STATE_PORT(samd_uart_tx_buffer[self->id]) = self->write_buffer.buf;
         #endif
 
         // Step 1: Configure the Pin mux.
@@ -324,8 +322,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     }
 
     // Create the UART object and fill it with defaults.
-    machine_uart_obj_t *self = m_new_obj_with_finaliser(machine_uart_obj_t);
-    self->base.type = &machine_uart_type;
+    machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
     self->id = uart_id;
     self->baudrate = DEFAULT_UART_BAUDRATE;
     self->bits = 8;
@@ -350,15 +347,16 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_uart_init_obj, 1, machine_uart_init);
 
 STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    Sercom *uart = sercom_instance[self->id];
-    // Disable interrupts
-    uart->USART.INTENCLR.reg = 0xff;
-    // clear table entry of uart
-    MP_STATE_PORT(sercom_table[self->id]) = NULL;
-    MP_STATE_PORT(samd_uart_rx_buffer[self->id]) = NULL;
-    #if MICROPY_HW_UART_TXBUF
-    MP_STATE_PORT(samd_uart_tx_buffer[self->id]) = NULL;
-    #endif
+    // Check if it is the active object.
+    if (MP_STATE_PORT(sercom_table)[self->id] == self) {
+        Sercom *uart = sercom_instance[self->id];
+        // Disable interrupts and de-register the IRQ
+        if (uart) {
+            uart->USART.INTENCLR.reg = 0xff;
+            sercom_register_irq(self->id, NULL);
+            sercom_enable(uart, 0);
+        }
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_deinit_obj, machine_uart_deinit);
@@ -423,7 +421,6 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_uart_deinit_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
 
@@ -547,8 +544,3 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &uart_stream_p,
     locals_dict, &machine_uart_locals_dict
     );
-
-MP_REGISTER_ROOT_POINTER(void *samd_uart_rx_buffer[SERCOM_INST_NUM]);
-#if MICROPY_HW_UART_TXBUF
-MP_REGISTER_ROOT_POINTER(void *samd_uart_tx_buffer[SERCOM_INST_NUM]);
-#endif
