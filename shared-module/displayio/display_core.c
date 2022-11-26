@@ -165,14 +165,15 @@ void displayio_display_core_set_rotation(displayio_display_core_t *self,
 bool displayio_display_core_set_root_group(displayio_display_core_t *self, displayio_group_t *root_group) {
 
     if (root_group == NULL) { // set the display to the REPL, reset REPL position and size
-        circuitpython_splash.in_group = false;
+        //circuitpython_splash.in_group = false;
         // force the circuit_python_splash out of any group (Note: could cause problems with the parent group)
-        circuitpython_splash.x = 0; // reset position in case someone moved it.
-        circuitpython_splash.y = 0;
+        //circuitpython_splash.x = 0; // reset position in case someone moved it.
+        //circuitpython_splash.y = 0;
         mp_printf(&mp_plat_print, "Inside set root group NULL\n");
-        supervisor_start_terminal(self->width, self->height);
+        //supervisor_start_terminal(self->width, self->height);
 
-        root_group = &circuitpython_splash;
+        //root_group = &circuitpython_splash;
+
     }
     if (root_group == self->current_group) {
         return true;
