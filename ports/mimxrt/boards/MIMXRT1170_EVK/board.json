@@ -1,0 +1,28 @@
+{
+    "deploy": [
+        "../deploy_mimxrt.md"
+    ],
+    "docs": "",
+    "features": [
+        "Ethernet",
+        "SDRAM",
+        "MicroSD",
+        "MicroUSB",
+        "Microphone",
+        "AudioCodec",
+        "SPDIF",
+        "CAN",
+        "Camera",
+        "SIM Socket",
+        "OpenSDA",
+        "JLink"
+    ],
+    "images": [
+        "IMX-RT1170-EVK-TOP.jpg"
+    ],
+    "mcu": "mimxrt",
+    "product": "MIMXRT1170_EVK",
+    "thumbnail": "",
+    "url": "https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/i-mx-rt1170-evaluation-kit:MIMXRT1170-EVK",
+    "vendor": "NXP"
+}

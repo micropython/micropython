@@ -73,7 +73,7 @@ int nina_bsp_init(void) {
         MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIFI_SPI_BAUDRATE),
     };
 
-    MP_STATE_PORT(mp_wifi_spi) = machine_spi_type.make_new((mp_obj_t)&machine_spi_type, 2, 0, args);
+    MP_STATE_PORT(mp_wifi_spi) = MP_OBJ_TYPE_GET_SLOT(&machine_spi_type, make_new)((mp_obj_t)&machine_spi_type, 2, 0, args);
     return 0;
 }
 
@@ -90,6 +90,20 @@ int nina_bsp_deinit(void) {
     return 0;
 }
 
+int nina_bsp_atomic_enter(void) {
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_lock();
+    #endif
+    return 0;
+}
+
+int nina_bsp_atomic_exit(void) {
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_unlock();
+    #endif
+    return 0;
+}
+
 int nina_bsp_read_irq(void) {
     return mp_hal_pin_read(MICROPY_HW_NINA_GPIO0);
 }
@@ -97,7 +111,7 @@ int nina_bsp_read_irq(void) {
 int nina_bsp_spi_slave_select(uint32_t timeout) {
     // Wait for ACK to go low.
     for (mp_uint_t start = mp_hal_ticks_ms(); mp_hal_pin_read(MICROPY_HW_NINA_ACK) == 1; mp_hal_delay_ms(1)) {
-        if ((mp_hal_ticks_ms() - start) >= timeout) {
+        if (timeout && ((mp_hal_ticks_ms() - start) >= timeout)) {
             return -1;
         }
     }
@@ -123,7 +137,7 @@ int nina_bsp_spi_slave_deselect(void) {
 
 int nina_bsp_spi_transfer(const uint8_t *tx_buf, uint8_t *rx_buf, uint32_t size) {
     mp_obj_t mp_wifi_spi = MP_STATE_PORT(mp_wifi_spi);
-    ((mp_machine_spi_p_t *)machine_spi_type.protocol)->transfer(mp_wifi_spi, size, tx_buf, rx_buf);
+    ((mp_machine_spi_p_t *)MP_OBJ_TYPE_GET_SLOT(&machine_spi_type, protocol))->transfer(mp_wifi_spi, size, tx_buf, rx_buf);
     #if NINA_DEBUG
     for (int i = 0; i < size; i++) {
         if (tx_buf) {

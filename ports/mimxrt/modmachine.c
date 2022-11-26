@@ -26,6 +26,7 @@
  */
 
 #include "py/runtime.h"
+#include "drivers/dht/dht.h"
 #include "extmod/machine_bitstream.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_i2c.h"
@@ -36,8 +37,9 @@
 #include "led.h"
 #include "pin.h"
 #include "modmachine.h"
-#include "fsl_clock.h"
 #include "fsl_wdog.h"
+
+#if MICROPY_PY_MACHINE
 
 #include CPU_HEADER_H
 
@@ -147,6 +149,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dht_readinto),        MP_ROM_PTR(&dht_readinto_obj) },
 
     // Reset reasons
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(MP_PWRON_RESET) },
@@ -160,4 +163,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine, MICROPY_PY_MACHINE);
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+
+#endif // MICROPY_PY_MACHINE

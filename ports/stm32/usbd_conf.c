@@ -215,7 +215,6 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd) {
     if (hpcd->Instance == USB_OTG_FS) {
         /* Disable USB FS Clocks */
         __USB_OTG_FS_CLK_DISABLE();
-        __SYSCFG_CLK_DISABLE();
         return;
     }
     #endif
@@ -224,7 +223,6 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd) {
     if (hpcd->Instance == USB_OTG_HS) {
         /* Disable USB FS Clocks */
         __USB_OTG_HS_CLK_DISABLE();
-        __SYSCFG_CLK_DISABLE();
     }
     #endif
 

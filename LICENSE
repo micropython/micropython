@@ -35,7 +35,6 @@ used during the build process and is not part of the compiled source code.
 
 / (MIT)
     /drivers
-        /cc3000 (BSD-3-clause)
         /cc3100 (BSD-3-clause)
         /wiznet5k (BSD-3-clause)
     /lib

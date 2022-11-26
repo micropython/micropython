@@ -89,7 +89,7 @@ parameter should be `id`.
        network media, there are different variants of predefined/
        recommended tuple formats, among them:
 
-       * WiFi: (ssid, bssid, channel, RSSI, authmode, hidden). There
+       * WiFi: (ssid, bssid, channel, RSSI, security, hidden). There
          may be further fields, specific to a particular device.
 
        The function may accept additional keyword arguments to filter scan
@@ -133,10 +133,10 @@ parameter should be `id`.
        querying, a parameter name should be quoted as a string, and only one
        parameter can be queried at a time::
 
-        # Set WiFi access point name (formally known as ESSID) and WiFi channel
-        ap.config(essid='My AP', channel=11)
+        # Set WiFi access point name (formally known as SSID) and WiFi channel
+        ap.config(ssid='My AP', channel=11)
         # Query params one by one
-        print(ap.config('essid'))
+        print(ap.config('ssid'))
         print(ap.config('channel'))
 
 Specific network class implementations
@@ -150,7 +150,6 @@ provide a way to control networking interfaces of various kinds.
 
    network.WLAN.rst
    network.WLANWiPy.rst
-   network.CC3K.rst
    network.WIZNET5K.rst
    network.LAN.rst
 

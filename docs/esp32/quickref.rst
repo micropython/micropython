@@ -76,12 +76,12 @@ The :mod:`network` module::
     wlan.active(True)       # activate the interface
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
-    wlan.connect('essid', 'password') # connect to an AP
+    wlan.connect('ssid', 'key') # connect to an AP
     wlan.config('mac')      # get the interface's MAC address
     wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
-    ap.config(essid='ESP-AP') # set the ESSID of the access point
+    ap.config(ssid='ESP-AP') # set the SSID of the access point
     ap.config(max_clients=10) # set how many clients can connect to the network
     ap.active(True)         # activate the interface
 
@@ -93,7 +93,7 @@ A useful function for connecting to your local WiFi network is::
         wlan.active(True)
         if not wlan.isconnected():
             print('connecting to network...')
-            wlan.connect('essid', 'password')
+            wlan.connect('ssid', 'key')
             while not wlan.isconnected():
                 pass
         print('network config:', wlan.ifconfig())
@@ -216,9 +216,10 @@ They each have default GPIO assigned to them, however depending on your
 ESP32 variant and board, these pins may conflict with embedded flash,
 onboard PSRAM or peripherals.
 
-Any GPIO can be used for hardware UARTs using the GPIO matrix, so to avoid
-conflicts simply provide ``tx`` and ``rx`` pins when constructing. The default
-pins listed below.
+Any GPIO can be used for hardware UARTs using the GPIO matrix, except for
+input-only pins 34-39 that can be used as ``rx``. To avoid conflicts simply
+provide ``tx`` and ``rx`` pins when constructing. The default pins listed
+below.
 
 =====  =====  =====  =====
 \      UART0  UART1  UART2
@@ -589,7 +590,7 @@ See :ref:`machine.SDCard <machine.SDCard>`. ::
 
     # Slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
     sd = machine.SDCard(slot=2)
-    os.mount(sd, "/sd")  # mount
+    os.mount(sd, '/sd')  # mount
 
     os.listdir('/sd')    # list directory contents
 

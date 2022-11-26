@@ -34,7 +34,11 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 
+#ifndef NO_QSTR
+// Only include module definitions when not doing qstr extraction, because the
+// qstr extraction stage also generates this module definition header file.
 #include "genhdr/moduledefs.h"
+#endif
 
 #if MICROPY_MODULE_BUILTIN_INIT
 STATIC void mp_module_call_init(mp_obj_t module_name, mp_obj_t module_obj);
@@ -85,6 +89,10 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             dest[0] = elem->value;
+        #if MICROPY_CPYTHON_COMPAT
+        } else if (attr == MP_QSTR___dict__) {
+            dest[0] = MP_OBJ_FROM_PTR(self->globals);
+        #endif
         #if MICROPY_MODULE_GETATTR
         } else if (attr != MP_QSTR___getattr__) {
             elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
@@ -126,12 +134,13 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t mp_type_module = {
-    { &mp_type_type },
-    .name = MP_QSTR_module,
-    .print = module_print,
-    .attr = module_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_module,
+    MP_QSTR_module,
+    MP_TYPE_FLAG_NONE,
+    print, module_print,
+    attr, module_attr
+    );
 
 mp_obj_t mp_obj_new_module(qstr module_name) {
     mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
@@ -161,10 +170,8 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 // Global module table and related functions
 
 STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
-    #ifdef MICROPY_REGISTERED_MODULES
     // builtin modules declared with MP_REGISTER_MODULE()
     MICROPY_REGISTERED_MODULES
-    #endif
 };
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);

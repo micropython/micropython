@@ -1115,14 +1115,19 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
             if (!is_as) {
                 *q_base = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
             }
-            int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-            int len = n - 1;
-            for (int i = 0; i < n; i++) {
+            size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+            if (n == 0) {
+                // There must be at least one node in this PN_dotted_name.
+                // Let the compiler know this so it doesn't warn, and can generate better code.
+                MP_UNREACHABLE;
+            }
+            size_t len = n - 1;
+            for (size_t i = 0; i < n; i++) {
                 len += qstr_len(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
             }
             char *q_ptr = mp_local_alloc(len);
             char *str_dest = q_ptr;
-            for (int i = 0; i < n; i++) {
+            for (size_t i = 0; i < n; i++) {
                 if (i > 0) {
                     *str_dest++ = '.';
                 }
@@ -1135,7 +1140,7 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
             mp_local_free(q_ptr);
             EMIT_ARG(import, q_full, MP_EMIT_IMPORT_NAME);
             if (is_as) {
-                for (int i = 1; i < n; i++) {
+                for (size_t i = 1; i < n; i++) {
                     EMIT_ARG(attr, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), MP_EMIT_ATTR_LOAD);
                 }
             }
@@ -1325,12 +1330,8 @@ STATIC void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             goto done;
         }
 
-        if (
-            // optimisation: don't jump over non-existent elif/else blocks
-            !(MP_PARSE_NODE_IS_NULL(pns->nodes[2]) && MP_PARSE_NODE_IS_NULL(pns->nodes[3]))
-            // optimisation: don't jump if last instruction was return
-            && !EMIT(last_emit_was_return_value)
-            ) {
+        // optimisation: don't jump over non-existent elif/else blocks
+        if (!(MP_PARSE_NODE_IS_NULL(pns->nodes[2]) && MP_PARSE_NODE_IS_NULL(pns->nodes[3]))) {
             // jump over elif/else blocks
             EMIT_ARG(jump, l_end);
         }
@@ -1357,10 +1358,7 @@ STATIC void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 goto done;
             }
 
-            // optimisation: don't jump if last instruction was return
-            if (!EMIT(last_emit_was_return_value)) {
-                EMIT_ARG(jump, l_end);
-            }
+            EMIT_ARG(jump, l_end);
             EMIT_ARG(label_assign, l_fail);
         }
     }
@@ -1575,9 +1573,7 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     EMIT_ARG(for_iter, pop_label);
     c_assign(comp, pns->nodes[0], ASSIGN_STORE); // variable
     compile_node(comp, pns->nodes[2]); // body
-    if (!EMIT(last_emit_was_return_value)) {
-        EMIT_ARG(jump, continue_label);
-    }
+    EMIT_ARG(jump, continue_label);
     EMIT_ARG(label_assign, pop_label);
     EMIT(for_iter_end);
 
@@ -3043,11 +3039,8 @@ STATIC bool compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         }
 
         compile_node(comp, pns->nodes[3]); // 3 is function body
-        // emit return if it wasn't the last opcode
-        if (!EMIT(last_emit_was_return_value)) {
-            EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-            EMIT(return_value);
-        }
+        EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
+        EMIT(return_value);
     } else if (scope->kind == SCOPE_LAMBDA) {
         assert(MP_PARSE_NODE_IS_STRUCT(scope->pn));
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)scope->pn;
@@ -3293,12 +3286,13 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
             if (pass > MP_PASS_SCOPE) {
                 mp_int_t bytesize = MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]);
                 for (uint j = 1; j < n_args; j++) {
-                    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_arg[j])) {
+                    mp_obj_t int_obj;
+                    if (!mp_parse_node_get_int_maybe(pn_arg[j], &int_obj)) {
                         compile_syntax_error(comp, nodes[i], MP_ERROR_TEXT("'data' requires integer arguments"));
                         return;
                     }
                     mp_asm_base_data((mp_asm_base_t *)comp->emit_inline_asm,
-                        bytesize, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[j]));
+                        bytesize, mp_obj_int_get_truncated(int_obj));
                 }
             }
         } else {

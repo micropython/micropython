@@ -13,6 +13,9 @@ MICROPY_BLUETOOTH_NIMBLE ?= 0
 MICROPY_BLUETOOTH_BTSTACK ?= 1
 MICROPY_VFS_LFS2 ?= 1
 
+# Board specific frozen modules
+FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py
+
 ifneq ($(BUILDING_MBOOT),1)
 LIB_SRC_C += lib/btstack/chipset/cc256x/btstack_chipset_cc256x.c
 endif

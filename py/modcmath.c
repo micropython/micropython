@@ -149,6 +149,6 @@ const mp_obj_module_t mp_module_cmath = {
     .globals = (mp_obj_dict_t *)&mp_module_cmath_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_cmath, mp_module_cmath, MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_BUILTINS_COMPLEX && MICROPY_PY_CMATH);
+MP_REGISTER_MODULE(MP_QSTR_cmath, mp_module_cmath);
 
 #endif // MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_BUILTINS_COMPLEX && MICROPY_PY_CMATH

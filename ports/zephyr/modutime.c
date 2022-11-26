@@ -28,7 +28,7 @@
 #include "py/mpconfig.h"
 #if MICROPY_PY_UTIME
 
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 
 #include "py/runtime.h"
 #include "py/smallint.h"
@@ -64,6 +64,6 @@ const mp_obj_module_t mp_module_time = {
     .globals = (mp_obj_dict_t *)&mp_module_time_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_utime, mp_module_time, MICROPY_PY_UTIME);
+MP_REGISTER_MODULE(MP_QSTR_utime, mp_module_time);
 
 #endif // MICROPY_PY_UTIME

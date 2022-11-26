@@ -28,6 +28,11 @@
 // continues to build (i.e. catches usage of mp_obj_t that don't work with
 // this representation).
 
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+
+// Enable extra Unix features.
+#include "../mpconfigvariant_common.h"
+
 // select nan-boxing object model
 #define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_D)
 

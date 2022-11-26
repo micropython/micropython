@@ -250,7 +250,7 @@ STATIC mp_obj_t mp_builtin_input(size_t n_args, const mp_obj_t *args) {
     if (line.len == 0 && ret == CHAR_CTRL_D) {
         mp_raise_type(&mp_type_EOFError);
     }
-    return mp_obj_new_str_from_vstr(&mp_type_str, &line);
+    return mp_obj_new_str_from_vstr(&line);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj, 0, 1, mp_builtin_input);
 
@@ -455,7 +455,7 @@ STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
         #if MICROPY_CAN_OVERRIDE_BUILTINS
         // Set "_" special variable
         mp_obj_t dest[2] = {MP_OBJ_SENTINEL, o};
-        mp_type_module.attr(MP_OBJ_FROM_PTR(&mp_module_builtins), MP_QSTR__, dest);
+        MP_OBJ_TYPE_GET_SLOT(&mp_type_module, attr)(MP_OBJ_FROM_PTR(&mp_module_builtins), MP_QSTR__, dest);
         #endif
     }
     return mp_const_none;
@@ -467,7 +467,7 @@ STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     mp_print_t print;
     vstr_init_print(&vstr, 16, &print);
     mp_obj_print_helper(&print, o_in, PRINT_REPR);
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return mp_obj_new_str_from_utf8_vstr(&vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 
@@ -547,7 +547,7 @@ STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t 
     if (n_args > 1) {
         mp_raise_TypeError(MP_ERROR_TEXT("must use keyword argument for key function"));
     }
-    mp_obj_t self = mp_type_list.make_new(&mp_type_list, 1, 0, args);
+    mp_obj_t self = mp_obj_list_make_new(&mp_type_list, 1, 0, args);
     mp_obj_list_sort(1, &self, kwargs);
 
     return self;
@@ -729,6 +729,9 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_next), MP_ROM_PTR(&mp_builtin_next_obj) },
     { MP_ROM_QSTR(MP_QSTR_oct), MP_ROM_PTR(&mp_builtin_oct_obj) },
+    #if MICROPY_PY_IO
+    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_ord), MP_ROM_PTR(&mp_builtin_ord_obj) },
     { MP_ROM_QSTR(MP_QSTR_pow), MP_ROM_PTR(&mp_builtin_pow_obj) },
     { MP_ROM_QSTR(MP_QSTR_print), MP_ROM_PTR(&mp_builtin_print_obj) },
@@ -785,4 +788,4 @@ const mp_obj_module_t mp_module_builtins = {
     .globals = (mp_obj_dict_t *)&mp_module_builtins_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_builtins, mp_module_builtins, 1);
+MP_REGISTER_MODULE(MP_QSTR_builtins, mp_module_builtins);

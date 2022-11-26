@@ -438,6 +438,23 @@ static size_t make_cdc_desc(uint8_t *dest, int need_iad, uint8_t iface_num) {
         memcpy(dest, cdc_class_desc_data + 8, sizeof(cdc_class_desc_data) - 8);
     }
     dest[2] = iface_num;        // bInterfaceNumber, main class
+
+    #ifdef MICROPY_HW_USB_INTERFACE_CDC0_STRING
+    if (iface_num == CDC_IFACE_NUM_ALONE || iface_num == CDC_IFACE_NUM_WITH_MSC || iface_num == CDC_IFACE_NUM_WITH_HID) {
+        dest[8] = USBD_IDX_INTERFACE_CDC0_STR; // iInterface
+    }
+    #endif
+    #ifdef MICROPY_HW_USB_INTERFACE_CDC1_STRING
+    if (iface_num == CDC2_IFACE_NUM_WITH_CDC || iface_num == CDC2_IFACE_NUM_WITH_MSC) {
+        dest[8] = USBD_IDX_INTERFACE_CDC1_STR; // iInterface
+    }
+    #endif
+    #ifdef MICROPY_HW_USB_INTERFACE_CDC2_STRING
+    if (iface_num == CDC3_IFACE_NUM_WITH_CDC || iface_num == CDC3_IFACE_NUM_WITH_MSC) {
+        dest[8] = USBD_IDX_INTERFACE_CDC2_STR; // iInterface
+    }
+    #endif
+
     dest[18] = iface_num + 1;   // bDataInterface
     dest[26] = iface_num + 0;   // bMasterInterface
     dest[27] = iface_num + 1;   // bSlaveInterface

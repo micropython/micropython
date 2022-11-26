@@ -539,16 +539,17 @@ STATIC const mp_rom_map_elem_t set_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(set_locals_dict, set_locals_dict_table);
 
-const mp_obj_type_t mp_type_set = {
-    { &mp_type_type },
-    .name = MP_QSTR_set,
-    .print = set_print,
-    .make_new = set_make_new,
-    .unary_op = set_unary_op,
-    .binary_op = set_binary_op,
-    .getiter = set_getiter,
-    .locals_dict = (mp_obj_dict_t *)&set_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_set,
+    MP_QSTR_set,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, set_make_new,
+    print, set_print,
+    unary_op, set_unary_op,
+    binary_op, set_binary_op,
+    iter, set_getiter,
+    locals_dict, &set_locals_dict
+    );
 
 #if MICROPY_PY_BUILTINS_FROZENSET
 STATIC const mp_rom_map_elem_t frozenset_locals_dict_table[] = {
@@ -564,17 +565,17 @@ STATIC const mp_rom_map_elem_t frozenset_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(frozenset_locals_dict, frozenset_locals_dict_table);
 
-const mp_obj_type_t mp_type_frozenset = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
-    .name = MP_QSTR_frozenset,
-    .print = set_print,
-    .make_new = set_make_new,
-    .unary_op = set_unary_op,
-    .binary_op = set_binary_op,
-    .getiter = set_getiter,
-    .locals_dict = (mp_obj_dict_t *)&frozenset_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_frozenset,
+    MP_QSTR_frozenset,
+    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, set_make_new,
+    print, set_print,
+    unary_op, set_unary_op,
+    binary_op, set_binary_op,
+    iter, set_getiter,
+    locals_dict, &frozenset_locals_dict
+    );
 #endif
 
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {

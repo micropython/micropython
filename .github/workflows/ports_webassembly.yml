@@ -1,0 +1,27 @@
+name: webassembly port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'lib/**'
+      - 'ports/webassembly/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install packages
+      run: source tools/ci.sh && ci_webassembly_setup
+    - name: Build
+      run: source tools/ci.sh && ci_webassembly_build
+    - name: Run tests
+      run: source tools/ci.sh && ci_webassembly_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures

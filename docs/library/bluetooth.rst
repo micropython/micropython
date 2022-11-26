@@ -13,6 +13,9 @@ concurrently. Pairing (and bonding) is supported on some ports.
 This API is intended to match the low-level Bluetooth protocol and provide
 building-blocks for higher-level abstractions such as specific device types.
 
+.. note:: For most applications, we recommend using the higher-level
+          `aioble library <https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble>`_.
+
 .. note:: This module is still under development and its classes, functions,
           methods and constants are subject to change.
 
@@ -163,7 +166,7 @@ Event Handling
                 conn_handle, status = data
             elif event == _IRQ_GATTC_CHARACTERISTIC_RESULT:
                 # Called for each characteristic found by gattc_discover_services().
-                conn_handle, def_handle, value_handle, properties, uuid = data
+                conn_handle, end_handle, value_handle, properties, uuid = data
             elif event == _IRQ_GATTC_CHARACTERISTIC_DONE:
                 # Called once service discovery is complete.
                 # Note: Status will be zero on success, implementation-specific value otherwise.

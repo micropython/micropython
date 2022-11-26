@@ -72,7 +72,7 @@ class Lexer:
         ("}", re.compile(r"}$")),
         (
             "} TypeDef",
-            re.compile(r"} *(?P<id>[A-Z][A-Za-z0-9_]+)_(?P<global>([A-Za-z0-9_]+)?)TypeDef;$"),
+            re.compile(r"} *(?P<id>[A-Z][A-Za-z0-9_]*)_(?P<global>([A-Za-z0-9_]+)?)TypeDef;$"),
         ),
         (
             "IO reg",

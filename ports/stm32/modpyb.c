@@ -30,7 +30,6 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared/runtime/pyexec.h"
-#include "drivers/dht/dht.h"
 #include "stm32_it.h"
 #include "irq.h"
 #include "led.h"
@@ -57,6 +56,8 @@
 #include "extmod/utime_mphal.h"
 
 char pyb_country_code[2];
+
+#if MICROPY_PY_PYB
 
 STATIC mp_obj_t pyb_fault_debug(mp_obj_t value) {
     pyb_hard_fault_debug = mp_obj_is_true(value);
@@ -189,9 +190,6 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     #endif
 
-    // This function is not intended to be public and may be moved elsewhere
-    { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
-
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&pyb_timer_type) },
 
     #if MICROPY_HW_ENABLE_RNG
@@ -266,4 +264,6 @@ const mp_obj_module_t pyb_module = {
     .globals = (mp_obj_dict_t *)&pyb_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_pyb, pyb_module, MICROPY_PY_PYB);
+MP_REGISTER_MODULE(MP_QSTR_pyb, pyb_module);
+
+#endif // MICROPY_PY_PYB

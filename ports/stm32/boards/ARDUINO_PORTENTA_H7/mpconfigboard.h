@@ -38,7 +38,7 @@ void PORTENTA_board_startup(void);
 #define MICROPY_BOARD_EARLY_INIT    PORTENTA_board_early_init
 void PORTENTA_board_early_init(void);
 
-#define MICROPY_BOARD_ENTER_BOOTLOADER PORTENTA_board_enter_bootloader
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) PORTENTA_board_enter_bootloader()
 void PORTENTA_board_enter_bootloader(void);
 
 void PORTENTA_board_low_power(int mode);
@@ -159,6 +159,9 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_UART7_CTS        (pyb_pin_BT_CTS)
 
 // I2C busses
+#define MICROPY_HW_I2C1_SCL         (pin_B6)
+#define MICROPY_HW_I2C1_SDA         (pin_B7)
+
 #define MICROPY_HW_I2C3_SCL         (pin_H7)
 #define MICROPY_HW_I2C3_SDA         (pin_H8)
 
@@ -206,8 +209,8 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_USB_HS_ULPI_DIR  (pin_I11)
 #define MICROPY_HW_USB_HS_ULPI3320  (1)
 
-#define MICROPY_HW_USB_CDC_RX_DATA_SIZE     (512)
-#define MICROPY_HW_USB_CDC_TX_DATA_SIZE     (512)
+#define MICROPY_HW_USB_CDC_RX_DATA_SIZE     (1024)
+#define MICROPY_HW_USB_CDC_TX_DATA_SIZE     (1024)
 #define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
 #define GPIO_AF10_OTG_HS                    (GPIO_AF10_OTG2_HS)
 

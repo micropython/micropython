@@ -83,12 +83,7 @@ function build_esp32_boards {
         if idf.py --version | grep -q v4.2; then
             if [ $mcu = esp32 ]; then
                 # build standard esp32-based boards with IDF v4.2
-                if echo $board_json | grep -q GENERIC; then
-                    # traditionally, GENERIC and GENERIC_SPIRAM boards used manifest_release.py
-                    MICROPY_AUTOBUILD_MAKE="$MICROPY_AUTOBUILD_MAKE FROZEN_MANIFEST=$(pwd)/boards/manifest_release.py" build_board $board_json $fw_tag $dest_dir bin elf map
-                else
-                    build_board $board_json $fw_tag $dest_dir bin elf map
-                fi
+                build_board $board_json $fw_tag $dest_dir bin elf map
             fi
         else
             if [ $mcu != esp32 ]; then
@@ -101,6 +96,10 @@ function build_esp32_boards {
 
 function build_mimxrt_boards {
     build_boards modmimxrt.c $1 $2 bin hex
+}
+
+function build_nrf_boards {
+    build_boards nrfx_glue.h $1 $2 bin hex
 }
 
 function build_renesas_ra_boards {

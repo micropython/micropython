@@ -37,6 +37,13 @@ You can also build the standard CMake way.  The final firmware is found in
 the top-level of the CMake build directory (`build` by default) and is
 called `firmware.uf2`.
 
+If you are using a different board other than a Rasoberry Pi Pico, then you should
+pass the board name to the build; e.g. for Raspberry Pi Pico W:
+
+    $ make BOARD=PICO_W submodules
+    $ make BOARD=PICO_W clean
+    $ make BOARD=PICO_W
+
 ## Deploying firmware to the device
 
 Firmware can be deployed to the device by putting it into bootloader mode

@@ -33,6 +33,12 @@
 #ifndef MICROPY_USE_READLINE
 #define MICROPY_USE_READLINE        (1)
 #endif
+#ifndef MICROPY_USE_READLINE_HISTORY
+#define MICROPY_USE_READLINE_HISTORY (1)
+#endif
+#ifndef MICROPY_READLINE_HISTORY_SIZE
+#define MICROPY_READLINE_HISTORY_SIZE (50)
+#endif
 
 #define MICROPY_ALLOC_PATH_MAX      (260) // see minwindef.h for msvc or limits.h for mingw
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
@@ -52,7 +58,6 @@
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_READER_POSIX        (1)
 #define MICROPY_READER_VFS          (1)
-#define MICROPY_USE_READLINE_HISTORY (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_EMACS_KEYS     (1)
 #define MICROPY_REPL_AUTO_INDENT    (1)
@@ -79,6 +84,7 @@
 #define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_DELATTR_SETATTR  (1)
 #define MICROPY_PY_FSTRINGS         (1)
+#define MICROPY_PY_BUILTINS_BYTES_HEX (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER (1)
 #define MICROPY_PY_BUILTINS_STR_PARTITION (1)
@@ -119,7 +125,6 @@
 #define MICROPY_PY_MATH_ISCLOSE     (MICROPY_PY_MATH_SPECIAL_FUNCTIONS)
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO_IOBASE        (1)
-#define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
 #ifndef MICROPY_STACKLESS
 #define MICROPY_STACKLESS           (0)
@@ -171,11 +176,6 @@ extern const struct _mp_print_t mp_stderr_print;
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE     (256)
 #define MICROPY_KBD_EXCEPTION       (1)
 
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open_obj mp_vfs_open_obj
-#define mp_type_fileio mp_type_vfs_posix_fileio
-#define mp_type_textio mp_type_vfs_posix_textio
-
 #define MICROPY_PORT_INIT_FUNC      init()
 #define MICROPY_PORT_DEINIT_FUNC    deinit()
 
@@ -210,14 +210,6 @@ typedef long suseconds_t;
 typedef long long mp_off_t;
 #else
 typedef long mp_off_t;
-#endif
-
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
-#if MICROPY_USE_READLINE == 1
-#define MICROPY_PORT_ROOT_POINTERS \
-    char *readline_hist[50];
 #endif
 
 #define MP_STATE_PORT               MP_STATE_VM
@@ -261,6 +253,7 @@ typedef long mp_off_t;
 #define NORETURN                    __declspec(noreturn)
 #define MP_WEAK
 #define MP_NOINLINE                 __declspec(noinline)
+#define MP_ALWAYSINLINE             __forceinline
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
 #define MICROPY_PORT_CONSTANTS      { MP_ROM_QSTR(MP_QSTR_dummy), MP_ROM_PTR(NULL) } // can't have zero-sized array

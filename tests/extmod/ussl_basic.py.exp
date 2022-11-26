@@ -1,7 +1,8 @@
-wrap_socket: OSError(-256, 'CONN_LOST')
+OSError: client
 <_SSLSocket 
-4
-b''
-read: OSError(-261,)
-read: OSError(9,)
-write: OSError(9,)
+TestSocket.setblocking(False)
+TestSocket.setblocking(True)
+TestSocket.ioctl 4 0
+TestSocket.ioctl 4 0
+OSError: read
+OSError: write

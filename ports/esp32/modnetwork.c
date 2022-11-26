@@ -244,6 +244,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(WIFI_PROTOCOL_11B) },
     { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(WIFI_PROTOCOL_11G) },
     { MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(WIFI_PROTOCOL_11N) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_LR), MP_ROM_INT(WIFI_PROTOCOL_LR) },
 
     { MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(WIFI_AUTH_OPEN) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(WIFI_AUTH_WEP) },
@@ -298,4 +299,4 @@ const mp_obj_module_t mp_module_network = {
 
 // Note: This port doesn't define MICROPY_PY_NETWORK so this will not conflict
 // with the common implementation provided by extmod/modnetwork.c.
-MP_REGISTER_MODULE(MP_QSTR_network, mp_module_network, 1);
+MP_REGISTER_MODULE(MP_QSTR_network, mp_module_network);

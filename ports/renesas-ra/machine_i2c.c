@@ -150,31 +150,20 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     return ret;
 }
 
-STATIC int machine_i2c_start(mp_obj_base_t *self) {
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("start is not supported."));
-    return 0;
-}
-
-STATIC int machine_i2c_stop(mp_obj_base_t *self) {
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("start is not supported."));
-    return 0;
-}
-
 STATIC const mp_machine_i2c_p_t machine_i2c_p = {
     .init = machine_i2c_init,
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_i2c_transfer_single,
-    .start = machine_i2c_start,
-    .stop = machine_i2c_stop,
 };
 
-const mp_obj_type_t machine_i2c_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2C,
-    .print = machine_i2c_print,
-    .make_new = machine_i2c_make_new,
-    .protocol = &machine_i2c_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_i2c_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_i2c_type,
+    MP_QSTR_I2C,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_i2c_make_new,
+    locals_dict, &mp_machine_i2c_locals_dict,
+    print, machine_i2c_print,
+    protocol, &machine_i2c_p
+    );
 
 #endif // MICROPY_HW_ENABLE_HW_I2C

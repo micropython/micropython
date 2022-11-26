@@ -32,6 +32,13 @@
 
 #include "driver/i2c.h"
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+#include "hal/i2c_ll.h"
+#else
+#include "soc/i2c_reg.h"
+#define I2C_LL_MAX_TIMEOUT I2C_TIME_OUT_REG_V
+#endif
+
 #ifndef MICROPY_HW_I2C0_SCL
 #define MICROPY_HW_I2C0_SCL (GPIO_NUM_18)
 #define MICROPY_HW_I2C0_SDA (GPIO_NUM_19)
@@ -45,6 +52,14 @@
 #define MICROPY_HW_I2C1_SCL (GPIO_NUM_9)
 #define MICROPY_HW_I2C1_SDA (GPIO_NUM_8)
 #endif
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S3
+#define I2C_SCLK_FREQ XTAL_CLK_FREQ
+#elif CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2
+#define I2C_SCLK_FREQ I2C_APB_CLK_FREQ
+#else
+#error "unsupported I2C for ESP32 SoC variant"
 #endif
 
 #define I2C_DEFAULT_TIMEOUT_US (10000) // 10ms
@@ -71,7 +86,8 @@ STATIC void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq, uint3
         .master.clk_speed = freq,
     };
     i2c_param_config(self->port, &conf);
-    i2c_set_timeout(self->port, I2C_APB_CLK_FREQ / 1000000 * timeout_us);
+    int timeout = I2C_SCLK_FREQ / 1000000 * timeout_us;
+    i2c_set_timeout(self->port, (timeout > I2C_LL_MAX_TIMEOUT) ? I2C_LL_MAX_TIMEOUT : timeout);
     i2c_driver_install(self->port, I2C_MODE_MASTER, 0, 0, 0);
 }
 
@@ -79,10 +95,20 @@ int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    int data_len = 0;
+
+    if (flags & MP_MACHINE_I2C_FLAG_WRITE1) {
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, addr << 1, true);
+        i2c_master_write(cmd, bufs->buf, bufs->len, true);
+        data_len += bufs->len;
+        --n;
+        ++bufs;
+    }
+
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, addr << 1 | (flags & MP_MACHINE_I2C_FLAG_READ), true);
 
-    int data_len = 0;
     for (; n--; ++bufs) {
         if (flags & MP_MACHINE_I2C_FLAG_READ) {
             i2c_master_read(cmd, bufs->buf, bufs->len, n == 0 ? I2C_MASTER_LAST_NACK : I2C_MASTER_ACK);
@@ -121,7 +147,7 @@ STATIC void machine_hw_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     int h, l;
     i2c_get_period(self->port, &h, &l);
     mp_printf(print, "I2C(%u, scl=%u, sda=%u, freq=%u)",
-        self->port, self->scl, self->sda, I2C_APB_CLK_FREQ / (h + l));
+        self->port, self->scl, self->sda, I2C_SCLK_FREQ / (h + l));
 }
 
 mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -151,7 +177,7 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     bool first_init = false;
     if (self->base.type == NULL) {
         // Created for the first time, set default pins
-        self->base.type = &machine_hw_i2c_type;
+        self->base.type = &machine_i2c_type;
         self->port = i2c_id;
         if (self->port == I2C_NUM_0) {
             self->scl = MICROPY_HW_I2C0_SCL;
@@ -178,14 +204,16 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
 }
 
 STATIC const mp_machine_i2c_p_t machine_hw_i2c_p = {
+    .transfer_supports_write1 = true,
     .transfer = machine_hw_i2c_transfer,
 };
 
-const mp_obj_type_t machine_hw_i2c_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2C,
-    .print = machine_hw_i2c_print,
-    .make_new = machine_hw_i2c_make_new,
-    .protocol = &machine_hw_i2c_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_i2c_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_i2c_type,
+    MP_QSTR_I2C,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_hw_i2c_make_new,
+    print, machine_hw_i2c_print,
+    protocol, &machine_hw_i2c_p,
+    locals_dict, &mp_machine_i2c_locals_dict
+    );

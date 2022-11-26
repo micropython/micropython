@@ -7,9 +7,7 @@ assignees: ''
 
 ---
 
-* Remove all placeholder text below before submitting.
-
-* Please search existing issues before raising a new issue. For questions about MicroPython or for help using MicroPython, please see the MicroPython Forum -- https://forum.micropython.org/
+* Please search existing issues before raising a new issue. For questions about MicroPython or for help using MicroPython, or any sort of "how do I?" requests, please use the Discussions tab or raise a documentation request instead.
 
 * Describe the feature you'd like to see added to MicroPython. In particular, what does this feature enable and why is it useful. MicroPython aims to strike a balance between functionality and code size, so please consider whether this feature can be optionally enabled and whether it can be provided in other ways (e.g. pure-Python library).
 
@@ -22,3 +20,5 @@ assignees: ''
 * For drivers (e.g. for external hardware), please link to datasheets and/or existing drivers from other sources.
 
 * Who do you expect will implement the feature you are requesting? Would you be willing to sponsor this work?
+
+* Remove all placeholder text above before submitting.

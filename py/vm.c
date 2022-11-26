@@ -202,14 +202,30 @@
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in state[0]
 mp_vm_return_kind_t MICROPY_WRAP_MP_EXECUTE_BYTECODE(mp_execute_bytecode)(mp_code_state_t *code_state, volatile mp_obj_t inject_exc) {
+
 #define SELECTIVE_EXC_IP (0)
+// When disabled, code_state->ip is updated unconditionally during op
+// dispatch, and this is subsequently used in the exception handler
+// (either NLR jump or direct RAISE). This is good for code size because it
+// happens in a single place but is more work than necessary, as many opcodes
+// cannot raise. Enabling SELECTIVE_EXC_IP means that code_state->ip
+// is "selectively" updated only during handling of opcodes that might raise.
+// This costs about 360 bytes on PYBV11 for a 1-3% performance gain (e.g. 3%
+// in bm_fft.py). On rp2040, there is zero code size diff for a 0-1% gain.
+// (Both with computed goto enabled).
 #if SELECTIVE_EXC_IP
-#define MARK_EXC_IP_SELECTIVE() { code_state->ip = ip; } /* stores ip 1 byte past last opcode */
+// Note: Because ip has already been advanced by one byte in the dispatch, the
+// value of ip here is one byte past the last opcode.
+#define MARK_EXC_IP_SELECTIVE() { code_state->ip = ip; }
+// No need to update in dispatch.
 #define MARK_EXC_IP_GLOBAL()
 #else
 #define MARK_EXC_IP_SELECTIVE()
-#define MARK_EXC_IP_GLOBAL() { code_state->ip = ip; } /* stores ip pointing to last opcode */
+// Immediately before dispatch, save the current ip, which will be the opcode
+// about to be dispatched.
+#define MARK_EXC_IP_GLOBAL() { code_state->ip = ip; }
 #endif
+
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "py/vmentrytable.h"
     #define DISPATCH() do { \
@@ -291,14 +307,14 @@ outer_dispatch_loop:
             // loop to execute byte code
             for (;;) {
 dispatch_loop:
-#if MICROPY_OPT_COMPUTED_GOTO
+                #if MICROPY_OPT_COMPUTED_GOTO
                 DISPATCH();
-#else
+                #else
                 TRACE(ip);
                 MARK_EXC_IP_GLOBAL();
                 TRACE_TICK(ip, sp, false);
                 switch (*ip++) {
-#endif
+                #endif
 
                 ENTRY(MP_BC_LOAD_CONST_FALSE):
                     PUSH(mp_const_false);
@@ -658,7 +674,7 @@ unwind_jump:;
                         assert(exc_sp >= exc_stack);
 
                         if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
-                            if (exc_sp->handler > ip) {
+                            if (exc_sp->handler >= ip) {
                                 // Found a finally handler that isn't active; run it.
                                 // Getting here the stack looks like:
                                 //     (..., X, dest_ip)
@@ -815,7 +831,7 @@ unwind_jump:;
                     mp_obj_dict_store(sp[0], sp[2], sp[1]);
                     DISPATCH();
 
-#if MICROPY_PY_BUILTINS_SET
+                #if MICROPY_PY_BUILTINS_SET
                 ENTRY(MP_BC_BUILD_SET): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
@@ -823,9 +839,9 @@ unwind_jump:;
                     SET_TOP(mp_obj_new_set(unum, sp));
                     DISPATCH();
                 }
-#endif
+                #endif
 
-#if MICROPY_PY_BUILTINS_SLICE
+                #if MICROPY_PY_BUILTINS_SLICE
                 ENTRY(MP_BC_BUILD_SLICE): {
                     MARK_EXC_IP_SELECTIVE();
                     mp_obj_t step = mp_const_none;
@@ -838,7 +854,7 @@ unwind_jump:;
                     SET_TOP(mp_obj_new_slice(start, stop, step));
                     DISPATCH();
                 }
-#endif
+                #endif
 
                 ENTRY(MP_BC_STORE_COMP): {
                     MARK_EXC_IP_SELECTIVE();
@@ -1079,7 +1095,7 @@ unwind_return:
                     // Search for and execute finally handlers that aren't already active
                     while (exc_sp >= exc_stack) {
                         if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
-                            if (exc_sp->handler > ip) {
+                            if (exc_sp->handler >= ip) {
                                 // Found a finally handler that isn't active; run it.
                                 // Getting here the stack looks like:
                                 //     (..., X, [iter0, iter1, ...,] ret_val)
@@ -1172,9 +1188,6 @@ yield:
 
                 ENTRY(MP_BC_YIELD_FROM): {
                     MARK_EXC_IP_SELECTIVE();
-//#define EXC_MATCH(exc, type) mp_obj_is_type(exc, type)
-#define EXC_MATCH(exc, type) mp_obj_exception_match(exc, type)
-#define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) { mp_obj_t raise_t = mp_make_raise_obj(t); RAISE(raise_t); }
                     mp_vm_return_kind_t ret_kind;
                     mp_obj_t send_value = POP();
                     mp_obj_t t_exc = MP_OBJ_NULL;
@@ -1198,11 +1211,14 @@ yield:
                         SET_TOP(ret_value);
                         // If we injected GeneratorExit downstream, then even
                         // if it was swallowed, we re-raise GeneratorExit
-                        GENERATOR_EXIT_IF_NEEDED(t_exc);
+                        if (t_exc != MP_OBJ_NULL && mp_obj_exception_match(t_exc, MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
+                            mp_obj_t raise_t = mp_make_raise_obj(t_exc);
+                            RAISE(raise_t);
+                        }
                         DISPATCH();
                     } else {
                         assert(ret_kind == MP_VM_RETURN_EXCEPTION);
-                        assert(!EXC_MATCH(ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration)));
+                        assert(!mp_obj_exception_match(ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration)));
                         // Pop exhausted gen
                         sp--;
                         RAISE(ret_value);
@@ -1232,7 +1248,7 @@ yield:
                     mp_import_all(POP());
                     DISPATCH();
 
-#if MICROPY_OPT_COMPUTED_GOTO
+                #if MICROPY_OPT_COMPUTED_GOTO
                 ENTRY(MP_BC_LOAD_CONST_SMALL_INT_MULTI):
                     PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS));
                     DISPATCH();
@@ -1260,7 +1276,7 @@ yield:
 
                 ENTRY_DEFAULT:
                     MARK_EXC_IP_SELECTIVE();
-#else
+                #else
                 ENTRY_DEFAULT:
                     if (ip[-1] < MP_BC_LOAD_CONST_SMALL_INT_MULTI + MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM) {
                         PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS));
@@ -1280,9 +1296,8 @@ yield:
                         SET_TOP(mp_binary_op(ip[-1] - MP_BC_BINARY_OP_MULTI, lhs, rhs));
                         DISPATCH();
                     } else
-#endif
+                #endif // MICROPY_OPT_COMPUTED_GOTO
                 {
-
                     mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("opcode"));
                     nlr_pop();
                     code_state->state[0] = obj;
@@ -1290,46 +1305,42 @@ yield:
                     return MP_VM_RETURN_EXCEPTION;
                 }
 
-#if !MICROPY_OPT_COMPUTED_GOTO
+                #if !MICROPY_OPT_COMPUTED_GOTO
                 } // switch
-#endif
+                #endif
 
 pending_exception_check:
+                // We've just done a branch, use this as a convenient point to
+                // run periodic code/checks and/or bounce the GIL.. i.e.
+                // not _every_ instruction but on average a branch should
+                // occur every few instructions.
                 MICROPY_VM_HOOK_LOOP
 
+                // Check for pending exceptions or scheduled tasks to run.
+                // Note: it's safe to just call mp_handle_pending(true), but
+                // we can inline the check for the common case where there is
+                // neither.
+                if (
                 #if MICROPY_ENABLE_SCHEDULER
-                // This is an inlined variant of mp_handle_pending
-                if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-                    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-                    // Re-check state is still pending now that we're in the atomic section.
-                    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-                        MARK_EXC_IP_SELECTIVE();
-                        mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-                        if (obj != MP_OBJ_NULL) {
-                            MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-                            if (!mp_sched_num_pending()) {
-                                MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
-                            }
-                            MICROPY_END_ATOMIC_SECTION(atomic_state);
-                            RAISE(obj);
-                        }
-                        mp_handle_pending_tail(atomic_state);
-                    } else {
-                        MICROPY_END_ATOMIC_SECTION(atomic_state);
-                    }
-                }
+                #if MICROPY_PY_THREAD
+                    // Scheduler + threading: Scheduler and pending exceptions are independent, check both.
+                    MP_STATE_VM(sched_state) == MP_SCHED_PENDING || MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL
                 #else
-                // This is an inlined variant of mp_handle_pending
-                if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
-                    MARK_EXC_IP_SELECTIVE();
-                    mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-                    MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-                    RAISE(obj);
-                }
+                    // Scheduler + non-threading: Optimisation: pending exception sets sched_state, only check sched_state.
+                    MP_STATE_VM(sched_state) == MP_SCHED_PENDING
                 #endif
+                #else
+                    // No scheduler: Just check pending exception.
+                    MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL
+                #endif
+                ) {
+                    MARK_EXC_IP_SELECTIVE();
+                    mp_handle_pending(true);
+                }
 
                 #if MICROPY_PY_THREAD_GIL
                 #if MICROPY_PY_THREAD_GIL_VM_DIVISOR
+                // Don't bounce the GIL too frequently (default every 32 branches).
                 if (--gil_divisor == 0)
                 #endif
                 {
@@ -1363,22 +1374,20 @@ exception_handler:
             #endif
 
             if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-                if (code_state->ip) {
-                    // check if it's a StopIteration within a for block
-                    if (*code_state->ip == MP_BC_FOR_ITER) {
-                        const byte *ip = code_state->ip + 1;
-                        DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                        code_state->ip = ip + ulab; // jump to after for-block
-                        code_state->sp -= MP_OBJ_ITER_BUF_NSLOTS; // pop the exhausted iterator
-                        goto outer_dispatch_loop; // continue with dispatch loop
-                    } else if (*code_state->ip == MP_BC_YIELD_FROM) {
-                        // StopIteration inside yield from call means return a value of
-                        // yield from, so inject exception's value as yield from's result
-                        // (Instead of stack pop then push we just replace exhausted gen with value)
-                        *code_state->sp = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
-                        code_state->ip++; // yield from is over, move to next instruction
-                        goto outer_dispatch_loop; // continue with dispatch loop
-                    }
+                // check if it's a StopIteration within a for block
+                if (*code_state->ip == MP_BC_FOR_ITER) {
+                    const byte *ip = code_state->ip + 1;
+                    DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
+                    code_state->ip = ip + ulab; // jump to after for-block
+                    code_state->sp -= MP_OBJ_ITER_BUF_NSLOTS; // pop the exhausted iterator
+                    goto outer_dispatch_loop; // continue with dispatch loop
+                } else if (*code_state->ip == MP_BC_YIELD_FROM) {
+                    // StopIteration inside yield from call means return a value of
+                    // yield from, so inject exception's value as yield from's result
+                    // (Instead of stack pop then push we just replace exhausted gen with value)
+                    *code_state->sp = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
+                    code_state->ip++; // yield from is over, move to next instruction
+                    goto outer_dispatch_loop; // continue with dispatch loop
                 }
             }
 

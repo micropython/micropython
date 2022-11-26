@@ -43,6 +43,7 @@ PATHS = [
     "shared/netutils/*.[ch]",
     "shared/timeutils/*.[ch]",
     "shared/runtime/*.[ch]",
+    "shared/tinyusb/*.[ch]",
     "mpy-cross/*.[ch]",
     "ports/**/*.[ch]",
     "py/*.[ch]",
@@ -151,6 +152,11 @@ def main():
     cmd_parser.add_argument("-c", action="store_true", help="Format C code only")
     cmd_parser.add_argument("-p", action="store_true", help="Format Python code only")
     cmd_parser.add_argument("-v", action="store_true", help="Enable verbose output")
+    cmd_parser.add_argument(
+        "-f",
+        action="store_true",
+        help="Filter files provided on the command line against the default list of files to check.",
+    )
     cmd_parser.add_argument("files", nargs="*", help="Run on specific globs")
     args = cmd_parser.parse_args()
 
@@ -162,6 +168,16 @@ def main():
     files = []
     if args.files:
         files = list_files(args.files)
+        if args.f:
+            # Filter against the default list of files. This is a little fiddly
+            # because we need to apply both the inclusion globs given in PATHS
+            # as well as the EXCLUSIONS, and use absolute paths
+            files = set(os.path.abspath(f) for f in files)
+            all_files = set(list_files(PATHS, EXCLUSIONS, TOP))
+            if args.v:  # In verbose mode, log any files we're skipping
+                for f in files - all_files:
+                    print("Not checking: {}".format(f))
+            files = list(files & all_files)
     else:
         files = list_files(PATHS, EXCLUSIONS, TOP)
 

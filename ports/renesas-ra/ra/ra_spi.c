@@ -196,9 +196,9 @@ static void ra_spi_module_stop(uint32_t ch) {
 
 static void ra_spi_set_pin(uint32_t pin, bool miso) {
     if (miso) {
-        ra_gpio_config(pin, GPIO_MODE_INPUT, 1, 0, AF_SPI);
+        ra_gpio_config(pin, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_LOW_POWER, AF_SPI);
     } else {
-        ra_gpio_config(pin, GPIO_MODE_AF_PP, 0, 0, AF_SPI);
+        ra_gpio_config(pin, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_LOW_POWER, AF_SPI);
     }
 }
 

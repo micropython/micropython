@@ -198,7 +198,7 @@ static int fsload_program_file(bool write_to_flash) {
 static int fsload_validate_and_program_file(void *stream, const stream_methods_t *meth, const char *fname) {
     // First pass verifies the file, second pass programs it
     for (unsigned int pass = 0; pass <= 1; ++pass) {
-        led_state_all(pass == 0 ? 2 : 4);
+        mboot_state_change(MBOOT_STATE_FSLOAD_PASS_START, pass);
         int res = meth->open(stream, fname);
         if (res == 0) {
             res = input_stream_init(stream, meth->read);

@@ -25,6 +25,8 @@ into the firmware image as part of the main firmware compilation process, which 
 the bytecode will be executed from ROM. This can lead to a significant memory saving, and
 reduce heap fragmentation.
 
+See :ref:`manifest` for more information.
+
 Variables
 ---------
 

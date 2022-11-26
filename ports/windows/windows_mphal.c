@@ -32,6 +32,7 @@
 #include <sys/time.h>
 #include <windows.h>
 #include <unistd.h>
+#include <bcrypt.h>
 
 HANDLE std_in = NULL;
 HANDLE con_out = NULL;
@@ -285,4 +286,11 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     #else
     msec_sleep((double)ms);
     #endif
+}
+
+void mp_hal_get_random(size_t n, void *buf) {
+    NTSTATUS result = BCryptGenRandom(NULL, (unsigned char *)buf, n, BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+    if (!BCRYPT_SUCCESS(result)) {
+        mp_raise_OSError(errno);
+    }
 }

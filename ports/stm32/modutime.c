@@ -129,6 +129,8 @@ STATIC mp_obj_t time_time(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
+#if MICROPY_PY_UTIME
+
 STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
 
@@ -154,4 +156,6 @@ const mp_obj_module_t mp_module_utime = {
     .globals = (mp_obj_dict_t *)&time_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_utime, mp_module_utime, MICROPY_PY_UTIME);
+MP_REGISTER_MODULE(MP_QSTR_utime, mp_module_utime);
+
+#endif // MICROPY_PY_UTIME

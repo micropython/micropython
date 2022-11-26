@@ -21,6 +21,12 @@ _MODE_QSTR = "qstr"
 # Extract MP_COMPRESSED_ROM_TEXT("") macros.  (Which come from MP_ERROR_TEXT)
 _MODE_COMPRESS = "compress"
 
+# Extract MP_REGISTER_MODULE(...) macros.
+_MODE_MODULE = "module"
+
+# Extract MP_REGISTER_ROOT_POINTER(...) macros.
+_MODE_ROOT_POINTER = "root_pointer"
+
 
 def is_c_source(fname):
     return os.path.splitext(fname)[1] in [".c"]
@@ -85,6 +91,10 @@ def process_file(f):
         re_match = re.compile(r"MP_QSTR_[_a-zA-Z0-9]+")
     elif args.mode == _MODE_COMPRESS:
         re_match = re.compile(r'MP_COMPRESSED_ROM_TEXT\("([^"]*)"\)')
+    elif args.mode == _MODE_MODULE:
+        re_match = re.compile(r"MP_REGISTER_MODULE\(.*?,\s*.*?\);")
+    elif args.mode == _MODE_ROOT_POINTER:
+        re_match = re.compile(r"MP_REGISTER_ROOT_POINTER\(.*?\);")
     output = []
     last_fname = None
     for line in f:
@@ -106,7 +116,7 @@ def process_file(f):
             if args.mode == _MODE_QSTR:
                 name = match.replace("MP_QSTR_", "")
                 output.append("Q(" + name + ")")
-            elif args.mode == _MODE_COMPRESS:
+            elif args.mode in (_MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
                 output.append(match)
 
     if last_fname:
@@ -141,6 +151,10 @@ def cat_together():
     mode_full = "QSTR"
     if args.mode == _MODE_COMPRESS:
         mode_full = "Compressed data"
+    elif args.mode == _MODE_MODULE:
+        mode_full = "Module registrations"
+    elif args.mode == _MODE_ROOT_POINTER:
+        mode_full = "Root pointer registrations"
     if old_hash != new_hash:
         print(mode_full, "updated")
         try:
@@ -201,7 +215,7 @@ if __name__ == "__main__":
     args.output_dir = sys.argv[4]
     args.output_file = None if len(sys.argv) == 5 else sys.argv[5]  # Unused for command=split
 
-    if args.mode not in (_MODE_QSTR, _MODE_COMPRESS):
+    if args.mode not in (_MODE_QSTR, _MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
         print("error: mode %s unrecognised" % sys.argv[2])
         sys.exit(2)
 

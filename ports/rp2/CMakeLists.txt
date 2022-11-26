@@ -16,6 +16,8 @@ endif()
 
 # Use the local tinyusb instead of the one in pico-sdk
 set(PICO_TINYUSB_PATH ${MICROPY_DIR}/lib/tinyusb)
+# Use the local lwip instead of the one in pico-sdk
+set(PICO_LWIP_PATH ${MICROPY_DIR}/lib/lwip)
 
 # Set the location of this port's directory.
 set(MICROPY_PORT_DIR ${CMAKE_SOURCE_DIR})
@@ -43,6 +45,19 @@ if(NOT PICO_BOARD)
     string(TOLOWER ${MICROPY_BOARD} PICO_BOARD)
 endif()
 
+# Enable extmod components that will be configured by extmod.cmake.
+# A board may also have enabled additional components.
+set(MICROPY_SSL_MBEDTLS ON)
+
+# Use the local cyw43_driver instead of the one in pico-sdk
+if (MICROPY_PY_NETWORK_CYW43)
+    set(PICO_CYW43_DRIVER_PATH ${MICROPY_DIR}/lib/cyw43-driver)
+endif()
+
+# Necessary submodules for all boards.
+string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/mbedtls)
+string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/tinyusb)
+
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
@@ -68,7 +83,9 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
+    ${MICROPY_DIR}/shared/netutils/dhcpserver.c
     ${MICROPY_DIR}/shared/netutils/netutils.c
+    ${MICROPY_DIR}/shared/netutils/trace.c
     ${MICROPY_DIR}/shared/readline/readline.c
     ${MICROPY_DIR}/shared/runtime/gchelper_m0.s
     ${MICROPY_DIR}/shared/runtime/gchelper_native.c
@@ -78,6 +95,9 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/shared/runtime/stdout_helpers.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
     ${MICROPY_DIR}/shared/timeutils/timeutils.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_cdc_common.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_usbd.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_usbd_descriptor.c
 )
 
 set(MICROPY_SOURCE_DRIVERS
@@ -102,18 +122,20 @@ set(MICROPY_SOURCE_PORT
     modrp2.c
     modutime.c
     mphalport.c
+    mpnetworkport.c
     mpthreadport.c
+    pendsv.c
     rp2_flash.c
     rp2_pio.c
-    tusb_port.c
     uart.c
+    usbd.c
     msc_disk.c
+    mbedtls/mbedtls_port.c
 )
 
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
-    ${MICROPY_SOURCE_EXTMOD}
-    ${MICROPY_SOURCE_USERMOD}
+    ${MICROPY_DIR}/shared/readline/readline.c
     ${MICROPY_DIR}/shared/runtime/mpirq.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
     ${PROJECT_SOURCE_DIR}/machine_adc.c
@@ -134,6 +156,7 @@ set(MICROPY_SOURCE_QSTR
 )
 
 set(PICO_SDK_COMPONENTS
+    cmsis_core
     hardware_adc
     hardware_base
     hardware_clocks
@@ -143,6 +166,7 @@ set(PICO_SDK_COMPONENTS
     hardware_i2c
     hardware_irq
     hardware_pio
+    hardware_pll
     hardware_pwm
     hardware_regs
     hardware_rtc
@@ -152,6 +176,7 @@ set(PICO_SDK_COMPONENTS
     hardware_timer
     hardware_uart
     hardware_watchdog
+    hardware_xosc
     pico_base_headers
     pico_binary_info
     pico_bootrom
@@ -167,6 +192,17 @@ set(PICO_SDK_COMPONENTS
     tinyusb_device
 )
 
+if (MICROPY_PY_LWIP)
+    target_link_libraries(${MICROPY_TARGET} micropy_lib_lwip)
+
+    target_include_directories(${MICROPY_TARGET} PRIVATE
+        lwip_inc
+    )
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_PY_LWIP=1
+    )
+endif()
+
 if(MICROPY_PY_BLUETOOTH)
     list(APPEND MICROPY_SOURCE_PORT mpbthciport.c)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
@@ -179,6 +215,11 @@ if(MICROPY_PY_BLUETOOTH)
 endif()
 
 if(MICROPY_BLUETOOTH_NIMBLE)
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/mynewt-nimble)
+    if(NOT (${ECHO_SUBMODULES}) AND NOT EXISTS ${MICROPY_DIR}/lib/mynewt-nimble/nimble/host/include/host/ble_hs.h)
+        message(FATAL_ERROR " mynewt-nimble not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
+    endif()
+
     list(APPEND MICROPY_SOURCE_PORT mpnimbleport.c)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_BLUETOOTH_NIMBLE=1
@@ -192,6 +233,38 @@ if(MICROPY_BLUETOOTH_NIMBLE)
     target_link_libraries(${MICROPY_TARGET} micropy_extmod_nimble)
     get_target_property(NIMBLE_INCLUDE micropy_extmod_nimble INTERFACE_INCLUDE_DIRECTORIES)
     list(APPEND MICROPY_INC_CORE ${NIMBLE_INCLUDE})
+endif()
+
+# tinyusb helper
+target_include_directories(${MICROPY_TARGET} PRIVATE
+    ${MICROPY_DIR}/shared/tinyusb/
+)
+
+if (MICROPY_PY_NETWORK_CYW43)
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/cyw43-driver)
+    if((NOT (${ECHO_SUBMODULES})) AND NOT EXISTS ${MICROPY_DIR}/lib/cyw43-driver/src/cyw43.h)
+        message(FATAL_ERROR " cyw43-driver not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
+    endif()
+
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_PY_NETWORK_CYW43=1
+        MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER=1
+        MICROPY_PY_SOCKET_DEFAULT_TIMEOUT_MS=30000 # default socket timeout
+    )
+    if (CMAKE_BUILD_TYPE MATCHES Debug)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        CYW43_USE_STATS=1
+    )
+    endif()
+
+    list(APPEND MICROPY_SOURCE_EXTMOD
+        ${MICROPY_DIR}/extmod/network_cyw43.c
+    )
+
+    target_link_libraries(${MICROPY_TARGET}
+        cyw43_driver_picow
+        cmsis_core
+    )
 endif()
 
 if (MICROPY_PY_NETWORK_NINAW10)
@@ -213,14 +286,58 @@ if (MICROPY_PY_NETWORK_NINAW10)
     list(APPEND MICROPY_SOURCE_EXTMOD
         ${MICROPY_DIR}/extmod/network_ninaw10.c
     )
+endif()
 
-    list(APPEND MICROPY_SOURCE_QSTR
-        ${MICROPY_DIR}/extmod/network_ninaw10.c
+if (MICROPY_PY_NETWORK_WIZNET5K)
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/wiznet5k)
+    if((NOT (${ECHO_SUBMODULES})) AND NOT EXISTS ${MICROPY_DIR}/lib/wiznet5k/README.md)
+        message(FATAL_ERROR " wiznet5k not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
+    endif()
+
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_PY_NETWORK_WIZNET5K=1
+        WIZCHIP_PREFIXED_EXPORTS=1
+        _WIZCHIP_=${MICROPY_PY_NETWORK_WIZNET5K}
+        WIZCHIP_YIELD=mpy_wiznet_yield
+    )
+
+    if (MICROPY_PY_LWIP)
+        target_compile_definitions(${MICROPY_TARGET} PRIVATE
+            # When using MACRAW mode (with lwIP), maximum buffer space must be used for the raw socket
+            WIZCHIP_USE_MAX_BUFFER=1
+        )
+    endif()
+
+    target_include_directories(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_DIR}/lib/wiznet5k/
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/
+    )
+
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5100/w5100.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5100S/w5100s.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5200/w5200.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5300/w5300.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5500/w5500.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/socket.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/wizchip_conf.c
+        ${MICROPY_DIR}/lib/wiznet5k/Internet/DNS/dns.c
+        ${MICROPY_DIR}/lib/wiznet5k/Internet/DHCP/dhcp.c
+    )
+
+    list(APPEND MICROPY_SOURCE_EXTMOD
+        ${MICROPY_DIR}/extmod/network_wiznet5k.c
     )
 endif()
 
+# Add qstr sources for extmod and usermod, in case they are modified by components above.
+list(APPEND MICROPY_SOURCE_QSTR
+    ${MICROPY_SOURCE_EXTMOD}
+    ${MICROPY_SOURCE_USERMOD}
+)
+
 # Define mpy-cross flags
-set(MICROPY_CROSS_FLAGS -march=armv7m)
+set(MICROPY_CROSS_FLAGS -march=armv6m)
 
 # Set the frozen manifest file
 if (MICROPY_USER_FROZEN_MANIFEST)
@@ -238,6 +355,7 @@ target_sources(${MICROPY_TARGET} PRIVATE
 )
 
 target_link_libraries(${MICROPY_TARGET} micropy_lib_mbedtls)
+
 target_link_libraries(${MICROPY_TARGET} usermod)
 
 target_include_directories(${MICROPY_TARGET} PRIVATE
@@ -301,9 +419,11 @@ endif()
 
 pico_add_extra_outputs(${MICROPY_TARGET})
 
+pico_find_compiler(PICO_COMPILER_SIZE ${PICO_GCC_TRIPLE}-size)
+
 add_custom_command(TARGET ${MICROPY_TARGET}
     POST_BUILD
-    COMMAND arm-none-eabi-size --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
+    COMMAND ${PICO_COMPILER_SIZE} --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
     VERBATIM
 )
 

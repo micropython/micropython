@@ -180,6 +180,12 @@ SECTIONS
         *(.uninitialized_data*)
     } > RAM
 
+    /* bss without zero init on startup */
+    .uninitialized_bss (NOLOAD): {
+        . = ALIGN(4);
+        *(.uninitialized_bss*)
+    } > RAM
+
     /* Start and end symbols must be word-aligned */
     .scratch_x : {
         __scratch_x_start__ = .;

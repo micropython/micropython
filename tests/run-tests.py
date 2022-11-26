@@ -31,16 +31,20 @@ def base_path(*p):
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python")
     MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", base_path("../ports/windows/micropython.exe"))
+    # mpy-cross is only needed if --via-mpy command-line arg is passed
+    MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/mpy-cross.exe"))
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", base_path("../ports/unix/micropython"))
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", base_path("../ports/unix/build-standard/micropython")
+    )
+    # mpy-cross is only needed if --via-mpy command-line arg is passed
+    MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/build/mpy-cross"))
 
 # Use CPython options to not save .pyc files, to only access the core standard library
 # (not site packages which may clash with u-module names), and improve start up time.
 CPYTHON3_CMD = [CPYTHON3, "-BS"]
 
-# mpy-cross is only needed if --via-mpy command-line arg is passed
-MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/mpy-cross"))
 
 # For diff'ing test output
 DIFF = os.getenv("MICROPY_DIFF", "diff -u")
@@ -301,6 +305,10 @@ def run_micropython(pyb, args, test_file, is_special=False):
     if had_crash or output_mupy in (b"SKIP\n", b"CRASH"):
         return output_mupy
 
+    # skipped special tests will output "SKIP" surrounded by other interpreter debug output
+    if is_special and not had_crash and b"\nSKIP\n" in output_mupy:
+        return b"SKIP\n"
+
     if is_special or test_file in special_tests:
         # convert parts of the output that are not stable across runs
         with open(test_file + ".exp", "rb") as f:
@@ -516,6 +524,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if upy_float_precision < 64:
         skip_tests.add("float/float_divmod.py")  # tested by float/float_divmod_relaxed.py instead
         skip_tests.add("float/float2int_doubleprec_intbig.py")
+        skip_tests.add("float/float_format_ints_doubleprec.py")
         skip_tests.add("float/float_parse_doubleprec.py")
 
     if not has_complex:
@@ -525,6 +534,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("float/int_big_float.py")
         skip_tests.add("float/true_value.py")
         skip_tests.add("float/types.py")
+        skip_tests.add("float/complex_dunder.py")
 
     if not has_coverage:
         skip_tests.add("cmdline/cmd_parsetree.py")
@@ -603,6 +613,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/del_deref.py")  # requires checking for unbound local
         skip_tests.add("basics/del_local.py")  # requires checking for unbound local
         skip_tests.add("basics/exception_chain.py")  # raise from is not supported
+        skip_tests.add("basics/fun_name.py")  # requires proper names for native functions
         skip_tests.add("basics/scope_implicit.py")  # requires checking for unbound local
         skip_tests.add("basics/sys_tracebacklimit.py")  # requires traceback info
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
@@ -897,9 +908,25 @@ the last matching regex is used:
         "unix",
         "qemu-arm",
     )
-    EXTERNAL_TARGETS = ("pyboard", "wipy", "esp8266", "esp32", "minimal", "nrf", "renesas-ra")
-    if args.target in LOCAL_TARGETS or args.list_tests:
+    EXTERNAL_TARGETS = (
+        "pyboard",
+        "wipy",
+        "esp8266",
+        "esp32",
+        "minimal",
+        "nrf",
+        "renesas-ra",
+        "rp2",
+    )
+    if args.list_tests:
         pyb = None
+    elif args.target in LOCAL_TARGETS:
+        pyb = None
+        if not args.mpy_cross_flags:
+            if args.target == "unix":
+                args.mpy_cross_flags = "-march=host"
+            elif args.target == "qemu-arm":
+                args.mpy_cross_flags = "-march=armv7m"
     elif args.target in EXTERNAL_TARGETS:
         global pyboard
         sys.path.append(base_path("../tools"))
@@ -910,6 +937,10 @@ the last matching regex is used:
                 args.mpy_cross_flags = "-march=xtensa"
             elif args.target == "esp32":
                 args.mpy_cross_flags = "-march=xtensawin"
+            elif args.target == "rp2":
+                args.mpy_cross_flags = "-march=armv6m"
+            elif args.target == "pyboard":
+                args.mpy_cross_flags = "-march=armv7emsp"
             else:
                 args.mpy_cross_flags = "-march=armv7m"
 
@@ -928,9 +959,11 @@ the last matching regex is used:
             )
             if args.target == "pyboard":
                 # run pyboard tests
-                test_dirs += ("float", "stress", "pyb", "pybnative", "inlineasm")
+                test_dirs += ("float", "stress", "pyb", "inlineasm")
             elif args.target in ("renesas-ra"):
                 test_dirs += ("float", "inlineasm", "renesas-ra")
+            elif args.target == "rp2":
+                test_dirs += ("float", "stress", "inlineasm")
             elif args.target in ("esp8266", "esp32", "minimal", "nrf"):
                 test_dirs += ("float",)
             elif args.target == "wipy":

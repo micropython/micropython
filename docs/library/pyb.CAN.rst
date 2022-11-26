@@ -31,7 +31,7 @@ for both classic and FD CAN controllers, unless otherwise stated.
 Constructors
 ------------
 
-.. class:: pyb.CAN(bus, ...)
+.. class:: CAN(bus, ...)
 
    Construct a CAN object on the given bus.  *bus* can be 1-2, or ``'YA'`` or ``'YB'``.
    With no additional parameters, the CAN object is created but not
@@ -252,7 +252,7 @@ Methods
    For example::
 
         buf = bytearray(8)
-        lst = [0, 0, 0, memoryview(buf)]
+        lst = [0, 0, 0, 0, memoryview(buf)]
         # No heap memory is allocated in the following call
         can.recv(0, lst)
 

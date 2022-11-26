@@ -96,3 +96,8 @@ import frzmpy3
 from frzqstr import returns_NULL
 
 print(returns_NULL())
+
+# test for freeze_mpy
+import frozentest
+
+print(frozentest.__file__)

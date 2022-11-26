@@ -28,8 +28,14 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "py/mpconfig.h"
 
 void gc_init(void *start, void *end);
+
+#if MICROPY_GC_SPLIT_HEAP
+// Used to add additional memory areas to the heap.
+void gc_add(void *start, void *end);
+#endif
 
 // These lock/unlock functions can be nested.
 // They can be used to prevent the GC from allocating/freeing.

@@ -130,7 +130,7 @@ uint32_t mp_hal_ticks_us(void) {
 }
 
 void mp_hal_delay_ms(uint32_t ms) {
-    uint64_t us = ms * 1000;
+    uint64_t us = (uint64_t)ms * 1000ULL;
     uint64_t dt;
     uint64_t t0 = esp_timer_get_time();
     for (;;) {
@@ -139,7 +139,7 @@ void mp_hal_delay_ms(uint32_t ms) {
         MP_THREAD_GIL_EXIT();
         uint64_t t1 = esp_timer_get_time();
         dt = t1 - t0;
-        if (dt + portTICK_PERIOD_MS * 1000 >= us) {
+        if (dt + portTICK_PERIOD_MS * 1000ULL >= us) {
             // doing a vTaskDelay would take us beyond requested delay time
             taskYIELD();
             MP_THREAD_GIL_ENTER();

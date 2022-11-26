@@ -85,3 +85,8 @@ print(t.foo, t.bar)
 # Not implemented so far
 #T2 = namedtuple("TupComma", "foo,bar")
 #t = T2(1, 2)
+
+# Creating an empty namedtuple should not segfault
+T5 = namedtuple("TupEmpty", [])
+t = T5()
+print(t)

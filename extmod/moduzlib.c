@@ -140,13 +140,14 @@ STATIC const mp_stream_p_t decompio_stream_p = {
 };
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_obj_type_t decompio_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_DecompIO,
-    .make_new = decompio_make_new,
-    .protocol = &decompio_stream_p,
-    .locals_dict = (void *)&decompio_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    decompio_type,
+    MP_QSTR_DecompIO,
+    MP_TYPE_FLAG_NONE,
+    make_new, decompio_make_new,
+    protocol, &decompio_stream_p,
+    locals_dict, &decompio_locals_dict
+    );
 #endif
 
 STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
@@ -223,7 +224,7 @@ const mp_obj_module_t mp_module_uzlib = {
 };
 
 
-MP_REGISTER_MODULE(MP_QSTR_uzlib, mp_module_uzlib, MICROPY_PY_UZLIB);
+MP_REGISTER_MODULE(MP_QSTR_uzlib, mp_module_uzlib);
 #endif
 
 // Source files #include'd here to make sure they're compiled in

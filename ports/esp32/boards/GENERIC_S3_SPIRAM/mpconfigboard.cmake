@@ -4,6 +4,7 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.base
     boards/sdkconfig.usb
     #boards/sdkconfig.usb_msc
+    boards/sdkconfig.ble
     boards/sdkconfig.spiram_sx
     boards/GENERIC_S3_SPIRAM/sdkconfig.board
 )

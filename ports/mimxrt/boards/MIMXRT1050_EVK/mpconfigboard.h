@@ -62,6 +62,7 @@
 #define I2S_DMA_REQ_SRC_RX { 0, kDmaRequestMuxSai1Rx, kDmaRequestMuxSai2Rx }
 #define I2S_DMA_REQ_SRC_TX { 0, kDmaRequestMuxSai1Tx, kDmaRequestMuxSai2Tx }
 #define I2S_WM8960_RX_MODE  (1)
+#define I2S_AUDIO_PLL_CLOCK (2U)
 
 #define I2S_GPIO(_hwid, _fn, _mode, _pin, _iomux) \
     { \
@@ -148,8 +149,8 @@
 #define ENET_PHY_OPS        phyksz8081_ops
 
 // Etherner PIN definitions
-#define ENET_RESET_PIN      pin_GPIO_AD_B0_09
-#define ENET_INT_PIN        pin_GPIO_AD_B0_10
+#define ENET_RESET_PIN      &pin_GPIO_AD_B0_09
+#define ENET_INT_PIN        &pin_GPIO_AD_B0_10
 
 #define IOMUX_TABLE_ENET \
     { IOMUXC_GPIO_B1_04_ENET_RX_DATA00, 0, 0xB0E9u }, \
@@ -162,6 +163,3 @@
     { IOMUXC_GPIO_B1_11_ENET_RX_ER, 0, 0xB0E9u }, \
     { IOMUXC_GPIO_EMC_41_ENET_MDIO, 0, 0xB0E9u }, \
     { IOMUXC_GPIO_EMC_40_ENET_MDC, 0, 0xB0E9u },
-
-#define MICROPY_BOARD_ROOT_POINTERS \
-    struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_I2S_NUM];

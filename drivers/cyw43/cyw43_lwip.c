@@ -117,7 +117,7 @@ void cyw43_tcpip_init(cyw43_t *self, int itf) {
     #else
     netif_add(n, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, cyw43_netif_init, netif_input);
     #endif
-    netif_set_hostname(n, "PYBD");
+    netif_set_hostname(n, self->hostname);
     netif_set_default(n);
     netif_set_up(n);
 
@@ -132,8 +132,9 @@ void cyw43_tcpip_init(cyw43_t *self, int itf) {
     #if LWIP_MDNS_RESPONDER
     // TODO better to call after IP address is set
     char mdns_hostname[9];
-    memcpy(&mdns_hostname[0], "PYBD", 4);
-    mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, &mdns_hostname[4]);
+    int len = MIN(strlen(self->hostname), 4);
+    memcpy(&mdns_hostname[0], self->hostname, len);
+    mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 4 + len, 8 - len, &mdns_hostname[len]);
     mdns_hostname[8] = '\0';
     mdns_resp_add_netif(n, mdns_hostname, 60);
     #endif

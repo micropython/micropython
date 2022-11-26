@@ -1,5 +1,5 @@
+cond false
+cond false
+RuntimeError
+RuntimeError
 [123]
-cond false
-cond false
-RuntimeError
-RuntimeError

@@ -36,7 +36,7 @@ All other commands below should be executed from the ports/renesas-ra/ directory
 * Arm compiler
 An `Arm compiler` is required for the build, along with the associated binary
 utilities.  The default compiler is `arm-none-eabi-gcc`, which is available for
-Arch Linux and Windows hosts via https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads.
+Linux, Mac and Windows hosts via https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads.
 The compiler can be changed using the `CROSS_COMPILE` variable
 when invoking `make`.
 

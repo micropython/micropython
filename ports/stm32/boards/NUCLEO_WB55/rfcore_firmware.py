@@ -34,36 +34,54 @@
 #
 # To perform a firmware update:
 #
-# 1. Generate "obfuscated" binary images using rfcore_makefirmware.py
-#  ./boards/NUCLEO_WB55/rfcore_makefirmware.py ~/src/github.com/STMicroelectronics/STM32CubeWB/Projects/STM32WB_Copro_Wireless_Binaries/STM32WB5x/ /tmp
+# 1. Generate "obfuscated" binary images using rfcore_makefirmware.py, eg.
+#  $ python3 ./boards/NUCLEO_WB55/rfcore_makefirmware.py ~/src/github.com/STMicroelectronics/STM32CubeWB/Projects/STM32WB_Copro_Wireless_Binaries/STM32WB5x/ /tmp
 #  This will generate /tmp/{fus_102,fus_110,ws_ble_hci}.bin
+#  It may warn that stm32wb5x_FUS_fw_1_0_2.bin cannot be found, newer packs don't include this
+#  which can be ignored unless your currently flashed FUS is older than 1.0.2
 #
 # 2. Copy required files to the device filesystem.
-# In general, it's always safe to copy all three files and the updater will
-# figure out what needs to be done. This is the recommended option.
-# However, if you already have the latest FUS (1.1.0) installed, then just the
-# WS firmware is required.
-# If a FUS binary is present, then the existing WS will be removed so it's a good
-# idea to always include the WS binary if updating FUS.
-# Note that a WS binary will not be installed unless FUS 1.1.0 is installed.
+#  $ mpremote cp /tmp/fus_102.bin :
+#  $ mpremote cp /tmp/fus_110.bin :
+#  $ mpremote cp /tmp/ws_ble_hci.bin :
+#  $ mpremote cp ./boards/NUCLEO_WB55/rfcore_firmware.py :
+#  In general, it's always safe to copy all three files and the updater will
+#  figure out what needs to be done. This is the recommended option.
+#  However, if you already have the latest FUS (1.1.0) installed, then just the
+#  WS firmware is required.
+#  If a FUS binary is present, then the existing WS will be removed so it's a good
+#  idea to always include the WS binary if updating FUS.
+#  Note that a WS binary will not be installed unless FUS 1.1.0 is installed.
 #
 # 3. Ensure boot.py calls `rfcore_firmware.resume()`.
-# The WB55 will reset several times during the firmware update process, so this
-# script manages the update state using RTC backup registers.
-# `rfcore_firmware.resume()` will continue the update operation on startup to
-# resume any in-progress update operation, and either trigger another reset, or
-# return 0 to indicate that the operation completed successfully, or a reason
-# code (see REASON_* below) to indicate failure.
+#  $ mpremote exec "import rfcore_firmware; rfcore_firmware.install_boot()"
+#  The WB55 will reset several times during the firmware update process, so this
+#  script manages the update state using RTC backup registers.
+#  `rfcore_firmware.resume()` will continue the update operation on startup to
+#  resume any in-progress update operation, and either trigger another reset, or
+#  return 0 to indicate that the operation completed successfully, or a reason
+#  code (see REASON_* below) to indicate failure.
 #
 # 4. Call rfcore_firmware.check_for_updates() to start the update process.
-# The device will then immediately reboot and when the firmware update completes,
-# the status will be returned from rfcore_firmware.resume(). See the REASON_ codes below.
-# You can use the built-in stm.rfcore_fw_version() to query the installed version
-# from your application code.
+#  $ mpremote exec "import rfcore_firmware; rfcore_firmware.check_for_updates()"
+#  The device will then immediately reboot and when the firmware update completes,
+#  the status will be returned from rfcore_firmware.resume(). See the REASON_ codes below.
+#  You can use the built-in stm.rfcore_fw_version() to query the installed version
+#  from your application code.
 
 import struct, os
-import machine, stm
-from micropython import const
+
+try:
+    import machine, stm
+    from ubinascii import crc32
+    from micropython import const
+except ImportError:
+    # cpython
+    from binascii import crc32
+
+    machine = stm = None
+    const = lambda x: x
+
 
 _OGF_VENDOR = const(0x3F)
 
@@ -174,13 +192,6 @@ _PATH_FUS_102 = "fus_102.bin"
 _PATH_FUS_110 = "fus_110.bin"
 _PATH_WS_BLE_HCI = "ws_ble_hci.bin"
 
-# This address is correct for versions up to v1.8 (assuming existing firmware deleted).
-# Note any address from the end of the filesystem to the SFSA would be fine, but if
-# the FUS is fixed in the future to use the specified address then these are the "correct"
-# ones.
-_ADDR_FUS = 0x080EC000
-_ADDR_WS_BLE_HCI = 0x080DC000
-
 # When installing the FUS/WS it can take a long time to return to the first
 # GET_STATE HCI command.
 # e.g. Installing stm32wb5x_BLE_Stack_full_fw.bin takes 3600ms to respond.
@@ -242,10 +253,79 @@ class _Flash:
         machine.mem32[stm.FLASH + stm.FLASH_CR] = 0
 
 
-def _copy_file_to_flash(filename, addr):
+def validate_crc(f):
+    """Should match copy of function in rfcore_makefirmware.py to confirm operation"""
+    f.seek(0)
+    file_crc = 0
+    chunk = 16 * 1024
+    buff = bytearray(chunk)
+    while True:
+        read = f.readinto(buff)
+        if read < chunk:
+            file_crc = crc32(buff[0:read], file_crc)
+            break
+        file_crc = crc32(buff, file_crc)
+
+    file_crc = 0xFFFFFFFF & -file_crc - 1
+    f.seek(0)
+    return file_crc == 0
+
+
+def check_file_details(filename):
+    with open(filename, "rb") as f:
+        if not validate_crc(f):
+            raise ValueError("file validation failed: incorrect crc")
+
+        # Check the footer on the file
+        f.seek(-64, 2)
+        footer = f.read()
+        details = struct.unpack("<37sIIIIbbbII", footer)
+        (
+            src_filename,
+            addr_1m,
+            addr_640k,
+            addr_512k,
+            addr_256k,
+            vers_major,
+            vers_minor,
+            vers_patch,
+            KEY,
+            crc,
+        ) = details
+        src_filename = src_filename.strip(b"\x00").decode()
+        if KEY != _OBFUSCATION_KEY:
+            raise ValueError("file validation failed: incorrect key")
+
+    return (
+        src_filename,
+        addr_1m,
+        addr_640k,
+        addr_512k,
+        addr_256k,
+        (vers_major, vers_minor, vers_patch),
+    )
+
+
+def _copy_file_to_flash(filename):
     flash = _Flash()
     flash.unlock()
+    # Reset any previously stored address
+    _write_target_addr(0)
     try:
+        (
+            src_filename,
+            addr_1m,
+            addr_640k,
+            addr_512k,
+            addr_256k,
+            vers,
+        ) = check_file_details(filename)
+
+        # TODO add support for querying the correct flash size on chip
+        addr = load_addr = addr_1m
+
+        log(f"Writing {src_filename} v{vers[0]}.{vers[1]}.{vers[2]} to addr: 0x{addr:x}")
+
         # Erase the entire staging area in flash.
         erase_addr = STAGING_AREA_START
         sfr_sfsa = machine.mem32[stm.FLASH + stm.FLASH_SFR] & 0xFF
@@ -265,6 +345,9 @@ def _copy_file_to_flash(filename, addr):
                     break
                 flash.write(addr, buf, sz, _OBFUSCATION_KEY)
                 addr += 4096
+
+        # Cache the intended target load address
+        _write_target_addr(load_addr)
 
     finally:
         flash.lock()
@@ -308,17 +391,25 @@ def _fus_fwdelete():
     return _run_sys_hci_cmd(_OGF_VENDOR, _OCF_FUS_FW_DELETE)
 
 
-def _fus_run_fwupgrade(addr):
+def _fus_run_fwupgrade():
     # Note: Address is ignored by the FUS (see comments above).
+    addr = _read_target_addr()
+    if not addr:
+        log(f"Update failed: Invalid load address: 0x{addr:x}")
+        return False
+
+    log(f"Loading to: 0x{addr:x}")
     return _run_sys_hci_cmd(_OGF_VENDOR, _OCF_FUS_FW_UPGRADE, struct.pack("<I", addr))
 
 
-# Get/set current state/reason to RTC Backup Domain.
-# Using the second- and third-last registers (17, 18) as the final one (19)
-# is reserved by powerctrl.c for restoring the frequency.
-# Can be overridden if necessary.
-REG_RTC_STATE = stm.RTC + stm.RTC_BKP18R
-REG_RTC_REASON = stm.RTC + stm.RTC_BKP17R
+if stm:
+    # Get/set current state/reason/addr to RTC Backup Domain.
+    # Using the second, third, and fourth-last registers (16, 17, 18) as
+    # the final one (19) is reserved by powerctrl.c for restoring the frequency.
+    # Can be overridden if necessary.
+    REG_RTC_STATE = stm.RTC + stm.RTC_BKP18R
+    REG_RTC_REASON = stm.RTC + stm.RTC_BKP17R
+    REG_RTC_ADDR = stm.RTC + stm.RTC_BKP16R
 
 
 def _read_state():
@@ -339,8 +430,16 @@ def _write_failure_state(reason):
     return reason
 
 
+def _read_target_addr():
+    return machine.mem32[REG_RTC_ADDR]
+
+
+def _write_target_addr(addr):
+    machine.mem32[REG_RTC_ADDR] = addr
+
+
 # Check for the presence of a given file and attempt to start installing it.
-def _stat_and_start_copy(path, addr, copying_state, copied_state):
+def _stat_and_start_copy(path, copying_state, copied_state):
     try:
         os.stat(path)
     except OSError:
@@ -358,7 +457,7 @@ def _stat_and_start_copy(path, addr, copying_state, copied_state):
         log("Copying {} to flash", path)
         # Mark that the flash write has started. Any failure should result in an overall failure.
         _write_state(copying_state)  # Either _STATE_COPYING_FUS or _STATE_COPYING_WS
-        _copy_file_to_flash(path, addr)
+        _copy_file_to_flash(path)
         log("Copying complete")
         # The entire write has completed successfully, start the install.
         _write_state(copied_state)  # Either _STATE_COPIED_FUS or _STATE_COPIED_WS
@@ -423,22 +522,20 @@ def resume():
             log("FUS version {}", fus_version)
             if fus_version < _FUS_VERSION_102:
                 log("Factory FUS detected")
-                if _stat_and_start_copy(
-                    _PATH_FUS_102, _ADDR_FUS, _STATE_COPYING_FUS, _STATE_COPIED_FUS
-                ):
+                if _stat_and_start_copy(_PATH_FUS_102, _STATE_COPYING_FUS, _STATE_COPIED_FUS):
                     continue
             elif fus_version >= _FUS_VERSION_102 and fus_version < _FUS_VERSION_110:
                 log("FUS 1.0.2 detected")
-                if _stat_and_start_copy(
-                    _PATH_FUS_110, _ADDR_FUS, _STATE_COPYING_FUS, _STATE_COPIED_FUS
-                ):
+                if _stat_and_start_copy(_PATH_FUS_110, _STATE_COPYING_FUS, _STATE_COPIED_FUS):
                     continue
             else:
                 log("FUS is up-to-date")
 
             if fus_version >= _FUS_VERSION_110:
                 if _stat_and_start_copy(
-                    _PATH_WS_BLE_HCI, _ADDR_WS_BLE_HCI, _STATE_COPYING_WS, _STATE_COPIED_WS
+                    _PATH_WS_BLE_HCI,
+                    _STATE_COPYING_WS,
+                    _STATE_COPIED_WS,
                 ):
                     continue
                 else:
@@ -465,7 +562,7 @@ def resume():
             if fus_is_idle():
                 log("FUS copy complete, installing")
                 _write_state(_STATE_INSTALLING_FUS)
-                _fus_run_fwupgrade(_ADDR_FUS)
+                _fus_run_fwupgrade()
             else:
                 log("FUS copy bad state")
                 _write_failure_state(REASON_FLASH_FUS_BAD_STATE)
@@ -519,7 +616,7 @@ def resume():
             if fus_is_idle():
                 log("WS copy complete, installing")
                 _write_state(_STATE_INSTALLING_WS)
-                _fus_run_fwupgrade(_ADDR_WS_BLE_HCI)
+                _fus_run_fwupgrade()
             else:
                 log("WS copy bad state")
                 _write_failure_state(REASON_FLASH_WS_BAD_STATE)
@@ -556,9 +653,59 @@ def resume():
                 _write_failure_state(REASON_WS_VENDOR + result)
 
 
+def install_boot():
+    boot_py = "/flash/boot.py"
+    header = ""
+    mode = "w"
+    try:
+        with open(boot_py, "r") as boot:
+            header = "\n"
+            mode = "a"
+            for line in boot:
+                if "rfcore_firmware.resume()" in line:
+                    print("Already installed.")
+                    return
+
+        print("boot.py exists, adding upgrade handler.")
+    except OSError:
+        print("boot.py doesn't exists, adding with upgrade handler.")
+
+    with open(boot_py, mode) as boot:
+        boot.write(header)
+        boot.write("# Handle rfcore updates.\n")
+        boot.write("import rfcore_firmware\n")
+        boot.write("rfcore_firmware.resume()\n")
+
+
 # Start a firmware update.
 # This will immediately trigger a reset and start the update process on boot.
-def check_for_updates():
-    log("Starting firmware update")
-    _write_state(_STATE_WAITING_FOR_FUS)
-    machine.reset()
+def check_for_updates(force=False):
+    (
+        src_filename,
+        addr_1m,
+        addr_640k,
+        addr_512k,
+        addr_256k,
+        vers_fus,
+    ) = check_file_details(_PATH_FUS_110)
+    (
+        src_filename,
+        addr_1m,
+        addr_640k,
+        addr_512k,
+        addr_256k,
+        vers_ws,
+    ) = check_file_details(_PATH_WS_BLE_HCI)
+    current_version_fus = stm.rfcore_fw_version(_FW_VERSION_FUS)
+    fus_uptodate = current_version_fus[0:3] == vers_fus
+
+    current_version_ws = stm.rfcore_fw_version(_FW_VERSION_WS)
+    ws_uptodate = current_version_ws[0:3] == vers_ws
+    if fus_uptodate and ws_uptodate and not force:
+        log(f"Already up to date: fus: {current_version_fus}, ws: {current_version_ws}")
+    else:
+        log(f"Starting firmware update")
+        log(f" - fus: {current_version_fus} -> {vers_fus}")
+        log(f" - ws:  {current_version_ws} -> {vers_ws}")
+        _write_state(_STATE_WAITING_FOR_FUS)
+        machine.reset()

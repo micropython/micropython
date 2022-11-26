@@ -94,7 +94,6 @@ SITES = [
     {"host": "www.google.com"},
     "micropython.org",
     "pypi.org",
-    "api.telegram.org",
     {"host": "api.pushbullet.com", "sni": True},
 ]
 

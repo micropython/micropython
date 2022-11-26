@@ -24,11 +24,6 @@ typedef struct _pwm_signal_param_u16
     uint16_t deadtimeValue;    // The deadtime value; only used if channel pair is operating in complementary mode
 } pwm_signal_param_u16_t;
 
-typedef enum _pwm_fault_channels {
-    kPWM_faultchannel_0 = 0U,
-    kPWM_faultchannel_1
-} pwm_fault_channels_t;
-
 #define PWM_FULL_SCALE  (65536UL)
 
 void PWM_UpdatePwmDutycycle_u16(PWM_Type *base, pwm_submodule_t subModule,
@@ -39,9 +34,6 @@ void PWM_SetupPwm_u16(PWM_Type *base, pwm_submodule_t subModule, pwm_signal_para
 
 void PWM_SetupPwmx_u16(PWM_Type *base, pwm_submodule_t subModule,
     uint32_t pwmFreq_Hz, uint16_t duty_cycle, uint8_t invert, uint32_t srcClock_Hz);
-
-void PWM_SetupFaultDisableMap(PWM_Type *base, pwm_submodule_t subModule,
-    pwm_channels_t pwmChannel, pwm_fault_channels_t pwm_fault_channels, uint16_t value);
 
 #ifdef FSL_FEATURE_SOC_TMR_COUNT
 status_t QTMR_SetupPwm_u16(TMR_Type *base, qtmr_channel_selection_t channel, uint32_t pwmFreqHz,

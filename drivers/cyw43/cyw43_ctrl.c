@@ -101,6 +101,8 @@ void cyw43_init(cyw43_t *self) {
     self->ap_channel = 3;
     self->ap_ssid_len = 0;
     self->ap_key_len = 0;
+    strncpy(self->hostname, MICROPY_BOARD_HOSTNAME, MICROPY_BOARD_HOSTNAME_LENGTH);
+    self->hostname[MICROPY_BOARD_HOSTNAME_LENGTH - 1] = 0;
 
     cyw43_poll = NULL;
 }

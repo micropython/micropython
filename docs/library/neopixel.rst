@@ -6,7 +6,7 @@
 
 This module provides a driver for WS2818 / NeoPixel LEDs.
 
-.. note:: This module is only included by default on the ESP8266 and ESP32
+.. note:: This module is only included by default on the ESP8266, ESP32 and RP2
    ports. On STM32 / Pyboard, you can `download the module
    <https://github.com/micropython/micropython/blob/master/drivers/neopixel/neopixel.py>`_
    and copy it to the filesystem.

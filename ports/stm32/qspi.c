@@ -246,7 +246,7 @@ STATIC void qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t
 STATIC void qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
     (void)self_in;
 
-    uint8_t adsize = MP_SPI_ADDR_IS_32B(addr) ? 3 : 2;
+    uint8_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 
@@ -331,7 +331,7 @@ STATIC uint32_t qspi_read_cmd(void *self_in, uint8_t cmd, size_t len) {
 STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
     (void)self_in;
 
-    uint8_t adsize = MP_SPI_ADDR_IS_32B(addr) ? 3 : 2;
+    uint8_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 

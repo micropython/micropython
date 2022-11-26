@@ -53,7 +53,7 @@ limitation.
 Constructors
 ------------
 
-.. class:: pyb.Timer(id, ...)
+.. class:: Timer(id, ...)
 
    Construct a new timer object of the given id.  If additional
    arguments are given, then the timer is initialised by ``init(...)``.
@@ -62,7 +62,7 @@ Constructors
 Methods
 -------
 
-.. method:: Timer.init(*, freq, prescaler, period, mode=Timer.UP, div=1, callback=None, deadtime=0)
+.. method:: Timer.init(*, freq, prescaler, period, mode=Timer.UP, div=1, callback=None, deadtime=0, brk=Timer.BRK_OFF)
 
    Initialise the timer.  Initialisation must be either by frequency (in Hz)
    or by prescaler and period::
@@ -106,6 +106,14 @@ Methods
        2, 256-512 in steps of 8, and 512-1008 in steps of 16. ``deadtime``
        measures ticks of ``source_freq`` divided by ``div`` clock ticks.
        ``deadtime`` is only available on timers 1 and 8.
+
+     - ``brk`` - specifies if the break mode is used to kill the output of
+       the PWM when the ``BRK_IN`` input is asserted. The value of this
+       argument determines if break is enabled and what the polarity is, and
+       can be one of ``Timer.BRK_OFF``, ``Timer.BRK_LOW`` or
+       ``Timer.BRK_HIGH``. To select the ``BRK_IN`` pin construct a Pin object with
+       ``mode=Pin.ALT, alt=Pin.AFn_TIMx``. The pin's GPIO input features are
+       available in alt mode - ``pull=`` , ``value()`` and ``irq()``.
 
     You must either specify freq or both of period and prescaler.
 
@@ -198,6 +206,17 @@ Methods
        ch2 = timer.channel(2, pyb.Timer.PWM, pin=pyb.Pin.board.X2, pulse_width=8000)
        ch3 = timer.channel(3, pyb.Timer.PWM, pin=pyb.Pin.board.X3, pulse_width=16000)
 
+   PWM Motor Example with complementary outputs, dead time, break input and break callback::
+
+       from pyb import Timer
+       from machine import Pin # machine.Pin supports alt mode and irq on the same pin.
+       pin_t8_1 = Pin(Pin.board.Y1, mode=Pin.ALT, af=Pin.AF3_TIM8)   # Pin PC6, TIM8_CH1
+       pin_t8_1n = Pin(Pin.board.X8, mode=Pin.ALT, af=Pin.AF3_TIM8)  # Pin PA7, TIM8_CH1N
+       pin_bkin = Pin(Pin.board.X7, mode=Pin.ALT, af=Pin.AF3_TIM8)   # Pin PA6, TIM8_BKIN
+       pin_bkin.irq(handler=break_callabck, trigger=Pin.IRQ_FALLING)
+       timer = pyb.Timer(8, freq=1000, deadtime=1008, brk=Timer.BRK_LOW)
+       ch1 = timer.channel(1, pyb.Timer.PWM, pulse_width_percent=30)
+
 .. method:: Timer.counter([value])
 
    Get or set the timer counter.
@@ -271,3 +290,9 @@ Constants
           Timer.CENTER
 
    Configures the timer to count Up, Down, or from 0 to ARR and then back down to 0.
+
+.. data:: Timer.BRK_OFF
+          Timer.BRK_LOW
+          Timer.BRK_HIGH
+
+   Configures the break mode when passed to the ``brk`` keyword argument.

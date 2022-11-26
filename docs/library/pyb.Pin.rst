@@ -58,23 +58,13 @@ an ordinal pin number:
 You can set ``pyb.Pin.debug(True)`` to get some debug information about
 how a particular object gets mapped to a pin.
 
-When a pin has the ``Pin.PULL_UP`` or ``Pin.PULL_DOWN`` pull-mode enabled,
-that pin has an effective 40k Ohm resistor pulling it to 3V3 or GND
-respectively (except pin Y5 which has 11k Ohm resistors).
-
-Now every time a falling edge is seen on the gpio pin, the callback will be
-executed. Caution: mechanical push buttons have "bounce" and pushing or
-releasing a switch will often generate multiple edges.
-See: http://www.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
-explanation, along with various techniques for debouncing.
-
 All pin objects go through the pin mapper to come up with one of the
 gpio pins.
 
 Constructors
 ------------
 
-.. class:: pyb.Pin(id, ...)
+.. class:: Pin(id, ...)
 
    Create a new Pin object associated with the id.  If additional arguments are given,
    they are used to initialise the pin.  See :meth:`pin.init`.
@@ -107,7 +97,8 @@ Methods
         - ``Pin.IN`` - configure the pin for input;
         - ``Pin.OUT_PP`` - configure the pin for output, with push-pull control;
         - ``Pin.OUT_OD`` - configure the pin for output, with open-drain control;
-        - ``Pin.AF_PP`` - configure the pin for alternate function, pull-pull;
+        - ``Pin.ALT`` - configure the pin for alternate function, input or output;
+        - ``Pin.AF_PP`` - configure the pin for alternate function, push-pull;
         - ``Pin.AF_OD`` - configure the pin for alternate function, open-drain;
         - ``Pin.ANALOG`` - configure the pin for analog.
 
@@ -117,10 +108,14 @@ Methods
         - ``Pin.PULL_UP`` - enable the pull-up resistor;
         - ``Pin.PULL_DOWN`` - enable the pull-down resistor.
 
+       When a pin has the ``Pin.PULL_UP`` or ``Pin.PULL_DOWN`` pull-mode enabled,
+       that pin has an effective 40k Ohm resistor pulling it to 3V3 or GND
+       respectively (except pin Y5 which has 11k Ohm resistors).
+
      - *value* if not None will set the port output value before enabling the pin.
 
-     - *alt* can be used when mode is ``Pin.AF_PP`` or ``Pin.AF_OD`` to set the
-       index or name of one of the alternate functions associated with a pin.
+     - *alt* can be used when mode is ``Pin.ALT`` , ``Pin.AF_PP`` or ``Pin.AF_OD`` to
+       set the index or name of one of the alternate functions associated with a pin.
        This arg was previously called *af* which can still be used if needed.
 
    Returns: ``None``.
@@ -183,6 +178,10 @@ Methods
 Constants
 ---------
 
+.. data:: Pin.ALT
+
+   initialise the pin to alternate-function mode for input or output
+
 .. data:: Pin.AF_OD
 
    initialise the pin to alternate-function mode with an open-drain drive
@@ -243,11 +242,11 @@ control is desired.
 
 To configure X3 to expose TIM2_CH3, you could use::
 
-   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, alt=pyb.Pin.AF1_TIM2)
+   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.ALT, alt=pyb.Pin.AF1_TIM2)
 
 or::
 
-   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, alt=1)
+   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.ALT, alt=1)
 
 Methods
 -------

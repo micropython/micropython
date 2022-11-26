@@ -47,9 +47,8 @@
 #error WIFI_MODE_STA and WIFI_MODE_AP are supposed to be bitfields!
 #endif
 
-STATIC const mp_obj_type_t wlan_if_type;
-STATIC const wlan_if_obj_t wlan_sta_obj = {{&wlan_if_type}, WIFI_IF_STA};
-STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
+STATIC const wlan_if_obj_t wlan_sta_obj;
+STATIC const wlan_if_obj_t wlan_ap_obj;
 
 // Set to "true" if esp_wifi_start() was called
 static bool wifi_started = false;
@@ -218,7 +217,7 @@ STATIC mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_wlan_active_obj, 1, 2, network_wlan_active);
 
 STATIC mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_password, ARG_bssid };
+    enum { ARG_ssid, ARG_key, ARG_bssid };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -239,8 +238,8 @@ STATIC mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
             p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
             memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
         }
-        if (args[ARG_password].u_obj != mp_const_none) {
-            p = mp_obj_str_get_data(args[ARG_password].u_obj, &len);
+        if (args[ARG_key].u_obj != mp_const_none) {
+            p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
             memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
         }
         if (args[ARG_bssid].u_obj != mp_const_none) {
@@ -345,6 +344,12 @@ STATIC mp_obj_t network_wlan_scan(mp_obj_t self_in) {
     if (status == 0) {
         uint16_t count = 0;
         esp_exceptions(esp_wifi_scan_get_ap_num(&count));
+        if (count == 0) {
+            // esp_wifi_scan_get_ap_records must be called to free internal buffers from the scan.
+            // But it returns an error if wifi_ap_records==NULL.  So allocate at least 1 AP entry.
+            // esp_wifi_scan_get_ap_records will then return the actual number of APs in count.
+            count = 1;
+        }
         wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
         esp_exceptions(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
         for (uint16_t i = 0; i < count; i++) {
@@ -410,6 +415,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         esp_exceptions(esp_wifi_set_mac(self->if_id, bufinfo.buf));
                         break;
                     }
+                    case MP_QSTR_ssid:
                     case MP_QSTR_essid: {
                         req_if = WIFI_IF_AP;
                         size_t len;
@@ -424,11 +430,13 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         cfg.ap.ssid_hidden = mp_obj_is_true(kwargs->table[i].value);
                         break;
                     }
+                    case MP_QSTR_security:
                     case MP_QSTR_authmode: {
                         req_if = WIFI_IF_AP;
                         cfg.ap.authmode = mp_obj_get_int(kwargs->table[i].value);
                         break;
                     }
+                    case MP_QSTR_key:
                     case MP_QSTR_password: {
                         req_if = WIFI_IF_AP;
                         size_t len;
@@ -439,10 +447,25 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         break;
                     }
                     case MP_QSTR_channel: {
-                        req_if = WIFI_IF_AP;
-                        cfg.ap.channel = mp_obj_get_int(kwargs->table[i].value);
+                        uint8_t primary;
+                        wifi_second_chan_t secondary;
+                        // Get the current value of secondary
+                        esp_exceptions(esp_wifi_get_channel(&primary, &secondary));
+                        primary = mp_obj_get_int(kwargs->table[i].value);
+                        esp_err_t err = esp_wifi_set_channel(primary, secondary);
+                        if (err == ESP_ERR_INVALID_ARG) {
+                            // May need to swap secondary channel above to below or below to above
+                            secondary = (
+                                (secondary == WIFI_SECOND_CHAN_ABOVE)
+                                ? WIFI_SECOND_CHAN_BELOW
+                                : (secondary == WIFI_SECOND_CHAN_BELOW)
+                                    ? WIFI_SECOND_CHAN_ABOVE
+                                    : WIFI_SECOND_CHAN_NONE);
+                            esp_exceptions(esp_wifi_set_channel(primary, secondary));
+                        }
                         break;
                     }
+                    case MP_QSTR_hostname:
                     case MP_QSTR_dhcp_hostname: {
                         const char *s = mp_obj_str_get_str(kwargs->table[i].value);
                         esp_exceptions(tcpip_adapter_set_hostname(self->if_id, s));
@@ -464,6 +487,10 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                     case MP_QSTR_txpower: {
                         int8_t power = (mp_obj_get_float(kwargs->table[i].value) * 4);
                         esp_exceptions(esp_wifi_set_max_tx_power(power));
+                        break;
+                    }
+                    case MP_QSTR_protocol: {
+                        esp_exceptions(esp_wifi_set_protocol(self->if_id, mp_obj_get_int(kwargs->table[i].value)));
                         break;
                     }
                     default:
@@ -503,6 +530,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                     goto unknown;
             }
         }
+        case MP_QSTR_ssid:
         case MP_QSTR_essid:
             switch (self->if_id) {
                 case WIFI_IF_STA:
@@ -519,14 +547,19 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             req_if = WIFI_IF_AP;
             val = mp_obj_new_bool(cfg.ap.ssid_hidden);
             break;
+        case MP_QSTR_security:
         case MP_QSTR_authmode:
             req_if = WIFI_IF_AP;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.authmode);
             break;
-        case MP_QSTR_channel:
-            req_if = WIFI_IF_AP;
-            val = MP_OBJ_NEW_SMALL_INT(cfg.ap.channel);
+        case MP_QSTR_channel: {
+            uint8_t channel;
+            wifi_second_chan_t second;
+            esp_exceptions(esp_wifi_get_channel(&channel, &second));
+            val = MP_OBJ_NEW_SMALL_INT(channel);
             break;
+        }
+        case MP_QSTR_hostname:
         case MP_QSTR_dhcp_hostname: {
             const char *s;
             esp_exceptions(tcpip_adapter_get_hostname(self->if_id, &s));
@@ -546,6 +579,12 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             int8_t power;
             esp_exceptions(esp_wifi_get_max_tx_power(&power));
             val = mp_obj_new_float(power * 0.25);
+            break;
+        }
+        case MP_QSTR_protocol: {
+            uint8_t protocol_bitmap;
+            esp_exceptions(esp_wifi_get_protocol(self->if_id, &protocol_bitmap));
+            val = MP_OBJ_NEW_SMALL_INT(protocol_bitmap);
             break;
         }
         default:
@@ -576,10 +615,14 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
-STATIC const mp_obj_type_t wlan_if_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_WLAN,
-    .locals_dict = (mp_obj_t)&wlan_if_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    wlan_if_type,
+    MP_QSTR_WLAN,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &wlan_if_locals_dict
+    );
+
+STATIC const wlan_if_obj_t wlan_sta_obj = {{&wlan_if_type}, WIFI_IF_STA};
+STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 
 #endif // MICROPY_PY_NETWORK_WLAN

@@ -78,7 +78,7 @@ typedef struct _qstr_pool_t {
 
 void qstr_init(void);
 
-mp_uint_t qstr_compute_hash(const byte *data, size_t len);
+size_t qstr_compute_hash(const byte *data, size_t len);
 qstr qstr_find_strn(const char *str, size_t str_len); // returns MP_QSTRnull if not found
 
 qstr qstr_from_str(const char *str);
@@ -93,7 +93,7 @@ void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, si
 void qstr_dump_data(void);
 
 #if MICROPY_ROM_TEXT_COMPRESSION
-void mp_decompress_rom_string(byte *dst, mp_rom_error_text_t src);
+void mp_decompress_rom_string(byte *dst, const mp_rom_error_text_t src);
 #define MP_IS_COMPRESSED_ROM_STRING(s) (*(byte *)(s) == 0xff)
 #endif
 

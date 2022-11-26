@@ -225,7 +225,7 @@ def _create_element(kind, body):
     return bytes([kind, len(body)]) + body
 
 
-def update_mpy(
+def update_app_elements(
     filename, fs_base, fs_len, fs_type=VFS_FAT, fs_blocksize=0, status_addr=None, addr_64bit=False
 ):
     # Check firmware is of .dfu or .dfu.gz type
@@ -237,7 +237,7 @@ def update_mpy(
             hdr = f.read(6)
     if hdr != b"DfuSe\x01":
         print("Firmware must be a .dfu(.gz) file.")
-        return
+        return ()
 
     if fs_type in (VFS_LFS1, VFS_LFS2) and not fs_blocksize:
         raise Exception("littlefs requires fs_blocksize parameter")
@@ -256,4 +256,10 @@ def update_mpy(
         machine.mem32[status_addr] = 1
         elems += _create_element(_ELEM_TYPE_STATUS, struct.pack("<L", status_addr))
     elems += _create_element(_ELEM_TYPE_END, b"")
-    machine.bootloader(elems)
+    return elems
+
+
+def update_mpy(*args, **kwargs):
+    elems = update_app_elements(*args, **kwargs)
+    if elems:
+        machine.bootloader(elems)

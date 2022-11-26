@@ -296,6 +296,7 @@ See :ref:`machine.WDT <machine.WDT>`. ::
     wdt = WDT(timeout=5000)
     wdt.feed()
 
+The maximum value for timeout is 8388 ms.
 
 OneWire driver
 --------------

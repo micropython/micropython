@@ -35,6 +35,8 @@
 #include "nrfx_uart.h"
 #include "py/ringbuf.h"
 #include "py/stream.h"
+#include "py/runtime.h"
+#include "shared/runtime/interrupt_char.h"
 
 #ifdef BLUETOOTH_SD
 #include "nrf_sdm.h"
@@ -44,7 +46,7 @@
 
 extern void tusb_hal_nrf_power_event(uint32_t event);
 
-static void cdc_task(void);
+static void cdc_task(bool tx);
 
 static uint8_t rx_ringbuf_array[1024];
 static uint8_t tx_ringbuf_array[1024];
@@ -119,35 +121,45 @@ static int cdc_tx_char(void) {
     return ringbuf_get((ringbuf_t*)&tx_ringbuf);
 }
 
-static void cdc_task(void)
+static void cdc_task(bool tx)
 {
     if ( tud_cdc_connected() ) {
         // connected and there are data available
         while (tud_cdc_available()) {
-            int c;
-            uint32_t count = tud_cdc_read(&c, 1);
-            (void)count;
-            ringbuf_put((ringbuf_t*)&rx_ringbuf, c);
-        }
-
-        int chars = 0;
-        while (cdc_tx_any()) {
-            if (chars < 64) {
-               tud_cdc_write_char(cdc_tx_char());
-               chars++;
+            int c = tud_cdc_read_char();
+            if (c == mp_interrupt_char) {
+                rx_ringbuf.iget = 0;
+                rx_ringbuf.iput = 0;
+                mp_sched_keyboard_interrupt();
             } else {
-               chars = 0;
-               tud_cdc_write_flush();
+                ringbuf_put((ringbuf_t*)&rx_ringbuf, c);
             }
         }
 
-        tud_cdc_write_flush();
+        if (tx) {
+            int chars = 0;
+            while (cdc_tx_any()) {
+                if (chars < 64) {
+                    tud_cdc_write_char(cdc_tx_char());
+                    chars++;
+                } else {
+                    chars = 0;
+                    tud_cdc_write_flush();
+                }
+            }
+
+            tud_cdc_write_flush();
+        }
     }
 }
 
 static void usb_cdc_loop(void) {
     tud_task();
-    cdc_task();
+    cdc_task(true);
+}
+
+void tud_cdc_rx_cb(uint8_t itf) {
+    cdc_task(false);
 }
 
 int usb_cdc_init(void)

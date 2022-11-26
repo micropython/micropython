@@ -311,13 +311,13 @@ STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
-STATIC const mp_obj_type_t mp_type_poll = {
-    { &mp_type_type },
-    .name = MP_QSTR_poll,
-    .getiter = mp_identity_getiter,
-    .iternext = poll_iternext,
-    .locals_dict = (void *)&poll_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_poll,
+    MP_QSTR_poll,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, poll_iternext,
+    locals_dict, &poll_locals_dict
+    );
 
 STATIC mp_obj_t select_poll(size_t n_args, const mp_obj_t *args) {
     int alloc = 4;
@@ -351,6 +351,6 @@ const mp_obj_module_t mp_module_uselect = {
     .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_uselect, mp_module_uselect, MICROPY_PY_USELECT_POSIX);
+MP_REGISTER_MODULE(MP_QSTR_uselect, mp_module_uselect);
 
 #endif // MICROPY_PY_USELECT_POSIX

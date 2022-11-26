@@ -34,6 +34,7 @@
 #include "py/mphal.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/softtimer.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/littlefs/lfs1.h"
 #include "lib/littlefs/lfs1_util.h"
@@ -65,7 +66,6 @@
 #include "gccollect.h"
 #include "factoryreset.h"
 #include "modmachine.h"
-#include "softtimer.h"
 #include "i2c.h"
 #include "spi.h"
 #include "uart.h"
@@ -97,41 +97,21 @@ STATIC pyb_uart_obj_t pyb_uart_repl_obj;
 STATIC uint8_t pyb_uart_repl_rxbuf[MICROPY_HW_UART_REPL_RXBUF];
 #endif
 
-void NORETURN __fatal_error(const char *msg) {
-    for (volatile uint delay = 0; delay < 10000000; delay++) {
-    }
-    led_state(1, 1);
-    led_state(2, 1);
-    led_state(3, 1);
-    led_state(4, 1);
-    mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 14);
-    mp_hal_stdout_tx_strn(msg, strlen(msg));
-    for (uint i = 0;;) {
-        led_toggle(((i++) & 3) + 1);
-        for (volatile uint delay = 0; delay < 10000000; delay++) {
-        }
-        if (i >= 16) {
-            // to conserve power
-            __WFI();
-        }
-    }
-}
-
 void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught exception %p\n", val);
     mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));
-    __fatal_error("");
+    MICROPY_BOARD_FATAL_ERROR("");
 }
 
 void abort(void) {
-    __fatal_error("abort");
+    MICROPY_BOARD_FATAL_ERROR("abort");
 }
 
 #ifndef NDEBUG
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     (void)func;
     printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
-    __fatal_error("");
+    MICROPY_BOARD_FATAL_ERROR("");
 }
 #endif
 
@@ -202,7 +182,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     if (len != -1) {
         // Detected a littlefs filesystem so create correct block device for it
         mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR_len), MP_OBJ_NEW_SMALL_INT(len) };
-        bdev = pyb_flash_type.make_new(&pyb_flash_type, 0, 1, args);
+        bdev = MP_OBJ_TYPE_GET_SLOT(&pyb_flash_type, make_new)(&pyb_flash_type, 0, 1, args);
     }
 
     #endif
@@ -679,3 +659,5 @@ soft_reset_exit:
 
     goto soft_reset;
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_config_main);

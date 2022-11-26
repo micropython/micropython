@@ -28,8 +28,8 @@
 // Include Zephyr's autoconf.h, which should be made first by Zephyr makefiles
 #include "autoconf.h"
 // Included here to get basic Zephyr environment (macros, etc.)
-#include <zephyr.h>
-#include <drivers/spi.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/spi.h>
 
 // Usually passed from Makefile
 #ifndef MICROPY_HEAP_SIZE
@@ -39,12 +39,14 @@
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_ENABLE_GC           (1)
+#define MICROPY_ENABLE_FINALISER    (MICROPY_VFS)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_PY_ASYNC_AWAIT      (0)
 #define MICROPY_PY_ATTRTUPLE        (0)
+#define MICROPY_PY_BUILTINS_BYTES_HEX (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE (0)
 #define MICROPY_PY_BUILTINS_FILTER  (0)
 #define MICROPY_PY_BUILTINS_MIN_MAX (0)
@@ -132,11 +134,6 @@ typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
-    void *machine_pin_irq_list; /* Linked list of pin irq objects */ \
-    struct _mp_bluetooth_zephyr_root_pointers_t *bluetooth_zephyr_root_pointers;
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

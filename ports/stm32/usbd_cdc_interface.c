@@ -42,9 +42,11 @@
 #include "usbd_cdc_interface.h"
 #include "pendsv.h"
 
-#include "py/obj.h"
+#include "py/runtime.h"
+#include "py/mphal.h"
 #include "shared/runtime/interrupt_char.h"
 #include "irq.h"
+#include "modmachine.h"
 
 #if MICROPY_HW_ENABLE_USB
 
@@ -61,6 +63,14 @@
 
 // Used to control the connect_state variable when USB host opens the serial port
 static uint8_t usbd_cdc_connect_tx_timer;
+
+#if MICROPY_HW_USB_CDC_1200BPS_TOUCH
+static mp_sched_node_t mp_bootloader_sched_node;
+STATIC void usbd_cdc_run_bootloader_task(mp_sched_node_t *node) {
+    mp_hal_delay_ms(250);
+    machine_bootloader(0, NULL);
+}
+#endif
 
 uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
     usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t *)cdc_in;
@@ -81,6 +91,7 @@ uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
     } else {
         cdc->flow |= USBD_CDC_FLOWCONTROL_CTS;
     }
+    cdc->bitrate = 0;
 
     // Return the buffer to place the first USB OUT packet
     return cdc->rx_packet_buf;
@@ -121,22 +132,14 @@ int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t *pbuf, ui
             break;
 
         case CDC_SET_LINE_CODING:
-            #if 0
-            LineCoding.bitrate = (uint32_t)(pbuf[0] | (pbuf[1] << 8) | \
-                (pbuf[2] << 16) | (pbuf[3] << 24));
-            LineCoding.format = pbuf[4];
-            LineCoding.paritytype = pbuf[5];
-            LineCoding.datatype = pbuf[6];
-            /* Set the new configuration */
-            #endif
+            cdc->bitrate = *((uint32_t *)pbuf);
             break;
 
         case CDC_GET_LINE_CODING:
-            /* Add your code here */
-            pbuf[0] = (uint8_t)(115200);
-            pbuf[1] = (uint8_t)(115200 >> 8);
-            pbuf[2] = (uint8_t)(115200 >> 16);
-            pbuf[3] = (uint8_t)(115200 >> 24);
+            pbuf[0] = (uint8_t)(cdc->bitrate);
+            pbuf[1] = (uint8_t)(cdc->bitrate >> 8);
+            pbuf[2] = (uint8_t)(cdc->bitrate >> 16);
+            pbuf[3] = (uint8_t)(cdc->bitrate >> 24);
             pbuf[4] = 0; // stop bits (1)
             pbuf[5] = 0; // parity (none)
             pbuf[6] = 8; // number of bits (8)
@@ -157,6 +160,12 @@ int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t *pbuf, ui
                 #endif
             } else {
                 cdc->connect_state = USBD_CDC_CONNECT_STATE_DISCONNECTED;
+                #if MICROPY_HW_USB_CDC_1200BPS_TOUCH
+                if (cdc->bitrate == 1200) {
+                    // Delay bootloader jump to allow the USB stack to service endpoints.
+                    mp_sched_schedule_node(&mp_bootloader_sched_node, usbd_cdc_run_bootloader_task);
+                }
+                #endif
             }
             break;
         }

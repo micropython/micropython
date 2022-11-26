@@ -69,4 +69,4 @@ const mp_obj_module_t pyb_module = {
     .globals = (mp_obj_dict_t *)&pyb_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_pyb, pyb_module, 1);
+MP_REGISTER_MODULE(MP_QSTR_pyb, pyb_module);

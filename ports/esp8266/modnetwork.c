@@ -109,7 +109,7 @@ STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 
 STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_password, ARG_bssid };
+    enum { ARG_ssid, ARG_key, ARG_bssid };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -133,8 +133,8 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         memcpy(config.ssid, p, len);
         set_config = true;
     }
-    if (args[ARG_password].u_obj != mp_const_none) {
-        p = mp_obj_str_get_data(args[ARG_password].u_obj, &len);
+    if (args[ARG_key].u_obj != mp_const_none) {
+        p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
         len = MIN(len, sizeof(config.password));
         memcpy(config.password, p, len);
         set_config = true;
@@ -361,6 +361,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         wifi_set_macaddr(self->if_id, bufinfo.buf);
                         break;
                     }
+                    case MP_QSTR_ssid:
                     case MP_QSTR_essid: {
                         req_if = SOFTAP_IF;
                         size_t len;
@@ -375,11 +376,13 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         cfg.ap.ssid_hidden = mp_obj_is_true(kwargs->table[i].value);
                         break;
                     }
+                    case MP_QSTR_security:
                     case MP_QSTR_authmode: {
                         req_if = SOFTAP_IF;
                         cfg.ap.authmode = mp_obj_get_int(kwargs->table[i].value);
                         break;
                     }
+                    case MP_QSTR_key:
                     case MP_QSTR_password: {
                         req_if = SOFTAP_IF;
                         size_t len;
@@ -394,12 +397,17 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         cfg.ap.channel = mp_obj_get_int(kwargs->table[i].value);
                         break;
                     }
+                    case MP_QSTR_hostname:
                     case MP_QSTR_dhcp_hostname: {
                         req_if = STATION_IF;
                         if (self->if_id == STATION_IF) {
                             const char *s = mp_obj_str_get_str(kwargs->table[i].value);
                             wifi_station_set_hostname((char *)s);
                         }
+                        break;
+                    }
+                    case MP_QSTR_protocol: {
+                        wifi_set_phy_mode(mp_obj_get_int(kwargs->table[i].value));
                         break;
                     }
                     default:
@@ -437,6 +445,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             wifi_get_macaddr(self->if_id, mac);
             return mp_obj_new_bytes(mac, sizeof(mac));
         }
+        case MP_QSTR_ssid:
         case MP_QSTR_essid:
             if (self->if_id == STATION_IF) {
                 val = mp_obj_new_str((char *)cfg.sta.ssid, strlen((char *)cfg.sta.ssid));
@@ -448,6 +457,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             req_if = SOFTAP_IF;
             val = mp_obj_new_bool(cfg.ap.ssid_hidden);
             break;
+        case MP_QSTR_security:
         case MP_QSTR_authmode:
             req_if = SOFTAP_IF;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.authmode);
@@ -456,6 +466,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             req_if = SOFTAP_IF;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.channel);
             break;
+        case MP_QSTR_hostname:
         case MP_QSTR_dhcp_hostname: {
             req_if = STATION_IF;
             char *s = wifi_station_get_hostname();
@@ -464,6 +475,10 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             } else {
                 val = mp_obj_new_str(s, strlen(s));
             }
+            break;
+        }
+        case MP_QSTR_protocol: {
+            val = mp_obj_new_int(wifi_get_phy_mode());
             break;
         }
         default:
@@ -495,11 +510,12 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
-const mp_obj_type_t wlan_if_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_WLAN,
-    .locals_dict = (mp_obj_dict_t *)&wlan_if_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    wlan_if_type,
+    MP_QSTR_WLAN,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &wlan_if_locals_dict
+    );
 
 STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
@@ -548,4 +564,4 @@ const mp_obj_module_t network_module = {
 
 // Note: This port doesn't define MICROPY_PY_NETWORK so this will not conflict
 // with the common implementation provided by extmod/modnetwork.c.
-MP_REGISTER_MODULE(MP_QSTR_network, network_module, 1);
+MP_REGISTER_MODULE(MP_QSTR_network, network_module);

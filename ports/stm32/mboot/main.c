@@ -1346,9 +1346,7 @@ void stm32_main(uint32_t initial_r0) {
     SCB_EnableDCache();
     #endif
 
-    #if defined(MBOOT_BOARD_EARLY_INIT)
-    MBOOT_BOARD_EARLY_INIT();
-    #endif
+    MBOOT_BOARD_EARLY_INIT(&initial_r0);
 
     #ifdef MBOOT_BOOTPIN_PIN
     mp_hal_pin_config(MBOOT_BOOTPIN_PIN, MP_HAL_PIN_MODE_INPUT, MBOOT_BOOTPIN_PULL, 0);
@@ -1357,11 +1355,11 @@ void stm32_main(uint32_t initial_r0) {
     }
     #endif
 
-    if ((initial_r0 & 0xffffff00) == 0x70ad0000) {
+    if ((initial_r0 & 0xffffff00) == MBOOT_INITIAL_R0_KEY) {
         goto enter_bootloader;
     }
 
-    int reset_mode = mboot_get_reset_mode();
+    int reset_mode = MBOOT_BOARD_GET_RESET_MODE(&initial_r0);
     if (reset_mode != BOARDCTRL_RESET_MODE_BOOTLOADER) {
         // Bootloader mode was not selected so try to enter the application,
         // passing through the reset_mode.  This will return if the application
@@ -1401,7 +1399,7 @@ enter_bootloader:
     mboot_pack_init();
     #endif
 
-    if ((initial_r0 & 0xffffff80) == 0x70ad0080) {
+    if ((initial_r0 & 0xffffff80) == MBOOT_INITIAL_R0_KEY_FSLOAD) {
         mboot_state_change(MBOOT_STATE_FSLOAD_START, 0);
         int ret = -1;
         #if MBOOT_FSLOAD
@@ -1520,9 +1518,9 @@ void SysTick_Handler(void) {
     // work properly.
     SysTick->CTRL;
 
-    // Update the LED0 state from here to ensure it's consistent regardless of
+    // Run any board-specific code that needs to be done regardless of
     // other processing going on in interrupts or main.
-    led0_update();
+    MBOOT_BOARD_SYSTICK();
 }
 
 #if defined(MBOOT_I2C_SCL)

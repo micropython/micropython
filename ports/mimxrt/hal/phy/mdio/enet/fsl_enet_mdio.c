@@ -21,7 +21,7 @@ static status_t ENET_MDIO_Write(mdio_handle_t *handle, uint32_t phyAddr, uint32_
 static status_t ENET_MDIO_Read(mdio_handle_t *handle, uint32_t phyAddr, uint32_t devAddr, uint32_t *dataPtr);
 
 uint32_t ENET_GetInstance(ENET_Type *base);
-extern clock_ip_name_t s_enetClock[];
+extern const clock_ip_name_t s_enetClock[];
 
 /*******************************************************************************
  * Variables

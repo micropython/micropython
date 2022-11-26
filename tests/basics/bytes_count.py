@@ -48,6 +48,13 @@ print(b"aaaa".count(b'a', 1, 5))
 print(b"aaaa".count(b'a', -1, 5))
 print(b"abbabba".count(b"abba"))
 
+print(b'\xaa \xaa'.count(b'\xaa'))
+print(b'\xaa \xaa \xaa \xaa'.count(b'\xaa'))
+print(b'\xaa \xaa \xaa \xaa'.count(b'\xaa'), 1)
+print(b'\xaa \xaa \xaa \xaa'.count(b'\xaa'), 2)
+print(b'\xaa \xaa \xaa \xaa'.count(b'\xaa'), 1, 3)
+print(b'\xaa \xaa \xaa \xaa'.count(b'\xaa'), 2, 3)
+
 def t():
     return True
 

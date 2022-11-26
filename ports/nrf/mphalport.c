@@ -374,3 +374,5 @@ const char *nrfx_error_code_lookup(uint32_t err_code) {
 }
 
 #endif // NRFX_LOG_ENABLED
+
+MP_REGISTER_ROOT_POINTER(struct _machine_hard_uart_obj_t *board_stdio_uart);

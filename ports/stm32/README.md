@@ -68,6 +68,23 @@ can be built via:
 
 For more information about mboot see mboot/README.md.
 
+### Link Time Optimization
+
+Link Time Optimization (LTO) reduces the firmware binary size when enabled
+(typically 2-3% smaller). However it may make build time longer, particularly on
+older GCC versions.
+
+Currently LTO is enabled by default for some smaller STM32 boards with less
+flash, but disabled on other boards.
+
+To enable LTO, pass `LTO=1` on the command line:
+
+    $ make BOARD=boardname LTO=1
+
+To disable LTO, pass `LTO=0` in the same way.
+
+Note that `make clean BOARD=boardname` will be needed before changing the `LTO`
+setting of a firmware that is already built.
 
 ### Flashing the Firmware using DFU mode
 

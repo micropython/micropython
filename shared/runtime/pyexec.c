@@ -488,6 +488,8 @@ int pyexec_event_repl_process_char(int c) {
     return res;
 }
 
+MP_REGISTER_ROOT_POINTER(vstr_t * repl_line);
+
 #else // MICROPY_REPL_EVENT_DRIVEN
 
 int pyexec_raw_repl(void) {

@@ -29,6 +29,7 @@
 // options to control how MicroPython is built
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_B)
 #define MICROPY_ALLOC_PATH_MAX      (64)
+#define MICROPY_QSTR_BYTES_IN_HASH  (1)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
@@ -89,10 +90,6 @@ typedef int mp_off_t;
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 #define MP_STATE_PORT MP_STATE_VM
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    char *readline_hist[8]; \
-    mp_obj_t keyboard_interrupt_obj; \
 
 #define MICROPY_MPHALPORT_H "pic16bit_mphal.h"
 #define MICROPY_HW_BOARD_NAME "dsPICSK"

@@ -389,7 +389,6 @@ pwm_add(uint8_t pin_id, uint32_t pin_mux, uint32_t pin_func) {
             pwm.duty[i] = 0;
             pwm_gpio |= (1 << pin_num[channel]);
             PIN_FUNC_SELECT(pin_mux, pin_func);
-            GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pin_num[channel])), GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pin_num[channel]))) & (~GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)));  // disable open drain;
             pwm_channel_num++;
             UNLOCK_PWM(critical);   // leave critical
             return channel;

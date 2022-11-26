@@ -44,6 +44,8 @@ Supported MCUs
 +-------------+--------------------+-------------------------+
 | i.MX RT1020 | Cortex-M7 @500 MHz | 256 kB SRAM             |
 +-------------+--------------------+-------------------------+
+| i.MX RT1015 | Cortex-M7 @500 MHz | 128 kB SRAM             |
++-------------+--------------------+-------------------------+
 | i.MX RT1010 | Cortex-M7 @500 MHz | 128 kB SRAM             |
 +-------------+--------------------+-------------------------+
 
@@ -72,7 +74,7 @@ For your convenience, a few technical specifications are provided below:
 * CPU frequency: up to 600MHz
 * Total RAM available: up to 1 MByte (see table)
 * BootROM: 96KB
-* External FlashROM: code and data, via SPI Flash; usual size 2 - 8 MB
+* External FlashROM: code and data, via SPI Flash; usual size 2 - 16 MB
   Some boards provide additional external RAM and SPI flash.
 * GPIO: up to 124 (GPIOs are multiplexed with other functions, including
   external FlashROM, UART, etc.)
@@ -80,9 +82,9 @@ For your convenience, a few technical specifications are provided below:
   but the boards used for testing do not expose the signals.
 * SPI: 2 or 4 low power SPI interfaces (software implementation available on every pin)
 * I2C: 2 or 4 low power I2C interfaces (software implementation available on every pin)
-* I2S: 3 I2S interfaces
+* I2S: 1 to 3 I2S interfaces
 * ADC: one or two 12-bit SAR ADC converters
-* Ethernet controller
+* Ethernet controller (except i.MX RT1010/-1015)
 * Programming: using BootROM bootloader from USB - due to external FlashROM
   and always-available BootROM bootloader, the MIMXRT is not brickable
 

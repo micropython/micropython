@@ -29,6 +29,7 @@
 #include <string.h>
 #include <p33Fxxxx.h>
 
+#include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/gc.h"

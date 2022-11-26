@@ -1,0 +1,113 @@
+# The pin_cap_table is a subset from table 6-1 of the data sheet.
+# It  contain the information about pin mux set and pad
+# for some of the peripheral devices with many possible assignments.
+# The colums represent the peripheral class, as defined in pin_cap_t. The
+# column number is equivalent to the mux class.
+# The eic and adc columns contain the decimal numer for the respecitive
+# quantity, the columns for sercom, tc and tcc have in each cell
+# the device number in the first, and the pad number in the second
+# digit. If a signal is not available, the cell in the csv table is left empty.
+# The first column is the pin id, not the number of the board pin.
+# Rows not starting with pa, pb, pc or pd are ignored.
+# When editing the table with a spread sheet, take care to import the data as text.
+#
+# Pin,EIC,ADC0,ADC1,SERCOM1,SERCOM2,TC,TCC1,TCC2
+pb03,9,15,,,51,61,,
+pa00,0,,,,10,20,,
+pa01,1,,,,11,21,,
+pc00,0,,10,,,,,
+pc01,1,,11,,,,,
+pc02,2,,4,,,,,
+pc03,3,,5,,,,,
+pa02,2,0,,,,,,
+pa03,3,10,,,,,,
+pb04,4,,6,,,,,
+pb05,5,,7,,,,,
+pd00,0,,14,,,,,
+pd01,1,,15,,,,,
+pb06,6,,8,,,,,
+pb07,7,,9,,,,,
+pb08,8,2,0,,40,40,,
+pb09,9,3,1,,41,41,,
+pa04,4,4,,,00,00,,
+pa05,5,5,,,01,01,,
+pa06,6,6,,,02,10,,
+pa07,7,7,,,03,11,,
+pc04,4,,,60,,,00,
+pc05,5,,,61,,,,
+pc06,6,,,62,,,,
+pc07,9,,,63,,,,
+pa08,,8,2,00,21,00,00,14
+pa09,9,9,3,01,20,01,01,15
+pa10,10,10,,02,22,10,02,16
+pa11,11,11,,03,23,11,03,17
+pb10,10,,,,42,50,04,10
+pb11,12,,,,43,51,05,11
+pb12,12,,,40,,40,30,00
+pb13,13,,,41,,41,31,01
+pb14,14,,,42,,50,40,02
+pb15,15,,,43,,51,41,03
+pd08,3,,,70,61,,01,
+pd09,4,,,71,60,,02,
+pd10,5,,,72,62,,03,
+pd11,6,,,73,63,,04,
+pd12,7,,,,,,05,
+pc10,10,,,62,72,,00,14
+pc11,11,,,63,73,,01,15
+pc12,12,,,70,61,,02,16
+pc13,13,,,71,60,,03,17
+pc14,14,,,72,62,,04,10
+pc15,15,,,73,63,,05,11
+pa12,12,,,20,41,20,06,12
+pa13,13,,,21,40,21,07,13
+pa14,14,,,22,42,30,20,12
+pa15,15,,,23,43,31,21,13
+pa16,0,,,10,31,20,10,04
+pa17,1,,,11,30,21,11,05
+pa18,2,,,12,32,30,12,06
+pa19,3,,,13,33,31,13,07
+pc16,0,,,60,01,,00,
+pc17,1,,,61,00,,01,
+pc18,2,,,62,02,,02,
+pc19,3,,,63,03,,03,
+pc20,4,,,,,,04,
+pc21,5,,,,,,05,
+pc22,6,,,10,31,,05,
+pc23,7,,,11,30,,07,
+pd20,10,,,12,32,,10,
+pd21,11,,,13,33,,11,
+pb16,0,,,50,,60,30,04
+pb17,1,,,51,,61,31,05
+pb18,2,,,52,72,,10,
+pb19,3,,,53,73,,11,
+pb20,4,,,30,71,,12,
+pb21,5,,,31,70,,13,
+pa20,4,,,52,32,70,14,00
+pa21,5,,,53,33,71,15,01
+pa22,6,,,30,51,40,16,02
+pa23,7,,,31,50,41,17,03
+pa24,8,,,32,52,50,22,
+pa25,9,,,33,53,51,,
+pb22,22,,,12,52,70,,
+pb23,7,,,13,53,71,,
+pb24,8,,,00,21,,,
+pb25,9,,,01,20,,,
+pb26,12,,,20,41,,12,
+pb27,13,,,21,40,,13,
+pb28,14,,,22,42,,14,
+pb29,15,,,23,43,,15,
+pc24,8,,,02,22,,,
+pc25,9,,,03,23,,,
+pc26,10,,,,,,,
+pc27,11,,,10,,,,
+pc28,12,,,11,,,,
+pa27,11,,,,,,,
+pa30,14,,,72,12,60,20,
+pa31,15,,,73,13,61,21,
+pb30,14,,,70,51,00,40,06
+pb31,15,,,71,50,01,41,07
+pc30,14,,12,,,,,
+pc31,15,,13,,,,,
+pb00,9,12,,,52,70,,
+pb01,1,13,,,53,71,,
+pb02,2,14,,,50,60,22,

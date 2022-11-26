@@ -29,6 +29,9 @@
 
 #include "hardware/watchdog.h"
 
+// The maximum timeout in milliseconds is: 0xffffff / 2 / 1000
+#define WDT_TIMEOUT_MAX 8388
+
 typedef struct _machine_wdt_obj_t {
     mp_obj_base_t base;
 } machine_wdt_obj_t;
@@ -53,7 +56,11 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type, size_t n_args, s
     }
 
     // Start the watchdog (timeout is in milliseconds).
-    watchdog_enable(args[ARG_timeout].u_int, false);
+    uint32_t timeout = args[ARG_timeout].u_int;
+    if (timeout > WDT_TIMEOUT_MAX) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timeout exceeds " MP_STRINGIFY(WDT_TIMEOUT_MAX)));
+    }
+    watchdog_enable(timeout, false);
 
     return MP_OBJ_FROM_PTR(&machine_wdt);
 }
@@ -70,9 +77,10 @@ STATIC const mp_rom_map_elem_t machine_wdt_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(machine_wdt_locals_dict, machine_wdt_locals_dict_table);
 
-const mp_obj_type_t machine_wdt_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_WDT,
-    .make_new = machine_wdt_make_new,
-    .locals_dict = (mp_obj_dict_t *)&machine_wdt_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_wdt_type,
+    MP_QSTR_WDT,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_wdt_make_new,
+    locals_dict, &machine_wdt_locals_dict
+    );

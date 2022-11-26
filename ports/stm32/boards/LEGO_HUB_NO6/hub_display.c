@@ -81,7 +81,7 @@ static void hub_display_tim_init(void) {
     tim->CCR2 = 2;
     tim->EGR = 1; // UG
 
-    mp_hal_pin_config(pin_B15, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
+    mp_hal_pin_config(pyb_pin_TLC_GS_CLK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
 }
 
 static void hub_display_spi_init(void) {
@@ -93,9 +93,9 @@ static void hub_display_spi_init(void) {
     spi->CR1 = SPI_CR1_SSM | SPI_CR1_SSI | 0 << SPI_CR1_BR_Pos | SPI_CR1_MSTR;
     spi->CR1 |= SPI_CR1_SPE;
 
-    mp_hal_pin_config(pin_A5, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 5);
-    mp_hal_pin_config(pin_A6, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 5);
-    mp_hal_pin_config(pin_A7, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 5);
+    mp_hal_pin_config(pyb_pin_TLC_SCLK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 5);
+    mp_hal_pin_config(pyb_pin_TLC_SOUT, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 5);
+    mp_hal_pin_config(pyb_pin_TLC_SIN, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 5);
 }
 
 static void hub_display_spi_write(uint8_t value) {
@@ -123,9 +123,9 @@ static void hub_display_latch_ctrl(uint8_t dc, uint32_t mc, uint32_t bc, uint8_t
     for (int i = 0; i < 42; ++i) {
         hub_display_spi_write(dc);
     }
-    mp_hal_pin_high(pin_A15);
+    mp_hal_pin_high(pyb_pin_TLC_LAT);
     mp_hal_delay_us(1);
-    mp_hal_pin_low(pin_A15);
+    mp_hal_pin_low(pyb_pin_TLC_LAT);
 }
 
 void hub_display_set(uint8_t led, uint16_t value) {
@@ -142,17 +142,17 @@ void hub_display_update(void) {
     for (int i = 0; i < 96; ++i) {
         hub_display_spi_write(hub_display_gs_state[95 - i]);
     }
-    mp_hal_pin_high(pin_A15);
+    mp_hal_pin_high(pyb_pin_TLC_LAT);
     mp_hal_delay_us(1);
-    mp_hal_pin_low(pin_A15);
+    mp_hal_pin_low(pyb_pin_TLC_LAT);
 }
 
 void hub_display_on(void) {
     if (hub_display_init) {
         return;
     }
-    mp_hal_pin_output(pin_A15);
-    mp_hal_pin_low(pin_A15);
+    mp_hal_pin_output(pyb_pin_TLC_LAT);
+    mp_hal_pin_low(pyb_pin_TLC_LAT);
     hub_display_spi_init();
     for (int i = 0; i < 2; ++i) {
         hub_display_latch_ctrl(0xff, 0, 0x1fffff, 0x11);
@@ -171,10 +171,10 @@ void hub_display_off(void) {
     __HAL_RCC_SPI1_CLK_DISABLE();
     __HAL_RCC_SPI1_FORCE_RESET();
     __HAL_RCC_SPI1_RELEASE_RESET();
-    mp_hal_pin_config(pin_A5, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
-    mp_hal_pin_config(pin_A6, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
-    mp_hal_pin_config(pin_A7, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
-    mp_hal_pin_config(pin_A15, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
-    mp_hal_pin_config(pin_B15, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pyb_pin_TLC_SCLK, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pyb_pin_TLC_SOUT, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pyb_pin_TLC_SIN, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pyb_pin_TLC_LAT, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pyb_pin_TLC_GS_CLK, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
     hub_display_init = false;
 }

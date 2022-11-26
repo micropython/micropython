@@ -27,6 +27,8 @@
 #define MICROPY_INCLUDED_ESP32_USB_H
 #include "usb_msc.h"
 
+#define MICROPY_HW_USB_CDC_TX_TIMEOUT  (500)
+
 void usb_init(void);
 void usb_tx_strn(const char *str, size_t len);
 

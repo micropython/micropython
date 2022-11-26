@@ -112,9 +112,6 @@ typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];
-
 // powerpc64 gcc doesn't seem to define these
 // These are pointers, so make them 64 bit types
 typedef long intptr_t;

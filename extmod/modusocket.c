@@ -32,10 +32,11 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
-#include "shared/netutils/netutils.h"
-#include "modnetwork.h"
 
 #if MICROPY_PY_NETWORK && MICROPY_PY_USOCKET && !MICROPY_PY_LWIP
+
+#include "shared/netutils/netutils.h"
+#include "modnetwork.h"
 
 /******************************************************************************/
 // socket class
@@ -73,8 +74,9 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     }
     s->timeout = -1;
     s->callback = MP_OBJ_NULL;
+    s->state = MOD_NETWORK_SS_NEW;
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
-    s->state = NULL;
+    s->_private = NULL;
     #endif
 
     return MP_OBJ_FROM_PTR(s);
@@ -143,6 +145,9 @@ STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
         mp_raise_OSError(_errno);
     }
 
+    // set socket state
+    self->state = MOD_NETWORK_SS_LISTENING;
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_listen_obj, 1, 2, socket_listen);
@@ -171,8 +176,9 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket2->fileno = -1;
     socket2->timeout = -1;
     socket2->callback = MP_OBJ_NULL;
+    socket2->state = MOD_NETWORK_SS_NEW;
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
-    socket2->state = NULL;
+    socket2->_private = NULL;
     #endif
 
     // accept incoming connection
@@ -212,6 +218,9 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     if (self->nic_type->connect(self, ip, port, &_errno) != 0) {
         mp_raise_OSError(_errno);
     }
+
+    // set socket state
+    self->state = MOD_NETWORK_SS_CONNECTED;
 
     return mp_const_none;
 }
@@ -288,7 +297,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
         return mp_const_empty_bytes;
     }
     vstr.len = ret;
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
@@ -339,7 +348,7 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
         tuple[0] = mp_const_empty_bytes;
     } else {
         vstr.len = ret;
-        tuple[0] = mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+        tuple[0] = mp_obj_new_bytes_from_vstr(&vstr);
     }
     tuple[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
     return mp_obj_new_tuple(2, tuple);
@@ -494,12 +503,18 @@ mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *
             self->nic_type->close(self);
             self->nic = MP_OBJ_NULL;
         }
+        self->state = MOD_NETWORK_SS_CLOSED;
         return 0;
     }
     if (self->nic == MP_OBJ_NULL) {
         if (request == MP_STREAM_POLL) {
-            // New sockets are writable and not connected.
-            return MP_STREAM_POLL_HUP | MP_STREAM_POLL_WR;
+            if (self->state == MOD_NETWORK_SS_NEW) {
+                // New sockets are writable and not connected.
+                return MP_STREAM_POLL_HUP | MP_STREAM_POLL_WR;
+            } else if (self->state == MOD_NETWORK_SS_CLOSED) {
+                // Closed socket, return invalid.
+                return MP_STREAM_POLL_NVAL;
+            }
         }
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
@@ -514,14 +529,15 @@ STATIC const mp_stream_p_t socket_stream_p = {
     .is_text = false,
 };
 
-STATIC const mp_obj_type_t socket_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_socket,
-    .print = socket_print,
-    .make_new = socket_make_new,
-    .protocol = &socket_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&socket_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    socket_type,
+    MP_QSTR_socket,
+    MP_TYPE_FLAG_NONE,
+    make_new, socket_make_new,
+    protocol, &socket_stream_p,
+    locals_dict, &socket_locals_dict,
+    print, socket_print
+    );
 
 /******************************************************************************/
 // usocket module
@@ -637,6 +653,6 @@ const mp_obj_module_t mp_module_usocket = {
     .globals = (mp_obj_dict_t *)&mp_module_usocket_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_usocket, MICROPY_PY_NETWORK && MICROPY_PY_USOCKET && !MICROPY_PY_LWIP);
+MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_usocket);
 
 #endif // MICROPY_PY_NETWORK && MICROPY_PY_USOCKET && !MICROPY_PY_LWIP

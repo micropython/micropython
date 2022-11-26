@@ -14,7 +14,11 @@ BAUD ?= 460800
 
 PYTHON ?= python3
 
-GIT_SUBMODULES = lib/berkeley-db-1.xx
+# Would be good to use cmake to discover submodules (see how rp2/Makefile does
+# it), but on ESP32 the same trick doesn't work because "idf.py build" fails
+# on berkeley-db dependency before printing out the submodule list.
+# For now just force the submodule dependencies here.
+GIT_SUBMODULES += lib/berkeley-db-1.xx lib/micropython-lib
 
 .PHONY: all clean deploy erase submodules FORCE
 
@@ -30,8 +34,10 @@ ifdef FROZEN_MANIFEST
        IDFPY_FLAGS += -D MICROPY_FROZEN_MANIFEST=$(FROZEN_MANIFEST)
 endif
 
+HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
+
 all:
-	idf.py $(IDFPY_FLAGS) build
+	idf.py $(IDFPY_FLAGS) build || (echo -e $(HELP_BUILD_ERROR); false)
 	@$(PYTHON) makeimg.py \
 		$(BUILD)/sdkconfig \
 		$(BUILD)/bootloader/bootloader.bin \
@@ -52,4 +58,4 @@ erase:
 	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) erase_flash
 
 submodules:
-	git submodule update --init $(addprefix ../../,$(GIT_SUBMODULES))
+	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$(GIT_SUBMODULES)" submodules
