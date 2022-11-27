@@ -11,30 +11,30 @@ and a detailed description of the changes can be found in
 .. table::
   :widths: 20 60 20
 
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | **Features**                                           |                                                    | **Status**   |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 573 <https://www.python.org/dev/peps/pep-0573/>`_ | Fast access to module state from methods of C      |              |
-  |                                                        | extension types                                    |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 584 <https://www.python.org/dev/peps/pep-0584/>`_ | Union operators added to dict                      |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 585 <https://www.python.org/dev/peps/pep-0584/>`_ | Type hinting generics in standard collections      |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 593 <https://www.python.org/dev/peps/pep-0593/>`_ | Flexible function and variable annotations         |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 602 <https://www.python.org/dev/peps/pep-0602/>`_ | CPython adopts an annual release cycle. Instead of |              |
-  |                                                        | annual, aiming for two month release cycle         |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 614 <https://www.python.org/dev/peps/pep-0614/>`_ | Relaxed grammar restrictions on decorators         |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 615 <https://www.python.org/dev/peps/pep-0615/>`_ | The IANA Time Zone Database is now present in the  |              |
-  |                                                        | standard library in the zoneinfo module            |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 616 <https://www.python.org/dev/peps/pep-0616/>`_ | String methods to remove prefixes and suffixes     |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 617 <https://www.python.org/dev/peps/pep-0617/>`_ | CPython now uses a new parser based on PEG         |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | **Features**                                           |                                                    | **Status**           |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 573 <https://www.python.org/dev/peps/pep-0573/>`_ | Fast access to module state from methods of C      | Not relevant         |
+  |                                                        | extension types                                    |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 584 <https://www.python.org/dev/peps/pep-0584/>`_ | Union operators added to dict                      | Complete [#pep584]_  |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 585 <https://www.python.org/dev/peps/pep-0584/>`_ | Type hinting generics in standard collections      |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 593 <https://www.python.org/dev/peps/pep-0593/>`_ | Flexible function and variable annotations         |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 602 <https://www.python.org/dev/peps/pep-0602/>`_ | CPython adopts an annual release cycle. Instead of | Not relevant         |
+  |                                                        | annual, aiming for two month release cycle         |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 614 <https://www.python.org/dev/peps/pep-0614/>`_ | Relaxed grammar restrictions on decorators         |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 615 <https://www.python.org/dev/peps/pep-0615/>`_ | The IANA Time Zone Database is now present in the  |                      |
+  |                                                        | standard library in the zoneinfo module            |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 616 <https://www.python.org/dev/peps/pep-0616/>`_ | String methods to remove prefixes and suffixes     |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 617 <https://www.python.org/dev/peps/pep-0617/>`_ | CPython now uses a new parser based on PEG         | Not relevant         |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
 
 Other Language Changes:
 
@@ -128,3 +128,7 @@ Changes to built-in modules:
   | Previously, *sys.stderr* was block-buffered when non-interactive. Now stderr defaults to always being         |               |
   | line-buffered                                                                                                 |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
+
+.. rubric:: Notes
+
+.. [#pep584] PEP 584 ``dict`` union operator is only available on MicroPython builds with ``MICROPY_CPYTHON_COMPAT`` enabled.
