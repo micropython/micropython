@@ -34,7 +34,7 @@
 
 
 static void pixelmap_set_pixel_rgbw(pixelmap_pixelmap_obj_t *self, size_t i, color_u rgbw) {
-    mp_arg_validate_index_range(i, 0, self->len, MP_QSTR_index);
+    mp_arg_validate_index_range(i, 0, self->len - 1, MP_QSTR_index);
 
     mp_obj_t item = self->items[i];
     if (mp_obj_is_small_int(item)) {
