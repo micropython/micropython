@@ -136,30 +136,12 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
-    mp_printf(&mp_plat_print, "Inside display make_new\n");
-    is_null(&circuitpython_splash);
-    //is_null(0);
-//    if(circuitpython_splash == mp_const_none) {
-//        mp_printf(&mp_plat_print, "Splash is NULL \n");
-//    }
-//    mp_printf(&mp_plat_print,  *circuitpython_splash);
-//    mp_printf(&mp_plat_print,  "\n");
-    //common_hal_displayio_display_show(self, &circuitpython_splash);
+
+    common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
     common_hal_displayio_display_set_auto_refresh(self, auto_refresh);
 }
 
-void is_null(displayio_group_t *root_group){
-    if (root_group == NULL){
-        mp_printf(&mp_plat_print,  "root_group is NULL\n");
-    }else{
-        mp_printf(&mp_plat_print, "root_group not NULL");
-    }
-}
-
 bool common_hal_displayio_display_show(displayio_display_obj_t *self, displayio_group_t *root_group) {
-    if(root_group == NULL){
-        mp_printf(&mp_plat_print,  "Its NULL inside display.show()\n");
-    }
     return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
@@ -448,7 +430,10 @@ void release_display(displayio_display_obj_t *self) {
 
 void reset_display(displayio_display_obj_t *self) {
     common_hal_displayio_display_set_auto_refresh(self, true);
-    common_hal_displayio_display_show(self, &circuitpython_splash);
+    circuitpython_splash.x = 0; // reset position in case someone moved it.
+    circuitpython_splash.y = 0;
+    supervisor_start_terminal(self->core.width, self->core.height);
+    common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
 }
 
 void displayio_display_collect_ptrs(displayio_display_obj_t *self) {
