@@ -136,7 +136,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
-
     common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
     common_hal_displayio_display_set_auto_refresh(self, auto_refresh);
 }
