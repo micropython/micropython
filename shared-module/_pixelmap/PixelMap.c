@@ -165,7 +165,7 @@ void shared_module_pixelmap_pixelmap_setitem(pixelmap_pixelmap_obj_t *self, mp_i
 }
 
 mp_obj_t shared_module_pixelmap_pixelmap_getitem(pixelmap_pixelmap_obj_t *self, mp_int_t i) {
-    mp_arg_validate_index_range(i, 0, self->len, MP_QSTR_index);
+    mp_arg_validate_index_range(i, 0, self->len - 1, MP_QSTR_index);
     mp_obj_t item = self->items[i];
     if (mp_obj_is_small_int(item)) {
         return common_hal_adafruit_pixelbuf_pixelbuf_get_pixel(self->pixelbuf, MP_OBJ_SMALL_INT_VALUE(item));
