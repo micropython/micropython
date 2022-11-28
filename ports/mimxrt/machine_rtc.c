@@ -38,7 +38,6 @@ typedef struct _machine_rtc_obj_t {
 
 // Singleton RTC object.
 STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
-uint32_t us_offset = 0;
 
 // Start the RTC Timer.
 void machine_rtc_start(void) {
@@ -83,7 +82,7 @@ STATIC mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args)
             mp_obj_new_int(srtc_date.hour),
             mp_obj_new_int(srtc_date.minute),
             mp_obj_new_int(srtc_date.second),
-            mp_obj_new_int((ticks_us64() + us_offset) % 1000000),
+            mp_obj_new_int(0),
         };
         return mp_obj_new_tuple(8, tuple);
     } else {
@@ -104,7 +103,6 @@ STATIC mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args)
         if (SNVS_LP_SRTC_SetDatetime(SNVS, &srtc_date) != kStatus_Success) {
             mp_raise_ValueError(NULL);
         }
-        us_offset = (1000000 + mp_obj_get_int(items[7]) - ticks_us64() % 1000000) % 1000000;
 
         return mp_const_none;
     }
@@ -127,7 +125,7 @@ STATIC mp_obj_t machine_rtc_now(mp_obj_t self_in) {
         mp_obj_new_int(srtc_date.hour),
         mp_obj_new_int(srtc_date.minute),
         mp_obj_new_int(srtc_date.second),
-        mp_obj_new_int((ticks_us64() + us_offset) % 1000000),
+        mp_obj_new_int(0),
         mp_const_none,
     };
     return mp_obj_new_tuple(8, tuple);
