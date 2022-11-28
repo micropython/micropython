@@ -206,6 +206,9 @@ mp_obj_t common_hal_displayio_display_get_bus(displayio_display_obj_t *self) {
 }
 
 mp_obj_t common_hal_displayio_display_get_root_group(displayio_display_obj_t *self) {
+    if (self->core.current_group == NULL) {
+        return mp_const_none;
+    }
     return self->core.current_group;
 }
 
