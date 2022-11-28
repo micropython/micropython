@@ -129,6 +129,7 @@ class Query:
         if request.status_code == 200:
             return request.json()
         else:
+            print(request.json())
             raise Exception("Query Failed: {}".format(request.status_code))
 
 
@@ -164,7 +165,7 @@ def get_commit_and_checksuite(query_commits):
     return [None, None]
 
 
-def append_runs_to_list(runs, list):
+def append_runs_to_list(runs, bad_runs_by_matrix):
     regex_matrix = re.compile("^build-[^ ]+")
     regex_board = re.compile("\([^ ]+\)$")
     for run in runs["nodes"]:
@@ -172,27 +173,32 @@ def append_runs_to_list(runs, list):
         res_matrix = regex_matrix.search(name)
         if res_matrix:
             matrix = res_matrix.group()
-            if matrix not in list:
-                list[matrix] = []
-            list[matrix].append(regex_board.search(name).group()[1:-1])
+            if matrix not in bad_runs_by_matrix:
+                bad_runs_by_matrix[matrix] = []
+            res_board = regex_board.search(name)
+            if res_board:
+                bad_runs_by_matrix[matrix].append(res_board.group()[1:-1])
 
 
-def get_bad_checkruns(query_checkruns, list={}):
-    checkruns = query_checkruns.fetch()["data"]["node"]
-    run_types = ["failed", "incomplete"]
-    paginate = False
+def get_bad_checkruns(query_checkruns):
+    more_pages = True
+    bad_runs_by_matrix = {}
+    while more_pages:
+        checkruns = query_checkruns.fetch()["data"]["node"]
+        run_types = ["failed", "incomplete"]
+        more_pages = False
 
-    for run_type in run_types:
-        run_type_camel = run_type.capitalize() + "Run"
-        run_type = run_type + "Runs"
+        for run_type in run_types:
+            run_type_camel = run_type.capitalize() + "Run"
+            run_type = run_type + "Runs"
 
-        append_runs_to_list(checkruns[run_type], list)
+            append_runs_to_list(checkruns[run_type], bad_runs_by_matrix)
 
-        if query_checkruns.paginate(checkruns[run_type]["pageInfo"], "after" + run_type_camel):
-            query_checkruns.variables["include" + run_type_camel] = True
-            paginate = True
+            if query_checkruns.paginate(checkruns[run_type]["pageInfo"], "after" + run_type_camel):
+                query_checkruns.variables["include" + run_type_camel] = True
+                more_pages = True
 
-    return get_bad_checkruns(query_checkruns, list) if paginate else list
+    return bad_runs_by_matrix
 
 
 def main():

@@ -344,38 +344,36 @@ STATIC mp_obj_t socketpool_socket_setblocking(mp_obj_t self_in, mp_obj_t blockin
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_setblocking_obj, socketpool_socket_setblocking);
 
-// //|     def setsockopt(self, level: int, optname: int, value: int) -> None:
-// //|         """Sets socket options"""
-// //|         ...
-// //|
-// STATIC mp_obj_t socketpool_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
-//     // mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+//|     def setsockopt(self, level: int, optname: int, value: int) -> None:
+//|         """Sets socket options"""
+//|         ...
+STATIC mp_obj_t socketpool_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t level = mp_obj_get_int(args[1]);
+    mp_int_t opt = mp_obj_get_int(args[2]);
 
-//     // mp_int_t level = mp_obj_get_int(args[1]);
-//     // mp_int_t opt = mp_obj_get_int(args[2]);
+    const void *optval;
+    mp_uint_t optlen;
+    mp_int_t val;
+    if (mp_obj_is_integer(args[3])) {
+        val = mp_obj_get_int_truncated(args[3]);
+        optval = &val;
+        optlen = sizeof(val);
+    } else {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
+        optval = bufinfo.buf;
+        optlen = bufinfo.len;
+    }
 
-//     // const void *optval;
-//     // mp_uint_t optlen;
-//     // mp_int_t val;
-//     // if (mp_obj_is_integer(args[3])) {
-//     //     val = mp_obj_get_int_truncated(args[3]);
-//     //     optval = &val;
-//     //     optlen = sizeof(val);
-//     // } else {
-//     //     mp_buffer_info_t bufinfo;
-//     //     mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
-//     //     optval = bufinfo.buf;
-//     //     optlen = bufinfo.len;
-//     // }
+    int _errno = common_hal_socketpool_socket_setsockopt(self, level, opt, optval, optlen);
+    if (_errno < 0) {
+        mp_raise_OSError(-_errno);
+    }
 
-//     // int _errno;
-//     // if (self->nic_type->setsockopt(self, level, opt, optval, optlen, &_errno) != 0) {
-//     //     mp_raise_OSError(_errno);
-//     // }
-
-//     return mp_const_none;
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_setsockopt_obj, 4, 4, socketpool_socket_setsockopt);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_setsockopt_obj, 4, 4, socketpool_socket_setsockopt);
 
 
 //|     def settimeout(self, value: int) -> None:
@@ -417,7 +415,7 @@ STATIC const mp_rom_map_elem_t socketpool_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sendall), MP_ROM_PTR(&socketpool_socket_sendall_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socketpool_socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socketpool_socket_setblocking_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socketpool_socket_setsockopt_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socketpool_socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&socketpool_socket_settimeout_obj) },
 };
 

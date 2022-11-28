@@ -24,18 +24,20 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <string.h>
 
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "genhdr/mpversion.h"
+#include "py/mperrno.h"
 #include "py/mpstate.h"
 #include "py/stackctrl.h"
 
 #include "shared-bindings/wifi/Radio.h"
 #include "shared-module/storage/__init__.h"
 #include "shared/timeutils/timeutils.h"
-#include "supervisor/fatfs_port.h"
+#include "supervisor/fatfs.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/reload.h"
@@ -47,8 +49,12 @@
 
 #include "shared-bindings/hashlib/__init__.h"
 #include "shared-bindings/hashlib/Hash.h"
+
+#if CIRCUITPY_MDNS
 #include "shared-bindings/mdns/RemoteService.h"
 #include "shared-bindings/mdns/Server.h"
+#endif
+
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/socketpool/__init__.h"
 #include "shared-bindings/socketpool/Socket.h"
@@ -61,11 +67,6 @@
 #if CIRCUITPY_DOTENV
 #include "shared-module/dotenv/__init__.h"
 #endif
-
-// TODO: Remove ESP specific stuff. For now, it is useful as we refine the server.
-#include "esp_log.h"
-
-static const char *TAG = "CP webserver";
 
 enum request_state {
     STATE_METHOD,
@@ -95,6 +96,7 @@ typedef struct {
     bool expect;
     bool json;
     bool websocket;
+    bool new_socket;
     uint32_t websocket_version;
     // RFC6455 for websockets says this header should be 24 base64 characters long.
     char websocket_key[24 + 1];
@@ -109,7 +111,10 @@ static uint32_t _last_ip = 0;
 static wifi_radio_error_t _last_wifi_status = WIFI_RADIO_ERROR_NONE;
 #endif
 
+#if CIRCUITPY_MDNS
 static mdns_server_obj_t mdns;
+#endif
+
 static uint32_t web_api_port = 80;
 
 static socketpool_socketpool_obj_t pool;
@@ -271,7 +276,7 @@ void supervisor_start_web_workflow(void) {
     // attempting to connect to the given network.
     _wifi_status = common_hal_wifi_radio_connect(
         &common_hal_wifi_radio_obj, (uint8_t *)ssid, ssid_len, (uint8_t *)password, password_len,
-        0, 0.1, NULL, 0);
+        0, 8, NULL, 0);
 
     if (_wifi_status != WIFI_RADIO_ERROR_NONE) {
         common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, false);
@@ -289,21 +294,20 @@ void supervisor_start_web_workflow(void) {
         new_port = strtoul(port_encoded, NULL, 10);
     }
 
-    bool first_start = mdns.base.type != &mdns_server_type;
+    bool first_start = pool.base.type != &socketpool_socketpool_type;
     bool port_changed = new_port != web_api_port;
 
     if (first_start) {
-        ESP_LOGI(TAG, "Starting web workflow");
+        #if CIRCUITPY_MDNS
         mdns_server_construct(&mdns, true);
         mdns.base.type = &mdns_server_type;
         common_hal_mdns_server_set_instance_name(&mdns, MICROPY_HW_BOARD_NAME);
+        #endif
         pool.base.type = &socketpool_socketpool_type;
         common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
 
-        listening.base.type = &socketpool_socket_type;
-        active.base.type = &socketpool_socket_type;
-        active.num = -1;
-        active.connected = false;
+        socketpool_socket_reset(&listening);
+        socketpool_socket_reset(&active);
 
         websocket_init();
     }
@@ -312,7 +316,9 @@ void supervisor_start_web_workflow(void) {
     }
     if (first_start || port_changed) {
         web_api_port = new_port;
+        #if CIRCUITPY_MDNS
         common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
+        #endif
         socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
         common_hal_socketpool_socket_settimeout(&listening, 0);
         // Bind to any ip.
@@ -326,17 +332,13 @@ void supervisor_start_web_workflow(void) {
         _api_password[api_password_len + 1] = '\0';
         _base64_in_place(_api_password, api_password_len + 1, sizeof(_api_password));
     }
-
-    // TODO:
-    // GET /edit/
-    //   - Super basic editor
     #endif
 }
 
 void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
     int total_sent = 0;
-    int sent = -EAGAIN;
-    while ((sent == -EAGAIN || (sent > 0 && total_sent < len)) &&
+    int sent = -MP_EAGAIN;
+    while ((sent == -MP_EAGAIN || (sent > 0 && total_sent < len)) &&
            common_hal_socketpool_socket_get_connected(socket)) {
         sent = socketpool_socket_send(socket, buf + total_sent, len - total_sent);
         if (sent > 0) {
@@ -346,9 +348,6 @@ void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, 
                 port_yield();
             }
         }
-    }
-    if (total_sent < len) {
-        ESP_LOGE(TAG, "short send %d %d", sent, len);
     }
 }
 
@@ -436,13 +435,15 @@ const char *ok_hosts[] = {
 
 static bool _origin_ok(const char *origin) {
     const char *http = "http://";
-    const char *local = ".local";
 
     // note: redirected requests send an Origin of "null" and will be caught by this
     if (strncmp(origin, http, strlen(http)) != 0) {
         return false;
     }
     // These are prefix checks up to : so that any port works.
+    // TODO: Support DHCP hostname in addition to MDNS.
+    #if CIRCUITPY_MDNS
+    const char *local = ".local";
     const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
     const char *end = origin + strlen(http) + strlen(hostname) + strlen(local);
     if (strncmp(origin + strlen(http), hostname, strlen(hostname)) == 0 &&
@@ -450,6 +451,9 @@ static bool _origin_ok(const char *origin) {
         (end[0] == '\0' || end[0] == ':')) {
         return true;
     }
+    #else
+    const char *end;
+    #endif
 
     _update_encoded_ip();
     end = origin + strlen(http) + strlen(_our_ip_encoded);
@@ -604,9 +608,10 @@ static void _reply_server_error(socketpool_socket_obj_t *socket, _request *reque
     _send_str(socket, "\r\n");
 }
 
+#if CIRCUITPY_MDNS
 static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, const char *path) {
     int nodelay = 1;
-    lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+    common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
     const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
     _send_strs(socket,
         "HTTP/1.1 307 Temporary Redirect\r\n",
@@ -628,6 +633,7 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, 
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
+#endif
 
 static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *request, FF_DIR *dir, const char *request_path, const char *path) {
     socketpool_socket_send(socket, (const uint8_t *)OK_JSON, strlen(OK_JSON));
@@ -710,10 +716,9 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
         while (send_offset < quantity_read) {
             int sent = socketpool_socket_send(socket, data_buffer + send_offset, quantity_read - send_offset);
             if (sent < 0) {
-                if (sent == -EAGAIN) {
+                if (sent == -MP_EAGAIN) {
                     sent = 0;
                 } else {
-                    ESP_LOGE(TAG, "file send error %d", sent);
                     break;
                 }
             }
@@ -726,15 +731,20 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
 }
 
 static void _reply_with_devices_json(socketpool_socket_obj_t *socket, _request *request) {
+    #if CIRCUITPY_MDNS
     mdns_remoteservice_obj_t found_devices[32];
     size_t total_results = mdns_server_find(&mdns, "_circuitpython", "_tcp", 1, found_devices, MP_ARRAY_SIZE(found_devices));
     size_t count = MIN(total_results, MP_ARRAY_SIZE(found_devices));
+    #else
+    size_t total_results = 0;
+    #endif
     socketpool_socket_send(socket, (const uint8_t *)OK_JSON, strlen(OK_JSON));
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
     mp_print_t _socket_print = {socket, _print_chunk};
 
     mp_printf(&_socket_print, "{\"total\": %d, \"devices\": [", total_results);
+    #if CIRCUITPY_MDNS
     for (size_t i = 0; i < count; i++) {
         if (i > 0) {
             _send_chunk(socket, ",");
@@ -751,6 +761,7 @@ static void _reply_with_devices_json(socketpool_socket_obj_t *socket, _request *
             "\"ip\": \"%d.%d.%d.%d\"}", hostname, instance_name, port, octets[0], octets[1], octets[2], octets[3]);
         common_hal_mdns_remoteservice_deinit(&found_devices[i]);
     }
+    #endif
     _send_chunk(socket, "]}");
     // Empty chunk signals the end of the response.
     _send_chunk(socket, "");
@@ -762,7 +773,11 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _send_str(socket, "\r\n");
     mp_print_t _socket_print = {socket, _print_chunk};
 
+    #if CIRCUITPY_MDNS
     const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
+    #else
+    const char *hostname = "";
+    #endif
     _update_encoded_ip();
     // Note: this leverages the fact that C concats consecutive string literals together.
     mp_printf(&_socket_print,
@@ -848,7 +863,6 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
         return;
     }
     if (result != FR_OK) {
-        ESP_LOGE(TAG, "file write error %d %s", result, path);
         override_fattime(0);
         #if CIRCUITPY_USB_MSC
         usb_msc_unlock();
@@ -888,19 +902,13 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
         size_t read_len = MIN(sizeof(bytes), request->content_length - total_read);
         int len = socketpool_socket_recv_into(socket, bytes, read_len);
         if (len < 0) {
-            if (len == -EAGAIN) {
+            if (len == -MP_EAGAIN) {
                 continue;
-            } else {
-                ESP_LOGE(TAG, "other error %d", len);
             }
             error = true;
             break;
         }
-        UINT actual;
-        f_write(&active_file, bytes, len, &actual);
-        if (actual != (UINT)len) {
-            ESP_LOGE(TAG, "didn't write whole file");
-        }
+        f_write(&active_file, bytes, len, NULL);
         total_read += len;
     }
 
@@ -934,7 +942,7 @@ STATIC_FILE(blinka_16x16_ico);
 static void _reply_static(socketpool_socket_obj_t *socket, _request *request, const uint8_t *response, size_t response_len, const char *content_type) {
     uint32_t total_length = response_len;
     char encoded_len[10];
-    snprintf(encoded_len, sizeof(encoded_len), "%d", total_length);
+    snprintf(encoded_len, sizeof(encoded_len), "%" PRIu32, total_length);
 
     _send_strs(socket,
         "HTTP/1.1 200 OK\r\n",
@@ -1004,9 +1012,10 @@ static void _decode_percents(char *str) {
 
 static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
     if (request->redirect) {
+        #if CIRCUITPY_MDNS
         _reply_redirect(socket, request, request->path);
+        #endif
     } else if (strlen(request->origin) > 0 && !_origin_ok(request->origin)) {
-        ESP_LOGE(TAG, "bad origin %s", request->origin);
         _reply_forbidden(socket, request);
     } else if (strncmp(request->path, "/fs/", 4) == 0) {
         if (strcasecmp(request->method, "OPTIONS") == 0) {
@@ -1061,7 +1070,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 if (result == FR_NO_PATH || result == FR_NO_FILE) {
                     _reply_missing(socket, request);
                 } else if (result != FR_OK) {
-                    ESP_LOGE(TAG, "rm error %d %s", result, path);
                     _reply_server_error(socket, request);
                 } else {
                     _reply_no_content(socket, request);
@@ -1089,7 +1097,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 } else if (result == FR_NO_PATH || result == FR_NO_FILE) { // Missing higher directories or target file.
                     _reply_missing(socket, request);
                 } else if (result != FR_OK) {
-                    ESP_LOGE(TAG, "move error %d %s", result, path);
                     _reply_server_error(socket, request);
                 } else {
                     _reply_created(socket, request);
@@ -1137,7 +1144,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     } else if (result == FR_NO_PATH) {
                         _reply_missing(socket, request);
                     } else if (result != FR_OK) {
-                        ESP_LOGE(TAG, "mkdir error %d %s", result, path);
                         _reply_server_error(socket, request);
                     } else {
                         _reply_created(socket, request);
@@ -1237,6 +1243,7 @@ static void _reset_request(_request *request) {
     request->redirect = false;
     request->done = false;
     request->in_progress = false;
+    request->new_socket = false;
     request->authenticated = false;
     request->expect = false;
     request->json = false;
@@ -1257,6 +1264,7 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
         if (!request->in_progress) {
             autoreload_suspend(AUTORELOAD_SUSPEND_WEB);
             request->in_progress = true;
+            request->new_socket = false;
         }
         switch (request->state) {
             case STATE_METHOD: {
@@ -1276,7 +1284,6 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                 if (c == ' ') {
                     request->path[request->offset] = '\0';
                     request->offset = 0;
-                    ESP_LOGI(TAG, "Request %s %s", request->method, request->path);
                     request->state = STATE_VERSION;
                 } else if (request->offset > sizeof(request->path) - 1) {
                     // Skip methods that are too long.
@@ -1352,7 +1359,6 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                     } else if (strcasecmp(request->header_key, "X-Destination") == 0) {
                         strcpy(request->destination, request->header_value);
                     }
-                    ESP_LOGI(TAG, "Header %s %s", request->header_key, request->header_value);
                 } else if (request->offset > sizeof(request->header_value) - 1) {
                     // Skip methods that are too long.
                 } else {
@@ -1369,8 +1375,9 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     }
     if (error) {
         const char *error_response = "HTTP/1.1 501 Not Implemented\r\n\r\n";
+
         int nodelay = 1;
-        lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+        common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
         socketpool_socket_send(socket, (const uint8_t *)error_response, strlen(error_response));
     }
     if (!request->done) {
@@ -1386,43 +1393,36 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
 
 
 void supervisor_web_workflow_background(void) {
-    // Otherwise, see if we have another socket to accept.
-    if ((!common_hal_socketpool_socket_get_connected(&active) || !active_request.in_progress) &&
-        !common_hal_socketpool_socket_get_closed(&listening) &&
-        listening.num > 0) {
-        uint32_t ip;
-        uint32_t port;
-        int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port);
-        if (newsoc == -EBADF) {
-            common_hal_socketpool_socket_close(&listening);
-            return;
-        }
-        if (newsoc > 0) {
-            // Close the active socket because we have another we accepted.
-            if (!common_hal_socketpool_socket_get_closed(&active)) {
-                common_hal_socketpool_socket_close(&active);
-            }
-            // TODO: Don't do this because it uses the private struct layout.
-            // Create the socket
-            active.num = newsoc;
-            active.pool = &pool;
-            active.connected = true;
-
-            common_hal_socketpool_socket_settimeout(&active, 0);
-
-            _reset_request(&active_request);
-
-            lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
-        }
-    }
-
-    // If we have a request in progress, continue working on it.
+    // If we have a request in progress, continue working on it. Do this first
+    // so that we can accept another socket after finishing this request.
     if (common_hal_socketpool_socket_get_connected(&active)) {
         _process_request(&active, &active_request);
     } else {
         // Close the active socket if it is no longer connected.
         common_hal_socketpool_socket_close(&active);
     }
+
+    // Otherwise, see if we have another socket to accept.
+    if ((!common_hal_socketpool_socket_get_connected(&active) ||
+         (!active_request.in_progress && !active_request.new_socket)) &&
+        !common_hal_socketpool_socket_get_closed(&listening)) {
+        uint32_t ip;
+        uint32_t port;
+        int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port, &active);
+        if (newsoc == -EBADF) {
+            common_hal_socketpool_socket_close(&listening);
+            return;
+        }
+        if (newsoc > 0) {
+            common_hal_socketpool_socket_settimeout(&active, 0);
+
+            _reset_request(&active_request);
+            // Mark new sockets, otherwise we may accept another before the first
+            // could start its request.
+            active_request.new_socket = true;
+        }
+    }
+
 
     websocket_background();
 }
