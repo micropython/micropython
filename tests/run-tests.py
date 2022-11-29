@@ -30,9 +30,11 @@ def base_path(*p):
 # to the correct executable.
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", base_path("../ports/windows/micropython.exe"))
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", base_path("../ports/windows/build-standard/micropython.exe")
+    )
     # mpy-cross is only needed if --via-mpy command-line arg is passed
-    MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/mpy-cross.exe"))
+    MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/build/mpy-cross.exe"))
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
     MICROPYTHON = os.getenv(

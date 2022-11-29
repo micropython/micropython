@@ -27,7 +27,9 @@ import pyboard
 
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3.exe")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", test_dir + "/../ports/windows/micropython.exe")
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", test_dir + "/../ports/windows/build-standard/micropython.exe"
+    )
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
     MICROPYTHON = os.getenv(
