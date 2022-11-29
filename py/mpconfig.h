@@ -1313,7 +1313,7 @@ typedef double mp_float_t;
 
 // Whether to provide "micropython" module
 #ifndef MICROPY_PY_MICROPYTHON
-#define MICROPY_PY_MICROPYTHON (1)
+#define MICROPY_PY_MICROPYTHON (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to provide "gc" module
