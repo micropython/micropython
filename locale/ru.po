@@ -79,7 +79,8 @@ msgstr "%02X"
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
-msgstr "%d адресных пинов, %d rgb пинов и %d тайлов указывают высоту %d а не %d"
+msgstr ""
+"%d адресных пинов, %d rgb пинов и %d тайлов указывают высоту %d а не %d"
 
 #: ports/atmel-samd/common-hal/alarm/__init__.c
 #: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
@@ -116,7 +117,7 @@ msgstr "%q сбой: %d"
 msgid "%q in use"
 msgstr "%q используется"
 
-#: py/obj.c py/objstr.c py/objstrunicode.c
+#: py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "Индекс %q вне диапазона"
 
@@ -181,7 +182,7 @@ msgstr "%q должно быть строкой"
 msgid "%q must be an int"
 msgstr "%q должно быть int"
 
-#: py/argcheck.c
+#: py/argcheck.c py/obj.c
 msgid "%q must be of type %q"
 msgstr "%q должно быть типа %q"
 
@@ -1467,7 +1468,7 @@ msgid "No DMA pacing timer found"
 msgstr ""
 
 #: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "No I2C device at address: 0x%x"
 msgstr "Не найдено устройство I2C по адресу: %x"
 
@@ -1721,6 +1722,10 @@ msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/mdns/Server.c
+msgid "Out of MDNS service slots"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
@@ -2259,6 +2264,7 @@ msgid "Unable to read color palette data"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr ""
 
@@ -3220,7 +3226,7 @@ msgid "index is out of bounds"
 msgstr ""
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr ""
@@ -3472,10 +3478,12 @@ msgid "loopback + silent mode not supported by peripheral"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
 msgstr ""
 

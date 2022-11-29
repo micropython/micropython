@@ -117,7 +117,7 @@ msgstr "%q Shībài: %d"
 msgid "%q in use"
 msgstr "%q zhèngzài bèi shǐyòng"
 
-#: py/obj.c py/objstr.c py/objstrunicode.c
+#: py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "%q suǒyǐn chāochū fànwéi"
 
@@ -183,7 +183,7 @@ msgstr "%q bìxū shì yí gè zì fú chuàn"
 msgid "%q must be an int"
 msgstr "%q bìxū shì zhěng xíng"
 
-#: py/argcheck.c
+#: py/argcheck.c py/obj.c
 msgid "%q must be of type %q"
 msgstr "%q bì xū shì %q lèi xíng"
 
@@ -1698,6 +1698,10 @@ msgstr "bù zhī chí cāo zuò huò gōng néng"
 msgid "Operation timed out"
 msgstr "cāo zuò yǐ fēn shí"
 
+#: ports/raspberrypi/common-hal/mdns/Server.c
+msgid "Out of MDNS service slots"
+msgstr ""
+
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "nèi cún bù zú"
@@ -2243,6 +2247,7 @@ msgid "Unable to read color palette data"
 msgstr "Wúfǎ dúqǔ tiáosèbǎn shùjù"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr "wú fǎ qǐ dòng mDNS chá xún"
 
@@ -3222,7 +3227,7 @@ msgid "index is out of bounds"
 msgstr "suǒyǐn chāochū fànwéi"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "suǒyǐn chāochū fànwéi"
@@ -3475,10 +3480,12 @@ msgid "loopback + silent mode not supported by peripheral"
 msgstr "Wài shè bù zhī chí huán huí + jìng yīn mó shì"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
 msgstr "mDNS yǐ chū shǐ huà"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
 msgstr "mDNS jǐn shì yòng yú nèi zhì wú xiàn wǎng luò"
 
