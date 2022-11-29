@@ -1311,6 +1311,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_CMATH (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to provide "micropython" module
+#ifndef MICROPY_PY_MICROPYTHON
+#define MICROPY_PY_MICROPYTHON (1)
+#endif
+
 // Whether to provide "gc" module
 #ifndef MICROPY_PY_GC
 #define MICROPY_PY_GC (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
