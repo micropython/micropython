@@ -47,6 +47,7 @@ SRC_SDK_CYW43 := \
 
 SRC_LWIP := \
 	shared/netutils/netutils.c \
+	$(wildcard lib/lwip/src/apps/mdns/*.c) \
 	$(wildcard lib/lwip/src/core/*.c) \
 	$(wildcard lib/lwip/src/core/ipv4/*.c) \
 	lib/lwip/src/netif/ethernet.c \

@@ -54,6 +54,14 @@
 #define LWIP_DHCP_DOES_ACD_CHECK    0
 #define SO_REUSE                    1
 
+#if CIRCUITPY_MDNS
+#define LWIP_IGMP                   1
+#define LWIP_MDNS_RESPONDER         1
+#define LWIP_NUM_NETIF_CLIENT_DATA  1
+#define LWIP_NETIF_EXT_STATUS_CALLBACK 1
+#define MDNS_MAX_SECONDARY_HOSTNAMES 1
+#endif
+
 #ifndef NDEBUG
 #define LWIP_DEBUG                  1
 #define LWIP_STATS                  1
@@ -88,6 +96,7 @@
 #define PPP_DEBUG                   LWIP_DBG_OFF
 #define SLIP_DEBUG                  LWIP_DBG_OFF
 #define DHCP_DEBUG                  LWIP_DBG_OFF
+#define MDNS_DEBUG                  LWIP_DBG_OFF
 
 #define LWIP_TIMEVAL_PRIVATE 0
 

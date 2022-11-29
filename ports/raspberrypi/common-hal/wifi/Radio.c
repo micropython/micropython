@@ -42,10 +42,6 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/ipaddress/__init__.h"
 
-#if CIRCUITPY_MDNS
-#include "components/mdns/include/mdns.h"
-#endif
-
 #include "lwip/sys.h"
 #include "lwip/dns.h"
 #include "lwip/icmp.h"
@@ -93,6 +89,10 @@ void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *host
     memcpy(self->hostname, hostname, strlen(hostname));
     netif_set_hostname(NETIF_STA, self->hostname);
     netif_set_hostname(NETIF_AP, self->hostname);
+}
+
+void wifi_radio_get_mac_address(wifi_radio_obj_t *self, uint8_t *mac) {
+    memcpy(mac, cyw43_state.mac, MAC_ADDRESS_LENGTH);
 }
 
 mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
