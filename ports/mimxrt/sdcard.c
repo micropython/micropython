@@ -360,7 +360,8 @@ static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handl
     status = kStatus_Timeout;
     for (int i = 0; i < timeout_ms * 100; i++) {
         // Wait until Data0 is low any more. Low indicates "Busy".
-        if ((transfer->data->txData == NULL) || (USDHC_GetPresentStatusFlags(base) & (uint32_t)kUSDHC_Data0LineLevelFlag) != 0) {
+        if (((transfer->data->txData == NULL) && (transfer->data->rxData == NULL)) ||
+            (USDHC_GetPresentStatusFlags(base) & (uint32_t)kUSDHC_Data0LineLevelFlag) != 0) {
             // Not busy anymore or no TX-Data
             status = USDHC_TransferBlocking(base, &dma_config, transfer);
             if (status != kStatus_Success) {
