@@ -115,7 +115,7 @@ msgstr "%q falha: %d"
 msgid "%q in use"
 msgstr "%q em uso"
 
-#: py/obj.c py/objstr.c py/objstrunicode.c
+#: py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "O índice %q está fora do intervalo"
 
@@ -180,7 +180,7 @@ msgstr "%q deve ser uma string"
 msgid "%q must be an int"
 msgstr "%q deve ser um inteiro"
 
-#: py/argcheck.c
+#: py/argcheck.c py/obj.c
 msgid "%q must be of type %q"
 msgstr "%q deve ser do tipo %q"
 
@@ -1709,6 +1709,10 @@ msgstr "A operação ou o recurso não é suportado"
 msgid "Operation timed out"
 msgstr "A operação expirou"
 
+#: ports/raspberrypi/common-hal/mdns/Server.c
+msgid "Out of MDNS service slots"
+msgstr ""
+
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "Sem memória"
@@ -2262,6 +2266,7 @@ msgid "Unable to read color palette data"
 msgstr "Não foi possível ler os dados da paleta de cores"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr "Não é possível iniciar a consulta mDNS"
 
@@ -3247,7 +3252,7 @@ msgid "index is out of bounds"
 msgstr "o índice está fora dos limites"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "Índice fora do intervalo"
@@ -3503,10 +3508,12 @@ msgid "loopback + silent mode not supported by peripheral"
 msgstr "o loopback + o modo silencioso não é suportado pelo periférico"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
 msgstr "O mDNS já foi inicializado"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
 msgstr "O mDNS só funciona com WiFi integrado"
 

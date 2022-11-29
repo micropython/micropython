@@ -114,7 +114,7 @@ msgstr "%q Fehler: %d"
 msgid "%q in use"
 msgstr "%q in Benutzung"
 
-#: py/obj.c py/objstr.c py/objstrunicode.c
+#: py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "Der Index %q befindet sich außerhalb des Bereiches"
 
@@ -180,7 +180,7 @@ msgstr "%q muss ein String sein"
 msgid "%q must be an int"
 msgstr "%q muss vom Typ Integer sein"
 
-#: py/argcheck.c
+#: py/argcheck.c py/obj.c
 msgid "%q must be of type %q"
 msgstr "%q muss vom Type %q sein"
 
@@ -1700,6 +1700,10 @@ msgstr "Vorgang oder Funktion wird nicht unterstützt"
 msgid "Operation timed out"
 msgstr "Zeit für Vorgang abgelaufen"
 
+#: ports/raspberrypi/common-hal/mdns/Server.c
+msgid "Out of MDNS service slots"
+msgstr ""
+
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "Kein Speicher mehr verfügbar"
@@ -2249,6 +2253,7 @@ msgid "Unable to read color palette data"
 msgstr "Konnte Farbpalettendaten nicht lesen"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr "mDNS-Abfrage kann nicht gestartet werden"
 
@@ -3242,7 +3247,7 @@ msgid "index is out of bounds"
 msgstr "Index ist außerhalb der Grenzen"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index außerhalb der Reichweite"
@@ -3500,10 +3505,12 @@ msgid "loopback + silent mode not supported by peripheral"
 msgstr "Loopback + Silent Mode wird vom Peripheriegerät nicht unterstützt"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
 msgstr "mDNS bereits initialisiert"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
 msgstr "mDNS funktioniert nur mit integriertem WiFi"
 
