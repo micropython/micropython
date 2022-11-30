@@ -31,10 +31,6 @@
 #define DHCPS_BASE_IP (16)
 #define DHCPS_MAX_IP (8)
 
-#ifndef DHCP_DEBUG
-#define DHCP_DEBUG    LWIP_DBG_ON
-#endif
-
 typedef struct _dhcp_server_lease_t {
     uint8_t mac[6];
     uint16_t expiry;

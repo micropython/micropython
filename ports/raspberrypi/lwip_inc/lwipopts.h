@@ -95,6 +95,7 @@
 #define TCPIP_DEBUG                 LWIP_DBG_OFF
 #define PPP_DEBUG                   LWIP_DBG_OFF
 #define SLIP_DEBUG                  LWIP_DBG_OFF
+#define DHCP_DEBUG                  LWIP_DBG_OFF
 #define MDNS_DEBUG                  LWIP_DBG_OFF
 
 #define LWIP_TIMEVAL_PRIVATE 0
