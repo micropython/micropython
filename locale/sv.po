@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-11-30 16:14+0000\n"
+"PO-Revision-Date: 2022-11-30 20:18+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -913,6 +913,7 @@ msgstr "Drivläge används inte när riktning är input."
 #: py/obj.c
 msgid "During handling of the above exception, another exception occurred:"
 msgstr ""
+"Under hanteringen av ovanstående undantag inträffade ett annat undantag:"
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
@@ -2056,7 +2057,7 @@ msgstr ""
 
 #: py/obj.c
 msgid "The above exception was the direct cause of the following exception:"
-msgstr ""
+msgstr "Ovanstående undantag var den direkta orsaken till följande undantag:"
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
