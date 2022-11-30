@@ -186,7 +186,7 @@ msgstr "%q должно быть int"
 msgid "%q must be of type %q"
 msgstr "%q должно быть типа %q"
 
-#: shared-bindings/digitalio/Pull.c
+#: py/objexcept.c shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or None"
 msgstr "%q должно быть типа %q или None"
 
@@ -924,6 +924,10 @@ msgstr "Выполнено"
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "Drive mode не используется, когда направление является входным."
+
+#: py/obj.c
+msgid "During handling of the above exception, another exception occurred:"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
@@ -2075,6 +2079,10 @@ msgstr ""
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode."
+msgstr ""
+
+#: py/obj.c
+msgid "The above exception was the direct cause of the following exception:"
 msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
@@ -3407,10 +3415,6 @@ msgstr ""
 
 #: py/parsenum.c
 msgid "invalid syntax for number"
-msgstr ""
-
-#: py/objexcept.c
-msgid "invalid traceback"
 msgstr ""
 
 #: py/objtype.c

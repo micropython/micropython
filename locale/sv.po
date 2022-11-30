@@ -185,7 +185,7 @@ msgstr "%q måste vara en int"
 msgid "%q must be of type %q"
 msgstr "%q måste vara av typen %q"
 
-#: shared-bindings/digitalio/Pull.c
+#: py/objexcept.c shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or None"
 msgstr "%q måste vara av typen %q eller None"
 
@@ -909,6 +909,10 @@ msgstr "Klar"
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "Drivläge används inte när riktning är input."
+
+#: py/obj.c
+msgid "During handling of the above exception, another exception occurred:"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
@@ -2049,6 +2053,10 @@ msgid ""
 msgstr ""
 "Modulen `microcontroller` användes för att starta upp i felsäkert läge. "
 "Tryck på reset för att avsluta felsäkert läget."
+
+#: py/obj.c
+msgid "The above exception was the direct cause of the following exception:"
+msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
@@ -3403,10 +3411,6 @@ msgstr "ogiltig syntax för heltal med bas %d"
 msgid "invalid syntax for number"
 msgstr "ogiltig syntax för tal"
 
-#: py/objexcept.c
-msgid "invalid traceback"
-msgstr "Ogilitig källspårning"
-
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr "issubclass() arg 1 måste vara en klass"
@@ -4405,6 +4409,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "invalid traceback"
+#~ msgstr "Ogilitig källspårning"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "Indexet %q måste vara ett heltal, inte %s"

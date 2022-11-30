@@ -184,7 +184,7 @@ msgstr "%q muss vom Typ Integer sein"
 msgid "%q must be of type %q"
 msgstr "%q muss vom Type %q sein"
 
-#: shared-bindings/digitalio/Pull.c
+#: py/objexcept.c shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or None"
 msgstr "%q muss vom Type %q oder None sein"
 
@@ -912,6 +912,10 @@ msgstr "Fertig"
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "Drive mode wird nicht verwendet, wenn die Richtung input ist."
+
+#: py/obj.c
+msgid "During handling of the above exception, another exception occurred:"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
@@ -2057,6 +2061,10 @@ msgid ""
 msgstr ""
 "Das Modul `microcontroller` wurde zum Booten in den abgesicherten Modus "
 "verwendet. Drücke Reset, um den abgesicherten Modus zu verlassen."
+
+#: py/obj.c
+msgid "The above exception was the direct cause of the following exception:"
+msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
@@ -3430,10 +3438,6 @@ msgstr "ungültige Syntax für integer mit Basis %d"
 msgid "invalid syntax for number"
 msgstr "ungültige Syntax für number"
 
-#: py/objexcept.c
-msgid "invalid traceback"
-msgstr "ungültiger Traceback"
-
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr "issubclass() arg 1 muss eine Klasse sein"
@@ -4441,6 +4445,9 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "invalid traceback"
+#~ msgstr "ungültiger Traceback"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "%q Indizes müssen Integer sein, nicht %s"

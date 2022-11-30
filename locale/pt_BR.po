@@ -184,7 +184,7 @@ msgstr "%q deve ser um inteiro"
 msgid "%q must be of type %q"
 msgstr "%q deve ser do tipo %q"
 
-#: shared-bindings/digitalio/Pull.c
+#: py/objexcept.c shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or None"
 msgstr "%q deve ser do tipo %q ou nenhum"
 
@@ -920,6 +920,10 @@ msgstr "Feito"
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "O modo do controlador não é usado quando a direção for inserida."
+
+#: py/obj.c
+msgid "During handling of the above exception, another exception occurred:"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
@@ -2071,6 +2075,10 @@ msgid ""
 msgstr ""
 "O módulo `microcontrolador` foi utilizado para iniciar em modo seguro. "
 "Pressione reset para encerrar do modo de segurança."
+
+#: py/obj.c
+msgid "The above exception was the direct cause of the following exception:"
+msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
@@ -3436,10 +3444,6 @@ msgstr "sintaxe inválida para o número inteiro com base %d"
 msgid "invalid syntax for number"
 msgstr "sintaxe inválida para o número"
 
-#: py/objexcept.c
-msgid "invalid traceback"
-msgstr "rastreamento inválido"
-
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr "issubclass() arg 1 deve ser uma classe"
@@ -4444,6 +4448,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "invalid traceback"
+#~ msgstr "rastreamento inválido"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "Os índices %q devem ser inteiros, e não %s"
