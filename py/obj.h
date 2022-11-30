@@ -791,7 +791,9 @@ extern const struct _mp_obj_dict_t mp_const_empty_dict_obj;
 extern const struct _mp_obj_traceback_t mp_const_empty_traceback_obj;
 extern const struct _mp_obj_singleton_t mp_const_ellipsis_obj;
 extern const struct _mp_obj_singleton_t mp_const_notimplemented_obj;
-extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
+#if MICROPY_CONST_GENERATOREXIT_OBJ
+extern const struct _mp_obj_exception_t mp_static_GeneratorExit_obj;
+#endif
 
 // Fixed empty map. Useful when calling keyword-receiving functions
 // without any keywords from C, etc.
