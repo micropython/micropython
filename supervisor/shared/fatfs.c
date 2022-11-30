@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,19 @@
  * THE SOFTWARE.
  */
 
-#include "py/mphal.h"
+#include "supervisor/fatfs.h"
+
 #include "py/runtime.h"
-#include "lib/oofatfs/ff.h"        /* FatFs lower layer API */
-#include "lib/oofatfs/diskio.h"    /* FatFs lower layer API */
+#include "lib/oofatfs/ff.h"
 #include "shared/timeutils/timeutils.h"
-
-#if CIRCUITPY_RTC
 #include "shared-bindings/rtc/RTC.h"
-#endif
+#include "shared-bindings/time/__init__.h"
 
+DWORD _time_override = 0;
 DWORD get_fattime(void) {
+    if (_time_override > 0) {
+        return _time_override;
+    }
     #if CIRCUITPY_RTC
     timeutils_struct_time_t tm;
     common_hal_rtc_get_time(&tm);
@@ -43,6 +45,8 @@ DWORD get_fattime(void) {
     #else
     return ((2016 - 1980) << 25) | ((9) << 21) | ((1) << 16) | ((16) << 11) | ((43) << 5) | (35 / 2);
     #endif
+}
 
-
+void override_fattime(DWORD time) {
+    _time_override = time;
 }

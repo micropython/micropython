@@ -42,10 +42,6 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/ipaddress/__init__.h"
 
-#if CIRCUITPY_MDNS
-#include "components/mdns/include/mdns.h"
-#endif
-
 #include "lwip/sys.h"
 #include "lwip/dns.h"
 #include "lwip/icmp.h"
@@ -73,13 +69,12 @@ NORETURN static void ro_attribute(int attr) {
 }
 
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
-    return true;
+    return self->enabled;
 }
 
 void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
-    if (!enabled) {
-        ro_attribute(MP_QSTR_enabled);
-    }
+    self->enabled = enabled;
+    // TODO: Actually enable and disable the WiFi module at this point.
 }
 
 mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self) {
@@ -94,6 +89,10 @@ void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *host
     memcpy(self->hostname, hostname, strlen(hostname));
     netif_set_hostname(NETIF_STA, self->hostname);
     netif_set_hostname(NETIF_AP, self->hostname);
+}
+
+void wifi_radio_get_mac_address(wifi_radio_obj_t *self, uint8_t *mac) {
+    memcpy(mac, cyw43_state.mac, MAC_ADDRESS_LENGTH);
 }
 
 mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
@@ -280,6 +279,13 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self) {
         return mp_const_none;
     }
     return common_hal_ipaddress_new_ipv4address(NETIF_AP->netmask.addr);
+}
+
+uint32_t wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
+        return 0;
+    }
+    return NETIF_STA->ip_addr.addr;
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {

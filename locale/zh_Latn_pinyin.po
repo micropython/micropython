@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-11-15 04:35+0000\n"
-"Last-Translator: River Wang <urfdvw@gmail.com>\n"
+"PO-Revision-Date: 2022-11-19 18:48+0000\n"
+"Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
 "MIME-Version: 1.0\n"
@@ -72,7 +72,7 @@ msgstr "%%c xūyào zhěngshù huòzhě zìfú"
 #: main.c
 #, c-format
 msgid "%02X"
-msgstr ""
+msgstr "%02X"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -117,7 +117,7 @@ msgstr "%q Shībài: %d"
 msgid "%q in use"
 msgstr "%q zhèngzài bèi shǐyòng"
 
-#: py/obj.c py/objstr.c py/objstrunicode.c
+#: py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "%q suǒyǐn chāochū fànwéi"
 
@@ -183,7 +183,7 @@ msgstr "%q bìxū shì yí gè zì fú chuàn"
 msgid "%q must be an int"
 msgstr "%q bìxū shì zhěng xíng"
 
-#: py/argcheck.c
+#: py/argcheck.c py/obj.c
 msgid "%q must be of type %q"
 msgstr "%q bì xū shì %q lèi xíng"
 
@@ -741,9 +741,8 @@ msgid "Cannot get temperature"
 msgstr "Wúfǎ huòqǔ wēndù"
 
 #: shared-bindings/_bleio/Adapter.c
-#, fuzzy
 msgid "Cannot have scan responses for extended, connectable advertisements."
-msgstr "Nín wúfǎ sǎomiáo kuòzhǎn de, kě liánjiē de guǎnggào."
+msgstr "Quē fá duì tuī guǎng, kě lián jiē guǎng gào de dá fù."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
@@ -794,7 +793,7 @@ msgstr "wúfǎ shǐyòng biānyuán huànxǐng, zhǐnéng shǐyòng diànpíng"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
-msgstr "wúfǎ shǐyòng biānyuán huànxǐng. zhǐnéng shǐyòng diànpíng"
+msgstr "wúfǎ shǐyòng biānyuán huànxǐng. zhǐnéng shǐyòng diànpíng."
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -864,9 +863,8 @@ msgstr "DAC zhèngzài bèi shǐyòng"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
-#, fuzzy
 msgid "Data 0 pin must be byte aligned"
-msgstr "Shùjù 0 de yǐn jiǎo bìxū shì zì jié duìqí"
+msgstr "shù jù 0 yǐn jiǎo bì xū shì zì jié duì qí de"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -874,9 +872,8 @@ msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy
 msgid "Data not supported with directed advertising"
-msgstr "bù zhī chí dìng xiàng guǎng gào de shù jù"
+msgstr "wèi xiàng guǎng gào tí gòng zhī zhù de shù jù"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1701,6 +1698,10 @@ msgstr "bù zhī chí cāo zuò huò gōng néng"
 msgid "Operation timed out"
 msgstr "cāo zuò yǐ fēn shí"
 
+#: ports/raspberrypi/common-hal/mdns/Server.c
+msgid "Out of MDNS service slots"
+msgstr ""
+
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "nèi cún bù zú"
@@ -2186,7 +2187,7 @@ msgstr "UART xiě rù"
 
 #: main.c
 msgid "UID:"
-msgstr ""
+msgstr "UID:"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
@@ -2246,6 +2247,7 @@ msgid "Unable to read color palette data"
 msgstr "Wúfǎ dúqǔ tiáosèbǎn shùjù"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr "wú fǎ qǐ dòng mDNS chá xún"
 
@@ -3225,7 +3227,7 @@ msgid "index is out of bounds"
 msgstr "suǒyǐn chāochū fànwéi"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "suǒyǐn chāochū fànwéi"
@@ -3478,10 +3480,12 @@ msgid "loopback + silent mode not supported by peripheral"
 msgstr "Wài shè bù zhī chí huán huí + jìng yīn mó shì"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
 msgstr "mDNS yǐ chū shǐ huà"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
 msgstr "mDNS jǐn shì yòng yú nèi zhì wú xiàn wǎng luò"
 

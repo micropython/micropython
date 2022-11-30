@@ -183,6 +183,15 @@
 #define TRACE_TICK(current_ip, current_sp, is_exception)
 #endif // MICROPY_PY_SYS_SETTRACE
 
+STATIC mp_obj_t get_active_exception(mp_exc_stack_t *exc_sp, mp_exc_stack_t *exc_stack) {
+    for (mp_exc_stack_t *e = exc_sp; e >= exc_stack; --e) {
+        if (e->prev_exc != NULL) {
+            return MP_OBJ_FROM_PTR(e->prev_exc);
+        }
+    }
+    return MP_OBJ_NULL;
+}
+
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
 // returns:
@@ -1129,13 +1138,7 @@ unwind_return:
                 ENTRY(MP_BC_RAISE_LAST): {
                     MARK_EXC_IP_SELECTIVE();
                     // search for the inner-most previous exception, to reraise it
-                    mp_obj_t obj = MP_OBJ_NULL;
-                    for (mp_exc_stack_t *e = exc_sp; e >= exc_stack; --e) {
-                        if (e->prev_exc != NULL) {
-                            obj = MP_OBJ_FROM_PTR(e->prev_exc);
-                            break;
-                        }
-                    }
+                    mp_obj_t obj = get_active_exception(exc_sp, exc_stack);
                     if (obj == MP_OBJ_NULL) {
                         obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("no active exception to reraise"));
                     }
@@ -1145,14 +1148,30 @@ unwind_return:
                 ENTRY(MP_BC_RAISE_OBJ): {
                     MARK_EXC_IP_SELECTIVE();
                     mp_obj_t obj = mp_make_raise_obj(TOP());
+                    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+                    mp_obj_t active_exception = get_active_exception(exc_sp, exc_stack);
+                    if (active_exception != MP_OBJ_NULL) {
+                        mp_store_attr(obj, MP_QSTR___context__, active_exception);
+                    }
+                    #endif
                     RAISE(obj);
                 }
 
                 ENTRY(MP_BC_RAISE_FROM): {
                     MARK_EXC_IP_SELECTIVE();
-                    mp_warning(NULL, "exception chaining not supported");
-                    sp--; // ignore (pop) "from" argument
+                    mp_obj_t cause = POP();
                     mp_obj_t obj = mp_make_raise_obj(TOP());
+                    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+                    // search for the inner-most previous exception, to chain it
+                    mp_obj_t active_exception = get_active_exception(exc_sp, exc_stack);
+                    if (active_exception != MP_OBJ_NULL) {
+                        mp_store_attr(obj, MP_QSTR___context__, active_exception);
+                    }
+                    mp_store_attr(obj, MP_QSTR___cause__, cause);
+                    #else
+                    (void)cause;
+                    mp_warning(NULL, "exception chaining not supported");
+                    #endif
                     RAISE(obj);
                 }
 
@@ -1391,7 +1410,10 @@ unwind_loop:
             // - constant GeneratorExit object, because it's const
             // - exceptions re-raised by END_FINALLY
             // - exceptions re-raised explicitly by "raise"
-            if (nlr.ret_val != &mp_const_GeneratorExit_obj
+            if ( true
+                #if MICROPY_CONST_GENERATOREXIT_OBJ
+                && nlr.ret_val != &mp_static_GeneratorExit_obj
+                #endif
                 && *code_state->ip != MP_BC_END_FINALLY
                 && *code_state->ip != MP_BC_RAISE_LAST) {
                 const byte *ip = code_state->fun_bc->bytecode;
@@ -1434,10 +1456,19 @@ unwind_loop:
                 // catch exception and pass to byte code
                 code_state->ip = exc_sp->handler;
                 mp_obj_t *sp = MP_TAGPTR_PTR(exc_sp->val_sp);
+                #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+                mp_obj_t active_exception = get_active_exception(exc_sp, exc_stack);
+                #endif
                 // save this exception in the stack so it can be used in a reraise, if needed
                 exc_sp->prev_exc = nlr.ret_val;
+                mp_obj_t obj = MP_OBJ_FROM_PTR(nlr.ret_val);
+                #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+                if (active_exception != MP_OBJ_NULL) {
+                    mp_store_attr(obj, MP_QSTR___context__, active_exception);
+                }
+                #endif
                 // push exception object so it can be handled by bytecode
-                PUSH(MP_OBJ_FROM_PTR(nlr.ret_val));
+                PUSH(obj);
                 code_state->sp = sp;
 
             #if MICROPY_STACKLESS

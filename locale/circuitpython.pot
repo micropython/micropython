@@ -175,7 +175,7 @@ msgstr ""
 msgid "%q must be of type %q"
 msgstr ""
 
-#: shared-bindings/digitalio/Pull.c
+#: py/objexcept.c shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or None"
 msgstr ""
 
@@ -892,6 +892,10 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
+msgstr ""
+
+#: py/obj.c
+msgid "During handling of the above exception, another exception occurred:"
 msgstr ""
 
 #: shared-bindings/aesio/aes.c
@@ -1663,6 +1667,10 @@ msgstr ""
 msgid "Operation timed out"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/mdns/Server.c
+msgid "Out of MDNS service slots"
+msgstr ""
+
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr ""
@@ -2011,6 +2019,10 @@ msgid ""
 "exit safe mode."
 msgstr ""
 
+#: py/obj.c
+msgid "The above exception was the direct cause of the following exception:"
+msgstr ""
+
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
 msgstr ""
@@ -2196,6 +2208,7 @@ msgid "Unable to read color palette data"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr ""
 
@@ -3352,10 +3365,6 @@ msgstr ""
 msgid "invalid syntax for number"
 msgstr ""
 
-#: py/objexcept.c
-msgid "invalid traceback"
-msgstr ""
-
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr ""
@@ -3421,10 +3430,12 @@ msgid "loopback + silent mode not supported by peripheral"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
 msgstr ""
 

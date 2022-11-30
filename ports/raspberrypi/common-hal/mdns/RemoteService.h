@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "lib/oofatfs/ff.h"
-#include "shared/timeutils/timeutils.h"
-#include "shared-bindings/rtc/RTC.h"
-#include "shared-bindings/time/__init__.h"
-#include "supervisor/fatfs_port.h"
+#pragma once
 
-DWORD _time_override = 0;
-DWORD get_fattime(void) {
-    if (_time_override > 0) {
-        return _time_override;
-    }
-    #if CIRCUITPY_RTC
-    timeutils_struct_time_t tm;
-    common_hal_rtc_get_time(&tm);
-    return ((tm.tm_year - 1980) << 25) | (tm.tm_mon << 21) | (tm.tm_mday << 16) |
-           (tm.tm_hour << 11) | (tm.tm_min << 5) | (tm.tm_sec >> 1);
-    #else
-    return ((2016 - 1980) << 25) | ((9) << 21) | ((1) << 16) | ((16) << 11) | ((43) << 5) | (35 / 2);
-    #endif
-}
+#include "lwip/apps/mdns.h"
 
-void override_fattime(DWORD time) {
-    _time_override = time;
-}
+typedef struct {
+    mp_obj_base_t base;
+    uint32_t ipv4_address;
+    uint16_t port;
+    char protocol[5]; // RFC 6763 Section 7.2 - 4 bytes + 1 for NUL
+    char service_name[17]; // RFC 6763 Section 7.2 - 16 bytes + 1 for NUL
+    char instance_name[64]; // RFC 6763 Section 7.2 - 63 bytes + 1 for NUL
+    char hostname[64]; // RFC 6762 Appendix A - 63 bytes for label + 1 for NUL
+    mp_obj_t next;
+} mdns_remoteservice_obj_t;

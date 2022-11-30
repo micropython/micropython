@@ -74,11 +74,8 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         scale = 1;
     }
 
-    width_in_tiles = width_px / (scroll_area->tile_width * scale);
-    if (width_in_tiles < 1) {
-        width_in_tiles = 1;
-    }
-    uint16_t height_in_tiles = height_px / (scroll_area->tile_height * scale);
+    width_in_tiles = MAX(1, width_px / (scroll_area->tile_width * scale));
+    uint16_t height_in_tiles = MAX(2, height_px / (scroll_area->tile_height * scale));
 
     uint16_t total_tiles = width_in_tiles * height_in_tiles;
 
@@ -117,7 +114,6 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         status_bar->top_left_y = 0;
         status_bar->width_in_tiles = width_in_tiles;
         status_bar->height_in_tiles = 1;
-        assert(width_in_tiles > 0);
         status_bar->pixel_width = width_in_tiles * status_bar->tile_width;
         status_bar->pixel_height = status_bar->tile_height;
         status_bar->tiles = tiles;
@@ -127,8 +123,6 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         scroll_area->top_left_y = 0;
         scroll_area->width_in_tiles = width_in_tiles;
         scroll_area->height_in_tiles = height_in_tiles - 1;
-        assert(width_in_tiles > 0);
-        assert(height_in_tiles > 1);
         scroll_area->pixel_width = width_in_tiles * scroll_area->tile_width;
         scroll_area->pixel_height = (height_in_tiles - 1) * scroll_area->tile_height;
         #if CIRCUITPY_REPL_LOGO

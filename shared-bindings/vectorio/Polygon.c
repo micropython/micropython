@@ -118,6 +118,9 @@ MP_PROPERTY_GETSET(vectorio_polygon_color_index_obj,
 //|     y: int
 //|     """Y position of the 0,0 origin in the points list."""
 //|
+//|     hidden: bool
+//|     """Hide the polygon or not."""
+//|
 //|     location: Tuple[int, int]
 //|     """(X,Y) position of the 0,0 origin in the points list."""
 //|
@@ -132,6 +135,7 @@ STATIC const mp_rom_map_elem_t vectorio_polygon_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_points), MP_ROM_PTR(&vectorio_polygon_points_obj) },
     { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&vectorio_vector_shape_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&vectorio_vector_shape_y_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hidden), MP_ROM_PTR(&vectorio_vector_shape_hidden_obj) },
     { MP_ROM_QSTR(MP_QSTR_color_index), MP_ROM_PTR(&vectorio_polygon_color_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_location), MP_ROM_PTR(&vectorio_vector_shape_location_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&vectorio_vector_shape_pixel_shader_obj) },

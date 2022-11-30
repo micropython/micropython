@@ -224,6 +224,9 @@ typedef long mp_off_t;
 #ifndef MICROPY_CPYTHON_COMPAT
 #define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
 #endif
+#ifndef MICROPY_CPYTHON_EXCEPTION_CHAIN
+#define MICROPY_CPYTHON_EXCEPTION_CHAIN       (CIRCUITPY_FULL_BUILD)
+#endif
 #define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_BUILTINS_POW3)
 #define MICROPY_PY_FSTRINGS                   (1)
 #define MICROPY_MODULE_WEAK_LINKS             (0)

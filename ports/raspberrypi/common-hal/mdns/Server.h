@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include "py/mphal.h"
-#include "py/runtime.h"
-#include "lib/oofatfs/ff.h"        /* FatFs lower layer API */
-#include "lib/oofatfs/diskio.h"    /* FatFs lower layer API */
-#include "shared/timeutils/timeutils.h"
+#pragma once
 
-#if CIRCUITPY_RTC
-#include "shared-bindings/rtc/RTC.h"
-#endif
+#include "py/obj.h"
 
-DWORD get_fattime(void) {
-    #if CIRCUITPY_RTC
-    timeutils_struct_time_t tm;
-    common_hal_rtc_get_time(&tm);
-    return ((tm.tm_year - 1980) << 25) | (tm.tm_mon << 21) | (tm.tm_mday << 16) |
-           (tm.tm_hour << 11) | (tm.tm_min << 5) | (tm.tm_sec >> 1);
-    #else
-    return ((2016 - 1980) << 25) | ((9) << 21) | ((1) << 16) | ((16) << 11) | ((43) << 5) | (35 / 2);
-    #endif
+#include "lwip/apps/mdns_opts.h"
 
-
-}
+typedef struct {
+    mp_obj_base_t base;
+    const char *hostname;
+    const char *instance_name;
+    // "cpy-" "XXXXXX" "\0"
+    char default_hostname[4 + 6 + 1];
+    const char *service_type[MDNS_MAX_SERVICES];
+} mdns_server_obj_t;
