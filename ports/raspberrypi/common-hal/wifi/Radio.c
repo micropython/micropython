@@ -155,8 +155,11 @@ void common_hal_wifi_radio_start_station(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
 
-    // <strike>This is wrong</strike> This is fine.
     cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
+    // This is wrong, but without this call the state of ITF_STA is still
+    // reported as CYW43_LINK_JOIN (by wifi_link_status) and CYW43_LINK_UP
+    // (by tcpip_link_status). However since ap disconnection isn't working
+    // either, this is not an issue.
     cyw43_wifi_leave(&cyw43_state, CYW43_ITF_AP);
 
     bindings_cyw43_wifi_enforce_pm();
