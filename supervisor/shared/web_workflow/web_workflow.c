@@ -907,8 +907,13 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
             error = true;
             break;
         }
-        f_write(&active_file, bytes, len, NULL);
         total_read += len;
+        UINT actual;
+        f_write(&active_file, bytes, len, &actual);
+        if (actual < (UINT)len) {
+            error = true;
+            break;
+        }
     }
 
     f_close(&active_file);
@@ -917,7 +922,10 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
     #endif
 
     override_fattime(0);
-    if (new_file) {
+    if (error) {
+        _discard_incoming(socket, request->content_length - total_read);
+        _reply_server_error(socket, request);
+    } else if (new_file) {
         _reply_created(socket, request);
     } else {
         _reply_no_content(socket, request);
