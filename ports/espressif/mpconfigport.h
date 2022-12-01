@@ -33,6 +33,8 @@
 #define MICROPY_USE_INTERNAL_PRINTF         (0)
 #define MICROPY_PY_SYS_PLATFORM             "Espressif"
 
+#define CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY (1)
+
 #include "py/circuitpy_mpconfig.h"
 
 #if CIRCUITPY_BLEIO

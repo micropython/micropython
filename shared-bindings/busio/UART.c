@@ -155,7 +155,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
         args[ARG_receiver_buffer_size].u_int, NULL, false);
     return (mp_obj_t)self;
     #else
-    mp_raise_ValueError(translate("Invalid pins"));
+    mp_raise_NotImplementedError(NULL);
     #endif  // CIRCUITPY_BUSIO_UART
 }
 
