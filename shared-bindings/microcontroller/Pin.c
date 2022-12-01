@@ -156,9 +156,7 @@ void validate_no_duplicate_pins_2(mp_obj_t seq1, mp_obj_t seq2, qstr arg_name1, 
 // Validate every element in the list to be a free pin.
 void validate_list_is_free_pins(qstr what, const mcu_pin_obj_t **pins_out, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out) {
     mp_int_t len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq));
-    if (len > max_pins) {
-        mp_raise_ValueError_varg(translate("At most %d %q may be specified (not %d)"), max_pins, what, len);
-    }
+    mp_arg_validate_length_max(len, max_pins, what);
     *count_out = len;
     for (mp_int_t i = 0; i < len; i++) {
         pins_out[i] = validate_obj_is_free_pin(mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));

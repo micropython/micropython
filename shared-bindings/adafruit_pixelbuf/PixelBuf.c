@@ -129,9 +129,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
 }
 
 static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed) {
-    if (!mp_obj_is_str(byteorder_obj)) {
-        mp_raise_TypeError(translate("byteorder is not a string"));
-    }
+    mp_arg_validate_type_string(byteorder_obj, MP_QSTR_byteorder);
 
     size_t bo_len;
     const char *byteorder = mp_obj_str_get_data(byteorder_obj, &bo_len);

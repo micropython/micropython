@@ -282,7 +282,7 @@ msgstr "Inaasahan ng '%s' ang hangang r%d"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr "Inaasahan ng '%s' ay {r0, r1, …}"
+msgstr "Inaasahan ng '%s' ay {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
@@ -2797,7 +2797,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr "ang color buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
+msgstr "ang color buffer ay dapat bytearray o array na type 'b' or 'B'"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
@@ -3915,7 +3915,7 @@ msgstr "return annotation ay dapat na identifier"
 
 #: py/emitnative.c
 msgid "return expected '%q' but got '%q'"
-msgstr "return umasa ng '%q' pero ang nakuha ay ‘%q’"
+msgstr "return umasa ng '%q' pero ang nakuha ay '%q'"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -4625,7 +4625,7 @@ msgstr ""
 #~ "Mangyaring bisitahin ang learn.adafruit.com/category/circuitpython para "
 #~ "sa project guides.\n"
 #~ "\n"
-#~ "Para makita ang listahan ng modules, `help(“modules”)`.\n"
+#~ "Para makita ang listahan ng modules, `help(\"modules\")`.\n"
 
 #~ msgid "integer required"
 #~ msgstr "kailangan ng int"
