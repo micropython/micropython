@@ -135,7 +135,7 @@ MP_PROPERTY_GETTER(pixelmap_pixelmap_byteorder_obj,
     (mp_obj_t)&pixelmap_pixelmap_get_byteorder);
 
 //|
-//|     def fill(self, color: PixelType, /) -> None:
+//|     def fill(self, color: PixelType) -> None:
 //|         """Fill all the pixels in the map with the given color"""
 STATIC mp_obj_t pixelmap_pixelmap_fill(const mp_obj_t self_in, const mp_obj_t color) {
     pixelmap_pixelmap_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -146,7 +146,7 @@ STATIC mp_obj_t pixelmap_pixelmap_fill(const mp_obj_t self_in, const mp_obj_t co
 MP_DEFINE_CONST_FUN_OBJ_2(pixelmap_pixelmap_fill_obj, pixelmap_pixelmap_fill);
 
 //|
-//|     def indices(self, index: int, /) -> Tuple[int]:
+//|     def indices(self, index: int) -> Tuple[int]:
 //|         """Return the PixelBuf indices for a PixelMap index"""
 STATIC mp_obj_t pixelmap_pixelmap_indices(const mp_obj_t self_in, const mp_obj_t index) {
     pixelmap_pixelmap_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -157,10 +157,14 @@ STATIC mp_obj_t pixelmap_pixelmap_indices(const mp_obj_t self_in, const mp_obj_t
 MP_DEFINE_CONST_FUN_OBJ_2(pixelmap_pixelmap_indices_obj, pixelmap_pixelmap_indices);
 
 
+//|     @overload
+//|     def __getitem__(self, index: slice) -> PixelReturnSequence:
+//|         """Retrieve the value of the underlying pixels."""
+//|         ...
+//|     @overload
 //|     def __getitem__(self, index: int) -> PixelReturnType:
-//|         """Retrieve the value of one of the underlying pixels at 'index'.
-//|
-//|         Note that slices are not supported by PixelMap.__getitem__"""
+//|         """Retrieve the value of one of the underlying pixels at 'index'."""
+//|         ...
 //|     @overload
 //|     def __setitem__(self, index: slice, value: PixelSequence) -> None: ...
 //|     @overload
@@ -176,21 +180,41 @@ STATIC mp_obj_t pixelmap_pixelmap_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
     if (value == MP_OBJ_NULL) {
         // delete
         return MP_OBJ_NULL; // op not supported
-    } else if (value == MP_OBJ_SENTINEL) {
-        int index = mp_obj_get_int(index_in);
-        return shared_module_pixelmap_pixelmap_getitem(self, index);
     }
 
-    // get
     if (0) {
     #if MICROPY_PY_BUILTINS_SLICE
     } else if (mp_obj_is_type(index_in, &mp_type_slice)) {
-        shared_module_pixelmap_pixelmap_setslice(self, index_in, value);
+        mp_bound_slice_t slice;
+        mp_seq_get_fast_slice_indexes(self->len, index_in, &slice);
+        size_t slice_len;
+        if (slice.step > 0) {
+            slice_len = slice.stop - slice.start;
+        } else {
+            slice_len = 1 + slice.start - slice.stop;
+        }
+        if (slice.step > 1 || slice.step < -1) {
+            size_t step = slice.step > 0 ? slice.step : slice.step * -1;
+            slice_len = (slice_len / step) + (slice_len % step ? 1 : 0);
+        }
+
+        if (value == MP_OBJ_SENTINEL) { // Get
+            return shared_module_pixelmap_pixelmap_getslice(self, slice, slice_len);
+        } else { // Set
+            shared_module_pixelmap_pixelmap_setslice(self, value, slice, slice_len);
+            return mp_const_none;
+        }
     #endif
-    } else {
-        shared_module_pixelmap_pixelmap_setitem(self, mp_obj_get_int(index_in), value);
+    } else { // single index
+        int index = mp_obj_get_int(index_in);
+
+        if (value == MP_OBJ_SENTINEL) { // Get
+            return shared_module_pixelmap_pixelmap_getitem(self, index);
+        } else {
+            shared_module_pixelmap_pixelmap_setitem(self, mp_obj_get_int(index_in), value);
+            return mp_const_none;
+        }
     }
-    return mp_const_none;
 }
 
 //|     def __len__(self) -> int:

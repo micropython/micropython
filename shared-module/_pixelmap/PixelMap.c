@@ -34,7 +34,7 @@
 
 
 static void pixelmap_set_pixel_rgbw(pixelmap_pixelmap_obj_t *self, size_t i, color_u rgbw) {
-    mp_arg_validate_index_range(i, 0, self->len, MP_QSTR_index);
+    mp_arg_validate_index_range(i, 0, self->len - 1, MP_QSTR_index);
 
     mp_obj_t item = self->items[i];
     if (mp_obj_is_small_int(item)) {
@@ -109,20 +109,16 @@ mp_obj_t shared_module_pixelmap_pixelmap_indices(pixelmap_pixelmap_obj_t *self, 
 }
 
 #if MICROPY_PY_BUILTINS_SLICE
-void shared_module_pixelmap_pixelmap_setslice(pixelmap_pixelmap_obj_t *self, const mp_obj_t slice_in, const mp_obj_t values) {
-    mp_bound_slice_t slice;
-    mp_seq_get_fast_slice_indexes(self->len, slice_in, &slice);
-    size_t slice_len;
-    if (slice.step > 0) {
-        slice_len = slice.stop - slice.start;
-    } else {
-        slice_len = 1 + slice.start - slice.stop;
-    }
-    if (slice.step > 1 || slice.step < -1) {
-        size_t step = slice.step > 0 ? slice.step : slice.step * -1;
-        slice_len = (slice_len / step) + (slice_len % step ? 1 : 0);
-    }
 
+mp_obj_t shared_module_pixelmap_pixelmap_getslice(pixelmap_pixelmap_obj_t *self, mp_bound_slice_t slice, size_t slice_len) {
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(slice_len, NULL));
+    for (uint i = 0; i < slice_len; i++) {
+        t->items[i] = shared_module_pixelmap_pixelmap_getitem(self, i * slice.step + slice.start);
+    }
+    return MP_OBJ_FROM_PTR(t);
+}
+
+void shared_module_pixelmap_pixelmap_setslice(pixelmap_pixelmap_obj_t *self, const mp_obj_t values, mp_bound_slice_t slice, size_t slice_len) {
     size_t num_items = mp_obj_get_int(mp_obj_len(values));
     if (num_items != slice_len) {
         mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
@@ -165,7 +161,7 @@ void shared_module_pixelmap_pixelmap_setitem(pixelmap_pixelmap_obj_t *self, mp_i
 }
 
 mp_obj_t shared_module_pixelmap_pixelmap_getitem(pixelmap_pixelmap_obj_t *self, mp_int_t i) {
-    mp_arg_validate_index_range(i, 0, self->len, MP_QSTR_index);
+    mp_arg_validate_index_range(i, 0, self->len - 1, MP_QSTR_index);
     mp_obj_t item = self->items[i];
     if (mp_obj_is_small_int(item)) {
         return common_hal_adafruit_pixelbuf_pixelbuf_get_pixel(self->pixelbuf, MP_OBJ_SMALL_INT_VALUE(item));

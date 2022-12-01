@@ -37,6 +37,7 @@ bool shared_module_pixelmap_pixelmap_auto_write_get(pixelmap_pixelmap_obj_t *sel
 void shared_module_pixelmap_pixelmap_auto_write_set(pixelmap_pixelmap_obj_t *self, bool auto_write);
 void shared_module_pixelmap_pixelmap_fill(pixelmap_pixelmap_obj_t *self, const mp_obj_t color);
 mp_obj_t shared_module_pixelmap_pixelmap_indices(pixelmap_pixelmap_obj_t *self, int index);
-void shared_module_pixelmap_pixelmap_setslice(pixelmap_pixelmap_obj_t *self, const mp_obj_t slice_in, const mp_obj_t value);
+void shared_module_pixelmap_pixelmap_setslice(pixelmap_pixelmap_obj_t *self, const mp_obj_t value, mp_bound_slice_t slice, size_t slice_len);
+mp_obj_t shared_module_pixelmap_pixelmap_getslice(pixelmap_pixelmap_obj_t *self, mp_bound_slice_t slice, size_t slice_len);
 mp_obj_t shared_module_pixelmap_pixelmap_getitem(pixelmap_pixelmap_obj_t *self, mp_int_t index);
 void shared_module_pixelmap_pixelmap_setitem(pixelmap_pixelmap_obj_t *self, mp_int_t index, const mp_obj_t value);
