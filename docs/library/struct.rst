@@ -43,5 +43,5 @@ Functions
 .. function:: unpack_from(fmt, data, offset=0, /)
 
    Unpack from the *data* starting at *offset* according to the format string
-   *fmt*. *offset* may be negative to count from the end of *buffer*. The return
+   *fmt*. *offset* may be negative to count from the end of *data*. The return
    value is a tuple of the unpacked values.
