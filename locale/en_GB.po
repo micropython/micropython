@@ -185,7 +185,7 @@ msgstr ""
 msgid "%q must be of type %q"
 msgstr ""
 
-#: shared-bindings/digitalio/Pull.c
+#: py/objexcept.c shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or None"
 msgstr ""
 
@@ -907,6 +907,10 @@ msgstr ""
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "Drive mode not used when direction is input."
+
+#: py/obj.c
+msgid "During handling of the above exception, another exception occurred:"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
@@ -2038,6 +2042,10 @@ msgid ""
 msgstr ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode."
+
+#: py/obj.c
+msgid "The above exception was the direct cause of the following exception:"
+msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
@@ -3378,10 +3386,6 @@ msgstr "invalid syntax for integer with base %d"
 msgid "invalid syntax for number"
 msgstr "invalid syntax for number"
 
-#: py/objexcept.c
-msgid "invalid traceback"
-msgstr "invalid traceback"
-
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr "issubclass() arg 1 must be a class"
@@ -4376,6 +4380,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "invalid traceback"
+#~ msgstr "invalid traceback"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "%q indices must be integers, not %s"
