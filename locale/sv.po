@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-11-30 20:18+0000\n"
+"PO-Revision-Date: 2022-12-02 01:55+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -201,7 +201,7 @@ msgstr "Pinne %q ogiltig"
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
-msgstr ""
+msgstr "%q steg kan inte vara noll"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -3189,7 +3189,7 @@ msgstr "index är utanför gränserna"
 
 #: shared-bindings/adafruit_pixelbuf/PixelMap.c
 msgid "index must be tuple or int"
-msgstr ""
+msgstr "index måste vara tuple eller int"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/espressif/common-hal/pulseio/PulseIn.c
@@ -3571,7 +3571,7 @@ msgstr "negativt skiftantal"
 
 #: shared-bindings/adafruit_pixelbuf/PixelMap.c
 msgid "nested index must be int"
-msgstr ""
+msgstr "nästlat index måste vara en int"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
