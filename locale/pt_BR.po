@@ -2325,6 +2325,7 @@ msgid "Unkown error code %d"
 msgstr "Código de erro desconhecido %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelMap.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr "Quantidade inigualável de itens no RHS (%d esperado, obteve %d)."
@@ -3217,6 +3218,10 @@ msgstr "preenchimento incorreto"
 msgid "index is out of bounds"
 msgstr "o índice está fora dos limites"
 
+#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+msgid "index must be tuple or int"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
@@ -3597,6 +3602,10 @@ msgstr "potência negativa sem suporte de flutuação"
 #: py/objint_mpz.c py/runtime.c
 msgid "negative shift count"
 msgstr "contagem de turnos negativos"
+
+#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+msgid "nested index must be int"
+msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
