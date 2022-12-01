@@ -142,7 +142,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
 
 bool common_hal_displayio_display_show(displayio_display_obj_t *self, displayio_group_t *root_group) {
     if (root_group == NULL) {
-        return displayio_display_core_set_root_group(&self->core, &circuitpython_splash);
+        root_group = &circuitpython_splash;
     }
     return displayio_display_core_set_root_group(&self->core, root_group);
 }

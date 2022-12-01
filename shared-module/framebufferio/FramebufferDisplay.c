@@ -102,6 +102,9 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 }
 
 bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
+    if (root_group == NULL) {
+        root_group = &circuitpython_splash;
+    }
     return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
