@@ -129,7 +129,7 @@ msgstr "%q chūshǐhuà shībài"
 msgid "%q is %q"
 msgstr "%q shì %q"
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr "%q de chángdù bìxū shì %d"
 
@@ -144,10 +144,6 @@ msgstr "%q chángdù bìxū <= %d"
 #: py/argcheck.c
 msgid "%q length must be >= %d"
 msgstr "%q chángdù bìxū >= %d"
-
-#: shared-bindings/busio/I2C.c
-msgid "%q length must be >= 1"
-msgstr "%q cháng dù bìxū >= 1"
 
 #: py/argcheck.c
 msgid "%q must be %d"
@@ -175,15 +171,7 @@ msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 "%q bì xū shì zì jié shù zǔ huò lèi xíng wéi 'h', 'H', 'b', huò 'B' de shù zǔ"
 
-#: py/argcheck.c
-msgid "%q must be a string"
-msgstr "%q bìxū shì yí gè zì fú chuàn"
-
-#: py/argcheck.c
-msgid "%q must be an int"
-msgstr "%q bìxū shì zhěng xíng"
-
-#: py/argcheck.c py/obj.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q"
 msgstr "%q bì xū shì %q lèi xíng"
 
@@ -213,9 +201,9 @@ msgstr "%q chāochū fànwéi"
 msgid "%q pin invalid"
 msgstr "%q yǐn jiǎo wúxiào"
 
-#: shared-bindings/usb_hid/Device.c
-msgid "%q with a report ID of 0 must be of length 1"
-msgstr "bào gào ID shì 0 de %q bì xū cháng dù wéi 1"
+#: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
+msgid "%q step cannot be zero"
+msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -522,10 +510,6 @@ msgstr "Shùzǔ bìxū bāohán halfwords (type 'H')"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "shùzǔ de zhí yīnggāi shì dān'gè zìjié."
-
-#: shared-bindings/microcontroller/Pin.c
-msgid "At most %d %q may be specified (not %d)"
-msgstr "zuìduō kěyǐ zhǐdìng %d gè %q (érbúshì %d)"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -1289,10 +1273,6 @@ msgstr "Wúxiào de nèicún fǎngwèn."
 msgid "Invalid multicast MAC address"
 msgstr "wú xiào de duō bō MAC dì zhǐ"
 
-#: shared-bindings/busio/UART.c
-msgid "Invalid pins"
-msgstr "Wúxiào de yǐn jiǎo"
-
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "dà xiǎo wú xiào"
@@ -1530,11 +1510,6 @@ msgstr "Wèi zhǐdìng mì yào"
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Méiyǒu zhǎng zhěngshù zhīchí"
-
-#: shared-module/usb_hid/__init__.c
-#, c-format
-msgid "No more than %d HID devices allowed"
-msgstr "bù yǔn xǔ chāo guò %d HID shè bèi"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2606,10 +2581,6 @@ msgstr "huǎnchōng qū tài xiǎo"
 msgid "buffer too small for requested bytes"
 msgstr "huǎn chōng qū tài xiǎo, duì yú qǐng qiú de zì jié"
 
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
-msgstr "byteorder bùshì zìfú chuàn"
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr "zì jié chángdù, bùshì xiàngmù dàxiǎo de bèishù"
@@ -2651,13 +2622,9 @@ msgstr "bùnéng fēnpèi dào biǎodá shì"
 msgid "can't cancel self"
 msgstr "bù néng qǔ xiāo zì wǒ"
 
-#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "Wúfǎ jiāng %q zhuǎnhuàn wèi %q"
-
-#: py/runtime.c
-msgid "can't convert %q to int"
-msgstr "wú fǎ jiāng %q zhuǎn huàn wéi nèi zài"
 
 #: py/obj.c
 #, c-format
@@ -2846,10 +2813,6 @@ msgstr "yánsè bìxū jiè yú 0x000000 hé 0xffffff zhī jiān"
 msgid "comparison of int and uint"
 msgstr "yīn tè hé wū yīn tè de bǐ jiào"
 
-#: py/objcomplex.c
-msgid "complex division by zero"
-msgstr "fùzá de fēngé wèi 0"
-
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr "bù zhīchí fùzá de zhí"
@@ -2954,12 +2917,7 @@ msgstr "chǐ cùn bù pǐ pèi"
 msgid "div/mod not implemented for uint"
 msgstr "div/ mó zǔ wèi wéi wèi shí xiàn"
 
-#: py/objfloat.c py/objint_mpz.c
-msgid "divide by zero"
-msgstr "chú yǐ líng"
-
-#: py/modmath.c py/objint_longlong.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: py/runtime.c
 msgid "division by zero"
 msgstr "bèi líng chú"
 
@@ -3333,10 +3291,6 @@ msgstr "shūrù xiàngliàng de chángdù bìxū xiāngděng"
 msgid "inputs are not iterable"
 msgstr "shū rù bù kě yí dòng"
 
-#: py/parsenum.c
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "zhěngshù() cānshù 2 bìxū > = 2 qiě <= 36"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr "zhōng jiān wéi cháng dù xiāng děng de 1D kě yì jiāo qì dìng yì"
@@ -3474,10 +3428,6 @@ msgstr "běndì '%q' zài zhī lèixíng zhīqián shǐyòng"
 #: py/vm.c
 msgid "local variable referenced before assignment"
 msgstr "fùzhí qián yǐnyòng de júbù biànliàng"
-
-#: py/objint.c
-msgid "long int not supported in this build"
-msgstr "cǐ bǎnběn bù zhīchí zhǎng zhěngshù"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
@@ -4013,10 +3963,6 @@ msgstr "shuìmián chángdù bìxū shìfēi fùshù"
 msgid "slice step can't be zero"
 msgstr "qiēpiàn bù cháng bùnéng wéi líng"
 
-#: py/objslice.c
-msgid "slice step cannot be zero"
-msgstr "qiēpiàn bù bùnéng wéi líng"
-
 #: py/nativeglue.c
 msgid "slice unsupported"
 msgstr "qiē piàn bù shòu zhī chí"
@@ -4069,20 +4015,12 @@ msgid "start/end indices"
 msgstr "kāishǐ/jiéshù zhǐshù"
 
 #: shared-bindings/random/__init__.c
-msgid "step must be non-zero"
-msgstr "bùzhòu bìxū shìfēi líng"
-
-#: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
 msgstr "tíngzhǐ wúfǎ cóng kāishǐ zhōng zhǎodào"
 
 #: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "bù zhīchí liú cāozuò"
-
-#: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
-msgstr "zìfú chuàn suǒyǐn bìxū shì zhěngshù, ér bùshì %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -4115,10 +4053,6 @@ msgstr "JSON yǔfǎ cuòwù"
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
 msgstr "uctypes miáoshù fú zhōng de yǔfǎ cuòwù"
-
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes a 9-sequence"
-msgstr "time.struct_time() xūyào 9 xùliè"
 
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
@@ -4401,10 +4335,6 @@ msgstr "xTaskCreate shī bài"
 msgid "y value out of bounds"
 msgstr "y zhí chāochū biānjiè"
 
-#: py/objrange.c
-msgid "zero step"
-msgstr "líng bù"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi bìxū shì ndarray"
@@ -4416,6 +4346,61 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q length must be >= 1"
+#~ msgstr "%q cháng dù bìxū >= 1"
+
+#~ msgid "%q must be a string"
+#~ msgstr "%q bìxū shì yí gè zì fú chuàn"
+
+#~ msgid "%q must be an int"
+#~ msgstr "%q bìxū shì zhěng xíng"
+
+#~ msgid "%q with a report ID of 0 must be of length 1"
+#~ msgstr "bào gào ID shì 0 de %q bì xū cháng dù wéi 1"
+
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "zuìduō kěyǐ zhǐdìng %d gè %q (érbúshì %d)"
+
+#~ msgid "Invalid pins"
+#~ msgstr "Wúxiào de yǐn jiǎo"
+
+#, c-format
+#~ msgid "No more than %d HID devices allowed"
+#~ msgstr "bù yǔn xǔ chāo guò %d HID shè bèi"
+
+#~ msgid "byteorder is not a string"
+#~ msgstr "byteorder bùshì zìfú chuàn"
+
+#~ msgid "can't convert %q to int"
+#~ msgstr "wú fǎ jiāng %q zhuǎn huàn wéi nèi zài"
+
+#~ msgid "complex division by zero"
+#~ msgstr "fùzá de fēngé wèi 0"
+
+#~ msgid "divide by zero"
+#~ msgstr "chú yǐ líng"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "zhěngshù() cānshù 2 bìxū > = 2 qiě <= 36"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "cǐ bǎnběn bù zhīchí zhǎng zhěngshù"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "qiēpiàn bù bùnéng wéi líng"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "bùzhòu bìxū shìfēi líng"
+
+#~ msgid "string indices must be integers, not %q"
+#~ msgstr "zìfú chuàn suǒyǐn bìxū shì zhěngshù, ér bùshì %q"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() xūyào 9 xùliè"
+
+#~ msgid "zero step"
+#~ msgstr "líng bù"
 
 #~ msgid "invalid traceback"
 #~ msgstr "wú xiào zhuī sù"

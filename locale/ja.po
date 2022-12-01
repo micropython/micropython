@@ -123,7 +123,7 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
 
@@ -137,10 +137,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
-
-#: shared-bindings/busio/I2C.c
-msgid "%q length must be >= 1"
 msgstr ""
 
 #: py/argcheck.c
@@ -168,15 +164,7 @@ msgstr ""
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must be a string"
-msgstr ""
-
-#: py/argcheck.c
-msgid "%q must be an int"
-msgstr ""
-
-#: py/argcheck.c py/obj.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q"
 msgstr ""
 
@@ -206,8 +194,8 @@ msgstr "%q が範囲外"
 msgid "%q pin invalid"
 msgstr "%q ピンは無効"
 
-#: shared-bindings/usb_hid/Device.c
-msgid "%q with a report ID of 0 must be of length 1"
+#: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
+msgid "%q step cannot be zero"
 msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
@@ -515,10 +503,6 @@ msgstr "array のタイプは16ビット ('H') でなければなりません"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Arrayの各値は1バイトでなければなりません"
-
-#: shared-bindings/microcontroller/Pin.c
-msgid "At most %d %q may be specified (not %d)"
-msgstr "最大で %d個の %q が指定できます（%d個でなく）"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -1271,10 +1255,6 @@ msgstr "不正なメモリアクセス"
 msgid "Invalid multicast MAC address"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "Invalid pins"
-msgstr "ピンが不正"
-
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr ""
@@ -1511,11 +1491,6 @@ msgstr "キーが指定されていません"
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "long integerに対応していません"
-
-#: shared-module/usb_hid/__init__.c
-#, c-format
-msgid "No more than %d HID devices allowed"
-msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2559,10 +2534,6 @@ msgstr ""
 msgid "buffer too small for requested bytes"
 msgstr ""
 
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
-msgstr "byteorderが文字列ではありません"
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr ""
@@ -2604,13 +2575,9 @@ msgstr "式には代入できません"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "%qを%qに変換できません"
-
-#: py/runtime.c
-msgid "can't convert %q to int"
-msgstr ""
 
 #: py/obj.c
 #, c-format
@@ -2797,10 +2764,6 @@ msgstr "色は0x000000から0xffffffでなければなりません"
 msgid "comparison of int and uint"
 msgstr ""
 
-#: py/objcomplex.c
-msgid "complex division by zero"
-msgstr "複素数ゼロ除算"
-
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr ""
@@ -2905,12 +2868,7 @@ msgstr ""
 msgid "div/mod not implemented for uint"
 msgstr ""
 
-#: py/objfloat.c py/objint_mpz.c
-msgid "divide by zero"
-msgstr ""
-
-#: py/modmath.c py/objint_longlong.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: py/runtime.c
 msgid "division by zero"
 msgstr "ゼロ除算 (division by zero)"
 
@@ -3283,10 +3241,6 @@ msgstr ""
 msgid "inputs are not iterable"
 msgstr ""
 
-#: py/parsenum.c
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "int()の第2引数は2以上36以下でなければなりません"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
@@ -3423,10 +3377,6 @@ msgstr ""
 #: py/vm.c
 msgid "local variable referenced before assignment"
 msgstr ""
-
-#: py/objint.c
-msgid "long int not supported in this build"
-msgstr "このビルドはlong intに非対応"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
@@ -3964,10 +3914,6 @@ msgstr "sleepの長さは非負数でなければなりません"
 msgid "slice step can't be zero"
 msgstr "スライスのステップは0にできません"
 
-#: py/objslice.c
-msgid "slice step cannot be zero"
-msgstr ""
-
 #: py/nativeglue.c
 msgid "slice unsupported"
 msgstr ""
@@ -4017,20 +3963,12 @@ msgid "start/end indices"
 msgstr ""
 
 #: shared-bindings/random/__init__.c
-msgid "step must be non-zero"
-msgstr "stepは非ゼロ値でなければなりません"
-
-#: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
 msgstr ""
 
 #: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "ストリーム操作は非対応"
-
-#: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
-msgstr "文字列のインデクスは整数でなければなりません (%qでなく)"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -4063,10 +4001,6 @@ msgstr "JSONに構文エラーがあります"
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
 msgstr "uctypedディスクリプタの構文エラー"
-
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes a 9-sequence"
-msgstr "time.struct_time()は9要素のシーケンスを受け取ります"
 
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
@@ -4349,10 +4283,6 @@ msgstr ""
 msgid "y value out of bounds"
 msgstr "yが範囲外"
 
-#: py/objrange.c
-msgid "zero step"
-msgstr "ステップが0"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "ziはndarrayでなければなりません"
@@ -4364,6 +4294,36 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "最大で %d個の %q が指定できます（%d個でなく）"
+
+#~ msgid "Invalid pins"
+#~ msgstr "ピンが不正"
+
+#~ msgid "byteorder is not a string"
+#~ msgstr "byteorderが文字列ではありません"
+
+#~ msgid "complex division by zero"
+#~ msgstr "複素数ゼロ除算"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "int()の第2引数は2以上36以下でなければなりません"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "このビルドはlong intに非対応"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "stepは非ゼロ値でなければなりません"
+
+#~ msgid "string indices must be integers, not %q"
+#~ msgstr "文字列のインデクスは整数でなければなりません (%qでなく)"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time()は9要素のシーケンスを受け取ります"
+
+#~ msgid "zero step"
+#~ msgstr "ステップが0"
 
 #~ msgid "WatchDogTimer.timeout must be greater than 0"
 #~ msgstr "WatchDogTimer.timeoutは0以上でなければなりません"

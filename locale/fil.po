@@ -119,7 +119,7 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
 
@@ -133,10 +133,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
-
-#: shared-bindings/busio/I2C.c
-msgid "%q length must be >= 1"
 msgstr ""
 
 #: py/argcheck.c
@@ -164,15 +160,7 @@ msgstr ""
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must be a string"
-msgstr ""
-
-#: py/argcheck.c
-msgid "%q must be an int"
-msgstr ""
-
-#: py/argcheck.c py/obj.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q"
 msgstr ""
 
@@ -202,8 +190,8 @@ msgstr ""
 msgid "%q pin invalid"
 msgstr ""
 
-#: shared-bindings/usb_hid/Device.c
-msgid "%q with a report ID of 0 must be of length 1"
+#: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
+msgid "%q step cannot be zero"
 msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
@@ -513,10 +501,6 @@ msgstr "May halfwords (type 'H') dapat ang array"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Array values ay dapat single bytes."
-
-#: shared-bindings/microcontroller/Pin.c
-msgid "At most %d %q may be specified (not %d)"
-msgstr ""
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -1272,10 +1256,6 @@ msgstr ""
 msgid "Invalid multicast MAC address"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "Invalid pins"
-msgstr "Mali ang pins"
-
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr ""
@@ -1511,11 +1491,6 @@ msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
-msgstr ""
-
-#: shared-module/usb_hid/__init__.c
-#, c-format
-msgid "No more than %d HID devices allowed"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -2565,10 +2540,6 @@ msgstr "masyadong maliit ang buffer"
 msgid "buffer too small for requested bytes"
 msgstr ""
 
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
-msgstr ""
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr ""
@@ -2611,12 +2582,8 @@ msgstr "hindi ma i-assign sa expression"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
-msgstr ""
-
-#: py/runtime.c
-msgid "can't convert %q to int"
 msgstr ""
 
 #: py/obj.c
@@ -2807,10 +2774,6 @@ msgstr "color ay dapat mula sa 0x000000 hangang 0xffffff"
 msgid "comparison of int and uint"
 msgstr ""
 
-#: py/objcomplex.c
-msgid "complex division by zero"
-msgstr "kumplikadong dibisyon sa pamamagitan ng zero"
-
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr "kumplikadong values hindi sinusuportahan"
@@ -2917,12 +2880,7 @@ msgstr ""
 msgid "div/mod not implemented for uint"
 msgstr ""
 
-#: py/objfloat.c py/objint_mpz.c
-msgid "divide by zero"
-msgstr ""
-
-#: py/modmath.c py/objint_longlong.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: py/runtime.c
 msgid "division by zero"
 msgstr "dibisyon ng zero"
 
@@ -3295,10 +3253,6 @@ msgstr ""
 msgid "inputs are not iterable"
 msgstr ""
 
-#: py/parsenum.c
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "int() arg 2 ay dapat >=2 at <= 36"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
@@ -3439,10 +3393,6 @@ msgstr "local '%q' ginamit bago alam ang type"
 #: py/vm.c
 msgid "local variable referenced before assignment"
 msgstr "local variable na reference bago na i-assign"
-
-#: py/objint.c
-msgid "long int not supported in this build"
-msgstr "long int hindi sinusuportahan sa build na ito"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
@@ -3980,10 +3930,6 @@ msgstr "sleep length ay dapat hindi negatibo"
 msgid "slice step can't be zero"
 msgstr ""
 
-#: py/objslice.c
-msgid "slice step cannot be zero"
-msgstr "slice step ay hindi puedeng 0"
-
 #: py/nativeglue.c
 msgid "slice unsupported"
 msgstr ""
@@ -4033,20 +3979,12 @@ msgid "start/end indices"
 msgstr "start/end indeks"
 
 #: shared-bindings/random/__init__.c
-msgid "step must be non-zero"
-msgstr "step ay dapat hindi zero"
-
-#: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
 msgstr "stop hindi maabot sa simula"
 
 #: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "stream operation hindi sinusuportahan"
-
-#: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
-msgstr ""
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -4079,10 +4017,6 @@ msgstr "sintaks error sa JSON"
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
 msgstr "may pagkakamali sa sintaks sa uctypes descriptor"
-
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes a 9-sequence"
-msgstr "time.struct_time() kumukuha ng 9-sequence"
 
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
@@ -4367,10 +4301,6 @@ msgstr ""
 msgid "y value out of bounds"
 msgstr "wala sa sakop ang address"
 
-#: py/objrange.c
-msgid "zero step"
-msgstr "zero step"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr ""
@@ -4382,6 +4312,30 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Invalid pins"
+#~ msgstr "Mali ang pins"
+
+#~ msgid "complex division by zero"
+#~ msgstr "kumplikadong dibisyon sa pamamagitan ng zero"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "int() arg 2 ay dapat >=2 at <= 36"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "long int hindi sinusuportahan sa build na ito"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "slice step ay hindi puedeng 0"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "step ay dapat hindi zero"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() kumukuha ng 9-sequence"
+
+#~ msgid "zero step"
+#~ msgstr "zero step"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "%q indeks ay dapat integers, hindi %s"
