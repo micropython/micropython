@@ -123,7 +123,7 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
 
@@ -137,10 +137,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
-
-#: shared-bindings/busio/I2C.c
-msgid "%q length must be >= 1"
 msgstr ""
 
 #: py/argcheck.c
@@ -168,15 +164,7 @@ msgstr ""
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must be a string"
-msgstr ""
-
-#: py/argcheck.c
-msgid "%q must be an int"
-msgstr ""
-
-#: py/argcheck.c py/obj.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q"
 msgstr ""
 
@@ -206,8 +194,8 @@ msgstr "%q poza zakresem"
 msgid "%q pin invalid"
 msgstr "nieprawidłowy pin %q"
 
-#: shared-bindings/usb_hid/Device.c
-msgid "%q with a report ID of 0 must be of length 1"
+#: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
+msgid "%q step cannot be zero"
 msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
@@ -515,10 +503,6 @@ msgstr "Tablica musi zawierać pół-słowa (typ 'H')"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Wartości powinny być bajtami."
-
-#: shared-bindings/microcontroller/Pin.c
-msgid "At most %d %q may be specified (not %d)"
-msgstr ""
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -1271,10 +1255,6 @@ msgstr "Nieprawidłowy dostęp do pamięci."
 msgid "Invalid multicast MAC address"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "Invalid pins"
-msgstr "Złe nóżki"
-
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "Nieprawidłowy rozmiar"
@@ -1510,11 +1490,6 @@ msgstr "Nie określono klucza"
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
-msgstr ""
-
-#: shared-module/usb_hid/__init__.c
-#, c-format
-msgid "No more than %d HID devices allowed"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -2556,10 +2531,6 @@ msgstr "zbyt mały bufor"
 msgid "buffer too small for requested bytes"
 msgstr ""
 
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
-msgstr ""
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr ""
@@ -2601,13 +2572,9 @@ msgstr "przypisanie do wyrażenia"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "nie można dokonać konwersji %q na %q"
-
-#: py/runtime.c
-msgid "can't convert %q to int"
-msgstr ""
 
 #: py/obj.c
 #, c-format
@@ -2792,10 +2759,6 @@ msgstr "kolor musi być pomiędzy 0x000000 a 0xffffff"
 msgid "comparison of int and uint"
 msgstr ""
 
-#: py/objcomplex.c
-msgid "complex division by zero"
-msgstr "zespolone dzielenie przez zero"
-
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr "wartości zespolone nieobsługiwane"
@@ -2899,12 +2862,7 @@ msgstr ""
 msgid "div/mod not implemented for uint"
 msgstr ""
 
-#: py/objfloat.c py/objint_mpz.c
-msgid "divide by zero"
-msgstr ""
-
-#: py/modmath.c py/objint_longlong.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: py/runtime.c
 msgid "division by zero"
 msgstr "dzielenie przez zero"
 
@@ -3276,10 +3234,6 @@ msgstr "wektory wejściowe muszą być równej długości"
 msgid "inputs are not iterable"
 msgstr ""
 
-#: py/parsenum.c
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "argument 2 do int() busi być pomiędzy 2 a 36"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
@@ -3416,10 +3370,6 @@ msgstr "local '%q' użyty zanim typ jest znany"
 #: py/vm.c
 msgid "local variable referenced before assignment"
 msgstr "zmienna lokalna użyta przed przypisaniem"
-
-#: py/objint.c
-msgid "long int not supported in this build"
-msgstr "long int jest nieobsługiwany"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
@@ -3956,10 +3906,6 @@ msgstr "okres snu musi być nieujemny"
 msgid "slice step can't be zero"
 msgstr ""
 
-#: py/objslice.c
-msgid "slice step cannot be zero"
-msgstr "zerowy krok"
-
 #: py/nativeglue.c
 msgid "slice unsupported"
 msgstr ""
@@ -4009,20 +3955,12 @@ msgid "start/end indices"
 msgstr "początkowe/końcowe indeksy"
 
 #: shared-bindings/random/__init__.c
-msgid "step must be non-zero"
-msgstr "step nie może być zerowe"
-
-#: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
 msgstr "stop nie jest osiągalne ze start"
 
 #: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "operacja na strumieniu nieobsługiwana"
-
-#: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
-msgstr ""
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -4055,10 +3993,6 @@ msgstr "błąd składni w JSON"
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
 msgstr "błąd składni w deskryptorze uctypes"
-
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes a 9-sequence"
-msgstr "time.struct_time() wymaga 9-elementowej sekwencji"
 
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
@@ -4341,10 +4275,6 @@ msgstr ""
 msgid "y value out of bounds"
 msgstr "y poza zakresem"
 
-#: py/objrange.c
-msgid "zero step"
-msgstr "zerowy krok"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr ""
@@ -4356,6 +4286,30 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Invalid pins"
+#~ msgstr "Złe nóżki"
+
+#~ msgid "complex division by zero"
+#~ msgstr "zespolone dzielenie przez zero"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "argument 2 do int() busi być pomiędzy 2 a 36"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "long int jest nieobsługiwany"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "zerowy krok"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "step nie może być zerowe"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() wymaga 9-elementowej sekwencji"
+
+#~ msgid "zero step"
+#~ msgstr "zerowy krok"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "%q indeks musi być liczbą całkowitą, a nie %s"

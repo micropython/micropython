@@ -128,7 +128,7 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
 
@@ -143,10 +143,6 @@ msgstr ""
 #: py/argcheck.c
 msgid "%q length must be >= %d"
 msgstr ""
-
-#: shared-bindings/busio/I2C.c
-msgid "%q length must be >= 1"
-msgstr "%q length must be >= 1"
 
 #: py/argcheck.c
 msgid "%q must be %d"
@@ -173,15 +169,7 @@ msgstr "%q must be >= %d"
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must be a string"
-msgstr "%q must be a string"
-
-#: py/argcheck.c
-msgid "%q must be an int"
-msgstr ""
-
-#: py/argcheck.c py/obj.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q"
 msgstr ""
 
@@ -211,8 +199,8 @@ msgstr "%q out of range"
 msgid "%q pin invalid"
 msgstr "%q pin invalid"
 
-#: shared-bindings/usb_hid/Device.c
-msgid "%q with a report ID of 0 must be of length 1"
+#: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
+msgid "%q step cannot be zero"
 msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
@@ -520,10 +508,6 @@ msgstr "Array must contain halfwords (type 'H')"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Array values should be single bytes."
-
-#: shared-bindings/microcontroller/Pin.c
-msgid "At most %d %q may be specified (not %d)"
-msgstr "At most %d %q may be specified (not %d)"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -1276,10 +1260,6 @@ msgstr "Invalid memory access."
 msgid "Invalid multicast MAC address"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "Invalid pins"
-msgstr "Invalid pins"
-
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "Invalid size"
@@ -1516,11 +1496,6 @@ msgstr "No key was specified"
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "No long integer support"
-
-#: shared-module/usb_hid/__init__.c
-#, c-format
-msgid "No more than %d HID devices allowed"
-msgstr "No more than %d HID devices allowed"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2579,10 +2554,6 @@ msgstr "Buffer too small"
 msgid "buffer too small for requested bytes"
 msgstr "Buffer too small for requested bytes"
 
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
-msgstr "Byteorder is not a string"
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr "Bytes length not a multiple of item size"
@@ -2624,13 +2595,9 @@ msgstr "Can't assign to expression"
 msgid "can't cancel self"
 msgstr "can't cancel self"
 
-#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "Can't convert %q to %q"
-
-#: py/runtime.c
-msgid "can't convert %q to int"
-msgstr "can't convert %q to int"
 
 #: py/obj.c
 #, c-format
@@ -2817,10 +2784,6 @@ msgstr "colour must be between 0x000000 and 0xffffff"
 msgid "comparison of int and uint"
 msgstr "comparison of int and uint"
 
-#: py/objcomplex.c
-msgid "complex division by zero"
-msgstr "complex division by zero"
-
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr "complex values not supported"
@@ -2924,12 +2887,7 @@ msgstr "dimensions do not match"
 msgid "div/mod not implemented for uint"
 msgstr "div/mod not implemented for uint"
 
-#: py/objfloat.c py/objint_mpz.c
-msgid "divide by zero"
-msgstr "divide by zero"
-
-#: py/modmath.c py/objint_longlong.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: py/runtime.c
 msgid "division by zero"
 msgstr "division by zero"
 
@@ -3301,10 +3259,6 @@ msgstr "input vectors must be of equal length"
 msgid "inputs are not iterable"
 msgstr "inputs are not iterable"
 
-#: py/parsenum.c
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "int() arg 2 must be >= 2 and <= 36"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr "interp is defined for 1D iterables of equal length"
@@ -3441,10 +3395,6 @@ msgstr "local '%q' used before type known"
 #: py/vm.c
 msgid "local variable referenced before assignment"
 msgstr "local variable referenced before assignment"
-
-#: py/objint.c
-msgid "long int not supported in this build"
-msgstr "long int not supported in this build"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
@@ -3980,10 +3930,6 @@ msgstr "sleep length must be non-negative"
 msgid "slice step can't be zero"
 msgstr "slice step can't be zero"
 
-#: py/objslice.c
-msgid "slice step cannot be zero"
-msgstr "slice step cannot be zero"
-
 #: py/nativeglue.c
 msgid "slice unsupported"
 msgstr "slice unsupported"
@@ -4033,20 +3979,12 @@ msgid "start/end indices"
 msgstr "start/end indices"
 
 #: shared-bindings/random/__init__.c
-msgid "step must be non-zero"
-msgstr "step must be non-zero"
-
-#: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
 msgstr "stop not reachable from start"
 
 #: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "stream operation not supported"
-
-#: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
-msgstr "string indices must be integers, not %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -4079,10 +4017,6 @@ msgstr "syntax error in JSON"
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
 msgstr "syntax error in uctypes descriptor"
-
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes a 9-sequence"
-msgstr "time.struct_time() takes a 9-sequence"
 
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
@@ -4365,10 +4299,6 @@ msgstr "xTaskCreate failed"
 msgid "y value out of bounds"
 msgstr "y value out of bounds"
 
-#: py/objrange.c
-msgid "zero step"
-msgstr "zero step"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi must be an ndarray"
@@ -4380,6 +4310,55 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "%q length must be >= 1"
+#~ msgstr "%q length must be >= 1"
+
+#~ msgid "%q must be a string"
+#~ msgstr "%q must be a string"
+
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "At most %d %q may be specified (not %d)"
+
+#~ msgid "Invalid pins"
+#~ msgstr "Invalid pins"
+
+#, c-format
+#~ msgid "No more than %d HID devices allowed"
+#~ msgstr "No more than %d HID devices allowed"
+
+#~ msgid "byteorder is not a string"
+#~ msgstr "Byteorder is not a string"
+
+#~ msgid "can't convert %q to int"
+#~ msgstr "can't convert %q to int"
+
+#~ msgid "complex division by zero"
+#~ msgstr "complex division by zero"
+
+#~ msgid "divide by zero"
+#~ msgstr "divide by zero"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "int() arg 2 must be >= 2 and <= 36"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "long int not supported in this build"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "slice step cannot be zero"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "step must be non-zero"
+
+#~ msgid "string indices must be integers, not %q"
+#~ msgstr "string indices must be integers, not %q"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() takes a 9-sequence"
+
+#~ msgid "zero step"
+#~ msgstr "zero step"
 
 #~ msgid "invalid traceback"
 #~ msgstr "invalid traceback"

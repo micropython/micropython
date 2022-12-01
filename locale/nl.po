@@ -121,7 +121,7 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
 
@@ -135,10 +135,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
-
-#: shared-bindings/busio/I2C.c
-msgid "%q length must be >= 1"
 msgstr ""
 
 #: py/argcheck.c
@@ -166,15 +162,7 @@ msgstr ""
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must be a string"
-msgstr ""
-
-#: py/argcheck.c
-msgid "%q must be an int"
-msgstr ""
-
-#: py/argcheck.c py/obj.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q"
 msgstr ""
 
@@ -204,8 +192,8 @@ msgstr "%q buiten bereik"
 msgid "%q pin invalid"
 msgstr "%q pin onjuist"
 
-#: shared-bindings/usb_hid/Device.c
-msgid "%q with a report ID of 0 must be of length 1"
+#: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
+msgid "%q step cannot be zero"
 msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
@@ -513,10 +501,6 @@ msgstr "Array moet halfwords (type 'H') bevatten"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Array waardes moet enkele bytes zijn."
-
-#: shared-bindings/microcontroller/Pin.c
-msgid "At most %d %q may be specified (not %d)"
-msgstr "Op zijn meest %d %q mogen worden gespecificeerd (niet %d)"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -1271,10 +1255,6 @@ msgstr "Ongeldig geheugen adres."
 msgid "Invalid multicast MAC address"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "Invalid pins"
-msgstr "Ongeldige pinnen"
-
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr ""
@@ -1511,11 +1491,6 @@ msgstr "Een sleutel was niet gespecificeerd"
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Geen lange integer ondersteuning"
-
-#: shared-module/usb_hid/__init__.c
-#, c-format
-msgid "No more than %d HID devices allowed"
-msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2575,10 +2550,6 @@ msgstr "buffer te klein"
 msgid "buffer too small for requested bytes"
 msgstr "buffer te klein voor gevraagde bytes"
 
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
-msgstr "byteorder is geen string"
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr "bytes lengte is geen veelvoud van itemgrootte"
@@ -2621,13 +2592,9 @@ msgstr "kan niet toewijzen aan expressie"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kan %q niet naar %q converteren"
-
-#: py/runtime.c
-msgid "can't convert %q to int"
-msgstr ""
 
 #: py/obj.c
 #, c-format
@@ -2812,10 +2779,6 @@ msgstr "kleur moet tussen 0x000000 en 0xffffff liggen"
 msgid "comparison of int and uint"
 msgstr ""
 
-#: py/objcomplex.c
-msgid "complex division by zero"
-msgstr "complexe deling door 0"
-
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr "complexe waardes niet ondersteund"
@@ -2920,12 +2883,7 @@ msgstr ""
 msgid "div/mod not implemented for uint"
 msgstr ""
 
-#: py/objfloat.c py/objint_mpz.c
-msgid "divide by zero"
-msgstr ""
-
-#: py/modmath.c py/objint_longlong.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: py/runtime.c
 msgid "division by zero"
 msgstr "deling door nul"
 
@@ -3298,10 +3256,6 @@ msgstr "invoervectors moeten van gelijke lengte zijn"
 msgid "inputs are not iterable"
 msgstr "invoer is niet itereerbaar"
 
-#: py/parsenum.c
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "int() argument 2 moet >=2 en <= 36 zijn"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
@@ -3441,10 +3395,6 @@ msgstr "lokale '%q' gebruikt voordat type bekend is"
 #: py/vm.c
 msgid "local variable referenced before assignment"
 msgstr "verwijzing naar een (nog) niet toegewezen lokale variabele"
-
-#: py/objint.c
-msgid "long int not supported in this build"
-msgstr "long int wordt niet ondersteund in deze build"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
@@ -3980,10 +3930,6 @@ msgstr "de slaapduur mag niet negatief zijn"
 msgid "slice step can't be zero"
 msgstr "segmentstap mag niet nul zijn"
 
-#: py/objslice.c
-msgid "slice step cannot be zero"
-msgstr "segmentstap mag niet nul zijn"
-
 #: py/nativeglue.c
 msgid "slice unsupported"
 msgstr ""
@@ -4033,20 +3979,12 @@ msgid "start/end indices"
 msgstr "start/stop indices"
 
 #: shared-bindings/random/__init__.c
-msgid "step must be non-zero"
-msgstr "step mag geen nul zijn"
-
-#: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
 msgstr "stop is niet bereikbaar vanaf start"
 
 #: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "stream operatie niet ondersteund"
-
-#: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
-msgstr "string indices moeten integers zijn, geen %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -4079,10 +4017,6 @@ msgstr "syntaxisfout in JSON"
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
 msgstr "syntaxisfout in uctypes aanduiding"
-
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes a 9-sequence"
-msgstr "time.struct_time() accepteert een 9-rij"
 
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
@@ -4365,10 +4299,6 @@ msgstr ""
 msgid "y value out of bounds"
 msgstr "y-waarde buiten bereik"
 
-#: py/objrange.c
-msgid "zero step"
-msgstr "nul-stap"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi moet een ndarray zijn"
@@ -4380,6 +4310,39 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "Op zijn meest %d %q mogen worden gespecificeerd (niet %d)"
+
+#~ msgid "Invalid pins"
+#~ msgstr "Ongeldige pinnen"
+
+#~ msgid "byteorder is not a string"
+#~ msgstr "byteorder is geen string"
+
+#~ msgid "complex division by zero"
+#~ msgstr "complexe deling door 0"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "int() argument 2 moet >=2 en <= 36 zijn"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "long int wordt niet ondersteund in deze build"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "segmentstap mag niet nul zijn"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "step mag geen nul zijn"
+
+#~ msgid "string indices must be integers, not %q"
+#~ msgstr "string indices moeten integers zijn, geen %q"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() accepteert een 9-rij"
+
+#~ msgid "zero step"
+#~ msgstr "nul-stap"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "%q indexen moeten integers zijn, niet %s"

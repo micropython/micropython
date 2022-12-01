@@ -130,7 +130,7 @@ msgstr "échec de l'initialisation %q"
 msgid "%q is %q"
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr "La longeur de %q doit être %d"
 
@@ -145,10 +145,6 @@ msgstr "La longeur de %q doit être <= %d"
 #: py/argcheck.c
 msgid "%q length must be >= %d"
 msgstr "La longeur de %q doit être >= %d"
-
-#: shared-bindings/busio/I2C.c
-msgid "%q length must be >= 1"
-msgstr "La longueur de %q doit être >= 1"
 
 #: py/argcheck.c
 msgid "%q must be %d"
@@ -175,15 +171,7 @@ msgstr "%q doit être >= %d"
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr "%q doit être a bytearray ou array de type 'h', 'H', 'b', ou 'B'"
 
-#: py/argcheck.c
-msgid "%q must be a string"
-msgstr "%q doit être une chaîne de caractères"
-
-#: py/argcheck.c
-msgid "%q must be an int"
-msgstr "%q doit être un entier"
-
-#: py/argcheck.c py/obj.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q"
 msgstr "%q doit être du type %q"
 
@@ -213,9 +201,9 @@ msgstr "%q est hors de porté"
 msgid "%q pin invalid"
 msgstr "broche %q invalide"
 
-#: shared-bindings/usb_hid/Device.c
-msgid "%q with a report ID of 0 must be of length 1"
-msgstr "%q avec un identifiant de rapport à 0 doit être de longueur 1"
+#: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
+msgid "%q step cannot be zero"
+msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -522,10 +510,6 @@ msgstr "La matrice doit contenir des demi-mots (type 'H')"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Les valeurs de la matrice doivent être des octets singuliers."
-
-#: shared-bindings/microcontroller/Pin.c
-msgid "At most %d %q may be specified (not %d)"
-msgstr "Au plus %d %q peut être spécifié (pas %d)"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -1314,10 +1298,6 @@ msgstr "Accès à la mémoire invalide."
 msgid "Invalid multicast MAC address"
 msgstr "Adresse MAC multicast invalide"
 
-#: shared-bindings/busio/UART.c
-msgid "Invalid pins"
-msgstr "Broches invalides"
-
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "Taille invalide"
@@ -1558,11 +1538,6 @@ msgstr "Aucune clé n'a été spécifiée"
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Pas de support pour chiffre entier long"
-
-#: shared-module/usb_hid/__init__.c
-#, c-format
-msgid "No more than %d HID devices allowed"
-msgstr "Pas plus de %d appareils HID autorisés"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2647,10 +2622,6 @@ msgstr "tampon trop petit"
 msgid "buffer too small for requested bytes"
 msgstr "tampon trop petit pour le nombre d'octets demandé"
 
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
-msgstr "byteorder n'est pas une chaîne"
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr "bytes length n'est pas un multiple de la taille d'un élément"
@@ -2693,13 +2664,9 @@ msgstr "ne peut pas assigner à une expression"
 msgid "can't cancel self"
 msgstr "ne peut pas s'annuler soi-même"
 
-#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "impossible de convertir %q en %q"
-
-#: py/runtime.c
-msgid "can't convert %q to int"
-msgstr "ne peut convertir %q à int"
 
 #: py/obj.c
 #, c-format
@@ -2893,10 +2860,6 @@ msgstr "la couleur doit être entre 0x000000 et 0xffffff"
 msgid "comparison of int and uint"
 msgstr "comparaison entre int et uint"
 
-#: py/objcomplex.c
-msgid "complex division by zero"
-msgstr "division complexe par zéro"
-
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr "valeurs complexes non supportées"
@@ -3002,12 +2965,7 @@ msgstr "les dimensions ne correspondent pas"
 msgid "div/mod not implemented for uint"
 msgstr "div/mod ne sont pas implémentés pour uint"
 
-#: py/objfloat.c py/objint_mpz.c
-msgid "divide by zero"
-msgstr "division par zéro"
-
-#: py/modmath.c py/objint_longlong.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: py/runtime.c
 msgid "division by zero"
 msgstr "division par zéro"
 
@@ -3382,10 +3340,6 @@ msgstr "les vecteurs d'entrée doivent être de longueur égale"
 msgid "inputs are not iterable"
 msgstr "les entrées ne sont pas itérables"
 
-#: py/parsenum.c
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "Le deuxième argument de int() doit être compris entre 2 et 36 inclus"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr "interp n'est défini que pour les 1D itérables de taille identique"
@@ -3528,10 +3482,6 @@ msgstr "variable locale '%q' utilisée avant d'en connaitre le type"
 #: py/vm.c
 msgid "local variable referenced before assignment"
 msgstr "variable locale référencée avant d'être assignée"
-
-#: py/objint.c
-msgid "long int not supported in this build"
-msgstr "entiers longs non supportés dans cette build"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
@@ -4072,10 +4022,6 @@ msgstr "la longueur de sleep ne doit pas être négative"
 msgid "slice step can't be zero"
 msgstr "le pas 'step' de la tranche ne peut être zéro"
 
-#: py/objslice.c
-msgid "slice step cannot be zero"
-msgstr "le pas 'step' de la tranche ne peut être zéro"
-
 #: py/nativeglue.c
 msgid "slice unsupported"
 msgstr "slice non-supporté"
@@ -4125,20 +4071,12 @@ msgid "start/end indices"
 msgstr "indices de début/fin"
 
 #: shared-bindings/random/__init__.c
-msgid "step must be non-zero"
-msgstr "le pas 'step' doit être non nul"
-
-#: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
 msgstr "stop n'est pas accessible au démarrage"
 
 #: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "opération de flux non supportée"
-
-#: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
-msgstr "les indices d'une chaîne doivent être des entiers, pas %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -4172,10 +4110,6 @@ msgstr "erreur de syntaxe JSON"
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
 msgstr "erreur de syntaxe dans le descripteur d'uctypes"
-
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes a 9-sequence"
-msgstr "time.struct_time() prend une séquence de longueur 9"
 
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
@@ -4458,10 +4392,6 @@ msgstr "Échec de xTaskCreate"
 msgid "y value out of bounds"
 msgstr "valeur y hors limites"
 
-#: py/objrange.c
-msgid "zero step"
-msgstr "'step' nul"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi doit être un ndarray"
@@ -4473,6 +4403,62 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "%q length must be >= 1"
+#~ msgstr "La longueur de %q doit être >= 1"
+
+#~ msgid "%q must be a string"
+#~ msgstr "%q doit être une chaîne de caractères"
+
+#~ msgid "%q must be an int"
+#~ msgstr "%q doit être un entier"
+
+#~ msgid "%q with a report ID of 0 must be of length 1"
+#~ msgstr "%q avec un identifiant de rapport à 0 doit être de longueur 1"
+
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "Au plus %d %q peut être spécifié (pas %d)"
+
+#~ msgid "Invalid pins"
+#~ msgstr "Broches invalides"
+
+#, c-format
+#~ msgid "No more than %d HID devices allowed"
+#~ msgstr "Pas plus de %d appareils HID autorisés"
+
+#~ msgid "byteorder is not a string"
+#~ msgstr "byteorder n'est pas une chaîne"
+
+#~ msgid "can't convert %q to int"
+#~ msgstr "ne peut convertir %q à int"
+
+#~ msgid "complex division by zero"
+#~ msgstr "division complexe par zéro"
+
+#~ msgid "divide by zero"
+#~ msgstr "division par zéro"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr ""
+#~ "Le deuxième argument de int() doit être compris entre 2 et 36 inclus"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "entiers longs non supportés dans cette build"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "le pas 'step' de la tranche ne peut être zéro"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "le pas 'step' doit être non nul"
+
+#~ msgid "string indices must be integers, not %q"
+#~ msgstr "les indices d'une chaîne doivent être des entiers, pas %q"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() prend une séquence de longueur 9"
+
+#~ msgid "zero step"
+#~ msgstr "'step' nul"
 
 #~ msgid "invalid traceback"
 #~ msgstr "traceback invalide"
