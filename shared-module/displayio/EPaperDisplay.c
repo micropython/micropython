@@ -247,6 +247,9 @@ uint16_t common_hal_displayio_epaperdisplay_get_rotation(displayio_epaperdisplay
 }
 
 mp_obj_t common_hal_displayio_epaperdisplay_get_root_group(displayio_epaperdisplay_obj_t *self) {
+    if (self->core.current_group == NULL) {
+        return mp_const_none;
+    }
     return self->core.current_group;
 }
 

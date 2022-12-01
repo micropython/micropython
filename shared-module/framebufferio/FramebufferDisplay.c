@@ -363,6 +363,9 @@ void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj
 }
 
 mp_obj_t common_hal_framebufferio_framebufferdisplay_get_root_group(framebufferio_framebufferdisplay_obj_t *self) {
+    if (self->core.current_group == NULL) {
+        return mp_const_none;
+    }
     return self->core.current_group;
 }
 
