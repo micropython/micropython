@@ -32,7 +32,8 @@ class PIOASMEmit:
         autopull=False,
         push_thresh=32,
         pull_thresh=32,
-        fifo_join=0
+        fifo_join=0,
+        const=None
     ):
         # uarray is a built-in module so importing it here won't require
         # scanning the filesystem.
@@ -59,6 +60,8 @@ class PIOASMEmit:
             self.sideset_count = 1
         else:
             self.sideset_count = len(sideset_init)
+
+        self.const_ = const
 
     def start_pass(self, pass_):
         if pass_ == 1:
@@ -176,6 +179,13 @@ class PIOASMEmit:
     def set(self, dest, data):
         return self.word(0xE000 | dest << 5 | data)
 
+    def const(self, label):
+        if self.const_ is None:
+            raise PIOASMError("constant is not defined")
+        if label not in self.const_:
+            raise PIOASMError(f"constant {label} not defined")
+        return self.const_[label]
+
 
 _pio_funcs = {
     # source constants for wait
@@ -229,6 +239,7 @@ _pio_funcs = {
     "mov": None,
     "irq": None,
     "set": None,
+    "const": None,
 }
 
 
@@ -253,6 +264,7 @@ def asm_pio(**kw):
         gl["mov"] = emit.mov
         gl["irq"] = emit.irq
         gl["set"] = emit.set
+        gl["const"] = emit.const
 
         old_gl = f.__globals__.copy()
         f.__globals__.clear()
