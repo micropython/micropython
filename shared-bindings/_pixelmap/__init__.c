@@ -24,45 +24,39 @@
  * THE SOFTWARE.
  */
 
-#pragma once
-
 #include "py/obj.h"
-#include "py/objarray.h"
+#include "py/mphal.h"
+#include "py/runtime.h"
+#include "py/objproperty.h"
 
-typedef struct {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t w;
-} pixelbuf_rgbw_t;
+#include "shared-bindings/_pixelmap/__init__.h"
+#include "shared-bindings/_pixelmap/PixelMap.h"
 
-typedef struct {
-    uint8_t bpp;
-    pixelbuf_rgbw_t byteorder;
-    bool has_white;
-    bool is_dotstar;
-    mp_obj_t order_string;
-} pixelbuf_byteorder_details_t;
 
-typedef struct {
-    mp_obj_base_t base;
-    size_t pixel_count;
-    uint16_t bytes_per_pixel;
-    uint16_t scaled_brightness;
-    pixelbuf_byteorder_details_t byteorder;
-    mp_float_t brightness;
-    mp_obj_t transmit_buffer_obj;
-    // The post_brightness_buffer is offset into the buffer allocated in transmit_buffer_obj to
-    // account for any header.
-    uint8_t *post_brightness_buffer;
-    uint8_t *pre_brightness_buffer;
-    bool auto_write;
-} pixelbuf_pixelbuf_obj_t;
+//| """A fast pixel mapping library
+//|
+//| The `_pixelmap` module provides the :py:class:`PixelMap` class to accelerate
+//| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel."""
+//|
+//| # The types accepted when getting a pixel value
+//| PixelReturnType = Union[
+//|     Tuple[int, int, int], Tuple[int, int, int, int], Tuple[int, int, int, float]
+//| ]
+//| PixelReturnSequence = Tuple[PixelReturnType]
+//| # The types returned when getting a pixel value
+//| PixelType = Union[int, PixelReturnType]
+//| PixelSequence = Union[Tuple[PixelType], List[PixelType]]
 
-#define PIXEL_R 0
-#define PIXEL_G 1
-#define PIXEL_B 2
-#define PIXEL_W 3
+STATIC const mp_rom_map_elem_t pixelmap_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__pixelmap) },
+    { MP_ROM_QSTR(MP_QSTR_PixelMap), MP_ROM_PTR(&pixelmap_pixelmap_type) },
+};
 
-#define DOTSTAR_LED_START 0b11100000
-#define DOTSTAR_LED_START_FULL_BRIGHT 0xFF
+STATIC MP_DEFINE_CONST_DICT(pixelmap_module_globals, pixelmap_module_globals_table);
+
+const mp_obj_module_t pixelmap_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&pixelmap_module_globals,
+};
+
+MP_REGISTER_MODULE(MP_QSTR__pixelmap, pixelmap_module, CIRCUITPY_PIXELMAP);

@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Rose Hooper
+ * Copyright (c) 2022 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,44 +26,18 @@
  */
 
 #pragma once
-
 #include "py/obj.h"
-#include "py/objarray.h"
 
-typedef struct {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t w;
-} pixelbuf_rgbw_t;
+extern const mp_obj_type_t pixelmap_pixelmap_type;
 
-typedef struct {
-    uint8_t bpp;
-    pixelbuf_rgbw_t byteorder;
-    bool has_white;
-    bool is_dotstar;
-    mp_obj_t order_string;
-} pixelbuf_byteorder_details_t;
+typedef struct _pixelmap_pixelmap_obj pixelmap_pixelmap_obj_t;
 
-typedef struct {
-    mp_obj_base_t base;
-    size_t pixel_count;
-    uint16_t bytes_per_pixel;
-    uint16_t scaled_brightness;
-    pixelbuf_byteorder_details_t byteorder;
-    mp_float_t brightness;
-    mp_obj_t transmit_buffer_obj;
-    // The post_brightness_buffer is offset into the buffer allocated in transmit_buffer_obj to
-    // account for any header.
-    uint8_t *post_brightness_buffer;
-    uint8_t *pre_brightness_buffer;
-    bool auto_write;
-} pixelbuf_pixelbuf_obj_t;
-
-#define PIXEL_R 0
-#define PIXEL_G 1
-#define PIXEL_B 2
-#define PIXEL_W 3
-
-#define DOTSTAR_LED_START 0b11100000
-#define DOTSTAR_LED_START_FULL_BRIGHT 0xFF
+void shared_module_pixelmap_pixelmap_construct(pixelmap_pixelmap_obj_t *self, mp_obj_t pixelbuf, mp_obj_t indices);
+bool shared_module_pixelmap_pixelmap_auto_write_get(pixelmap_pixelmap_obj_t *self);
+void shared_module_pixelmap_pixelmap_auto_write_set(pixelmap_pixelmap_obj_t *self, bool auto_write);
+void shared_module_pixelmap_pixelmap_fill(pixelmap_pixelmap_obj_t *self, const mp_obj_t color);
+mp_obj_t shared_module_pixelmap_pixelmap_indices(pixelmap_pixelmap_obj_t *self, int index);
+void shared_module_pixelmap_pixelmap_setslice(pixelmap_pixelmap_obj_t *self, const mp_obj_t value, mp_bound_slice_t slice, size_t slice_len);
+mp_obj_t shared_module_pixelmap_pixelmap_getslice(pixelmap_pixelmap_obj_t *self, mp_bound_slice_t slice, size_t slice_len);
+mp_obj_t shared_module_pixelmap_pixelmap_getitem(pixelmap_pixelmap_obj_t *self, mp_int_t index);
+void shared_module_pixelmap_pixelmap_setitem(pixelmap_pixelmap_obj_t *self, mp_int_t index, const mp_obj_t value);
