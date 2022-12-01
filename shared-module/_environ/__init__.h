@@ -24,13 +24,22 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+typedef enum {
+    ENVIRON_OK = 0,
+    ENVIRON_ERR_OPEN,
+    ENVIRON_ERR_UNICODE,
+    ENVIRON_ERR_LENGTH,
+    ENVIRON_ERR_NOT_FOUND,
+    ENVIRON_ERR_UNEXPECTED = 0xff00, // logical or'd with the byte value
+} _environ_err_t;
+
 // Allocation free version that returns the full length of the value.
-mp_int_t dotenv_get_key(const char *path, const char *key, char *value, mp_int_t value_len);
+// If it fits, the return value is 0-terminated. If the value doesn't fit,
+// *value_len may be an over-estimate but never an under-estimate.
+_environ_err_t _environ_get_key_str(const char *key, char *value, size_t value_len);
 
-// Returns true and sets value to a '\0'-terminated string if key is present
-// and the value (including the terminating '\0') fits strictly within
-// value_len bytes.
-bool dotenv_get_key_terminated(const char *path, const char *key, char *value, mp_int_t value_len);
-
-// Returns true and sets value to the read value.  Returns false if the value was not numeric.
-bool dotenv_get_key_int(const char *path, const char *key, mp_int_t *value);
+// Returns ENVIRON_ERR_OK and sets value to the read value.  Returns
+// ENVIRON_ERR_... if the value was not numeric. allocation-free.
+_environ_err_t _environ_get_key_int(const char *key, mp_int_t *value);

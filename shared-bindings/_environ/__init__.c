@@ -33,11 +33,11 @@
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
-#include "shared-bindings/dotenv/__init__.h"
+#include "shared-bindings/_environ/__init__.h"
 
 //| """Functions to manage environment variables from a .env file.
 //|
-//|    A subset of the CPython `dotenv library <https://saurabh-kumar.com/python-dotenv/>`_. It does
+//|    A subset of the CPython `_environ library <https://saurabh-kumar.com/python-_environ/>`_. It does
 //|    not support variables or double quotes.
 //|
 //|    Keys and values may be put in single quotes.
@@ -71,43 +71,30 @@
 //| import typing
 //|
 
-//| def get_key(dotenv_path: str, key_to_get: str) -> Optional[str]:
+//| def get_key(_environ_path: str, key_to_get: str) -> Optional[str]:
 //|     """Get the value for the given key from the given .env file. If the key occurs multiple
 //|     times in the file, then the last value will be returned.
 //|
 //|     Returns None if the key isn't found or doesn't have a value."""
 //|     ...
 //|
-STATIC mp_obj_t _dotenv_get_key(mp_obj_t path_in, mp_obj_t key_to_get_in) {
-    return common_hal_dotenv_get_key(mp_obj_str_get_str(path_in),
+STATIC mp_obj_t __environ_get_key(mp_obj_t path_in, mp_obj_t key_to_get_in) {
+    return common_hal__environ_get_key_path(mp_obj_str_get_str(path_in),
         mp_obj_str_get_str(key_to_get_in));
 }
-MP_DEFINE_CONST_FUN_OBJ_2(dotenv_get_key_obj, _dotenv_get_key);
+MP_DEFINE_CONST_FUN_OBJ_2(_environ_get_key_obj, __environ_get_key);
 
-//| def load_dotenv() -> None:
-//|     """Does nothing in CircuitPython because os.getenv will automatically read .env when
-//|     available.
-//|
-//|     Present in CircuitPython so CPython-compatible code can use it without error."""
-//|     ...
-//|
-STATIC mp_obj_t dotenv_load_dotenv(void) {
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(dotenv_load_dotenv_obj, dotenv_load_dotenv);
+STATIC const mp_rom_map_elem_t _environ_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__environ) },
 
-STATIC const mp_rom_map_elem_t dotenv_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_dotenv) },
-
-    { MP_ROM_QSTR(MP_QSTR_get_key), MP_ROM_PTR(&dotenv_get_key_obj) },
-    { MP_ROM_QSTR(MP_QSTR_load_dotenv), MP_ROM_PTR(&dotenv_load_dotenv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_key), MP_ROM_PTR(&_environ_get_key_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(dotenv_module_globals, dotenv_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(_environ_module_globals, _environ_module_globals_table);
 
-const mp_obj_module_t dotenv_module = {
+const mp_obj_module_t _environ_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&dotenv_module_globals,
+    .globals = (mp_obj_dict_t *)&_environ_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_dotenv, dotenv_module, CIRCUITPY_DOTENV);
+MP_REGISTER_MODULE(MP_QSTR__environ, _environ_module, CIRCUITPY_ENVIRON);

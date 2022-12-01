@@ -59,8 +59,8 @@
 #include "esp_bt.h"
 #include "esp_nimble_hci.h"
 
-#if CIRCUITPY_DOTENV
-#include "shared-module/dotenv/__init__.h"
+#if CIRCUITPY_ENVIRON
+#include "shared-module/_environ/__init__.h"
 #endif
 
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
@@ -101,28 +101,24 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         ble_hs_cfg.sync_cb = _on_sync;
         // ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
-        #if CIRCUITPY_DOTENV
-        mp_int_t name_len = 0;
-        char ble_name[32];
-        name_len = dotenv_get_key("/.env", "CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name) - 1);
-        if (name_len > 0) {
-            if (name_len > MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH) {
-                name_len = MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH;
-            }
-            ble_name[name_len] = '\0';
+        #if CIRCUITPY_ENVIRON
+        char ble_name[1 + MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH];
+        _environ_err_t result = _environ_get_key_str("CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name));
+        if (result == ENVIRON_OK) {
             ble_svc_gap_device_name_set(ble_name);
-        } else {
+        } else
+        #else
+        {
             ble_svc_gap_device_name_set("CIRCUITPY");
         }
-        #else
-        ble_svc_gap_device_name_set("CIRCUITPY");
         #endif
 
-        // Clear all of the internal connection objects.
-        for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-            bleio_connection_internal_t *connection = &bleio_connections[i];
-            // Reset connection.
-            connection->conn_handle = BLEIO_HANDLE_INVALID;
+        {// Clear all of the internal connection objects.
+            for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+                bleio_connection_internal_t *connection = &bleio_connections[i];
+                // Reset connection.
+                connection->conn_handle = BLEIO_HANDLE_INVALID;
+            }
         }
 
         cp_task = xTaskGetCurrentTaskHandle();

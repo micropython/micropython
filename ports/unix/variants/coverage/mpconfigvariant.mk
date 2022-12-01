@@ -33,7 +33,7 @@ SRC_BITMAP := \
 	shared-bindings/aesio/__init__.c \
 	shared-bindings/bitmaptools/__init__.c \
 	shared-bindings/displayio/Bitmap.c \
-	shared-bindings/dotenv/__init__.c \
+	shared-bindings/_environ/__init__.c \
 	shared-bindings/rainbowio/__init__.c \
 	shared-bindings/traceback/__init__.c \
 	shared-bindings/util.c \
@@ -45,7 +45,7 @@ SRC_BITMAP := \
 	shared-module/displayio/Bitmap.c \
 	shared-module/displayio/ColorConverter.c \
 	shared-module/displayio/ColorConverter.c \
-	shared-module/dotenv/__init__.c \
+	shared-module/_environ/__init__.c \
 	shared-module/rainbowio/__init__.c \
 	shared-module/traceback/__init__.c \
 	shared-module/zlib/__init__.c \
@@ -56,7 +56,7 @@ CFLAGS += \
 	-DCIRCUITPY_AESIO=1 \
 	-DCIRCUITPY_BITMAPTOOLS=1 \
 	-DCIRCUITPY_DISPLAYIO_UNIX=1 \
-	-DCIRCUITPY_DOTENV=1 \
+	-DCIRCUITPY_ENVIRON=1 \
 	-DCIRCUITPY_GIFIO=1 \
 	-DCIRCUITPY_RAINBOWIO=1 \
 	-DCIRCUITPY_TRACEBACK=1 \

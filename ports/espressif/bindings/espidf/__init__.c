@@ -132,7 +132,7 @@ STATIC mp_obj_t espidf_get_total_psram(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_get_total_psram_obj, espidf_get_total_psram);
 
 //| def get_reserved_psram() -> int:
-//|     """Returns number of bytes of psram reserved for use by esp-idf, either a board-specific default value or the value defined in ``/.env``."""
+//|     """Returns number of bytes of psram reserved for use by esp-idf, either a board-specific default value or the value defined in ``settings.toml``."""
 //|
 STATIC mp_obj_t espidf_get_reserved_psram(void) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_espidf_get_reserved_psram());

@@ -1002,6 +1002,10 @@ msgstr ""
 msgid "File exists"
 msgstr ""
 
+#: shared-module/dotenv/__init__.c
+msgid "File not found"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -1184,6 +1188,7 @@ msgid "Internal define error"
 msgstr ""
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#: shared-module/dotenv/__init__.c
 msgid "Internal error"
 msgstr ""
 
@@ -1230,6 +1235,11 @@ msgstr ""
 msgid "Invalid bits per value"
 msgstr ""
 
+#: shared-module/dotenv/__init__.c
+#, c-format
+msgid "Invalid byte %.*s"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
@@ -1260,8 +1270,16 @@ msgstr ""
 msgid "Invalid state"
 msgstr ""
 
+#: shared-module/dotenv/__init__.c
+msgid "Invalid unicode escape"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
+msgstr ""
+
+#: shared-module/dotenv/__init__.c
+msgid "Key not found"
 msgstr ""
 
 #: shared-module/is31fl3741/FrameBuffer.c

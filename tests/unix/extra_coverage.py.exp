@@ -29,10 +29,10 @@ RuntimeError:
 ame__
 mport 
 
-builtins        micropython     _asyncio        _thread
-_uasyncio       aesio           array           binascii
-bitmaptools     btree           cexample        cmath
-collections     cppexample      displayio       dotenv
+builtins        micropython     _asyncio        _environ
+_thread         _uasyncio       aesio           array
+binascii        bitmaptools     btree           cexample
+cmath           collections     cppexample      displayio
 errno           ffi             framebuf        gc
 gifio           hashlib         json            math
 qrio            rainbowio       re              sys

@@ -24,16 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DOTENV___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DOTENV___INIT___H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "py/objtuple.h"
 
-#include "shared-module/dotenv/__init__.h"
+#include "shared-module/_environ/__init__.h"
 
-mp_obj_t common_hal_dotenv_get_key(const char *path, const char *key);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_DOTENV___INIT___H
+mp_obj_t common_hal__environ_get_key_path(const char *path, const char *key);
+mp_obj_t common_hal__environ_get_key(const char *key);

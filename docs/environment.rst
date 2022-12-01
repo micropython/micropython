@@ -6,24 +6,36 @@ variables are commonly used to store "secrets" such as Wi-Fi passwords and API
 keys. This method *does not* make them secure. It only separates them from the
 code.
 
-CircuitPython supports these by mimicking the `dotenv <https://github.com/theskumar/python-dotenv>`_
-CPython library. Other languages such as Javascript, PHP and Ruby also have
-dotenv libraries.
+CircuitPython supports these by parsing a subset of the `toml <https://toml.io/>`_ file format internally.
 
-These libraries store environment variables in a ``.env`` file. Here is a simple
-example:
+Here is a simple example:
 
 .. code-block:: bash
 
-  KEY1='value1'
+  KEY1="value1"
   # Comment
-  KEY2='value2
-  is multiple lines'
+  KEY2="value2\ncontains a newline"
 
-CircuitPython uses the ``.env`` at the drive root (no folder) as the environment.
+  [SECTION] # Only values in the "root table" are parsed
+  SECTION_VALUE = ... # so this value cannot be seen by getenv
+
+CircuitPython uses the ``settings.toml`` at the drive root (no folder) as the environment.
 User code can access the values from the file using `os.getenv()`. It is
 recommended to save any values used repeatedly in a variable because `os.getenv()`
-will parse the ``/.env`` on every access.
+will parse the ``settings.toml`` file contents on every access.
+
+Details of the toml language subset
+-----------------------------------
+
+* The content is required to be in UTF-8 encoding
+* The supported data types are string and integer
+* Only basic strings are supported, not triple-quoted strings
+* Only integers supported by strtol. (no 0o, no 0b, no underscores 1_000, 011
+  is 9, not 11)
+* Only bare keys are supported
+* Duplicate keys are not diagnosed.
+* Comments are supported
+* Only values from the "root table" can be retrieved
 
 CircuitPython behavior
 ----------------------
