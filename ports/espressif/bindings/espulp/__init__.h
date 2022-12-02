@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,11 +24,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_COPROC_COPROCALARM_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_COPROC_COPROCALARM_H
+#pragma once
 
-#include "common-hal/alarm/coproc/CoprocAlarm.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-extern const mp_obj_type_t alarm_coproc_coprocalarm_type;
+void espulp_reset(void);
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_COPROC_COPROCALARM_H
+mp_int_t common_hal_espulp_get_rtc_gpio_number(const mcu_pin_obj_t *pin);

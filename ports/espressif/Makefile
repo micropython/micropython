@@ -100,8 +100,6 @@ INC += \
 	-isystem esp-idf/components/soc/include \
 	-isystem esp-idf/components/soc/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/spi_flash/include \
-	-isystem esp-idf/components/ulp/include \
-	-isystem esp-idf/components/ulp/ulp_riscv/include \
 	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/include \
 	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/$(IDF_TARGET)/include
 
@@ -261,6 +259,15 @@ CFLAGS += -isystem esp32-camera/driver/include
 CFLAGS += -isystem esp32-camera/conversions/include
 endif
 
+ifneq ($(CIRCUITPY_ESPULP),0)
+SRC_ULP := \
+	$(wildcard common-hal/espulp/*.c) \
+	$(wildcard bindings/espulp/*.c)
+SRC_C += $(SRC_ULP)
+CFLAGS += -isystem esp-idf/components/ulp/include
+CFLAGS += -isystem esp-idf/components/ulp/ulp_riscv/include
+endif
+
 SRC_COMMON_HAL_EXPANDED = \
 	$(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
 	$(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
@@ -364,7 +371,7 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
 	                esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
 endif
-ifneq ($(CIRCUITPY_COPROC),0)
+ifneq ($(CIRCUITPY_ESPULP),0)
 	ESP_IDF_COMPONENTS_LINK += ulp
 endif
 

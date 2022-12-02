@@ -246,6 +246,15 @@ void supervisor_web_workflow_status(void) {
 void supervisor_start_web_workflow(void) {
     #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI && CIRCUITPY_OS_GETENV
 
+    // Skip starting the workflow if we're not starting from power on or reset.
+    const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
+    if (reset_reason != RESET_REASON_POWER_ON &&
+        reset_reason != RESET_REASON_RESET_PIN &&
+        reset_reason != RESET_REASON_UNKNOWN &&
+        reset_reason != RESET_REASON_SOFTWARE) {
+        return;
+    }
+
     char ssid[33];
     char password[64];
 

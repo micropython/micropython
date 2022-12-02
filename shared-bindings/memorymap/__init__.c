@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 microDev
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_COPROC_COPROC_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_COPROC_COPROC_H
-
 #include "py/obj.h"
-#include "common-hal/coproc/CoprocMemory.h"
+#include "py/mphal.h"
+#include "py/runtime.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    uint8_t *buf;
-    size_t buf_len;
-    coproc_memory_obj_t *coproc_memory;
-} coproc_coproc_obj_t;
+#include "shared-bindings/memorymap/__init__.h"
+#include "shared-bindings/memorymap/AddressRange.h"
 
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_COPROC_COPROC_H
+//| """Raw memory map access
+//|
+//| The `memorymap` module allows you to read and write memory addresses in the
+//| address space seen from the processor running CircuitPython. It is usually
+//| the physical address space.
+//| """
+STATIC const mp_rom_map_elem_t memorymap_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_memorymap) },
+    { MP_ROM_QSTR(MP_QSTR_AddressRange),   MP_ROM_PTR(&memorymap_addressrange_type) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(memorymap_module_globals, memorymap_module_globals_table);
+
+const mp_obj_module_t memorymap_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&memorymap_module_globals,
+};
+
+MP_REGISTER_MODULE(MP_QSTR_memorymap, memorymap_module, CIRCUITPY_MEMORYMAP);

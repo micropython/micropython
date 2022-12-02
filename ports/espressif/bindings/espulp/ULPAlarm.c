@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries.
+ * Copyright (c) 2022 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,33 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "bindings/espulp/ULPAlarm.h"
 
-#include "common-hal/alarm/SleepMemory.h"
-#include "common-hal/alarm/pin/PinAlarm.h"
-#include "common-hal/alarm/time/TimeAlarm.h"
-#include "common-hal/alarm/touch/TouchAlarm.h"
+#include "py/runtime.h"
 
-#if CIRCUITPY_ESPULP
-#include "common-hal/espulp/ULPAlarm.h"
-#endif
+//| class ULPAlarm:
+//|     """Trigger an alarm when the ULP requests wake-up."""
+//|
+//|     def __init__(self) -> None:
+//|         """Create an alarm that will be triggered when the ULP requests wake-up.
+//|
+//|         The alarm is not active until it is passed to an `alarm`-enabling function, such as
+//|         `alarm.light_sleep_until_alarms()` or `alarm.exit_and_deep_sleep_until_alarms()`.
+//|
+//|         """
+//|         ...
+//|
+STATIC mp_obj_t espulp_ulpalarm_make_new(const mp_obj_type_t *type,
+    size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
 
-typedef union {
-    espulp_ulpalarm_obj_t ulp_alarm;
-    alarm_pin_pinalarm_obj_t pin_alarm;
-    alarm_time_timealarm_obj_t time_alarm;
-    alarm_touch_touchalarm_obj_t touch_alarm;
-} alarm_wake_alarm_union_t;
+    espulp_ulpalarm_obj_t *self = m_new_obj(espulp_ulpalarm_obj_t);
+    self->base.type = &espulp_ulpalarm_type;
+    common_hal_espulp_ulpalarm_construct(self);
+    return MP_OBJ_FROM_PTR(self);
+}
 
-extern alarm_wake_alarm_union_t alarm_wake_alarm;
-extern const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
-
-extern void alarm_reset(void);
+const mp_obj_type_t espulp_ulpalarm_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_ULPAlarm,
+    .make_new = espulp_ulpalarm_make_new,
+};

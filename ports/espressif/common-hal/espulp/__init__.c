@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 microDev
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries LLC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_COPROC___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_COPROC___INIT___H
+#include "bindings/espulp/__init__.h"
 
-#include "py/obj.h"
-#include "common-hal/coproc/Coproc.h"
-
-extern void common_hal_coproc_run(coproc_coproc_obj_t *self);
-extern void common_hal_coproc_halt(coproc_coproc_obj_t *self);
-extern mp_obj_t common_hal_coproc_memory(coproc_coproc_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_COPROC___INIT___H
+mp_int_t common_hal_espulp_get_rtc_gpio_number(const mcu_pin_obj_t *pin) {
+    if (pin->number <= 21) {
+        return pin->number;
+    }
+    return -1;
+}

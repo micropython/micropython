@@ -28,6 +28,7 @@
 
 #include "py/mphal.h"
 #include "py/mpstate.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/tick.h"
 
@@ -52,6 +53,7 @@ void reload_initiate(supervisor_run_reason_t run_reason) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
     }
     #endif
+    port_wake_main_task();
 }
 
 void autoreload_reset() {

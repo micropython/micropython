@@ -29,17 +29,14 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "common-hal/coproc/Coproc.h"
-
 typedef struct {
     mp_obj_base_t base;
-    coproc_coproc_obj_t *coproc;
-} alarm_coproc_coprocalarm_obj_t;
+} espulp_ulpalarm_obj_t;
 
-mp_obj_t alarm_coproc_coprocalarm_find_triggered_alarm(const size_t n_alarms, const mp_obj_t *alarms);
-mp_obj_t alarm_coproc_coprocalarm_record_wake_alarm(void);
+mp_obj_t espulp_ulpalarm_find_triggered_alarm(const size_t n_alarms, const mp_obj_t *alarms);
+mp_obj_t espulp_ulpalarm_record_wake_alarm(void);
 
-void alarm_coproc_coprocalarm_prepare_for_deep_sleep(void);
-void alarm_coproc_coprocalarm_reset(void);
-void alarm_coproc_coprocalarm_set_alarm(const bool deep_sleep, const size_t n_alarms, const mp_obj_t *alarms);
-bool alarm_coproc_coprocalarm_woke_this_cycle(void);
+void espulp_ulpalarm_prepare_for_deep_sleep(void);
+void espulp_ulpalarm_reset(void);
+void espulp_ulpalarm_set_alarm(const bool deep_sleep, const size_t n_alarms, const mp_obj_t *alarms);
+bool espulp_ulpalarm_woke_this_cycle(void);
