@@ -162,17 +162,10 @@ void displayio_display_core_set_rotation(displayio_display_core_t *self,
     }
 }
 
-bool displayio_display_core_show(displayio_display_core_t *self, displayio_group_t *root_group) {
+bool displayio_display_core_set_root_group(displayio_display_core_t *self, displayio_group_t *root_group) {
 
-    if (root_group == NULL) { // set the display to the REPL, reset REPL position and size
-        circuitpython_splash.in_group = false;
-        // force the circuit_python_splash out of any group (Note: could cause problems with the parent group)
-        circuitpython_splash.x = 0; // reset position in case someone moved it.
-        circuitpython_splash.y = 0;
-
-        supervisor_start_terminal(self->width, self->height);
-
-        root_group = &circuitpython_splash;
+    if (root_group == NULL) {
+        // Show nothing on the display
     }
     if (root_group == self->current_group) {
         return true;
@@ -366,7 +359,10 @@ void displayio_display_core_collect_ptrs(displayio_display_core_t *self) {
 }
 
 bool displayio_display_core_fill_area(displayio_display_core_t *self, displayio_area_t *area, uint32_t *mask, uint32_t *buffer) {
-    return displayio_group_fill_area(self->current_group, &self->colorspace, area, mask, buffer);
+    if (self->current_group != NULL) {
+        return displayio_group_fill_area(self->current_group,&self->colorspace, area, mask, buffer);
+    }
+    return false;
 }
 
 bool displayio_display_core_clip_area(displayio_display_core_t *self, const displayio_area_t *area, displayio_area_t *clipped) {

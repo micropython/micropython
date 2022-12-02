@@ -67,5 +67,6 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t *self, 
 
 mp_obj_t common_hal_displayio_display_get_bus(displayio_display_obj_t *self);
 mp_obj_t common_hal_displayio_display_get_root_group(displayio_display_obj_t *self);
+mp_obj_t common_hal_displayio_display_set_root_group(displayio_display_obj_t *self, displayio_group_t *root_group);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_DISPLAY_H
