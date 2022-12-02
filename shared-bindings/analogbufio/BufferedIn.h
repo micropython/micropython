@@ -32,9 +32,9 @@
 
 extern const mp_obj_type_t analogbufio_bufferedin_type;
 
-void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *self, const mcu_pin_obj_t *pin, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed, uint32_t sample_rate);
+void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *self, const mcu_pin_obj_t *pin, uint32_t sample_rate);
 void common_hal_analogbufio_bufferedin_deinit(analogbufio_bufferedin_obj_t *self);
 bool common_hal_analogbufio_bufferedin_deinited(analogbufio_bufferedin_obj_t *self);
-void common_hal_analogbufio_bufferedin_read(analogbufio_bufferedin_obj_t *self);
+uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t *self, uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample);
 
 #endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGBUFIO_BUFFEREDIN_H__

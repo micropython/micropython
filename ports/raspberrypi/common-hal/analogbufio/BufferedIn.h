@@ -41,16 +41,9 @@
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
-    uint8_t *buffer;
-    uint32_t len;
-    uint8_t bytes_per_sample;
-    bool samples_signed;
-    uint32_t sample_rate;
     uint8_t chan;
     uint dma_chan;
     dma_channel_config cfg;
 } analogbufio_bufferedin_obj_t;
-
-void bufferedin_init(void);
 
 #endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ANALOGBUFIO_BUFFEREDIN_H
