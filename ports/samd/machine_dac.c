@@ -38,9 +38,10 @@ typedef struct _dac_obj_t {
     mp_obj_base_t base;
     uint8_t id;
     mp_hal_pin_obj_t gpio_id;
+    uint8_t vref;
 } dac_obj_t;
 
-STATIC const dac_obj_t dac_obj[] = {
+STATIC dac_obj_t dac_obj[] = {
     #if defined(MCU_SAMD21)
     {{&machine_dac_type}, 0, PIN_PA02},
     #elif defined(MCU_SAMD51)
@@ -51,23 +52,51 @@ STATIC const dac_obj_t dac_obj[] = {
 Dac *const dac_bases[] = DAC_INSTS;
 
 #if defined(MCU_SAMD21)
-#define MAX_DAC_VALUE  (1023)
+
+#define MAX_DAC_VALUE       (1023)
+#define DEFAULT_DAC_VREF    (1)
+#define MAX_DAC_VREF        (2)
+
 #elif defined(MCU_SAMD51)
-#define MAX_DAC_VALUE  (4095)
+
+// According to Errata 2.9.2, VDDANA as ref value is not available. However it worked
+// in tests. So I keep the selection here but set the default to Aref, which is usually
+// connected at the Board to VDDANA
+static uint8_t dac_vref_table[] = {
+    DAC_CTRLB_REFSEL_INTREF_Val, DAC_CTRLB_REFSEL_VDDANA_Val,
+    DAC_CTRLB_REFSEL_VREFPU_Val, DAC_CTRLB_REFSEL_VREFPB_Val
+};
+#define MAX_DAC_VALUE       (4095)
+#define DEFAULT_DAC_VREF    (2)
+#define MAX_DAC_VREF        (3)
 static bool dac_init = false;
 #endif
 
 
 STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
-    const mp_obj_t *args) {
+    const mp_obj_t *all_args) {
 
-    mp_arg_check_num(n_args, n_kw, 1, 1, true);
-    uint8_t id = mp_obj_get_int(args[0]);
-    const dac_obj_t *self = NULL;
+    enum { ARG_id, ARG_vref };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_vref,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_DAC_VREF} },
+    };
+
+    // Parse the arguments.
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint8_t id = args[ARG_id].u_int;
+    dac_obj_t *self = NULL;
     if (0 <= id && id <= MP_ARRAY_SIZE(dac_obj)) {
         self = &dac_obj[id];
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid Pin for DAC"));
+    }
+
+    uint8_t vref = args[ARG_vref].u_int;
+    if (0 <= vref && vref <= MAX_DAC_VREF) {
+        self->vref = vref;
     }
 
     Dac *dac = dac_bases[0]; // Just one DAC
@@ -85,7 +114,7 @@ STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     dac->CTRLA.bit.SWRST = 1;
     while (dac->CTRLA.bit.SWRST) {
     }
-    dac->CTRLB.reg = DAC_CTRLB_EOEN | DAC_CTRLB_REFSEL(DAC_CTRLB_REFSEL_AVCC_Val);
+    dac->CTRLB.reg = DAC_CTRLB_EOEN | DAC_CTRLB_REFSEL(self->vref);
     // Enable DAC and wait to be ready
     dac->CTRLA.bit.ENABLE = 1;
     while (dac->STATUS.bit.SYNCBUSY) {
@@ -95,21 +124,15 @@ STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
     // Configuration SAMD51
     // Enable APBD clocks and PCHCTRL clocks; GCLK3 at 8 MHz
-    if (!dac_init) {
-        dac_init = true;
-        MCLK->APBDMASK.reg |= MCLK_APBDMASK_DAC;
-        GCLK->PCHCTRL[DAC_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK3 | GCLK_PCHCTRL_CHEN;
+    dac_init = true;
+    MCLK->APBDMASK.reg |= MCLK_APBDMASK_DAC;
+    GCLK->PCHCTRL[DAC_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK3 | GCLK_PCHCTRL_CHEN;
 
-        // Reset DAC registers
-        dac->CTRLA.bit.SWRST = 1;
-        while (dac->CTRLA.bit.SWRST) {
-        }
-        dac->CTRLB.reg = DAC_CTRLB_REFSEL(DAC_CTRLB_REFSEL_VDDANA_Val);
-    } else {
-        dac->CTRLA.bit.ENABLE = 0;
-        while (dac->SYNCBUSY.bit.ENABLE) {
-        }
+    // Reset DAC registers
+    dac->CTRLA.bit.SWRST = 1;
+    while (dac->CTRLA.bit.SWRST) {
     }
+    dac->CTRLB.reg = DAC_CTRLB_REFSEL(dac_vref_table[self->vref]);
     dac->DACCTRL[self->id].reg = DAC_DACCTRL_ENABLE | DAC_DACCTRL_REFRESH(2) | DAC_DACCTRL_CCTRL_CC12M;
 
     // Enable DAC and wait to be ready
@@ -126,7 +149,7 @@ STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
 STATIC void dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     dac_obj_t *self = self_in;
-    mp_printf(print, "DAC(%u, Pin=%s)", self->id, pin_name(self->gpio_id));
+    mp_printf(print, "DAC(%u, Pin=%s, vref=%d)", self->id, pin_name(self->gpio_id), self->vref);
 }
 
 STATIC mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
