@@ -1961,6 +1961,10 @@ msgstr ""
 msgid "Stereo right must be on PWM channel B"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Stopping AP is not supported."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr "Podaj co najmniej jeden pin UART"
@@ -2349,6 +2353,18 @@ msgstr ""
 
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is in access point mode."
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is in station mode."
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is not enabled"
 msgstr ""
 
 #: main.c
