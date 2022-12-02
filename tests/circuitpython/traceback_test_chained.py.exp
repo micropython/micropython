@@ -1,5 +1,11 @@
 ------------------------------------------------------------------------
 Traceback (most recent call last):
+  File "circuitpython/traceback_test_chained.py", line 25, in <module>
+RuntimeError: 
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+Traceback (most recent call last):
   File "circuitpython/traceback_test_chained.py", line 23, in <module>
 ZeroDivisionError: division by zero
 
@@ -17,39 +23,39 @@ OSError:
 The above exception was the direct cause of the following exception:
 
 Traceback (most recent call last):
-  File "circuitpython/traceback_test_chained.py", line 34, in <module>
+  File "circuitpython/traceback_test_chained.py", line 35, in <module>
 RuntimeError: 
 ------------------------------------------------------------------------
 
 
 ------------------------------------------------------------------------
 Traceback (most recent call last):
-  File "circuitpython/traceback_test_chained.py", line 42, in <module>
+  File "circuitpython/traceback_test_chained.py", line 43, in <module>
 ZeroDivisionError: division by zero
 
 During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
-  File "circuitpython/traceback_test_chained.py", line 44, in <module>
+  File "circuitpython/traceback_test_chained.py", line 45, in <module>
 RuntimeError: 
 ------------------------------------------------------------------------
 
 
 ------------------------------------------------------------------------
 Traceback (most recent call last):
-  File "circuitpython/traceback_test_chained.py", line 53, in <module>
+  File "circuitpython/traceback_test_chained.py", line 54, in <module>
 RuntimeError: 
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
 Traceback (most recent call last):
-  File "circuitpython/traceback_test_chained.py", line 59, in <module>
+  File "circuitpython/traceback_test_chained.py", line 60, in <module>
 RuntimeError: 
 
 During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
-  File "circuitpython/traceback_test_chained.py", line 61, in <module>
+  File "circuitpython/traceback_test_chained.py", line 62, in <module>
 ZeroDivisionError: division by zero
 ------------------------------------------------------------------------
 

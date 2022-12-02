@@ -11,9 +11,9 @@ except:
     raise SystemExit
 
 
-def print_exc_info(e):
+def print_exc_info(e, chain=True):
     print("-" * 72)
-    traceback.print_exception(None, e, e.__traceback__)
+    traceback.print_exception(None, e, e.__traceback__, chain=chain)
     print("-" * 72)
     print()
 
@@ -24,6 +24,7 @@ try:
     except Exception as inner:
         raise RuntimeError() from inner
 except Exception as e:
+    print_exc_info(e, chain=False)
     print_exc_info(e)
 print()
 
