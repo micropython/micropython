@@ -47,7 +47,7 @@
 //|         import array
 //|
 //|         length = 1000
-//|         mybuffer = array.array("H", 0x0000 for i in range(length))
+//|         mybuffer = array.array("H", [0x0000] * length)
 //|         rate = 500000
 //|         adcbuf = analogbufio.BufferedIn(board.GP26, sample_rate=rate)
 //|         adcbuf.readinto(mybuffer)

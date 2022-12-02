@@ -79,7 +79,6 @@ void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *s
 
     // sample_rate is forced to be >= 1 in shared-bindings
     float clk_div = (float)ADC_CLOCK_INPUT / (float)sample_rate;
-    mp_printf(&mp_plat_print, "clk_div %f for %d\n", (double)clk_div, sample_rate);
     adc_set_clkdiv(clk_div);
 
     // Set up the DMA to start transferring data as soon as it appears in FIFO
@@ -122,7 +121,9 @@ uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t
     // RP2040 Implementation Detail
     // Fills the supplied buffer with ADC values using DMA transfer.
     // If the buffer is 8-bit, then values are 8-bit shifted and error bit is off.
-    // If buffer is 16-bit, then values are not shifted and error bit is present.
+    // If buffer is 16-bit, then values are 12-bit and error bit is present. We
+    // stretch the 12-bit value to 16-bits and truncate the number of valid
+    // samples at the first sample with the error bit set.
     // Number of transfers is always the number of samples which is the array
     // byte length divided by the bytes_per_sample.
     uint dma_size = DMA_SIZE_8;
