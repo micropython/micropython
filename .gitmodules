@@ -146,7 +146,7 @@
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
 	url = https://github.com/adafruit/esp-idf.git
-	branch = circuitpython8
+	branch = release/v4.4-circuitpython
 [submodule "ports/espressif/certificates/nina-fw"]
 	path = lib/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git
