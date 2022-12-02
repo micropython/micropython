@@ -40,22 +40,6 @@
 //| call :py:meth:`!deinit` or use a context manager. See
 //| :ref:`lifetime-and-contextmanagers` for more info.
 //|
-//| For example::
-//|
-//|   import analogbufio
-//|   import array
-//|   from board import *
-//|
-//|   length = 5000000
-//|   mybuffer = array.array("H", 0x0000 for i in range(length))
-//|   adc_in = analogbufio.BufferedIn(GP26, mybuffer, length)
-//|   analogbufio.read()
-//|   print(*mybuffer)
-//|   adc_in.deinit()
-//|
-//| This example will initialize the the device, read and fill
-//| :py:data:`~analogbufio.BufferedIn` to mybuffer
-//|
 //| TODO: For the essentials of `analogbufio`, see the `CircuitPython Essentials
 //| Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-analogbufio>`_
 //|
