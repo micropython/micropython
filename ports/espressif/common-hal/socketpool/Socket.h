@@ -42,6 +42,7 @@ typedef struct {
     int ipproto;
     bool connected;
     socketpool_socketpool_obj_t *pool;
+    struct ssl_sslsocket_obj *ssl_socket;
     mp_uint_t timeout_ms;
 } socketpool_socket_obj_t;
 
