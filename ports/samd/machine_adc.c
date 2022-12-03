@@ -208,6 +208,7 @@ static mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // flag the device/channel as being in use.
     ch_busy_flags |= (1 << (self->adc_config.device * 16 + self->adc_config.channel));
+    device_mgmt[self->adc_config.device].init = false;
     self->dma_channel = -1;
     self->tc_index = -1;
 
@@ -225,6 +226,8 @@ static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
         mp_raise_OSError(MP_EBUSY);
     }
 
+    // Set the reference voltage. Default: external AREFA.
+    adc->REFCTRL.reg = adc_vref_table[self->vref];
     // Set Input channel and resolution
     // Select the pin as positive input and gnd as negative input reference, non-diff mode by default
     adc->INPUTCTRL.reg = ADC_INPUTCTRL_MUXNEG_GND | self->adc_config.channel;
@@ -261,6 +264,8 @@ static void machine_adc_read_timed(mp_obj_t self_in, mp_obj_t values, mp_obj_t f
         if (self->tc_index == -1) {
             self->tc_index = allocate_tc_instance();
         }
+        // Set the reference voltage. Default: external AREFA.
+        adc->REFCTRL.reg = adc_vref_table[self->vref];
         // Set Input channel and resolution
         // Select the pin as positive input and gnd as negative input reference, non-diff mode by default
         adc->INPUTCTRL.reg = ADC_INPUTCTRL_MUXNEG_GND | self->adc_config.channel;
@@ -407,7 +412,7 @@ static void adc_init(machine_adc_obj_t *self) {
         // Divide a 48MHz clock by 32 to obtain 1.5 MHz clock to adc
         adc->CTRLB.reg = ADC_CTRLB_PRESCALER_DIV32;
         // Select external AREFA as reference voltage.
-        adc->REFCTRL.reg = self->vref;
+        adc->REFCTRL.reg = adc_vref_table[self->vref];
         // Average: Accumulate samples and scale them down accordingly
         adc->AVGCTRL.reg = self->avg | ADC_AVGCTRL_ADJRES(self->avg);
         // Enable ADC and wait to be ready
