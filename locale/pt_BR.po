@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-11-11 18:49+0000\n"
+"PO-Revision-Date: 2022-12-05 21:48+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -165,7 +165,7 @@ msgstr "o %q deve ser >= %d"
 
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
-msgstr ""
+msgstr "%q deve ser um bytearray ou uma matriz do tipo 'H' ou 'B'"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
@@ -203,7 +203,7 @@ msgstr "%q pino inválido"
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
-msgstr ""
+msgstr "A etapa %q não pode ser zero"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -910,7 +910,7 @@ msgstr "O modo do controlador não é usado quando a direção for inserida."
 
 #: py/obj.c
 msgid "During handling of the above exception, another exception occurred:"
-msgstr ""
+msgstr "Outra exceção ocorreu durante o tratamento da exceção acima:"
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
@@ -1693,7 +1693,7 @@ msgstr "A operação expirou"
 
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Out of MDNS service slots"
-msgstr ""
+msgstr "Sem slots do serviço MDNS"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
@@ -2011,7 +2011,7 @@ msgstr "O estéreo à direita deve estar no canal PWM B"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Stopping AP is not supported."
-msgstr ""
+msgstr "Não há suporte para a interrupção do AP."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
@@ -2060,7 +2060,7 @@ msgstr ""
 
 #: py/obj.c
 msgid "The above exception was the direct cause of the following exception:"
-msgstr ""
+msgstr "A exceção acima foi a causa direta da seguinte exceção:"
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
@@ -2430,15 +2430,15 @@ msgstr "Wi-Fi: "
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is in access point mode."
-msgstr ""
+msgstr "O Wi-Fi está em modo de ponto de acesso."
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is in station mode."
-msgstr ""
+msgstr "O Wi-Fi está em modo estação."
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
-msgstr ""
+msgstr "O Wi-Fi não está ativado"
 
 #: main.c
 msgid "Woken up by alarm.\n"
@@ -3239,7 +3239,7 @@ msgstr "o índice está fora dos limites"
 
 #: shared-bindings/adafruit_pixelbuf/PixelMap.c
 msgid "index must be tuple or int"
-msgstr ""
+msgstr "o índice deve ser tupla ou int"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/espressif/common-hal/pulseio/PulseIn.c
@@ -3624,7 +3624,7 @@ msgstr "contagem de turnos negativos"
 
 #: shared-bindings/adafruit_pixelbuf/PixelMap.c
 msgid "nested index must be int"
-msgstr ""
+msgstr "o índice aninhado deve ser int"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
