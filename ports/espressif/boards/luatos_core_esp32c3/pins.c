@@ -4,7 +4,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     // Luatos Core ESP32-C3
-    // Documentation:
+    // Documentation (Chinese only):
     // https://wiki.luatos.com/chips/esp32c3/index.html
     // Pinout:
     // https://wiki.luatos.com/_images/20221023.png
