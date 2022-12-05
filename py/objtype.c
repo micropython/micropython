@@ -826,6 +826,41 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
         return mp_obj_subscr(self->subobj[0], index, value);
     } else if (member[0] != MP_OBJ_NULL) {
         size_t n_args = value == MP_OBJ_NULL || value == MP_OBJ_SENTINEL ? 1 : 2;
+
+        #if MICROPY_PY_BUILTINS_SLICE
+        // It's possible that:
+        // a) The index is a slice (in which case it will be the thread-local
+        //    slice object).
+        // b) The index is a tuple (in which case the first slice-type
+        //    element, if any, will be the thread-local slice).
+        // c) The index is something else (no-thread-local slice to deal with).
+
+        // For built-in subscr methods, it's safe to just use the thread-local
+        // slice directly. However in this case we're calling a user-defined
+        // {get,set,del}item handler and cannot make any assumptions (e.g.
+        // they may store the slice), so copy it to the heap before passing it
+        // to Python code. See mp_obj_new_slice for details about the
+        // thread-local slice.
+        mp_obj_t *slice_check = &member[2];
+        if (mp_obj_is_type(index, &mp_type_tuple)) {
+            // If the index is a tuple, then at most one of the elements may
+            // be the thread-local slice.
+            mp_obj_tuple_t *t = MP_OBJ_TO_PTR(index);
+            for (size_t i = 0; i < t->len; ++i) {
+                if (t->items[i] == MP_OBJ_FROM_PTR(&MP_STATE_THREAD(slice))) {
+                    slice_check = &t->items[i];
+                }
+            }
+        }
+        if (*slice_check == MP_OBJ_FROM_PTR(&MP_STATE_THREAD(slice))) {
+            // By default the slice object will be thread-local under the
+            // assumption that built-in subscr methods will be safe.
+            mp_obj_slice_t *o = m_new(mp_obj_slice_t, 1);
+            memcpy(o, MP_OBJ_TO_PTR(*slice_check), sizeof(mp_obj_slice_t));
+            *slice_check = MP_OBJ_FROM_PTR(o);
+        }
+        #endif
+
         mp_obj_t ret = mp_call_method_n_kw(n_args, 0, member);
         if (value == MP_OBJ_SENTINEL) {
             return ret;

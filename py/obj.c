@@ -534,6 +534,13 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     const mp_obj_type_t *type = mp_obj_get_type(base);
     if (MP_OBJ_TYPE_HAS_SLOT(type, subscr)) {
         mp_obj_t ret = MP_OBJ_TYPE_GET_SLOT(type, subscr)(base, index, value);
+
+        // If the slice was a thread-local slice (see mp_obj_new_slice), then
+        // mark it as no longer "pending" (i.e. it's now safe to re-use the
+        // thread-local slot).
+        mp_obj_slice_t *o = &MP_STATE_THREAD(slice);
+        o->base.type = NULL;
+
         if (ret != MP_OBJ_NULL) {
             return ret;
         }

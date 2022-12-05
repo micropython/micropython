@@ -116,7 +116,24 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
-    mp_obj_slice_t *o = mp_obj_malloc(mp_obj_slice_t, &mp_type_slice);
+    // Use the thread-local slice object, assuming that the likely case is
+    // that this will be passed to a built-in type->subscr which will:
+    // 1. Not cause another slice to be allocated in the meantime.
+    // 2. Not save a reference to the slice.
+    // The only exception to this is instance_subscr which will copy the slice
+    // object into the heap before calling the user-defined __
+    // {get,set,del}item__.
+    // This prevents allocation of slice objects for all built-in types, as
+    // well as making some specific cases (e.g. memoryview or bytearray slice
+    // assignment) completely allocation-free.
+    mp_obj_slice_t *o = &MP_STATE_THREAD(slice);
+    if (o->base.type) {
+        // There's already a thread-local slice "pending" (waiting to be
+        // passed to LOAD_SUBSCR or STORE_SUBSCR), so make this one
+        // heap-allocated. This happens for example with `a[1:2,3:4]`.
+        o = m_new_obj(mp_obj_slice_t);
+    }
+    o->base.type = &mp_type_slice;
     o->start = ostart;
     o->stop = ostop;
     o->step = ostep;

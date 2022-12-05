@@ -268,6 +268,8 @@ typedef struct _mp_state_thread_t {
     // Locking of the GC is done per thread.
     uint16_t gc_lock_depth;
 
+    mp_obj_slice_t slice;
+
     ////////////////////////////////////////////////////////////
     // START ROOT POINTER SECTION
     // Everything that needs GC scanning must start here, and
