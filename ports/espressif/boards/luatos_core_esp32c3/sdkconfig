@@ -1,0 +1,5 @@
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="luatos-core-esp32c3"
+# end of LWIP
