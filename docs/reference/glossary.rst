@@ -158,6 +158,8 @@ Glossary
         network-capable boards, and internally by tools such
         as :term:`mpremote`.
 
+        See :ref:`packages` for more information on using ``mip``.
+
     mpremote
         A tool for interacting with a MicroPython device. See :ref:`mpremote`.
 
