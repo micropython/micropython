@@ -12,5 +12,6 @@ print(cexample.__name__)
 d = dir(cexample)
 d.index("add_ints")
 d.index("Timer")
+d.index("AdvancedTimer")
 
 print(cexample.add_ints(1, 3))

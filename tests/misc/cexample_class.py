@@ -22,3 +22,20 @@ t_end = timer.time()
 print(timer)
 print(0 <= t_start <= TOLERANCE_MS)
 print(SLEEP_MS - TOLERANCE_MS <= t_end <= SLEEP_MS + TOLERANCE_MS)
+
+advanced_timer = cexample.AdvancedTimer()
+
+time.sleep_ms(100)
+
+print(repr(advanced_timer))
+print(str(advanced_timer))
+
+print(advanced_timer.seconds)
+advanced_timer.seconds = 123
+print(advanced_timer.seconds)
+print(advanced_timer.time() < 123000 + TOLERANCE_MS)
+
+try:
+    advanced_timer.seconds = "bad input"
+except TypeError:
+    print("TypeError")
