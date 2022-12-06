@@ -57,11 +57,15 @@ static _websocket cp_serial;
 
 void websocket_init(void) {
     socketpool_socket_reset(&cp_serial.socket);
+    cp_serial.closed = true;
 
     ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf) - 1);
 }
 
 void websocket_handoff(socketpool_socket_obj_t *socket) {
+    if (!cp_serial.closed) {
+        common_hal_socketpool_socket_close(&cp_serial.socket);
+    }
     socketpool_socket_move(socket, &cp_serial.socket);
     cp_serial.closed = false;
     cp_serial.opcode = 0;

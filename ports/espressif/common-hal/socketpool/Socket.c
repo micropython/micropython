@@ -285,6 +285,7 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         accepted->num = newsoc;
         accepted->pool = self->pool;
         accepted->connected = true;
+        lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
     }
 
     return newsoc;
@@ -303,7 +304,6 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
         sock->pool = self->pool;
         sock->connected = true;
 
-        lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
         return sock;
     } else {
         mp_raise_OSError(-newsoc);
