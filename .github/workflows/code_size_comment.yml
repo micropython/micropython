@@ -13,6 +13,7 @@ jobs:
         id: download-artifact
         uses: actions/github-script@v6
         with:
+          result-encoding: string
           script: |
             const fs = require('fs');
 
@@ -27,7 +28,10 @@ jobs:
             });
 
             if (matchArtifact.length === 0) {
-              return false;
+              console.log('no matching artifact found');
+              console.log('result: "skip"');
+
+              return 'skip';
             }
 
             const download = await github.rest.actions.downloadArtifact({
@@ -39,12 +43,15 @@ jobs:
 
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/code-size-report.zip`, Buffer.from(download.data));
 
-            return true;
+            console.log('artifact downloaded to `code-size-report.zip`');
+            console.log('result: "ok"');
+
+            return 'ok';
       - name: 'Unzip artifact'
-        if: steps.download-artifact.outputs.result
+        if: steps.download-artifact.outputs.result == 'ok'
         run: unzip code-size-report.zip
       - name: Post comment to pull request
-        if: steps.download-artifact.outputs.result
+        if: steps.download-artifact.outputs.result == 'ok'
         uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
