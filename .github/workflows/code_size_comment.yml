@@ -4,6 +4,7 @@ on:
   workflow_run:
     workflows: [Check code size]
     types: [completed]
+    branches-ignore: [master]
 
 jobs:
   comment:
