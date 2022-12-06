@@ -1118,7 +1118,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 arg = key_elem->value;
             }
             if (field_name < field_name_top) {
-                mp_raise_NotImplementedError(MP_ERROR_TEXT("attributes not supported yet"));
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("attributes not supported"));
             }
         } else {
             if (*arg_i < 0) {
