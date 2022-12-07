@@ -34,6 +34,8 @@
 
 #include "components/esp-tls/esp_tls.h"
 
+typedef struct ssl_sslsocket_obj ssl_sslsocket_obj_t;
+
 typedef struct {
     mp_obj_base_t base;
     int num;
@@ -42,7 +44,7 @@ typedef struct {
     int ipproto;
     bool connected;
     socketpool_socketpool_obj_t *pool;
-    struct ssl_sslsocket_obj *ssl_socket;
+    ssl_sslsocket_obj_t *ssl_socket;
     mp_uint_t timeout_ms;
 } socketpool_socket_obj_t;
 
