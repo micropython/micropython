@@ -111,9 +111,9 @@ enum {
     MP_PERSISTENT_OBJ_TUPLE,
 };
 
-mp_compiled_module_t mp_raw_code_load(mp_reader_t *reader, mp_module_context_t *ctx);
-mp_compiled_module_t mp_raw_code_load_mem(const byte *buf, size_t len, mp_module_context_t *ctx);
-mp_compiled_module_t mp_raw_code_load_file(const char *filename, mp_module_context_t *ctx);
+void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *ctx);
+void mp_raw_code_load_mem(const byte *buf, size_t len, mp_compiled_module_t *ctx);
+void mp_raw_code_load_file(const char *filename, mp_compiled_module_t *ctx);
 
 void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print);
 void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename);

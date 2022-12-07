@@ -3427,7 +3427,7 @@ STATIC void scope_compute_things(scope_t *scope) {
 #if !MICROPY_PERSISTENT_CODE_SAVE
 STATIC
 #endif
-mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl, mp_module_context_t *context) {
+void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl, mp_compiled_module_t *cm) {
     // put compiler state on the stack, it's relatively small
     compiler_t comp_state = {0};
     compiler_t *comp = &comp_state;
@@ -3568,26 +3568,24 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
     }
 
     // construct the global qstr/const table for this module
-    mp_compiled_module_t cm;
-    cm.rc = module_scope->raw_code;
-    cm.context = context;
+    cm->rc = module_scope->raw_code;
     #if MICROPY_PERSISTENT_CODE_SAVE
-    cm.has_native = false;
+    cm->has_native = false;
     #if MICROPY_EMIT_NATIVE
     if (emit_native != NULL) {
-        cm.has_native = true;
+        cm->has_native = true;
     }
     #endif
     #if MICROPY_EMIT_INLINE_ASM
     if (comp->emit_inline_asm != NULL) {
-        cm.has_native = true;
+        cm->has_native = true;
     }
     #endif
-    cm.n_qstr = comp->emit_common.qstr_map.used;
-    cm.n_obj = comp->emit_common.const_obj_list.len;
+    cm->n_qstr = comp->emit_common.qstr_map.used;
+    cm->n_obj = comp->emit_common.const_obj_list.len;
     #endif
     if (comp->compile_error == MP_OBJ_NULL) {
-        mp_emit_common_populate_module_context(&comp->emit_common, source_file, context);
+        mp_emit_common_populate_module_context(&comp->emit_common, source_file, cm->context);
 
         #if MICROPY_DEBUG_PRINTERS
         // now that the module context is valid, the raw codes can be printed
@@ -3595,7 +3593,7 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
             for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
                 mp_raw_code_t *rc = s->raw_code;
                 if (rc->kind == MP_CODE_BYTECODE) {
-                    mp_bytecode_print(&mp_plat_print, rc, &cm.context->constants);
+                    mp_bytecode_print(&mp_plat_print, rc, &cm->context->constants);
                 }
             }
         }
@@ -3629,14 +3627,13 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
     if (comp->compile_error != MP_OBJ_NULL) {
         nlr_raise(comp->compile_error);
     }
-
-    return cm;
 }
 
 mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl) {
-    mp_module_context_t *context = m_new_obj(mp_module_context_t);
-    context->module.globals = mp_globals_get();
-    mp_compiled_module_t cm = mp_compile_to_raw_code(parse_tree, source_file, is_repl, context);
+    mp_compiled_module_t cm;
+    cm.context = m_new_obj(mp_module_context_t);
+    cm.context->module.globals = mp_globals_get();
+    mp_compile_to_raw_code(parse_tree, source_file, is_repl, &cm);
     // return function that executes the outer module
     return mp_make_function_from_raw_code(cm.rc, cm.context, NULL);
 }

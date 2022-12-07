@@ -152,7 +152,9 @@ The most relevant method you should know about is this:
        context->module.globals = mp_globals_get();
 
        // Compile the input parse_tree to a raw-code structure.
-       mp_compiled_module_t cm = mp_compile_to_raw_code(parse_tree, source_file, is_repl, context);
+       mp_compiled_module_t cm;
+       cm.context = context;
+       mp_compile_to_raw_code(parse_tree, source_file, is_repl, &cm);
 
        // Create and return a function object that executes the outer module.
        return mp_make_function_from_raw_code(cm.rc, cm.context, NULL);

@@ -73,8 +73,9 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         #endif
 
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
-        mp_compiled_module_t cm = mp_compile_to_raw_code(&parse_tree, source_name, false, ctx);
+        mp_compiled_module_t cm;
+        cm.context = m_new_obj(mp_module_context_t);
+        mp_compile_to_raw_code(&parse_tree, source_name, false, &cm);
 
         vstr_t vstr;
         vstr_init(&vstr, 16);

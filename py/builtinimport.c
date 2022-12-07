@@ -245,7 +245,9 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
     // the correct format and, if so, load and execute the file.
     #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
-        mp_compiled_module_t cm = mp_raw_code_load_file(file_str, module_obj);
+        mp_compiled_module_t cm;
+        cm.context = module_obj;
+        mp_raw_code_load_file(file_str, &cm);
         do_execute_raw_code(cm.context, cm.rc, file_str);
         return;
     }
