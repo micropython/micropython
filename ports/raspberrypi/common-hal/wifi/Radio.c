@@ -206,6 +206,22 @@ void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
      */
 }
 
+static bool connection_unchanged(wifi_radio_obj_t *self, const uint8_t *ssid, size_t ssid_len) {
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
+        mp_printf(&mp_plat_print, "(not connected)\n");
+        return false;
+    }
+    if (ssid_len != self->connected_ssid_len) {
+        mp_printf(&mp_plat_print, "(length mismatch)\n");
+        return false;
+    }
+    if (memcmp(ssid, self->connected_ssid, self->connected_ssid_len)) {
+        mp_printf(&mp_plat_print, "(ssid mismatch)\n");
+        return false;
+    }
+    return true;
+}
+
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("Wifi is not enabled"));
@@ -215,10 +231,18 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
         mp_raise_RuntimeError(translate("Wifi is in access point mode."));
     }
 
+    if (ssid_len > 32) {
+        return WIFI_RADIO_ERROR_CONNECTION_FAIL;
+    }
 
     size_t timeout_ms = timeout <= 0 ? 8000 : (size_t)MICROPY_FLOAT_C_FUN(ceil)(timeout * 1000);
     uint64_t start = port_get_raw_ticks(NULL);
     uint64_t deadline = start + timeout_ms;
+
+    if (connection_unchanged(self, ssid, ssid_len)) {
+        mp_printf(&mp_plat_print, "re-used existing wifi connection");
+        return WIFI_RADIO_ERROR_NONE;
+    }
 
     // disconnect
     common_hal_wifi_radio_stop_station(self);
@@ -237,6 +261,8 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
 
         switch (result) {
             case CYW43_LINK_UP:
+                memcpy(self->connected_ssid, ssid, ssid_len);
+                self->connected_ssid_len = ssid_len;
                 bindings_cyw43_wifi_enforce_pm();
                 return WIFI_RADIO_ERROR_NONE;
             case CYW43_LINK_FAIL:
