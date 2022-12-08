@@ -1002,7 +1002,7 @@ msgstr ""
 msgid "File exists"
 msgstr ""
 
-#: shared-module/dotenv/__init__.c
+#: shared-module/_environ/__init__.c
 msgid "File not found"
 msgstr ""
 
@@ -1062,6 +1062,8 @@ msgstr ""
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-module/displayio/Display.c
+#: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr ""
 
@@ -1188,7 +1190,7 @@ msgid "Internal define error"
 msgstr ""
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
-#: shared-module/dotenv/__init__.c
+#: shared-module/_environ/__init__.c
 msgid "Internal error"
 msgstr ""
 
@@ -1235,7 +1237,7 @@ msgstr ""
 msgid "Invalid bits per value"
 msgstr ""
 
-#: shared-module/dotenv/__init__.c
+#: shared-module/_environ/__init__.c
 #, c-format
 msgid "Invalid byte %.*s"
 msgstr ""
@@ -1270,7 +1272,7 @@ msgstr ""
 msgid "Invalid state"
 msgstr ""
 
-#: shared-module/dotenv/__init__.c
+#: shared-module/_environ/__init__.c
 msgid "Invalid unicode escape"
 msgstr ""
 
@@ -1278,7 +1280,7 @@ msgstr ""
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr ""
 
-#: shared-module/dotenv/__init__.c
+#: shared-module/_environ/__init__.c
 msgid "Key not found"
 msgstr ""
 
@@ -2280,7 +2282,7 @@ msgid "Unkown error code %d"
 msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-#: shared-module/adafruit_pixelbuf/PixelMap.c
+#: shared-module/_pixelmap/PixelMap.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr ""
@@ -3161,7 +3163,7 @@ msgstr ""
 msgid "index is out of bounds"
 msgstr ""
 
-#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+#: shared-bindings/_pixelmap/PixelMap.c
 msgid "index must be tuple or int"
 msgstr ""
 
@@ -3540,7 +3542,7 @@ msgstr ""
 msgid "negative shift count"
 msgstr ""
 
-#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+#: shared-bindings/_pixelmap/PixelMap.c
 msgid "nested index must be int"
 msgstr ""
 
