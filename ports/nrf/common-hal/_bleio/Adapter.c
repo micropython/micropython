@@ -53,7 +53,7 @@
 #include "shared-bindings/time/__init__.h"
 
 #if CIRCUITPY_OS_GETENV
-#include "shared-bindings/os/getenv.h"
+#include "shared-bindings/os/__init__.h"
 #endif
 
 #define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
@@ -346,7 +346,7 @@ STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
     mp_int_t name_len = 0;
 
     #if CIRCUITPY_OS_GETENV
-    mp_obj_t ble_name = common_hal_os_environ_get_key("CIRCUITPY_BLE_NAME");
+    mp_obj_t ble_name = common_hal_os_getenv("CIRCUITPY_BLE_NAME", mp_const_none);
     if (ble_name != mp_const_none) {
         common_hal_bleio_adapter_set_name(self, mp_obj_str_get_str(ble_name));
         return;
