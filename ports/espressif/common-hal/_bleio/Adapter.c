@@ -107,18 +107,16 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         if (result == ENVIRON_OK) {
             ble_svc_gap_device_name_set(ble_name);
         } else
-        #else
+        #endif
         {
             ble_svc_gap_device_name_set("CIRCUITPY");
         }
-        #endif
 
-        {// Clear all of the internal connection objects.
-            for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-                bleio_connection_internal_t *connection = &bleio_connections[i];
-                // Reset connection.
-                connection->conn_handle = BLEIO_HANDLE_INVALID;
-            }
+        // Clear all of the internal connection objects.
+        for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+            bleio_connection_internal_t *connection = &bleio_connections[i];
+            // Reset connection.
+            connection->conn_handle = BLEIO_HANDLE_INVALID;
         }
 
         cp_task = xTaskGetCurrentTaskHandle();
