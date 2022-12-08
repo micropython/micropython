@@ -129,6 +129,9 @@ bool filesystem_init(bool create_allowed, bool force_create) {
         make_empty_file(&vfs_fat->fatfs, "/.metadata_never_index");
         make_empty_file(&vfs_fat->fatfs, "/.Trashes");
         make_empty_file(&vfs_fat->fatfs, "/.fseventsd/no_log");
+        #if CIRCUITPY_ENVIRON
+        make_empty_file(&vfs_fat->fatfs, "/settings.toml");
+        #endif
         // make a sample code.py file
         make_sample_code_file(&vfs_fat->fatfs);
 
