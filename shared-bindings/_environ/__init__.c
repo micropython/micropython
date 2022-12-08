@@ -35,47 +35,55 @@
 #include "py/runtime.h"
 #include "shared-bindings/_environ/__init__.h"
 
-//| """Functions to manage environment variables from a .env file.
+//| """Functions to manage environment variables from a settings.toml file.
 //|
-//|    A subset of the CPython `_environ library <https://saurabh-kumar.com/python-_environ/>`_. It does
-//|    not support variables or double quotes.
+//|    This library can read a subset of `toml files <https://toml.io/>`_.
 //|
-//|    Keys and values may be put in single quotes.
-//|    ``\`` and ``'`` are escaped by ``\`` in single quotes. Newlines can occur in quotes for multiline values.
-//|    Comments start with ``#`` and apply for the rest of the line.
-//|    A ``#`` immediately following an ``=`` is part of the value, not the start of a comment,
-//|    and a ``#`` embedded in a value without whitespace will be part of that value.
-//|    This corresponds to how assignments and comments work in most Unix shells.
+//|    It is recommended to not use this module directly. Instead, retrieve string
+//|    values using `os.getenv`.
 //|
+//|    Due to technical limitations it probably also accepts some files that are
+//|    not valid TOML files; bugs of this nature are subject to change (i.e., be
+//|    fixed) without the usual deprecation period for incompatible changes.
+//|
+//|    Details of the format understood by this module:
+//|     * the content is required to be in UTF-8 encoding
+//|     * the supported data types are string and integer
+//|     * only integers and basic strings are supported
+//|     * only integers supported by strtol are supported (no 0o, no 0b, no
+//|       underscores 1_000, 011 is 9, not 11)
+//|     * In quoted strings, all standard eescape codes, including ``\\uxxxx``
+//|       and ``\\Uxxxxxxxx``, are supported
+//|     * only bare keys are supported
+//|     * duplicate keys are not diagnosed.
+//|     * comments are supported
+//|     * only values from the "root table" can be retrieved (parsing ends when it
+//|       encounters a line starting with [)
+//|     * due to technical limitations, the content of multi-line
+//|       strings can erroneously be parsed as a value.
 //|
 //|    File format example:
 //|
 //|    .. code-block::
 //|
-//|        key=value
-//|          key2 = value2
-//|        'key3' = 'value with spaces'
+//|        str_key="Hello world" # with trailing comment
+//|        int_key = 7
+//|        unicode_key="👨"
+//|        unicode_key2="\\U0001f468" # same as above
+//|        escape_codes="supported, including \\r\\n\\"\\\\"
 //|        # comment
-//|        key4 = value3 # comment 2
-//|        'key5'=value4
-//|        key=value5 # overrides the first one
-//|        multiline = 'hello
-//|        world
-//|        how are you?'
-//|        # The #'s below will be included in the value. They do not start a comment.
-//|        key6=#value
-//|        key7=abc#def
+//|        [subtable]
+//|        subvalue="cannot retrieve this using _environ or getenv"
 //|
 //| """
 //|
 //| import typing
 //|
 
-//| def get_key(_environ_path: str, key_to_get: str) -> Optional[str]:
-//|     """Get the value for the given key from the given .env file. If the key occurs multiple
-//|     times in the file, then the last value will be returned.
+//| def get_key(_environ_path: str, key_to_get: str) -> Union[str, int, None]:
+//|     """Get the value for the given key from the given .env file.
 //|
-//|     Returns None if the key isn't found or doesn't have a value."""
+//|     Returns None if the key isn't found"""
 //|     ...
 //|
 STATIC mp_obj_t __environ_get_key(mp_obj_t path_in, mp_obj_t key_to_get_in) {
