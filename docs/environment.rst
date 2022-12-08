@@ -6,23 +6,33 @@ variables are commonly used to store "secrets" such as Wi-Fi passwords and API
 keys. This method *does not* make them secure. It only separates them from the
 code.
 
-CircuitPython supports these by parsing a subset of the `toml <https://toml.io/>`_ file format internally.
+CircuitPython uses a file called ``settings.toml`` at the drive root (no
+folder) as the environment.  User code can access the values from the file
+using `os.getenv()`. It is recommended to save any values used repeatedly in a
+variable because `os.getenv()` will parse the ``settings.toml`` file contents
+on every access.
 
-Here is a simple example:
+CircuitPython only supports a subset of the full toml specification, see below
+for more details. The subset is very "Python-like", which is a key reason we
+selected the format.
 
-.. code-block:: bash
+Due to technical limitations it probably also accepts some files that are
+not valid TOML files; bugs of this nature are subject to change (i.e., be
+fixed) without the usual deprecation period for incompatible changes.
 
-  KEY1="value1"
-  # Comment
-  KEY2="value2\ncontains a newline"
+File format example:
 
-  [SECTION] # Only values in the "root table" are parsed
-  SECTION_VALUE = ... # so this value cannot be seen by getenv
+.. code-block::
 
-CircuitPython uses the ``settings.toml`` at the drive root (no folder) as the environment.
-User code can access the values from the file using `os.getenv()`. It is
-recommended to save any values used repeatedly in a variable because `os.getenv()`
-will parse the ``settings.toml`` file contents on every access.
+   str_key="Hello world" # with trailing comment
+   int_key = 7
+   unicode_key="👨"
+   unicode_key2="\\U0001f468" # same as above
+   escape_codes="supported, including \\r\\n\\"\\\\"
+   # comment
+   [subtable]
+   subvalue="cannot retrieve this using _environ or getenv"
+
 
 Details of the toml language subset
 -----------------------------------
@@ -36,6 +46,8 @@ Details of the toml language subset
 * Duplicate keys are not diagnosed.
 * Comments are supported
 * Only values from the "root table" can be retrieved
+* due to technical limitations, the content of multi-line
+  strings can erroneously be parsed as a value.
 
 CircuitPython behavior
 ----------------------

@@ -27,7 +27,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "shared-bindings/_environ/__init__.h"
+#include "shared-bindings/os/__init__.h"
+#include "shared-module/os/__init__.h"
 
 #include "py/gc.h"
 #include "py/misc.h"
@@ -177,7 +178,7 @@ STATIC bool key_matches(file_arg *active_file, const char *key) {
     return true;
 }
 
-STATIC _environ_err_t read_unicode_escape(file_arg *active_file, int sz, vstr_t *buf) {
+STATIC os_environ_err_t read_unicode_escape(file_arg *active_file, int sz, vstr_t *buf) {
     char hex_buf[sz + 1];
     for (int i = 0; i < sz; i++) {
         hex_buf[i] = get_next_byte(active_file);
@@ -196,7 +197,7 @@ STATIC _environ_err_t read_unicode_escape(file_arg *active_file, int sz, vstr_t 
 }
 
 // Read a quoted string
-STATIC _environ_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
+STATIC os_environ_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
     while (true) {
         int character = get_next_byte(active_file);
         switch (character) {
@@ -243,7 +244,7 @@ STATIC _environ_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
                     case 'U':
                     case 'u': {
                         int sz = (character == 'u') ? 4 : 8;
-                        _environ_err_t res;
+                        os_environ_err_t res;
                         res = read_unicode_escape(active_file, sz, buf);
                         if (res != ENVIRON_OK) {
                             return res;
@@ -261,7 +262,7 @@ STATIC _environ_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
 }
 
 // Read a numeric value (non-quoted value) as a string
-STATIC _environ_err_t read_bare_value(file_arg *active_file, vstr_t *buf, int first_character) {
+STATIC os_environ_err_t read_bare_value(file_arg *active_file, vstr_t *buf, int first_character) {
     int character = first_character;
     while (true) {
         switch (character) {
@@ -291,13 +292,13 @@ STATIC mp_int_t read_value(file_arg *active_file, vstr_t *buf, bool *quoted) {
     }
 }
 
-STATIC _environ_err_t _environ_get_key_vstr(const char *path, const char *key, vstr_t *buf, bool *quoted) {
+STATIC os_environ_err_t os_environ_get_key_vstr(const char *path, const char *key, vstr_t *buf, bool *quoted) {
     file_arg active_file;
     if (!open_file(path, &active_file)) {
         return ENVIRON_ERR_OPEN;
     }
 
-    _environ_err_t result = ENVIRON_ERR_NOT_FOUND;
+    os_environ_err_t result = ENVIRON_ERR_NOT_FOUND;
     while (!is_eof(&active_file)) {
         if (key_matches(&active_file, key)) {
             result = read_value(&active_file, buf, quoted);
@@ -307,10 +308,10 @@ STATIC _environ_err_t _environ_get_key_vstr(const char *path, const char *key, v
     return result;
 }
 
-STATIC _environ_err_t _environ_get_key_buf_terminated(const char *key, char *value, size_t value_len, bool *quoted) {
+STATIC os_environ_err_t os_environ_get_key_buf_terminated(const char *key, char *value, size_t value_len, bool *quoted) {
     vstr_t buf;
     vstr_init_fixed_buf(&buf, value_len, value);
-    _environ_err_t result = _environ_get_key_vstr(ENVIRON_PATH, key, &buf, quoted);
+    os_environ_err_t result = os_environ_get_key_vstr(ENVIRON_PATH, key, &buf, quoted);
 
     if (result == ENVIRON_OK) {
         vstr_add_byte_nonstd(&buf, 0);
@@ -322,16 +323,16 @@ STATIC _environ_err_t _environ_get_key_buf_terminated(const char *key, char *val
     return result;
 }
 
-_environ_err_t _environ_get_key_str(const char *key, char *value, size_t value_len) {
+os_environ_err_t common_hal_os_environ_get_key_str(const char *key, char *value, size_t value_len) {
     bool quoted;
-    _environ_err_t result = _environ_get_key_buf_terminated(key, value, value_len, &quoted);
+    os_environ_err_t result = os_environ_get_key_buf_terminated(key, value, value_len, &quoted);
     if (result == ENVIRON_OK && !quoted) {
         result = ENVIRON_ERR_UNEXPECTED | value[0];
     }
     return result;
 }
 
-STATIC void throw__environ_error(_environ_err_t error) {
+STATIC void throw__environ_error(os_environ_err_t error) {
     if (error == ENVIRON_OK) {
         return;
     }
@@ -360,14 +361,14 @@ STATIC void throw__environ_error(_environ_err_t error) {
     }
 }
 
-mp_obj_t common_hal__environ_get_key_path(const char *path, const char *key) {
+mp_obj_t common_hal_os_getenv_path(const char *path, const char *key, mp_obj_t default_) {
     vstr_t buf;
     bool quoted;
 
     vstr_init(&buf, 64);
-    _environ_err_t result = _environ_get_key_vstr(path, key, &buf, &quoted);
+    os_environ_err_t result = os_environ_get_key_vstr(path, key, &buf, &quoted);
     if (result == ENVIRON_ERR_NOT_FOUND) {
-        return mp_const_none;
+        return default_;
     }
     throw__environ_error(result);
 
@@ -378,14 +379,14 @@ mp_obj_t common_hal__environ_get_key_path(const char *path, const char *key) {
     }
 }
 
-mp_obj_t common_hal__environ_get_key(const char *key) {
-    return common_hal__environ_get_key_path(ENVIRON_PATH, key);
+mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_) {
+    return common_hal_os_getenv_path(ENVIRON_PATH, key, default_);
 }
 
-_environ_err_t _environ_get_key_int(const char *key, mp_int_t *value) {
+os_environ_err_t common_hal_os_environ_get_key_int(const char *key, mp_int_t *value) {
     char buf[16];
     bool quoted;
-    _environ_err_t result = _environ_get_key_buf_terminated(key, buf, sizeof(buf), &quoted);
+    os_environ_err_t result = os_environ_get_key_buf_terminated(key, buf, sizeof(buf), &quoted);
     if (result != ENVIRON_OK) {
         return result;
     }

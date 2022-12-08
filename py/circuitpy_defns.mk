@@ -182,9 +182,6 @@ endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/%
 endif
-ifeq ($(CIRCUITPY_ENVIRON),1)
-SRC_PATTERNS += _environ/%
-endif
 ifeq ($(CIRCUITPY__EVE),1)
 SRC_PATTERNS += _eve/%
 endif
@@ -618,6 +615,7 @@ SRC_SHARED_MODULE_ALL = \
 	onewireio/__init__.c \
 	onewireio/OneWire.c \
 	os/__init__.c \
+	os/getenv.c \
 	paralleldisplay/ParallelBus.c \
 	qrio/__init__.c \
 	qrio/QRDecoder.c \

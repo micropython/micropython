@@ -92,6 +92,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 //|     ...
 //|
 STATIC mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    #if CIRCUITPY_OS_GETENV
     enum { ARG_key, ARG_default };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_key, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -101,6 +102,9 @@ STATIC mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     return common_hal_os_getenv(mp_obj_str_get_str(args[ARG_key].u_obj), args[ARG_default].u_obj);
+    #else
+    return mp_const_none;
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(os_getenv_obj, 1, os_getenv);
 

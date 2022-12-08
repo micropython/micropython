@@ -49,8 +49,8 @@
 #include "shared-bindings/_bleio/ScanEntry.h"
 #include "shared-bindings/time/__init__.h"
 
-#if CIRCUITPY_ENVIRON
-#include "shared-bindings/_environ/__init__.h"
+#if CIRCUITPY_OS_GETENV
+#include "shared-bindings/os/__init__.h"
 #endif
 
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
@@ -284,8 +284,8 @@ char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0
 STATIC void bleio_adapter_hci_init(bleio_adapter_obj_t *self) {
     mp_int_t name_len = 0;
 
-    #if CIRCUITPY_ENVIRON
-    mp_obj_t name = common_hal__environ_get_key("CIRCUITPY_BLE_NAME");
+    #if CIRCUITPY_OS_GETENV
+    mp_obj_t name = common_hal_os_getenv("CIRCUITPY_BLE_NAME", mp_const_none);
     if (name != mp_const_none) {
         mp_arg_validate_type_string(name, MP_QSTR_CIRCUITPY_BLE_NAME);
         self->name = name;

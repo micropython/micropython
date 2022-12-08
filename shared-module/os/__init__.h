@@ -26,12 +26,20 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stdbool.h>
+typedef enum {
+    ENVIRON_OK = 0,
+    ENVIRON_ERR_OPEN,
+    ENVIRON_ERR_UNICODE,
+    ENVIRON_ERR_LENGTH,
+    ENVIRON_ERR_NOT_FOUND,
+    ENVIRON_ERR_UNEXPECTED = 0xff00, // logical or'd with the byte value
+} os_environ_err_t;
 
-#include "py/objtuple.h"
+// Allocation free version that returns the full length of the value.
+// If it fits, the return value is 0-terminated. If the value doesn't fit,
+// *value_len may be an over-estimate but never an under-estimate.
+os_environ_err_t common_hal_os_environ_get_key_str(const char *key, char *value, size_t value_len);
 
-#include "shared-module/_environ/__init__.h"
-
-mp_obj_t common_hal__environ_get_key_path(const char *path, const char *key);
-mp_obj_t common_hal__environ_get_key(const char *key);
+// Returns ENVIRON_ERR_OK and sets value to the read value.  Returns
+// ENVIRON_ERR_... if the value was not numeric. allocation-free.
+os_environ_err_t common_hal_os_environ_get_key_int(const char *key, mp_int_t *value);

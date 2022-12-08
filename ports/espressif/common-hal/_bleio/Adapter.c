@@ -59,8 +59,8 @@
 #include "esp_bt.h"
 #include "esp_nimble_hci.h"
 
-#if CIRCUITPY_ENVIRON
-#include "shared-module/_environ/__init__.h"
+#if CIRCUITPY_OS_GETENV
+#include "shared-module/os/__init__.h"
 #endif
 
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
@@ -101,9 +101,9 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         ble_hs_cfg.sync_cb = _on_sync;
         // ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
-        #if CIRCUITPY_ENVIRON
+        #if CIRCUITPY_OS_GETENV
         char ble_name[1 + MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH];
-        _environ_err_t result = _environ_get_key_str("CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name));
+        os_environ_err_t result = common_hal_os_environ_get_key_str("CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name));
         if (result == ENVIRON_OK) {
             ble_svc_gap_device_name_set(ble_name);
         } else

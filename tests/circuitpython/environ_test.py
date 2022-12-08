@@ -1,8 +1,8 @@
 import os
 
 try:
-    from _environ import get_key
-except:
+    get_key
+except NameError:
     # Because run-tests.py suppresses site-packages, this test can't be run
     # on the host interpreter. However, it can be run manually to
     # generate/update the expected file.
