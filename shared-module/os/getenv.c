@@ -323,7 +323,7 @@ STATIC os_environ_err_t os_environ_get_key_buf_terminated(const char *key, char 
     return result;
 }
 
-os_environ_err_t common_hal_os_environ_get_key_str(const char *key, char *value, size_t value_len) {
+os_environ_err_t common_hal_os_getenv_str(const char *key, char *value, size_t value_len) {
     bool quoted;
     os_environ_err_t result = os_environ_get_key_buf_terminated(key, value, value_len, &quoted);
     if (result == ENVIRON_OK && !quoted) {

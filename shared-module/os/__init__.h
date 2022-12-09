@@ -38,7 +38,7 @@ typedef enum {
 // Allocation free version that returns the full length of the value.
 // If it fits, the return value is 0-terminated. If the value doesn't fit,
 // *value_len may be an over-estimate but never an under-estimate.
-os_environ_err_t common_hal_os_environ_get_key_str(const char *key, char *value, size_t value_len);
+os_environ_err_t common_hal_os_getenv_str(const char *key, char *value, size_t value_len);
 
 // Returns ENVIRON_ERR_OK and sets value to the read value.  Returns
 // ENVIRON_ERR_... if the value was not numeric. allocation-free.

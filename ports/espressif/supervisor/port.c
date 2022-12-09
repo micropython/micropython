@@ -519,7 +519,7 @@ void port_idle_until_interrupt(void) {
 void port_post_boot_py(bool heap_valid) {
     if (!heap_valid && filesystem_present()) {
         mp_int_t reserved;
-        if (common_hal_os_environ_get_key_int("CIRCUITPY_RESERVED_PSRAM", &reserved) == ENVIRON_OK) {
+        if (common_hal_os_getenv_int("CIRCUITPY_RESERVED_PSRAM", &reserved) == ENVIRON_OK) {
             common_hal_espidf_set_reserved_psram(reserved);
         }
         common_hal_espidf_reserve_psram();
