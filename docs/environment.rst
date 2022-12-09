@@ -26,8 +26,9 @@ File format example:
 
    str_key="Hello world" # with trailing comment
    int_key = 7
-   unicode_key="👨"
-   unicode_key2="\\U0001f468" # same as above
+   unicode_key="œuvre"
+   unicode_key2="\\u0153uvre" # same as above
+   unicode_key3="\\U00000153uvre" # same as above
    escape_codes="supported, including \\r\\n\\"\\\\"
    # comment
    [subtable]
