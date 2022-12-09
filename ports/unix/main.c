@@ -423,9 +423,9 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 mp_obj_t common_hal_os_getenv_path(const char *path, const char *key, mp_obj_t default_);
 STATIC mp_obj_t getenv_from_file(mp_obj_t path_in, mp_obj_t key_to_get_in) {
     return common_hal_os_getenv_path(mp_obj_str_get_str(path_in),
-        mp_obj_str_get_str(key_to_get_in), default_);
+        mp_obj_str_get_str(key_to_get_in), mp_const_none);
 }
-MP_DEFINE_CONST_FUN_OBJ_2(getenv_from_file_obj, get_key);
+MP_DEFINE_CONST_FUN_OBJ_2(getenv_from_file_obj, getenv_from_file);
 
 MP_NOINLINE int main_(int argc, char **argv);
 
