@@ -109,17 +109,16 @@ STATIC int mp_spiflash_transfer_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, 
     return ret;
 }
 
-STATIC uint32_t mp_spiflash_read_cmd(mp_spiflash_t *self, uint8_t cmd, size_t len) {
+STATIC int mp_spiflash_read_cmd(mp_spiflash_t *self, uint8_t cmd, size_t len, uint32_t *dest) {
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
-        uint32_t buf;
         mp_hal_pin_write(c->bus.u_spi.cs, 0);
         c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 1, &cmd, NULL);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, (void*)&buf, (void*)&buf);
+        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, (void*)dest, (void*)dest);
         mp_hal_pin_write(c->bus.u_spi.cs, 1);
-        return buf;
+        return 0;
     } else {
-        return c->bus.u_qspi.proto->read_cmd(c->bus.u_qspi.data, cmd, len);
+        return c->bus.u_qspi.proto->read_cmd(c->bus.u_qspi.data, cmd, len, dest);
     }
 }
 
@@ -139,9 +138,12 @@ STATIC int mp_spiflash_write_cmd(mp_spiflash_t *self, uint8_t cmd) {
 }
 
 STATIC int mp_spiflash_wait_sr(mp_spiflash_t *self, uint8_t mask, uint8_t val, uint32_t timeout) {
-    uint8_t sr;
     do {
-        sr = mp_spiflash_read_cmd(self, CMD_RDSR, 1);
+        uint32_t sr;
+        int ret = mp_spiflash_read_cmd(self, CMD_RDSR, 1, &sr);
+        if (ret != 0) {
+            return ret;
+        }
         if ((sr & mask) == val) {
             return 0; // success
         }
@@ -180,17 +182,23 @@ void mp_spiflash_init(mp_spiflash_t *self) {
 
     #if defined(CHECK_DEVID)
     // Validate device id
-    uint32_t devid = mp_spiflash_read_cmd(self, CMD_RD_DEVID, 3);
-    if (devid != CHECK_DEVID) {
-        return 0;
+    uint32_t devid;
+    int ret = mp_spiflash_read_cmd(self, CMD_RD_DEVID, 3, &devid);
+    if (ret != 0 || devid != CHECK_DEVID) {
+        mp_spiflash_release_bus(self);
+        return;
     }
     #endif
 
     if (self->config->bus_kind == MP_SPIFLASH_BUS_QSPI) {
         // Set QE bit
-        uint32_t data = (mp_spiflash_read_cmd(self, CMD_RDSR, 1) & 0xff)
-            | (mp_spiflash_read_cmd(self, CMD_RDCR, 1) & 0xff) << 8;
-        if (!(data & (QSPI_QE_MASK << 8))) {
+        uint32_t sr = 0, cr = 0;
+        int ret = mp_spiflash_read_cmd(self, CMD_RDSR, 1, &sr);
+        if (ret == 0) {
+            ret = mp_spiflash_read_cmd(self, CMD_RDCR, 1, &cr);
+        }
+        uint32_t data = (sr & 0xff) | (cr & 0xff) << 8;
+        if (ret == 0 && !(data & (QSPI_QE_MASK << 8))) {
             data |= QSPI_QE_MASK << 8;
             mp_spiflash_write_cmd(self, CMD_WREN);
             mp_spiflash_write_cmd_data(self, CMD_WRSR, 2, data);

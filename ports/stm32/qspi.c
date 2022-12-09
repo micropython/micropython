@@ -312,7 +312,7 @@ STATIC int qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, s
     return 0;
 }
 
-STATIC uint32_t qspi_read_cmd(void *self_in, uint8_t cmd, size_t len) {
+STATIC int qspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {
     (void)self_in;
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
@@ -334,7 +334,6 @@ STATIC uint32_t qspi_read_cmd(void *self_in, uint8_t cmd, size_t len) {
     // Wait for read to finish
     while (!(QUADSPI->SR & QUADSPI_SR_TCF)) {
         if (QUADSPI->SR & QUADSPI_SR_TEF) {
-            // Not sure that calling functions will deal with this appropriately
             return -MP_EIO;
         }
     }
@@ -342,7 +341,9 @@ STATIC uint32_t qspi_read_cmd(void *self_in, uint8_t cmd, size_t len) {
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 
     // Read result
-    return QUADSPI->DR;
+    *dest = QUADSPI->DR;
+
+    return 0;
 }
 
 STATIC int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
