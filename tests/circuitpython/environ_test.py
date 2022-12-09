@@ -1,7 +1,7 @@
 import os
 
 try:
-    get_key
+    getenv_from_file
 except NameError:
     # Because run-tests.py suppresses site-packages, this test can't be run
     # on the host interpreter. However, it can be run manually to
@@ -10,7 +10,7 @@ except NameError:
     # After 3.11 becomes standard, change this to use tomllib.
     import tomlkit
 
-    def get_key(filename, key):
+    def getenv_from_file(filename, key):
         with open(filename) as f:
             s = tomlkit.load(f)
             return s.get(key, None)
