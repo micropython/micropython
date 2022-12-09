@@ -39,7 +39,7 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/memory.h"
 
-#define ENVIRON_PATH "settings.toml"
+#define GETENV_PATH "settings.toml"
 
 #if defined(UNIX)
 typedef FILE *file_arg;
@@ -178,7 +178,7 @@ STATIC bool key_matches(file_arg *active_file, const char *key) {
     return true;
 }
 
-STATIC os_environ_err_t read_unicode_escape(file_arg *active_file, int sz, vstr_t *buf) {
+STATIC os_getenv_err_t read_unicode_escape(file_arg *active_file, int sz, vstr_t *buf) {
     char hex_buf[sz + 1];
     for (int i = 0; i < sz; i++) {
         hex_buf[i] = get_next_byte(active_file);
@@ -197,7 +197,7 @@ STATIC os_environ_err_t read_unicode_escape(file_arg *active_file, int sz, vstr_
 }
 
 // Read a quoted string
-STATIC os_environ_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
+STATIC os_getenv_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
     while (true) {
         int character = get_next_byte(active_file);
         switch (character) {
@@ -244,7 +244,7 @@ STATIC os_environ_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
                     case 'U':
                     case 'u': {
                         int sz = (character == 'u') ? 4 : 8;
-                        os_environ_err_t res;
+                        os_getenv_err_t res;
                         res = read_unicode_escape(active_file, sz, buf);
                         if (res != ENVIRON_OK) {
                             return res;
@@ -262,7 +262,7 @@ STATIC os_environ_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
 }
 
 // Read a numeric value (non-quoted value) as a string
-STATIC os_environ_err_t read_bare_value(file_arg *active_file, vstr_t *buf, int first_character) {
+STATIC os_getenv_err_t read_bare_value(file_arg *active_file, vstr_t *buf, int first_character) {
     int character = first_character;
     while (true) {
         switch (character) {
@@ -292,13 +292,13 @@ STATIC mp_int_t read_value(file_arg *active_file, vstr_t *buf, bool *quoted) {
     }
 }
 
-STATIC os_environ_err_t os_environ_get_key_vstr(const char *path, const char *key, vstr_t *buf, bool *quoted) {
+STATIC os_getenv_err_t os_environ_get_key_vstr(const char *path, const char *key, vstr_t *buf, bool *quoted) {
     file_arg active_file;
     if (!open_file(path, &active_file)) {
         return ENVIRON_ERR_OPEN;
     }
 
-    os_environ_err_t result = ENVIRON_ERR_NOT_FOUND;
+    os_getenv_err_t result = ENVIRON_ERR_NOT_FOUND;
     while (!is_eof(&active_file)) {
         if (key_matches(&active_file, key)) {
             result = read_value(&active_file, buf, quoted);
@@ -308,10 +308,10 @@ STATIC os_environ_err_t os_environ_get_key_vstr(const char *path, const char *ke
     return result;
 }
 
-STATIC os_environ_err_t os_environ_get_key_buf_terminated(const char *key, char *value, size_t value_len, bool *quoted) {
+STATIC os_getenv_err_t os_environ_get_key_buf_terminated(const char *key, char *value, size_t value_len, bool *quoted) {
     vstr_t buf;
     vstr_init_fixed_buf(&buf, value_len, value);
-    os_environ_err_t result = os_environ_get_key_vstr(ENVIRON_PATH, key, &buf, quoted);
+    os_getenv_err_t result = os_environ_get_key_vstr(ENVIRON_PATH, key, &buf, quoted);
 
     if (result == ENVIRON_OK) {
         vstr_add_byte_nonstd(&buf, 0);
@@ -323,16 +323,16 @@ STATIC os_environ_err_t os_environ_get_key_buf_terminated(const char *key, char 
     return result;
 }
 
-os_environ_err_t common_hal_os_getenv_str(const char *key, char *value, size_t value_len) {
+os_getenv_err_t common_hal_os_getenv_str(const char *key, char *value, size_t value_len) {
     bool quoted;
-    os_environ_err_t result = os_environ_get_key_buf_terminated(key, value, value_len, &quoted);
+    os_getenv_err_t result = os_environ_get_key_buf_terminated(key, value, value_len, &quoted);
     if (result == ENVIRON_OK && !quoted) {
         result = ENVIRON_ERR_UNEXPECTED | value[0];
     }
     return result;
 }
 
-STATIC void throw__environ_error(os_environ_err_t error) {
+STATIC void throw__environ_error(os_getenv_err_t error) {
     if (error == ENVIRON_OK) {
         return;
     }
@@ -366,7 +366,7 @@ mp_obj_t common_hal_os_getenv_path(const char *path, const char *key, mp_obj_t d
     bool quoted;
 
     vstr_init(&buf, 64);
-    os_environ_err_t result = os_environ_get_key_vstr(path, key, &buf, &quoted);
+    os_getenv_err_t result = os_environ_get_key_vstr(path, key, &buf, &quoted);
     if (result == ENVIRON_ERR_NOT_FOUND) {
         return default_;
     }
@@ -383,10 +383,10 @@ mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_) {
     return common_hal_os_getenv_path(ENVIRON_PATH, key, default_);
 }
 
-os_environ_err_t common_hal_os_environ_get_key_int(const char *key, mp_int_t *value) {
+os_getenv_err_t common_hal_os_environ_get_key_int(const char *key, mp_int_t *value) {
     char buf[16];
     bool quoted;
-    os_environ_err_t result = os_environ_get_key_buf_terminated(key, buf, sizeof(buf), &quoted);
+    os_getenv_err_t result = os_environ_get_key_buf_terminated(key, buf, sizeof(buf), &quoted);
     if (result != ENVIRON_OK) {
         return result;
     }

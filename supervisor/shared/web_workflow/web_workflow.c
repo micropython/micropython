@@ -251,8 +251,8 @@ void supervisor_start_web_workflow(void) {
     size_t ssid_len = 0;
     size_t password_len = 0;
 
-    os_environ_err_t result = common_hal_os_getenv_str("CIRCUITPY_WIFI_SSID", ssid, sizeof(ssid));
-    if (result != ENVIRON_OK) {
+    os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_WIFI_SSID", ssid, sizeof(ssid));
+    if (result != GETENV_OK) {
         return;
     }
 

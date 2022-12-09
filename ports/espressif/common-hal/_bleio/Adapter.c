@@ -103,8 +103,8 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
 
         #if CIRCUITPY_OS_GETENV
         char ble_name[1 + MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH];
-        os_environ_err_t result = common_hal_os_getenv_str("CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name));
-        if (result == ENVIRON_OK) {
+        os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name));
+        if (result == GETENV_OK) {
             ble_svc_gap_device_name_set(ble_name);
         } else
         #endif
