@@ -187,13 +187,13 @@ STATIC os_getenv_err_t read_unicode_escape(file_arg *active_file, int sz, vstr_t
     char *end;
     unsigned long c = strtoul(hex_buf, &end, 16);
     if (end != &hex_buf[sz]) {
-        return ENVIRON_ERR_UNEXPECTED | *end;
+        return GETENV_ERR_UNEXPECTED | *end;
     }
     if (c >= 0x110000) {
-        return ENVIRON_ERR_UNICODE;
+        return GETENV_ERR_UNICODE;
     }
     vstr_add_char_nonstd(buf, c);
-    return ENVIRON_OK;
+    return GETENV_OK;
 }
 
 // Read a quoted string
@@ -203,7 +203,7 @@ STATIC os_getenv_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
         switch (character) {
             case 0:
             case '\n':
-                return ENVIRON_ERR_UNEXPECTED | character;
+                return GETENV_ERR_UNEXPECTED | character;
 
             case '"':
                 character = consume_whitespace(active_file);
@@ -212,9 +212,9 @@ STATIC os_getenv_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
                         next_line(active_file);
                         MP_FALLTHROUGH;
                     case '\n':
-                        return ENVIRON_OK;
+                        return GETENV_OK;
                     default:
-                        return ENVIRON_ERR_UNEXPECTED | character;
+                        return GETENV_ERR_UNEXPECTED | character;
                 }
 
             case '\\':
@@ -222,7 +222,7 @@ STATIC os_getenv_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
                 switch (character) {
                     case 0:
                     case '\n':
-                        return ENVIRON_ERR_UNEXPECTED | character;
+                        return GETENV_ERR_UNEXPECTED | character;
                     case 'b':
                         character = '\b';
                         break;
@@ -246,7 +246,7 @@ STATIC os_getenv_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
                         int sz = (character == 'u') ? 4 : 8;
                         os_getenv_err_t res;
                         res = read_unicode_escape(active_file, sz, buf);
-                        if (res != ENVIRON_OK) {
+                        if (res != GETENV_OK) {
                             return res;
                         }
                         continue;
@@ -267,12 +267,12 @@ STATIC os_getenv_err_t read_bare_value(file_arg *active_file, vstr_t *buf, int f
     while (true) {
         switch (character) {
             case 0:
-                return ENVIRON_ERR_UNEXPECTED | character;
+                return GETENV_ERR_UNEXPECTED | character;
             case '\n':
-                return ENVIRON_OK;
+                return GETENV_OK;
             case '#':
                 next_line(active_file);
-                return ENVIRON_OK;
+                return GETENV_OK;
             default:
                 vstr_add_byte_nonstd(buf, character);
         }
@@ -292,13 +292,13 @@ STATIC mp_int_t read_value(file_arg *active_file, vstr_t *buf, bool *quoted) {
     }
 }
 
-STATIC os_getenv_err_t os_environ_get_key_vstr(const char *path, const char *key, vstr_t *buf, bool *quoted) {
+STATIC os_getenv_err_t os_getenv_vstr(const char *path, const char *key, vstr_t *buf, bool *quoted) {
     file_arg active_file;
     if (!open_file(path, &active_file)) {
-        return ENVIRON_ERR_OPEN;
+        return GETENV_ERR_OPEN;
     }
 
-    os_getenv_err_t result = ENVIRON_ERR_NOT_FOUND;
+    os_getenv_err_t result = GETENV_ERR_NOT_FOUND;
     while (!is_eof(&active_file)) {
         if (key_matches(&active_file, key)) {
             result = read_value(&active_file, buf, quoted);
@@ -308,16 +308,16 @@ STATIC os_getenv_err_t os_environ_get_key_vstr(const char *path, const char *key
     return result;
 }
 
-STATIC os_getenv_err_t os_environ_get_key_buf_terminated(const char *key, char *value, size_t value_len, bool *quoted) {
+STATIC os_getenv_err_t os_getenv_buf_terminated(const char *key, char *value, size_t value_len, bool *quoted) {
     vstr_t buf;
     vstr_init_fixed_buf(&buf, value_len, value);
-    os_getenv_err_t result = os_environ_get_key_vstr(ENVIRON_PATH, key, &buf, quoted);
+    os_getenv_err_t result = os_getenv_vstr(GETENV_PATH, key, &buf, quoted);
 
-    if (result == ENVIRON_OK) {
+    if (result == GETENV_OK) {
         vstr_add_byte_nonstd(&buf, 0);
         memcpy(value, buf.buf, MIN(buf.len, value_len));
         if (buf.len > value_len) {
-            result = ENVIRON_ERR_LENGTH;
+            result = GETENV_ERR_LENGTH;
         }
     }
     return result;
@@ -325,18 +325,18 @@ STATIC os_getenv_err_t os_environ_get_key_buf_terminated(const char *key, char *
 
 os_getenv_err_t common_hal_os_getenv_str(const char *key, char *value, size_t value_len) {
     bool quoted;
-    os_getenv_err_t result = os_environ_get_key_buf_terminated(key, value, value_len, &quoted);
-    if (result == ENVIRON_OK && !quoted) {
-        result = ENVIRON_ERR_UNEXPECTED | value[0];
+    os_getenv_err_t result = os_getenv_buf_terminated(key, value, value_len, &quoted);
+    if (result == GETENV_OK && !quoted) {
+        result = GETENV_ERR_UNEXPECTED | value[0];
     }
     return result;
 }
 
-STATIC void throw__environ_error(os_getenv_err_t error) {
-    if (error == ENVIRON_OK) {
+STATIC void throw_getenv_error(os_getenv_err_t error) {
+    if (error == GETENV_OK) {
         return;
     }
-    if (error & ENVIRON_ERR_UNEXPECTED) {
+    if (error & GETENV_ERR_UNEXPECTED) {
         byte character = (error & 0xff);
         mp_print_t print;
         vstr_t vstr;
@@ -350,11 +350,11 @@ STATIC void throw__environ_error(os_getenv_err_t error) {
             vstr.len, vstr.buf);
     }
     switch (error) {
-        case ENVIRON_ERR_OPEN:
+        case GETENV_ERR_OPEN:
             mp_raise_ValueError(translate("File not found"));
-        case ENVIRON_ERR_UNICODE:
+        case GETENV_ERR_UNICODE:
             mp_raise_ValueError(translate("Invalid unicode escape"));
-        case ENVIRON_ERR_NOT_FOUND:
+        case GETENV_ERR_NOT_FOUND:
             mp_raise_ValueError(translate("Key not found"));
         default:
             mp_raise_RuntimeError(translate("Internal error"));
@@ -366,11 +366,11 @@ mp_obj_t common_hal_os_getenv_path(const char *path, const char *key, mp_obj_t d
     bool quoted;
 
     vstr_init(&buf, 64);
-    os_getenv_err_t result = os_environ_get_key_vstr(path, key, &buf, &quoted);
-    if (result == ENVIRON_ERR_NOT_FOUND) {
+    os_getenv_err_t result = os_getenv_vstr(path, key, &buf, &quoted);
+    if (result == GETENV_ERR_NOT_FOUND) {
         return default_;
     }
-    throw__environ_error(result);
+    throw_getenv_error(result);
 
     if (quoted) {
         return mp_obj_new_str_from_vstr(&mp_type_str, &buf);
@@ -380,24 +380,24 @@ mp_obj_t common_hal_os_getenv_path(const char *path, const char *key, mp_obj_t d
 }
 
 mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_) {
-    return common_hal_os_getenv_path(ENVIRON_PATH, key, default_);
+    return common_hal_os_getenv_path(GETENV_PATH, key, default_);
 }
 
-os_getenv_err_t common_hal_os_environ_get_key_int(const char *key, mp_int_t *value) {
+os_getenv_err_t common_hal_os_getenv_int(const char *key, mp_int_t *value) {
     char buf[16];
     bool quoted;
-    os_getenv_err_t result = os_environ_get_key_buf_terminated(key, buf, sizeof(buf), &quoted);
-    if (result != ENVIRON_OK) {
+    os_getenv_err_t result = os_getenv_buf_terminated(key, buf, sizeof(buf), &quoted);
+    if (result != GETENV_OK) {
         return result;
     }
     if (quoted) {
-        return ENVIRON_ERR_UNEXPECTED | '"';
+        return GETENV_ERR_UNEXPECTED | '"';
     }
     char *end;
     long num = strtol(buf, &end, 0);
     if (end == buf || *end) { // If the whole buffer was not consumed it's an error
-        return ENVIRON_ERR_UNEXPECTED | *end;
+        return GETENV_ERR_UNEXPECTED | *end;
     }
     *value = (mp_int_t)num;
-    return ENVIRON_OK;
+    return GETENV_OK;
 }
