@@ -101,8 +101,6 @@ STATIC void seek_eof(file_arg *active_file) {
 STATIC void vstr_add_byte_nonstd(vstr_t *vstr, byte b) {
     if (!vstr->fixed_buf || vstr->alloc > vstr->len) {
         vstr_add_byte(vstr, b);
-    } else {
-        vstr->len++;
     }
 }
 
@@ -114,8 +112,6 @@ STATIC void vstr_add_char_nonstd(vstr_t *vstr, unichar c) {
         (c < 0x10000) ? 3 : 4;
     if (!vstr->fixed_buf || vstr->alloc > vstr->len + ulen) {
         vstr_add_char(vstr, c);
-    } else {
-        vstr->len += ulen;
     }
 }
 
