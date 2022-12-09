@@ -32,7 +32,7 @@ File format example:
    escape_codes="supported, including \\r\\n\\"\\\\"
    # comment
    [subtable]
-   subvalue="cannot retrieve this using _environ or getenv"
+   subvalue="cannot retrieve this using getenv"
 
 
 Details of the toml language subset
