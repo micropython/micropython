@@ -1002,7 +1002,7 @@ msgstr ""
 msgid "File exists"
 msgstr ""
 
-#: shared-module/_environ/__init__.c
+#: shared-module/os/getenv.c
 msgid "File not found"
 msgstr ""
 
@@ -1190,7 +1190,7 @@ msgid "Internal define error"
 msgstr ""
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
-#: shared-module/_environ/__init__.c
+#: shared-module/os/getenv.c
 msgid "Internal error"
 msgstr ""
 
@@ -1237,7 +1237,7 @@ msgstr ""
 msgid "Invalid bits per value"
 msgstr ""
 
-#: shared-module/_environ/__init__.c
+#: shared-module/os/getenv.c
 #, c-format
 msgid "Invalid byte %.*s"
 msgstr ""
@@ -1272,7 +1272,7 @@ msgstr ""
 msgid "Invalid state"
 msgstr ""
 
-#: shared-module/_environ/__init__.c
+#: shared-module/os/getenv.c
 msgid "Invalid unicode escape"
 msgstr ""
 
@@ -1280,7 +1280,7 @@ msgstr ""
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr ""
 
-#: shared-module/_environ/__init__.c
+#: shared-module/os/getenv.c
 msgid "Key not found"
 msgstr ""
 
