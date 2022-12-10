@@ -32,6 +32,8 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 
+#if MICROPY_PY_MICROPYTHON
+
 // Various builtins specific to MicroPython runtime,
 // living in micropython module
 
@@ -211,3 +213,5 @@ const mp_obj_module_t mp_module_micropython = {
 };
 
 MP_REGISTER_MODULE(MP_QSTR_micropython, mp_module_micropython);
+
+#endif // MICROPY_PY_MICROPYTHON

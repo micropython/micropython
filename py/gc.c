@@ -32,6 +32,10 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 
+#if MICROPY_DEBUG_VALGRIND
+#include <valgrind/memcheck.h>
+#endif
+
 #if MICROPY_ENABLE_GC
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -91,6 +95,12 @@
 #define BLOCK_FROM_PTR(area, ptr) (((byte *)(ptr) - area->gc_pool_start) / BYTES_PER_BLOCK)
 #define PTR_FROM_BLOCK(area, block) (((block) * BYTES_PER_BLOCK + (uintptr_t)area->gc_pool_start))
 
+// After the ATB, there must be a byte filled with AT_FREE so that gc_mark_tree
+// cannot erroneously conclude that a block extends past the end of the GC heap
+// due to bit patterns in the FTB (or first block, if finalizers are disabled)
+// being interpreted as AT_TAIL.
+#define ALLOC_TABLE_GAP_BYTE (1)
+
 #if MICROPY_ENABLE_FINALISER
 // FTB = finaliser table byte
 // if set, then the corresponding block may have a finaliser
@@ -119,16 +129,16 @@ STATIC void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
     size_t total_byte_len = (byte *)end - (byte *)start;
     #if MICROPY_ENABLE_FINALISER
-    area->gc_alloc_table_byte_len = total_byte_len * MP_BITS_PER_BYTE / (MP_BITS_PER_BYTE + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + MP_BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
+    area->gc_alloc_table_byte_len = (total_byte_len - ALLOC_TABLE_GAP_BYTE) * MP_BITS_PER_BYTE / (MP_BITS_PER_BYTE + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + MP_BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
     #else
-    area->gc_alloc_table_byte_len = total_byte_len / (1 + MP_BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
+    area->gc_alloc_table_byte_len = (total_byte_len - ALLOC_TABLE_GAP_BYTE) / (1 + MP_BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
     #endif
 
     area->gc_alloc_table_start = (byte *)start;
 
     #if MICROPY_ENABLE_FINALISER
     size_t gc_finaliser_table_byte_len = (area->gc_alloc_table_byte_len * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
-    area->gc_finaliser_table_start = area->gc_alloc_table_start + area->gc_alloc_table_byte_len;
+    area->gc_finaliser_table_start = area->gc_alloc_table_start + area->gc_alloc_table_byte_len + ALLOC_TABLE_GAP_BYTE;
     #endif
 
     size_t gc_pool_block_len = area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
@@ -139,12 +149,12 @@ STATIC void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     assert(area->gc_pool_start >= area->gc_finaliser_table_start + gc_finaliser_table_byte_len);
     #endif
 
-    // clear ATBs
-    memset(area->gc_alloc_table_start, 0, area->gc_alloc_table_byte_len);
-
     #if MICROPY_ENABLE_FINALISER
-    // clear FTBs
-    memset(area->gc_finaliser_table_start, 0, gc_finaliser_table_byte_len);
+    // clear ATBs and FTBs
+    memset(area->gc_alloc_table_start, 0, gc_finaliser_table_byte_len + area->gc_alloc_table_byte_len + ALLOC_TABLE_GAP_BYTE);
+    #else
+    // clear ATBs
+    memset(area->gc_alloc_table_start, 0, area->gc_alloc_table_byte_len + ALLOC_TABLE_GAP_BYTE);
     #endif
 
     area->gc_last_free_atb_index = 0;
@@ -152,6 +162,13 @@ STATIC void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     #if MICROPY_GC_SPLIT_HEAP
     area->next = NULL;
     #endif
+
+    DEBUG_printf("GC layout:\n");
+    DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(area).gc_alloc_table_start, MP_STATE_MEM(area).gc_alloc_table_byte_len, MP_STATE_MEM(area).gc_alloc_table_byte_len * BLOCKS_PER_ATB);
+    #if MICROPY_ENABLE_FINALISER
+    DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(area).gc_finaliser_table_start, gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
+    #endif
+    DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(area).gc_pool_start, gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
 }
 
 void gc_init(void *start, void *end) {
@@ -181,13 +198,6 @@ void gc_init(void *start, void *end) {
     #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_MEM(gc_mutex));
     #endif
-
-    DEBUG_printf("GC layout:\n");
-    DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_alloc_table_start), MP_STATE_MEM(gc_alloc_table_byte_len), MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB);
-    #if MICROPY_ENABLE_FINALISER
-    DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_finaliser_table_start), gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
-    #endif
-    DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
 }
 
 #if MICROPY_GC_SPLIT_HEAP
@@ -286,6 +296,9 @@ STATIC void gc_mark_subtree(size_t block)
         do {
             n_blocks += 1;
         } while (ATB_GET_KIND(area, block + n_blocks) == AT_TAIL);
+
+        // check that the consecutive blocks didn't overflow past the end of the area
+        assert(area->gc_pool_start + (block + n_blocks) * BYTES_PER_BLOCK <= area->gc_pool_end);
 
         // check this block's children
         void **ptrs = (void **)PTR_FROM_BLOCK(area, block);
@@ -449,6 +462,11 @@ void gc_collect_start(void) {
 __attribute__((no_sanitize_address))
 #endif
 static void *gc_get_ptr(void **ptrs, int i) {
+    #if MICROPY_DEBUG_VALGRIND
+    if (!VALGRIND_CHECK_MEM_IS_ADDRESSABLE(&ptrs[i], sizeof(*ptrs))) {
+        return NULL;
+    }
+    #endif
     return ptrs[i];
 }
 

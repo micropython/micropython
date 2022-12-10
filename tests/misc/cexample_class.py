@@ -7,14 +7,18 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-t = cexample.Timer()
 
-print(t)
-print(t.time() <= 1)
+SLEEP_MS = 100
+TOLERANCE_MS = 20
+
+timer = cexample.Timer()
+
+t_start = timer.time()
 
 time.sleep_ms(100)
 
-elapsed = t.time()
+t_end = timer.time()
 
-if not (99 <= elapsed <= 110):
-    print("Elapsed time should be approx. 100ms but it is", elapsed)
+print(timer)
+print(0 <= t_start <= TOLERANCE_MS)
+print(SLEEP_MS - TOLERANCE_MS <= t_end <= SLEEP_MS + TOLERANCE_MS)

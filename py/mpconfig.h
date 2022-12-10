@@ -510,6 +510,11 @@
 #define MICROPY_DEBUG_VM_STACK_OVERFLOW (0)
 #endif
 
+// Whether to enable extra instrumentation for valgrind
+#ifndef MICROPY_DEBUG_VALGRIND
+#define MICROPY_DEBUG_VALGRIND (0)
+#endif
+
 /*****************************************************************************/
 /* Optimisations                                                             */
 
@@ -1309,6 +1314,11 @@ typedef double mp_float_t;
 // Whether to provide "cmath" module
 #ifndef MICROPY_PY_CMATH
 #define MICROPY_PY_CMATH (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether to provide "micropython" module
+#ifndef MICROPY_PY_MICROPYTHON
+#define MICROPY_PY_MICROPYTHON (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to provide "gc" module

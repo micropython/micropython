@@ -101,4 +101,10 @@
 // HAL parameter assertions are disabled
 #define assert_param(expr) ((void)0)
 
+// The STM32H7xx HAL defines LPUART1 AF macros without numbers.
+#ifndef GPIO_AF3_LPUART1
+#define GPIO_AF3_LPUART1 GPIO_AF3_LPUART
+#define GPIO_AF8_LPUART1 GPIO_AF8_LPUART
+#endif
+
 #endif // MICROPY_INCLUDED_STM32H7XX_HAL_CONF_BASE_H

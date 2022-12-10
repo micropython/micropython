@@ -214,7 +214,7 @@ typedef struct _mp_module_context_t {
 
 // Outer level struct defining a compiled module.
 typedef struct _mp_compiled_module_t {
-    const mp_module_context_t *context;
+    mp_module_context_t *context;
     const struct _mp_raw_code_t *rc;
     #if MICROPY_PERSISTENT_CODE_SAVE
     bool has_native;
