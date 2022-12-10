@@ -8,9 +8,9 @@ repos:
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
-        exclude: '^(tests/.*\.toml|tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|ports/espressif/esp-idf-config/.*|ports/espressif/boards/.*/sdkconfig)'
+        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|ports/espressif/esp-idf-config/.*|ports/espressif/boards/.*/sdkconfig)'
     -   id: trailing-whitespace
-        exclude: '^(tests/.*\.toml|tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|lib/mbedtls_errors/.*)'
+        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|lib/mbedtls_errors/.*)'
 -   repo: local
     hooks:
     -   id: translations

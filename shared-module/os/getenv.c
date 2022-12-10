@@ -39,43 +39,29 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/memory.h"
 
-#define GETENV_PATH "settings.toml"
+#define GETENV_PATH "/settings.toml"
 
-#if defined(UNIX)
-typedef FILE *file_arg;
-STATIC bool open_file(const char *name, file_arg *active_file) {
-    FILE *result = fopen(name, "r");
-    if (result) {
-        *active_file = result;
-    }
-    return result != NULL;
-}
-STATIC void close_file(file_arg *active_file) {
-    fclose(*active_file);
-}
-STATIC bool is_eof(file_arg *active_file) {
-    return feof(*active_file);
-}
-STATIC uint8_t get_next_byte(file_arg *active_file) {
-    int value = fgetc(*active_file);
-    if (value == EOF) {
-        return 0;
-    }
-    return value;
-}
-__attribute__((unused))
-STATIC void seek_eof(file_arg *active_file) {
-    fseek(*active_file, 0, SEEK_END);
-    (void)fgetc(*active_file);
-}
-#else
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 typedef FIL file_arg;
 STATIC bool open_file(const char *name, file_arg *active_file) {
+    #if defined(UNIX)
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t file_obj = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), mp_obj_new_str(name, strlen(name)), MP_ROM_QSTR(MP_QSTR_rb));
+        mp_arg_validate_type(file_obj, &mp_type_vfs_fat_fileio, MP_QSTR_file);
+        pyb_file_obj_t *file = MP_OBJ_TO_PTR(file_obj);
+        *active_file = file->fp;
+        nlr_pop();
+        return true;
+    } else {
+        return false;
+    }
+    #else
     FATFS *fs = filesystem_circuitpy();
     FRESULT result = f_open(fs, active_file, name, FA_READ);
     return result == FR_OK;
+    #endif
 }
 STATIC void close_file(file_arg *active_file) {
     // nothing
@@ -95,7 +81,6 @@ STATIC uint8_t get_next_byte(FIL *active_file) {
 STATIC void seek_eof(file_arg *active_file) {
     f_lseek(active_file, f_size(active_file));
 }
-#endif
 
 // For a fixed buffer, record the required size rather than throwing
 STATIC void vstr_add_byte_nonstd(vstr_t *vstr, byte b) {
@@ -363,7 +348,7 @@ mp_obj_t common_hal_os_getenv_path(const char *path, const char *key, mp_obj_t d
 
     vstr_init(&buf, 64);
     os_getenv_err_t result = os_getenv_vstr(path, key, &buf, &quoted);
-    if (result == GETENV_ERR_NOT_FOUND) {
+    if (result == GETENV_ERR_NOT_FOUND || result == GETENV_ERR_OPEN) {
         return default_;
     }
     throw_getenv_error(result);

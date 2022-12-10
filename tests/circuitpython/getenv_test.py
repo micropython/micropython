@@ -1,20 +1,78 @@
-def run_test(f, k=None):
+import uos
+
+uos.umount("/")
+
+
+class RAMBlockDevice:
+    ERASE_BLOCK_SIZE = 512
+
+    def __init__(self, blocks):
+        self.data = bytearray(blocks * self.ERASE_BLOCK_SIZE)
+
+    def readblocks(self, block, buf, off=0):
+        addr = block * self.ERASE_BLOCK_SIZE + off
+        for i in range(len(buf)):
+            buf[i] = self.data[addr + i]
+
+    def writeblocks(self, block, buf, off=None):
+        if off is None:
+            # erase, then write
+            off = 0
+        addr = block * self.ERASE_BLOCK_SIZE + off
+        for i in range(len(buf)):
+            self.data[addr + i] = buf[i]
+
+    def ioctl(self, op, arg):
+        if op == 4:  # block count
+            return len(self.data) // self.ERASE_BLOCK_SIZE
+        if op == 5:  # block size
+            return self.ERASE_BLOCK_SIZE
+        if op == 6:  # erase block
+            return 0
+
+
+bdev = RAMBlockDevice(64)
+uos.VfsFat.mkfs(bdev)
+uos.mount(uos.VfsFat(bdev), "/")
+
+content_good = """
+# comment
+key0 = "hello world"
+key1 = 7
+ cstring = "hello comment" # comment
+  cnumber = 0x7f # comment
+key2= "\n"
+key3 ="\u00c1x"
+key4 = "\U000000c1x"
+key5 = "\f\"\\"
+key6 = "\t\r\b"
+key7 = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+key8 = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+[section]
+subvalue = "hi"
+"""
+
+content_bad = [
+    'key = "\n',
+    'key = """\n',
+    "key =\n",
+    'key="',
+]
+
+
+def run_test(key, content):
+    with open("/settings.toml", "w") as f:
+        f.write(content)
+
     try:
-        v = getenv_from_file(f"{BASE}/{f}.toml", k or f)
-        print(f, k, repr(v))
+        v = uos.getenv(key)
+        print(key, repr(v))
     except Exception as e:
-        print(f, k, str(e))
+        print(key, str(e))
 
 
-BASE = __file__.rpartition("/")[0] or "."
+for i in range(9):
+    run_test(f"key{i}", content_good)
 
-run_test("good", "notpresent")
-run_test("good", "string")
-run_test("good", "number")
-run_test("good", "cstring")
-run_test("good", "cnumber")
-run_test("good", "subvalue")
-for i in range(8):
-    run_test("good", f"string{i}")
-for i in range(1, 5):
-    run_test(f"bad{i}", f"string")
+for content in content_bad:
+    run_test("key", content)

@@ -420,13 +420,6 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 #define PATHLIST_SEP_CHAR ':'
 #endif
 
-mp_obj_t common_hal_os_getenv_path(const char *path, const char *key, mp_obj_t default_);
-STATIC mp_obj_t getenv_from_file(mp_obj_t path_in, mp_obj_t key_to_get_in) {
-    return common_hal_os_getenv_path(mp_obj_str_get_str(path_in),
-        mp_obj_str_get_str(key_to_get_in), mp_const_none);
-}
-MP_DEFINE_CONST_FUN_OBJ_2(getenv_from_file_obj, getenv_from_file);
-
 MP_NOINLINE int main_(int argc, char **argv);
 
 int main(int argc, char **argv) {
@@ -547,7 +540,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
         MP_DECLARE_CONST_FUN_OBJ_0(extra_cpp_coverage_obj);
         mp_store_global(MP_QSTR_extra_coverage, MP_OBJ_FROM_PTR(&extra_coverage_obj));
         mp_store_global(MP_QSTR_extra_cpp_coverage, MP_OBJ_FROM_PTR(&extra_cpp_coverage_obj));
-        mp_store_global(MP_QSTR_getenv_from_file, MP_OBJ_FROM_PTR(&getenv_from_file_obj));
     }
     #endif
 
