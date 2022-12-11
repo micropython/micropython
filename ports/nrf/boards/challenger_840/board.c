@@ -25,5 +25,12 @@
  */
 
 #include "supervisor/board.h"
+#include "nrf_gpio.h"
+
+#define PORTPIN(x, y)     (x * 32 + y)
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
+void board_init(void) {
+  nrf_gpio_cfg_output(PORTPIN(1, 9));
+  nrf_gpio_pin_write(PORTPIN(1, 9), 1);
+}
