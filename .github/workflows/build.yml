@@ -138,7 +138,7 @@ jobs:
     - name: Get changes
       id: get-changes
       if: github.event_name == 'pull_request'
-      uses: tj-actions/changed-files@v34.5.3
+      uses: tj-actions/changed-files@v34.5.1
       with:
         json: true
         sha: ${{ steps.get-last-commit-with-checks.outputs.commit && github.event.after }}
