@@ -61,7 +61,7 @@
 //|         scroll_area: displayio.TileGrid,
 //|         font: fontio.BuiltinFont,
 //|         *,
-//|         status_bar: displayio.TileGrid = None
+//|         status_bar: Optional[displayio.TileGrid] = None
 //|     ) -> None:
 //|         """Terminal manages tile indices and cursor position based on VT100 commands. The font should be
 //|         a `fontio.BuiltinFont` and the TileGrid's bitmap should match the font's bitmap."""

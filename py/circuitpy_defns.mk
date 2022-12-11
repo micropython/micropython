@@ -266,6 +266,9 @@ endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += adafruit_pixelbuf/%
 endif
+ifeq ($(CIRCUITPY_PIXELMAP),1)
+SRC_PATTERNS += _pixelmap/%
+endif
 ifeq ($(CIRCUITPY_QRIO),1)
 SRC_PATTERNS += qrio/%
 endif
@@ -543,6 +546,8 @@ SRC_SHARED_MODULE_ALL = \
 	_eve/__init__.c \
 	adafruit_pixelbuf/PixelBuf.c \
 	adafruit_pixelbuf/__init__.c \
+	_pixelmap/PixelMap.c \
+	_pixelmap/__init__.c \
 	_stage/Layer.c \
 	_stage/Text.c \
 	_stage/__init__.c \

@@ -423,8 +423,21 @@ STATIC mp_obj_t displayio_display_obj_get_root_group(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_root_group_obj, displayio_display_obj_get_root_group);
 
-MP_PROPERTY_GETTER(displayio_display_root_group_obj,
-    (mp_obj_t)&displayio_display_get_root_group_obj);
+STATIC mp_obj_t displayio_display_obj_set_root_group(mp_obj_t self_in, mp_obj_t group_in) {
+    displayio_display_obj_t *self = native_display(self_in);
+    displayio_group_t *group = NULL;
+    if (group_in != mp_const_none) {
+        group = MP_OBJ_TO_PTR(native_group(group_in));
+    }
+
+    common_hal_displayio_display_set_root_group(self, group);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_set_root_group_obj, displayio_display_obj_set_root_group);
+
+MP_PROPERTY_GETSET(displayio_display_root_group_obj,
+    (mp_obj_t)&displayio_display_get_root_group_obj,
+    (mp_obj_t)&displayio_display_set_root_group_obj);
 
 
 //|     def fill_row(self, y: int, buffer: WriteableBuffer) -> WriteableBuffer:

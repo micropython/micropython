@@ -23,7 +23,7 @@ jobs:
     - name: Set up Python 3
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: "3.x"
     - name: Get CP deps
       run: python tools/ci_fetch_deps.py website ${{ github.sha }}
     - name: Install deps

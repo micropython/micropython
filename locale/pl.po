@@ -111,13 +111,9 @@ msgstr "%q niepowodzenie: %d"
 msgid "%q in use"
 msgstr "%q w użyciu"
 
-#: py/obj.c py/objstr.c py/objstrunicode.c
+#: py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "%q poza zakresem"
-
-#: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "%q indeks musi być liczbą całkowitą, a nie %s"
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
@@ -127,7 +123,7 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
 
@@ -141,10 +137,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
-
-#: shared-bindings/busio/I2C.c
-msgid "%q length must be >= 1"
 msgstr ""
 
 #: py/argcheck.c
@@ -168,23 +160,18 @@ msgid "%q must be >= %d"
 msgstr ""
 
 #: shared-bindings/analogbufio/BufferedIn.c
+msgid "%q must be a bytearray or array of type 'H' or 'B'"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must be a string"
-msgstr ""
-
-#: py/argcheck.c
-msgid "%q must be an int"
-msgstr ""
-
-#: py/argcheck.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q"
 msgstr ""
 
-#: shared-bindings/digitalio/Pull.c
+#: py/objexcept.c shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or None"
 msgstr ""
 
@@ -210,8 +197,8 @@ msgstr "%q poza zakresem"
 msgid "%q pin invalid"
 msgstr "nieprawidłowy pin %q"
 
-#: shared-bindings/usb_hid/Device.c
-msgid "%q with a report ID of 0 must be of length 1"
+#: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
+msgid "%q step cannot be zero"
 msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
@@ -519,10 +506,6 @@ msgstr "Tablica musi zawierać pół-słowa (typ 'H')"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Wartości powinny być bajtami."
-
-#: shared-bindings/microcontroller/Pin.c
-msgid "At most %d %q may be specified (not %d)"
-msgstr ""
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -907,6 +890,10 @@ msgstr ""
 msgid "Drive mode not used when direction is input."
 msgstr "Tryb sterowania nieużywany w trybie wejścia."
 
+#: py/obj.c
+msgid "During handling of the above exception, another exception occurred:"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
 msgstr "ECB działa tylko na 16 bajtach naraz"
@@ -1271,10 +1258,6 @@ msgstr "Nieprawidłowy dostęp do pamięci."
 msgid "Invalid multicast MAC address"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "Invalid pins"
-msgstr "Złe nóżki"
-
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "Nieprawidłowy rozmiar"
@@ -1512,11 +1495,6 @@ msgstr "Nie określono klucza"
 msgid "No long integer support"
 msgstr ""
 
-#: shared-module/usb_hid/__init__.c
-#, c-format
-msgid "No more than %d HID devices allowed"
-msgstr ""
-
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr ""
@@ -1676,6 +1654,10 @@ msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/mdns/Server.c
+msgid "Out of MDNS service slots"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
@@ -1982,6 +1964,10 @@ msgstr ""
 msgid "Stereo right must be on PWM channel B"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Stopping AP is not supported."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr "Podaj co najmniej jeden pin UART"
@@ -2020,6 +2006,10 @@ msgstr ""
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode."
+msgstr ""
+
+#: py/obj.c
+msgid "The above exception was the direct cause of the following exception:"
 msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
@@ -2207,6 +2197,7 @@ msgid "Unable to read color palette data"
 msgstr "Nie można odczytać danych palety"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr ""
 
@@ -2282,6 +2273,7 @@ msgid "Unkown error code %d"
 msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelMap.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr "Zła liczba obiektów po prawej stronie (oczekiwano %d, jest %d)."
@@ -2352,10 +2344,6 @@ msgstr ""
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
 
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr "WatchDogTimer.timeout musi być większe od 0"
-
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -2368,6 +2356,18 @@ msgstr ""
 
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is in access point mode."
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is in station mode."
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is not enabled"
 msgstr ""
 
 #: main.c
@@ -2551,10 +2551,6 @@ msgstr "zbyt mały bufor"
 msgid "buffer too small for requested bytes"
 msgstr ""
 
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
-msgstr ""
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr ""
@@ -2596,13 +2592,9 @@ msgstr "przypisanie do wyrażenia"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "nie można dokonać konwersji %q na %q"
-
-#: py/runtime.c
-msgid "can't convert %q to int"
-msgstr ""
 
 #: py/obj.c
 #, c-format
@@ -2787,10 +2779,6 @@ msgstr "kolor musi być pomiędzy 0x000000 a 0xffffff"
 msgid "comparison of int and uint"
 msgstr ""
 
-#: py/objcomplex.c
-msgid "complex division by zero"
-msgstr "zespolone dzielenie przez zero"
-
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr "wartości zespolone nieobsługiwane"
@@ -2894,12 +2882,7 @@ msgstr ""
 msgid "div/mod not implemented for uint"
 msgstr ""
 
-#: py/objfloat.c py/objint_mpz.c
-msgid "divide by zero"
-msgstr ""
-
-#: py/modmath.c py/objint_longlong.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: py/runtime.c
 msgid "division by zero"
 msgstr "dzielenie przez zero"
 
@@ -3172,15 +3155,15 @@ msgstr "złe wypełnienie"
 msgid "index is out of bounds"
 msgstr "indeks jest poza zakresem"
 
+#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+msgid "index must be tuple or int"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "indeks poza zakresem"
-
-#: py/obj.c
-msgid "indices must be integers"
-msgstr "indeksy muszą być całkowite"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
@@ -3275,10 +3258,6 @@ msgstr "wektory wejściowe muszą być równej długości"
 msgid "inputs are not iterable"
 msgstr ""
 
-#: py/parsenum.c
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "argument 2 do int() busi być pomiędzy 2 a 36"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
@@ -3360,10 +3339,6 @@ msgstr "zła składnia dla liczby całkowitej w bazie %d"
 msgid "invalid syntax for number"
 msgstr "zła składnia dla liczby"
 
-#: py/objexcept.c
-msgid "invalid traceback"
-msgstr ""
-
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr "argument 1 dla issubclass() musi być klasą"
@@ -3420,19 +3395,17 @@ msgstr "local '%q' użyty zanim typ jest znany"
 msgid "local variable referenced before assignment"
 msgstr "zmienna lokalna użyta przed przypisaniem"
 
-#: py/objint.c
-msgid "long int not supported in this build"
-msgstr "long int jest nieobsługiwany"
-
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
 msgstr ""
 
@@ -3561,6 +3534,10 @@ msgstr "ujemna potęga, ale brak obsługi liczb zmiennoprzecinkowych"
 msgid "negative shift count"
 msgstr "ujemne przesunięcie"
 
+#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+msgid "nested index must be int"
+msgstr ""
+
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
 msgstr ""
@@ -3597,10 +3574,6 @@ msgstr ""
 #: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "nie ma takiego atrybutu"
-
-#: shared-bindings/usb_hid/__init__.c
-msgid "non-Device in %q"
-msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
@@ -3726,10 +3699,20 @@ msgid "offset out of bounds"
 msgstr "offset poza zakresem"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
 msgstr "obsługiwane jest tylko bit_depth=16"
 
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only mono is supported"
+msgstr ""
+
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only oversample=64 is supported"
+msgstr ""
+
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr "obsługiwane jest tylko sample_rate=16000"
 
@@ -3876,11 +3859,6 @@ msgstr "rzeczywiste i urojone części muszą mieć jednakową długość"
 msgid "relative import"
 msgstr "relatywny import"
 
-#: py/obj.c
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr "zażądano długości %d ale obiekt ma długość %d"
-
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
 msgstr ""
@@ -3944,10 +3922,6 @@ msgstr "znak jest niedopuszczalny w specyfikacji formatu łańcucha"
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "znak jest niedopuszczalny w specyfikacji 'c'"
 
-#: py/objstr.c
-msgid "single '}' encountered in format string"
-msgstr "pojedynczy '}' w specyfikacji formatu"
-
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
 msgstr ""
@@ -3959,10 +3933,6 @@ msgstr "okres snu musi być nieujemny"
 #: extmod/ulab/code/ndarray.c
 msgid "slice step can't be zero"
 msgstr ""
-
-#: py/objslice.c
-msgid "slice step cannot be zero"
-msgstr "zerowy krok"
 
 #: py/nativeglue.c
 msgid "slice unsupported"
@@ -4013,20 +3983,12 @@ msgid "start/end indices"
 msgstr "początkowe/końcowe indeksy"
 
 #: shared-bindings/random/__init__.c
-msgid "step must be non-zero"
-msgstr "step nie może być zerowe"
-
-#: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
 msgstr "stop nie jest osiągalne ze start"
 
 #: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "operacja na strumieniu nieobsługiwana"
-
-#: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
-msgstr ""
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -4060,23 +4022,11 @@ msgstr "błąd składni w JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "błąd składni w deskryptorze uctypes"
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr "threshold musi być w zakresie 0-65536"
-
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes a 9-sequence"
-msgstr "time.struct_time() wymaga 9-elementowej sekwencji"
-
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
-msgstr ""
-
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -4131,10 +4081,6 @@ msgstr ""
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr ""
-
-#: py/obj.c
-msgid "tuple/list has wrong length"
-msgstr "krotka/lista ma złą długość"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4214,8 +4160,9 @@ msgid "unknown type '%q'"
 msgstr "zły typ '%q'"
 
 #: py/objstr.c
-msgid "unmatched '{' in format"
-msgstr "niepasujące '{' for formacie"
+#, c-format
+msgid "unmatched '%c' in format"
+msgstr ""
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4283,10 +4230,6 @@ msgstr "value_count musi być > 0"
 
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4360,10 +4303,6 @@ msgstr ""
 msgid "y value out of bounds"
 msgstr "y poza zakresem"
 
-#: py/objrange.c
-msgid "zero step"
-msgstr "zerowy krok"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr ""
@@ -4375,6 +4314,55 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Invalid pins"
+#~ msgstr "Złe nóżki"
+
+#~ msgid "complex division by zero"
+#~ msgstr "zespolone dzielenie przez zero"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "argument 2 do int() busi być pomiędzy 2 a 36"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "long int jest nieobsługiwany"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "zerowy krok"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "step nie może być zerowe"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() wymaga 9-elementowej sekwencji"
+
+#~ msgid "zero step"
+#~ msgstr "zerowy krok"
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "%q indeks musi być liczbą całkowitą, a nie %s"
+
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.timeout musi być większe od 0"
+
+#~ msgid "indices must be integers"
+#~ msgstr "indeksy muszą być całkowite"
+
+#, c-format
+#~ msgid "requested length %d but object has length %d"
+#~ msgstr "zażądano długości %d ale obiekt ma długość %d"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "pojedynczy '}' w specyfikacji formatu"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "threshold musi być w zakresie 0-65536"
+
+#~ msgid "tuple/list has wrong length"
+#~ msgstr "krotka/lista ma złą długość"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "niepasujące '{' for formacie"
 
 #~ msgid "To exit, please reset the board without "
 #~ msgstr "By wyjść, proszę zresetować płytkę bez "

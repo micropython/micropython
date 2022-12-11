@@ -53,8 +53,10 @@ STATIC void check_result(digitalinout_result_t result) {
             return;
         case DIGITALINOUT_PIN_BUSY:
             mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_Pin);
+        #if CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY
         case DIGITALINOUT_INPUT_ONLY:
             mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_direction);
+        #endif
         #if CIRCUITPY_DIGITALIO_HAVE_INVALID_PULL
         case DIGITALINOUT_INVALID_PULL:
             mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_pull);
@@ -64,6 +66,10 @@ STATIC void check_result(digitalinout_result_t result) {
             mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_drive_mode);
         #endif
     }
+}
+
+MP_WEAK const mcu_pin_obj_t *common_hal_digitalio_validate_pin(mp_obj_t obj) {
+    return validate_obj_is_free_pin(obj);
 }
 
 //| class DigitalInOut:
@@ -87,14 +93,7 @@ STATIC mp_obj_t digitalio_digitalinout_make_new(const mp_obj_type_t *type,
     digitalio_digitalinout_obj_t *self = m_new_obj(digitalio_digitalinout_obj_t);
     self->base.type = &digitalio_digitalinout_type;
 
-    #if CIRCUITPY_CYW43
-    // The GPIO pin attached to the CYW43 co-processor can only be used for
-    // DigitalInOut, not for other purposes like PWM. That's why this check
-    // is here, and it's not rolled into validate_obj_is_free_pin.
-    const mcu_pin_obj_t *pin = validate_obj_is_free_pin_including_cyw43(args[0]);
-    #else
-    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
-    #endif
+    const mcu_pin_obj_t *pin = common_hal_digitalio_validate_pin(args[0]);
     common_hal_digitalio_digitalinout_construct(self, pin);
 
     return MP_OBJ_FROM_PTR(self);

@@ -91,9 +91,7 @@ extern const busio_uart_parity_obj_t busio_uart_parity_odd_obj;
 
 #if CIRCUITPY_BUSIO_UART
 STATIC void validate_timeout(mp_float_t timeout) {
-    if (timeout < (mp_float_t)0.0f || timeout > (mp_float_t)100.0f) {
-        mp_raise_ValueError(translate("timeout must be 0.0-100.0 seconds"));
-    }
+    mp_arg_validate_int_range((int)timeout, 0, 100, MP_QSTR_timeout);
 }
 #endif  // CIRCUITPY_BUSIO_UART
 
@@ -157,7 +155,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
         args[ARG_receiver_buffer_size].u_int, NULL, false);
     return (mp_obj_t)self;
     #else
-    mp_raise_ValueError(translate("Invalid pins"));
+    mp_raise_NotImplementedError(NULL);
     #endif  // CIRCUITPY_BUSIO_UART
 }
 

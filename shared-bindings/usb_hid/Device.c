@@ -155,7 +155,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     }
 
     if (report_ids_array[0] == 0 && report_ids_count > 1) {
-        mp_raise_ValueError_varg(translate("%q with a report ID of 0 must be of length 1"), MP_QSTR_report_ids);
+        mp_raise_ValueError_varg(translate("%q length must be %d"), MP_QSTR_report_id_space_0, 1);
     }
 
     common_hal_usb_hid_device_construct(

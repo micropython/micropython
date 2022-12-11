@@ -34,15 +34,23 @@
 extern const mp_obj_type_t socketpool_socketpool_type;
 
 typedef enum {
-    SOCKETPOOL_SOCK_STREAM,
-    SOCKETPOOL_SOCK_DGRAM,
-    SOCKETPOOL_SOCK_RAW
+    SOCKETPOOL_SOCK_STREAM = 1,
+    SOCKETPOOL_SOCK_DGRAM = 2,
+    SOCKETPOOL_SOCK_RAW = 3
 } socketpool_socketpool_sock_t;
 
 typedef enum {
-    SOCKETPOOL_AF_INET,
-    SOCKETPOOL_AF_INET6
+    SOCKETPOOL_AF_INET = 2,
+    SOCKETPOOL_AF_INET6 = 10
 } socketpool_socketpool_addressfamily_t;
+
+typedef enum {
+    SOCKETPOOL_IPPROTO_TCP = 6,
+} socketpool_socketpool_ipproto_t;
+
+typedef enum {
+    SOCKETPOOL_TCP_NODELAY = 1,
+} socketpool_socketpool_tcpopt_t;
 
 void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *self, mp_obj_t radio);
 

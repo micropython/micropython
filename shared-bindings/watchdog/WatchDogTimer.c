@@ -94,9 +94,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_timeout(mp_obj_t self_in, mp_obj_
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_float_t timeout = mp_obj_get_float(timeout_obj);
 
-    if (timeout <= 0) {
-        mp_raise_ValueError(translate("watchdog timeout must be greater than 0"));
-    }
+    mp_arg_validate_int_min((int)timeout, 0, MP_QSTR_timeout);
 
     common_hal_watchdog_set_timeout(self, timeout);
     return mp_const_none;
@@ -136,9 +134,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t m
 
     // When setting the mode, the timeout value must be greater than zero
     if (new_mode == WATCHDOGMODE_RESET || new_mode == WATCHDOGMODE_RAISE) {
-        if (current_timeout <= 0) {
-            mp_raise_ValueError(translate("WatchDogTimer.timeout must be greater than 0"));
-        }
+        mp_arg_validate_int_min((int)current_timeout, 0, MP_QSTR_timeout);
     }
 
     // Don't allow changing the mode once the watchdog timer has been started

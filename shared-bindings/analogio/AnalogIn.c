@@ -36,6 +36,10 @@
 #include "shared-bindings/analogio/AnalogIn.h"
 #include "shared-bindings/util.h"
 
+MP_WEAK const mcu_pin_obj_t *common_hal_analogio_analogin_validate_pin(mp_obj_t obj) {
+    return validate_obj_is_free_pin(obj);
+}
+
 //| class AnalogIn:
 //|     """Read analog voltage levels
 //|
@@ -60,8 +64,7 @@ STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // 1st argument is the pin
-    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
-
+    const mcu_pin_obj_t *pin = common_hal_analogio_analogin_validate_pin(args[0]);
     analogio_analogin_obj_t *self = m_new_obj(analogio_analogin_obj_t);
     self->base.type = &analogio_analogin_type;
     common_hal_analogio_analogin_construct(self, pin);

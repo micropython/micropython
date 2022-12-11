@@ -65,6 +65,7 @@ name2codepoint["tilde"] = ord("~")
 # These are just vexing!
 del name2codepoint["and"]
 del name2codepoint["or"]
+del name2codepoint["not"]
 
 
 def preprocess():

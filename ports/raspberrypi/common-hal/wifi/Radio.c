@@ -42,18 +42,11 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/ipaddress/__init__.h"
 
-#if CIRCUITPY_MDNS
-#include "components/mdns/include/mdns.h"
-#endif
-
+#include "lwip/sys.h"
 #include "lwip/dns.h"
 #include "lwip/icmp.h"
 #include "lwip/raw.h"
 #include "lwip_src/ping.h"
-
-#ifndef PING_ID
-#define PING_ID        0xAFAF
-#endif
 
 #define MAC_ADDRESS_LENGTH 6
 
@@ -76,13 +69,12 @@ NORETURN static void ro_attribute(int attr) {
 }
 
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
-    return true;
+    return self->enabled;
 }
 
 void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
-    if (!enabled) {
-        ro_attribute(MP_QSTR_enabled);
-    }
+    self->enabled = enabled;
+    // TODO: Actually enable and disable the WiFi module at this point.
 }
 
 mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self) {
@@ -97,6 +89,10 @@ void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *host
     memcpy(self->hostname, hostname, strlen(hostname));
     netif_set_hostname(NETIF_STA, self->hostname);
     netif_set_hostname(NETIF_AP, self->hostname);
+}
+
+void wifi_radio_get_mac_address(wifi_radio_obj_t *self, uint8_t *mac) {
+    memcpy(mac, cyw43_state.mac, MAC_ADDRESS_LENGTH);
 }
 
 mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
@@ -137,7 +133,7 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, u
         mp_raise_RuntimeError(translate("Already scanning for wifi networks"));
     }
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
+        mp_raise_RuntimeError(translate("Wifi is not enabled"));
     }
     wifi_scannednetworks_obj_t *scan = m_new_obj(wifi_scannednetworks_obj_t);
     scan->base.type = &wifi_scannednetworks_type;
@@ -158,35 +154,78 @@ void common_hal_wifi_radio_start_station(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
+
     cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
     // This is wrong, but without this call the state of ITF_STA is still
     // reported as CYW43_LINK_JOIN (by wifi_link_status) and CYW43_LINK_UP
-    // (by tcpip_link_status). Until AP support is added, we can ignore the
-    // problem.
+    // (by tcpip_link_status). However since ap disconnection isn't working
+    // either, this is not an issue.
     cyw43_wifi_leave(&cyw43_state, CYW43_ITF_AP);
+
     bindings_cyw43_wifi_enforce_pm();
 }
 
-void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode, uint8_t max_connections) {
-    mp_raise_NotImplementedError(NULL);
+void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint32_t authmodes, uint8_t max_connections) {
+    if (!common_hal_wifi_radio_get_enabled(self)) {
+        mp_raise_RuntimeError(translate("Wifi is not enabled"));
+    }
+
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_DOWN) {
+        mp_raise_RuntimeError(translate("Wifi is in station mode."));
+    }
+
+    common_hal_wifi_radio_stop_ap(self);
+
+    // Channel can only be changed after inital powerup and config of ap.
+    // Defaults to 1 if not set or invalid (i.e. 13)
+    cyw43_wifi_ap_set_channel(&cyw43_state, (const uint32_t)channel);
+
+    cyw43_arch_enable_ap_mode((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK);
+
+    // TODO: Implement authmode check like in espressif
     bindings_cyw43_wifi_enforce_pm();
 }
 
 void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
-    mp_raise_NotImplementedError(NULL);
+    if (!common_hal_wifi_radio_get_enabled(self)) {
+        mp_raise_RuntimeError(translate("wifi is not enabled"));
+    }
+
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_DOWN) {
+        mp_raise_NotImplementedError(translate("Stopping AP is not supported."));
+    }
+
+    /*
+     * AP cannot be disconnected. cyw43_wifi_leave is broken.
+     * This code snippet should work, but doesn't.
+     *
+     * cyw43_wifi_leave(&cyw43_state, CYW43_ITF_AP);
+     * cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
+     *
+     * bindings_cyw43_wifi_enforce_pm();
+     */
 }
 
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
+        mp_raise_RuntimeError(translate("Wifi is not enabled"));
     }
+
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_DOWN) {
+        mp_raise_RuntimeError(translate("Wifi is in access point mode."));
+    }
+
 
     size_t timeout_ms = timeout <= 0 ? 8000 : (size_t)MICROPY_FLOAT_C_FUN(ceil)(timeout * 1000);
     uint64_t start = port_get_raw_ticks(NULL);
     uint64_t deadline = start + timeout_ms;
 
+    // disconnect
+    common_hal_wifi_radio_stop_station(self);
+
     // connect
     cyw43_arch_wifi_connect_async((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK);
+    // TODO: Implement authmode check like in espressif
 
     while (port_get_raw_ticks(NULL) < deadline) {
         RUN_BACKGROUND_TASKS;
@@ -245,6 +284,13 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(NETIF_AP->netmask.addr);
 }
 
+uint32_t wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
+        return 0;
+    }
+    return NETIF_STA->ip_addr.addr;
+}
+
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
     if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
         return mp_const_none;
@@ -295,6 +341,7 @@ void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv
 }
 
 volatile bool ping_received;
+uint32_t ping_time;
 
 static u8_t
 ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr) {
@@ -303,6 +350,7 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
 
     if ((p->tot_len >= (PBUF_IP_HLEN + sizeof(struct icmp_echo_hdr))) &&
         pbuf_remove_header(p, PBUF_IP_HLEN) == 0) {
+
         iecho = (struct icmp_echo_hdr *)p->payload;
 
         if ((iecho->id == PING_ID) && (iecho->seqno == lwip_htons(ping_seq_num))) {
@@ -322,6 +370,7 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
 }
 
 mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout) {
+    ping_time = sys_now();
     ip_addr_t ping_addr;
     ipaddress_ipaddress_to_lwip(ip_address, &ping_addr);
 

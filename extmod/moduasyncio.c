@@ -83,7 +83,7 @@ STATIC mp_obj_t ticks(void) {
 // shared-bindings/supervisor/__init__.c). We assume/require that
 // supervisor.ticks_ms is picked as the ticks implementation under
 // CircuitPython for the Python-coded bits of asyncio.
-#define ticks() MP_OBJ_NEW_SMALL_INT(supervisor_ticks_ms())
+#define ticks() supervisor_ticks_ms()
 #endif
 
 STATIC mp_int_t ticks_diff(mp_obj_t t1_in, mp_obj_t t0_in) {

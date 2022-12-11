@@ -31,6 +31,8 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/socketpool/SocketPool.h"
+#include "shared-bindings/ssl/SSLSocket.h"
+#include "common-hal/ssl/SSLSocket.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/workflow.h"
@@ -44,7 +46,7 @@
 StackType_t socket_select_stack[2 * configMINIMAL_STACK_SIZE];
 
 STATIC int open_socket_fds[CONFIG_LWIP_MAX_SOCKETS];
-STATIC bool user_socket[CONFIG_LWIP_MAX_SOCKETS];
+STATIC socketpool_socket_obj_t *user_socket[CONFIG_LWIP_MAX_SOCKETS];
 StaticTask_t socket_select_task_handle;
 STATIC int socket_change_fd = -1;
 
@@ -117,7 +119,7 @@ void socket_user_reset(void) {
 
         for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_fds); i++) {
             open_socket_fds[i] = -1;
-            user_socket[i] = false;
+            user_socket[i] = NULL;
         }
         socket_change_fd = eventfd(0, 0);
         // Run this at the same priority as CP so that the web workflow background task can be
@@ -134,12 +136,13 @@ void socket_user_reset(void) {
 
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_fds); i++) {
         if (open_socket_fds[i] >= 0 && user_socket[i]) {
+            common_hal_socketpool_socket_close(user_socket[i]);
             int num = open_socket_fds[i];
             // Close automatically clears socket handle
             lwip_shutdown(num, SHUT_RDWR);
             lwip_close(num);
             open_socket_fds[i] = -1;
-            user_socket[i] = false;
+            user_socket[i] = NULL;
         }
     }
 }
@@ -171,10 +174,10 @@ STATIC void unregister_open_socket(int fd) {
     }
 }
 
-STATIC void mark_user_socket(int fd) {
+STATIC void mark_user_socket(int fd, socketpool_socket_obj_t *obj) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_fds); i++) {
         if (open_socket_fds[i] == fd) {
-            user_socket[i] = true;
+            user_socket[i] = obj;
             return;
         }
     }
@@ -236,11 +239,11 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     if (!socketpool_socket(self, family, type, sock)) {
         mp_raise_RuntimeError(translate("Out of sockets"));
     }
-    mark_user_socket(sock->num);
+    mark_user_socket(sock->num, sock);
     return sock;
 }
 
-int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port) {
+int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port, socketpool_socket_obj_t *accepted) {
     struct sockaddr_in accept_addr;
     socklen_t socklen = sizeof(accept_addr);
     int newsoc = -1;
@@ -274,23 +277,36 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         lwip_close(newsoc);
         return -MP_EBADF;
     }
+
+
+    if (accepted != NULL) {
+        // Close the active socket because we have another we accepted.
+        if (!common_hal_socketpool_socket_get_closed(accepted)) {
+            common_hal_socketpool_socket_close(accepted);
+        }
+        // Create the socket
+        accepted->num = newsoc;
+        accepted->pool = self->pool;
+        accepted->connected = true;
+        lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
+    }
+
     return newsoc;
 }
 
 socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *self,
     uint8_t *ip, uint32_t *port) {
-    int newsoc = socketpool_socket_accept(self, ip, port);
+    socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
+    int newsoc = socketpool_socket_accept(self, ip, port, NULL);
 
     if (newsoc > 0) {
-        mark_user_socket(newsoc);
         // Create the socket
-        socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
+        mark_user_socket(newsoc, sock);
         sock->base.type = &socketpool_socket_type;
         sock->num = newsoc;
         sock->pool = self->pool;
         sock->connected = true;
 
-        lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
         return sock;
     } else {
         mp_raise_OSError(-newsoc);
@@ -325,6 +341,12 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
 }
 
 void socketpool_socket_close(socketpool_socket_obj_t *self) {
+    if (self->ssl_socket) {
+        ssl_sslsocket_obj_t *ssl_socket = self->ssl_socket;
+        self->ssl_socket = NULL;
+        common_hal_ssl_sslsocket_close(ssl_socket);
+        return;
+    }
     self->connected = false;
     if (self->num >= 0) {
         lwip_shutdown(self->num, SHUT_RDWR);
@@ -552,4 +574,52 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
 
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint32_t timeout_ms) {
     self->timeout_ms = timeout_ms;
+}
+
+
+int common_hal_socketpool_socket_setsockopt(socketpool_socket_obj_t *self, int level, int optname, const void *value, size_t optlen) {
+    int err = lwip_setsockopt(self->num, level, optname, value, optlen);
+    if (err != 0) {
+        return -errno;
+    }
+    return 0;
+}
+
+bool common_hal_socketpool_readable(socketpool_socket_obj_t *self) {
+    struct timeval immediate = {0, 0};
+
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(self->num, &fds);
+    int num_triggered = select(self->num + 1, &fds, NULL, &fds, &immediate);
+
+    // including returning true in the error case
+    return num_triggered != 0;
+}
+
+bool common_hal_socketpool_writable(socketpool_socket_obj_t *self) {
+    struct timeval immediate = {0, 0};
+
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(self->num, &fds);
+    int num_triggered = select(self->num + 1, NULL, &fds, &fds, &immediate);
+
+    // including returning true in the error case
+    return num_triggered != 0;
+}
+
+void socketpool_socket_move(socketpool_socket_obj_t *self, socketpool_socket_obj_t *sock) {
+    *sock = *self;
+    self->connected = false;
+    self->num = -1;
+}
+
+void socketpool_socket_reset(socketpool_socket_obj_t *self) {
+    if (self->base.type == &socketpool_socket_type) {
+        return;
+    }
+    self->base.type = &socketpool_socket_type;
+    self->connected = false;
+    self->num = -1;
 }

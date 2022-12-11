@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-10-31 13:02+0000\n"
+"PO-Revision-Date: 2022-12-04 17:47+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.2-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: main.c
 msgid ""
@@ -114,13 +114,9 @@ msgstr "%q-fel: %d"
 msgid "%q in use"
 msgstr "%q används redan"
 
-#: py/obj.c py/objstr.c py/objstrunicode.c
+#: py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "Index %q ligger utanför intervallet"
-
-#: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "Indexet %q måste vara ett heltal, inte %s"
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
@@ -130,7 +126,7 @@ msgstr "%q init misslyckades"
 msgid "%q is %q"
 msgstr "%q är %q"
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr "längden på %q måste vara %d"
 
@@ -145,10 +141,6 @@ msgstr "längden på %q måste vara <= %d"
 #: py/argcheck.c
 msgid "%q length must be >= %d"
 msgstr "längden på %q måste vara >= %d"
-
-#: shared-bindings/busio/I2C.c
-msgid "%q length must be >= 1"
-msgstr "längden på %q måste vara >= 1"
 
 #: py/argcheck.c
 msgid "%q must be %d"
@@ -171,25 +163,20 @@ msgid "%q must be >= %d"
 msgstr "%q måste vara >= %d"
 
 #: shared-bindings/analogbufio/BufferedIn.c
+msgid "%q must be a bytearray or array of type 'H' or 'B'"
+msgstr "%q måste vara en bytearray eller array av typen 'H' eller 'B'"
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 "%q måste vara en bytearray eller en array av typen \"h\", \"H\", \"b\" eller "
 "\"B\""
 
-#: py/argcheck.c
-msgid "%q must be a string"
-msgstr "%q måste vara en sträng"
-
-#: py/argcheck.c
-msgid "%q must be an int"
-msgstr "%q måste vara en int"
-
-#: py/argcheck.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q"
 msgstr "%q måste vara av typen %q"
 
-#: shared-bindings/digitalio/Pull.c
+#: py/objexcept.c shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or None"
 msgstr "%q måste vara av typen %q eller None"
 
@@ -215,9 +202,9 @@ msgstr "%q utanför intervallet"
 msgid "%q pin invalid"
 msgstr "Pinne %q ogiltig"
 
-#: shared-bindings/usb_hid/Device.c
-msgid "%q with a report ID of 0 must be of length 1"
-msgstr "%q med report-ID 0 måste ha längd 1"
+#: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
+msgid "%q step cannot be zero"
+msgstr "%q steg kan inte vara noll"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -505,7 +492,7 @@ msgstr "Kör redan"
 #: ports/espressif/common-hal/wifi/Radio.c
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
-msgstr "Skannar redan efter wifi-nätverk"
+msgstr "Skannar redan efter WiFi-nätverk"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -524,10 +511,6 @@ msgstr "Matrisen måste innehålla halfwords (typ \"H\")"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Matrisvärden ska bestå av enstaka bytes."
-
-#: shared-bindings/microcontroller/Pin.c
-msgid "At most %d %q may be specified (not %d)"
-msgstr "Högst %d %q kan anges (inte %d)"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -914,6 +897,11 @@ msgstr "Klar"
 msgid "Drive mode not used when direction is input."
 msgstr "Drivläge används inte när riktning är input."
 
+#: py/obj.c
+msgid "During handling of the above exception, another exception occurred:"
+msgstr ""
+"Under hanteringen av ovanstående undantag inträffade ett annat undantag:"
+
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
 msgstr "ECB arbetar endast på 16 byte åt gången"
@@ -1282,10 +1270,6 @@ msgstr "Ogiltig minnesåtkomst."
 msgid "Invalid multicast MAC address"
 msgstr "Ogiltig MAC-adress för multicast"
 
-#: shared-bindings/busio/UART.c
-msgid "Invalid pins"
-msgstr "Ogiltiga pinnar"
-
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "Ogiltig storlek"
@@ -1524,11 +1508,6 @@ msgstr "Ingen nyckel angavs"
 msgid "No long integer support"
 msgstr "Inget stöd för långt heltal"
 
-#: shared-module/usb_hid/__init__.c
-#, c-format
-msgid "No more than %d HID devices allowed"
-msgstr "Högst %d HID-enheter är tillåtna"
-
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr "Inget nätverk med sådant ssid"
@@ -1694,6 +1673,10 @@ msgstr "Operation eller funktion stöds inte"
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
 msgstr "Åtgärden orsakade timeout"
+
+#: ports/raspberrypi/common-hal/mdns/Server.c
+msgid "Out of MDNS service slots"
+msgstr "Slut på MDNS-serviceplatser"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
@@ -2006,6 +1989,10 @@ msgstr "Vänster stereokanal måste använda PWM kanal A"
 msgid "Stereo right must be on PWM channel B"
 msgstr "Höger stereokanal måste använda PWM kanal B"
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Stopping AP is not supported."
+msgstr "Stoppa AP stöds inte."
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr "Ange minst en UART-pinne"
@@ -2049,6 +2036,10 @@ msgid ""
 msgstr ""
 "Modulen `microcontroller` användes för att starta upp i felsäkert läge. "
 "Tryck på reset för att avsluta felsäkert läget."
+
+#: py/obj.c
+msgid "The above exception was the direct cause of the following exception:"
+msgstr "Ovanstående undantag var den direkta orsaken till följande undantag:"
 
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
@@ -2241,6 +2232,7 @@ msgid "Unable to read color palette data"
 msgstr "Det går inte att läsa färgpalettdata"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr "Det gick inte att starta mDNS-frågan"
 
@@ -2316,6 +2308,7 @@ msgid "Unkown error code %d"
 msgstr "Okänd felkod %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelMap.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr "Omatchat antal på RHS (förväntat %d, fick %d)."
@@ -2389,10 +2382,6 @@ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
 "WatchDogTimer.mode kan inte ändras när den är inställd på WatchDogMode.RESET"
 
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr "WatchDogTimer.timeout måste vara större än 0"
-
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -2411,6 +2400,18 @@ msgstr ""
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
 msgstr "Wi-Fi: "
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is in access point mode."
+msgstr "WiFi är i accesspunktläge."
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is in station mode."
+msgstr "WiFi är i stationsläge."
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is not enabled"
+msgstr "WiFi är inte aktiverat"
 
 #: main.c
 msgid "Woken up by alarm.\n"
@@ -2595,10 +2596,6 @@ msgstr "buffert för liten"
 msgid "buffer too small for requested bytes"
 msgstr "buffert för liten för begärd längd"
 
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
-msgstr "byteorder är inte en sträng"
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr "bytelängd inte en multipel av storlek"
@@ -2640,13 +2637,9 @@ msgstr "kan inte tilldela uttryck"
 msgid "can't cancel self"
 msgstr "kan inte avbryta sig själv"
 
-#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kan inte konvertera %q till %q"
-
-#: py/runtime.c
-msgid "can't convert %q to int"
-msgstr "kan inte konvertera %q till int"
 
 #: py/obj.c
 #, c-format
@@ -2833,10 +2826,6 @@ msgstr "färg måste vara mellan 0x000000 och 0xffffff"
 msgid "comparison of int and uint"
 msgstr "jämförelse av int och uint"
 
-#: py/objcomplex.c
-msgid "complex division by zero"
-msgstr "komplex division med noll"
-
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr "komplexa värden stöds inte"
@@ -2942,12 +2931,7 @@ msgstr "dimensioner matchar inte"
 msgid "div/mod not implemented for uint"
 msgstr "div/mod inte implementerat för uint"
 
-#: py/objfloat.c py/objint_mpz.c
-msgid "divide by zero"
-msgstr "division med noll"
-
-#: py/modmath.c py/objint_longlong.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: py/runtime.c
 msgid "division by zero"
 msgstr "division med noll"
 
@@ -3222,15 +3206,15 @@ msgstr "felaktig utfyllnad"
 msgid "index is out of bounds"
 msgstr "index är utanför gränserna"
 
+#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+msgid "index must be tuple or int"
+msgstr "index måste vara tuple eller int"
+
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index utanför intervallet"
-
-#: py/obj.c
-msgid "indices must be integers"
-msgstr "index måste vara heltal"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
@@ -3325,10 +3309,6 @@ msgstr "indatavektorer måste ha samma längd"
 msgid "inputs are not iterable"
 msgstr "indata är inte iterbara"
 
-#: py/parsenum.c
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "int() arg 2 måste vara >= 2 och <= 36"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr "interp är definierad för 1D-iterabla med samma längd"
@@ -3410,10 +3390,6 @@ msgstr "ogiltig syntax för heltal med bas %d"
 msgid "invalid syntax for number"
 msgstr "ogiltig syntax för tal"
 
-#: py/objexcept.c
-msgid "invalid traceback"
-msgstr "Ogilitig källspårning"
-
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr "issubclass() arg 1 måste vara en klass"
@@ -3473,19 +3449,17 @@ msgstr "lokal '%q' används innan typen är känd"
 msgid "local variable referenced before assignment"
 msgstr "lokal variabel refererad före tilldelning"
 
-#: py/objint.c
-msgid "long int not supported in this build"
-msgstr "long int stöds inte i denna build"
-
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
 msgstr "loopback + tyst läge stöds inte av kringutrustning"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
 msgstr "mDNS har redan initierats"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
 msgstr "mDNS fungerar bara med inbyggt WiFi"
 
@@ -3614,6 +3588,10 @@ msgstr "negativ exponent utan stöd för flyttal"
 msgid "negative shift count"
 msgstr "negativt skiftantal"
 
+#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+msgid "nested index must be int"
+msgstr "nästlat index måste vara en int"
+
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
 msgstr "inget SD-kort"
@@ -3650,10 +3628,6 @@ msgstr "inget svar från SD-kort"
 #: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "inget sådant attribut"
-
-#: shared-bindings/usb_hid/__init__.c
-msgid "non-Device in %q"
-msgstr "icke-enhet i %q"
 
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
@@ -3779,10 +3753,20 @@ msgid "offset out of bounds"
 msgstr "offset utanför gränserna"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
 msgstr "bara bit_depth=16 stöds"
 
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only mono is supported"
+msgstr "endast mono stöds"
+
+#: ports/stm/common-hal/audiobusio/PDMIn.c
+msgid "only oversample=64 is supported"
+msgstr "endast oversample=64 stöds"
+
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr "enbart sample_rate=16000 stöds"
 
@@ -3929,11 +3913,6 @@ msgstr "verkliga och imaginära delar måste ha samma längd"
 msgid "relative import"
 msgstr "relativ import"
 
-#: py/obj.c
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr "begärd längd %d men objektet har längden %d"
-
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
 msgstr "resultaten kan inte castas till angiven typ"
@@ -3997,10 +3976,6 @@ msgstr "tecknet tillåts inte i strängformatspecificerare"
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "tecken tillåts inte med heltalsformatspecificeraren 'c'"
 
-#: py/objstr.c
-msgid "single '}' encountered in format string"
-msgstr "Enkelt '}' påträffades i formatsträngen"
-
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
 msgstr "storlek är enbart definierad ndarrays"
@@ -4011,10 +3986,6 @@ msgstr "värdet för sleep måste vara positivt"
 
 #: extmod/ulab/code/ndarray.c
 msgid "slice step can't be zero"
-msgstr "segmentsteg kan inte vara noll"
-
-#: py/objslice.c
-msgid "slice step cannot be zero"
 msgstr "segmentsteg kan inte vara noll"
 
 #: py/nativeglue.c
@@ -4066,20 +4037,12 @@ msgid "start/end indices"
 msgstr "start-/slutindex"
 
 #: shared-bindings/random/__init__.c
-msgid "step must be non-zero"
-msgstr "step måste vara icke-noll"
-
-#: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
 msgstr "stop kan inte nås från start"
 
 #: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "stream-åtgärd stöds inte"
-
-#: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
-msgstr "strängindex måste vara heltal, inte %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -4113,24 +4076,12 @@ msgstr "syntaxfel i JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "syntaxfel i uctypes deskriptor"
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
-
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes a 9-sequence"
-msgstr "time.struct_time() kräver en 9-sekvens"
-
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "timeout-längd överskred det maximala värde som stöds"
-
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
-msgstr "timeout måste vara 0.0-100.0 sekunder"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
@@ -4184,10 +4135,6 @@ msgstr "trapz är definierad för 1D-matriser med samma längd"
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr "trapz är definierat för 1D-iterabla"
-
-#: py/obj.c
-msgid "tuple/list has wrong length"
-msgstr "tupel/lista har fel längd"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4267,8 +4214,9 @@ msgid "unknown type '%q'"
 msgstr "okänd typ '%q'"
 
 #: py/objstr.c
-msgid "unmatched '{' in format"
-msgstr "omatchad '{' i format"
+#, c-format
+msgid "unmatched '%c' in format"
+msgstr "Omatchad '%c' i format"
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4338,10 +4286,6 @@ msgstr "value_count måste vara > 0"
 msgid "watchdog not initialized"
 msgstr "watchdog är inte initierad"
 
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
-msgstr "watchdog timeout måste vara större än 0"
-
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
 msgstr "width måste vara större än noll"
@@ -4349,7 +4293,7 @@ msgstr "width måste vara större än noll"
 #: ports/espressif/common-hal/wifi/Radio.c
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
-msgstr "wifi är inte aktiverat"
+msgstr "WiFi är inte aktiverat"
 
 #: ports/raspberrypi/common-hal/wifi/Monitor.c
 msgid "wifi.Monitor not available"
@@ -4413,10 +4357,6 @@ msgstr "xTaskCreate misslyckades"
 msgid "y value out of bounds"
 msgstr "y-värde utanför intervall"
 
-#: py/objrange.c
-msgid "zero step"
-msgstr "noll steg"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi måste vara en ndarray"
@@ -4428,6 +4368,98 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "%q length must be >= 1"
+#~ msgstr "längden på %q måste vara >= 1"
+
+#~ msgid "%q must be a string"
+#~ msgstr "%q måste vara en sträng"
+
+#~ msgid "%q must be an int"
+#~ msgstr "%q måste vara en int"
+
+#~ msgid "%q with a report ID of 0 must be of length 1"
+#~ msgstr "%q med report-ID 0 måste ha längd 1"
+
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "Högst %d %q kan anges (inte %d)"
+
+#~ msgid "Invalid pins"
+#~ msgstr "Ogiltiga pinnar"
+
+#, c-format
+#~ msgid "No more than %d HID devices allowed"
+#~ msgstr "Högst %d HID-enheter är tillåtna"
+
+#~ msgid "byteorder is not a string"
+#~ msgstr "byteorder är inte en sträng"
+
+#~ msgid "can't convert %q to int"
+#~ msgstr "kan inte konvertera %q till int"
+
+#~ msgid "complex division by zero"
+#~ msgstr "komplex division med noll"
+
+#~ msgid "divide by zero"
+#~ msgstr "division med noll"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "int() arg 2 måste vara >= 2 och <= 36"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "long int stöds inte i denna build"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "segmentsteg kan inte vara noll"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "step måste vara icke-noll"
+
+#~ msgid "string indices must be integers, not %q"
+#~ msgstr "strängindex måste vara heltal, inte %q"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() kräver en 9-sekvens"
+
+#~ msgid "zero step"
+#~ msgstr "noll steg"
+
+#~ msgid "invalid traceback"
+#~ msgstr "Ogilitig källspårning"
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "Indexet %q måste vara ett heltal, inte %s"
+
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.timeout måste vara större än 0"
+
+#~ msgid "indices must be integers"
+#~ msgstr "index måste vara heltal"
+
+#~ msgid "non-Device in %q"
+#~ msgstr "icke-enhet i %q"
+
+#, c-format
+#~ msgid "requested length %d but object has length %d"
+#~ msgstr "begärd längd %d men objektet har längden %d"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "Enkelt '}' påträffades i formatsträngen"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
+
+#~ msgid "timeout must be 0.0-100.0 seconds"
+#~ msgstr "timeout måste vara 0.0-100.0 sekunder"
+
+#~ msgid "tuple/list has wrong length"
+#~ msgstr "tupel/lista har fel längd"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "omatchad '{' i format"
+
+#~ msgid "watchdog timeout must be greater than 0"
+#~ msgstr "watchdog timeout måste vara större än 0"
 
 #~ msgid "To exit, please reset the board without "
 #~ msgstr "För att avsluta, gör reset på kortet utan "

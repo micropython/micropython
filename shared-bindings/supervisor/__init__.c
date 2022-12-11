@@ -197,7 +197,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(supervisor_set_next_code_file_obj, 0, supervisor_set_
 //|
 //|         def ticks_add(ticks, delta):
 //|             "Add a delta to a base number of ticks, performing wraparound at 2**29ms."
-//|             return (a + b) % _TICKS_PERIOD
+//|             return (ticks + delta) % _TICKS_PERIOD
 //|
 //|         def ticks_diff(ticks1, ticks2):
 //|             "Compute the signed difference between two ticks values, assuming that they are within 2**28 ticks"

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2022 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,20 @@
  * THE SOFTWARE.
  */
 
-#include "py/mphal.h"
-#include "py/runtime.h"
-#include "lib/oofatfs/ff.h"        /* FatFs lower layer API */
-#include "lib/oofatfs/diskio.h"    /* FatFs lower layer API */
-#include "shared/timeutils/timeutils.h"
+// Micropython setup
 
-#if CIRCUITPY_RTC
-#include "shared-bindings/rtc/RTC.h"
-#endif
+#define MICROPY_HW_BOARD_NAME       "CRCibernetica IdeaBoard"
+#define MICROPY_HW_MCU_NAME         "ESP32"
 
-DWORD get_fattime(void) {
-    #if CIRCUITPY_RTC
-    timeutils_struct_time_t tm;
-    common_hal_rtc_get_time(&tm);
-    return ((tm.tm_year - 1980) << 25) | (tm.tm_mon << 21) | (tm.tm_mday << 16) |
-           (tm.tm_hour << 11) | (tm.tm_min << 5) | (tm.tm_sec >> 1);
-    #else
-    return ((2016 - 1980) << 25) | ((9) << 21) | ((1) << 16) | ((16) << 11) | ((43) << 5) | (35 / 2);
-    #endif
-}
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO22, .sda = &pin_GPIO21}}
+
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO18, .mosi = &pin_GPIO23, .miso = &pin_GPIO19}}
+
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO17, .rx = &pin_GPIO16}}
+
+// UART pins attached to the USB-serial converter chip
+#define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)
+#define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO3)

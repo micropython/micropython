@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "lib/oofatfs/ff.h"
+// Board setup
 
-DWORD get_fattime(void) {
-    // TODO: Implement this function. For now, fake it.
-    return ((2016 - 1980) << 25) | ((12) << 21) | ((4) << 16) | ((00) << 11) | ((18) << 5) | (23 / 2);
-}
+#define MICROPY_HW_BOARD_NAME       "Luatos Core-ESP32C3"
+#define MICROPY_HW_MCU_NAME         "ESP32-C3"
+
+// Status LED
+#define MICROPY_HW_LED_STATUS (&pin_GPIO12)
+
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO21, .rx = &pin_GPIO20}}
+
+#define CIRCUITPY_ESP_USB_SERIAL_JTAG (1)

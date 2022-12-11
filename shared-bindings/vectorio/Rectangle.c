@@ -139,6 +139,9 @@ const mp_obj_property_t vectorio_rectangle_color_index_obj = {
 //|     y: int
 //|     """Y position of the top left corner of the rectangle in the parent."""
 //|
+//|     hidden: bool
+//|     """Hide the rectangle or not."""
+//|
 //|     location: Tuple[int, int]
 //|     """(X,Y) position of the top left corner of the rectangle in the parent."""
 //|
@@ -152,6 +155,7 @@ STATIC const mp_rom_map_elem_t vectorio_rectangle_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&vectorio_vector_shape_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&vectorio_vector_shape_y_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hidden), MP_ROM_PTR(&vectorio_vector_shape_hidden_obj) },
     { MP_ROM_QSTR(MP_QSTR_color_index), MP_ROM_PTR(&vectorio_rectangle_color_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&vectorio_rectangle_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&vectorio_rectangle_height_obj) },

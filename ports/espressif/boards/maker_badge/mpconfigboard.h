@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,30 @@
  * THE SOFTWARE.
  */
 
-#include "py/mphal.h"
-#include "py/runtime.h"
-#include "lib/oofatfs/ff.h"        /* FatFs lower layer API */
-#include "lib/oofatfs/diskio.h"    /* FatFs lower layer API */
-#include "shared/timeutils/timeutils.h"
+// Micropython setup
 
-#if CIRCUITPY_RTC
-#include "shared-bindings/rtc/RTC.h"
-#endif
+#define MICROPY_HW_BOARD_NAME       "Maker badge by Czech maker"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-DWORD get_fattime(void) {
-    #if CIRCUITPY_RTC
-    timeutils_struct_time_t tm;
-    common_hal_rtc_get_time(&tm);
-    return ((tm.tm_year - 1980) << 25) | (tm.tm_mon << 21) | (tm.tm_mday << 16) |
-           (tm.tm_hour << 11) | (tm.tm_min << 5) | (tm.tm_sec >> 1);
-    #else
-    return ((2016 - 1980) << 25) | ((9) << 21) | ((1) << 16) | ((16) << 11) | ((43) << 5) | (35 / 2);
-    #endif
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
+#define MICROPY_HW_NEOPIXEL_COUNT (4)
 
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 
-}
+#define AUTORESET_DELAY_MS 500
+
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
+
+#define DEFAULT_UART_BUS_RX (&pin_GPIO44)
+#define DEFAULT_UART_BUS_TX (&pin_GPIO43)
+
+// USB is always used internally so skip the pin objects for it.
+#define IGNORE_PIN_GPIO18     1
+#define IGNORE_PIN_GPIO19     1
+
+#define DOUBLE_TAP_PIN (&pin_GPIO38)
