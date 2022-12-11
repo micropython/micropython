@@ -58,7 +58,9 @@
 #define MICROPY_PY_BUILTINS_HELP_TEXT       samd_help_text
 #define MICROPY_PY_BUILTINS_HELP_MODULES    (1)
 #define MICROPY_ENABLE_SCHEDULER            (1)
+#define MICROPY_SCHEDULER_STATIC_NODES      (1)
 #define MICROPY_MODULE_WEAK_LINKS           (1)
+#define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
 
 // Control over Python builtins
 #define MICROPY_PY_BUILTINS_BYTES_HEX       (1)

@@ -41,4 +41,6 @@ extern const mp_obj_type_t machine_wdt_type;
 extern const mp_obj_type_t machine_rtc_type;
 #endif
 
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args);
+
 #endif // MICROPY_INCLUDED_SAMD_MODMACHINE_H

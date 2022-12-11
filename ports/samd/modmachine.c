@@ -74,15 +74,14 @@ STATIC mp_obj_t machine_reset(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
-STATIC mp_obj_t machine_bootloader(void) {
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_LOADER;
     #ifdef DBL_TAP_ADDR_ALT
     *DBL_TAP_ADDR_ALT = DBL_TAP_MAGIC_LOADER;
     #endif
     NVIC_SystemReset();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
 
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
