@@ -256,8 +256,8 @@ void supervisor_start_web_workflow(void) {
         return;
     }
 
-    result = common_hal_os_environ_get_key_str("CIRCUITPY_WIFI_PASSWORD", password, sizeof(password));
-    if (result != ENVIRON_OK) {
+    result = common_hal_os_getenv_str("CIRCUITPY_WIFI_PASSWORD", password, sizeof(password));
+    if (result != GETENV_OK) {
         return;
     }
 
@@ -283,7 +283,7 @@ void supervisor_start_web_workflow(void) {
 
     mp_int_t new_port = web_api_port;
     // (leaves new_port unchanged on any failure)
-    (void)common_hal_os_environ_get_key_int("CIRCUITPY_WEB_API_PORT", &new_port);
+    (void)common_hal_os_getenv_int("CIRCUITPY_WEB_API_PORT", &new_port);
 
     bool first_start = pool.base.type != &socketpool_socketpool_type;
     bool port_changed = new_port != web_api_port;
@@ -320,8 +320,8 @@ void supervisor_start_web_workflow(void) {
 
 
     const size_t api_password_len = sizeof(_api_password) - 1;
-    result = common_hal_os_environ_get_key_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
-    if (result == ENVIRON_OK) {
+    result = common_hal_os_getenv_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
+    if (result == GETENV_OK) {
         _api_password[0] = ':';
         _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
     }
