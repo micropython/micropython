@@ -248,8 +248,6 @@ void supervisor_start_web_workflow(void) {
 
     char ssid[33];
     char password[64];
-    size_t ssid_len = 0;
-    size_t password_len = 0;
 
     os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_WIFI_SSID", ssid, sizeof(ssid));
     if (result != GETENV_OK) {
@@ -273,7 +271,7 @@ void supervisor_start_web_workflow(void) {
     // network. If we are connected to a different network, then it will disconnect before
     // attempting to connect to the given network.
     _wifi_status = common_hal_wifi_radio_connect(
-        &common_hal_wifi_radio_obj, (uint8_t *)ssid, ssid_len, (uint8_t *)password, password_len,
+        &common_hal_wifi_radio_obj, (uint8_t *)ssid, strlen(ssid), (uint8_t *)password, strlen(password),
         0, 8, NULL, 0);
 
     if (_wifi_status != WIFI_RADIO_ERROR_NONE) {
