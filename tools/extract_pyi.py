@@ -228,7 +228,8 @@ def convert_folder(top_level, stub_directory):
     imports, type_imports = extract_imports(tree)
     import_lines = ["from __future__ import annotations"]
     for type_module, used_types in type_imports.items():
-        import_lines.append(f"from {type_module} import {', '.join(sorted(used_types))}")
+        if used_types:
+            import_lines.append(f"from {type_module} import {', '.join(sorted(used_types))}")
     import_lines.extend(f"import {m}" for m in sorted(imports))
     import_body = "\n".join(import_lines)
     m = re.match(r'(\s*""".*?""")', stub_contents, flags=re.DOTALL)
