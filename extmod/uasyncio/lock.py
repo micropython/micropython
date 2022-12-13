@@ -28,7 +28,8 @@ class Lock:
             # No Task waiting so unlock
             self.state = 0
 
-    async def acquire(self):
+    # async
+    def acquire(self):
         if self.state != 0:
             # Lock unavailable, put the calling Task on the waiting queue
             self.waiting.push(core.cur_task)

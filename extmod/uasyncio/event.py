@@ -23,7 +23,8 @@ class Event:
     def clear(self):
         self.state = False
 
-    async def wait(self):
+    # async
+    def wait(self):
         if not self.state:
             # Event not set, put the calling task on the event's waiting queue
             self.waiting.push(core.cur_task)
