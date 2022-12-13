@@ -54,6 +54,7 @@
 
 #if CIRCUITPY_OS_GETENV
 #include "shared-bindings/os/__init__.h"
+#include "shared-module/os/__init__.h"
 #endif
 
 #define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
@@ -343,19 +344,17 @@ STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
     default_ble_name[len - 1] = nibble_to_hex_lower[addr.addr[0] & 0xf];
     default_ble_name[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
 
-    mp_int_t name_len = 0;
-
     #if CIRCUITPY_OS_GETENV
-    mp_obj_t ble_name = common_hal_os_getenv("CIRCUITPY_BLE_NAME", mp_const_none);
-    if (ble_name != mp_const_none) {
-        common_hal_bleio_adapter_set_name(self, mp_obj_str_get_str(ble_name));
+    char ble_name[32];
+
+    os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name));
+    if (result == GETENV_OK) {
+        common_hal_bleio_adapter_set_name(self, ble_name);
         return;
     }
     #endif
 
-    if (name_len <= 0) {
-        common_hal_bleio_adapter_set_name(self, (char *)default_ble_name);
-    }
+    common_hal_bleio_adapter_set_name(self, (char *)default_ble_name);
 }
 
 static void bluetooth_adapter_background(void *data) {
