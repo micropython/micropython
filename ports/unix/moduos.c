@@ -32,14 +32,17 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-STATIC mp_obj_t mp_uos_getenv(mp_obj_t var_in) {
-    const char *s = getenv(mp_obj_str_get_str(var_in));
+STATIC mp_obj_t mp_uos_getenv(size_t n_args, const mp_obj_t *args) {
+    const char *s = getenv(mp_obj_str_get_str(args[0]));
     if (s == NULL) {
+        if (n_args == 2) {
+            return args[1];
+        }
         return mp_const_none;
     }
     return mp_obj_new_str(s, strlen(s));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_getenv_obj, mp_uos_getenv);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_uos_getenv_obj, 1, 2, mp_uos_getenv);
 
 STATIC mp_obj_t mp_uos_putenv(mp_obj_t key_in, mp_obj_t value_in) {
     const char *key = mp_obj_str_get_str(key_in);
