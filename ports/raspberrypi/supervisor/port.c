@@ -127,6 +127,13 @@ safe_mode_t port_init(void) {
         (&_ld_dtcm_bss_start)[i] = 0;
     }
 
+    #if CIRCUITPY_CYW43
+    never_reset_pin_number(23);
+    never_reset_pin_number(24);
+    never_reset_pin_number(25);
+    never_reset_pin_number(29);
+    #endif
+
     // Reset everything into a known state before board_init.
     reset_port();
 
@@ -140,10 +147,6 @@ safe_mode_t port_init(void) {
     // Check brownout.
 
     #if CIRCUITPY_CYW43
-    never_reset_pin_number(23);
-    never_reset_pin_number(24);
-    never_reset_pin_number(25);
-    never_reset_pin_number(29);
     // A small number of samples of pico w need an additional delay before
     // initializing the cyw43 chip. Delays inside cyw43_arch_init_with_country
     // are intended to meet the power on timing requirements, but apparently
