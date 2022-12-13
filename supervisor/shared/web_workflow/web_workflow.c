@@ -351,7 +351,7 @@ static void _send_str(socketpool_socket_obj_t *socket, const char *str) {
 }
 
 // The last argument must be NULL! Otherwise, it won't stop.
-static void _send_strs(socketpool_socket_obj_t *socket, ...) {
+static __attribute__((sentinel)) void _send_strs(socketpool_socket_obj_t *socket, ...) {
     va_list ap;
     va_start(ap, socket);
 
@@ -691,7 +691,7 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
     } else if (_endswith(filename, ".json")) {
         _send_strs(socket, "Content-Type:", "application/json", ";charset=UTF-8\r\n", NULL);
     } else {
-        _send_strs(socket, "Content-Type:", "application/octet-stream\r\n");
+        _send_strs(socket, "Content-Type:", "application/octet-stream\r\n", NULL);
     }
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
