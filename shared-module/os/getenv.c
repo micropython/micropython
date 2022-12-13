@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+// These functions are separate from __init__.c so that os.getenv() can be
+// tested in the unix "coverage" build, without bringing in "our" os module
+
 #include <stdlib.h>
 #include <string.h>
 
