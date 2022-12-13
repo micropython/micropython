@@ -12,6 +12,10 @@ on:
       - 'drivers/**'
       - 'ports/esp8266/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest

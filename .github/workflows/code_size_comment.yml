@@ -5,6 +5,10 @@ on:
     workflows: [Check code size]
     types: [completed]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   comment:
     runs-on: ubuntu-20.04

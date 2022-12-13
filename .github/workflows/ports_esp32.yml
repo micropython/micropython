@@ -12,6 +12,10 @@ on:
       - 'drivers/**'
       - 'ports/esp32/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_idf402:
     runs-on: ubuntu-20.04
