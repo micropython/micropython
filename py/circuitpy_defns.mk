@@ -614,7 +614,6 @@ SRC_SHARED_MODULE_ALL = \
 	onewireio/__init__.c \
 	onewireio/OneWire.c \
 	os/__init__.c \
-	os/getenv.c \
 	paralleldisplay/ParallelBus.c \
 	qrio/__init__.c \
 	qrio/QRDecoder.c \
@@ -715,6 +714,7 @@ endif
 SRC_SHARED_MODULE_INTERNAL = \
 $(filter $(SRC_PATTERNS), \
 	displayio/display_core.c \
+	os/getenv.c \
 	usb/utf16le.c \
 )
 
