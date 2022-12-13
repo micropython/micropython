@@ -12,6 +12,10 @@ on:
       - 'drivers/**'
       - 'ports/stm32/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_pyb:
     runs-on: ubuntu-20.04

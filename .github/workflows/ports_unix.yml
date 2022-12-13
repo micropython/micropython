@@ -14,6 +14,10 @@ on:
       - 'ports/unix/**'
       - 'tests/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   minimal:
     runs-on: ubuntu-latest

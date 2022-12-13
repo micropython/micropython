@@ -9,6 +9,10 @@ on:
       - 'tests/**'
       - 'tools/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-20.04 # use 20.04 to get python2
