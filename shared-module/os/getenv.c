@@ -86,6 +86,8 @@ STATIC void seek_eof(file_arg *active_file) {
 STATIC void vstr_add_byte_nonstd(vstr_t *vstr, byte b) {
     if (!vstr->fixed_buf || vstr->alloc > vstr->len) {
         vstr_add_byte(vstr, b);
+    } else {
+        vstr->len++;
     }
 }
 
@@ -97,6 +99,8 @@ STATIC void vstr_add_char_nonstd(vstr_t *vstr, unichar c) {
         (c < 0x10000) ? 3 : 4;
     if (!vstr->fixed_buf || vstr->alloc > vstr->len + ulen) {
         vstr_add_char(vstr, c);
+    } else {
+        vstr->len += ulen;
     }
 }
 
@@ -297,7 +301,7 @@ STATIC os_getenv_err_t os_getenv_buf_terminated(const char *key, char *value, si
     if (result == GETENV_OK) {
         vstr_add_byte_nonstd(&buf, 0);
         memcpy(value, buf.buf, MIN(buf.len, value_len));
-        if (buf.len > value_len) {
+        if (buf.len > value_len) { // this length includes trailing NUL
             result = GETENV_ERR_LENGTH;
         }
     }
