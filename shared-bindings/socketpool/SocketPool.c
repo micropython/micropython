@@ -36,8 +36,6 @@
 #include "shared-bindings/socketpool/Socket.h"
 #include "shared-bindings/socketpool/SocketPool.h"
 
-#define SOCKETPOOL_EAI_NONAME (-2)
-
 //| class SocketPool:
 //|     """A pool of socket resources available for the given radio. Only one
 //|     SocketPool can be created for each radio.
@@ -151,15 +149,7 @@ STATIC mp_obj_t socketpool_socketpool_getaddrinfo(size_t n_args, const mp_obj_t 
     }
 
     if (ip_str == mp_const_none) {
-        ip_str = common_hal_socketpool_socketpool_gethostbyname(self, host);
-    }
-
-    if (ip_str == mp_const_none) {
-        mp_obj_t exc_args[2] = {
-            MP_OBJ_NEW_SMALL_INT(SOCKETPOOL_EAI_NONAME),
-            MP_OBJ_NEW_QSTR(MP_QSTR_Name_space_or_space_service_space_not_space_known),
-        };
-        nlr_raise(mp_obj_new_exception_args(&mp_type_gaierror, 2, exc_args));
+        ip_str = common_hal_socketpool_socketpool_gethostbyname_raise(self, host);
     }
 
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));
@@ -203,3 +193,21 @@ const mp_obj_type_t socketpool_socketpool_type = {
     .make_new = socketpool_socketpool_make_new,
     .locals_dict = (mp_obj_dict_t *)&socketpool_socketpool_locals_dict,
 };
+
+MP_WEAK
+mp_obj_t common_hal_socketpool_socketpool_gethostbyname_raise(socketpool_socketpool_obj_t *self, const char *host) {
+    mp_obj_t ip_str = common_hal_socketpool_socketpool_gethostbyname(self, host);
+    if (ip_str == mp_const_none) {
+        common_hal_socketpool_socketpool_raise_gaierror(SOCKETPOOL_EAI_NONAME, MP_QSTR_Name_space_or_space_service_space_not_space_known);
+    }
+    return ip_str;
+}
+
+MP_WEAK NORETURN
+void common_hal_socketpool_socketpool_raise_gaierror(int value, qstr name) {
+    mp_obj_t exc_args[2] = {
+        MP_OBJ_NEW_SMALL_INT(value),
+        MP_OBJ_NEW_QSTR(name),
+    };
+    nlr_raise(mp_obj_new_exception_args(&mp_type_gaierror, 2, exc_args));
+}

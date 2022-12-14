@@ -52,6 +52,10 @@ typedef enum {
     SOCKETPOOL_TCP_NODELAY = 1,
 } socketpool_socketpool_tcpopt_t;
 
+typedef enum {
+    SOCKETPOOL_EAI_NONAME  = -2,
+} socketpool_eai_t;
+
 void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *self, mp_obj_t radio);
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
@@ -59,11 +63,16 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
 
 mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
     const char *host);
+// raises an exception instead of returning mp_const_none in the case of error
+mp_obj_t common_hal_socketpool_socketpool_gethostbyname_raise(socketpool_socketpool_obj_t *self,
+    const char *host);
 
 // Non-allocating version for internal use. These sockets are not registered and, therefore, not
 // closed automatically.
 bool socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
     socketpool_socket_obj_t *sock);
+
+NORETURN void common_hal_socketpool_socketpool_raise_gaierror(int value, qstr name);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKETPOOL_H
