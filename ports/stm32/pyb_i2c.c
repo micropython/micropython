@@ -137,7 +137,7 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
 
 #define PYB_I2C_TIMINGR (1)
 
-#if defined(STM32F745xx) || defined(STM32F746xx)
+#if defined(STM32F745xx) || defined(STM32F746xx) || defined(STM32F756xx)
 
 // The value 0x40912732 was obtained from the DISCOVERY_I2Cx_TIMING constant
 // defined in the STM32F7Cube file Drivers/BSP/STM32F746G-Discovery/stm32f7456g_discovery.h
