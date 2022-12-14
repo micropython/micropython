@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-12-04 17:47+0000\n"
+"PO-Revision-Date: 2022-12-15 12:49+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1021,7 +1021,7 @@ msgstr "Filen finns redan"
 
 #: shared-module/os/getenv.c
 msgid "File not found"
-msgstr ""
+msgstr "Filen hittades inte"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
@@ -1263,7 +1263,7 @@ msgstr "Ogiltigt värde för bitar per värde"
 #: shared-module/os/getenv.c
 #, c-format
 msgid "Invalid byte %.*s"
-msgstr ""
+msgstr "Ogiltig byte %.*s"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
@@ -1297,7 +1297,7 @@ msgstr "Ogiltigt tillstånd"
 
 #: shared-module/os/getenv.c
 msgid "Invalid unicode escape"
-msgstr ""
+msgstr "Ogiltig unicode escape"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1305,7 +1305,7 @@ msgstr "Nyckeln måste vara 16, 24 eller 32 byte lång"
 
 #: shared-module/os/getenv.c
 msgid "Key not found"
-msgstr ""
+msgstr "Nyckeln hittades inte"
 
 #: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
