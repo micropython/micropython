@@ -1013,6 +1013,10 @@ msgstr "Fatální chyba."
 msgid "File exists"
 msgstr "soubor existuje"
 
+#: shared-module/os/getenv.c
+msgid "File not found"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -1071,6 +1075,8 @@ msgstr "Základní chyba"
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-module/displayio/Display.c
+#: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Skupina již byla použita"
 
@@ -1199,6 +1205,7 @@ msgid "Internal define error"
 msgstr ""
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#: shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "Interní chyba"
 
@@ -1245,6 +1252,11 @@ msgstr "Neplatný argument"
 msgid "Invalid bits per value"
 msgstr ""
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "Invalid byte %.*s"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
@@ -1275,9 +1287,17 @@ msgstr "Chybný soket pro TLS"
 msgid "Invalid state"
 msgstr "Chybný stav"
 
+#: shared-module/os/getenv.c
+msgid "Invalid unicode escape"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Klíč musí být dlouhý 16, 24 nebo 32 bajtů"
+
+#: shared-module/os/getenv.c
+msgid "Key not found"
+msgstr ""
 
 #: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
@@ -2280,7 +2300,7 @@ msgid "Unkown error code %d"
 msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-#: shared-module/adafruit_pixelbuf/PixelMap.c
+#: shared-module/_pixelmap/PixelMap.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr ""
@@ -3161,7 +3181,7 @@ msgstr ""
 msgid "index is out of bounds"
 msgstr ""
 
-#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+#: shared-bindings/_pixelmap/PixelMap.c
 msgid "index must be tuple or int"
 msgstr ""
 
@@ -3540,7 +3560,7 @@ msgstr ""
 msgid "negative shift count"
 msgstr ""
 
-#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+#: shared-bindings/_pixelmap/PixelMap.c
 msgid "nested index must be int"
 msgstr ""
 

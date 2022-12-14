@@ -1020,6 +1020,10 @@ msgstr "zhì mìng cuò wù."
 msgid "File exists"
 msgstr "Wénjiàn cúnzài"
 
+#: shared-module/os/getenv.c
+msgid "File not found"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -1080,6 +1084,8 @@ msgstr "tōng yòng gù zhàng"
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-module/displayio/Display.c
+#: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Jítuán yǐjīng shǐyòngguò"
 
@@ -1213,6 +1219,7 @@ msgid "Internal define error"
 msgstr "Nèibù dìngyì cuòwù"
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#: shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "nèi bù cuò wù"
 
@@ -1259,6 +1266,11 @@ msgstr "Wúxiào de cānshù"
 msgid "Invalid bits per value"
 msgstr "Měi gè zhí de wèi wúxiào"
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "Invalid byte %.*s"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
@@ -1289,9 +1301,17 @@ msgstr "TLS de chā zuò wú xiào"
 msgid "Invalid state"
 msgstr "wú xiào zhuàng tài"
 
+#: shared-module/os/getenv.c
+msgid "Invalid unicode escape"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "mì yào bì xū wéi 16, 24 huò 32 zì jié cháng"
+
+#: shared-module/os/getenv.c
+msgid "Key not found"
+msgstr ""
 
 #: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
@@ -2313,7 +2333,7 @@ msgid "Unkown error code %d"
 msgstr "wèi zhī cuò wù dài %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-#: shared-module/adafruit_pixelbuf/PixelMap.c
+#: shared-module/_pixelmap/PixelMap.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr "RHS (yùqí %d, huòdé %d) shàng wèi pǐpèi de xiàngmù."
@@ -3212,7 +3232,7 @@ msgstr "bù zhèngquè de tiánchōng"
 msgid "index is out of bounds"
 msgstr "suǒyǐn chāochū fànwéi"
 
-#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+#: shared-bindings/_pixelmap/PixelMap.c
 msgid "index must be tuple or int"
 msgstr ""
 
@@ -3592,7 +3612,7 @@ msgstr "méiyǒu fú diǎn zhīchí de xiāojí gōnglǜ"
 msgid "negative shift count"
 msgstr "fù zhuǎnyí jìshù"
 
-#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+#: shared-bindings/_pixelmap/PixelMap.c
 msgid "nested index must be int"
 msgstr ""
 

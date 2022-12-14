@@ -1019,6 +1019,10 @@ msgstr "Fatalt fel."
 msgid "File exists"
 msgstr "Filen finns redan"
 
+#: shared-module/os/getenv.c
+msgid "File not found"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -1077,6 +1081,8 @@ msgstr "Allmänt fel"
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-module/displayio/Display.c
+#: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Grupp används redan"
 
@@ -1207,6 +1213,7 @@ msgid "Internal define error"
 msgstr "Internt define-fel"
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#: shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "Internt fel"
 
@@ -1253,6 +1260,11 @@ msgstr "Ogiltigt argument"
 msgid "Invalid bits per value"
 msgstr "Ogiltigt värde för bitar per värde"
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "Invalid byte %.*s"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
@@ -1283,9 +1295,17 @@ msgstr "Ogiltig socket för TLS"
 msgid "Invalid state"
 msgstr "Ogiltigt tillstånd"
 
+#: shared-module/os/getenv.c
+msgid "Invalid unicode escape"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Nyckeln måste vara 16, 24 eller 32 byte lång"
+
+#: shared-module/os/getenv.c
+msgid "Key not found"
+msgstr ""
 
 #: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
@@ -2308,7 +2328,7 @@ msgid "Unkown error code %d"
 msgstr "Okänd felkod %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-#: shared-module/adafruit_pixelbuf/PixelMap.c
+#: shared-module/_pixelmap/PixelMap.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr "Omatchat antal på RHS (förväntat %d, fick %d)."
@@ -3206,7 +3226,7 @@ msgstr "felaktig utfyllnad"
 msgid "index is out of bounds"
 msgstr "index är utanför gränserna"
 
-#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+#: shared-bindings/_pixelmap/PixelMap.c
 msgid "index must be tuple or int"
 msgstr "index måste vara tuple eller int"
 
@@ -3588,7 +3608,7 @@ msgstr "negativ exponent utan stöd för flyttal"
 msgid "negative shift count"
 msgstr "negativt skiftantal"
 
-#: shared-bindings/adafruit_pixelbuf/PixelMap.c
+#: shared-bindings/_pixelmap/PixelMap.c
 msgid "nested index must be int"
 msgstr "nästlat index måste vara en int"
 
