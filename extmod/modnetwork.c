@@ -77,7 +77,7 @@ mp_obj_t mod_network_find_nic(const uint8_t *ip) {
     for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
         mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
         // TODO check IP suitability here
-        // mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
+        // mod_network_nic_protocol_t *nic_protocol = (mod_network_nic_protocol_t *)MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(nic), protocol);
         return nic;
     }
 

@@ -77,7 +77,7 @@ typedef struct _nina_obj_t {
 #define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__)
 
 static uint16_t bind_port = BIND_PORT_RANGE_MIN;
-const mod_network_nic_type_t mod_network_nic_type_nina;
+const mp_obj_type_t mod_network_nic_type_nina;
 static nina_obj_t network_nina_wl_sta = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_STA_IF};
 static nina_obj_t network_nina_wl_ap = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_AP_IF};
 static mp_sched_node_t mp_wifi_sockpoll_node;
@@ -798,7 +798,7 @@ STATIC int network_ninaw10_socket_ioctl(mod_network_socket_obj_t *socket, mp_uin
     return ret;
 }
 
-static const mp_rom_map_elem_t nina_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t nina_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active),              MP_ROM_PTR(&network_ninaw10_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan),                MP_ROM_PTR(&network_ninaw10_scan_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),             MP_ROM_PTR(&network_ninaw10_connect_obj) },
@@ -817,18 +817,9 @@ static const mp_rom_map_elem_t nina_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_WPA_PSK),             MP_ROM_INT(NINA_SEC_WPA_PSK) },
 };
 
-static MP_DEFINE_CONST_DICT(nina_locals_dict, nina_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(nina_locals_dict, nina_locals_dict_table);
 
-STATIC MP_DEFINE_CONST_OBJ_FULL_TYPE(
-    mod_network_nic_type_nina_base,
-    MP_QSTR_nina,
-    MP_TYPE_FLAG_NONE,
-    make_new, network_ninaw10_make_new,
-    locals_dict, &nina_locals_dict
-    );
-
-const mod_network_nic_type_t mod_network_nic_type_nina = {
-    .base = mod_network_nic_type_nina_base,
+STATIC const mod_network_nic_protocol_t mod_network_nic_protocol_nina = {
     .gethostbyname = network_ninaw10_gethostbyname,
     .socket = network_ninaw10_socket_socket,
     .close = network_ninaw10_socket_close,
@@ -844,6 +835,15 @@ const mod_network_nic_type_t mod_network_nic_type_nina = {
     .settimeout = network_ninaw10_socket_settimeout,
     .ioctl = network_ninaw10_socket_ioctl,
 };
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mod_network_nic_type_nina,
+    MP_QSTR_nina,
+    MP_TYPE_FLAG_NONE,
+    make_new, network_ninaw10_make_new,
+    locals_dict, &nina_locals_dict,
+    protocol, &mod_network_nic_protocol_nina
+    );
 
 MP_REGISTER_ROOT_POINTER(struct _machine_spi_obj_t *mp_wifi_spi);
 MP_REGISTER_ROOT_POINTER(struct _machine_timer_obj_t *mp_wifi_timer);

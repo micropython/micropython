@@ -61,10 +61,7 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
 
 struct _mod_network_socket_obj_t;
 
-typedef struct _mod_network_nic_type_t {
-    // Ensure that this struct is big enough to hold any type size.
-    mp_obj_full_type_t base;
-
+typedef struct _mod_network_nic_protocol_t {
     // API for non-socket operations
     int (*gethostbyname)(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *ip_out);
 
@@ -82,12 +79,12 @@ typedef struct _mod_network_nic_type_t {
     int (*setsockopt)(struct _mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno);
     int (*settimeout)(struct _mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno);
     int (*ioctl)(struct _mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno);
-} mod_network_nic_type_t;
+} mod_network_nic_protocol_t;
 
 typedef struct _mod_network_socket_obj_t {
     mp_obj_base_t base;
     mp_obj_t nic;
-    mod_network_nic_type_t *nic_type;
+    mod_network_nic_protocol_t *nic_protocol;
     uint32_t domain : 5;
     uint32_t type   : 5;
     uint32_t proto  : 5;
