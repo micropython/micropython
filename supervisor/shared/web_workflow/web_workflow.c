@@ -64,8 +64,8 @@
 #include "shared-bindings/wifi/__init__.h"
 #endif
 
-#if CIRCUITPY_DOTENV
-#include "shared-module/dotenv/__init__.h"
+#if CIRCUITPY_OS_GETENV
+#include "shared-module/os/__init__.h"
 #endif
 
 enum request_state {
@@ -115,7 +115,7 @@ static wifi_radio_error_t _last_wifi_status = WIFI_RADIO_ERROR_NONE;
 static mdns_server_obj_t mdns;
 #endif
 
-static uint32_t web_api_port = 80;
+static mp_int_t web_api_port = 80;
 
 static socketpool_socketpool_obj_t pool;
 static socketpool_socket_obj_t listening;
@@ -244,22 +244,21 @@ void supervisor_web_workflow_status(void) {
 #endif
 
 void supervisor_start_web_workflow(void) {
-    #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI
-
+    #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI && CIRCUITPY_OS_GETENV
 
     char ssid[33];
     char password[64];
-    mp_int_t ssid_len = 0;
-    mp_int_t password_len = 0;
 
-    #if CIRCUITPY_DOTENV
-    ssid_len = dotenv_get_key("/.env", "CIRCUITPY_WIFI_SSID", ssid, sizeof(ssid) - 1);
-    password_len = dotenv_get_key("/.env", "CIRCUITPY_WIFI_PASSWORD", password, sizeof(password) - 1);
-    #endif
-    if (ssid_len <= 0 || (size_t)ssid_len >= sizeof(ssid) ||
-        password_len <= 0 || (size_t)password_len >= sizeof(password)) {
+    os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_WIFI_SSID", ssid, sizeof(ssid));
+    if (result != GETENV_OK) {
         return;
     }
+
+    result = common_hal_os_getenv_str("CIRCUITPY_WIFI_PASSWORD", password, sizeof(password));
+    if (result != GETENV_OK) {
+        return;
+    }
+
     if (!common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
         common_hal_wifi_init(false);
         common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, true);
@@ -268,14 +267,11 @@ void supervisor_start_web_workflow(void) {
     // TODO: Do our own scan so that we can find the channel we want before calling connect.
     // Otherwise, connect will do a full slow scan to pick the best AP.
 
-    // NUL terminate the strings because dotenv doesn't.
-    ssid[ssid_len] = '\0';
-    password[password_len] = '\0';
     // We can all connect again because it will return early if we're already connected to the
     // network. If we are connected to a different network, then it will disconnect before
     // attempting to connect to the given network.
     _wifi_status = common_hal_wifi_radio_connect(
-        &common_hal_wifi_radio_obj, (uint8_t *)ssid, ssid_len, (uint8_t *)password, password_len,
+        &common_hal_wifi_radio_obj, (uint8_t *)ssid, strlen(ssid), (uint8_t *)password, strlen(password),
         0, 8, NULL, 0);
 
     if (_wifi_status != WIFI_RADIO_ERROR_NONE) {
@@ -283,21 +279,15 @@ void supervisor_start_web_workflow(void) {
         return;
     }
 
-    char port_encoded[6];
-    size_t port_len = 0;
-    size_t new_port = web_api_port;
-    #if CIRCUITPY_DOTENV
-    port_len = dotenv_get_key("/.env", "CIRCUITPY_WEB_API_PORT", port_encoded, sizeof(port_encoded) - 1);
-    #endif
-    if (0 < port_len && port_len < sizeof(port_encoded)) {
-        port_encoded[port_len] = '\0';
-        new_port = strtoul(port_encoded, NULL, 10);
-    }
+    mp_int_t new_port = web_api_port;
+    // (leaves new_port unchanged on any failure)
+    (void)common_hal_os_getenv_int("CIRCUITPY_WEB_API_PORT", &new_port);
 
     bool first_start = pool.base.type != &socketpool_socketpool_type;
     bool port_changed = new_port != web_api_port;
 
     if (first_start) {
+        port_changed = false;
         #if CIRCUITPY_MDNS
         mdns_server_construct(&mdns, true);
         mdns.base.type = &mdns_server_type;
@@ -326,11 +316,12 @@ void supervisor_start_web_workflow(void) {
         common_hal_socketpool_socket_listen(&listening, 1);
     }
 
-    mp_int_t api_password_len = dotenv_get_key("/.env", "CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, sizeof(_api_password) - 2);
-    if (api_password_len > 0) {
+
+    const size_t api_password_len = sizeof(_api_password) - 1;
+    result = common_hal_os_getenv_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
+    if (result == GETENV_OK) {
         _api_password[0] = ':';
-        _api_password[api_password_len + 1] = '\0';
-        _base64_in_place(_api_password, api_password_len + 1, sizeof(_api_password));
+        _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
     }
     #endif
 }
@@ -360,7 +351,7 @@ static void _send_str(socketpool_socket_obj_t *socket, const char *str) {
 }
 
 // The last argument must be NULL! Otherwise, it won't stop.
-static void _send_strs(socketpool_socket_obj_t *socket, ...) {
+static __attribute__((sentinel)) void _send_strs(socketpool_socket_obj_t *socket, ...) {
     va_list ap;
     va_start(ap, socket);
 
@@ -691,16 +682,16 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
     mp_print_t _socket_print = {socket, _print_raw};
     mp_printf(&_socket_print, "Content-Length: %d\r\n", total_length);
     // TODO: Make this a table to save space.
-    if (_endswith(filename, ".txt") || _endswith(filename, ".py")) {
-        _send_strs(socket, "Content-Type: text/plain", ";charset=UTF-8\r\n", NULL);
+    if (_endswith(filename, ".txt") || _endswith(filename, ".py") || _endswith(filename, ".toml")) {
+        _send_strs(socket, "Content-Type:", "text/plain", ";charset=UTF-8\r\n", NULL);
     } else if (_endswith(filename, ".js")) {
-        _send_strs(socket, "Content-Type: text/javascript", ";charset=UTF-8\r\n", NULL);
+        _send_strs(socket, "Content-Type:", "text/javascript", ";charset=UTF-8\r\n", NULL);
     } else if (_endswith(filename, ".html")) {
-        _send_strs(socket, "Content-Type: text/html", ";charset=UTF-8\r\n", NULL);
+        _send_strs(socket, "Content-Type:", "text/html", ";charset=UTF-8\r\n", NULL);
     } else if (_endswith(filename, ".json")) {
-        _send_strs(socket, "Content-Type: application/json", ";charset=UTF-8\r\n", NULL);
+        _send_strs(socket, "Content-Type:", "application/json", ";charset=UTF-8\r\n", NULL);
     } else {
-        _send_str(socket, "Content-Type: application/octet-stream\r\n");
+        _send_strs(socket, "Content-Type:", "application/octet-stream\r\n", NULL);
     }
     _cors_header(socket, request);
     _send_str(socket, "\r\n");

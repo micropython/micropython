@@ -55,7 +55,7 @@
 #include "shared-bindings/microcontroller/RunMode.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/socketpool/__init__.h"
-#include "shared-module/dotenv/__init__.h"
+#include "shared-module/os/__init__.h"
 
 #include "peripherals/rmt.h"
 #include "peripherals/timer.h"
@@ -519,7 +519,7 @@ void port_idle_until_interrupt(void) {
 void port_post_boot_py(bool heap_valid) {
     if (!heap_valid && filesystem_present()) {
         mp_int_t reserved;
-        if (dotenv_get_key_int("/.env", "CIRCUITPY_RESERVED_PSRAM", &reserved)) {
+        if (common_hal_os_getenv_int("CIRCUITPY_RESERVED_PSRAM", &reserved) == GETENV_OK) {
             common_hal_espidf_set_reserved_psram(reserved);
         }
         common_hal_espidf_reserve_psram();

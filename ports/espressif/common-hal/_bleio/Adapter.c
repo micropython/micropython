@@ -59,8 +59,8 @@
 #include "esp_bt.h"
 #include "esp_nimble_hci.h"
 
-#if CIRCUITPY_DOTENV
-#include "shared-module/dotenv/__init__.h"
+#if CIRCUITPY_OS_GETENV
+#include "shared-module/os/__init__.h"
 #endif
 
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
@@ -101,22 +101,16 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         ble_hs_cfg.sync_cb = _on_sync;
         // ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
-        #if CIRCUITPY_DOTENV
-        mp_int_t name_len = 0;
-        char ble_name[32];
-        name_len = dotenv_get_key("/.env", "CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name) - 1);
-        if (name_len > 0) {
-            if (name_len > MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH) {
-                name_len = MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH;
-            }
-            ble_name[name_len] = '\0';
+        #if CIRCUITPY_OS_GETENV
+        char ble_name[1 + MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH];
+        os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name));
+        if (result == GETENV_OK) {
             ble_svc_gap_device_name_set(ble_name);
-        } else {
+        } else
+        #endif
+        {
             ble_svc_gap_device_name_set("CIRCUITPY");
         }
-        #else
-        ble_svc_gap_device_name_set("CIRCUITPY");
-        #endif
 
         // Clear all of the internal connection objects.
         for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {

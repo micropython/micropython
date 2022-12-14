@@ -193,7 +193,12 @@ STATIC mp_obj_t mod_os_system(mp_obj_t cmd_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_os_system_obj, mod_os_system);
 
+mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_);
 STATIC mp_obj_t mod_os_getenv(mp_obj_t var_in) {
+    mp_obj_t result = common_hal_os_getenv(mp_obj_str_get_str(var_in), mp_const_none);
+    if (result != mp_const_none) {
+        return result;
+    }
     const char *s = getenv(mp_obj_str_get_str(var_in));
     if (s == NULL) {
         return mp_const_none;
