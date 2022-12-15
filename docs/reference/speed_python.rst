@@ -215,6 +215,7 @@ There are certain limitations in the current implementation of the native code e
 * Context managers are not supported (the ``with`` statement).
 * Generators are not supported.
 * If ``raise`` is used an argument must be supplied.
+* `Walrus assignment operator <https://docs.python.org/3/whatsnew/3.8.html#assignment-expressions>`_ is not supported.
 
 The trade-off for the improved performance (roughly twice as fast as bytecode) is an
 increase in compiled code size.
