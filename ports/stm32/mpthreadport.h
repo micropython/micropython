@@ -44,9 +44,16 @@ static inline void mp_thread_mutex_init(mp_thread_mutex_t *m) {
     pyb_mutex_init(m);
 }
 
+#ifdef MICROPY_PY_THREAD_LOCK_TIMEOUT
+static inline int mp_thread_mutex_lock_timeout(mp_thread_mutex_t *mutex, int timeout_us) {
+    // TODO timeout_us
+    return pyb_mutex_lock(m, wait);
+}
+#else
 static inline int mp_thread_mutex_lock(mp_thread_mutex_t *m, int wait) {
     return pyb_mutex_lock(m, wait);
 }
+#endif
 
 static inline void mp_thread_mutex_unlock(mp_thread_mutex_t *m) {
     pyb_mutex_unlock(m);
