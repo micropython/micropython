@@ -26,26 +26,44 @@
  */
 
 #include "supervisor/board.h"
-#include "boards/flash_config.h"
-#include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-void board_init(void) {
+// These pins should never ever be reset; doing so could interfere with basic operation.
+STATIC const mcu_pin_obj_t *_reset_forbidden_pins[] = {
     // SWD Pins
-    common_hal_never_reset_pin(&pin_GPIO_AD_B0_00);// SWDIO
-    common_hal_never_reset_pin(&pin_GPIO_AD_B0_01);// SWCLK
+    &pin_GPIO_AD_B0_00,// SWDIO
+    &pin_GPIO_AD_B0_01,// SWCLK
 
     // FLEX flash
-    common_hal_never_reset_pin(&pin_GPIO_SD_B1_06);
-    common_hal_never_reset_pin(&pin_GPIO_SD_B1_07);
-    common_hal_never_reset_pin(&pin_GPIO_SD_B1_08);
-    common_hal_never_reset_pin(&pin_GPIO_SD_B1_09);
-    common_hal_never_reset_pin(&pin_GPIO_SD_B1_10);
-    common_hal_never_reset_pin(&pin_GPIO_SD_B1_11);
+    &pin_GPIO_SD_B1_06,
+    &pin_GPIO_SD_B1_07,
+    &pin_GPIO_SD_B1_08,
+    &pin_GPIO_SD_B1_09,
+    &pin_GPIO_SD_B1_10,
+    &pin_GPIO_SD_B1_11,
 
     // USB Pins
-    common_hal_never_reset_pin(&pin_GPIO_AD_B1_11);
-    common_hal_never_reset_pin(&pin_GPIO_AD_B1_12);
+    &pin_GPIO_AD_B1_11,
+    &pin_GPIO_AD_B1_12,
+};
+
+STATIC bool _reset_forbidden(const mcu_pin_obj_t *pin) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(_reset_forbidden_pins); i++) {
+        if (pin == _reset_forbidden_pins[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool mimxrt10xx_board_reset_pin_number(const mcu_pin_obj_t *pin) {
+    if (_reset_forbidden(pin)) {
+        return true;
+    }
+
+    // Other reset variations would go here.
+
+    return false;
 }
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

@@ -35,4 +35,11 @@
 void reset_all_pins(void);
 void claim_pin(const mcu_pin_obj_t *pin);
 
+// Allow the board to reset a pin in a board-specific way. This can be used
+// for LEDs or enable pins to put them in a state beside the default pull-up,
+// or to simply not reset the pin at all.
+// Return true to indicate that the pin was handled in a special way. Returning false will lead to
+// the port-default reset behavior.
+extern bool mimxrt10xx_board_reset_pin_number(const mcu_pin_obj_t *pin);
+
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_MICROCONTROLLER_PIN_H

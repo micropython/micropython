@@ -44,9 +44,12 @@ void reset_all_pins(void) {
         if (never_reset_pins[pin->mux_idx]) {
             continue;
         }
-        *(uint32_t *)pin->mux_reg = pin->mux_reset;
-        *(uint32_t *)pin->cfg_reg = pin->pad_reset;
+        common_hal_reset_pin(pin);
     }
+}
+
+MP_WEAK bool mimxrt10xx_board_reset_pin_number(const mcu_pin_obj_t *pin) {
+    return false;
 }
 
 // Since i.MX pins need extra register and reset information to reset properly,
@@ -55,6 +58,12 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
     if (pin == NULL) {
         return;
     }
+
+    // Give the board a chance to reset the pin in a particular way, or not reset it at all.
+    if (mimxrt10xx_board_reset_pin_number(pin)) {
+        return;
+    }
+
     never_reset_pins[pin->mux_idx] = false;
     claimed_pins[pin->mux_idx] = false;
     *(uint32_t *)pin->mux_reg = pin->mux_reset;
