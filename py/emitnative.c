@@ -401,7 +401,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
     // local variables begin unbound, and have unknown type
     for (mp_uint_t i = num_args; i < emit->local_vtype_alloc; i++) {
-        emit->local_vtype[i] = VTYPE_UNBOUND;
+        emit->local_vtype[i] = emit->do_viper_types ? VTYPE_UNBOUND : VTYPE_PYOBJ;
     }
 
     // values on stack begin unbound
