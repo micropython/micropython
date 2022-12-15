@@ -57,7 +57,7 @@ STATIC void lwip_getaddrinfo_cb(const char *name, const ip_addr_t *ipaddr, void 
     }
 }
 
-int socketpool_resolve_host(socketpool_socketpool_obj_t *self, const char *host, ip_addr_t *addr) {
+STATIC int socketpool_resolve_host(socketpool_socketpool_obj_t *self, const char *host, ip_addr_t *addr) {
 
     getaddrinfo_state_t state;
     state.status = 0;
@@ -94,17 +94,26 @@ int socketpool_resolve_host(socketpool_socketpool_obj_t *self, const char *host,
     return 0;
 }
 
-mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
-    const char *host) {
-
-    ip_addr_t addr;
-    int result = socketpool_resolve_host(self, host, &addr);
+void socketpool_resolve_host_raise(socketpool_socketpool_obj_t *self, const char *host, ip_addr_t *addr) {
+    int result = socketpool_resolve_host(self, host, addr);
     if (result < 0) {
+        printf("socket_resolve_host() returned %d\n", result);
+        common_hal_socketpool_socketpool_raise_gaierror(SOCKETPOOL_EAI_NONAME, MP_QSTR_Name_space_or_space_service_space_not_space_known);
         mp_raise_OSError(-result);
     }
+}
+
+mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self, const char *host) {
+
+    ip_addr_t addr;
+    socketpool_resolve_host_raise(self, host, &addr);
 
     char ip_str[IP4ADDR_STRLEN_MAX];
     inet_ntoa_r(addr, ip_str, IP4ADDR_STRLEN_MAX);
     mp_obj_t ip_obj = mp_obj_new_str(ip_str, strlen(ip_str));
     return ip_obj;
+}
+
+mp_obj_t common_hal_socketpool_socketpool_gethostbyname_raise(socketpool_socketpool_obj_t *self, const char *host) {
+    return common_hal_socketpool_socketpool_gethostbyname(self, host);
 }

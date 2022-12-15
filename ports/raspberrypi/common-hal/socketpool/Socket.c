@@ -872,11 +872,7 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     ip_addr_t bind_addr;
     const ip_addr_t *bind_addr_ptr = &bind_addr;
     if (hostlen > 0) {
-        int error = socketpool_resolve_host(socket->pool, host, &bind_addr);
-        if (error != 0) {
-            mp_raise_OSError(EHOSTUNREACH);
-        }
-
+        socketpool_resolve_host_raise(socket->pool, host, &bind_addr);
     } else {
         bind_addr_ptr = IP_ANY_TYPE;
     }
@@ -965,10 +961,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *socket,
 
     // get address
     ip_addr_t dest;
-    int error = socketpool_resolve_host(socket->pool, host, &dest);
-    if (error != 0) {
-        mp_raise_OSError(EHOSTUNREACH);
-    }
+    socketpool_resolve_host_raise(socket->pool, host, &dest);
 
     err_t err = ERR_ARG;
     switch (socket->type) {
@@ -1163,10 +1156,7 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *socket,
     const char *host, size_t hostlen, uint32_t port, const uint8_t *buf, uint32_t len) {
     int _errno;
     ip_addr_t ip;
-    int error = socketpool_resolve_host(socket->pool, host, &ip);
-    if (error != 0) {
-        mp_raise_OSError(EHOSTUNREACH);
-    }
+    socketpool_resolve_host_raise(socket->pool, host, &ip);
 
     mp_uint_t ret = 0;
     switch (socket->type) {
