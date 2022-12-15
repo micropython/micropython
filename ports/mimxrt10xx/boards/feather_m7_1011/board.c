@@ -29,7 +29,8 @@
 #include "shared-bindings/microcontroller/Pin.h"
 
 // These pins should never ever be reset; doing so could interfere with basic operation.
-STATIC const mcu_pin_obj_t *_reset_forbidden_pins[] = {
+// Used in common-hal/microcontroller/Pin.c
+const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[] = {
     &pin_GPIO_AD_13,// SWDIO
     &pin_GPIO_AD_12,// SWCLK
 
@@ -41,25 +42,7 @@ STATIC const mcu_pin_obj_t *_reset_forbidden_pins[] = {
     &pin_GPIO_SD_08,
     &pin_GPIO_SD_07,
     &pin_GPIO_SD_06,
+    NULL,                       // Must end in NULL.
 };
-
-STATIC bool _reset_forbidden(const mcu_pin_obj_t *pin) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(_reset_forbidden_pins); i++) {
-        if (pin == _reset_forbidden_pins[i]) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool mimxrt10xx_board_reset_pin_number(const mcu_pin_obj_t *pin) {
-    if (_reset_forbidden(pin)) {
-        return true;
-    }
-
-    // Other reset variations would go here.
-
-    return false;
-}
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

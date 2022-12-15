@@ -31,6 +31,22 @@
 STATIC bool claimed_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
 STATIC bool never_reset_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
 
+// Default is that no pins are forbidden to reset.
+MP_WEAK const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[] = {
+    NULL,
+};
+
+STATIC bool _reset_forbidden(const mcu_pin_obj_t *pin) {
+    const mcu_pin_obj_t **forbidden_pin = &mimxrt10xx_reset_forbidden_pins[0];
+    while (*forbidden_pin) {
+        if (pin == *forbidden_pin) {
+            return true;
+        }
+        forbidden_pin++;
+    }
+    return false;
+}
+
 // There are two numbering systems used here:
 // IOMUXC index, used for iterating through pins and accessing reset information,
 // and GPIO port and number, used to store claimed and reset tagging. The two number
@@ -55,7 +71,12 @@ MP_WEAK bool mimxrt10xx_board_reset_pin_number(const mcu_pin_obj_t *pin) {
 // Since i.MX pins need extra register and reset information to reset properly,
 // resetting pins by number alone has been removed.
 void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
+    return;
     if (pin == NULL) {
+        return;
+    }
+
+    if (_reset_forbidden(pin)) {
         return;
     }
 
