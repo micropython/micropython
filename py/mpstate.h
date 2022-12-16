@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_MPSTATE_H
 #define MICROPY_INCLUDED_PY_MPSTATE_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "py/mpconfig.h"
@@ -293,8 +294,14 @@ extern mp_state_ctx_t mp_state_ctx;
 #if MICROPY_PY_THREAD
 extern mp_state_thread_t *mp_thread_get_state(void);
 #define MP_STATE_THREAD(x) (mp_thread_get_state()->x)
+static inline bool mp_thread_is_main_thread(void) {
+    return mp_thread_get_state() == &mp_state_ctx.thread;
+}
 #else
 #define MP_STATE_THREAD(x)  MP_STATE_MAIN_THREAD(x)
+static inline bool mp_thread_is_main_thread(void) {
+    return true;
+}
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPSTATE_H
