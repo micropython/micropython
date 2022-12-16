@@ -941,9 +941,11 @@ void powerctrl_enter_standby_mode(void) {
     // Clear and mask D1 EXTIs.
     EXTI_D1->PR1 = 0x3fffffu;
     EXTI_D1->IMR1 &= ~(0xFFFFu); // 16 lines
+    #if defined(EXTI_D2)
     // Clear and mask D2 EXTIs.
     EXTI_D2->PR1 = 0x3fffffu;
     EXTI_D2->IMR1 &= ~(0xFFFFu); // 16 lines
+    #endif
     // Clear all wake-up flags.
     PWR->WKUPCR |= PWR_WAKEUP_FLAG_ALL;
     #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
@@ -970,7 +972,7 @@ void powerctrl_enter_standby_mode(void) {
     PWR->CSR1 |= PWR_CSR1_EIWUP;
     #endif
 
-    #if defined(NDEBUG)
+    #if defined(NDEBUG) && defined(DBGMCU)
     // Disable Debug MCU.
     DBGMCU->CR = 0;
     #endif
