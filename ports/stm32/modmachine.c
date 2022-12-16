@@ -265,8 +265,12 @@ STATIC mp_obj_t machine_reset(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 STATIC mp_obj_t machine_soft_reset(void) {
-    pyexec_system_exit = PYEXEC_FORCED_EXIT;
-    mp_raise_type(&mp_type_SystemExit);
+    mp_sched_vm_abort();
+    // Either handle the pending abort, or wait if we aren't the main thread.
+    for (;;) {
+        MICROPY_EVENT_POLL_HOOK;
+    }
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
