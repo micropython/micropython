@@ -79,6 +79,9 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     nlr_buf_t nlr;
     nlr.ret_val = NULL;
     if (nlr_push(&nlr) == 0) {
+        #if MICROPY_SCHED_VM_ABORT
+        nlr_set_abort(&nlr);
+        #endif
         mp_obj_t module_fun;
         #if MICROPY_MODULE_FROZEN_MPY
         if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
@@ -140,7 +143,12 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_hal_stdout_tx_strn("\x04", 1);
         }
 
-        // check for SystemExit
+        #if MICROPY_SCHED_VM_ABORT
+        if (nlr.ret_val == NULL) {
+            // VM abort
+            ret = PYEXEC_FORCED_EXIT;
+        } else
+        #endif
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
