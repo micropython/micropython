@@ -32,15 +32,6 @@
 // sources such as interrupts and UNIX signal handlers).
 void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
     MP_STATE_MAIN_THREAD(mp_pending_exception) = exc;
-
-    #if MICROPY_ENABLE_SCHEDULER && !MICROPY_PY_THREAD
-    // Optimisation for the case where we have scheduler but no threading.
-    // Allows the VM to do a single check to exclude both pending exception
-    // and queued tasks.
-    if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
-        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
-    }
-    #endif
 }
 
 #if MICROPY_KBD_EXCEPTION
@@ -55,9 +46,14 @@ void MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(mp_sched_keyboard_interrupt)(void)
 
 #define IDX_MASK(i) ((i) & (MICROPY_SCHEDULER_DEPTH - 1))
 
-// This is a macro so it is guaranteed to be inlined in functions like
+// The following are macros so they are guaranteed to be inlined in functions like
 // mp_sched_schedule that may be located in a special memory region.
 #define mp_sched_full() (mp_sched_num_pending() == MICROPY_SCHEDULER_DEPTH)
+#if MICROPY_SCHEDULER_STATIC_NODES
+#define mp_sched_any() (MP_STATE_VM(sched_head) != NULL || mp_sched_num_pending())
+#else
+#define mp_sched_any() (mp_sched_num_pending())
+#endif
 
 static inline bool mp_sched_empty(void) {
     MP_STATIC_ASSERT(MICROPY_SCHEDULER_DEPTH <= 255); // MICROPY_SCHEDULER_DEPTH must fit in 8 bits
@@ -68,16 +64,20 @@ static inline bool mp_sched_empty(void) {
 
 static inline void mp_sched_run_pending(void) {
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-    if (MP_STATE_VM(sched_state) != MP_SCHED_PENDING) {
+    if (MP_STATE_VM(sched_lock_depth)) {
         // Something else (e.g. hard IRQ) locked the scheduler while we
         // acquired the lock.
         MICROPY_END_ATOMIC_SECTION(atomic_state);
         return;
     }
 
+    if (MP_STATE_MAIN_THREAD(mp_pending_exception) == MP_OBJ_SENTINEL) {
+        MP_STATE_MAIN_THREAD(mp_pending_exception) = MP_OBJ_NULL;
+    }
+
     // Equivalent to mp_sched_lock(), but we're already in the atomic
     // section and know that we're pending.
-    MP_STATE_VM(sched_state) = MP_SCHED_LOCKED;
+    ++MP_STATE_VM(sched_lock_depth);
 
     #if MICROPY_SCHEDULER_STATIC_NODES
     // Run all pending C callbacks.
@@ -116,34 +116,20 @@ static inline void mp_sched_run_pending(void) {
 // tasks and also in hard interrupts or GC finalisers.
 void mp_sched_lock(void) {
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-    if (MP_STATE_VM(sched_state) < 0) {
-        // Already locked, increment lock (recursive lock).
-        --MP_STATE_VM(sched_state);
-    } else {
-        // Pending or idle.
-        MP_STATE_VM(sched_state) = MP_SCHED_LOCKED;
-    }
+    ++MP_STATE_VM(sched_lock_depth);
     MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
 
 void mp_sched_unlock(void) {
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-    assert(MP_STATE_VM(sched_state) < 0);
-    if (++MP_STATE_VM(sched_state) == 0) {
+    assert(MP_STATE_VM(sched_lock_depth) > 0);
+    if (--MP_STATE_VM(sched_lock_depth) == 0) {
         // Scheduler became unlocked. Check if there are still tasks in the
         // queue and set sched_state accordingly.
-        if (
-            #if !MICROPY_PY_THREAD
-            // See optimisation in mp_sched_exception.
-            MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL ||
-            #endif
-            #if MICROPY_SCHEDULER_STATIC_NODES
-            MP_STATE_VM(sched_head) != NULL ||
-            #endif
-            mp_sched_num_pending()) {
-            MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
-        } else {
-            MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
+        if (MP_STATE_MAIN_THREAD(mp_pending_exception) == MP_OBJ_NULL) {
+            if (mp_sched_any()) {
+                MP_STATE_MAIN_THREAD(mp_pending_exception) = MP_OBJ_SENTINEL;
+            }
         }
     }
     MICROPY_END_ATOMIC_SECTION(atomic_state);
@@ -153,8 +139,8 @@ bool MICROPY_WRAP_MP_SCHED_SCHEDULE(mp_sched_schedule)(mp_obj_t function, mp_obj
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     bool ret;
     if (!mp_sched_full()) {
-        if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
-            MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+        if (MP_STATE_MAIN_THREAD(mp_pending_exception) == MP_OBJ_NULL) {
+            MP_STATE_MAIN_THREAD(mp_pending_exception) = MP_OBJ_SENTINEL;
         }
         uint8_t iput = IDX_MASK(MP_STATE_VM(sched_idx) + MP_STATE_VM(sched_len)++);
         MP_STATE_VM(sched_queue)[iput].func = function;
@@ -174,8 +160,8 @@ bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback)
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     bool ret;
     if (node->callback == NULL) {
-        if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
-            MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+        if (MP_STATE_MAIN_THREAD(mp_pending_exception) == MP_OBJ_NULL) {
+            MP_STATE_MAIN_THREAD(mp_pending_exception) = MP_OBJ_SENTINEL;
         }
         node->callback = callback;
         node->next = NULL;
@@ -206,8 +192,13 @@ void mp_handle_pending(bool raise_exc) {
     if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
         mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
         mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-        if (obj != MP_OBJ_NULL) {
+        if (obj != MP_OBJ_NULL && obj != MP_OBJ_SENTINEL) {
             MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
+            #if MICROPY_ENABLE_SCHEDULER
+            if (MP_STATE_MAIN_THREAD(mp_pending_exception) == MP_OBJ_NULL && mp_sched_any()) {
+                MP_STATE_MAIN_THREAD(mp_pending_exception) = MP_OBJ_SENTINEL;
+            }
+            #endif
             if (raise_exc) {
                 MICROPY_END_ATOMIC_SECTION(atomic_state);
                 nlr_raise(obj);
@@ -216,7 +207,7 @@ void mp_handle_pending(bool raise_exc) {
         MICROPY_END_ATOMIC_SECTION(atomic_state);
     }
     #if MICROPY_ENABLE_SCHEDULER
-    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
+    if (MP_STATE_MAIN_THREAD(mp_pending_exception) == MP_OBJ_SENTINEL) {
         mp_sched_run_pending();
     }
     #endif

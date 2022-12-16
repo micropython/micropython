@@ -61,11 +61,6 @@ typedef struct mp_dynamic_compiler_t {
 extern mp_dynamic_compiler_t mp_dynamic_compiler;
 #endif
 
-// These are the values for sched_state
-#define MP_SCHED_IDLE (1)
-#define MP_SCHED_LOCKED (-1)
-#define MP_SCHED_PENDING (0) // 0 so it's a quick check in the VM
-
 typedef struct _mp_sched_item_t {
     mp_obj_t func;
     mp_obj_t arg;
@@ -211,7 +206,12 @@ typedef struct _mp_state_vm_t {
     #endif
 
     #if MICROPY_ENABLE_SCHEDULER
-    volatile int16_t sched_state;
+    // This counts the depth of calls to mp_sched_lock/mp_sched_unlock.
+    volatile uint16_t sched_lock_depth;
+
+    // These index sched_queue.
+    uint8_t sched_len;
+    uint8_t sched_idx;
 
     #if MICROPY_SCHEDULER_STATIC_NODES
     // These will usually point to statically allocated memory.  They are not
@@ -220,10 +220,6 @@ typedef struct _mp_state_vm_t {
     struct _mp_sched_node_t *sched_head;
     struct _mp_sched_node_t *sched_tail;
     #endif
-
-    // These index sched_queue.
-    uint8_t sched_len;
-    uint8_t sched_idx;
     #endif
 
     #if MICROPY_PY_THREAD_GIL

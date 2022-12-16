@@ -1321,17 +1321,9 @@ pending_exception_check:
                 // we can inline the check for the common case where there is
                 // neither.
                 if (
-                #if MICROPY_ENABLE_SCHEDULER
+                    MP_STATE_MAIN_THREAD(mp_pending_exception) != MP_OBJ_NULL
                 #if MICROPY_PY_THREAD
-                    // Scheduler + threading: Scheduler and pending exceptions are independent, check both.
-                    MP_STATE_VM(sched_state) == MP_SCHED_PENDING || MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL
-                #else
-                    // Scheduler + non-threading: Optimisation: pending exception sets sched_state, only check sched_state.
-                    MP_STATE_VM(sched_state) == MP_SCHED_PENDING
-                #endif
-                #else
-                    // No scheduler: Just check pending exception.
-                    MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL
+                    || MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL
                 #endif
                 ) {
                     MARK_EXC_IP_SELECTIVE();
@@ -1349,7 +1341,7 @@ pending_exception_check:
                     #endif
                     #if MICROPY_ENABLE_SCHEDULER
                     // can only switch threads if the scheduler is unlocked
-                    if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE)
+                    if (MP_STATE_VM(sched_lock_depth) == 0)
                     #endif
                     {
                     MP_THREAD_GIL_EXIT();
