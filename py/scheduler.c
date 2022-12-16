@@ -42,6 +42,15 @@ void MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(mp_sched_keyboard_interrupt)(void)
 }
 #endif
 
+#if MICROPY_SCHED_VM_ABORT
+void MICROPY_WRAP_MP_SCHED_VM_ABORT(mp_sched_vm_abort)(void) {
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    MP_STATE_VM(vm_abort) = true;
+    mp_sched_exception(MP_OBJ_SENTINEL);
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+}
+#endif
+
 #if MICROPY_ENABLE_SCHEDULER
 
 #define IDX_MASK(i) ((i) & (MICROPY_SCHEDULER_DEPTH - 1))
@@ -126,6 +135,9 @@ void mp_sched_unlock(void) {
     if (--MP_STATE_VM(sched_lock_depth) == 0) {
         // Scheduler became unlocked. Check if there are still tasks in the
         // queue and set sched_state accordingly.
+        // dpg: don't understand why this is needed: exceptions should be handled
+        // within scheduled code so mp_handle_pending should make sure this state
+        // is consistent
         if (MP_STATE_MAIN_THREAD(mp_pending_exception) == MP_OBJ_NULL) {
             if (mp_sched_any()) {
                 MP_STATE_MAIN_THREAD(mp_pending_exception) = MP_OBJ_SENTINEL;
@@ -192,6 +204,19 @@ void mp_handle_pending(bool raise_exc) {
     if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
         mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
         mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
+        #if MICROPY_SCHED_VM_ABORT
+        if (MP_STATE_VM(vm_abort) && mp_thread_is_main_thread()) {
+            MP_STATE_VM(vm_abort) = false;
+            MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
+            #if MICROPY_ENABLE_SCHEDULER
+            if (MP_STATE_MAIN_THREAD(mp_pending_exception) == MP_OBJ_NULL && mp_sched_any()) {
+                MP_STATE_MAIN_THREAD(mp_pending_exception) = MP_OBJ_SENTINEL;
+            }
+            #endif
+            MICROPY_END_ATOMIC_SECTION(atomic_state);
+            nlr_jump_abort();
+        }
+        #endif
         if (obj != MP_OBJ_NULL && obj != MP_OBJ_SENTINEL) {
             MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
             #if MICROPY_ENABLE_SCHEDULER
