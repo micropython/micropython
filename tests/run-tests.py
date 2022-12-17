@@ -532,6 +532,14 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if os.getenv("GITHUB_ACTIONS") == "true":
         skip_tests.add("thread/stress_schedule.py")  # has reliability issues
 
+        if os.getenv("RUNNER_OS") == "Windows":
+            # fails with stack overflow on Debug builds
+            skip_tests.add("misc/sys_settrace_features.py")
+
+            if os.getenv("MSYSTEM") is not None:
+                # fails due to wrong path separator
+                skip_tests.add("import/import_file.py")
+
     if upy_float_precision == 0:
         skip_tests.add("extmod/uctypes_le_float.py")
         skip_tests.add("extmod/uctypes_native_float.py")
