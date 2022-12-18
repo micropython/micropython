@@ -85,14 +85,20 @@ void common_hal_esp32_camera_camera_construct(
     for (int i = 0; i < 8; i++) {
         claim_pin_number(data_pins[i]);
     }
-    claim_pin(external_clock_pin);
+    maybe_claim_pin(external_clock_pin);
     claim_pin(pixel_clock_pin);
     claim_pin(vsync_pin);
     claim_pin(href_pin);
     maybe_claim_pin(powerdown_pin);
     maybe_claim_pin(reset_pin);
 
-    common_hal_pwmio_pwmout_construct(&self->pwm, external_clock_pin, 1, external_clock_frequency, true);
+    if (external_clock_pin) {
+        common_hal_pwmio_pwmout_construct(&self->pwm, external_clock_pin, 1, external_clock_frequency, true);
+        self->camera_config.ledc_timer = self->pwm.tim_handle.timer_num;
+        self->camera_config.ledc_channel = self->pwm.chan_handle.channel;
+    } else {
+        self->camera_config.ledc_channel = 0xff; // NO_CAMERA_LEDC_CHANNEL
+    }
 
     self->i2c = i2c;
 
@@ -118,9 +124,6 @@ void common_hal_esp32_camera_camera_construct(
     self->camera_config.pin_pclk = common_hal_mcu_pin_number(pixel_clock_pin);
 
     self->camera_config.xclk_freq_hz = external_clock_frequency;
-
-    self->camera_config.ledc_timer = self->pwm.tim_handle.timer_num;
-    self->camera_config.ledc_channel = self->pwm.chan_handle.channel;
 
     self->camera_config.pixel_format = pixel_format;
     self->camera_config.frame_size = frame_size;
