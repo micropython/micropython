@@ -72,7 +72,7 @@ STATIC mp_obj_t mcu_processor_set_frequency(mp_obj_t self, mp_obj_t freq) {
     uint32_t value_of_freq = (uint32_t)mp_arg_validate_int_min(mp_obj_get_int(freq), 0, MP_QSTR_frequency);
     common_hal_mcu_processor_set_frequency(self, value_of_freq);
     #else
-    mp_raise_msg(&mp_type_NotImplementedError,translate("frequency is read-only for this board"));
+    mp_raise_NotImplementedError_varg(translate("%q is read-only for this board"), MP_QSTR_frequency);
     #endif
     return mp_const_none;
 }

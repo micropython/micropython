@@ -64,8 +64,8 @@ static inline void nw_put_le32(uint8_t *buf, uint32_t x) {
     buf[3] = x >> 24;
 }
 
-NORETURN static void ro_attribute(int attr) {
-    mp_raise_msg_varg(&mp_type_AttributeError, MP_ERROR_TEXT("'%s' object has no attribute '%q'"), "Radio", attr);
+NORETURN static void ro_attribute(qstr attr) {
+    mp_raise_NotImplementedError_varg(translate("%q is read-only for this board"), attr);
 }
 
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {

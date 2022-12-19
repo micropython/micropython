@@ -117,7 +117,7 @@ uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t
 
 void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_area_t *dirty_area) {
     if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
+        mp_raise_RuntimeError(translate("Read-only"));
     }
 
     displayio_area_t area = *dirty_area;
