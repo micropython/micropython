@@ -36,9 +36,9 @@
 #endif
 
 typedef union {
-#if CIRCUITPY_ESPULP
+    #if CIRCUITPY_ESPULP
     espulp_ulpalarm_obj_t ulp_alarm;
-#endif
+    #endif
     alarm_pin_pinalarm_obj_t pin_alarm;
     alarm_time_timealarm_obj_t time_alarm;
     alarm_touch_touchalarm_obj_t touch_alarm;
