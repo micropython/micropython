@@ -135,6 +135,26 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
     if (hpcd->Instance == USB_OTG_HS) {
         #if MICROPY_HW_USB_HS_IN_FS
 
+        // Configure USB GPIO's.
+
+        #if defined(STM32H723xx)
+
+        // These MCUs don't have an alternate function for USB but rather require
+        // the pins to be disconnected from all peripherals, ie put in analog mode.
+
+        #if defined(MICROPY_HW_USB_OTG_ID_PIN)
+        const uint32_t otg_alt = GPIO_AF10_OTG1_FS;
+        #endif
+
+        mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+        mp_hal_pin_config_speed(pin_A11, GPIO_SPEED_FREQ_VERY_HIGH);
+        mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+        mp_hal_pin_config_speed(pin_A12, GPIO_SPEED_FREQ_VERY_HIGH);
+
+        #else
+
+        // Other MCUs have an alternate function for GPIO's to be in USB mode.
+
         #if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
         const uint32_t otg_alt = GPIO_AF10_OTG1_FS;
         #elif defined(STM32H7)
@@ -143,11 +163,12 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         const uint32_t otg_alt = GPIO_AF12_OTG_HS_FS;
         #endif
 
-        // Configure USB FS GPIOs
         mp_hal_pin_config(pin_B14, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, otg_alt);
         mp_hal_pin_config_speed(pin_B14, GPIO_SPEED_FREQ_VERY_HIGH);
         mp_hal_pin_config(pin_B15, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, otg_alt);
         mp_hal_pin_config_speed(pin_B15, GPIO_SPEED_FREQ_VERY_HIGH);
+
+        #endif
 
         #if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
         // Configure VBUS Pin

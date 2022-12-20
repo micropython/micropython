@@ -379,7 +379,9 @@ void stm32_main(uint32_t reset_mode) {
     // Enable D2 SRAM1/2/3 clocks.
     __HAL_RCC_D2SRAM1_CLK_ENABLE();
     __HAL_RCC_D2SRAM2_CLK_ENABLE();
+    #if defined(__HAL_RCC_D2SRAM3_CLK_ENABLE)
     __HAL_RCC_D2SRAM3_CLK_ENABLE();
+    #endif
     #endif
 
     MICROPY_BOARD_EARLY_INIT();
