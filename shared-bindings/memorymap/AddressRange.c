@@ -105,8 +105,8 @@ STATIC MP_DEFINE_CONST_DICT(memorymap_addressrange_locals_dict, memorymap_addres
 //|     def __getitem__(self, index: int) -> int:
 //|         """Returns the value(s) at the given index.
 //|
-//|         1, 2, 4 and 8 byte reads will be done in one assignment. All others
-//|         will use memcpy."""
+//|         1, 2, 4 and 8 byte aligned reads will be done in one transaction.
+//|         All others may use multiple transactions."""
 //|         ...
 //|     @overload
 //|     def __setitem__(self, index: slice, value: ReadableBuffer) -> None: ...
@@ -114,8 +114,8 @@ STATIC MP_DEFINE_CONST_DICT(memorymap_addressrange_locals_dict, memorymap_addres
 //|     def __setitem__(self, index: int, value: int) -> None:
 //|         """Set the value(s) at the given index.
 //|
-//|         1, 2, 4 and 8 byte writes will be done in one assignment. All others
-//|         will use memcpy."""
+//|         1, 2, 4 and 8 byte aligned writes will be done in one transaction.
+//|         All others may use multiple transactions."""
 //|         ...
 //|
 STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {

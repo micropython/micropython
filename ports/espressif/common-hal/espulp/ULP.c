@@ -61,7 +61,7 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
     }
 
     if (pin_mask >= (1 << 22)) {
-        mp_raise_ValueError(translate("Pins 21+ not supported from ULP"));
+        raise_ValueError_invalid_pin();
     }
 
     for (uint8_t i = 0; i < 32; i++) {
@@ -89,7 +89,7 @@ void common_hal_espulp_ulp_halt(espulp_ulp_obj_t *self) {
     // ulp_riscv_timer_stop();
     // ulp_riscv_halt();
 
-    // stop the ulp timer so that is doesn't restart the cpu
+    // stop the ulp timer so that it doesn't restart the cpu
     CLEAR_PERI_REG_MASK(RTC_CNTL_ULP_CP_TIMER_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
 
     // suspends the ulp operation
@@ -107,6 +107,9 @@ void common_hal_espulp_ulp_halt(espulp_ulp_obj_t *self) {
 }
 
 void common_hal_espulp_ulp_construct(espulp_ulp_obj_t *self) {
+    // Use a static variable to track ULP in use so that subsequent code runs can
+    // use a running ULP. This is only to prevent multiple portions of user code
+    // from using the ULP concurrently.
     if (ulp_used) {
         mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_ULP);
     }

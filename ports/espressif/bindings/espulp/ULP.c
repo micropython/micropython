@@ -56,7 +56,7 @@ STATIC espulp_ulp_obj_t *get_ulp_obj(mp_obj_t self_in) {
 }
 
 //|     def deinit(self) -> None:
-//|         """Deinitialises the camera and releases all memory resources for reuse."""
+//|         """Deinitialises the ULP and releases it for another program."""
 //|         ...
 STATIC mp_obj_t espulp_ulp_deinit(mp_obj_t self_in) {
     espulp_ulp_obj_t *self = get_ulp_obj(self_in);
@@ -104,12 +104,19 @@ STATIC mp_obj_t espulp_ulp_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     mp_obj_t pins_in = args[ARG_pins].u_obj;
     const size_t num_pins = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(pins_in));
+
+    // The ULP only supports 21 pins on the ESP32-S2 and S3. So we can store it
+    // as a bitmask in a 32 bit number. The common-hal code does further checks.
     uint32_t pin_mask = 0;
 
     for (mp_uint_t i = 0; i < num_pins; i++) {
         mp_obj_t pin_obj = mp_obj_subscr(pins_in, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
         validate_obj_is_free_pin(pin_obj);
-        pin_mask |= 1 << ((const mcu_pin_obj_t *)pin_obj)->number;
+        const mcu_pin_obj_t *pin = ((const mcu_pin_obj_t *)pin_obj);
+        if (pin->number >= 32) {
+            raise_ValueError_invalid_pin();
+        }
+        pin_mask |= 1 << pin->number;
     }
 
     common_hal_espulp_ulp_run(self, bufinfo.buf, bufinfo.len, pin_mask);
