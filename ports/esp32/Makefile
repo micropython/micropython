@@ -5,6 +5,11 @@
 # Select the board to build for, defaulting to GENERIC.
 BOARD ?= GENERIC
 
+BOARD_DIR ?= boards/$(BOARD)
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+$(error Invalid BOARD specified: $(BOARD_DIR))
+endif
+
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
@@ -28,7 +33,7 @@ ifdef USER_C_MODULES
 	CMAKE_ARGS += -DUSER_C_MODULES=${USER_C_MODULES}
 endif
 
-IDFPY_FLAGS += -D MICROPY_BOARD=$(BOARD) -B $(BUILD) $(CMAKE_ARGS)
+IDFPY_FLAGS += -D MICROPY_BOARD_DIR=$(BOARD_DIR) -D MICROPY_BOARD=$(BOARD) -B $(BUILD) $(CMAKE_ARGS)
 
 ifdef FROZEN_MANIFEST
        IDFPY_FLAGS += -D MICROPY_FROZEN_MANIFEST=$(FROZEN_MANIFEST)
