@@ -457,10 +457,15 @@ class Pyboard:
         self.exec_raw_no_follow(command)
         return self.follow(timeout, data_consumer)
 
-    def eval(self, expression):
-        ret = self.exec_("print({})".format(expression))
-        ret = ret.strip()
-        return ret
+    def eval(self, expression, parse=False):
+        if parse:
+            ret = self.exec_("print(repr({}))".format(expression))
+            ret = ret.strip()
+            return ast.literal_eval(ret.decode())
+        else:
+            ret = self.exec_("print({})".format(expression))
+            ret = ret.strip()
+            return ret
 
     def exec_(self, command, data_consumer=None):
         ret, ret_err = self.exec_raw(command, data_consumer=data_consumer)
