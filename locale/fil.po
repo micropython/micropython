@@ -101,6 +101,7 @@ msgstr ""
 msgid "%q failure: %d"
 msgstr ""
 
+#: ports/espressif/common-hal/espulp/ULP.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -181,7 +182,6 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
@@ -395,6 +395,10 @@ msgstr ""
 msgid "Address must be %d bytes long"
 msgstr "ang palette ay dapat 32 bytes ang haba"
 
+#: ports/espressif/common-hal/memorymap/AddressRange.c
+msgid "Address range not allowed"
+msgstr ""
+
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
 msgstr ""
@@ -476,7 +480,7 @@ msgstr ""
 msgid "Already have all-matches listener"
 msgstr ""
 
-#: ports/espressif/common-hal/coproc/__init__.c
+#: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
@@ -500,7 +504,7 @@ msgstr "Isa pang send ay aktibo na"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "May halfwords (type 'H') dapat ang array"
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Array values ay dapat single bytes."
@@ -924,10 +928,10 @@ msgstr "May pagkakamali sa REGEX"
 msgid "Error: Failure to bind"
 msgstr ""
 
-#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/alarm/__init__.c shared-bindings/alarm/coproc/CoprocAlarm.c
-#: shared-bindings/busio/SPI.c shared-bindings/coproc/Coproc.c
-#: shared-bindings/coproc/__init__.c shared-bindings/microcontroller/Pin.c
+#: ports/espressif/bindings/espulp/ULP.c py/enum.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
 msgstr "Umasa ng %q"
@@ -1030,7 +1034,6 @@ msgstr ""
 msgid "Firmware is invalid"
 msgstr ""
 
-#: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
 msgstr ""
@@ -1643,9 +1646,12 @@ msgid ""
 "%d bpp given"
 msgstr ""
 
-#: ports/espressif/common-hal/alarm/coproc/CoprocAlarm.c
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one %q can be set in deep sleep."
+msgstr ""
+
+#: ports/espressif/common-hal/espulp/ULPAlarm.c
+msgid "Only one %q can be set."
 msgstr ""
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
@@ -1764,6 +1770,10 @@ msgid ""
 "constructor"
 msgstr ""
 
+#: ports/espressif/common-hal/espulp/ULP.c
+msgid "Pins 21+ not supported from ULP"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"
 msgstr ""
@@ -1806,6 +1816,10 @@ msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program size invalid"
+msgstr ""
+
+#: ports/espressif/common-hal/espulp/ULP.c
+msgid "Program too long"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -1953,7 +1967,7 @@ msgstr ""
 msgid "Sleep Memory not available"
 msgstr ""
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Slice at value iba't ibang haba."
@@ -2227,8 +2241,8 @@ msgstr ""
 msgid "Unable to start mDNS query"
 msgstr ""
 
-#: shared-bindings/coproc/CoprocMemory.c
-msgid "Unable to write"
+#: shared-bindings/memorymap/AddressRange.c
+msgid "Unable to write to address."
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
@@ -2486,7 +2500,7 @@ msgid "array has too many dimensions"
 msgstr ""
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
-#: shared-bindings/coproc/CoprocMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "array/bytes kinakailangan sa kanang bahagi"
 
@@ -3761,7 +3775,7 @@ msgid "only sample_rate=16000 is supported"
 msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"

@@ -112,6 +112,7 @@ msgstr "%q contient des broches en double"
 msgid "%q failure: %d"
 msgstr "Échec de %q : %d"
 
+#: ports/espressif/common-hal/espulp/ULP.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -192,7 +193,6 @@ msgstr "%q est hors limites"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
@@ -405,6 +405,10 @@ msgstr "ADC2 est utilisé pars le Wifi"
 msgid "Address must be %d bytes long"
 msgstr "L'adresse doit être longue de %d octets"
 
+#: ports/espressif/common-hal/memorymap/AddressRange.c
+msgid "Address range not allowed"
+msgstr ""
+
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
 msgstr "Tous les périphériques CAN sont utilisés"
@@ -485,7 +489,7 @@ msgstr "S'annonce déjà."
 msgid "Already have all-matches listener"
 msgstr "Il y a déjà un auditeur all-matches"
 
-#: ports/espressif/common-hal/coproc/__init__.c
+#: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
@@ -509,7 +513,7 @@ msgstr "Un autre envoi est déjà actif"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "La matrice doit contenir des demi-mots (type 'H')"
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Les valeurs de la matrice doivent être des octets singuliers."
@@ -948,10 +952,10 @@ msgstr "Erreur dans l'expression régulière"
 msgid "Error: Failure to bind"
 msgstr "Erreur : Impossible de lier"
 
-#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/alarm/__init__.c shared-bindings/alarm/coproc/CoprocAlarm.c
-#: shared-bindings/busio/SPI.c shared-bindings/coproc/Coproc.c
-#: shared-bindings/coproc/__init__.c shared-bindings/microcontroller/Pin.c
+#: ports/espressif/bindings/espulp/ULP.c py/enum.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
 msgstr "Attendu un %q"
@@ -1055,7 +1059,6 @@ msgstr "Le logiciel est identique"
 msgid "Firmware is invalid"
 msgstr "Logiciel invalide"
 
-#: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
 msgstr "Logiciel trop volumineux"
@@ -1692,10 +1695,13 @@ msgstr ""
 "Seulement les BMP monochromes, 4 bpp ou 8 bpp, ou 16 bpp et plus sont "
 "supportés: %d bpp fournis"
 
-#: ports/espressif/common-hal/alarm/coproc/CoprocAlarm.c
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one %q can be set in deep sleep."
 msgstr "Une seul %q autorisée en sommeil profond."
+
+#: ports/espressif/common-hal/espulp/ULPAlarm.c
+msgid "Only one %q can be set."
+msgstr ""
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
@@ -1817,6 +1823,10 @@ msgstr ""
 "octets idéal. Si cela ne peut pas être évité, transmettez allow_inefficient "
 "= True au constructeur"
 
+#: ports/espressif/common-hal/espulp/ULP.c
+msgid "Pins 21+ not supported from ULP"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"
 msgstr "Les broches doivent être séquentielles"
@@ -1864,6 +1874,10 @@ msgstr "Le programme fait des sorties sans charger d'OSR"
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program size invalid"
 msgstr "Taille du programme invalide"
+
+#: ports/espressif/common-hal/espulp/ULP.c
+msgid "Program too long"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -2009,7 +2023,7 @@ msgstr "Taille n'est pas supportée"
 msgid "Sleep Memory not available"
 msgstr "La mémoire de sommeil n'est pas disponible"
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Tranche et valeur de tailles différentes."
@@ -2298,9 +2312,9 @@ msgstr "Impossible de lire les données de la palette de couleurs"
 msgid "Unable to start mDNS query"
 msgstr "Impossible de lancer la requête mDNS"
 
-#: shared-bindings/coproc/CoprocMemory.c
-msgid "Unable to write"
-msgstr "Écriture impossible"
+#: shared-bindings/memorymap/AddressRange.c
+msgid "Unable to write to address."
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -2569,7 +2583,7 @@ msgid "array has too many dimensions"
 msgstr "la tableau à trop de dimensions"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
-#: shared-bindings/coproc/CoprocMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "matrice/octets requis à la droite"
 
@@ -3852,7 +3866,7 @@ msgid "only sample_rate=16000 is supported"
 msgstr "seul sample_rate = 16000 est pris en charge"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
@@ -4451,6 +4465,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Unable to write"
+#~ msgstr "Écriture impossible"
 
 #~ msgid "%q length must be >= 1"
 #~ msgstr "La longueur de %q doit être >= 1"
