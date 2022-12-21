@@ -24,17 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_COPROC_COPROC_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_COPROC_COPROC_H
+#pragma once
 
-#include "common-hal/coproc/Coproc.h"
+#include "py/obj.h"
+#include "common-hal/espulp/ULP.h"
 
-extern const mp_obj_type_t coproc_coproc_type;
 
-extern void common_hal_coproc_coproc_construct(coproc_coproc_obj_t *self,
-    const uint8_t *buf, const size_t buf_len, coproc_memory_obj_t *coproc_memory);
+extern const mp_obj_type_t espulp_ulp_type;
 
-extern void common_hal_coproc_coproc_deinit(coproc_coproc_obj_t *self);
-extern bool common_hal_coproc_coproc_deinited(coproc_coproc_obj_t *self);
+void common_hal_espulp_ulp_construct(espulp_ulp_obj_t *self);
+bool common_hal_espulp_ulp_deinited(espulp_ulp_obj_t *self);
+void common_hal_espulp_ulp_deinit(espulp_ulp_obj_t *self);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_COPROC_COPROC_H
+void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t length, uint32_t pin_mask);
+void common_hal_espulp_ulp_halt(espulp_ulp_obj_t *self);

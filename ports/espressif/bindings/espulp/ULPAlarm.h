@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,29 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/coproc/CoprocMemory.h"
+#pragma once
 
-uint32_t common_hal_coproc_memory_get_length(coproc_memory_obj_t *self) {
-    return self->len;
-}
+#include "common-hal/espulp/ULPAlarm.h"
 
-bool common_hal_coproc_memory_set_bytes(coproc_memory_obj_t *self,
-    uint32_t start_index, const uint8_t *values, uint32_t len) {
+extern const mp_obj_type_t espulp_ulpalarm_type;
 
-    if (start_index + len > self->len) {
-        return false;
-    }
-
-    memcpy((uint8_t *)(self->address + start_index), values, len);
-    return true;
-}
-
-void common_hal_coproc_memory_get_bytes(coproc_memory_obj_t *self,
-    uint32_t start_index, uint8_t *values, uint32_t len) {
-
-    if (start_index + len > self->len) {
-        return;
-    }
-
-    memcpy(values, (uint8_t *)(self->address + start_index), len);
-}
+void common_hal_espulp_ulpalarm_construct(espulp_ulpalarm_obj_t *self);

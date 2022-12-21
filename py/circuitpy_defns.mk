@@ -167,9 +167,6 @@ endif
 ifeq ($(CIRCUITPY_CANIO),1)
 SRC_PATTERNS += canio/%
 endif
-ifeq ($(CIRCUITPY_COPROC),1)
-SRC_PATTERNS += coproc/%
-endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
 endif
@@ -226,6 +223,9 @@ SRC_PATTERNS += keypad/%
 endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
+endif
+ifeq ($(CIRCUITPY_MEMORYMAP),1)
+SRC_PATTERNS += memorymap/%
 endif
 ifeq ($(CIRCUITPY_MEMORYMONITOR),1)
 SRC_PATTERNS += memorymonitor/%
@@ -400,7 +400,6 @@ SRC_COMMON_HAL_ALL = \
 	alarm/pin/PinAlarm.c \
 	alarm/time/TimeAlarm.c \
 	alarm/touch/TouchAlarm.c \
-	alarm/coproc/CoprocAlarm.c \
 	analogbufio/BufferedIn.c \
 	analogbufio/__init__.c \
 	analogio/AnalogIn.c \
@@ -423,9 +422,6 @@ SRC_COMMON_HAL_ALL = \
 	canio/CAN.c \
 	canio/Listener.c \
 	canio/__init__.c \
-	coproc/__init__.c \
-	coproc/Coproc.c \
-	coproc/CoprocMemory.c \
 	countio/Counter.c \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
@@ -443,9 +439,11 @@ SRC_COMMON_HAL_ALL = \
 	hashlib/Hash.c \
 	i2ctarget/I2CTarget.c \
 	i2ctarget/__init__.c \
+	memorymap/__init__.c \
+	memorymap/AddressRange.c \
+	microcontroller/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
-	microcontroller/__init__.c \
 	mdns/__init__.c \
 	mdns/Server.c \
 	mdns/RemoteService.c \
