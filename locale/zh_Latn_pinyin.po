@@ -111,6 +111,7 @@ msgstr "%q bāo hán chóng fù de yǐn jiǎo"
 msgid "%q failure: %d"
 msgstr "%q Shībài: %d"
 
+#: ports/espressif/common-hal/espulp/ULP.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -192,7 +193,6 @@ msgstr "%q chāo chū jiè xiàn"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
@@ -405,6 +405,10 @@ msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
 msgid "Address must be %d bytes long"
 msgstr "dìzhǐ chángdù bìxū shì %d zìjié"
 
+#: ports/espressif/common-hal/memorymap/AddressRange.c
+msgid "Address range not allowed"
+msgstr ""
+
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
 msgstr "suǒyǒu CAN wàishè dōu zài shǐyòng zhōng"
@@ -485,7 +489,7 @@ msgstr "Mùqián zhèngzài guǎngbō."
 msgid "Already have all-matches listener"
 msgstr "yǐjīng yǒu all-matches jiāntīng qì"
 
-#: ports/espressif/common-hal/coproc/__init__.c
+#: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
@@ -509,7 +513,7 @@ msgstr "Lìng yīgè fāsòng (send) yǐjīng zài gōngzuò"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "Shùzǔ bìxū bāohán halfwords (type 'H')"
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "shùzǔ de zhí yīnggāi shì dān'gè zìjié."
@@ -932,10 +936,10 @@ msgstr "Zhèngzé biǎodá shì cuòwù"
 msgid "Error: Failure to bind"
 msgstr "cuò wù: bǎng dìng shī bài"
 
-#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/alarm/__init__.c shared-bindings/alarm/coproc/CoprocAlarm.c
-#: shared-bindings/busio/SPI.c shared-bindings/coproc/Coproc.c
-#: shared-bindings/coproc/__init__.c shared-bindings/microcontroller/Pin.c
+#: ports/espressif/bindings/espulp/ULP.c py/enum.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
 msgstr "Yù qí %q"
@@ -1038,7 +1042,6 @@ msgstr "gù jiàn chóng fù"
 msgid "Firmware is invalid"
 msgstr "gù jiàn wú xiào"
 
-#: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
 msgstr "gù jiàn tài dà"
@@ -1663,10 +1666,13 @@ msgstr ""
 "Jǐn zhīchí dān sè, suǒyǐn wéi 4bpp huò 8bpp yǐjí 16bpp huò gèng gāo de BMP: "
 "Gěi chū %d bpp"
 
-#: ports/espressif/common-hal/alarm/coproc/CoprocAlarm.c
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one %q can be set in deep sleep."
 msgstr "zài shēn dù shuì mián zhōng zhǐ néng shè zhì yí gè %q."
+
+#: ports/espressif/common-hal/espulp/ULPAlarm.c
+msgid "Only one %q can be set."
+msgstr ""
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
@@ -1786,6 +1792,10 @@ msgstr ""
 "duōzì jié. Rúguǒ wúfǎ bìmiǎn, qǐng jiāng allow_inefficient = True chuándì "
 "gěigòuzào hánshù"
 
+#: ports/espressif/common-hal/espulp/ULP.c
+msgid "Pins 21+ not supported from ULP"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"
 msgstr "yǐn jiǎo bì xū shì lián xù de"
@@ -1831,6 +1841,10 @@ msgstr "chéng xù zài bù jiā zǎi Osr de qíng kuàng xià zhí xíng OUT"
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program size invalid"
 msgstr "chéng xù dà xiǎo wú xiào"
+
+#: ports/espressif/common-hal/espulp/ULP.c
+msgid "Program too long"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1976,7 +1990,7 @@ msgstr "bù zhī chí dà xiǎo"
 msgid "Sleep Memory not available"
 msgstr "shuì mián jì yì bù kě yòng"
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Qiēpiàn hé zhí bùtóng chángdù."
@@ -2261,9 +2275,9 @@ msgstr "Wúfǎ dúqǔ tiáosèbǎn shùjù"
 msgid "Unable to start mDNS query"
 msgstr "wú fǎ qǐ dòng mDNS chá xún"
 
-#: shared-bindings/coproc/CoprocMemory.c
-msgid "Unable to write"
-msgstr "wú fǎ xiě rù"
+#: shared-bindings/memorymap/AddressRange.c
+msgid "Unable to write to address."
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -2528,7 +2542,7 @@ msgid "array has too many dimensions"
 msgstr "shùzǔ yǒu tài duō wéidù"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
-#: shared-bindings/coproc/CoprocMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "yòu cè xūyào shùzǔ/zì jié"
 
@@ -3795,7 +3809,7 @@ msgid "only sample_rate=16000 is supported"
 msgstr "Jǐn zhīchí cǎiyàng lǜ = 16000"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "jǐn zhīchí bù zhǎng = 1(jí wú) de qiēpiàn"
@@ -4394,6 +4408,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Unable to write"
+#~ msgstr "wú fǎ xiě rù"
 
 #~ msgid "%q length must be >= 1"
 #~ msgstr "%q cháng dù bìxū >= 1"
