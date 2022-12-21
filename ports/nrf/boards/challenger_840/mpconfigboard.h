@@ -10,6 +10,7 @@
 #define SPI_FLASH_MISO_PIN          (&pin_P0_11)
 #define SPI_FLASH_SCK_PIN           (&pin_P0_14)
 #define SPI_FLASH_CS_PIN            (&pin_P0_08)
+#define SPI_FLASH_MAX_BAUDRATE      20000000
 #endif
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
