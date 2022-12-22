@@ -58,6 +58,9 @@ IGNORE = [
     "tools/ci_check_duplicate_usb_vid_pid.py",
 ]
 
+# Files in these directories never influence board builds
+IGNORE_DIRS = ["tests", "docs", ".devcontainer"]
+
 if len(sys.argv) > 1:
     print("Using files list on commandline")
     changed_files = sys.argv[1:]
@@ -149,8 +152,7 @@ def set_boards_to_build(build_all):
             if p in IGNORE:
                 continue
 
-            # Boards don't run tests or docs so ignore those as well.
-            if p.startswith("tests") or p.startswith("docs"):
+            if any([p.startswith(d) for d in IGNORE_DIRS]):
                 continue
 
             # As a (nearly) last resort, for some certain files, we compute the settings from the
