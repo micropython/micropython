@@ -67,10 +67,11 @@ Or:
 
 """
 
+import ast
+import os
+import struct
 import sys
 import time
-import os
-import ast
 
 try:
     stdout = sys.stdout.buffer
@@ -379,7 +380,7 @@ class Pyboard:
     def raw_paste_write(self, command_bytes):
         # Read initial header, with window size.
         data = self.serial.read(2)
-        window_size = data[0] | data[1] << 8
+        window_size = struct.unpack("<H", data)[0]
         window_remain = window_size
 
         # Write out the command_bytes data.
