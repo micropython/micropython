@@ -125,7 +125,8 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
     self->phy_addr = args[ARG_phy_addr].u_int;
 
-    if (args[ARG_phy_type].u_int != PHY_LAN8720 &&
+    if (args[ARG_phy_type].u_int != PHY_LAN8710 &&
+        args[ARG_phy_type].u_int != PHY_LAN8720 &&
         args[ARG_phy_type].u_int != PHY_IP101 &&
         args[ARG_phy_type].u_int != PHY_RTL8201 &&
         #if ESP_IDF_VERSION_MINOR >= 3      // KSZ8041 is new in ESP-IDF v4.3
@@ -146,6 +147,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     self->phy = NULL;
 
     switch (args[ARG_phy_type].u_int) {
+        case PHY_LAN8710:
         case PHY_LAN8720:
             self->phy = esp_eth_phy_new_lan8720(&phy_config);
             break;
