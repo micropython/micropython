@@ -38,7 +38,7 @@ class Button(TouchPad):
         self.on_long_press = on_long_press
 
     def check(self) -> None:
-        """ timer triggered """
+        """timer triggered"""
         if self._active and (self.on_press or self.on_long_press):
             v = self.read()
             if v < self._threshold:  # button currently touched

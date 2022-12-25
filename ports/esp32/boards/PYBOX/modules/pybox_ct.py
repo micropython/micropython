@@ -10,7 +10,7 @@ import pybox_log as log
 
 _TIMER_ID = const(0)
 _TICK_MS = const(1)
-MIN_FREQ = const(1000//_TICK_MS * 60 * 60)  # about 1 hour
+MIN_FREQ = const(1000 // _TICK_MS * 60 * 60)  # about 1 hour
 MAX_FREQ = const(_TICK_MS)
 
 

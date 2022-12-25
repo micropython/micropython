@@ -76,11 +76,9 @@ def connect(wifi_networks: list) -> bool:
             for i in range(2, 8):
                 sta_if = WLAN(STA_IF)
                 if sta_if.isconnected():
-                    print(f"network config: {sta_if.ifconfig()}")
-                    print(f"hostname: {sta_if.config('dhcp_hostname')}")
                     conn = True
                     ip_addr = sta_if.ifconfig()[0]
-                    hostname = sta_if.config('dhcp_hostname')
+                    hostname = sta_if.config("dhcp_hostname")
                     break
                 else:
                     sleep(i)
@@ -118,25 +116,27 @@ def rgb_color() -> (int, int, int):
         yield i * 3, 255 - i * 3, 0
 
 
-palette = OrderedDict([
-    # red
-    ("Auriga", (255, 0, 63)),
-    ("Antares", (255, 0, 0)),
-    # orange
-    ("Jupiter", (255, 32, 0)),
-    ("Proxima", (191, 128, 0)),
-    # gray
-    ("Sirius", (255, 255, 255)),
-    ("Vega", (127, 127, 191)),
-    # green
-    ("Nebula", (0, 255, 0)),
-    ("Kepler", (0, 127, 63)),
-    ("Uranus", (0, 191, 255)),
-    # blue
-    ("Rigel", (31, 31, 255)),
-    ("Medusa", (127, 0, 255)),
-    ("Orion", (255, 31, 255))
-])
+palette = OrderedDict(
+    [
+        # red
+        ("Auriga", (255, 0, 63)),
+        ("Antares", (255, 0, 0)),
+        # orange
+        ("Jupiter", (255, 32, 0)),
+        ("Proxima", (191, 128, 0)),
+        # gray
+        ("Sirius", (255, 255, 255)),
+        ("Vega", (127, 127, 191)),
+        # green
+        ("Nebula", (0, 255, 0)),
+        ("Kepler", (0, 127, 63)),
+        ("Uranus", (0, 191, 255)),
+        # blue
+        ("Rigel", (31, 31, 255)),
+        ("Medusa", (127, 0, 255)),
+        ("Orion", (255, 31, 255)),
+    ]
+)
 
 blue_led = Signal(Pin(_BLUE_LED_PIN, mode=Pin.OUT, value=False), invert=False)
 blue_led.off()

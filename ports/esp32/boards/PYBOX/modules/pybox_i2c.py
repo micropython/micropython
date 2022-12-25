@@ -14,7 +14,7 @@ _FREQ = const(400000)
 
 
 def write_bytes(address: int, ba: bytearray) -> None:
-    """s Sends a bytearray to the given device address
+    """Sends a bytearray to the given device address
     :param address:  I2C address of the device to write to
     :param ba: bytes to write
     :return: None
@@ -23,10 +23,10 @@ def write_bytes(address: int, ba: bytearray) -> None:
 
 
 def write_byte(address: int, data: int) -> None:
-    """ Sends a single byte to the device
-        :param address:  I2C address of the device to write to
-        :param data: the data will be cast to a byte and then send.
-        :return: None
+    """Sends a single byte to the device
+    :param address:  I2C address of the device to write to
+    :param data: the data will be cast to a byte and then send.
+    :return: None
     """
     ba = bytearray(1)
     ba[0] = data
@@ -34,11 +34,11 @@ def write_byte(address: int, data: int) -> None:
 
 
 def write_cmd(address: int, command: int, value: int) -> None:
-    """ Sends two bytes, e.g. a command and a parameter
-        :param address:  I2C address of the device to write to
-        :param command: The "command" or register
-        :param value: The byte to write to the I2C bus
-        :return: None
+    """Sends two bytes, e.g. a command and a parameter
+    :param address:  I2C address of the device to write to
+    :param command: The "command" or register
+    :param value: The byte to write to the I2C bus
+    :return: None
     """
     ba = bytearray(2)
     ba[0] = command
@@ -47,11 +47,11 @@ def write_cmd(address: int, command: int, value: int) -> None:
 
 
 def write_block(address: int, command: int, values: [int]) -> None:
-    """ Sends a command byte and a data list
-        :param address:  I2C address of the device to write to
-        :param command: The "command" or register
-        :param values: a list of ints (cast to bytes) to write on the I2C bus.
-        :return: None
+    """Sends a command byte and a data list
+    :param address:  I2C address of the device to write to
+    :param command: The "command" or register
+    :param values: a list of ints (cast to bytes) to write on the I2C bus.
+    :return: None
     """
     ba = bytearray(len(values) + 1)
     ba[0] = command
