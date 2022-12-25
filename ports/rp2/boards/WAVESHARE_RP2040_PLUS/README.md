@@ -15,7 +15,7 @@ can be displayed with the `query-variant` target. An example:
 ```bash
 > cd ports/rp2
 > make BOARD=WAVESHARE_RP2040_PLUS query-variants
-VARIANTS: flash_2mb flash_4mb flash_8mb flash_16mb
+VARIANTS: flash_4mb flash_16mb
 > make BOARD=WAVESHARE_RP2040_PLUS BOARD_VARIANT=flash_16mb submodules all  # Build the 16 MiB variant
 ```
 
