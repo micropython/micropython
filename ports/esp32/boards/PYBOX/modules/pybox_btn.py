@@ -9,7 +9,7 @@ import pybox_ct as ct
 
 
 class Button(TouchPad):
-    """Capacitive Touch Button"""
+    """Capacitive Touch Buttons"""
 
     def __init__(
         self,
