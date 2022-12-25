@@ -29,7 +29,7 @@ returned by `getaddrinfo` function, which must be used to resolve textual addres
     # You must use getaddrinfo() even for numeric addresses
     sockaddr = socket.getaddrinfo('127.0.0.1', 80)[0][-1]
     # Now you can use that address
-    sock.connect(addr)
+    sock.connect(sockaddr)
 
 Using `getaddrinfo` is the most efficient (both in terms of memory and processing
 power) and portable way to work with addresses.
