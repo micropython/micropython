@@ -14,13 +14,13 @@ class Button(TouchPad):
     """
 
     def __init__(
-            self,
-            pin: int,
-            on_press: callable = None,
-            on_long_press: callable = None,
-            threshold: int = 600,
-            hold_ms: int = 500,
-            freq_ms: int = 100
+        self,
+        pin: int,
+        on_press: callable = None,
+        on_long_press: callable = None,
+        threshold: int = 600,
+        hold_ms: int = 500,
+        freq_ms: int = 100
     ):
         """
         :param pin: port pin this button is connected to
