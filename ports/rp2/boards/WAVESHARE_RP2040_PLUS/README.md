@@ -1,4 +1,4 @@
-# WeAct Studio RP2040
+# Waveshare RP2040-Plus
 
 The Waveshare RP2040-Plus Board is based on the Raspberry Pi RP2040 and can be
 purchased with 4/16 MiB of flash.
