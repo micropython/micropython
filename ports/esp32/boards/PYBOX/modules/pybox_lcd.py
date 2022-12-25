@@ -279,8 +279,7 @@ def print(row0: str = None, row1: str = None) -> None:
                 if len(content[r]) > _MAX_COLUMNS:  # add a gap for scrolling
                     content_buffer[r] = content[r] + 3 * " "
                 else:  # fill the row
-                    content_buffer[r] = content[r] + (
-                            _MAX_COLUMNS - len(content[r])) * " "
+                    content_buffer[r] = content[r] + (_MAX_COLUMNS - len(content[r])) * " "
         longest = max([len(content_buffer[0]), len(content_buffer[1])])
         if longest > _MAX_COLUMNS:  # need_to_scroll
             if not scrolling:
@@ -298,7 +297,7 @@ def print(row0: str = None, row1: str = None) -> None:
             else:  # (->) in str  .. move last char to the start
                 content_buffer[r] = content_buffer[r][-1] + content_buffer[r][0:-1]
         s += content_buffer[r][:_MAX_COLUMNS]
-    i2c.write_bytes(address, bytes(s, 'utf-8'))
+    i2c.write_bytes(address, bytes(s, "utf-8"))
     if update:
         sleep_ms(50)
 
