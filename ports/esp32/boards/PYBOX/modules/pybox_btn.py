@@ -20,7 +20,7 @@ class Button(TouchPad):
         on_long_press: callable = None,
         threshold: int = 600,
         hold_ms: int = 500,
-        freq_ms: int = 100
+        freq_ms: int = 100,
     ):
         """
         :param pin: port pin this button is connected to
