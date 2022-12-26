@@ -186,6 +186,10 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     bindings_cyw43_wifi_enforce_pm();
 }
 
+bool common_hal_wifi_radio_get_ap_active(wifi_radio_obj_t *self) {
+    return cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) == CYW43_LINK_UP;
+}
+
 void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
@@ -273,6 +277,10 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
 
     // Being here means we either timed out or got interrupted.
     return WIFI_RADIO_ERROR_UNSPECIFIED;
+}
+
+bool common_hal_wifi_radio_get_connected(wifi_radio_obj_t *self) {
+    return cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) == CYW43_LINK_UP;
 }
 
 mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
