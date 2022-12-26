@@ -201,6 +201,7 @@ STATIC os_getenv_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
                     case '#':
                         next_line(active_file);
                         MP_FALLTHROUGH;
+                    case 0:
                     case '\n':
                         return GETENV_OK;
                     default:
@@ -257,7 +258,6 @@ STATIC os_getenv_err_t read_bare_value(file_arg *active_file, vstr_t *buf, int f
     while (true) {
         switch (character) {
             case 0:
-                return GETENV_ERR_UNEXPECTED | character;
             case '\n':
                 return GETENV_OK;
             case '#':

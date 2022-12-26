@@ -75,5 +75,8 @@ def run_test(key, content):
 for i in range(13):
     run_test(f"key{i}", content_good)
 
+# Test value without trailing newline
+run_test(f"noeol", "noeol=3")
+
 for content in content_bad:
     run_test("key", content)
