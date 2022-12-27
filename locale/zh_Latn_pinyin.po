@@ -74,6 +74,11 @@ msgstr "%%c xūyào zhěngshù huòzhě zìfú"
 msgid "%02X"
 msgstr "%02X"
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "%S"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -499,6 +504,11 @@ msgstr "yǐjīng zài yùnxíng"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "yǐjīng zài sǎomiáo WIFI wǎngluò"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "An error occurred while retrieving '%s':\n"
+msgstr ""
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -1791,10 +1801,6 @@ msgstr ""
 "Chājiǎo měi gè yuánsù shǐyòng%d gè zì jié, zhè bǐ lǐxiǎng de%d xiāohào gèng "
 "duōzì jié. Rúguǒ wúfǎ bìmiǎn, qǐng jiāng allow_inefficient = True chuándì "
 "gěigòuzào hánshù"
-
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Pins 21+ not supported from ULP"
-msgstr ""
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"

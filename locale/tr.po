@@ -75,6 +75,11 @@ msgstr "%%c int veya char tipine ihtiyaç duyar"
 msgid "%02X"
 msgstr "%02X"
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "%S"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -500,6 +505,11 @@ msgstr "Halihazırda çalışıyor"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Halihazırda wifi ağları için tarama yapılıyor"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "An error occurred while retrieving '%s':\n"
+msgstr ""
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -1775,10 +1785,6 @@ msgid ""
 "Pinout uses %d bytes per element, which consumes more than the ideal %d "
 "bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
 "constructor"
-msgstr ""
-
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Pins 21+ not supported from ULP"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c

@@ -14,8 +14,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 4.15.1-dev\n"
 
 #: main.c
@@ -74,6 +74,11 @@ msgstr "%%c требует int или char"
 #, c-format
 msgid "%02X"
 msgstr "%02X"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "%S"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -498,6 +503,11 @@ msgstr "Уже запущен"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Поиск сетей wifi уже происходит"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "An error occurred while retrieving '%s':\n"
+msgstr ""
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -1819,10 +1829,6 @@ msgstr ""
 "Pinout использует %d байт на элемент, что потребляет больше, чем идеальные "
 "%d байт.   Если этого нельзя избежать, передайте allow_inefficient=True в "
 "конструктор"
-
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Pins 21+ not supported from ULP"
-msgstr ""
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"

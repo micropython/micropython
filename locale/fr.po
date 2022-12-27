@@ -75,6 +75,11 @@ msgstr "%%c nécessite un chiffre entier 'int' ou un caractère 'char'"
 msgid "%02X"
 msgstr "%02X"
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "%S"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -499,6 +504,11 @@ msgstr "Déjà en cours d'exécution"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Déjà à la recherche des réseaux wifi"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "An error occurred while retrieving '%s':\n"
+msgstr ""
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -1822,10 +1832,6 @@ msgstr ""
 "Le brochage utilise %d octets par élément, ce qui consomme plus que le %d "
 "octets idéal. Si cela ne peut pas être évité, transmettez allow_inefficient "
 "= True au constructeur"
-
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Pins 21+ not supported from ULP"
-msgstr ""
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"

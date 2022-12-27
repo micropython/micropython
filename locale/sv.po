@@ -72,6 +72,11 @@ msgstr "%%c kräver int eller char"
 msgid "%02X"
 msgstr "%02X"
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "%S"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -497,6 +502,11 @@ msgstr "Kör redan"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Skannar redan efter WiFi-nätverk"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "An error occurred while retrieving '%s':\n"
+msgstr ""
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -1787,10 +1797,6 @@ msgstr ""
 "Pinout använder %d byte per element, vilket förbrukar mer än det idealiska "
 "%d byte.  Om detta inte kan undvikas, skicka allow_inefficient=True till "
 "konstruktorn"
-
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Pins 21+ not supported from ULP"
-msgstr "Pins 21+ stöds inte av ULP"
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"
@@ -4402,6 +4408,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Pins 21+ not supported from ULP"
+#~ msgstr "Pins 21+ stöds inte av ULP"
 
 #~ msgid "Unable to write"
 #~ msgstr "Kan inte skriva"

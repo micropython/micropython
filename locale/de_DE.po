@@ -71,6 +71,11 @@ msgstr "%%c erwartet Int oder Char"
 msgid "%02X"
 msgstr "%02X"
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "%S"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -497,6 +502,11 @@ msgstr "Läuft bereits"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Sucht bereits nach Wifi-Netzwerken"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "An error occurred while retrieving '%s':\n"
+msgstr ""
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -1793,10 +1803,6 @@ msgstr ""
 "Pinbelegung verwendet %d Bytes pro Element, was mehr als die idealen %d "
 "Bytes verbraucht. Wenn dies nicht vermieden werden kann, übergib "
 "allow_inefficient=True an den Konstruktor"
-
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Pins 21+ not supported from ULP"
-msgstr ""
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"
