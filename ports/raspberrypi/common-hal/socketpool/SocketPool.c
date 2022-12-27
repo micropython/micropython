@@ -98,7 +98,7 @@ void socketpool_resolve_host_raise(socketpool_socketpool_obj_t *self, const char
     int result = socketpool_resolve_host(self, host, addr);
     if (result < 0) {
         printf("socket_resolve_host() returned %d\n", result);
-        common_hal_socketpool_socketpool_raise_gaierror(SOCKETPOOL_EAI_NONAME, MP_QSTR_Name_space_or_space_service_space_not_space_known);
+        common_hal_socketpool_socketpool_raise_gaierror_noname();
         mp_raise_OSError(-result);
     }
 }
