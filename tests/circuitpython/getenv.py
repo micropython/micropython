@@ -35,7 +35,7 @@ bdev = RAMBlockDevice(64)
 uos.VfsFat.mkfs(bdev)
 uos.mount(uos.VfsFat(bdev), "/")
 
-content_good = """
+content_good = b"""
 # comment
 key0 = "hello world"
 key1 = 7
@@ -54,15 +54,15 @@ subvalue = "hi"
 """
 
 content_bad = [
-    'key = "\n',
-    'key = """\n',
-    "key =\n",
-    'key="',
+    b'key = "\n',
+    b'key = """\n',
+    b"key =\n",
+    b'key="',
 ]
 
 
 def run_test(key, content):
-    with open("/settings.toml", "w") as f:
+    with open("/settings.toml", "wb") as f:
         f.write(content)
 
     try:
@@ -74,6 +74,13 @@ def run_test(key, content):
 
 for i in range(13):
     run_test(f"key{i}", content_good)
+
+content_good = content_good.replace(b"\n", b"\r\n")
+for i in range(13):
+    run_test(f"key{i}", content_good)
+
+# Test value without trailing newline
+run_test(f"noeol", b"noeol=3")
 
 for content in content_bad:
     run_test("key", content)

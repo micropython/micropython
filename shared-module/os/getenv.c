@@ -28,6 +28,7 @@
 // tested in the unix "coverage" build, without bringing in "our" os module
 
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 
 #include "shared-bindings/os/__init__.h"
@@ -36,6 +37,7 @@
 #include "py/gc.h"
 #include "py/misc.h"
 #include "py/mpstate.h"
+#include "py/mpprint.h"
 #include "py/objstr.h"
 #include "py/parsenum.h"
 #include "py/runtime.h"
@@ -199,6 +201,7 @@ STATIC os_getenv_err_t read_string_value(file_arg *active_file, vstr_t *buf) {
                     case '#':
                         next_line(active_file);
                         MP_FALLTHROUGH;
+                    case 0:
                     case '\n':
                         return GETENV_OK;
                     default:
@@ -255,7 +258,6 @@ STATIC os_getenv_err_t read_bare_value(file_arg *active_file, vstr_t *buf, int f
     while (true) {
         switch (character) {
             case 0:
-                return GETENV_ERR_UNEXPECTED | character;
             case '\n':
                 return GETENV_OK;
             case '#':
@@ -311,7 +313,58 @@ STATIC os_getenv_err_t os_getenv_buf_terminated(const char *key, char *value, si
     return result;
 }
 
-os_getenv_err_t common_hal_os_getenv_str(const char *key, char *value, size_t value_len) {
+STATIC void print_dont_raise(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
+    va_list argptr;
+    va_start(argptr,fmt);
+    mp_vcprintf(&mp_plat_print, fmt, argptr);
+    mp_printf(&mp_plat_print, "\n");
+    va_end(argptr);
+}
+
+STATIC void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...)) {
+    if (error == GETENV_OK) {
+        return;
+    }
+    if (error & GETENV_ERR_UNEXPECTED) {
+        byte character = (error & 0xff);
+        char buf[8];
+        vstr_t vstr;
+        vstr_init_fixed_buf(&vstr, sizeof(buf), buf);
+        mp_print_t print = { .data = &vstr, .print_strn = (mp_print_strn_t)vstr_add_strn };
+
+        if (character) {
+            mp_str_print_quoted(&print, &character, 1, true);
+        } else {
+            mp_str_print_quoted(&print, (byte *)"EOF", 3, true);
+        }
+        handle(&mp_type_ValueError, translate("Invalid byte %.*s"), vstr.len, vstr.buf);
+    } else {
+        switch (error) {
+            case GETENV_ERR_OPEN:
+                handle(&mp_type_ValueError, translate("%S"), translate("File not found"));
+                break;
+            case GETENV_ERR_UNICODE:
+                handle(&mp_type_ValueError, translate("%S"), translate("Invalid unicode escape"));
+                break;
+            case GETENV_ERR_NOT_FOUND:
+                handle(&mp_type_ValueError, translate("%S"), translate("Key not found"));
+                break;
+            default:
+                handle(&mp_type_RuntimeError, translate("%S"), translate("Internal error"));
+                break;
+        }
+    }
+}
+
+STATIC void common_hal_os_getenv_showerr(const char *key, os_getenv_err_t result) {
+    if (result != GETENV_OK && result != GETENV_ERR_OPEN && result != GETENV_ERR_NOT_FOUND) {
+        mp_cprintf(&mp_plat_print, translate("An error occurred while retrieving '%s':\n"), key);
+        handle_getenv_error(result, print_dont_raise);
+    }
+}
+
+STATIC
+os_getenv_err_t common_hal_os_getenv_str_inner(const char *key, char *value, size_t value_len) {
     bool quoted;
     os_getenv_err_t result = os_getenv_buf_terminated(key, value, value_len, &quoted);
     if (result == GETENV_OK && !quoted) {
@@ -320,33 +373,10 @@ os_getenv_err_t common_hal_os_getenv_str(const char *key, char *value, size_t va
     return result;
 }
 
-STATIC void throw_getenv_error(os_getenv_err_t error) {
-    if (error == GETENV_OK) {
-        return;
-    }
-    if (error & GETENV_ERR_UNEXPECTED) {
-        byte character = (error & 0xff);
-        mp_print_t print;
-        vstr_t vstr;
-        vstr_init_print(&vstr, 8 + 4 + 1, &print);
-        if (character) {
-            mp_str_print_quoted(&print, &character, 1, true);
-        } else {
-            mp_str_print_quoted(&print, (byte *)"EOF", 3, true);
-        }
-        mp_raise_ValueError_varg(translate("Invalid byte %.*s"),
-            vstr.len, vstr.buf);
-    }
-    switch (error) {
-        case GETENV_ERR_OPEN:
-            mp_raise_ValueError(translate("File not found"));
-        case GETENV_ERR_UNICODE:
-            mp_raise_ValueError(translate("Invalid unicode escape"));
-        case GETENV_ERR_NOT_FOUND:
-            mp_raise_ValueError(translate("Key not found"));
-        default:
-            mp_raise_RuntimeError(translate("Internal error"));
-    }
+os_getenv_err_t common_hal_os_getenv_str(const char *key, char *value, size_t value_len) {
+    os_getenv_err_t result = common_hal_os_getenv_str_inner(key, value, value_len);
+    common_hal_os_getenv_showerr(key, result);
+    return result;
 }
 
 mp_obj_t common_hal_os_getenv_path(const char *path, const char *key, mp_obj_t default_) {
@@ -358,7 +388,7 @@ mp_obj_t common_hal_os_getenv_path(const char *path, const char *key, mp_obj_t d
     if (result == GETENV_ERR_NOT_FOUND || result == GETENV_ERR_OPEN) {
         return default_;
     }
-    throw_getenv_error(result);
+    handle_getenv_error(result, mp_raise_msg_varg);
 
     if (quoted) {
         return mp_obj_new_str_from_vstr(&mp_type_str, &buf);
@@ -371,7 +401,7 @@ mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_) {
     return common_hal_os_getenv_path(GETENV_PATH, key, default_);
 }
 
-os_getenv_err_t common_hal_os_getenv_int(const char *key, mp_int_t *value) {
+STATIC os_getenv_err_t common_hal_os_getenv_int_inner(const char *key, mp_int_t *value) {
     char buf[16];
     bool quoted;
     os_getenv_err_t result = os_getenv_buf_terminated(key, buf, sizeof(buf), &quoted);
@@ -388,4 +418,10 @@ os_getenv_err_t common_hal_os_getenv_int(const char *key, mp_int_t *value) {
     }
     *value = (mp_int_t)num;
     return GETENV_OK;
+}
+
+os_getenv_err_t common_hal_os_getenv_int(const char *key, mp_int_t *value) {
+    os_getenv_err_t result = common_hal_os_getenv_int_inner(key, value);
+    common_hal_os_getenv_showerr(key, result);
+    return result;
 }
