@@ -1427,6 +1427,10 @@ msgstr "NLR jump misslyckades. Troligen korrupt minne."
 msgid "NVS Error"
 msgstr "NVS-fel"
 
+#: shared-bindings/socketpool/SocketPool.c
+msgid "Name or service not known"
+msgstr ""
+
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Name är för långt"

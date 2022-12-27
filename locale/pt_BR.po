@@ -1442,6 +1442,10 @@ msgstr "O salto NLR falhou. Possível corrupção da memória."
 msgid "NVS Error"
 msgstr "Erro NVS"
 
+#: shared-bindings/socketpool/SocketPool.c
+msgid "Name or service not known"
+msgstr ""
+
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Nome muito longo"

@@ -1433,6 +1433,10 @@ msgstr "NLR tiào zhuǎn shī bài. kě néng shì nèi cún sǔn huài."
 msgid "NVS Error"
 msgstr "NVS cuò wù"
 
+#: shared-bindings/socketpool/SocketPool.c
+msgid "Name or service not known"
+msgstr ""
+
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Míngchēng tài zhǎng"

@@ -1456,6 +1456,10 @@ msgstr "Не удалось выполнить NLR jump. Вероятно, по�
 msgid "NVS Error"
 msgstr "Ошибка NVS"
 
+#: shared-bindings/socketpool/SocketPool.c
+msgid "Name or service not known"
+msgstr ""
+
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Имя слишком длинное"
