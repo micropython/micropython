@@ -1112,7 +1112,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, type_make_new,
     print, type_print,
     call, type_call,
-    unary_op, mp_generic_unary_op,
     attr, type_attr
     );
 
