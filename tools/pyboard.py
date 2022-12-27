@@ -286,7 +286,15 @@ class Pyboard:
             delayed = False
             for attempt in range(wait + 1):
                 try:
-                    self.serial = serial.Serial(device, **serial_kwargs)
+                    if os.name == "nt":
+                        # Windows does not set DTR or RTS by default
+                        self.serial = serial.Serial(**serial_kwargs)
+                        self.serial.dtr = True
+                        self.serial.rts = False
+                        self.serial.port = device
+                        self.serial.open()
+                    else:
+                        self.serial = serial.Serial(device, **serial_kwargs)
                     break
                 except (OSError, IOError):  # Py2 and Py3 have different errors
                     if wait == 0:
