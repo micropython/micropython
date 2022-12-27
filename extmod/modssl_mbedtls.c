@@ -194,7 +194,7 @@ STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
 }
 
 // SSLContext
-STATIC mp_obj_ssl_context_t *context_new() {
+STATIC mp_obj_ssl_context_t *context_new(void) {
     #if MICROPY_PY_SSL_FINALISER
     mp_obj_ssl_context_t *ctxi = m_new_obj_with_finaliser(mp_obj_ssl_context_t);
     #else
@@ -266,7 +266,7 @@ STATIC void context_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     mp_printf(print, "<_SSLContext %p>", self);
 }
 
-STATIC mp_obj_t mod_ssl_get_ciphers() {
+STATIC mp_obj_t mod_ssl_get_ciphers(mp_obj_t self_in) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
     const int *cipher_list = mbedtls_ssl_list_ciphersuites();
     // int len_cipher_list = sizeof(cipher_list);
@@ -594,7 +594,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 
-STATIC mp_obj_t mod_ssl_ctx_init() {
+STATIC mp_obj_t mod_ssl_ctx_init(void) {
     // TODO: Implement class methods
     return MP_OBJ_FROM_PTR(context_new());
 }
