@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-11-09 19:20+0000\n"
-"Last-Translator: Deleted User <noreply+52049@weblate.org>\n"
+"PO-Revision-Date: 2022-12-27 18:02+0000\n"
+"Last-Translator: Blinka CircuitPython <limor@ladyada.net>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: main.c
 msgid ""
@@ -78,7 +78,7 @@ msgstr "%02X"
 #: shared-module/os/getenv.c
 #, c-format
 msgid "%S"
-msgstr ""
+msgstr "%S"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
