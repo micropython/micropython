@@ -413,6 +413,9 @@ STATIC os_getenv_err_t common_hal_os_getenv_int_inner(const char *key, mp_int_t 
     }
     char *end;
     long num = strtol(buf, &end, 0);
+    while (unichar_isspace(*end)) {
+        end++;
+    }
     if (end == buf || *end) { // If the whole buffer was not consumed it's an error
         return GETENV_ERR_UNEXPECTED | *end;
     }
