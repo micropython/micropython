@@ -292,6 +292,7 @@ STATIC os_getenv_err_t os_getenv_vstr(const char *path, const char *key, vstr_t 
     while (!is_eof(&active_file)) {
         if (key_matches(&active_file, key)) {
             result = read_value(&active_file, buf, quoted);
+            break;
         }
     }
     close_file(&active_file);
