@@ -173,7 +173,7 @@ msgstr "%q должно быть >= %d"
 
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
-msgstr "%q должно быть bytearray или array типа ‘H' или 'B'"
+msgstr "%q должно быть bytearray или array типа 'H' или 'B'"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
