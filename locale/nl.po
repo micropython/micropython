@@ -68,6 +68,11 @@ msgstr "%%c vereist een int of char"
 msgid "%02X"
 msgstr ""
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "%S"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -490,6 +495,11 @@ msgstr "Wordt al uitgevoerd"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Zoekt al naar WiFi netwerken"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "An error occurred while retrieving '%s':\n"
+msgstr ""
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -1404,6 +1414,10 @@ msgstr ""
 msgid "NVS Error"
 msgstr "NVS-fout"
 
+#: shared-bindings/socketpool/SocketPool.c
+msgid "Name or service not known"
+msgstr ""
+
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Naam te lang"
@@ -1775,10 +1789,6 @@ msgstr ""
 "Pinout gebruikt %d bytes per element, welke meer dan de ideale %d bytes "
 "gebruikt. Als dit niet kan worden vermeden, geef dan het argument "
 "allow_inefficient=True aan de constructor"
-
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Pins 21+ not supported from ULP"
-msgstr ""
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"

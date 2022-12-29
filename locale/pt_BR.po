@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-12-22 15:49+0000\n"
+"PO-Revision-Date: 2022-12-28 03:47+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -71,6 +71,11 @@ msgstr "%%c requer int ou char"
 #, c-format
 msgid "%02X"
 msgstr "%02X"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "%S"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -500,6 +505,11 @@ msgstr "Já está em execução"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Já está em busca das redes de wifi"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "An error occurred while retrieving '%s':\n"
+msgstr "Ocorreu um erro ao recuperar '%s':\n"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -1432,6 +1442,10 @@ msgstr "O salto NLR falhou. Possível corrupção da memória."
 msgid "NVS Error"
 msgstr "Erro NVS"
 
+#: shared-bindings/socketpool/SocketPool.c
+msgid "Name or service not known"
+msgstr "Nome ou serviço desconhecido"
+
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Nome muito longo"
@@ -1804,10 +1818,6 @@ msgstr ""
 "A pinagem utiliza %d bytes por elemento, que consome mais do que %d bytes do "
 "ideal. Caso isso não possa ser evitado, passe allow_inefficient=True ao "
 "construtor"
-
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Pins 21+ not supported from ULP"
-msgstr "Os pinos 21+ não são suportados pelo ULP"
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"
@@ -4440,6 +4450,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Pins 21+ not supported from ULP"
+#~ msgstr "Os pinos 21+ não são suportados pelo ULP"
 
 #~ msgid "Unable to write"
 #~ msgstr "Não é possível escrever"

@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-11-09 19:20+0000\n"
-"Last-Translator: Deleted User <noreply+52049@weblate.org>\n"
+"PO-Revision-Date: 2022-12-27 18:02+0000\n"
+"Last-Translator: Blinka CircuitPython <limor@ladyada.net>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: main.c
 msgid ""
@@ -74,6 +74,11 @@ msgstr "%%c nécessite un chiffre entier 'int' ou un caractère 'char'"
 #, c-format
 msgid "%02X"
 msgstr "%02X"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "%S"
+msgstr "%S"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -499,6 +504,11 @@ msgstr "Déjà en cours d'exécution"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Déjà à la recherche des réseaux wifi"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "An error occurred while retrieving '%s':\n"
+msgstr ""
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -1450,6 +1460,10 @@ msgstr "Saut NLR échoué. Corruption de mémoire probable."
 msgid "NVS Error"
 msgstr "Erreur NVS"
 
+#: shared-bindings/socketpool/SocketPool.c
+msgid "Name or service not known"
+msgstr ""
+
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Nom trop long"
@@ -1822,10 +1836,6 @@ msgstr ""
 "Le brochage utilise %d octets par élément, ce qui consomme plus que le %d "
 "octets idéal. Si cela ne peut pas être évité, transmettez allow_inefficient "
 "= True au constructeur"
-
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Pins 21+ not supported from ULP"
-msgstr ""
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"
