@@ -170,7 +170,6 @@ def main(use_stream=True):
             print(client_s.recv(4096))
             client_s.send(CONTENT % counter)
         client_s.close()
-        ctx.reset()
         counter += 1
         print()
 
