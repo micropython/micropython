@@ -172,7 +172,7 @@ class Server:
                 # Ignore a failed accept
                 continue
             if s2:
-                if isinstance(ssl, _ssl.SSLContext):
+                if _ssl and isinstance(ssl, _ssl.SSLContext):
                     s2.setblocking(True)
                     try:
                         s2 = ssl.wrap_socket(s2, server_side=True)

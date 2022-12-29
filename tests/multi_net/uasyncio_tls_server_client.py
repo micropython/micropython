@@ -2,13 +2,20 @@
 
 try:
     import uasyncio as asyncio
+
 except ImportError:
     try:
         import asyncio
     except ImportError:
         print("SKIP")
         raise SystemExit
-import ssl
+
+try:
+    import ssl
+except ImportError:
+    print("SKIP")
+    raise SystemExit
+
 import binascii
 
 PORT = 8000
