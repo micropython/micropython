@@ -8,10 +8,13 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     // External pins are in silkscreen order, from top to bottom, left side, then right side
 
-    { MP_ROM_QSTR(MP_QSTR_I2S_SDO), MP_ROM_PTR(&pin_GPIO22) },
-    { MP_ROM_QSTR(MP_QSTR_I2S_SCK), MP_ROM_PTR(&pin_GPIO19) },
-    { MP_ROM_QSTR(MP_QSTR_I2S_SDI), MP_ROM_PTR(&pin_GPIO23) },
-    { MP_ROM_QSTR(MP_QSTR_I2S_LRC), MP_ROM_PTR(&pin_GPIO33) },
+    { MP_ROM_QSTR(MP_QSTR_SPK_I2S_SDO), MP_ROM_PTR(&pin_GPIO22) },
+    { MP_ROM_QSTR(MP_QSTR_SPK_I2S_SCK), MP_ROM_PTR(&pin_GPIO19) },
+
+    { MP_ROM_QSTR(MP_QSTR_SPK_I2S_LRC), MP_ROM_PTR(&pin_GPIO33) },
+    { MP_ROM_QSTR(MP_QSTR_PDM_MIC_CLK), MP_ROM_PTR(&pin_GPIO33) },
+
+    { MP_ROM_QSTR(MP_QSTR_PDM_MIC_DATA), MP_ROM_PTR(&pin_GPIO23) },
 
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_GPIO21) },
     { MP_ROM_QSTR(MP_QSTR_D21), MP_ROM_PTR(&pin_GPIO21) },
