@@ -30,12 +30,12 @@
 
 #include "py/runtime.h"
 
-enum { align_bits = 8 * sizeof(uint32_t) };
+enum { ALIGN_BITS = 8 * sizeof(uint32_t) };
 
 static int stride(uint32_t width, uint32_t bits_per_value) {
     uint32_t row_width = width * bits_per_value;
     // align to uint32_t
-    return (row_width + align_bits - 1) / align_bits;
+    return (row_width + ALIGN_BITS - 1) / ALIGN_BITS;
 }
 
 void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t width,
@@ -66,7 +66,7 @@ void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self,
     self->x_shift = 0; // Used to divide the index by the number of pixels per word. Its used in a
                        // shift which effectively divides by 2 ** x_shift.
     uint32_t power_of_two = 1;
-    while (power_of_two < align_bits / bits_per_value) {
+    while (power_of_two < ALIGN_BITS / bits_per_value) {
         self->x_shift++;
         power_of_two <<= 1;
     }
