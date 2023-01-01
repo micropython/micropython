@@ -70,8 +70,8 @@ void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self,
         self->x_shift++;
         power_of_two <<= 1;
     }
-    self->x_mask = (1 << self->x_shift) - 1; // Used as a modulus on the x value
-    self->bitmask = (1 << bits_per_value) - 1;
+    self->x_mask = (1u << self->x_shift) - 1u; // Used as a modulus on the x value
+    self->bitmask = (1u << bits_per_value) - 1u;
 
     self->dirty_area.x1 = 0;
     self->dirty_area.x2 = width;
