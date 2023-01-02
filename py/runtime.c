@@ -1247,8 +1247,8 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     mp_raise_AttributeError(MP_ERROR_TEXT("no such attribute"));
     #else
     mp_raise_msg_varg(&mp_type_AttributeError,
-        MP_ERROR_TEXT("'%s' object has no attribute '%q'"),
-        mp_obj_get_type_str(base), attr);
+        MP_ERROR_TEXT("can't set attribute '%q'"),
+        attr);
     #endif
 }
 
