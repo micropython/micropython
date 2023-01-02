@@ -125,7 +125,6 @@ msgid "%q is %q"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
-#: shared-bindings/microcontroller/Processor.c
 msgid "%q is read-only for this board"
 msgstr ""
 
@@ -2709,6 +2708,10 @@ msgstr ""
 
 #: py/objexcept.c py/objnamedtuple.c
 msgid "can't set attribute"
+msgstr ""
+
+#: py/runtime.c
+msgid "can't set attribute '%q'"
 msgstr ""
 
 #: py/emitnative.c

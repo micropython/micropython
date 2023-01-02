@@ -139,13 +139,19 @@ MP_PROPERTY_GETSET(wifi_radio_hostname_obj,
 
 //|     mac_address: ReadableBuffer
 //|     """MAC address for the station. When the address is altered after interface is connected
-//|        the changes would only be reflected once the interface reconnects."""
+//|        the changes would only be reflected once the interface reconnects.
+//|
+//|     **Limitations:** Not settable on RP2040 CYW43 boards, such as Pi Pico W.
+//|     """
+
+
 STATIC mp_obj_t _wifi_radio_get_mac_address(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(common_hal_wifi_radio_get_mac_address(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_obj, _wifi_radio_get_mac_address);
 
+#if CIRCUITPY_WIFI_RADIO_SETTABLE_MAC_ADDRESS
 STATIC mp_obj_t wifi_radio_set_mac_address(mp_obj_t self_in, mp_obj_t mac_address_in) {
     mp_buffer_info_t mac_address;
     mp_get_buffer_raise(mac_address_in, &mac_address, MP_BUFFER_READ);
@@ -160,10 +166,16 @@ STATIC mp_obj_t wifi_radio_set_mac_address(mp_obj_t self_in, mp_obj_t mac_addres
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_mac_address_obj, wifi_radio_set_mac_address);
+#endif
 
+#if CIRCUITPY_WIFI_RADIO_SETTABLE_MAC_ADDRESS
 MP_PROPERTY_GETSET(wifi_radio_mac_address_obj,
     (mp_obj_t)&wifi_radio_get_mac_address_obj,
     (mp_obj_t)&wifi_radio_set_mac_address_obj);
+#else
+MP_PROPERTY_GETTER(wifi_radio_mac_address_obj,
+    (mp_obj_t)&wifi_radio_get_mac_address_obj);
+#endif
 
 //|     tx_power: float
 //|     """Wifi transmission power, in dBm."""
@@ -187,13 +199,17 @@ MP_PROPERTY_GETSET(wifi_radio_tx_power_obj,
 
 //|     mac_address_ap: ReadableBuffer
 //|     """MAC address for the AP. When the address is altered after interface is started
-//|        the changes would only be reflected once the interface restarts."""
+//|        the changes would only be reflected once the interface restarts.
+//|
+//|     **Limitations:** Not settable on RP2040 CYW43 boards, such as Pi Pico W.
+//|     """
 STATIC mp_obj_t wifi_radio_get_mac_address_ap(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(common_hal_wifi_radio_get_mac_address_ap(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_ap_obj, wifi_radio_get_mac_address_ap);
 
+#if CIRCUITPY_WIFI_RADIO_SETTABLE_MAC_ADDRESS
 STATIC mp_obj_t wifi_radio_set_mac_address_ap(mp_obj_t self_in, mp_obj_t mac_address_in) {
     mp_buffer_info_t mac_address;
     mp_get_buffer_raise(mac_address_in, &mac_address, MP_BUFFER_READ);
@@ -208,10 +224,16 @@ STATIC mp_obj_t wifi_radio_set_mac_address_ap(mp_obj_t self_in, mp_obj_t mac_add
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_mac_address_ap_obj, wifi_radio_set_mac_address_ap);
+#endif
 
+#if CIRCUITPY_WIFI_RADIO_SETTABLE_MAC_ADDRESS
 MP_PROPERTY_GETSET(wifi_radio_mac_address_ap_obj,
     (mp_obj_t)&wifi_radio_get_mac_address_ap_obj,
     (mp_obj_t)&wifi_radio_set_mac_address_ap_obj);
+#else
+MP_PROPERTY_GETTER(wifi_radio_mac_address_ap_obj,
+    (mp_obj_t)&wifi_radio_get_mac_address_ap_obj);
+#endif
 
 //|     def start_scanning_networks(
 //|         self, *, start_channel: int = 1, stop_channel: int = 11
