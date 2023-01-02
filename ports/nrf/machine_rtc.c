@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#ifdef MICROPY_PY_MACHINE_RTC
+
 #include <stdio.h>
 #include <string.h>
 
@@ -215,3 +217,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, machine_rtc_make_new,
     locals_dict, &machine_rtc_locals_dict
     );
+
+#endif

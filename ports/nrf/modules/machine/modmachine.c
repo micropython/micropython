@@ -241,7 +241,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 #if MICROPY_PY_MACHINE_TEMP
     { MP_ROM_QSTR(MP_QSTR_Temp),               MP_ROM_PTR(&machine_temp_type) },
 #endif
+#if MICROPY_PY_MACHINE_RTC
     { MP_ROM_QSTR(MP_QSTR_RTC),                MP_ROM_PTR(&machine_rtc_type) },
+#endif
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET),         MP_ROM_INT(PYB_RESET_HARD) },
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),          MP_ROM_INT(PYB_RESET_WDT) },
     { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),         MP_ROM_INT(PYB_RESET_SOFT) },
