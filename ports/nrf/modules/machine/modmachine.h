@@ -32,9 +32,9 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 
-//#if MICROPY_PY_MACHINE_RTC
+#if MICROPY_PY_MACHINE_RTC
 extern const mp_obj_type_t machine_rtc_type;
-//#endif
+#endif
 
 void machine_init(void);
 
