@@ -281,7 +281,6 @@ SRC_C += \
 	gccollect.c \
 	pin_named_pins.c \
 	fatfs_port.c \
-	machine_rtc.c \
 	drivers/flash.c \
 	drivers/rng.c \
 	drivers/softpwm.c \
@@ -326,6 +325,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/pin.c \
 	machine/timer.c \
 	machine/rtcounter.c \
+	machine/rtc.c \
 	machine/pwm.c \
 	machine/temp.c \
 	uos/moduos.c \
