@@ -130,6 +130,10 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "%q is read-only for this board"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
@@ -304,7 +308,7 @@ msgstr ""
 msgid "'%s' object doesn't support item deletion"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
+#: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "Objek '%s' tidak memiliki atribut '%q'"
 
@@ -1883,17 +1887,13 @@ msgid "Random number generation error"
 msgstr "Kesalahan pembuatan nomor acak"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Baca-saja"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "sistem file (filesystem) bersifat Read-only"
-
-#: shared-module/displayio/Bitmap.c
-msgid "Read-only object"
-msgstr "Objek Read-only"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
@@ -2741,6 +2741,10 @@ msgstr ""
 msgid "can't set attribute"
 msgstr ""
 
+#: py/runtime.c
+msgid "can't set attribute '%q'"
+msgstr ""
+
 #: py/emitnative.c
 msgid "can't store '%q'"
 msgstr ""
@@ -3100,10 +3104,6 @@ msgstr ""
 
 #: py/objstr.c
 msgid "format requires a dict"
-msgstr ""
-
-#: shared-bindings/microcontroller/Processor.c
-msgid "frequency is read-only for this board"
 msgstr ""
 
 #: py/objdeque.c
@@ -4377,6 +4377,9 @@ msgstr "zi harus berjenis float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "Zi harus berbentuk (n_section, 2)"
+
+#~ msgid "Read-only object"
+#~ msgstr "Objek Read-only"
 
 #~ msgid "%q length must be >= 1"
 #~ msgstr "%q panjang harus >= 1"

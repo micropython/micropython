@@ -132,6 +132,10 @@ msgstr "%q Initialisierung ist gescheitert"
 msgid "%q is %q"
 msgstr "%q ist %q"
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "%q is read-only for this board"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr "%q länge muss %d betragen"
@@ -308,7 +312,7 @@ msgstr "'%s' Objekt unterstützt keine Element-Zuordnung"
 msgid "'%s' object doesn't support item deletion"
 msgstr "'%s' Objekt unterstützt keine Löschung von Elementen"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
+#: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "'%s' Objekt hat kein Attribut '%q'"
 
@@ -1899,17 +1903,13 @@ msgid "Random number generation error"
 msgstr "Fehler bei der Erzeugung von Zufallszahlen"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Nur lesen möglich, da Schreibgeschützt"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "Schreibgeschützte Dateisystem"
-
-#: shared-module/displayio/Bitmap.c
-msgid "Read-only object"
-msgstr "Schreibgeschützte Objekt"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
@@ -2787,6 +2787,10 @@ msgstr "Kann Blockgröße von 512 nicht setzen"
 msgid "can't set attribute"
 msgstr "kann Attribut nicht setzen"
 
+#: py/runtime.c
+msgid "can't set attribute '%q'"
+msgstr ""
+
 #: py/emitnative.c
 msgid "can't store '%q'"
 msgstr "Speichern von '%q' nicht möglich"
@@ -3157,10 +3161,6 @@ msgstr "Die Schriftart (font) muss 2048 Byte lang sein"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "Format erfordert ein Wörterbuch (dict)"
-
-#: shared-bindings/microcontroller/Processor.c
-msgid "frequency is read-only for this board"
-msgstr "Frequenz ist für dieses Board schreibgeschützt"
 
 #: py/objdeque.c
 msgid "full"
@@ -4447,6 +4447,12 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "Read-only object"
+#~ msgstr "Schreibgeschützte Objekt"
+
+#~ msgid "frequency is read-only for this board"
+#~ msgstr "Frequenz ist für dieses Board schreibgeschützt"
 
 #~ msgid "Unable to write"
 #~ msgstr "Schreiben nicht möglich"

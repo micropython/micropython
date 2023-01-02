@@ -132,6 +132,10 @@ msgstr "%q init misslyckades"
 msgid "%q is %q"
 msgstr "%q är %q"
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "%q is read-only for this board"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr "längden på %q måste vara %d"
@@ -308,7 +312,7 @@ msgstr "Objektet '%s' stöder inte tilldelning"
 msgid "'%s' object doesn't support item deletion"
 msgstr "Objektet '%s' stöder inte borttagning"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
+#: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "Objektet '%s' har inget attribut '%q'"
 
@@ -1892,17 +1896,13 @@ msgid "Random number generation error"
 msgstr "Fel vid generering av slumptal"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Skrivskyddad"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "Skrivskyddat filsystem"
-
-#: shared-module/displayio/Bitmap.c
-msgid "Read-only object"
-msgstr "Skrivskyddat objekt"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
@@ -2766,6 +2766,10 @@ msgstr "kan inte sätta blockstorlek 512"
 msgid "can't set attribute"
 msgstr "kan inte att ange attribut"
 
+#: py/runtime.c
+msgid "can't set attribute '%q'"
+msgstr ""
+
 #: py/emitnative.c
 msgid "can't store '%q'"
 msgstr "kan inte lagra '%q'"
@@ -3133,10 +3137,6 @@ msgstr "typsnitt måste vara 2048 bytes långt"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "formatet kräver en dict"
-
-#: shared-bindings/microcontroller/Processor.c
-msgid "frequency is read-only for this board"
-msgstr "frekvens är skrivskyddad för detta kort"
 
 #: py/objdeque.c
 msgid "full"
@@ -4412,6 +4412,12 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Read-only object"
+#~ msgstr "Skrivskyddat objekt"
+
+#~ msgid "frequency is read-only for this board"
+#~ msgstr "frekvens är skrivskyddad för detta kort"
 
 #~ msgid "Pins 21+ not supported from ULP"
 #~ msgstr "Pins 21+ stöds inte av ULP"

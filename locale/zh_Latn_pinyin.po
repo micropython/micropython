@@ -135,6 +135,10 @@ msgstr "%q chūshǐhuà shībài"
 msgid "%q is %q"
 msgstr "%q shì %q"
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "%q is read-only for this board"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr "%q de chángdù bìxū shì %d"
@@ -310,7 +314,7 @@ msgstr "'%s' duìxiàng bù zhīchí yuánsù fùzhí"
 msgid "'%s' object doesn't support item deletion"
 msgstr "'%s' duìxiàng bù zhīchí yuánsù shānchú"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
+#: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "'%s' duìxiàng méiyǒu shǔxìng '%q'"
 
@@ -1896,17 +1900,13 @@ msgid "Random number generation error"
 msgstr "Suíjī shù shēngchéng cuòwù"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Zhǐ dú"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "Zhǐ dú wénjiàn xìtǒng"
-
-#: shared-module/displayio/Bitmap.c
-msgid "Read-only object"
-msgstr "Zhǐ dú duìxiàng"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
@@ -2771,6 +2771,10 @@ msgstr "wúfǎ shèzhì 512 kuài dàxiǎo"
 msgid "can't set attribute"
 msgstr "wúfǎ shèzhì shǔxìng"
 
+#: py/runtime.c
+msgid "can't set attribute '%q'"
+msgstr ""
+
 #: py/emitnative.c
 msgid "can't store '%q'"
 msgstr "wúfǎ cúnchú '%q'"
@@ -3139,10 +3143,6 @@ msgstr "zìtǐ bìxū wèi 2048 zì jié"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "géshì yāoqiú yīgè yǔjù"
-
-#: shared-bindings/microcontroller/Processor.c
-msgid "frequency is read-only for this board"
-msgstr "cǐ zhǔ bǎn de pín lǜ wéi zhǐ dú"
 
 #: py/objdeque.c
 msgid "full"
@@ -4418,6 +4418,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Read-only object"
+#~ msgstr "Zhǐ dú duìxiàng"
+
+#~ msgid "frequency is read-only for this board"
+#~ msgstr "cǐ zhǔ bǎn de pín lǜ wéi zhǐ dú"
 
 #~ msgid "Unable to write"
 #~ msgstr "wú fǎ xiě rù"

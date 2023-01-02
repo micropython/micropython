@@ -129,6 +129,10 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "%q is read-only for this board"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
@@ -303,7 +307,7 @@ msgstr ""
 msgid "'%s' object doesn't support item deletion"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
+#: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "'%s' obiekt nie ma atrybutu '%q'"
 
@@ -1867,17 +1871,13 @@ msgid "Random number generation error"
 msgstr "Błąd generowania liczb losowych"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Tylko do odczytu"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "System plików tylko do odczytu"
-
-#: shared-module/displayio/Bitmap.c
-msgid "Read-only object"
-msgstr "Obiekt tylko do odczytu"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
@@ -2721,6 +2721,10 @@ msgstr ""
 msgid "can't set attribute"
 msgstr "nie można ustawić atrybutu"
 
+#: py/runtime.c
+msgid "can't set attribute '%q'"
+msgstr ""
+
 #: py/emitnative.c
 msgid "can't store '%q'"
 msgstr "nie można zapisać '%q'"
@@ -3082,10 +3086,6 @@ msgstr "font musi mieć 2048 bajtów długości"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "format wymaga słownika"
-
-#: shared-bindings/microcontroller/Processor.c
-msgid "frequency is read-only for this board"
-msgstr ""
 
 #: py/objdeque.c
 msgid "full"
@@ -4358,6 +4358,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Read-only object"
+#~ msgstr "Obiekt tylko do odczytu"
 
 #~ msgid "Invalid pins"
 #~ msgstr "Złe nóżki"

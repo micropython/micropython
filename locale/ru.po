@@ -135,6 +135,10 @@ msgstr "Инициализация %q не удалась"
 msgid "%q is %q"
 msgstr "%q является %q"
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "%q is read-only for this board"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr "Длинна %q должна быть %d"
@@ -309,7 +313,7 @@ msgstr "Объект '%s' не поддерживает присвоение э�
 msgid "'%s' object doesn't support item deletion"
 msgstr "Объект '%s' не поддерживает удаление элементов"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
+#: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "Объект '%s' не имеет атрибута '%q'"
 
@@ -1924,16 +1928,12 @@ msgid "Random number generation error"
 msgstr ""
 
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr ""
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
-msgstr ""
-
-#: shared-module/displayio/Bitmap.c
-msgid "Read-only object"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
@@ -2780,6 +2780,10 @@ msgstr ""
 msgid "can't set attribute"
 msgstr ""
 
+#: py/runtime.c
+msgid "can't set attribute '%q'"
+msgstr ""
+
 #: py/emitnative.c
 msgid "can't store '%q'"
 msgstr ""
@@ -3139,10 +3143,6 @@ msgstr ""
 
 #: py/objstr.c
 msgid "format requires a dict"
-msgstr ""
-
-#: shared-bindings/microcontroller/Processor.c
-msgid "frequency is read-only for this board"
 msgstr ""
 
 #: py/objdeque.c

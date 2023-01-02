@@ -127,6 +127,10 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "%q is read-only for this board"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
@@ -301,7 +305,7 @@ msgstr ""
 msgid "'%s' object doesn't support item deletion"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
+#: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "'%s' object heeft geen attribuut '%q'"
 
@@ -1880,17 +1884,13 @@ msgid "Random number generation error"
 msgstr "Random number generatie fout"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Alleen-lezen"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "Alleen-lezen bestandssysteem"
-
-#: shared-module/displayio/Bitmap.c
-msgid "Read-only object"
-msgstr "Alleen-lezen object"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
@@ -2741,6 +2741,10 @@ msgstr "kan geen 512 blokgrootte instellen"
 msgid "can't set attribute"
 msgstr "kan attribute niet instellen"
 
+#: py/runtime.c
+msgid "can't set attribute '%q'"
+msgstr ""
+
 #: py/emitnative.c
 msgid "can't store '%q'"
 msgstr "kan '%q' niet opslaan"
@@ -3103,10 +3107,6 @@ msgstr "lettertype moet 2048 bytes lang zijn"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "format vereist een dict"
-
-#: shared-bindings/microcontroller/Processor.c
-msgid "frequency is read-only for this board"
-msgstr ""
 
 #: py/objdeque.c
 msgid "full"
@@ -4382,6 +4382,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Read-only object"
+#~ msgstr "Alleen-lezen object"
 
 #~ msgid "At most %d %q may be specified (not %d)"
 #~ msgstr "Op zijn meest %d %q mogen worden gespecificeerd (niet %d)"
