@@ -44,7 +44,7 @@
 
 // Circuitpython
 
-//common-hal/microcontroller/__init__.c
+// common-hal/microcontroller/__init__.c
 
 nrf_nvic_state_t nrf_nvic_state = {0};
 
@@ -71,7 +71,7 @@ void common_hal_mcu_enable_interrupts() {
     if (nesting_count == 0) {
         // This is very very bad because it means there was mismatched disable/enables so we
         // crash.
-        //reset_into_safe_mode(HARD_CRASH);
+        // reset_into_safe_mode(HARD_CRASH);
     }
     nesting_count--;
     if (nesting_count > 0) {
@@ -81,7 +81,7 @@ void common_hal_mcu_enable_interrupts() {
     sd_nvic_critical_region_exit(is_nested_critical_region);
 }
 
-//port.c
+// port.c
 static volatile struct {
     uint32_t prefix;
     uint64_t overflowed_ticks;
@@ -101,7 +101,7 @@ uint64_t port_get_raw_ticks(uint8_t *subticks) {
     return overflow_count + rtc / 32;
 }
 
-//RTC.C
+// RTC.C
 
 #define RTC_OFFSET_CHECK_PREFIX 0x25ea7e2a
 #define RTC_OFFSET_CHECK_SUFFIX 0x2b80b69e
@@ -130,8 +130,6 @@ void rtc_set_time(timeutils_struct_time_t *tm) {
 
 // end of Circuitpython
 
-
-
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
 } machine_rtc_obj_t;
@@ -145,26 +143,26 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     // bool r = rtc_running();
 
     // if (!r) {
-        // This shouldn't happen as rtc_init() is already called in main so
-        // it's here just in case
+    //      This shouldn't happen as rtc_init() is already called in main so
+    //      it's here just in case
     //    rtc_init();
     //    datetime_t t = { .month = 1, .day = 1 };
     //    rtc_set_datetime(&t);
-    //}
+    // }
     // return constant object
     return (mp_obj_t)&machine_rtc_obj;
 }
 
 STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
-        //bool ret;
-        //datetime_t t;
+        // bool ret;
+        // datetime_t t;
         timeutils_struct_time_t t;
 
-        //ret = rtc_get_datetime(&t);
-        //if (!ret) {
+        // ret = rtc_get_datetime(&t);
+        // if (!ret) {
         //    mp_raise_OSError(MP_EIO);
-        //}
+        // }
         rtc_get_time(&t);
 
         mp_obj_t tuple[8] = {
@@ -195,9 +193,9 @@ STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
         // Deliberately ignore the weekday argument and compute the proper value
         t.tm_wday = timeutils_calc_weekday(t.tm_year, t.tm_mon, t.tm_mday);
 
-        //if (!rtc_set_time(&t)) {
+        // if (!rtc_set_time(&t)) {
         //    mp_raise_OSError(MP_EINVAL);
-        //}
+        // }
         rtc_set_time(&t);
 
     }
