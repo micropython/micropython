@@ -42,6 +42,8 @@
 #include "nrf_nvic.h"
 #include "nrfx_rtc.h"
 
+#if MICROPY_PY_MACHINE_RTC
+
 // Circuitpython
 
 // common-hal/microcontroller/__init__.c
@@ -215,3 +217,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, machine_rtc_make_new,
     locals_dict, &machine_rtc_locals_dict
     );
+
+#endif
