@@ -3,6 +3,10 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Nick Moore for Adafruit Industries
+ * Copyright (c) 2021 Junji Sakai
  * Copyright (c) 2021 "Krzysztof Adamski" <k@japko.eu>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
