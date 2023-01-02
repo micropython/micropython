@@ -33,22 +33,24 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "modmachine.h"
+
+#if MICROPY_PY_MACHINE_RTC
+
+#include "ble_drv.h"
+#include "nrf_nvic.h"
+#include "nrfx_rtc.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "shared/timeutils/timeutils.h"
-// #include "hardware/rtc.h"
-// #include "pico/util/datetime.h"
-#include "modmachine.h"
-#include "nrf_nvic.h"
-#include "nrfx_rtc.h"
-
-#if MICROPY_PY_MACHINE_RTC
 
 // Circuitpython
 
 // common-hal/microcontroller/__init__.c
 
+#if (BLUETOOTH_SD != 132) && (BLUETOOTH_SD != 140)
 nrf_nvic_state_t nrf_nvic_state = {0};
+#endif
 
 static volatile uint32_t nesting_count = 0;
 static uint8_t is_nested_critical_region;
