@@ -204,6 +204,10 @@
 #define MICROPY_PY_MACHINE_RTCOUNTER (0)
 #endif
 
+#ifndef MICROPY_PY_MACHINE_RTC
+#define MICROPY_PY_MACHINE_RTC (1)
+#endif
+
 #ifndef MICROPY_PY_TIME_TICKS
 #define MICROPY_PY_TIME_TICKS       (1)
 #endif

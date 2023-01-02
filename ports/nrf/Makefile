@@ -76,6 +76,7 @@ INC += -I./modules/board
 INC += -I./modules/nrf
 INC += -I../../shared/readline
 INC += -I./drivers/bluetooth
+INC += -I./drivers/bluetooth/s140_nrf52_6.1.1/s140_nrf52_6.1.1_API/include
 INC += -I./drivers
 INC += -I../../lib/nrfx/
 INC += -I../../lib/nrfx/drivers
@@ -280,6 +281,7 @@ SRC_C += \
 	gccollect.c \
 	pin_named_pins.c \
 	fatfs_port.c \
+	machine_rtc.c \
 	drivers/flash.c \
 	drivers/rng.c \
 	drivers/softpwm.c \

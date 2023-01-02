@@ -32,6 +32,10 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 
+//#if MICROPY_PY_MACHINE_RTC
+extern const mp_obj_type_t machine_rtc_type;
+//#endif
+
 void machine_init(void);
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj);
