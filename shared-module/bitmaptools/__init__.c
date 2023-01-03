@@ -689,7 +689,7 @@ STATIC void fill_row(displayio_bitmap_t *bitmap, int swap, int16_t *luminance_da
 static void write_pixels(displayio_bitmap_t *bitmap, int y, bool *data) {
     if (bitmap->bits_per_value == 1) {
         uint32_t *pixel_data = (uint32_t *)(bitmap->data + bitmap->stride * y);
-        for (int i = 0; i < bitmap->stride; i++) {
+        for (int i = 0; i < bitmap->width; i++) {
             uint32_t p = 0;
             for (int j = 0; j < 32; j++) {
                 p = (p << 1);

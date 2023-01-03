@@ -57,7 +57,11 @@
 #endif
 
 #if defined(MICROPY_UNIX_COVERAGE)
+#include "py/objstr.h"
+typedef int os_getenv_err_t;
 mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_);
+os_getenv_err_t common_hal_os_getenv_str(const char *key, char *value, size_t value_len);
+os_getenv_err_t common_hal_os_getenv_int(const char *key, mp_int_t *value);
 #endif
 
 STATIC mp_obj_t mod_os_urandom(mp_obj_t num) {
@@ -212,6 +216,28 @@ STATIC mp_obj_t mod_os_getenv(mp_obj_t var_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_obj, mod_os_getenv);
 
+#if defined(MICROPY_UNIX_COVERAGE)
+STATIC mp_obj_t mod_os_getenv_int(mp_obj_t var_in) {
+    mp_int_t value;
+    os_getenv_err_t result = common_hal_os_getenv_int(mp_obj_str_get_str(var_in), &value);
+    if (result == 0) {
+        return mp_obj_new_int(value);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_int_obj, mod_os_getenv_int);
+
+STATIC mp_obj_t mod_os_getenv_str(mp_obj_t var_in) {
+    char buf[4096];
+    os_getenv_err_t result = common_hal_os_getenv_str(mp_obj_str_get_str(var_in), buf, sizeof(buf));
+    if (result == 0) {
+        return mp_obj_new_str_copy(&mp_type_str, (byte *)buf, strlen(buf));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_str_obj, mod_os_getenv_str);
+#endif
+
 STATIC mp_obj_t mod_os_putenv(mp_obj_t key_in, mp_obj_t value_in) {
     const char *key = mp_obj_str_get_str(key_in);
     const char *value = mp_obj_str_get_str(value_in);
@@ -351,6 +377,10 @@ STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&mod_os_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&mod_os_rmdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mod_os_getenv_obj) },
+    #if defined(MICROPY_UNIX_COVERAGE)
+    { MP_ROM_QSTR(MP_QSTR_getenv_int), MP_ROM_PTR(&mod_os_getenv_int_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getenv_str), MP_ROM_PTR(&mod_os_getenv_str_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_putenv), MP_ROM_PTR(&mod_os_putenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_unsetenv), MP_ROM_PTR(&mod_os_unsetenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mod_os_mkdir_obj) },

@@ -74,6 +74,11 @@ msgstr "%%c xūyào zhěngshù huòzhě zìfú"
 msgid "%02X"
 msgstr "%02X"
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "%S"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -129,6 +134,10 @@ msgstr "%q chūshǐhuà shībài"
 #: shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
 msgstr "%q shì %q"
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "%q is read-only for this board"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
@@ -305,7 +314,7 @@ msgstr "'%s' duìxiàng bù zhīchí yuánsù fùzhí"
 msgid "'%s' object doesn't support item deletion"
 msgstr "'%s' duìxiàng bù zhīchí yuánsù shānchú"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
+#: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "'%s' duìxiàng méiyǒu shǔxìng '%q'"
 
@@ -499,6 +508,11 @@ msgstr "yǐjīng zài yùnxíng"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "yǐjīng zài sǎomiáo WIFI wǎngluò"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "An error occurred while retrieving '%s':\n"
+msgstr ""
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -1423,6 +1437,10 @@ msgstr "NLR tiào zhuǎn shī bài. kě néng shì nèi cún sǔn huài."
 msgid "NVS Error"
 msgstr "NVS cuò wù"
 
+#: shared-bindings/socketpool/SocketPool.c
+msgid "Name or service not known"
+msgstr ""
+
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Míngchēng tài zhǎng"
@@ -1792,10 +1810,6 @@ msgstr ""
 "duōzì jié. Rúguǒ wúfǎ bìmiǎn, qǐng jiāng allow_inefficient = True chuándì "
 "gěigòuzào hánshù"
 
-#: ports/espressif/common-hal/espulp/ULP.c
-msgid "Pins 21+ not supported from ULP"
-msgstr ""
-
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"
 msgstr "yǐn jiǎo bì xū shì lián xù de"
@@ -1886,17 +1900,13 @@ msgid "Random number generation error"
 msgstr "Suíjī shù shēngchéng cuòwù"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Zhǐ dú"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "Zhǐ dú wénjiàn xìtǒng"
-
-#: shared-module/displayio/Bitmap.c
-msgid "Read-only object"
-msgstr "Zhǐ dú duìxiàng"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
@@ -2761,6 +2771,10 @@ msgstr "wúfǎ shèzhì 512 kuài dàxiǎo"
 msgid "can't set attribute"
 msgstr "wúfǎ shèzhì shǔxìng"
 
+#: py/runtime.c
+msgid "can't set attribute '%q'"
+msgstr ""
+
 #: py/emitnative.c
 msgid "can't store '%q'"
 msgstr "wúfǎ cúnchú '%q'"
@@ -3129,10 +3143,6 @@ msgstr "zìtǐ bìxū wèi 2048 zì jié"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "géshì yāoqiú yīgè yǔjù"
-
-#: shared-bindings/microcontroller/Processor.c
-msgid "frequency is read-only for this board"
-msgstr "cǐ zhǔ bǎn de pín lǜ wéi zhǐ dú"
 
 #: py/objdeque.c
 msgid "full"
@@ -4408,6 +4418,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Read-only object"
+#~ msgstr "Zhǐ dú duìxiàng"
+
+#~ msgid "frequency is read-only for this board"
+#~ msgstr "cǐ zhǔ bǎn de pín lǜ wéi zhǐ dú"
 
 #~ msgid "Unable to write"
 #~ msgstr "wú fǎ xiě rù"
