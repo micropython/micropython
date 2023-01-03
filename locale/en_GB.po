@@ -134,6 +134,10 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "%q is read-only for this board"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
@@ -308,7 +312,7 @@ msgstr "'%s' object doesn't support item assignment"
 msgid "'%s' object doesn't support item deletion"
 msgstr "'%s' object doesn't support item deletion"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
+#: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "'%s' object has no attribute '%q'"
 
@@ -1880,17 +1884,13 @@ msgid "Random number generation error"
 msgstr "Random number generation error"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Read-only"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "Read-only filesystem"
-
-#: shared-module/displayio/Bitmap.c
-msgid "Read-only object"
-msgstr "Read-only object"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
@@ -2744,6 +2744,10 @@ msgstr "can't set 512 block size"
 msgid "can't set attribute"
 msgstr "can't set attribute"
 
+#: py/runtime.c
+msgid "can't set attribute '%q'"
+msgstr ""
+
 #: py/emitnative.c
 msgid "can't store '%q'"
 msgstr "can't store '%q'"
@@ -3107,10 +3111,6 @@ msgstr "font must be 2048 bytes long"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "format requires a dict"
-
-#: shared-bindings/microcontroller/Processor.c
-msgid "frequency is read-only for this board"
-msgstr ""
 
 #: py/objdeque.c
 msgid "full"
@@ -4382,6 +4382,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Read-only object"
+#~ msgstr "Read-only object"
 
 #~ msgid "%q length must be >= 1"
 #~ msgstr "%q length must be >= 1"

@@ -136,6 +136,10 @@ msgstr "échec de l'initialisation %q"
 msgid "%q is %q"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "%q is read-only for this board"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr "La longeur de %q doit être %d"
@@ -310,7 +314,7 @@ msgstr "l'objet %s ne supporte pas l'assignation d'éléments"
 msgid "'%s' object doesn't support item deletion"
 msgstr "L'objet '%s' ne prend pas en charge la suppression d'éléments"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
+#: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "l'objet '%s' n'a pas d'attribut '%q'"
 
@@ -1929,17 +1933,13 @@ msgid "Random number generation error"
 msgstr "Erreur de génération de chiffres aléatoires"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Lecture seule"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "Système de fichier en lecture seule"
-
-#: shared-module/displayio/Bitmap.c
-msgid "Read-only object"
-msgstr "Objet en lecture seule"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
@@ -2815,6 +2815,10 @@ msgstr "impossible de définir une taille de bloc de 512"
 msgid "can't set attribute"
 msgstr "attribut non modifiable"
 
+#: py/runtime.c
+msgid "can't set attribute '%q'"
+msgstr ""
+
 #: py/emitnative.c
 msgid "can't store '%q'"
 msgstr "impossible de stocker '%q'"
@@ -3187,10 +3191,6 @@ msgstr "la police doit être longue de 2048 octets"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "le format nécessite un dict"
-
-#: shared-bindings/microcontroller/Processor.c
-msgid "frequency is read-only for this board"
-msgstr "la fréquence est en lecture seule pour cette carte"
 
 #: py/objdeque.c
 msgid "full"
@@ -4475,6 +4475,12 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Read-only object"
+#~ msgstr "Objet en lecture seule"
+
+#~ msgid "frequency is read-only for this board"
+#~ msgstr "la fréquence est en lecture seule pour cette carte"
 
 #~ msgid "Unable to write"
 #~ msgstr "Écriture impossible"
