@@ -1,5 +1,5 @@
 USB_VID = 0x2E8A
-USB_PID = 0x000A
+USB_PID = 0x1039
 USB_PRODUCT = "Waveshare RP2040-LCD-1.28"
 USB_MANUFACTURER = "Waveshare Electronics"
 
