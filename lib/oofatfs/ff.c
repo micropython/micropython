@@ -257,6 +257,11 @@
 #define GET_FATTIME()   get_fattime()
 #endif
 
+#if FF_FS_MAKE_VOLID == 1
+#define MAKE_VOLID(x) (make_volid())
+#else
+#define MAKE_VOLID(x) (GET_FATTIME())
+#endif
 
 /* File lock controls */
 #if FF_FS_LOCK != 0
@@ -5421,6 +5426,7 @@ FRESULT f_mkfs (
     DWORD tbl[3];
 #endif
 
+    DWORD volid = MAKE_VOLID();
 
     /* Check mounted drive and clear work area */
     fs->fs_type = 0;    /* Clear mounted volume */
@@ -5622,7 +5628,7 @@ FRESULT f_mkfs (
             st_dword(buf + BPB_DataOfsEx, b_data - b_vol);          /* Data offset [sector] */
             st_dword(buf + BPB_NumClusEx, n_clst);                  /* Number of clusters */
             st_dword(buf + BPB_RootClusEx, 2 + tbl[0] + tbl[1]);    /* Root dir cluster # */
-            st_dword(buf + BPB_VolIDEx, GET_FATTIME());             /* VSN */
+            st_dword(buf + BPB_VolIDEx, volid);             /* VSN */
             st_word(buf + BPB_FSVerEx, 0x100);                      /* Filesystem version (1.00) */
             for (buf[BPB_BytsPerSecEx] = 0, i = ss; i >>= 1; buf[BPB_BytsPerSecEx]++) ; /* Log2 of sector size [byte] */
             for (buf[BPB_SecPerClusEx] = 0, i = au; i >>= 1; buf[BPB_SecPerClusEx]++) ; /* Log2 of cluster size [sector] */
@@ -5758,7 +5764,7 @@ FRESULT f_mkfs (
         st_dword(buf + BPB_HiddSec, b_vol);             /* Volume offset in the physical drive [sector] */
 #if FF_MKFS_FAT32
         if (fmt == FS_FAT32) {
-            st_dword(buf + BS_VolID32, GET_FATTIME());  /* VSN */
+            st_dword(buf + BS_VolID32, volid);  /* VSN */
             st_dword(buf + BPB_FATSz32, sz_fat);        /* FAT size [sector] */
             st_dword(buf + BPB_RootClus32, 2);          /* Root directory cluster # (2) */
             st_word(buf + BPB_FSInfo32, 1);             /* Offset of FSINFO sector (VBR + 1) */
@@ -5769,7 +5775,7 @@ FRESULT f_mkfs (
         } else
 #endif
         {
-            st_dword(buf + BS_VolID, GET_FATTIME());    /* VSN */
+            st_dword(buf + BS_VolID, volid);    /* VSN */
             st_word(buf + BPB_FATSz16, (WORD)sz_fat);   /* FAT size [sector] */
             buf[BS_DrvNum] = 0x80;                      /* Drive number (for int13) */
             buf[BS_BootSig] = 0x29;                     /* Extended boot signature */

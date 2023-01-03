@@ -334,6 +334,10 @@ FRESULT f_setcp (WORD cp);                                          /* Set curre
 DWORD get_fattime (void);
 #endif
 
+#if FF_FS_MAKE_VOLID
+DWORD make_volid (void);
+#endif
+
 /* LFN support functions */
 #if FF_USE_LFN >= 1                     /* Code conversion (defined in unicode.c) */
 WCHAR ff_oem2uni (WCHAR oem, WORD cp);  /* OEM code to Unicode conversion */
