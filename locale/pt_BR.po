@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-12-28 03:47+0000\n"
+"PO-Revision-Date: 2023-01-05 02:52+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -135,7 +135,7 @@ msgstr "%q é %q"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "%q is read-only for this board"
-msgstr ""
+msgstr "%q é de somente leitura para esta placa"
 
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
@@ -2797,7 +2797,7 @@ msgstr "não é possível definir o atributo"
 
 #: py/runtime.c
 msgid "can't set attribute '%q'"
-msgstr ""
+msgstr "não é possível definir o atributo '%q'"
 
 #: py/emitnative.c
 msgid "can't store '%q'"
