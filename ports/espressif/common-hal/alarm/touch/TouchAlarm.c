@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/touch/TouchAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -52,9 +53,9 @@ mp_obj_t alarm_touch_touchalarm_find_triggered_alarm(const size_t n_alarms, cons
     return mp_const_none;
 }
 
-mp_obj_t alarm_touch_touchalarm_create_wakeup_alarm(void) {
-    // Create TouchAlarm object.
-    alarm_touch_touchalarm_obj_t *alarm = m_new_obj(alarm_touch_touchalarm_obj_t);
+mp_obj_t alarm_touch_touchalarm_record_wake_alarm(void) {
+    alarm_touch_touchalarm_obj_t *const alarm = &alarm_wake_alarm.touch_alarm;
+
     alarm->base.type = &alarm_touch_touchalarm_type;
     alarm->pin = NULL;
 

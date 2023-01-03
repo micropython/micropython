@@ -310,6 +310,7 @@ static void _remove_layer(displayio_group_t *self, size_t index) {
         self->members->items[index], &displayio_tilegrid_type);
     if (layer != MP_OBJ_NULL) {
         displayio_tilegrid_t *tilegrid = layer;
+        tilegrid->in_group = false;
         rendered_last_frame = displayio_tilegrid_get_previous_area(tilegrid, &layer_area);
         displayio_tilegrid_update_transform(tilegrid, NULL);
     }
@@ -317,6 +318,7 @@ static void _remove_layer(displayio_group_t *self, size_t index) {
         self->members->items[index], &displayio_group_type);
     if (layer != MP_OBJ_NULL) {
         displayio_group_t *group = layer;
+        group->in_group = false;
         rendered_last_frame = displayio_group_get_previous_area(group, &layer_area);
         displayio_group_update_transform(group, NULL);
     }

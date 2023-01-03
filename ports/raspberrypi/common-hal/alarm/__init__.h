@@ -24,10 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM__INIT__H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM__INIT__H
+#pragma once
 
 #include "common-hal/alarm/SleepMemory.h"
+#include "common-hal/alarm/pin/PinAlarm.h"
+#include "common-hal/alarm/time/TimeAlarm.h"
 
 #include "hardware/regs/clocks.h"
 
@@ -35,8 +36,12 @@
 #define RP_SLEEP_WAKEUP_GPIO    1
 #define RP_SLEEP_WAKEUP_RTC     2
 
+typedef union {
+    alarm_pin_pinalarm_obj_t pin_alarm;
+    alarm_time_timealarm_obj_t time_alarm;
+} alarm_wake_alarm_union_t;
+
+extern alarm_wake_alarm_union_t alarm_wake_alarm;
 extern const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
 
 extern void alarm_reset(void);
-
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM__INIT__H

@@ -109,6 +109,9 @@ MP_PROPERTY_GETSET(vectorio_circle_color_index_obj,
 //|     y: int
 //|     """Y position of the center point of the circle in the parent."""
 //|
+//|     hidden: bool
+//|     """Hide the circle or not."""
+//|
 //|     location: Tuple[int, int]
 //|     """(X,Y) position of the center point of the circle in the parent."""
 //|
@@ -123,6 +126,7 @@ STATIC const mp_rom_map_elem_t vectorio_circle_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_radius), MP_ROM_PTR(&vectorio_circle_radius_obj) },
     { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&vectorio_vector_shape_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&vectorio_vector_shape_y_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hidden), MP_ROM_PTR(&vectorio_vector_shape_hidden_obj) },
     { MP_ROM_QSTR(MP_QSTR_color_index), MP_ROM_PTR(&vectorio_circle_color_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_location), MP_ROM_PTR(&vectorio_vector_shape_location_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&vectorio_vector_shape_pixel_shader_obj) },

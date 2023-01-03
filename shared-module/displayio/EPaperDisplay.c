@@ -103,7 +103,14 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t 
 }
 
 bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t *self, displayio_group_t *root_group) {
-    return displayio_display_core_show(&self->core, root_group);
+    if (root_group == NULL) {
+        root_group = &circuitpython_splash;
+    }
+    return displayio_display_core_set_root_group(&self->core, root_group);
+}
+
+bool common_hal_displayio_epaperdisplay_set_root_group(displayio_epaperdisplay_obj_t *self, displayio_group_t *root_group) {
+    return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
 STATIC const displayio_area_t *displayio_epaperdisplay_get_refresh_areas(displayio_epaperdisplay_obj_t *self) {
@@ -239,6 +246,12 @@ uint16_t common_hal_displayio_epaperdisplay_get_rotation(displayio_epaperdisplay
     return self->core.rotation;
 }
 
+mp_obj_t common_hal_displayio_epaperdisplay_get_root_group(displayio_epaperdisplay_obj_t *self) {
+    if (self->core.current_group == NULL) {
+        return mp_const_none;
+    }
+    return self->core.current_group;
+}
 
 STATIC bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t *self, const displayio_area_t *area) {
     uint16_t buffer_size = 128; // In uint32_ts

@@ -205,20 +205,21 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
     set_mode_station(self, false);
 }
 
-void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode, uint8_t max_connections) {
+void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint32_t authmodes, uint8_t max_connections) {
     set_mode_ap(self, true);
 
-    switch (authmode) {
-        case (1 << AUTHMODE_OPEN):
+    uint8_t authmode = 0;
+    switch (authmodes) {
+        case AUTHMODE_OPEN:
             authmode = WIFI_AUTH_OPEN;
             break;
-        case ((1 << AUTHMODE_WPA) | (1 << AUTHMODE_PSK)):
+        case AUTHMODE_WPA | AUTHMODE_PSK:
             authmode = WIFI_AUTH_WPA_PSK;
             break;
-        case ((1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK)):
+        case AUTHMODE_WPA2 | AUTHMODE_PSK:
             authmode = WIFI_AUTH_WPA2_PSK;
             break;
-        case ((1 << AUTHMODE_WPA) | (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK)):
+        case AUTHMODE_WPA | AUTHMODE_WPA2 | AUTHMODE_PSK:
             authmode = WIFI_AUTH_WPA_WPA2_PSK;
             break;
         default:

@@ -105,9 +105,13 @@ STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type
     if (args[ARG_chip_select].u_obj != MP_OBJ_NULL) {
         digitalinout_result_t result = common_hal_digitalio_digitalinout_switch_to_output(MP_OBJ_TO_PTR(args[ARG_chip_select].u_obj),
             true, DRIVE_MODE_PUSH_PULL);
+        #if CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY
         if (result == DIGITALINOUT_INPUT_ONLY) {
             mp_raise_NotImplementedError(translate("Pin is input only"));
         }
+        #else
+        (void)result;
+        #endif
     }
 
     return (mp_obj_t)self;

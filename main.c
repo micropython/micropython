@@ -132,7 +132,7 @@ static void reset_devices(void) {
     #endif
 }
 
-STATIC void start_mp(supervisor_allocation *heap, bool first_run) {
+STATIC void start_mp(supervisor_allocation *heap) {
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -176,14 +176,6 @@ STATIC void start_mp(supervisor_allocation *heap, bool first_run) {
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
 
     mp_obj_list_init((mp_obj_list_t *)mp_sys_argv, 0);
-
-    #if CIRCUITPY_ALARM
-    // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
-    // There is no alarm if this is not the first time code.py or the REPL has been run.
-    shared_alarm_save_wake_alarm(first_run ? common_hal_alarm_create_wake_alarm() : mp_const_none);
-    // Reset alarm module only after we retrieved the wakeup alarm.
-    alarm_reset();
-    #endif
 }
 
 STATIC void stop_mp(void) {
@@ -226,12 +218,10 @@ void supervisor_execution_status(void) {
 }
 #endif
 
-#define STRING_LIST(...) {__VA_ARGS__, ""}
-
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
 // Return its index. If no file found, return -1.
-STATIC const char *first_existing_file_in_list(const char *const *filenames) {
-    for (int i = 0; filenames[i] != (char *)""; i++) {
+STATIC const char *first_existing_file_in_list(const char *const *filenames, size_t n_filenames) {
+    for (size_t i = 0; i < n_filenames; i++) {
         mp_import_stat_t stat = mp_import_stat(filenames[i]);
         if (stat == MP_IMPORT_STAT_FILE) {
             return filenames[i];
@@ -240,11 +230,11 @@ STATIC const char *first_existing_file_in_list(const char *const *filenames) {
     return NULL;
 }
 
-STATIC bool maybe_run_list(const char *const *filenames) {
+STATIC bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
     _exec_result.return_code = 0;
     _exec_result.exception = MP_OBJ_NULL;
     _exec_result.exception_line = 0;
-    _current_executing_filename = first_existing_file_in_list(filenames);
+    _current_executing_filename = first_existing_file_in_list(filenames, n_filenames);
     if (_current_executing_filename == NULL) {
         return false;
     }
@@ -373,7 +363,7 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_reset) {
+STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
     bool serial_connected_at_start = serial_connected();
     bool printed_safe_mode_message = false;
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
@@ -399,18 +389,20 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         filesystem_flush();
     }
     if (safe_mode == NO_SAFE_MODE && !autoreload_pending()) {
-        static const char *const supported_filenames[] = STRING_LIST(
-            "code.txt", "code.py", "main.py", "main.txt");
+        static const char *const supported_filenames[] = {
+            "code.txt", "code.py", "main.py", "main.txt"
+        };
         #if CIRCUITPY_FULL_BUILD
-        static const char *const double_extension_filenames[] = STRING_LIST(
+        static const char *const double_extension_filenames[] = {
             "code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
-            "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
+            "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py"
+        };
         #endif
 
         supervisor_allocation *heap = allocate_remaining_memory();
 
-        // Prepare the VM state. Includes an alarm check/reset for sleep.
-        start_mp(heap, first_run);
+        // Prepare the VM state.
+        start_mp(heap);
 
         #if CIRCUITPY_USB
         usb_setup_with_vm();
@@ -418,14 +410,15 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         // Check if a different run file has been allocated
         if (next_code_allocation) {
-            ((next_code_info_t *)next_code_allocation->ptr)->options &= ~SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
-            next_code_options = ((next_code_info_t *)next_code_allocation->ptr)->options;
-            if (((next_code_info_t *)next_code_allocation->ptr)->filename[0] != '\0') {
-                const char *next_list[] = {((next_code_info_t *)next_code_allocation->ptr)->filename, ""};
+            next_code_info_t *info = ((next_code_info_t *)next_code_allocation->ptr);
+            info->options &= ~SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
+            next_code_options = info->options;
+            if (info->filename[0] != '\0') {
                 // This is where the user's python code is actually executed:
-                found_main = maybe_run_list(next_list);
+                const char *const filenames[] = { info->filename };
+                found_main = maybe_run_list(filenames, MP_ARRAY_SIZE(filenames));
                 if (!found_main) {
-                    serial_write(((next_code_info_t *)next_code_allocation->ptr)->filename);
+                    serial_write(info->filename);
                     serial_write_compressed(translate(" not found.\n"));
                 }
             }
@@ -433,11 +426,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         // Otherwise, default to the standard list of filenames
         if (!found_main) {
             // This is where the user's python code is actually executed:
-            found_main = maybe_run_list(supported_filenames);
+            found_main = maybe_run_list(supported_filenames, MP_ARRAY_SIZE(supported_filenames));
             // If that didn't work, double check the extensions
             #if CIRCUITPY_FULL_BUILD
             if (!found_main) {
-                found_main = maybe_run_list(double_extension_filenames);
+                found_main = maybe_run_list(double_extension_filenames, MP_ARRAY_SIZE(double_extension_filenames));
                 if (found_main) {
                     serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
                 }
@@ -749,14 +742,13 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         && safe_mode == NO_SAFE_MODE
         && MP_STATE_VM(vfs_mount_table) != NULL;
 
-    static const char *const boot_py_filenames[] = STRING_LIST("boot.py", "boot.txt");
+    static const char *const boot_py_filenames[] = {"boot.py", "boot.txt"};
 
     // Do USB setup even if boot.py is not run.
 
     supervisor_allocation *heap = allocate_remaining_memory();
 
-    // true means this is the first set of VM's after a hard reset.
-    start_mp(heap, true);
+    start_mp(heap);
 
     #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
@@ -787,7 +779,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         port_boot_info();
         #endif
 
-        bool found_boot = maybe_run_list(boot_py_filenames);
+        bool found_boot = maybe_run_list(boot_py_filenames, MP_ARRAY_SIZE(boot_py_filenames));
         (void)found_boot;
 
 
@@ -853,12 +845,12 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     #endif
 }
 
-STATIC int run_repl(bool first_run) {
+STATIC int run_repl(void) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
     supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap, first_run);
+    start_mp(heap);
 
     #if CIRCUITPY_USB
     usb_setup_with_vm();
@@ -968,6 +960,15 @@ int __attribute__((used)) main(void) {
         safe_mode = NO_CIRCUITPY;
     }
 
+    #if CIRCUITPY_ALARM
+    // Record which alarm woke us up, if any.
+    // common_hal_alarm_record_wake_alarm() should return a static, non-heap object
+    shared_alarm_save_wake_alarm(common_hal_alarm_record_wake_alarm());
+    // Then reset the alarm system. It's not reset in reset_port(), because that's also called
+    // on VM teardown, which would clear any alarm setup.
+    alarm_reset();
+    #endif
+
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
     // Port-independent devices, like CIRCUITPY_BLEIO_HCI.
@@ -1001,20 +1002,21 @@ int __attribute__((used)) main(void) {
     // Boot script is finished, so now go into REPL or run code.py.
     int exit_code = PYEXEC_FORCED_EXIT;
     bool skip_repl = true;
-    bool first_run = true;
-    bool simulate_reset;
+    bool simulate_reset = true;
     for (;;) {
-        simulate_reset = false;
         if (!skip_repl) {
-            exit_code = run_repl(first_run);
+            exit_code = run_repl();
             supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
-            if (!first_run) {
+            if (!simulate_reset) {
                 serial_write_compressed(translate("soft reboot\n"));
             }
             if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-                skip_repl = run_code_py(safe_mode, first_run, &simulate_reset);
+                // If code.py did a fake deep sleep, pretend that we
+                // are running code.py for the first time after a hard
+                // reset. This will preserve any alarm information.
+                skip_repl = run_code_py(safe_mode, &simulate_reset);
             } else {
                 skip_repl = false;
             }
@@ -1022,10 +1024,10 @@ int __attribute__((used)) main(void) {
             break;
         }
 
-        // Either the REPL or code.py has run and finished.
-        // If code.py did a fake deep sleep, pretend that we are running code.py for
-        // the first time after a hard reset. This will preserve any alarm information.
-        first_run = simulate_reset;
+        #if CIRCUITPY_ALARM
+        shared_alarm_save_wake_alarm(simulate_reset ? common_hal_alarm_record_wake_alarm() : mp_const_none);
+        alarm_reset();
+        #endif
     }
     mp_deinit();
     return 0;

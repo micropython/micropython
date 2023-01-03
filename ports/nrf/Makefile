@@ -22,42 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Select the board to build for.
-ifeq ($(BOARD),)
-  $(info You must provide a BOARD parameter with 'BOARD=')
-  $(info Possible values are:)
-  $(info $(sort $(subst /.,,$(subst boards/,,$(wildcard boards/*/.)))))
-  $(error BOARD not defined)
-else
-  ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD specified)
-  endif
-endif
-
-CLI_SD := $(SD)
-SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
-
-# Build directory with SD if it's different from the default.
-BUILD ?= $(if $(CLI_SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
-
-include ../../py/mkenv.mk
-# Board-specific
-include boards/$(BOARD)/mpconfigboard.mk
-# Port-specific
-include mpconfigport.mk
-# CircuitPython-specific
-include $(TOP)/py/circuitpy_mpconfig.mk
-
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-
-# include py core make definitions
-include $(TOP)/py/py.mk
-
-include $(TOP)/supervisor/supervisor.mk
-
-# Include make rules and variables common across CircuitPython builds.
-include $(TOP)/py/circuitpy_defns.mk
+include ../../py/circuitpy_mkenv.mk
 
 ifneq ($(SD), )
 	include bluetooth/bluetooth_common.mk
@@ -165,7 +130,6 @@ endif
 
 SRC_C += \
 	background.c \
-	fatfs_port.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \

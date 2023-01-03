@@ -47,6 +47,10 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
     },
 };
 
+// Non-heap alarm object recording alarm (if any) that woke up CircuitPython after light or deep sleep.
+// This object lives across VM instantiations, so none of these objects can contain references to the heap.
+alarm_wake_alarm_union_t alarm_wake_alarm;
+
 STATIC stm_sleep_source_t true_deep_wake_reason;
 
 void alarm_reset(void) {
@@ -81,16 +85,16 @@ bool common_hal_alarm_woken_from_sleep(void) {
     return alarm_get_wakeup_cause() != STM_WAKEUP_UNDEF;
 }
 
-mp_obj_t common_hal_alarm_create_wake_alarm(void) {
+mp_obj_t common_hal_alarm_record_wake_alarm(void) {
     // If woken from deep sleep, create a copy alarm similar to what would have
     // been passed in originally. Otherwise, just return none
     stm_sleep_source_t cause = alarm_get_wakeup_cause();
     switch (cause) {
         case STM_WAKEUP_RTC: {
-            return alarm_time_timealarm_create_wakeup_alarm();
+            return alarm_time_timealarm_record_wake_alarm();
         }
         case STM_WAKEUP_GPIO: {
-            return alarm_pin_pinalarm_create_wakeup_alarm();
+            return alarm_pin_pinalarm_record_wake_alarm();
         }
         case STM_WAKEUP_UNDEF:
         default:

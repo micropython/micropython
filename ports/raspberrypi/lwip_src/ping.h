@@ -12,6 +12,14 @@
 #define PING_USE_SOCKETS    LWIP_SOCKET
 #endif
 
+#ifndef PING_ID
+#define PING_ID        0xAFAF
+#endif
+
+#ifndef PING_DEBUG
+#define PING_DEBUG     LWIP_DBG_ON
+#endif
+
 void ping_init(const ip_addr_t *ping_addr);
 void ping_prepare_echo(struct icmp_echo_hdr *iecho, u16_t len);
 

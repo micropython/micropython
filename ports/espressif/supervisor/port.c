@@ -30,12 +30,14 @@
 #include "supervisor/board.h"
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
+#include "supervisor/shared/reload.h"
 #include "py/runtime.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "bindings/espidf/__init__.h"
+#include "bindings/espulp/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogOut.h"
 #include "common-hal/busio/I2C.h"
@@ -55,7 +57,7 @@
 #include "shared-bindings/microcontroller/RunMode.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/socketpool/__init__.h"
-#include "shared-module/dotenv/__init__.h"
+#include "shared-module/os/__init__.h"
 
 #include "peripherals/rmt.h"
 #include "peripherals/timer.h"
@@ -367,6 +369,10 @@ void reset_port(void) {
     dualbank_reset();
     #endif
 
+    #if CIRCUITPY_ESPULP
+    espulp_reset();
+    #endif
+
     #if CIRCUITPY_FREQUENCYIO
     peripherals_timer_reset();
     #endif
@@ -511,7 +517,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 // On the ESP we use FreeRTOS notifications instead of interrupts so this is a
 // bit of a misnomer.
 void port_idle_until_interrupt(void) {
-    if (!background_callback_pending()) {
+    if (!background_callback_pending() && !autoreload_pending()) {
         xTaskNotifyWait(0x01, 0x01, NULL, portMAX_DELAY);
     }
 }
@@ -519,7 +525,7 @@ void port_idle_until_interrupt(void) {
 void port_post_boot_py(bool heap_valid) {
     if (!heap_valid && filesystem_present()) {
         mp_int_t reserved;
-        if (dotenv_get_key_int("/.env", "CIRCUITPY_RESERVED_PSRAM", &reserved)) {
+        if (common_hal_os_getenv_int("CIRCUITPY_RESERVED_PSRAM", &reserved) == GETENV_OK) {
             common_hal_espidf_set_reserved_psram(reserved);
         }
         common_hal_espidf_reserve_psram();

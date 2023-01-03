@@ -262,8 +262,15 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/
 	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py --output_type=data $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
-$(PY_BUILD)/translations-$(TRANSLATION).c $(HEADER_BUILD)/compression.generated.h: $(PY_SRC)/maketranslationdata.py $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h
+# Is generated as a side-effect of building compression.generated.h
+# Specifying both in a single rule actually causes the rule to be run twice!
+# This alternative makes it run just once.
+$(PY_BUILD)/translations-$(TRANSLATION).c: $(HEADER_BUILD)/compression.generated.h
+	@true
+
+$(HEADER_BUILD)/compression.generated.h: $(PY_SRC)/maketranslationdata.py $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h
 	$(STEPECHO) "GEN $@"
+	$(Q)mkdir -p $(PY_BUILD)
 	$(Q)$(PYTHON) $(PY_SRC)/maketranslationdata.py --compression_filename $(HEADER_BUILD)/compression.generated.h --translation $(HEADER_BUILD)/$(TRANSLATION).mo --translation_filename $(PY_BUILD)/translations-$(TRANSLATION).c $(HEADER_BUILD)/qstrdefs.preprocessed.h
 
 PY_CORE_O += $(PY_BUILD)/translations-$(TRANSLATION).o

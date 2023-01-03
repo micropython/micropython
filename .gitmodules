@@ -146,7 +146,7 @@
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
 	url = https://github.com/adafruit/esp-idf.git
-	branch = circuitpython8
+	branch = release/v4.4-circuitpython
 [submodule "ports/espressif/certificates/nina-fw"]
 	path = lib/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git
@@ -310,12 +310,21 @@
 [submodule "ports/espressif/esp32-camera"]
 	path = ports/espressif/esp32-camera
 	url = https://github.com/adafruit/esp32-camera/
+        branch = circuitpython
 [submodule "ports/raspberrypi/lib/cyw43-driver"]
 	path = ports/raspberrypi/lib/cyw43-driver
-	url = https://github.com/georgerobotics/cyw43-driver.git
+	url = https://github.com/adafruit/cyw43-driver.git
+	branch = circuitpython8
 [submodule "ports/raspberrypi/lib/lwip"]
 	path = ports/raspberrypi/lib/lwip
-	url = https://github.com/lwip-tcpip/lwip.git
+	url = https://github.com/adafruit/lwip.git
+	branch = circuitpython8
 [submodule "lib/mbedtls"]
 	path = lib/mbedtls
 	url = https://github.com/ARMmbed/mbedtls.git
+[submodule "frozen/Adafruit_CircuitPython_UC8151D"]
+	path = frozen/Adafruit_CircuitPython_UC8151D
+	url = https://github.com/adafruit/Adafruit_CircuitPython_UC8151D
+[submodule "frozen/Adafruit_CircuitPython_SSD1680"]
+	path = frozen/Adafruit_CircuitPython_SSD1680
+	url = https://github.com/adafruit/Adafruit_CircuitPython_SSD1680

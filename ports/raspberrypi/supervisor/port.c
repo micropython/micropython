@@ -62,6 +62,7 @@
 #include "src/rp2_common/hardware_sync/include/hardware/sync.h"
 #include "src/rp2_common/hardware_timer/include/hardware/timer.h"
 #if CIRCUITPY_CYW43
+#include "py/mphal.h"
 #include "pico/cyw43_arch.h"
 #endif
 #include "src/common/pico_time/include/pico/time.h"
@@ -71,6 +72,9 @@
 #include "hardware/watchdog.h"
 
 #include "supervisor/serial.h"
+
+#include "tusb.h"
+#include <cmsis_compiler.h>
 
 extern volatile bool mp_msc_enabled;
 
@@ -123,6 +127,13 @@ safe_mode_t port_init(void) {
         (&_ld_dtcm_bss_start)[i] = 0;
     }
 
+    #if CIRCUITPY_CYW43
+    never_reset_pin_number(23);
+    never_reset_pin_number(24);
+    never_reset_pin_number(25);
+    never_reset_pin_number(29);
+    #endif
+
     // Reset everything into a known state before board_init.
     reset_port();
 
@@ -136,11 +147,14 @@ safe_mode_t port_init(void) {
     // Check brownout.
 
     #if CIRCUITPY_CYW43
-    never_reset_pin_number(23);
-    never_reset_pin_number(24);
-    never_reset_pin_number(25);
-    never_reset_pin_number(29);
-    if (cyw43_arch_init()) {
+    // A small number of samples of pico w need an additional delay before
+    // initializing the cyw43 chip. Delays inside cyw43_arch_init_with_country
+    // are intended to meet the power on timing requirements, but apparently
+    // are inadequate. We'll back off this long delay based on future testing.
+    mp_hal_delay_ms(1000);
+    // Change this as a placeholder as to how to init with country code.
+    // Default country code is CYW43_COUNTRY_WORLDWIDE)
+    if (cyw43_arch_init_with_country(PICO_CYW43_ARCH_DEFAULT_COUNTRY_CODE)) {
         serial_write("WiFi init failed\n");
     } else {
         cyw_ever_init = true;
@@ -241,38 +255,48 @@ uint32_t port_get_saved_word(void) {
     return __scratch_x_start__;
 }
 
+static volatile bool ticks_enabled;
+
 uint64_t port_get_raw_ticks(uint8_t *subticks) {
     uint64_t microseconds = time_us_64();
     return 1024 * (microseconds / 1000000) + (microseconds % 1000000) / 977;
 }
 
 STATIC void _tick_callback(uint alarm_num) {
-    supervisor_tick();
-    hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), 977));
+    if (ticks_enabled) {
+        supervisor_tick();
+        hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), 977));
+    }
 }
 
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
+    ticks_enabled = true;
     hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), 977));
 }
 
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
-    // hardware_alarm_cancel(0);
+    // One additional _tick_callback may occur, but it will just return
+    // whenever !ticks_enabled. Cancel is not called just in case
+    // it could nuke a timeout set by port_interrupt_after_ticks.
+    ticks_enabled = false;
 }
 
 // This is called by sleep, we ignore it when our ticks are enabled because
 // they'll wake us up earlier. If we don't, we'll mess up ticks by overwriting
 // the next RTC wake up time.
 void port_interrupt_after_ticks(uint32_t ticks) {
+    if (!ticks_enabled) {
+        hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), ticks * 977));
+    }
 }
 
 void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
-    if (!background_callback_pending()) {
-        // TODO: Does not work when board is power-cycled.
-        // asm volatile ("dsb 0xF" ::: "memory");
-        // __wfi();
+    if (!background_callback_pending() && !tud_task_event_ready()) {
+        __DSB();
+        __WFI();
     }
     common_hal_mcu_enable_interrupts();
 }

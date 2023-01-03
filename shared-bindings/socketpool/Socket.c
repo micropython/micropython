@@ -30,13 +30,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "shared/runtime/context_manager_helpers.h"
-#include "py/objtuple.h"
-#include "py/objlist.h"
-#include "py/runtime.h"
 #include "py/mperrno.h"
+#include "py/objlist.h"
+#include "py/objtuple.h"
+#include "py/runtime.h"
+#include "py/stream.h"
 
 #include "shared/netutils/netutils.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "shared/runtime/interrupt_char.h"
 
 //| class Socket:
@@ -343,38 +344,36 @@ STATIC mp_obj_t socketpool_socket_setblocking(mp_obj_t self_in, mp_obj_t blockin
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_setblocking_obj, socketpool_socket_setblocking);
 
-// //|     def setsockopt(self, level: int, optname: int, value: int) -> None:
-// //|         """Sets socket options"""
-// //|         ...
-// //|
-// STATIC mp_obj_t socketpool_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
-//     // mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+//|     def setsockopt(self, level: int, optname: int, value: int) -> None:
+//|         """Sets socket options"""
+//|         ...
+STATIC mp_obj_t socketpool_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t level = mp_obj_get_int(args[1]);
+    mp_int_t opt = mp_obj_get_int(args[2]);
 
-//     // mp_int_t level = mp_obj_get_int(args[1]);
-//     // mp_int_t opt = mp_obj_get_int(args[2]);
+    const void *optval;
+    mp_uint_t optlen;
+    mp_int_t val;
+    if (mp_obj_is_integer(args[3])) {
+        val = mp_obj_get_int_truncated(args[3]);
+        optval = &val;
+        optlen = sizeof(val);
+    } else {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
+        optval = bufinfo.buf;
+        optlen = bufinfo.len;
+    }
 
-//     // const void *optval;
-//     // mp_uint_t optlen;
-//     // mp_int_t val;
-//     // if (mp_obj_is_integer(args[3])) {
-//     //     val = mp_obj_get_int_truncated(args[3]);
-//     //     optval = &val;
-//     //     optlen = sizeof(val);
-//     // } else {
-//     //     mp_buffer_info_t bufinfo;
-//     //     mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
-//     //     optval = bufinfo.buf;
-//     //     optlen = bufinfo.len;
-//     // }
+    int _errno = common_hal_socketpool_socket_setsockopt(self, level, opt, optval, optlen);
+    if (_errno < 0) {
+        mp_raise_OSError(-_errno);
+    }
 
-//     // int _errno;
-//     // if (self->nic_type->setsockopt(self, level, opt, optval, optlen, &_errno) != 0) {
-//     //     mp_raise_OSError(_errno);
-//     // }
-
-//     return mp_const_none;
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_setsockopt_obj, 4, 4, socketpool_socket_setsockopt);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_setsockopt_obj, 4, 4, socketpool_socket_setsockopt);
 
 
 //|     def settimeout(self, value: int) -> None:
@@ -416,11 +415,36 @@ STATIC const mp_rom_map_elem_t socketpool_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sendall), MP_ROM_PTR(&socketpool_socket_sendall_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socketpool_socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socketpool_socket_setblocking_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socketpool_socket_setsockopt_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socketpool_socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&socketpool_socket_settimeout_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(socketpool_socket_locals_dict, socketpool_socket_locals_dict_table);
+
+STATIC mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_uint_t ret;
+    if (request == MP_STREAM_POLL) {
+        mp_uint_t flags = arg;
+        ret = 0;
+        if ((flags & MP_STREAM_POLL_RD) && common_hal_socketpool_readable(self) > 0) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        if ((flags & MP_STREAM_POLL_WR) && common_hal_socketpool_writable(self)) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+    } else {
+        *errcode = MP_EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+    return ret;
+}
+
+STATIC const mp_stream_p_t socket_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
+    .ioctl = socket_ioctl,
+    .is_text = false,
+};
 
 const mp_obj_type_t socketpool_socket_type = {
     { &mp_type_type },
@@ -429,5 +453,6 @@ const mp_obj_type_t socketpool_socket_type = {
     .locals_dict = (mp_obj_dict_t *)&socketpool_socket_locals_dict,
     MP_TYPE_EXTENDED_FIELDS(
         .unary_op = mp_generic_unary_op,
+        .protocol = &socket_stream_p,
         )
 };

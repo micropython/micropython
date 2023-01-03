@@ -33,7 +33,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: false
-        fetch-depth: 1
+        fetch-depth: 0
     - name: Set up Python 3
       uses: actions/setup-python@v4
       with:
@@ -125,20 +125,30 @@ jobs:
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-raspbian s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-raspbian-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-amd64-linux-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static.exe s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-x64-windows-${{ env.CP_VERSION }}.exe --no-progress --region us-east-1
-    - name: "Get changes"
+    - name: Get last commit with checks
+      id: get-last-commit-with-checks
       if: github.event_name == 'pull_request'
-      uses: dorny/paths-filter@v2
-      id: filter
+      working-directory: tools
+      env:
+        REPO: ${{ github.repository }}
+        PULL: ${{ github.event.number }}
+        GITHUB_TOKEN: ${{ github.token }}
+        EXCLUDE_COMMIT: ${{ github.event.after }}
+      run: python3 -u ci_changes_per_commit.py
+    - name: Get changes
+      id: get-changes
+      if: github.event_name == 'pull_request'
+      uses: tj-actions/changed-files@v34.5.3
       with:
-        list-files: json
-        filters: |
-          changed:
-            - '**'
-    - name: "Set matrix"
+        json: true
+        sha: ${{ steps.get-last-commit-with-checks.outputs.commit && github.event.after }}
+        base_sha: ${{ steps.get-last-commit-with-checks.outputs.commit }}
+    - name: Set matrix
       id: set-matrix
       working-directory: tools
       env:
-        CHANGED_FILES: ${{ steps.filter.outputs.changed_files }}
+        CHANGED_FILES: ${{ steps.get-changes.outputs.all_changed_and_modified_files }}
+        LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.checkruns }}
       run: python3 -u ci_set_matrix.py
 
 
@@ -156,7 +166,7 @@ jobs:
     - name: Set up Python 3
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: "3.10"
     - name: Get CP deps
       run: python tools/ci_fetch_deps.py mpy-cross-mac ${{ github.sha }}
     - name: CircuitPython version
@@ -220,7 +230,7 @@ jobs:
     - name: Set up Python 3
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: "3.10"
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -278,7 +288,7 @@ jobs:
     - name: Set up Python 3
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: "3.10"
     - uses: actions/checkout@v3
       with:
         submodules: false
@@ -331,7 +341,7 @@ jobs:
     - name: Set up Python 3
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: "3.10"
     - uses: actions/checkout@v3
       with:
         submodules: false
@@ -384,7 +394,7 @@ jobs:
       id: py3
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: "3.10"
     - uses: actions/checkout@v3
       with:
         submodules: false
@@ -473,7 +483,7 @@ jobs:
     - name: Set up Python 3
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: "3.10"
     - uses: actions/checkout@v3
       with:
         submodules: false

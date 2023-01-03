@@ -349,6 +349,30 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_bus_obj, displayio_epaperd
 MP_PROPERTY_GETTER(displayio_epaperdisplay_bus_obj,
     (mp_obj_t)&displayio_epaperdisplay_get_bus_obj);
 
+//|     root_group: Group
+//|     """The root group on the epaper display."""
+//|
+STATIC mp_obj_t displayio_epaperdisplay_obj_get_root_group(mp_obj_t self_in) {
+    displayio_epaperdisplay_obj_t *self = native_display(self_in);
+    return common_hal_displayio_epaperdisplay_get_root_group(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_root_group_obj, displayio_epaperdisplay_obj_get_root_group);
+
+STATIC mp_obj_t displayio_epaperdisplay_obj_set_root_group(mp_obj_t self_in, mp_obj_t group_in) {
+    displayio_epaperdisplay_obj_t *self = native_display(self_in);
+    displayio_group_t *group = NULL;
+    if (group_in != mp_const_none) {
+        group = MP_OBJ_TO_PTR(native_group(group_in));
+    }
+
+    common_hal_displayio_epaperdisplay_set_root_group(self, group);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_set_root_group_obj, displayio_epaperdisplay_obj_set_root_group);
+
+MP_PROPERTY_GETSET(displayio_epaperdisplay_root_group_obj,
+    (mp_obj_t)&displayio_epaperdisplay_get_root_group_obj,
+    (mp_obj_t)&displayio_epaperdisplay_set_root_group_obj);
 
 STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_epaperdisplay_show_obj) },
@@ -361,6 +385,7 @@ STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_bus), MP_ROM_PTR(&displayio_epaperdisplay_bus_obj) },
     { MP_ROM_QSTR(MP_QSTR_busy), MP_ROM_PTR(&displayio_epaperdisplay_busy_obj) },
     { MP_ROM_QSTR(MP_QSTR_time_to_refresh), MP_ROM_PTR(&displayio_epaperdisplay_time_to_refresh_obj) },
+    { MP_ROM_QSTR(MP_QSTR_root_group), MP_ROM_PTR(&displayio_epaperdisplay_root_group_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_epaperdisplay_locals_dict, displayio_epaperdisplay_locals_dict_table);
 

@@ -16,6 +16,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "shared/runtime/interrupt_char.h"
 
 // Flags for poll()
 #define FLAG_ONESHOT (1)
@@ -230,6 +231,9 @@ STATIC mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
             break;
         }
         RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            return 0;
+        }
     }
 
     return n_ready;

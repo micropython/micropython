@@ -41,6 +41,10 @@
 #include "pico/cyw43_arch.h"
 #include "bindings/cyw43/__init__.h"
 #define IS_CYW(self) ((self)->pin->base.type == &cyw43_pin_type)
+
+const mcu_pin_obj_t *common_hal_digitalio_validate_pin(mp_obj_t obj) {
+    return validate_obj_is_free_pin_including_cyw43(obj);
+}
 #endif
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(

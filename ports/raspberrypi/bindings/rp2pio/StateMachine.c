@@ -422,7 +422,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine
 //|     ) -> None:
 //|         """Write data to the TX fifo in the background, with optional looping.
 //|
-//|         First, if any previous ``once`` or ``loop`` buffer has not been started, this function blocks until they have.
+//|         First, if any previous ``once`` or ``loop`` buffer has not been started, this function blocks until they have been started.
 //|         This means that any ``once`` or ``loop`` buffer will be written at least once.
 //|         Then the ``once`` and/or ``loop`` buffers are queued. and the function returns.
 //|         The ``once`` buffer (if specified) will be written just once.

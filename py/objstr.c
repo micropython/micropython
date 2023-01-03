@@ -986,7 +986,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             terse_str_format_value_error();
             #else
-            mp_raise_ValueError(MP_ERROR_TEXT("single '}' encountered in format string"));
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("unmatched '%c' in format"), '}');
             #endif
         }
         if (*str != '{') {
@@ -1063,7 +1063,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             terse_str_format_value_error();
             #else
-            mp_raise_ValueError(MP_ERROR_TEXT("unmatched '{' in format"));
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("unmatched '%c' in format"), '{');
             #endif
         }
         if (*str != '}') {
