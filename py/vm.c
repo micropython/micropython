@@ -1150,7 +1150,7 @@ unwind_return:
                     mp_obj_t obj = mp_make_raise_obj(TOP());
                     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
                     mp_obj_t active_exception = get_active_exception(exc_sp, exc_stack);
-                    if (active_exception != MP_OBJ_NULL) {
+                    if (active_exception != MP_OBJ_NULL && active_exception != obj) {
                         mp_store_attr(obj, MP_QSTR___context__, active_exception);
                     }
                     #endif
@@ -1164,7 +1164,7 @@ unwind_return:
                     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
                     // search for the inner-most previous exception, to chain it
                     mp_obj_t active_exception = get_active_exception(exc_sp, exc_stack);
-                    if (active_exception != MP_OBJ_NULL) {
+                    if (active_exception != MP_OBJ_NULL && active_exception != obj) {
                         mp_store_attr(obj, MP_QSTR___context__, active_exception);
                     }
                     mp_store_attr(obj, MP_QSTR___cause__, cause);
@@ -1463,7 +1463,7 @@ unwind_loop:
                 exc_sp->prev_exc = nlr.ret_val;
                 mp_obj_t obj = MP_OBJ_FROM_PTR(nlr.ret_val);
                 #if MICROPY_CPYTHON_EXCEPTION_CHAIN
-                if (active_exception != MP_OBJ_NULL) {
+                if (active_exception != MP_OBJ_NULL && active_exception != obj) {
                     mp_store_attr(obj, MP_QSTR___context__, active_exception);
                 }
                 #endif
