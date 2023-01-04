@@ -62,3 +62,13 @@ try:
         1 / 0
 except Exception as e:
     print_exc_info(e)
+
+try:
+    try:
+        1 / 0
+    except Exception as inner:
+        raise inner
+except Exception as e:
+    print_exc_info(e, chain=False)
+    print_exc_info(e)
+print()

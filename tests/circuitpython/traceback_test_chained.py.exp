@@ -59,3 +59,18 @@ Traceback (most recent call last):
 ZeroDivisionError: division by zero
 ------------------------------------------------------------------------
 
+------------------------------------------------------------------------
+Traceback (most recent call last):
+  File "circuitpython/traceback_test_chained.py", line 70, in <module>
+  File "circuitpython/traceback_test_chained.py", line 68, in <module>
+ZeroDivisionError: division by zero
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+Traceback (most recent call last):
+  File "circuitpython/traceback_test_chained.py", line 70, in <module>
+  File "circuitpython/traceback_test_chained.py", line 68, in <module>
+ZeroDivisionError: division by zero
+------------------------------------------------------------------------
+
+
