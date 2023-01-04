@@ -594,6 +594,7 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE (0)
 #endif
 
+#define FF_FS_MAKE_VOLID (1)
 
 #define MICROPY_PY_OPTIMIZE_PROPERTY_FLASH_SIZE (CIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE)
 

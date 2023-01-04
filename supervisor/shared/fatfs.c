@@ -28,9 +28,11 @@
 
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
-#include "shared/timeutils/timeutils.h"
+#include "shared-bindings/microcontroller/Processor.h"
+#include "shared-bindings/os/__init__.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "shared-bindings/time/__init__.h"
+#include "shared/timeutils/timeutils.h"
 
 DWORD _time_override = 0;
 DWORD get_fattime(void) {
@@ -49,4 +51,18 @@ DWORD get_fattime(void) {
 
 void override_fattime(DWORD time) {
     _time_override = time;
+}
+
+DWORD make_volid(void) {
+    DWORD result;
+    if (!common_hal_os_urandom((uint8_t *)&result, sizeof(result))) {
+        #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH >= 4
+        uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
+        common_hal_mcu_processor_get_uid(raw_id);
+        memcpy(&result, raw_id, sizeof(result));
+        #else
+        result = (DWORD)common_hal_time_monotonic_ns();
+        #endif
+    }
+    return result;
 }
