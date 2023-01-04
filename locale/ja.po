@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Matt Watson <zaius0930@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -1806,8 +1806,7 @@ msgstr "Prefixバッファはヒープ上になければなりません"
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
-msgstr ""
-"REPLに入るため、エンターキーを押す。リーロードするため、Ctl-Dを入力する。\n"
+msgstr "REPLに入るため、エンターキーを押す。リーロードするため、Ctl-Dを入力する。\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
