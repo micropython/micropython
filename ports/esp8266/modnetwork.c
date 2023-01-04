@@ -410,6 +410,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         wifi_set_phy_mode(mp_obj_get_int(kwargs->table[i].value));
                         break;
                     }
+                    case MP_QSTR_txpower: {
+                        int8_t power = mp_obj_get_float(kwargs->table[i].value) * 4;
+                        system_phy_set_max_tpw(power);
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
