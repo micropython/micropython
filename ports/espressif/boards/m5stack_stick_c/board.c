@@ -230,7 +230,7 @@ static bool display_init(void) {
         &pin_GPIO23,    // DC
         &pin_GPIO5,     // CS
         &pin_GPIO18,    // RST
-        40000000,       // baudrate
+        10000000,       // baudrate
         0,              // polarity
         0               // phase
         );

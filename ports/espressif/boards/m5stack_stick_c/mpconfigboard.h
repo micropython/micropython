@@ -31,8 +31,9 @@
 
 #define MICROPY_HW_LED_STATUS       (&pin_GPIO10)
 
-#define CIRCUITPY_BOARD_I2C         (1)
-#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO22, .sda = &pin_GPIO21}}
+#define CIRCUITPY_BOARD_I2C         (2)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO22, .sda = &pin_GPIO21}, \
+                                     {.scl = &pin_GPIO33, .sda = &pin_GPIO32}}
 
 // For entering safe mode
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO37)
