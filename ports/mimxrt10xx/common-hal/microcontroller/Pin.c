@@ -71,7 +71,6 @@ MP_WEAK bool mimxrt10xx_board_reset_pin_number(const mcu_pin_obj_t *pin) {
 // Since i.MX pins need extra register and reset information to reset properly,
 // resetting pins by number alone has been removed.
 void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
-    return;
     if (pin == NULL) {
         return;
     }
