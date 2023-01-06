@@ -29,7 +29,6 @@
 #include "shared-bindings/memorymap/AddressRange.h"
 
 #include "py/runtime.h"
-
 #include "soc/soc.h"
 
 size_t allow_ranges[][2] = {
@@ -39,7 +38,6 @@ size_t allow_ranges[][2] = {
     {SOC_RTC_DRAM_LOW, SOC_RTC_DRAM_HIGH},
     // RTC peripheral registers
     {0x60008000, 0x60009000}
-
 };
 
 void common_hal_memorymap_addressrange_construct(memorymap_addressrange_obj_t *self, uint8_t *start_address, size_t length) {

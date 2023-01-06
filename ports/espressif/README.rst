@@ -9,7 +9,7 @@ Support Status:
 .. csv-table::
     :header: SoC, Status
 
-    ESP, "beta"
+    ESP32, "beta"
     ESP32-C3, "beta"
     ESP32-S2, "stable"
     ESP32-S3, "beta"

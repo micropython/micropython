@@ -32,6 +32,7 @@
 #include "components/mbedtls/esp_crt_bundle/include/esp_crt_bundle.h"
 
 #include "py/runtime.h"
+#include "lwip/sockets.h"
 
 void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t *self) {
 

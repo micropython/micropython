@@ -34,6 +34,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "supervisor/shared/tick.h"
+#include "lwip/sockets.h"
 
 ssl_sslsocket_obj_t *common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self,
     uint8_t *ip, uint32_t *port) {
@@ -60,7 +61,7 @@ void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self,
     if (result < 0) {
         int esp_tls_code;
         int flags;
-        esp_err_t err = esp_tls_get_and_clear_last_error(self->tls->error_handle, &esp_tls_code, &flags);
+        esp_err_t err = esp_tls_get_and_clear_last_error(self->tls_error_handle, &esp_tls_code, &flags);
 
         if (err == ESP_ERR_MBEDTLS_SSL_SETUP_FAILED) {
             mp_raise_espidf_MemoryError();
@@ -154,7 +155,7 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t
     if (sent < 0) {
         int esp_tls_code;
         int flags;
-        esp_err_t err = esp_tls_get_and_clear_last_error(self->tls->error_handle, &esp_tls_code, &flags);
+        esp_err_t err = esp_tls_get_and_clear_last_error(self->tls_error_handle, &esp_tls_code, &flags);
 
         if (err == ESP_ERR_MBEDTLS_SSL_SETUP_FAILED) {
             mp_raise_espidf_MemoryError();

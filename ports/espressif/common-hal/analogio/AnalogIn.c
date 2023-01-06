@@ -30,8 +30,9 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate/translate.h"
 
-#include "components/driver/include/driver/adc_common.h"
-#include "components/esp_adc_cal/include/esp_adc_cal.h"
+#include "driver/adc.h"
+#include "driver/gpio.h"
+#include "esp_adc_cal.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
 
@@ -54,7 +55,7 @@
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
     const mcu_pin_obj_t *pin) {
-    if (pin->adc_index == 0 || pin->adc_channel == ADC_CHANNEL_MAX) {
+    if (pin->adc_index == 0 || pin->adc_channel == NO_ADC_CHANNEL) {
         raise_ValueError_invalid_pin();
     }
     common_hal_mcu_pin_claim(pin);

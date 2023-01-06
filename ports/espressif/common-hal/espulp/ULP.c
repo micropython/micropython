@@ -28,7 +28,6 @@
 #include "bindings/espulp/ULP.h"
 
 #include "py/runtime.h"
-
 #include "shared-bindings/microcontroller/Pin.h"
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
@@ -56,7 +55,7 @@ void espulp_reset(void) {
 }
 
 void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t length, uint32_t pin_mask) {
-    if (length > ULP_COPROC_RESERVE_MEM) {
+    if (length > CONFIG_ULP_COPROC_RESERVE_MEM) {
         mp_raise_ValueError(translate("Program too long"));
     }
 
@@ -111,18 +110,8 @@ void common_hal_espulp_ulp_halt(espulp_ulp_obj_t *self) {
     #ifdef CONFIG_IDF_TARGET_ESP32
     mp_raise_NotImplementedError(NULL);
     #else
-    // To-do idf v5.0: use following functions
-    // ulp_riscv_timer_stop();
-    // ulp_riscv_halt();
-
-    // stop the ulp timer so that it doesn't restart the cpu
-    CLEAR_PERI_REG_MASK(RTC_CNTL_ULP_CP_TIMER_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
-
-    // suspends the ulp operation
-    SET_PERI_REG_MASK(RTC_CNTL_COCPU_CTRL_REG, RTC_CNTL_COCPU_DONE);
-
-    // resets the processor
-    SET_PERI_REG_MASK(RTC_CNTL_COCPU_CTRL_REG, RTC_CNTL_COCPU_SHUT_RESET_EN);
+    ulp_riscv_timer_stop();
+    ulp_riscv_halt();
     #endif
 
     // Release pins we were using.

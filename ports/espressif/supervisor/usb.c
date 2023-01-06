@@ -35,8 +35,8 @@
 #include "hal/usb_hal.h"
 #include "soc/usb_periph.h"
 
-#include "components/driver/include/driver/gpio.h"
-#include "components/driver/include/driver/periph_ctrl.h"
+#include "driver/gpio.h"
+#include "esp_private/periph_ctrl.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 #include "components/esp_rom/include/esp32c3/rom/gpio.h"

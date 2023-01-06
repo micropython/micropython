@@ -86,21 +86,20 @@
 #include "esp_camera.h"
 #endif
 
-#ifndef CONFIG_IDF_TARGET_ESP32
-#include "soc/cache_memory.h"
-#endif
-
 #include "soc/efuse_reg.h"
 #include "soc/rtc_cntl_reg.h"
-
-#include "esp_debug_helpers.h"
+#include "soc/spi_pins.h"
 
 #include "bootloader_flash_config.h"
+
+#include "esp_debug_helpers.h"
 #include "esp_efuse.h"
 #include "esp_ipc.h"
 #include "esp_rom_efuse.h"
+#include "esp_timer.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32
+#include "hal/efuse_hal.h"
 #include "esp32/rom/efuse.h"
 #endif
 
@@ -187,7 +186,7 @@ static void _never_reset_spi_ram_flash(void) {
     if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5) {
         never_reset_pin_number(D2WD_PSRAM_CLK_IO);
         never_reset_pin_number(D2WD_PSRAM_CS_IO);
-    } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4 && esp_efuse_get_chip_ver() >= 3) {
+    } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4 && efuse_hal_get_major_chip_version() >= 3) {
         // This chip is ESP32-PICO-V3 and doesn't have PSRAM.
     } else if ((pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD2) || (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4)) {
         never_reset_pin_number(PICO_PSRAM_CLK_IO);

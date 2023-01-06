@@ -44,7 +44,7 @@
 #include "components/lwip/include/apps/ping/ping_sock.h"
 
 #if CIRCUITPY_MDNS
-#include "components/mdns/include/mdns.h"
+#include "mdns.h"
 #endif
 
 #define MAC_ADDRESS_LENGTH 6

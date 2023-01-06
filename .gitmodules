@@ -143,7 +143,16 @@
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
 	url = https://github.com/adafruit/esp-idf.git
-	branch = release/v4.4-circuitpython
+[submodule "ports/espressif/esp-protocols"]
+	path = ports/espressif/esp-protocols
+	url = https://github.com/espressif/esp-protocols.git
+[submodule "ports/espressif/esp-iot-solution"]
+	path = ports/espressif/esp-iot-solution
+	url = https://github.com/espressif/esp-iot-solution.git
+[submodule "ports/espressif/esp-camera"]
+	path = ports/espressif/esp-camera
+	url = https://github.com/espressif/esp32-camera.git
+	branch = circuitpython
 [submodule "frozen/Adafruit_CircuitPython_ST7789"]
 	path = frozen/Adafruit_CircuitPython_ST7789
 	url = https://github.com/adafruit/Adafruit_CircuitPython_ST7789
@@ -297,10 +306,6 @@
 [submodule "frozen/circuitpython_picoed"]
 	path = frozen/circuitpython_picoed
 	url = https://github.com/elecfreaks/circuitpython_picoed.git
-[submodule "ports/espressif/esp32-camera"]
-	path = ports/espressif/esp32-camera
-	url = https://github.com/adafruit/esp32-camera/
-        branch = circuitpython
 [submodule "ports/raspberrypi/lib/cyw43-driver"]
 	path = ports/raspberrypi/lib/cyw43-driver
 	url = https://github.com/georgerobotics/cyw43-driver.git

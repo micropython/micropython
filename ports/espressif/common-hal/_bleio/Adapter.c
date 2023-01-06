@@ -95,7 +95,6 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     }
 
     if (enabled) {
-        esp_nimble_hci_and_controller_init();
         nimble_port_init();
         // ble_hs_cfg.reset_cb = blecent_on_reset;
         ble_hs_cfg.sync_cb = _on_sync;

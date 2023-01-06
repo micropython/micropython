@@ -44,7 +44,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/neopixel_write/__init__.h"
 #include "supervisor/port.h"
-#include "components/driver/include/driver/rmt.h"
 #include "peripherals/rmt.h"
 
 // Use closer to WS2812-style timings instead of WS2812B, to accommodate more varieties.

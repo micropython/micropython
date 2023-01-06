@@ -29,7 +29,7 @@
 #include "common-hal/alarm/__init__.h"
 #include "supervisor/port.h"
 
-#include "driver/rtc_cntl.h"
+#include "esp_private/rtc_ctrl.h"
 #include "soc/rtc_cntl_reg.h"
 
 #include "esp_sleep.h"
@@ -117,7 +117,9 @@ void espulp_ulpalarm_prepare_for_deep_sleep(void) {
 
     // enable ulp wakeup
     esp_sleep_enable_ulp_wakeup();
+    #if defined(SOC_PM_SUPPORT_RTC_SLOW_MEM_PD) && SOC_PM_SUPPORT_RTC_SLOW_MEM_PD
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
+    #endif
 }
 
 bool espulp_ulpalarm_woke_this_cycle(void) {

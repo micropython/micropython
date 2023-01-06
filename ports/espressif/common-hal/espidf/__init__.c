@@ -35,7 +35,7 @@
 #define TAG "espidf"
 
 #ifdef CONFIG_SPIRAM
-#include "esp32/spiram.h"
+#include "esp_psram.h"
 #include "esp_heap_caps.h"
 #include "esp_heap_caps_init.h"
 #include "soc/soc.h"
@@ -51,7 +51,7 @@ size_t reserved_psram = DEFAULT_RESERVED_PSRAM;
 static size_t psram_size_usable(void) {
     #ifdef CONFIG_SPIRAM
     /* PSRAM chip may be larger than the size we can map into address space */
-    size_t s = MIN(esp_spiram_get_size(), SOC_EXTRAM_DATA_SIZE);
+    size_t s = MIN(esp_psram_get_size(), SOC_EXTRAM_DATA_SIZE);
     return s - esp_himem_reserved_area_size();
     #else
     return 0;
@@ -60,7 +60,7 @@ static size_t psram_size_usable(void) {
 
 bool common_hal_espidf_set_reserved_psram(size_t amount) {
     #ifdef CONFIG_SPIRAM
-    if (!esp_spiram_is_initialized()) {
+    if (!esp_psram_is_initialized()) {
         return false;
     }
     if (!ok_to_reserve_psram) {
@@ -112,7 +112,7 @@ size_t common_hal_espidf_get_total_psram(void) {
 
 intptr_t common_hal_espidf_get_psram_start(void) {
     #ifdef CONFIG_SPIRAM
-    if (esp_spiram_is_initialized()) {
+    if (esp_psram_is_initialized()) {
         #ifdef CONFIG_IDF_TARGET_ESP32
         return SOC_EXTRAM_DATA_LOW;
         #else
@@ -125,7 +125,7 @@ intptr_t common_hal_espidf_get_psram_start(void) {
 
 intptr_t common_hal_espidf_get_psram_end(void) {
     #ifdef CONFIG_SPIRAM
-    if (esp_spiram_is_initialized()) {
+    if (esp_psram_is_initialized()) {
         return common_hal_espidf_get_psram_start() + psram_size_usable();
     }
     #endif

@@ -121,7 +121,7 @@ static void event_handler(void *arg, esp_event_base_t event_base,
             // Cases to handle later.
             // case WIFI_EVENT_STA_AUTHMODE_CHANGE:
             default: {
-                ESP_LOGW(TAG, "event %d 0x%02x", event_id, event_id);
+                ESP_LOGW(TAG, "event %ld 0x%02ld", event_id, event_id);
                 break;
             }
         }
