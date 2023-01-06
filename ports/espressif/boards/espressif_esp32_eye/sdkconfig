@@ -7,8 +7,6 @@
 #
 # ESP32-specific
 #
-CONFIG_ESP32_SPIRAM_SUPPORT=y
-#
 # SPI RAM config
 #
 CONFIG_SPIRAM_TYPE_AUTO=y

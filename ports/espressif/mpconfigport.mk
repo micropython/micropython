@@ -7,6 +7,9 @@ INTERNAL_LIBM = 1
 # Longints can be implemented as mpz, as longlong, or not
 LONGINT_IMPL = MPZ
 
+# Default to no-psram
+CIRCUITPY_ESP_PSRAM_SIZE ?= 0
+
 # Enable more features
 CIRCUITPY_FULL_BUILD ?= 1
 

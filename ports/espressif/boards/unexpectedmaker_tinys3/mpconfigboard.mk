@@ -15,3 +15,5 @@ CIRCUITPY_STAGE = 1
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
+
+CIRCUITPY_ESP_PSRAM_SIZE = 8MB

@@ -1,5 +1,4 @@
 CONFIG_ESP32_ECO3_CACHE_LOCK_FIX=y
-CONFIG_ESP32_SPIRAM_SUPPORT=n
 
 # Uncomment (remove ###) to send ESP_LOG  output to TX/RX pins
 ### #
