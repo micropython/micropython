@@ -120,6 +120,11 @@ STATIC mp_obj_t rp2_flash_readblocks(size_t n_args, const mp_obj_t *args) {
         offset += mp_obj_get_int(args[3]);
     }
     memcpy(bufinfo.buf, (void *)(XIP_BASE + self->flash_base + offset), bufinfo.len);
+    // MICROPY_EVENT_POLL_HOOK_FAST is called here to avoid a fail in registering
+    // USB at boot time, if the board is busy loading files or scanning the file
+    // system. MICROPY_EVENT_POLL_HOOK_FAST calls tud_task(). As the alternative
+    // tud_task() should be called in the USB IRQ. See discussion in PR #10423.
+    MICROPY_EVENT_POLL_HOOK_FAST;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rp2_flash_readblocks_obj, 3, 4, rp2_flash_readblocks);
@@ -134,7 +139,7 @@ STATIC mp_obj_t rp2_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
         mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
         flash_range_erase(self->flash_base + offset, bufinfo.len);
         MICROPY_END_ATOMIC_SECTION(atomic_state);
-        MICROPY_EVENT_POLL_HOOK
+        MICROPY_EVENT_POLL_HOOK_FAST;
         // TODO check return value
     } else {
         offset += mp_obj_get_int(args[3]);
@@ -143,7 +148,7 @@ STATIC mp_obj_t rp2_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     flash_range_program(self->flash_base + offset, bufinfo.buf, bufinfo.len);
     MICROPY_END_ATOMIC_SECTION(atomic_state);
-    MICROPY_EVENT_POLL_HOOK
+    MICROPY_EVENT_POLL_HOOK_FAST;
     // TODO check return value
     return mp_const_none;
 }
