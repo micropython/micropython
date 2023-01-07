@@ -143,27 +143,29 @@ def set_output(name, value):
 
 def get_commit_depth_and_check_suite(query_commits):
     while True:
-      commits = query_commits.fetch()["data"]["repository"]["pullRequest"]["commits"]
+        commits = query_commits.fetch()["data"]["repository"]["pullRequest"]["commits"]
 
-      if commits["totalCount"] > 0:
-          nodes = commits["nodes"]
-          nodes.reverse()
-          if nodes[0]["commit"]["oid"] == os.environ["EXCLUDE_COMMIT"]:
-              nodes.pop(0)
-          for index, commit in enumerate(nodes):
-              commit = commit["commit"]
-              commit_sha = commit["oid"]
-              check_suites = commit["checkSuites"]
-              if check_suites["totalCount"] > 0:
-                  for check_suite in check_suites["nodes"]:
-                      if check_suite["workflowRun"]["workflow"]["name"] == "Build CI":
-                          return [
-                              {"sha": commit_sha, "depth": index + 1},
-                              check_suite["id"] if check_suite["conclusion"] != "SUCCESS" else None,
-                          ]
-          else:
-              if not query_commits.paginate(commits["pageInfo"], "beforeCommit"):
-                  break
+        if commits["totalCount"] > 0:
+            nodes = commits["nodes"]
+            nodes.reverse()
+            if nodes[0]["commit"]["oid"] == os.environ["EXCLUDE_COMMIT"]:
+                nodes.pop(0)
+            for index, commit in enumerate(nodes):
+                commit = commit["commit"]
+                commit_sha = commit["oid"]
+                check_suites = commit["checkSuites"]
+                if check_suites["totalCount"] > 0:
+                    for check_suite in check_suites["nodes"]:
+                        if check_suite["workflowRun"]["workflow"]["name"] == "Build CI":
+                            return [
+                                {"sha": commit_sha, "depth": index + 1},
+                                check_suite["id"]
+                                if check_suite["conclusion"] != "SUCCESS"
+                                else None,
+                            ]
+            else:
+                if not query_commits.paginate(commits["pageInfo"], "beforeCommit"):
+                    break
 
     return [None, None]
 
@@ -197,7 +199,9 @@ def get_bad_check_runs(query_check_runs):
 
             append_runs_to_list(check_runs[run_type], bad_runs_by_matrix)
 
-            if query_check_runs.paginate(check_runs[run_type]["pageInfo"], "after" + run_type_camel):
+            if query_check_runs.paginate(
+                check_runs[run_type]["pageInfo"], "after" + run_type_camel
+            ):
                 query_check_runs.variables["include" + run_type_camel] = True
                 more_pages = True
 
