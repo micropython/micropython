@@ -39,7 +39,7 @@ query ($owner: String!, $name: String!, $pullNumber: Int!, $commitsPerPage: Int!
 }
 """
 
-QUERY_CHECKRUNS = """
+QUERY_CHECK_RUNS = """
 query ($checkSuiteID: ID!,
        $afterFailedRun: String, $afterIncompleteRun: String,
        $includeFailedRuns: Boolean!, $includeIncompleteRuns: Boolean!) {
@@ -92,7 +92,7 @@ query_variables_commits = {
 }
 
 
-query_variables_checkruns = {
+query_variables_check_runs = {
     "checkSuiteID": "",
     "afterFailedRun": None,
     "afterIncompleteRun": None,
@@ -141,7 +141,7 @@ def set_output(name, value):
         print(f"Would set GitHub actions output {name} to '{value}'")
 
 
-def get_commit_and_checksuite(query_commits):
+def get_commit_and_check_suite(query_commits):
     commits = query_commits.fetch()["data"]["repository"]["pullRequest"]["commits"]
 
     if commits["totalCount"] > 0:
@@ -150,17 +150,17 @@ def get_commit_and_checksuite(query_commits):
             commit_sha = commit["oid"]
             if commit_sha == os.environ["EXCLUDE_COMMIT"]:
                 continue
-            checksuites = commit["checkSuites"]
-            if checksuites["totalCount"] > 0:
-                for checksuite in checksuites["nodes"]:
-                    if checksuite["workflowRun"]["workflow"]["name"] == "Build CI":
+            check_suites = commit["checkSuites"]
+            if check_suites["totalCount"] > 0:
+                for check_suite in check_suites["nodes"]:
+                    if check_suite["workflowRun"]["workflow"]["name"] == "Build CI":
                         return [
                             commit_sha,
-                            checksuite["id"] if checksuite["conclusion"] != "SUCCESS" else None,
+                            check_suite["id"] if check_suite["conclusion"] != "SUCCESS" else None,
                         ]
         else:
             if query_commits.paginate(commits["pageInfo"], "beforeCommit"):
-                return get_commit_and_checksuite(query_commits)
+                return get_commit_and_check_suite(query_commits)
 
     return [None, None]
 
@@ -180,11 +180,11 @@ def append_runs_to_list(runs, bad_runs_by_matrix):
                 bad_runs_by_matrix[matrix].append(res_board.group()[1:-1])
 
 
-def get_bad_checkruns(query_checkruns):
+def get_bad_check_runs(query_check_runs):
     more_pages = True
     bad_runs_by_matrix = {}
     while more_pages:
-        checkruns = query_checkruns.fetch()["data"]["node"]
+        check_runs = query_check_runs.fetch()["data"]["node"]
         run_types = ["failed", "incomplete"]
         more_pages = False
 
@@ -192,10 +192,10 @@ def get_bad_checkruns(query_checkruns):
             run_type_camel = run_type.capitalize() + "Run"
             run_type = run_type + "Runs"
 
-            append_runs_to_list(checkruns[run_type], bad_runs_by_matrix)
+            append_runs_to_list(check_runs[run_type], bad_runs_by_matrix)
 
-            if query_checkruns.paginate(checkruns[run_type]["pageInfo"], "after" + run_type_camel):
-                query_checkruns.variables["include" + run_type_camel] = True
+            if query_check_runs.paginate(check_runs[run_type]["pageInfo"], "after" + run_type_camel):
+                query_check_runs.variables["include" + run_type_camel] = True
                 more_pages = True
 
     return bad_runs_by_matrix
@@ -207,26 +207,26 @@ def main():
         "/"
     )
 
-    commit, checksuite = get_commit_and_checksuite(query_commits)
+    commit, check_suite = get_commit_and_check_suite(query_commits)
 
-    if checksuite is None:
+    if check_suite is None:
         if commit is None:
-            print("No checkSuites found -> Abort")
+            print("Abort: No check suite found")
         else:
             set_output("commit", commit)
         quit()
 
-    query_checkruns = Query(QUERY_CHECKRUNS, query_variables_checkruns, headers)
-    query_checkruns.variables["checkSuiteID"] = checksuite
+    query_check_runs = Query(QUERY_CHECK_RUNS, query_variables_check_runs, headers)
+    query_check_runs.variables["checkSuiteID"] = check_suite
 
-    checkruns = get_bad_checkruns(query_checkruns)
+    check_runs = get_bad_check_runs(query_check_runs)
 
-    if len(checkruns) == 0:
-        print("No checkRuns found -> Abort")
+    if len(check_runs) == 0:
+        print("Abort: No check runs found")
         quit()
 
     set_output("commit", commit)
-    set_output("checkruns", json.dumps(checkruns))
+    set_output("check_runs", json.dumps(check_runs))
 
 
 if __name__ == "__main__":
