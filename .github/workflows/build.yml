@@ -153,6 +153,8 @@ jobs:
       id: set-matrix
       working-directory: tools
       env:
+        BASE_SHA: ${{ steps.deepen-and-convert-depth-to-sha.outputs.commit }}
+        HEAD_SHA: ${{ github.event.after }}
         CHANGED_FILES: ${{ steps.get-changes.outputs.changed_files }}
         LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
       run: python3 -u ci_set_matrix.py

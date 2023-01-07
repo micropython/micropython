@@ -26,6 +26,7 @@ import os
 import sys
 import json
 import pathlib
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
 tools_dir = pathlib.Path(__file__).resolve().parent
@@ -238,6 +239,15 @@ def set_docs_to_build(build_all):
             r"^(?:.github/workflows/|docs|extmod/ulab|(?:(?:ports/\w+/bindings|shared-bindings)\S+\.c|conf\.py|tools/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
         )
         for p in changed_files:
+            if (
+                p.endswith(".c")
+                and not subprocess.run(
+                    f"git diff -U0 {os.environ.get('BASE_SHA')}...{os.environ.get('HEAD_SHA')} {p} | grep -o -m 1 '^[+-]\/\/|'",
+                    capture_output=True,
+                    shell=True,
+                ).stdout
+            ):
+                continue
             if doc_pattern.search(p):
                 doc_match = True
                 break
