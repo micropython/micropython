@@ -135,27 +135,23 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         EXCLUDE_COMMIT: ${{ github.event.after }}
       run: python3 -u ci_changes_per_commit.py
-    - name: Deepen and convert depth to sha
-      id: deepen-and-convert-depth-to-sha
+    - name: Set base sha
       run: |
         DEEPEN=$((DEPTH - $(git rev-list HEAD --count))) && if((DEEPEN > 0)); then git fetch --no-tags --recurse-submodules=no --deepen=$DEEPEN; fi
-        echo "commit=$(git rev-list $GITHUB_SHA --skip=$((DEPTH + 1)) --max-count=1)" >> $GITHUB_OUTPUT
+        echo "BASE_SHA=$(git rev-list $GITHUB_SHA --skip=$((DEPTH + 1)) --max-count=1)" >> $GITHUB_ENV
       env:
         DEPTH: ${{ steps.get-last-commit-with-checks.outputs.commit_depth || github.event.pull_request.commits }}
+    - name: Set head sha
+      run: echo "HEAD_SHA=$(git rev-list $GITHUB_SHA --skip=1 --max-count=1)" >> $GITHUB_ENV
     - name: Get changes
       id: get-changes
       if: github.event_name == 'pull_request'
       run: echo $(git diff $BASE_SHA...$HEAD_SHA --name-only) | echo "changed_files=[\"$(sed "s/ /\", \"/g")\"]" >> $GITHUB_OUTPUT
-      env:
-        BASE_SHA: ${{ steps.deepen-and-convert-depth-to-sha.outputs.commit }}
-        HEAD_SHA: ${{ github.event.after }}
     - name: Set matrix
       id: set-matrix
       working-directory: tools
       run: python3 -u ci_set_matrix.py
       env:
-        BASE_SHA: ${{ steps.deepen-and-convert-depth-to-sha.outputs.commit }}
-        HEAD_SHA: ${{ github.event.after }}
         CHANGED_FILES: ${{ steps.get-changes.outputs.changed_files }}
         LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
 
