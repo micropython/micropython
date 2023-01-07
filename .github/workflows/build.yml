@@ -136,12 +136,14 @@ jobs:
         EXCLUDE_COMMIT: ${{ github.event.after }}
       run: python3 -u ci_changes_per_commit.py
     - name: Set base sha
+      if: github.event_name == 'pull_request'
       run: |
         DEEPEN=$((DEPTH - $(git rev-list HEAD --count))) && if((DEEPEN > 0)); then git fetch --no-tags --recurse-submodules=no --deepen=$DEEPEN; fi
         echo "BASE_SHA=$(git rev-list $GITHUB_SHA --skip=$((DEPTH + 1)) --max-count=1)" >> $GITHUB_ENV
       env:
         DEPTH: ${{ steps.get-last-commit-with-checks.outputs.commit_depth || github.event.pull_request.commits }}
     - name: Set head sha
+      if: github.event_name == 'pull_request'
       run: echo "HEAD_SHA=$(git rev-list $GITHUB_SHA --skip=1 --max-count=1)" >> $GITHUB_ENV
     - name: Get changes
       id: get-changes
