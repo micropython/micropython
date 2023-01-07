@@ -152,12 +152,12 @@ jobs:
     - name: Set matrix
       id: set-matrix
       working-directory: tools
+      run: python3 -u ci_set_matrix.py
       env:
         BASE_SHA: ${{ steps.deepen-and-convert-depth-to-sha.outputs.commit }}
         HEAD_SHA: ${{ github.event.after }}
         CHANGED_FILES: ${{ steps.get-changes.outputs.changed_files }}
         LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
-      run: python3 -u ci_set_matrix.py
 
 
   mpy-cross-mac:
@@ -420,14 +420,15 @@ jobs:
         path: ${{ github.workspace }}/.idf_tools
         key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/espressif/esp-idf/HEAD') }}-${{ steps.py3.outputs.python-path }}-20220404
     - name: Clone IDF submodules
-      run: |
-        (cd $IDF_PATH && git submodule update --init)
+      run: git submodule update --init $IDF_PATH
       env:
         IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
     - name: Install IDF tools
       run: |
+        echo "Installing ESP-IDF tools"
         $IDF_PATH/tools/idf_tools.py --non-interactive install required
         $IDF_PATH/tools/idf_tools.py --non-interactive install cmake
+        echo "Installing Python environment and packages"
         $IDF_PATH/tools/idf_tools.py --non-interactive install-python-env
         rm -rf $IDF_TOOLS_PATH/dist
       env:
@@ -445,7 +446,6 @@ jobs:
       run: |
         source $IDF_PATH/export.sh
         gcc --version
-        xtensa-esp32s2-elf-gcc --version
         python3 --version
         ninja --version
         cmake --version
@@ -478,6 +478,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
 
   build-aarch:
     runs-on: ubuntu-20.04
