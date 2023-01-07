@@ -27,9 +27,9 @@ jobs:
       boards-aarch: ${{ steps.set-matrix.outputs.boards-aarch }}
     steps:
     - name: Dump GitHub context
+      run: echo "$GITHUB_CONTEXT"
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
     - uses: actions/checkout@v3
       with:
         submodules: false
@@ -135,20 +135,26 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         EXCLUDE_COMMIT: ${{ github.event.after }}
       run: python3 -u ci_changes_per_commit.py
+    - name: Deepen and convert depth to sha
+      id: deepen-and-convert-depth-to-sha
+      run: |
+        DEEPEN=$((DEPTH - $(git rev-list HEAD --count))) && if((DEEPEN > 0)); then git fetch --no-tags --recurse-submodules=no --deepen=$DEEPEN; fi
+        echo "commit=$(git rev-list $GITHUB_SHA --skip=$((DEPTH + 1)) --max-count=1)" >> $GITHUB_OUTPUT
+      env:
+        DEPTH: ${{ steps.get-last-commit-with-checks.outputs.commit_depth || github.event.pull_request.commits }}
     - name: Get changes
       id: get-changes
       if: github.event_name == 'pull_request'
-      uses: tj-actions/changed-files@v34
-      with:
-        json: true
-        sha: ${{ steps.get-last-commit-with-checks.outputs.commit && github.event.after }}
-        base_sha: ${{ steps.get-last-commit-with-checks.outputs.commit }}
+      run: echo $(git diff $BASE_SHA...$HEAD_SHA --name-only) | echo "changed_files=[\"$(sed "s/ /\", \"/g")\"]" >> $GITHUB_OUTPUT
+      env:
+        BASE_SHA: ${{ steps.deepen-and-convert-depth-to-sha.outputs.commit }}
+        HEAD_SHA: ${{ github.event.after }}
     - name: Set matrix
       id: set-matrix
       working-directory: tools
       env:
-        CHANGED_FILES: ${{ steps.get-changes.outputs.all_changed_and_modified_files }}
-        LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.checkruns }}
+        CHANGED_FILES: ${{ steps.get-changes.outputs.changed_files }}
+        LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
       run: python3 -u ci_set_matrix.py
 
 

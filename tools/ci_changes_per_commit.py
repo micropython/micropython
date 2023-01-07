@@ -18,7 +18,7 @@ query ($owner: String!, $name: String!, $pullNumber: Int!, $commitsPerPage: Int!
         }
         nodes {
           commit {
-            checkSuites(first: 3) {
+            checkSuites(first: 100) {
               nodes {
                 conclusion
                 workflowRun {
@@ -141,26 +141,29 @@ def set_output(name, value):
         print(f"Would set GitHub actions output {name} to '{value}'")
 
 
-def get_commit_and_check_suite(query_commits):
-    commits = query_commits.fetch()["data"]["repository"]["pullRequest"]["commits"]
+def get_commit_depth_and_check_suite(query_commits):
+    while True:
+      commits = query_commits.fetch()["data"]["repository"]["pullRequest"]["commits"]
 
-    if commits["totalCount"] > 0:
-        for commit in reversed(commits["nodes"]):
-            commit = commit["commit"]
-            commit_sha = commit["oid"]
-            if commit_sha == os.environ["EXCLUDE_COMMIT"]:
-                continue
-            check_suites = commit["checkSuites"]
-            if check_suites["totalCount"] > 0:
-                for check_suite in check_suites["nodes"]:
-                    if check_suite["workflowRun"]["workflow"]["name"] == "Build CI":
-                        return [
-                            commit_sha,
-                            check_suite["id"] if check_suite["conclusion"] != "SUCCESS" else None,
-                        ]
-        else:
-            if query_commits.paginate(commits["pageInfo"], "beforeCommit"):
-                return get_commit_and_check_suite(query_commits)
+      if commits["totalCount"] > 0:
+          nodes = commits["nodes"]
+          nodes.reverse()
+          if nodes[0]["commit"]["oid"] == os.environ["EXCLUDE_COMMIT"]:
+              nodes.pop(0)
+          for index, commit in enumerate(nodes):
+              commit = commit["commit"]
+              commit_sha = commit["oid"]
+              check_suites = commit["checkSuites"]
+              if check_suites["totalCount"] > 0:
+                  for check_suite in check_suites["nodes"]:
+                      if check_suite["workflowRun"]["workflow"]["name"] == "Build CI":
+                          return [
+                              {"sha": commit_sha, "depth": index + 1},
+                              check_suite["id"] if check_suite["conclusion"] != "SUCCESS" else None,
+                          ]
+          else:
+              if not query_commits.paginate(commits["pageInfo"], "beforeCommit"):
+                  break
 
     return [None, None]
 
@@ -201,19 +204,24 @@ def get_bad_check_runs(query_check_runs):
     return bad_runs_by_matrix
 
 
+def set_commit(commit):
+    set_output("commit_sha", commit["sha"])
+    set_output("commit_depth", commit["depth"])
+
+
 def main():
     query_commits = Query(QUERY_COMMITS, query_variables_commits, headers)
     query_commits.variables["owner"], query_commits.variables["name"] = os.environ["REPO"].split(
         "/"
     )
 
-    commit, check_suite = get_commit_and_check_suite(query_commits)
+    commit, check_suite = get_commit_depth_and_check_suite(query_commits)
 
     if check_suite is None:
         if commit is None:
             print("Abort: No check suite found")
         else:
-            set_output("commit", commit)
+            set_commit(commit)
         quit()
 
     query_check_runs = Query(QUERY_CHECK_RUNS, query_variables_check_runs, headers)
@@ -225,7 +233,7 @@ def main():
         print("Abort: No check runs found")
         quit()
 
-    set_output("commit", commit)
+    set_commit(commit)
     set_output("check_runs", json.dumps(check_runs))
 
 
