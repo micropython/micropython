@@ -238,11 +238,13 @@ def set_docs_to_build(build_all):
         doc_pattern = re.compile(
             r"^(?:.github/workflows/|docs|extmod/ulab|(?:(?:ports/\w+/bindings|shared-bindings)\S+\.c|conf\.py|tools/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
         )
+        github_workspace = os.environ.get("GITHUB_WORKSPACE") or ""
+        github_workspace = github_workspace and github_workspace + "/"
         for p in changed_files:
             if (
                 p.endswith(".c")
                 and not subprocess.run(
-                    f"git diff -U0 {os.environ.get('BASE_SHA')}...{os.environ.get('HEAD_SHA')} {p} | grep -o -m 1 '^[+-]\/\/|'",
+                    f"git diff -U0 $BASE_SHA...$HEAD_SHA {github_workspace + p} | grep -o -m 1 '^[+-]\/\/|'",
                     capture_output=True,
                     shell=True,
                 ).stdout
