@@ -28,10 +28,12 @@
 #include <string.h>
 
 #include "py/mphal.h"
+#include "py/runtime.h"
 #include "common-hal/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
+#include "pico/stdlib.h"
 #include "src/rp2_common/hardware_adc/include/hardware/adc.h"
 #include "src/rp2_common/hardware_clocks/include/hardware/clocks.h"
 
@@ -56,6 +58,16 @@ float common_hal_mcu_processor_get_voltage(void) {
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
+    return clock_get_hz(clk_sys);
+}
+
+uint32_t common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self,
+    uint32_t frequency) {
+    uint32_t freq = frequency / 1000;
+
+    if (!set_sys_clock_khz(freq, false)) {
+        mp_raise_ValueError(translate("Invalid frequency supplied"));
+    }
     return clock_get_hz(clk_sys);
 }
 

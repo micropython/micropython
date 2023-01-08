@@ -229,6 +229,7 @@ SRC_SDK := \
 	src/rp2_common/pico_printf/printf.c \
 	src/rp2_common/pico_runtime/runtime.c \
 	src/rp2_common/pico_stdio/stdio.c \
+	src/rp2_common/pico_stdlib/stdlib.c \
 	src/rp2_common/pico_unique_id/unique_id.c \
 	$(SRC_SDK_CYW43) \
 

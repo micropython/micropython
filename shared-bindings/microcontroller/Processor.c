@@ -67,7 +67,7 @@
 //|     frequency: int
 //|     """The CPU operating frequency in Hertz.
 //|
-//|     **Limitations:** Setting the ``frequency`` is possible only on some i.MX boards.
+//|     **Limitations:** Setting the ``frequency`` is possible on RP2040 boards and some i.MX boards.
 //|     On most boards, ``frequency`` is read-only.
 //|     """
 
