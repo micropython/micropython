@@ -111,13 +111,11 @@ class Query:
         self.headers = headers
 
     def paginate(self, page_info, name):
-        has_page = (
-            page_info["hasNextPage"] if name.startswith("after") else page_info["hasPreviousPage"]
-        )
+        has_page = page_info["hasNextPage" if name.startswith("after") else "hasPreviousPage"]
         if has_page:
-            self.variables[name] = (
-                page_info["endCursor"] if name.startswith("after") else page_info["startCursor"]
-            )
+            self.variables[name] = page_info[
+                "endCursor" if name.startswith("after") else "startCursor"
+            ]
         return has_page
 
     def fetch(self):
@@ -142,15 +140,16 @@ def set_output(name, value):
 
 
 def get_commit_depth_and_check_suite(query_commits):
+    commit_depth = 0
     while True:
         commits = query_commits.fetch()["data"]["repository"]["pullRequest"]["commits"]
-
         if commits["totalCount"] > 0:
             nodes = commits["nodes"]
             nodes.reverse()
             if nodes[0]["commit"]["oid"] == os.environ["EXCLUDE_COMMIT"]:
                 nodes.pop(0)
-            for index, commit in enumerate(nodes):
+            for commit in nodes:
+                commit_depth += 1
                 commit = commit["commit"]
                 commit_sha = commit["oid"]
                 check_suites = commit["checkSuites"]
@@ -158,16 +157,13 @@ def get_commit_depth_and_check_suite(query_commits):
                     for check_suite in check_suites["nodes"]:
                         if check_suite["workflowRun"]["workflow"]["name"] == "Build CI":
                             return [
-                                {"sha": commit_sha, "depth": index + 1},
+                                {"sha": commit_sha, "depth": commit_depth},
                                 check_suite["id"]
                                 if check_suite["conclusion"] != "SUCCESS"
                                 else None,
                             ]
-            else:
-                if not query_commits.paginate(commits["pageInfo"], "beforeCommit"):
-                    break
-
-    return [None, None]
+        if not query_commits.paginate(commits["pageInfo"], "beforeCommit"):
+            return [None, None]
 
 
 def append_runs_to_list(runs, bad_runs_by_matrix):
@@ -188,9 +184,10 @@ def append_runs_to_list(runs, bad_runs_by_matrix):
 def get_bad_check_runs(query_check_runs):
     more_pages = True
     bad_runs_by_matrix = {}
+    run_types = ["failed", "incomplete"]
+
     while more_pages:
         check_runs = query_check_runs.fetch()["data"]["node"]
-        run_types = ["failed", "incomplete"]
         more_pages = False
 
         for run_type in run_types:
@@ -221,11 +218,11 @@ def main():
 
     commit, check_suite = get_commit_depth_and_check_suite(query_commits)
 
-    if check_suite is None:
-        if commit is None:
-            print("Abort: No check suite found")
-        else:
+    if not check_suite:
+        if commit:
             set_commit(commit)
+        else:
+            print("Abort: No check suite found")
         quit()
 
     query_check_runs = Query(QUERY_CHECK_RUNS, query_variables_check_runs, headers)
@@ -233,7 +230,7 @@ def main():
 
     check_runs = get_bad_check_runs(query_check_runs)
 
-    if len(check_runs) == 0:
+    if not check_runs:
         print("Abort: No check runs found")
         quit()
 
