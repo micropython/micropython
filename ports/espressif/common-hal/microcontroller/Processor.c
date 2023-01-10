@@ -139,6 +139,7 @@ mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
                 case ESP_SLEEP_WAKEUP_EXT0:
                 case ESP_SLEEP_WAKEUP_EXT1:
                 case ESP_SLEEP_WAKEUP_TOUCHPAD:
+                case ESP_SLEEP_WAKEUP_ULP:
                     return RESET_REASON_DEEP_SLEEP_ALARM;
 
                 case ESP_SLEEP_WAKEUP_UNDEFINED:

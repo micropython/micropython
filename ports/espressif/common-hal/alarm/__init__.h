@@ -27,13 +27,18 @@
 #pragma once
 
 #include "common-hal/alarm/SleepMemory.h"
-#include "common-hal/alarm/coproc/CoprocAlarm.h"
 #include "common-hal/alarm/pin/PinAlarm.h"
 #include "common-hal/alarm/time/TimeAlarm.h"
 #include "common-hal/alarm/touch/TouchAlarm.h"
 
+#if CIRCUITPY_ESPULP
+#include "common-hal/espulp/ULPAlarm.h"
+#endif
+
 typedef union {
-    alarm_coproc_coprocalarm_obj_t coproc_alarm;
+    #if CIRCUITPY_ESPULP
+    espulp_ulpalarm_obj_t ulp_alarm;
+    #endif
     alarm_pin_pinalarm_obj_t pin_alarm;
     alarm_time_timealarm_obj_t time_alarm;
     alarm_touch_touchalarm_obj_t touch_alarm;

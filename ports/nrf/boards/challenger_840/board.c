@@ -23,7 +23,3 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#include "supervisor/board.h"
-
-// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

@@ -139,13 +139,19 @@ MP_PROPERTY_GETSET(wifi_radio_hostname_obj,
 
 //|     mac_address: ReadableBuffer
 //|     """MAC address for the station. When the address is altered after interface is connected
-//|        the changes would only be reflected once the interface reconnects."""
-STATIC mp_obj_t wifi_radio_get_mac_address(mp_obj_t self_in) {
+//|        the changes would only be reflected once the interface reconnects.
+//|
+//|     **Limitations:** Not settable on RP2040 CYW43 boards, such as Pi Pico W.
+//|     """
+
+
+STATIC mp_obj_t _wifi_radio_get_mac_address(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(common_hal_wifi_radio_get_mac_address(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_obj, wifi_radio_get_mac_address);
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_obj, _wifi_radio_get_mac_address);
 
+#if CIRCUITPY_WIFI_RADIO_SETTABLE_MAC_ADDRESS
 STATIC mp_obj_t wifi_radio_set_mac_address(mp_obj_t self_in, mp_obj_t mac_address_in) {
     mp_buffer_info_t mac_address;
     mp_get_buffer_raise(mac_address_in, &mac_address, MP_BUFFER_READ);
@@ -160,10 +166,16 @@ STATIC mp_obj_t wifi_radio_set_mac_address(mp_obj_t self_in, mp_obj_t mac_addres
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_mac_address_obj, wifi_radio_set_mac_address);
+#endif
 
+#if CIRCUITPY_WIFI_RADIO_SETTABLE_MAC_ADDRESS
 MP_PROPERTY_GETSET(wifi_radio_mac_address_obj,
     (mp_obj_t)&wifi_radio_get_mac_address_obj,
     (mp_obj_t)&wifi_radio_set_mac_address_obj);
+#else
+MP_PROPERTY_GETTER(wifi_radio_mac_address_obj,
+    (mp_obj_t)&wifi_radio_get_mac_address_obj);
+#endif
 
 //|     tx_power: float
 //|     """Wifi transmission power, in dBm."""
@@ -187,13 +199,17 @@ MP_PROPERTY_GETSET(wifi_radio_tx_power_obj,
 
 //|     mac_address_ap: ReadableBuffer
 //|     """MAC address for the AP. When the address is altered after interface is started
-//|        the changes would only be reflected once the interface restarts."""
+//|        the changes would only be reflected once the interface restarts.
+//|
+//|     **Limitations:** Not settable on RP2040 CYW43 boards, such as Pi Pico W.
+//|     """
 STATIC mp_obj_t wifi_radio_get_mac_address_ap(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(common_hal_wifi_radio_get_mac_address_ap(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_ap_obj, wifi_radio_get_mac_address_ap);
 
+#if CIRCUITPY_WIFI_RADIO_SETTABLE_MAC_ADDRESS
 STATIC mp_obj_t wifi_radio_set_mac_address_ap(mp_obj_t self_in, mp_obj_t mac_address_in) {
     mp_buffer_info_t mac_address;
     mp_get_buffer_raise(mac_address_in, &mac_address, MP_BUFFER_READ);
@@ -208,10 +224,16 @@ STATIC mp_obj_t wifi_radio_set_mac_address_ap(mp_obj_t self_in, mp_obj_t mac_add
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_mac_address_ap_obj, wifi_radio_set_mac_address_ap);
+#endif
 
+#if CIRCUITPY_WIFI_RADIO_SETTABLE_MAC_ADDRESS
 MP_PROPERTY_GETSET(wifi_radio_mac_address_ap_obj,
     (mp_obj_t)&wifi_radio_get_mac_address_ap_obj,
     (mp_obj_t)&wifi_radio_set_mac_address_ap_obj);
+#else
+MP_PROPERTY_GETTER(wifi_radio_mac_address_ap_obj,
+    (mp_obj_t)&wifi_radio_get_mac_address_ap_obj);
+#endif
 
 //|     def start_scanning_networks(
 //|         self, *, start_channel: int = 1, stop_channel: int = 11
@@ -282,10 +304,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|     def start_ap(
 //|         self,
 //|         ssid: Union[str | ReadableBuffer],
-//|         password: Union[str | ReadableBuffer] = "",
+//|         password: Union[str | ReadableBuffer] = b"",
 //|         *,
-//|         channel: Optional[int] = 1,
-//|         authmode: Optional[AuthMode],
+//|         channel: int = 1,
+//|         authmode: Optional[AuthMode] = None,
 //|         max_connections: Optional[int] = 4
 //|     ) -> None:
 //|         """Starts an Access Point with the specified ssid and password.
@@ -293,10 +315,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|         If ``channel`` is given, the access point will use that channel unless
 //|         a station is already operating on a different channel.
 //|
-//|         If ``authmode`` is given, the access point will use that Authentication
-//|         mode. If a password is given, ``authmode`` must not be ``OPEN``.
-//|         If ``authmode`` isn't given, ``OPEN`` will be used when password isn't provided,
-//|         otherwise ``WPA_WPA2_PSK``.
+//|         If ``authmode`` is not None, the access point will use that Authentication
+//|         mode. If a non-empty password is given, ``authmode`` must not be ``OPEN``.
+//|         If ``authmode`` is not given or is None,
+//|         ``OPEN`` will be used when the password is the empty string,
+//|         otherwise ``authmode`` will be ``WPA_WPA2_PSK``.
 //|
 //|         If ``max_connections`` is given, the access point will allow up to
 //|         that number of stations to connect."""
@@ -305,9 +328,9 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
     enum { ARG_ssid, ARG_password, ARG_channel, ARG_authmode, ARG_max_connections };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = mp_const_empty_bytes} },
         { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none } },
         { MP_QSTR_max_connections, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 4} },
     };
 
@@ -315,12 +338,13 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    uint8_t authmode = 0;
-    if (args[ARG_authmode].u_obj != MP_OBJ_NULL) {
+    // 0 indicates mode wasn't given.
+    uint32_t authmodes = 0;
+    if (args[ARG_authmode].u_obj != mp_const_none) {
         mp_obj_iter_buf_t iter_buf;
         mp_obj_t item, iterable = mp_getiter(args[ARG_authmode].u_obj, &iter_buf);
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            authmode |= (1 << (wifi_authmode_t)cp_enum_value(&wifi_authmode_type, item));
+            authmodes |= cp_enum_value(&wifi_authmode_type, item);
         }
     }
 
@@ -329,20 +353,24 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_validate_length_range(ssid.len, 1, 32, MP_QSTR_ssid);
 
     mp_buffer_info_t password;
-    password.len = 0;
-    if (args[ARG_password].u_obj != MP_OBJ_NULL) {
-        if (authmode == 1) {
-            mp_raise_ValueError(translate("AuthMode.OPEN is not used with password"));
-        } else if (authmode == 0) {
-            authmode = (1 << AUTHMODE_WPA) | (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK);
+    mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
+    if (authmodes == 0) {
+        if (password.len == 0) {
+            authmodes = AUTHMODE_OPEN;
+        } else {
+            authmodes = AUTHMODE_WPA | AUTHMODE_WPA2 | AUTHMODE_PSK;
         }
-        mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
-        mp_arg_validate_length_range(password.len, 8, 63, MP_QSTR_password);
-    } else {
-        authmode = 1;
     }
 
-    common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, authmode, args[ARG_max_connections].u_int);
+    if (authmodes == AUTHMODE_OPEN && password.len > 0) {
+        mp_raise_ValueError(translate("AuthMode.OPEN is not used with password"));
+    }
+
+    if (authmodes != AUTHMODE_OPEN) {
+        mp_arg_validate_length_range(password.len, 8, 63, MP_QSTR_password);
+    }
+
+    common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, authmodes, args[ARG_max_connections].u_int);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_ap_obj, 1, wifi_radio_start_ap);
@@ -359,10 +387,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_ap_obj, wifi_radio_stop_ap);
 //|     def connect(
 //|         self,
 //|         ssid: Union[str | ReadableBuffer],
-//|         password: Union[str | ReadableBuffer] = "",
+//|         password: Union[str | ReadableBuffer] = b"",
 //|         *,
-//|         channel: Optional[int] = 0,
-//|         bssid: Optional[Union[str | ReadableBuffer]] = "",
+//|         channel: int = 0,
+//|         bssid: Optional[Union[str | ReadableBuffer]] = None,
 //|         timeout: Optional[float] = None
 //|     ) -> None:
 //|         """Connects to the given ssid and waits for an ip address. Reconnections are handled
@@ -371,20 +399,20 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_ap_obj, wifi_radio_stop_ap);
 //|         By default, this will scan all channels and connect to the access point (AP) with the
 //|         given ``ssid`` and greatest signal strength (rssi).
 //|
-//|         If ``channel`` is given, the scan will begin with the given channel and connect to
+//|         If ``channel`` is non-zero, the scan will begin with the given channel and connect to
 //|         the first AP with the given ``ssid``. This can speed up the connection time
 //|         significantly because a full scan doesn't occur.
 //|
-//|         If ``bssid`` is given, the scan will start at the first channel or the one given and
+//|         If ``bssid`` is given and not None, the scan will start at the first channel or the one given and
 //|         connect to the AP with the given ``bssid`` and ``ssid``."""
 //|         ...
 STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_password, ARG_channel, ARG_bssid, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = mp_const_empty_bytes} },
         { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
@@ -404,9 +432,11 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     mp_buffer_info_t password;
     password.len = 0;
-    if (args[ARG_password].u_obj != MP_OBJ_NULL) {
+    if (args[ARG_password].u_obj != mp_const_none) {
         mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
-        mp_arg_validate_length_range(password.len, 8, 63, MP_QSTR_password);
+        if (password.len != 0) {
+            mp_arg_validate_length_range(password.len, 8, 63, MP_QSTR_password);
+        }
     }
 
     #define MAC_ADDRESS_LENGTH 6
@@ -414,7 +444,7 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
     mp_buffer_info_t bssid;
     bssid.len = 0;
     // Should probably make sure bssid is just bytes and not something else too
-    if (args[ARG_bssid].u_obj != MP_OBJ_NULL) {
+    if (args[ARG_bssid].u_obj != mp_const_none) {
         mp_get_buffer_raise(args[ARG_bssid].u_obj, &bssid, MP_BUFFER_READ);
         if (bssid.len != MAC_ADDRESS_LENGTH) {
             mp_raise_ValueError(translate("Invalid BSSID"));

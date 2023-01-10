@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SOCKETPOOL_SOCKET_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SOCKETPOOL_SOCKET_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -33,6 +32,8 @@
 #include "common-hal/ssl/SSLContext.h"
 
 #include "components/esp-tls/esp_tls.h"
+
+typedef struct ssl_sslsocket_obj ssl_sslsocket_obj_t;
 
 typedef struct {
     mp_obj_base_t base;
@@ -42,9 +43,8 @@ typedef struct {
     int ipproto;
     bool connected;
     socketpool_socketpool_obj_t *pool;
+    ssl_sslsocket_obj_t *ssl_socket;
     mp_uint_t timeout_ms;
 } socketpool_socket_obj_t;
 
 void socket_user_reset(void);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SOCKETPOOL_SOCKET_H

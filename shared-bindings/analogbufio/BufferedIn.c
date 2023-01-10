@@ -47,10 +47,10 @@
 //|         import array
 //|
 //|         length = 1000
-//|         mybuffer = array.array("H", 0x0000 for i in range(length))
+//|         mybuffer = array.array("H", [0x0000] * length)
 //|         rate = 500000
-//|         adcbuf = analogbufio.BufferedIn(board.GP26, mybuffer, rate)
-//|         adcbuf.read()
+//|         adcbuf = analogbufio.BufferedIn(board.GP26, sample_rate=rate)
+//|         adcbuf.readinto(mybuffer)
 //|         adcbuf.deinit()
 //|         for i in range(length):
 //|             print(i, mybuffer[i])
@@ -60,26 +60,17 @@
 //|         (TODO) Provide mechanism to read CPU Temperature."""
 //|
 
-//|     def __init__(
-//|         self, pin: microcontroller.Pin, buffer: WriteableBuffer, *, sample_rate: int = 500000
-//|     ) -> None:
-//|         """Create a `BufferedIn` on the given pin. ADC values will be read
-//|            into the given buffer at the supplied sample_rate. Depending on the
-//|            buffer typecode, 'b', 'B', 'h', 'H', samples are 8-bit byte-arrays or
-//|            16-bit half-words and are signed or unsigned.
-//|            The ADC most significant bits of the ADC are kept. (See
-//|            https://docs.circuitpython.org/en/latest/docs/library/array.html)
+//|     def __init__(self, pin: microcontroller.Pin, *, sample_rate: int) -> None:
+//|         """Create a `BufferedIn` on the given pin and given sample rate.
 //|
 //|         :param ~microcontroller.Pin pin: the pin to read from
-//|         :param ~circuitpython_typing.WriteableBuffer buffer: buffer: A buffer for samples
 //|         :param ~int sample_rate: rate: sampling frequency, in samples per second"""
 //|         ...
 STATIC mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_pin, ARG_buffer, ARG_sample_rate };
+    enum { ARG_pin, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin,    MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_sample_rate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 500000} },
+        { MP_QSTR_sample_rate, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -87,37 +78,12 @@ STATIC mp_obj_t analogbufio_bufferedin_make_new(const mp_obj_type_t *type, size_
     // Validate Pin
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 
-    // Buffer defined and allocated by user
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
-
-    // signed or unsigned, byte per sample
-    bool signed_samples = bufinfo.typecode == 'b' || bufinfo.typecode == 'h';
-    uint8_t bytes_per_sample = 1;
-
-    // Bytes Per Sample
-    if (bufinfo.typecode == 'h' || bufinfo.typecode == 'H') {
-        bytes_per_sample = 2;
-    } else if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError_varg(translate("%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"), MP_QSTR_buffer);
-    }
-
-    // Validate sample rate here
-    uint32_t sample_rate = (uint32_t)mp_arg_validate_int_range(args[ARG_sample_rate].u_int, 1, 500000, MP_QSTR_sample_rate);
-
     // Create local object
-    analogbufio_bufferedin_obj_t *self = m_new_obj(analogbufio_bufferedin_obj_t);
+    analogbufio_bufferedin_obj_t *self = m_new_obj_with_finaliser(analogbufio_bufferedin_obj_t);
     self->base.type = &analogbufio_bufferedin_type;
 
-    // Call local intereface in ports/common-hal/analogbufio
-    common_hal_analogbufio_bufferedin_construct(self,
-        pin,
-        ((uint8_t *)bufinfo.buf),
-        bufinfo.len,
-        bytes_per_sample,
-        signed_samples,
-        sample_rate
-        );
+    // Call local interface in ports/common-hal/analogbufio
+    common_hal_analogbufio_bufferedin_construct(self, pin, args[ARG_sample_rate].u_int);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -153,23 +119,46 @@ STATIC mp_obj_t analogbufio_bufferedin___exit__(size_t n_args, const mp_obj_t *a
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogbufio_bufferedin___exit___obj, 4, 4, analogbufio_bufferedin___exit__);
 
-//|     def read(self) -> None:
-//|         """Fills the provided buffer with ADC voltage values."""
+//|     def readinto(self, buffer: WriteableBuffer) -> int:
+//|         """Fills the provided buffer with ADC voltage values.
+//|
+//|         ADC values will be read into the given buffer at the supplied sample_rate.
+//|         Depending on the buffer typecode, 'B', 'H', samples are 8-bit byte-arrays or
+//|         16-bit half-words and are always unsigned.
+//|         The ADC most significant bits of the ADC are kept. (See
+//|         https://docs.circuitpython.org/en/latest/docs/library/array.html)
+//|
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: buffer: A buffer for samples"""
 //|         ...
 //|
-STATIC mp_obj_t analogbufio_bufferedin_obj_read(mp_obj_t self_in) {
+STATIC mp_obj_t analogbufio_bufferedin_obj_readinto(mp_obj_t self_in, mp_obj_t buffer_obj) {
     analogbufio_bufferedin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    common_hal_analogbufio_bufferedin_read(self);
-    return mp_const_none;
+
+    // Buffer defined and allocated by user
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buffer_obj, &bufinfo, MP_BUFFER_READ);
+
+    uint8_t bytes_per_sample = 1;
+
+    // Bytes Per Sample
+    if (bufinfo.typecode == 'H') {
+        bytes_per_sample = 2;
+    } else if (bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
+        mp_raise_ValueError_varg(translate("%q must be a bytearray or array of type 'H' or 'B'"), MP_QSTR_buffer);
+    }
+
+    mp_uint_t captured = common_hal_analogbufio_bufferedin_readinto(self, bufinfo.buf, bufinfo.len, bytes_per_sample);
+    return MP_OBJ_NEW_SMALL_INT(captured);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(analogbufio_bufferedin_read_obj, analogbufio_bufferedin_obj_read);
+MP_DEFINE_CONST_FUN_OBJ_2(analogbufio_bufferedin_readinto_obj, analogbufio_bufferedin_obj_readinto);
 
 STATIC const mp_rom_map_elem_t analogbufio_bufferedin_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___del__),    MP_ROM_PTR(&analogbufio_bufferedin_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),     MP_ROM_PTR(&analogbufio_bufferedin_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),  MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),   MP_ROM_PTR(&analogbufio_bufferedin___exit___obj) },
-    { MP_ROM_QSTR(MP_QSTR_read),       MP_ROM_PTR(&analogbufio_bufferedin_read_obj)},
+    { MP_ROM_QSTR(MP_QSTR_readinto),       MP_ROM_PTR(&analogbufio_bufferedin_readinto_obj)},
 
 };
 

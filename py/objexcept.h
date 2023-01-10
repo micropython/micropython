@@ -34,6 +34,11 @@ typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;
     mp_obj_tuple_t *args;
     mp_obj_traceback_t *traceback;
+    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+    struct _mp_obj_exception_t *cause, *context;
+    bool suppress_context;
+    bool marked;
+    #endif
 } mp_obj_exception_t;
 
 void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);

@@ -29,14 +29,12 @@
 #include "py/ringbuf.h"
 #include "py/runtime.h"
 #include "shared/runtime/interrupt_char.h"
+#include "shared-bindings/socketpool/SocketPool.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
 
 #if CIRCUITPY_STATUS_BAR
 #include "supervisor/shared/status_bar.h"
 #endif
-
-// TODO: Remove ESP specific stuff. For now, it is useful as we refine the server.
-#include "esp_log.h"
 
 typedef struct {
     socketpool_socket_obj_t socket;
@@ -57,24 +55,22 @@ STATIC uint8_t _buf[16];
 
 static _websocket cp_serial;
 
-static const char *TAG = "CP websocket";
-
 void websocket_init(void) {
-    cp_serial.socket.num = -1;
-    cp_serial.socket.connected = false;
+    socketpool_socket_reset(&cp_serial.socket);
+    cp_serial.closed = true;
 
     ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf) - 1);
 }
 
 void websocket_handoff(socketpool_socket_obj_t *socket) {
-    cp_serial.socket = *socket;
+    if (!cp_serial.closed) {
+        common_hal_socketpool_socket_close(&cp_serial.socket);
+    }
+    socketpool_socket_move(socket, &cp_serial.socket);
     cp_serial.closed = false;
     cp_serial.opcode = 0;
     cp_serial.frame_index = 0;
     cp_serial.frame_len = 2;
-    // Mark the original socket object as closed without telling the lower level.
-    socket->connected = false;
-    socket->num = -1;
 
     #if CIRCUITPY_STATUS_BAR
     // Send the title bar for the new client.
@@ -89,9 +85,6 @@ bool websocket_connected(void) {
 static bool _read_byte(uint8_t *c) {
     int len = socketpool_socket_recv_into(&cp_serial.socket, c, 1);
     if (len != 1) {
-        if (len != -EAGAIN) {
-            ESP_LOGE(TAG, "recv error %d", len);
-        }
         return false;
     }
     return true;
@@ -147,13 +140,10 @@ static void _read_next_frame_header(void) {
                 // Set the TCP socket to send immediately so that we send the payload back before
                 // closing the connection.
                 int nodelay = 1;
-                lwip_setsockopt(cp_serial.socket.num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+                common_hal_socketpool_socket_setsockopt(&cp_serial.socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
             }
             uint8_t frame_header[2];
             frame_header[0] = 1 << 7 | opcode;
-            if (cp_serial.payload_remaining > 125) {
-                ESP_LOGE(TAG, "CLOSE or PING has long payload");
-            }
             frame_header[1] = cp_serial.payload_remaining;
             web_workflow_send_raw(&cp_serial.socket, (const uint8_t *)frame_header, 2);
         }

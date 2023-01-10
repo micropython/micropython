@@ -220,9 +220,7 @@ bool common_hal_usb_hid_enable(const mp_obj_t devices, uint8_t boot_device) {
     }
 
     const mp_int_t num_devices = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(devices));
-    if (num_devices > MAX_HID_DEVICES) {
-        mp_raise_ValueError_varg(translate("No more than %d HID devices allowed"), MAX_HID_DEVICES);
-    }
+    mp_arg_validate_length_max(num_devices, MAX_HID_DEVICES, MP_QSTR_devices);
 
     num_hid_devices = num_devices;
 

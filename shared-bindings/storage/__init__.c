@@ -258,6 +258,10 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|     this property can only be set when the device is writable by the
 //|     microcontroller."""
 //|     ...
+//|     readonly: bool
+//|     """``True`` when the device is mounted as readonly by the microcontroller.
+//|     This property cannot be changed, use `storage.remount` instead."""
+//|     ...
 //|
 //|     def mkfs(self) -> None:
 //|         """Format the block device, deleting any data that may have been there"""

@@ -45,6 +45,16 @@ void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *sel
 mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
     const char *host) {
 
+    // As of 2022, the version of lwip in esp-idf does not handle the
+    // trailing-dot syntax of domain names, so emulate it.
+    // Remove this once https://github.com/espressif/esp-idf/issues/10013 has
+    // been implemented
+    size_t strlen_host = strlen(host);
+    if (strlen_host && host[strlen_host - 1] == '.') {
+        mp_obj_t nodot = mp_obj_new_str(host, strlen_host - 1);
+        host = mp_obj_str_get_str(nodot);
+    }
+
     const struct addrinfo hints = {
         .ai_family = AF_INET,
         .ai_socktype = SOCK_STREAM,

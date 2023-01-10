@@ -48,6 +48,7 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     sock->base.type = &ssl_sslsocket_type;
     sock->ssl_context = self;
     sock->sock = socket;
+    socket->ssl_socket = sock;
 
     // Create a copy of the ESP-TLS config object and store the server hostname
     // Note that ESP-TLS will use common_name for both SNI and verification

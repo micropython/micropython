@@ -218,12 +218,10 @@ void supervisor_execution_status(void) {
 }
 #endif
 
-#define STRING_LIST(...) {__VA_ARGS__, ""}
-
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
 // Return its index. If no file found, return -1.
-STATIC const char *first_existing_file_in_list(const char *const *filenames) {
-    for (int i = 0; filenames[i] != (char *)""; i++) {
+STATIC const char *first_existing_file_in_list(const char *const *filenames, size_t n_filenames) {
+    for (size_t i = 0; i < n_filenames; i++) {
         mp_import_stat_t stat = mp_import_stat(filenames[i]);
         if (stat == MP_IMPORT_STAT_FILE) {
             return filenames[i];
@@ -232,11 +230,11 @@ STATIC const char *first_existing_file_in_list(const char *const *filenames) {
     return NULL;
 }
 
-STATIC bool maybe_run_list(const char *const *filenames) {
+STATIC bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
     _exec_result.return_code = 0;
     _exec_result.exception = MP_OBJ_NULL;
     _exec_result.exception_line = 0;
-    _current_executing_filename = first_existing_file_in_list(filenames);
+    _current_executing_filename = first_existing_file_in_list(filenames, n_filenames);
     if (_current_executing_filename == NULL) {
         return false;
     }
@@ -391,12 +389,14 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         filesystem_flush();
     }
     if (safe_mode == NO_SAFE_MODE && !autoreload_pending()) {
-        static const char *const supported_filenames[] = STRING_LIST(
-            "code.txt", "code.py", "main.py", "main.txt");
+        static const char *const supported_filenames[] = {
+            "code.txt", "code.py", "main.py", "main.txt"
+        };
         #if CIRCUITPY_FULL_BUILD
-        static const char *const double_extension_filenames[] = STRING_LIST(
+        static const char *const double_extension_filenames[] = {
             "code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
-            "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
+            "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py"
+        };
         #endif
 
         supervisor_allocation *heap = allocate_remaining_memory();
@@ -410,14 +410,15 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
         // Check if a different run file has been allocated
         if (next_code_allocation) {
-            ((next_code_info_t *)next_code_allocation->ptr)->options &= ~SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
-            next_code_options = ((next_code_info_t *)next_code_allocation->ptr)->options;
-            if (((next_code_info_t *)next_code_allocation->ptr)->filename[0] != '\0') {
-                const char *next_list[] = {((next_code_info_t *)next_code_allocation->ptr)->filename, ""};
+            next_code_info_t *info = ((next_code_info_t *)next_code_allocation->ptr);
+            info->options &= ~SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
+            next_code_options = info->options;
+            if (info->filename[0] != '\0') {
                 // This is where the user's python code is actually executed:
-                found_main = maybe_run_list(next_list);
+                const char *const filenames[] = { info->filename };
+                found_main = maybe_run_list(filenames, MP_ARRAY_SIZE(filenames));
                 if (!found_main) {
-                    serial_write(((next_code_info_t *)next_code_allocation->ptr)->filename);
+                    serial_write(info->filename);
                     serial_write_compressed(translate(" not found.\n"));
                 }
             }
@@ -425,11 +426,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         // Otherwise, default to the standard list of filenames
         if (!found_main) {
             // This is where the user's python code is actually executed:
-            found_main = maybe_run_list(supported_filenames);
+            found_main = maybe_run_list(supported_filenames, MP_ARRAY_SIZE(supported_filenames));
             // If that didn't work, double check the extensions
             #if CIRCUITPY_FULL_BUILD
             if (!found_main) {
-                found_main = maybe_run_list(double_extension_filenames);
+                found_main = maybe_run_list(double_extension_filenames, MP_ARRAY_SIZE(double_extension_filenames));
                 if (found_main) {
                     serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
                 }
@@ -741,7 +742,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         && safe_mode == NO_SAFE_MODE
         && MP_STATE_VM(vfs_mount_table) != NULL;
 
-    static const char *const boot_py_filenames[] = STRING_LIST("boot.py", "boot.txt");
+    static const char *const boot_py_filenames[] = {"boot.py", "boot.txt"};
 
     // Do USB setup even if boot.py is not run.
 
@@ -778,7 +779,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         port_boot_info();
         #endif
 
-        bool found_boot = maybe_run_list(boot_py_filenames);
+        bool found_boot = maybe_run_list(boot_py_filenames, MP_ARRAY_SIZE(boot_py_filenames));
         (void)found_boot;
 
 

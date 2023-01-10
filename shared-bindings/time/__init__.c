@@ -97,9 +97,7 @@ STATIC mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, s
     size_t len;
     mp_obj_t *items;
     mp_obj_get_array(args[0], &len, &items);
-    if (len != 9) {
-        mp_raise_TypeError(translate("time.struct_time() takes a 9-sequence"));
-    }
+    mp_arg_validate_length(len, 9, MP_QSTR_value);
     return namedtuple_make_new(type, len, 0, items);
 }
 
