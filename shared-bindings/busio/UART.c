@@ -116,8 +116,8 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *rx = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
-    const mcu_pin_obj_t *tx = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);
+    const mcu_pin_obj_t *rx = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj, MP_QSTR_rx);
+    const mcu_pin_obj_t *tx = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj, MP_QSTR_tx);
 
     if ((tx == NULL) && (rx == NULL)) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
@@ -137,9 +137,9 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     validate_timeout(timeout);
 
-    const mcu_pin_obj_t *rts = validate_obj_is_free_pin_or_none(args[ARG_rts].u_obj);
-    const mcu_pin_obj_t *cts = validate_obj_is_free_pin_or_none(args[ARG_cts].u_obj);
-    const mcu_pin_obj_t *rs485_dir = validate_obj_is_free_pin_or_none(args[ARG_rs485_dir].u_obj);
+    const mcu_pin_obj_t *rts = validate_obj_is_free_pin_or_none(args[ARG_rts].u_obj, MP_QSTR_rts);
+    const mcu_pin_obj_t *cts = validate_obj_is_free_pin_or_none(args[ARG_cts].u_obj, MP_QSTR_cts);
+    const mcu_pin_obj_t *rs485_dir = validate_obj_is_free_pin_or_none(args[ARG_rs485_dir].u_obj, MP_QSTR_rs485_dir);
 
     const bool rs485_invert = args[ARG_rs485_invert].u_bool;
 

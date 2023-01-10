@@ -222,19 +222,25 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
     mp_get_buffer(args[ARG_init].u_obj, &init_bufinfo, MP_BUFFER_READ);
 
     // We don't validate pin in use here because we may be ok sharing them within a PIO.
-    const mcu_pin_obj_t *first_out_pin = validate_obj_is_pin_or_none(args[ARG_first_out_pin].u_obj);
+    const mcu_pin_obj_t *first_out_pin =
+        validate_obj_is_pin_or_none(args[ARG_first_out_pin].u_obj, MP_QSTR_first_out_pin);
     mp_int_t out_pin_count = mp_arg_validate_int_min(args[ARG_out_pin_count].u_int, 1, MP_QSTR_out_pin_count);
 
-    const mcu_pin_obj_t *first_in_pin = validate_obj_is_pin_or_none(args[ARG_first_in_pin].u_obj);
+    const mcu_pin_obj_t *first_in_pin =
+        validate_obj_is_pin_or_none(args[ARG_first_in_pin].u_obj, MP_QSTR_first_in_pin);
     mp_int_t in_pin_count = mp_arg_validate_int_min(args[ARG_in_pin_count].u_int, 1, MP_QSTR_in_pin_count);
 
-    const mcu_pin_obj_t *first_set_pin = validate_obj_is_pin_or_none(args[ARG_first_set_pin].u_obj);
+    const mcu_pin_obj_t *first_set_pin =
+        validate_obj_is_pin_or_none(args[ARG_first_set_pin].u_obj, MP_QSTR_first_set_pin);
     mp_int_t set_pin_count = mp_arg_validate_int_range(args[ARG_set_pin_count].u_int, 1, 5, MP_QSTR_set_pin_count);
 
-    const mcu_pin_obj_t *first_sideset_pin = validate_obj_is_pin_or_none(args[ARG_first_sideset_pin].u_obj);
-    mp_int_t sideset_pin_count = mp_arg_validate_int_range(args[ARG_sideset_pin_count].u_int, 1, 5, MP_QSTR_set_pin_count);
+    const mcu_pin_obj_t *first_sideset_pin =
+        validate_obj_is_pin_or_none(args[ARG_first_sideset_pin].u_obj, MP_QSTR_first_sideset_pin);
+    mp_int_t sideset_pin_count =
+        mp_arg_validate_int_range(args[ARG_sideset_pin_count].u_int, 1, 5, MP_QSTR_set_pin_count);
 
-    const mcu_pin_obj_t *jmp_pin = validate_obj_is_pin_or_none(args[ARG_jmp_pin].u_obj);
+    const mcu_pin_obj_t *jmp_pin =
+        validate_obj_is_pin_or_none(args[ARG_jmp_pin].u_obj, MP_QSTR_jmp_pin);
     digitalio_pull_t jmp_pin_pull = validate_pull(args[ARG_jmp_pin_pull].u_rom_obj, MP_QSTR_jmp_pull);
 
     mp_int_t pull_threshold =

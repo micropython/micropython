@@ -43,7 +43,7 @@
 #define IS_CYW(self) ((self)->pin->base.type == &cyw43_pin_type)
 
 const mcu_pin_obj_t *common_hal_digitalio_validate_pin(mp_obj_t obj) {
-    return validate_obj_is_free_pin_including_cyw43(obj);
+    return validate_obj_is_free_pin_including_cyw43(obj, MP_QSTR_pin);
 }
 #endif
 

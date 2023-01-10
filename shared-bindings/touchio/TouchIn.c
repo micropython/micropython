@@ -63,7 +63,7 @@ STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // 1st argument is the pin
-    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0], MP_QSTR_pin);
 
     touchio_touchin_obj_t *self = m_new_obj(touchio_touchin_obj_t);
     self->base.type = &touchio_touchin_type;

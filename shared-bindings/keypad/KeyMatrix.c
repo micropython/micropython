@@ -102,13 +102,13 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
 
     for (size_t row = 0; row < num_row_pins; row++) {
         const mcu_pin_obj_t *pin =
-            validate_obj_is_free_pin(mp_obj_subscr(row_pins, MP_OBJ_NEW_SMALL_INT(row), MP_OBJ_SENTINEL));
+            validate_obj_is_free_pin(mp_obj_subscr(row_pins, MP_OBJ_NEW_SMALL_INT(row), MP_OBJ_SENTINEL), MP_QSTR_pin);
         row_pins_array[row] = pin;
     }
 
     for (size_t column = 0; column < num_column_pins; column++) {
         const mcu_pin_obj_t *pin =
-            validate_obj_is_free_pin(mp_obj_subscr(column_pins, MP_OBJ_NEW_SMALL_INT(column), MP_OBJ_SENTINEL));
+            validate_obj_is_free_pin(mp_obj_subscr(column_pins, MP_OBJ_NEW_SMALL_INT(column), MP_OBJ_SENTINEL), MP_QSTR_pin);
         column_pins_array[column] = pin;
     }
 

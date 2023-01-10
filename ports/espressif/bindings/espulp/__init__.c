@@ -61,7 +61,7 @@
 //|
 
 STATIC mp_obj_t espulp_get_rtc_gpio_number(mp_obj_t pin_obj) {
-    const mcu_pin_obj_t *pin = validate_obj_is_pin(pin_obj);
+    const mcu_pin_obj_t *pin = validate_obj_is_pin(pin_obj, MP_QSTR_pin);
     mp_int_t number = common_hal_espulp_get_rtc_gpio_number(pin);
     if (number < 0) {
         return mp_const_none;

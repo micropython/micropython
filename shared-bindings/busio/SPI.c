@@ -103,9 +103,9 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
-    const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);
-    const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj);
+    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj, MP_QSTR_clock);
+    const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj, MP_QSTR_mosi);
+    const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj, MP_QSTR_miso);
 
     if (!miso && !mosi) {
         mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
@@ -463,9 +463,6 @@ const mp_obj_type_t busio_spi_type = {
     .locals_dict = (mp_obj_dict_t *)&busio_spi_locals_dict,
 };
 
-busio_spi_obj_t *validate_obj_is_spi_bus(mp_obj_t obj) {
-    if (!mp_obj_is_type(obj, &busio_spi_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), busio_spi_type.name);
-    }
-    return MP_OBJ_TO_PTR(obj);
+busio_spi_obj_t *validate_obj_is_spi_bus(mp_obj_t obj, qstr arg_name) {
+    return mp_arg_validate_type(obj, &busio_spi_type, arg_name);
 }

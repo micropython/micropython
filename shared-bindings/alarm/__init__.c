@@ -86,7 +86,7 @@ STATIC void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
             mp_obj_is_type(objs[i], &alarm_touch_touchalarm_type)) {
             continue;
         }
-        mp_raise_TypeError_varg(translate("Expected an %q"), MP_QSTR_Alarm);
+        mp_raise_TypeError_varg(translate("Expected a kind of %q"), MP_QSTR_Alarm);
     }
 }
 
@@ -207,10 +207,7 @@ STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_o
 
     for (mp_uint_t i = 0; i < num_dios; i++) {
         mp_obj_t dio = mp_obj_subscr(preserve_dios, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
-        if (!mp_obj_is_type(dio, &digitalio_digitalinout_type)) {
-            mp_raise_TypeError_varg(translate("Expected a %q"), MP_QSTR_DigitalInOut);
-        }
-        dios_array[i] = MP_OBJ_TO_PTR(dio);
+        dios_array[i] = mp_arg_validate_type(dio, &digitalio_digitalinout_type, MP_QSTR_alarm);
     }
 
     common_hal_alarm_set_deep_sleep_alarms(n_args, pos_args, num_dios, dios_array);
