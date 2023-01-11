@@ -108,8 +108,10 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *left_channel_pin = validate_obj_is_free_pin(args[ARG_left_channel].u_obj);
-    const mcu_pin_obj_t *right_channel_pin = validate_obj_is_free_pin_or_none(args[ARG_right_channel].u_obj);
+    const mcu_pin_obj_t *left_channel_pin =
+        validate_obj_is_free_pin(args[ARG_left_channel].u_obj, MP_QSTR_left_channel);
+    const mcu_pin_obj_t *right_channel_pin =
+        validate_obj_is_free_pin_or_none(args[ARG_right_channel].u_obj, MP_QSTR_right_channel);
 
     // create AudioOut object from the given pin
     audiopwmio_pwmaudioout_obj_t *self = m_new_obj(audiopwmio_pwmaudioout_obj_t);

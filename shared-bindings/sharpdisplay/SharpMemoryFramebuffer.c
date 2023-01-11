@@ -47,8 +47,8 @@ STATIC mp_obj_t sharpdisplay_framebuffer_make_new(const mp_obj_type_t *type, siz
 
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
-    busio_spi_obj_t *spi = validate_obj_is_spi_bus(args[ARG_spi_bus].u_obj);
+    const mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj, MP_QSTR_chip_select);
+    busio_spi_obj_t *spi = validate_obj_is_spi_bus(args[ARG_spi_bus].u_obj, MP_QSTR_spi_bus);
 
     sharpdisplay_framebuffer_obj_t *self = &allocate_display_bus_or_raise()->sharpdisplay;
     self->base.type = &sharpdisplay_framebuffer_type;

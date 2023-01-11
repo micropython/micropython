@@ -121,9 +121,7 @@ STATIC mp_obj_dict_t bleio_module_globals;
 //|
 mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj) {
     #if CIRCUITPY_BLEIO_HCI
-    if (adapter_obj != mp_const_none && !mp_obj_is_type(adapter_obj, &bleio_adapter_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), bleio_adapter_type.name);
-    }
+    (void)mp_arg_validate_type_or_none(adapter_obj, &bleio_adapter_type, MP_QSTR_adapter);
 
     // Equivalent of:
     // bleio.adapter = adapter_obj
@@ -132,7 +130,7 @@ mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj) {
         elem->value = adapter_obj;
     }
     #else
-    mp_raise_NotImplementedError(translate("Not settable"));
+    mp_raise_NotImplementedError(translate("Read-only"));
     #endif
     return mp_const_none;
 }

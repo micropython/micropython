@@ -43,11 +43,17 @@
 //|     """Return True if the pins have sequential GPIO numbers, False otherwise"""
 //|     ...
 //|
-STATIC mp_obj_t rp2pio_pins_are_sequential(const mp_obj_t pins) {
+STATIC mp_obj_t rp2pio_pins_are_sequential(mp_obj_t pins_obj) {
     size_t len;
     mp_obj_t *items;
-    mp_obj_get_array(pins, &len, &items);
-    return mp_obj_new_bool(common_hal_rp2pio_pins_are_sequential(len, items));
+    mp_obj_get_array(pins_obj, &len, &items);
+
+    const mcu_pin_obj_t *pins[len];
+    for (size_t i = 0; i < len; i++) {
+        pins[i] = validate_obj_is_pin(items[i], MP_QSTR_pins);
+    }
+
+    return mp_obj_new_bool(common_hal_rp2pio_pins_are_sequential(len, pins));
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_pins_are_sequential_obj, rp2pio_pins_are_sequential);

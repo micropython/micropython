@@ -159,7 +159,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        mp_raise_TypeError_varg(translate("%q must be of type %q"), MP_QSTR_index, MP_QSTR_int);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_index, MP_QSTR_int, mp_obj_get_type(index)->name);
     }
     const byte *s, *top = self_data + self_len;
     if (i < 0) {

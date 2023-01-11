@@ -116,23 +116,23 @@ STATIC mp_obj_t cyw43_get_power_management() {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(cyw43_get_power_management_obj, cyw43_get_power_management);
 
-const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj) {
+const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj, qstr arg_name) {
     if (!mp_obj_is_type(obj, &mcu_pin_type) && !mp_obj_is_type(obj, &cyw43_pin_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q or %q"), mcu_pin_type.name, cyw43_pin_type.name);
+        mp_raise_TypeError_varg(translate("%q must be of type %q or %q, not %q"), arg_name, mcu_pin_type.name, cyw43_pin_type.name, mp_obj_get_type(obj)->name);
     }
     return MP_OBJ_TO_PTR(obj);
 }
 
-const mcu_pin_obj_t *validate_obj_is_free_pin_or_gpio29(mp_obj_t obj) {
-    const mcu_pin_obj_t *pin = validate_obj_is_pin(obj);
+const mcu_pin_obj_t *validate_obj_is_free_pin_or_gpio29(mp_obj_t obj, qstr arg_name) {
+    const mcu_pin_obj_t *pin = validate_obj_is_pin(obj, arg_name);
     if (obj != &pin_GPIO29) {
         assert_pin_free(pin);
     }
     return pin;
 }
 
-const mcu_pin_obj_t *validate_obj_is_free_pin_including_cyw43(mp_obj_t obj) {
-    const mcu_pin_obj_t *pin = validate_obj_is_pin_including_cyw43(obj);
+const mcu_pin_obj_t *validate_obj_is_free_pin_including_cyw43(mp_obj_t obj, qstr arg_name) {
+    const mcu_pin_obj_t *pin = validate_obj_is_pin_including_cyw43(obj, arg_name);
     assert_pin_free(pin);
     return pin;
 }

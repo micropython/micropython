@@ -44,7 +44,7 @@
 #define SPECIAL_PIN(pin) (pin->number == 29)
 
 const mcu_pin_obj_t *common_hal_analogio_analogin_validate_pin(mp_obj_t obj) {
-    return validate_obj_is_free_pin_or_gpio29(obj);
+    return validate_obj_is_free_pin_or_gpio29(obj, MP_QSTR_pin);
 }
 #else
 #define SPECIAL_PIN(pin) false

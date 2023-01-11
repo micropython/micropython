@@ -113,12 +113,8 @@ STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
 //|     ...
 //|
 STATIC mp_obj_t neopixel_write_neopixel_write_(mp_obj_t digitalinout_obj, mp_obj_t buf) {
-    if (!mp_obj_is_type(digitalinout_obj, &digitalio_digitalinout_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), digitalio_digitalinout_type.name);
-    }
-
-    // Convert parameters into expected types.
-    const digitalio_digitalinout_obj_t *digitalinout = MP_OBJ_TO_PTR(digitalinout_obj);
+    const digitalio_digitalinout_obj_t *digitalinout =
+        mp_arg_validate_type(digitalinout_obj, &digitalio_digitalinout_type, MP_QSTR_digitalinout);
 
     // Check to see if the NeoPixel has been deinited before writing to it.
     check_for_deinit(digitalinout_obj);

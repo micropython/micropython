@@ -69,7 +69,7 @@ STATIC void check_result(digitalinout_result_t result) {
 }
 
 MP_WEAK const mcu_pin_obj_t *common_hal_digitalio_validate_pin(mp_obj_t obj) {
-    return validate_obj_is_free_pin(obj);
+    return validate_obj_is_free_pin(obj, MP_QSTR_pin);
 }
 
 //| class DigitalInOut:

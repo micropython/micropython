@@ -80,7 +80,7 @@ STATIC mp_obj_t qrio_qrdecoder_decode(size_t n_args, const mp_obj_t *pos_args, m
 
     // verify that the buffer is big enough
     int sz = width * height;
-    qrio_pixel_policy_t policy = cp_enum_value(&qrio_pixel_policy_type, args[ARG_pixel_policy].u_obj);
+    qrio_pixel_policy_t policy = cp_enum_value(&qrio_pixel_policy_type, args[ARG_pixel_policy].u_obj, MP_QSTR_pixel_policy);
     if (policy != QRIO_EVERY_BYTE) {
         sz *= 2;
     }

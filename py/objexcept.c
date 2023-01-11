@@ -228,7 +228,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 self->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
             } else {
                 if (!mp_obj_is_type(dest[1], &mp_type_traceback)) {
-                    mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or None"), MP_QSTR___context__, MP_QSTR_traceback);
+                    mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), MP_QSTR___context__, MP_QSTR_traceback, MP_QSTR_None, mp_obj_get_type(dest[1])->name);
                 }
                 self->traceback = MP_OBJ_TO_PTR(dest[1]);
             }
@@ -240,7 +240,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             } else if (!mp_obj_is_type(dest[1], &mp_type_BaseException)) {
                 self->cause = dest[1];
             } else {
-                mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or None"), attr, MP_QSTR_BaseException);
+                mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), attr, MP_QSTR_BaseException, MP_QSTR_None, mp_obj_get_type(dest[1])->name);
             }
             self->suppress_context = true;
             dest[0] = MP_OBJ_NULL; // indicate success
@@ -250,7 +250,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             } else if (!mp_obj_is_type(dest[1], &mp_type_BaseException)) {
                 self->context = dest[1];
             } else {
-                mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or None"), attr, MP_QSTR_BaseException);
+                mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), attr, MP_QSTR_BaseException, MP_QSTR_None, mp_obj_get_type(dest[1])->name);
             }
             dest[0] = MP_OBJ_NULL; // indicate success
         } else if (attr == MP_QSTR___suppress_context__) {

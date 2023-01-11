@@ -344,7 +344,7 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
         mp_obj_iter_buf_t iter_buf;
         mp_obj_t item, iterable = mp_getiter(args[ARG_authmode].u_obj, &iter_buf);
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            authmodes |= cp_enum_value(&wifi_authmode_type, item);
+            authmodes |= cp_enum_value(&wifi_authmode_type, item, MP_QSTR_authmode);
         }
     }
 

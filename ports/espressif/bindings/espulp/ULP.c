@@ -44,22 +44,17 @@ STATIC mp_obj_t espulp_ulp_make_new(const mp_obj_type_t *type, size_t n_args, si
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC espulp_ulp_obj_t *get_ulp_obj(mp_obj_t self_in) {
-    if (!mp_obj_is_type(self_in, &espulp_ulp_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), MP_QSTR_ULP);
-    }
-    espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC void check_for_deinit(espulp_ulp_obj_t *self) {
     if (common_hal_espulp_ulp_deinited(self)) {
         raise_deinited_error();
     }
-    return self;
 }
 
 //|     def deinit(self) -> None:
 //|         """Deinitialises the ULP and releases it for another program."""
 //|         ...
 STATIC mp_obj_t espulp_ulp_deinit(mp_obj_t self_in) {
-    espulp_ulp_obj_t *self = get_ulp_obj(self_in);
+    espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_espulp_ulp_deinit(self);
     return mp_const_none;
 }
@@ -89,6 +84,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espulp_ulp___exit___obj, 4, 4, espulp
 //|         The program will continue to run even when the running Python is halted."""
 //|         ...
 STATIC mp_obj_t espulp_ulp_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_for_deinit(self);
+
     enum { ARG_program, ARG_pins };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_program, MP_ARG_REQUIRED | MP_ARG_OBJ},
@@ -96,7 +94,6 @@ STATIC mp_obj_t espulp_ulp_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    espulp_ulp_obj_t *self = get_ulp_obj(pos_args[0]);
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_buffer_info_t bufinfo;
@@ -111,7 +108,7 @@ STATIC mp_obj_t espulp_ulp_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     for (mp_uint_t i = 0; i < num_pins; i++) {
         mp_obj_t pin_obj = mp_obj_subscr(pins_in, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
-        validate_obj_is_free_pin(pin_obj);
+        validate_obj_is_free_pin(pin_obj, MP_QSTR_pin);
         const mcu_pin_obj_t *pin = ((const mcu_pin_obj_t *)pin_obj);
         if (pin->number >= 32) {
             raise_ValueError_invalid_pin();
@@ -129,7 +126,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espulp_ulp_run_obj, 2, espulp_ulp_run);
 //|         ...
 //|
 STATIC mp_obj_t espulp_ulp_halt(mp_obj_t self_in) {
-    common_hal_espulp_ulp_halt(get_ulp_obj(self_in));
+    espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
+    common_hal_espulp_ulp_halt(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(espulp_ulp_halt_obj, espulp_ulp_halt);

@@ -76,8 +76,8 @@ STATIC mp_obj_t bitbangio_i2c_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
-    const mcu_pin_obj_t *sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
+    const mcu_pin_obj_t *scl = validate_obj_is_free_pin(args[ARG_scl].u_obj, MP_QSTR_scl);
+    const mcu_pin_obj_t *sda = validate_obj_is_free_pin(args[ARG_sda].u_obj, MP_QSTR_sda);
 
     bitbangio_i2c_obj_t *self = m_new_obj(bitbangio_i2c_obj_t);
     self->base.type = &bitbangio_i2c_type;
