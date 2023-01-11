@@ -76,7 +76,7 @@ void alarm_reset(void) {
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
 
-STATIC esp_sleep_wakeup_cause_t _get_wakeup_cause(void) {
+STATIC esp_sleep_wakeup_cause_t _get_wakeup_cause(bool deep_sleep) {
     // First check if the modules remember what last woke up
     if (alarm_pin_pinalarm_woke_this_cycle()) {
         return ESP_SLEEP_WAKEUP_GPIO;
@@ -94,17 +94,20 @@ STATIC esp_sleep_wakeup_cause_t _get_wakeup_cause(void) {
     #endif
     // If waking from true deep sleep, modules will have lost their state,
     // so check the deep wakeup cause manually
-    return esp_sleep_get_wakeup_cause();
+    if (deep_sleep) {
+        return esp_sleep_get_wakeup_cause();
+    }
+    return ESP_SLEEP_WAKEUP_UNDEFINED;
 }
 
 bool common_hal_alarm_woken_from_sleep(void) {
-    return _get_wakeup_cause() != ESP_SLEEP_WAKEUP_UNDEFINED;
+    return _get_wakeup_cause(false) != ESP_SLEEP_WAKEUP_UNDEFINED;
 }
 
 mp_obj_t common_hal_alarm_record_wake_alarm(void) {
     // If woken from deep sleep, create a copy alarm similar to what would have
     // been passed in originally. Otherwise, just return none
-    esp_sleep_wakeup_cause_t cause = _get_wakeup_cause();
+    esp_sleep_wakeup_cause_t cause = _get_wakeup_cause(true);
     switch (cause) {
         case ESP_SLEEP_WAKEUP_TIMER: {
             return alarm_time_timealarm_record_wake_alarm();
@@ -154,7 +157,7 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
         RUN_BACKGROUND_TASKS;
         // Detect if interrupt was alarm or ctrl-C interrupt.
         if (common_hal_alarm_woken_from_sleep()) {
-            esp_sleep_wakeup_cause_t cause = _get_wakeup_cause();
+            esp_sleep_wakeup_cause_t cause = _get_wakeup_cause(false);
             switch (cause) {
                 case ESP_SLEEP_WAKEUP_TIMER: {
                     wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms,alarms);
