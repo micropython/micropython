@@ -264,7 +264,10 @@ void supervisor_start_web_workflow(void) {
     }
 
     result = common_hal_os_getenv_str("CIRCUITPY_WIFI_PASSWORD", password, sizeof(password));
-    if (result != GETENV_OK) {
+    if (result == GETENV_ERR_NOT_FOUND) {
+        // if password is unspecified, assume an open network
+        password[0] = '\0';
+    } else if (result != GETENV_OK) {
         return;
     }
 

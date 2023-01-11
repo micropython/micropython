@@ -244,7 +244,8 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     common_hal_wifi_radio_stop_station(self);
 
     // connect
-    cyw43_arch_wifi_connect_async((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK);
+    int auth_mode = password_len ? CYW43_AUTH_WPA2_AES_PSK : CYW43_AUTH_OPEN;
+    cyw43_arch_wifi_connect_async((const char *)ssid, (const char *)password, auth_mode);
     // TODO: Implement authmode check like in espressif
 
     while (port_get_raw_ticks(NULL) < deadline) {
