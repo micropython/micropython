@@ -35,6 +35,7 @@
 
 #include "shared/runtime/buffer_helper.h"
 #include "shared/runtime/context_manager_helpers.h"
+#include "py/binary.h"
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -264,9 +265,15 @@ STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
+    // Compute bounds in terms of elements, not bytes.
+    int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     int32_t start = args[ARG_start].u_int;
-    size_t length = bufinfo.len;
+    size_t length = bufinfo.len / stride_in_bytes;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
 
     if (length == 0) {
         return mp_const_none;
@@ -323,9 +330,15 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
+    // Compute bounds in terms of elements, not bytes.
+    int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     int32_t start = args[ARG_start].u_int;
     size_t length = bufinfo.len;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
 
     if (length == 0) {
         return mp_const_none;
@@ -392,15 +405,23 @@ STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args
 
     mp_buffer_info_t buf_out_info;
     mp_get_buffer_raise(args[ARG_out_buffer].u_obj, &buf_out_info, MP_BUFFER_READ);
+    int out_stride_in_bytes = mp_binary_get_size('@', buf_out_info.typecode, NULL);
     int32_t out_start = args[ARG_out_start].u_int;
-    size_t out_length = buf_out_info.len;
+    size_t out_length = buf_out_info.len / out_stride_in_bytes;
     normalize_buffer_bounds(&out_start, args[ARG_out_end].u_int, &out_length);
 
     mp_buffer_info_t buf_in_info;
     mp_get_buffer_raise(args[ARG_in_buffer].u_obj, &buf_in_info, MP_BUFFER_WRITE);
+    int in_stride_in_bytes = mp_binary_get_size('@', buf_in_info.typecode, NULL);
     int32_t in_start = args[ARG_in_start].u_int;
-    size_t in_length = buf_in_info.len;
+    size_t in_length = buf_in_info.len / in_stride_in_bytes;
     normalize_buffer_bounds(&in_start, args[ARG_in_end].u_int, &in_length);
+
+    // Treat start and length in terms of bytes from now on.
+    out_start *= out_stride_in_bytes;
+    out_length *= out_stride_in_bytes;
+    in_start *= in_stride_in_bytes;
+    in_length *= in_stride_in_bytes;
 
     if (out_length != in_length) {
         mp_raise_ValueError(translate("buffer slices must be of equal length"));

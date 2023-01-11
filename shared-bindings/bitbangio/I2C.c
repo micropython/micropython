@@ -33,6 +33,7 @@
 
 #include "shared/runtime/buffer_helper.h"
 #include "shared/runtime/context_manager_helpers.h"
+#include "py/binary.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate/translate.h"
@@ -187,9 +188,14 @@ STATIC void readfrom(bitbangio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffe
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_WRITE);
 
-    size_t length = bufinfo.len;
+    int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
+    size_t length = bufinfo.len / stride_in_bytes;
     normalize_buffer_bounds(&start, end, &length);
     mp_arg_validate_length_min(length, 1, MP_QSTR_buffer);
+
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
 
     uint8_t status = shared_module_bitbangio_i2c_read(self, address, ((uint8_t *)bufinfo.buf) + start, length);
     if (status != 0) {
@@ -244,10 +250,15 @@ STATIC void writeto(bitbangio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
 
-    size_t length = bufinfo.len;
+    int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
+    size_t length = bufinfo.len / stride_in_bytes;
     normalize_buffer_bounds(&start, end, &length);
 
-    // do the transfer
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
+
+    // Do the transfer
     uint8_t status = shared_module_bitbangio_i2c_write(self, address,
         ((uint8_t *)bufinfo.buf) + start, length,
         stop);
