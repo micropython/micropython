@@ -99,13 +99,17 @@ Methods
 
 .. method:: StateMachine.put(value, shift=0)
 
-    Push a word onto the state machine's TX FIFO.
+    Push words onto the state machine's TX FIFO.
 
-    If the FIFO is full, it blocks until there is space (i.e. the state machine
-    pulls a word).
+    *value* can be an integer, an array of type ``B``, ``H`` or ``I``, or a
+    `bytearray`.
 
-    The value is first shifted left by *shift* bits, i.e. the state machine
-    receives ``value << shift``.
+    This method will block until all words have been written to the FIFO.  If
+    the FIFO is, or becomes, full, the method will block until the state machine
+    pulls enough words to complete the write.
+
+    Each word is first shifted left by *shift* bits, i.e. the state machine
+    receives ``word << shift``.
 
 .. method:: StateMachine.rx_fifo()
 
