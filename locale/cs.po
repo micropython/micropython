@@ -112,6 +112,10 @@ msgstr "%q obsahuje duplicitní piny"
 msgid "%q failure: %d"
 msgstr "%q: selhání %d"
 
+#: py/argcheck.c
+msgid "%q in %q must be of type %q, not %q"
+msgstr ""
+
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -179,13 +183,14 @@ msgstr ""
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
-msgid "%q must be of type %q"
-msgstr "%q musí být typu %q"
+#: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
+#: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or %q, not %q"
+msgstr ""
 
-#: py/objexcept.c shared-bindings/digitalio/Pull.c
-msgid "%q must be of type %q or None"
-msgstr "%q musí být typu %q nebo None"
+#: py/argcheck.c py/obj.c py/objstrunicode.c
+msgid "%q must be of type %q, not %q"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
@@ -943,20 +948,8 @@ msgstr "Chyba v regulárním výrazu"
 msgid "Error: Failure to bind"
 msgstr ""
 
-#: ports/espressif/bindings/espulp/ULP.c py/enum.c
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c
-msgid "Expected a %q"
-msgstr "Očekává se %q"
-
-#: ports/raspberrypi/bindings/cyw43/__init__.c
-msgid "Expected a %q or %q"
-msgstr ""
-
 #: shared-bindings/alarm/__init__.c
-msgid "Expected an %q"
+msgid "Expected a kind of %q"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
@@ -1130,11 +1123,6 @@ msgstr "Periférie I2C je používána"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr ""
-
-#: shared-bindings/aesio/aes.c
-#, c-format
-msgid "IV must be %d bytes long"
-msgstr "IV musí být dlouhé %d bajtů"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
@@ -1598,10 +1586,6 @@ msgstr "Nepřipojený"
 msgid "Not playing"
 msgstr "Nehraje"
 
-#: shared-bindings/_bleio/__init__.c
-msgid "Not settable"
-msgstr ""
-
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
@@ -1877,6 +1861,7 @@ msgstr ""
 msgid "Random number generation error"
 msgstr ""
 
+#: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
@@ -2063,7 +2048,10 @@ msgstr ""
 msgid "The above exception was the direct cause of the following exception:"
 msgstr ""
 
+#: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
+#: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
+#: ports/espressif/boards/m5stack_atom_u/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
 msgstr ""
 
@@ -2985,14 +2973,6 @@ msgstr ""
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
-msgstr ""
-
-#: shared-bindings/canio/CAN.c
-msgid "expected '%q' but got '%q'"
-msgstr ""
-
-#: shared-bindings/canio/CAN.c
-msgid "expected '%q' or '%q' but got '%q'"
 msgstr ""
 
 #: py/objstr.c
@@ -4363,6 +4343,19 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "%q must be of type %q"
+#~ msgstr "%q musí být typu %q"
+
+#~ msgid "%q must be of type %q or None"
+#~ msgstr "%q musí být typu %q nebo None"
+
+#~ msgid "Expected a %q"
+#~ msgstr "Očekává se %q"
+
+#, c-format
+#~ msgid "IV must be %d bytes long"
+#~ msgstr "IV musí být dlouhé %d bajtů"
 
 #~ msgid "%q length must be >= 1"
 #~ msgstr "%q délka musí být >= 1"

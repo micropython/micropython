@@ -117,6 +117,10 @@ msgstr "%q contient des broches en double"
 msgid "%q failure: %d"
 msgstr "Échec de %q : %d"
 
+#: py/argcheck.c
+msgid "%q in %q must be of type %q, not %q"
+msgstr ""
+
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -184,13 +188,14 @@ msgstr ""
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr "%q doit être a bytearray ou array de type 'h', 'H', 'b', ou 'B'"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
-msgid "%q must be of type %q"
-msgstr "%q doit être du type %q"
+#: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
+#: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or %q, not %q"
+msgstr ""
 
-#: py/objexcept.c shared-bindings/digitalio/Pull.c
-msgid "%q must be of type %q or None"
-msgstr "%q doit être du type %q ou None"
+#: py/argcheck.c py/obj.c py/objstrunicode.c
+msgid "%q must be of type %q, not %q"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
@@ -966,20 +971,8 @@ msgstr "Erreur dans l'expression régulière"
 msgid "Error: Failure to bind"
 msgstr "Erreur : Impossible de lier"
 
-#: ports/espressif/bindings/espulp/ULP.c py/enum.c
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c
-msgid "Expected a %q"
-msgstr "Attendu un %q"
-
-#: ports/raspberrypi/bindings/cyw43/__init__.c
-msgid "Expected a %q or %q"
-msgstr "Attendu un %q ou %q"
-
 #: shared-bindings/alarm/__init__.c
-msgid "Expected an %q"
+msgid "Expected a kind of %q"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
@@ -1159,11 +1152,6 @@ msgstr "périphérique I2C utilisé"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut n'est pas disponible"
-
-#: shared-bindings/aesio/aes.c
-#, c-format
-msgid "IV must be %d bytes long"
-msgstr "IV doit être de longueur de %d octets"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
@@ -1641,10 +1629,6 @@ msgstr "Non connecté"
 msgid "Not playing"
 msgstr "Ne joue pas"
 
-#: shared-bindings/_bleio/__init__.c
-msgid "Not settable"
-msgstr "Non réglable"
-
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
@@ -1932,6 +1916,7 @@ msgstr "RTC non supporté sur cette carte"
 msgid "Random number generation error"
 msgstr "Erreur de génération de chiffres aléatoires"
 
+#: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
@@ -2122,7 +2107,10 @@ msgstr ""
 msgid "The above exception was the direct cause of the following exception:"
 msgstr ""
 
+#: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
+#: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
+#: ports/espressif/boards/m5stack_atom_u/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
 msgstr "Le bouton central était pressé au démarrage.\n"
 
@@ -3085,14 +3073,6 @@ msgstr ""
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
 msgstr "les exceptions doivent dériver de 'BaseException'"
-
-#: shared-bindings/canio/CAN.c
-msgid "expected '%q' but got '%q'"
-msgstr "'%q' était attendu, mais reçu '%q'"
-
-#: shared-bindings/canio/CAN.c
-msgid "expected '%q' or '%q' but got '%q'"
-msgstr "'%q' ou '%q' était attendu, mais reçu '%q'"
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
@@ -4475,6 +4455,31 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "%q must be of type %q"
+#~ msgstr "%q doit être du type %q"
+
+#~ msgid "%q must be of type %q or None"
+#~ msgstr "%q doit être du type %q ou None"
+
+#~ msgid "Expected a %q"
+#~ msgstr "Attendu un %q"
+
+#~ msgid "Expected a %q or %q"
+#~ msgstr "Attendu un %q ou %q"
+
+#, c-format
+#~ msgid "IV must be %d bytes long"
+#~ msgstr "IV doit être de longueur de %d octets"
+
+#~ msgid "Not settable"
+#~ msgstr "Non réglable"
+
+#~ msgid "expected '%q' but got '%q'"
+#~ msgstr "'%q' était attendu, mais reçu '%q'"
+
+#~ msgid "expected '%q' or '%q' but got '%q'"
+#~ msgstr "'%q' ou '%q' était attendu, mais reçu '%q'"
 
 #~ msgid "Read-only object"
 #~ msgstr "Objet en lecture seule"

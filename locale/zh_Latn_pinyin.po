@@ -116,6 +116,10 @@ msgstr "%q bāo hán chóng fù de yǐn jiǎo"
 msgid "%q failure: %d"
 msgstr "%q Shībài: %d"
 
+#: py/argcheck.c
+msgid "%q in %q must be of type %q, not %q"
+msgstr ""
+
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -184,13 +188,14 @@ msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 "%q bì xū shì zì jié shù zǔ huò lèi xíng wéi 'h', 'H', 'b', huò 'B' de shù zǔ"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
-msgid "%q must be of type %q"
-msgstr "%q bì xū shì %q lèi xíng"
+#: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
+#: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or %q, not %q"
+msgstr ""
 
-#: py/objexcept.c shared-bindings/digitalio/Pull.c
-msgid "%q must be of type %q or None"
-msgstr "%q lèi xíng bì xū wéi %q huò wú"
+#: py/argcheck.c py/obj.c py/objstrunicode.c
+msgid "%q must be of type %q, not %q"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
@@ -950,21 +955,9 @@ msgstr "Zhèngzé biǎodá shì cuòwù"
 msgid "Error: Failure to bind"
 msgstr "cuò wù: bǎng dìng shī bài"
 
-#: ports/espressif/bindings/espulp/ULP.c py/enum.c
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/alarm/__init__.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c
-msgid "Expected a %q"
-msgstr "Yù qí %q"
-
-#: ports/raspberrypi/bindings/cyw43/__init__.c
-msgid "Expected a %q or %q"
-msgstr "yù qī wéi %q huò %q"
-
 #: shared-bindings/alarm/__init__.c
-msgid "Expected an %q"
-msgstr "yù qī wéi %q"
+msgid "Expected a kind of %q"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1139,11 +1132,6 @@ msgstr "I2C wài shè zhèng zài shǐ yòng zhōng"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut bù kě yòng"
-
-#: shared-bindings/aesio/aes.c
-#, c-format
-msgid "IV must be %d bytes long"
-msgstr "IV bì xū wéi %d zì jié cháng"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
@@ -1613,10 +1601,6 @@ msgstr "Wèi liánjiē"
 msgid "Not playing"
 msgstr "Wèi bòfàng"
 
-#: shared-bindings/_bleio/__init__.c
-msgid "Not settable"
-msgstr "bù kě shè zhì"
-
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
@@ -1899,6 +1883,7 @@ msgstr "Cǐ bǎn bù zhīchí RTC"
 msgid "Random number generation error"
 msgstr "Suíjī shù shēngchéng cuòwù"
 
+#: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
@@ -2089,7 +2074,10 @@ msgstr ""
 msgid "The above exception was the direct cause of the following exception:"
 msgstr ""
 
+#: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
+#: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
+#: ports/espressif/boards/m5stack_atom_u/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
 msgstr "qǐ dòng shí àn xià zhōng yāng àn niǔ.\n"
 
@@ -3037,14 +3025,6 @@ msgstr ""
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
 msgstr "lìwài bìxū láizì BaseException"
-
-#: shared-bindings/canio/CAN.c
-msgid "expected '%q' but got '%q'"
-msgstr "yùqí wèi'%q'dàn dédàole'%q'"
-
-#: shared-bindings/canio/CAN.c
-msgid "expected '%q' or '%q' but got '%q'"
-msgstr "yùqí wèi'%q'huò'%q', dàn huòdéle'%q'"
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
@@ -4418,6 +4398,34 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q must be of type %q"
+#~ msgstr "%q bì xū shì %q lèi xíng"
+
+#~ msgid "%q must be of type %q or None"
+#~ msgstr "%q lèi xíng bì xū wéi %q huò wú"
+
+#~ msgid "Expected a %q"
+#~ msgstr "Yù qí %q"
+
+#~ msgid "Expected a %q or %q"
+#~ msgstr "yù qī wéi %q huò %q"
+
+#~ msgid "Expected an %q"
+#~ msgstr "yù qī wéi %q"
+
+#, c-format
+#~ msgid "IV must be %d bytes long"
+#~ msgstr "IV bì xū wéi %d zì jié cháng"
+
+#~ msgid "Not settable"
+#~ msgstr "bù kě shè zhì"
+
+#~ msgid "expected '%q' but got '%q'"
+#~ msgstr "yùqí wèi'%q'dàn dédàole'%q'"
+
+#~ msgid "expected '%q' or '%q' but got '%q'"
+#~ msgstr "yùqí wèi'%q'huò'%q', dàn huòdéle'%q'"
 
 #~ msgid "Read-only object"
 #~ msgstr "Zhǐ dú duìxiàng"
