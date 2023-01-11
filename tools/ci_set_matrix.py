@@ -235,7 +235,7 @@ def set_docs_to_build(build_doc: bool):
             build_doc = True
         else:
             doc_pattern = re.compile(
-                r"^(?:.github/workflows/|docs|extmod/ulab|(?:(?:ports/\w+/bindings|shared-bindings)\S+\.c|conf\.py|tools/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
+                r"^(?:\.github\/workflows\/|docs|extmod\/ulab|(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|conf\.py|tools\/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
             )
             github_workspace = os.environ.get("GITHUB_WORKSPACE") or ""
             github_workspace = github_workspace and github_workspace + "/"
