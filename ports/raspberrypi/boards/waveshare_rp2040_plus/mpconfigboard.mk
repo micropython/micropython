@@ -1,5 +1,5 @@
 USB_VID = 0x2E8A
-USB_PID = 0x0005
+USB_PID = 0x1020
 USB_PRODUCT = "RP2040-Plus"
 USB_MANUFACTURER = "Waveshare Electronics"
 
