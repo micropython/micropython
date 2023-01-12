@@ -64,7 +64,7 @@ STATIC mp_obj_t mdns_server_make_new(const mp_obj_type_t *type, size_t n_args, s
     }
     #endif
 
-    mdns_server_obj_t *self = m_new_obj(mdns_server_obj_t);
+    mdns_server_obj_t *self = m_new_obj_with_finaliser(mdns_server_obj_t);
     self->base.type = &mdns_server_type;
     common_hal_mdns_server_construct(self, args[ARG_network_interface].u_obj);
 
@@ -205,6 +205,7 @@ STATIC const mp_rom_map_elem_t mdns_server_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_find),              MP_ROM_PTR(&mdns_server_find_obj) },
     { MP_ROM_QSTR(MP_QSTR_advertise_service), MP_ROM_PTR(&mdns_server_advertise_service_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR___del__),           MP_ROM_PTR(&mdns_server_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),            MP_ROM_PTR(&mdns_server_deinit_obj) },
 };
 

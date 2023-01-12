@@ -36,21 +36,28 @@
 #include "lwip/apps/mdns.h"
 #include "lwip/prot/dns.h"
 
+// Track if we've inited the LWIP MDNS at all. It expects to only init once.
+// Subsequent times, we restart it.
+STATIC bool inited = false;
 // Track if we are globally inited. This essentially forces one inited MDNS
 // object at a time. (But ignores MDNS objects that are deinited.)
-STATIC bool inited = false;
+STATIC bool object_inited = false;
 
 #define NETIF_STA (&cyw43_state.netif[CYW43_ITF_STA])
 #define NETIF_AP (&cyw43_state.netif[CYW43_ITF_AP])
 
 void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
-    if (inited) {
+    if (object_inited) {
         self->inited = false;
         return;
     }
 
-    mdns_resp_init();
-    inited = true;
+    if (!inited) {
+        mdns_resp_init();
+        inited = true;
+    } else {
+        mdns_resp_restart(NETIF_STA);
+    }
     self->inited = true;
 
     uint8_t mac[6];
@@ -72,7 +79,7 @@ void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_
         mp_raise_ValueError(translate("mDNS only works with built-in WiFi"));
         return;
     }
-    if (inited) {
+    if (object_inited) {
         mp_raise_RuntimeError(translate("mDNS already initialized"));
     }
     mdns_server_construct(self, false);
@@ -83,7 +90,7 @@ void common_hal_mdns_server_deinit(mdns_server_obj_t *self) {
         return;
     }
     self->inited = false;
-    inited = false;
+    object_inited = false;
     mdns_resp_remove_netif(NETIF_STA);
 }
 
