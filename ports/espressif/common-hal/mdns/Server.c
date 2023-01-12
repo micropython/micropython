@@ -37,6 +37,7 @@ STATIC bool inited = false;
 
 void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
     if (inited) {
+        self->inited = false;
         return;
     }
     mdns_init();
@@ -45,6 +46,8 @@ void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
     esp_netif_get_mac(common_hal_wifi_radio_obj.netif, mac);
     snprintf(self->default_hostname, sizeof(self->default_hostname), "cpy-%02x%02x%02x", mac[3], mac[4], mac[5]);
     common_hal_mdns_server_set_hostname(self, self->default_hostname);
+
+    self->inited = true;
 
     if (workflow) {
         // Set a delegated entry to ourselves. This allows us to respond to "circuitpython.local"
@@ -67,21 +70,23 @@ void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_
         mp_raise_ValueError(translate("mDNS only works with built-in WiFi"));
         return;
     }
-    if (inited) {
+    mdns_server_construct(self, false);
+    if (common_hal_mdns_server_deinited(self)) {
         mp_raise_RuntimeError(translate("mDNS already initialized"));
     }
-    mdns_server_construct(self, false);
 }
 
 void common_hal_mdns_server_deinit(mdns_server_obj_t *self) {
+    if (common_hal_mdns_server_deinited(self)) {
+        return;
+    }
+    self->inited = false;
     inited = false;
     mdns_free();
 }
 
 bool common_hal_mdns_server_deinited(mdns_server_obj_t *self) {
-    // This returns INVALID_STATE when not initialized and INVALID_PARAM when it
-    // is.
-    return mdns_instance_name_set(NULL) == ESP_ERR_INVALID_STATE;
+    return !self->inited;
 }
 
 const char *common_hal_mdns_server_get_hostname(mdns_server_obj_t *self) {

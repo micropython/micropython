@@ -37,4 +37,5 @@ typedef struct {
     // "cpy-" "XXXXXX" "\0"
     char default_hostname[4 + 6 + 1];
     const char *service_type[MDNS_MAX_SERVICES];
+    bool inited;
 } mdns_server_obj_t;
