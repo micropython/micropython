@@ -200,6 +200,15 @@ STATIC void _update_encoded_ip(void) {
     }
 }
 
+mdns_server_obj_t *supervisor_web_workflow_mdns(mp_obj_t network_interface) {
+    #if CIRCUITPY_MDNS
+    if (network_interface == &common_hal_wifi_radio_obj) {
+        return &mdns;
+    }
+    #endif
+    return NULL;
+}
+
 #if CIRCUITPY_STATUS_BAR
 bool supervisor_web_workflow_status_dirty(void) {
     return common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj) != _last_enabled ||
