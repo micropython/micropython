@@ -3,11 +3,11 @@ from machine import SPI
 
 machine = os.uname().machine
 if (
-    "RA6M1_EK" in machine
-    or "RA4M1_CLICKER" in machine
-    or "RA4M1_EK" in machine
-    or "RA4W1_EK" in machine
-    or "RA6M1_EK" in machine
+    "EK-RA6M1" in machine
+    or "RA4M1 CLICKER" in machine
+    or "EK-RA4M1" in machine
+    or "EK-RA4W1" in machine
+    or "EK-RA6M1" in machine
 ):
     spis = (-1, 0)
 else:
