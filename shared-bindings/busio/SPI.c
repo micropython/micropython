@@ -333,7 +333,7 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
     // Compute bounds in terms of elements, not bytes.
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     int32_t start = args[ARG_start].u_int;
-    size_t length = bufinfo.len;
+    size_t length = bufinfo.len / stride_in_bytes;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
 
     // Treat start and length in terms of bytes from now on.
