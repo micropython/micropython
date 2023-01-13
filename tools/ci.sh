@@ -10,7 +10,7 @@ fi
 # general helper functions
 
 function ci_gcc_arm_setup {
-    sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
+    sudo apt-get install --option="APT::Acquire::Retries=3" gcc-arm-none-eabi libnewlib-arm-none-eabi
     arm-none-eabi-gcc --version
 }
 
@@ -18,7 +18,7 @@ function ci_gcc_arm_setup {
 # code formatting
 
 function ci_code_formatting_setup {
-    sudo apt-get install uncrustify
+    sudo apt-get install --option="APT::Acquire::Retries=3" uncrustify
     pip3 install black
     uncrustify --version
     black --version
@@ -43,7 +43,7 @@ function ci_commit_formatting_run {
 
 function ci_code_size_setup {
     sudo apt-get update
-    sudo apt-get install gcc-multilib
+    sudo apt-get install --option="APT::Acquire::Retries=3" gcc-multilib
     gcc --version
     ci_gcc_arm_setup
 }
@@ -226,7 +226,7 @@ function ci_nrf_build {
 
 function ci_powerpc_setup {
     sudo apt-get update
-    sudo apt-get install gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
+    sudo apt-get install --option="APT::Acquire::Retries=3" gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
 }
 
 function ci_powerpc_build {
@@ -240,7 +240,7 @@ function ci_powerpc_build {
 function ci_qemu_arm_setup {
     ci_gcc_arm_setup
     sudo apt-get update
-    sudo apt-get install qemu-system
+    sudo apt-get install --option="APT::Acquire::Retries=3" qemu-system
     qemu-system-arm --version
 }
 
@@ -508,7 +508,7 @@ function ci_unix_coverage_run_native_mpy_tests {
 function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
-    sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386
+    sudo apt-get install --option="APT::Acquire::Retries=3" gcc-multilib g++-multilib libffi-dev:i386
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     gcc --version
@@ -549,7 +549,7 @@ function ci_unix_float_run_tests {
 }
 
 function ci_unix_clang_setup {
-    sudo apt-get install clang
+    sudo apt-get install --option="APT::Acquire::Retries=3" clang
     clang --version
 }
 
@@ -612,8 +612,8 @@ function ci_unix_macos_run_tests {
 
 function ci_unix_qemu_mips_setup {
     sudo apt-get update
-    sudo apt-get install gcc-mips-linux-gnu g++-mips-linux-gnu
-    sudo apt-get install qemu-user
+    sudo apt-get install --option="APT::Acquire::Retries=3" gcc-mips-linux-gnu g++-mips-linux-gnu
+    sudo apt-get install --option="APT::Acquire::Retries=3" qemu-user
     qemu-mips --version
 }
 
@@ -632,8 +632,8 @@ function ci_unix_qemu_mips_run_tests {
 
 function ci_unix_qemu_arm_setup {
     sudo apt-get update
-    sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
-    sudo apt-get install qemu-user
+    sudo apt-get install --option="APT::Acquire::Retries=3" gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
+    sudo apt-get install --option="APT::Acquire::Retries=3" qemu-user
     qemu-arm --version
 }
 
@@ -654,7 +654,7 @@ function ci_unix_qemu_arm_run_tests {
 # ports/windows
 
 function ci_windows_setup {
-    sudo apt-get install gcc-mingw-w64
+    sudo apt-get install --option="APT::Acquire::Retries=3" gcc-mingw-w64
 }
 
 function ci_windows_build {
