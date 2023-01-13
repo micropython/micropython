@@ -10,6 +10,7 @@ fi
 # general helper functions
 
 function ci_gcc_arm_setup {
+    sudo apt-get update
     sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
     arm-none-eabi-gcc --version
 }
@@ -18,6 +19,7 @@ function ci_gcc_arm_setup {
 # code formatting
 
 function ci_code_formatting_setup {
+    sudo apt-get update
     sudo apt-get install uncrustify
     pip3 install black
     uncrustify --version
@@ -549,6 +551,7 @@ function ci_unix_float_run_tests {
 }
 
 function ci_unix_clang_setup {
+    sudo apt-get update
     sudo apt-get install clang
     clang --version
 }
@@ -654,6 +657,7 @@ function ci_unix_qemu_arm_run_tests {
 # ports/windows
 
 function ci_windows_setup {
+    sudo apt-get update
     sudo apt-get install gcc-mingw-w64
 }
 
