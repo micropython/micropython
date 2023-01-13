@@ -374,7 +374,12 @@ STATIC mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         if (bufinfo.len != 6) {
                             mp_raise_ValueError(MP_ERROR_TEXT("invalid buffer length"));
                         }
-                        esp_eth_ioctl(self->eth_handle, ETH_CMD_S_MAC_ADDR, bufinfo.buf);
+                        if (
+                            (esp_eth_ioctl(self->eth_handle, ETH_CMD_S_MAC_ADDR, bufinfo.buf) != ESP_OK) ||
+                            (esp_netif_set_mac(self->eth_netif, bufinfo.buf) != ESP_OK)
+                            ) {
+                            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("failed setting MAC address"));
+                        }
                         break;
                     }
                     default:
