@@ -272,7 +272,10 @@ function ci_renesas_ra_board_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/renesas-ra submodules
     make ${MAKEOPTS} -C ports/renesas-ra BOARD=RA4M1_CLICKER
-    make ${MAKEOPTS} -C ports/renesas-ra BOARD=RA6M2_EK
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M2
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M1
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4M1
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4W1
 }
 
 ########################################################################################
