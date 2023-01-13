@@ -26,6 +26,7 @@ import os
 import sys
 import json
 import pathlib
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
 tools_dir = pathlib.Path(__file__).resolve().parent
@@ -82,7 +83,7 @@ else:
         last_failed_jobs = json.loads(j)
 
 
-def set_output(name, value):
+def set_output(name: str, value):
     if "GITHUB_OUTPUT" in os.environ:
         with open(os.environ["GITHUB_OUTPUT"], "at") as f:
             print(f"{name}={value}", file=f)
@@ -90,7 +91,7 @@ def set_output(name, value):
         print(f"Would set GitHub actions output {name} to '{value}'")
 
 
-def set_boards_to_build(build_all):
+def set_boards_to_build(build_all: bool):
     # Get boards in json format
     boards_info_json = build_board_info.get_board_mapping()
     all_board_ids = set()
@@ -228,23 +229,34 @@ def set_boards_to_build(build_all):
         set_output(f"boards-{arch}", json.dumps(sorted(arch_to_boards[arch])))
 
 
-def set_docs_to_build(build_all):
-    if "build-doc" in last_failed_jobs:
-        build_all = True
-
-    doc_match = build_all
-    if not build_all:
-        doc_pattern = re.compile(
-            r"^(?:.github/workflows/|docs|extmod/ulab|(?:(?:ports/\w+/bindings|shared-bindings)\S+\.c|conf\.py|tools/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
-        )
-        for p in changed_files:
-            if doc_pattern.search(p):
-                doc_match = True
-                break
+def set_docs_to_build(build_doc: bool):
+    if not build_doc:
+        if "build-doc" in last_failed_jobs:
+            build_doc = True
+        else:
+            doc_pattern = re.compile(
+                r"^(?:\.github\/workflows\/|docs|extmod\/ulab|(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|conf\.py|tools\/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
+            )
+            github_workspace = os.environ.get("GITHUB_WORKSPACE") or ""
+            github_workspace = github_workspace and github_workspace + "/"
+            for p in changed_files:
+                if doc_pattern.search(p) and (
+                    (
+                        subprocess.run(
+                            f"git diff -U0 $BASE_SHA...$HEAD_SHA {github_workspace + p} | grep -o -m 1 '^[+-]\/\/|'",
+                            capture_output=True,
+                            shell=True,
+                        ).stdout
+                    )
+                    if p.endswith(".c")
+                    else True
+                ):
+                    build_doc = True
+                    break
 
     # Set the step outputs
-    print("Building docs:", doc_match)
-    set_output("build-doc", doc_match)
+    print("Building docs:", build_doc)
+    set_output("build-doc", build_doc)
 
 
 def check_changed_files():

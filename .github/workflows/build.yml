@@ -27,9 +27,9 @@ jobs:
       boards-aarch: ${{ steps.set-matrix.outputs.boards-aarch }}
     steps:
     - name: Dump GitHub context
+      run: echo "$GITHUB_CONTEXT"
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
     - uses: actions/checkout@v3
       with:
         submodules: false
@@ -135,21 +135,27 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         EXCLUDE_COMMIT: ${{ github.event.after }}
       run: python3 -u ci_changes_per_commit.py
+    - name: Set head sha
+      if: github.event_name == 'pull_request'
+      run: echo "HEAD_SHA=$(git show -s --format=%s $GITHUB_SHA | grep -o -P "(?<=Merge ).*(?= into)")" >> $GITHUB_ENV
+    - name: Set base sha
+      if: github.event_name == 'pull_request'
+      run: |
+        git fetch --no-tags --no-recurse-submodules --depth=$((DEPTH + 1)) origin $HEAD_SHA
+        echo "BASE_SHA=$(git rev-list $HEAD_SHA --skip=$DEPTH --max-count=1)" >> $GITHUB_ENV
+      env:
+        DEPTH: ${{ steps.get-last-commit-with-checks.outputs.commit_depth || github.event.pull_request.commits }}
     - name: Get changes
       id: get-changes
       if: github.event_name == 'pull_request'
-      uses: tj-actions/changed-files@v34
-      with:
-        json: true
-        sha: ${{ steps.get-last-commit-with-checks.outputs.commit && github.event.after }}
-        base_sha: ${{ steps.get-last-commit-with-checks.outputs.commit }}
+      run: echo $(git diff $BASE_SHA...$HEAD_SHA --name-only) | echo "changed_files=[\"$(sed "s/ /\", \"/g")\"]" >> $GITHUB_OUTPUT
     - name: Set matrix
       id: set-matrix
       working-directory: tools
-      env:
-        CHANGED_FILES: ${{ steps.get-changes.outputs.all_changed_and_modified_files }}
-        LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.checkruns }}
       run: python3 -u ci_set_matrix.py
+      env:
+        CHANGED_FILES: ${{ steps.get-changes.outputs.changed_files }}
+        LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
 
 
   mpy-cross-mac:
@@ -412,14 +418,15 @@ jobs:
         path: ${{ github.workspace }}/.idf_tools
         key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/espressif/esp-idf/HEAD') }}-${{ steps.py3.outputs.python-path }}-20220404
     - name: Clone IDF submodules
-      run: |
-        (cd $IDF_PATH && git submodule update --init)
+      run: git submodule update --init $IDF_PATH
       env:
         IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
     - name: Install IDF tools
       run: |
+        echo "Installing ESP-IDF tools"
         $IDF_PATH/tools/idf_tools.py --non-interactive install required
         $IDF_PATH/tools/idf_tools.py --non-interactive install cmake
+        echo "Installing Python environment and packages"
         $IDF_PATH/tools/idf_tools.py --non-interactive install-python-env
         rm -rf $IDF_TOOLS_PATH/dist
       env:
@@ -437,7 +444,6 @@ jobs:
       run: |
         source $IDF_PATH/export.sh
         gcc --version
-        xtensa-esp32s2-elf-gcc --version
         python3 --version
         ninja --version
         cmake --version
@@ -470,6 +476,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
 
   build-aarch:
     runs-on: ubuntu-20.04

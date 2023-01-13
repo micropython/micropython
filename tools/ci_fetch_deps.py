@@ -70,6 +70,8 @@ run(
     "Fetch back to the start of 2021 to get commit history",
     f'git fetch --recurse-submodules=no --shallow-since="2021-07-01" origin {ref}',
 )
+# See https://stackoverflow.com/questions/63878612/git-fatal-error-in-object-unshallow-sha-1#comment118418373_63879454
+run('Fix for bug "fatal: error in object: unshallow"', "git repack -d")
 run("Init submodules", "git submodule init")
 run("Submodule status", "git submodule status")
 
