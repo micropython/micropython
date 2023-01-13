@@ -28,7 +28,7 @@ jobs:
     - name: Build
       run: source tools/ci.sh && ci_code_size_build
     - name: Compute code size difference
-      run: tools/metrics.py diff ~/size0 ~/size1 | tee > diff
+      run: tools/metrics.py diff ~/size0 ~/size1 | tee diff
     - name: Save PR number
       if: github.event_name == 'pull_request'
       env:
