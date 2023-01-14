@@ -21,29 +21,54 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       build-doc: ${{ steps.set-matrix.outputs.build-doc }}
-      boards-arm: ${{ steps.set-matrix.outputs.boards-arm }}
-      boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
-      boards-espressif: ${{ steps.set-matrix.outputs.boards-espressif }}
       boards-aarch: ${{ steps.set-matrix.outputs.boards-aarch }}
+      boards-arm: ${{ steps.set-matrix.outputs.boards-arm }}
+      boards-espressif: ${{ steps.set-matrix.outputs.boards-espressif }}
+      boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
+      cp-version: ${{ steps.cp-version.outputs.cp-version }}
     steps:
     - name: Dump GitHub context
       run: echo "$GITHUB_CONTEXT"
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
-    - uses: actions/checkout@v3
+    - name: Set up repository
+      uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
-    - name: Set up Python 3
+    - name: Set up python
       uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-    - name: Get CP deps
-      run: python tools/ci_fetch_deps.py test ${{ github.sha }}
-    - name: CircuitPython version
+    - name: Duplicate USB VID/PID check
+      run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
+    - name: Create submodule status
+      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+    - name: Cache submodules
+      uses: actions/cache@v3
+      with:
+        path: |
+          .git/modules/
+          extmod/ulab
+          frozen/
+          lib/
+          tools/
+        key: submodules-common-${{ hashFiles('submodule_status') }}
+    - name: CircuitPython dependencies
       run: |
-        tools/describe || git log --parents HEAD~4..
-        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
+        python tools/ci_fetch_deps.py ${{ github.job }}
+        echo "::group::Fetch history and tags"
+        git fetch --no-recurse-submodules --shallow-since="2021-07-01" --tags https://github.com/adafruit/circuitpython HEAD
+        git fetch --no-recurse-submodules --shallow-since="2021-07-01" origin $GITHUB_SHA
+        git repack -d
+        echo "::endgroup::"
+    - name: CircuitPython version
+      id: cp-version
+      run: |
+        CP_VERSION=$(tools/describe)
+        echo "$CP_VERSION"
+        echo "CP_VERSION=$CP_VERSION" >> $GITHUB_ENV
+        echo "cp-version=$CP_VERSION" >> $GITHUB_OUTPUT
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -54,8 +79,6 @@ jobs:
       run: |
         gcc --version
         python3 --version
-    - name: Duplicate USB VID/PID Check
-      run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - name: Build unix port
@@ -160,25 +183,36 @@ jobs:
 
   mpy-cross-mac:
     runs-on: macos-11
+    needs: test
+    if: ${{ needs.test.outputs.boards-aarch != '[]' || needs.test.outputs.boards-arm != '[]' || needs.scheduler.test.boards-espressif != '[]' || needs.scheduler.test.boards-riscv != '[]' }}
+    env:
+      CP_VERSION: ${{ needs.test.outputs.cp-version }}
     steps:
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
-    - uses: actions/checkout@v3
+    - name: Set up repository
+      uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
-    - name: Set up Python 3
+    - name: Set up python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
-    - name: Get CP deps
-      run: python tools/ci_fetch_deps.py mpy-cross-mac ${{ github.sha }}
+        python-version: "3.x"
+    - name: Create submodule status
+      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+    - name: Restore submodules
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          .git/modules/
+          extmod/ulab
+          frozen/
+          lib/
+          tools/
+        key: submodules-common-${{ hashFiles('submodule_status') }}
+    - name: CircuitPython dependencies
+      run: python tools/ci_fetch_deps.py ${{ github.job }}
     - name: CircuitPython version
-      run: |
-        tools/describe || git log --parents HEAD~4..
-        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
+      run: tools/describe
     - name: Install dependencies
       run: |
         brew install gettext
@@ -222,21 +256,34 @@ jobs:
     runs-on: ubuntu-20.04
     needs: test
     if: ${{ needs.test.outputs.build-doc == 'True' }}
+    env:
+      CP_VERSION: ${{ needs.test.outputs.cp-version }}
     steps:
-    - uses: actions/checkout@v3
+    - name: Set up repository
+      uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
-    - name: Get CP deps
-      run: python tools/ci_fetch_deps.py docs ${{ github.sha }}
+    - name: Create submodule status
+      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+    - name: Restore submodules
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          .git/modules/
+          extmod/ulab
+          frozen/
+          lib/
+          tools/
+        key: submodules-common-${{ hashFiles('submodule_status') }}
+    - name: CircuitPython dependencies
+      run: python tools/ci_fetch_deps.py ${{ github.job }}
     - name: CircuitPython version
-      run: |
-        tools/describe || git log --parents HEAD~4..
-        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
-    - name: Set up Python 3
+      run: tools/describe
+    - name: Set up python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: "3.x"
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -285,22 +332,37 @@ jobs:
   build-arm:
     runs-on: ubuntu-20.04
     needs: test
+    if: ${{ needs.test.outputs.boards-arm != '[]' }}
+    env:
+      CP_VERSION: ${{ needs.test.outputs.cp-version }}
     strategy:
       fail-fast: false
       matrix:
         board: ${{ fromJSON(needs.test.outputs.boards-arm) }}
-    if: ${{ needs.test.outputs.boards-arm != '[]' }}
     steps:
-    - name: Set up Python 3
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-    - uses: actions/checkout@v3
+    - name: Set up repository
+      uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
-    - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
+    - name: Set up python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    - name: Create submodule status
+      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+    - name: Restore submodules
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          .git/modules/
+          extmod/ulab
+          frozen/
+          lib/
+          tools/
+        key: submodules-common-${{ hashFiles('submodule_status') }}
+    - name: CircuitPython dependencies
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }}
     - uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
         release: '10-2020-q4'
@@ -338,22 +400,37 @@ jobs:
   build-riscv:
     runs-on: ubuntu-20.04
     needs: test
+    if: ${{ needs.test.outputs.boards-riscv != '[]' }}
+    env:
+      CP_VERSION: ${{ needs.test.outputs.cp-version }}
     strategy:
       fail-fast: false
       matrix:
         board: ${{ fromJSON(needs.test.outputs.boards-riscv) }}
-    if: ${{ needs.test.outputs.boards-riscv != '[]' }}
     steps:
-    - name: Set up Python 3
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-    - uses: actions/checkout@v3
+    - name: Set up repository
+      uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
-    - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
+    - name: Set up python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    - name: Create submodule status
+      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+    - name: Restore submodules
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          .git/modules/
+          extmod/ulab
+          frozen/
+          lib/
+          tools/
+        key: submodules-common-${{ hashFiles('submodule_status') }}
+    - name: CircuitPython dependencies
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }}
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
@@ -390,27 +467,40 @@ jobs:
   build-espressif:
     runs-on: ubuntu-20.04
     needs: test
+    if: ${{ needs.test.outputs.boards-espressif != '[]' }}
+    env:
+      CP_VERSION: ${{ needs.test.outputs.cp-version }}
     strategy:
       fail-fast: false
       matrix:
         board: ${{ fromJSON(needs.test.outputs.boards-espressif) }}
-    if: ${{ needs.test.outputs.boards-espressif != '[]' }}
     steps:
-    - name: Set up Python 3
+    - name: Set up repository
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        fetch-depth: 1
+    - name: Set up python
       id: py3
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
-    - uses: actions/checkout@v3
+    - name: Create submodule status
+      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+    - name: Restore submodules
+      uses: actions/cache/restore@v3
       with:
-        submodules: false
-        fetch-depth: 1
-    - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
+        path: |
+          .git/modules/
+          extmod/ulab
+          frozen/
+          lib/
+          tools/
+        key: submodules-common-${{ hashFiles('submodule_status') }}
+    - name: CircuitPython dependencies
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }}
     - name: CircuitPython version
-      run: |
-        tools/describe || git log --parents HEAD~4..
-        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
+      run: tools/describe
     - uses: actions/cache@v3
       name: Fetch IDF tool cache
       id: idf-cache
@@ -481,22 +571,37 @@ jobs:
   build-aarch:
     runs-on: ubuntu-20.04
     needs: test
+    if: ${{ needs.test.outputs.boards-aarch != '[]' }}
+    env:
+      CP_VERSION: ${{ needs.test.outputs.cp-version }}
     strategy:
       fail-fast: false
       matrix:
         board: ${{ fromJSON(needs.test.outputs.boards-aarch) }}
-    if: ${{ needs.test.outputs.boards-aarch != '[]' }}
     steps:
-    - name: Set up Python 3
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-    - uses: actions/checkout@v3
+    - name: Set up repository
+      uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
-    - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
+    - name: Set up python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    - name: Create submodule status
+      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+    - name: Restore submodules
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          .git/modules/
+          extmod/ulab
+          frozen/
+          lib/
+          tools/
+        key: submodules-common-${{ hashFiles('submodule_status') }}
+    - name: CircuitPython dependencies
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }}
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext mtools
