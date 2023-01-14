@@ -103,7 +103,10 @@ const mcu_pin_obj_t *validate_obj_is_pin_in(mp_obj_t obj, qstr arg_name) {
 
 // Validate that the obj is a pin or None. Return an mcu_pin_obj_t* or NULL, correspondingly.
 const mcu_pin_obj_t *validate_obj_is_pin_or_none(mp_obj_t obj, qstr arg_name) {
-    return MP_OBJ_TO_PTR(mp_arg_validate_type(obj, &mcu_pin_type, arg_name));
+    if (obj == mp_const_none) {
+        return NULL;
+    }
+    return validate_obj_is_pin(obj, arg_name);
 }
 
 const mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj, qstr arg_name) {

@@ -64,7 +64,7 @@ void common_hal_rp2pio_statemachine_restart(rp2pio_statemachine_obj_t *self);
 void common_hal_rp2pio_statemachine_stop(rp2pio_statemachine_obj_t *self);
 void common_hal_rp2pio_statemachine_run(rp2pio_statemachine_obj_t *self, const uint16_t *instructions, size_t len);
 
-// Writes out the given data.
+// Lengths are in bytes.
 bool common_hal_rp2pio_statemachine_write(rp2pio_statemachine_obj_t *self, const uint8_t *data, size_t len, uint8_t stride_in_bytes, bool swap);
 bool common_hal_rp2pio_statemachine_background_write(rp2pio_statemachine_obj_t *self, const sm_buf_info *once_obj, const sm_buf_info *loop_obj, uint8_t stride_in_bytes, bool swap);
 bool common_hal_rp2pio_statemachine_stop_background_write(rp2pio_statemachine_obj_t *self);
