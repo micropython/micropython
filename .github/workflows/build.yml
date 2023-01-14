@@ -43,14 +43,13 @@ jobs:
     - name: Duplicate USB VID/PID check
       run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
     - name: Create submodule status
-      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
     - name: Cache submodules
       uses: actions/cache@v3
       with:
         path: |
           .git/modules/
           extmod/ulab
-          frozen/
           lib/
           tools/
         key: submodules-common-${{ hashFiles('submodule_status') }}
@@ -198,14 +197,13 @@ jobs:
       with:
         python-version: "3.x"
     - name: Create submodule status
-      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
         path: |
           .git/modules/
           extmod/ulab
-          frozen/
           lib/
           tools/
         key: submodules-common-${{ hashFiles('submodule_status') }}
@@ -265,14 +263,13 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Create submodule status
-      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
         path: |
           .git/modules/
           extmod/ulab
-          frozen/
           lib/
           tools/
         key: submodules-common-${{ hashFiles('submodule_status') }}
@@ -350,18 +347,18 @@ jobs:
       with:
         python-version: "3.x"
     - name: Create submodule status
-      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
         path: |
           .git/modules/
           extmod/ulab
-          frozen/
           lib/
           tools/
         key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: CircuitPython dependencies
+      id: cp-deps
       run: python tools/ci_fetch_deps.py ${{ matrix.board }}
     - uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
@@ -375,11 +372,12 @@ jobs:
         gcc --version
         arm-none-eabi-gcc --version
         python3 --version
-    - name: mpy-cross
+    - name: Build mpy-cross
+      if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
       run: make -C mpy-cross -j2
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
-    - name: build
+    - name: Build
       run: python3 -u build_release_files.py
       working-directory: tools
       env:
@@ -418,18 +416,18 @@ jobs:
       with:
         python-version: "3.x"
     - name: Create submodule status
-      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
         path: |
           .git/modules/
           extmod/ulab
-          frozen/
           lib/
           tools/
         key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: CircuitPython dependencies
+      id: cp-deps
       run: python tools/ci_fetch_deps.py ${{ matrix.board }}
     - name: Install dependencies
       run: |
@@ -442,11 +440,12 @@ jobs:
         gcc --version
         riscv64-unknown-elf-gcc --version
         python3 --version
-    - name: mpy-cross
+    - name: Build mpy-cross
+      if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
       run: make -C mpy-cross -j2
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
-    - name: build
+    - name: Build
       run: python3 -u build_release_files.py
       working-directory: tools
       env:
@@ -486,18 +485,18 @@ jobs:
       with:
         python-version: "3.10"
     - name: Create submodule status
-      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
         path: |
           .git/modules/
           extmod/ulab
-          frozen/
           lib/
           tools/
         key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: CircuitPython dependencies
+      id: cp-deps
       run: python tools/ci_fetch_deps.py ${{ matrix.board }}
     - name: CircuitPython version
       run: tools/describe
@@ -541,11 +540,12 @@ jobs:
       env:
         IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
-    - name: mpy-cross
+    - name: Build mpy-cross
+      if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
       run: make -C mpy-cross -j2
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
-    - name: build
+    - name: Build
       run: |
         source $IDF_PATH/export.sh
         python3 -u build_release_files.py
@@ -589,18 +589,18 @@ jobs:
       with:
         python-version: "3.x"
     - name: Create submodule status
-      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
         path: |
           .git/modules/
           extmod/ulab
-          frozen/
           lib/
           tools/
         key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: CircuitPython dependencies
+      id: cp-deps
       run: python tools/ci_fetch_deps.py ${{ matrix.board }}
     - name: Install dependencies
       run: |
@@ -627,11 +627,12 @@ jobs:
         arm-none-eabi-gcc --version
         python3 --version
         mkfs.fat --version || true
-    - name: mpy-cross
+    - name: Build mpy-cross
+      if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
       run: make -C mpy-cross -j2
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
-    - name: build
+    - name: Build
       run: python3 -u build_release_files.py
       working-directory: tools
       env:

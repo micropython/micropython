@@ -1,8 +1,9 @@
-import pathlib
-import shlex
-import subprocess
+import os
 import sys
 import time
+import shlex
+import pathlib
+import subprocess
 
 # Target will be a board, "test", "docs", "mpy-cross-mac", or "windows"
 TARGET = sys.argv[1]
@@ -58,13 +59,21 @@ def run(title, command, check=True):
         print("Duration:", time.monotonic() - start, flush=True)
 
 
+def set_output(name, value):
+    if "GITHUB_OUTPUT" in os.environ:
+        with open(os.environ["GITHUB_OUTPUT"], "at") as f:
+            print(f"{name}={value}", file=f)
+    else:
+        print(f"Would set GitHub actions output {name} to '{value}'")
+
+
 def main():
     submodules = []
+    submodules_tags = []
+
     print("Target:", TARGET)
 
-    if TARGET == "scheduler":
-        submodules = ["extmod/ulab", "lib/", "tools/", "frozen/"]
-    elif TARGET == "mpy-cross-tests":
+    if TARGET == "test":
         submodules = ["extmod/ulab", "lib/", "tools/"]
     elif TARGET == "build-doc":
         # used in .readthedocs.yml to generate RTD
@@ -98,13 +107,29 @@ def main():
                     if lib_folder.count("/") > 1:
                         lib_folder = lib_folder.split("/", maxsplit=2)
                         lib_folder = "/".join(lib_folder[:2])
-                    submodules.append(lib_folder)
+                    submodules_tags.append(lib_folder)
 
-    print("Submodule paths:", submodules)
+    print("Submodule tags[Y]:", submodules_tags)
+    print("Submodule tags[N]:", submodules)
+
+    if submodules_tags:
+        run(
+            "Init the submodules with tags",
+            f"git submodule update --init {' '.join(submodules_tags)}",
+        )
 
     if submodules:
-        submodules = " ".join(submodules)
-        run("Init the required submodules", f"git submodule update --init --depth=1 {submodules}")
+        run(
+            "Init the submodules without tags",
+            f"git submodule update --init --depth=1 {' '.join(submodules)}",
+        )
+
+    for submodule in submodules_tags:
+        if submodule.startswith("frozen"):
+            set_output("frozen_tags", True)
+            break
+    else:
+        set_output("frozen_tags", False)
 
 
 if __name__ == "__main__":

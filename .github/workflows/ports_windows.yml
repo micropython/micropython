@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
     paths:
-      - '.github/workflows/*.yml'
+      - '.github/workflows/ports_windows.yml'
       - 'extmod/**'
       - 'lib/**'
       - 'mpy-cross/**'
@@ -77,14 +77,13 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Create submodule status
-      run: git submodule status extmod/ulab frozen/ lib/ tools/ >> submodule_status
+      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
         path: |
           .git/modules/
           extmod/ulab
-          frozen/
           lib/
           tools/
         key: submodules-common-${{ hashFiles('submodule_status') }}
