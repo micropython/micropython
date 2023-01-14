@@ -396,16 +396,21 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
-    int32_t start = args[ARG_start].u_int;
-    size_t length = bufinfo.len;
-    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
-    if (length == 0) {
-        return mp_const_none;
-    }
-
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
         mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
+    }
+    int32_t start = args[ARG_start].u_int;
+    size_t length = bufinfo.len / stride_in_bytes;
+    // Normalize in element size units, not bytes.
+    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
+
+    if (length == 0) {
+        return mp_const_none;
     }
 
     bool ok = common_hal_rp2pio_statemachine_write(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes, args[ARG_swap].u_bool);
@@ -603,17 +608,19 @@ STATIC mp_obj_t rp2pio_statemachine_readinto(size_t n_args, const mp_obj_t *pos_
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
-    int32_t start = args[ARG_start].u_int;
-    size_t length = bufinfo.len;
-    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
-
-    if (length == 0) {
-        return mp_const_none;
-    }
-
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
         mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
+    }
+    int32_t start = args[ARG_start].u_int;
+    size_t length = bufinfo.len / stride_in_bytes;
+    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
+    if (length == 0) {
+        return mp_const_none;
     }
 
     bool ok = common_hal_rp2pio_statemachine_readinto(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes, args[ARG_swap].u_bool);
@@ -674,28 +681,32 @@ STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t
 
     mp_buffer_info_t buf_out_info;
     mp_get_buffer_raise(args[ARG_buffer_out].u_obj, &buf_out_info, MP_BUFFER_READ);
+    int out_stride_in_bytes = mp_binary_get_size('@', buf_out_info.typecode, NULL);
+    if (out_stride_in_bytes > 4) {
+        mp_raise_ValueError(translate("Out-buffer elements must be <= 4 bytes long"));
+    }
     int32_t out_start = args[ARG_out_start].u_int;
-    size_t out_length = buf_out_info.len;
+    size_t out_length = buf_out_info.len / out_stride_in_bytes;
     normalize_buffer_bounds(&out_start, args[ARG_out_end].u_int, &out_length);
 
     mp_buffer_info_t buf_in_info;
     mp_get_buffer_raise(args[ARG_buffer_in].u_obj, &buf_in_info, MP_BUFFER_WRITE);
-    int32_t in_start = args[ARG_in_start].u_int;
-    size_t in_length = buf_in_info.len;
-    normalize_buffer_bounds(&in_start, args[ARG_in_end].u_int, &in_length);
-
-    if (out_length == 0 && in_length == 0) {
-        return mp_const_none;
-    }
-
     int in_stride_in_bytes = mp_binary_get_size('@', buf_in_info.typecode, NULL);
     if (in_stride_in_bytes > 4) {
         mp_raise_ValueError(translate("In-buffer elements must be <= 4 bytes long"));
     }
+    int32_t in_start = args[ARG_in_start].u_int;
+    size_t in_length = buf_in_info.len / in_stride_in_bytes;
+    normalize_buffer_bounds(&in_start, args[ARG_in_end].u_int, &in_length);
 
-    int out_stride_in_bytes = mp_binary_get_size('@', buf_out_info.typecode, NULL);
-    if (out_stride_in_bytes > 4) {
-        mp_raise_ValueError(translate("Out-buffer elements must be <= 4 bytes long"));
+    // Treat start and length in terms of bytes from now on.
+    out_start *= out_stride_in_bytes;
+    out_length *= out_stride_in_bytes;
+    in_start *= in_stride_in_bytes;
+    in_length *= in_stride_in_bytes;
+
+    if (out_length == 0 && in_length == 0) {
+        return mp_const_none;
     }
 
     bool ok = common_hal_rp2pio_statemachine_write_readinto(self,
