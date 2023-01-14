@@ -326,6 +326,88 @@ jobs:
         [ -z "$TWINE_USERNAME" ] || twine upload circuitpython-stubs/dist/*
 
 
+  build-aarch:
+    runs-on: ubuntu-20.04
+    needs: test
+    if: ${{ needs.test.outputs.boards-aarch != '[]' }}
+    env:
+      CP_VERSION: ${{ needs.test.outputs.cp-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        board: ${{ fromJSON(needs.test.outputs.boards-aarch) }}
+    steps:
+    - name: Set up repository
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        fetch-depth: 1
+    - name: Set up python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    - name: Create submodule status
+      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
+    - name: Restore submodules
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          .git/modules/
+          extmod/ulab
+          lib/
+          tools/
+        key: submodules-common-${{ hashFiles('submodule_status') }}
+    - name: CircuitPython dependencies
+      id: cp-deps
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }}
+    - name: Install dependencies
+      run: |
+        sudo apt-get install -y gettext mtools
+        pip install -r requirements-ci.txt -r requirements-dev.txt
+        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
+    - uses: carlosperate/arm-none-eabi-gcc-action@v1
+      with:
+        release: '10-2020-q4'
+    - name: Install mkfs.fat
+      run: |
+        wget https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz
+        tar -xaf dosfstools-4.2.tar.gz
+        cd dosfstools-4.2
+        ./configure
+        make -j 2
+        cd src
+        echo >>$GITHUB_PATH $(pwd)
+    - name: Versions
+      run: |
+        gcc --version
+        aarch64-none-elf-gcc --version
+        arm-none-eabi-gcc --version
+        python3 --version
+        mkfs.fat --version || true
+    - name: Build mpy-cross
+      if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
+      run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
+    - name: Build
+      run: python3 -u build_release_files.py
+      working-directory: tools
+      env:
+        BOARDS: ${{ matrix.board }}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.board }}
+        path: bin/${{ matrix.board }}
+    - name: Upload to S3
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
+      env:
+        AWS_PAGER: ''
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
+
   build-arm:
     runs-on: ubuntu-20.04
     needs: test
@@ -371,74 +453,6 @@ jobs:
       run: |
         gcc --version
         arm-none-eabi-gcc --version
-        python3 --version
-    - name: Build mpy-cross
-      if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
-      run: make -C mpy-cross -j2
-    - name: Setup build failure matcher
-      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
-    - name: Build
-      run: python3 -u build_release_files.py
-      working-directory: tools
-      env:
-        BOARDS: ${{ matrix.board }}
-    - uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.board }}
-        path: bin/${{ matrix.board }}
-    - name: Upload to S3
-      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
-      env:
-        AWS_PAGER: ''
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
-
-
-  build-riscv:
-    runs-on: ubuntu-20.04
-    needs: test
-    if: ${{ needs.test.outputs.boards-riscv != '[]' }}
-    env:
-      CP_VERSION: ${{ needs.test.outputs.cp-version }}
-    strategy:
-      fail-fast: false
-      matrix:
-        board: ${{ fromJSON(needs.test.outputs.boards-riscv) }}
-    steps:
-    - name: Set up repository
-      uses: actions/checkout@v3
-      with:
-        submodules: false
-        fetch-depth: 1
-    - name: Set up python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.x"
-    - name: Create submodule status
-      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
-    - name: Restore submodules
-      uses: actions/cache/restore@v3
-      with:
-        path: |
-          .git/modules/
-          extmod/ulab
-          lib/
-          tools/
-        key: submodules-common-${{ hashFiles('submodule_status') }}
-    - name: CircuitPython dependencies
-      id: cp-deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }}
-    - name: Install dependencies
-      run: |
-        sudo apt-get install -y gettext
-        pip install -r requirements-ci.txt -r requirements-dev.txt
-        wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
-        sudo tar -C /usr --strip-components=1 -xaf riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
-    - name: Versions
-      run: |
-        gcc --version
-        riscv64-unknown-elf-gcc --version
         python3 --version
     - name: Build mpy-cross
       if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
@@ -568,16 +582,16 @@ jobs:
       if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
 
-  build-aarch:
+  build-riscv:
     runs-on: ubuntu-20.04
     needs: test
-    if: ${{ needs.test.outputs.boards-aarch != '[]' }}
+    if: ${{ needs.test.outputs.boards-riscv != '[]' }}
     env:
       CP_VERSION: ${{ needs.test.outputs.cp-version }}
     strategy:
       fail-fast: false
       matrix:
-        board: ${{ fromJSON(needs.test.outputs.boards-aarch) }}
+        board: ${{ fromJSON(needs.test.outputs.boards-riscv) }}
     steps:
     - name: Set up repository
       uses: actions/checkout@v3
@@ -604,29 +618,15 @@ jobs:
       run: python tools/ci_fetch_deps.py ${{ matrix.board }}
     - name: Install dependencies
       run: |
-        sudo apt-get install -y gettext mtools
+        sudo apt-get install -y gettext
         pip install -r requirements-ci.txt -r requirements-dev.txt
-        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
-        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
-    - uses: carlosperate/arm-none-eabi-gcc-action@v1
-      with:
-        release: '10-2020-q4'
-    - name: Install mkfs.fat
-      run: |
-        wget https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz
-        tar -xaf dosfstools-4.2.tar.gz
-        cd dosfstools-4.2
-        ./configure
-        make -j 2
-        cd src
-        echo >>$GITHUB_PATH $(pwd)
+        wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
+        sudo tar -C /usr --strip-components=1 -xaf riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
     - name: Versions
       run: |
         gcc --version
-        aarch64-none-elf-gcc --version
-        arm-none-eabi-gcc --version
+        riscv64-unknown-elf-gcc --version
         python3 --version
-        mkfs.fat --version || true
     - name: Build mpy-cross
       if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
       run: make -C mpy-cross -j2
