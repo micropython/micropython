@@ -485,6 +485,8 @@ jobs:
     if: ${{ needs.test.outputs.boards-espressif != '[]' }}
     env:
       CP_VERSION: ${{ needs.test.outputs.cp-version }}
+      IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
+      IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     strategy:
       fail-fast: false
       matrix:
@@ -496,7 +498,7 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Set up python
-      id: py3
+      id: setup-python
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
@@ -511,21 +513,32 @@ jobs:
           lib/
           tools/
         key: submodules-common-${{ hashFiles('submodule_status') }}
+    - name: Get IDF commit
+      id: idf-commit
+      run: |
+        COMMIT=$(git submodule status ports/espressif/esp-idf | grep -o -P '(?<=^-).*(?= )')
+        echo "$COMMIT"
+        echo "commit=$COMMIT" >> $GITHUB_OUTPUT
+    - name: Cache IDF submodules
+      uses: actions/cache@v3
+      with:
+        path: |
+          .git/modules/ports/espressif/esp-idf
+          ports/espressif/esp-idf
+        key: submodules-idf-${{ steps.idf-commit.outputs.commit }}
     - name: CircuitPython dependencies
       id: cp-deps
       run: python tools/ci_fetch_deps.py ${{ matrix.board }}
     - name: CircuitPython version
       run: tools/describe
-    - uses: actions/cache@v3
-      name: Fetch IDF tool cache
-      id: idf-cache
+    - name: Cache IDF tools
+      uses: actions/cache@v3
       with:
-        path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/espressif/esp-idf/HEAD') }}-${{ steps.py3.outputs.python-path }}-20220404
+        path: ${{ env.IDF_TOOLS_PATH }}
+        key: ${{ runner.os }}-idf-tools-${{ steps.idf-commit.outputs.commit }}-${{ steps.setup-python.outputs.python-version }}
     - name: Clone IDF submodules
-      run: cd $IDF_PATH && git submodule update --init --depth=1
-      env:
-        IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
+      run: git submodule update --init --depth=1
+      working-directory: ${{ env.IDF_PATH }}
     - name: Install IDF tools
       run: |
         echo "Installing ESP-IDF tools"
@@ -534,17 +547,11 @@ jobs:
         echo "Installing Python environment and packages"
         $IDF_PATH/tools/idf_tools.py --non-interactive install-python-env
         rm -rf $IDF_TOOLS_PATH/dist
-      env:
-        IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
-        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     - name: Install dependencies
       run: |
         source $IDF_PATH/export.sh
         sudo apt-get install -y gettext ninja-build
         pip install -r requirements-dev.txt
-      env:
-        IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
-        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     - name: Versions
       run: |
         source $IDF_PATH/export.sh
@@ -552,10 +559,6 @@ jobs:
         python3 --version
         ninja --version
         cmake --version
-      shell: bash
-      env:
-        IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
-        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     - name: Build mpy-cross
       if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
       run: make -C mpy-cross -j2
@@ -566,10 +569,7 @@ jobs:
         source $IDF_PATH/export.sh
         python3 -u build_release_files.py
       working-directory: tools
-      shell: bash
       env:
-        IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
-        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
         BOARDS: ${{ matrix.board }}
     - uses: actions/upload-artifact@v3
       with:
