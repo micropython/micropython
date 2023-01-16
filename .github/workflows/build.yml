@@ -523,7 +523,7 @@ jobs:
         path: ${{ github.workspace }}/.idf_tools
         key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/espressif/esp-idf/HEAD') }}-${{ steps.py3.outputs.python-path }}-20220404
     - name: Clone IDF submodules
-      run: git submodule update --init $IDF_PATH
+      run: cd $IDF_PATH && git submodule update --init --depth=1
       env:
         IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
     - name: Install IDF tools
