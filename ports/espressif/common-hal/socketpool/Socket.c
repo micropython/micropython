@@ -168,7 +168,9 @@ STATIC void unregister_open_socket(int fd) {
         if (open_socket_fds[i] == fd) {
             open_socket_fds[i] = -1;
             user_socket[i] = false;
-            write(socket_change_fd, &fd, sizeof(fd));
+            // Write must be 8 bytes for an eventfd.
+            uint64_t signal = 1;
+            write(socket_change_fd, &signal, sizeof(signal));
             return;
         }
     }
@@ -251,7 +253,9 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
     uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Allow timeouts and interrupts
-    while (newsoc == -1 && !timed_out) {
+    while (newsoc == -1 &&
+           !timed_out &&
+           !mp_hal_is_interrupted()) {
         if (self->timeout_ms != (uint)-1 && self->timeout_ms != 0) {
             timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
         }
@@ -262,6 +266,9 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
             return -MP_EAGAIN;
         }
     }
+
+    // New client socket will not be non-blocking by default, so make it non-blocking.
+    lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
 
     if (!timed_out) {
         // harmless on failure but avoiding memcpy is faster
@@ -284,11 +291,10 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         if (!common_hal_socketpool_socket_get_closed(accepted)) {
             common_hal_socketpool_socket_close(accepted);
         }
-        // Create the socket
+        // Replace the old accepted socket with the new one.
         accepted->num = newsoc;
         accepted->pool = self->pool;
         accepted->connected = true;
-        lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
     }
 
     return newsoc;
