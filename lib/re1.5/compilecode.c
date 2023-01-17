@@ -4,6 +4,9 @@
 
 #include "re1.5.h"
 
+// Matches: DSWdsw
+#define MATCH_NAMED_CLASS_CHAR(c) (((c) | 0x20) == 'd' || ((c) | 0x24) == 'w')
+
 #define INSERT_CODE(at, num, pc) \
     ((code ? memmove(code + at + num, code + at, pc - at) : 0), pc += num)
 #define REL(at, to) (to - at - 2)
@@ -31,7 +34,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
         case '\\':
             re++;
             if (!*re) return NULL; // Trailing backslash
-            if ((*re | 0x20) == 'd' || (*re | 0x20) == 's' || (*re | 0x20) == 'w') {
+            if (MATCH_NAMED_CLASS_CHAR(*re)) {
                 term = PC;
                 EMIT(PC++, NamedClass);
                 EMIT(PC++, *re);
