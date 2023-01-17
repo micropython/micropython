@@ -200,6 +200,16 @@ STATIC void _update_encoded_ip(void) {
     }
 }
 
+mdns_server_obj_t *supervisor_web_workflow_mdns(mp_obj_t network_interface) {
+    #if CIRCUITPY_MDNS
+    if (network_interface == &common_hal_wifi_radio_obj &&
+        mdns.base.type == &mdns_server_type) {
+        return &mdns;
+    }
+    #endif
+    return NULL;
+}
+
 #if CIRCUITPY_STATUS_BAR
 bool supervisor_web_workflow_status_dirty(void) {
     return common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj) != _last_enabled ||
@@ -300,11 +310,6 @@ void supervisor_start_web_workflow(void) {
 
     if (first_start) {
         port_changed = false;
-        #if CIRCUITPY_MDNS
-        mdns_server_construct(&mdns, true);
-        mdns.base.type = &mdns_server_type;
-        common_hal_mdns_server_set_instance_name(&mdns, MICROPY_HW_BOARD_NAME);
-        #endif
         pool.base.type = &socketpool_socketpool_type;
         common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
 
@@ -313,13 +318,26 @@ void supervisor_start_web_workflow(void) {
 
         websocket_init();
     }
+    #if CIRCUITPY_MDNS
+    // Try to start MDNS if the user deinited it.
+    if (mdns.base.type != &mdns_server_type ||
+        common_hal_mdns_server_deinited(&mdns)) {
+        mdns_server_construct(&mdns, true);
+        mdns.base.type = &mdns_server_type;
+        if (!common_hal_mdns_server_deinited(&mdns)) {
+            common_hal_mdns_server_set_instance_name(&mdns, MICROPY_HW_BOARD_NAME);
+        }
+    }
+    #endif
     if (port_changed) {
         common_hal_socketpool_socket_close(&listening);
     }
     if (first_start || port_changed) {
         web_api_port = new_port;
         #if CIRCUITPY_MDNS
-        common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
+        if (!common_hal_mdns_server_deinited(&mdns)) {
+            common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
+        }
         #endif
         socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
         common_hal_socketpool_socket_settimeout(&listening, 0);
@@ -444,17 +462,18 @@ static bool _origin_ok(const char *origin) {
     }
     // These are prefix checks up to : so that any port works.
     // TODO: Support DHCP hostname in addition to MDNS.
-    #if CIRCUITPY_MDNS
-    const char *local = ".local";
-    const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
-    const char *end = origin + strlen(http) + strlen(hostname) + strlen(local);
-    if (strncmp(origin + strlen(http), hostname, strlen(hostname)) == 0 &&
-        strncmp(origin + strlen(http) + strlen(hostname), local, strlen(local)) == 0 &&
-        (end[0] == '\0' || end[0] == ':')) {
-        return true;
-    }
-    #else
     const char *end;
+    #if CIRCUITPY_MDNS
+    if (!common_hal_mdns_server_deinited(&mdns)) {
+        const char *local = ".local";
+        const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
+        end = origin + strlen(http) + strlen(hostname) + strlen(local);
+        if (strncmp(origin + strlen(http), hostname, strlen(hostname)) == 0 &&
+            strncmp(origin + strlen(http) + strlen(hostname), local, strlen(local)) == 0 &&
+            (end[0] == '\0' || end[0] == ':')) {
+            return true;
+        }
+    }
     #endif
 
     _update_encoded_ip();
@@ -733,12 +752,13 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
 }
 
 static void _reply_with_devices_json(socketpool_socket_obj_t *socket, _request *request) {
+    size_t total_results = 0;
     #if CIRCUITPY_MDNS
     mdns_remoteservice_obj_t found_devices[32];
-    size_t total_results = mdns_server_find(&mdns, "_circuitpython", "_tcp", 1, found_devices, MP_ARRAY_SIZE(found_devices));
+    if (!common_hal_mdns_server_deinited(&mdns)) {
+        total_results = mdns_server_find(&mdns, "_circuitpython", "_tcp", 1, found_devices, MP_ARRAY_SIZE(found_devices));
+    }
     size_t count = MIN(total_results, MP_ARRAY_SIZE(found_devices));
-    #else
-    size_t total_results = 0;
     #endif
     socketpool_socket_send(socket, (const uint8_t *)OK_JSON, strlen(OK_JSON));
     _cors_header(socket, request);
@@ -775,10 +795,11 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _send_str(socket, "\r\n");
     mp_print_t _socket_print = {socket, _print_chunk};
 
-    #if CIRCUITPY_MDNS
-    const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
-    #else
     const char *hostname = "";
+    #if CIRCUITPY_MDNS
+    if (!common_hal_mdns_server_deinited(&mdns)) {
+        hostname = common_hal_mdns_server_get_hostname(&mdns);
+    }
     #endif
     _update_encoded_ip();
     // Note: this leverages the fact that C concats consecutive string literals together.
@@ -1023,7 +1044,13 @@ static void _decode_percents(char *str) {
 static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
     if (request->redirect) {
         #if CIRCUITPY_MDNS
-        _reply_redirect(socket, request, request->path);
+        if (!common_hal_mdns_server_deinited(&mdns)) {
+            _reply_redirect(socket, request, request->path);
+        } else {
+            _reply_missing(socket, request);
+        }
+        #else
+        _reply_missing(socket, request);
         #endif
     } else if (strlen(request->origin) > 0 && !_origin_ok(request->origin)) {
         _reply_forbidden(socket, request);

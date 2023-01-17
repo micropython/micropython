@@ -33,6 +33,10 @@
 #include "shared-bindings/mdns/Server.h"
 #include "shared-bindings/util.h"
 
+#if CIRCUITPY_WEB_WORKFLOW
+#include "supervisor/shared/web_workflow/web_workflow.h"
+#endif
+
 //| class Server:
 //|     """The MDNS Server responds to queries for this device's information and allows for querying
 //|     other devices."""
@@ -53,7 +57,14 @@ STATIC mp_obj_t mdns_server_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mdns_server_obj_t *self = m_new_obj(mdns_server_obj_t);
+    #if CIRCUITPY_WEB_WORKFLOW
+    mdns_server_obj_t *web_workflow_mdns = supervisor_web_workflow_mdns(args[ARG_network_interface].u_obj);
+    if (web_workflow_mdns != NULL) {
+        return web_workflow_mdns;
+    }
+    #endif
+
+    mdns_server_obj_t *self = m_new_obj_with_finaliser(mdns_server_obj_t);
     self->base.type = &mdns_server_type;
     common_hal_mdns_server_construct(self, args[ARG_network_interface].u_obj);
 
@@ -194,6 +205,7 @@ STATIC const mp_rom_map_elem_t mdns_server_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_find),              MP_ROM_PTR(&mdns_server_find_obj) },
     { MP_ROM_QSTR(MP_QSTR_advertise_service), MP_ROM_PTR(&mdns_server_advertise_service_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR___del__),           MP_ROM_PTR(&mdns_server_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),            MP_ROM_PTR(&mdns_server_deinit_obj) },
 };
 

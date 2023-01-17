@@ -34,4 +34,5 @@ typedef struct {
     const char *instance_name;
     // "cpy-" "XXXXXX" "\0"
     char default_hostname[4 + 6 + 1];
+    bool inited;
 } mdns_server_obj_t;
