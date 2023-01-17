@@ -67,8 +67,11 @@
 //|     frequency: int
 //|     """The CPU operating frequency in Hertz.
 //|
-//|     **Limitations:** Setting the ``frequency`` is possible on RP2040 boards and some i.MX boards.
-//|     On most boards, ``frequency`` is read-only.
+//|     **Limitations:** On most boards, ``frequency`` is read-only. Setting
+//|     the ``frequency`` is possible on RP2040 boards and some i.MX boards.
+//|
+//|     .. warning:: On RP2040 boards changing the frequency may cause issues
+//|        with other subsystems, such as USB, PWM, and PIO.
 //|     """
 
 #if CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY

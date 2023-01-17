@@ -39,6 +39,6 @@ mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void);
 float common_hal_mcu_processor_get_temperature(void);
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]);
 float common_hal_mcu_processor_get_voltage(void);
-uint32_t common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self, uint32_t frequency);
+void common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self, uint32_t frequency);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PROCESSOR_H

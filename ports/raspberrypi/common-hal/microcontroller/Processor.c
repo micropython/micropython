@@ -61,14 +61,10 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
     return clock_get_hz(clk_sys);
 }
 
-uint32_t common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self,
-    uint32_t frequency) {
-    uint32_t freq = frequency / 1000;
-
-    if (!set_sys_clock_khz(freq, false)) {
-        mp_raise_ValueError(translate("Invalid frequency supplied"));
+void common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self, uint32_t frequency) {
+    if (!set_sys_clock_khz(frequency / 1000, false)) {
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
-    return clock_get_hz(clk_sys);
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
