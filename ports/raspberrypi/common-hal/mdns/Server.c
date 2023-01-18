@@ -48,6 +48,7 @@ STATIC bool object_inited = false;
 
 void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
     if (object_inited) {
+        // Mark the object as deinit since another is already using MDNS.
         self->inited = false;
         return;
     }

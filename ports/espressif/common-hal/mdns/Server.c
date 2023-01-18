@@ -33,14 +33,19 @@
 
 #include "components/mdns/include/mdns.h"
 
-STATIC bool inited = false;
+// Track whether the underlying IDF mdns has been started so that we only
+// create a single inited MDNS object to CircuitPython. (After deinit, another
+// could be created.)
+STATIC bool mdns_started = false;
 
 void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
-    if (inited) {
+    if (mdns_started) {
+        // Mark this object as deinited because another is already using MDNS.
         self->inited = false;
         return;
     }
     mdns_init();
+    mdns_started = true;
 
     uint8_t mac[6];
     esp_netif_get_mac(common_hal_wifi_radio_obj.netif, mac);
@@ -81,7 +86,7 @@ void common_hal_mdns_server_deinit(mdns_server_obj_t *self) {
         return;
     }
     self->inited = false;
-    inited = false;
+    mdns_started = false;
     mdns_free();
 }
 
