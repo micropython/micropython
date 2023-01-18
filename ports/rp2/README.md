@@ -10,7 +10,7 @@ Currently supported features are:
 - `uos` module with VFS support.
 - `machine` module with the following classes: `Pin`, `ADC`, `PWM`, `I2C`, `SPI`,
   `SoftI2C`, `SoftSPI`, `Timer`, `UART`, `WDT`.
-- `rp2` module with programmable IO (PIO) support.
+- `rp2` module with programmable IO (PIO) support and DMA module.
 
 See the `examples/rp2/` directory for some example code.
 

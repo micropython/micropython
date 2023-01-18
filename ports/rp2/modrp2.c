@@ -55,6 +55,8 @@ STATIC const mp_rom_map_elem_t rp2_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Flash),               MP_ROM_PTR(&rp2_flash_type) },
     { MP_ROM_QSTR(MP_QSTR_PIO),                 MP_ROM_PTR(&rp2_pio_type) },
     { MP_ROM_QSTR(MP_QSTR_StateMachine),        MP_ROM_PTR(&rp2_state_machine_type) },
+    { MP_ROM_QSTR(MP_QSTR_DMA),      MP_ROM_PTR(&dma_DMA_type) },
+    { MP_ROM_QSTR(MP_QSTR_Timer),    MP_ROM_PTR(&dma_Timer_type) },
 
     #if MICROPY_PY_NETWORK_CYW43
     { MP_ROM_QSTR(MP_QSTR_country), MP_ROM_PTR(&rp2_country_obj) },
