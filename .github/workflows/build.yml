@@ -16,6 +16,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  CACHE_SUBMODULES: "['extmod/ulab', 'lib/', 'tools/']"
+
 jobs:
   test:
     runs-on: ubuntu-20.04
@@ -43,15 +46,11 @@ jobs:
     - name: Duplicate USB VID/PID check
       run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
     - name: Create submodule status
-      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
+      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
     - name: Cache submodules
       uses: actions/cache@v3
       with:
-        path: |
-          .git/modules/
-          extmod/ulab
-          lib/
-          tools/
+        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
         key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: CircuitPython dependencies
       run: |
@@ -137,7 +136,9 @@ jobs:
         name: mpy-cross.static-x64-windows
         path: mpy-cross/mpy-cross.static.exe
     - name: Upload to S3
-      if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+      if: >-
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
+        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -184,7 +185,11 @@ jobs:
   mpy-cross-mac:
     runs-on: macos-11
     needs: test
-    if: ${{ needs.test.outputs.boards-aarch != '[]' || needs.test.outputs.boards-arm != '[]' || needs.scheduler.test.boards-espressif != '[]' || needs.scheduler.test.boards-riscv != '[]' }}
+    if: >-
+      needs.test.outputs.boards-aarch != '[]' ||
+      needs.test.outputs.boards-arm != '[]' ||
+      needs.test.outputs.boards-espressif != '[]' ||
+      needs.test.outputs.boards-riscv != '[]'
     env:
       CP_VERSION: ${{ needs.test.outputs.cp-version }}
     steps:
@@ -198,15 +203,11 @@ jobs:
       with:
         python-version: "3.x"
     - name: Create submodule status
-      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
+      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
-        path: |
-          .git/modules/
-          extmod/ulab
-          lib/
-          tools/
+        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
         key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: CircuitPython dependencies
       run: python tools/ci_fetch_deps.py ${{ github.job }}
@@ -260,15 +261,11 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Create submodule status
-      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
+      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
-        path: |
-          .git/modules/
-          extmod/ulab
-          lib/
-          tools/
+        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
         key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: CircuitPython dependencies
       run: python tools/ci_fetch_deps.py ${{ github.job }}
@@ -304,7 +301,9 @@ jobs:
         name: docs
         path: _build/latex
     - name: Upload to S3
-      if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+      if: >-
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
+        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -345,15 +344,11 @@ jobs:
       with:
         python-version: "3.x"
     - name: Create submodule status
-      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
+      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
-        path: |
-          .git/modules/
-          extmod/ulab
-          lib/
-          tools/
+        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
         key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: CircuitPython dependencies
       id: cp-deps
@@ -398,14 +393,16 @@ jobs:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
     - name: Upload to S3
+      if: >-
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
+        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
       run: |
         pip install awscli
-        "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
 
   build-arm:
@@ -429,15 +426,11 @@ jobs:
       with:
         python-version: "3.x"
     - name: Create submodule status
-      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
+      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
-        path: |
-          .git/modules/
-          extmod/ulab
-          lib/
-          tools/
+        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
         key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: CircuitPython dependencies
       id: cp-deps
@@ -469,14 +462,17 @@ jobs:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
     - name: Upload to S3
+      if: >-
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
+        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
       run: |
         pip install awscli
-        "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
 
 
   build-espressif:
@@ -503,15 +499,11 @@ jobs:
       with:
         python-version: "3.10"
     - name: Create submodule status
-      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
+      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
-        path: |
-          .git/modules/
-          extmod/ulab
-          lib/
-          tools/
+        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
         key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: Get IDF commit
       id: idf-commit
@@ -535,7 +527,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ env.IDF_TOOLS_PATH }}
-        key: ${{ runner.os }}-idf-tools-${{ steps.idf-commit.outputs.commit }}-${{ steps.setup-python.outputs.python-version }}
+        key: ${{ runner.os }}-Python-${{ steps.setup-python.outputs.python-version }}-tools-idf-${{ steps.idf-commit.outputs.commit }}
     - name: Clone IDF submodules
       run: git submodule update --init --depth=1
       working-directory: ${{ env.IDF_PATH }}
@@ -576,14 +568,16 @@ jobs:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
     - name: Upload to S3
+      if: >-
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
+        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
       run: |
         pip install awscli
-        "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
 
   build-riscv:
@@ -607,15 +601,11 @@ jobs:
       with:
         python-version: "3.x"
     - name: Create submodule status
-      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
+      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
     - name: Restore submodules
       uses: actions/cache/restore@v3
       with:
-        path: |
-          .git/modules/
-          extmod/ulab
-          lib/
-          tools/
+        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
         key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: CircuitPython dependencies
       id: cp-deps
@@ -646,11 +636,13 @@ jobs:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
     - name: Upload to S3
+      if: >-
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
+        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
       run: |
         pip install awscli
-        "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
