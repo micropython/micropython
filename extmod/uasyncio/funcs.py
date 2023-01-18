@@ -69,7 +69,6 @@ def gather(*aws, return_exceptions=False):
     def done(t, er):
         # Sub-task "t" has finished, with exception "er".
         nonlocal state
-        nonlocal gather_task
         if gather_task.data is not _Remove:
             # The main gather task has already been scheduled, so do nothing.
             # This happens if another sub-task already raised an exception and
