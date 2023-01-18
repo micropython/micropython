@@ -143,17 +143,16 @@ int TINFCC uzlib_gzip_parse_header(TINF_DATA *d);
 
 /* Compression API */
 
-typedef const uint8_t *uzlib_hash_entry_t;
-
-struct uzlib_comp {
-    struct Outbuf out;
-
-    uzlib_hash_entry_t *hash_table;
-    unsigned int hash_bits;
-    unsigned int dict_size;
+struct uzlib_lz77_state {
+    struct Outbuf outbuf;
+    uint8_t *hist_buf;
+    size_t hist_max;
+    size_t hist_start;
+    size_t hist_len;
 };
 
-void TINFCC uzlib_compress(struct uzlib_comp *c, const uint8_t *src, unsigned slen);
+void TINFCC uzlib_lz77_init(struct uzlib_lz77_state *state, uint8_t *hist, size_t hist_max);
+void TINFCC uzlib_lz77_compress(struct uzlib_lz77_state *state, const uint8_t *src, unsigned len);
 
 /* Checksum API */
 
