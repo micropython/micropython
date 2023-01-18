@@ -34,3 +34,4 @@ The peripherals include:
 * 16 PWM channels
 * USB 1.1 controller
 * 8 PIO state machines
+* 12 DMA channels and 4 pacing timers

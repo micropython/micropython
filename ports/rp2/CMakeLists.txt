@@ -109,6 +109,7 @@ set(MICROPY_SOURCE_PORT
     fatfs_port.c
     machine_adc.c
     machine_bitstream.c
+    dma.c
     machine_i2c.c
     machine_i2s.c
     machine_pin.c
@@ -140,6 +141,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_DIR}/shared/runtime/mpirq.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
     ${PROJECT_SOURCE_DIR}/machine_adc.c
+    ${PROJECT_SOURCE_DIR}/dma.c
     ${PROJECT_SOURCE_DIR}/machine_i2c.c
     ${PROJECT_SOURCE_DIR}/machine_i2s.c
     ${PROJECT_SOURCE_DIR}/machine_pin.c
