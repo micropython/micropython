@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-01-18 16:18+0000\n"
+"PO-Revision-Date: 2023-01-18 18:05+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -2463,15 +2463,15 @@ msgstr "Wi-Fi: "
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is in access point mode."
-msgstr ""
+msgstr "Wifi est en modo de access point."
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is in station mode."
-msgstr ""
+msgstr "Wifi esta en modo station."
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
-msgstr ""
+msgstr "Wifi no esta activado"
 
 #: main.c
 msgid "Woken up by alarm.\n"
@@ -2560,7 +2560,7 @@ msgstr "Longitud del array e índice tienen que ser iguales"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "array has too many dimensions"
-msgstr ""
+msgstr "La matriz tiene demasiadas dimensiones"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
@@ -2593,7 +2593,7 @@ msgstr "Eje demasiado largo"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "background value out of range of target"
-msgstr ""
+msgstr "El valor del fondo esta fuera del rango del objectivo"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2617,7 +2617,7 @@ msgstr "operacion binaria %q no implementada"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
-msgstr ""
+msgstr "Los tamaños de los bitmap deben coincidir"
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
@@ -2675,7 +2675,7 @@ msgstr "calibration es de solo lectura"
 #: shared-module/vectorio/Circle.c shared-module/vectorio/Polygon.c
 #: shared-module/vectorio/Rectangle.c
 msgid "can only have one parent"
-msgstr ""
+msgstr "solamente puede tener un parent"
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
@@ -2712,7 +2712,7 @@ msgstr "no se puede convertir el objeto '%q' a %q implícitamente"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
-msgstr ""
+msgstr "no se puede convertir complejo a float"
 
 #: py/obj.c
 msgid "can't convert to %q"
@@ -2768,7 +2768,7 @@ msgstr "no se puede cargar con el índice '%q'"
 
 #: py/builtinimport.c
 msgid "can't perform relative import"
-msgstr ""
+msgstr "no se puede realizar una importacion relativa"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -2785,7 +2785,7 @@ msgstr "no se puede asignar el atributo"
 
 #: py/runtime.c
 msgid "can't set attribute '%q'"
-msgstr ""
+msgstr "no se puede configurar el attributo '%q'"
 
 #: py/emitnative.c
 msgid "can't store '%q'"
@@ -2815,7 +2815,7 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
-msgstr ""
+msgstr "no se puede asignar una nueva forma"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
@@ -2823,11 +2823,11 @@ msgstr "No se puede realizar cast de la salida sin una regla de cast"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex to dtype"
-msgstr ""
+msgstr "no se puede convertir complex a dtype"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex type"
-msgstr ""
+msgstr "no se puede convertir tipo complejo"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -2851,7 +2851,7 @@ msgstr "convirtiendo tipo"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "channel re-init"
-msgstr ""
+msgstr "re-nicialización del canal"
 
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
@@ -2923,7 +2923,7 @@ msgstr "los argumentos para convolve no deben estar vacíos"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "corrupted file"
-msgstr ""
+msgstr "Archivo corrompido"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "could not invert Vandermonde matrix"
@@ -3003,7 +3003,7 @@ msgstr "división por cero"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "dtype must be float, or complex"
-msgstr ""
+msgstr "dtype debe ser float, o complex"
 
 #: py/objdeque.c
 msgid "empty"
@@ -3011,7 +3011,7 @@ msgstr "vacío"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "empty file"
-msgstr ""
+msgstr "archivo vacio"
 
 #: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
@@ -3043,6 +3043,8 @@ msgid ""
 "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
 msgstr ""
+"esp32_camera. la camara necesita PSRAM reservada para ser configurada. Vea "
+"la documentacion para mas instrucciones."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -3092,7 +3094,7 @@ msgstr "el archivo deberia ser una archivo abierto en modo byte"
 
 #: shared-bindings/traceback/__init__.c
 msgid "file write is not available"
-msgstr ""
+msgstr "la escritura del archivo no esta disponible"
 
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
@@ -3173,7 +3175,7 @@ msgstr "Función solo definida para ndarrays"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "function is implemented for ndarrays only"
-msgstr ""
+msgstr "la funcion esta implementada solamente para ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -3260,7 +3262,7 @@ msgstr "el índice está fuera de límites"
 
 #: shared-bindings/_pixelmap/PixelMap.c
 msgid "index must be tuple or int"
-msgstr ""
+msgstr "el indice debe ser tuple o int"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/espressif/common-hal/pulseio/PulseIn.c
@@ -3274,7 +3276,7 @@ msgstr "los índices deben ser enteros, particiones o listas de booleanos"
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "init I2C"
-msgstr ""
+msgstr "inicializacion I2C"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "initial values must be iterable"
@@ -3310,7 +3312,7 @@ msgstr "los datos de entrada deben ser iterables"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input dtype must be float or complex"
-msgstr ""
+msgstr "dtype de entrada debe ser float o complex"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3323,11 +3325,11 @@ msgstr "la matriz de entrada es singular"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input must be 1- or 2-d"
-msgstr ""
+msgstr "entrada debe ser 1-d o 2-d"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
-msgstr ""
+msgstr "entrada debe ser un ndarray de 1D"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
@@ -3339,7 +3341,7 @@ msgstr "Entrada tiene que ser un ndarray"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be an ndarray, or a scalar"
-msgstr ""
+msgstr "entrada debe ser una ndarray o un escalar"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
@@ -3377,7 +3379,7 @@ msgstr "arquitectura inválida"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
-msgstr ""
+msgstr "bits_per_pixel %d invalidos, deben ser, 1, 2, 4, 8, 16, 24, o 32"
 
 #: ports/raspberrypi/common-hal/ssl/SSLSocket.c
 msgid "invalid cert"
@@ -3395,7 +3397,7 @@ msgstr "el element_size %d,no es valido, debe ser 1,2 ó 4"
 
 #: shared-bindings/traceback/__init__.c
 msgid "invalid exception"
-msgstr ""
+msgstr "excepcion invalida"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3419,7 +3421,7 @@ msgstr "decorador de micropython inválido"
 
 #: ports/espressif/common-hal/esp32_camera/Camera.c
 msgid "invalid setting"
-msgstr ""
+msgstr "configuracion invalida"
 
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
@@ -3508,12 +3510,12 @@ msgstr "Loopback + modo silencioso no están soportados por periférico"
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
-msgstr ""
+msgstr "mDNS ya esta inicializado"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
-msgstr ""
+msgstr "mDNS solo funciona con WIFI incorporado"
 
 #: py/parse.c
 msgid "malformed f-string"
@@ -3540,7 +3542,7 @@ msgstr "max_length debe ser 0-%d cuando fixed_length es %s"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is "
-msgstr ""
+msgstr "el numero maximo de dimensiones es "
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3574,7 +3576,7 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
-msgstr ""
+msgstr "el modo debe ser completo o reducido"
 
 #: py/builtinimport.c
 msgid "module not found"
@@ -3582,7 +3584,7 @@ msgstr "módulo no encontrado"
 
 #: ports/espressif/common-hal/wifi/Monitor.c
 msgid "monitor init failed"
-msgstr ""
+msgstr "fallo en el monitor de inicializacion"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "more degrees of freedom than data points"
@@ -3643,7 +3645,7 @@ msgstr "cuenta de corrimientos negativo"
 
 #: shared-bindings/_pixelmap/PixelMap.c
 msgid "nested index must be int"
-msgstr ""
+msgstr "indice anidado debe ser int"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
@@ -3728,7 +3730,7 @@ msgstr "no suficientes argumentos para format string"
 
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
-msgstr ""
+msgstr "no esta implementado para complex dtype"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3790,7 +3792,7 @@ msgstr "string de longitud impar"
 
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "off"
-msgstr ""
+msgstr "apagado"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
@@ -3815,11 +3817,11 @@ msgstr "solo se admite bit_depth=16"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only mono is supported"
-msgstr ""
+msgstr "solamente mono esta suportado"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only oversample=64 is supported"
-msgstr ""
+msgstr "solamente oversample=64 esta soportado"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 #: ports/stm/common-hal/audiobusio/PDMIn.c
@@ -3843,11 +3845,11 @@ msgstr "los operandos no se pueden transmitir juntos"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "operation is defined for 2D arrays only"
-msgstr ""
+msgstr "la operacion esta definida para matrices 2D solamente"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "operation is defined for ndarrays only"
-msgstr ""
+msgstr "la operacion esta definida para ndarrays solamente"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
@@ -3921,7 +3923,7 @@ msgstr "pixel_shader debe ser displayio.Palette o displayio.ColorConverter"
 
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
-msgstr ""
+msgstr "el sondeo del archivo no esta disponible en win32"
 
 #: ports/espressif/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
@@ -3958,7 +3960,7 @@ msgstr "desbordamiento de cola(queue)"
 
 #: py/parse.c
 msgid "raw f-strings are not supported"
-msgstr ""
+msgstr "raw f-strings no esta soportadas"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4077,15 +4079,15 @@ msgstr "paleta fuente muy larga"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 2 or 65536"
-msgstr ""
+msgstr "source_bitmap debe tener value_count de 2 o 65536"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 65536"
-msgstr ""
+msgstr "source_bitmap debe tener value_count de 65536"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
-msgstr ""
+msgstr "source_bitmap debe tener value_count de 8"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -4153,7 +4155,7 @@ msgstr "tiempo de espera agotado esperando a tarjeta v2"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "timer re-init"
-msgstr ""
+msgstr "temporizador re-inicializado"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
