@@ -31,14 +31,13 @@
    code. */
 
 struct Outbuf {
-    unsigned char *outbuf;
-    int outlen, outsize;
+    void *dest_write_data;
+    void (*dest_write_cb)(struct Outbuf *outbuf, uint8_t byte);
     unsigned long outbits;
     int noutbits;
     int comp_disabled;
 };
 
-void outbits(struct Outbuf *out, unsigned long bits, int nbits);
 void zlib_start_block(struct Outbuf *ctx);
 void zlib_finish_block(struct Outbuf *ctx);
 void zlib_literal(struct Outbuf *ectx, unsigned char c);
