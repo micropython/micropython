@@ -31,8 +31,12 @@
 extern const mp_obj_type_t rp2_flash_type;
 extern const mp_obj_type_t rp2_pio_type;
 extern const mp_obj_type_t rp2_state_machine_type;
+extern const mp_obj_type_t dma_DMA_type;
+extern const mp_obj_type_t dma_Timer_type;
+
 
 void rp2_pio_init(void);
 void rp2_pio_deinit(void);
+void dma_init();
 
 #endif // MICROPY_INCLUDED_RP2_MODRP2_H

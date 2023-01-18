@@ -298,6 +298,50 @@ See :ref:`machine.WDT <machine.WDT>`. ::
 
 The maximum value for timeout is 8388 ms.
 
+DMA (Direct memory access)
+--------------------------
+
+The RP2040 has a DMA subsytem that has 12 hardware controlled DMA channels and 4 pacing timers.
+
+Example using DMA to fade an LED::
+
+    from rp2 import DMA, Timer
+    from machine import Pin, PWM
+
+    led = Pin(16, Pin.OUT)
+    pwm1 = PWM(led)
+    pwm1.freq(1000)
+    pwm1.duty_u16(0)
+
+    # PWM 0A for GPIO16. Lower 16 bits of CC
+    dest = 0x4005000e 
+    dma = DMA()
+    dma.claim()
+    t = Timer()
+
+    t.claim()
+    # go as slowly as possible
+    t.set(0x0001, 0xffff)
+
+    data_size = dma.DMA_SIZE_16
+    buffer_size = 32768
+    from_buffer = bytearray(buffer_size)
+    for i in range(0, buffer_size, 2):
+        from_buffer[i]= i & 0xff
+        from_buffer[i+1]= (i>>8) & 0xff
+
+    dma.write_from(from_buffer=from_buffer,
+                   to_address=dest,
+                   transfer_count=buffer_size>>data_size,
+                   dreq=dreq,
+                   data_size=data_size)
+    while dma.isbusy():
+        time.sleep_ms(1)
+    
+    t.unclaim()
+    dma.unclaim()
+
+
 OneWire driver
 --------------
 
