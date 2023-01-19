@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_CHARACTERISTICBUFFER_H
 #define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_CHARACTERISTICBUFFER_H
 
+#include <stdbool.h>
+
 #include "py/ringbuf.h"
 #include "shared-bindings/_bleio/Characteristic.h"
 
@@ -36,6 +38,7 @@ typedef struct {
     uint32_t timeout_ms;
     // Ring buffer storing consecutive incoming values.
     ringbuf_t ringbuf;
+    bool watch_for_interrupt_char;
 } bleio_characteristic_buffer_obj_t;
 
 #endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_CHARACTERISTICBUFFER_H
