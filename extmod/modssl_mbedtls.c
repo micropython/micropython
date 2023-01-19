@@ -36,7 +36,6 @@
 #include "py/stream.h"
 #include "py/objstr.h"
 
-// mbedtls_time_t
 #include "mbedtls/platform.h"
 #include "mbedtls/ssl.h"
 #include "mbedtls/x509_crt.h"
@@ -218,13 +217,6 @@ STATIC mp_obj_ssl_context_t *context_new(void) {
     #ifdef MICROPY_MBEDTLS_PLATFORM_TIME_ALT
     mbedtls_platform_set_time(platform_mbedtls_time);
     #endif
-    // DEBUG MBEDTLS_PLATFORM
-    // time_t mbt;
-    // time_t mbtz;
-    // mbt = mbedtls_time(NULL);
-    // mbtz = platform_mbedtls_time(NULL);
-    // printf("secs mbt : %lu \n\n", mbt);
-    // printf("secs mbtz: %lu \n\n", mbtz);
     mbedtls_entropy_init(&ctxi->entropy);
     const byte seed[] = "upy";
     ret = mbedtls_ctr_drbg_seed(&ctxi->ctr_drbg, mbedtls_entropy_func, &ctxi->entropy, seed, sizeof(seed));
@@ -269,9 +261,7 @@ STATIC void context_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 STATIC mp_obj_t mod_ssl_get_ciphers(mp_obj_t self_in) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
     const int *cipher_list = mbedtls_ssl_list_ciphersuites();
-    // int len_cipher_list = sizeof(cipher_list);
 
-    // for (int i = 0; i <= len_cipher_list; i++)
     while (*cipher_list) {
         const char *cipher_name = mbedtls_ssl_get_ciphersuite_name(*cipher_list);
         mp_obj_list_append(list,
@@ -301,15 +291,12 @@ STATIC mp_obj_t mod_ssl_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) {
         if (ciphers->items[i] != mp_const_none) {
             const char *ciphername = mp_obj_str_get_str(ciphers->items[i]);
             const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
-            // const int ciphers[] = {id, 0};
             ctxi->cipherid[i] = id;
             if (id == 0) {
                 ret = MBEDTLS_ERR_SSL_BAD_CONFIG;
                 goto cleanupcipher;
             }
 
-            // mbedtls_ssl_conf_ciphersuites(&ctxi->conf, ciphers);
-            // ctxi->cipherid = id;
         }
     }
 
@@ -337,7 +324,6 @@ STATIC mp_obj_t mod_ssl_load_certchain(size_t n_args, const mp_obj_t *pos_args,
     };
 
     mp_obj_ssl_context_t *ctxi = MP_OBJ_TO_PTR(pos_args[0]);
-    // struct cert_chain_args args;
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args,
         args);
@@ -520,7 +506,6 @@ cleanup:
 
     if (ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
         flags = mbedtls_ssl_get_verify_result(&o->ssl);
-        // ret = mbedtls_ssl_get_verify_result(&o->ssl);
 
     }
     mbedtls_pk_free(&o->pkey);
@@ -553,7 +538,6 @@ cleanup:
 }
 
 STATIC mp_obj_t mod_ssl_ctx_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    // TODO: Implement more args
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -561,7 +545,6 @@ STATIC mp_obj_t mod_ssl_ctx_wrap_socket(size_t n_args, const mp_obj_t *pos_args,
         { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
 
-    // TODO: Check that sock implements stream protocol
     mp_obj_t self_in = pos_args[0];
     mp_obj_t sock = pos_args[1];
 
@@ -595,7 +578,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
 
 
 STATIC mp_obj_t mod_ssl_ctx_init(void) {
-    // TODO: Implement class methods
     return MP_OBJ_FROM_PTR(context_new());
 }
 
