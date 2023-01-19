@@ -85,6 +85,7 @@ void _common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buff
     bool watch_for_interrupt_char) {
     self->characteristic = characteristic;
     self->timeout_ms = timeout * 1000;
+    self->watch_for_interrupt_char = watch_for_interrupt_char;
     ringbuf_init(&self->ringbuf, buffer, buffer_size);
 
     if (static_handler_entry != NULL) {
