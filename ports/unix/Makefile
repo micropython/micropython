@@ -99,7 +99,7 @@ else
 # Use gcc syntax for map file
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
-LDFLAGS += $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA) -lSDL2
+LDFLAGS += $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 
 # Flags to link with pthread library
 LIBPTHREAD = -lpthread
@@ -219,6 +219,13 @@ endif
 
 # Additional optional libraries
 
+SDL_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags sdl2)
+SDL_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   sdl2)
+ifneq ($(SDL_LDFLAGS_MOD),)
+CFLAGS_MOD += $(SDL_CFLAGS_MOD) -DMICROPY_SDL=1
+LDFLAGS_MOD += $(SDL_LDFLAGS_MOD)
+endif
+
 RLOTTIE_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags rlottie)
 RLOTTIE_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   rlottie)
 ifneq ($(RLOTTIE_LDFLAGS_MOD),)
@@ -262,9 +269,6 @@ SRC_C += \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
 LIB_SRC_C += $(addprefix lib/,\
-    lv_bindings/driver/SDL/sdl_common.c \
-    lv_bindings/driver/SDL/sdl.c \
-	lv_bindings/driver/SDL/modSDL.c \
 	$(LIB_SRC_C_EXTRA) \
 	)
 
