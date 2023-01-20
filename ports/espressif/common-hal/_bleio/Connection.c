@@ -30,21 +30,24 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "shared/runtime/interrupt_char.h"
 #include "py/gc.h"
 #include "py/objlist.h"
 #include "py/objstr.h"
 #include "py/qstr.h"
 #include "py/runtime.h"
+
+#include "shared/runtime/interrupt_char.h"
+
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
 #include "shared-bindings/_bleio/Attribute.h"
 #include "shared-bindings/_bleio/Characteristic.h"
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
+
 #include "supervisor/shared/tick.h"
 
-// #include "common-hal/_bleio/bonding.h"
+#include "common-hal/_bleio/ble_events.h"
 
 #include "host/ble_att.h"
 

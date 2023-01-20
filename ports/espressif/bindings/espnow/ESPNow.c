@@ -6,6 +6,7 @@
  * Copyright (c) 2017-2020 Nick Moore
  * Copyright (c) 2018 shawwwn <shawwwn1@gmail.com>
  * Copyright (c) 2020-2021 Glenn Moloney @glenn20
+ * Copyright (c) 2023 MicroDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +26,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 
 #include <stdio.h>
 #include <stdint.h>
@@ -48,8 +48,10 @@
 
 #include "mpconfigport.h"
 #include "mphalport.h"
-#include "modnetwork.h"
-#include "modespnow.h"
+
+#include "bindings/espnow/ESPNow.h"
+
+#include "shared-bindings/wifi/__init__.h"
 
 #ifndef MICROPY_ESPNOW_RSSI
 // Include code to track rssi of peers
@@ -115,14 +117,22 @@ typedef struct _esp_espnow_obj_t {
     volatile size_t tx_responses;   // # of sent packet responses received
     volatile size_t tx_failures;    // # of sent packet responses failed
     size_t peer_count;              // Cache the # of peers for send(sync=True)
+    #if MICROPY_ENABLE_SCHEDULER
     mp_obj_t recv_cb;               // Callback when a packet is received
     mp_obj_t recv_cb_arg;           // Argument passed to callback
+    #endif
     #if MICROPY_ESPNOW_RSSI
     mp_obj_t peers_table;           // A dictionary of discovered peers
     #endif // MICROPY_ESPNOW_RSSI
 } esp_espnow_obj_t;
 
-const mp_obj_type_t esp_espnow_type;
+static const mp_obj_type_t esp_espnow_type;
+
+static void check_esp_err(esp_err_t status) {
+    if (status != ESP_OK) {
+        mp_raise_RuntimeError(translate("an error occured"));
+    }
+}
 
 // ### Initialisation and Config functions
 //
@@ -130,16 +140,17 @@ const mp_obj_type_t esp_espnow_type;
 // Return a pointer to the ESPNow module singleton
 // If state == INITIALISED check the device has been initialised.
 // Raises OSError if not initialised and state == INITIALISED.
-static esp_espnow_obj_t *_get_singleton() {
+static esp_espnow_obj_t *_get_singleton(void) {
     return MP_STATE_PORT(espnow_singleton);
 }
 
-static esp_espnow_obj_t *_get_singleton_initialised() {
+static esp_espnow_obj_t *_get_singleton_initialised(void) {
     esp_espnow_obj_t *self = _get_singleton();
     // assert(self);
     if (self->recv_buffer == NULL) {
         // Throw an espnow not initialised error
-        check_esp_err(ESP_ERR_ESPNOW_NOT_INIT);
+        // check_esp_err(ESP_ERR_ESPNOW_NOT_INIT);
+        mp_raise_RuntimeError(translate("espnow not inited"));
     }
     return self;
 }
@@ -163,7 +174,9 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
     self->recv_buffer_size = DEFAULT_RECV_BUFFER_SIZE;
     self->recv_timeout_ms = DEFAULT_RECV_TIMEOUT_MS;
     self->recv_buffer = NULL;       // Buffer is allocated in espnow_init()
+    #if MICROPY_ENABLE_SCHEDULER
     self->recv_cb = mp_const_none;
+    #endif
     #if MICROPY_ESPNOW_RSSI
     self->peers_table = mp_obj_new_dict(0);
     // Prevent user code modifying the dict
@@ -181,29 +194,38 @@ STATIC void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);
 
 STATIC void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len);
 
+static void _wifi_init(void) {
+    if (!common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
+        common_hal_wifi_init(false);
+        common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, true);
+    }
+}
+
 // ESPNow.init(): Initialise the data buffers and ESP-NOW functions.
 // Initialise the Espressif ESPNOW software stack, register callbacks and
 // allocate the recv data buffers.
 // Returns None.
-static mp_obj_t espnow_init(mp_obj_t _) {
+static void espnow_init(void) {
     esp_espnow_obj_t *self = _get_singleton();
     if (self->recv_buffer == NULL) {    // Already initialised
         self->recv_buffer = m_new_obj(ringbuf_t);
-        ringbuf_alloc(self->recv_buffer, self->recv_buffer_size);
+        if (!ringbuf_alloc(self->recv_buffer, self->recv_buffer_size, true)) {
+            m_malloc_fail(self->recv_buffer_size);
+        }
 
-        esp_initialise_wifi();  // Call the wifi init code in network_wlan.c
+        _wifi_init();   // Call the wifi init code
+
         check_esp_err(esp_now_init());
         check_esp_err(esp_now_register_recv_cb(recv_cb));
         check_esp_err(esp_now_register_send_cb(send_cb));
     }
-    return mp_const_none;
 }
 
 // ESPNow.deinit(): De-initialise the ESPNOW software stack, disable callbacks
 // and deallocate the recv data buffers.
 // Note: this function is called from main.c:mp_task() to cleanup before soft
 // reset, so cannot be declared STATIC and must guard against self == NULL;.
-mp_obj_t espnow_deinit(mp_obj_t _) {
+static void espnow_deinit(void) {
     esp_espnow_obj_t *self = _get_singleton();
     if (self != NULL && self->recv_buffer != NULL) {
         check_esp_err(esp_now_unregister_recv_cb());
@@ -214,16 +236,20 @@ mp_obj_t espnow_deinit(mp_obj_t _) {
         self->peer_count = 0; // esp_now_deinit() removes all peers.
         self->tx_packets = self->tx_responses;
     }
-    return mp_const_none;
+}
+
+void espnow_reset(void) {
+    espnow_deinit();
+    MP_STATE_PORT(espnow_singleton) = NULL;
 }
 
 STATIC mp_obj_t espnow_active(size_t n_args, const mp_obj_t *args) {
     esp_espnow_obj_t *self = _get_singleton();
     if (n_args > 1) {
         if (mp_obj_is_true(args[1])) {
-            espnow_init(self);
+            espnow_init();
         } else {
-            espnow_deinit(self);
+            espnow_deinit();
         }
     }
     return self->recv_buffer != NULL ? mp_const_true : mp_const_false;
@@ -257,7 +283,7 @@ STATIC mp_obj_t espnow_config(
     }
     if (args[ARG_rate].u_int >= 0) {
         #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
-        esp_initialise_wifi();  // Call the wifi init code in network_wlan.c
+        _wifi_init();  // Call the wifi init code
         check_esp_err(esp_wifi_config_espnow_rate(
             ESP_IF_WIFI_STA, args[ARG_rate].u_int));
         check_esp_err(esp_wifi_config_espnow_rate(
@@ -288,6 +314,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espnow_config_obj, 1, espnow_config);
 // ESPNow.on_recv(recv_cb)
 // Set callback function to be invoked when a message is received.
 STATIC mp_obj_t espnow_on_recv(size_t n_args, const mp_obj_t *args) {
+    #if MICROPY_ENABLE_SCHEDULER
     esp_espnow_obj_t *self = _get_singleton();
     mp_obj_t recv_cb = args[1];
     if (recv_cb != mp_const_none && !mp_obj_is_callable(recv_cb)) {
@@ -295,6 +322,9 @@ STATIC mp_obj_t espnow_on_recv(size_t n_args, const mp_obj_t *args) {
     }
     self->recv_cb = recv_cb;
     self->recv_cb_arg = (n_args > 2) ? args[2] : mp_const_none;
+    #else
+    mp_raise_NotImplementedError(NULL);
+    #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_on_recv_obj, 2, 3, espnow_on_recv);
@@ -329,9 +359,11 @@ static inline int8_t _get_rssi_from_wifi_pkt(const uint8_t *msg) {
     // and a espnow_frame_format_t.
     // Backtrack to get a pointer to the wifi_promiscuous_pkt_t.
     static const size_t sizeof_espnow_frame_format = 39;
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
     wifi_promiscuous_pkt_t *wifi_pkt = (wifi_promiscuous_pkt_t *)(
         msg - sizeof_espnow_frame_format - sizeof(wifi_promiscuous_pkt_t));
-
+    #pragma GCC diagnostic pop
     #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 2, 0)
     return wifi_pkt->rx_ctrl.rssi - 100;  // Offset rssi for IDF 4.0.2
     #else
@@ -411,13 +443,13 @@ static const uint8_t *_get_peer(mp_obj_t mac_addr) {
 }
 
 // Copy data from the ring buffer - wait if buffer is empty up to timeout_ms
-int ringbuf_read_wait(ringbuf_t *r, void *data, size_t len, int timeout_ms) {
+static int ringbuf_read_wait(ringbuf_t *r, void *data, size_t len, int timeout_ms) {
     int64_t end = mp_hal_ticks_ms() + timeout_ms;
     int status = 0;
     while (
         ((status = ringbuf_read(r, data, len)) == 0) &&
         (end - (int64_t)mp_hal_ticks_ms()) >= 0) {
-        MICROPY_EVENT_POLL_HOOK;
+        RUN_BACKGROUND_TASKS;
     }
     return status;
 }
@@ -437,7 +469,7 @@ STATIC mp_obj_t espnow_recvinto(size_t n_args, const mp_obj_t *args) {
     esp_espnow_obj_t *self = _get_singleton_initialised();
 
     size_t timeout_ms = ((n_args > 2 && args[2] != mp_const_none)
-            ? mp_obj_get_int(args[2]) : self->recv_timeout_ms);
+            ? (size_t)mp_obj_get_int(args[2]) : self->recv_timeout_ms);
 
     mp_obj_list_t *list = MP_OBJ_TO_PTR(args[1]);
     if (!mp_obj_is_type(list, &mp_type_list) || list->len < 2) {
@@ -510,7 +542,7 @@ static void _wait_for_pending_responses(esp_espnow_obj_t *self) {
         }
         if (t > PENDING_RESPONSES_BUSY_POLL_MS) {
             // After 10ms of busy waiting give other tasks a look in.
-            MICROPY_EVENT_POLL_HOOK;
+            RUN_BACKGROUND_TASKS;
         }
     }
 }
@@ -545,14 +577,14 @@ STATIC mp_obj_t espnow_send(size_t n_args, const mp_obj_t *args) {
         // call has sync=True.
         _wait_for_pending_responses(self);
     }
-    int saved_failures = self->tx_failures;
+    size_t saved_failures = self->tx_failures;
     // Send the packet - try, try again if internal esp-now buffers are full.
     esp_err_t err;
     int64_t start = mp_hal_ticks_ms();
     while ((ESP_ERR_ESPNOW_NO_MEM ==
             (err = esp_now_send(peer, message.buf, message.len))) &&
            (mp_hal_ticks_ms() - start) <= DEFAULT_SEND_TIMEOUT_MS) {
-        MICROPY_EVENT_POLL_HOOK;
+        RUN_BACKGROUND_TASKS;
     }
     check_esp_err(err);           // Will raise OSError if e != ESP_OK
     // Increment the sent packet count. If peer_addr==NULL msg will be
@@ -610,9 +642,11 @@ STATIC void recv_cb(
     ringbuf_write(buf, mac_addr, ESP_NOW_ETH_ALEN);
     ringbuf_write(buf, msg, msg_len);
     self->rx_packets++;
+    #if MICROPY_ENABLE_SCHEDULER
     if (self->recv_cb != mp_const_none) {
         mp_sched_schedule(self->recv_cb, self->recv_cb_arg);
     }
+    #endif
 }
 
 // ### Peer Management Functions
@@ -670,7 +704,7 @@ STATIC bool _update_peer_info(
 // Update the cached peer count in self->peer_count;
 // The peer_count ignores broadcast and multicast addresses and is used for the
 // send() logic and is updated from add_peer(), mod_peer() and del_peer().
-STATIC void _update_peer_count() {
+STATIC void _update_peer_count(void) {
     esp_espnow_obj_t *self = _get_singleton_initialised();
 
     esp_now_peer_info_t peer = {0};
@@ -745,8 +779,8 @@ STATIC mp_obj_t espnow_get_peers(mp_obj_t _) {
     // Build and initialise the peer info tuple.
     mp_obj_tuple_t *peerinfo_tuple = mp_obj_new_tuple(self->peer_count, NULL);
     esp_now_peer_info_t peer = {0};
-    for (int i = 0; i < peerinfo_tuple->len; i++) {
-        int status = esp_now_fetch_peer((i == 0), &peer);
+    for (size_t i = 0; i < peerinfo_tuple->len; i++) {
+        esp_err_t status = esp_now_fetch_peer((i == 0), &peer);
         peerinfo_tuple->items[i] =
             (status == ESP_OK ? _peer_info_to_tuple(&peer) : mp_const_none);
     }
@@ -887,22 +921,23 @@ STATIC void espnow_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 #endif // MICROPY_ESPNOW_RSSI
 
-MP_DEFINE_CONST_OBJ_TYPE(
-    esp_espnow_type,
-    MP_QSTR_ESPNow,
-    MP_TYPE_FLAG_NONE,
-    make_new, espnow_make_new,
+STATIC const mp_obj_type_t esp_espnow_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_ESPNow,
+    .make_new = espnow_make_new,
+    .locals_dict = (mp_obj_t)&esp_espnow_locals_dict,
     #if MICROPY_ESPNOW_RSSI
-    attr, espnow_attr,
+    .attr = espnow_attr,
     #endif // MICROPY_ESPNOW_RSSI
-    protocol, &espnow_stream_p,
-    locals_dict, &esp_espnow_locals_dict
-    );
+    .flags = MP_TYPE_FLAG_EXTENDED,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &espnow_stream_p,
+        ),
+};
 
 const mp_obj_module_t mp_module_espnow = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&espnow_globals_dict,
 };
 
-MP_REGISTER_MODULE(MP_QSTR__espnow, mp_module_espnow);
-MP_REGISTER_ROOT_POINTER(struct _esp_espnow_obj_t *espnow_singleton);
+MP_REGISTER_MODULE(MP_QSTR__espnow, mp_module_espnow, CIRCUITPY_ESPNOW);

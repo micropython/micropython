@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2021 Glenn Moloney @glenn20
+ * Copyright (c) 2023 MicroDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +25,5 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
-
-// Called from main.c:mp_task() to reset the espnow software stack
-mp_obj_t espnow_deinit(mp_obj_t _);
+#pragma once
+void espnow_reset(void);

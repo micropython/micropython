@@ -142,3 +142,47 @@ int ringbuf_put16(ringbuf_t *r, uint16_t v) {
     ringbuf_put(r, v & 0xff);
     return 0;
 }
+
+// Returns:
+//    1: Success
+//    0: Not enough data available to complete read (try again later)
+//   -1: Requested read is larger than buffer - will never succeed
+int ringbuf_read(ringbuf_t *r, void *data, size_t data_len) {
+    if (ringbuf_avail(r) < data_len) {
+        return (r->size <= data_len) ? -1 : 0;
+    }
+    uint32_t iget = r->next_read;
+    uint32_t iget_a = (iget + data_len) % r->size;
+    uint8_t *datap = data;
+    if (iget_a < iget) {
+        // Copy part of the data from the space left at the end of the buffer
+        memcpy(datap, r->buf + iget, r->size - iget);
+        datap += (r->size - iget);
+        iget = 0;
+    }
+    memcpy(datap, r->buf + iget, iget_a - iget);
+    r->next_read = iget_a;
+    return 1;
+}
+
+// Returns:
+//    1: Success
+//    0: Not enough free space available to complete write (try again later)
+//   -1: Requested write is larger than buffer - will never succeed
+int ringbuf_write(ringbuf_t *r, const void *data, size_t data_len) {
+    if (ringbuf_free(r) < data_len) {
+        return (r->size <= data_len) ? -1 : 0;
+    }
+    uint32_t iput = r->next_write;
+    uint32_t iput_a = (iput + data_len) % r->size;
+    const uint8_t *datap = data;
+    if (iput_a < iput) {
+        // Copy part of the data to the end of the buffer
+        memcpy(r->buf + iput, datap, r->size - iput);
+        datap += (r->size - iput);
+        iput = 0;
+    }
+    memcpy(r->buf + iput, datap, iput_a - iput);
+    r->next_write = iput_a;
+    return 1;
+}

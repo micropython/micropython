@@ -27,16 +27,19 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "shared/runtime/interrupt_char.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+
+#include "shared/runtime/interrupt_char.h"
 
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Connection.h"
 #include "shared-bindings/_bleio/PacketBuffer.h"
-#include "supervisor/shared/tick.h"
 
+#include "supervisor/shared/tick.h"
 #include "supervisor/shared/bluetooth/serial.h"
+
+#include "common-hal/_bleio/ble_events.h"
 
 #include "host/ble_att.h"
 

@@ -663,6 +663,7 @@ msgstr ""
 
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+#: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
 msgid "Button A was pressed at start up.\n"
 msgstr ""
 
@@ -915,6 +916,18 @@ msgstr ""
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
+msgstr ""
+
+#: ports/espressif/bindings/espnow/ESPNow.c
+msgid "ESPNow.recv(): buffer error"
+msgstr ""
+
+#: ports/espressif/bindings/espnow/ESPNow.c
+msgid "ESPNow.recvinto(): Invalid argument"
+msgstr ""
+
+#: ports/espressif/bindings/espnow/ESPNow.c
+msgid "ESPNow: bytes or bytearray wrong length"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
@@ -2429,6 +2442,10 @@ msgstr ""
 msgid "addresses is empty"
 msgstr ""
 
+#: ports/espressif/bindings/espnow/ESPNow.c
+msgid "an error occured"
+msgstr ""
+
 #: py/compile.c
 msgid "annotation must be an identifier"
 msgstr ""
@@ -2953,6 +2970,10 @@ msgid ""
 "documentation for instructions."
 msgstr ""
 
+#: ports/espressif/bindings/espnow/ESPNow.c
+msgid "espnow not inited"
+msgstr ""
+
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
 msgstr ""
@@ -3312,6 +3333,10 @@ msgstr ""
 
 #: py/objstr.c
 msgid "invalid format specifier"
+msgstr ""
+
+#: ports/espressif/bindings/espnow/ESPNow.c
+msgid "invalid handler"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -3858,6 +3883,10 @@ msgstr ""
 msgid "queue overflow"
 msgstr ""
 
+#: ports/espressif/bindings/espnow/ESPNow.c
+msgid "rate option not supported"
+msgstr ""
+
 #: py/parse.c
 msgid "raw f-strings are not supported"
 msgstr ""
@@ -4151,6 +4180,10 @@ msgstr ""
 
 #: py/parse.c
 msgid "unindent doesn't match any outer indent level"
+msgstr ""
+
+#: ports/espressif/bindings/espnow/ESPNow.c
+msgid "unknown config param"
 msgstr ""
 
 #: py/objstr.c
