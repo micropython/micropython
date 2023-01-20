@@ -34,7 +34,13 @@
 
 #include "hardware/dma.h"
 
-#define DBG_PRINTF(...)  mp_printf(&mp_plat_print, "rp2.dma: " __VA_ARGS__)
+#define RP2_DEBUG 0
+
+#if RP2_DEBUG
+    #define DBG_PRINTF(...)  mp_printf(&mp_plat_print, "rp2.dma: " __VA_ARGS__)
+#else
+    #define DBG_PRINTF(...)
+#endif
 
 extern const mp_obj_type_t dma_DMA_type;
 extern const mp_obj_type_t dma_Timer_type;
@@ -57,7 +63,7 @@ typedef struct _dma_Timer_obj_t {
 
 /******************************************************************************
  * Private methods
-*/
+******************************************************************************/
 void dma_irq_handler()
 {
     uint32_t insts0 = dma_hw->ints0;
@@ -82,7 +88,7 @@ void dma_irq_handler()
                     // any memory allocations.  We must also catch any exceptions.
                     gc_lock();
                     nlr_buf_t nlr;
-                    if (nlr_push(&nlr) == 0) 
+                    if(nlr_push(&nlr) == 0) 
                     {
                         uint32_t status =  dma_channel_hw_addr(i)->ctrl_trig;
                         mp_call_function_1(callback, mp_obj_new_int_from_uint((status >> 29) & 3));
@@ -90,8 +96,10 @@ void dma_irq_handler()
                         nlr_pop();
                     } 
                     else 
-                    {}
-
+                    {
+                        dma_callback->handler = mp_const_none;
+                        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+                    }
                     gc_unlock();
                     mp_sched_unlock();
                 }
@@ -117,6 +125,11 @@ void dma_irq_init(dma_DMA_obj_t *self, mp_obj_t handler)
     }
  }
 
+void check_busy(dma_DMA_obj_t *self)
+{
+    if(dma_channel_is_busy(self->dma_channel))
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("DMA channel is already active")); 
+}
 
 uint32_t dma_get_error_status(uint channel)
 {
@@ -176,7 +189,6 @@ void dma_start_request(dma_DMA_obj_t *self,
     dma_check_and_raise_status(self, config);
 }
 
-
 MP_REGISTER_ROOT_POINTER(struct _dma_DMA_obj_t *dma_DMA_obj_all[NUM_DMA_CHANNELS]);
 
 void dma_init(void)
@@ -192,6 +204,7 @@ STATIC mp_obj_t dma_DMA_make_new(const mp_obj_type_t *type, size_t n_args, size_
     self->transfers = 0;
     return MP_OBJ_FROM_PTR(self);
 }
+
 STATIC void dma_DMA_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     dma_DMA_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<DMA channel=%d request count=%d transfers=%d>", self->dma_channel, self->requests, self->transfers);
@@ -222,12 +235,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(dma_DMA_unclaim_obj, dma_DMA_unclaim);
  
 STATIC mp_obj_t dma_DMA_isclaimed(mp_obj_t self_in) {
     dma_DMA_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    bool claimed = dma_channel_is_claimed(self->dma_channel);
-    if(claimed)
-        return mp_const_true;
-    else
-        return mp_const_false;
-    
+    return mp_obj_new_bool(dma_channel_is_claimed(self->dma_channel));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(dma_DMA_isclaimed_obj, dma_DMA_isclaimed);
  
@@ -243,7 +251,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(dma_DMA_isclaimed_obj, dma_DMA_isclaimed);
  * dreq - optional throttle transfer. Default is to go as fast as possible
  * handler - optional IRQ handler
  * 
-*/
+*******************************************************************************/
 STATIC mp_obj_t dma_DMA_write_from(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_from_buffer, ARG_to_address, ARG_dreq, ARG_transfer_count, ARG_data_size, ARG_handler};
     static const mp_arg_t allowed_args[] = {
@@ -254,13 +262,17 @@ STATIC mp_obj_t dma_DMA_write_from(size_t n_args, const mp_obj_t *pos_args, mp_m
         { MP_QSTR_data_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_SIZE_8} },
         { MP_QSTR_handler, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
-    
+    DBG_PRINTF("write_from\n");
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     dma_DMA_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     
     check_init(self);
+    check_busy(self);
+
+    if(dma_channel_is_busy(self->dma_channel))
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("DMA channel is already active")); 
 
     void * to_address_ptr = (void*)args[ARG_to_address].u_int;
     uint32_t dreq = args[ARG_dreq].u_int;
@@ -302,7 +314,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dma_DMA_write_from_obj, 1, dma_DMA_write_from)
  * dreq - optional throttle transfer. Default is to go as fast as possible
  * handler - optional IRQ handler
  * 
-*/
+*******************************************************************************/
 STATIC mp_obj_t dma_DMA_read_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_from_address, ARG_to_buffer, ARG_transfer_count, ARG_data_size, ARG_dreq,  ARG_handler};
     static const mp_arg_t allowed_args[] = {
@@ -313,11 +325,13 @@ STATIC mp_obj_t dma_DMA_read_into(size_t n_args, const mp_obj_t *pos_args, mp_ma
         { MP_QSTR_dreq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_handler, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
+    DBG_PRINTF("read_into\n");
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     
     dma_DMA_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_init(self);
+    check_busy(self);
     
     void * from_address_ptr = (void*)(args[ARG_from_address].u_int);
 
@@ -351,11 +365,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dma_DMA_read_into_obj, 1, dma_DMA_read_into);
  * 
  * Arguments
  * from_buffer - source bytearray
- * data_size - 1,2,4 bytes (use constant)
  * to_buffer - bytearray 
  * handler - optional IRQ handler
  * 
-*/
+*******************************************************************************/
 STATIC mp_obj_t dma_DMA_copy(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_from_buffer, ARG_to_buffer, ARG_handler};
     static const mp_arg_t allowed_args[] = {
@@ -363,10 +376,14 @@ STATIC mp_obj_t dma_DMA_copy(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         { MP_QSTR_to_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_handler, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
+    DBG_PRINTF("copy\n");
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     
     dma_DMA_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    check_init(self);
+    check_busy(self);
 
     mp_buffer_info_t from_buffer;
     from_buffer.buf = NULL;
@@ -392,6 +409,19 @@ STATIC mp_obj_t dma_DMA_copy(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dma_DMA_copy_obj, 1, dma_DMA_copy);
+
+STATIC mp_obj_t dma_DMA_abort(mp_obj_t self_in) {
+    dma_DMA_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    
+    dma_channel_set_irq0_enabled(self->dma_channel, false);
+    // abort the channel
+    dma_channel_abort(self->dma_channel);
+    // clear the spurious IRQ (if there was one)
+    dma_channel_acknowledge_irq0(self->dma_channel);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(dma_DMA_abort_obj, dma_DMA_abort);
 
 STATIC mp_obj_t dma_DMA_isbusy(mp_obj_t self_in) {
     dma_DMA_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -427,6 +457,7 @@ STATIC const mp_rom_map_elem_t dma_DMA_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write_from),     (mp_obj_t)&dma_DMA_write_from_obj },
     { MP_ROM_QSTR(MP_QSTR_read_into),      MP_ROM_PTR(&dma_DMA_read_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_copy),           MP_ROM_PTR(&dma_DMA_copy_obj) },
+    { MP_ROM_QSTR(MP_QSTR_abort),          MP_ROM_PTR(&dma_DMA_abort_obj) },
     { MP_ROM_QSTR(MP_QSTR_isbusy),         MP_ROM_PTR(&dma_DMA_isbusy_obj) },
     { MP_ROM_QSTR(MP_QSTR_error_status),   (mp_obj_t)&dma_DMA_error_status_obj },
     { MP_ROM_QSTR(MP_QSTR_clear_error),    MP_ROM_PTR(&dma_DMA_clear_error_obj) },
