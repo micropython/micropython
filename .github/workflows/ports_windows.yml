@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
     paths:
-      - '.github/workflows/*.yml'
+      - '.github/workflows/ports_windows.yml'
       - 'extmod/**'
       - 'lib/**'
       - 'mpy-cross/**'
@@ -71,12 +71,31 @@ jobs:
         which python; python --version; python -c "import cascadetoml"
         which python3; python3 --version; python3 -c "import cascadetoml"
 
-    - uses: actions/checkout@v3
+    - name: Set up repository
+      uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
-    - name: Get CP deps
-      run: python tools/ci_fetch_deps.py windows ${{ github.sha }}
+    - name: Create submodule status
+      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
+    - name: Restore submodules
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          .git/modules/
+          extmod/ulab
+          lib/
+          tools/
+        key: submodules-common-${{ hashFiles('submodule_status') }}
+        enableCrossOsArchive: true
+    - name: CircuitPython dependencies
+      run: |
+        python tools/ci_fetch_deps.py windows
+        echo "::group::Fetch history and tags"
+        git fetch --no-recurse-submodules --shallow-since="2021-07-01" --tags https://github.com/adafruit/circuitpython HEAD
+        git fetch --no-recurse-submodules --shallow-since="2021-07-01" origin $GITHUB_SHA
+        git repack -d
+        echo "::endgroup::"
     - name: CircuitPython version
       run: |
         tools/describe || git log --parents HEAD~4..
