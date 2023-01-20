@@ -384,36 +384,10 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
 
 }
 
-void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
+STATIC void draw_line(displayio_bitmap_t *destination,
     int16_t x0, int16_t y0,
     int16_t x1, int16_t y1,
     uint32_t value) {
-
-    //
-    // adapted from Adafruit_CircuitPython_Display_Shapes.Polygon._line
-    //
-
-    // update the dirty rectangle
-    int16_t xbb0, xbb1, ybb0, ybb1;
-    if (x0 < x1) {
-        xbb0 = x0;
-        xbb1 = x1 + 1;
-    } else {
-        xbb0 = x1;
-        xbb1 = x0 + 1;
-    }
-    if (y0 < y1) {
-        ybb0 = y0;
-        ybb1 = y1 + 1;
-    } else {
-        ybb0 = y1;
-        ybb1 = y0 + 1;
-    }
-    displayio_area_t area = { xbb0, ybb0, xbb1, ybb1, NULL };
-    displayio_area_t bitmap_area = { 0, 0, destination->width, destination->height, NULL };
-    displayio_area_compute_overlap(&area, &bitmap_area, &area);
-
-    displayio_bitmap_set_dirty_area(destination, &area);
 
     int16_t temp, x, y;
 
@@ -486,6 +460,84 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
             }
         }
     }
+}
+
+void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
+    int16_t x0, int16_t y0,
+    int16_t x1, int16_t y1,
+    uint32_t value) {
+
+    //
+    // adapted from Adafruit_CircuitPython_Display_Shapes.Polygon._line
+    //
+
+    // update the dirty rectangle
+    int16_t xbb0, xbb1, ybb0, ybb1;
+    if (x0 < x1) {
+        xbb0 = x0;
+        xbb1 = x1 + 1;
+    } else {
+        xbb0 = x1;
+        xbb1 = x0 + 1;
+    }
+    if (y0 < y1) {
+        ybb0 = y0;
+        ybb1 = y1 + 1;
+    } else {
+        ybb0 = y1;
+        ybb1 = y0 + 1;
+    }
+    displayio_area_t area = { xbb0, ybb0, xbb1, ybb1, NULL };
+    displayio_area_t bitmap_area = { 0, 0, destination->width, destination->height, NULL };
+    displayio_area_compute_overlap(&area, &bitmap_area, &area);
+
+    displayio_bitmap_set_dirty_area(destination, &area);
+
+    draw_line(destination, x0, y0, x1, y1, value);
+}
+
+STATIC int32_t ith(void *data, size_t i, int element_size) {
+    switch (element_size) {
+        default:
+        case 1:
+            return *((int8_t *)data + i);
+        case 2:
+            return *((int16_t *)data + i);
+        case 4:
+            return *((int32_t *)data + i);
+    }
+}
+
+void common_hal_bitmaptools_draw_polygon(displayio_bitmap_t *destination, void *xs, void *ys, size_t points_len, int point_size, uint32_t value, bool close) {
+    int16_t x0, y0, xmin, xmax, ymin, ymax, xprev, yprev, x, y;
+    x0 = ith(xs, 0, point_size);
+    xmin = x0;
+    xmax = x0;
+    xprev = x0;
+    y0 = ith(ys, 0, point_size);
+    ymin = y0;
+    ymax = y0;
+    yprev = y0;
+
+    for (size_t i = 1; i < points_len; i++) {
+        x = ith(xs, i, point_size);
+        y = ith(ys, i, point_size);
+        draw_line(destination, xprev, yprev, x, y, value);
+        xprev = x;
+        yprev = y;
+        xmin = MIN(xmin, x);
+        xmax = MAX(xmax, x);
+        ymin = MIN(ymin, y);
+        ymax = MAX(ymax, y);
+    }
+    if (close) {
+        draw_line(destination, xprev, yprev, x0, y0, value);
+    }
+
+    displayio_area_t area = { xmin, ymin, xmax, ymax, NULL };
+    displayio_area_t bitmap_area = { 0, 0, destination->width, destination->height, NULL };
+    displayio_area_compute_overlap(&area, &bitmap_area, &area);
+    displayio_bitmap_set_dirty_area(destination, &area);
 }
 
 void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int element_size, int x1, int y1, int x2, int y2, bool skip_specified, uint32_t skip_value) {
