@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 microDev
+ * Copyright (c) 2023 MicroDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,28 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "py/enum.h"
 
-#include "py/obj.h"
 #include "bindings/espulp/ULPArch.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    espulp_ulparch_t arch;
-    bool inited;
-} espulp_ulp_obj_t;
+MAKE_ENUM_VALUE(espulp_ulparch_type, ulparch, FSM, FSM);
+MAKE_ENUM_VALUE(espulp_ulparch_type, ulparch, RISCV, RISCV);
+
+//| class ULPArch:
+//|     """The ULP architectures available."""
+//|
+//|     FSM: ULPArch
+//|     """The ULP Finite State Machine."""
+//|
+//|     RISCV: ULPArch
+//|     """The ULP RISC-V Coprocessor."""
+//|
+MAKE_ENUM_MAP(espulp_ulparch) {
+    MAKE_ENUM_MAP_ENTRY(ulparch, FSM),
+    MAKE_ENUM_MAP_ENTRY(ulparch, RISCV),
+};
+STATIC MP_DEFINE_CONST_DICT(espulp_ulparch_locals_dict, espulp_ulparch_locals_table);
+
+MAKE_PRINTER(espulp, espulp_ulparch);
+
+MAKE_ENUM_TYPE(espulp, ULPArch, espulp_ulparch);

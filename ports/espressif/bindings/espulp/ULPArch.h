@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 microDev
+ * Copyright (c) 2023 MicroDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,17 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#ifndef MICROPY_INCLUDED_BINDINGS_ESPULP_ULPARCH_H
+#define MICROPY_INCLUDED_BINDINGS_ESPULP_ULPARCH_H
 
-#include "py/obj.h"
-#include "bindings/espulp/ULPArch.h"
+#include "py/enum.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    espulp_ulparch_t arch;
-    bool inited;
-} espulp_ulp_obj_t;
+typedef enum {
+    FSM,
+    RISCV
+} espulp_ulparch_t;
+
+extern const mp_obj_type_t espulp_ulparch_type;
+extern const cp_enum_obj_t ulparch_FSM_obj;
+
+#endif // MICROPY_INCLUDED_BINDINGS_ESPULP_ULPARCH_H
