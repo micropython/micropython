@@ -249,7 +249,7 @@ jobs:
 
 
   build-doc:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: test
     if: ${{ needs.test.outputs.build-doc == 'True' }}
     env:
@@ -324,7 +324,7 @@ jobs:
 
 
   build-aarch:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: test
     if: ${{ needs.test.outputs.boards-aarch != '[]' }}
     env:
@@ -406,7 +406,7 @@ jobs:
 
 
   build-arm:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: test
     if: ${{ needs.test.outputs.boards-arm != '[]' }}
     env:
@@ -476,7 +476,7 @@ jobs:
 
 
   build-espressif:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: test
     if: ${{ needs.test.outputs.boards-espressif != '[]' }}
     env:
@@ -581,7 +581,7 @@ jobs:
 
 
   build-riscv:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: test
     if: ${{ needs.test.outputs.boards-riscv != '[]' }}
     env:
