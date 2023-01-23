@@ -362,18 +362,18 @@ ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 g0 l0))
 CSUPEROPT = -Os # save some code space
 SRC_O += \
 	resethandler_m0.o \
-	shared/runtime/gchelper_m0.o
+	shared/runtime/gchelper_thumb1.o
 else
 ifeq ($(MCU_SERIES),l1)
 CFLAGS += -DUSE_HAL_DRIVER
 SRC_O += \
 	resethandler_m3.o \
-	shared/runtime/gchelper_m3.o
+	shared/runtime/gchelper_thumb2.o
 else
 SRC_O += \
 	system_stm32.o \
 	resethandler.o \
-	shared/runtime/gchelper_m3.o
+	shared/runtime/gchelper_thumb2.o
 endif
 endif
 

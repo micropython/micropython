@@ -262,7 +262,7 @@ SRC_SS = \
 	$(MCU_DIR)/gcc/startup_$(MCU_SERIES)$(MCU_CORE).S \
 	hal/resethandler_MIMXRT10xx.S
 
-SRC_S += shared/runtime/gchelper_m3.s \
+SRC_S += shared/runtime/gchelper_thumb2.s \
 
 # =============================================================================
 # QSTR Sources

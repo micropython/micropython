@@ -335,7 +335,7 @@ SRC_O += \
 	$(SYSTEM_FILE)
 
 SRC_O += \
-	shared/runtime/gchelper_m3.o
+	shared/runtime/gchelper_thumb2.o
 
 HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/board/$(BOARD_LOW)/,\
 	board_init.c \
