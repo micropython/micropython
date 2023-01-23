@@ -27,7 +27,7 @@
 #include "shared-bindings/util.h"
 
 #include "bindings/espnow/__init__.h"
-#include "bindings/espnow/Now.h"
+#include "bindings/espnow/ESPNow.h"
 
 //| """ESP-NOW Module
 //|
@@ -36,7 +36,9 @@
 //| protocol provided by Espressif on its SoCs
 //| (`API docs <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/network/esp_now.html>`_).
 //|
-//| **Sender:** ::
+//| **Sender**
+//|
+//| .. code-block:: python
 //|
 //|     import espnow
 //|
@@ -50,7 +52,9 @@
 //|         e.send(peer, str(i)*20, True)
 //|         e.send(b'end')
 //|
-//| **Receiver:** ::
+//| **Receiver**
+//|
+//| .. code-block:: python
 //|
 //|     import espnow
 //|
@@ -73,7 +77,7 @@ STATIC const mp_rom_map_elem_t espnow_module_globals_table[] = {
     // module name
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_espnow) },
     // module classes
-    { MP_ROM_QSTR(MP_QSTR_Now), MP_ROM_PTR(&espnow_type) },
+    { MP_ROM_QSTR(MP_QSTR_ESPNow), MP_ROM_PTR(&espnow_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(espnow_module_globals, espnow_module_globals_table);
 

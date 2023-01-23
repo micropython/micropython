@@ -124,7 +124,7 @@ msgstr ""
 msgid "%q init failed"
 msgstr ""
 
-#: shared-bindings/dualbank/__init__.c
+#: ports/espressif/bindings/espnow/ESPNow.c shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
 msgstr ""
 
@@ -2430,7 +2430,7 @@ msgstr ""
 msgid "addresses is empty"
 msgstr ""
 
-#: ports/espressif/bindings/espnow/Now.c
+#: ports/espressif/bindings/espnow/ESPNow.c
 msgid "an error occured"
 msgstr ""
 
@@ -3814,6 +3814,10 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr ""
 
+#: ports/espressif/bindings/espnow/ESPNow.c
+msgid "peer already exists"
+msgstr ""
+
 #: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
 msgstr ""
@@ -4156,10 +4160,6 @@ msgstr ""
 
 #: py/parse.c
 msgid "unindent doesn't match any outer indent level"
-msgstr ""
-
-#: ports/espressif/bindings/espnow/Now.c
-msgid "unknown config param"
 msgstr ""
 
 #: py/objstr.c

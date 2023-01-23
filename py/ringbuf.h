@@ -61,15 +61,5 @@ size_t ringbuf_get_n(ringbuf_t *r, uint8_t *buf, size_t bufsize);
 // Note: big-endian. Return -1 if can't read or write two bytes.
 int ringbuf_get16(ringbuf_t *r);
 int ringbuf_put16(ringbuf_t *r, uint16_t v);
-int ringbuf_read(ringbuf_t *r, void *data, size_t data_len);
-int ringbuf_write(ringbuf_t *r, const void *data, size_t data_len);
-
-static inline size_t ringbuf_free(ringbuf_t *r) {
-    return (r->size + r->next_read - r->next_write - 1) % r->size;
-}
-
-static inline size_t ringbuf_avail(ringbuf_t *r) {
-    return (r->size + r->next_write - r->next_read) % r->size;
-}
 
 #endif // MICROPY_INCLUDED_PY_RINGBUF_H
