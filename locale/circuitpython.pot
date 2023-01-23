@@ -918,18 +918,6 @@ msgstr ""
 msgid "ESP-IDF memory allocation failed"
 msgstr ""
 
-#: ports/espressif/bindings/espnow/ESPNow.c
-msgid "ESPNow.recv(): buffer error"
-msgstr ""
-
-#: ports/espressif/bindings/espnow/ESPNow.c
-msgid "ESPNow.recvinto(): Invalid argument"
-msgstr ""
-
-#: ports/espressif/bindings/espnow/ESPNow.c
-msgid "ESPNow: bytes or bytearray wrong length"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -2442,7 +2430,7 @@ msgstr ""
 msgid "addresses is empty"
 msgstr ""
 
-#: ports/espressif/bindings/espnow/ESPNow.c
+#: ports/espressif/bindings/espnow/Now.c
 msgid "an error occured"
 msgstr ""
 
@@ -2970,10 +2958,6 @@ msgid ""
 "documentation for instructions."
 msgstr ""
 
-#: ports/espressif/bindings/espnow/ESPNow.c
-msgid "espnow not inited"
-msgstr ""
-
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
 msgstr ""
@@ -3333,10 +3317,6 @@ msgstr ""
 
 #: py/objstr.c
 msgid "invalid format specifier"
-msgstr ""
-
-#: ports/espressif/bindings/espnow/ESPNow.c
-msgid "invalid handler"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -3883,10 +3863,6 @@ msgstr ""
 msgid "queue overflow"
 msgstr ""
 
-#: ports/espressif/bindings/espnow/ESPNow.c
-msgid "rate option not supported"
-msgstr ""
-
 #: py/parse.c
 msgid "raw f-strings are not supported"
 msgstr ""
@@ -4182,7 +4158,7 @@ msgstr ""
 msgid "unindent doesn't match any outer indent level"
 msgstr ""
 
-#: ports/espressif/bindings/espnow/ESPNow.c
+#: ports/espressif/bindings/espnow/Now.c
 msgid "unknown config param"
 msgstr ""
 

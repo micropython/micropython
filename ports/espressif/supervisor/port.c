@@ -37,7 +37,7 @@
 #include "freertos/task.h"
 
 #include "bindings/espidf/__init__.h"
-#include "bindings/espnow/ESPNow.h"
+#include "bindings/espnow/__init__.h"
 #include "bindings/espulp/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogOut.h"

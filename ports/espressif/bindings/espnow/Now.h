@@ -26,4 +26,6 @@
  */
 
 #pragma once
-void espnow_reset(void);
+
+#include "py/obj.h"
+extern const mp_obj_type_t espnow_type;

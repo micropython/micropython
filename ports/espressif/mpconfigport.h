@@ -44,7 +44,7 @@
 #endif
 
 #if CIRCUITPY_ESPNOW
-#define ESPNOW_ROOT_POINTERS struct _esp_espnow_obj_t *espnow_singleton;
+#define ESPNOW_ROOT_POINTERS struct _espnow_obj_t *espnow_singleton;
 #else
 #define ESPNOW_ROOT_POINTERS
 #endif
