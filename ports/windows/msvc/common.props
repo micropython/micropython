@@ -6,6 +6,7 @@
   <PropertyGroup>
     <PyVariant Condition="'$(PyVariant)' == ''">standard</PyVariant>
     <PyBuild Condition="'$(PyBuild)' == ''">build-$(PyVariant)</PyBuild>
+    <PyProg Condition="'$(PyProg)' == ''">micropython</PyProg>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="paths.props" Condition="'$(PyPathsIncluded)' != 'True'"/>
