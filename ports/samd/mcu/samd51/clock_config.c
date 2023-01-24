@@ -187,12 +187,16 @@ void init_clocks(uint32_t cpu_freq) {
     dfll48m_calibration = 0; // please the compiler
 
     // SAMD51 clock settings
-    // GCLK0: 48MHz from DFLL48M or 48 - 200 MHz from DPLL0 (SAMD51)
-    // GCLK1: 32768 Hz from 32KULP or DFLL48M
-    // GCLK2: 8-48MHz from DFLL48M for Peripheral devices
-    // GCLK3: 16Mhz for the us-counter (TC0/TC1)
-    // GCLK4: 32kHz from crystal, if present
-    // GCLK5: 48MHz from DFLL48M for USB
+    //
+    // GCLK0: 48MHz, source: 48 - 200 MHz from DPLL0, usage: CPU
+    // GCLK1: 32kHz, source: OSCULP32K or DFLL48M, usage: ref_clk DPLL0
+    // GCLK2: 1-48MHz, source:DFLL48M, usage: Peripheral devices
+    // GCLK3: 16Mhz, source: DLLL48M, usage: us-counter (TC0/TC1)
+    // GCLK4: 32kHz, source: XOSC32K, if crystal present, usage: DFLL48M reference
+    // GCLK5: 48MHz, source: DFLL48M, usage: USB
+    // DFLL48M: Reference sources:
+    //          - in closed loop mode: eiter XOSC32K or OSCULP32K or USB clock
+    //          - in open loop mode: None
     // DPLL0: 48 - 200 MHz
 
     // Steps to set up clocks:

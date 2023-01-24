@@ -135,13 +135,18 @@ void init_clocks(uint32_t cpu_freq) {
     dfll48m_calibration = 0; // please the compiler
 
     // SAMD21 Clock settings
-    // GCLK0: 48MHz from DFLL open loop mode or closed loop mode from 32k Crystal
-    // GCLK1: 32768 Hz from 32K ULP or DFLL48M
-    // GCLK2: 48MHz from DFLL for Peripherals
-    // GCLK3: 1Mhz for the us-counter (TC4/TC5)
-    // GCLK4: 32kHz from crystal, if present
-    // GCLK5: 48MHz from DFLL for USB
-    // GCLK8: 1kHz clock for WDT and RTC
+    //
+    // GCLK0: 48MHz, source: DFLL48M, usage: CPU
+    // GCLK1: 32kHz, source: XOSC32K or OSCULP32K or DFLL48M, usage: FDPLL96M reference
+    // GCLK2: 1-48MHz, source: DFLL48M, usage: Peripherals
+    // GCLK3: 1Mhz,  source: DFLL48M, usage: us-counter (TC4/TC5)
+    // GCLK4: 32kHz, source: XOSC32K, if crystal present, usage: DFLL48M reference
+    // GCLK5: 48MHz, source: DFLL48M, usage: USB
+    // GCLK8: 1kHz,  source: XOSC32K or OSCULP32K, usage: WDT and RTC
+    // DFLL48M: Reference sources:
+    //          - in closed loop mode: eiter XOSC32K or OSCULP32K or USB clock
+    //          - in open loop mode: None
+    // FDPLL96M: Not used (yet). Option to use it for the CPU clock.
 
     NVMCTRL->CTRLB.bit.MANW = 1; // errata "Spurious Writes"
     NVMCTRL->CTRLB.bit.RWS = 1; // 1 read wait state for 48MHz
@@ -169,14 +174,14 @@ void init_clocks(uint32_t cpu_freq) {
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }
 
-    // Connect the GCLK4 to OSC32K via GCLK1 to the DFLL input and for further use.
+    // Connect the GCLK4 to OSC32K
     GCLK->GENDIV.reg = GCLK_GENDIV_ID(4) | GCLK_GENDIV_DIV(1);
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_XOSC32K | GCLK_GENCTRL_ID(4);
+    // Connect GCLK4 to the DFLL input.
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_GEN_GCLK4 | GCLK_CLKCTRL_ID_DFLL48 | GCLK_CLKCTRL_CLKEN;
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }
 
-    // Connect GCLK4 to the DFLL input and for further use.
-    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID_DFLL48 | GCLK_CLKCTRL_GEN_GCLK4 | GCLK_CLKCTRL_CLKEN;
     // Enable access to the DFLLCTRL reg acc. to Errata 1.2.1
     SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_ENABLE;
     while (SYSCTRL->PCLKSR.bit.DFLLRDY == 0) {
