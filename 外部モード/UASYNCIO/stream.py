@@ -100,13 +100,16 @@ StreamWriter = Stream
 # Create a TCP stream connection to a remote host
 #
 # async
-def open_connection(host, port):
+def open_connection(host, port, ssl=False):
     from uerrno import EINPROGRESS
     import usocket as socket
 
     ai = socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM)[0]  # TODO this is blocking!
     s = socket.socket(ai[0], ai[1], ai[2])
     s.setblocking(False)
+    if ssl:
+        import ussl
+        s = ussl.wrap_socket(s)
     ss = Stream(s)
     try:
         s.connect(ai[-1])
