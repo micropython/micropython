@@ -77,11 +77,11 @@ STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
             mp_obj_new_int(t.year),
             mp_obj_new_int(t.month),
             mp_obj_new_int(t.day),
-            mp_obj_new_int(t.dotw),
             mp_obj_new_int(t.hour),
             mp_obj_new_int(t.min),
             mp_obj_new_int(t.sec),
-            mp_obj_new_int(0)
+            mp_obj_new_int(t.dotw),
+            mp_obj_new_int(timeutils_year_day(t.year, t.month, t.day))
         };
 
         return mp_obj_new_tuple(8, tuple);
@@ -94,9 +94,9 @@ STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
             .year = mp_obj_get_int(items[0]),
             .month = mp_obj_get_int(items[1]),
             .day = mp_obj_get_int(items[2]),
-            .hour = mp_obj_get_int(items[4]),
-            .min = mp_obj_get_int(items[5]),
-            .sec = mp_obj_get_int(items[6]),
+            .hour = mp_obj_get_int(items[3]),
+            .min = mp_obj_get_int(items[4]),
+            .sec = mp_obj_get_int(items[5]),
         };
         // Deliberately ignore the weekday argument and compute the proper value
         t.dotw = timeutils_calc_weekday(t.year, t.month, t.day);
