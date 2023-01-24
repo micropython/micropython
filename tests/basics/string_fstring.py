@@ -61,3 +61,6 @@ except (ValueError, SyntaxError):
 print(f"a {1,} b")
 print(f"a {x,y,} b")
 print(f"a {x,1} b")
+
+print(f"{'None'!r}" == "'None'")
+print(f"{'None'!s}" == "None")
