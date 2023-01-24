@@ -62,7 +62,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
   </ItemGroup>
 
   <!-- Preprocess changed files, concatenate and feed into makeqstrdefs.py split/cat-->
-  <Target Name="MakeQstrDefs" DependsOnTargets="MakeDestDir" Inputs="@(ClCompile);@(QstrDependencies)" Outputs="$(QstrDefsCollected)">
+  <Target Name="MakeQstrDefs" DependsOnTargets="MakeDestDir;MakeVersionHdr" Inputs="@(ClCompile);@(QstrDependencies)" Outputs="$(QstrDefsCollected)">
     <ItemGroup>
       <PyIncDirs Include="$(PyIncDirs)"/>
       <PreProcDefs Include="%(ClCompile.PreProcessorDefinitions);NO_QSTR"/>
