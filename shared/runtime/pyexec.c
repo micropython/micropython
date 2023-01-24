@@ -154,12 +154,12 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     // display debugging info if wanted
     if ((exec_flags & EXEC_FLAG_ALLOW_DEBUGGING) && repl_display_debugging_info) {
         mp_uint_t ticks = mp_hal_ticks_ms() - start; // TODO implement a function that does this properly
-        printf("took " UINT_FMT " ms\n", ticks);
+        mp_printf(&mp_plat_print, "took " UINT_FMT " ms\n", ticks);
         // qstr info
         {
             size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
             qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-            printf("qstr:\n  n_pool=%u\n  n_qstr=%u\n  "
+            mp_printf(&mp_plat_print, "qstr:\n  n_pool=%u\n  n_qstr=%u\n  "
                 "n_str_data_bytes=%u\n  n_total_bytes=%u\n",
                 (unsigned)n_pool, (unsigned)n_qstr, (unsigned)n_str_data_bytes, (unsigned)n_total_bytes);
         }
@@ -713,7 +713,7 @@ int pyexec_frozen_module(const char *name) {
         #endif
 
         default:
-            printf("could not find module '%s'\n", name);
+            mp_printf(MICROPY_ERROR_PRINTER, "could not find module '%s'\n", name);
             return false;
     }
 }
