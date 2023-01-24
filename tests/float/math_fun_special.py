@@ -50,3 +50,20 @@ for function_name, function, test_vals in functions:
             print("{:.4g}".format(function(value)))
         except ValueError as e:
             print(str(e))
+
+hypot_func_var_args = [
+    (
+        "hypot",
+        hypot,
+        (
+            (12.0, 5.0),
+            (12, 5),
+            (bool(1), bool(0), bool(1), bool(1)),
+            (0.0, 0.0),
+            (-10.5),
+            (),
+            (1.5, 1.5, 0.5),
+            (1.5, 0.5, 1.5),
+        ),
+    ),
+]
