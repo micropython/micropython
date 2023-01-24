@@ -102,11 +102,20 @@ static inline void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
     gpio_set_function(pin, GPIO_FUNC_SIO);
 }
 
-static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
-    gpio_set_dir(pin, GPIO_IN);
-    gpio_put(pin, 0);
+static inline void mp_hal_pin_open_drain_with_value(mp_hal_pin_obj_t pin, int v) {
+    if (v) {
+        gpio_set_dir(pin, GPIO_IN);
+        gpio_put(pin, 0);
+    } else {
+        gpio_put(pin, 0);
+        gpio_set_dir(pin, GPIO_OUT);
+    }
     machine_pin_open_drain_mask |= 1 << pin;
     gpio_set_function(pin, GPIO_FUNC_SIO);
+}
+
+static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
+    mp_hal_pin_open_drain_with_value(pin, 1);
 }
 
 static inline void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint32_t alt) {
