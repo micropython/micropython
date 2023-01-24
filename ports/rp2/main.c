@@ -234,7 +234,7 @@ void gc_collect(void) {
 }
 
 void nlr_jump_fail(void *val) {
-    printf("FATAL: uncaught exception %p\n", val);
+    mp_printf(&mp_plat_print, "FATAL: uncaught exception %p\n", val);
     mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));
     for (;;) {
         __breakpoint();
