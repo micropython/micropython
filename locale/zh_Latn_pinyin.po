@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-11-30 16:14+0000\n"
+"PO-Revision-Date: 2023-01-25 03:47+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 #: main.c
 msgid ""
@@ -118,7 +118,7 @@ msgstr "%q Shībài: %d"
 
 #: py/argcheck.c
 msgid "%q in %q must be of type %q, not %q"
-msgstr ""
+msgstr "%q zhōng de %q bì xū shì %q lèi xíng, ér bù shì %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -141,7 +141,7 @@ msgstr "%q shì %q"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "%q is read-only for this board"
-msgstr ""
+msgstr "%q duì yú cǐ bǎn shì zhǐ dú de"
 
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
@@ -181,7 +181,7 @@ msgstr "%q bìxū >= %d"
 
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
-msgstr ""
+msgstr "%q bì xū shì zì jié shù zǔ huò lèi xíng wéi 'H' huò 'B' de shù zǔ"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
@@ -191,11 +191,11 @@ msgstr ""
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or %q, not %q"
-msgstr ""
+msgstr "%q de lèi xíng bì xū shì %q huò %q, ér bù shì %q"
 
 #: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q, not %q"
-msgstr ""
+msgstr "%q de lèi xíng bì xū shì %q, ér bù shì %q"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
@@ -220,7 +220,7 @@ msgstr "%q yǐn jiǎo wúxiào"
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
-msgstr ""
+msgstr "%q bù cháng bù néng wéi líng"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -421,7 +421,7 @@ msgstr "dìzhǐ chángdù bìxū shì %d zìjié"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
-msgstr ""
+msgstr "bù yǔn xǔ de dì zhǐ fàn wéi"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -517,7 +517,7 @@ msgstr "yǐjīng zài sǎomiáo WIFI wǎngluò"
 #: shared-module/os/getenv.c
 #, c-format
 msgid "An error occurred while retrieving '%s':\n"
-msgstr ""
+msgstr "jiǎn suǒ '%s' shí chū cuò:\n"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -924,7 +924,7 @@ msgstr "Fāngxiàng shūrù shí qūdòng móshì méiyǒu shǐyòng."
 
 #: py/obj.c
 msgid "During handling of the above exception, another exception occurred:"
-msgstr ""
+msgstr "zài chǔ lǐ shàng shù yì cháng qī jiān, fā shēng le lìng yí gè yì cháng:"
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
@@ -957,7 +957,7 @@ msgstr "cuò wù: bǎng dìng shī bài"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
-msgstr ""
+msgstr "yù qī yì zhǒng %q"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1033,7 +1033,7 @@ msgstr "Wénjiàn cúnzài"
 
 #: shared-module/os/getenv.c
 msgid "File not found"
-msgstr ""
+msgstr "zhǎo bú dào wén jiàn"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
@@ -1274,7 +1274,7 @@ msgstr "Měi gè zhí de wèi wúxiào"
 #: shared-module/os/getenv.c
 #, c-format
 msgid "Invalid byte %.*s"
-msgstr ""
+msgstr "wú xiào zì jié %.*s"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
@@ -1308,7 +1308,7 @@ msgstr "wú xiào zhuàng tài"
 
 #: shared-module/os/getenv.c
 msgid "Invalid unicode escape"
-msgstr ""
+msgstr "wú xiào de unicode zhuǎn yì"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1316,7 +1316,7 @@ msgstr "mì yào bì xū wéi 16, 24 huò 32 zì jié cháng"
 
 #: shared-module/os/getenv.c
 msgid "Key not found"
-msgstr ""
+msgstr "wèi zhǎo dào mì yào"
 
 #: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
@@ -1427,7 +1427,7 @@ msgstr "NVS cuò wù"
 
 #: shared-bindings/socketpool/SocketPool.c
 msgid "Name or service not known"
-msgstr ""
+msgstr "míng chēng huò fú wù wèi zhī"
 
 #: py/qstr.c
 msgid "Name too long"
@@ -1674,7 +1674,7 @@ msgstr "zài shēn dù shuì mián zhōng zhǐ néng shè zhì yí gè %q."
 
 #: ports/espressif/common-hal/espulp/ULPAlarm.c
 msgid "Only one %q can be set."
-msgstr ""
+msgstr "zhǐ néng shè zhì yí gè %q."
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
@@ -1842,7 +1842,7 @@ msgstr "chéng xù dà xiǎo wú xiào"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 msgid "Program too long"
-msgstr ""
+msgstr "chéng xù tài cháng"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -2024,7 +2024,7 @@ msgstr "lì tǐ shēng yòu cè bì xū zài PWM tōng dào B shàng"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Stopping AP is not supported."
-msgstr ""
+msgstr "bù zhī chí tíng zhǐ AP."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
@@ -2072,7 +2072,7 @@ msgstr ""
 
 #: py/obj.c
 msgid "The above exception was the direct cause of the following exception:"
-msgstr ""
+msgstr "shàng shù yì cháng shì yǐ xià yì cháng de zhí jiē yuán yīn:"
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
@@ -2275,7 +2275,7 @@ msgstr "wú fǎ qǐ dòng mDNS chá xún"
 
 #: shared-bindings/memorymap/AddressRange.c
 msgid "Unable to write to address."
-msgstr ""
+msgstr "Wú fǎ xiě rù dì zhǐ."
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -2440,15 +2440,15 @@ msgstr "Wi-Fi: "
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is in access point mode."
-msgstr ""
+msgstr "Wú xiàn wǎng luò chǔ yú jiē rù diǎn mó shì."
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is in station mode."
-msgstr ""
+msgstr "Wú xiàn wǎng luò chǔ yú gōng zuò zhàn mó shì."
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
-msgstr ""
+msgstr "wú xiàn wǎng luò wèi qǐ yòng"
 
 #: main.c
 msgid "Woken up by alarm.\n"
@@ -2761,7 +2761,7 @@ msgstr "wúfǎ shèzhì shǔxìng"
 
 #: py/runtime.c
 msgid "can't set attribute '%q'"
-msgstr ""
+msgstr "wú fǎ shè zhì shǔ xìng '%q'"
 
 #: py/emitnative.c
 msgid "can't store '%q'"
@@ -3238,7 +3238,7 @@ msgstr "suǒyǐn chāochū fànwéi"
 
 #: shared-bindings/_pixelmap/PixelMap.c
 msgid "index must be tuple or int"
-msgstr ""
+msgstr "suǒ yǐn bì xū shì yuán zǔ huò zhěng shù"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/espressif/common-hal/pulseio/PulseIn.c
@@ -3618,7 +3618,7 @@ msgstr "fù zhuǎnyí jìshù"
 
 #: shared-bindings/_pixelmap/PixelMap.c
 msgid "nested index must be int"
-msgstr ""
+msgstr "qiàn tào suǒ yǐn bì xū shì int"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
