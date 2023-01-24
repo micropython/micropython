@@ -55,10 +55,10 @@ void set_cpu_freq(uint32_t cpu_freq_arg) {
     // Set 1 waitstate to be safe
     NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_MANW | NVMCTRL_CTRLB_RWS(1);
 
-    int div = DFLL48M_FREQ / cpu_freq_arg;
-    peripheral_freq = cpu_freq = DFLL48M_FREQ / div;
+    int div = MAX(DFLL48M_FREQ / cpu_freq_arg, 1);
+    peripheral_freq = DFLL48M_FREQ / div;
 
-    // Enable GCLK output: 48M on both CCLK0 and GCLK2
+    // Enable GCLK output: 48MHz from DFLL48M on both CCLK0 and GCLK2
     GCLK->GENDIV.reg = GCLK_GENDIV_ID(0) | GCLK_GENDIV_DIV(div);
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(0);
     while (GCLK->STATUS.bit.SYNCBUSY) {
@@ -66,6 +66,32 @@ void set_cpu_freq(uint32_t cpu_freq_arg) {
     GCLK->GENDIV.reg = GCLK_GENDIV_ID(2) | GCLK_GENDIV_DIV(div);
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(2);
     while (GCLK->STATUS.bit.SYNCBUSY) {
+    }
+    // The comparison is >=, such that for 48MHz still the FDPLL96 is used for the CPU clock.
+    if (cpu_freq_arg >= 48000000) {
+        cpu_freq = cpu_freq_arg;
+        // Connect GCLK1 to the FDPLL96 input.
+        GCLK->CLKCTRL.reg = GCLK_CLKCTRL_GEN_GCLK1 | GCLK_CLKCTRL_ID_FDPLL | GCLK_CLKCTRL_CLKEN;
+        while (GCLK->STATUS.bit.SYNCBUSY) {
+        }
+        // configure the FDPLL96
+        // CtrlB: Set the ref ource to GCLK, set the Wakup-Fast Flag.
+        SYSCTRL->DPLLCTRLB.reg = SYSCTRL_DPLLCTRLB_REFCLK_GCLK | SYSCTRL_DPLLCTRLB_WUF;
+        // Set the FDPLL ratio and enable the DPLL.
+        int ldr = cpu_freq_arg / FDPLL_REF_FREQ - 1;
+        SYSCTRL->DPLLRATIO.reg = SYSCTRL_DPLLRATIO_LDR(ldr);
+        SYSCTRL->DPLLCTRLA.reg = SYSCTRL_DPLLCTRLA_ENABLE;
+        // Wait for the DPLL lock.
+        while (!SYSCTRL->DPLLSTATUS.bit.LOCK) {
+        }
+        // Finally switch GCLK0 to FDPLL96M.
+        GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DPLL96M | GCLK_GENCTRL_ID(0);
+        while (GCLK->STATUS.bit.SYNCBUSY) {
+        }
+    } else {
+        cpu_freq = peripheral_freq;
+        // Disable the FDPLL96M in case it was enabled.
+        SYSCTRL->DPLLCTRLA.reg = 0;
     }
     if (cpu_freq >= 8000000) {
         // Enable GCLK output: 48MHz on GCLK5 for USB
@@ -136,8 +162,8 @@ void init_clocks(uint32_t cpu_freq) {
 
     // SAMD21 Clock settings
     //
-    // GCLK0: 48MHz, source: DFLL48M, usage: CPU
-    // GCLK1: 32kHz, source: XOSC32K or OSCULP32K or DFLL48M, usage: FDPLL96M reference
+    // GCLK0: 48MHz, source: DFLL48M or FDPLL96M, usage: CPU
+    // GCLK1: 32kHz, source: XOSC32K or OSCULP32K, usage: FDPLL96M reference
     // GCLK2: 1-48MHz, source: DFLL48M, usage: Peripherals
     // GCLK3: 1Mhz,  source: DFLL48M, usage: us-counter (TC4/TC5)
     // GCLK4: 32kHz, source: XOSC32K, if crystal present, usage: DFLL48M reference
@@ -145,8 +171,10 @@ void init_clocks(uint32_t cpu_freq) {
     // GCLK8: 1kHz,  source: XOSC32K or OSCULP32K, usage: WDT and RTC
     // DFLL48M: Reference sources:
     //          - in closed loop mode: eiter XOSC32K or OSCULP32K or USB clock
+    //            from GCLK4.
     //          - in open loop mode: None
-    // FDPLL96M: Not used (yet). Option to use it for the CPU clock.
+    // FDPLL96M: Reference source GCLK1
+    //           Used for the CPU clock for freq >= 48Mhz
 
     NVMCTRL->CTRLB.bit.MANW = 1; // errata "Spurious Writes"
     NVMCTRL->CTRLB.bit.RWS = 1; // 1 read wait state for 48MHz
@@ -166,7 +194,7 @@ void init_clocks(uint32_t cpu_freq) {
     GCLK->GENDIV.reg = GCLK_GENDIV_ID(1) | GCLK_GENDIV_DIV(1);
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(1);
     #else
-    // Connect the GCLK1 to OSC32K via GCLK1 to the DFLL input and for further use.
+    // Connect the GCLK1 to OSC32K
     GCLK->GENDIV.reg = GCLK_GENDIV_ID(1) | GCLK_GENDIV_DIV(1);
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_XOSC32K | GCLK_GENCTRL_ID(1);
     #endif
@@ -247,9 +275,9 @@ void init_clocks(uint32_t cpu_freq) {
     while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {
     }
 
-    // Enable 32768 Hz on GCLK1 for consistency
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(1) | GCLK_GENDIV_DIV(48016384 / 32768);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(1);
+    // Connect the GCLK1 to the XOSC32KULP
+    GCLK->GENDIV.reg = GCLK_GENDIV_ID(1) | GCLK_GENDIV_DIV(1);
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(1);
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }
     // Set GCLK8 to 1 kHz.

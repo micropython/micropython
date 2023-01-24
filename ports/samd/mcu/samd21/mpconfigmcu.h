@@ -40,7 +40,8 @@
 
 #define CPU_FREQ                        (48000000)
 #define DFLL48M_FREQ                    (48000000)
-#define MAX_CPU_FREQ                    (48000000)
+#define MAX_CPU_FREQ                    (54000000)
+#define FDPLL_REF_FREQ                  (32768)
 
 #define IRQ_PRI_PENDSV                  ((1 << __NVIC_PRIO_BITS) - 1)
 
