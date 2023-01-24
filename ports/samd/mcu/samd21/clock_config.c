@@ -78,8 +78,9 @@ void set_cpu_freq(uint32_t cpu_freq_arg) {
         // CtrlB: Set the ref ource to GCLK, set the Wakup-Fast Flag.
         SYSCTRL->DPLLCTRLB.reg = SYSCTRL_DPLLCTRLB_REFCLK_GCLK | SYSCTRL_DPLLCTRLB_WUF;
         // Set the FDPLL ratio and enable the DPLL.
-        int ldr = cpu_freq_arg / FDPLL_REF_FREQ - 1;
-        SYSCTRL->DPLLRATIO.reg = SYSCTRL_DPLLRATIO_LDR(ldr);
+        int ldr = cpu_freq / FDPLL_REF_FREQ;
+        int frac = ((cpu_freq - ldr * FDPLL_REF_FREQ) / (FDPLL_REF_FREQ / 16)) & 0x0f;
+        SYSCTRL->DPLLRATIO.reg = SYSCTRL_DPLLRATIO_LDR((frac << 16 | ldr) - 1);
         SYSCTRL->DPLLCTRLA.reg = SYSCTRL_DPLLCTRLA_ENABLE;
         // Wait for the DPLL lock.
         while (!SYSCTRL->DPLLSTATUS.bit.LOCK) {

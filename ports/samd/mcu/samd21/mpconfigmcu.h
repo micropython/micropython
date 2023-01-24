@@ -22,6 +22,9 @@
 #define MICROPY_PY_CMATH                (0)
 #endif
 
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (trng_random_u32())
+unsigned long trng_random_u32(void);
+
 #define VFS_BLOCK_SIZE_BYTES            (1536) // 24x 64B flash pages;
 
 #ifndef MICROPY_HW_UART_TXBUF
