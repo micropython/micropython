@@ -12,13 +12,12 @@
         "PoE",
         "Breadboard friendly"
     ],
-    "id": "esp32",
     "images": [
         "ESP32-POE-ISO-1.jpg"
     ],
     "mcu": "esp32",
-    "product": "ESP32",
+    "product": "Olimex ESP32 POE",
     "thumbnail": "",
     "url": "https://www.olimex.com/",
-    "vendor": "Olimex"
+    "vendor": "OLIMEX"
 }
