@@ -144,7 +144,11 @@ class SSLContext:
         return self.ctx.set_ciphers(self.ciphersuite)
 
     def wrap_socket(
-        self, sock, server_side=False, do_handshake_on_connect=True, server_hostname=None
+        self,
+        sock,
+        server_side=False,
+        do_handshake_on_connect=True,
+        server_hostname=None,
     ):
 
         if self.check_hostname and server_hostname is None:
@@ -153,13 +157,16 @@ class SSLContext:
         # _ussl._context_wrap_socket(*args, **kargs)
         if self._reload_ctx:
             self.ctx = self._reset(server=server_side)
-
-        ssl_sock = self.ctx.wrap_socket(
-            sock,
-            server_side=server_side,
-            cert_reqs=self.verify_mode,
-            server_hostname=server_hostname,
-            do_handshake=do_handshake_on_connect,
-        )
-        self._reload_ctx = True
+        try:
+            ssl_sock = self.ctx.wrap_socket(
+                sock,
+                server_side=server_side,
+                cert_reqs=self.verify_mode,
+                server_hostname=server_hostname,
+                do_handshake=do_handshake_on_connect,
+            )
+            self._reload_ctx = True
+        except Exception as e:
+            self._reload_ctx = True
+            raise e
         return ssl_sock
