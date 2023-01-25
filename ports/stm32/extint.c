@@ -708,16 +708,24 @@ void Handle_EXTI_Irq(uint32_t line) {
                 // When executing code within a handler we must lock the GC to prevent
                 // any memory allocations.  We must also catch any exceptions.
                 gc_lock();
+                nlr_buf_t *nlr_abort_orig = nlr_get_abort();
                 nlr_buf_t nlr;
                 if (nlr_push(&nlr) == 0) {
+                    nlr_set_abort(&nlr);
                     mp_call_function_1(*cb, pyb_extint_callback_arg[line]);
                     nlr_pop();
                 } else {
-                    // Uncaught exception; disable the callback so it doesn't run again.
-                    *cb = mp_const_none;
-                    extint_disable(line);
-                    mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in ExtInt interrupt handler line %u\n", (unsigned int)line);
-                    mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+                    nlr_set_abort(nlr_abort_orig);
+                    if (nlr.ret_val == NULL) {
+                        // Reschedule the abort.
+                        mp_sched_vm_abort();
+                    } else {
+                        // Uncaught exception; disable the callback so it doesn't run again.
+                        *cb = mp_const_none;
+                        extint_disable(line);
+                        mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in ExtInt interrupt handler line %u\n", (unsigned int)line);
+                        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+                    }
                 }
                 gc_unlock();
                 mp_sched_unlock();
