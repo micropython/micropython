@@ -2,6 +2,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2021 Renesas Electronics Corporation
+ * Copyright (c) 2023 Vekatech Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +32,9 @@
 // #include "hal_data.h"
 #include "bsp_api.h"
 #include "common_data.h"
+#if defined(USE_DBG_PRINT)
+#include RA_CFG_H
+#endif
 
 #define SCI_CH      0
 #define SCI_BAUD    115200
@@ -56,8 +60,10 @@
 
 #include "ra_config.h"
 #include "ra_adc.h"
+#include "ra_dac.h"
 #include "ra_flash.h"
 #include "ra_gpio.h"
+#include "ra_gpt.h"
 #include "ra_i2c.h"
 #include "ra_icu.h"
 #include "ra_init.h"
@@ -82,16 +88,16 @@ typedef enum {
 #define DEBUG_CH SCI_CH
 #endif
 #if (DEBUG_CH == 0)
-#define DEBUG_TX_PIN    P411
-#define DEBUG_RX_PIN    P410
+#define DEBUG_TX_PIN    DBG_TX0
+#define DEBUG_RX_PIN    DBG_RX0
 #endif
 #if (DEBUG_CH == 1)
-#define DEBUG_TX_PIN    P401
-#define DEBUG_RX_PIN    P402
+#define DEBUG_TX_PIN    DBG_TX1
+#define DEBUG_RX_PIN    DBG_RX1
 #endif
 #if (DEBUG_CH == 9)
-#define DEBUG_TX_PIN    P203
-#define DEBUG_RX_PIN    P202
+#define DEBUG_TX_PIN    DBG_TX9
+#define DEBUG_RX_PIN    DBG_RX9
 #endif
 #define DEBUG_TXSTR(s)  ra_sci_tx_str(DEBUG_CH, (unsigned char *)s)
 #define DEBUG_TXCH(c)   ra_sci_tx_ch(DEBUG_CH, c)

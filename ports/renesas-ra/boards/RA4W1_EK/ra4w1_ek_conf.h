@@ -27,4 +27,13 @@
 
 #define DEBUG_CH    0
 
+#define DBG_TX0     P411
+#define DBG_RX0     P410
+
+#define DBG_TX1     P401
+#define DBG_RX1     P402
+
+#define DBG_TX9     P203
+#define DBG_RX9     P202
+
 #endif /* RA4M1_EK_CONF_H */

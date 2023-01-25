@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+    "UART",
+    "SPI",
+    "I2C",
+    "ADC",
+    "DAC",
+    "PWM"
+    ],
+    "id": "VK-RA4W1",
+    "images": [
+        "https://vekatech.com/VK-RA4W1_docs/images/VK-RA4W1.jpg"
+    ],
+    "mcu": "RA4W1",
+    "product": "VK-RA4W1",
+    "thumbnail": "",
+    "url": "https://vekatech.com/VK-RA4W1_docs/brochures/VK-RA4W1%20Flyer%20R2.pdf",
+    "vendor": "Vekatech"
+}

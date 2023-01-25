@@ -56,8 +56,10 @@
 
 #include "ra_config.h"
 #include "ra_adc.h"
+#include "ra_dac.h"
 #include "ra_flash.h"
 #include "ra_gpio.h"
+#include "ra_gpt.h"
 #include "ra_i2c.h"
 #include "ra_icu.h"
 #include "ra_init.h"

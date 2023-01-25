@@ -1,0 +1,8 @@
+uPy:
+	@echo "Does uPY $(BRD) build exist?"
+ifeq ($(wildcard ../../../build-$(BRD)/.),)
+	@echo "-> NO ... Generating uPY firmware first ..."
+	$(MAKE) -C ../../.. BOARD=$(BRD) V=1
+else
+	@echo "-> YES ... Using some [build-$(BRD)] files ..."
+endif

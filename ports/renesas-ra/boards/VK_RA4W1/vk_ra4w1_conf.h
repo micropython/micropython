@@ -1,10 +1,7 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
- *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2021, 2022 Renesas Electronics Corporation
+ * Copyright (c) 2023 Vekatech Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,17 +22,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RA_SPI_H
-#define MICROPY_INCLUDED_RA_SPI_H
+#ifndef VK_RA4M1_CONF_H
+#define VK_RA4M1_CONF_H
 
-// A transfer of "len" bytes should take len*8*1000/baudrate milliseconds.
-// To simplify the calculation we assume the baudrate is never less than 8kHz
-// and use that value for the baudrate in the formula, plus a small constant.
-#define SPI_TRANSFER_TIMEOUT(len) ((len) + 100)
+#define DEBUG_CH    1
 
-void spi_init0(void);
-void spi_deinit(uint32_t ch);
-int spi_find_index(mp_obj_t id);
-void spi_transfer(uint32_t ch, uint32_t bits, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout);
+#define DBG_TX0
+#define DBG_RX0
 
-#endif // MICROPY_INCLUDED_RA_SPI_H
+#define DBG_TX1     P213
+#define DBG_RX1     P212
+
+#define DBG_TX9     P109
+#define DBG_RX9     P110
+
+#endif /* VK_RA4M1_CONF_H */
