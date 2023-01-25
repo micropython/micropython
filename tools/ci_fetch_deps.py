@@ -85,6 +85,8 @@ def main():
         submodules = ["extmod/ulab", "lib/", "tools/", "ports/", "data/nvm.toml"]
     elif TARGET == "website":
         submodules = ["tools/adabot/", "frozen/"]
+    elif TARGET == "pre-commit":
+        submodules = ["extmod/ulab"]
     else:
         p = list(pathlib.Path(".").glob(f"ports/*/boards/{TARGET}/mpconfigboard.mk"))
         if not p:

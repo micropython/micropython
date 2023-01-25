@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: windows-2019
+    runs-on: windows-2022
     defaults:
       run:
         # We define a custom shell script here, although `msys2.cmd` does neither exist nor is it available in the PATH yet
@@ -32,8 +32,7 @@ jobs:
       shell: bash
 
     - name: Check python coding (cmd)
-      run: |
-        python -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
+      run: python -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
       shell: cmd
 
     # We use a JS Action, which calls the system terminal or other custom terminals directly, if required
@@ -98,8 +97,9 @@ jobs:
         echo "::endgroup::"
     - name: CircuitPython version
       run: |
-        tools/describe || git log --parents HEAD~4..
-        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
+        CP_VERSION=$(tools/describe)
+        echo "$CP_VERSION"
+        echo "CP_VERSION=$CP_VERSION" >> $GITHUB_ENV
 
     - name: build mpy-cross
       run: make -j2 -C mpy-cross
