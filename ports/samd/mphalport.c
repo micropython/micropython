@@ -147,7 +147,7 @@ uint64_t mp_hal_ticks_us_64(void) {
         us64_upper++;
     }
     #if defined(MCU_SAMD21)
-    return ((uint64_t)us64_upper << 32) | us64_lower;
+    return ((uint64_t)us64_upper << 31) | (us64_lower >> 1);
     #elif defined(MCU_SAMD51)
     return ((uint64_t)us64_upper << 28) | (us64_lower >> 4);
     #endif

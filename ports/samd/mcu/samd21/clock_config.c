@@ -166,7 +166,7 @@ void init_clocks(uint32_t cpu_freq) {
     // GCLK0: 48MHz, source: DFLL48M or FDPLL96M, usage: CPU
     // GCLK1: 32kHz, source: XOSC32K or OSCULP32K, usage: FDPLL96M reference
     // GCLK2: 1-48MHz, source: DFLL48M, usage: Peripherals
-    // GCLK3: 1Mhz,  source: DFLL48M, usage: us-counter (TC4/TC5)
+    // GCLK3: 2Mhz,  source: DFLL48M, usage: us-counter (TC4/TC5)
     // GCLK4: 32kHz, source: XOSC32K, if crystal present, usage: DFLL48M reference
     // GCLK5: 48MHz, source: DFLL48M, usage: USB
     // GCLK8: 1kHz,  source: XOSC32K or OSCULP32K, usage: WDT and RTC
@@ -291,8 +291,8 @@ void init_clocks(uint32_t cpu_freq) {
 
     set_cpu_freq(cpu_freq);
 
-    // Enable GCLK output: 1MHz on GCLK3 for TC4
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(3) | GCLK_GENDIV_DIV(48);
+    // Enable GCLK output: 2MHz on GCLK3 for TC4
+    GCLK->GENDIV.reg = GCLK_GENDIV_ID(3) | GCLK_GENDIV_DIV(24);
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(3);
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }

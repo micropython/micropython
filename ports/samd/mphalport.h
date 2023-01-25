@@ -54,11 +54,7 @@ static inline mp_uint_t mp_hal_ticks_ms(void) {
 }
 
 static inline mp_uint_t mp_hal_ticks_us(void) {
-    #if defined(MCU_SAMD21)
-    return REG_TC4_COUNT32_COUNT;
-    #else
     return (mp_uint_t)mp_hal_ticks_us_64();
-    #endif
 }
 
 #if defined(MCU_SAMD21)
