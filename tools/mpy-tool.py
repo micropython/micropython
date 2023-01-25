@@ -27,6 +27,7 @@
 # Python 2/3 compatibility code
 from __future__ import print_function
 import platform
+import sys
 
 if platform.python_version_tuple()[0] == "2":
     from binascii import hexlify as hexlify_py2
@@ -1362,7 +1363,10 @@ def read_mpy(filename):
             obj_table.append(read_obj(reader, segments))
 
         # Compute the compiled-module escaped name.
-        cm_escaped_name = qstr_table[0].str.replace("/", "_")[:-3]
+        if sys.platform == "win32":
+            cm_escaped_name = qstr_table[0].str.replace("\\", "_")[:-3]
+        else:
+            cm_escaped_name = qstr_table[0].str.replace("/", "_")[:-3]
 
         # Read the outer raw code, which will in turn read all its children.
         raw_code_file_offset = reader.tell()
@@ -1514,6 +1518,8 @@ def freeze_mpy(base_qstrs, compiled_modules):
     mp_frozen_mpy_names_content = 1
     for cm in compiled_modules:
         module_name = cm.source_file.str
+        if sys.platform == "win32":
+            module_name = module_name.replace("\\", "/")
         print('    "%s\\0"' % module_name)
         mp_frozen_mpy_names_content += len(cm.source_file.str) + 1
     print('    "\\0"')
@@ -1532,6 +1538,8 @@ def freeze_mpy(base_qstrs, compiled_modules):
     print("#ifdef MICROPY_FROZEN_LIST_ITEM")
     for cm in compiled_modules:
         module_name = cm.source_file.str
+        if sys.platform == "win32":
+            module_name = module_name.replace("\\", "/")
         if module_name.endswith("/__init__.py"):
             short_name = module_name[: -len("/__init__.py")]
         else:
