@@ -255,10 +255,10 @@ static uint8_t *_get_bytes_len(mp_obj_t obj, size_t len, mp_uint_t rw) {
     return (uint8_t *)bufinfo.buf;
 }
 
-//|     def set_pmk(self, pmk: bytes) -> None:
+//|     def set_pmk(self, pmk: ReadableBuffer) -> None:
 //|         """Set the ESP-NOW Primary Master Key (pmk) for encrypted communications.
 //|
-//|         :param bytes pmk: The ESP-NOW Primary Master Key (length = 16 bytes)."""
+//|         :param ReadableBuffer pmk: The ESP-NOW Primary Master Key (length = 16 bytes)."""
 //|         ...
 STATIC mp_obj_t espnow_set_pmk(mp_obj_t self_in, mp_obj_t key) {
     check_esp_err(esp_now_set_pmk(_get_bytes_len(key, ESP_NOW_KEY_LEN, MP_BUFFER_READ)));
@@ -426,14 +426,14 @@ static void _wait_for_pending_responses(espnow_obj_t *self) {
 
 //|     def send(
 //|         self,
-//|         message: Union[bytearray, bytes, str],
-//|         mac: Optional[bytes],
+//|         message: ReadableBuffer,
+//|         mac: Optional[ReadableBuffer],
 //|         sync: bool = True,
 //|     ) -> bool:
 //|         """Send a message to the peer's mac address. Optionally wait for a response.
 //|
-//|         :param Union[bytearray, bytes, str] message: The message to send (length < 250 bytes).
-//|         :param bytes mac: The peer's address (length = 6 bytes). If `None` or any non-true value, send to all registered peers.
+//|         :param ReadableBuffer message: The message to send (length <= 250 bytes).
+//|         :param ReadableBuffer mac: The peer's address (length = 6 bytes). If `None` or any non-true value, send to all registered peers.
 //|         :param bool sync: If `True`, wait for response from peer(s) after sending.
 //|
 //|         :returns:
@@ -498,7 +498,7 @@ STATIC mp_obj_t espnow_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espnow_send_obj, 2, espnow_send);
 
-//|     def recv(self, buffers: List[bytearray]) -> int:
+//|     def recv(self, buffers: List[WriteableBuffer]) -> int:
 //|         """Loads mac, message, rssi and timestamp into the provided buffers.
 //|
 //|         If buffers is 2 elements long, the mac and message will be
@@ -506,7 +506,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espnow_send_obj, 2, espnow_send);
 //|         If buffers is 4 elements long, the rssi and timestamp values will be
 //|         loaded into the 3rd and 4th elements.
 //|
-//|         :param List[bytearray] buffers: List of buffers to be loaded.
+//|         :param List[WriteableBuffer] buffers: List of buffers to be loaded.
 //|
 //|         :returns: Length of the message."""
 //|         ...
@@ -651,16 +651,16 @@ static void _update_peer_count(espnow_obj_t *self) {
 
 //|     def add_peer(
 //|         self,
-//|         mac: bytes,
-//|         lmk: Optional[bytes],
+//|         mac: ReadableBuffer,
+//|         lmk: Optional[ReadableBuffer],
 //|         channel: int = 0,
 //|         interface: int = 0,
 //|         encrypt: bool = False,
 //|     ) -> None:
 //|         """Add peer.
 //|
-//|         :param bytes mac: The mac address of the peer.
-//|         :param bytes lmk: The Local Master Key (lmk) of the peer.
+//|         :param ReadableBuffer mac: The mac address of the peer.
+//|         :param ReadableBuffer lmk: The Local Master Key (lmk) of the peer.
 //|         :param int channel: The peer's channel. Default: 0 ie. use the current channel.
 //|         :param int interface: The WiFi interface to use. Default: 0 ie. STA.
 //|         :param bool encrypt: Whether or not to use encryption."""
@@ -678,16 +678,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espnow_add_peer_obj, 2, espnow_add_peer);
 
 //|     def mod_peer(
 //|         self,
-//|         mac: bytes,
-//|         lmk: Optional[bytes],
+//|         mac: ReadableBuffer,
+//|         lmk: Optional[ReadableBuffer],
 //|         channel: int = 0,
 //|         interface: int = 0,
 //|         encrypt: bool = False,
 //|     ) -> None:
 //|         """Modify peer.
 //|
-//|         :param bytes mac: The mac address of the peer.
-//|         :param bytes lmk: The Local Master Key (lmk) of the peer.
+//|         :param ReadableBuffer mac: The mac address of the peer.
+//|         :param ReadableBuffer lmk: The Local Master Key (lmk) of the peer.
 //|         :param int channel: The peer's channel. Default: 0 ie. use the current channel.
 //|         :param int interface: The WiFi interface to use. Default: 0 ie. STA.
 //|         :param bool encrypt: Whether or not to use encryption."""
@@ -702,10 +702,10 @@ STATIC mp_obj_t espnow_mod_peer(size_t n_args, const mp_obj_t *pos_args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espnow_mod_peer_obj, 2, espnow_mod_peer);
 
-//|     def del_peer(self, mac: bytes) -> None:
+//|     def del_peer(self, mac: ReadableBuffer) -> None:
 //|         """Delete peer.
 //|
-//|         :param bytes mac: The mac address of the peer."""
+//|         :param ReadableBuffer mac: The mac address of the peer."""
 //|         ...
 STATIC mp_obj_t espnow_del_peer(mp_obj_t self_in, mp_obj_t mac) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -732,10 +732,10 @@ static mp_obj_t _peer_info_to_tuple(const esp_now_peer_info_t *peer) {
         mp_obj_new_bool(peer->encrypt));
 }
 
-//|     def get_peer(self, mac: bytes) -> Tuple[bytes, int, int, bool]:
+//|     def get_peer(self, mac: ReadableBuffer) -> Tuple[bytes, int, int, bool]:
 //|         """Get the peer info for mac as a `tuple`.
 //|
-//|         :param bytes mac: The mac address of the peer.
+//|         :param ReadableBuffer mac: The mac address of the peer.
 //|
 //|         :returns: A `tuple` of (mac, lmk, channel, interface, encrypt)."""
 //|         ...
