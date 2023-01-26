@@ -133,7 +133,7 @@ void common_hal_espulp_ulp_halt(espulp_ulp_obj_t *self) {
     }
 }
 
-void common_hal_espulp_ulp_construct(espulp_ulp_obj_t *self, espulp_ulparch_t arch) {
+void common_hal_espulp_ulp_construct(espulp_ulp_obj_t *self, espulp_architecture_t arch) {
     // Use a static variable to track ULP in use so that subsequent code runs can
     // use a running ULP. This is only to prevent multiple portions of user code
     // from using the ULP concurrently.

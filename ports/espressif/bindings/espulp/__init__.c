@@ -29,7 +29,7 @@
 #include "bindings/espulp/__init__.h"
 #include "bindings/espulp/ULP.h"
 #include "bindings/espulp/ULPAlarm.h"
-#include "bindings/espulp/ULPArch.h"
+#include "bindings/espulp/Architecture.h"
 
 #include "py/runtime.h"
 
@@ -82,7 +82,7 @@ STATIC const mp_rom_map_elem_t espulp_module_globals_table[] = {
     // module classes
     { MP_ROM_QSTR(MP_QSTR_ULP), MP_OBJ_FROM_PTR(&espulp_ulp_type) },
     { MP_ROM_QSTR(MP_QSTR_ULPAlarm), MP_OBJ_FROM_PTR(&espulp_ulpalarm_type) },
-    { MP_ROM_QSTR(MP_QSTR_ULPArch),    MP_ROM_PTR(&espulp_ulparch_type) },
+    { MP_ROM_QSTR(MP_QSTR_Architecture), MP_ROM_PTR(&espulp_architecture_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(espulp_module_globals, espulp_module_globals_table);
 

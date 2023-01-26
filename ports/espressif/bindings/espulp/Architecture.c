@@ -24,17 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_BINDINGS_ESPULP_ULPARCH_H
-#define MICROPY_INCLUDED_BINDINGS_ESPULP_ULPARCH_H
-
 #include "py/enum.h"
 
-typedef enum {
-    FSM,
-    RISCV
-} espulp_ulparch_t;
+#include "bindings/espulp/Architecture.h"
 
-extern const mp_obj_type_t espulp_ulparch_type;
-extern const cp_enum_obj_t ulparch_FSM_obj;
+MAKE_ENUM_VALUE(espulp_architecture_type, architecture, FSM, FSM);
+MAKE_ENUM_VALUE(espulp_architecture_type, architecture, RISCV, RISCV);
 
-#endif // MICROPY_INCLUDED_BINDINGS_ESPULP_ULPARCH_H
+//| class Architecture:
+//|     """The ULP architectures available."""
+//|
+//|     FSM: Architecture
+//|     """The ULP Finite State Machine."""
+//|
+//|     RISCV: Architecture
+//|     """The ULP RISC-V Coprocessor."""
+//|
+MAKE_ENUM_MAP(espulp_architecture) {
+    MAKE_ENUM_MAP_ENTRY(architecture, FSM),
+    MAKE_ENUM_MAP_ENTRY(architecture, RISCV),
+};
+STATIC MP_DEFINE_CONST_DICT(espulp_architecture_locals_dict, espulp_architecture_locals_table);
+
+MAKE_PRINTER(espulp, espulp_architecture);
+
+MAKE_ENUM_TYPE(espulp, Architecture, espulp_architecture);

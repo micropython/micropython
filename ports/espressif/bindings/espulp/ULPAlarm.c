@@ -25,9 +25,9 @@
  */
 
 #include "bindings/espulp/ULPAlarm.h"
-#include "bindings/espulp/ULPArch.h"
 
 #include "py/runtime.h"
+#include "py/objproperty.h"
 
 //| class ULPAlarm:
 //|     """Trigger an alarm when the ULP requests wake-up."""
@@ -52,7 +52,10 @@ STATIC mp_obj_t espulp_ulpalarm_make_new(const mp_obj_type_t *type, size_t n_arg
 
     espulp_ulpalarm_obj_t *self = m_new_obj(espulp_ulpalarm_obj_t);
     self->base.type = &espulp_ulpalarm_type;
-    self->ulp = mp_arg_validate_type(args[ARG_ulp].u_obj, &espulp_ulp_type, MP_QSTR_ulp);
+
+    espulp_ulp_obj_t *ulp = mp_arg_validate_type(args[ARG_ulp].u_obj, &espulp_ulp_type, MP_QSTR_ulp);
+
+    common_hal_espulp_ulpalarm_construct(self, ulp);
 
     return MP_OBJ_FROM_PTR(self);
 }

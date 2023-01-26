@@ -37,6 +37,10 @@
 static volatile bool woke_up = false;
 static bool alarm_set = false;
 
+void common_hal_espulp_ulpalarm_construct(espulp_ulpalarm_obj_t *self, espulp_ulp_obj_t *ulp) {
+    self->ulp = ulp;
+}
+
 mp_obj_t espulp_ulpalarm_find_triggered_alarm(const size_t n_alarms, const mp_obj_t *alarms) {
     for (size_t i = 0; i < n_alarms; i++) {
         if (mp_obj_is_type(alarms[i], &espulp_ulpalarm_type)) {

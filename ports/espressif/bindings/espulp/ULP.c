@@ -33,24 +33,24 @@
 #include "py/objproperty.h"
 
 //| class ULP:
-//|     def __init__(self, arch: ULPArch = ULPArch.FSM):
+//|     def __init__(self, arch: Architecture = Architecture.FSM):
 //|         """The ultra-low-power processor.
 //|
 //|         Raises an exception if another ULP has been instantiated. This
 //|         ensures that is is only used by one piece of code at a time.
 //|
-//|         :param ULPArch arch: The ulp arch"""
+//|         :param Architecture arch: The ulp arch"""
 //|         ...
 STATIC mp_obj_t espulp_ulp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_arch };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_arch, MP_ARG_OBJ, {.u_obj = (void *)&ulparch_FSM_obj} },
+        { MP_QSTR_arch, MP_ARG_OBJ, {.u_obj = (void *)&architecture_FSM_obj} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const espulp_ulparch_t arch = cp_enum_value(&espulp_ulparch_type, args[ARG_arch].u_obj, MP_QSTR_arch);
+    const espulp_architecture_t arch = cp_enum_value(&espulp_architecture_type, args[ARG_arch].u_obj, MP_QSTR_arch);
 
     espulp_ulp_obj_t *self = m_new_obj(espulp_ulp_obj_t);
     self->base.type = &espulp_ulp_type;
@@ -149,14 +149,14 @@ STATIC mp_obj_t espulp_ulp_halt(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(espulp_ulp_halt_obj, espulp_ulp_halt);
 
-//|     arch: ULPArch
-//|     """The ulp arch. (read-only)"""
+//|     arch: Architecture
+//|     """The ulp architecture. (read-only)"""
 //|
 STATIC mp_obj_t espulp_ulp_get_arch(mp_obj_t self_in) {
     espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
-    return cp_enum_find(&espulp_ulparch_type, self->arch);
+    return cp_enum_find(&espulp_architecture_type, self->arch);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(espulp_ulp_get_arch_obj, espulp_ulp_get_arch);
 
@@ -164,12 +164,12 @@ MP_PROPERTY_GETTER(espulp_ulp_arch_obj,
     (mp_obj_t)&espulp_ulp_get_arch_obj);
 
 STATIC const mp_rom_map_elem_t espulp_ulp_locals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&espulp_ulp_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&espulp_ulp___exit___obj) },
-    { MP_ROM_QSTR(MP_QSTR_run), MP_ROM_PTR(&espulp_ulp_run_obj) },
-    { MP_ROM_QSTR(MP_QSTR_halt), MP_ROM_PTR(&espulp_ulp_halt_obj) },
-    { MP_ROM_QSTR(MP_QSTR_arch), MP_ROM_PTR(&espulp_ulp_arch_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),      MP_ROM_PTR(&espulp_ulp_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),   MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__),    MP_ROM_PTR(&espulp_ulp___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR_run),         MP_ROM_PTR(&espulp_ulp_run_obj) },
+    { MP_ROM_QSTR(MP_QSTR_halt),        MP_ROM_PTR(&espulp_ulp_halt_obj) },
+    { MP_ROM_QSTR(MP_QSTR_arch),        MP_ROM_PTR(&espulp_ulp_arch_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(espulp_ulp_locals_dict, espulp_ulp_locals_table);
 

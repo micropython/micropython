@@ -27,10 +27,10 @@
 #pragma once
 
 #include "py/obj.h"
-#include "bindings/espulp/ULPArch.h"
+#include "bindings/espulp/Architecture.h"
 
 typedef struct {
     mp_obj_base_t base;
-    espulp_ulparch_t arch;
+    espulp_architecture_t arch;
     bool inited;
 } espulp_ulp_obj_t;
