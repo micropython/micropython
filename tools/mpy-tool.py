@@ -937,6 +937,10 @@ class RawCode(object):
                 % (self.escaped_name, self.offset_line_info)
             )
             print(
+                "        .line_info_top = fun_data_%s + %u,"
+                % (self.escaped_name, self.offset_closure_info)
+            )
+            print(
                 "        .opcodes = fun_data_%s + %u," % (self.escaped_name, self.offset_opcodes)
             )
             print("    },")
