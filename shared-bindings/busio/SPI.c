@@ -35,6 +35,7 @@
 
 #include "shared/runtime/buffer_helper.h"
 #include "shared/runtime/context_manager_helpers.h"
+#include "py/binary.h"
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -103,9 +104,9 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
-    const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);
-    const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj);
+    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj, MP_QSTR_clock);
+    const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj, MP_QSTR_mosi);
+    const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj, MP_QSTR_miso);
 
     if (!miso && !mosi) {
         mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
@@ -264,9 +265,15 @@ STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
+    // Compute bounds in terms of elements, not bytes.
+    int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     int32_t start = args[ARG_start].u_int;
-    size_t length = bufinfo.len;
+    size_t length = bufinfo.len / stride_in_bytes;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
 
     if (length == 0) {
         return mp_const_none;
@@ -323,9 +330,15 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
+    // Compute bounds in terms of elements, not bytes.
+    int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     int32_t start = args[ARG_start].u_int;
-    size_t length = bufinfo.len;
+    size_t length = bufinfo.len / stride_in_bytes;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
 
     if (length == 0) {
         return mp_const_none;
@@ -392,15 +405,23 @@ STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args
 
     mp_buffer_info_t buf_out_info;
     mp_get_buffer_raise(args[ARG_out_buffer].u_obj, &buf_out_info, MP_BUFFER_READ);
+    int out_stride_in_bytes = mp_binary_get_size('@', buf_out_info.typecode, NULL);
     int32_t out_start = args[ARG_out_start].u_int;
-    size_t out_length = buf_out_info.len;
+    size_t out_length = buf_out_info.len / out_stride_in_bytes;
     normalize_buffer_bounds(&out_start, args[ARG_out_end].u_int, &out_length);
 
     mp_buffer_info_t buf_in_info;
     mp_get_buffer_raise(args[ARG_in_buffer].u_obj, &buf_in_info, MP_BUFFER_WRITE);
+    int in_stride_in_bytes = mp_binary_get_size('@', buf_in_info.typecode, NULL);
     int32_t in_start = args[ARG_in_start].u_int;
-    size_t in_length = buf_in_info.len;
+    size_t in_length = buf_in_info.len / in_stride_in_bytes;
     normalize_buffer_bounds(&in_start, args[ARG_in_end].u_int, &in_length);
+
+    // Treat start and length in terms of bytes from now on.
+    out_start *= out_stride_in_bytes;
+    out_length *= out_stride_in_bytes;
+    in_start *= in_stride_in_bytes;
+    in_length *= in_stride_in_bytes;
 
     if (out_length != in_length) {
         mp_raise_ValueError(translate("buffer slices must be of equal length"));
@@ -463,9 +484,6 @@ const mp_obj_type_t busio_spi_type = {
     .locals_dict = (mp_obj_dict_t *)&busio_spi_locals_dict,
 };
 
-busio_spi_obj_t *validate_obj_is_spi_bus(mp_obj_t obj) {
-    if (!mp_obj_is_type(obj, &busio_spi_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), busio_spi_type.name);
-    }
-    return MP_OBJ_TO_PTR(obj);
+busio_spi_obj_t *validate_obj_is_spi_bus(mp_obj_t obj, qstr arg_name) {
+    return mp_arg_validate_type(obj, &busio_spi_type, arg_name);
 }

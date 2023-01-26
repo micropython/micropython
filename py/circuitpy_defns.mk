@@ -167,9 +167,6 @@ endif
 ifeq ($(CIRCUITPY_CANIO),1)
 SRC_PATTERNS += canio/%
 endif
-ifeq ($(CIRCUITPY_COPROC),1)
-SRC_PATTERNS += coproc/%
-endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
 endif
@@ -181,9 +178,6 @@ SRC_PATTERNS += digitalio/%
 endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/%
-endif
-ifeq ($(CIRCUITPY_DOTENV),1)
-SRC_PATTERNS += dotenv/%
 endif
 ifeq ($(CIRCUITPY__EVE),1)
 SRC_PATTERNS += _eve/%
@@ -230,6 +224,9 @@ endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
 endif
+ifeq ($(CIRCUITPY_MEMORYMAP),1)
+SRC_PATTERNS += memorymap/%
+endif
 ifeq ($(CIRCUITPY_MEMORYMONITOR),1)
 SRC_PATTERNS += memorymonitor/%
 endif
@@ -265,6 +262,9 @@ SRC_PATTERNS += _pew/%
 endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += adafruit_pixelbuf/%
+endif
+ifeq ($(CIRCUITPY_PIXELMAP),1)
+SRC_PATTERNS += _pixelmap/%
 endif
 ifeq ($(CIRCUITPY_QRIO),1)
 SRC_PATTERNS += qrio/%
@@ -400,7 +400,6 @@ SRC_COMMON_HAL_ALL = \
 	alarm/pin/PinAlarm.c \
 	alarm/time/TimeAlarm.c \
 	alarm/touch/TouchAlarm.c \
-	alarm/coproc/CoprocAlarm.c \
 	analogbufio/BufferedIn.c \
 	analogbufio/__init__.c \
 	analogio/AnalogIn.c \
@@ -423,9 +422,6 @@ SRC_COMMON_HAL_ALL = \
 	canio/CAN.c \
 	canio/Listener.c \
 	canio/__init__.c \
-	coproc/__init__.c \
-	coproc/Coproc.c \
-	coproc/CoprocMemory.c \
 	countio/Counter.c \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
@@ -443,9 +439,11 @@ SRC_COMMON_HAL_ALL = \
 	hashlib/Hash.c \
 	i2ctarget/I2CTarget.c \
 	i2ctarget/__init__.c \
+	memorymap/__init__.c \
+	memorymap/AddressRange.c \
+	microcontroller/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
-	microcontroller/__init__.c \
 	mdns/__init__.c \
 	mdns/Server.c \
 	mdns/RemoteService.c \
@@ -543,6 +541,8 @@ SRC_SHARED_MODULE_ALL = \
 	_eve/__init__.c \
 	adafruit_pixelbuf/PixelBuf.c \
 	adafruit_pixelbuf/__init__.c \
+	_pixelmap/PixelMap.c \
+	_pixelmap/__init__.c \
 	_stage/Layer.c \
 	_stage/Text.c \
 	_stage/__init__.c \
@@ -584,7 +584,6 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/TileGrid.c \
 	displayio/area.c \
 	displayio/__init__.c \
-	dotenv/__init__.c \
 	floppyio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
@@ -713,6 +712,7 @@ endif
 SRC_SHARED_MODULE_INTERNAL = \
 $(filter $(SRC_PATTERNS), \
 	displayio/display_core.c \
+	os/getenv.c \
 	usb/utf16le.c \
 )
 

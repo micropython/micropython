@@ -145,9 +145,11 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
     mp_arg_parse_all(n_pos, args, &kw_args, n_allowed, allowed, out_vals);
 }
 
+#if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
 NORETURN void mp_arg_error_terse_mismatch(void) {
     mp_raise_TypeError(MP_ERROR_TEXT("argument num/types mismatch"));
 }
+#endif
 
 #if MICROPY_CPYTHON_COMPAT
 NORETURN void mp_arg_error_unimpl_kw(void) {
@@ -232,14 +234,28 @@ mp_int_t mp_arg_validate_index_range(mp_int_t index, mp_int_t min, mp_int_t max,
 
 mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name) {
     if (!mp_obj_is_type(obj, type)) {
-        mp_raise_TypeError_varg(translate("%q must be of type %q"), arg_name, type->name);
+        mp_raise_TypeError_varg(translate("%q must be of type %q, not %q"), arg_name, type->name, mp_obj_get_type(obj)->name);
+    }
+    return obj;
+}
+
+mp_obj_t mp_arg_validate_type_in(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name) {
+    if (!mp_obj_is_type(obj, type)) {
+        mp_raise_TypeError_varg(translate("%q in %q must be of type %q, not %q"), MP_QSTR_object, arg_name, type->name, mp_obj_get_type(obj)->name);
+    }
+    return obj;
+}
+
+mp_obj_t mp_arg_validate_type_or_none(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name) {
+    if (obj != mp_const_none && !mp_obj_is_type(obj, type)) {
+        mp_raise_TypeError_varg(translate("%q must be of type %q or %q, not %q"), arg_name, type->name, MP_QSTR_None, mp_obj_get_type(obj)->name);
     }
     return obj;
 }
 
 mp_obj_t mp_arg_validate_type_string(mp_obj_t obj, qstr arg_name) {
     if (!mp_obj_is_str(obj)) {
-        mp_raise_TypeError_varg(translate("%q must be a string"), arg_name);
+        mp_raise_TypeError_varg(translate("%q must be of type %q, not %q"), arg_name, MP_QSTR_str, mp_obj_get_type(obj)->name);
     }
     return obj;
 }
@@ -247,7 +263,7 @@ mp_obj_t mp_arg_validate_type_string(mp_obj_t obj, qstr arg_name) {
 mp_int_t mp_arg_validate_type_int(mp_obj_t obj, qstr arg_name) {
     mp_int_t an_int;
     if (!mp_obj_get_int_maybe(obj, &an_int)) {
-        mp_raise_TypeError_varg(translate("%q must be an int"), arg_name);
+        mp_raise_TypeError_varg(translate("%q must be of type %q, not %q"), arg_name, MP_QSTR_int, mp_obj_get_type(obj)->name);
     }
     return an_int;
 }

@@ -61,7 +61,7 @@ STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, siz
     displayio_colorconverter_t *self = m_new_obj(displayio_colorconverter_t);
     self->base.type = &displayio_colorconverter_type;
 
-    common_hal_displayio_colorconverter_construct(self, args[ARG_dither].u_bool, (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_input_colorspace].u_obj));
+    common_hal_displayio_colorconverter_construct(self, args[ARG_dither].u_bool, (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_input_colorspace].u_obj, MP_QSTR_input_colorspace));
 
     return MP_OBJ_FROM_PTR(self);
 }

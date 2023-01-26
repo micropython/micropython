@@ -35,7 +35,6 @@ These libraries are not currently enabled in any CircuitPython build, but may be
    json.rst
    re.rst
    sys.rst
-   asyncio.rst
    ctypes.rst
    select.rst
 

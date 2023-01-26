@@ -83,5 +83,5 @@ digitalio_pull_t validate_pull(mp_rom_obj_t obj, qstr arg_name) {
     if (obj == MP_ROM_NONE) {
         return PULL_NONE;
     }
-    mp_raise_TypeError_varg(translate("%q must be of type %q or None"), arg_name, MP_QSTR_Pull);
+    mp_raise_TypeError_varg(translate("%q must be of type %q or %q, not %q"), arg_name, MP_QSTR_Pull, MP_QSTR_None, mp_obj_get_type(obj)->name);
 }

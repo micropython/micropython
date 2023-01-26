@@ -46,7 +46,7 @@ connection, the central device can discover two default services. One for file t
 CircuitPython specifically that includes serial characteristics.
 
 To change the default BLE advertising name without (or before) running user code, the desired name
-can be put in the `/.env` file. The key is `CIRCUITPY_BLE_NAME`. It's limited to approximately
+can be put in the `settings.toml` file. The key is `CIRCUITPY_BLE_NAME`. It's limited to approximately
 30 characters depending on the port's settings and will be truncated if longer.
 
 ### File Transfer API
@@ -69,21 +69,21 @@ Read-only characteristic that returns the UTF-8 encoded version string.
 
 ## Web
 
-The web workflow is depends on adding Wi-Fi credentials into the `/.env` file. The keys are
+The web workflow is depends on adding Wi-Fi credentials into the `settings.toml` file. The keys are
 `CIRCUITPY_WIFI_SSID` and `CIRCUITPY_WIFI_PASSWORD`. Once these are defined, CircuitPython will
 automatically connect to the network and start the webserver used for the workflow. The webserver
 is on port 80 unless overridden by `CIRCUITPY_WEB_API_PORT`. It also enables MDNS.
 
-Here is an example `/.env`:
+Here is an example `/settings.toml`:
 
 ```bash
 # To auto-connect to Wi-Fi
-CIRCUITPY_WIFI_SSID='scottswifi'
-CIRCUITPY_WIFI_PASSWORD='secretpassword'
+CIRCUITPY_WIFI_SSID="scottswifi"
+CIRCUITPY_WIFI_PASSWORD="secretpassword"
 
 # To enable modifying files from the web. Change this too!
 # Leave the User field blank in the browser.
-CIRCUITPY_WEB_API_PASSWORD='passw0rd'
+CIRCUITPY_WEB_API_PASSWORD="passw0rd"
 
 CIRCUITPY_WEB_API_PORT=80
 ```
@@ -124,7 +124,7 @@ All file system related APIs are protected by HTTP basic authentication. It is *
 hopefully prevent some griefing in shared settings. The password is sent unencrypted so do not reuse
 a password with something important. The user field is left blank.
 
-The password is taken from `/.env` with the key `CIRCUITPY_WEB_API_PASSWORD`. If this is unset, the
+The password is taken from `settings.toml` with the key `CIRCUITPY_WEB_API_PASSWORD`. If this is unset, the
 server will respond with `403 Forbidden`. When a password is set, but not provided in a request, it
 will respond `401 Unauthorized`.
 

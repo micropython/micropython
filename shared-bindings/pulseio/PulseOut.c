@@ -77,10 +77,10 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *pin = args[ARG_pin].u_obj;
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj, MP_QSTR_pin);
     mp_int_t frequency = args[ARG_frequency].u_int;
     mp_int_t duty_cycle = args[ARG_duty_cycle].u_int;
-    validate_obj_is_free_pin(MP_OBJ_FROM_PTR(pin));
+
     pulseio_pulseout_obj_t *self = m_new_obj(pulseio_pulseout_obj_t);
     self->base.type = &pulseio_pulseout_type;
     common_hal_pulseio_pulseout_construct(self, pin, frequency, duty_cycle);

@@ -41,7 +41,12 @@ STATIC void update_internal_buffer(pulseio_pulsein_obj_t *self) {
         length /= 4;
         for (size_t i = 0; i < length; i++) {
             uint16_t pos = (self->start + self->len) % self->maxlen;
-            self->buffer[pos] = items[i].duration0 * 3;
+            uint32_t val = items[i].duration0 * 3;
+            // make sure the value returned does not exceed the max uint16 value.
+            if (val > 65535) {
+                val = 65535;
+            }
+            self->buffer[pos] = (uint16_t)val;
             if (self->len < self->maxlen) {
                 self->len++;
             } else {
@@ -50,7 +55,11 @@ STATIC void update_internal_buffer(pulseio_pulsein_obj_t *self) {
             // Check if second item exists
             if (items[i].duration1) {
                 pos = (self->start + self->len) % self->maxlen;
-                self->buffer[pos] = items[i].duration1 * 3;
+                val = items[i].duration1 * 3;
+                if (val > 65535) {
+                    val = 65535;
+                }
+                self->buffer[pos] = (uint16_t)val;
                 if (self->len < self->maxlen) {
                     self->len++;
                 } else {

@@ -39,6 +39,15 @@
 //| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel.
 //|
 //| Byteorders are configured with strings, such as "RGB" or "RGBD"."""
+//|
+//| # The types accepted when getting a pixel value
+//| PixelReturnType = Union[
+//|     Tuple[int, int, int], Tuple[int, int, int, int], Tuple[int, int, int, float]
+//| ]
+//| PixelReturnSequence = Tuple[PixelReturnType]
+//| # The types returned when getting a pixel value
+//| PixelType = Union[int, PixelReturnType]
+//| PixelSequence = Union[Tuple[PixelType], List[PixelType]]
 // TODO: Pull in docs from adafruit_pixelbuf.
 
 STATIC const mp_rom_map_elem_t pixelbuf_module_globals_table[] = {

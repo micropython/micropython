@@ -24,12 +24,10 @@
  * THE SOFTWARE.
  */
 
+#pragma once
 
 #include "py/obj.h"
 #include "py/objarray.h"
-
-#ifndef PIXELBUF_SHARED_MODULE_H
-#define PIXELBUF_SHARED_MODULE_H
 
 typedef struct {
     uint8_t r;
@@ -68,5 +66,3 @@ typedef struct {
 
 #define DOTSTAR_LED_START 0b11100000
 #define DOTSTAR_LED_START_FULL_BRIGHT 0xFF
-
-#endif

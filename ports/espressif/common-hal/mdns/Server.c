@@ -33,18 +33,26 @@
 
 #include "components/mdns/include/mdns.h"
 
-STATIC bool inited = false;
+// Track whether the underlying IDF mdns has been started so that we only
+// create a single inited MDNS object to CircuitPython. (After deinit, another
+// could be created.)
+STATIC bool mdns_started = false;
 
 void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
-    if (inited) {
+    if (mdns_started) {
+        // Mark this object as deinited because another is already using MDNS.
+        self->inited = false;
         return;
     }
     mdns_init();
+    mdns_started = true;
 
     uint8_t mac[6];
     esp_netif_get_mac(common_hal_wifi_radio_obj.netif, mac);
     snprintf(self->default_hostname, sizeof(self->default_hostname), "cpy-%02x%02x%02x", mac[3], mac[4], mac[5]);
     common_hal_mdns_server_set_hostname(self, self->default_hostname);
+
+    self->inited = true;
 
     if (workflow) {
         // Set a delegated entry to ourselves. This allows us to respond to "circuitpython.local"
@@ -67,21 +75,23 @@ void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_
         mp_raise_ValueError(translate("mDNS only works with built-in WiFi"));
         return;
     }
-    if (inited) {
+    mdns_server_construct(self, false);
+    if (common_hal_mdns_server_deinited(self)) {
         mp_raise_RuntimeError(translate("mDNS already initialized"));
     }
-    mdns_server_construct(self, false);
 }
 
 void common_hal_mdns_server_deinit(mdns_server_obj_t *self) {
-    inited = false;
+    if (common_hal_mdns_server_deinited(self)) {
+        return;
+    }
+    self->inited = false;
+    mdns_started = false;
     mdns_free();
 }
 
 bool common_hal_mdns_server_deinited(mdns_server_obj_t *self) {
-    // This returns INVALID_STATE when not initialized and INVALID_PARAM when it
-    // is.
-    return mdns_instance_name_set(NULL) == ESP_ERR_INVALID_STATE;
+    return !self->inited;
 }
 
 const char *common_hal_mdns_server_get_hostname(mdns_server_obj_t *self) {

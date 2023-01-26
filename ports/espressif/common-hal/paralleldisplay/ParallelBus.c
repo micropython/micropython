@@ -118,7 +118,8 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
     const mcu_pin_obj_t *data_pins[8];
     for (int i = 0; i < 8; i++) {
         snprintf(buf, sizeof(buf), "GPIO%d", data0->number + i);
-        data_pins[i] = validate_obj_is_free_pin(mp_obj_dict_get(MP_OBJ_FROM_PTR(&mcu_pin_globals), mp_obj_new_str(buf, strlen(buf))));
+        data_pins[i] = validate_obj_is_free_pin(
+            mp_obj_dict_get(MP_OBJ_FROM_PTR(&mcu_pin_globals), mp_obj_new_str(buf, strlen(buf))), MP_QSTR_pin);
     }
     common_hal_paralleldisplay_parallelbus_construct_nonsequential(self, 8, data_pins, command, chip_select, write, read, reset, frequency);
 }

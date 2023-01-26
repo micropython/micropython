@@ -50,8 +50,8 @@
 //|         vsync_pin: microcontroller.Pin,
 //|         href_pin: microcontroller.Pin,
 //|         i2c: busio.I2C,
-//|         external_clock_pin: microcontroller.Pin,
-//|         external_clock_frequency: int,
+//|         external_clock_pin: Optional[microcontroller.Pin] = None,
+//|         external_clock_frequency: int = 20_000_000,
 //|         powerdown_pin: Optional[microcontroller.Pin] = None,
 //|         reset_pin: Optional[microcontroller.Pin] = None,
 //|         pixel_format: PixelFormat = PixelFormat.RGB565,
@@ -63,7 +63,7 @@
 //|         """
 //|         Configure and initialize a camera with the given properties
 //|
-//|         This driver requires that the ``CIRCUITPY_RESERVED_PSRAM`` in ``/.env`` be large enough to hold the camera frambuffer(s). Generally, boards with built-in cameras will have a default setting that is large enough. If the constructor raises a MemoryError or an IDFError, this probably indicates the setting is too small and should be increased.
+//|         This driver requires that the ``CIRCUITPY_RESERVED_PSRAM`` in ``settings.toml`` be large enough to hold the camera frambuffer(s). Generally, boards with built-in cameras will have a default setting that is large enough. If the constructor raises a MemoryError or an IDFError, this probably indicates the setting is too small and should be increased.
 //|
 //|
 //|         .. important::
@@ -101,8 +101,8 @@ STATIC mp_obj_t esp32_camera_camera_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_vsync_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_href_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_i2c, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
-        { MP_QSTR_external_clock_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY },
-        { MP_QSTR_external_clock_frequency, MP_ARG_INT | MP_ARG_REQUIRED },
+        { MP_QSTR_external_clock_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = MP_ROM_NONE } },
+        { MP_QSTR_external_clock_frequency, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 20000000L } },
         { MP_QSTR_powerdown_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = MP_ROM_NONE } },
         { MP_QSTR_reset_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = MP_ROM_NONE } },
         { MP_QSTR_pixel_format, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = MP_ROM_PTR((void *)&pixel_format_RGB565_obj) } },
@@ -121,14 +121,21 @@ STATIC mp_obj_t esp32_camera_camera_make_new(const mp_obj_type_t *type, size_t n
     validate_pins(MP_QSTR_data_pins, data_pins, MP_ARRAY_SIZE(data_pins), args[ARG_data_pins].u_obj, &data_pin_count);
     mp_arg_validate_length(data_pin_count, 8, MP_QSTR_data_pins);
 
-    const mcu_pin_obj_t *pixel_clock_pin = validate_obj_is_free_pin(args[ARG_pixel_clock_pin].u_obj);
-    const mcu_pin_obj_t *vsync_pin = validate_obj_is_free_pin(args[ARG_vsync_pin].u_obj);
-    const mcu_pin_obj_t *href_pin = validate_obj_is_free_pin(args[ARG_href_pin].u_obj);
+    const mcu_pin_obj_t *pixel_clock_pin =
+        validate_obj_is_free_pin(args[ARG_pixel_clock_pin].u_obj, MP_QSTR_pixel_clock_pin);
+    const mcu_pin_obj_t *vsync_pin =
+        validate_obj_is_free_pin(args[ARG_vsync_pin].u_obj, MP_QSTR_vsync_pin);
+    const mcu_pin_obj_t *href_pin =
+        validate_obj_is_free_pin(args[ARG_href_pin].u_obj, MP_QSTR_href_pin);
     busio_i2c_obj_t *i2c = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c));
-    const mcu_pin_obj_t *external_clock_pin = validate_obj_is_free_pin(args[ARG_external_clock_pin].u_obj);
-    const mcu_pin_obj_t *powerdown_pin = validate_obj_is_free_pin_or_none(args[ARG_powerdown_pin].u_obj);
-    const mcu_pin_obj_t *reset_pin = validate_obj_is_free_pin_or_none(args[ARG_reset_pin].u_obj);
-    const mp_int_t external_clock_frequency = mp_arg_validate_int_range(args[ARG_external_clock_frequency].u_int, 0, 40000000, MP_QSTR_clock_frequency);
+    const mcu_pin_obj_t *external_clock_pin =
+        validate_obj_is_free_pin_or_none(args[ARG_external_clock_pin].u_obj, MP_QSTR_external_clock_pin);
+    const mcu_pin_obj_t *powerdown_pin =
+        validate_obj_is_free_pin_or_none(args[ARG_powerdown_pin].u_obj, MP_QSTR_powerdown_pin);
+    const mcu_pin_obj_t *reset_pin =
+        validate_obj_is_free_pin_or_none(args[ARG_reset_pin].u_obj, MP_QSTR_reset_pin);
+    const mp_int_t external_clock_frequency =
+        mp_arg_validate_int_range(args[ARG_external_clock_frequency].u_int, 0, 40000000, MP_QSTR_external_clock_frequency);
 
     camera_grab_mode_t grab_mode = validate_grab_mode(args[ARG_grab_mode].u_obj, MP_QSTR_grab_mode);
     framesize_t frame_size = validate_frame_size(args[ARG_frame_size].u_obj, MP_QSTR_frame_size);

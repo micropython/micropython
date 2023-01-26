@@ -68,6 +68,11 @@ msgstr "%%c vereist een int of char"
 msgid "%02X"
 msgstr ""
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "%S"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -103,13 +108,18 @@ msgstr ""
 msgid "%q failure: %d"
 msgstr "%q fout: %d"
 
+#: py/argcheck.c
+msgid "%q in %q must be of type %q, not %q"
+msgstr ""
+
+#: ports/espressif/common-hal/espulp/ULP.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q in gebruik"
 
-#: py/obj.c py/objstr.c py/objstrunicode.c
+#: py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "%q index buiten bereik"
 
@@ -121,7 +131,11 @@ msgstr ""
 msgid "%q is %q"
 msgstr ""
 
-#: py/argcheck.c
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "%q is read-only for this board"
+msgstr ""
+
+#: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
 
@@ -135,10 +149,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
-
-#: shared-bindings/busio/I2C.c
-msgid "%q length must be >= 1"
 msgstr ""
 
 #: py/argcheck.c
@@ -162,24 +172,20 @@ msgid "%q must be >= %d"
 msgstr ""
 
 #: shared-bindings/analogbufio/BufferedIn.c
+msgid "%q must be a bytearray or array of type 'H' or 'B'"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must be a string"
+#: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
+#: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must be an int"
-msgstr ""
-
-#: py/argcheck.c
-msgid "%q must be of type %q"
-msgstr ""
-
-#: shared-bindings/digitalio/Pull.c
-msgid "%q must be of type %q or None"
+#: py/argcheck.c py/obj.c py/objstrunicode.c
+msgid "%q must be of type %q, not %q"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
@@ -192,7 +198,6 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
@@ -204,8 +209,8 @@ msgstr "%q buiten bereik"
 msgid "%q pin invalid"
 msgstr "%q pin onjuist"
 
-#: shared-bindings/usb_hid/Device.c
-msgid "%q with a report ID of 0 must be of length 1"
+#: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
+msgid "%q step cannot be zero"
 msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
@@ -283,7 +288,7 @@ msgstr "'%s' verwacht op zijn meest r%d"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr "'%s' verwacht {r0, r1, …}"
+msgstr "'%s' verwacht {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
@@ -305,7 +310,7 @@ msgstr ""
 msgid "'%s' object doesn't support item deletion"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c py/runtime.c
+#: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
 msgstr "'%s' object heeft geen attribuut '%q'"
 
@@ -405,6 +410,10 @@ msgstr "ADC2 wordt gebruikt door WiFi"
 msgid "Address must be %d bytes long"
 msgstr "Adres moet %d bytes lang zijn"
 
+#: ports/espressif/common-hal/memorymap/AddressRange.c
+msgid "Address range not allowed"
+msgstr ""
+
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
 msgstr "Alle CAN-peripherals zijn in gebruik"
@@ -485,7 +494,7 @@ msgstr "Advertising is al bezig."
 msgid "Already have all-matches listener"
 msgstr "Heeft al een luisteraar voor 'all-matches'"
 
-#: ports/espressif/common-hal/coproc/__init__.c
+#: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
@@ -495,6 +504,11 @@ msgstr "Wordt al uitgevoerd"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Zoekt al naar WiFi netwerken"
+
+#: shared-module/os/getenv.c
+#, c-format
+msgid "An error occurred while retrieving '%s':\n"
+msgstr ""
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -509,14 +523,10 @@ msgstr "Een andere send is al actief"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "Array moet halfwords (type 'H') bevatten"
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Array waardes moet enkele bytes zijn."
-
-#: shared-bindings/microcontroller/Pin.c
-msgid "At most %d %q may be specified (not %d)"
-msgstr "Op zijn meest %d %q mogen worden gespecificeerd (niet %d)"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -902,6 +912,10 @@ msgstr ""
 msgid "Drive mode not used when direction is input."
 msgstr "Drive modus niet gebruikt als de richting input is."
 
+#: py/obj.c
+msgid "During handling of the above exception, another exception occurred:"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
 msgstr "ECB werkt alleen met 16 bytes tegelijkertijd"
@@ -931,20 +945,8 @@ msgstr "Fout in regex"
 msgid "Error: Failure to bind"
 msgstr ""
 
-#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/alarm/__init__.c shared-bindings/alarm/coproc/CoprocAlarm.c
-#: shared-bindings/busio/SPI.c shared-bindings/coproc/Coproc.c
-#: shared-bindings/coproc/__init__.c shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c
-msgid "Expected a %q"
-msgstr "Verwacht een %q"
-
-#: ports/raspberrypi/bindings/cyw43/__init__.c
-msgid "Expected a %q or %q"
-msgstr ""
-
 #: shared-bindings/alarm/__init__.c
-msgid "Expected an %q"
+msgid "Expected a kind of %q"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
@@ -1019,6 +1021,10 @@ msgstr ""
 msgid "File exists"
 msgstr "Bestand bestaat"
 
+#: shared-module/os/getenv.c
+msgid "File not found"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -1033,7 +1039,6 @@ msgstr ""
 msgid "Firmware is invalid"
 msgstr ""
 
-#: ports/espressif/common-hal/coproc/Coproc.c
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
 msgstr ""
@@ -1076,6 +1081,8 @@ msgstr ""
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-module/displayio/Display.c
+#: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Groep al gebruikt"
 
@@ -1112,11 +1119,6 @@ msgstr ""
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut is niet beschikbaar"
-
-#: shared-bindings/aesio/aes.c
-#, c-format
-msgid "IV must be %d bytes long"
-msgstr "IV %d bytes lang zijn"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
@@ -1204,6 +1206,7 @@ msgid "Internal define error"
 msgstr "Interne define fout"
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#: shared-module/os/getenv.c
 msgid "Internal error"
 msgstr ""
 
@@ -1250,6 +1253,11 @@ msgstr "Ongeldig argument"
 msgid "Invalid bits per value"
 msgstr "Ongeldige bits per waarde"
 
+#: shared-module/os/getenv.c
+#, c-format
+msgid "Invalid byte %.*s"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
@@ -1267,10 +1275,6 @@ msgstr "Ongeldig geheugen adres."
 msgid "Invalid multicast MAC address"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "Invalid pins"
-msgstr "Ongeldige pinnen"
-
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr ""
@@ -1284,9 +1288,17 @@ msgstr ""
 msgid "Invalid state"
 msgstr ""
 
+#: shared-module/os/getenv.c
+msgid "Invalid unicode escape"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Sleutel moet 16, 24, of 32 bytes lang zijn"
+
+#: shared-module/os/getenv.c
+msgid "Key not found"
+msgstr ""
 
 #: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
@@ -1393,6 +1405,10 @@ msgstr ""
 #: ports/espressif/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
 msgstr "NVS-fout"
+
+#: shared-bindings/socketpool/SocketPool.c
+msgid "Name or service not known"
+msgstr ""
 
 #: py/qstr.c
 msgid "Name too long"
@@ -1508,11 +1524,6 @@ msgstr "Een sleutel was niet gespecificeerd"
 msgid "No long integer support"
 msgstr "Geen lange integer ondersteuning"
 
-#: shared-module/usb_hid/__init__.c
-#, c-format
-msgid "No more than %d HID devices allowed"
-msgstr ""
-
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr "Geen netwerk met dat SSID gevonden"
@@ -1570,10 +1581,6 @@ msgstr "Niet verbonden"
 #: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
 msgstr "Wordt niet afgespeeld"
-
-#: shared-bindings/_bleio/__init__.c
-msgid "Not settable"
-msgstr "Niet instelbaar"
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
@@ -1643,9 +1650,12 @@ msgstr ""
 "Alleen monochrome en 4bpp of 8bpp, en 16bpp of grotere geïndiceerde BMP's "
 "zijn ondersteund: %d bpp is gegeven"
 
-#: ports/espressif/common-hal/alarm/coproc/CoprocAlarm.c
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one %q can be set in deep sleep."
+msgstr ""
+
+#: ports/espressif/common-hal/espulp/ULPAlarm.c
+msgid "Only one %q can be set."
 msgstr ""
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
@@ -1678,6 +1688,10 @@ msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/mdns/Server.c
+msgid "Out of MDNS service slots"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
@@ -1810,6 +1824,10 @@ msgstr ""
 msgid "Program size invalid"
 msgstr ""
 
+#: ports/espressif/common-hal/espulp/ULP.c
+msgid "Program too long"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "Pull niet gebruikt wanneer de richting output is."
@@ -1849,18 +1867,15 @@ msgstr "RTC is niet ondersteund door dit board"
 msgid "Random number generation error"
 msgstr "Random number generatie fout"
 
+#: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Alleen-lezen"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "Alleen-lezen bestandssysteem"
-
-#: shared-module/displayio/Bitmap.c
-msgid "Read-only object"
-msgstr "Alleen-lezen object"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
@@ -1954,7 +1969,7 @@ msgstr "Afmeting niet ondersteund"
 msgid "Sleep Memory not available"
 msgstr ""
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Slice en waarde hebben verschillende lengtes."
@@ -1989,6 +2004,10 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Stopping AP is not supported."
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
@@ -2031,7 +2050,14 @@ msgid ""
 "exit safe mode."
 msgstr ""
 
+#: py/obj.c
+msgid "The above exception was the direct cause of the following exception:"
+msgstr ""
+
+#: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
+#: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
+#: ports/espressif/boards/m5stack_atom_u/mpconfigboard.h
 msgid "The central button was pressed at start up.\n"
 msgstr ""
 
@@ -2216,11 +2242,12 @@ msgid "Unable to read color palette data"
 msgstr "Niet in staat kleurenpalet data te lezen"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr ""
 
-#: shared-bindings/coproc/CoprocMemory.c
-msgid "Unable to write"
+#: shared-bindings/memorymap/AddressRange.c
+msgid "Unable to write to address."
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
@@ -2291,6 +2318,7 @@ msgid "Unkown error code %d"
 msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
+#: shared-module/_pixelmap/PixelMap.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr "Niet overeenkomend aantal RHS items (verwachtte %d, kreeg %d)."
@@ -2381,6 +2409,18 @@ msgstr ""
 msgid "Wi-Fi: "
 msgstr ""
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is in access point mode."
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is in station mode."
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "Wifi is not enabled"
+msgstr ""
+
 #: main.c
 msgid "Woken up by alarm.\n"
 msgstr "Gewekt door alarm.\n"
@@ -2469,7 +2509,7 @@ msgid "array has too many dimensions"
 msgstr ""
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
-#: shared-bindings/coproc/CoprocMemory.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "array/bytes vereist aan de rechterkant"
 
@@ -2562,10 +2602,6 @@ msgstr "buffer te klein"
 msgid "buffer too small for requested bytes"
 msgstr "buffer te klein voor gevraagde bytes"
 
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
-msgstr "byteorder is geen string"
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr "bytes lengte is geen veelvoud van itemgrootte"
@@ -2608,13 +2644,9 @@ msgstr "kan niet toewijzen aan expressie"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kan %q niet naar %q converteren"
-
-#: py/runtime.c
-msgid "can't convert %q to int"
-msgstr ""
 
 #: py/obj.c
 #, c-format
@@ -2696,6 +2728,10 @@ msgstr "kan geen 512 blokgrootte instellen"
 #: py/objexcept.c py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr "kan attribute niet instellen"
+
+#: py/runtime.c
+msgid "can't set attribute '%q'"
+msgstr ""
 
 #: py/emitnative.c
 msgid "can't store '%q'"
@@ -2798,10 +2834,6 @@ msgstr "kleur moet tussen 0x000000 en 0xffffff liggen"
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr ""
-
-#: py/objcomplex.c
-msgid "complex division by zero"
-msgstr "complexe deling door 0"
 
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
@@ -2907,12 +2939,7 @@ msgstr ""
 msgid "div/mod not implemented for uint"
 msgstr ""
 
-#: py/objfloat.c py/objint_mpz.c
-msgid "divide by zero"
-msgstr ""
-
-#: py/modmath.c py/objint_longlong.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: py/runtime.c
 msgid "division by zero"
 msgstr "deling door nul"
 
@@ -2962,14 +2989,6 @@ msgstr ""
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
 msgstr "uitzonderingen moeten afleiden van BaseException"
-
-#: shared-bindings/canio/CAN.c
-msgid "expected '%q' but got '%q'"
-msgstr "verwachtte '%q' maar ontving '%q'"
-
-#: shared-bindings/canio/CAN.c
-msgid "expected '%q' or '%q' but got '%q'"
-msgstr "verwachtte '%q' of '%q' maar ontving '%q'"
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
@@ -3068,10 +3087,6 @@ msgstr "lettertype moet 2048 bytes lang zijn"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "format vereist een dict"
-
-#: shared-bindings/microcontroller/Processor.c
-msgid "frequency is read-only for this board"
-msgstr ""
 
 #: py/objdeque.c
 msgid "full"
@@ -3186,8 +3201,12 @@ msgstr "vulling (padding) is onjuist"
 msgid "index is out of bounds"
 msgstr "index is buiten bereik"
 
+#: shared-bindings/_pixelmap/PixelMap.c
+msgid "index must be tuple or int"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index is buiten bereik"
@@ -3285,10 +3304,6 @@ msgstr "invoervectors moeten van gelijke lengte zijn"
 msgid "inputs are not iterable"
 msgstr "invoer is niet itereerbaar"
 
-#: py/parsenum.c
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "int() argument 2 moet >=2 en <= 36 zijn"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
@@ -3370,10 +3385,6 @@ msgstr "ongeldige syntax voor integer met grondtal %d"
 msgid "invalid syntax for number"
 msgstr "ongeldige syntax voor nummer"
 
-#: py/objexcept.c
-msgid "invalid traceback"
-msgstr ""
-
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr "issubclass() argument 1 moet een klasse zijn"
@@ -3433,19 +3444,17 @@ msgstr "lokale '%q' gebruikt voordat type bekend is"
 msgid "local variable referenced before assignment"
 msgstr "verwijzing naar een (nog) niet toegewezen lokale variabele"
 
-#: py/objint.c
-msgid "long int not supported in this build"
-msgstr "long int wordt niet ondersteund in deze build"
-
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
 msgstr "loopback + silent mode wordt niet ondersteund door randapparaat"
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
+#: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
 msgstr ""
 
@@ -3573,6 +3582,10 @@ msgstr "negatieve macht terwijl er geen ondersteuning is voor float"
 #: py/objint_mpz.c py/runtime.c
 msgid "negative shift count"
 msgstr "negatieve verschuivingstelling (shift count)"
+
+#: shared-bindings/_pixelmap/PixelMap.c
+msgid "nested index must be int"
+msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
@@ -3753,7 +3766,7 @@ msgid "only sample_rate=16000 is supported"
 msgstr "alleen sample_rate=16000 wordt ondersteund"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/coproc/CoprocMemory.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "alleen segmenten met step=1 (ook wel None) worden ondersteund"
@@ -3969,10 +3982,6 @@ msgstr "de slaapduur mag niet negatief zijn"
 msgid "slice step can't be zero"
 msgstr "segmentstap mag niet nul zijn"
 
-#: py/objslice.c
-msgid "slice step cannot be zero"
-msgstr "segmentstap mag niet nul zijn"
-
 #: py/nativeglue.c
 msgid "slice unsupported"
 msgstr ""
@@ -4022,20 +4031,12 @@ msgid "start/end indices"
 msgstr "start/stop indices"
 
 #: shared-bindings/random/__init__.c
-msgid "step must be non-zero"
-msgstr "step mag geen nul zijn"
-
-#: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
 msgstr "stop is niet bereikbaar vanaf start"
 
 #: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "stream operatie niet ondersteund"
-
-#: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
-msgstr "string indices moeten integers zijn, geen %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -4068,10 +4069,6 @@ msgstr "syntaxisfout in JSON"
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
 msgstr "syntaxisfout in uctypes aanduiding"
-
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes a 9-sequence"
-msgstr "time.struct_time() accepteert een 9-rij"
 
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
@@ -4354,10 +4351,6 @@ msgstr ""
 msgid "y value out of bounds"
 msgstr "y-waarde buiten bereik"
 
-#: py/objrange.c
-msgid "zero step"
-msgstr "nul-stap"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi moet een ndarray zijn"
@@ -4369,6 +4362,58 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Expected a %q"
+#~ msgstr "Verwacht een %q"
+
+#, c-format
+#~ msgid "IV must be %d bytes long"
+#~ msgstr "IV %d bytes lang zijn"
+
+#~ msgid "Not settable"
+#~ msgstr "Niet instelbaar"
+
+#~ msgid "expected '%q' but got '%q'"
+#~ msgstr "verwachtte '%q' maar ontving '%q'"
+
+#~ msgid "expected '%q' or '%q' but got '%q'"
+#~ msgstr "verwachtte '%q' of '%q' maar ontving '%q'"
+
+#~ msgid "Read-only object"
+#~ msgstr "Alleen-lezen object"
+
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "Op zijn meest %d %q mogen worden gespecificeerd (niet %d)"
+
+#~ msgid "Invalid pins"
+#~ msgstr "Ongeldige pinnen"
+
+#~ msgid "byteorder is not a string"
+#~ msgstr "byteorder is geen string"
+
+#~ msgid "complex division by zero"
+#~ msgstr "complexe deling door 0"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "int() argument 2 moet >=2 en <= 36 zijn"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "long int wordt niet ondersteund in deze build"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "segmentstap mag niet nul zijn"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "step mag geen nul zijn"
+
+#~ msgid "string indices must be integers, not %q"
+#~ msgstr "string indices moeten integers zijn, geen %q"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() accepteert een 9-rij"
+
+#~ msgid "zero step"
+#~ msgstr "nul-stap"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "%q indexen moeten integers zijn, niet %s"

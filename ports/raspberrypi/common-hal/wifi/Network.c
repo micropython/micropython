@@ -53,27 +53,27 @@ mp_obj_t common_hal_wifi_network_get_country(wifi_network_obj_t *self) {
 }
 
 mp_obj_t common_hal_wifi_network_get_authmode(wifi_network_obj_t *self) {
-    uint8_t authmode_mask = 0;
+    uint32_t authmode_mask = 0;
     if (self->record.auth_mode == 0) {
-        authmode_mask = (1 << AUTHMODE_OPEN);
+        authmode_mask = AUTHMODE_OPEN;
     }
     if (self->record.auth_mode & 1) {
-        authmode_mask |= (1 << AUTHMODE_PSK);
+        authmode_mask |= AUTHMODE_PSK;
     }
     ;
     if (self->record.auth_mode & 2) {
-        authmode_mask |= (1 << AUTHMODE_WPA);
+        authmode_mask |= AUTHMODE_WPA;
     }
     ;
     if (self->record.auth_mode & 4) {
-        authmode_mask |= (1 << AUTHMODE_WPA2);
+        authmode_mask |= AUTHMODE_WPA2;
     }
     ;
     mp_obj_t authmode_list = mp_obj_new_list(0, NULL);
     if (authmode_mask != 0) {
-        for (uint8_t i = 0; i < 8; i++) {
+        for (uint32_t i = 0; i < 32; i++) {
             if ((authmode_mask >> i) & 1) {
-                mp_obj_list_append(authmode_list, cp_enum_find(&wifi_authmode_type, i));
+                mp_obj_list_append(authmode_list, cp_enum_find(&wifi_authmode_type, 1 << i));
             }
         }
     }

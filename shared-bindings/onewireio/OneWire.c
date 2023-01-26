@@ -60,7 +60,7 @@ STATIC mp_obj_t onewireio_onewire_make_new(const mp_obj_type_t *type, size_t n_a
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj, MP_QSTR_pin);
 
     onewireio_onewire_obj_t *self = m_new_obj(onewireio_onewire_obj_t);
     self->base.type = &onewireio_onewire_type;

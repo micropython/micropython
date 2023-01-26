@@ -341,7 +341,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
 #endif // CIRCUITPY_USB_VENDOR
 
 
-#if MICROPY_KBD_EXCEPTION
+#if MICROPY_KBD_EXCEPTION && CIRCUITPY_USB_CDC
 
 /**
  * Callback invoked when received an "wanted" char.
@@ -355,6 +355,12 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     // Compare mp_interrupt_char with wanted_char and ignore if not matched
     if (mp_interrupt_char == wanted_char) {
         tud_cdc_n_read_flush(itf);    // flush read fifo
+        mp_sched_keyboard_interrupt();
+    }
+}
+
+void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms) {
+    if (usb_cdc_console_enabled() && mp_interrupt_char != -1 && itf == 0 && duration_ms > 0) {
         mp_sched_keyboard_interrupt();
     }
 }

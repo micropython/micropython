@@ -98,8 +98,8 @@ STATIC mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args,
 
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
-    const mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
+    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj, MP_QSTR_clock);
+    const mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj, MP_QSTR_command);
     const mcu_pin_obj_t *data_pins[4];
     uint8_t num_data;
     validate_list_is_free_pins(MP_QSTR_data, data_pins, MP_ARRAY_SIZE(data_pins), args[ARG_data].u_obj, &num_data);

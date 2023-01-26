@@ -69,7 +69,7 @@ MAKE_PRINTER(esp32_camera, esp32_camera_grab_mode);
 MAKE_ENUM_TYPE(esp32_camera, GrabMode, esp32_camera_grab_mode);
 
 camera_grab_mode_t validate_grab_mode(mp_obj_t obj, qstr arg_name) {
-    return cp_enum_value(&esp32_camera_grab_mode_type, mp_arg_validate_type(obj, &esp32_camera_grab_mode_type, arg_name));
+    return cp_enum_value(&esp32_camera_grab_mode_type, obj, arg_name);
 }
 
 //| class PixelFormat:
@@ -100,7 +100,7 @@ MAKE_PRINTER(esp32_camera, esp32_camera_pixel_format);
 MAKE_ENUM_TYPE(esp32_camera, PixelFormat, esp32_camera_pixel_format);
 
 pixformat_t validate_pixel_format(mp_obj_t obj, qstr arg_name) {
-    return cp_enum_value(&esp32_camera_pixel_format_type, mp_arg_validate_type(obj, &esp32_camera_pixel_format_type, arg_name));
+    return cp_enum_value(&esp32_camera_pixel_format_type, obj, arg_name);
 }
 
 //| class FrameSize:
@@ -225,7 +225,7 @@ MAKE_PRINTER(esp32_camera, esp32_camera_frame_size);
 MAKE_ENUM_TYPE(esp32_camera, FrameSize, esp32_camera_frame_size);
 
 framesize_t validate_frame_size(mp_obj_t obj, qstr arg_name) {
-    return cp_enum_value(&esp32_camera_frame_size_type, mp_arg_validate_type(obj, &esp32_camera_frame_size_type, arg_name));
+    return cp_enum_value(&esp32_camera_frame_size_type, obj, arg_name);
 }
 
 //| class GainCeiling:
@@ -265,7 +265,7 @@ MAKE_PRINTER(esp32_camera, esp32_camera_gain_ceiling);
 MAKE_ENUM_TYPE(esp32_camera, GainCeiling, esp32_camera_gain_ceiling);
 
 gainceiling_t validate_gain_ceiling(mp_obj_t obj, qstr arg_name) {
-    return cp_enum_value(&esp32_camera_gain_ceiling_type, mp_arg_validate_type(obj, &esp32_camera_gain_ceiling_type, arg_name));
+    return cp_enum_value(&esp32_camera_gain_ceiling_type, obj, arg_name);
 }
 
 STATIC const mp_rom_map_elem_t esp32_camera_module_globals_table[] = {

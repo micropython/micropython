@@ -22,42 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Select the board to build for.
-ifeq ($(BOARD),)
-  $(error You must provide a BOARD parameter)
-else
-  ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD specified)
-  endif
-endif
-
-# If the flash PORT is not given, use the default /dev/tty.SLAB_USBtoUART.
-PORT ?= /dev/tty.SLAB_USBtoUART
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
-include ../../py/mkenv.mk
-
-# Board-specific
-include boards/$(BOARD)/mpconfigboard.mk
-
-# Port-specific
-include mpconfigport.mk
-
-# CircuitPython-specific
-include $(TOP)/py/circuitpy_mpconfig.mk
-
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-
-# include py core make definitions
-include $(TOP)/py/py.mk
-
-include $(TOP)/supervisor/supervisor.mk
-
-# Include make rules and variables common across CircuitPython builds.
-include $(TOP)/py/circuitpy_defns.mk
+include ../../py/circuitpy_mkenv.mk
 
 ifeq ($(IDF_TARGET),esp32c3)
 IDF_TARGET_ARCH = riscv
@@ -135,8 +100,6 @@ INC += \
 	-isystem esp-idf/components/soc/include \
 	-isystem esp-idf/components/soc/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/spi_flash/include \
-	-isystem esp-idf/components/ulp/include \
-	-isystem esp-idf/components/ulp/ulp_riscv/include \
 	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/include \
 	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/$(IDF_TARGET)/include
 
@@ -250,7 +213,6 @@ endif
 
 SRC_C += \
 	background.c \
-	fatfs_port.c \
 	mphalport.c \
 	bindings/espidf/__init__.c \
 	boards/$(BOARD)/board.c \
@@ -295,6 +257,15 @@ SRC_CAMERA := \
 SRC_C += $(SRC_CAMERA)
 CFLAGS += -isystem esp32-camera/driver/include
 CFLAGS += -isystem esp32-camera/conversions/include
+endif
+
+ifneq ($(CIRCUITPY_ESPULP),0)
+SRC_ULP := \
+	$(wildcard common-hal/espulp/*.c) \
+	$(wildcard bindings/espulp/*.c)
+SRC_C += $(SRC_ULP)
+CFLAGS += -isystem esp-idf/components/ulp/include
+CFLAGS += -isystem esp-idf/components/ulp/ulp_riscv/include
 endif
 
 SRC_COMMON_HAL_EXPANDED = \
@@ -400,7 +371,7 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
 	                esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
 endif
-ifneq ($(CIRCUITPY_COPROC),0)
+ifneq ($(CIRCUITPY_ESPULP),0)
 	ESP_IDF_COMPONENTS_LINK += ulp
 endif
 
@@ -458,7 +429,7 @@ esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 
 $(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(BUILD)/esp-idf/esp-idf/newlib/libnewlib.a  -Wl,--end-group -u newlib_include_pthread_impl -Wl,--start-group $(LIBS) -Wl,--end-group $(BUILD)/esp-idf/esp-idf/pthread/libpthread.a  -u __cxx_fatal_exception
+	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(BUILD)/esp-idf/esp-idf/newlib/libnewlib.a  -Wl,--end-group -u newlib_include_pthread_impl -u ld_include_highint_hdl -Wl,--start-group $(LIBS) -Wl,--end-group $(BUILD)/esp-idf/esp-idf/pthread/libpthread.a  -u __cxx_fatal_exception
 
 $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf | tools/build_memory_info.py
 	$(STEPECHO) "Create $@"

@@ -81,8 +81,8 @@ STATIC mp_obj_t i2ctarget_i2c_target_make_new(const mp_obj_type_t *type, size_t 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
-    const mcu_pin_obj_t *sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
+    const mcu_pin_obj_t *scl = validate_obj_is_free_pin(args[ARG_scl].u_obj, MP_QSTR_scl);
+    const mcu_pin_obj_t *sda = validate_obj_is_free_pin(args[ARG_sda].u_obj, MP_QSTR_sda);
 
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(args[ARG_addresses].u_obj, &iter_buf);
@@ -159,7 +159,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_request(size_t n_args, const mp_obj_t *pos_
 
     bool forever = false;
     uint64_t timeout_end = 0;
-    if (timeout_ms <= 0) {
+    if (timeout_ms == 0) {
         forever = true;
     } else if (timeout_ms > 0) {
         timeout_end = common_hal_time_monotonic_ms() + timeout_ms;

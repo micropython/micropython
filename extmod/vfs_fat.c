@@ -429,6 +429,18 @@ STATIC mp_obj_t vfs_fat_utime(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t times_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_utime_obj, vfs_fat_utime);
 
+STATIC mp_obj_t vfs_fat_getreadonly(mp_obj_t self_in) {
+    fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(!filesystem_is_writable_by_python(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getreadonly_obj, vfs_fat_getreadonly);
+STATIC const mp_obj_property_t fat_vfs_readonly_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&fat_vfs_getreadonly_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
+
 #if MICROPY_FATFS_USE_LABEL
 STATIC mp_obj_t vfs_fat_getlabel(mp_obj_t self_in) {
     fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
@@ -481,6 +493,7 @@ STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&vfs_fat_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&fat_vfs_umount_obj) },
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&fat_vfs_utime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readonly), MP_ROM_PTR(&fat_vfs_readonly_obj) },
     #if MICROPY_FATFS_USE_LABEL
     { MP_ROM_QSTR(MP_QSTR_label), MP_ROM_PTR(&fat_vfs_label_obj) },
     #endif

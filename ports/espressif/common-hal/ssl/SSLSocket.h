@@ -34,7 +34,7 @@
 
 #include "components/esp-tls/esp_tls.h"
 
-typedef struct {
+typedef struct ssl_sslsocket_obj {
     mp_obj_base_t base;
     socketpool_socket_obj_t *sock;
     esp_tls_t *tls;

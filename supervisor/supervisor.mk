@@ -4,6 +4,7 @@ SRC_SUPERVISOR = \
 	supervisor/shared/background_callback.c \
 	supervisor/shared/board.c \
 	supervisor/shared/cpu.c \
+	supervisor/shared/fatfs.c \
 	supervisor/shared/flash.c \
 	supervisor/shared/lock.c \
 	supervisor/shared/memory.c \

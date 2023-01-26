@@ -423,6 +423,8 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
             y0 = y1;
             y1 = temp;
         }
+        y0 = MAX(0, y0); // only draw inside bitmap
+        y1 = MIN(y1, destination->height - 1);
         for (y = y0; y < (y1 + 1); y++) { // write a horizontal line
             displayio_bitmap_write_pixel(destination, x0, y, value);
         }
@@ -432,6 +434,8 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
             x0 = x1;
             x1 = temp;
         }
+        x0 = MAX(0, x0); // only draw inside bitmap
+        x1 = MIN(x1, destination->width - 1);
         for (x = x0; x < (x1 + 1); x++) { // write a horizontal line
             displayio_bitmap_write_pixel(destination, x, y0, value);
         }
@@ -689,7 +693,7 @@ STATIC void fill_row(displayio_bitmap_t *bitmap, int swap, int16_t *luminance_da
 static void write_pixels(displayio_bitmap_t *bitmap, int y, bool *data) {
     if (bitmap->bits_per_value == 1) {
         uint32_t *pixel_data = (uint32_t *)(bitmap->data + bitmap->stride * y);
-        for (int i = 0; i < bitmap->stride; i++) {
+        for (int i = 0; i < bitmap->width; i++) {
             uint32_t p = 0;
             for (int j = 0; j < 32; j++) {
                 p = (p << 1);
