@@ -35,6 +35,15 @@ class Stream:
     def read(self, n=-1):
         r = b""
         while True:
+            if hasattr(self.s, "ssl_pending"):
+                if self.s.ssl_pending():
+                    r2 = self.s.read(n)
+                    if r2 is not None:
+                        if n >= 0:
+                            return r2
+                        if not len(r2):
+                            return r
+                        r += r2
             yield core._io_queue.queue_read(self.s)
             r2 = self.s.read(n)
             if r2 is not None:
@@ -46,6 +55,9 @@ class Stream:
 
     # async
     def readinto(self, buf):
+        if hasattr(self.s, "ssl_pending"):
+            if self.s.ssl_pending():
+                return self.s.readinto(buf)
         yield core._io_queue.queue_read(self.s)
         return self.s.readinto(buf)
 
@@ -53,6 +65,15 @@ class Stream:
     def readexactly(self, n):
         r = b""
         while n:
+            # prevent queueing if pending read in a ssl socket
+            if hasattr(self.s, "ssl_pending"):
+                if self.s.ssl_pending():
+                    r2 = self.s.read(n)
+                    if r2 is not None:
+                        if not len(r2):
+                            raise EOFError
+                        r += r2
+                        n -= len(r2)
             yield core._io_queue.queue_read(self.s)
             r2 = self.s.read(n)
             if r2 is not None:
@@ -66,6 +87,13 @@ class Stream:
     def readline(self):
         l = b""
         while True:
+            # prevent queueing if pending read in a ssl socket
+            if hasattr(self.s, "ssl_pending"):
+                if self.s.ssl_pending():
+                    l2 = self.s.readline()
+                    l += l2
+                    if not l2 or l[-1] == 10:
+                        return l
             yield core._io_queue.queue_read(self.s)
             l2 = self.s.readline()  # may do multiple reads but won't block
             l += l2

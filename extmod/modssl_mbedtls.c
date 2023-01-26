@@ -684,6 +684,14 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
+STATIC mp_obj_t socket_ssl_pending(mp_obj_t self_in) {
+    mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(self_in);
+    int check_pending = 0;
+    check_pending = mbedtls_ssl_check_pending(&o->ssl);
+    return mp_obj_new_int(check_pending);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_ssl_pending_obj, socket_ssl_pending);
+
 STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(o_in);
     mp_uint_t ret = 0;
@@ -753,6 +761,7 @@ STATIC const mp_rom_map_elem_t ssl_socket_locals_dict_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_getpeercert), MP_ROM_PTR(&mod_ssl_getpeercert_obj) },
     { MP_ROM_QSTR(MP_QSTR_cipher), MP_ROM_PTR(&mod_ssl_cipher_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ssl_pending), MP_ROM_PTR(&socket_ssl_pending_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(ssl_socket_locals_dict, ssl_socket_locals_dict_table);
