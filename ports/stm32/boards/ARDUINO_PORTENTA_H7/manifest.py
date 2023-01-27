@@ -1,9 +1,7 @@
 include("$(PORT_DIR)/boards/manifest.py")
 
 # Networking
-require("webrepl")
-require("urequests")
-require("ntptime")
+require("bundle-networking")
 
 # Utils
 require("logging")
