@@ -250,10 +250,10 @@ endif
 
 SRC_C += $(wildcard common-hal/espidf/*.c)
 
-ifneq ($(CIRCUITPY_ESP32_CAMERA),0)
+ifneq ($(CIRCUITPY_ESPCAMERA),0)
 SRC_CAMERA := \
-	$(wildcard common-hal/esp32_camera/*.c) \
-	$(wildcard bindings/esp32_camera/*.c)
+	$(wildcard common-hal/espcamera/*.c) \
+	$(wildcard bindings/espcamera/*.c)
 SRC_C += $(SRC_CAMERA)
 CFLAGS += -isystem esp32-camera/driver/include
 CFLAGS += -isystem esp32-camera/conversions/include
@@ -333,7 +333,7 @@ endif
 .PHONY: do-sdkconfig
 do-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
 $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig CMakeLists.txt | $(BUILD)/esp-idf
-	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja -DCIRCUITPY_ESP32_CAMERA=$(CIRCUITPY_ESP32_CAMERA)
+	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja -DCIRCUITPY_ESPCAMERA=$(CIRCUITPY_ESPCAMERA)
 
 # build a lib
 # Adding -d explain -j 1 -v to the ninja line will output debug info
@@ -385,7 +385,7 @@ BINARY_BLOBS += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 ESP_IDF_COMPONENTS_EXPANDED += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 endif
 
-ifneq ($(CIRCUITPY_ESP32_CAMERA),0)
+ifneq ($(CIRCUITPY_ESPCAMERA),0)
 ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/esp32-camera/libesp32-camera.a
 #$(error $(ESP_IDF_COMPONENTS_EXPANDED))
 endif

@@ -33,11 +33,11 @@
 
 #include "shared-bindings/busio/I2C.h"
 
-extern const mp_obj_type_t esp32_camera_camera_type;
-typedef struct esp32_camera_camera_obj esp32_camera_camera_obj_t;
+extern const mp_obj_type_t espcamera_camera_type;
+typedef struct espcamera_camera_obj espcamera_camera_obj_t;
 
-extern void common_hal_esp32_camera_camera_construct(
-    esp32_camera_camera_obj_t *self,
+extern void common_hal_espcamera_camera_construct(
+    espcamera_camera_obj_t *self,
     uint8_t data_pins[8],
     const mcu_pin_obj_t *external_clock_pin,
     const mcu_pin_obj_t *pixel_clock_pin,
@@ -53,11 +53,11 @@ extern void common_hal_esp32_camera_camera_construct(
     mp_int_t framebuffer_count,
     camera_grab_mode_t grab_mode);
 
-extern void common_hal_esp32_camera_camera_deinit(esp32_camera_camera_obj_t *self);
-extern bool common_hal_esp32_camera_camera_deinited(esp32_camera_camera_obj_t *self);
-extern bool common_hal_esp32_camera_camera_available(esp32_camera_camera_obj_t *self);
-extern camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self, int timeout_ms);
-extern void common_hal_esp32_camera_camera_reconfigure(esp32_camera_camera_obj_t *self, framesize_t frame_size, pixformat_t pixel_format, camera_grab_mode_t grab_mode, mp_int_t framebuffer_count);
+extern void common_hal_espcamera_camera_deinit(espcamera_camera_obj_t *self);
+extern bool common_hal_espcamera_camera_deinited(espcamera_camera_obj_t *self);
+extern bool common_hal_espcamera_camera_available(espcamera_camera_obj_t *self);
+extern camera_fb_t *common_hal_espcamera_camera_take(espcamera_camera_obj_t *self, int timeout_ms);
+extern void common_hal_espcamera_camera_reconfigure(espcamera_camera_obj_t *self, framesize_t frame_size, pixformat_t pixel_format, camera_grab_mode_t grab_mode, mp_int_t framebuffer_count);
 
 #define DECLARE_SENSOR_GETSET(type, name, field_name, setter_function_name) \
     DECLARE_SENSOR_GET(type, name, field_name, setter_function_name) \
@@ -70,10 +70,10 @@ extern void common_hal_esp32_camera_camera_reconfigure(esp32_camera_camera_obj_t
     DECLARE_SENSOR_GET(type, name, status.status_field_name, setter_function_name)
 
 #define DECLARE_SENSOR_GET(type, name, status_field_name, setter_function_name) \
-    extern type common_hal_esp32_camera_camera_get_##name(esp32_camera_camera_obj_t * self);
+    extern type common_hal_espcamera_camera_get_##name(espcamera_camera_obj_t * self);
 
 #define DECLARE_SENSOR_SET(type, name, setter_function_name) \
-    extern void common_hal_esp32_camera_camera_set_##name(esp32_camera_camera_obj_t * self, type value);
+    extern void common_hal_espcamera_camera_set_##name(espcamera_camera_obj_t * self, type value);
 
 DECLARE_SENSOR_GET(pixformat_t, pixel_format, pixformat, set_pixformat)
 DECLARE_SENSOR_STATUS_GET(framesize_t, frame_size, framesize, set_framesize)
@@ -104,13 +104,13 @@ DECLARE_SENSOR_STATUS_GETSET(bool, raw_gma, raw_gma, set_raw_gma);
 DECLARE_SENSOR_STATUS_GETSET(bool, lenc, lenc, set_lenc);
 
 // From settings
-extern camera_grab_mode_t common_hal_esp32_camera_camera_get_grab_mode(esp32_camera_camera_obj_t *self);
-extern int common_hal_esp32_camera_camera_get_framebuffer_count(esp32_camera_camera_obj_t *self);
+extern camera_grab_mode_t common_hal_espcamera_camera_get_grab_mode(espcamera_camera_obj_t *self);
+extern int common_hal_espcamera_camera_get_framebuffer_count(espcamera_camera_obj_t *self);
 
 // From camera_sensor_info_t
-extern int common_hal_esp32_camera_camera_get_address(esp32_camera_camera_obj_t *self);
-extern const char *common_hal_esp32_camera_camera_get_sensor_name(esp32_camera_camera_obj_t *self);
-extern const bool common_hal_esp32_camera_camera_get_supports_jpeg(esp32_camera_camera_obj_t *self);
-extern framesize_t common_hal_esp32_camera_camera_get_max_frame_size(esp32_camera_camera_obj_t *self);
-extern int common_hal_esp32_camera_camera_get_width(esp32_camera_camera_obj_t *self);
-extern int common_hal_esp32_camera_camera_get_height(esp32_camera_camera_obj_t *self);
+extern int common_hal_espcamera_camera_get_address(espcamera_camera_obj_t *self);
+extern const char *common_hal_espcamera_camera_get_sensor_name(espcamera_camera_obj_t *self);
+extern const bool common_hal_espcamera_camera_get_supports_jpeg(espcamera_camera_obj_t *self);
+extern framesize_t common_hal_espcamera_camera_get_max_frame_size(espcamera_camera_obj_t *self);
+extern int common_hal_espcamera_camera_get_width(espcamera_camera_obj_t *self);
+extern int common_hal_espcamera_camera_get_height(espcamera_camera_obj_t *self);
