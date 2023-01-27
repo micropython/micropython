@@ -78,7 +78,7 @@
 #include "shared-bindings/_bleio/__init__.h"
 #endif
 
-#if CIRCUITPY_ESP32_CAMERA
+#if CIRCUITPY_ESPCAMERA
 #include "esp_camera.h"
 #endif
 
@@ -341,7 +341,7 @@ safe_mode_t port_init(void) {
 
 void reset_port(void) {
     // TODO deinit for esp32-camera
-    #if CIRCUITPY_ESP32_CAMERA
+    #if CIRCUITPY_ESPCAMERA
     esp_camera_deinit();
     #endif
 
