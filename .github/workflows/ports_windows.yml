@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  windows:
     runs-on: windows-2022
     defaults:
       run:
@@ -75,31 +75,11 @@ jobs:
       with:
         submodules: false
         fetch-depth: 1
-    - name: Create submodule status
-      run: git submodule status extmod/ulab lib/ tools/ >> submodule_status
-    - name: Restore submodules
-      uses: actions/cache/restore@v3
+
+    - name: Set up submodules
+      uses: ./.github/actions/fetch_submodules
       with:
-        path: |
-          .git/modules/
-          extmod/ulab
-          lib/
-          tools/
-        key: submodules-common-${{ hashFiles('submodule_status') }}
-        enableCrossOsArchive: true
-    - name: CircuitPython dependencies
-      run: |
-        python tools/ci_fetch_deps.py windows
-        echo "::group::Fetch history and tags"
-        git fetch --no-recurse-submodules --shallow-since="2021-07-01" --tags https://github.com/adafruit/circuitpython HEAD
-        git fetch --no-recurse-submodules --shallow-since="2021-07-01" origin $GITHUB_SHA
-        git repack -d
-        echo "::endgroup::"
-    - name: CircuitPython version
-      run: |
-        CP_VERSION=$(tools/describe)
-        echo "$CP_VERSION"
-        echo "CP_VERSION=$CP_VERSION" >> $GITHUB_ENV
+        version: true
 
     - name: build mpy-cross
       run: make -j2 -C mpy-cross
