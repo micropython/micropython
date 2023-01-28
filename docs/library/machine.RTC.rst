@@ -48,6 +48,8 @@ Methods
 
    Get get the current datetime tuple.
 
+   Availability: WiPy.
+
 .. method:: RTC.deinit()
 
    Resets the RTC to the time of January 1, 2015 and starts running it again.
