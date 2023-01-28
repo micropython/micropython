@@ -681,6 +681,7 @@ msgstr "La broche %d du bus est déjà utilisée"
 
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+#: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
 msgid "Button A was pressed at start up.\n"
 msgstr "Le bouton A était pressé au démarrage.\n"
 
@@ -3062,13 +3063,11 @@ msgstr "epoch_time n'est pas supporté sur ce panneau"
 msgid "error = 0x%08lX"
 msgstr "erreur = 0x%08lX"
 
-#: ports/espressif/common-hal/esp32_camera/Camera.c
+#: ports/espressif/common-hal/espcamera/Camera.c
 msgid ""
-"esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+"espcamera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
 msgstr ""
-"esp32_camera.Camera nécessite la configuration de PSRAM réservée. Se référer "
-"à la documentation."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -3445,7 +3444,7 @@ msgstr "clé invalide"
 msgid "invalid micropython decorator"
 msgstr "décorateur micropython invalide"
 
-#: ports/espressif/common-hal/esp32_camera/Camera.c
+#: ports/espressif/common-hal/espcamera/Camera.c
 msgid "invalid setting"
 msgstr "réglage invalide"
 
@@ -3707,7 +3706,7 @@ msgstr "pas de broche de réinitialisation disponible"
 msgid "no response from SD card"
 msgstr "pas de réponse de la carte SD"
 
-#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/espcamera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "pas de tel attribut"
 
@@ -4455,6 +4454,13 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid ""
+#~ "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "esp32_camera.Camera nécessite la configuration de PSRAM réservée. Se "
+#~ "référer à la documentation."
 
 #~ msgid "%q must be of type %q"
 #~ msgstr "%q doit être du type %q"
