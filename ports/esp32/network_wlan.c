@@ -35,6 +35,7 @@
 
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "modnetwork.h"
 
 #include "esp_wifi.h"
@@ -210,6 +211,12 @@ STATIC mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
                 wifi_started = true;
             }
         }
+        // This delay is a band-aid patch for issues #8289, #8792 and #9236,
+        // allowing the esp data structures to settle. It looks like some
+        // kind of race condition, which is not yet found. But at least
+        // this small delay seems not hurt much, since wlan.active() is
+        // usually not called in a time critical part of the code.
+        mp_hal_delay_ms(1);
     }
 
     return (mode & bit) ? mp_const_true : mp_const_false;

@@ -313,12 +313,12 @@ typedef union _mp_rom_obj_t {
 
 // Cast mp_obj_t to object pointer
 #ifndef MP_OBJ_TO_PTR
-#define MP_OBJ_TO_PTR(o) ((void *)o)
+#define MP_OBJ_TO_PTR(o) ((void *)(o))
 #endif
 
 // Cast object pointer to mp_obj_t
 #ifndef MP_OBJ_FROM_PTR
-#define MP_OBJ_FROM_PTR(p) ((mp_obj_t)p)
+#define MP_OBJ_FROM_PTR(p) ((mp_obj_t)(p))
 #endif
 
 // Macros to create objects that are stored in ROM.

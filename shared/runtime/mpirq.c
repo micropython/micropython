@@ -81,8 +81,8 @@ void mp_irq_handler(mp_irq_obj_t *self) {
                 // Uncaught exception; disable the callback so that it doesn't run again
                 self->methods->trigger(self->parent, 0);
                 self->handler = mp_const_none;
-                printf("Uncaught exception in IRQ callback handler\n");
-                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+                mp_printf(MICROPY_ERROR_PRINTER, "Uncaught exception in IRQ callback handler\n");
+                mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
             }
             gc_unlock();
             mp_sched_unlock();

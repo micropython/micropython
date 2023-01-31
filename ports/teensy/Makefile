@@ -169,7 +169,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_TEENSY:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
-OBJ += $(BUILD)/shared/runtime/gchelper_m3.o
+OBJ += $(BUILD)/shared/runtime/gchelper_thumb2.o
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
 all: hex

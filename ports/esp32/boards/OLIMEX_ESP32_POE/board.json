@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "MicroSD",
+        "Battery Charging",
+        "Ethernet",
+        "PoE",
+        "Breadboard friendly"
+    ],
+    "images": [
+        "ESP32-POE-ISO-1.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "Olimex ESP32 POE",
+    "thumbnail": "",
+    "url": "https://www.olimex.com/",
+    "vendor": "OLIMEX"
+}

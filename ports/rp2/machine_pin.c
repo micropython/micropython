@@ -236,13 +236,10 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         mp_raise_ValueError("alternate functions are not supported for external pins");
     }
 
+    // get initial value of pin (only valid for OUT and OPEN_DRAIN modes)
     int value = -1;
     if (args[ARG_value].u_obj != mp_const_none) {
         value = mp_obj_is_true(args[ARG_value].u_obj);
-        // set initial value (do this before configuring mode/pull)
-        if (!is_ext_pin(self)) {
-            gpio_put(self->id, value);
-        }
     }
 
     // configure mode
@@ -257,9 +254,13 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         } else if (mode == MACHINE_PIN_MODE_IN) {
             mp_hal_pin_input(self->id);
         } else if (mode == MACHINE_PIN_MODE_OUT) {
+            if (value != -1) {
+                // set initial output value before configuring mode
+                gpio_put(self->id, value);
+            }
             mp_hal_pin_output(self->id);
         } else if (mode == MACHINE_PIN_MODE_OPEN_DRAIN) {
-            mp_hal_pin_open_drain(self->id);
+            mp_hal_pin_open_drain_with_value(self->id, value == -1 ? 1 : value);
         } else {
             // Configure alternate function.
             mp_uint_t af = args[ARG_alt].u_int;
@@ -423,7 +424,7 @@ STATIC machine_pin_irq_obj_t *machine_pin_get_irq(mp_hal_pin_obj_t pin) {
         irq = m_new_obj(machine_pin_irq_obj_t);
         irq->base.base.type = &mp_irq_type;
         irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
-        irq->base.parent = MP_OBJ_FROM_PTR(&machine_pin_cpu_pins[pin]);
+        irq->base.parent = MP_OBJ_FROM_PTR(machine_pin_cpu_pins[pin]);
         irq->base.handler = mp_const_none;
         irq->base.ishard = false;
         MP_STATE_PORT(machine_pin_irq_obj[pin]) = irq;

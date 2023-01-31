@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2014 Damien P. George
+ * Copyright (c) 2022-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,15 @@
  * THE SOFTWARE.
  */
 
-    .syntax unified
-    .cpu cortex-m3
-    .thumb
+#include <stdint.h>
 
-    .section .text
-    .align  2
+// Type definitions for the specific machine
 
-    .global gc_helper_get_regs_and_sp
-    .type gc_helper_get_regs_and_sp, %function
+typedef intptr_t mp_int_t; // must be pointer size
+typedef uintptr_t mp_uint_t; // must be pointer size
+typedef long mp_off_t;
 
-@ uint gc_helper_get_regs_and_sp(r0=uint regs[10])
-gc_helper_get_regs_and_sp:
-    @ store registers into given array
-    str     r4, [r0], #4
-    str     r5, [r0], #4
-    str     r6, [r0], #4
-    str     r7, [r0], #4
-    str     r8, [r0], #4
-    str     r9, [r0], #4
-    str     r10, [r0], #4
-    str     r11, [r0], #4
-    str     r12, [r0], #4
-    str     r13, [r0], #4
+// Need to provide a declaration/definition of alloca()
+#include <alloca.h>
 
-    @ return the sp
-    mov     r0, sp
-    bx      lr
-
-    .size gc_helper_get_regs_and_sp, .-gc_helper_get_regs_and_sp
+#define MICROPY_MPHALPORT_H "port/mphalport.h"

@@ -65,16 +65,52 @@ changes to the correct style.  Without arguments this tool will reformat all
 source code (and may take some time to run).  Otherwise pass as arguments to
 the tool the files that changed and it will only reformat those.
 
-**Important**: Use only [uncrustify](https://github.com/uncrustify/uncrustify)
-v0.71 or v0.72 for MicroPython. Different uncrustify versions produce slightly
-different formatting, and the configuration file formats are often incompatible.
+uncrustify
+==========
+
+Only [uncrustify](https://github.com/uncrustify/uncrustify) v0.71 or v0.72 can
+be used for MicroPython. Different uncrustify versions produce slightly
+different formatting, and the configuration file formats are often
+incompatible. v0.73 or newer *will not work*.
+
+Depending on your operating system version, it may be possible to install a pre-compiled
+uncrustify version:
+
+Ubuntu, Debian
+--------------
+
+Ubuntu versions 21.10 or 22.04LTS, and Debian versions bullseye or bookworm all
+include v0.72 so can be installed directly:
+
+```
+$ apt install uncrustify
+```
+
+Arch Linux
+----------
+
+The current Arch uncrustify version is too new. There is an [old Arch package
+for v0.72](https://archive.archlinux.org/packages/u/uncrustify/) that can be
+installed from the Arch Linux archive ([more
+information](https://wiki.archlinux.org/title/Downgrading_packages#Arch_Linux_Archive)). Use
+the [IgnorePkg feature](https://wiki.archlinux.org/title/Pacman#Skip_package_from_being_upgraded)
+to prevent it re-updating.
+
+Brew
+----
+
+This command may work, please raise a new Issue if it doesn't:
+
+```
+brew install https://github.com/Homebrew/homebrew-core/raw/2b07d8192623365078a8b855a164ebcdf81494a6/Formula/uncrustify.rb
+```
 
 Automatic Pre-Commit Hooks
 ==========================
 
 To have code formatting and commit message conventions automatically checked,
-a configuration file is provided for the [pre-commit]
-(https://pre-commit.com/) tool.
+a configuration file is provided for the [pre-commit](https://pre-commit.com/)
+tool.
 
 First install `pre-commit`, either from your system package manager or via
 `pip`. When installing `pre-commit` via pip, it is recommended to use a
@@ -82,13 +118,17 @@ virtual environment. Other sources, such as Brew are also available, see
 [the docs](https://pre-commit.com/index.html#install) for details.
 
 ```
-$ apt install pre-commit       # Ubuntu
+$ apt install pre-commit       # Ubuntu, Debian
 $ pacman -Sy python-precommit  # Arch Linux
 $ brew install pre-commit      # Brew
 $ pip install pre-commit       # PyPI
 ```
 
-Then inside the MicroPython repository, register the git hooks for pre-commit
+Next, install [uncrustify (see above)](#uncrustify). Other dependencies are managed by
+pre-commit automatically, but uncrustify needs to be installed and available on
+the PATH.
+
+Then, inside the MicroPython repository, register the git hooks for pre-commit
 by running:
 
 ```
@@ -114,7 +154,6 @@ Tips:
   `--no-verify`).
 * To ignore the pre-commit message format check temporarily, start the commit
   message subject line with "WIP" (for "Work In Progress").
-
 
 Python code conventions
 =======================

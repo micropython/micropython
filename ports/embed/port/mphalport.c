@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Damien P. George
+ * Copyright (c) 2022-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,38 +24,10 @@
  * THE SOFTWARE.
  */
 
-    .syntax unified
-    .cpu cortex-m0
-    .thumb
+#include <stdio.h>
+#include "py/mphal.h"
 
-    .section .text
-    .align 2
-
-    .global gc_helper_get_regs_and_sp
-    .type gc_helper_get_regs_and_sp, %function
-
-@ uint gc_helper_get_regs_and_sp(r0=uint regs[10])
-gc_helper_get_regs_and_sp:
-    @ store registers into given array
-    str    r4, [r0, #0]
-    str    r5, [r0, #4]
-    str    r6, [r0, #8]
-    str    r7, [r0, #12]
-    mov    r1, r8
-    str    r1, [r0, #16]
-    mov    r1, r9
-    str    r1, [r0, #20]
-    mov    r1, r10
-    str    r1, [r0, #24]
-    mov    r1, r11
-    str    r1, [r0, #28]
-    mov    r1, r12
-    str    r1, [r0, #32]
-    mov    r1, r13
-    str    r1, [r0, #36]
-
-    @ return the sp
-    mov    r0, sp
-    bx     lr
-
-    .size gc_helper_get_regs_and_sp, .-gc_helper_get_regs_and_sp
+// Send string of given length to stdout, converting \n to \r\n.
+void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
+    printf("%.*s", (int)len, str);
+}

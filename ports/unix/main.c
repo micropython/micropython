@@ -699,6 +699,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             char *basedir = realpath(argv[a], pathbuf);
             if (basedir == NULL) {
                 mp_printf(&mp_stderr_print, "%s: can't open file '%s': [Errno %d] %s\n", argv[0], argv[a], errno, strerror(errno));
+                free(pathbuf);
                 // CPython exits with 2 in such case
                 ret = 2;
                 break;
