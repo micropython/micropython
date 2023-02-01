@@ -267,7 +267,3 @@ typedef intptr_t mp_off_t;
 extern uint32_t rosc_random_u32(void);
 extern void lwip_lock_acquire(void);
 extern void lwip_lock_release(void);
-extern void cyw43_irq_init(void);
-extern void cyw43_post_poll_hook(void);
-
-#define CYW43_POST_POLL_HOOK cyw43_post_poll_hook();

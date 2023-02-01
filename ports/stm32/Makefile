@@ -487,10 +487,7 @@ SRC_C += mpbtstackport.c
 MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 endif
 
-ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
-DRIVERS_SRC_C += drivers/cyw43/cywbt.c
-endif
-endif
+endif # MICROPY_PY_BLUETOOTH
 
 # SRC_O should be placed first to work around this LTO bug with binutils <2.35:
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83967

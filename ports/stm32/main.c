@@ -48,7 +48,9 @@
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
 #include "lwip/apps/mdns.h"
-#include "drivers/cyw43/cyw43.h"
+#if MICROPY_PY_NETWORK_CYW43
+#include "lib/cyw43-driver/src/cyw43.h"
+#endif
 #endif
 
 #if MICROPY_PY_BLUETOOTH

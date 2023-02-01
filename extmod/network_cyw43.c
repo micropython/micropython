@@ -36,12 +36,8 @@
 #include "extmod/network_cyw43.h"
 #include "modnetwork.h"
 
-#if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
 #include "lib/cyw43-driver/src/cyw43.h"
 #include "lib/cyw43-driver/src/cyw43_country.h"
-#else
-#include "drivers/cyw43/cyw43.h"
-#endif
 
 typedef struct _network_cyw43_obj_t {
     mp_obj_base_t base;
@@ -120,23 +116,13 @@ STATIC mp_obj_t network_cyw43_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_cyw43_deinit_obj, network_cyw43_deinit);
 
-#if !MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
-// TODO: The old driver expects this to be available at link time.
-char pyb_country_code[2];
-#endif
-
 STATIC mp_obj_t network_cyw43_active(size_t n_args, const mp_obj_t *args) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         return mp_obj_new_bool(cyw43_tcpip_link_status(self->cyw, self->itf));
     } else {
-        #if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
         uint32_t country = CYW43_COUNTRY(mod_network_country_code[0], mod_network_country_code[1], 0);
         cyw43_wifi_set_up(self->cyw, self->itf, mp_obj_is_true(args[1]), country);
-        #else
-        memcpy(pyb_country_code, mod_network_country_code, sizeof(pyb_country_code));
-        cyw43_wifi_set_up(self->cyw, self->itf, mp_obj_is_true(args[1]));
-        #endif
         return mp_const_none;
     }
 }
@@ -277,13 +263,12 @@ STATIC mp_obj_t network_cyw43_connect(size_t n_args, const mp_obj_t *pos_args, m
     uint32_t auth_type;
     if (args[ARG_security].u_int == -1) {
         if (key.buf == NULL || key.len == 0) {
-            auth_type = 0; // open security
+            // Default to open when no password set.
+            auth_type = CYW43_AUTH_OPEN;
         } else {
-            #if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
+            // Default to WPA2 otherwise. All other modes require the security
+            // kwarg to be set explicitly.
             auth_type = CYW43_AUTH_WPA2_MIXED_PSK;
-            #else
-            auth_type = 0x008006; // WPA2_MIXED_PSK
-            #endif
         }
     } else {
         auth_type = args[ARG_security].u_int;
@@ -396,11 +381,9 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                     return mp_obj_new_str((const char *)buf, len);
                 }
             }
-            #if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
             case MP_QSTR_security: {
                 return MP_OBJ_NEW_SMALL_INT(cyw43_wifi_ap_get_auth(self->cyw));
             }
-            #endif
             case MP_QSTR_mac: {
                 uint8_t buf[6];
                 cyw43_wifi_get_mac(self->cyw, self->itf, buf);
@@ -412,11 +395,10 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                 cyw43_ioctl(self->cyw, CYW43_IOCTL_GET_VAR, 13, buf, self->itf);
                 return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf) / 4);
             }
-            #if !MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
             case MP_QSTR_hostname: {
-                return mp_obj_new_str(self->cyw->hostname, strlen(self->cyw->hostname));
+                // TODO: Deprecated. Use network.hostname() instead.
+                return mp_obj_new_str(mod_network_hostname, strlen(mod_network_hostname));
             }
-            #endif
             default:
                 mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
         }
@@ -489,14 +471,16 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                         cyw43_ioctl(self->cyw, CYW43_IOCTL_SET_VAR, 9 + 4, buf, self->itf);
                         break;
                     }
-                    #if !MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
                     case MP_QSTR_hostname: {
-                        const char *hostname = mp_obj_str_get_str(e->value);
-                        strncpy(self->cyw->hostname, hostname, MICROPY_BOARD_HOSTNAME_LENGTH);
-                        self->cyw->hostname[MICROPY_BOARD_HOSTNAME_LENGTH - 1] = 0;
+                        // TODO: Deprecated. Use network.hostname(name) instead.
+                        size_t len;
+                        const char *str = mp_obj_str_get_data(args[0], &len);
+                        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
+                            mp_raise_ValueError(NULL);
+                        }
+                        strcpy(mod_network_hostname, str);
                         break;
                     }
-                    #endif
                     default:
                         mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }

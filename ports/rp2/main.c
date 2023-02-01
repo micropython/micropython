@@ -42,6 +42,7 @@
 #include "modmachine.h"
 #include "modrp2.h"
 #include "mpbthciport.h"
+#include "mpnetworkport.h"
 #include "genhdr/mpversion.h"
 #include "mp_usbd.h"
 
