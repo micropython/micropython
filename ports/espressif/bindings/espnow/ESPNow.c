@@ -561,20 +561,6 @@ STATIC mp_obj_t espnow_recv(mp_obj_t self_in, mp_obj_t buffers) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(espnow_recv_obj, espnow_recv);
 
-//|     any: bool
-//|     """`True` if data is available to read from the buffers."""
-//|
-STATIC mp_obj_t espnow_get_any(const mp_obj_t self_in) {
-    espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    return ringbuf_num_filled(self->recv_buffer) ? mp_const_true : mp_const_false;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_any_obj, espnow_get_any);
-
-MP_PROPERTY_GETTER(espnow_any_obj,
-    (mp_obj_t)&espnow_get_any_obj);
-
 // --- Peer Management Functions ---
 
 // Common code for add_peer() and mod_peer() to process the args.
@@ -826,7 +812,6 @@ STATIC const mp_rom_map_elem_t espnow_locals_dict_table[] = {
     // Send and receive messages
     { MP_ROM_QSTR(MP_QSTR_send),        MP_ROM_PTR(&espnow_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_recv),        MP_ROM_PTR(&espnow_recv_obj) },
-    { MP_ROM_QSTR(MP_QSTR_any),         MP_ROM_PTR(&espnow_any_obj) },
 
     // Peer management functions
     { MP_ROM_QSTR(MP_QSTR_add_peer),    MP_ROM_PTR(&espnow_add_peer_obj) },
@@ -864,6 +849,27 @@ STATIC const mp_stream_p_t espnow_stream_p = {
     .ioctl = espnow_stream_ioctl,
 };
 
+//|     def __bool__(self) -> bool:
+//|         """``True`` if `len()` is greater than zero.
+//|         This is an easy way to check if the buffer is empty.
+//|         """
+//|         ...
+//|     def __len__(self) -> int:
+//|         """Return the number of `bytes` available to read. Used to implement ``len()``."""
+//|         ...
+STATIC mp_obj_t espnow_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    size_t len = ringbuf_num_filled(self->recv_buffer);
+    switch (op) {
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(len != 0);
+        case MP_UNARY_OP_LEN:
+            return mp_obj_new_int_from_uint(len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
+    }
+}
+
 const mp_obj_type_t espnow_type = {
     { &mp_type_type },
     .name = MP_QSTR_ESPNow,
@@ -872,5 +878,6 @@ const mp_obj_type_t espnow_type = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     MP_TYPE_EXTENDED_FIELDS(
         .protocol = &espnow_stream_p,
+        .unary_op = &espnow_unary_op
         ),
 };
