@@ -2510,6 +2510,10 @@ msgstr ""
 msgid "array has too many dimensions"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "array is too big"
+msgstr ""
+
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -2936,6 +2940,10 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "div/mod not implemented for uint"
+msgstr ""
+
+#: extmod/ulab/code/numpy/create.c
+msgid "divide by zero"
 msgstr ""
 
 #: py/runtime.c
@@ -3750,6 +3758,10 @@ msgstr ""
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only mono is supported"
+msgstr ""
+
+#: extmod/ulab/code/numpy/create.c
+msgid "only ndarrays can be concatenated"
 msgstr ""
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
