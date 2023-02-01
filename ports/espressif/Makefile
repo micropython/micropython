@@ -260,7 +260,9 @@ CFLAGS += -isystem esp32-camera/conversions/include
 endif
 
 ifneq ($(CIRCUITPY_ESPNOW),0)
-SRC_ESPNOW := $(wildcard bindings/espnow/*.c)
+SRC_ESPNOW := \
+	$(wildcard common-hal/espnow/*.c) \
+	$(wildcard bindings/espnow/*.c)
 SRC_C += $(SRC_ESPNOW)
 endif
 

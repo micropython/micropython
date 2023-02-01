@@ -491,6 +491,7 @@ msgstr ""
 msgid "Already have all-matches listener"
 msgstr ""
 
+#: ports/espressif/bindings/espnow/ESPNow.c
 #: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -2431,6 +2432,7 @@ msgid "addresses is empty"
 msgstr ""
 
 #: ports/espressif/bindings/espnow/ESPNow.c
+#: ports/espressif/common-hal/espnow/ESPNow.c
 msgid "an error occured"
 msgstr ""
 
@@ -3816,6 +3818,10 @@ msgstr ""
 
 #: ports/espressif/bindings/espnow/ESPNow.c
 msgid "peer already exists"
+msgstr ""
+
+#: ports/espressif/bindings/espnow/ESPNow.c
+msgid "peer not found"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c

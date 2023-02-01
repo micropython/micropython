@@ -28,6 +28,7 @@
 
 #include "bindings/espnow/__init__.h"
 #include "bindings/espnow/ESPNow.h"
+#include "bindings/espnow/ESPNowPacket.h"
 
 //| """ESP-NOW Module
 //|
@@ -75,9 +76,11 @@
 
 STATIC const mp_rom_map_elem_t espnow_module_globals_table[] = {
     // module name
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_espnow) },
+    { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_espnow) },
+
     // module classes
-    { MP_ROM_QSTR(MP_QSTR_ESPNow), MP_ROM_PTR(&espnow_type) },
+    { MP_ROM_QSTR(MP_QSTR_ESPNow),      MP_ROM_PTR(&espnow_type) },
+    { MP_ROM_QSTR(MP_QSTR_ESPNowPacket),MP_ROM_PTR(&espnow_packet_type_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(espnow_module_globals, espnow_module_globals_table);
 
