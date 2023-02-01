@@ -60,6 +60,7 @@
 //| """CPU information and control, such as ``cpus[0].temperature`` and ``cpus[1].frequency``
 //| (clock frequency) on chips with more than 1 cpu. The index selects which cpu.
 //| This object is an instance of `microcontroller.Processor`."""
+//|
 
 //| def delay_us(delay: int) -> None:
 //|     """Dedicated delay method used for very short delays. **Do not** do long delays

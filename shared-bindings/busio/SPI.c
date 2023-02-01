@@ -61,7 +61,6 @@
 //|         MISO: Optional[microcontroller.Pin] = None,
 //|         half_duplex: bool = False,
 //|     ) -> None:
-//|
 //|         """Construct an SPI object on the given pins.
 //|
 //|         .. note:: The SPI peripherals allocated in order of desirability, if possible,

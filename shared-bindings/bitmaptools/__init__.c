@@ -50,6 +50,7 @@
 //|     <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_
 //|     for information about using the :py:mod:`displayio` module.
 //| """
+//|
 
 STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
     // Checks if point is None and returns default_value, otherwise decodes integer value

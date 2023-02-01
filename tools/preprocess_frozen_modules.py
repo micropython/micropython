@@ -46,7 +46,6 @@ def version_string(path=None, *, valid_semver=False):
 # with actual version info derived from git.
 def copy_and_process(in_dir, out_dir):
     for root, subdirs, files in os.walk(in_dir):
-
         # Skip library examples directory and subfolders.
         relative_path_parts = Path(root).relative_to(in_dir).parts
         if relative_path_parts and relative_path_parts[0] in [

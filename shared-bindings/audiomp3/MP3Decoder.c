@@ -45,7 +45,6 @@
 //|     """
 //|
 //|     def __init__(self, file: Union[str, typing.BinaryIO], buffer: WriteableBuffer) -> None:
-//|
 //|         """Load a .mp3 file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|         :param Union[str, typing.BinaryIO] file: The name of a mp3 file (preferred) or an already opened mp3 file

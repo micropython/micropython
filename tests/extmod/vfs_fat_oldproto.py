@@ -13,7 +13,6 @@ except AttributeError:
 
 
 class RAMFS_OLD:
-
     SEC_SIZE = 512
 
     def __init__(self, blocks):
