@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
+"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -1208,8 +1208,7 @@ msgstr "Dispositivo I2C en uso"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
-msgstr ""
-"Los elementos del búfer de entrada deben ser de una longitud <= 4 bytes"
+msgstr "Los elementos del búfer de entrada deben ser de una longitud <= 4 bytes"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -2056,8 +2055,7 @@ msgstr "Lectura de temperatura expirada"
 
 #: supervisor/shared/safe_mode.c
 msgid "The `microcontroller` module was used to boot into safe mode."
-msgstr ""
-"El modulo `microcontrolador` fue usado para inicializar en modo seguro."
+msgstr "El modulo `microcontrolador` fue usado para inicializar en modo seguro."
 
 #: py/obj.c
 msgid "The above exception was the direct cause of the following exception:"
