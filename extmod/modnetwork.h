@@ -65,7 +65,7 @@ struct netif;
 void mod_network_lwip_init(void);
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
-#else
+#elif defined(MICROPY_PORT_NETWORK_INTERFACES)
 
 struct _mod_network_socket_obj_t;
 
@@ -107,11 +107,13 @@ typedef struct _mod_network_socket_obj_t {
     #endif
 } mod_network_socket_obj_t;
 
-#endif // MICROPY_PY_LWIP
+#endif // MICROPY_PY_LWIP / MICROPY_PORT_NETWORK_INTERFACES
 
+#ifdef MICROPY_PORT_NETWORK_INTERFACES
 void mod_network_init(void);
 void mod_network_deinit(void);
 void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);
+#endif
 
 #endif // MICROPY_INCLUDED_MODNETWORK_H

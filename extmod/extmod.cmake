@@ -38,6 +38,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/moduzlib.c
     ${MICROPY_EXTMOD_DIR}/modwebrepl.c
     ${MICROPY_EXTMOD_DIR}/network_cyw43.c
+    ${MICROPY_EXTMOD_DIR}/network_lwip.c
     ${MICROPY_EXTMOD_DIR}/network_ninaw10.c
     ${MICROPY_EXTMOD_DIR}/network_wiznet5k.c
     ${MICROPY_EXTMOD_DIR}/uos_dupterm.c
