@@ -54,7 +54,8 @@ STATIC mp_obj_t scanresults_iternext(mp_obj_t self_in) {
 //|         ...
 //|     def __next__(self) -> ScanEntry:
 //|         """Returns the next `_bleio.ScanEntry`. Blocks if none have been received and scanning is still
-//|         active. Raises `StopIteration` if scanning is finished and no other results are available."""
+//|         active. Raises `StopIteration` if scanning is finished and no other results are available.
+//|         """
 //|         ...
 //|
 

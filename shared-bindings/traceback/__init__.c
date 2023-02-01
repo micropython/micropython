@@ -37,6 +37,7 @@
 //| |see_cpython_module| :mod:`cpython:traceback`.
 //| """
 //| ...
+//|
 
 STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *print, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_exc, ARG_value, ARG_tb, ARG_limit, ARG_file, ARG_chain };

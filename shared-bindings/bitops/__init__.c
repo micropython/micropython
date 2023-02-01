@@ -30,6 +30,7 @@
 #include "shared-bindings/bitops/__init__.h"
 
 //| """Routines for low-level manipulation of binary data"""
+//|
 
 //| def bit_transpose(
 //|     input: ReadableBuffer, output: WriteableBuffer, width: int = 8

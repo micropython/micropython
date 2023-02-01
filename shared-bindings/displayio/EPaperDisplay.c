@@ -117,7 +117,8 @@
 //|         :param float seconds_per_frame: Minimum number of seconds between screen refreshes
 //|         :param bool always_toggle_chip_select: When True, chip select is toggled every byte
 //|         :param bool grayscale: When true, the color ram is the low bit of 2-bit grayscale
-//|         :param bool two_byte_sequence_length: When true, use two bytes to define sequence length"""
+//|         :param bool two_byte_sequence_length: When true, use two bytes to define sequence length
+//|         """
 //|         ...
 STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_display_bus, ARG_start_sequence, ARG_stop_sequence, ARG_width, ARG_height,

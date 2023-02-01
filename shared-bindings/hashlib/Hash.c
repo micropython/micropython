@@ -49,7 +49,8 @@ MP_PROPERTY_GETTER(hashlib_hash_digest_size_obj, (mp_obj_t)&hashlib_hash_digest_
 //|     def update(self, data: ReadableBuffer) -> None:
 //|         """Update the hash with the given bytes.
 //|
-//|         :param ~circuitpython_typing.ReadableBuffer data: Update the hash from data in this buffer"""
+//|         :param ~circuitpython_typing.ReadableBuffer data: Update the hash from data in this buffer
+//|         """
 //|         ...
 mp_obj_t hashlib_hash_update(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_check_self(mp_obj_is_type(self_in, &hashlib_hash_type));

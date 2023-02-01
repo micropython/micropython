@@ -46,6 +46,7 @@
 //|
 //| Supported format codes: *b*, *B*, *x*, *h*, *H*, *i*, *I*, *l*, *L*, *q*, *Q*,
 //| *s*, *P*, *f*, *d* (the latter 2 depending on the floating-point support)."""
+//|
 
 
 //| def calcsize(fmt: str) -> int:

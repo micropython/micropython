@@ -34,6 +34,7 @@
 #include "shared-bindings/memorymonitor/AllocationSize.h"
 
 //| """Memory monitoring helpers"""
+//|
 
 //| class AllocationError(Exception):
 //|     """Catchall exception for allocation related errors."""

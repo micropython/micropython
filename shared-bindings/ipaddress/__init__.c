@@ -35,6 +35,7 @@
 //| The `ipaddress` module provides types for IP addresses. It is a subset of CPython's ipaddress
 //| module.
 //| """
+//|
 
 
 bool ipaddress_parse_ipv4address(const char *str_data, size_t str_len, uint32_t *ip_out) {

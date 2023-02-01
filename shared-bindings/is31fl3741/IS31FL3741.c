@@ -141,7 +141,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(is31fl3741_IS31FL3741_set_led_obj, 4, 4, is3
 //|     """Write buf out on the I2C bus to the IS31FL3741.
 //|
 //|     :param ~Tuple[int, ...] mapping: map the pixels in the buffer to the order addressed by the driver chip
-//|     :param ~_typing.ReadableBuffer buf: The bytes to clock out. No assumption is made about color order"""
+//|     :param ~_typing.ReadableBuffer buf: The bytes to clock out. No assumption is made about color order
+//|     """
 //|     ...
 //|
 STATIC mp_obj_t is31fl3741_IS31FL3741_write(mp_obj_t self_in, mp_obj_t mapping, mp_obj_t buffer) {

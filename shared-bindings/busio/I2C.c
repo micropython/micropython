@@ -48,7 +48,6 @@
 //|         frequency: int = 100000,
 //|         timeout: int = 255
 //|     ) -> None:
-//|
 //|         """I2C is a two-wire protocol for communicating between devices.  At the
 //|         physical level it consists of 2 wires: SCL and SDA, the clock and data
 //|         lines respectively.

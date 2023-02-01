@@ -45,6 +45,7 @@
 //|     Non-Espressif microcontrollers use the `imagecapture` module together with wrapper libraries such as `adafruit_ov5640 <https://circuitpython.readthedocs.io/projects/ov5640/en/latest/>`_.
 //|
 //| """
+//|
 
 //| class GrabMode:
 //|     """Controls when a new frame is grabbed."""

@@ -84,6 +84,7 @@ C_ESCAPES = {
     '"': '\\"',
 }
 
+
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr, bytes_hash):
     hash = 5381
@@ -277,7 +278,7 @@ def compute_huffman_coding(translation_name, translations, f):
 
         counter = collections.Counter()
         for t in texts:
-            for (found, word) in extractor.iter_words(t):
+            for found, word in extractor.iter_words(t):
                 if not found:
                     for substr in iter_substrings(word, minlen=2, maxlen=11):
                         counter[substr] += 1

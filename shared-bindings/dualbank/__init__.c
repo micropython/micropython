@@ -65,6 +65,7 @@
 //|     dualbank.switch()
 //| """
 //| ...
+//|
 
 #if CIRCUITPY_STORAGE_EXTEND
 STATIC void raise_error_if_storage_extended(void) {

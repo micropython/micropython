@@ -59,6 +59,7 @@
 //| The status bar reports the current IP or BLE connection, what file is running,
 //| the last exception name and location, and firmware version information.
 //| This object is the sole instance of `supervisor.StatusBar`."""
+//|
 
 //| def reload() -> None:
 //|     """Reload the main Python code and run it (equivalent to hitting Ctrl-D at the REPL)."""

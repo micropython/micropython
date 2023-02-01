@@ -47,6 +47,7 @@
 //| containing a `Device` that describes the boot device chosen (keyboard or mouse).
 //| The request for a boot device overrides any other HID devices.
 //| """
+//|
 
 //| def disable() -> None:
 //|     """Do not present any USB HID devices to the host computer.
