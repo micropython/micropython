@@ -36,6 +36,7 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/modnetwork.h"
 #include "modnetwork.h"
 
 #include "esp_wifi.h"
@@ -91,12 +92,8 @@ void network_wlan_event_handler(system_event_t *event) {
             if (!mdns_initialised) {
                 mdns_init();
                 #if MICROPY_HW_ENABLE_MDNS_RESPONDER
-                const char *hostname = NULL;
-                if (tcpip_adapter_get_hostname(WIFI_IF_STA, &hostname) != ESP_OK || hostname == NULL) {
-                    hostname = "esp32";
-                }
-                mdns_hostname_set(hostname);
-                mdns_instance_name_set(hostname);
+                mdns_hostname_set(mod_network_hostname);
+                mdns_instance_name_set(mod_network_hostname);
                 #endif
                 mdns_initialised = true;
             }
@@ -182,7 +179,7 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid WLAN interface identifier"));
     }
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(get_wlan_obj, 0, 1, get_wlan);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_get_wlan_obj, 0, 1, get_wlan);
 
 STATIC mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -259,6 +256,8 @@ STATIC mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         }
         esp_exceptions(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
     }
+
+    esp_exceptions(tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_STA, mod_network_hostname));
 
     wifi_sta_reconnects = 0;
     // connect to the WiFi AP
@@ -474,8 +473,13 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                     }
                     case MP_QSTR_hostname:
                     case MP_QSTR_dhcp_hostname: {
-                        const char *s = mp_obj_str_get_str(kwargs->table[i].value);
-                        esp_exceptions(tcpip_adapter_set_hostname(self->if_id, s));
+                        // TODO: Deprecated. Use network.hostname(name) instead.
+                        size_t len;
+                        const char *str = mp_obj_str_get_data(kwargs->table[i].value, &len);
+                        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
+                            mp_raise_ValueError(NULL);
+                        }
+                        strcpy(mod_network_hostname, str);
                         break;
                     }
                     case MP_QSTR_max_clients: {
@@ -568,9 +572,9 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
         }
         case MP_QSTR_hostname:
         case MP_QSTR_dhcp_hostname: {
-            const char *s;
-            esp_exceptions(tcpip_adapter_get_hostname(self->if_id, &s));
-            val = mp_obj_new_str(s, strlen(s));
+            // TODO: Deprecated. Use network.hostname() instead.
+            req_if = WIFI_IF_STA;
+            val = mp_obj_new_str(mod_network_hostname, strlen(mod_network_hostname));
             break;
         }
         case MP_QSTR_max_clients: {
@@ -618,7 +622,7 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&network_wlan_scan_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_wlan_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&network_wlan_config_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_network_ifconfig_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 

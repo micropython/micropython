@@ -1,5 +1,6 @@
 #define MICROPY_HW_BOARD_NAME               "FeatherS3"
 #define MICROPY_HW_MCU_NAME                 "ESP32-S3"
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "FeatherS3"
 
 #define MICROPY_PY_MACHINE_DAC              (0)
 
