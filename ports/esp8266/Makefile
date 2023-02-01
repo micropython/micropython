@@ -106,8 +106,8 @@ SRC_C = \
 	machine_wdt.c \
 	machine_hspi.c \
 	modesp.c \
-	modnetwork.c \
 	modutime.c \
+	network_wlan.c \
 	ets_alt_task.c \
 	fatfs_port.c \
 	posix_helpers.c \
