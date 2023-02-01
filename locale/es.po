@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-01-29 16:16+0000\n"
+"PO-Revision-Date: 2023-02-01 22:11+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -2565,7 +2565,7 @@ msgstr "La matriz tiene demasiadas dimensiones"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array is too big"
-msgstr ""
+msgstr "el arreglo es muy grande"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
@@ -3830,7 +3830,7 @@ msgstr "solamente mono esta suportado"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "only ndarrays can be concatenated"
-msgstr ""
+msgstr "solamente ndarrays pueden ser concatenadas"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only oversample=64 is supported"
