@@ -38,6 +38,7 @@
 
 #if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
 #include "lib/cyw43-driver/src/cyw43.h"
+#include "lib/cyw43-driver/src/cyw43_country.h"
 #else
 #include "drivers/cyw43/cyw43.h"
 #endif
@@ -119,14 +120,21 @@ STATIC mp_obj_t network_cyw43_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_cyw43_deinit_obj, network_cyw43_deinit);
 
+#if !MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
+// TODO: The old driver expects this to be available at link time.
+char pyb_country_code[2];
+#endif
+
 STATIC mp_obj_t network_cyw43_active(size_t n_args, const mp_obj_t *args) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         return mp_obj_new_bool(cyw43_tcpip_link_status(self->cyw, self->itf));
     } else {
         #if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
-        cyw43_wifi_set_up(self->cyw, self->itf, mp_obj_is_true(args[1]), MICROPY_CYW43_COUNTRY);
+        uint32_t country = CYW43_COUNTRY(mod_network_country_code[0], mod_network_country_code[1], 0);
+        cyw43_wifi_set_up(self->cyw, self->itf, mp_obj_is_true(args[1]), country);
         #else
+        memcpy(pyb_country_code, mod_network_country_code, sizeof(pyb_country_code));
         cyw43_wifi_set_up(self->cyw, self->itf, mp_obj_is_true(args[1]));
         #endif
         return mp_const_none;

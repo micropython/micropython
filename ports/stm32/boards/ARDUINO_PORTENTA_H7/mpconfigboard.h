@@ -9,6 +9,8 @@
 #define MICROPY_PY_SYS_PLATFORM     "Portenta"
 #define MICROPY_HW_FLASH_FS_LABEL   "portenta"
 
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "Portenta"
+
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 #define UINT_FMT                    "%u"
 #define INT_FMT                     "%d"

@@ -52,6 +52,14 @@
 #define MOD_NETWORK_SS_CONNECTED    (2)
 #define MOD_NETWORK_SS_CLOSED       (3)
 
+extern char mod_network_country_code[2];
+
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN
+#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (16)
+#endif
+
+extern char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN];
+
 #if MICROPY_PY_LWIP
 struct netif;
 void mod_network_lwip_init(void);
