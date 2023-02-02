@@ -123,7 +123,7 @@ static void recv_cb(const uint8_t *mac, const uint8_t *msg, int msg_len) {
 }
 
 bool common_hal_espnow_deinited(espnow_obj_t *self) {
-    return self->recv_buffer == NULL;
+    return self == NULL || self->recv_buffer == NULL;
 }
 
 // Initialize the ESP-NOW software stack,
@@ -154,7 +154,7 @@ void common_hal_espnow_init(espnow_obj_t *self) {
 // De-initialize the ESP-NOW software stack,
 // disable callbacks and deallocate the recv data buffers.
 void common_hal_espnow_deinit(espnow_obj_t *self) {
-    if (self == NULL || common_hal_espnow_deinited(self)) {
+    if (common_hal_espnow_deinited(self)) {
         return;
     }
 
@@ -164,7 +164,7 @@ void common_hal_espnow_deinit(espnow_obj_t *self) {
 
     self->recv_buffer->buf = NULL;
     self->recv_buffer = NULL;
-    self->peers_count = 0; // esp_now_deinit() removes all peers.
+    // self->peers_count = 0; // esp_now_deinit() removes all peers.
     self->tx_packets = self->tx_responses;
 }
 
@@ -278,7 +278,7 @@ mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const bool sync, const uint8
 
     // Increment the sent packet count.
     // If mac == NULL msg will be sent to all peers EXCEPT any broadcast or multicast addresses.
-    self->tx_packets += ((mac == NULL) ? self->peers_count : 1);
+    self->tx_packets += ((mac == NULL) ? ((mp_obj_list_t *)self->peers->list)->len : 1);
 
     if (sync) {
         // Wait for and tally all the expected responses from peers

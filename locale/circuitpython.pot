@@ -124,7 +124,7 @@ msgstr ""
 msgid "%q init failed"
 msgstr ""
 
-#: ports/espressif/bindings/espnow/ESPNow.c shared-bindings/dualbank/__init__.c
+#: ports/espressif/bindings/espnow/Peer.c shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
 msgstr ""
 
@@ -2431,7 +2431,7 @@ msgstr ""
 msgid "addresses is empty"
 msgstr ""
 
-#: ports/espressif/bindings/espnow/ESPNow.c
+#: ports/espressif/bindings/espnow/Peers.c
 #: ports/espressif/common-hal/espnow/ESPNow.c
 msgid "an error occured"
 msgstr ""
@@ -3814,14 +3814,6 @@ msgstr ""
 
 #: py/emitinlinethumb.c
 msgid "parameters must be registers in sequence r0 to r3"
-msgstr ""
-
-#: ports/espressif/bindings/espnow/ESPNow.c
-msgid "peer already exists"
-msgstr ""
-
-#: ports/espressif/bindings/espnow/ESPNow.c
-msgid "peer not found"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c

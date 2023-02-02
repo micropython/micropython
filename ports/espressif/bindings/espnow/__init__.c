@@ -29,6 +29,8 @@
 #include "bindings/espnow/__init__.h"
 #include "bindings/espnow/ESPNow.h"
 #include "bindings/espnow/ESPNowPacket.h"
+#include "bindings/espnow/Peer.h"
+#include "bindings/espnow/Peers.h"
 
 //| """ESP-NOW Module
 //|
@@ -44,14 +46,13 @@
 //|     import espnow
 //|
 //|     e = espnow.ESPNow()
-//|     e.active(True)
-//|     peer = b'\xbb\xbb\xbb\xbb\xbb\xbb'   # MAC address of peer's wifi interface
-//|     e.add_peer(peer)
+//|     peer = espnow.Peer(mac=b'\xaa\xaa\xaa\xaa\xaa\xaa')
+//|     e.peers.append(peer)
 //|
-//|     e.send("Starting...")   # Send to all peers
+//|     e.send("Starting...")
 //|     for i in range(100):
 //|         e.send(peer, str(i)*20, True)
-//|         e.send(b'end')
+//|     e.send(b'end')
 //|
 //| **Receiver**
 //|
@@ -60,16 +61,18 @@
 //|     import espnow
 //|
 //|     e = espnow.ESPNow()
-//|     e.active(True)
-//|     peer = b'\xaa\xaa\xaa\xaa\xaa\xaa'   # MAC address of peer's wifi interface
-//|     e.add_peer(peer)
+//|     packets = []
 //|
 //|     while True:
-//|         host, msg = e.recv()
-//|         if msg:             # msg == None if timeout in recv()
-//|             print(host, msg)
-//|             if msg == b'end':
+//|         if e:
+//|             packet = e.recv()
+//|             packets.append(packet)
+//|             if packet.msg == b'end':
 //|                 break
+//|
+//|     print("packets:", f"length={len(packets)}")
+//|     for packet in packets:
+//|         print(packet)
 //| """
 //| ...
 //|
@@ -81,6 +84,8 @@ STATIC const mp_rom_map_elem_t espnow_module_globals_table[] = {
     // module classes
     { MP_ROM_QSTR(MP_QSTR_ESPNow),      MP_ROM_PTR(&espnow_type) },
     { MP_ROM_QSTR(MP_QSTR_ESPNowPacket),MP_ROM_PTR(&espnow_packet_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_Peer),        MP_ROM_PTR(&espnow_peer_type) },
+    { MP_ROM_QSTR(MP_QSTR_Peers),       MP_ROM_PTR(&espnow_peers_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(espnow_module_globals, espnow_module_globals_table);
 

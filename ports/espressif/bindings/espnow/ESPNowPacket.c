@@ -32,7 +32,7 @@
 //|     mac: ReadableBuffer
 //|     """The sender's mac address (length = 6 bytes)"""
 //|
-//|     msg: RedableBuffer
+//|     msg: ReadableBuffer
 //|     """The message sent by the peer (length <= 250 bytes)"""
 //|
 //|     rssi: int

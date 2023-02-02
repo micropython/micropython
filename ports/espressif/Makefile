@@ -126,9 +126,13 @@ ifeq ($(DEBUG), 1)
   # CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -DNDEBUG -ggdb3
-  OPTIMIZATION_FLAGS ?= -O2
   # RISC-V is larger than xtensa
   # Use -Os for RISC-V when it overflows
+  ifeq ($(IDF_TARGET_ARCH),riscv)
+  OPTIMIZATION_FLAGS ?= -Os
+  else
+  OPTIMIZATION_FLAGS ?= -O2
+  endif
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk

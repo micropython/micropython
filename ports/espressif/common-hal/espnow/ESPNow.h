@@ -24,7 +24,12 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#include "py/obj.h"
 #include "py/ringbuf.h"
+
+#include "bindings/espnow/Peers.h"
 
 #include "esp_wifi.h"
 
@@ -39,7 +44,7 @@ typedef struct _espnow_obj_t {
     size_t tx_packets;              // # of sent packets
     volatile size_t tx_responses;   // # of sent packet responses received
     volatile size_t tx_failures;    // # of sent packet responses failed
-    size_t peers_count;             // Cache the # of peers for send(sync=True)
+    espnow_peers_obj_t *peers;      // Cache the # of peers for send(sync=True)
     mp_obj_t peers_table;           // A dictionary of discovered peers
 } espnow_obj_t;
 
