@@ -1,6 +1,54 @@
 [build-system]
 requires = [
-    "setuptools>=42",
-    "wheel"
+    "hatchling",
+    "hatch-requirements-txt",
+    "hatch-vcs",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "hatchling.build"
+
+[project]
+name = "mpremote"
+description = "Tool for interacting remotely with MicroPython devices"
+readme = "README.md"
+authors = [
+    {name = "Damien George", email = "damien@micropython.org"},
+]
+urls = {Homepage = "https://github.com/micropython/micropython"}
+keywords = [
+    "hardware",
+    "micropython",
+]
+license = {text = "MIT"}
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: System :: Hardware",
+]
+requires-python = ">=3.4"
+dynamic = ["dependencies", "version"]
+
+[project.scripts]
+mpremote = "mpremote.main:main"
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
+
+[tool.hatch.version]
+source = "vcs"
+tag-pattern = "(?P<version>v(\\d+).(\\d+).(\\d+))"
+raw-options = { root = "../..", version_scheme = "post-release" }
+
+[tool.hatch.build]
+packages = ["mpremote"]
+
+# Also grab pyboard.py from /tools and add it to the package for both wheel and sdist.
+[tool.hatch.build.force-include]
+"../pyboard.py" = "mpremote/pyboard.py"
+
+# Workaround to allow `python -m build` to work.
+[tool.hatch.build.targets.sdist.force-include]
+"../pyboard.py" = "mpremote/pyboard.py"
+"requirements.txt" = "requirements.txt"
