@@ -28,6 +28,7 @@ SPI_CLK = const(36)
 I2C_SDA = const(8)
 I2C_SCL = const(9)
 
+
 # Helper functions
 def set_pixel_power(state):
     """Enable or Disable power to the onboard NeoPixel to either show colour, or to reduce power for deep sleep."""

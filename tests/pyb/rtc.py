@@ -55,6 +55,7 @@ set_and_print_calib(-511)
 # restore existing calibration value
 rtc.calibration(cal_tmp)
 
+
 # Check register settings for wakeup
 def set_and_print_wakeup(ms):
     try:

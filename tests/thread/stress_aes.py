@@ -38,6 +38,7 @@ aes_s_box_table = bytes((
 ))
 # fmt: on
 
+
 # multiplication of polynomials modulo x^8 + x^4 + x^3 + x + 1 = 0x11b
 def aes_gf8_mul_2(x):
     if x & 0x80:
@@ -79,6 +80,7 @@ def aes_r_con(a):
 # provides such a sequence.  En/de-cryption is implemented here
 # using OCB, where the sequence is xored against the plaintext.
 # Care must be taken to (almost) always choose a different IV.
+
 
 # all inputs must be size 16
 def aes_add_round_key(state, w):

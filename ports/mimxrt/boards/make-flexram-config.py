@@ -53,6 +53,7 @@ According to AN12077:
 """
 ocram_min_size = 0x00010000  # 64 KB
 
+
 # Value parser
 def mimxrt_default_parser(defines_file, features_file, ld_script):
     with open(ld_script, "r") as input_file:

@@ -20,6 +20,7 @@ if hasattr(machine, "Timer"):
 else:
     _timer = None
 
+
 # Batch writes into 50ms intervals.
 def schedule_in(handler, delay_ms):
     def _wrap(_arg):
