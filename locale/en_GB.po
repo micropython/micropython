@@ -2513,6 +2513,10 @@ msgstr "array and index length must be equal"
 msgid "array has too many dimensions"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "array is too big"
+msgstr ""
+
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -2943,6 +2947,10 @@ msgstr "dimensions do not match"
 #: py/emitnative.c
 msgid "div/mod not implemented for uint"
 msgstr "div/mod not implemented for uint"
+
+#: extmod/ulab/code/numpy/create.c
+msgid "divide by zero"
+msgstr "divide by zero"
 
 #: py/runtime.c
 msgid "division by zero"
@@ -3757,6 +3765,10 @@ msgstr "only bit_depth=16 is supported"
 msgid "only mono is supported"
 msgstr ""
 
+#: extmod/ulab/code/numpy/create.c
+msgid "only ndarrays can be concatenated"
+msgstr ""
+
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only oversample=64 is supported"
 msgstr ""
@@ -4407,9 +4419,6 @@ msgstr "zi must be of shape (n_section, 2)"
 
 #~ msgid "complex division by zero"
 #~ msgstr "complex division by zero"
-
-#~ msgid "divide by zero"
-#~ msgstr "divide by zero"
 
 #~ msgid "int() arg 2 must be >= 2 and <= 36"
 #~ msgstr "int() arg 2 must be >= 2 and <= 36"
