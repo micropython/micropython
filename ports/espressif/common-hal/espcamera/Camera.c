@@ -27,9 +27,9 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "bindings/esp32_camera/Camera.h"
+#include "bindings/espcamera/Camera.h"
 #include "bindings/espidf/__init__.h"
-#include "common-hal/esp32_camera/Camera.h"
+#include "common-hal/espcamera/Camera.h"
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
@@ -38,10 +38,10 @@
 #include "esp32-camera/driver/private_include/cam_hal.h"
 
 #if !CONFIG_SPIRAM
-#error esp32_camera only works on boards configured with spiram, disable it in mpconfigboard.mk
+#error espcamera only works on boards configured with spiram, disable it in mpconfigboard.mk
 #endif
 
-static void i2c_lock(esp32_camera_camera_obj_t *self) {
+static void i2c_lock(espcamera_camera_obj_t *self) {
     if (common_hal_busio_i2c_deinited(self->i2c)) {
         raise_deinited_error();
     }
@@ -50,7 +50,7 @@ static void i2c_lock(esp32_camera_camera_obj_t *self) {
     }
 }
 
-static void i2c_unlock(esp32_camera_camera_obj_t *self) {
+static void i2c_unlock(espcamera_camera_obj_t *self) {
     common_hal_busio_i2c_unlock(self->i2c);
 }
 
@@ -60,8 +60,8 @@ static void maybe_claim_pin(const mcu_pin_obj_t *pin) {
     }
 }
 
-void common_hal_esp32_camera_camera_construct(
-    esp32_camera_camera_obj_t *self,
+void common_hal_espcamera_camera_construct(
+    espcamera_camera_obj_t *self,
     uint8_t data_pins[8],
     const mcu_pin_obj_t *external_clock_pin,
     const mcu_pin_obj_t *pixel_clock_pin,
@@ -79,7 +79,7 @@ void common_hal_esp32_camera_camera_construct(
 
     if (common_hal_espidf_get_reserved_psram() == 0) {
         mp_raise_msg(&mp_type_MemoryError, translate(
-            "esp32_camera.Camera requires reserved PSRAM to be configured. "
+            "espcamera.Camera requires reserved PSRAM to be configured. "
             "See the documentation for instructions."));
     }
     for (int i = 0; i < 8; i++) {
@@ -140,8 +140,8 @@ void common_hal_esp32_camera_camera_construct(
     CHECK_ESP_RESULT(result);
 }
 
-extern void common_hal_esp32_camera_camera_deinit(esp32_camera_camera_obj_t *self) {
-    if (common_hal_esp32_camera_camera_deinited(self)) {
+extern void common_hal_espcamera_camera_deinit(espcamera_camera_obj_t *self) {
+    if (common_hal_espcamera_camera_deinited(self)) {
         return;
     }
 
@@ -165,15 +165,15 @@ extern void common_hal_esp32_camera_camera_deinit(esp32_camera_camera_obj_t *sel
     self->camera_config.xclk_freq_hz = 0;
 }
 
-bool common_hal_esp32_camera_camera_deinited(esp32_camera_camera_obj_t *self) {
+bool common_hal_espcamera_camera_deinited(espcamera_camera_obj_t *self) {
     return !self->camera_config.xclk_freq_hz;
 }
 
-bool common_hal_esp32_camera_camera_available(esp32_camera_camera_obj_t *self) {
+bool common_hal_espcamera_camera_available(espcamera_camera_obj_t *self) {
     return esp_camera_fb_available();
 }
 
-camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self, int timeout_ms) {
+camera_fb_t *common_hal_espcamera_camera_take(espcamera_camera_obj_t *self, int timeout_ms) {
     if (self->buffer_to_return) {
         esp_camera_fb_return(self->buffer_to_return);
         self->buffer_to_return = NULL;
@@ -189,7 +189,7 @@ camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self
     SENSOR_GETSET(type, name, status.status_field_name, setter_function_name)
 
 #define SENSOR_GET(type, name, status_field_name, setter_function_name) \
-    type common_hal_esp32_camera_camera_get_##name(esp32_camera_camera_obj_t * self) { \
+    type common_hal_espcamera_camera_get_##name(espcamera_camera_obj_t * self) { \
         i2c_lock(self); \
         sensor_t *sensor = esp_camera_sensor_get(); \
         i2c_unlock(self); \
@@ -200,7 +200,7 @@ camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self
     }
 
 #define SENSOR_SET(type, name, setter_function_name) \
-    void common_hal_esp32_camera_camera_set_##name(esp32_camera_camera_obj_t * self, type value) { \
+    void common_hal_espcamera_camera_set_##name(espcamera_camera_obj_t * self, type value) { \
         i2c_lock(self); \
         sensor_t *sensor = esp_camera_sensor_get(); \
         i2c_unlock(self); \
@@ -212,15 +212,15 @@ camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self
         } \
     }
 
-pixformat_t common_hal_esp32_camera_camera_get_pixel_format(esp32_camera_camera_obj_t *self) {
+pixformat_t common_hal_espcamera_camera_get_pixel_format(espcamera_camera_obj_t *self) {
     return self->camera_config.pixel_format;
 }
 
-framesize_t common_hal_esp32_camera_camera_get_frame_size(esp32_camera_camera_obj_t *self) {
+framesize_t common_hal_espcamera_camera_get_frame_size(espcamera_camera_obj_t *self) {
     return self->camera_config.frame_size;
 }
 
-void common_hal_esp32_camera_camera_reconfigure(esp32_camera_camera_obj_t *self, framesize_t frame_size, pixformat_t pixel_format, camera_grab_mode_t grab_mode, mp_int_t framebuffer_count) {
+void common_hal_espcamera_camera_reconfigure(espcamera_camera_obj_t *self, framesize_t frame_size, pixformat_t pixel_format, camera_grab_mode_t grab_mode, mp_int_t framebuffer_count) {
     sensor_t *sensor = esp_camera_sensor_get();
     camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);
 
@@ -272,46 +272,46 @@ SENSOR_STATUS_GETSET(bool, wpc, wpc, set_wpc);
 SENSOR_STATUS_GETSET(bool, raw_gma, raw_gma, set_raw_gma);
 SENSOR_STATUS_GETSET(bool, lenc, lenc, set_lenc);
 
-const char *common_hal_esp32_camera_camera_get_sensor_name(esp32_camera_camera_obj_t *self) {
+const char *common_hal_espcamera_camera_get_sensor_name(espcamera_camera_obj_t *self) {
     sensor_t *sensor = esp_camera_sensor_get();
     camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);
     return sensor_info->name;
 }
 
-const bool common_hal_esp32_camera_camera_get_supports_jpeg(esp32_camera_camera_obj_t *self) {
+const bool common_hal_espcamera_camera_get_supports_jpeg(espcamera_camera_obj_t *self) {
     sensor_t *sensor = esp_camera_sensor_get();
     camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);
     return sensor_info->support_jpeg;
 }
 
-const framesize_t common_hal_esp32_camera_camera_get_max_frame_size(esp32_camera_camera_obj_t *self) {
+const framesize_t common_hal_espcamera_camera_get_max_frame_size(espcamera_camera_obj_t *self) {
     sensor_t *sensor = esp_camera_sensor_get();
     camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);
     return sensor_info->max_size;
 }
 
-const int common_hal_esp32_camera_camera_get_address(esp32_camera_camera_obj_t *self) {
+const int common_hal_espcamera_camera_get_address(espcamera_camera_obj_t *self) {
     sensor_t *sensor = esp_camera_sensor_get();
     camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);
     return sensor_info->sccb_addr;
 }
 
-const int common_hal_esp32_camera_camera_get_width(esp32_camera_camera_obj_t *self) {
+const int common_hal_espcamera_camera_get_width(espcamera_camera_obj_t *self) {
     sensor_t *sensor = esp_camera_sensor_get();
     framesize_t framesize = sensor->status.framesize;
     return resolution[framesize].width;
 }
 
-const int common_hal_esp32_camera_camera_get_height(esp32_camera_camera_obj_t *self) {
+const int common_hal_espcamera_camera_get_height(espcamera_camera_obj_t *self) {
     sensor_t *sensor = esp_camera_sensor_get();
     framesize_t framesize = sensor->status.framesize;
     return resolution[framesize].height;
 }
 
-const camera_grab_mode_t common_hal_esp32_camera_camera_get_grab_mode(esp32_camera_camera_obj_t *self) {
+const camera_grab_mode_t common_hal_espcamera_camera_get_grab_mode(espcamera_camera_obj_t *self) {
     return self->camera_config.grab_mode;
 }
 
-const int common_hal_esp32_camera_camera_get_framebuffer_count(esp32_camera_camera_obj_t *self) {
+const int common_hal_espcamera_camera_get_framebuffer_count(espcamera_camera_obj_t *self) {
     return self->camera_config.fb_count;
 }

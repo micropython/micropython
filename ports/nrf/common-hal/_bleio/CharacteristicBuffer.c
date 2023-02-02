@@ -45,7 +45,17 @@
 STATIC void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *data, uint16_t len) {
     uint8_t is_nested_critical_region;
     sd_nvic_critical_region_enter(&is_nested_critical_region);
-    ringbuf_put_n(&self->ringbuf, data, len);
+    if (self->watch_for_interrupt_char) {
+        for (uint16_t i = 0; i < len; i++) {
+            if (data[i] == mp_interrupt_char) {
+                mp_sched_keyboard_interrupt();
+            } else {
+                ringbuf_put(&self->ringbuf, data[i]);
+            }
+        }
+    } else {
+        ringbuf_put_n(&self->ringbuf, data, len);
+    }
     sd_nvic_critical_region_exit(is_nested_critical_region);
 }
 
@@ -85,10 +95,12 @@ void _common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buff
     bleio_characteristic_obj_t *characteristic,
     mp_float_t timeout,
     uint8_t *buffer, size_t buffer_size,
-    void *static_handler_entry) {
+    void *static_handler_entry,
+    bool watch_for_interrupt_char) {
 
     self->characteristic = characteristic;
     self->timeout_ms = timeout * 1000;
+    self->watch_for_interrupt_char = watch_for_interrupt_char;
 
     ringbuf_init(&self->ringbuf, buffer, buffer_size);
 
@@ -105,7 +117,7 @@ void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffe
     mp_float_t timeout,
     size_t buffer_size) {
     uint8_t *buffer = m_malloc(buffer_size, true);
-    _common_hal_bleio_characteristic_buffer_construct(self, characteristic, timeout, buffer, buffer_size, NULL);
+    _common_hal_bleio_characteristic_buffer_construct(self, characteristic, timeout, buffer, buffer_size, NULL, false);
 }
 
 uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_t *self, uint8_t *data, size_t len, int *errcode) {

@@ -146,7 +146,8 @@ void supervisor_start_bluetooth_serial(void) {
         &supervisor_ble_circuitpython_rx_characteristic,
         0.1f,
         (uint8_t *)_incoming, sizeof(_incoming) * sizeof(uint32_t),
-        &rx_static_handler_entry);
+        &rx_static_handler_entry,
+        true /* watch for interrupt character */);
 
     _enabled = true;
 }

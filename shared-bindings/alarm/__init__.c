@@ -73,6 +73,7 @@
 //| """The most recently triggered alarm. If CircuitPython was sleeping, the alarm that woke it from sleep.
 //| If no alarm occured since the last hard reset or soft restart, value is ``None``.
 //| """
+//|
 
 // wake_alarm is implemented as a dictionary entry, so there's no code here.
 

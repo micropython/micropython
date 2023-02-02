@@ -41,6 +41,7 @@
 
 //| _DisplayBus = Union["FourWire", "paralleldisplay.ParallelBus", "I2CDisplay"]
 //| """:py:class:`FourWire`, :py:class:`paralleldisplay.ParallelBus` or :py:class:`I2CDisplay`"""
+//|
 
 //| class Display:
 //|     """Manage updating a display over a display bus
@@ -282,7 +283,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show
 //|
 //|         :param Optional[int] target_frames_per_second: The target frame rate that :py:func:`refresh` should try to
 //|             achieve. Set to `None` for immediate refresh.
-//|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second."""
+//|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second.
+//|         """
 //|         ...
 STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_target_frames_per_second, ARG_minimum_frames_per_second };
@@ -445,7 +447,8 @@ MP_PROPERTY_GETSET(displayio_display_root_group_obj,
 //|         """Extract the pixels from a single row
 //|
 //|         :param int y: The top edge of the area
-//|         :param ~circuitpython_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: The buffer in which to place the pixel data
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

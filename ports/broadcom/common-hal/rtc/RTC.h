@@ -1,9 +1,10 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2018 Noralf Trønnes
+ * Copyright (c) 2019 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +25,9 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#ifndef MICROPY_INCLUDED_BROADCOM_COMMON_HAL_RTC_RTC_H
+#define MICROPY_INCLUDED_BROADCOM_COMMON_HAL_RTC_RTC_H
 
-#include "py/enum.h"
-#include "py/obj.h"
+extern void rtc_reset(void);
 
-#include "esp_camera.h"
-
-extern const mp_obj_type_t esp32_camera_grab_mode_type;
-extern const cp_enum_obj_t grab_mode_WHEN_EMPTY_obj;
-extern const mp_obj_type_t esp32_camera_pixel_format_type;
-extern const cp_enum_obj_t pixel_format_RGB565_obj;
-extern const mp_obj_type_t esp32_camera_frame_size_type;
-extern const cp_enum_obj_t frame_size_QQVGA_obj;
-extern const mp_obj_type_t esp32_camera_gain_ceiling_type;
-
-extern camera_grab_mode_t validate_grab_mode(mp_obj_t obj, qstr arg_name);
-extern pixformat_t validate_pixel_format(mp_obj_t obj, qstr arg_name);
-extern framesize_t validate_frame_size(mp_obj_t obj, qstr arg_name);
-extern gainceiling_t validate_gain_ceiling(mp_obj_t obj, qstr arg_name);
+#endif  // MICROPY_INCLUDED_BROADCOM_COMMON_HAL_RTC_RTC_H

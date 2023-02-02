@@ -66,7 +66,7 @@ safe_mode_t wait_for_safe_mode_reset(void) {
         reset_reason != RESET_REASON_SOFTWARE) {
         return NO_SAFE_MODE;
     }
-    #ifdef CIRCUITPY_SKIP_SAFE_MODE_WAIT
+    #if CIRCUITPY_SKIP_SAFE_MODE_WAIT
     return NO_SAFE_MODE;
     #endif
     port_set_saved_word(SAFE_MODE_DATA_GUARD | (MANUAL_SAFE_MODE << 8));

@@ -131,6 +131,11 @@ void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y
     // Writes the color index value into a pixel position
     // Must update the dirty area separately
 
+    // Don't write if out of area
+    if (0 > x || x >= self->width || 0 > y || y >= self->height) {
+        return;
+    }
+
     // Update one pixel of data
     int32_t row_start = y * self->stride;
     uint32_t bytes_per_value = self->bits_per_value / 8;

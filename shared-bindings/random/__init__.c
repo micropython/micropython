@@ -47,6 +47,7 @@
 //| from typing import TypeVar
 //|
 //| _T = TypeVar("_T")
+//|
 
 //| def seed(seed: int) -> None:
 //|     """Sets the starting seed of the random  number generation. Further calls to

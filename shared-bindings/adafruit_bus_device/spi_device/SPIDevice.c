@@ -51,7 +51,6 @@
 //|         phase: int = 0,
 //|         extra_clocks: int = 0
 //|     ) -> None:
-//|
 //|         """
 //|         Represents a single SPI device and manages locking the bus and the device address.
 //|

@@ -30,6 +30,7 @@
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
 // #define MICROPY_HW_NEOPIXEL  (&pin_GPIO18)
+#define MICROPY_HW_LED_STATUS (&pin_GPIO0)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO16)
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO15)

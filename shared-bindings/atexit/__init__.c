@@ -37,11 +37,11 @@
 //| |see_cpython_module| :mod:`cpython:atexit`.
 //| """
 //| ...
+//|
 
 //| def register(
 //|     func: Callable[..., Any], *args: Optional[Any], **kwargs: Optional[Any]
 //| ) -> Callable[..., Any]:
-//|
 //|     """Register func as a function to be executed at termination.
 //|
 //|     Any optional arguments that are to be passed to func must be passed as arguments to `register()`.
@@ -65,7 +65,6 @@ STATIC mp_obj_t atexit_register(size_t n_args, const mp_obj_t *pos_args, mp_map_
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(atexit_register_obj, 1, atexit_register);
 
 //| def unregister(func: Callable[..., Any]) -> None:
-//|
 //|     """Remove func from the list of functions to be run at termination.
 //|
 //|     `unregister()` silently does nothing if func was not previously registered. If func has been registered more than once,

@@ -675,6 +675,7 @@ msgstr "Bus-Pin %d wird schon benutzt"
 
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+#: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
 msgid "Button A was pressed at start up.\n"
 msgstr "Beim Starten wurde Taste A gedrückt.\n"
 
@@ -2554,6 +2555,10 @@ msgstr "Array- und Indexlänge müssen gleich sein"
 msgid "array has too many dimensions"
 msgstr "Das Array hat zu viele Dimensionen"
 
+#: extmod/ulab/code/ndarray.c
+msgid "array is too big"
+msgstr ""
+
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -2994,6 +2999,10 @@ msgstr "Abmessungen stimmen nicht überein"
 msgid "div/mod not implemented for uint"
 msgstr "div/mod für uint nicht implementiert"
 
+#: extmod/ulab/code/numpy/create.c
+msgid "divide by zero"
+msgstr "durch Null dividieren"
+
 #: py/runtime.c
 msgid "division by zero"
 msgstr "Division durch Null"
@@ -3035,13 +3044,11 @@ msgstr "epoch_time wird auf diesem Board nicht unterstützt"
 msgid "error = 0x%08lX"
 msgstr "Fehler = 0x%08lX"
 
-#: ports/espressif/common-hal/esp32_camera/Camera.c
+#: ports/espressif/common-hal/espcamera/Camera.c
 msgid ""
-"esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+"espcamera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
 msgstr ""
-"esp32_camera.Camera benötigt reservierten PSRAM um konfiguriert werden zu "
-"können. Sieh in der Dokumentation für eine Anleitung nach."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -3418,7 +3425,7 @@ msgstr "ungültiger Schlüssel"
 msgid "invalid micropython decorator"
 msgstr "ungültiger micropython decorator"
 
-#: ports/espressif/common-hal/esp32_camera/Camera.c
+#: ports/espressif/common-hal/espcamera/Camera.c
 msgid "invalid setting"
 msgstr "Invalide Einstellung"
 
@@ -3681,7 +3688,7 @@ msgstr "kein Reset Pin verfügbar"
 msgid "no response from SD card"
 msgstr "keine Antwort von der SD-Karte"
 
-#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/espcamera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "kein solches Attribut"
 
@@ -3818,6 +3825,10 @@ msgstr "nur eine bit_depth=16 wird unterstützt"
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only mono is supported"
 msgstr "nur Mono wird unterstützt"
+
+#: extmod/ulab/code/numpy/create.c
+msgid "only ndarrays can be concatenated"
+msgstr ""
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only oversample=64 is supported"
@@ -4431,6 +4442,13 @@ msgstr "zi muss eine Gleitkommazahl sein"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
 
+#~ msgid ""
+#~ "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "esp32_camera.Camera benötigt reservierten PSRAM um konfiguriert werden zu "
+#~ "können. Sieh in der Dokumentation für eine Anleitung nach."
+
 #~ msgid "%q must be of type %q"
 #~ msgstr "%q muss vom Type %q sein"
 
@@ -4498,9 +4516,6 @@ msgstr "zi muss die Form (n_section, 2) haben"
 
 #~ msgid "complex division by zero"
 #~ msgstr "Komplexe Division durch null"
-
-#~ msgid "divide by zero"
-#~ msgstr "durch Null dividieren"
 
 #~ msgid "int() arg 2 must be >= 2 and <= 36"
 #~ msgstr "int() arg 2 muss >= 2 und <= 36 sein"

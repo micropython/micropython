@@ -40,7 +40,7 @@
 #include "shared-module/adafruit_pixelbuf/PixelBuf.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
-#ifdef CIRCUITPY_ULAB
+#if CIRCUITPY_ULAB
 #include "extmod/ulab/code/ndarray.h"
 #endif
 
@@ -78,7 +78,8 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|         :param float brightness: Brightness (0 to 1.0, default 1.0)
 //|         :param bool auto_write: Whether to automatically write pixels (Default False)
 //|         :param ~circuitpython_typing.ReadableBuffer header: Sequence of bytes to always send before pixel values.
-//|         :param ~circuitpython_typing.ReadableBuffer trailer: Sequence of bytes to always send after pixel values."""
+//|         :param ~circuitpython_typing.ReadableBuffer trailer: Sequence of bytes to always send after pixel values.
+//|         """
 //|         ...
 STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_size, ARG_byteorder, ARG_brightness, ARG_auto_write, ARG_header, ARG_trailer };

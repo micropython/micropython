@@ -82,10 +82,10 @@ void common_hal_mcu_enable_interrupts() {
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
     enum { DFU_MAGIC_UF2_RESET = 0x57 };
-    if (runmode == RUNMODE_BOOTLOADER) {
-        NRF_POWER->GPREGRET = DFU_MAGIC_UF2_RESET;
+    if (runmode == RUNMODE_BOOTLOADER || runmode == RUNMODE_UF2) {
+        sd_power_gpregret_set(0,DFU_MAGIC_UF2_RESET);
     } else {
-        NRF_POWER->GPREGRET = 0;
+        sd_power_gpregret_set(0,0);
     }
     if (runmode == RUNMODE_SAFE_MODE) {
         safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);

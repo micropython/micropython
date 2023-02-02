@@ -160,7 +160,6 @@ STATIC mp_obj_t sdioio_sdcard_count(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_count_obj, sdioio_sdcard_count);
 
 //|     def readblocks(self, start_block: int, buf: WriteableBuffer) -> None:
-//|
 //|         """Read one or more blocks from the card
 //|
 //|         :param int start_block: The block to start reading from
@@ -182,7 +181,6 @@ STATIC mp_obj_t sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_
 MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, sdioio_sdcard_readblocks);
 
 //|     def writeblocks(self, start_block: int, buf: ReadableBuffer) -> None:
-//|
 //|         """Write one or more blocks to the card
 //|
 //|         :param int start_block: The block to start writing from

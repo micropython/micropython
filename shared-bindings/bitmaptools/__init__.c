@@ -50,6 +50,7 @@
 //|     <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_
 //|     for information about using the :py:mod:`displayio` module.
 //| """
+//|
 
 STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
     // Checks if point is None and returns default_value, otherwise decodes integer value
@@ -513,13 +514,6 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
     int16_t y1 = args[ARG_y1].u_int;
     int16_t x2 = args[ARG_x2].u_int;
     int16_t y2 = args[ARG_y2].u_int;
-
-    // verify points are within the bitmap boundary (inclusive)
-    if ((x1 < 0) || (x2 < 0) || (y1 < 0) || (y2 < 0) ||
-        (x1 >= destination->width) || (x2 >= destination->width) ||
-        (y1 >= destination->height) || (y2 >= destination->height)) {
-        mp_raise_ValueError(translate("out of range of target"));
-    }
 
     common_hal_bitmaptools_draw_line(destination, x1, y1, x2, y2, value);
 

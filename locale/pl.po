@@ -670,6 +670,7 @@ msgstr "Nóżka magistrali %d jest w użyciu"
 
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+#: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
 msgid "Button A was pressed at start up.\n"
 msgstr ""
 
@@ -2489,6 +2490,10 @@ msgstr ""
 msgid "array has too many dimensions"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "array is too big"
+msgstr ""
+
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -2918,6 +2923,10 @@ msgstr ""
 msgid "div/mod not implemented for uint"
 msgstr ""
 
+#: extmod/ulab/code/numpy/create.c
+msgid "divide by zero"
+msgstr ""
+
 #: py/runtime.c
 msgid "division by zero"
 msgstr "dzielenie przez zero"
@@ -2959,9 +2968,9 @@ msgstr ""
 msgid "error = 0x%08lX"
 msgstr "błąd = 0x%08lX"
 
-#: ports/espressif/common-hal/esp32_camera/Camera.c
+#: ports/espressif/common-hal/espcamera/Camera.c
 msgid ""
-"esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+"espcamera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
 msgstr ""
 
@@ -3338,7 +3347,7 @@ msgstr "zły klucz"
 msgid "invalid micropython decorator"
 msgstr "zły dekorator micropythona"
 
-#: ports/espressif/common-hal/esp32_camera/Camera.c
+#: ports/espressif/common-hal/espcamera/Camera.c
 msgid "invalid setting"
 msgstr ""
 
@@ -3595,7 +3604,7 @@ msgstr ""
 msgid "no response from SD card"
 msgstr ""
 
-#: ports/espressif/common-hal/esp32_camera/Camera.c py/objobject.c py/runtime.c
+#: ports/espressif/common-hal/espcamera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "nie ma takiego atrybutu"
 
@@ -3729,6 +3738,10 @@ msgstr "obsługiwane jest tylko bit_depth=16"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only mono is supported"
+msgstr ""
+
+#: extmod/ulab/code/numpy/create.c
+msgid "only ndarrays can be concatenated"
 msgstr ""
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c

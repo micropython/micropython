@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
     paths:
-      - '.github/workflows/*.yml'
+      - '.github/workflows/ports_windows.yml'
       - 'extmod/**'
       - 'lib/**'
       - 'mpy-cross/**'
@@ -19,8 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: windows-2019
+  windows:
+    runs-on: windows-2022
     defaults:
       run:
         # We define a custom shell script here, although `msys2.cmd` does neither exist nor is it available in the PATH yet
@@ -32,8 +32,7 @@ jobs:
       shell: bash
 
     - name: Check python coding (cmd)
-      run: |
-        python -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
+      run: python -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
       shell: cmd
 
     # We use a JS Action, which calls the system terminal or other custom terminals directly, if required
@@ -71,16 +70,16 @@ jobs:
         which python; python --version; python -c "import cascadetoml"
         which python3; python3 --version; python3 -c "import cascadetoml"
 
-    - uses: actions/checkout@v3
+    - name: Set up repository
+      uses: actions/checkout@v3
       with:
         submodules: false
         fetch-depth: 1
-    - name: Get CP deps
-      run: python tools/ci_fetch_deps.py windows ${{ github.sha }}
-    - name: CircuitPython version
-      run: |
-        tools/describe || git log --parents HEAD~4..
-        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
+
+    - name: Set up submodules
+      uses: ./.github/actions/fetch_submodules
+      with:
+        version: true
 
     - name: build mpy-cross
       run: make -j2 -C mpy-cross

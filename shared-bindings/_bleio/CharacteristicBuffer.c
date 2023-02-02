@@ -47,7 +47,6 @@ STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self
 //|     def __init__(
 //|         self, characteristic: Characteristic, *, timeout: int = 1, buffer_size: int = 64
 //|     ) -> None:
-//|
 //|         """Monitor the given Characteristic. Each time a new value is written to the Characteristic
 //|         add the newly-written bytes to a FIFO buffer.
 //|

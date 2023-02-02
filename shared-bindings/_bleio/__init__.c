@@ -58,6 +58,7 @@
 //| adapter: Adapter
 //| """BLE Adapter used to manage device discovery and connections.
 //| This object is the sole instance of `_bleio.Adapter`."""
+//|
 
 //| class BluetoothError(Exception):
 //|     """Catchall exception for Bluetooth related errors."""

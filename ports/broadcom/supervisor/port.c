@@ -32,7 +32,7 @@
 
 #include "genhdr/mpversion.h"
 
-// #include "common-hal/rtc/RTC.h"
+#include "common-hal/rtc/RTC.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
