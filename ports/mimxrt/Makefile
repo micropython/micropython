@@ -10,7 +10,6 @@ CROSS_COMPILE ?= arm-none-eabi-
 GIT_SUBMODULES += lib/tinyusb lib/nxp_driver
 
 # MicroPython feature configurations
-FROZEN_MANIFEST ?= boards/manifest.py
 MICROPY_VFS_LFS2 ?= 1
 MICROPY_VFS_FAT ?= 1
 
@@ -30,6 +29,9 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
     $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 include $(BOARD_DIR)/mpconfigboard.mk
+
+# File containing description of content to be frozen into firmware.
+FROZEN_MANIFEST ?= boards/manifest.py
 
 # Include py core make definitions
 include $(TOP)/py/py.mk
