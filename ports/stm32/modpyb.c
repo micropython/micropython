@@ -116,6 +116,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_repl_uart_obj, 0, 1, pyb_repl_uar
 
 #if MICROPY_PY_NETWORK
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_country_obj);
+#else
+// Provide a no-op version of pyb.country for backwards compatibility on
+// boards that don't support networking.
+STATIC mp_obj_t pyb_country(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    (void)args;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_country_obj, 0, 1, pyb_country);
 #endif
 
 STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
@@ -148,10 +157,8 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_main), MP_ROM_PTR(&pyb_main_obj) },
     { MP_ROM_QSTR(MP_QSTR_repl_uart), MP_ROM_PTR(&pyb_repl_uart_obj) },
 
-    #if MICROPY_PY_NETWORK
     // Deprecated (use network.country instead).
     { MP_ROM_QSTR(MP_QSTR_country), MP_ROM_PTR(&mod_network_country_obj) },
-    #endif
 
     #if MICROPY_HW_ENABLE_USB
     { MP_ROM_QSTR(MP_QSTR_usb_mode), MP_ROM_PTR(&pyb_usb_mode_obj) },
