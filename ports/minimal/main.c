@@ -29,7 +29,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 
 static char *stack_top;
 #if MICROPY_ENABLE_GC
-static char heap[2048];
+static char heap[MICROPY_HEAP_SIZE];
 #endif
 
 int main(int argc, char **argv) {
