@@ -1406,7 +1406,7 @@ def freeze_mpy(base_qstrs, compiled_modules):
         if q is None or q.qstr_esc in base_qstrs or q.qstr_esc in new:
             continue
         new[q.qstr_esc] = (len(new), q.qstr_esc, q.str, bytes_cons(q.str, "utf8"))
-    new = sorted(new.values(), key=lambda x: x[0])
+    new = sorted(new.values(), key=lambda x: x[2])
 
     print('#include "py/mpconfig.h"')
     print('#include "py/objint.h"')
@@ -1489,6 +1489,7 @@ def freeze_mpy(base_qstrs, compiled_modules):
     print("    MP_QSTRnumber_of, // previous pool size")
     print("    %u, // allocated entries" % qstr_pool_alloc)
     print("    %u, // used entries" % len(new))
+    print("    true, // sorted")
     if config.MICROPY_QSTR_BYTES_IN_HASH:
         print("    (qstr_hash_t *)mp_qstr_frozen_const_hashes,")
     print("    (qstr_len_t *)mp_qstr_frozen_const_lengths,")
@@ -1781,7 +1782,9 @@ def main():
 
     # set config values for qstrs, and get the existing base set of qstrs
     if args.qstr_header:
-        qcfgs, base_qstrs = qstrutil.parse_input_headers([args.qstr_header])
+        special_qstrs = qstrutil.static_qstr_list_ident
+        qcfgs, extra_qstrs = qstrutil.parse_input_headers([args.qstr_header])
+        base_qstrs = set(special_qstrs) | set(extra_qstrs.keys())
         config.MICROPY_QSTR_BYTES_IN_LEN = int(qcfgs["BYTES_IN_LEN"])
         config.MICROPY_QSTR_BYTES_IN_HASH = int(qcfgs["BYTES_IN_HASH"])
     else:
