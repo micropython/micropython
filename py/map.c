@@ -32,7 +32,6 @@
 #include "py/mpconfig.h"
 #include "py/misc.h"
 #include "py/runtime.h"
-#include "py/objstr.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -242,17 +241,46 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
         }
     }
 
+    // When MICROPY_QSTR_BYTES_IN_HASH is zero, for qstr keys we use the qstr
+    // value (i.e. the index in the qstr pool) as the hash value as it is
+    // free to compute and also a very effective hash as it is unique across
+    // all qstrs.
+    //
+    // However, non-qstr strings (i.e. str) still use their "true" hash
+    // (i.e. computed using qstr_hash) which will be different. So this means
+    // that identical strings will hash differently depending on whether they
+    // are qstr or str. It should be rare for a program to be working with
+    // both but it is possible.
+    //
+    // So this means that in certain situations (see below), we cannot rely on
+    // the linear probing finding an unused slot as the signal that the key
+    // does not exist, as it's possible the key was inserted using
+    // its "other" hash, and must fall back to searching the entire table. We
+    // can still use the hash as a good hint for the starting location
+    // though. This flag must be set to false in these situations.
+    bool stop_at_empty = true;
+
     // get hash of index, with fast path for common case of qstr
     mp_uint_t hash;
     if (mp_obj_is_qstr(index)) {
         #if MICROPY_QSTR_BYTES_IN_HASH
         hash = qstr_hash(MP_OBJ_QSTR_VALUE(index));
         #else
-        GET_STR_DATA_LEN(index, data, len);
-        hash = qstr_compute_hash(data, len);
+        // Optimisation -- use the qstr index directly as the hash.
+        hash = MP_OBJ_QSTR_VALUE(index);
+        // If there are non-qstr keys in this map, we must assume that there
+        // may possibly be str keys.
+        stop_at_empty = map->all_keys_are_qstrs;
         #endif
     } else {
         hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
+
+        #if MICROPY_QSTR_BYTES_IN_HASH == 0
+        if (mp_obj_is_exact_type(index, &mp_type_str)) {
+            // We must assume there might be qstr keys.
+            stop_at_empty = false;
+        }
+        #endif
     }
 
     size_t pos = hash % map->alloc;
@@ -261,20 +289,14 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
     for (;;) {
         mp_map_elem_t *slot = &map->table[pos];
         if (slot->key == MP_OBJ_NULL) {
-            // found NULL slot, so index is not in table
-            if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
-                map->used += 1;
-                if (avail_slot == NULL) {
-                    avail_slot = slot;
-                }
-                avail_slot->key = index;
-                avail_slot->value = MP_OBJ_NULL;
-                if (!mp_obj_is_qstr(index)) {
-                    map->all_keys_are_qstrs = 0;
-                }
-                return avail_slot;
-            } else {
-                return NULL;
+            // found an empty slot, remember for later
+            if (avail_slot == NULL) {
+                avail_slot = slot;
+            }
+            if (stop_at_empty) {
+                // safe to assume that the key doesn't exist, so pretend like
+                // we searched the entire table
+                goto search_over;
             }
         } else if (slot->key == MP_OBJ_SENTINEL) {
             // found deleted slot, remember for later
@@ -303,7 +325,8 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
         pos = (pos + 1) % map->alloc;
 
         if (pos == start_pos) {
-            // search got back to starting position, so index is not in table
+        search_over:
+            // search got back to starting position (or found empty slot), so index is not in table
             if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
                 if (avail_slot != NULL) {
                     // there was an available slot, so use that
