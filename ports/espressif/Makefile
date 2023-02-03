@@ -218,7 +218,6 @@ endif
 SRC_C += \
 	background.c \
 	mphalport.c \
-	bindings/espidf/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	shared/netutils/netutils.c \
@@ -252,8 +251,6 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 SRC_C += common-hal/_bleio/ble_events.c
 endif
 
-SRC_C += $(wildcard common-hal/espidf/*.c)
-
 ifneq ($(CIRCUITPY_ESPCAMERA),0)
 SRC_CAMERA := \
 	$(wildcard common-hal/espcamera/*.c) \
@@ -261,6 +258,13 @@ SRC_CAMERA := \
 SRC_C += $(SRC_CAMERA)
 CFLAGS += -isystem esp32-camera/driver/include
 CFLAGS += -isystem esp32-camera/conversions/include
+endif
+
+ifneq ($(CIRCUITPY_ESPIDF),0)
+SRC_ESPIDF := \
+	$(wildcard common-hal/espidf/*.c) \
+	$(wildcard bindings/espidf/*.c)
+SRC_C += $(SRC_ESPIDF)
 endif
 
 ifneq ($(CIRCUITPY_ESPNOW),0)

@@ -28,16 +28,12 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 
+#include "bindings/espidf/__init__.h"
+
 #include "bindings/espnow/Peer.h"
 #include "bindings/espnow/Peers.h"
 
 #include "esp_now.h"
-
-static void check_esp_err(esp_err_t status) {
-    if (status != ESP_OK) {
-        mp_raise_RuntimeError(translate("an error occured"));
-    }
-}
 
 //| class Peers:
 //|     """A class that provides peer managment functions. Sequence[Peer]."""
@@ -51,7 +47,7 @@ static void check_esp_err(esp_err_t status) {
 //|         ...
 STATIC mp_obj_t espnow_peers_append(mp_obj_t self_in, mp_obj_t arg) {
     espnow_peer_obj_t *peer = MP_OBJ_TO_PTR(mp_arg_validate_type(arg, &espnow_peer_type, MP_QSTR_Peer));
-    check_esp_err(esp_now_add_peer(&peer->peer_info));
+    CHECK_ESP_RESULT(esp_now_add_peer(&peer->peer_info));
     espnow_peers_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_list_append(self->list, arg);
 }
@@ -66,7 +62,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(espnow_peers_append_obj, espnow_peers_append);
 //|
 STATIC mp_obj_t espnow_peers_remove(mp_obj_t self_in, mp_obj_t arg) {
     espnow_peer_obj_t *peer = MP_OBJ_TO_PTR(mp_arg_validate_type(arg, &espnow_peer_type, MP_QSTR_Peer));
-    check_esp_err(esp_now_del_peer(peer->peer_info.peer_addr));
+    CHECK_ESP_RESULT(esp_now_del_peer(peer->peer_info.peer_addr));
     espnow_peers_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_list_remove(self->list, arg);
 }

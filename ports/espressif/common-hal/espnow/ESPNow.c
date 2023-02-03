@@ -30,7 +30,9 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
+#include "bindings/espidf/__init__.h"
 #include "bindings/espnow/ESPNowPacket.h"
+
 #include "shared-bindings/wifi/__init__.h"
 
 #include "common-hal/espnow/ESPNow.h"
@@ -40,6 +42,8 @@
 #include "esp_now.h"
 
 #define ESPNOW_MAGIC 0x99
+
+// TODO: deinit wifi?
 
 // The maximum length of an espnow packet (bytes)
 #define MAX_PACKET_LEN (sizeof(espnow_packet_t) + ESP_NOW_MAX_DATA_LEN)
@@ -65,12 +69,6 @@ typedef struct {
     uint8_t peer[6];            // Peer address
     uint8_t msg[0];             // Message is up to 250 bytes
 } __attribute__((packed)) espnow_packet_t;
-
-static void check_esp_err(esp_err_t status) {
-    if (status != ESP_OK) {
-        mp_raise_RuntimeError(translate("an error occured"));
-    }
-}
 
 // Return a pointer to the ESPNow module singleton
 static espnow_obj_t *_get_singleton(void) {
@@ -152,12 +150,12 @@ void common_hal_espnow_init(espnow_obj_t *self) {
         common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, true);
     }
 
-    check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, self->phy_rate));
-    check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, self->phy_rate));
+    CHECK_ESP_RESULT(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, self->phy_rate));
+    CHECK_ESP_RESULT(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, self->phy_rate));
 
-    check_esp_err(esp_now_init());
-    check_esp_err(esp_now_register_send_cb(send_cb));
-    check_esp_err(esp_now_register_recv_cb(recv_cb));
+    CHECK_ESP_RESULT(esp_now_init());
+    CHECK_ESP_RESULT(esp_now_register_send_cb(send_cb));
+    CHECK_ESP_RESULT(esp_now_register_recv_cb(recv_cb));
 }
 
 // De-initialize the ESP-NOW software stack,
@@ -167,9 +165,9 @@ void common_hal_espnow_deinit(espnow_obj_t *self) {
         return;
     }
 
-    check_esp_err(esp_now_unregister_send_cb());
-    check_esp_err(esp_now_unregister_recv_cb());
-    check_esp_err(esp_now_deinit());
+    CHECK_ESP_RESULT(esp_now_unregister_send_cb());
+    CHECK_ESP_RESULT(esp_now_unregister_recv_cb());
+    CHECK_ESP_RESULT(esp_now_deinit());
 
     self->recv_buffer->buf = NULL;
     self->recv_buffer = NULL;
@@ -191,7 +189,7 @@ void common_hal_espnow_set_phy_rate(espnow_obj_t *self, mp_int_t value) {
 };
 
 void common_hal_espnow_set_pmk(espnow_obj_t *self, const uint8_t *key) {
-    check_esp_err(esp_now_set_pmk(key));
+    CHECK_ESP_RESULT(esp_now_set_pmk(key));
 }
 
 // --- Send and Receive ESP-NOW data ---
@@ -206,7 +204,7 @@ mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const uint8_t *mac, const mp
            (mp_hal_ticks_ms() - start) <= DEFAULT_SEND_TIMEOUT_MS) {
         RUN_BACKGROUND_TASKS;
     }
-    check_esp_err(err);
+    CHECK_ESP_RESULT(err);
 
     // Increment the sent packet count.
     // If mac == NULL msg will be sent to all peers EXCEPT any broadcast or multicast addresses.
