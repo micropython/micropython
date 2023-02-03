@@ -34,6 +34,10 @@
 #endif
 #endif
 
+#ifndef MICROPY_PY_MACHINE_PIN_BOARD_CPU
+#define MICROPY_PY_MACHINE_PIN_BOARD_CPU (1)
+#endif
+
 #define CPU_FREQ                        (48000000)
 #define DFLL48M_FREQ                    (48000000)
 #define MAX_CPU_FREQ                    (48000000)

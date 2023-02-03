@@ -34,6 +34,10 @@ unsigned long trng_random_u32(void);
 #endif
 #endif
 
+#ifndef MICROPY_PY_MACHINE_PIN_BOARD_CPU
+#define MICROPY_PY_MACHINE_PIN_BOARD_CPU (1)
+#endif
+
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN            (1)
 #define MICROPY_FATFS_RPATH                 (2)
