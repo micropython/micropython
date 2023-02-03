@@ -295,7 +295,8 @@ def compute_hash(qstr, bytes_hash):
     for b in qstr:
         hash = (hash * 33) ^ b
     # Make sure that valid hash is never zero, zero means "hash not computed"
-    return (hash & ((1 << (8 * bytes_hash)) - 1)) or 1
+    # if bytes_hash is zero, assume a 16-bit mask (to match qstr.c)
+    return (hash & ((1 << (8 * (bytes_hash or 2))) - 1)) or 1
 
 
 def qstr_escape(qst):
