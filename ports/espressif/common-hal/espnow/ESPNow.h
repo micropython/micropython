@@ -57,5 +57,5 @@ extern void common_hal_espnow_set_buffer_size(espnow_obj_t *self, mp_int_t value
 extern void common_hal_espnow_set_phy_rate(espnow_obj_t *self, mp_int_t value);
 extern void common_hal_espnow_set_pmk(espnow_obj_t *self, const uint8_t *key);
 
-extern mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const bool sync, const uint8_t *mac, const mp_buffer_info_t *message);
+extern mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const uint8_t *mac, const mp_buffer_info_t *message);
 extern mp_obj_t common_hal_espnow_recv(espnow_obj_t *self);

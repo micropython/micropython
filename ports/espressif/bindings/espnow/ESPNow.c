@@ -205,18 +205,11 @@ MP_PROPERTY_GETTER(espnow_stats_obj,
 //|         self,
 //|         message: ReadableBuffer,
 //|         mac: Optional[ReadableBuffer],
-//|         sync: bool = True,
 //|     ) -> bool:
-//|         """Send a message to the peer's mac address. Optionally wait for a response.
+//|         """Send a message to the peer's mac address.
 //|
 //|         :param ReadableBuffer message: The message to send (length <= 250 bytes).
 //|         :param ReadableBuffer mac: The peer's address (length = 6 bytes). If `None` or any non-true value, send to all registered peers.
-//|         :param bool sync: If `True`, wait for response from peer(s) after sending.
-//|
-//|         :returns:
-//|             `True` if sync == `False` and message sent successfully.
-//|             `True` if sync == `True` and message is received successfully by all recipients
-//|             `False` if sync == `True` and message is not received by at least one recipient
 //|
 //|         :raises EAGAIN: if the internal espnow buffers are full."""
 //|         ...
@@ -225,7 +218,6 @@ STATIC mp_obj_t espnow_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_message,  MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_mac,      MP_ARG_OBJ, { .u_obj = mp_const_none } },
-        { MP_QSTR_sync,     MP_ARG_BOOL, { .u_bool = mp_const_true } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -234,14 +226,13 @@ STATIC mp_obj_t espnow_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     espnow_obj_t *self = pos_args[0];
     check_for_deinit(self);
 
-    const bool sync = mp_obj_is_true(args[ARG_sync].u_obj);
     const uint8_t *peer_addr = _get_peer_addr(args[ARG_mac].u_obj);
 
     // Get a pointer to the data buffer of the message
     mp_buffer_info_t message;
     mp_get_buffer_raise(args[ARG_message].u_obj, &message, MP_BUFFER_READ);
 
-    return common_hal_espnow_send(self, sync, peer_addr, &message);
+    return common_hal_espnow_send(self, peer_addr, &message);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espnow_send_obj, 2, espnow_send);
 

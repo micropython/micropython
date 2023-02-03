@@ -49,12 +49,7 @@
 #define DEFAULT_RECV_BUFFER_SIZE (2 * MAX_PACKET_LEN)
 
 // Time to wait (millisec) for responses from sent packets: (2 seconds).
-#define DEFAULT_SEND_TIMEOUT_MS (2 * 1000)
-
-// Number of milliseconds to wait for pending responses to sent packets.
-// This is a fallback which should never be reached.
-#define PENDING_RESPONSES_TIMEOUT_MS    100
-#define PENDING_RESPONSES_BUSY_POLL_MS  10
+#define DEFAULT_SEND_TIMEOUT_MS (1000)
 
 // ESPNow packet format for the receive buffer.
 // Use this for peeking at the header of the next packet in the buffer.
@@ -201,34 +196,10 @@ void common_hal_espnow_set_pmk(espnow_obj_t *self, const uint8_t *key) {
 
 // --- Send and Receive ESP-NOW data ---
 
-// Used by espnow_send() for sends() with sync==True.
-// Wait till all pending sent packet responses have been received.
-// ie. self->tx_responses == self->tx_packets.
-static void _wait_for_pending_responses(espnow_obj_t *self) {
-    mp_uint_t t, start = mp_hal_ticks_ms();
-    while (self->tx_responses < self->tx_packets) {
-        if ((t = mp_hal_ticks_ms() - start) > PENDING_RESPONSES_TIMEOUT_MS) {
-            mp_raise_OSError(MP_ETIMEDOUT);
-        }
-        if (t > PENDING_RESPONSES_BUSY_POLL_MS) {
-            // After 10ms of busy waiting give other tasks a look in.
-            RUN_BACKGROUND_TASKS;
-        }
-    }
-}
 
-mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const bool sync, const uint8_t *mac, const mp_buffer_info_t *message) {
-    if (sync) {
-        // Flush out any pending responses.
-        // If the last call was sync == False there may be outstanding responses
-        // still to be received (possible many if we just had a burst of unsync send()s).
-        // We need to wait for all pending responses if this call has sync = True.
-        _wait_for_pending_responses(self);
-    }
-
-    // Send the packet - try, try again if internal esp-now buffers are full.
+mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const uint8_t *mac, const mp_buffer_info_t *message) {
+    // Send the packet - keep trying until timeout if the internal esp-now buffers are full.
     esp_err_t err;
-    size_t saved_failures = self->tx_failures;
     mp_uint_t start = mp_hal_ticks_ms();
 
     while ((ESP_ERR_ESPNOW_NO_MEM == (err = esp_now_send(mac, message->buf, message->len))) &&
@@ -241,13 +212,7 @@ mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const bool sync, const uint8
     // If mac == NULL msg will be sent to all peers EXCEPT any broadcast or multicast addresses.
     self->tx_packets += ((mac == NULL) ? ((mp_obj_list_t *)self->peers->list)->len : 1);
 
-    if (sync) {
-        // Wait for and tally all the expected responses from peers
-        _wait_for_pending_responses(self);
-    }
-
-    // Return False if sync and any peers did not respond.
-    return mp_obj_new_bool(!(sync && self->tx_failures != saved_failures));
+    return mp_const_none;
 }
 
 mp_obj_t common_hal_espnow_recv(espnow_obj_t *self) {
