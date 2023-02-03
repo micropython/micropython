@@ -182,6 +182,15 @@ STATIC void pre_process_options(int argc, char **argv) {
     }
 }
 
+STATIC char *backslash_to_forwardslash(char *path) {
+    for (char *p = path; p != NULL && *p != '\0'; ++p) {
+        if (*p == '\\') {
+            *p = '/';
+        }
+    }
+    return path;
+}
+
 MP_NOINLINE int main_(int argc, char **argv) {
     mp_stack_set_limit(40000 * (sizeof(void *) / 4));
 
@@ -242,7 +251,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     exit(usage(argv));
                 }
                 a += 1;
-                source_file = argv[a];
+                source_file = backslash_to_forwardslash(argv[a]);
             } else if (strncmp(argv[a], "-msmall-int-bits=", sizeof("-msmall-int-bits=") - 1) == 0) {
                 char *end;
                 mp_dynamic_compiler.small_int_bits =
@@ -308,7 +317,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 mp_printf(&mp_stderr_print, "multiple input files\n");
                 exit(1);
             }
-            input_file = argv[a];
+            input_file = backslash_to_forwardslash(argv[a]);
         }
     }
 

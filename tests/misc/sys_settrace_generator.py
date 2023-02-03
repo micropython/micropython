@@ -48,11 +48,9 @@ def test_generator():
     gen = make_gen()
     r = 0
     try:
-
         r += gen.send(None)
 
         while True:
-
             r += gen.send(None)
 
     except StopIteration as e:

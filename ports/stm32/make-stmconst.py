@@ -29,6 +29,7 @@ elif platform.python_version_tuple()[0] == "3":
 
 # end compatibility code
 
+
 # given a list of (name,regex) pairs, find the first one that matches the given line
 def re_match_first(regexs, line):
     for name, regex in regexs:

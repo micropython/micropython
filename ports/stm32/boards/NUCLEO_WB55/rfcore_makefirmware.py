@@ -65,7 +65,6 @@ def get_details(release_notes, filename):
 
 
 def main(src_path, dest_path):
-
     # Load the release note to parse for important details
     with open(os.path.join(src_path, _RELEASE_NOTES), "rb") as f:
         release_notes = f.read()

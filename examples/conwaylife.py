@@ -4,6 +4,7 @@ import pyb
 lcd = pyb.LCD("x")
 lcd.light(1)
 
+
 # do 1 iteration of Conway's Game of Life
 def conway_step():
     for x in range(128):  # loop over x coordinates

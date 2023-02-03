@@ -62,7 +62,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
   </ItemGroup>
 
   <!-- Preprocess changed files, concatenate and feed into makeqstrdefs.py split/cat-->
-  <Target Name="MakeQstrDefs" DependsOnTargets="MakeDestDir" Inputs="@(ClCompile);@(QstrDependencies)" Outputs="$(QstrDefsCollected)">
+  <Target Name="MakeQstrDefs" DependsOnTargets="MakeDestDir;MakeVersionHdr" Inputs="@(ClCompile);@(QstrDependencies)" Outputs="$(QstrDefsCollected)">
     <ItemGroup>
       <PyIncDirs Include="$(PyIncDirs)"/>
       <PreProcDefs Include="%(ClCompile.PreProcessorDefinitions);NO_QSTR"/>
@@ -150,7 +150,9 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
       <TmpFile>$(QstrGen).tmp</TmpFile>
     </PropertyGroup>
     <Exec Command="$(PyClTool) /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /E $(PyQstrDefs) $(QstrDefs) > $(DestDir)qstrdefs.preprocessed.h"/>
-    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdata.py $(DestDir)qstrdefs.preprocessed.h $(QstrDefsCollected) > $(TmpFile)"/>
+    <!--Because makemanifest.py relies on this file to have all Q() and QCFG() entries.-->
+    <Exec Command="type $(QstrDefsCollected) >> $(DestDir)qstrdefs.preprocessed.h"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdata.py $(DestDir)qstrdefs.preprocessed.h > $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(QstrGen)"/>
   </Target>
 
@@ -167,7 +169,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     <ItemGroup>
       <ClCompile Include="$(PyBuildDir)frozen_content.c"/>
       <ClCompile>
-        <PreprocessorDefinitions>MICROPY_MODULE_FROZEN_MPY=1;MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+        <PreprocessorDefinitions>MICROPY_MODULE_FROZEN_MPY=1;MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool;MPZ_DIG_SIZE=16;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       </ClCompile>
     </ItemGroup>
     <Exec Command="$(PyPython) $(PyBaseDir)tools\makemanifest.py -v MPY_DIR=$(PyBaseDir) -v MPY_LIB_DIR=$(PyBaseDir)/lib/micropython-lib -v PORT_DIR=$(PyWinDir) -o $(PyBuildDir)frozen_content.c -b $(PyBuildDir) $(FrozenManifest)"/>

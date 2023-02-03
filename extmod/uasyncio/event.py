@@ -3,6 +3,7 @@
 
 from . import core
 
+
 # Event class for primitive events that can be waited on, set, and cleared
 class Event:
     def __init__(self):
