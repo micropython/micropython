@@ -45,7 +45,6 @@ typedef struct _espnow_obj_t {
     volatile size_t tx_responses;   // # of sent packet responses received
     volatile size_t tx_failures;    // # of sent packet responses failed
     espnow_peers_obj_t *peers;      // Cache the # of peers for send(sync=True)
-    mp_obj_t peers_table;           // A dictionary of discovered peers
 } espnow_obj_t;
 
 extern void espnow_reset(void);

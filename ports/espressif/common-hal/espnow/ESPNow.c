@@ -95,7 +95,21 @@ static void send_cb(const uint8_t *mac, esp_now_send_status_t status) {
     }
 }
 
-static inline int8_t _get_rssi_from_wifi_packet(const uint8_t *msg);
+// Get the RSSI value from the wifi packet header
+static inline int8_t _get_rssi_from_wifi_packet(const uint8_t *msg) {
+    // Warning: Secret magic to get the rssi from the wifi packet header
+    // See espnow.c:espnow_recv_cb() at https://github.com/espressif/esp-now/
+    // In the wifi packet the msg comes after a wifi_promiscuous_pkt_t
+    // and a espnow_frame_format_t.
+    // Backtrack to get a pointer to the wifi_promiscuous_pkt_t.
+    #define SIZEOF_ESPNOW_FRAME_FORMAT 39
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
+    wifi_promiscuous_pkt_t *wifi_packet = (wifi_promiscuous_pkt_t *)(
+        msg - SIZEOF_ESPNOW_FRAME_FORMAT - sizeof(wifi_promiscuous_pkt_t));
+    #pragma GCC diagnostic pop
+    return wifi_packet->rx_ctrl.rssi;
+}
 
 // Callback triggered when an ESP-NOW packet is received.
 // Write the peer MAC address and the message into the recv_buffer as an ESPNow packet.
@@ -185,59 +199,6 @@ void common_hal_espnow_set_pmk(espnow_obj_t *self, const uint8_t *key) {
     check_esp_err(esp_now_set_pmk(key));
 }
 
-// --- Maintaining the peer table and reading RSSI values ---
-
-// We maintain a peers table for several reasons, to:
-// - support monitoring the RSSI values for all peers; and
-// - to return unique bytestrings for each peer which supports more efficient
-//   application memory usage and peer handling.
-
-// Get the RSSI value from the wifi packet header
-static inline int8_t _get_rssi_from_wifi_packet(const uint8_t *msg) {
-    // Warning: Secret magic to get the rssi from the wifi packet header
-    // See espnow.c:espnow_recv_cb() at https://github.com/espressif/esp-now/
-    // In the wifi packet the msg comes after a wifi_promiscuous_pkt_t
-    // and a espnow_frame_format_t.
-    // Backtrack to get a pointer to the wifi_promiscuous_pkt_t.
-    #define SIZEOF_ESPNOW_FRAME_FORMAT 39
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wcast-align"
-    wifi_promiscuous_pkt_t *wifi_packet = (wifi_promiscuous_pkt_t *)(
-        msg - SIZEOF_ESPNOW_FRAME_FORMAT - sizeof(wifi_promiscuous_pkt_t));
-    #pragma GCC diagnostic pop
-    return wifi_packet->rx_ctrl.rssi;
-}
-
-// Lookup a peer in the peers table and return a reference to the item in the peers_table.
-// Add peer to the table if it is not found (may alloc memory). Will not return NULL.
-static mp_map_elem_t *_lookup_add_peer(espnow_obj_t *self, const uint8_t *peer) {
-    // We do not want to allocate any new memory in the case that the peer
-    // already exists in the peers_table (which is almost all the time).
-    // So, we use a byte string on the stack and look that up in the dict.
-    mp_map_t *map = mp_obj_dict_get_map(self->peers_table);
-    mp_obj_str_t peer_obj = {{&mp_type_bytes}, 0, ESP_NOW_ETH_ALEN, peer};
-    mp_map_elem_t *item = mp_map_lookup(map, &peer_obj, MP_MAP_LOOKUP);
-    if (item == NULL) {
-        // If not found, add the peer using a new bytestring
-        map->is_fixed = 0;      // Allow to modify the dict
-        mp_obj_t new_peer = mp_obj_new_bytes(peer, ESP_NOW_ETH_ALEN);
-        item = mp_map_lookup(map, new_peer, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
-        item->value = mp_obj_new_list(2, NULL);
-        map->is_fixed = 1;      // Relock the dict
-    }
-    return item;
-}
-
-// Update the peers table with the new rssi value from a received packet and
-// return a reference to the item in the peers_table.
-static void _update_rssi(espnow_obj_t *self, const uint8_t *peer, int8_t rssi, uint32_t time_ms) {
-    // Lookup the peer in the device table
-    mp_map_elem_t *item = _lookup_add_peer(self, peer);
-    mp_obj_list_t *list = MP_OBJ_TO_PTR(item->value);
-    list->items[0] = MP_OBJ_NEW_SMALL_INT(rssi);
-    list->items[1] = mp_obj_new_int(time_ms);
-}
-
 // --- Send and Receive ESP-NOW data ---
 
 // Used by espnow_send() for sends() with sync==True.
@@ -312,9 +273,6 @@ mp_obj_t common_hal_espnow_recv(espnow_obj_t *self) {
         ringbuf_get_n(self->recv_buffer, msg_buf, msg_len) != msg_len) {
         mp_arg_error_invalid(MP_QSTR_buffer);
     }
-
-    // Update rssi value in the peer device table
-    _update_rssi(self, mac_buf, header.rssi, header.time_ms);
 
     mp_obj_t elems[4] = {
         mp_obj_new_bytes(mac_buf, ESP_NOW_ETH_ALEN),

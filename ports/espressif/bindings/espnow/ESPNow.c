@@ -95,10 +95,6 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     common_hal_espnow_set_phy_rate(self, args[ARG_phy_rate].u_int);
 
     self->peers = espnow_peers_new();
-    self->peers_table = mp_obj_new_dict(0);
-
-    // Prevent user code modifying the dict
-    mp_obj_dict_get_map(self->peers_table)->is_fixed = 1;
 
     // Set the global singleton pointer for the espnow protocol.
     MP_STATE_PORT(espnow_singleton) = self;
@@ -277,25 +273,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_peers_obj, espnow_get_peers);
 MP_PROPERTY_GETTER(espnow_peers_obj,
     (mp_obj_t)&espnow_get_peers_obj);
 
-//|     peers_table: Dict[bytes, List[int]]
-//|     """The dictionary of peers we have seen. (read-only)
-//|
-//|     A `dict` of {peer: [rssi, time], ...}
-//|
-//|     where:
-//|         * peer is a byte string containing the 6-byte mac address of the peer.
-//|         * rssi is the wifi signal strength from the last msg received (in dBm from -127 to 0).
-//|         * time is the time in milliseconds since device last booted."""
-//|
-STATIC mp_obj_t espnow_get_peers_table(mp_obj_t self_in) {
-    espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return self->peers_table;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_peers_table_obj, espnow_get_peers_table);
-
-MP_PROPERTY_GETTER(espnow_peers_table_obj,
-    (mp_obj_t)&espnow_get_peers_table_obj);
-
 STATIC const mp_rom_map_elem_t espnow_locals_dict_table[] = {
     // Context managers
     { MP_ROM_QSTR(MP_QSTR___enter__),   MP_ROM_PTR(&mp_identity_obj) },
@@ -316,7 +293,6 @@ STATIC const mp_rom_map_elem_t espnow_locals_dict_table[] = {
 
     // Peer related properties
     { MP_ROM_QSTR(MP_QSTR_peers),       MP_ROM_PTR(&espnow_peers_obj) },
-    { MP_ROM_QSTR(MP_QSTR_peers_table), MP_ROM_PTR(&espnow_peers_table_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(espnow_locals_dict, espnow_locals_dict_table);
 
