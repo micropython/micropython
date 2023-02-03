@@ -219,6 +219,10 @@ endif
 
 # Additional optional libraries
 
+ifneq ($(UNAME_S),Darwin)
+CFLAGS_MOD += -DMICROPY_FB=1
+endif
+
 SDL_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags sdl2)
 SDL_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   sdl2)
 ifneq ($(SDL_LDFLAGS_MOD),)
@@ -277,12 +281,6 @@ SHARED_SRC_C += $(addprefix shared/,\
 	timeutils/timeutils.c \
 	$(SHARED_SRC_C_EXTRA) \
 	)
-
-ifneq ($(UNAME_S),Darwin)
-LIB_SRC_C += $(addprefix lib/,\
-	lv_bindings/driver/linux/modfb.c \
-	)
-endif
 
 SRC_CXX += \
 	$(SRC_MOD_CXX)
