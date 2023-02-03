@@ -10,11 +10,14 @@ import io
 data = extra_coverage()
 
 # test hashing of str/bytes that have an invalid hash
+# if MICROPY_QSTR_BYTES_IN_HASH>0, then the hash will be mod 2**(n*8), whereas
+# with MICROPY_QSTR_BYTES_IN_HASH==0 the hash will be the full range of
+# size_t. so always % 65536 so this test works with both configurations.
 print(data[0], data[1])
-print(hash(data[0]))
-print(hash(data[1]))
-print(hash(bytes(data[0], "utf8")))
-print(hash(str(data[1], "utf8")))
+print(hash(data[0]) % 65536)
+print(hash(data[1]) % 65536)
+print(hash(bytes(data[0], "utf8")) % 65536)
+print(hash(str(data[1], "utf8")) % 65536)
 
 # test streams
 stream = data[2]  # has set_error and set_buf. Write always returns error

@@ -128,7 +128,9 @@ STATIC NORETURN void ssl_raise_error(int err) {
     o_str->base.type = &mp_type_str;
     o_str->data = (const byte *)errstr;
     o_str->len = strlen((char *)o_str->data);
+    #if MICROPY_QSTR_BYTES_IN_HASH
     o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+    #endif
 
     // Raise OSError(err, str).
     mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(err), MP_OBJ_FROM_PTR(o_str)};

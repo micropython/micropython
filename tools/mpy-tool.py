@@ -714,11 +714,13 @@ class CompiledModule:
             else:
                 obj_type = "mp_type_bytes"
             print(
-                'static const mp_obj_str_t %s = {{&%s}, %u, %u, (const byte*)"%s"};'
+                'static const mp_obj_str_t %s = {{&%s}, %s, %u, (const byte*)"%s"};'
                 % (
                     obj_name,
                     obj_type,
-                    qstrutil.compute_hash(obj, config.MICROPY_QSTR_BYTES_IN_HASH),
+                    str(qstrutil.compute_hash(obj, config.MICROPY_QSTR_BYTES_IN_HASH))
+                    if config.MICROPY_QSTR_BYTES_IN_HASH
+                    else "0",
                     len(obj),
                     "".join(("\\x%02x" % b) for b in obj),
                 )
@@ -1464,20 +1466,20 @@ def freeze_mpy(base_qstrs, compiled_modules):
     raw_code_count = 0
     raw_code_content = 0
 
-    print()
-    print("const qstr_hash_t mp_qstr_frozen_const_hashes[] = {")
     qstr_size = {"metadata": 0, "data": 0}
-    for _, _, _, qbytes in new:
-        qhash = qstrutil.compute_hash(qbytes, config.MICROPY_QSTR_BYTES_IN_HASH)
-        print("    %d," % qhash)
-    print("};")
+    if config.MICROPY_QSTR_BYTES_IN_HASH:
+        print()
+        print("const qstr_hash_t mp_qstr_frozen_const_hashes[] = {")
+        for _, _, _, qbytes in new:
+            qhash = qstrutil.compute_hash(qbytes, config.MICROPY_QSTR_BYTES_IN_HASH)
+            print("    %d," % qhash)
+            qstr_size["metadata"] += config.MICROPY_QSTR_BYTES_IN_HASH
+        print("};")
     print()
     print("const qstr_len_t mp_qstr_frozen_const_lengths[] = {")
     for _, _, _, qbytes in new:
         print("    %d," % len(qbytes))
-        qstr_size["metadata"] += (
-            config.MICROPY_QSTR_BYTES_IN_LEN + config.MICROPY_QSTR_BYTES_IN_HASH
-        )
+        qstr_size["metadata"] += config.MICROPY_QSTR_BYTES_IN_LEN
         qstr_size["data"] += len(qbytes)
     print("};")
     print()
@@ -1487,14 +1489,13 @@ def freeze_mpy(base_qstrs, compiled_modules):
     print("    MP_QSTRnumber_of, // previous pool size")
     print("    %u, // allocated entries" % qstr_pool_alloc)
     print("    %u, // used entries" % len(new))
-    print("    (qstr_hash_t *)mp_qstr_frozen_const_hashes,")
+    if config.MICROPY_QSTR_BYTES_IN_HASH:
+        print("    (qstr_hash_t *)mp_qstr_frozen_const_hashes,")
     print("    (qstr_len_t *)mp_qstr_frozen_const_lengths,")
     print("    {")
     for _, _, qstr, qbytes in new:
         print('        "%s",' % qstrutil.escape_bytes(qstr, qbytes))
-        qstr_content += (
-            config.MICROPY_QSTR_BYTES_IN_LEN + config.MICROPY_QSTR_BYTES_IN_HASH + len(qbytes) + 1
-        )
+    qstr_content = qstr_size["metadata"] + qstr_size["data"] + 1
     print("    },")
     print("};")
 

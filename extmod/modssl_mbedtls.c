@@ -128,7 +128,9 @@ STATIC NORETURN void mbedtls_raise_error(int err) {
     o_str->base.type = &mp_type_str;
     o_str->data = o_str_buf;
     o_str->len = len;
+    #if MICROPY_QSTR_BYTES_IN_HASH
     o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+    #endif
     // raise
     mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(err), MP_OBJ_FROM_PTR(o_str)};
     nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));

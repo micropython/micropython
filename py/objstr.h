@@ -31,7 +31,11 @@
 
 typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
+    #if MICROPY_QSTR_BYTES_IN_HASH
     size_t hash;
+    #else
+    size_t _placeholder; // TODO: e.g. byte inline_data[sizeof(size_t)];
+    #endif
     // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
     size_t len;
     const byte *data;
@@ -46,6 +50,7 @@ typedef struct _mp_obj_str_t {
 
 #define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, (const byte *)str}
 
+#if MICROPY_QSTR_BYTES_IN_HASH
 // use this macro to extract the string hash
 // warning: the hash can be 0, meaning invalid, and must then be explicitly computed from the data
 #define GET_STR_HASH(str_obj_in, str_hash) \
@@ -55,6 +60,7 @@ typedef struct _mp_obj_str_t {
     } else { \
         str_hash = ((mp_obj_str_t *)MP_OBJ_TO_PTR(str_obj_in))->hash; \
     }
+#endif
 
 // use this macro to extract the string length
 #define GET_STR_LEN(str_obj_in, str_len) \

@@ -32,6 +32,7 @@
 #include "py/mpconfig.h"
 #include "py/misc.h"
 #include "py/runtime.h"
+#include "py/objstr.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -244,7 +245,12 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
     // get hash of index, with fast path for common case of qstr
     mp_uint_t hash;
     if (mp_obj_is_qstr(index)) {
+        #if MICROPY_QSTR_BYTES_IN_HASH
         hash = qstr_hash(MP_OBJ_QSTR_VALUE(index));
+        #else
+        GET_STR_DATA_LEN(index, data, len);
+        hash = qstr_compute_hash(data, len);
+        #endif
     } else {
         hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
     }

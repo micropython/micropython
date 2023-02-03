@@ -91,7 +91,9 @@ void check_esp_err_(esp_err_t code, const char *func, const int line, const char
         o_str->data = (const byte *)esp_err_to_name(code); // esp_err_to_name ret's ptr to const str
         #endif
         o_str->len = strlen((char *)o_str->data);
+        #if MICROPY_QSTR_BYTES_IN_HASH
         o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+        #endif
         // raise
         mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(pcode), MP_OBJ_FROM_PTR(o_str)};
         nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));

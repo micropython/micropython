@@ -315,12 +315,17 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
         }
     } else if (op == MP_UNARY_OP_HASH && mp_obj_is_str_or_bytes(arg)) {
         // fast path for hashing str/bytes
+        #if MICROPY_QSTR_BYTES_IN_HASH
         GET_STR_HASH(arg, h);
         if (h == 0) {
             GET_STR_DATA_LEN(arg, data, len);
             h = qstr_compute_hash(data, len);
         }
         return MP_OBJ_NEW_SMALL_INT(h);
+        #else
+        GET_STR_DATA_LEN(arg, data, len);
+        return MP_OBJ_NEW_SMALL_INT(qstr_compute_hash(data, len));
+        #endif
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(arg);
         if (MP_OBJ_TYPE_HAS_SLOT(type, unary_op)) {

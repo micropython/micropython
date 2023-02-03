@@ -185,7 +185,11 @@ STATIC const uint8_t usbd_fifo_size_cdc3_msc_hid[] = {
 // predefined hid mouse data
 STATIC const mp_obj_str_t pyb_usb_hid_mouse_desc_obj = {
     {&mp_type_bytes},
+    #if MICROPY_QSTR_BYTES_IN_HASH
     0, // hash not valid
+    #else
+    0,
+    #endif
     USBD_HID_MOUSE_REPORT_DESC_SIZE,
     USBD_HID_MOUSE_ReportDesc,
 };
@@ -204,7 +208,11 @@ const mp_rom_obj_tuple_t pyb_usb_hid_mouse_obj = {
 // predefined hid keyboard data
 STATIC const mp_obj_str_t pyb_usb_hid_keyboard_desc_obj = {
     {&mp_type_bytes},
+    #if MICROPY_QSTR_BYTES_IN_HASH
     0, // hash not valid
+    #else
+    0,
+    #endif
     USBD_HID_KEYBOARD_REPORT_DESC_SIZE,
     USBD_HID_KEYBOARD_ReportDesc,
 };

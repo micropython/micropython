@@ -45,7 +45,9 @@
 // A qstr is an index into the qstr pool.
 // The data for a qstr is \0 terminated (so they can be printed using printf)
 
+#if MICROPY_QSTR_BYTES_IN_HASH
 #define Q_HASH_MASK ((1 << (8 * MICROPY_QSTR_BYTES_IN_HASH)) - 1)
+#endif
 
 #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
 #define QSTR_ENTER() mp_thread_mutex_lock(&MP_STATE_VM(qstr_mutex), 1)
@@ -66,14 +68,17 @@ size_t qstr_compute_hash(const byte *data, size_t len) {
     for (const byte *top = data + len; data < top; data++) {
         hash = ((hash << 5) + hash) ^ (*data); // hash * 33 ^ data
     }
+    #if MICROPY_QSTR_BYTES_IN_HASH
     hash &= Q_HASH_MASK;
     // Make sure that valid hash is never zero, zero means "hash not computed"
     if (hash == 0) {
         hash++;
     }
+    #endif
     return hash;
 }
 
+#if MICROPY_QSTR_BYTES_IN_HASH
 const qstr_hash_t mp_qstr_const_hashes[] = {
     #ifndef NO_QSTR
 #define QDEF(id, hash, len, str) hash,
@@ -81,6 +86,7 @@ const qstr_hash_t mp_qstr_const_hashes[] = {
 #undef QDEF
     #endif
 };
+#endif
 
 const qstr_len_t mp_qstr_const_lengths[] = {
     #ifndef NO_QSTR
@@ -95,7 +101,9 @@ const qstr_pool_t mp_qstr_const_pool = {
     0,                  // no previous pool
     MICROPY_ALLOC_QSTR_ENTRIES_INIT,
     MP_QSTRnumber_of,   // corresponds to number of strings in array just below
+    #if MICROPY_QSTR_BYTES_IN_HASH
     (qstr_hash_t *)mp_qstr_const_hashes,
+    #endif
     (qstr_len_t *)mp_qstr_const_lengths,
     {
         #ifndef NO_QSTR
@@ -135,8 +143,16 @@ STATIC const qstr_pool_t *find_qstr(qstr *q) {
 }
 
 // qstr_mutex must be taken while in this function
-STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
+STATIC qstr qstr_add(
+    #if MICROPY_QSTR_BYTES_IN_HASH
+    mp_uint_t hash,
+    #endif
+    mp_uint_t len, const char *q_ptr) {
+    #if MICROPY_QSTR_BYTES_IN_HASH
     DEBUG_printf("QSTR: add hash=%d len=%d data=%.*s\n", hash, len, len, q_ptr);
+    #else
+    DEBUG_printf("QSTR: add len=%d data=%.*s\n", hash, len, len, q_ptr);
+    #endif
 
     // make sure we have room in the pool for a new qstr
     if (MP_STATE_VM(last_pool)->len >= MP_STATE_VM(last_pool)->alloc) {
@@ -146,7 +162,11 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
         new_alloc = MAX(MICROPY_ALLOC_QSTR_ENTRIES_INIT, new_alloc);
         #endif
         mp_uint_t pool_size = sizeof(qstr_pool_t)
-            + (sizeof(const char *) + sizeof(qstr_hash_t) + sizeof(qstr_len_t)) * new_alloc;
+            + (sizeof(const char *)
+                #if MICROPY_QSTR_BYTES_IN_HASH
+                + sizeof(qstr_hash_t)
+                #endif
+                + sizeof(qstr_len_t)) * new_alloc;
         qstr_pool_t *pool = (qstr_pool_t *)m_malloc_maybe(pool_size);
         if (pool == NULL) {
             // Keep qstr_last_chunk consistent with qstr_pool_t: qstr_last_chunk is not scanned
@@ -158,8 +178,12 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
             QSTR_EXIT();
             m_malloc_fail(new_alloc);
         }
+        #if MICROPY_QSTR_BYTES_IN_HASH
         pool->hashes = (qstr_hash_t *)(pool->qstrs + new_alloc);
         pool->lengths = (qstr_len_t *)(pool->hashes + new_alloc);
+        #else
+        pool->lengths = (qstr_len_t *)(pool->qstrs + new_alloc);
+        #endif
         pool->prev = MP_STATE_VM(last_pool);
         pool->total_prev_len = MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len;
         pool->alloc = new_alloc;
@@ -170,7 +194,9 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
 
     // add the new qstr
     mp_uint_t at = MP_STATE_VM(last_pool)->len;
+    #if MICROPY_QSTR_BYTES_IN_HASH
     MP_STATE_VM(last_pool)->hashes[at] = hash;
+    #endif
     MP_STATE_VM(last_pool)->lengths[at] = len;
     MP_STATE_VM(last_pool)->qstrs[at] = q_ptr;
     MP_STATE_VM(last_pool)->len++;
@@ -181,12 +207,18 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
 
 qstr qstr_find_strn(const char *str, size_t str_len) {
     // work out hash of str
+    #if MICROPY_QSTR_BYTES_IN_HASH
     size_t str_hash = qstr_compute_hash((const byte *)str, str_len);
+    #endif
 
     // search pools for the data
     for (const qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL; pool = pool->prev) {
-        for (mp_uint_t at = 0, top = pool->len; at < top; at++) {
-            if (pool->hashes[at] == str_hash && pool->lengths[at] == str_len
+        for (mp_uint_t at = pool->prev ? 0 : 1, top = pool->len; at < top; at++) {
+            if (
+                #if MICROPY_QSTR_BYTES_IN_HASH
+                pool->hashes[at] == str_hash &&
+                #endif
+                pool->lengths[at] == str_len
                 && memcmp(pool->qstrs[at], str, str_len) == 0) {
                 return pool->total_prev_len + at;
             }
@@ -194,7 +226,7 @@ qstr qstr_find_strn(const char *str, size_t str_len) {
     }
 
     // not found; return null qstr
-    return 0;
+    return MP_QSTRnull;
 }
 
 qstr qstr_from_str(const char *str) {
@@ -254,19 +286,27 @@ qstr qstr_from_strn(const char *str, size_t len) {
         MP_STATE_VM(qstr_last_used) += n_bytes;
 
         // store the interned strings' data
+        #if MICROPY_QSTR_BYTES_IN_HASH
         size_t hash = qstr_compute_hash((const byte *)str, len);
+        #endif
         memcpy(q_ptr, str, len);
         q_ptr[len] = '\0';
-        q = qstr_add(hash, len, q_ptr);
+        q = qstr_add(
+            #if MICROPY_QSTR_BYTES_IN_HASH
+            hash,
+            #endif
+            len, q_ptr);
     }
     QSTR_EXIT();
     return q;
 }
 
+#if MICROPY_QSTR_BYTES_IN_HASH
 mp_uint_t qstr_hash(qstr q) {
     const qstr_pool_t *pool = find_qstr(&q);
     return pool->hashes[q];
 }
+#endif
 
 size_t qstr_len(qstr q) {
     const qstr_pool_t *pool = find_qstr(&q);
@@ -300,7 +340,11 @@ void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, si
         *n_total_bytes += gc_nbytes(pool); // this counts actual bytes used in heap
         #else
         *n_total_bytes += sizeof(qstr_pool_t)
-            + (sizeof(const char *) + sizeof(qstr_hash_t) + sizeof(qstr_len_t)) * pool->alloc;
+            + (sizeof(const char *)
+                #if MICROPY_QSTR_BYTES_IN_HASH
+                + sizeof(qstr_hash_t)
+                #endif
+                + sizeof(qstr_len_t)) * pool->alloc;
         #endif
     }
     *n_total_bytes += *n_str_data_bytes;

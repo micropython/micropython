@@ -148,12 +148,16 @@ STATIC void decompress_error_text_maybe(mp_obj_exception_t *o) {
             mp_decompress_rom_string(buf, (mp_rom_error_text_t)o_str->data);
             o_str->data = buf;
             o_str->len = strlen((const char *)buf);
+            #if MICROPY_QSTR_BYTES_IN_HASH
             o_str->hash = 0;
+            #endif
         }
+        #if MICROPY_QSTR_BYTES_IN_HASH
         // Lazily compute the string hash.
         if (o_str->hash == 0) {
             o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
         }
+        #endif
     }
     #endif
 }
@@ -417,10 +421,12 @@ mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, mp_rom_error_te
     o_str->base.type = &mp_type_str;
     o_str->len = strlen((const char *)msg);
     o_str->data = (const byte *)msg;
+    #if MICROPY_QSTR_BYTES_IN_HASH
     #if MICROPY_ROM_TEXT_COMPRESSION
     o_str->hash = 0; // will be computed only if string object is accessed
     #else
     o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+    #endif
     #endif
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
     return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
@@ -526,10 +532,12 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_er
 
     // Create the string object and call mp_obj_exception_make_new to create the exception
     o_str->base.type = &mp_type_str;
+    #if MICROPY_QSTR_BYTES_IN_HASH
     #if MICROPY_ROM_TEXT_COMPRESSION
     o_str->hash = 0; // will be computed only if string object is accessed
     #else
     o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+    #endif
     #endif
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
     return mp_obj_exception_make_new(exc_type, 1, 0, &arg);

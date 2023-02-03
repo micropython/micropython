@@ -48,7 +48,8 @@ enum {
 typedef size_t qstr;
 typedef uint16_t qstr_short_t;
 
-#if MICROPY_QSTR_BYTES_IN_HASH == 1
+#if MICROPY_QSTR_BYTES_IN_HASH == 0
+#elif MICROPY_QSTR_BYTES_IN_HASH == 1
 typedef uint8_t qstr_hash_t;
 #elif MICROPY_QSTR_BYTES_IN_HASH == 2
 typedef uint16_t qstr_hash_t;
@@ -69,7 +70,9 @@ typedef struct _qstr_pool_t {
     size_t total_prev_len;
     size_t alloc;
     size_t len;
+    #if MICROPY_QSTR_BYTES_IN_HASH
     qstr_hash_t *hashes;
+    #endif
     qstr_len_t *lengths;
     const char *qstrs[];
 } qstr_pool_t;
@@ -79,12 +82,15 @@ typedef struct _qstr_pool_t {
 void qstr_init(void);
 
 size_t qstr_compute_hash(const byte *data, size_t len);
+
 qstr qstr_find_strn(const char *str, size_t str_len); // returns MP_QSTRnull if not found
 
 qstr qstr_from_str(const char *str);
 qstr qstr_from_strn(const char *str, size_t len);
 
+#if MICROPY_QSTR_BYTES_IN_HASH
 mp_uint_t qstr_hash(qstr q);
+#endif
 const char *qstr_str(qstr q);
 size_t qstr_len(qstr q);
 const byte *qstr_data(qstr q, size_t *len);

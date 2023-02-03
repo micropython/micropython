@@ -183,10 +183,12 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
             // TODO: validate 2nd/3rd args
             if (mp_obj_is_type(args[0], &mp_type_bytes)) {
                 GET_STR_DATA_LEN(args[0], str_data, str_len);
+                #if MICROPY_QSTR_BYTES_IN_HASH
                 GET_STR_HASH(args[0], str_hash);
                 if (str_hash == 0) {
                     str_hash = qstr_compute_hash(str_data, str_len);
                 }
+                #endif
                 #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
                 if (!utf8_check(str_data, str_len)) {
                     mp_raise_msg(&mp_type_UnicodeError, NULL);
@@ -201,7 +203,9 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
                 mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_copy(type, NULL, str_len));
                 o->data = str_data;
+                #if MICROPY_QSTR_BYTES_IN_HASH
                 o->hash = str_hash;
+                #endif
                 return MP_OBJ_FROM_PTR(o);
             } else {
                 mp_buffer_info_t bufinfo;
@@ -240,13 +244,17 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
             #endif
         }
         GET_STR_DATA_LEN(args[0], str_data, str_len);
+        #if MICROPY_QSTR_BYTES_IN_HASH
         GET_STR_HASH(args[0], str_hash);
         if (str_hash == 0) {
             str_hash = qstr_compute_hash(str_data, str_len);
         }
+        #endif
         mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_copy(&mp_type_bytes, NULL, str_len));
         o->data = str_data;
+        #if MICROPY_QSTR_BYTES_IN_HASH
         o->hash = str_hash;
+        #endif
         return MP_OBJ_FROM_PTR(o);
     }
 
@@ -2063,7 +2071,9 @@ mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_u
 void mp_obj_str_set_data(mp_obj_str_t *str, const byte *data, size_t len) {
     str->data = data;
     str->len = len;
+    #if MICROPY_QSTR_BYTES_IN_HASH
     str->hash = qstr_compute_hash(data, len);
+    #endif
 }
 
 // This locals table is used for the following types: str, bytes, bytearray, array.array.
@@ -2199,7 +2209,13 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 // The zero-length bytes object, with data that includes a null-terminating byte
-const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes}, 0, 0, (const byte *)""};
+const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes},
+                                               #if MICROPY_QSTR_BYTES_IN_HASH
+                                               0,
+                                               #else
+                                               0,
+                                               #endif
+                                               0, (const byte *)""};
 
 // Create a str/bytes object using the given data.  New memory is allocated and
 // the data is copied across.  This function should only be used if the type is bytes,
@@ -2208,7 +2224,9 @@ mp_obj_t mp_obj_new_str_copy(const mp_obj_type_t *type, const byte *data, size_t
     mp_obj_str_t *o = mp_obj_malloc(mp_obj_str_t, type);
     o->len = len;
     if (data) {
+        #if MICROPY_QSTR_BYTES_IN_HASH
         o->hash = qstr_compute_hash(data, len);
+        #endif
         byte *p = m_new(byte, len + 1);
         o->data = p;
         memcpy(p, data, len * sizeof(byte));
@@ -2267,7 +2285,9 @@ STATIC mp_obj_t mp_obj_new_str_type_from_vstr(const mp_obj_type_t *type, vstr_t 
     #endif
     mp_obj_str_t *o = mp_obj_malloc(mp_obj_str_t, type);
     o->len = vstr->len;
+    #if MICROPY_QSTR_BYTES_IN_HASH
     o->hash = qstr_compute_hash(data, vstr->len);
+    #endif
     o->data = data;
     return MP_OBJ_FROM_PTR(o);
 }
@@ -2327,12 +2347,14 @@ bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
     if (mp_obj_is_qstr(s1) && mp_obj_is_qstr(s2)) {
         return s1 == s2;
     } else {
+        #if MICROPY_QSTR_BYTES_IN_HASH
         GET_STR_HASH(s1, h1);
         GET_STR_HASH(s2, h2);
         // If any of hashes is 0, it means it's not valid
         if (h1 != 0 && h2 != 0 && h1 != h2) {
             return false;
         }
+        #endif
         GET_STR_DATA_LEN(s1, d1, l1);
         GET_STR_DATA_LEN(s2, d2, l2);
         if (l1 != l2) {
