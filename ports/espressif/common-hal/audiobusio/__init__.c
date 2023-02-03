@@ -84,7 +84,7 @@ static void i2s_fill_buffer(i2s_t *self) {
     if (self->instance < 0 || self->instance >= I2S_NUM_MAX) {
         return;
     }
-#define STACK_BUFFER_SIZE (512)
+#define STACK_BUFFER_SIZE (4096)
     int16_t signed_samples[STACK_BUFFER_SIZE / sizeof(int16_t)];
 
     if (!self->playing || self->paused || !self->sample || self->stopping) {
@@ -188,8 +188,8 @@ void port_i2s_allocate_init(i2s_t *self, bool left_justified) {
         .bits_per_sample = 16,
         .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
         .communication_format = left_justified ? I2S_COMM_FORMAT_STAND_I2S : I2S_COMM_FORMAT_STAND_I2S,
-        .dma_buf_count = 2,
-        .dma_buf_len = 128, // in _frames_, so 128 is 512 bytes per dma buf
+        .dma_buf_count = 3,
+        .dma_buf_len = 1024, // in _frames_, so 1024 is 4096 bytes per dma buf
         .use_apll = false,
     };
     CHECK_ESP_RESULT(i2s_driver_install(self->instance, &i2s_config, I2S_QUEUE_SIZE, &i2s_queues[self->instance]));
