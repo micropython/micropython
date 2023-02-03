@@ -172,7 +172,7 @@ void common_hal_is31fl3741_FrameBuffer_refresh(is31fl3741_FrameBuffer_obj_t *sel
                     } else {
                         color = (rsum << 16) + (gsum << 8) + bsum;
                     }
-                    common_hal_is31fl3741_draw_pixel(self->is31fl3741, x, y, color, self->mapping, self->height);
+                    common_hal_is31fl3741_draw_pixel(self->is31fl3741, x, y, color, self->mapping, self->scale_height);
                 }
             }
         } else {
@@ -193,7 +193,7 @@ void common_hal_is31fl3741_FrameBuffer_refresh(is31fl3741_FrameBuffer_obj_t *sel
                             color = *buffer;
                         }
 
-                        common_hal_is31fl3741_draw_pixel(self->is31fl3741, x, y, color, self->mapping, self->height);
+                        common_hal_is31fl3741_draw_pixel(self->is31fl3741, x, y, color, self->mapping, self->scale_height);
                         buffer++;
                     }
                 } else {
