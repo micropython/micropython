@@ -223,7 +223,11 @@ void port_i2s_play(i2s_t *self, mp_obj_t sample, bool loop) {
 
     audiosample_reset_buffer(self->sample, false, 0);
 
-    CHECK_ESP_RESULT(i2s_set_sample_rates(self->instance, audiosample_sample_rate(sample)));
+    uint32_t sample_rate = audiosample_sample_rate(sample);
+    if (sample_rate != self->i2s_config.sample_rate) {
+        CHECK_ESP_RESULT(i2s_set_sample_rates(self->instance, audiosample_sample_rate(sample)));
+        self->i2s_config.sample_rate = sample_rate;
+    }
 
     background_callback_add(&self->callback, i2s_callback_fun, self);
 }
