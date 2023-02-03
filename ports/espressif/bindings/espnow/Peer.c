@@ -29,24 +29,10 @@
 #include "py/runtime.h"
 
 #include "bindings/espnow/Peer.h"
+#include "common-hal/espnow/__init__.h"
 
 // TODO: check peer already exist
 // TODO: check peer dosen't exist
-
-// Return C pointer to the ReadableBuffer.
-// Raise ValueError if the length does not match expected len.
-static const uint8_t *_get_bytes_len(mp_obj_t obj, size_t len, mp_uint_t rw) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(obj, &bufinfo, rw);
-    mp_arg_validate_length(bufinfo.len, len, MP_QSTR_buffer);
-    return (uint8_t *)bufinfo.buf;
-}
-
-// Return C pointer to the MAC address.
-// Raise ValueError if mac is wrong type or is not 6 bytes long.
-static const uint8_t *_get_peer_addr(mp_obj_t mac) {
-    return mp_obj_is_true(mac) ? _get_bytes_len(mac, ESP_NOW_ETH_ALEN, MP_BUFFER_READ) : NULL;
-}
 
 //| class Peer:
 //|     """A data class to store parameters specific to a peer."""
@@ -89,7 +75,7 @@ STATIC mp_obj_t espnow_peer_make_new(const mp_obj_type_t *type, size_t n_args, s
         .encrypt = false
     };
 
-    memcpy(self->peer_info.peer_addr, _get_peer_addr(args[ARG_mac].u_obj), ESP_NOW_ETH_ALEN);
+    memcpy(self->peer_info.peer_addr, common_hal_espnow_get_bytes_len(args[ARG_mac].u_obj, ESP_NOW_ETH_ALEN), ESP_NOW_ETH_ALEN);
 
     const mp_obj_t channel = args[ARG_channel].u_obj;
     if (channel != mp_const_none) {
@@ -108,7 +94,7 @@ STATIC mp_obj_t espnow_peer_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     const mp_obj_t lmk = args[ARG_lmk].u_obj;
     if (lmk != mp_const_none) {
-        memcpy(self->peer_info.lmk, _get_bytes_len(lmk, ESP_NOW_KEY_LEN, MP_BUFFER_READ), ESP_NOW_KEY_LEN);
+        memcpy(self->peer_info.lmk, common_hal_espnow_get_bytes_len(lmk, ESP_NOW_KEY_LEN), ESP_NOW_KEY_LEN);
     } else if (self->peer_info.encrypt && !self->peer_info.lmk) {
         mp_raise_ValueError_varg(translate("%q is %q"), MP_QSTR_lmk, MP_QSTR_None);
     }
@@ -128,7 +114,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(espnow_peer_get_mac_obj, espnow_peer_get_mac);
 STATIC mp_obj_t espnow_peer_set_mac(const mp_obj_t self_in, const mp_obj_t value) {
     espnow_peer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    memcpy(self->peer_info.peer_addr, _get_peer_addr(value), ESP_NOW_ETH_ALEN);
+    memcpy(self->peer_info.peer_addr, common_hal_espnow_get_bytes_len(value, ESP_NOW_ETH_ALEN), ESP_NOW_ETH_ALEN);
     esp_now_mod_peer(&self->peer_info);
 
     return mp_const_none;
@@ -151,7 +137,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(espnow_peer_get_lmk_obj, espnow_peer_get_lmk);
 STATIC mp_obj_t espnow_peer_set_lmk(const mp_obj_t self_in, const mp_obj_t value) {
     espnow_peer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    memcpy(self->peer_info.lmk, _get_bytes_len(value, ESP_NOW_KEY_LEN, MP_BUFFER_READ), ESP_NOW_KEY_LEN);
+    memcpy(self->peer_info.lmk, common_hal_espnow_get_bytes_len(value, ESP_NOW_KEY_LEN), ESP_NOW_KEY_LEN);
     esp_now_mod_peer(&self->peer_info);
 
     return mp_const_none;

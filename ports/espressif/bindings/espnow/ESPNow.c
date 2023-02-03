@@ -36,24 +36,10 @@
 
 #include "shared-bindings/util.h"
 
+#include "common-hal/espnow/__init__.h"
 #include "common-hal/espnow/ESPNow.h"
 
 #include "esp_now.h"
-
-// Return C pointer to byte memory string/bytes/bytearray in obj.
-// Raise ValueError if the length does not match expected len.
-static const uint8_t *_get_bytes_len(mp_obj_t obj, size_t len, mp_uint_t rw) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(obj, &bufinfo, rw);
-    mp_arg_validate_length(bufinfo.len, len, MP_QSTR_buffer);
-    return (uint8_t *)bufinfo.buf;
-}
-
-// Return C pointer to the MAC address.
-// Raise ValueError if mac is wrong type or is not 6 bytes long.
-static const uint8_t *_get_peer_addr(mp_obj_t mac) {
-    return mp_obj_is_true(mac) ? _get_bytes_len(mac, ESP_NOW_ETH_ALEN, MP_BUFFER_READ) : NULL;
-}
 
 // --- Initialisation and Config functions ---
 
@@ -136,7 +122,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow___exit___obj, 4, 4, espnow_obj
 //|         ...
 STATIC mp_obj_t espnow_set_pmk(mp_obj_t self_in, mp_obj_t key) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_espnow_set_pmk(self, _get_bytes_len(key, ESP_NOW_KEY_LEN, MP_BUFFER_READ));
+    common_hal_espnow_set_pmk(self, common_hal_espnow_get_bytes_len(key, ESP_NOW_KEY_LEN));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(espnow_set_pmk_obj, espnow_set_pmk);
@@ -226,7 +212,7 @@ STATIC mp_obj_t espnow_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     espnow_obj_t *self = pos_args[0];
     check_for_deinit(self);
 
-    const uint8_t *peer_addr = _get_peer_addr(args[ARG_mac].u_obj);
+    const uint8_t *peer_addr = common_hal_espnow_get_bytes_len(args[ARG_mac].u_obj, ESP_NOW_ETH_ALEN);
 
     // Get a pointer to the data buffer of the message
     mp_buffer_info_t message;
