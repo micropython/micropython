@@ -80,6 +80,8 @@ void i2s_reset(void) {
     }
 }
 
+#define I2S_WRITE_DELAY pdMS_TO_TICKS(1)
+
 static void i2s_fill_buffer(i2s_t *self) {
     if (self->instance < 0 || self->instance >= I2S_NUM_MAX) {
         return;
@@ -92,7 +94,7 @@ static void i2s_fill_buffer(i2s_t *self) {
 
         size_t bytes_written = 0;
         do {
-            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, sizeof(signed_samples), &bytes_written, 0));
+            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, sizeof(signed_samples), &bytes_written, I2S_WRITE_DELAY));
         } while (bytes_written != 0);
         return;
     }
@@ -120,9 +122,9 @@ static void i2s_fill_buffer(i2s_t *self) {
         size_t bytecount = self->sample_end - self->sample_data;
         if (self->samples_signed && self->channel_count == 2) {
             if (self->bytes_per_sample == 2) {
-                CHECK_ESP_RESULT(i2s_write(self->instance, self->sample_data, bytecount, &bytes_written, 0));
+                CHECK_ESP_RESULT(i2s_write(self->instance, self->sample_data, bytecount, &bytes_written, I2S_WRITE_DELAY));
             } else {
-                CHECK_ESP_RESULT(i2s_write_expand(self->instance, self->sample_data, bytecount, 8, 16, &bytes_written, 0));
+                CHECK_ESP_RESULT(i2s_write_expand(self->instance, self->sample_data, bytecount, 8, 16, &bytes_written, I2S_WRITE_DELAY));
             }
         } else {
             const size_t bytes_per_output_frame = 4;
@@ -151,7 +153,7 @@ static void i2s_fill_buffer(i2s_t *self) {
                 }
             }
             size_t expanded_bytes_written = 0;
-            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, bytes_per_output_frame * framecount, &expanded_bytes_written, 0));
+            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, bytes_per_output_frame * framecount, &expanded_bytes_written, I2S_WRITE_DELAY));
             assert(expanded_bytes_written % 4 == 0);
             bytes_written = expanded_bytes_written / bytes_per_output_frame * bytes_per_input_frame;
         }
