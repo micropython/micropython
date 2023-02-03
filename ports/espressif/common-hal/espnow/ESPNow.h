@@ -29,6 +29,7 @@
 #include "py/obj.h"
 #include "py/ringbuf.h"
 
+#include "bindings/espnow/ESPNowStats.h"
 #include "bindings/espnow/Peers.h"
 
 #include "esp_wifi.h"
@@ -39,16 +40,14 @@ typedef struct _espnow_obj_t {
     ringbuf_t *recv_buffer;         // A buffer for received packets
     size_t recv_buffer_size;        // The size of the recv_buffer
     wifi_phy_rate_t phy_rate;       // The ESP-NOW physical layer rate.
-    volatile size_t rx_packets;     // # of received packets
-    volatile size_t rx_failures;    // # of dropped packets (buffer full)
-    size_t tx_packets;              // # of sent packets
-    volatile size_t tx_responses;   // # of sent packet responses received
-    volatile size_t tx_failures;    // # of sent packet responses failed
-    espnow_peers_obj_t *peers;      // Cache the # of peers for send(sync=True)
+    espnow_stats_obj_t *tx_stats;   // The tx packet stats
+    espnow_stats_obj_t *rx_stats;   // The rx packet stats
+    espnow_peers_obj_t *peers;      // The sequence of peers
 } espnow_obj_t;
 
 extern void espnow_reset(void);
 
+extern void common_hal_espnow_construct(espnow_obj_t *self, mp_int_t buffer_size, mp_int_t phy_rate);
 extern void common_hal_espnow_init(espnow_obj_t *self);
 extern void common_hal_espnow_deinit(espnow_obj_t *self);
 extern bool common_hal_espnow_deinited(espnow_obj_t *self);

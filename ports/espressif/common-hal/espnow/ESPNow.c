@@ -45,14 +45,15 @@
 
 // TODO: deinit wifi?
 
-// The maximum length of an espnow packet (bytes)
+// The min/max length of an espnow packet (bytes)
+#define MIN_PACKET_LEN (sizeof(espnow_packet_t))
 #define MAX_PACKET_LEN (sizeof(espnow_packet_t) + ESP_NOW_MAX_DATA_LEN)
 
 // Enough for 2 full-size packets: 2 * (6 + 7 + 250) = 526 bytes
 // Will allocate an additional 7 bytes for buffer overhead
 #define DEFAULT_RECV_BUFFER_SIZE (2 * MAX_PACKET_LEN)
 
-// Time to wait (millisec) for responses from sent packets: (2 seconds).
+// Time to wait (millisec) for responses from sent packets: (1 seconds).
 #define DEFAULT_SEND_TIMEOUT_MS (1000)
 
 // ESPNow packet format for the receive buffer.
@@ -70,27 +71,34 @@ typedef struct {
     uint8_t msg[0];             // Message is up to 250 bytes
 } __attribute__((packed)) espnow_packet_t;
 
-// Return a pointer to the ESPNow module singleton
-static espnow_obj_t *_get_singleton(void) {
-    return MP_STATE_PORT(espnow_singleton);
-}
-
 // --- The ESP-NOW send and recv callback routines ---
 
 // Callback triggered when a sent packet is acknowledged by the peer (or not).
 // Just count the number of responses and number of failures.
 // These are used in the send() logic.
 static void send_cb(const uint8_t *mac, esp_now_send_status_t status) {
-    espnow_obj_t *self = _get_singleton();
-    self->tx_responses++;
-    if (status != ESP_NOW_SEND_SUCCESS) {
-        self->tx_failures++;
+    espnow_obj_t *self = MP_STATE_PORT(espnow_singleton);
+    if (status == ESP_NOW_SEND_SUCCESS) {
+        self->tx_stats->success++;
+    } else {
+        self->tx_stats->failure++;
     }
 }
 
-// Get the RSSI value from the wifi packet header
-static inline int8_t _get_rssi_from_wifi_packet(const uint8_t *msg) {
-    // Warning: Secret magic to get the rssi from the wifi packet header
+// Callback triggered when an ESP-NOW packet is received.
+// Write the peer MAC address and the message into the recv_buffer as an ESPNow packet.
+// If the buffer is full, drop the message and increment the dropped count.
+static void recv_cb(const uint8_t *mac, const uint8_t *msg, int msg_len) {
+    espnow_obj_t *self = MP_STATE_PORT(espnow_singleton);
+    ringbuf_t *buf = self->recv_buffer;
+
+    if (sizeof(espnow_packet_t) + msg_len > ringbuf_num_empty(buf)) {
+        self->rx_stats->failure++;
+        return;
+    }
+
+    // Get the RSSI value from the wifi packet header
+    // Secret magic to get the rssi from the wifi packet header
     // See espnow.c:espnow_recv_cb() at https://github.com/espressif/esp-now/
     // In the wifi packet the msg comes after a wifi_promiscuous_pkt_t
     // and a espnow_frame_format_t.
@@ -101,36 +109,35 @@ static inline int8_t _get_rssi_from_wifi_packet(const uint8_t *msg) {
     wifi_promiscuous_pkt_t *wifi_packet = (wifi_promiscuous_pkt_t *)(
         msg - SIZEOF_ESPNOW_FRAME_FORMAT - sizeof(wifi_promiscuous_pkt_t));
     #pragma GCC diagnostic pop
-    return wifi_packet->rx_ctrl.rssi;
-}
-
-// Callback triggered when an ESP-NOW packet is received.
-// Write the peer MAC address and the message into the recv_buffer as an ESPNow packet.
-// If the buffer is full, drop the message and increment the dropped count.
-static void recv_cb(const uint8_t *mac, const uint8_t *msg, int msg_len) {
-    espnow_obj_t *self = _get_singleton();
-    ringbuf_t *buf = self->recv_buffer;
-
-    if (sizeof(espnow_packet_t) + msg_len > ringbuf_num_empty(buf)) {
-        self->rx_failures++;
-        return;
-    }
 
     espnow_header_t header;
     header.magic = ESPNOW_MAGIC;
     header.msg_len = msg_len;
-    header.rssi = _get_rssi_from_wifi_packet(msg);
+    header.rssi = wifi_packet->rx_ctrl.rssi;
     header.time_ms = mp_hal_ticks_ms();
 
     ringbuf_put_n(buf, (uint8_t *)&header, sizeof(header));
     ringbuf_put_n(buf, mac, ESP_NOW_ETH_ALEN);
     ringbuf_put_n(buf, msg, msg_len);
 
-    self->rx_packets++;
+    self->rx_stats->success++;
 }
 
 bool common_hal_espnow_deinited(espnow_obj_t *self) {
     return self == NULL || self->recv_buffer == NULL;
+}
+
+// Construct the ESPNow object
+void common_hal_espnow_construct(espnow_obj_t *self, mp_int_t buffer_size, mp_int_t phy_rate) {
+    common_hal_espnow_set_buffer_size(self, buffer_size);
+    common_hal_espnow_set_phy_rate(self, phy_rate);
+
+    self->tx_stats = espnow_stats_new();
+    self->rx_stats = espnow_stats_new();
+
+    self->peers = espnow_peers_new();
+
+    common_hal_espnow_init(self);
 }
 
 // Initialize the ESP-NOW software stack,
@@ -171,17 +178,15 @@ void common_hal_espnow_deinit(espnow_obj_t *self) {
 
     self->recv_buffer->buf = NULL;
     self->recv_buffer = NULL;
-    // self->peers_count = 0; // esp_now_deinit() removes all peers.
-    self->tx_packets = self->tx_responses;
 }
 
 void espnow_reset(void) {
-    common_hal_espnow_deinit(_get_singleton());
+    common_hal_espnow_deinit(MP_STATE_PORT(espnow_singleton));
     MP_STATE_PORT(espnow_singleton) = NULL;
 }
 
 void common_hal_espnow_set_buffer_size(espnow_obj_t *self, mp_int_t value) {
-    self->recv_buffer_size = mp_arg_validate_int_min(value, MAX_PACKET_LEN, MP_QSTR_buffer_size);
+    self->recv_buffer_size = mp_arg_validate_int_min(value, MIN_PACKET_LEN, MP_QSTR_buffer_size);
 };
 
 void common_hal_espnow_set_phy_rate(espnow_obj_t *self, mp_int_t value) {
@@ -205,10 +210,6 @@ mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const uint8_t *mac, const mp
         RUN_BACKGROUND_TASKS;
     }
     CHECK_ESP_RESULT(err);
-
-    // Increment the sent packet count.
-    // If mac == NULL msg will be sent to all peers EXCEPT any broadcast or multicast addresses.
-    self->tx_packets += ((mac == NULL) ? ((mp_obj_list_t *)self->peers->list)->len : 1);
 
     return mp_const_none;
 }

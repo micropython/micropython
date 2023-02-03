@@ -27,9 +27,8 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/objarray.h"
 #include "py/objproperty.h"
+#include "py/runtime.h"
 #include "py/stream.h"
 
 #include "bindings/espnow/ESPNow.h"
@@ -74,19 +73,15 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         mp_raise_RuntimeError(translate("Already running"));
     }
 
+    // Allocate a new object
     self = m_new_obj(espnow_obj_t);
     self->base.type = &espnow_type;
 
-    common_hal_espnow_set_buffer_size(self, args[ARG_buffer_size].u_int);
-    common_hal_espnow_set_phy_rate(self, args[ARG_phy_rate].u_int);
-
-    self->peers = espnow_peers_new();
+    // Construct the object
+    common_hal_espnow_construct(self, args[ARG_buffer_size].u_int, args[ARG_phy_rate].u_int);
 
     // Set the global singleton pointer for the espnow protocol.
     MP_STATE_PORT(espnow_singleton) = self;
-
-    common_hal_espnow_init(self);
-
     return self;
 }
 
@@ -167,23 +162,29 @@ MP_PROPERTY_GETSET(espnow_phy_rate_obj,
     (mp_obj_t)&espnow_get_phy_rate_obj,
     (mp_obj_t)&espnow_set_phy_rate_obj);
 
-//|     stats: Tuple[int, int, int, int, int]
-//|     """Provide some useful stats in a `tuple` of
-//|        (tx_packets, tx_responses, tx_failures, rx_packets, rx_failures). (read-only)"""
+//|     tx_stats: ESPNowStats
+//|     """The ``TX`` packet statistics."""
 //|
-STATIC mp_obj_t espnow_get_stats(mp_obj_t self_in) {
+STATIC mp_obj_t espnow_get_tx_stats(mp_obj_t self_in) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_TUPLE(
-        mp_obj_new_int(self->tx_packets),
-        mp_obj_new_int(self->tx_responses),
-        mp_obj_new_int(self->tx_failures),
-        mp_obj_new_int(self->rx_packets),
-        mp_obj_new_int(self->rx_failures));
+    return MP_OBJ_FROM_PTR(self->tx_stats);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_stats_obj, espnow_get_stats);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_tx_stats_obj, espnow_get_tx_stats);
 
-MP_PROPERTY_GETTER(espnow_stats_obj,
-    (mp_obj_t)&espnow_get_stats_obj);
+MP_PROPERTY_GETTER(espnow_tx_stats_obj,
+    (mp_obj_t)&espnow_get_tx_stats_obj);
+
+//|     rx_stats: ESPNowStats
+//|     """The ``RX`` packet statistics."""
+//|
+STATIC mp_obj_t espnow_get_rx_stats(mp_obj_t self_in) {
+    espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_FROM_PTR(self->rx_stats);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_rx_stats_obj, espnow_get_rx_stats);
+
+MP_PROPERTY_GETTER(espnow_rx_stats_obj,
+    (mp_obj_t)&espnow_get_rx_stats_obj);
 
 // --- Send and Receive ESP-NOW data ---
 
@@ -195,9 +196,8 @@ MP_PROPERTY_GETTER(espnow_stats_obj,
 //|         """Send a message to the peer's mac address.
 //|
 //|         :param ReadableBuffer message: The message to send (length <= 250 bytes).
-//|         :param ReadableBuffer mac: The peer's address (length = 6 bytes). If `None` or any non-true value, send to all registered peers.
-//|
-//|         :raises EAGAIN: if the internal espnow buffers are full."""
+//|         :param ReadableBuffer mac: The peer's address (length = 6 bytes).
+//|             If `None` or any non-true value, send to all registered peers."""
 //|         ...
 STATIC mp_obj_t espnow_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_message, ARG_mac, ARG_sync };
@@ -255,6 +255,7 @@ STATIC const mp_rom_map_elem_t espnow_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__),   MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),    MP_ROM_PTR(&espnow___exit___obj) },
 
+    // Deinit the object
     { MP_ROM_QSTR(MP_QSTR_deinit),      MP_ROM_PTR(&espnow_deinit_obj) },
 
     // Config parameters
@@ -262,7 +263,9 @@ STATIC const mp_rom_map_elem_t espnow_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_buffer_size), MP_ROM_PTR(&espnow_buffer_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_phy_rate),    MP_ROM_PTR(&espnow_phy_rate_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_stats),       MP_ROM_PTR(&espnow_stats_obj) },
+    // Packet statistics
+    { MP_ROM_QSTR(MP_QSTR_tx_stats),    MP_ROM_PTR(&espnow_tx_stats_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rx_stats),    MP_ROM_PTR(&espnow_rx_stats_obj) },
 
     // Send and receive messages
     { MP_ROM_QSTR(MP_QSTR_send),        MP_ROM_PTR(&espnow_send_obj) },
@@ -278,21 +281,25 @@ STATIC MP_DEFINE_CONST_DICT(espnow_locals_dict, espnow_locals_dict_table);
 
 // Support ioctl(MP_STREAM_POLL, ) for asyncio
 STATIC mp_uint_t espnow_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
-    if (request != MP_STREAM_POLL) {
-        *errcode = MP_EINVAL;
-        return MP_STREAM_ERROR;
-    }
-
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return (common_hal_espnow_deinited(self)) ? 0 : // If not initialized
-           arg ^ (
-               // If no data in the buffer, unset the Read ready flag
-               ((!ringbuf_num_filled(self->recv_buffer)) ? MP_STREAM_POLL_RD : 0) |
-               // If still waiting for responses, unset the Write ready flag
-               ((self->tx_responses < self->tx_packets) ? MP_STREAM_POLL_WR : 0));
+    check_for_deinit(self);
+    switch (request) {
+        case MP_STREAM_POLL: {
+            mp_uint_t flags = arg;
+            mp_uint_t ret = 0;
+            if ((flags & MP_STREAM_POLL_RD) && ringbuf_num_filled(self->recv_buffer) > 0) {
+                ret |= MP_STREAM_POLL_RD;
+            }
+            return ret;
+        }
+        default:
+            *errcode = MP_EINVAL;
+            return MP_STREAM_ERROR;
+    }
 }
 
 STATIC const mp_stream_p_t espnow_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .ioctl = espnow_stream_ioctl,
 };
 

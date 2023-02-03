@@ -35,6 +35,8 @@
 
 #include "esp_now.h"
 
+// TODO: Check for deinit
+
 //| class Peers:
 //|     """A class that provides peer managment functions. Sequence[Peer]."""
 //|
