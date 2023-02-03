@@ -112,7 +112,14 @@ void dma_irq_init(dma_DMA_obj_t *self, mp_obj_t handler)
 {
     self->handler = handler;
     MP_STATE_PORT(dma_DMA_obj_all)[self->dma_channel] = self;
+    
+    // work around to prevent spurious IRQ's
+    dma_channel_set_irq0_enabled(self->dma_channel, false);
+    dma_channel_abort(self->dma_channel);
+    // clear the spurious IRQ (if there was one)
+    dma_channel_acknowledge_irq0(self->dma_channel);
     dma_channel_set_irq0_enabled(self->dma_channel, true);
+    
     irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler);
     irq_set_enabled(DMA_IRQ_0, true);
 }
@@ -270,9 +277,6 @@ STATIC mp_obj_t dma_DMA_write_from(size_t n_args, const mp_obj_t *pos_args, mp_m
     
     check_init(self);
     check_busy(self);
-
-    if(dma_channel_is_busy(self->dma_channel))
-        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("DMA channel is already active")); 
 
     void * to_address_ptr = (void*)args[ARG_to_address].u_int;
     uint32_t dreq = args[ARG_dreq].u_int;
