@@ -32,21 +32,11 @@
 #include "py/stream.h"
 
 #include "bindings/espnow/ESPNow.h"
-
-#include "shared-bindings/util.h"
-
 #include "common-hal/espnow/__init__.h"
-#include "common-hal/espnow/ESPNow.h"
 
 #include "esp_now.h"
 
 // --- Initialisation and Config functions ---
-
-static void check_for_deinit(espnow_obj_t *self) {
-    if (common_hal_espnow_deinited(self)) {
-        raise_deinited_error();
-    }
-}
 
 //| class ESPNow:
 //|     """Provides access to the ESP-NOW protocol."""
@@ -82,7 +72,7 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 
     // Set the global singleton pointer for the espnow protocol.
     MP_STATE_PORT(espnow_singleton) = self;
-    return self;
+    return MP_OBJ_FROM_PTR(self);
 }
 
 //|     def deinit(self) -> None:
@@ -90,6 +80,7 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 //|         ...
 STATIC mp_obj_t espnow_deinit(mp_obj_t self_in) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_espnow_check_for_deinit(self);
     common_hal_espnow_deinit(self);
     return mp_const_none;
 }
@@ -117,6 +108,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow___exit___obj, 4, 4, espnow_obj
 //|         ...
 STATIC mp_obj_t espnow_set_pmk(mp_obj_t self_in, mp_obj_t key) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_espnow_check_for_deinit(self);
     common_hal_espnow_set_pmk(self, common_hal_espnow_get_bytes_len(key, ESP_NOW_KEY_LEN));
     return mp_const_none;
 }
@@ -133,6 +125,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_buffer_size_obj, espnow_get_buffer_size);
 
 STATIC mp_obj_t espnow_set_buffer_size(const mp_obj_t self_in, const mp_obj_t value) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_espnow_check_for_deinit(self);
     common_hal_espnow_set_buffer_size(self, mp_obj_get_int(value));
     return mp_const_none;
 }
@@ -153,6 +146,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_phy_rate_obj, espnow_get_phy_rate);
 
 STATIC mp_obj_t espnow_set_phy_rate(const mp_obj_t self_in, const mp_obj_t value) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_espnow_check_for_deinit(self);
     common_hal_espnow_set_phy_rate(self, mp_obj_get_int(value));
     return mp_const_none;
 }
@@ -162,78 +156,29 @@ MP_PROPERTY_GETSET(espnow_phy_rate_obj,
     (mp_obj_t)&espnow_get_phy_rate_obj,
     (mp_obj_t)&espnow_set_phy_rate_obj);
 
-//|     tx_stats: ESPNowStats
-//|     """The ``TX`` packet statistics."""
+//|     send: Communicate
+//|     """A `Communicate` object with ``job`` set to ``send``. (read-only)"""
 //|
-STATIC mp_obj_t espnow_get_tx_stats(mp_obj_t self_in) {
+STATIC mp_obj_t espnow_get_send(mp_obj_t self_in) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_FROM_PTR(self->tx_stats);
+    return MP_OBJ_FROM_PTR(self->send);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_tx_stats_obj, espnow_get_tx_stats);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_send_obj, espnow_get_send);
 
-MP_PROPERTY_GETTER(espnow_tx_stats_obj,
-    (mp_obj_t)&espnow_get_tx_stats_obj);
+MP_PROPERTY_GETTER(espnow_send_call_obj,
+    (mp_obj_t)&espnow_get_send_obj);
 
-//|     rx_stats: ESPNowStats
-//|     """The ``RX`` packet statistics."""
+//|     recv: Communicate
+//|     """A `Communicate` object with ``job`` set to ``recv``. (read-only)"""
 //|
-STATIC mp_obj_t espnow_get_rx_stats(mp_obj_t self_in) {
+STATIC mp_obj_t espnow_get_recv(mp_obj_t self_in) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_FROM_PTR(self->rx_stats);
+    return MP_OBJ_FROM_PTR(self->recv);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_rx_stats_obj, espnow_get_rx_stats);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_recv_obj, espnow_get_recv);
 
-MP_PROPERTY_GETTER(espnow_rx_stats_obj,
-    (mp_obj_t)&espnow_get_rx_stats_obj);
-
-// --- Send and Receive ESP-NOW data ---
-
-//|     def send(
-//|         self,
-//|         message: ReadableBuffer,
-//|         mac: Optional[ReadableBuffer],
-//|     ) -> bool:
-//|         """Send a message to the peer's mac address.
-//|
-//|         :param ReadableBuffer message: The message to send (length <= 250 bytes).
-//|         :param ReadableBuffer mac: The peer's address (length = 6 bytes).
-//|             If `None` or any non-true value, send to all registered peers."""
-//|         ...
-STATIC mp_obj_t espnow_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_message, ARG_mac, ARG_sync };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_message,  MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_mac,      MP_ARG_OBJ, { .u_obj = mp_const_none } },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    espnow_obj_t *self = pos_args[0];
-    check_for_deinit(self);
-
-    const uint8_t *peer_addr = common_hal_espnow_get_bytes_len(args[ARG_mac].u_obj, ESP_NOW_ETH_ALEN);
-
-    // Get a pointer to the data buffer of the message
-    mp_buffer_info_t message;
-    mp_get_buffer_raise(args[ARG_message].u_obj, &message, MP_BUFFER_READ);
-
-    return common_hal_espnow_send(self, peer_addr, &message);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espnow_send_obj, 2, espnow_send);
-
-//|     def recv(self) -> Optional[ESPNowPacket]:
-//|         """Receive a message from the peer(s).
-//|
-//|         :returns: An `ESPNowPacket` if available in the buffer, otherwise `None`."""
-//|         ...
-STATIC mp_obj_t espnow_recv(mp_obj_t self_in) {
-    espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    return common_hal_espnow_recv(self);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_recv_obj, espnow_recv);
+MP_PROPERTY_GETTER(espnow_recv_call_obj,
+    (mp_obj_t)&espnow_get_recv_obj);
 
 // --- Peer Related Properties ---
 
@@ -242,7 +187,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_recv_obj, espnow_recv);
 //|
 STATIC mp_obj_t espnow_get_peers(mp_obj_t self_in) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
     return MP_OBJ_FROM_PTR(self->peers);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_peers_obj, espnow_get_peers);
@@ -263,13 +207,9 @@ STATIC const mp_rom_map_elem_t espnow_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_buffer_size), MP_ROM_PTR(&espnow_buffer_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_phy_rate),    MP_ROM_PTR(&espnow_phy_rate_obj) },
 
-    // Packet statistics
-    { MP_ROM_QSTR(MP_QSTR_tx_stats),    MP_ROM_PTR(&espnow_tx_stats_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rx_stats),    MP_ROM_PTR(&espnow_rx_stats_obj) },
-
     // Send and receive messages
-    { MP_ROM_QSTR(MP_QSTR_send),        MP_ROM_PTR(&espnow_send_obj) },
-    { MP_ROM_QSTR(MP_QSTR_recv),        MP_ROM_PTR(&espnow_recv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send),        MP_ROM_PTR(&espnow_send_call_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recv),        MP_ROM_PTR(&espnow_recv_call_obj) },
 
     // Peer related properties
     { MP_ROM_QSTR(MP_QSTR_peers),       MP_ROM_PTR(&espnow_peers_obj) },
@@ -282,7 +222,7 @@ STATIC MP_DEFINE_CONST_DICT(espnow_locals_dict, espnow_locals_dict_table);
 // Support ioctl(MP_STREAM_POLL, ) for asyncio
 STATIC mp_uint_t espnow_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
+    common_hal_espnow_check_for_deinit(self);
     switch (request) {
         case MP_STREAM_POLL: {
             mp_uint_t flags = arg;
@@ -314,6 +254,7 @@ STATIC const mp_stream_p_t espnow_stream_p = {
 //|
 STATIC mp_obj_t espnow_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_espnow_check_for_deinit(self);
     size_t len = ringbuf_num_filled(self->recv_buffer);
     switch (op) {
         case MP_UNARY_OP_BOOL:

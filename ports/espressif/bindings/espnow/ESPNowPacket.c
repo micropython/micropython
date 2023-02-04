@@ -27,19 +27,19 @@
 #include "bindings/espnow/ESPNowPacket.h"
 
 //| class ESPNowPacket:
-//|     """A packet retrieved from ESP-NOW communication protocol"""
+//|     """A packet retrieved from ESP-NOW communication protocol. A namedtuple."""
 //|
 //|     mac: ReadableBuffer
-//|     """The sender's mac address (length = 6 bytes)"""
+//|     """The sender's mac address (length = 6 bytes)."""
 //|
 //|     msg: ReadableBuffer
-//|     """The message sent by the peer (length <= 250 bytes)"""
+//|     """The message sent by the peer (length <= 250 bytes)."""
 //|
 //|     rssi: int
-//|     """The received signal strength indication (in dBm from -127 to 0)"""
+//|     """The received signal strength indication (in dBm from -127 to 0)."""
 //|
 //|     time: int
-//|     """The time in milliseconds since the device last booted when the packet was received"""
+//|     """The time in milliseconds since the device last booted when the packet was received."""
 //|
 
 const mp_obj_namedtuple_type_t espnow_packet_type_obj = {

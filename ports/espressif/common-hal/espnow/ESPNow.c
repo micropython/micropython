@@ -53,8 +53,8 @@
 // Will allocate an additional 7 bytes for buffer overhead
 #define DEFAULT_RECV_BUFFER_SIZE (2 * MAX_PACKET_LEN)
 
-// Time to wait (millisec) for responses from sent packets: (1 seconds).
-#define DEFAULT_SEND_TIMEOUT_MS (1000)
+// Time to wait (millisec) for responses from sent packets: (2 seconds).
+#define DEFAULT_SEND_TIMEOUT_MS (2000)
 
 // ESPNow packet format for the receive buffer.
 // Use this for peeking at the header of the next packet in the buffer.
@@ -79,9 +79,9 @@ typedef struct {
 static void send_cb(const uint8_t *mac, esp_now_send_status_t status) {
     espnow_obj_t *self = MP_STATE_PORT(espnow_singleton);
     if (status == ESP_NOW_SEND_SUCCESS) {
-        self->tx_stats->success++;
+        self->send->success++;
     } else {
-        self->tx_stats->failure++;
+        self->send->failure++;
     }
 }
 
@@ -93,7 +93,7 @@ static void recv_cb(const uint8_t *mac, const uint8_t *msg, int msg_len) {
     ringbuf_t *buf = self->recv_buffer;
 
     if (sizeof(espnow_packet_t) + msg_len > ringbuf_num_empty(buf)) {
-        self->rx_stats->failure++;
+        self->recv->failure++;
         return;
     }
 
@@ -120,7 +120,7 @@ static void recv_cb(const uint8_t *mac, const uint8_t *msg, int msg_len) {
     ringbuf_put_n(buf, mac, ESP_NOW_ETH_ALEN);
     ringbuf_put_n(buf, msg, msg_len);
 
-    self->rx_stats->success++;
+    self->recv->success++;
 }
 
 bool common_hal_espnow_deinited(espnow_obj_t *self) {
@@ -132,8 +132,8 @@ void common_hal_espnow_construct(espnow_obj_t *self, mp_int_t buffer_size, mp_in
     common_hal_espnow_set_buffer_size(self, buffer_size);
     common_hal_espnow_set_phy_rate(self, phy_rate);
 
-    self->tx_stats = espnow_stats_new();
-    self->rx_stats = espnow_stats_new();
+    self->send = espnow_com_new(MP_QSTR_send);
+    self->recv = espnow_com_new(MP_QSTR_recv);
 
     self->peers = espnow_peers_new();
 
@@ -200,7 +200,7 @@ void common_hal_espnow_set_pmk(espnow_obj_t *self, const uint8_t *key) {
 // --- Send and Receive ESP-NOW data ---
 
 
-mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const uint8_t *mac, const mp_buffer_info_t *message) {
+mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const mp_buffer_info_t *message, const uint8_t *mac) {
     // Send the packet - keep trying until timeout if the internal esp-now buffers are full.
     esp_err_t err;
     mp_uint_t start = mp_hal_ticks_ms();

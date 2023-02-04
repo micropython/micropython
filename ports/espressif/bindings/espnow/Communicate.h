@@ -32,7 +32,8 @@ typedef struct {
     mp_obj_base_t base;
     volatile size_t success;
     volatile size_t failure;
-} espnow_stats_obj_t;
+    qstr job;
+} espnow_com_obj_t;
 
-const mp_obj_type_t espnow_stats_type;
-extern espnow_stats_obj_t *espnow_stats_new(void);
+const mp_obj_type_t espnow_com_type;
+extern espnow_com_obj_t *espnow_com_new(qstr job);

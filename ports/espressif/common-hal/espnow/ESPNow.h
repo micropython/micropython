@@ -29,7 +29,7 @@
 #include "py/obj.h"
 #include "py/ringbuf.h"
 
-#include "bindings/espnow/ESPNowStats.h"
+#include "bindings/espnow/Communicate.h"
 #include "bindings/espnow/Peers.h"
 
 #include "esp_wifi.h"
@@ -37,12 +37,12 @@
 // The data structure for the espnow_singleton.
 typedef struct _espnow_obj_t {
     mp_obj_base_t base;
-    ringbuf_t *recv_buffer;         // A buffer for received packets
-    size_t recv_buffer_size;        // The size of the recv_buffer
-    wifi_phy_rate_t phy_rate;       // The ESP-NOW physical layer rate.
-    espnow_stats_obj_t *tx_stats;   // The tx packet stats
-    espnow_stats_obj_t *rx_stats;   // The rx packet stats
-    espnow_peers_obj_t *peers;      // The sequence of peers
+    ringbuf_t *recv_buffer;     // A buffer for received packets
+    size_t recv_buffer_size;    // The size of the recv_buffer
+    wifi_phy_rate_t phy_rate;   // The ESP-NOW physical layer rate.
+    espnow_com_obj_t *send;     // The tx packet stats
+    espnow_com_obj_t *recv;     // The rx packet stats
+    espnow_peers_obj_t *peers;  // The sequence of peers
 } espnow_obj_t;
 
 extern void espnow_reset(void);
@@ -56,5 +56,5 @@ extern void common_hal_espnow_set_buffer_size(espnow_obj_t *self, mp_int_t value
 extern void common_hal_espnow_set_phy_rate(espnow_obj_t *self, mp_int_t value);
 extern void common_hal_espnow_set_pmk(espnow_obj_t *self, const uint8_t *key);
 
-extern mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const uint8_t *mac, const mp_buffer_info_t *message);
+extern mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const mp_buffer_info_t *message, const uint8_t *mac);
 extern mp_obj_t common_hal_espnow_recv(espnow_obj_t *self);

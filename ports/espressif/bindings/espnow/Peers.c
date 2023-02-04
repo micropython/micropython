@@ -40,6 +40,9 @@
 //| class Peers:
 //|     """A class that provides peer managment functions. Sequence[Peer]."""
 //|
+//|     def __init__(self) -> None:
+//|         """You cannot create an instance of `Peers`."""
+//|         ...
 
 //|     def append(self, peer: Peer) -> None:
 //|         """Append peer.
@@ -195,7 +198,6 @@ const mp_obj_type_t espnow_peers_type = {
     { &mp_type_type },
     .name = MP_QSTR_Peers,
     .print = espnow_peers_print,
-    // .make_new = espnow_peers_make_new,
     .locals_dict = (mp_obj_t)&espnow_peers_locals_dict,
     .flags = MP_TYPE_FLAG_EXTENDED,
     MP_TYPE_EXTENDED_FIELDS(
@@ -204,16 +206,3 @@ const mp_obj_type_t espnow_peers_type = {
         .getiter = espnow_peers_getiter,
         ),
 };
-
-/*
-STATIC mp_obj_t espnow_peers_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    (void)type_in;
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
-
-    espnow_peers_obj_t *self = m_new_obj(espnow_peers_obj_t);
-    self->base.type = &espnow_peers_type;
-    self->list = mp_obj_new_list_from_iter(args[0]);
-
-    return MP_OBJ_FROM_PTR(self);
-}
-*/
