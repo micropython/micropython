@@ -141,15 +141,15 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     uint16_t x = 0;
     uint16_t y = 0;
     if (mp_obj_is_small_int(index_obj)) {
-        mp_int_t i = MP_OBJ_SMALL_INT_VALUE(index_obj);
+        mp_int_t i = mp_arg_validate_int_min(MP_OBJ_SMALL_INT_VALUE(index_obj), 0, MP_QSTR_index);
         uint16_t width = common_hal_displayio_bitmap_get_width(self);
         x = i % width;
         y = i / width;
     } else {
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(index_obj, 2, &items);
-        x = mp_obj_get_int(items[0]);
-        y = mp_obj_get_int(items[1]);
+        x = mp_arg_validate_int_min(mp_obj_get_int(items[0]), 0, MP_QSTR_x);
+        y = mp_arg_validate_int_min(mp_obj_get_int(items[1]), 0, MP_QSTR_y);
         if (x >= common_hal_displayio_bitmap_get_width(self) || y >= common_hal_displayio_bitmap_get_height(self)) {
             mp_raise_IndexError(translate("pixel coordinates out of bounds"));
         }
@@ -286,7 +286,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_blit_obj, 1, displayio_bitmap_obj_bl
 STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_uint_t value = (mp_uint_t)mp_obj_get_int(value_obj);
+    mp_uint_t value = (mp_uint_t)mp_arg_validate_int_min(mp_obj_get_int(value_obj), 0, MP_QSTR_value);
     if ((value >> common_hal_displayio_bitmap_get_bits_per_value(self)) != 0) {
         mp_raise_ValueError(translate("pixel value requires too many bits"));
     }
