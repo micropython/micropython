@@ -39,6 +39,7 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/I2CDisplay.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
+#include "shared-bindings/displayio/OnDiskGif.h"
 #include "shared-bindings/displayio/Palette.h"
 #if CIRCUITPY_PARALLELDISPLAY
 #include "shared-bindings/paralleldisplay/ParallelBus.h"
@@ -85,6 +86,7 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_EPaperDisplay), MP_ROM_PTR(&displayio_epaperdisplay_type) },
     { MP_ROM_QSTR(MP_QSTR_Group), MP_ROM_PTR(&displayio_group_type) },
     { MP_ROM_QSTR(MP_QSTR_OnDiskBitmap), MP_ROM_PTR(&displayio_ondiskbitmap_type) },
+    { MP_ROM_QSTR(MP_QSTR_OnDiskGif), MP_ROM_PTR(&displayio_ondiskgif_type) },
     { MP_ROM_QSTR(MP_QSTR_Palette), MP_ROM_PTR(&displayio_palette_type) },
     { MP_ROM_QSTR(MP_QSTR_Shape), MP_ROM_PTR(&displayio_shape_type) },
     { MP_ROM_QSTR(MP_QSTR_TileGrid), MP_ROM_PTR(&displayio_tilegrid_type) },
