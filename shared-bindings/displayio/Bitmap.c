@@ -62,14 +62,11 @@
 //|         ...
 STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
-    uint32_t width = mp_obj_get_int(all_args[0]);
-    uint32_t height = mp_obj_get_int(all_args[1]);
-    uint32_t value_count = mp_obj_get_int(all_args[2]);
+    uint32_t width = mp_arg_validate_int_min(mp_obj_get_int(all_args[0]), 1, MP_QSTR_width);
+    uint32_t height = mp_arg_validate_int_min(mp_obj_get_int(all_args[1]), 1, MP_QSTR_height);
+    uint32_t value_count = mp_arg_validate_int_min(mp_obj_get_int(all_args[2]), 1, MP_QSTR_value_count);
     uint32_t bits = 1;
 
-    if (value_count == 0) {
-        mp_raise_ValueError(translate("value_count must be > 0"));
-    }
     while ((value_count - 1) >> bits) {
         if (bits < 8) {
             bits <<= 1;
