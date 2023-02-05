@@ -165,20 +165,20 @@ STATIC mp_obj_t espnow_get_send(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_send_obj, espnow_get_send);
 
-MP_PROPERTY_GETTER(espnow_send_call_obj,
+MP_PROPERTY_GETTER(espnow_send_obj,
     (mp_obj_t)&espnow_get_send_obj);
 
-//|     recv: Communicate
-//|     """A `Communicate` object with ``job`` set to ``recv``. (read-only)"""
+//|     read: Communicate
+//|     """A `Communicate` object with ``job`` set to ``read``. (read-only)"""
 //|
-STATIC mp_obj_t espnow_get_recv(mp_obj_t self_in) {
+STATIC mp_obj_t espnow_get_read(mp_obj_t self_in) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_FROM_PTR(self->recv);
+    return MP_OBJ_FROM_PTR(self->read);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_recv_obj, espnow_get_recv);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_read_obj, espnow_get_read);
 
-MP_PROPERTY_GETTER(espnow_recv_call_obj,
-    (mp_obj_t)&espnow_get_recv_obj);
+MP_PROPERTY_GETTER(espnow_read_obj,
+    (mp_obj_t)&espnow_get_read_obj);
 
 // --- Peer Related Properties ---
 
@@ -208,8 +208,8 @@ STATIC const mp_rom_map_elem_t espnow_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_phy_rate),    MP_ROM_PTR(&espnow_phy_rate_obj) },
 
     // Send and receive messages
-    { MP_ROM_QSTR(MP_QSTR_send),        MP_ROM_PTR(&espnow_send_call_obj) },
-    { MP_ROM_QSTR(MP_QSTR_recv),        MP_ROM_PTR(&espnow_recv_call_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send),        MP_ROM_PTR(&espnow_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read),        MP_ROM_PTR(&espnow_read_obj) },
 
     // Peer related properties
     { MP_ROM_QSTR(MP_QSTR_peers),       MP_ROM_PTR(&espnow_peers_obj) },

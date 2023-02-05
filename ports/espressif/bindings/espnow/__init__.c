@@ -64,7 +64,7 @@
 //|
 //|     while True:
 //|         if e:
-//|             packet = e.recv()
+//|             packet = e.read()
 //|             packets.append(packet)
 //|             if packet.msg == b'end':
 //|                 break

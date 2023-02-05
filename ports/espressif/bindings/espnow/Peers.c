@@ -38,7 +38,7 @@
 // TODO: Check for deinit
 
 //| class Peers:
-//|     """A class that provides peer managment functions. Sequence[Peer]."""
+//|     """Maintains a `list` of `Peer` internally and only exposes a subset of `list` methods."""
 //|
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `Peers`."""
@@ -86,22 +86,7 @@ STATIC MP_DEFINE_CONST_DICT(espnow_peers_locals_dict, espnow_peers_locals_dict_t
 STATIC void espnow_peers_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     espnow_peers_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_list_t *list = MP_OBJ_TO_PTR(self->list);
-    const char *item_separator = ", ";
-    if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
-        kind = PRINT_REPR;
-    } else {
-        #if MICROPY_PY_UJSON_SEPARATORS
-        item_separator = MP_PRINT_GET_EXT(print)->item_separator;
-        #endif
-    }
-    mp_print_str(print, "[");
-    for (size_t i = 0; i < list->len; i++) {
-        if (i > 0) {
-            mp_print_str(print, item_separator);
-        }
-        mp_obj_print_helper(print, list->items[i], kind);
-    }
-    mp_print_str(print, "]");
+    return list->base.type->print(print, self->list, kind);
 }
 
 /******************************************************************************/
@@ -110,20 +95,7 @@ STATIC void espnow_peers_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 STATIC mp_obj_t espnow_peers_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     espnow_peers_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_list_t *list = MP_OBJ_TO_PTR(self->list);
-    switch (op) {
-        case MP_UNARY_OP_BOOL:
-            return mp_obj_new_bool(list->len != 0);
-        case MP_UNARY_OP_LEN:
-            return MP_OBJ_NEW_SMALL_INT(list->len);
-        #if MICROPY_PY_SYS_GETSIZEOF
-        case MP_UNARY_OP_SIZEOF: {
-            size_t sz = sizeof(*list) + sizeof(mp_obj_t) * list->alloc;
-            return MP_OBJ_NEW_SMALL_INT(sz);
-        }
-        #endif
-        default:
-            return MP_OBJ_NULL; // op not supported
-    }
+    return list->base.type->ext->unary_op(op, self->list);
 }
 
 /******************************************************************************/
@@ -133,58 +105,18 @@ STATIC mp_obj_t espnow_peers_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t v
     if (value != MP_OBJ_SENTINEL) {
         return MP_OBJ_NULL; // op not supported
     }
-
     espnow_peers_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_list_t *list = MP_OBJ_TO_PTR(self->list);
-
-    // load
-    #if MICROPY_PY_BUILTINS_SLICE
-    if (mp_obj_is_type(index, &mp_type_slice)) {
-        mp_bound_slice_t slice;
-        if (!mp_seq_get_fast_slice_indexes(list->len, index, &slice)) {
-            return mp_seq_extract_slice(list->len, list->items, &slice);
-        }
-
-        mp_obj_list_t *res = MP_OBJ_TO_PTR(mp_obj_new_list(slice.stop - slice.start, NULL));
-        mp_seq_copy(res->items, list->items + slice.start, res->len, mp_obj_t);
-        return MP_OBJ_FROM_PTR(res);
-    }
-    #endif
-    size_t index_val = mp_get_index(list->base.type, list->len, index, false);
-    return list->items[index_val];
+    return list->base.type->ext->subscr(self->list, index, value);
 }
 
 /******************************************************************************/
 /* peers iterator                                                             */
 
-typedef struct _espnow_peers_it_t {
-    mp_obj_base_t base;
-    mp_fun_1_t iternext;
-    mp_obj_t peers;
-    size_t cur;
-} espnow_peers_it_t;
-
-STATIC mp_obj_t espnow_peers_it_iternext(mp_obj_t self_in) {
-    espnow_peers_it_t *self = MP_OBJ_TO_PTR(self_in);
-    espnow_peers_obj_t *peers = MP_OBJ_TO_PTR(self->peers);
-    mp_obj_list_t *list = MP_OBJ_TO_PTR(peers->list);
-    if (self->cur < list->len) {
-        mp_obj_t o_out = list->items[self->cur];
-        self->cur += 1;
-        return o_out;
-    } else {
-        return MP_OBJ_STOP_ITERATION;
-    }
-}
-
-STATIC mp_obj_t espnow_peers_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
-    assert(sizeof(espnow_peers_it_t) <= sizeof(mp_obj_iter_buf_t));
-    espnow_peers_it_t *o = (espnow_peers_it_t *)iter_buf;
-    o->base.type = &mp_type_polymorph_iter;
-    o->iternext = espnow_peers_it_iternext;
-    o->peers = o_in;
-    o->cur = 0;
-    return MP_OBJ_FROM_PTR(o);
+STATIC mp_obj_t espnow_peers_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+    espnow_peers_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_list_t *list = MP_OBJ_TO_PTR(self->list);
+    return list->base.type->ext->getiter(self->list, iter_buf);
 }
 
 espnow_peers_obj_t *espnow_peers_new(void) {

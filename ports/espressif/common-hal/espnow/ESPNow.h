@@ -40,8 +40,8 @@ typedef struct _espnow_obj_t {
     ringbuf_t *recv_buffer;     // A buffer for received packets
     size_t recv_buffer_size;    // The size of the recv_buffer
     wifi_phy_rate_t phy_rate;   // The ESP-NOW physical layer rate.
-    espnow_com_obj_t *send;     // The tx packet stats
-    espnow_com_obj_t *recv;     // The rx packet stats
+    espnow_com_obj_t *send;     // For keeping tx stats
+    espnow_com_obj_t *read;     // For keeping rx stats
     espnow_peers_obj_t *peers;  // The sequence of peers
 } espnow_obj_t;
 
@@ -57,4 +57,4 @@ extern void common_hal_espnow_set_phy_rate(espnow_obj_t *self, mp_int_t value);
 extern void common_hal_espnow_set_pmk(espnow_obj_t *self, const uint8_t *key);
 
 extern mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const mp_buffer_info_t *message, const uint8_t *mac);
-extern mp_obj_t common_hal_espnow_recv(espnow_obj_t *self);
+extern mp_obj_t common_hal_espnow_read(espnow_obj_t *self);

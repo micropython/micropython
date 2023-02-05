@@ -36,9 +36,9 @@
 //|     """Provides methods and statistics related to communication
 //|     with the ESP-NOW peers.
 //|
-//|     Dictionary:
+//|     Terminology:
 //|         * "Send" = "Transmit" = ``TX``
-//|         * "Recv" = "Receive" = ``RX``
+//|         * "Read" = ``RX``
 //|     """
 //|
 //|     def __init__(self) -> None:
@@ -46,7 +46,7 @@
 //|         ...
 
 //|     job: str
-//|     """Used to decide whether to call `__send` or `__recv`. (read-only)"""
+//|     """Used to decide whether to call `__send` or `__read`. (read-only)"""
 //|
 STATIC mp_obj_t espnow_com_get_job(const mp_obj_t self_in) {
     espnow_com_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -97,8 +97,10 @@ MP_PROPERTY_GETTER(espnow_com_failure_obj,
 //|         self,
 //|         message: ReadableBuffer,
 //|         peer: Peer,
-//|     ) -> bool:
+//|     ) -> None:
 //|         """Send a message to the peer's mac address.
+//|
+//|         This blocks until a timeout of ``2`` seconds if the ESP-NOW internal buffers are full.
 //|
 //|         :param ReadableBuffer message: The message to send (length <= 250 bytes).
 //|         :param Peer peer: Send message to this peer. If `None`, send to all registered peers.
@@ -131,18 +133,20 @@ STATIC mp_obj_t espnow_com___send(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espnow_com___send_obj, 2, espnow_com___send);
 
-//|     def __recv(self) -> Optional[ESPNowPacket]:
-//|         """Receive a message from the peer(s).
+//|     def __read(self) -> Optional[ESPNowPacket]:
+//|         """Read a packet from the receive buffer.
+//|
+//|         This is non-blocking, the packet is received asynchronously from the peer(s).
 //|
 //|         :returns: An `ESPNowPacket` if available in the buffer, otherwise `None`."""
 //|         ...
-STATIC mp_obj_t espnow_com___recv(mp_obj_t self_in) {
+STATIC mp_obj_t espnow_com___read(mp_obj_t self_in) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_espnow_check_for_deinit(self);
 
-    return common_hal_espnow_recv(self);
+    return common_hal_espnow_read(self);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_com___recv_obj, espnow_com___recv);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_com___read_obj, espnow_com___read);
 
 STATIC const mp_rom_map_elem_t espnow_com_locals_dict_table[] = {
     // Config parameters
@@ -153,14 +157,14 @@ STATIC const mp_rom_map_elem_t espnow_com_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_failure), MP_ROM_PTR(&espnow_com_failure_obj) },
 
     // Communication methods
-    { MP_ROM_QSTR(MP_QSTR___send), MP_ROM_PTR(&espnow_com___send_obj) },
-    { MP_ROM_QSTR(MP_QSTR___recv), MP_ROM_PTR(&espnow_com___recv_obj) },
+    { MP_ROM_QSTR(MP_QSTR___send),  MP_ROM_PTR(&espnow_com___send_obj) },
+    { MP_ROM_QSTR(MP_QSTR___read),  MP_ROM_PTR(&espnow_com___read_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(espnow_com_locals_dict, espnow_com_locals_dict_table);
 
 //|     def __call__(self, *args: Optional[Any], **kwargs: Optional[Any]) -> Optional[Any]:
-//|         """Calls the private `__send` or `__recv` methods with the supplied ``args`` and ``kwargs``
-//|         based on whether the job parameter is set to ``send`` or ``recv``."""
+//|         """Calls the private `__send` or `__read` methods with the supplied ``args`` and ``kwargs``
+//|         based on whether the job parameter is set to ``send`` or ``read``."""
 //|         ...
 //|
 STATIC mp_obj_t espnow_com_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -170,8 +174,8 @@ STATIC mp_obj_t espnow_com_call(mp_obj_t self_in, size_t n_args, size_t n_kw, co
         case MP_QSTR_send:
             meth = MP_OBJ_FROM_PTR(&espnow_com___send_obj);
             break;
-        case MP_QSTR_recv:
-            meth = MP_OBJ_FROM_PTR(&espnow_com___recv_obj);
+        case MP_QSTR_read:
+            meth = MP_OBJ_FROM_PTR(&espnow_com___read_obj);
             break;
         default:
             break;

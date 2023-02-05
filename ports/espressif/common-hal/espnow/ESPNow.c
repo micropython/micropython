@@ -93,7 +93,7 @@ static void recv_cb(const uint8_t *mac, const uint8_t *msg, int msg_len) {
     ringbuf_t *buf = self->recv_buffer;
 
     if (sizeof(espnow_packet_t) + msg_len > ringbuf_num_empty(buf)) {
-        self->recv->failure++;
+        self->read->failure++;
         return;
     }
 
@@ -120,7 +120,7 @@ static void recv_cb(const uint8_t *mac, const uint8_t *msg, int msg_len) {
     ringbuf_put_n(buf, mac, ESP_NOW_ETH_ALEN);
     ringbuf_put_n(buf, msg, msg_len);
 
-    self->recv->success++;
+    self->read->success++;
 }
 
 bool common_hal_espnow_deinited(espnow_obj_t *self) {
@@ -133,7 +133,7 @@ void common_hal_espnow_construct(espnow_obj_t *self, mp_int_t buffer_size, mp_in
     common_hal_espnow_set_phy_rate(self, phy_rate);
 
     self->send = espnow_com_new(MP_QSTR_send);
-    self->recv = espnow_com_new(MP_QSTR_recv);
+    self->read = espnow_com_new(MP_QSTR_read);
 
     self->peers = espnow_peers_new();
 
@@ -166,7 +166,7 @@ void common_hal_espnow_init(espnow_obj_t *self) {
 }
 
 // De-initialize the ESP-NOW software stack,
-// disable callbacks and deallocate the recv data buffers.
+// disable callbacks and deallocate the recv data buffer.
 void common_hal_espnow_deinit(espnow_obj_t *self) {
     if (common_hal_espnow_deinited(self)) {
         return;
@@ -214,7 +214,7 @@ mp_obj_t common_hal_espnow_send(espnow_obj_t *self, const mp_buffer_info_t *mess
     return mp_const_none;
 }
 
-mp_obj_t common_hal_espnow_recv(espnow_obj_t *self) {
+mp_obj_t common_hal_espnow_read(espnow_obj_t *self) {
     if (!ringbuf_num_filled(self->recv_buffer)) {
         return mp_const_none;
     }
