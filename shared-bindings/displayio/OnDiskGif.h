@@ -42,4 +42,8 @@ mp_obj_t common_hal_displayio_ondiskgif_get_pixel_shader(displayio_ondiskgif_t *
 mp_obj_t common_hal_displayio_ondiskgif_get_bitmap(displayio_ondiskgif_t *self);
 uint16_t common_hal_displayio_ondiskgif_get_width(displayio_ondiskgif_t *self);
 uint8_t common_hal_displayio_ondiskgif_play_frame(displayio_ondiskgif_t *self);
+int32_t common_hal_displayio_ondiskgif_get_duration(displayio_ondiskgif_t *self);
+int32_t common_hal_displayio_ondiskgif_get_frame_count(displayio_ondiskgif_t *self);
+int32_t common_hal_displayio_ondiskgif_get_min_delay(displayio_ondiskgif_t *self);
+int32_t common_hal_displayio_ondiskgif_get_max_delay(displayio_ondiskgif_t *self);
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKGIF_H

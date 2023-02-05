@@ -42,13 +42,11 @@ typedef struct {
     mp_obj_base_t base;
     GIFIMAGE gif;
     pyb_file_obj_t *file;
-    uint32_t *frame;
     displayio_bitmap_t *bitmap;
-    union {
-        mp_obj_base_t *pixel_shader_base;
-        struct displayio_palette *palette;
-        struct displayio_colorconverter *colorconverter;
-    };
+    int32_t duration;
+    int32_t frame_count;
+    int32_t min_delay;
+    int32_t max_delay;
 } displayio_ondiskgif_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKGIF_H

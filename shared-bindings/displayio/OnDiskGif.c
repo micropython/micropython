@@ -123,25 +123,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskgif_get_height_obj, displayio_ondiskgi
 MP_PROPERTY_GETTER(displayio_ondiskgif_height_obj,
     (mp_obj_t)&displayio_ondiskgif_get_height_obj);
 
-//|     pixel_shader: Union[ColorConverter, Palette]
-//|     """The image's pixel_shader.  The type depends on the underlying
-//|     bitmap's structure.  The pixel shader can be modified (e.g., to set the
-//|     transparent pixel or, for palette shaded images, to update the palette.)"""
-//|
-STATIC mp_obj_t displayio_ondiskgif_obj_get_pixel_shader(mp_obj_t self_in) {
-    displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
-    return common_hal_displayio_ondiskgif_get_pixel_shader(self);
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskgif_get_pixel_shader_obj, displayio_ondiskgif_obj_get_pixel_shader);
-
-const mp_obj_property_t displayio_ondiskgif_pixel_shader_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_ondiskgif_get_pixel_shader_obj,
-              (mp_obj_t)MP_ROM_NONE,
-              (mp_obj_t)MP_ROM_NONE},
-};
-
 //|     bitmap: Bitmap
 //|     """The image's bitmap.  The type depends on the underlying
 //|     bitmap's structure.  The pixel shader can be modified (e.g., to set the
@@ -154,12 +135,16 @@ STATIC mp_obj_t displayio_ondiskgif_obj_get_bitmap(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskgif_get_bitmap_obj, displayio_ondiskgif_obj_get_bitmap);
 
+MP_PROPERTY_GETTER(displayio_ondiskgif_bitmap_obj,
+    (mp_obj_t)&displayio_ondiskgif_get_bitmap_obj);
+
+/*
 const mp_obj_property_t displayio_ondiskgif_bitmap_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_ondiskgif_get_bitmap_obj,
               (mp_obj_t)MP_ROM_NONE,
               (mp_obj_t)MP_ROM_NONE},
-};
+};*/
 
 
 //|     play_frame: None
@@ -173,13 +158,68 @@ STATIC mp_obj_t displayio_ondiskgif_obj_play_frame(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskgif_play_frame_obj, displayio_ondiskgif_obj_play_frame);
 
+//|     duration: int
+//|     """Height of the bitmap. (read only)"""
+STATIC mp_obj_t displayio_ondiskgif_obj_get_duration(mp_obj_t self_in) {
+    displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskgif_get_duration(self));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskgif_get_duration_obj, displayio_ondiskgif_obj_get_duration);
+
+MP_PROPERTY_GETTER(displayio_ondiskgif_duration_obj,
+    (mp_obj_t)&displayio_ondiskgif_get_duration_obj);
+
+//|     frame_count: int
+//|     """Height of the bitmap. (read only)"""
+STATIC mp_obj_t displayio_ondiskgif_obj_get_frame_count(mp_obj_t self_in) {
+    displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskgif_get_frame_count(self));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskgif_get_frame_count_obj, displayio_ondiskgif_obj_get_frame_count);
+
+MP_PROPERTY_GETTER(displayio_ondiskgif_frame_count_obj,
+    (mp_obj_t)&displayio_ondiskgif_get_frame_count_obj);
+
+//|     min_delay: int
+//|     """Height of the bitmap. (read only)"""
+STATIC mp_obj_t displayio_ondiskgif_obj_get_min_delay(mp_obj_t self_in) {
+    displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskgif_get_min_delay(self));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskgif_get_min_delay_obj, displayio_ondiskgif_obj_get_min_delay);
+
+MP_PROPERTY_GETTER(displayio_ondiskgif_min_delay_obj,
+    (mp_obj_t)&displayio_ondiskgif_get_min_delay_obj);
+
+//|     max_delay: int
+//|     """Height of the bitmap. (read only)"""
+//|
+STATIC mp_obj_t displayio_ondiskgif_obj_get_max_delay(mp_obj_t self_in) {
+    displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskgif_get_max_delay(self));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskgif_get_max_delay_obj, displayio_ondiskgif_obj_get_max_delay);
+
+MP_PROPERTY_GETTER(displayio_ondiskgif_max_delay_obj,
+    (mp_obj_t)&displayio_ondiskgif_get_max_delay_obj);
 
 STATIC const mp_rom_map_elem_t displayio_ondiskgif_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_ondiskgif_height_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&displayio_ondiskgif_pixel_shader_obj) },
     { MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&displayio_ondiskgif_bitmap_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_ondiskgif_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_play_frame), MP_ROM_PTR(&displayio_ondiskgif_play_frame_obj) },
+    { MP_ROM_QSTR(MP_QSTR_duration), MP_ROM_PTR(&displayio_ondiskgif_duration_obj) },
+    { MP_ROM_QSTR(MP_QSTR_frame_count), MP_ROM_PTR(&displayio_ondiskgif_frame_count_obj) },
+    { MP_ROM_QSTR(MP_QSTR_min_delay), MP_ROM_PTR(&displayio_ondiskgif_min_delay_obj) },
+    { MP_ROM_QSTR(MP_QSTR_max_delay), MP_ROM_PTR(&displayio_ondiskgif_max_delay_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_ondiskgif_locals_dict, displayio_ondiskgif_locals_dict_table);
 
