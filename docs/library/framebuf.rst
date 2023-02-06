@@ -77,12 +77,13 @@ The following methods draw shapes onto the FrameBuffer.
     methods draw horizontal and vertical lines respectively up to
     a given length.
 
-.. method:: FrameBuffer.rect(x, y, w, h, c[, f])
+.. method:: FrameBuffer.rect(x, y, w, h, c)
 
     Draw a rectangle at the given location, size and color.
 
-    The optional *f* parameter can be set to ``True`` to fill the rectangle.
-    Otherwise just a one pixel outline is drawn.
+.. method:: FrameBuffer.fill_rect(x, y, w, h, c)
+
+    Draw a filled rectangle at the given location, size and color.
 
 .. method:: FrameBuffer.ellipse(x, y, xr, yr, c[, f, m])
 
