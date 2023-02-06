@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "https://pocketqube.readthedocs.io/en/latest/",
+    "features": [
+        "Space Ready",
+        "Micro USB",
+        "RGB LED",
+        "SPI Flash"
+    ],
+    "images": [
+        ""
+    ],
+    "mcu": "samd51",
+    "product": "Pycubed Mini V04",
+    "thumbnail": "",
+    "url": "https://pocketqube.readthedocs.io/en/latest/",
+    "vendor": "RexLab"
+}
