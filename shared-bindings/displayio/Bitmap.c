@@ -212,8 +212,9 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
 
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    int16_t x = args[ARG_x].u_int;
-    int16_t y = args[ARG_y].u_int;
+    // Check x,y are within self (target) bitmap boundary
+    int16_t x = mp_arg_validate_int_range(args[ARG_x].u_int, 0, self->width - 1, MP_QSTR_x);
+    int16_t y = mp_arg_validate_int_range(args[ARG_y].u_int, 0, self->height - 1, MP_QSTR_y);
 
     displayio_bitmap_t *source = mp_arg_validate_type(args[ARG_source].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap);
 
@@ -223,32 +224,21 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
         mp_raise_ValueError(translate("source palette too large"));
     }
 
-    int16_t x1 = args[ARG_x1].u_int;
-    int16_t y1 = args[ARG_y1].u_int;
+    // Check x1,y1,x2,y2 are within source bitmap boundary
+    int16_t x1 = mp_arg_validate_int_range(args[ARG_x1].u_int, 0, source->width - 1, MP_QSTR_x1);
+    int16_t y1 = mp_arg_validate_int_range(args[ARG_y1].u_int, 0, source->height - 1, MP_QSTR_y1);
     int16_t x2, y2;
     // if x2 or y2 is None, then set as the maximum size of the source bitmap
     if (args[ARG_x2].u_obj == mp_const_none) {
         x2 = source->width;
     } else {
-        x2 = mp_obj_get_int(args[ARG_x2].u_obj);
+        x2 = mp_arg_validate_int_range(mp_obj_get_int(args[ARG_x2].u_obj), 0, source->width, MP_QSTR_x2);
     }
     // int16_t y2;
     if (args[ARG_y2].u_obj == mp_const_none) {
         y2 = source->height;
     } else {
-        y2 = mp_obj_get_int(args[ARG_y2].u_obj);
-    }
-
-    // Check x,y are within self (target) bitmap boundary
-    if ((x < 0) || (y < 0) || (x > self->width) || (y > self->height)) {
-        mp_raise_ValueError(translate("out of range of target"));
-    }
-    // Check x1,y1,x2,y2 are within source bitmap boundary
-    if ((x1 < 0) || (x1 > source->width) ||
-        (y1 < 0) || (y1 > source->height) ||
-        (x2 < 0) || (x2 > source->width) ||
-        (y2 < 0) || (y2 > source->height)) {
-        mp_raise_ValueError(translate("out of range of source"));
+        y2 = mp_arg_validate_int_range(mp_obj_get_int(args[ARG_y2].u_obj), 0, source->height, MP_QSTR_y2);
     }
 
     // Ensure x1 < x2 and y1 < y2
