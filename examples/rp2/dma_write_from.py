@@ -31,16 +31,17 @@ def led():
 
     # create a 16 bit fade
     for i in range(0, buffer_size, 2):
-        from_buffer[i]= i & 0xFF
-        from_buffer[i+1]= (i>>8) & 0xFF
+        from_buffer[i] = i & 0xFF
+        from_buffer[i+1] = (i>>8) & 0xFF
 
     start = time.ticks_ms()
 
-    dma.write_from(from_buffer=from_buffer,
+    dma.write_from(
+        from_buffer=from_buffer,
         to_address=dest,
-        transfer_count=buffer_size>>data_size,
+        transfer_count=buffer_size >> data_size,
         dreq=dreq,
-        data_size=data_size
+        data_size=data_size,
     )
     while dma.isbusy():
         time.sleep_ms(100)
@@ -54,5 +55,5 @@ def led():
     pwm1.duty_u16(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     led()
