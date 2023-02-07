@@ -32,7 +32,7 @@ def led():
     # create a 16 bit fade
     for i in range(0, buffer_size, 2):
         from_buffer[i] = i & 0xFF
-        from_buffer[i+1] = (i>>8) & 0xFF
+        from_buffer[i+1] = (i >> 8) & 0xFF
 
     start = time.ticks_ms()
 
