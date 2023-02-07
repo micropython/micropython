@@ -1,4 +1,5 @@
 # Example using PIO to turn on an LED via an explicit exec.
+# Note: this does not work on Pico W because it uses Pin(25) for LED output.
 #
 # Demonstrates:
 #   - using set_init and set_base
