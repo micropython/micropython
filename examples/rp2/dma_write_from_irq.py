@@ -33,8 +33,8 @@ async def led():
 
     # create a 16 bit fade
     for i in range(0, buffer_size, 2):
-        from_buffer[i]= i & 0xFF
-        from_buffer[i+1]= (i>>8) & 0xFF
+        from_buffer[i] = i & 0xFF
+        from_buffer[i+1] = (i>>8) & 0xFF
 
     start = time.ticks_ms()
 
@@ -44,12 +44,13 @@ async def led():
         print("callback")
         e.set()
 
-    dma.write_from(from_buffer=from_buffer,
+    dma.write_from(
+        from_buffer=from_buffer,
         to_address=dest,
-        transfer_count=buffer_size>>data_size,
+        transfer_count=buffer_size >> data_size,
         dreq=dreq,
         data_size=data_size,
-        handler=_callback
+        handler=_callback,
     )
 
     await e.wait()
@@ -72,5 +73,5 @@ def main():
     uasyncio.run(async_led())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
