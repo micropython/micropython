@@ -33,13 +33,9 @@
 #include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/displayio/OnDiskGif.h"
 
-//| class OnDiskBitmap:
+//| class OnDiskGif:
 //|     """Loads values straight from disk. This minimizes memory use but can lead to
-//|     much slower pixel load times. These load times may result in frame tearing where only part of
-//|     the image is visible.
-//|
-//|     It's easiest to use on a board with a built in display such as the `Hallowing M0 Express
-//|     <https://www.adafruit.com/product/3900>`_.
+//|     much slower pixel load times
 //|
 //|     .. code-block:: Python
 //|
@@ -48,34 +44,25 @@
 //|       import time
 //|       import pulseio
 //|
-//|       board.DISPLAY.brightness = 0
 //|       splash = displayio.Group()
 //|       board.DISPLAY.show(splash)
 //|
-//|       odb = displayio.OnDiskBitmap('/sample.bmp')
-//|       face = displayio.TileGrid(odb, pixel_shader=odb.pixel_shader)
+//|       odg = displayio.OnDiskBitmap('/sample.gif')
+//|       odg.play_frame() # Load the first frame
+//|       face = displayio.TileGrid(odg, pixel_shader=displayio.ColorConverter(input_colorspace=displayio.Colorspace.RGB565))
 //|       splash.append(face)
-//|       # Wait for the image to load.
-//|       board.DISPLAY.refresh(target_frames_per_second=60)
-//|
-//|       # Fade up the backlight
-//|       for i in range(100):
-//|           board.DISPLAY.brightness = 0.01 * i
-//|           time.sleep(0.05)
+//|       board.DISPLAY.refresh()
 //|
 //|       # Wait forever
 //|       while True:
-//|           pass"""
+//|           gif.play_frame()
+//|           time.sleep(0.1)"""
 //|
-//|     def __init__(self, file: Union[str, typing.BinaryIO]) -> None:
-//|         """Create an OnDiskBitmap object with the given file.
+//|     def __init__(self, file: str) -> None:
+//|         """Create an OnDiskGif object with the given file.
 //|
-//|         :param file file: The name of the bitmap file.  For backwards compatibility, a file opened in binary mode may also be passed.
+//|         :param file file: The name of the GIF file.
 //|
-//|         Older versions of CircuitPython required a file opened in binary
-//|         mode. CircuitPython 7.0 modified OnDiskBitmap so that it takes a
-//|         filename instead, and opens the file internally.  A future version
-//|         of CircuitPython will remove the ability to pass in an opened file.
 //|         """
 //|         ...
 STATIC mp_obj_t displayio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -98,7 +85,7 @@ STATIC mp_obj_t displayio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n
 }
 
 //|     width: int
-//|     """Width of the bitmap. (read only)"""
+//|     """Width of the gif. (read only)"""
 STATIC mp_obj_t displayio_ondiskgif_obj_get_width(mp_obj_t self_in) {
     displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -111,7 +98,7 @@ MP_PROPERTY_GETTER(displayio_ondiskgif_width_obj,
     (mp_obj_t)&displayio_ondiskgif_get_width_obj);
 
 //|     height: int
-//|     """Height of the bitmap. (read only)"""
+//|     """Height of the gif. (read only)"""
 STATIC mp_obj_t displayio_ondiskgif_obj_get_height(mp_obj_t self_in) {
     displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -124,10 +111,7 @@ MP_PROPERTY_GETTER(displayio_ondiskgif_height_obj,
     (mp_obj_t)&displayio_ondiskgif_get_height_obj);
 
 //|     bitmap: Bitmap
-//|     """The image's bitmap.  The type depends on the underlying
-//|     bitmap's structure.  The pixel shader can be modified (e.g., to set the
-//|     transparent pixel or, for palette shaded images, to update the palette.)"""
-//|
+//|     """The bitmap used to hold the current frame."""
 STATIC mp_obj_t displayio_ondiskgif_obj_get_bitmap(mp_obj_t self_in) {
     displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_displayio_ondiskgif_get_bitmap(self);
@@ -138,28 +122,23 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskgif_get_bitmap_obj, displayio_ondiskgi
 MP_PROPERTY_GETTER(displayio_ondiskgif_bitmap_obj,
     (mp_obj_t)&displayio_ondiskgif_get_bitmap_obj);
 
-/*
-const mp_obj_property_t displayio_ondiskgif_bitmap_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_ondiskgif_get_bitmap_obj,
-              (mp_obj_t)MP_ROM_NONE,
-              (mp_obj_t)MP_ROM_NONE},
-};*/
+//|     play_frame: int
+//|     """Play next frame. Returns expected delay until the next frame."""
+STATIC mp_obj_t displayio_ondiskgif_obj_play_frame(size_t n_args, const mp_obj_t *args) {
+    displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(args[0]);
+    bool setDirty = mp_const_true;
 
+    if (n_args == 1) {
+        setDirty = mp_obj_is_true(args[1]);
+    }
 
-//|     play_frame: None
-//|     """Play next frame. (read only)"""
-//|
-STATIC mp_obj_t displayio_ondiskgif_obj_play_frame(mp_obj_t self_in) {
-    displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
-
-    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskgif_play_frame(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskgif_play_frame(self, setDirty));
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskgif_play_frame_obj, displayio_ondiskgif_obj_play_frame);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(displayio_ondiskgif_play_frame_obj, 1, 2, displayio_ondiskgif_obj_play_frame);
 
 //|     duration: int
-//|     """Height of the bitmap. (read only)"""
+//|     """Returns the total duration of the GIF in milliseconds. (read only)"""
 STATIC mp_obj_t displayio_ondiskgif_obj_get_duration(mp_obj_t self_in) {
     displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -172,7 +151,7 @@ MP_PROPERTY_GETTER(displayio_ondiskgif_duration_obj,
     (mp_obj_t)&displayio_ondiskgif_get_duration_obj);
 
 //|     frame_count: int
-//|     """Height of the bitmap. (read only)"""
+//|     """Returns the number of frames in the GIF. (read only)"""
 STATIC mp_obj_t displayio_ondiskgif_obj_get_frame_count(mp_obj_t self_in) {
     displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -185,7 +164,7 @@ MP_PROPERTY_GETTER(displayio_ondiskgif_frame_count_obj,
     (mp_obj_t)&displayio_ondiskgif_get_frame_count_obj);
 
 //|     min_delay: int
-//|     """Height of the bitmap. (read only)"""
+//|     """The minimum delay found between frames. (read only)"""
 STATIC mp_obj_t displayio_ondiskgif_obj_get_min_delay(mp_obj_t self_in) {
     displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -198,7 +177,7 @@ MP_PROPERTY_GETTER(displayio_ondiskgif_min_delay_obj,
     (mp_obj_t)&displayio_ondiskgif_get_min_delay_obj);
 
 //|     max_delay: int
-//|     """Height of the bitmap. (read only)"""
+//|     """The maximum delay found between frames. (read only)"""
 //|
 STATIC mp_obj_t displayio_ondiskgif_obj_get_max_delay(mp_obj_t self_in) {
     displayio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);

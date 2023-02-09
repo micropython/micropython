@@ -41,7 +41,7 @@ uint16_t common_hal_displayio_ondiskgif_get_height(displayio_ondiskgif_t *self);
 mp_obj_t common_hal_displayio_ondiskgif_get_pixel_shader(displayio_ondiskgif_t *self);
 mp_obj_t common_hal_displayio_ondiskgif_get_bitmap(displayio_ondiskgif_t *self);
 uint16_t common_hal_displayio_ondiskgif_get_width(displayio_ondiskgif_t *self);
-uint8_t common_hal_displayio_ondiskgif_play_frame(displayio_ondiskgif_t *self);
+uint8_t common_hal_displayio_ondiskgif_play_frame(displayio_ondiskgif_t *self, bool setDirty);
 int32_t common_hal_displayio_ondiskgif_get_duration(displayio_ondiskgif_t *self);
 int32_t common_hal_displayio_ondiskgif_get_frame_count(displayio_ondiskgif_t *self);
 int32_t common_hal_displayio_ondiskgif_get_min_delay(displayio_ondiskgif_t *self);

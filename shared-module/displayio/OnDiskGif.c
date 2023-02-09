@@ -109,7 +109,7 @@ void common_hal_displayio_ondiskgif_construct(displayio_ondiskgif_t *self, pyb_f
     // mp_printf(&mp_plat_print, "Begin OnDiskGif\n");
     self->file = file;
 
-    GIF_begin(&self->gif, GIF_PALETTE_RGB565_LE);
+    GIF_begin(&self->gif, GIF_PALETTE_RGB565_BE);
 
     self->gif.iError = GIF_SUCCESS;
     self->gif.pfnRead = GIFReadFile;
@@ -170,10 +170,11 @@ int32_t common_hal_displayio_ondiskgif_get_max_delay(displayio_ondiskgif_t *self
     return self->max_delay;
 }
 
-uint8_t common_hal_displayio_ondiskgif_play_frame(displayio_ondiskgif_t *self) {
-    int result = GIF_playFrame(&self->gif, 0, self->bitmap);
+uint8_t common_hal_displayio_ondiskgif_play_frame(displayio_ondiskgif_t *self, bool setDirty) {
+    int nextDelay = 0;
+    int result = GIF_playFrame(&self->gif, &nextDelay, self->bitmap);
 
-    if (result >= 0) {
+    if ((result >= 0) && (setDirty)) {
         displayio_area_t dirty_area = {
             .x1 = 0,
             .y1 = 0,
@@ -184,5 +185,5 @@ uint8_t common_hal_displayio_ondiskgif_play_frame(displayio_ondiskgif_t *self) {
         displayio_bitmap_set_dirty_area(self->bitmap, &dirty_area);
     }
 
-    return result;
+    return nextDelay;
 }
