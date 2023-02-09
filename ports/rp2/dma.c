@@ -64,17 +64,14 @@ typedef struct _dma_Timer_obj_t {
 /******************************************************************************
  * Private methods
 ******************************************************************************/
-void dma_irq_handler() {
-    uint32_t insts0 = dma_hw->ints0;
-    // clear the dma irq
-    dma_hw->ints0 = dma_hw->ints0;
-
+void dma_irq_handler(uint32_t irq_status) {
+    DBG_PRINTF("dma_irq_handler 0x%08x\n", irq_status);
     dma_DMA_obj_t *dma_callback = NULL;
     mp_obj_t callback = mp_const_none;
 
     for (uint8_t i = 0; i < NUM_DMA_CHANNELS; i++)
     {
-        if (insts0 & (1 << i)) {
+        if (irq_status & (1 << i)) {
             dma_callback = MP_STATE_PORT(dma_DMA_obj_all)[i];
             if (dma_callback) {
                 callback = dma_callback->handler;
@@ -101,19 +98,43 @@ void dma_irq_handler() {
     }
 }
 
-void dma_irq_init(dma_DMA_obj_t *self, mp_obj_t handler) {
+void dma_irq_handler0() {
+    uint32_t insts0 = dma_hw->ints0;
+    // clear the dma irq
+    dma_hw->ints0 = dma_hw->ints0;
+    dma_irq_handler(insts0);
+}
+
+void dma_irq_handler1() {
+    uint32_t insts1 = dma_hw->ints1;
+    // clear the dma irq
+    dma_hw->ints1 = dma_hw->ints1;
+    dma_irq_handler(insts1);
+}
+
+void dma_irq_init(dma_DMA_obj_t *self, mp_obj_t handler, uint32_t irq) {
+    DBG_PRINTF("dma_irq_init %d\n", irq);
     self->handler = handler;
     MP_STATE_PORT(dma_DMA_obj_all)[self->dma_channel] = self;
 
     // work around to prevent spurious IRQ's
-    dma_channel_set_irq0_enabled(self->dma_channel, false);
+    dma_irqn_set_channel_enabled(irq, self->dma_channel, false);
     dma_channel_abort(self->dma_channel);
     // clear the spurious IRQ (if there was one)
     dma_channel_acknowledge_irq0(self->dma_channel);
-    dma_channel_set_irq0_enabled(self->dma_channel, true);
+    if (irq == DMA_IRQ_0) {
+        dma_irqn_set_channel_enabled(0, self->dma_channel, true);
+    } else {
+        dma_irqn_set_channel_enabled(1, self->dma_channel, true);
+    }
 
-    irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler);
-    irq_set_enabled(DMA_IRQ_0, true);
+    if (irq == DMA_IRQ_0) {
+        irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler0);
+    } else {
+        irq_set_exclusive_handler(DMA_IRQ_1, dma_irq_handler1);
+    }
+
+    irq_set_enabled(irq, true);
 }
 
 void check_init(dma_DMA_obj_t *self) {
@@ -155,7 +176,8 @@ void dma_start_request(dma_DMA_obj_t *self,
     uint32_t transfer_count,
     uint32_t dreq,
     uint32_t data_size,
-    mp_obj_t handler) {
+    mp_obj_t handler,
+    uint32_t irq) {
     if (dreq != 0) {
         channel_config_set_dreq(config, dreq);
     }
@@ -164,9 +186,10 @@ void dma_start_request(dma_DMA_obj_t *self,
 
     // IRQ stuff
     if (mp_obj_is_callable(handler)) {
-        dma_irq_init(self, handler);
+        dma_irq_init(self, handler, irq);
     } else {
         dma_channel_set_irq0_enabled(self->dma_channel, false);
+        dma_channel_set_irq1_enabled(self->dma_channel, false);
     }
 
     // configure a one shot DMA request.
@@ -243,7 +266,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(dma_DMA_isclaimed_obj, dma_DMA_isclaimed);
  *
 *******************************************************************************/
 STATIC mp_obj_t dma_DMA_write_from(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_from_buffer, ARG_to_address, ARG_dreq, ARG_transfer_count, ARG_data_size, ARG_handler};
+    enum { ARG_from_buffer, ARG_to_address, ARG_dreq, ARG_transfer_count, ARG_data_size, ARG_handler, ARG_irq};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_from_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_to_address, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -251,6 +274,8 @@ STATIC mp_obj_t dma_DMA_write_from(size_t n_args, const mp_obj_t *pos_args, mp_m
         { MP_QSTR_transfer_count, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_data_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_SIZE_8} },
         { MP_QSTR_handler, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_irq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_IRQ_0} },
+
     };
     DBG_PRINTF("write_from\n");
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -266,6 +291,7 @@ STATIC mp_obj_t dma_DMA_write_from(size_t n_args, const mp_obj_t *pos_args, mp_m
     uint32_t transfer_count = args[ARG_transfer_count].u_int;
     uint32_t data_size = args[ARG_data_size].u_int;
     mp_obj_t handler = args[ARG_handler].u_obj;
+    uint32_t irq = args[ARG_irq].u_int;
 
     mp_buffer_info_t bufinfo;
     bufinfo.buf = NULL;
@@ -283,7 +309,7 @@ STATIC mp_obj_t dma_DMA_write_from(size_t n_args, const mp_obj_t *pos_args, mp_m
     channel_config_set_read_increment(&config, true);
     channel_config_set_write_increment(&config, false);
 
-    dma_start_request(self, &config, to_address_ptr, bufinfo.buf, transfer_count, dreq, data_size, handler);
+    dma_start_request(self, &config, to_address_ptr, bufinfo.buf, transfer_count, dreq, data_size, handler, irq);
 
     return mp_obj_new_int(bufinfo.len);
 
@@ -304,7 +330,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dma_DMA_write_from_obj, 1, dma_DMA_write_from)
  *
 *******************************************************************************/
 STATIC mp_obj_t dma_DMA_read_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_from_address, ARG_to_buffer, ARG_transfer_count, ARG_data_size, ARG_dreq,  ARG_handler};
+    enum { ARG_from_address, ARG_to_buffer, ARG_transfer_count, ARG_data_size, ARG_dreq,  ARG_handler, ARG_irq};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_from_address, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_to_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -312,6 +338,7 @@ STATIC mp_obj_t dma_DMA_read_into(size_t n_args, const mp_obj_t *pos_args, mp_ma
         { MP_QSTR_data_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_SIZE_8} },
         { MP_QSTR_dreq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_handler, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_irq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_IRQ_0} },
     };
     DBG_PRINTF("read_into\n");
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -327,6 +354,8 @@ STATIC mp_obj_t dma_DMA_read_into(size_t n_args, const mp_obj_t *pos_args, mp_ma
     uint32_t transfer_count = args[ARG_transfer_count].u_int;
     uint32_t data_size = args[ARG_data_size].u_int;
     mp_obj_t handler = args[ARG_handler].u_obj;
+    uint32_t irq = args[ARG_irq].u_int;
+
 
     mp_buffer_info_t bufinfo;
     bufinfo.buf = NULL;
@@ -343,7 +372,7 @@ STATIC mp_obj_t dma_DMA_read_into(size_t n_args, const mp_obj_t *pos_args, mp_ma
     channel_config_set_read_increment(&config, false);
     channel_config_set_write_increment(&config, true);
 
-    dma_start_request(self, &config, bufinfo.buf, from_address_ptr, transfer_count, dreq, data_size, handler);
+    dma_start_request(self, &config, bufinfo.buf, from_address_ptr, transfer_count, dreq, data_size, handler, irq);
 
     return mp_const_none;
 }
@@ -359,17 +388,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dma_DMA_read_into_obj, 1, dma_DMA_read_into);
  *
 *******************************************************************************/
 STATIC mp_obj_t dma_DMA_copy(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_from_buffer, ARG_to_buffer, ARG_handler};
+    enum { ARG_from_buffer, ARG_to_buffer, ARG_handler, ARG_irq};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_from_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_to_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_handler, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_irq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_IRQ_0} },
     };
     DBG_PRINTF("copy\n");
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     dma_DMA_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    uint32_t irq = args[ARG_irq].u_int;
 
     check_init(self);
     check_busy(self);
@@ -394,7 +425,7 @@ STATIC mp_obj_t dma_DMA_copy(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     channel_config_set_read_increment(&config, true);
     channel_config_set_write_increment(&config, true);
 
-    dma_start_request(self, &config, to_buffer.buf, from_buffer.buf, from_buffer.len, 0x3f, DMA_SIZE_8, handler);
+    dma_start_request(self, &config, to_buffer.buf, from_buffer.buf, from_buffer.len, 0x3f, DMA_SIZE_8, handler, irq);
 
     return mp_const_none;
 }
@@ -455,6 +486,8 @@ STATIC const mp_rom_map_elem_t dma_DMA_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DMA_SIZE_8),     MP_ROM_INT(DMA_SIZE_8) },
     { MP_ROM_QSTR(MP_QSTR_DMA_SIZE_16),    MP_ROM_INT(DMA_SIZE_16) },
     { MP_ROM_QSTR(MP_QSTR_DMA_SIZE_32),    MP_ROM_INT(DMA_SIZE_32) },
+    { MP_ROM_QSTR(MP_QSTR_DMA_IRQ_0),      MP_ROM_INT(DMA_IRQ_0) },
+    { MP_ROM_QSTR(MP_QSTR_DMA_IRQ_1),      MP_ROM_INT(DMA_IRQ_1) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(dma_DMA_locals_dict, dma_DMA_locals_dict_table);
