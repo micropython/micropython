@@ -532,6 +532,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if not has_complex:
         skip_tests.add("float/complex1.py")
         skip_tests.add("float/complex1_intbig.py")
+        skip_tests.add("float/complex_reverse_op.py")
         skip_tests.add("float/complex_special_methods.py")
         skip_tests.add("float/int_big_float.py")
         skip_tests.add("float/true_value.py")

@@ -14,7 +14,7 @@ class TestFloat:
 
 class TestComplex:
     def __complex__(self):
-        return 1j + 10
+        return complex(10, 1)
 
 
 for clas in TestFloat, TestComplex:

@@ -38,11 +38,10 @@ class RAMFS:
 
 try:
     bdev = RAMFS(50)
+    uos.VfsFat.mkfs(bdev)
 except MemoryError:
     print("SKIP")
     raise SystemExit
-
-uos.VfsFat.mkfs(bdev)
 
 print(b"FOO_FILETXT" not in bdev.data)
 print(b"hello!" not in bdev.data)
