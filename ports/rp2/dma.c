@@ -149,6 +149,12 @@ void check_busy(dma_DMA_obj_t *self) {
     }
 }
 
+void check_irq(uint32_t irq) {
+    if (irq != DMA_IRQ_0 && irq != DMA_IRQ_1) {
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("DMA invalid IRQ %d"), irq);
+    }
+}
+
 uint32_t dma_get_error_status(uint channel) {
     dma_channel_hw_t *dma = dma_channel_hw_addr(channel);
     return (dma->ctrl_trig >> 29) & 7;
@@ -263,6 +269,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(dma_DMA_isclaimed_obj, dma_DMA_isclaimed);
  * to_address - address to send data
  * dreq - optional throttle transfer. Default is to go as fast as possible
  * handler - optional IRQ handler
+ * irq - optional irq channel. Either DMA_IRQ_0 or DMA_IRQ_1
  *
 *******************************************************************************/
 STATIC mp_obj_t dma_DMA_write_from(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -292,6 +299,8 @@ STATIC mp_obj_t dma_DMA_write_from(size_t n_args, const mp_obj_t *pos_args, mp_m
     uint32_t data_size = args[ARG_data_size].u_int;
     mp_obj_t handler = args[ARG_handler].u_obj;
     uint32_t irq = args[ARG_irq].u_int;
+
+    check_irq(irq);
 
     mp_buffer_info_t bufinfo;
     bufinfo.buf = NULL;
@@ -327,6 +336,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dma_DMA_write_from_obj, 1, dma_DMA_write_from)
  * to_buffer - bytearray
  * dreq - optional throttle transfer. Default is to go as fast as possible
  * handler - optional IRQ handler
+ * irq - optional irq channel. Either DMA_IRQ_0 or DMA_IRQ_1
  *
 *******************************************************************************/
 STATIC mp_obj_t dma_DMA_read_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -356,6 +366,7 @@ STATIC mp_obj_t dma_DMA_read_into(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_obj_t handler = args[ARG_handler].u_obj;
     uint32_t irq = args[ARG_irq].u_int;
 
+    check_irq(irq);
 
     mp_buffer_info_t bufinfo;
     bufinfo.buf = NULL;
@@ -385,6 +396,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dma_DMA_read_into_obj, 1, dma_DMA_read_into);
  * from_buffer - source bytearray
  * to_buffer - bytearray
  * handler - optional IRQ handler
+ * irq - optional irq channel. Either DMA_IRQ_0 or DMA_IRQ_1
  *
 *******************************************************************************/
 STATIC mp_obj_t dma_DMA_copy(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -404,6 +416,7 @@ STATIC mp_obj_t dma_DMA_copy(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     check_init(self);
     check_busy(self);
+    check_irq(irq);
 
     mp_buffer_info_t from_buffer;
     from_buffer.buf = NULL;
