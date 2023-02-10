@@ -148,21 +148,15 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     } else {
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(index_obj, 2, &items);
-        x = mp_arg_validate_int_min(mp_obj_get_int(items[0]), 0, MP_QSTR_x);
-        y = mp_arg_validate_int_min(mp_obj_get_int(items[1]), 0, MP_QSTR_y);
-        if (x >= common_hal_displayio_bitmap_get_width(self) || y >= common_hal_displayio_bitmap_get_height(self)) {
-            mp_raise_IndexError(translate("pixel coordinates out of bounds"));
-        }
+        x = mp_arg_validate_int_range(mp_obj_get_int(items[0]), 0, self->width - 1, MP_QSTR_x);
+        y = mp_arg_validate_int_range(mp_obj_get_int(items[1]), 0, self->height - 1, MP_QSTR_y);
     }
 
     if (value_obj == MP_OBJ_SENTINEL) {
         // load
         return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_bitmap_get_pixel(self, x, y));
     } else {
-        mp_uint_t value = (mp_uint_t)mp_obj_get_int(value_obj);
-        if ((value >> common_hal_displayio_bitmap_get_bits_per_value(self)) != 0) {
-            mp_raise_ValueError(translate("pixel value requires too many bits"));
-        }
+        mp_uint_t value = (mp_uint_t)mp_arg_validate_int_range(mp_obj_get_int(value_obj), 0,(1u << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1, MP_QSTR_value);
         common_hal_displayio_bitmap_set_pixel(self, x, y, value);
     }
     return mp_const_none;
@@ -276,10 +270,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_blit_obj, 1, displayio_bitmap_obj_bl
 STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_uint_t value = (mp_uint_t)mp_arg_validate_int_min(mp_obj_get_int(value_obj), 0, MP_QSTR_value);
-    if ((value >> common_hal_displayio_bitmap_get_bits_per_value(self)) != 0) {
-        mp_raise_ValueError(translate("pixel value requires too many bits"));
-    }
+    mp_uint_t value = (mp_uint_t)mp_arg_validate_int_range(mp_obj_get_int(value_obj), 0,(1u << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1,MP_QSTR_value);
     common_hal_displayio_bitmap_fill(self, value);
 
     return mp_const_none;
