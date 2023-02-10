@@ -21,11 +21,15 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       build-doc: ${{ steps.set-matrix.outputs.build-doc }}
+      build-boards: ${{ steps.set-matrix.outputs.build-boards }}
       boards-aarch: ${{ steps.set-matrix.outputs.boards-aarch }}
       boards-arm: ${{ steps.set-matrix.outputs.boards-arm }}
       boards-espressif: ${{ steps.set-matrix.outputs.boards-espressif }}
       boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
       cp-version: ${{ steps.set-up-submodules.outputs.version }}
+    env:
+      MICROPY_CPYTHON3: python3.8
+      MICROPY_MICROPYTHON: ${{ github.workspace }}/ports/unix/micropython-coverage
     steps:
     - name: Dump GitHub context
       run: echo "$GITHUB_CONTEXT"
@@ -39,14 +43,14 @@ jobs:
     - name: Set up python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: 3.x
     - name: Duplicate USB VID/PID check
       run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
     - name: Set up submodules
       id: set-up-submodules
       uses: ./.github/actions/fetch_submodules
       with:
-        cache: "cache"
+        cache: cache
         version: true
     - name: Install dependencies
       run: |
@@ -60,24 +64,27 @@ jobs:
         python3 --version
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
+    - uses: actions/upload-artifact@v3
+      with:
+        name: mpy-cross
+        path: mpy-cross/mpy-cross
     - name: Build unix port
-      run: |
-        make -C ports/unix VARIANT=coverage -j2
+      run: make -C ports/unix VARIANT=coverage -j2
     - name: Test all
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1
+      run:  ./run-tests.py -j2
       working-directory: tests
     - name: Print failure info
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --print-failures
+      run: ./run-tests.py -j2 --print-failures
       if: failure()
       working-directory: tests
     - name: Native Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --emit native
+      run: ./run-tests.py -j2 --emit native
       working-directory: tests
     - name: mpy Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --via-mpy -d basics float micropython
+      run: ./run-tests.py -j2 --via-mpy -d basics float micropython
       working-directory: tests
     - name: Native mpy Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --via-mpy --emit native -d basics float micropython
+      run: ./run-tests.py -j2 --via-mpy --emit native -d basics float micropython
       working-directory: tests
     - name: Build native modules
       run: |
@@ -90,7 +97,7 @@ jobs:
         make -C examples/natmod/ure
         make -C examples/natmod/uzlib
     - name: Test native modules
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-natmodtests.py extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py
+      run: ./run-natmodtests.py extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py
       working-directory: tests
     - name: Build mpy-cross.static-aarch64
       run: make -C mpy-cross -j2 -f Makefile.static-aarch64
@@ -166,11 +173,7 @@ jobs:
   mpy-cross-mac:
     runs-on: macos-11
     needs: test
-    if: >-
-      needs.test.outputs.boards-aarch != '[]' ||
-      needs.test.outputs.boards-arm != '[]' ||
-      needs.test.outputs.boards-espressif != '[]' ||
-      needs.test.outputs.boards-riscv != '[]'
+    if: ${{ needs.test.outputs.build-boards == 'True' }}
     env:
       CP_VERSION: ${{ needs.test.outputs.cp-version }}
     steps:
@@ -182,7 +185,7 @@ jobs:
     - name: Set up python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: 3.x
     - name: Set up submodules
       uses: ./.github/actions/fetch_submodules
     - name: Versions
@@ -235,7 +238,7 @@ jobs:
     - name: Set up python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: 3.x
     - name: Set up submodules
       uses: ./.github/actions/fetch_submodules
     - name: Install dependencies
@@ -305,7 +308,7 @@ jobs:
     - name: Set up python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: 3.x
     - name: Set up submodules
       id: set-up-submodules
       uses: ./.github/actions/fetch_submodules
@@ -334,9 +337,15 @@ jobs:
         arm-none-eabi-gcc --version
         python3 --version
         mkfs.fat --version || true
-    - name: Build mpy-cross
+    - name: Download mpy-cross
       if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
-      run: make -C mpy-cross -j2
+      uses: actions/download-artifact@v3
+      with:
+        name: mpy-cross
+        path: mpy-cross
+    - name: Make mpy-cross executable
+      if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
+      run: sudo chmod +x mpy-cross/mpy-cross
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: Build
@@ -380,7 +389,7 @@ jobs:
     - name: Set up python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: 3.x
     - name: Set up submodules
       id: set-up-submodules
       uses: ./.github/actions/fetch_submodules
@@ -396,9 +405,15 @@ jobs:
         gcc --version
         arm-none-eabi-gcc --version
         python3 --version
-    - name: Build mpy-cross
+    - name: Download mpy-cross
       if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
-      run: make -C mpy-cross -j2
+      uses: actions/download-artifact@v3
+      with:
+        name: mpy-cross
+        path: mpy-cross
+    - name: Make mpy-cross executable
+      if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
+      run: sudo chmod +x mpy-cross/mpy-cross
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: Build
@@ -489,9 +504,15 @@ jobs:
         python3 --version
         ninja --version
         cmake --version
-    - name: Build mpy-cross
+    - name: Download mpy-cross
       if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
-      run: make -C mpy-cross -j2
+      uses: actions/download-artifact@v3
+      with:
+        name: mpy-cross
+        path: mpy-cross
+    - name: Make mpy-cross executable
+      if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
+      run: sudo chmod +x mpy-cross/mpy-cross
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: Build
@@ -537,7 +558,7 @@ jobs:
     - name: Set up python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: 3.x
     - name: Set up submodules
       id: set-up-submodules
       uses: ./.github/actions/fetch_submodules
@@ -552,9 +573,15 @@ jobs:
         gcc --version
         riscv64-unknown-elf-gcc --version
         python3 --version
-    - name: Build mpy-cross
+    - name: Download mpy-cross
       if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
-      run: make -C mpy-cross -j2
+      uses: actions/download-artifact@v3
+      with:
+        name: mpy-cross
+        path: mpy-cross
+    - name: Make mpy-cross executable
+      if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
+      run: sudo chmod +x mpy-cross/mpy-cross
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: Build

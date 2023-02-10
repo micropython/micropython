@@ -204,7 +204,9 @@ def set_boards_to_build(build_all: bool):
             break
 
     # Split boards by architecture.
-    print("Building boards:")
+    build_boards = bool(boards_to_build)
+    print("Building boards:", build_boards)
+    set_output("build-boards", build_boards)
     arch_to_boards = {"aarch": [], "arm": [], "riscv": [], "espressif": []}
     for board in sorted(boards_to_build):
         print(" ", board)
