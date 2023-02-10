@@ -1,0 +1,51 @@
+name: Fetch port deps
+
+inputs:
+  platform:
+    required: false
+    default: none
+    type: choice
+    options:
+    - espressif
+    - none
+
+runs:
+  using: composite
+  steps:
+    # espressif
+    - name: Set IDF env
+      if: inputs.platform == 'espressif'
+      run: |
+        echo >> $GITHUB_ENV "IDF_PATH=$GITHUB_WORKSPACE/ports/espressif/esp-idf"
+        echo >> $GITHUB_ENV "IDF_TOOLS_PATH=$GITHUB_WORKSPACE/.idf_tools"
+      shell: bash
+
+    - name: Get IDF commit
+      if: inputs.platform == 'espressif'
+      id: idf-commit
+      run: |
+        COMMIT=$(git submodule status ports/espressif/esp-idf | grep -o -P '(?<=^-).*(?= )')
+        echo "$COMMIT"
+        echo "commit=$COMMIT" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Cache IDF submodules
+      if: inputs.platform == 'espressif'
+      uses: actions/cache@v3
+      with:
+        path: |
+          .git/modules/ports/espressif/esp-idf
+          ports/espressif/esp-idf
+        key: submodules-idf-${{ steps.idf-commit.outputs.commit }}
+
+    - name: Cache IDF tools
+      if: inputs.platform == 'espressif'
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.IDF_TOOLS_PATH }}
+        key: tools-idf-${{ steps.idf-commit.outputs.commit }}-${{ runner.os }}-${{ env.pythonLocation }}
+
+    - name: Initialize IDF submodules
+      if: inputs.platform == 'espressif'
+      run: git submodule update --init --depth=1 --recursive $IDF_PATH
+      shell: bash
