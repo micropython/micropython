@@ -155,6 +155,12 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
     mp_obj_tuple_print(print, MP_OBJ_FROM_PTR(o->args), kind);
 }
 
+void mp_obj_exception_initialize0(mp_obj_exception_t *o_exc, const mp_obj_type_t *type) {
+    o_exc->base.type = type;
+    o_exc->args = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
+    mp_obj_exception_clear_traceback(o_exc);
+}
+
 mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, false);
 
@@ -583,6 +589,12 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
     // just set the traceback to the empty traceback object
     // we don't want to call any memory management functions here
     self->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
+    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+    self->cause = 0;
+    self->context = 0;
+    self->suppress_context = false;
+    self->marked = false;
+    #endif
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block) {
