@@ -25,10 +25,6 @@ jobs:
       matrix:
         board: ${{ fromJSON(inputs.boards) }}
     steps:
-    - name: Dump GitHub context
-      run: echo "$GITHUB_CONTEXT"
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
     - name: Set up repository
       uses: actions/checkout@v3
       with:
@@ -49,6 +45,9 @@ jobs:
       uses: ./.github/actions/external_deps
       with:
         platform: ${{ inputs.platform }}
+    - name: Set up mpy-cross
+      if: steps.set-up-submodules.outputs.frozen == 'True'
+      uses: ./.github/actions/mpy_cross
 
     - name: Versions
       run: |
@@ -62,16 +61,6 @@ jobs:
         riscv32-esp-elf-gcc --version || true
         riscv64-unknown-elf-gcc --version || true
         mkfs.fat --version || true
-
-    - name: Download mpy-cross
-      if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
-      uses: actions/download-artifact@v3
-      with:
-        name: mpy-cross
-        path: mpy-cross
-    - name: Make mpy-cross executable
-      if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
-      run: sudo chmod +x mpy-cross/mpy-cross
 
     - name: Set up build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"

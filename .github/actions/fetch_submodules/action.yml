@@ -1,6 +1,11 @@
 name: 'Fetch Submodules'
 
 inputs:
+  target:
+    description: 'The target for ci_fetch_deps'
+    required: false
+    type: string
+
   submodules:
     description: 'The submodules to cache'
     required: false
@@ -63,7 +68,7 @@ runs:
 
     - name: CircuitPython dependencies
       id: cp-deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board || github.job }}
+      run: python tools/ci_fetch_deps.py ${{ inputs.target || matrix.board || github.job }}
       shell: bash
 
     - name: CircuitPython version

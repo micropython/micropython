@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  scheduler:
     runs-on: ubuntu-20.04
     outputs:
       build-doc: ${{ steps.set-matrix.outputs.build-doc }}
@@ -54,89 +54,8 @@ jobs:
         version: true
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y eatmydata
-        sudo eatmydata apt-get install -y gettext gcc-aarch64-linux-gnu mingw-w64
-        pip install -r requirements-dev.txt
-    - name: Versions
-      run: |
-        gcc --version
-        python3 --version
-    - name: Build mpy-cross
-      run: make -C mpy-cross -j2
-    - uses: actions/upload-artifact@v3
-      with:
-        name: mpy-cross
-        path: mpy-cross/mpy-cross
-    - name: Build unix port
-      run: make -C ports/unix VARIANT=coverage -j2
-    - name: Test all
-      run:  ./run-tests.py -j2
-      working-directory: tests
-    - name: Print failure info
-      run: ./run-tests.py -j2 --print-failures
-      if: failure()
-      working-directory: tests
-    - name: Native Tests
-      run: ./run-tests.py -j2 --emit native
-      working-directory: tests
-    - name: mpy Tests
-      run: ./run-tests.py -j2 --via-mpy -d basics float micropython
-      working-directory: tests
-    - name: Native mpy Tests
-      run: ./run-tests.py -j2 --via-mpy --emit native -d basics float micropython
-      working-directory: tests
-    - name: Build native modules
-      run: |
-        make -C examples/natmod/features1
-        make -C examples/natmod/features2
-        make -C examples/natmod/btree
-        make -C examples/natmod/framebuf
-        make -C examples/natmod/uheapq
-        make -C examples/natmod/urandom
-        make -C examples/natmod/ure
-        make -C examples/natmod/uzlib
-    - name: Test native modules
-      run: ./run-natmodtests.py extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py
-      working-directory: tests
-    - name: Build mpy-cross.static-aarch64
-      run: make -C mpy-cross -j2 -f Makefile.static-aarch64
-    - uses: actions/upload-artifact@v3
-      with:
-        name: mpy-cross.static-aarch64
-        path: mpy-cross/mpy-cross.static-aarch64
-    - name: Build mpy-cross.static-raspbian
-      run: make -C mpy-cross -j2 -f Makefile.static-raspbian
-    - uses: actions/upload-artifact@v3
-      with:
-        name: mpy-cross.static-raspbian
-        path: mpy-cross/mpy-cross.static-raspbian
-    - name: Build mpy-cross.static
-      run: make -C mpy-cross -j2 -f Makefile.static
-    - uses: actions/upload-artifact@v3
-      with:
-        name: mpy-cross.static-amd64-linux
-        path: mpy-cross/mpy-cross.static
-    - name: Build mpy-cross.static-mingw
-      run: make -C mpy-cross -j2 -f Makefile.static-mingw
-    - uses: actions/upload-artifact@v3
-      with:
-        name: mpy-cross.static-x64-windows
-        path: mpy-cross/mpy-cross.static.exe
-    - name: Upload to S3
-      if: >-
-        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
-        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
-      env:
-        AWS_PAGER: ''
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: |
-        pip install awscli
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-aarch64 s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-aarch64-${{ env.CP_VERSION }} --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-raspbian s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-raspbian-${{ env.CP_VERSION }} --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-amd64-linux-${{ env.CP_VERSION }} --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static.exe s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-x64-windows-${{ env.CP_VERSION }}.exe --no-progress --region us-east-1
+        sudo apt-get install -y gettext
+        pip install requests requests-cache sh
     # Disabled: Needs to be updated
     # - name: Get last commit with checks
     #   id: get-last-commit-with-checks
@@ -148,6 +67,8 @@ jobs:
     #     PULL: ${{ github.event.number }}
     #     GITHUB_TOKEN: ${{ github.token }}
     #     EXCLUDE_COMMIT: ${{ github.event.after }}
+    - name: Set up mpy-cross
+      uses: ./.github/actions/mpy_cross
     - name: Set head sha
       if: github.event_name == 'pull_request'
       run: echo "HEAD_SHA=$(git show -s --format=%s $GITHUB_SHA | grep -o -P "(?<=Merge ).*(?= into)")" >> $GITHUB_ENV
@@ -170,13 +91,28 @@ jobs:
         CHANGED_FILES: ${{ steps.get-changes.outputs.changed_files }}
         LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
 
+  tests:
+    needs: scheduler
+    if: needs.scheduler.outputs.build-boards == 'True'
+    uses: ./.github/workflows/run-tests.yml
+    with:
+      cp-version: ${{ needs.scheduler.outputs.cp-version }}
+
+
+  mpy-cross:
+    needs: scheduler
+    if: needs.scheduler.outputs.build-boards == 'True'
+    uses: ./.github/workflows/build-mpy-cross.yml
+    with:
+      cp-version: ${{ needs.scheduler.outputs.cp-version }}
+
 
   mpy-cross-mac:
     runs-on: macos-11
-    needs: test
-    if: ${{ needs.test.outputs.build-boards == 'True' }}
+    needs: scheduler
+    if: ${{ needs.scheduler.outputs.build-boards == 'True' }}
     env:
-      CP_VERSION: ${{ needs.test.outputs.cp-version }}
+      CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
     steps:
     - name: Set up repository
       uses: actions/checkout@v3
@@ -213,23 +149,25 @@ jobs:
         name: mpy-cross-macos-11-universal
         path: mpy-cross-macos-universal
     - name: Upload mpy-cross build to S3
-      run: |
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross-macos-universal s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-universal --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-x64 --no-progress --region us-east-1
+      if: >-
+          (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
+          (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+      run: |
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross-macos-universal s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-universal --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-x64 --no-progress --region us-east-1
 
 
   build-doc:
     runs-on: ubuntu-22.04
-    needs: test
-    if: ${{ needs.test.outputs.build-doc == 'True' }}
+    needs: scheduler
+    if: ${{ needs.scheduler.outputs.build-doc == 'True' }}
     env:
-      CP_VERSION: ${{ needs.test.outputs.cp-version }}
+      CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
     steps:
     - name: Set up repository
       uses: actions/checkout@v3
@@ -276,7 +214,6 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
-        pip install awscli
         zip -9r circuitpython-stubs.zip circuitpython-stubs
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp circuitpython-stubs/dist/*.tar.gz s3://adafruit-circuit-python/bin/stubs/circuitpython-stubs-${{ env.CP_VERSION }}.zip --no-progress --region us-east-1
     - name: Upload stubs to PyPi
@@ -291,40 +228,40 @@ jobs:
 
 
   aarch:
-    needs: test
-    if: ${{ needs.test.outputs.boards-aarch != '[]' }}
+    needs: [scheduler, mpy-cross, tests]
+    if: ${{ needs.scheduler.outputs.boards-aarch != '[]' }}
     uses: ./.github/workflows/build-boards.yml
     with:
       platform: aarch
-      boards: ${{ needs.test.outputs.boards-aarch }}
-      cp-version: ${{ needs.test.outputs.cp-version }}
+      boards: ${{ needs.scheduler.outputs.boards-aarch }}
+      cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
 
   arm:
-    needs: test
-    if: ${{ needs.test.outputs.boards-arm != '[]' }}
+    needs: [scheduler, mpy-cross, tests]
+    if: ${{ needs.scheduler.outputs.boards-arm != '[]' }}
     uses: ./.github/workflows/build-boards.yml
     with:
       platform: arm
-      boards: ${{ needs.test.outputs.boards-arm }}
-      cp-version: ${{ needs.test.outputs.cp-version }}
+      boards: ${{ needs.scheduler.outputs.boards-arm }}
+      cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
 
   espressif:
-    needs: test
-    if: ${{ needs.test.outputs.boards-espressif != '[]' }}
+    needs: [scheduler, mpy-cross, tests]
+    if: ${{ needs.scheduler.outputs.boards-espressif != '[]' }}
     uses: ./.github/workflows/build-boards.yml
     with:
       platform: espressif
-      boards: ${{ needs.test.outputs.boards-espressif }}
-      cp-version: ${{ needs.test.outputs.cp-version }}
+      boards: ${{ needs.scheduler.outputs.boards-espressif }}
+      cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
 
   riscv:
-    needs: test
-    if: ${{ needs.test.outputs.boards-riscv != '[]' }}
+    needs: [scheduler, mpy-cross, tests]
+    if: ${{ needs.scheduler.outputs.boards-riscv != '[]' }}
     uses: ./.github/workflows/build-boards.yml
     with:
       platform: riscv
-      boards: ${{ needs.test.outputs.boards-riscv }}
-      cp-version: ${{ needs.test.outputs.cp-version }}
+      boards: ${{ needs.scheduler.outputs.boards-riscv }}
+      cp-version: ${{ needs.scheduler.outputs.cp-version }}
