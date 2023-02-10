@@ -61,15 +61,9 @@ jobs:
         path: mpy-cross/mpy-cross.${{ env[format('EX_{0}', matrix.mpy-cross)] || matrix.mpy-cross }}
 
     - name: Upload to S3
-      if: >-
-        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
-        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
-      env:
-        AWS_PAGER: ''
+      uses: ./.github/actions/upload_aws
+      with:
+        source: mpy-cross/mpy-cross.${{ env[format('EX_{0}', matrix.mpy-cross)] || matrix.mpy-cross }}
+        destination: mpy-cross/${{ env[format('OS_{0}', matrix.mpy-cross)] }}/mpy-cross-${{ env.CP_VERSION }}.${{ env[format('EX_{0}', matrix.mpy-cross)] || matrix.mpy-cross }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: >-
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp
-        mpy-cross/mpy-cross.${{ env[format('EX_{0}', matrix.mpy-cross)] || matrix.mpy-cross }}
-        s3://adafruit-circuit-python/bin/mpy-cross/$OS_${{ matrix.mpy-cross }}/mpy-cross-$CP_VERSION.${{ env[format('EX_{0}', matrix.mpy-cross)] || matrix.mpy-cross }}
-        --no-progress --region us-east-1

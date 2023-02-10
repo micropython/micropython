@@ -144,23 +144,23 @@ jobs:
         path: mpy-cross/mpy-cross-arm64
     - name: Make universal binary
       run: lipo -create -output mpy-cross-macos-universal mpy-cross/mpy-cross mpy-cross/mpy-cross-arm64
-    - uses: actions/upload-artifact@v3
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
       with:
         name: mpy-cross-macos-11-universal
         path: mpy-cross-macos-universal
-    - name: Upload mpy-cross build to S3
+    - name: Upload to S3
       if: >-
           (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
           (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
-      env:
-        AWS_PAGER: ''
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross-macos-universal s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-universal --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-x64 --no-progress --region us-east-1
-
+      env:
+        AWS_PAGER: ''
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   build-doc:
     runs-on: ubuntu-22.04
@@ -206,16 +206,12 @@ jobs:
         name: docs
         path: _build/latex
     - name: Upload to S3
-      if: >-
-        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
-        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
-      env:
-        AWS_PAGER: ''
+      uses: ./.github/actions/upload_aws
+      with:
+        source: circuitpython-stubs/dist/*.tar.gz
+        destination: stubs/circuitpython-stubs-${{ env.CP_VERSION }}.zip
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: |
-        zip -9r circuitpython-stubs.zip circuitpython-stubs
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp circuitpython-stubs/dist/*.tar.gz s3://adafruit-circuit-python/bin/stubs/circuitpython-stubs-${{ env.CP_VERSION }}.zip --no-progress --region us-east-1
     - name: Upload stubs to PyPi
       if: github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested')
       env:
