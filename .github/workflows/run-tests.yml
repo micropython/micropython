@@ -33,32 +33,22 @@ jobs:
       with:
         python-version: 3.x
     - name: Set up submodules
-      uses: ./.github/actions/fetch_submodules
+      uses: ./.github/actions/deps/submodules
       with:
         target: tests
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gettext
-
+    - name: Set up external
+      uses: ./.github/actions/deps/external
     - name: Set up mpy-cross
       uses: ./.github/actions/mpy_cross
-
     - name: Build unix port
       run: make -C ports/unix VARIANT=coverage -j2
-
-    - name: Test all
-      run: ./run-tests.py -j2 $TEST_${{ matrix.test }}
+    - name: Run tests
+      run: ./run-tests.py -j2 ${{ env[format('TEST_{0}', matrix.test)] }}
       working-directory: tests
     - name: Print failure info
       run: ./run-tests.py -j2 --print-failures
       if: failure()
       working-directory: tests
-
-    - name: Set up native modules
-      if: matrix.test == 'all'
-      run: pip install -r requirements-dev.txt
     - name: Build native modules
       if: matrix.test == 'all'
       run: |

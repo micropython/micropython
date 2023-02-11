@@ -27,9 +27,6 @@ jobs:
       boards-espressif: ${{ steps.set-matrix.outputs.boards-espressif }}
       boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
       cp-version: ${{ steps.set-up-submodules.outputs.version }}
-    env:
-      MICROPY_CPYTHON3: python3.8
-      MICROPY_MICROPYTHON: ${{ github.workspace }}/ports/unix/micropython-coverage
     steps:
     - name: Dump GitHub context
       run: echo "$GITHUB_CONTEXT"
@@ -48,14 +45,12 @@ jobs:
       run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
     - name: Set up submodules
       id: set-up-submodules
-      uses: ./.github/actions/fetch_submodules
+      uses: ./.github/actions/deps/submodules
       with:
-        cache: cache
+        action: cache
         version: true
-    - name: Install dependencies
-      run: |
-        sudo apt-get install -y gettext
-        pip install requests requests-cache sh
+    - name: Set up external
+      uses: ./.github/actions/deps/external
     # Disabled: Needs to be updated
     # - name: Get last commit with checks
     #   id: get-last-commit-with-checks
@@ -69,6 +64,8 @@ jobs:
     #     EXCLUDE_COMMIT: ${{ github.event.after }}
     - name: Set up mpy-cross
       uses: ./.github/actions/mpy_cross
+      with:
+        download: false
     - name: Set head sha
       if: github.event_name == 'pull_request'
       run: echo "HEAD_SHA=$(git show -s --format=%s $GITHUB_SHA | grep -o -P "(?<=Merge ).*(?= into)")" >> $GITHUB_ENV
@@ -124,7 +121,7 @@ jobs:
       with:
         python-version: 3.x
     - name: Set up submodules
-      uses: ./.github/actions/fetch_submodules
+      uses: ./.github/actions/deps/submodules
     - name: Versions
       run: |
         gcc --version
@@ -179,7 +176,7 @@ jobs:
       with:
         python-version: 3.x
     - name: Set up submodules
-      uses: ./.github/actions/fetch_submodules
+      uses: ./.github/actions/deps/submodules
     - name: Install dependencies
       run: |
         sudo apt-get update

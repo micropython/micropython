@@ -43,7 +43,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: ${{ env.IDF_TOOLS_PATH }}
-        key: tools-idf-${{ steps.idf-commit.outputs.commit }}-${{ runner.os }}-${{ env.pythonLocation }}
+        key: ${{ runner.os }}-${{ env.pythonLocation }}-tools-idf-${{ steps.idf-commit.outputs.commit }}
 
     - name: Initialize IDF submodules
       if: inputs.platform == 'espressif'

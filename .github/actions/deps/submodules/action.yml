@@ -12,7 +12,7 @@ inputs:
     default: '["extmod/ulab", "lib/", "tools/"]'
     type: string
 
-  cache:
+  action:
     description: 'The cache action to use'
     required: false
     default: 'restore'
@@ -47,7 +47,7 @@ runs:
       shell: bash
 
     - name: Cache submodules
-      if: ${{ inputs.cache == 'cache' }}
+      if: ${{ inputs.action == 'cache' }}
       uses: actions/cache@v3
       with:
         path: ".git/modules/\n${{ join(fromJSON(steps.create-submodule-status.outputs.submodules), '\n') }}"
@@ -55,7 +55,7 @@ runs:
         enableCrossOsArchive: true
 
     - name: Restore submodules
-      if: ${{ inputs.cache == 'restore' }}
+      if: ${{ inputs.action == 'restore' }}
       uses: actions/cache/restore@v3
       with:
         path: ".git/modules/\n${{ join(fromJSON(steps.create-submodule-status.outputs.submodules), '\n') }}"

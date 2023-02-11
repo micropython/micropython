@@ -1,0 +1,35 @@
+name: Fetch python deps
+
+inputs:
+  action:
+    description: The cache action to use
+    required: false
+    default: restore
+    type: choice
+    options:
+    - cache
+    - restore
+
+runs:
+  using: composite
+  steps:
+    - name: Cache python dependencies
+      if: ${{ inputs.action == 'cache' }}
+      uses: actions/cache@v3
+      with:
+        path: .cp_tools
+        key: ${{ runner.os }}-${{ env.pythonLocation }}-tools-cp-${{ hashFiles('requirements-dev.txt') }}
+
+    - name: Restore python dependencies
+      if: ${{ inputs.action == 'restore' }}
+      uses: actions/cache/restore@v3
+      with:
+        path: .cp_tools
+        key: ${{ runner.os }}-${{ env.pythonLocation }}-tools-cp-${{ hashFiles('requirements-dev.txt') }}
+
+    - name: Set up venv
+      run: |
+        python -m venv .cp_tools
+        source .cp_tools/bin/activate
+        echo >> $GITHUB_PATH "$PATH"
+      shell: bash

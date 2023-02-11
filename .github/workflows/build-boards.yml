@@ -35,14 +35,14 @@ jobs:
       with:
         python-version: 3.x
     - name: Set up port
-      uses: ./.github/actions/port_deps
+      uses: ./.github/actions/deps/port
       with:
         platform: ${{ inputs.platform }}
     - name: Set up submodules
       id: set-up-submodules
-      uses: ./.github/actions/fetch_submodules
+      uses: ./.github/actions/deps/submodules
     - name: Set up external
-      uses: ./.github/actions/external_deps
+      uses: ./.github/actions/deps/external
       with:
         platform: ${{ inputs.platform }}
     - name: Set up mpy-cross
@@ -64,7 +64,7 @@ jobs:
 
     - name: Set up build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
-    - name: Build
+    - name: Build board
       run: python3 -u build_release_files.py
       working-directory: tools
       env:
