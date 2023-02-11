@@ -48,7 +48,6 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     int icnt;
     while ((port_get_raw_ticks(NULL) < next_start_raw_ticks) &
            (next_start_raw_ticks - port_get_raw_ticks(NULL) < 100)) {
-
         RUN_BACKGROUND_TASKS;
     }
 
