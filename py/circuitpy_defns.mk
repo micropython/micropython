@@ -580,7 +580,6 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/I2CDisplay.c \
 	displayio/OnDiskBitmap.c \
 	displayio/OnDiskGif.c \
-	displayio/gif.c \
 	displayio/Palette.c \
 	displayio/Shape.c \
 	displayio/TileGrid.c \
@@ -699,10 +698,10 @@ SRC_MOD += $(addprefix lib/protomatter/src/, \
 $(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces -Wno-missing-prototypes
 endif
 
-#SRC_MOD += $(addprefix lib/AnimatedGIF/, \
-	#gif.c \
-#)
-#$(BUILD)/lib/AnimatedGIF/gif.o: CFLAGS += -Wno-missing-braces -Wno-missing-prototypes
+SRC_MOD += $(addprefix lib/AnimatedGIF/, \
+	gif.c \
+)
+$(BUILD)/lib/AnimatedGIF/gif.o: CFLAGS += -DCIRCUITPY
 
 ifeq ($(CIRCUITPY_ZLIB),1)
 SRC_MOD += $(addprefix lib/uzlib/, \

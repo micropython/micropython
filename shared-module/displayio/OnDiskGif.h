@@ -32,8 +32,7 @@
 
 #include "py/obj.h"
 
-// #include "lib/AnimatedGIF/AnimatedGIF_circuitpy.h"
-#include "AnimatedGIF_circuitpy.h"
+#include "lib/AnimatedGIF/AnimatedGIF_circuitpy.h"
 #include "Bitmap.h"
 
 #include "extmod/vfs_fat.h"

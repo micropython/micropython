@@ -8,14 +8,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ===========================================================================
+//===========================================================================
 
 #ifndef __ANIMATEDGIF__
 #define __ANIMATEDGIF__
+#if defined( PICO_BUILD ) || defined( __MACH__ ) || defined( __LINUX__ ) || defined( __MCUXPRESSO )
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#define memcpy_P memcpy
+#define PROGMEM
+#else
+#include <Arduino.h>
+#endif
 //
 // GIF Animator
 // Written by Larry Bank
@@ -28,9 +34,13 @@
 
 /* GIF Defines and variables */
 #define MAX_CHUNK_SIZE 255
-#define LZW_BUF_SIZE (6 * MAX_CHUNK_SIZE)
-#define LZW_HIGHWATER (4 * MAX_CHUNK_SIZE)
+#define LZW_BUF_SIZE (6*MAX_CHUNK_SIZE)
+#define LZW_HIGHWATER (4*MAX_CHUNK_SIZE)
+#ifdef __LINUX__
+#define MAX_WIDTH 2048
+#else
 #define MAX_WIDTH 320
+#endif // __LINUX__
 #define FILE_BUF_SIZE 4096
 
 #define PIXEL_FIRST 0
@@ -41,9 +51,9 @@
 #define MAXMAXCODE 4096
 
 enum {
-    GIF_PALETTE_RGB565_LE = 0, // little endian (default)
-    GIF_PALETTE_RGB565_BE,    // big endian
-    GIF_PALETTE_RGB888        // original 24-bpp entries
+   GIF_PALETTE_RGB565_LE = 0, // little endian (default)
+   GIF_PALETTE_RGB565_BE,     // big endian
+   GIF_PALETTE_RGB888         // original 24-bpp entries
 };
 // for compatibility with older code
 #define LITTLE_ENDIAN_PIXELS GIF_PALETTE_RGB565_LE
@@ -54,37 +64,37 @@ enum {
 // COOKED = 16 or 24-bpp fully rendered pixels ready for display
 //
 enum {
-    GIF_DRAW_RAW = 0,
-    GIF_DRAW_COOKED
+   GIF_DRAW_RAW = 0,
+   GIF_DRAW_COOKED
 };
 
 enum {
-    GIF_SUCCESS = 0,
-    GIF_DECODE_ERROR,
-    GIF_TOO_WIDE,
-    GIF_INVALID_PARAMETER,
-    GIF_UNSUPPORTED_FEATURE,
-    GIF_FILE_NOT_OPEN,
-    GIF_EARLY_EOF,
-    GIF_EMPTY_FRAME,
-    GIF_BAD_FILE,
-    GIF_ERROR_MEMORY
+   GIF_SUCCESS = 0,
+   GIF_DECODE_ERROR,
+   GIF_TOO_WIDE,
+   GIF_INVALID_PARAMETER,
+   GIF_UNSUPPORTED_FEATURE,
+   GIF_FILE_NOT_OPEN,
+   GIF_EARLY_EOF,
+   GIF_EMPTY_FRAME,
+   GIF_BAD_FILE,
+   GIF_ERROR_MEMORY
 };
 
 typedef struct gif_file_tag
 {
-    int32_t iPos; // current file position
-    int32_t iSize; // file size
-    uint8_t *pData; // memory file pointer
-    void *fHandle; // class pointer to File/SdFat or whatever you want
+  int32_t iPos; // current file position
+  int32_t iSize; // file size
+  uint8_t *pData; // memory file pointer
+  void * fHandle; // class pointer to File/SdFat or whatever you want
 } GIFFILE;
 
 typedef struct gif_info_tag
 {
-    int32_t iFrameCount; // total frames in file
-    int32_t iDuration; // duration of animation in milliseconds
-    int32_t iMaxDelay; // maximum frame delay
-    int32_t iMinDelay; // minimum frame delay
+  int32_t iFrameCount; // total frames in file
+  int32_t iDuration; // duration of animation in milliseconds
+  int32_t iMaxDelay; // maximum frame delay
+  int32_t iMinDelay; // minimum frame delay
 } GIFINFO;
 
 typedef struct gif_draw_tag
@@ -149,28 +159,56 @@ typedef struct gif_image_tag
     unsigned char ucDrawType; // RAW or COOKED
 } GIFIMAGE;
 
+#ifdef __cplusplus
+//
+// The GIF class wraps portable C code which does the actual work
+//
+class AnimatedGIF
+{
+  public:
+    int open(uint8_t *pData, int iDataSize, GIF_DRAW_CALLBACK *pfnDraw);
+    int openFLASH(uint8_t *pData, int iDataSize, GIF_DRAW_CALLBACK *pfnDraw);
+    int open(const char *szFilename, GIF_OPEN_CALLBACK *pfnOpen, GIF_CLOSE_CALLBACK *pfnClose, GIF_READ_CALLBACK *pfnRead, GIF_SEEK_CALLBACK *pfnSeek, GIF_DRAW_CALLBACK *pfnDraw);
+    void close();
+    void reset();
+    void begin(unsigned char ucPaletteType = GIF_PALETTE_RGB565_LE);
+    void begin(int iEndian, unsigned char ucPaletteType) { begin(ucPaletteType); };
+    int playFrame(bool bSync, int *delayMilliseconds, void *pUser = NULL);
+    int getCanvasWidth();
+    int allocFrameBuf(GIF_ALLOC_CALLBACK *pfnAlloc);
+    int setDrawType(int iType);
+    int freeFrameBuf(GIF_FREE_CALLBACK *pfnFree);
+    uint8_t *getFrameBuf();
+    int getCanvasHeight();
+    int getLoopCount();
+    int getInfo(GIFINFO *pInfo);
+    int getLastError();
+    int getComment(char *destBuffer);
+
+  private:
+    GIFIMAGE _gif;
+};
+#else
 // C interface
-int GIF_openRAM(GIFIMAGE *pGIF, uint8_t *pData, int iDataSize, GIF_DRAW_CALLBACK *pfnDraw);
-int GIF_openFile(GIFIMAGE *pGIF, const char *szFilename, GIF_DRAW_CALLBACK *pfnDraw);
-void GIF_close(GIFIMAGE *pGIF);
-void GIF_begin(GIFIMAGE *pGIF, unsigned char ucPaletteType);
-void GIF_reset(GIFIMAGE *pGIF);
-int GIF_playFrame(GIFIMAGE *pGIF, int *delayMilliseconds, void *pUser);
-int GIF_getCanvasWidth(GIFIMAGE *pGIF);
-int GIF_getCanvasHeight(GIFIMAGE *pGIF);
-int GIF_getComment(GIFIMAGE *pGIF, char *destBuffer);
-int GIF_getInfo(GIFIMAGE *pGIF, GIFINFO *pInfo);
-int GIF_getLastError(GIFIMAGE *pGIF);
-int GIF_getLoopCount(GIFIMAGE *pGIF);
-int GIF_init(GIFIMAGE *pGIF);
-void GIF_setDrawCallback(GIFIMAGE *pGIF, GIF_DRAW_CALLBACK *pfnDraw);
-void GIF_scaleHalf(uint16_t *pCurrent, uint16_t *pPrev, int iWidth, int bBigEndian);
+    int GIF_openRAM(GIFIMAGE *pGIF, uint8_t *pData, int iDataSize, GIF_DRAW_CALLBACK *pfnDraw);
+    int GIF_openFile(GIFIMAGE *pGIF, const char *szFilename, GIF_DRAW_CALLBACK *pfnDraw);
+    void GIF_close(GIFIMAGE *pGIF);
+    void GIF_begin(GIFIMAGE *pGIF, unsigned char ucPaletteType);
+    void GIF_reset(GIFIMAGE *pGIF);
+    int GIF_playFrame(GIFIMAGE *pGIF, int *delayMilliseconds, void *pUser);
+    int GIF_getCanvasWidth(GIFIMAGE *pGIF);
+    int GIF_getCanvasHeight(GIFIMAGE *pGIF);
+    int GIF_getComment(GIFIMAGE *pGIF, char *destBuffer);
+    int GIF_getInfo(GIFIMAGE *pGIF, GIFINFO *pInfo);
+    int GIF_getLastError(GIFIMAGE *pGIF);
+    int GIF_getLoopCount(GIFIMAGE *pGIF);
+#endif // __cplusplus
 
 // Due to unaligned memory causing an exception, we have to do these macros the slow way
-#define INTELSHORT(p) ((*p) + (*(p + 1) << 8))
-#define INTELLONG(p) ((*p) + (*(p + 1) << 8) + (*(p + 2) << 16) + (*(p + 3) << 24))
-#define MOTOSHORT(p) (((*(p)) << 8) + (*(p + 1)))
-#define MOTOLONG(p) (((*p) << 24) + ((*(p + 1)) << 16) + ((*(p + 2)) << 8) + (*(p + 3)))
+#define INTELSHORT(p) ((*p) + (*(p+1)<<8))
+#define INTELLONG(p) ((*p) + (*(p+1)<<8) + (*(p+2)<<16) + (*(p+3)<<24))
+#define MOTOSHORT(p) (((*(p))<<8) + (*(p+1)))
+#define MOTOLONG(p) (((*p)<<24) + ((*(p+1))<<16) + ((*(p+2))<<8) + (*(p+3)))
 
 // Must be a 32-bit target processor
 #define REGISTER_WIDTH 32
