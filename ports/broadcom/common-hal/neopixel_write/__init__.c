@@ -47,7 +47,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     // two.
     int icnt;
     while ((port_get_raw_ticks(NULL) < next_start_raw_ticks) & 
-        (next_start_raw_ticks-port_get_raw_ticks(NULL) < 100)) {
+           (next_start_raw_ticks - port_get_raw_ticks(NULL) < 100)) {
         
         RUN_BACKGROUND_TASKS;
     }
@@ -140,20 +140,20 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
             }
         }
         if (channel == 1) {
-            icnt=0;
+            icnt = 0;
             while ((pwm->STA_b.FULL1 == 1) & (icnt++ < 150)) {
                 RUN_BACKGROUND_TASKS;
             }
             // Dummy value for the first channel.
             pwm->FIF1 = 0x000000;
         }
-        icnt=0;
+        icnt = 0;
         while ((pwm->STA_b.FULL1 == 1) & (icnt++ < 150)) {
             RUN_BACKGROUND_TASKS;
         }
         pwm->FIF1 = expanded;
         if (channel == 0) {
-            icnt=0;
+            icnt = 0;
             while ((pwm->STA_b.FULL1 == 1) & (icnt++ < 150)) {
                 RUN_BACKGROUND_TASKS;
             }
@@ -168,7 +168,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     }
     // Wait for transmission to start.
     icnt = 0;
-    while (((pwm->STA_b.STA1 ==0) & (pwm->STA_b.STA2 == 0)) & (icnt++ < 150)) {
+    while (((pwm->STA_b.STA1 == 0) & (pwm->STA_b.STA2 == 0)) & (icnt++ < 150)) {
         RUN_BACKGROUND_TASKS;
     }
     // Wait for transmission to complete.
