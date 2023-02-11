@@ -58,7 +58,7 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
 
     displayio_palette_t *self = m_new_obj(displayio_palette_t);
     self->base.type = &displayio_palette_type;
-    common_hal_displayio_palette_construct(self, args[ARG_color_count].u_int);
+    common_hal_displayio_palette_construct(self, mp_arg_validate_int_range(args[ARG_color_count].u_int, 1, 32767, MP_QSTR_color_count));
 
     return MP_OBJ_FROM_PTR(self);
 }
