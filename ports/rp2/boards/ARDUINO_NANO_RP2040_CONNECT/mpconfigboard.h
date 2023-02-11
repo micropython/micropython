@@ -7,8 +7,14 @@
 // Enable networking.
 #define MICROPY_PY_NETWORK              (1)
 
+// Enable MD5 hash.
+#define MICROPY_PY_UHASHLIB_MD5         (1)
+
 // Disable internal error numbers.
 #define MICROPY_USE_INTERNAL_ERRNO      (0)
+
+// Enable externally controlled pins.
+#define MICROPY_HW_PIN_EXT_COUNT        (5)
 
 // Enable USB Mass Storage with FatFS filesystem.
 #define MICROPY_HW_USB_MSC              (1)

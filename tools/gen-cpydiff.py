@@ -27,7 +27,6 @@
     manually using the command make gen-cpydiff. """
 
 import os
-import errno
 import subprocess
 import time
 import re
@@ -39,13 +38,15 @@ from collections import namedtuple
 # to the correct executable.
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3.exe")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/windows/micropython.exe")
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", "../ports/windows/build-standard/micropython.exe"
+    )
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
     MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/unix/build-standard/micropython")
 
-TESTPATH = "../tests/cpydiff/"
-DOCPATH = "../docs/genrst/"
+TESTPATH = "../tests/cpydiff"
+DOCPATH = "../docs/genrst"
 INDEXTEMPLATE = "../docs/differences/index_template.txt"
 INDEX = "index.rst"
 
@@ -79,7 +80,8 @@ def readfiles():
     files = []
 
     for test in tests:
-        text = open(TESTPATH + test, "r").read()
+        test_fullpath = os.path.join(TESTPATH, test)
+        text = open(test_fullpath, "r").read()
 
         try:
             class_, desc, cause, workaround, code = [
@@ -98,7 +100,7 @@ def readfiles():
             output = Output(test, class_, desc, cause, workaround, code, "", "", "")
             files.append(output)
         except IndexError:
-            print("Incorrect format in file " + TESTPATH + test)
+            print("Incorrect format in file " + test_fullpath)
 
     return files
 
@@ -107,7 +109,8 @@ def run_tests(tests):
     """executes all tests"""
     results = []
     for test in tests:
-        with open(TESTPATH + test.name, "rb") as f:
+        test_fullpath = os.path.join(TESTPATH, test.name)
+        with open(test_fullpath, "rb") as f:
             input_py = f.read()
 
         process = subprocess.Popen(
@@ -130,7 +133,7 @@ def run_tests(tests):
 
         if output_cpy[0] == output_upy[0] and output_cpy[1] == output_upy[1]:
             status = "Supported"
-            print("Supported operation!\nFile: " + TESTPATH + test.name)
+            print("Supported operation!\nFile: " + test_fullpath)
         else:
             status = "Unsupported"
 
@@ -197,11 +200,8 @@ def gen_rst(results):
     """creates restructured text documents to display tests"""
 
     # make sure the destination directory exists
-    try:
+    if not os.path.isdir(DOCPATH):
         os.mkdir(DOCPATH)
-    except OSError as e:
-        if e.args[0] != errno.EEXIST and e.args[0] != errno.EISDIR:
-            raise
 
     toctree = []
     class_ = []
@@ -214,7 +214,7 @@ def gen_rst(results):
             if i >= len(class_) or section[i] != class_[i]:
                 if i == 0:
                     filename = section[i].replace(" ", "_").lower()
-                    rst = open(DOCPATH + filename + ".rst", "w")
+                    rst = open(os.path.join(DOCPATH, filename + ".rst"), "w")
                     rst.write(HEADER)
                     rst.write(section[i] + "\n")
                     rst.write(RSTCHARS[0] * len(section[i]))
@@ -225,7 +225,7 @@ def gen_rst(results):
                     rst.write(RSTCHARS[min(i, len(RSTCHARS) - 1)] * len(section[i]))
                     rst.write("\n\n")
         class_ = section
-        rst.write(".. _cpydiff_%s:\n\n" % output.name.rsplit(".", 1)[0])
+        rst.write(".. _cpydiff_%s:\n\n" % os.path.splitext(output.name)[0])
         rst.write(output.desc + "\n")
         rst.write("~" * len(output.desc) + "\n\n")
         if output.cause != "Unknown":
@@ -242,7 +242,7 @@ def gen_rst(results):
         rst.write(table)
 
     template = open(INDEXTEMPLATE, "r")
-    index = open(DOCPATH + INDEX, "w")
+    index = open(os.path.join(DOCPATH, INDEX), "w")
     index.write(HEADER)
     index.write(template.read())
     for section in INDEXPRIORITY:

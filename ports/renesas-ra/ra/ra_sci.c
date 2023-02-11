@@ -1026,6 +1026,16 @@ int ra_sci_tx_wait(uint32_t ch) {
     return (int)(tx_fifo[idx].len != (tx_fifo[idx].size - 1));
 }
 
+int ra_sci_tx_busy(uint32_t ch) {
+    uint32_t idx = ch_to_idx[ch];
+    return (int)(tx_fifo[idx].busy);
+}
+
+int ra_sci_tx_bufsize(uint32_t ch) {
+    uint32_t idx = ch_to_idx[ch];
+    return (int)(tx_fifo[idx].size - 1);
+}
+
 void ra_sci_tx_break(uint32_t ch) {
     uint32_t idx = ch_to_idx[ch];
     R_SCI0_Type *sci_reg = sci_regs[idx];

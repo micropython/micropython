@@ -21,7 +21,7 @@ INC += -I$(XC16)/include
 INC += -I$(XC16)/support/$(PARTFAMILY)/h
 
 CFLAGS_PIC16BIT = -mcpu=$(PART) -mlarge-code
-CFLAGS = $(INC) -Wall -Werror -std=gnu99 -nostdlib $(CFLAGS_PIC16BIT) $(COPT)
+CFLAGS += $(INC) -Wall -Werror -std=gnu99 -nostdlib $(CFLAGS_PIC16BIT) $(COPT)
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -30,8 +30,8 @@ else
 CFLAGS += -O1 -DNDEBUG
 endif
 
-LDFLAGS = --heap=0 -nostdlib -T $(XC16)/support/$(PARTFAMILY)/gld/p$(PART).gld -Map=$@.map --cref -p$(PART)
-LIBS = -L$(XC16)/lib -L$(XC16)/lib/$(PARTFAMILY) -lc -lm -lpic30
+LDFLAGS += --heap=0 -nostdlib -T $(XC16)/support/$(PARTFAMILY)/gld/p$(PART).gld -Map=$@.map --cref -p$(PART)
+LIBS += -L$(XC16)/lib -L$(XC16)/lib/$(PARTFAMILY) -lc -lm -lpic30
 
 SRC_C = \
 	main.c \

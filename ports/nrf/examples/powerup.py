@@ -187,7 +187,6 @@ class PowerUp3:
         self.old_speed = 0
 
         while True:
-
             time.sleep_ms(100)
 
             # read out new angle

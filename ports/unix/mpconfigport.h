@@ -154,6 +154,9 @@ typedef long mp_off_t;
 // Don't default sys.argv because we do that in main.
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (0)
 
+// Enable sys.executable.
+#define MICROPY_PY_SYS_EXECUTABLE (1)
+
 #define MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT (SOMAXCONN < 128 ? SOMAXCONN : 128)
 
 // Bare-metal ports don't have stderr. Printing debug to stderr may give tests
@@ -237,3 +240,11 @@ static inline unsigned long mp_urandom_seed_init(void) {
 // Configure the implementation of machine.idle().
 #include <sched.h>
 #define MICROPY_UNIX_MACHINE_IDLE sched_yield();
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#endif
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
+#endif

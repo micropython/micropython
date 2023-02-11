@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+// This file should be compiled when included from vfs_lfs.c.
+#if defined(LFS_BUILD_VERSION)
+
 #include <stdio.h>
 #include <string.h>
 
@@ -244,3 +247,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &MP_VFS_LFSx(textio_stream_p),
     locals_dict, &MP_VFS_LFSx(file_locals_dict)
     );
+
+#endif // defined(LFS_BUILD_VERSION)

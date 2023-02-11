@@ -43,6 +43,7 @@
 #include "modrp2.h"
 #include "mpbthciport.h"
 #include "genhdr/mpversion.h"
+#include "mp_usbd.h"
 
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
@@ -85,7 +86,9 @@ int main(int argc, char **argv) {
     #endif
 
     #if MICROPY_HW_ENABLE_USBDEV
+    #if MICROPY_HW_USB_CDC
     bi_decl(bi_program_feature("USB REPL"))
+    #endif
     tusb_init();
     #endif
 
@@ -231,7 +234,7 @@ void gc_collect(void) {
 }
 
 void nlr_jump_fail(void *val) {
-    printf("FATAL: uncaught exception %p\n", val);
+    mp_printf(&mp_plat_print, "FATAL: uncaught exception %p\n", val);
     mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));
     for (;;) {
         __breakpoint();

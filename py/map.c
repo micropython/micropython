@@ -221,6 +221,7 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
         }
         mp_map_elem_t *elem = map->table + map->used++;
         elem->key = index;
+        elem->value = MP_OBJ_NULL;
         if (!mp_obj_is_qstr(index)) {
             map->all_keys_are_qstrs = 0;
         }

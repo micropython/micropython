@@ -490,7 +490,7 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
         self = &machine_hw_spi_obj[1];
         default_pins = &machine_hw_spi_default_pins[1];
     }
-    self->base.type = &machine_hw_spi_type;
+    self->base.type = &machine_spi_type;
 
     int8_t sck, mosi, miso;
 
@@ -533,6 +533,14 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return MP_OBJ_FROM_PTR(self);
 }
 
+spi_host_device_t machine_hw_spi_get_host(mp_obj_t in) {
+    if (mp_obj_get_type(in) != &machine_spi_type) {
+        mp_raise_ValueError(MP_ERROR_TEXT("expecting a SPI object"));
+    }
+    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *)in;
+    return self->host;
+}
+
 STATIC const mp_machine_spi_p_t machine_hw_spi_p = {
     .init = machine_hw_spi_init,
     .deinit = machine_hw_spi_deinit,
@@ -540,7 +548,7 @@ STATIC const mp_machine_spi_p_t machine_hw_spi_p = {
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    machine_hw_spi_type,
+    machine_spi_type,
     MP_QSTR_SPI,
     MP_TYPE_FLAG_NONE,
     make_new, machine_hw_spi_make_new,

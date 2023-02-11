@@ -7,6 +7,7 @@ import _thread
 # the shared bytearray
 ba = bytearray()
 
+
 # main thread function
 def th(n, lo, hi):
     for repeat in range(n):

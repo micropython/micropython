@@ -25,13 +25,6 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <string.h>
-#include <errno.h>
-#include <dlfcn.h>
-#include <ffi.h>
-#include <stdint.h>
-
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/mperrno.h"
@@ -39,6 +32,12 @@
 #include "py/gc.h"
 
 #if MICROPY_PY_FFI
+
+#include <assert.h>
+#include <string.h>
+#include <errno.h>
+#include <dlfcn.h>
+#include <ffi.h>
 
 /*
  * modffi uses character codes to encode a value type, based on "struct"

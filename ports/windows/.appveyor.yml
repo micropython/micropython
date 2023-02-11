@@ -34,7 +34,7 @@ before_build:
     <?xml version="1.0" encoding="utf-8"?>
     <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
       <Target Name="Build">
-        <MsBuild BuildInParallel="True" Projects="mpy-cross\mpy-cross.vcxproj;ports\windows\micropython.vcxproj"/>
+        <MsBuild Projects="mpy-cross\mpy-cross.vcxproj;ports\windows\micropython.vcxproj"/>
       </Target>
     </Project>
     "@ | Set-Content build.proj
@@ -78,7 +78,7 @@ after_test:
     if ($LASTEXITCODE -ne 0) {
       throw "$env:MSYSTEM build exited with code $LASTEXITCODE"
     }
-    C:\msys64\usr\bin\bash.exe -l -c "make -B -j4 V=1 MICROPY_MPYCROSS=../../mpy-cross/mpy-cross.exe VARIANT=$($env:PyVariant)"
+    C:\msys64\usr\bin\bash.exe -l -c "make -B -j4 V=1 MICROPY_MPYCROSS=../../mpy-cross/build/mpy-cross.exe VARIANT=$($env:PyVariant)"
     if ($LASTEXITCODE -ne 0) {
       throw "$env:MSYSTEM build exited with code $LASTEXITCODE"
     }

@@ -13,7 +13,9 @@ from collections import defaultdict
 # to the correct executable.
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3.exe")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/windows/micropython.exe")
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", "../ports/windows/build-standard/micropython.exe"
+    )
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
     MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/unix/build-standard/micropython")
@@ -26,7 +28,6 @@ def run_tests(pyb, test_dict):
     for base_test, tests in sorted(test_dict.items()):
         print(base_test + ":")
         for test_file in tests:
-
             # run MicroPython
             if pyb is None:
                 # run on PC

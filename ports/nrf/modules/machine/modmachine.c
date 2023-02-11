@@ -217,13 +217,13 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem32),              MP_ROM_PTR(&machine_mem32_obj) },
     
 #if MICROPY_PY_MACHINE_UART
-    { MP_ROM_QSTR(MP_QSTR_UART),               MP_ROM_PTR(&machine_hard_uart_type) },
+    { MP_ROM_QSTR(MP_QSTR_UART),               MP_ROM_PTR(&machine_uart_type) },
 #endif
 #if MICROPY_PY_MACHINE_HW_SPI
-    { MP_ROM_QSTR(MP_QSTR_SPI),                MP_ROM_PTR(&machine_hard_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI),                MP_ROM_PTR(&machine_spi_type) },
 #endif
 #if MICROPY_PY_MACHINE_I2C
-    { MP_ROM_QSTR(MP_QSTR_I2C),                MP_ROM_PTR(&machine_hard_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2C),                MP_ROM_PTR(&machine_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftI2C),            MP_ROM_PTR(&mp_machine_soft_i2c_type) },
 #endif
 #if MICROPY_PY_MACHINE_ADC
@@ -232,11 +232,11 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 #if MICROPY_PY_MACHINE_RTCOUNTER
     { MP_ROM_QSTR(MP_QSTR_RTCounter),          MP_ROM_PTR(&machine_rtcounter_type) },
 #endif
-#if MICROPY_PY_MACHINE_TIMER
+#if MICROPY_PY_MACHINE_TIMER_NRF
     { MP_ROM_QSTR(MP_QSTR_Timer),              MP_ROM_PTR(&machine_timer_type) },
 #endif
 #if MICROPY_PY_MACHINE_HW_PWM
-    { MP_ROM_QSTR(MP_QSTR_PWM),                MP_ROM_PTR(&machine_hard_pwm_type) },
+    { MP_ROM_QSTR(MP_QSTR_PWM),                MP_ROM_PTR(&machine_pwm_type) },
 #endif
 #if MICROPY_PY_MACHINE_TEMP
     { MP_ROM_QSTR(MP_QSTR_Temp),               MP_ROM_PTR(&machine_temp_type) },

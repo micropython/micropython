@@ -32,22 +32,44 @@ endif
 ifneq ($(USER_C_MODULES),)
 # pre-define USERMOD variables as expanded so that variables are immediate
 # expanded as they're added to them
-SRC_USERMOD :=
+
+# C/C++ files that are included in the QSTR/module build
+SRC_USERMOD_C :=
 SRC_USERMOD_CXX :=
+# Other C/C++ files (e.g. libraries or helpers)
+SRC_USERMOD_LIB_C :=
+SRC_USERMOD_LIB_CXX :=
+# Optionally set flags
 CFLAGS_USERMOD :=
 CXXFLAGS_USERMOD :=
 LDFLAGS_USERMOD :=
+
+# Backwards compatibility with older user c modules that set SRC_USERMOD
+# added to SRC_USERMOD_C below
+SRC_USERMOD :=
+
 $(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
     $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
     $(info Including User C Module from $(USERMOD_DIR))\
 	$(eval include $(module))\
 )
 
-SRC_MOD += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD))
-SRC_MOD_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_CXX))
-CFLAGS_MOD += $(CFLAGS_USERMOD)
-CXXFLAGS_MOD += $(CXXFLAGS_USERMOD)
-LDFLAGS_MOD += $(LDFLAGS_USERMOD)
+SRC_USERMOD_C += $(SRC_USERMOD)
+
+SRC_USERMOD_PATHFIX_C += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD_C))
+SRC_USERMOD_PATHFIX_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_CXX))
+SRC_USERMOD_PATHFIX_LIB_C += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD_LIB_C))
+SRC_USERMOD_PATHFIX_LIB_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_LIB_CXX))
+
+CFLAGS += $(CFLAGS_USERMOD)
+CXXFLAGS += $(CXXFLAGS_USERMOD)
+LDFLAGS += $(LDFLAGS_USERMOD)
+
+SRC_QSTR += $(SRC_USERMOD_PATHFIX_C) $(SRC_USERMOD_PATHFIX_CXX)
+PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_C:.c=.o))
+PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_CXX:.cpp=.o))
+PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_C:.c=.o))
+PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_CXX:.cpp=.o))
 endif
 
 # py object files
@@ -58,6 +80,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	nlrx64.o \
 	nlrthumb.o \
 	nlraarch64.o \
+	nlrmips.o \
 	nlrpowerpc.o \
 	nlrxtensa.o \
 	nlrsetjmp.o \
@@ -185,7 +208,7 @@ endif
 
 # Sources that may contain qstrings
 SRC_QSTR_IGNORE = py/nlr%
-SRC_QSTR += $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c))
+SRC_QSTR += $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c))
 
 # Anything that depends on FORCE will be considered out-of-date
 FORCE:

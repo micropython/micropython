@@ -33,14 +33,15 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+
+#if MICROPY_PY_NETWORK_WIZNET5K
+
 #include "shared/netutils/netutils.h"
 #include "extmod/modnetwork.h"
 #include "extmod/machine_spi.h"
 #include "extmod/virtpin.h"
 #include "modmachine.h"
 #include "drivers/bus/spi.h"
-
-#if MICROPY_PY_NETWORK_WIZNET5K
 
 #include "lib/wiznet5k/Ethernet/wizchip_conf.h"
 
@@ -1016,24 +1017,9 @@ STATIC const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
 
 #if WIZNET5K_WITH_LWIP_STACK
-MP_DEFINE_CONST_OBJ_TYPE(
-    mod_network_nic_type_wiznet5k,
-    MP_QSTR_WIZNET5K,
-    MP_TYPE_FLAG_NONE,
-    make_new, wiznet5k_make_new,
-    locals_dict, &wiznet5k_locals_dict
-    );
+#define NIC_TYPE_WIZNET_PROTOCOL
 #else // WIZNET5K_PROVIDED_STACK
-STATIC MP_DEFINE_CONST_OBJ_FULL_TYPE(
-    mod_network_nic_type_wiznet5k_base,
-    MP_QSTR_WIZNET5K,
-    MP_TYPE_FLAG_NONE,
-    make_new, wiznet5k_make_new,
-    locals_dict, &wiznet5k_locals_dict
-    );
-
-const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
-    .base = mod_network_nic_type_wiznet5k_base,
+const mod_network_nic_protocol_t mod_network_nic_protocol_wiznet = {
     .gethostbyname = wiznet5k_gethostbyname,
     .socket = wiznet5k_socket_socket,
     .close = wiznet5k_socket_close,
@@ -1049,6 +1035,16 @@ const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
     .settimeout = wiznet5k_socket_settimeout,
     .ioctl = wiznet5k_socket_ioctl,
 };
+#define NIC_TYPE_WIZNET_PROTOCOL protocol, &mod_network_nic_protocol_wiznet,
 #endif
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mod_network_nic_type_wiznet5k,
+    MP_QSTR_WIZNET5K,
+    MP_TYPE_FLAG_NONE,
+    make_new, wiznet5k_make_new,
+    NIC_TYPE_WIZNET_PROTOCOL
+    locals_dict, &wiznet5k_locals_dict
+    );
 
 #endif // MICROPY_PY_NETWORK_WIZNET5K

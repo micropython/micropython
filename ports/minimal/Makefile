@@ -23,12 +23,12 @@ ifeq ($(CROSS), 1)
 DFU = $(TOP)/tools/dfu.py
 PYDFU = $(TOP)/tools/pydfu.py
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -fsingle-precision-constant -Wdouble-promotion -Wfloat-conversion
-CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
-LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref --gc-sections
+CFLAGS += $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
+LDFLAGS += -nostdlib -T stm32f405.ld -Map=$@.map --cref --gc-sections
 else
-LD = gcc
-CFLAGS = $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
-LDFLAGS = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
+LD = $(CC)
+CFLAGS += $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
+LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
 
 CSUPEROPT = -Os # save some code space
@@ -44,11 +44,6 @@ endif
 
 # Flags for optional C++ source code
 CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
-CXXFLAGS += $(CXXFLAGS_MOD)
-
-# Flags for user C modules
-CFLAGS += $(CFLAGS_MOD)
-LDFLAGS += $(LDFLAGS_MOD)
 
 LIBS =
 
@@ -65,14 +60,10 @@ ifeq ($(CROSS), 1)
 SRC_C += shared/libc/string0.c
 endif
 
-SRC_C += $(SRC_MOD)
-
-SRC_CXX += $(SRC_MOD_CXX)
-
 SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c
-SRC_QSTR += $(SRC_MOD) $(SRC_MOD_CXX)
 
-OBJ += $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(PY_CORE_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 
 ifeq ($(CROSS), 1)

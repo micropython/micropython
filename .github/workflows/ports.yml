@@ -8,11 +8,15 @@ on:
       - 'tools/**'
       - ports/**
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build ports download metadata
       run: mkdir boards && ./tools/autobuild/build-downloads.py . ./boards

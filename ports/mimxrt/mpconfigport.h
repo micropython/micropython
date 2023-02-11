@@ -29,12 +29,19 @@
 // Board specific definitions
 #include "mpconfigboard.h"
 #include "fsl_common.h"
+#include "lib/nxp_driver/sdk/CMSIS/Include/core_cm7.h"
 
 uint32_t trng_random_u32(void);
 
+// Config level
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
+
 // Memory allocation policies
+#if MICROPY_HW_SDRAM_AVAIL
+#define MICROPY_GC_STACK_ENTRY_TYPE         uint32_t
+#else
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
-#define MICROPY_GC_ALLOC_THRESHOLD          (0)
+#endif
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT      (32)
 #define MICROPY_ALLOC_PATH_MAX              (256)
 
@@ -44,94 +51,31 @@ uint32_t trng_random_u32(void);
 #define MICROPY_EMIT_INLINE_THUMB           (1)
 
 // Optimisations
-#define MICROPY_OPT_LOAD_ATTR_FAST_PATH     (1)
-#define MICROPY_OPT_MAP_LOOKUP_CACHE        (1)
 
 // Python internal features
 #define MICROPY_TRACKED_ALLOC               (MICROPY_SSL_MBEDTLS)
 #define MICROPY_READER_VFS                  (1)
 #define MICROPY_ENABLE_GC                   (1)
-#define MICROPY_ENABLE_FINALISER            (1)
-#define MICROPY_STACK_CHECK                 (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
-#define MICROPY_KBD_EXCEPTION               (1)
-#define MICROPY_HELPER_REPL                 (1)
-#define MICROPY_REPL_AUTO_INDENT            (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_ENABLE_SOURCE_LINE          (1)
-#define MICROPY_STREAMS_NON_BLOCK           (1)
-#define MICROPY_MODULE_BUILTIN_INIT         (1)
-#define MICROPY_MODULE_WEAK_LINKS           (1)
-#define MICROPY_CAN_OVERRIDE_BUILTINS       (1)
-#define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_VFS                         (1)
 #define MICROPY_MODULE_FROZEN_MPY           (1)
 #define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
 
 // Control over Python builtins
-#define MICROPY_PY_FUNCTION_ATTRS           (1)
-#define MICROPY_PY_DESCRIPTORS              (1)
-#define MICROPY_PY_DELATTR_SETATTR          (1)
-#define MICROPY_PY_FSTRINGS                 (1)
-#define MICROPY_PY_BUILTINS_BYTES_HEX       (1)
-#define MICROPY_PY_BUILTINS_STR_UNICODE     (1)
-#define MICROPY_PY_BUILTINS_STR_CENTER      (1)
-#define MICROPY_PY_BUILTINS_STR_PARTITION   (1)
-#define MICROPY_PY_BUILTINS_STR_SPLITLINES  (1)
-#define MICROPY_PY_BUILTINS_MEMORYVIEW      (1)
-#define MICROPY_PY_BUILTINS_SLICE_ATTRS     (1)
-#define MICROPY_PY_BUILTINS_SLICE_INDICES   (1)
-#define MICROPY_PY_BUILTINS_FROZENSET       (1)
-#define MICROPY_PY_BUILTINS_ROUND_INT       (1)
-#define MICROPY_PY_ALL_SPECIAL_METHODS      (1)
-#define MICROPY_PY_REVERSE_SPECIAL_METHODS  (1)
-#define MICROPY_PY_BUILTINS_COMPILE         (1)
-#define MICROPY_PY_BUILTINS_INPUT           (1)
-#define MICROPY_PY_BUILTINS_POW3            (1)
-#define MICROPY_PY_BUILTINS_HELP            (1)
-#define MICROPY_PY_BUILTINS_HELP_MODULES    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT       mimxrt_help_text
-#define MICROPY_PY_MICROPYTHON_MEM_INFO     (1)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN       (1)
-#define MICROPY_PY_COLLECTIONS_DEQUE        (1)
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT  (1)
-#define MICROPY_PY_MATH_SPECIAL_FUNCTIONS   (1)
-#define MICROPY_PY_MATH_FACTORIAL           (1)
-#define MICROPY_PY_MATH_ISCLOSE             (1)
-#define MICROPY_PY_CMATH                    (1)
-#define MICROPY_PY_IO_IOBASE                (1)
-#define MICROPY_PY_SYS_MAXSIZE              (1)
 #define MICROPY_PY_SYS_PLATFORM             "mimxrt"
-#define MICROPY_PY_SYS_STDFILES             (1)
-#define MICROPY_PY_SYS_STDIO_BUFFER         (1)
-#define MICROPY_PY_UERRNO                   (1)
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970               (1)
-#define MICROPY_PY_UASYNCIO                 (1)
-#define MICROPY_PY_UCTYPES                  (1)
-#define MICROPY_PY_UZLIB                    (1)
-#define MICROPY_PY_UJSON                    (1)
-#define MICROPY_PY_URE                      (1)
-#define MICROPY_PY_URE_MATCH_GROUPS         (1)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END (1)
-#define MICROPY_PY_URE_SUB                  (1)
 #define MICROPY_PY_USSL_FINALISER           (MICROPY_PY_USSL)
-#define MICROPY_PY_UHASHLIB                 (1)
-#define MICROPY_PY_UBINASCII                (1)
-#define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_UTIME_MP_HAL             (1)
-#define MICROPY_PY_UOS                      (1)
 #define MICROPY_PY_UOS_INCLUDEFILE          "ports/mimxrt/moduos.c"
 #define MICROPY_PY_OS_DUPTERM               (3)
 #define MICROPY_PY_UOS_DUPTERM_NOTIFY       (1)
 #define MICROPY_PY_UOS_UNAME                (1)
-#define MICROPY_PY_UOS_URANDOM              (1)
-#define MICROPY_PY_URANDOM                  (1)
-#define MICROPY_PY_URANDOM_EXTRA_FUNCS      (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (trng_random_u32())
-#define MICROPY_PY_USELECT                  (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
@@ -147,7 +91,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
-#define MICROPY_PY_FRAMEBUF                 (1)
+#define MICROPY_PY_MACHINE_TIMER            (1)
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_UPLATFORM                (1)
 
@@ -233,15 +177,21 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 #define MICROPY_HW_PIT_NUM_CHANNELS 3
 
+#ifndef MICROPY_BOARD_ROOT_POINTERS
+#define MICROPY_BOARD_ROOT_POINTERS
+#endif
+
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
-
+#ifndef  MICROPY_EVENT_POLL_HOOK
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
+        __WFE(); \
     } while (0);
+#endif
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 

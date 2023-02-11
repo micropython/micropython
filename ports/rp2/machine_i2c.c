@@ -68,8 +68,8 @@ typedef struct _machine_i2c_obj_t {
 } machine_i2c_obj_t;
 
 STATIC machine_i2c_obj_t machine_i2c_obj[] = {
-    {{&machine_hw_i2c_type}, i2c0, 0, MICROPY_HW_I2C0_SCL, MICROPY_HW_I2C0_SDA, 0},
-    {{&machine_hw_i2c_type}, i2c1, 1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 0},
+    {{&machine_i2c_type}, i2c0, 0, MICROPY_HW_I2C0_SCL, MICROPY_HW_I2C0_SDA, 0},
+    {{&machine_i2c_type}, i2c1, 1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 0},
 };
 
 STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -177,7 +177,7 @@ STATIC const mp_machine_i2c_p_t machine_i2c_p = {
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    machine_hw_i2c_type,
+    machine_i2c_type,
     MP_QSTR_I2C,
     MP_TYPE_FLAG_NONE,
     make_new, machine_i2c_make_new,

@@ -211,7 +211,7 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
                 .gpio_cs = GPIO_NUM_34,
                 .gpio_cd = SDSPI_SLOT_NO_CD,
                 .gpio_wp = SDSPI_SLOT_NO_WP,
-                .dma_channel = 2
+                .dma_channel = SPI_DMA_CH_AUTO
             },
             SDSPI_SLOT_CONFIG_DEFAULT()
         };

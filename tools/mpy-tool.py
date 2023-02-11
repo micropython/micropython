@@ -937,6 +937,10 @@ class RawCode(object):
                 % (self.escaped_name, self.offset_line_info)
             )
             print(
+                "        .line_info_top = fun_data_%s + %u,"
+                % (self.escaped_name, self.offset_closure_info)
+            )
+            print(
                 "        .opcodes = fun_data_%s + %u," % (self.escaped_name, self.offset_opcodes)
             )
             print("    },")
@@ -1676,7 +1680,7 @@ def merge_mpy(compiled_modules, output_file):
         header = bytearray(4)
         header[0] = ord("M")
         header[1] = config.MPY_VERSION
-        header[2] = config.native_arch << 2 | config.MPY_SUB_VERSION
+        header[2] = config.native_arch << 2 | config.MPY_SUB_VERSION if config.native_arch else 0
         header[3] = config.mp_small_int_bits
         merged_mpy.extend(header)
 

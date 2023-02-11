@@ -47,22 +47,22 @@
 // SPI6_RX: DMA2_Stream6.CHANNEL_1
 
 #if defined(MICROPY_HW_SPI1_SCK)
-SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI2_SCK)
-SPI_HandleTypeDef SPIHandle2 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle2 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI3_SCK)
-SPI_HandleTypeDef SPIHandle3 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle3 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI4_SCK)
-SPI_HandleTypeDef SPIHandle4 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle4 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI5_SCK)
-SPI_HandleTypeDef SPIHandle5 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle5 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI6_SCK)
-SPI_HandleTypeDef SPIHandle6 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle6 = {.Instance = NULL};
 #endif
 
 const spi_t spi_obj[6] = {
@@ -678,7 +678,7 @@ const spi_t *spi_from_mp_obj(mp_obj_t o) {
     if (mp_obj_is_type(o, &pyb_spi_type)) {
         pyb_spi_obj_t *self = MP_OBJ_TO_PTR(o);
         return self->spi;
-    } else if (mp_obj_is_type(o, &machine_hard_spi_type)) {
+    } else if (mp_obj_is_type(o, &machine_spi_type)) {
         machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(o);
         return self->spi;
     } else {
@@ -687,7 +687,7 @@ const spi_t *spi_from_mp_obj(mp_obj_t o) {
 }
 
 mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t o) {
-    if (mp_obj_is_type(o, &machine_hard_spi_type)) {
+    if (mp_obj_is_type(o, &machine_spi_type)) {
         return MP_OBJ_TO_PTR(o);
     }
     #if MICROPY_PY_MACHINE_SOFTSPI

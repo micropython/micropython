@@ -35,8 +35,8 @@
 #define MICROPY_HW_USB_PID (0x9802)
 #endif
 
-#ifndef MICROPY_HW_USB_STR_MANUF
-#define MICROPY_HW_USB_STR_MANUF ("MicroPython")
+#ifndef MICROPY_HW_USB_MANUFACTURER_STRING
+#define MICROPY_HW_USB_MANUFACTURER_STRING ("MicroPython")
 #endif
 
 #define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN)
@@ -85,7 +85,7 @@ static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
 };
 
 static const char *const usbd_desc_str[] = {
-    [USBD_STR_MANUF] = MICROPY_HW_USB_STR_MANUF,
+    [USBD_STR_MANUF] = MICROPY_HW_USB_MANUFACTURER_STRING,
     [USBD_STR_PRODUCT] = MICROPY_HW_BOARD_NAME,
     [USBD_STR_SERIAL] = "00000000000000000000",
     [USBD_STR_CDC] = "Board CDC",

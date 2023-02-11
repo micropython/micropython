@@ -748,19 +748,31 @@ STATIC mp_obj_t framebuf_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t ys
     if (xstep < 0) {
         sx = 0;
         xend = self->width + xstep;
+        if (xend <= 0) {
+            return mp_const_none;
+        }
         dx = 1;
     } else {
         sx = self->width - 1;
         xend = xstep - 1;
+        if (xend >= sx) {
+            return mp_const_none;
+        }
         dx = -1;
     }
     if (ystep < 0) {
         y = 0;
         yend = self->height + ystep;
+        if (yend <= 0) {
+            return mp_const_none;
+        }
         dy = 1;
     } else {
         y = self->height - 1;
         yend = ystep - 1;
+        if (yend >= y) {
+            return mp_const_none;
+        }
         dy = -1;
     }
     for (; y != yend; y += dy) {

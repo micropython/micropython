@@ -123,7 +123,6 @@
 #define MICROPY_PY_USSL_FINALISER           (1)
 #define MICROPY_PY_UWEBSOCKET               (1)
 #define MICROPY_PY_WEBREPL                  (1)
-#define MICROPY_PY_BTREE                    (1)
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_UPLATFORM                (1)
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
@@ -218,3 +217,21 @@ typedef long mp_off_t;
 #endif
 
 void boardctrl_startup(void);
+
+#ifndef MICROPY_PY_NETWORK_LAN
+#if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 1) && (CONFIG_IDF_TARGET_ESP32 || (CONFIG_ETH_USE_SPI_ETHERNET && (CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL || CONFIG_ETH_SPI_ETHERNET_DM9051 || CONFIG_ETH_SPI_ETHERNET_W5500)))
+#define MICROPY_PY_NETWORK_LAN              (1)
+#else
+#define MICROPY_PY_NETWORK_LAN              (0)
+#endif
+#endif
+
+#if MICROPY_PY_NETWORK_LAN && CONFIG_ETH_USE_SPI_ETHERNET
+#ifndef MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C2
+#define MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ       (12)
+#else
+#define MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ       (36)
+#endif
+#endif
+#endif

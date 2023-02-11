@@ -198,8 +198,9 @@ function ci_mimxrt_setup {
 
 function ci_mimxrt_build {
     make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/mimxrt submodules
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK submodules
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40 submodules
     make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40
 }
 
@@ -283,6 +284,10 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C ports/rp2 USER_C_MODULES=../../examples/usercmodule/micropython.cmake
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO submodules
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO
+
+    # Test building ninaw10 driver and NIC interface.
+    make ${MAKEOPTS} -C ports/rp2 BOARD=ARDUINO_NANO_RP2040_CONNECT submodules
+    make ${MAKEOPTS} -C ports/rp2 BOARD=ARDUINO_NANO_RP2040_CONNECT
 }
 
 ########################################################################################
@@ -310,6 +315,7 @@ function ci_stm32_setup {
 function ci_stm32_pyb_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 MICROPY_PY_NETWORK_WIZNET5K=5200 submodules
+    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2 submodules
     git submodule update --init lib/btstack
     git submodule update --init lib/mynewt-nimble
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_NETWORK_WIZNET5K=5200 USER_C_MODULES=../../examples/usercmodule
@@ -326,7 +332,7 @@ function ci_stm32_pyb_build {
 
 function ci_stm32_nucleo_build {
     make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/stm32 submodules
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI submodules
     git submodule update --init lib/mynewt-nimble
 
     # Test building various MCU families, some with additional options.
@@ -506,7 +512,6 @@ function ci_unix_32bit_setup {
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     gcc --version
-    python2 --version
     python3 --version
 }
 
@@ -685,7 +690,6 @@ function ci_zephyr_install {
 
 function ci_zephyr_build {
     docker exec zephyr-ci west build -p auto -b qemu_x86 -- -DCONF_FILE=prj_minimal.conf
-    docker exec zephyr-ci west build -p auto -b qemu_x86
     docker exec zephyr-ci west build -p auto -b frdm_k64f
     docker exec zephyr-ci west build -p auto -b mimxrt1050_evk
     docker exec zephyr-ci west build -p auto -b nucleo_wb55rg # for bluetooth

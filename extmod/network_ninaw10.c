@@ -51,6 +51,9 @@ typedef struct _nina_obj_t {
     mp_obj_base_t base;
     bool active;
     uint32_t itf;
+    mp_uint_t security;
+    char ssid[NINA_MAX_SSID_LEN + 1];
+    char key[NINA_MAX_WPA_LEN + 1];
 } nina_obj_t;
 
 // For auto-binding UDP sockets
@@ -74,10 +77,11 @@ typedef struct _nina_obj_t {
 #define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__)
 
 static uint16_t bind_port = BIND_PORT_RANGE_MIN;
-const mod_network_nic_type_t mod_network_nic_type_nina;
+const mp_obj_type_t mod_network_nic_type_nina;
 static nina_obj_t network_nina_wl_sta = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_STA_IF};
 static nina_obj_t network_nina_wl_ap = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_AP_IF};
 static mp_sched_node_t mp_wifi_sockpoll_node;
+static mp_sched_node_t mp_wifi_connpoll_node;
 
 STATIC void network_ninaw10_poll_sockets(mp_sched_node_t *node) {
     (void)node;
@@ -97,6 +101,40 @@ STATIC void network_ninaw10_poll_sockets(mp_sched_node_t *node) {
             }
         }
     }
+}
+
+STATIC void network_ninaw10_poll_connect(mp_sched_node_t *node) {
+    nina_obj_t *self = &network_nina_wl_sta;
+
+    int status = nina_connection_status();
+    if (status == NINA_STATUS_CONNECTED) {
+        // Connected to AP, nothing else to do.
+        return;
+    }
+
+    if (status != NINA_STATUS_NO_SSID_AVAIL) {
+        // If not connected, and no connection in progress, the connection attempt has failed.
+        // Read the ESP failure reason, reconnect and reschedule the connection polling code.
+        int reason = nina_connection_reason();
+        if (reason == NINA_ESP_REASON_AUTH_EXPIRE ||
+            reason == NINA_ESP_REASON_ASSOC_EXPIRE ||
+            reason == NINA_ESP_REASON_NOT_AUTHED ||
+            reason == NINA_ESP_REASON_4WAY_HANDSHAKE_TIMEOUT ||
+            reason >= NINA_ESP_REASON_BEACON_TIMEOUT) {
+            debug_printf(&mp_plat_print, "poll_connect() status: %d reason %d\n", status, reason);
+            if (nina_connect(self->ssid, self->security, self->key, 0) != 0) {
+                mp_raise_msg_varg(&mp_type_OSError,
+                    MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s\n"),
+                    self->ssid, self->security, self->key);
+            }
+        } else {
+            // Will not attempt to reconnect if there's another error code set.
+            return;
+        }
+    }
+
+    // Reschedule the connection polling code.
+    mp_sched_schedule_node(&mp_wifi_connpoll_node, network_ninaw10_poll_connect);
 }
 
 STATIC mp_obj_t network_ninaw10_timer_callback(mp_obj_t none_in) {
@@ -240,6 +278,12 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
             mp_raise_msg_varg(&mp_type_OSError,
                 MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s\n"), ssid, security, key);
         }
+
+        // Save connection info to re-connect if needed.
+        self->security = security;
+        strncpy(self->key, key, NINA_MAX_WPA_LEN);
+        strncpy(self->ssid, ssid, NINA_MAX_SSID_LEN);
+        mp_sched_schedule_node(&mp_wifi_connpoll_node, network_ninaw10_poll_connect);
     } else {
         mp_uint_t channel = args[ARG_channel].u_int;
 
@@ -252,6 +296,7 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("failed to start in AP mode"));
         }
     }
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_ninaw10_connect_obj, 1, network_ninaw10_connect);
@@ -753,7 +798,7 @@ STATIC int network_ninaw10_socket_ioctl(mod_network_socket_obj_t *socket, mp_uin
     return ret;
 }
 
-static const mp_rom_map_elem_t nina_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t nina_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active),              MP_ROM_PTR(&network_ninaw10_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan),                MP_ROM_PTR(&network_ninaw10_scan_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),             MP_ROM_PTR(&network_ninaw10_connect_obj) },
@@ -772,18 +817,9 @@ static const mp_rom_map_elem_t nina_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_WPA_PSK),             MP_ROM_INT(NINA_SEC_WPA_PSK) },
 };
 
-static MP_DEFINE_CONST_DICT(nina_locals_dict, nina_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(nina_locals_dict, nina_locals_dict_table);
 
-STATIC MP_DEFINE_CONST_OBJ_FULL_TYPE(
-    mod_network_nic_type_nina_base,
-    MP_QSTR_nina,
-    MP_TYPE_FLAG_NONE,
-    make_new, network_ninaw10_make_new,
-    locals_dict, &nina_locals_dict
-    );
-
-const mod_network_nic_type_t mod_network_nic_type_nina = {
-    .base = mod_network_nic_type_nina_base,
+STATIC const mod_network_nic_protocol_t mod_network_nic_protocol_nina = {
     .gethostbyname = network_ninaw10_gethostbyname,
     .socket = network_ninaw10_socket_socket,
     .close = network_ninaw10_socket_close,
@@ -799,6 +835,15 @@ const mod_network_nic_type_t mod_network_nic_type_nina = {
     .settimeout = network_ninaw10_socket_settimeout,
     .ioctl = network_ninaw10_socket_ioctl,
 };
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mod_network_nic_type_nina,
+    MP_QSTR_nina,
+    MP_TYPE_FLAG_NONE,
+    make_new, network_ninaw10_make_new,
+    locals_dict, &nina_locals_dict,
+    protocol, &mod_network_nic_protocol_nina
+    );
 
 MP_REGISTER_ROOT_POINTER(struct _machine_spi_obj_t *mp_wifi_spi);
 MP_REGISTER_ROOT_POINTER(struct _machine_timer_obj_t *mp_wifi_timer);

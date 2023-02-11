@@ -30,19 +30,13 @@
 #include "extmod/machine_i2c.h"
 #include "modmachine.h"
 #include CLOCK_CONFIG_H
+#include "pin.h"
 
 #include "fsl_iomuxc.h"
 #include "fsl_lpi2c.h"
 
 #define DEFAULT_I2C_FREQ        (400000)
 #define DEFAULT_I2C_DRIVE       (6)
-
-// Select USB1 PLL (480 MHz) as master lpi2c clock source
-#define LPI2C_CLOCK_SOURCE_SELECT (0U)
-// Clock divider for master lpi2c clock source
-#define LPI2C_CLOCK_SOURCE_DIVIDER (1U)
-// Get frequency of lpi2c clock = 30 MHz
-#define LPI2C_CLOCK_FREQUENCY ((CLOCK_GetFreq(kCLOCK_Usb1PllClk) / 8) / (LPI2C_CLOCK_SOURCE_DIVIDER + 1U))
 
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;

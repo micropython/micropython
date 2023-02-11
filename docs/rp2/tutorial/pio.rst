@@ -76,9 +76,10 @@ and state machines. Below is the code for reference.
         nop()                       [29]
         jmp(x_dec, "delay_high")
 
-        # Cycles: 1 + 7 + 32 * (30 + 1) = 1000
+        # Cycles: 1 + 1 + 6 + 32 * (30 + 1) = 1000
+        nop()
         set(pins, 0)
-        set(x, 31)                  [6]
+        set(x, 31)                  [5]
         label("delay_low")
         nop()                       [29]
         jmp(x_dec, "delay_low")
@@ -113,6 +114,8 @@ the following:
   X starts with the value 31 this jump will happen 31 times, so the ``nop() [29]``
   runs 32 times in total (note there is also one instruction cycle taken by the
   ``jmp`` for each of these 32 loops).
+- The single ``nop()`` correlates with the cycle used for IRQ raise, and ensures
+  the same number of cycles are used for LED on and LED off.
 - ``set(pins, 0)`` will turn the LED off by setting pin 25 low.
 - Another 32 loops of ``nop() [29]`` and ``jmp(...)`` will execute.
 - Because ``wrap_target()`` and ``wrap()`` are not specified, their default will

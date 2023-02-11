@@ -33,13 +33,16 @@
 #include "esp_idf_version.h"
 
 // LAN only for ESP32 (not ESP32S2) and only for ESP-IDF v4.1 and higher
-#if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 1) && (CONFIG_IDF_TARGET_ESP32)
+#if MICROPY_PY_NETWORK_LAN
 
 #include "esp_eth.h"
 #include "esp_eth_mac.h"
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_netif.h"
+#if CONFIG_ETH_USE_SPI_ETHERNET
+#include "driver/spi_master.h"
+#endif
 
 #include "modnetwork.h"
 
@@ -48,9 +51,11 @@ typedef struct _lan_if_obj_t {
     int if_id; // MUST BE FIRST to match wlan_if_obj_t
     bool initialized;
     bool active;
-    uint8_t mdc_pin;
-    uint8_t mdio_pin;
+    int8_t mdc_pin;
+    int8_t mdio_pin;
     int8_t phy_power_pin;
+    int8_t phy_cs_pin;
+    int8_t phy_int_pin;
     uint8_t phy_addr;
     uint8_t phy_type;
     esp_eth_phy_t *phy;
@@ -97,14 +102,23 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         return MP_OBJ_FROM_PTR(&lan_obj);
     }
 
-    enum { ARG_id, ARG_mdc, ARG_mdio, ARG_power, ARG_phy_addr, ARG_phy_type };
+    enum { ARG_id, ARG_mdc, ARG_mdio, ARG_power, ARG_phy_addr, ARG_phy_type,
+           ARG_spi, ARG_cs, ARG_int, ARG_ref_clk_mode, ARG_ref_clk };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,           MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_mdc,          MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_mdio,         MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_mdc,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_mdio,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_power,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_phy_addr,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_phy_type,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_spi,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_cs,           MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_int,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        #if ESP_IDF_VERSION_MINOR >= 4
+        // Dynamic ref_clk configuration available at v4.4
+        { MP_QSTR_ref_clk_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_ref_clk,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        #endif
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -116,36 +130,99 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         }
     }
 
-    self->mdc_pin = machine_pin_get_id(args[ARG_mdc].u_obj);
-    self->mdio_pin = machine_pin_get_id(args[ARG_mdio].u_obj);
-    self->phy_power_pin = args[ARG_power].u_obj == mp_const_none ? -1 : machine_pin_get_id(args[ARG_power].u_obj);
+    #define GET_PIN(XXX) args[XXX].u_obj == mp_const_none ? -1 : machine_pin_get_id(args[XXX].u_obj);
+
+    self->mdc_pin = GET_PIN(ARG_mdc);
+    self->mdio_pin = GET_PIN(ARG_mdio);
+    self->phy_power_pin = GET_PIN(ARG_power);
+    self->phy_cs_pin = GET_PIN(ARG_cs);
+    self->phy_int_pin = GET_PIN(ARG_int);
 
     if (args[ARG_phy_addr].u_int < 0x00 || args[ARG_phy_addr].u_int > 0x1f) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy address"));
     }
     self->phy_addr = args[ARG_phy_addr].u_int;
 
-    if (args[ARG_phy_type].u_int != PHY_LAN8720 &&
+    if (args[ARG_phy_type].u_int != PHY_LAN8710 &&
+        args[ARG_phy_type].u_int != PHY_LAN8720 &&
         args[ARG_phy_type].u_int != PHY_IP101 &&
         args[ARG_phy_type].u_int != PHY_RTL8201 &&
         #if ESP_IDF_VERSION_MINOR >= 3      // KSZ8041 is new in ESP-IDF v4.3
         args[ARG_phy_type].u_int != PHY_KSZ8041 &&
+        #endif
+        #if ESP_IDF_VERSION_MINOR >= 4      // KSZ8081 is new in ESP-IDF v4.4
+        args[ARG_phy_type].u_int != PHY_KSZ8081 &&
+        #endif
+        #if CONFIG_ETH_USE_SPI_ETHERNET
+        #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
+        args[ARG_phy_type].u_int != PHY_KSZ8851SNL &&
+        #endif
+        #if CONFIG_ETH_SPI_ETHERNET_DM9051
+        args[ARG_phy_type].u_int != PHY_DM9051 &&
+        #endif
+        #if CONFIG_ETH_SPI_ETHERNET_W5500
+        args[ARG_phy_type].u_int != PHY_W5500 &&
+        #endif
         #endif
         args[ARG_phy_type].u_int != PHY_DP83848) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy type"));
     }
 
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
-    mac_config.smi_mdc_gpio_num = self->mdc_pin;
-    mac_config.smi_mdio_gpio_num = self->mdio_pin;
-    esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&mac_config);
+    esp_eth_mac_t *mac = NULL;
+
+    // Dynamic ref_clk configuration available at v4.4
+    #if ESP_IDF_VERSION_MINOR >= 4
+    if (args[ARG_ref_clk_mode].u_int != -1) {
+        // Map the GPIO_MODE constants to EMAC_CLK constants.
+        mac_config.clock_config.rmii.clock_mode =
+            args[ARG_ref_clk_mode].u_int == GPIO_MODE_INPUT ? EMAC_CLK_EXT_IN : EMAC_CLK_OUT;
+    }
+    if (args[ARG_ref_clk].u_obj != mp_const_none) {
+        mac_config.clock_config.rmii.clock_gpio = machine_pin_get_id(args[ARG_ref_clk].u_obj);
+    }
+    #endif
 
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
     phy_config.phy_addr = self->phy_addr;
     phy_config.reset_gpio_num = self->phy_power_pin;
     self->phy = NULL;
 
+    #if CONFIG_ETH_USE_SPI_ETHERNET
+    spi_device_handle_t spi_handle = NULL;
+    if (IS_SPI_PHY(args[ARG_phy_type].u_int)) {
+        spi_device_interface_config_t devcfg = {
+            .mode = 0,
+            .clock_speed_hz = MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ * 1000 * 1000,
+            .queue_size = 20,
+            .spics_io_num = self->phy_cs_pin,
+        };
+        switch (args[ARG_phy_type].u_int) {
+            #if CONFIG_ETH_SPI_ETHERNET_DM9051
+            case PHY_DM9051: {
+                devcfg.command_bits = 1;
+                devcfg.address_bits = 7;
+                break;
+            }
+            #endif
+            #if CONFIG_ETH_SPI_ETHERNET_W5500
+            case PHY_W5500: {
+                devcfg.command_bits = 16;
+                devcfg.address_bits = 8;
+                break;
+            }
+            #endif
+        }
+        spi_host_device_t host = machine_hw_spi_get_host(args[ARG_spi].u_obj);
+        if (spi_bus_add_device(host, &devcfg, &spi_handle) != ESP_OK) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("spi_bus_add_device failed"));
+        }
+    }
+    #endif
+
     switch (args[ARG_phy_type].u_int) {
+        #if CONFIG_IDF_TARGET_ESP32
+        case PHY_LAN8710:
         case PHY_LAN8720:
             self->phy = esp_eth_phy_new_lan8720(&phy_config);
             break;
@@ -158,14 +235,58 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         case PHY_DP83848:
             self->phy = esp_eth_phy_new_dp83848(&phy_config);
             break;
+        #if ESP_IDF_VERSION_MINOR >= 3 // KSZ8041 is new in ESP-IDF v4.3
         case PHY_KSZ8041:
-            #if ESP_IDF_VERSION_MINOR >= 3      // KSZ8041 is new in ESP-IDF v4.3
             self->phy = esp_eth_phy_new_ksz8041(&phy_config);
             break;
-            #endif
-        default:
-            mp_raise_ValueError(MP_ERROR_TEXT("unknown phy"));
+        #endif
+        #if ESP_IDF_VERSION_MINOR >= 4 // KSZ8081 is new in ESP-IDF v4.4
+        case PHY_KSZ8081:
+            self->phy = esp_eth_phy_new_ksz8081(&phy_config);
+            break;
+        #endif
+        #endif
+        #if CONFIG_ETH_USE_SPI_ETHERNET
+        #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
+        case PHY_KSZ8851SNL: {
+            eth_ksz8851snl_config_t chip_config = ETH_KSZ8851SNL_DEFAULT_CONFIG(spi_handle);
+            chip_config.int_gpio_num = self->phy_int_pin;
+            mac = esp_eth_mac_new_ksz8851snl(&chip_config, &mac_config);
+            self->phy = esp_eth_phy_new_ksz8851snl(&phy_config);
+            break;
+        }
+        #endif
+        #if CONFIG_ETH_SPI_ETHERNET_DM9051
+        case PHY_DM9051: {
+            eth_dm9051_config_t chip_config = ETH_DM9051_DEFAULT_CONFIG(spi_handle);
+            chip_config.int_gpio_num = self->phy_int_pin;
+            mac = esp_eth_mac_new_dm9051(&chip_config, &mac_config);
+            self->phy = esp_eth_phy_new_dm9051(&phy_config);
+            break;
+        }
+        #endif
+        #if CONFIG_ETH_SPI_ETHERNET_W5500
+        case PHY_W5500: {
+            eth_w5500_config_t chip_config = ETH_W5500_DEFAULT_CONFIG(spi_handle);
+            chip_config.int_gpio_num = self->phy_int_pin;
+            mac = esp_eth_mac_new_w5500(&chip_config, &mac_config);
+            self->phy = esp_eth_phy_new_w5500(&phy_config);
+            break;
+        }
+        #endif
+        #endif
     }
+
+    #if CONFIG_IDF_TARGET_ESP32
+    if (!IS_SPI_PHY(args[ARG_phy_type].u_int)) {
+        if (self->mdc_pin == -1 || self->mdio_pin == -1) {
+            mp_raise_ValueError(MP_ERROR_TEXT("mdc and mdio must be specified"));
+        }
+        mac_config.smi_mdc_gpio_num = self->mdc_pin;
+        mac_config.smi_mdio_gpio_num = self->mdio_pin;
+        mac = esp_eth_mac_new_esp32(&mac_config);
+    }
+    #endif
 
     if (esp_netif_init() != ESP_OK) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_netif_init failed"));
@@ -261,7 +382,12 @@ STATIC mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         if (bufinfo.len != 6) {
                             mp_raise_ValueError(MP_ERROR_TEXT("invalid buffer length"));
                         }
-                        esp_eth_ioctl(self->eth_handle, ETH_CMD_S_MAC_ADDR, bufinfo.buf);
+                        if (
+                            (esp_eth_ioctl(self->eth_handle, ETH_CMD_S_MAC_ADDR, bufinfo.buf) != ESP_OK) ||
+                            (esp_netif_set_mac(self->eth_netif, bufinfo.buf) != ESP_OK)
+                            ) {
+                            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("failed setting MAC address"));
+                        }
                         break;
                     }
                     default:

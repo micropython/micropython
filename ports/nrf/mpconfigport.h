@@ -196,8 +196,8 @@
 #define MICROPY_PY_MACHINE_SOFT_PWM (0)
 #endif
 
-#ifndef MICROPY_PY_MACHINE_TIMER
-#define MICROPY_PY_MACHINE_TIMER    (0)
+#ifndef MICROPY_PY_MACHINE_TIMER_NRF
+#define MICROPY_PY_MACHINE_TIMER_NRF (1)
 #endif
 
 #ifndef MICROPY_PY_MACHINE_RTCOUNTER
@@ -276,6 +276,11 @@
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
+
+#if MICROPY_HW_ENABLE_RNG
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (rng_generate_random_word())
+long unsigned int rng_generate_random_word(void);
+#endif
 
 #if BOARD_SPECIFIC_MODULES
 #include "boardmodules.h"

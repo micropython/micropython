@@ -27,19 +27,28 @@
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
 
 #include <stdint.h>
+#include "hardware/flash.h"
 #include "hardware/spi.h"
 #include "hardware/sync.h"
 #include "pico/binary_info.h"
 #include "pico/multicore.h"
 #include "mpconfigboard.h"
-#if MICROPY_HW_USB_MSC
-#include "hardware/flash.h"
-#endif
 
 // Board and hardware specific configuration
 #define MICROPY_HW_MCU_NAME                     "RP2040"
 #define MICROPY_HW_ENABLE_UART_REPL             (0) // useful if there is no USB
 #define MICROPY_HW_ENABLE_USBDEV                (1)
+
+#if MICROPY_HW_ENABLE_USBDEV
+// Enable USB-CDC serial port
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC (1)
+#endif
+// Enable USB Mass Storage with FatFS filesystem.
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC (0)
+#endif
+#endif
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
@@ -167,18 +176,14 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #ifndef MICROPY_PY_USOCKET_EXTENDED_STATE
 #define MICROPY_PY_USOCKET_EXTENDED_STATE   (1)
 #endif
-extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
+extern const struct _mp_obj_type_t mod_network_nic_type_nina;
 #define MICROPY_HW_NIC_NINAW10              { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
 #else
 #define MICROPY_HW_NIC_NINAW10
 #endif
 
 #if MICROPY_PY_NETWORK_WIZNET5K
-#if MICROPY_PY_LWIP
 extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
-#else
-extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
-#endif
 #define MICROPY_HW_NIC_WIZNET5K             { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
 #else
 #define MICROPY_HW_NIC_WIZNET5K
@@ -198,6 +203,13 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 
 // Miscellaneous settings
 
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID (0x2E8A) // Raspberry Pi
+#endif
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID (0x0005) // RP2 MicroPython
+#endif
+
 // Entering a critical section.
 extern uint32_t mp_thread_begin_atomic_section(void);
 extern void mp_thread_end_atomic_section(uint32_t);
@@ -210,7 +222,7 @@ extern void mp_thread_end_atomic_section(uint32_t);
 #define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
 
 #if MICROPY_HW_ENABLE_USBDEV
-#define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task_ext(uint32_t, bool); tud_task_ext(0, false);
+#define MICROPY_HW_USBDEV_TASK_HOOK extern void usbd_task(void); usbd_task();
 #define MICROPY_VM_HOOK_COUNT (10)
 #define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
 #define MICROPY_VM_HOOK_POLL if (get_core_num() == 0 && --vm_hook_divisor == 0) { \

@@ -32,12 +32,12 @@
 // Implementation of hard SPI for machine module
 
 STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
-    {{&machine_hard_spi_type}, &spi_obj[0]},
-    {{&machine_hard_spi_type}, &spi_obj[1]},
-    {{&machine_hard_spi_type}, &spi_obj[2]},
-    {{&machine_hard_spi_type}, &spi_obj[3]},
-    {{&machine_hard_spi_type}, &spi_obj[4]},
-    {{&machine_hard_spi_type}, &spi_obj[5]},
+    {{&machine_spi_type}, &spi_obj[0]},
+    {{&machine_spi_type}, &spi_obj[1]},
+    {{&machine_spi_type}, &spi_obj[2]},
+    {{&machine_spi_type}, &spi_obj[3]},
+    {{&machine_spi_type}, &spi_obj[4]},
+    {{&machine_spi_type}, &spi_obj[5]},
 };
 
 STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -136,7 +136,7 @@ STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    machine_hard_spi_type,
+    machine_spi_type,
     MP_QSTR_SPI,
     MP_TYPE_FLAG_NONE,
     make_new, machine_hard_spi_make_new,

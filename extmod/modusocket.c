@@ -32,10 +32,11 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
-#include "shared/netutils/netutils.h"
-#include "modnetwork.h"
 
 #if MICROPY_PY_NETWORK && MICROPY_PY_USOCKET && !MICROPY_PY_LWIP
+
+#include "shared/netutils/netutils.h"
+#include "modnetwork.h"
 
 /******************************************************************************/
 // socket class
@@ -56,7 +57,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     mod_network_socket_obj_t *s = m_new_obj_with_finaliser(mod_network_socket_obj_t);
     s->base.type = &socket_type;
     s->nic = MP_OBJ_NULL;
-    s->nic_type = NULL;
+    s->nic_protocol = NULL;
     s->domain = MOD_NETWORK_AF_INET;
     s->type = MOD_NETWORK_SOCK_STREAM;
     s->proto = 0;
@@ -85,17 +86,17 @@ STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
     if (self->nic == MP_OBJ_NULL) {
         // select NIC based on IP
         self->nic = mod_network_find_nic(ip);
-        self->nic_type = (mod_network_nic_type_t *)mp_obj_get_type(self->nic);
+        self->nic_protocol = (mod_network_nic_protocol_t *)MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(self->nic), protocol);
 
         // call the NIC to open the socket
         int _errno;
-        if (self->nic_type->socket(self, &_errno) != 0) {
+        if (self->nic_protocol->socket(self, &_errno) != 0) {
             mp_raise_OSError(_errno);
         }
 
         #if MICROPY_PY_USOCKET_EXTENDED_STATE
         // if a timeout was set before binding a NIC, call settimeout to reset it
-        if (self->timeout != -1 && self->nic_type->settimeout(self, self->timeout, &_errno) != 0) {
+        if (self->timeout != -1 && self->nic_protocol->settimeout(self, self->timeout, &_errno) != 0) {
             mp_raise_OSError(_errno);
         }
         #endif
@@ -115,7 +116,7 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 
     // call the NIC to bind the socket
     int _errno;
-    if (self->nic_type->bind(self, ip, port, &_errno) != 0) {
+    if (self->nic_protocol->bind(self, ip, port, &_errno) != 0) {
         mp_raise_OSError(_errno);
     }
 
@@ -140,7 +141,7 @@ STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
     }
 
     int _errno;
-    if (self->nic_type->listen(self, backlog, &_errno) != 0) {
+    if (self->nic_protocol->listen(self, backlog, &_errno) != 0) {
         mp_raise_OSError(_errno);
     }
 
@@ -165,7 +166,7 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mod_network_socket_obj_t *socket2 = m_new_obj_with_finaliser(mod_network_socket_obj_t);
     socket2->base.type = &socket_type;
     socket2->nic = MP_OBJ_NULL;
-    socket2->nic_type = NULL;
+    socket2->nic_protocol = NULL;
 
     // set the same address family, socket type and protocol as parent
     socket2->domain = self->domain;
@@ -184,13 +185,13 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
     mp_uint_t port;
     int _errno;
-    if (self->nic_type->accept(self, socket2, ip, &port, &_errno) != 0) {
+    if (self->nic_protocol->accept(self, socket2, ip, &port, &_errno) != 0) {
         mp_raise_OSError(_errno);
     }
 
     // new socket has valid state, so set the NIC to the same as parent
     socket2->nic = self->nic;
-    socket2->nic_type = self->nic_type;
+    socket2->nic_protocol = self->nic_protocol;
 
     // make the return value
     mp_obj_tuple_t *client = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
@@ -214,7 +215,7 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 
     // call the NIC to connect the socket
     int _errno;
-    if (self->nic_type->connect(self, ip, port, &_errno) != 0) {
+    if (self->nic_protocol->connect(self, ip, port, &_errno) != 0) {
         mp_raise_OSError(_errno);
     }
 
@@ -235,7 +236,7 @@ STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     int _errno;
-    mp_uint_t ret = self->nic_type->send(self, bufinfo.buf, bufinfo.len, &_errno);
+    mp_uint_t ret = self->nic_protocol->send(self, bufinfo.buf, bufinfo.len, &_errno);
     if (ret == -1) {
         mp_raise_OSError(_errno);
     }
@@ -255,7 +256,7 @@ STATIC mp_obj_t socket_sendall(mp_obj_t self_in, mp_obj_t buf_in) {
     int _errno;
     mp_uint_t ret = 0;
     if (self->timeout == 0) {
-        ret = self->nic_type->send(self, bufinfo.buf, bufinfo.len, &_errno);
+        ret = self->nic_protocol->send(self, bufinfo.buf, bufinfo.len, &_errno);
         if (ret == -1) {
             mp_raise_OSError(_errno);
         } else if (bufinfo.len > ret) {
@@ -265,7 +266,7 @@ STATIC mp_obj_t socket_sendall(mp_obj_t self_in, mp_obj_t buf_in) {
         // TODO: In CPython3.5, socket timeout should apply to the
         // entire sendall() operation, not to individual send() chunks.
         while (bufinfo.len != 0) {
-            ret = self->nic_type->send(self, bufinfo.buf, bufinfo.len, &_errno);
+            ret = self->nic_protocol->send(self, bufinfo.buf, bufinfo.len, &_errno);
             if (ret == -1) {
                 mp_raise_OSError(_errno);
             }
@@ -288,7 +289,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, len);
     int _errno;
-    mp_uint_t ret = self->nic_type->recv(self, (byte *)vstr.buf, len, &_errno);
+    mp_uint_t ret = self->nic_protocol->recv(self, (byte *)vstr.buf, len, &_errno);
     if (ret == -1) {
         mp_raise_OSError(_errno);
     }
@@ -317,7 +318,7 @@ STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_
 
     // call the NIC to sendto
     int _errno;
-    mp_int_t ret = self->nic_type->sendto(self, bufinfo.buf, bufinfo.len, ip, port, &_errno);
+    mp_int_t ret = self->nic_protocol->sendto(self, bufinfo.buf, bufinfo.len, ip, port, &_errno);
     if (ret == -1) {
         mp_raise_OSError(_errno);
     }
@@ -338,7 +339,7 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     byte ip[4];
     mp_uint_t port;
     int _errno;
-    mp_int_t ret = self->nic_type->recvfrom(self, (byte *)vstr.buf, vstr.len, ip, &port, &_errno);
+    mp_int_t ret = self->nic_protocol->recvfrom(self, (byte *)vstr.buf, vstr.len, ip, &port, &_errno);
     if (ret == -1) {
         mp_raise_OSError(_errno);
     }
@@ -388,7 +389,7 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     }
 
     int _errno;
-    if (self->nic_type->setsockopt(self, level, opt, optval, optlen, &_errno) != 0) {
+    if (self->nic_protocol->setsockopt(self, level, opt, optval, optlen, &_errno) != 0) {
         mp_raise_OSError(_errno);
     }
 
@@ -428,7 +429,7 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
         #endif
     } else {
         int _errno;
-        if (self->nic_type->settimeout(self, timeout, &_errno) != 0) {
+        if (self->nic_protocol->settimeout(self, timeout, &_errno) != 0) {
             mp_raise_OSError(_errno);
         }
     }
@@ -476,7 +477,7 @@ mp_uint_t socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode)
     if (self->nic == MP_OBJ_NULL) {
         return MP_STREAM_ERROR;
     }
-    mp_int_t ret = self->nic_type->recv(self, (byte *)buf, size, errcode);
+    mp_int_t ret = self->nic_protocol->recv(self, (byte *)buf, size, errcode);
     if (ret < 0) {
         ret = MP_STREAM_ERROR;
     }
@@ -488,7 +489,7 @@ mp_uint_t socket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *e
     if (self->nic == MP_OBJ_NULL) {
         return MP_STREAM_ERROR;
     }
-    mp_int_t ret = self->nic_type->send(self, buf, size, errcode);
+    mp_int_t ret = self->nic_protocol->send(self, buf, size, errcode);
     if (ret < 0) {
         ret = MP_STREAM_ERROR;
     }
@@ -499,7 +500,7 @@ mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (request == MP_STREAM_CLOSE) {
         if (self->nic != MP_OBJ_NULL) {
-            self->nic_type->close(self);
+            self->nic_protocol->close(self);
             self->nic = MP_OBJ_NULL;
         }
         self->state = MOD_NETWORK_SS_CLOSED;
@@ -518,7 +519,7 @@ mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
     }
-    return self->nic_type->ioctl(self, request, arg, errcode);
+    return self->nic_protocol->ioctl(self, request, arg, errcode);
 }
 
 STATIC const mp_stream_p_t socket_stream_p = {
@@ -588,9 +589,9 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         // find a NIC that can do a name lookup
         for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
             mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
-            mod_network_nic_type_t *nic_type = (mod_network_nic_type_t *)mp_obj_get_type(nic);
-            if (nic_type->gethostbyname != NULL) {
-                int ret = nic_type->gethostbyname(nic, host, hlen, out_ip);
+            mod_network_nic_protocol_t *nic_protocol = (mod_network_nic_protocol_t *)MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(nic), protocol);
+            if (nic_protocol->gethostbyname != NULL) {
+                int ret = nic_protocol->gethostbyname(nic, host, hlen, out_ip);
                 if (ret != 0) {
                     mp_raise_OSError(ret);
                 }

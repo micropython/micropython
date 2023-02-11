@@ -45,6 +45,15 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+#if MICROPY_MODULE_WEAK_LINKS
+STATIC qstr make_weak_link_name(vstr_t *buffer, qstr name) {
+    vstr_reset(buffer);
+    vstr_add_char(buffer, 'u');
+    vstr_add_str(buffer, qstr_str(name));
+    return qstr_from_strn(buffer->buf, buffer->len);
+}
+#endif
+
 #if MICROPY_ENABLE_EXTERNAL_IMPORT
 
 // Must be a string of one byte.
@@ -236,7 +245,9 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
     // the correct format and, if so, load and execute the file.
     #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
-        mp_compiled_module_t cm = mp_raw_code_load_file(file_str, module_obj);
+        mp_compiled_module_t cm;
+        cm.context = module_obj;
+        mp_raw_code_load_file(file_str, &cm);
         do_execute_raw_code(cm.context, cm.rc, file_str);
         return;
     }
@@ -367,10 +378,7 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         // formerly known as "weak links").
         #if MICROPY_MODULE_WEAK_LINKS
         if (stat == MP_IMPORT_STAT_NO_EXIST && module_obj == MP_OBJ_NULL) {
-            char *umodule_buf = vstr_str(path);
-            umodule_buf[0] = 'u';
-            strcpy(umodule_buf + 1, qstr_str(level_mod_name));
-            qstr umodule_name = qstr_from_str(umodule_buf);
+            qstr umodule_name = make_weak_link_name(path, level_mod_name);
             module_obj = mp_module_get_builtin(umodule_name);
         }
         #elif MICROPY_PY_SYS
@@ -581,10 +589,8 @@ mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
 
     #if MICROPY_MODULE_WEAK_LINKS
     // Check if there is a weak link to this module
-    char umodule_buf[MICROPY_ALLOC_PATH_MAX];
-    umodule_buf[0] = 'u';
-    strcpy(umodule_buf + 1, args[0]);
-    qstr umodule_name_qstr = qstr_from_str(umodule_buf);
+    VSTR_FIXED(umodule_path, MICROPY_ALLOC_PATH_MAX);
+    qstr umodule_name_qstr = make_weak_link_name(&umodule_path, module_name_qstr);
     module_obj = mp_module_get_loaded_or_builtin(umodule_name_qstr);
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;

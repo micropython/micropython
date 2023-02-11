@@ -154,8 +154,8 @@
 #define VBAT_DIV (4)
 #elif defined(STM32F722xx) || defined(STM32F723xx) || \
     defined(STM32F732xx) || defined(STM32F733xx) || \
-    defined(STM32F745xx) || \
-    defined(STM32F746xx) || defined(STM32F765xx) || \
+    defined(STM32F745xx) || defined(STM32F746xx) || \
+    defined(STM32F756xx) || defined(STM32F765xx) || \
     defined(STM32F767xx) || defined(STM32F769xx)
 #define VBAT_DIV (4)
 #elif defined(STM32G0) || defined(STM32G4)
@@ -215,6 +215,14 @@ static inline uint32_t adc_get_internal_channel(uint32_t channel) {
     // (on some MCUs ADC_CHANNEL_TEMPSENSOR=16, on others it doesn't)
     if (channel == 16) {
         channel = ADC_CHANNEL_TEMPSENSOR;
+    }
+    #elif defined(STM32L4)
+    if (channel == 0) {
+        channel = ADC_CHANNEL_VREFINT;
+    } else if (channel == 17) {
+        channel = ADC_CHANNEL_TEMPSENSOR;
+    } else if (channel == 18) {
+        channel = ADC_CHANNEL_VBAT;
     }
     #endif
     return channel;
@@ -852,9 +860,9 @@ float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
         return 0;
     }
     #else
-    #if defined(STM32L1)
+    #if defined(STM32L1) || defined(STM32L4)
     // Update the reference correction factor before reading tempsensor
-    // because TS_CAL1 and TS_CAL2 of STM32L1 are at VDDA=3.0V
+    // because TS_CAL1 and TS_CAL2 of STM32L1/L4 are at VDDA=3.0V
     adc_read_core_vref(adcHandle);
     #endif
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);

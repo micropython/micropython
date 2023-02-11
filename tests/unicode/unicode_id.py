@@ -10,6 +10,7 @@ bβ = 3
 βb = 4
 print(α, αβγ, bβ, βb)
 
+
 # function, argument, local identifiers
 def α(β, γ):
     δ = β + γ
@@ -17,6 +18,7 @@ def α(β, γ):
 
 
 α(1, 2)
+
 
 # class, method identifiers
 class φ:

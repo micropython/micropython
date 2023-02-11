@@ -32,6 +32,7 @@ I2C_SCL = const(9)
 
 # Helper functions
 
+
 # LED & Ambient Light Sensor control
 def led_set(state):
     """Set the state of the BLUE LED on IO13"""

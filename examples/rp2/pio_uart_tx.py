@@ -33,6 +33,7 @@ for i in range(NUM_UARTS):
     sm.active(1)
     uarts.append(sm)
 
+
 # We can print characters from each UART by pushing them to the TX FIFO
 def pio_uart_print(sm, s):
     for c in s:

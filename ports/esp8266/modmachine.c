@@ -31,6 +31,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared/runtime/pyexec.h"
+#include "drivers/dht/dht.h"
 
 // This needs to be set before we include the RTOS headers
 #define USE_US_TIMER 1
@@ -418,6 +419,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #endif
 
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us), MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&esp_timer_type) },

@@ -409,6 +409,14 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
 
+// \method uart.txdone()
+// Return `True` if all characters have been sent.
+STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return uart_tx_busy(self) ? mp_const_false : mp_const_true;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
+
 // irq(handler, trigger, hard)
 STATIC mp_obj_t machine_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[MP_IRQ_ARG_INIT_NUM_ARGS];
@@ -452,6 +460,8 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
+    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
 
     /// \method read([nbytes])
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
@@ -557,6 +567,19 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr
         if ((flags & MP_STREAM_POLL_WR) && uart_tx_avail(self)) {
             ret |= MP_STREAM_POLL_WR;
         }
+    } else if (request == MP_STREAM_FLUSH) {
+        // The timeout is estimated using the buffer size and the baudrate.
+        // Take the worst case assumptions at 13 bit symbol size times 2.
+        uint32_t timeout = mp_hal_ticks_ms() +
+            (uint32_t)(uart_tx_txbuf(self)) * 13000ll * 2 / self->baudrate;
+        do {
+            if (!uart_tx_busy(self)) {
+                return 0;
+            }
+            MICROPY_EVENT_POLL_HOOK
+        } while (mp_hal_ticks_ms() < timeout);
+        *errcode = MP_ETIMEDOUT;
+        ret = MP_STREAM_ERROR;
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;

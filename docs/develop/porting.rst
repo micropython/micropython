@@ -98,8 +98,8 @@ We also need a Makefile at this point for the port:
    include $(TOP)/extmod/extmod.mk
 
    # Set CFLAGS and libraries.
-   CFLAGS = -I. -I$(BUILD) -I$(TOP)
-   LIBS = -lm
+   CFLAGS += -I. -I$(BUILD) -I$(TOP)
+   LIBS += -lm
 
    # Define the required source files.
    SRC_C = \

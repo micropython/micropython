@@ -46,13 +46,15 @@
     (GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)) & ~GPIO_PIN_INT_TYPE_MASK) \
     | GPIO_PIN_INT_TYPE_SET(trig))) \
 
-#define GPIO_MODE_INPUT (0)
-#define GPIO_MODE_OUTPUT (1)
-#define GPIO_MODE_OPEN_DRAIN (2) // synthesised
-#define GPIO_PULL_NONE (0)
-#define GPIO_PULL_UP (1)
-// Removed in SDK 1.1.0
-// #define GPIO_PULL_DOWN (2)
+#define ENABLE_OPEN_DRAIN(phys_port) \
+    (GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(phys_port)), \
+    GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(phys_port))) \
+    | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)))
+
+#define DISABLE_OPEN_DRAIN(phys_port) \
+    (GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(phys_port)), \
+    GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(phys_port))) \
+    & ~GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE))) \
 
 typedef struct _pin_irq_obj_t {
     mp_obj_base_t base;
@@ -84,7 +86,7 @@ const pyb_pin_obj_t pyb_pin_obj[16 + 1] = {
     {{&pyb_pin_type}, 16, -1, -1},
 };
 
-STATIC uint8_t pin_mode[16 + 1];
+uint8_t pin_mode[16 + 1];
 
 // forward declaration
 STATIC const pin_irq_obj_t pin_irq_obj[16];
@@ -173,9 +175,7 @@ void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin_id) {
 
     ETS_GPIO_INTR_DISABLE();
     PIN_FUNC_SELECT(pin->periph, pin->func);
-    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)),
-        GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)))
-        | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); // open drain
+    ENABLE_OPEN_DRAIN(pin->phys_port);
     GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS,
         GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pin->phys_port));
     ETS_GPIO_INTR_ENABLE();
@@ -279,6 +279,7 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, size_t n_args, cons
             mp_raise_ValueError(MP_ERROR_TEXT("Pin(16) doesn't support pull"));
         }
     } else {
+        DISABLE_OPEN_DRAIN(self->phys_port);
         PIN_FUNC_SELECT(self->periph, self->func);
         #if 0
         // Removed in SDK 1.1.0

@@ -57,6 +57,25 @@ function download_s140_nrf52_6_1_1
     cd -
 }
 
+function download_s140_nrf52_7_3_0
+{
+    echo ""
+    echo "####################################"
+    echo "### Downloading s140_nrf52_7.3.0 ###"
+    echo "####################################"
+    echo ""
+
+    mkdir -p $1/s140_nrf52_7.3.0
+    cd $1/s140_nrf52_7.3.0
+    wget --post-data="fileName=DeviceDownload&ids=59452FDD13BA46EEAD0810A57359F294" https://www.nordicsemi.com/api/sitecore/Products/MedialibraryZipDownload2
+    mv MedialibraryZipDownload2 temp.zip
+    unzip -u temp.zip
+    unzip -u s140_nrf52_7.3.0.zip
+    rm s140_nrf52_7.3.0.zip
+    rm temp.zip
+    cd -
+}
+
 SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [ $# -eq 0 ]; then 
@@ -64,6 +83,7 @@ if [ $# -eq 0 ]; then
     download_s110_nrf51_8_0_0 ${SCRIPT_DIR}
     download_s132_nrf52_6_1_1 ${SCRIPT_DIR}
     download_s140_nrf52_6_1_1 ${SCRIPT_DIR}
+    download_s140_nrf52_7_3_0 ${SCRIPT_DIR}
 else 
     case $1 in
         "s110_nrf51" )
@@ -72,6 +92,8 @@ else
             download_s132_nrf52_6_1_1 ${SCRIPT_DIR} ;;
         "s140_nrf52_6_1_1" )
             download_s140_nrf52_6_1_1 ${SCRIPT_DIR} ;;
+        "s140_nrf52_7_3_0" )
+            download_s140_nrf52_7_3_0 ${SCRIPT_DIR} ;;
     esac
 fi
 

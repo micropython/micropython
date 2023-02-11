@@ -149,6 +149,16 @@ void GPIO5_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[5], 5, 16);
 }
 
+#if defined(MIMXRT117x_SERIES)
+void GPIO6_Combined_0_15_IRQHandler(void) {
+    call_handler(gpiobases[6], 6, 0);
+}
+
+void GPIO6_Combined_16_31_IRQHandler(void) {
+    call_handler(gpiobases[6], 6, 16);
+}
+#endif
+
 // Deinit all pin IRQ handlers.
 void machine_pin_irq_deinit(void) {
     for (int i = 0; i < ARRAY_SIZE(MP_STATE_PORT(machine_pin_irq_objects)); ++i) {
@@ -285,6 +295,14 @@ STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
+// pin.toggle()
+STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
+    machine_pin_obj_t *self = self_in;
+    mp_hal_pin_toggle(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
+
 // pin.value([value])
 STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
     return machine_pin_obj_call(args[0], (n_args - 1), 0, args + 1);
@@ -366,6 +384,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&machine_pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&machine_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&machine_pin_on_obj) },
+    { MP_ROM_QSTR(MP_QSTR_toggle),  MP_ROM_PTR(&machine_pin_toggle_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&machine_pin_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&machine_pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&machine_pin_irq_obj) },

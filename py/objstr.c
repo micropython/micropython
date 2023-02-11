@@ -233,7 +233,11 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
 
     if (mp_obj_is_str(args[0])) {
         if (n_args < 2 || n_args > 3) {
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             goto wrong_args;
+            #else
+            mp_raise_TypeError(MP_ERROR_TEXT("string argument without an encoding"));
+            #endif
         }
         GET_STR_DATA_LEN(args[0], str_data, str_len);
         GET_STR_HASH(args[0], str_hash);
@@ -1114,7 +1118,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 arg = key_elem->value;
             }
             if (field_name < field_name_top) {
-                mp_raise_NotImplementedError(MP_ERROR_TEXT("attributes not supported yet"));
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("attributes not supported"));
             }
         } else {
             if (*arg_i < 0) {
@@ -2043,6 +2047,12 @@ mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_u
         // can't write to a string
         return 1;
     }
+}
+
+void mp_obj_str_set_data(mp_obj_str_t *str, const byte *data, size_t len) {
+    str->data = data;
+    str->len = len;
+    str->hash = qstr_compute_hash(data, len);
 }
 
 // This locals table is used for the following types: str, bytes, bytearray, array.array.

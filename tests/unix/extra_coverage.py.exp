@@ -17,6 +17,8 @@ abc
 # GC
 0
 0
+# GC part 2
+pass
 # tracked allocation
 m_tracked_head = 0
 0 1
@@ -62,10 +64,11 @@ ime
 utime           utimeq
 
 argv            atexit          byteorder       exc_info
-exit            getsizeof       implementation  maxsize
-modules         path            platform        print_exception
-ps1             ps2             stderr          stdin
-stdout          tracebacklimit  version         version_info
+executable      exit            getsizeof       implementation
+maxsize         modules         path            platform
+print_exception                 ps1             ps2
+stderr          stdin           stdout          tracebacklimit
+version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
@@ -178,7 +181,6 @@ OSError
 None
 None
 cpp None
-5
 (3, 'hellocpp')
 frzstr1
 frzstr1.py

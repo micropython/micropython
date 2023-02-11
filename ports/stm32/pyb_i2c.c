@@ -137,7 +137,7 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
 
 #define PYB_I2C_TIMINGR (1)
 
-#if defined(STM32F745xx) || defined(STM32F746xx)
+#if defined(STM32F745xx) || defined(STM32F746xx) || defined(STM32F756xx)
 
 // The value 0x40912732 was obtained from the DISCOVERY_I2Cx_TIMING constant
 // defined in the STM32F7Cube file Drivers/BSP/STM32F746G-Discovery/stm32f7456g_discovery.h
@@ -208,11 +208,14 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
 
 #elif defined(STM32L4)
 
-// The value 0x90112626 was obtained from the DISCOVERY_I2C1_TIMING constant
-// defined in the STM32L4Cube file Drivers/BSP/STM32L476G-Discovery/stm32l476g_discovery.h
-#define MICROPY_HW_I2C_BAUDRATE_TIMING {{PYB_I2C_SPEED_STANDARD, 0x90112626}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_STANDARD)
-#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_STANDARD)
+// generated using CubeMX
+#define MICROPY_HW_I2C_BAUDRATE_TIMING { \
+        {PYB_I2C_SPEED_STANDARD, 0x10909CEC}, \
+        {PYB_I2C_SPEED_FULL, 0x00702991}, \
+        {PYB_I2C_SPEED_FAST, 0x00300F33}, \
+}
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FAST)
 
 #else
 #error "no I2C timings for this MCU"
@@ -478,8 +481,20 @@ void i2c_ev_irq_handler(mp_uint_t i2c_id) {
         } else {
             hi2c->Instance->DR = I2C_7BIT_ADD_READ(hi2c->Devaddress);
         }
+        hi2c->Instance->CR2 |= I2C_CR2_DMAEN;
     } else if (hi2c->Instance->SR1 & I2C_FLAG_ADDR) {
         __IO uint32_t tmp_sr2;
+        if (hi2c->State == HAL_I2C_STATE_BUSY_RX) {
+            if (hi2c->XferCount == 1U) {
+                hi2c->Instance->CR1 &= ~I2C_CR1_ACK;
+            } else {
+                if (hi2c->XferCount == 2U) {
+                    hi2c->Instance->CR1 &= ~I2C_CR1_ACK;
+                    hi2c->Instance->CR1 |= I2C_CR1_POS;
+                }
+                hi2c->Instance->CR2 |= I2C_CR2_LAST;
+            }
+        }
         tmp_sr2 = hi2c->Instance->SR2;
         UNUSED(tmp_sr2);
     } else if (hi2c->Instance->SR1 & I2C_FLAG_BTF && hi2c->State == HAL_I2C_STATE_BUSY_TX) {

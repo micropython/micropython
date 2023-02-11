@@ -1,10 +1,9 @@
 MicroPython port to ESP8266
 ===========================
 
-This is an experimental port of MicroPython for the WiFi modules based
-on Espressif ESP8266 chip.
-
-WARNING: The port is experimental and many APIs are subject to change.
+This is a port of MicroPython to the Espressif ESP8266 WiFi microcontroller.
+MicroPython runs on this chip without any underlying operating system, using
+the ESP8266 NONOS SDK.
 
 Supported features include:
 - REPL (Python prompt) over UART0.

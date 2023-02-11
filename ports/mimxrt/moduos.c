@@ -30,9 +30,43 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+
+#if defined(MIMXRT117x_SERIES)
+#include "fsl_caam.h"
+#else
 #include "fsl_trng.h"
+#endif
 
 static bool initialized = false;
+
+#if defined(MIMXRT117x_SERIES)
+STATIC caam_handle_t caam_handle;
+STATIC caam_rng_state_handle_t caam_state_handle = kCAAM_RngStateHandle0;
+
+#if defined(FSL_FEATURE_HAS_L1CACHE) || defined(__DCACHE_PRESENT)
+AT_NONCACHEABLE_SECTION(static caam_job_ring_interface_t s_jrif0);
+#else
+static caam_job_ring_interface_t s_jrif0;
+#endif
+
+STATIC void trng_start(void) {
+    caam_config_t config;
+
+    if (!initialized) {
+        CAAM_GetDefaultConfig(&config);
+        config.jobRingInterface[0] = &s_jrif0;
+        CAAM_Init(CAAM, &config);
+        initialized = true;
+    }
+}
+
+void trng_random_data(unsigned char *output, size_t len) {
+    trng_start();
+    CAAM_RNG_GetRandomData(CAAM, &caam_handle, caam_state_handle, output, len,
+        kCAAM_RngDataAny, NULL);
+}
+
+#else
 
 STATIC void trng_start(void) {
     trng_config_t trngConfig;
@@ -46,11 +80,18 @@ STATIC void trng_start(void) {
     }
 }
 
+void trng_random_data(unsigned char *output, size_t len) {
+    trng_start();
+    TRNG_GetRandomData(TRNG, output, len);
+}
+
+#endif
+
 uint32_t trng_random_u32(void) {
     uint32_t rngval;
 
     trng_start();
-    TRNG_GetRandomData(TRNG, (uint8_t *)&rngval, 4);
+    trng_random_data((uint8_t *)&rngval, 4);
     return rngval;
 }
 
@@ -61,7 +102,7 @@ STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     vstr_init_len(&vstr, n);
 
     trng_start();
-    TRNG_GetRandomData(TRNG, vstr.buf, n);
+    trng_random_data((uint8_t *)vstr.buf, n);
 
     return mp_obj_new_bytes_from_vstr(&vstr);
 }

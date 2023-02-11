@@ -35,6 +35,8 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
+#include "extmod/vfs.h"
+#include "extmod/vfs_posix.h"
 #include "shared/runtime/pyexec.h"
 
 #include "emscripten.h"
@@ -92,6 +94,18 @@ void mp_js_init(int heap_size) {
     #endif
 
     mp_init();
+
+    #if MICROPY_VFS_POSIX
+    {
+        // Mount the host FS at the root of our internal VFS
+        mp_obj_t args[2] = {
+            MP_OBJ_TYPE_GET_SLOT(&mp_type_vfs_posix, make_new)(&mp_type_vfs_posix, 0, 0, NULL),
+            MP_OBJ_NEW_QSTR(qstr_from_str("/")),
+        };
+        mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
+        MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
+    }
+    #endif
 }
 
 void mp_js_init_repl() {
@@ -109,6 +123,7 @@ void gc_collect(void) {
     gc_collect_end();
 }
 
+#if !MICROPY_VFS
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     mp_raise_OSError(MP_ENOENT);
 }
@@ -121,6 +136,7 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
+#endif
 
 void nlr_jump_fail(void *val) {
     while (1) {

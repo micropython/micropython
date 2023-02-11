@@ -99,7 +99,7 @@ function build_mimxrt_boards {
 }
 
 function build_nrf_boards {
-    build_boards nrfx_glue.h $1 $2 bin hex
+    build_boards nrfx_glue.h $1 $2 bin hex uf2
 }
 
 function build_renesas_ra_boards {

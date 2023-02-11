@@ -56,8 +56,6 @@ STATIC const mp_rom_map_elem_t rp2_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PIO),                 MP_ROM_PTR(&rp2_pio_type) },
     { MP_ROM_QSTR(MP_QSTR_StateMachine),        MP_ROM_PTR(&rp2_state_machine_type) },
 
-    { MP_ROM_QSTR(MP_QSTR_dht_readinto),        MP_ROM_PTR(&dht_readinto_obj) },
-
     #if MICROPY_PY_NETWORK_CYW43
     { MP_ROM_QSTR(MP_QSTR_country), MP_ROM_PTR(&rp2_country_obj) },
     #endif

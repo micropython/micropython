@@ -30,9 +30,11 @@ def base_path(*p):
 # to the correct executable.
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", base_path("../ports/windows/micropython.exe"))
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", base_path("../ports/windows/build-standard/micropython.exe")
+    )
     # mpy-cross is only needed if --via-mpy command-line arg is passed
-    MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/mpy-cross.exe"))
+    MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/build/mpy-cross.exe"))
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
     MICROPYTHON = os.getenv(
@@ -530,6 +532,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if not has_complex:
         skip_tests.add("float/complex1.py")
         skip_tests.add("float/complex1_intbig.py")
+        skip_tests.add("float/complex_reverse_op.py")
         skip_tests.add("float/complex_special_methods.py")
         skip_tests.add("float/int_big_float.py")
         skip_tests.add("float/true_value.py")
@@ -539,6 +542,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if not has_coverage:
         skip_tests.add("cmdline/cmd_parsetree.py")
         skip_tests.add("cmdline/repl_sys_ps1_ps2.py")
+        skip_tests.add("extmod/ussl_poll.py")
 
     # Some tests shouldn't be run on a PC
     if args.target == "unix":
@@ -918,8 +922,15 @@ the last matching regex is used:
         "renesas-ra",
         "rp2",
     )
-    if args.target in LOCAL_TARGETS or args.list_tests:
+    if args.list_tests:
         pyb = None
+    elif args.target in LOCAL_TARGETS:
+        pyb = None
+        if not args.mpy_cross_flags:
+            if args.target == "unix":
+                args.mpy_cross_flags = "-march=host"
+            elif args.target == "qemu-arm":
+                args.mpy_cross_flags = "-march=armv7m"
     elif args.target in EXTERNAL_TARGETS:
         global pyboard
         sys.path.append(base_path("../tools"))

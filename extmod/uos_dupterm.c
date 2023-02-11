@@ -33,9 +33,10 @@
 #include "py/objarray.h"
 #include "py/stream.h"
 #include "extmod/misc.h"
-#include "shared/runtime/interrupt_char.h"
 
 #if MICROPY_PY_OS_DUPTERM
+
+#include "shared/runtime/interrupt_char.h"
 
 void mp_uos_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     mp_obj_t term = MP_STATE_VM(dupterm_objs[dupterm_idx]);

@@ -53,11 +53,13 @@ typedef struct _samd_flash_obj_t {
     uint32_t flash_size;
 } samd_flash_obj_t;
 
+extern uint8_t _oflash_fs, _sflash_fs;
+
 // Build a Flash storage at top.
 STATIC samd_flash_obj_t samd_flash_obj = {
     .base = { &samd_flash_type },
-    .flash_base = MICROPY_HW_FLASH_STORAGE_BASE, // Board specific: mpconfigboard.h
-    .flash_size = MICROPY_HW_FLASH_STORAGE_BYTES, // Board specific: mpconfigboard.h
+    .flash_base = (uint32_t)&_oflash_fs, // Get from MCU-Specific loader script.
+    .flash_size = (uint32_t)&_sflash_fs, // Get from MCU-Specific loader script.
 };
 
 // FLASH stuff
@@ -96,21 +98,17 @@ STATIC mp_obj_t eraseblock(uint32_t sector_in) {
 }
 
 STATIC mp_obj_t samd_flash_version(void) {
-    printf("Flash Driver Version: %lu\n", flash_get_version());
-    return mp_const_none;
+    return MP_OBJ_NEW_SMALL_INT(flash_get_version());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(samd_flash_version_obj, samd_flash_version);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(samd_flash_version_static_obj, MP_ROM_PTR(&samd_flash_version_obj));
 
 STATIC mp_obj_t samd_flash_size(void) {
     // ASF4 API calls
     mp_int_t PAGES = flash_get_total_pages(&flash_desc);
     mp_int_t PAGE_SIZE = flash_get_page_size(&flash_desc);
-    printf("Flash Size: %u Bytes\n",  PAGES * PAGE_SIZE);
-    return mp_const_none;
+    return MP_OBJ_NEW_SMALL_INT(PAGES * PAGE_SIZE);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(samd_flash_size_obj, samd_flash_size);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(samd_flash_size_static_obj, MP_ROM_PTR(&samd_flash_size_obj));
 
 STATIC mp_obj_t samd_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t offset = (mp_obj_get_int(args[1]) * BLOCK_SIZE) + samd_flash_obj.flash_base;
@@ -172,8 +170,8 @@ STATIC mp_obj_t samd_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(samd_flash_ioctl_obj, samd_flash_ioctl);
 
 STATIC const mp_rom_map_elem_t samd_flash_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_flash_version), MP_ROM_PTR(&samd_flash_version_static_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flash_size), MP_ROM_PTR(&samd_flash_size_static_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flash_version), MP_ROM_PTR(&samd_flash_version_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flash_size), MP_ROM_PTR(&samd_flash_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_init), MP_ROM_PTR(&samd_flash_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&samd_flash_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&samd_flash_writeblocks_obj) },

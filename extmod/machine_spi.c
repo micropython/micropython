@@ -28,6 +28,9 @@
 #include <string.h>
 
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI
+
 #include "extmod/machine_spi.h"
 
 // if a port didn't define MSB/LSB constants then provide them
@@ -38,8 +41,6 @@
 
 /******************************************************************************/
 // MicroPython bindings for generic machine.SPI
-
-#if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI
 
 STATIC mp_obj_t machine_spi_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);

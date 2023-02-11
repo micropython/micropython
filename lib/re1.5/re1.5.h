@@ -138,6 +138,7 @@ struct Subject {
 
 #define NON_ANCHORED_PREFIX 5
 #define HANDLE_ANCHORED(bytecode, is_anchored) ((is_anchored) ? (bytecode) + NON_ANCHORED_PREFIX : (bytecode))
+#define RE15_CLASS_NAMED_CLASS_INDICATOR 0
 
 int re1_5_backtrack(ByteProg*, Subject*, const char**, int, int);
 int re1_5_pikevm(ByteProg*, Subject*, const char**, int, int);

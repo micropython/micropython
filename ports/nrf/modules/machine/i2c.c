@@ -69,8 +69,8 @@ typedef struct _machine_hard_i2c_obj_t {
 } machine_hard_i2c_obj_t;
 
 STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
-    {{&machine_hard_i2c_type}, .p_twi = NRFX_TWI_INSTANCE(0)},
-    {{&machine_hard_i2c_type}, .p_twi = NRFX_TWI_INSTANCE(1)},
+    {{&machine_i2c_type}, .p_twi = NRFX_TWI_INSTANCE(0)},
+    {{&machine_i2c_type}, .p_twi = NRFX_TWI_INSTANCE(1)},
 };
 
 void i2c_init0(void) {
@@ -162,7 +162,7 @@ STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    machine_hard_i2c_type,
+    machine_i2c_type,
     MP_QSTR_I2C,
     MP_TYPE_FLAG_NONE,
     make_new, machine_hard_i2c_make_new,

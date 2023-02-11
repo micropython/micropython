@@ -30,7 +30,12 @@
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 #include "ticks.h"
+
+#if defined(MIMXRT1170x_SERIES)
+#include "cm7/fsl_cache.h"
+#else
 #include "fsl_cache.h"
+#endif
 
 #include "sdcard.h"
 

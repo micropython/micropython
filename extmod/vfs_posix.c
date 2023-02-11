@@ -37,9 +37,11 @@
 #error "MICROPY_VFS_POSIX requires MICROPY_ENABLE_FINALISER"
 #endif
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <dirent.h>
 #ifdef _MSC_VER
 #include <direct.h> // For mkdir etc.

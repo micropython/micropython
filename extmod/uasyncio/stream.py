@@ -26,7 +26,8 @@ class Stream:
         # TODO yield?
         self.s.close()
 
-    async def read(self, n=-1):
+    # async
+    def read(self, n=-1):
         r = b""
         while True:
             yield core._io_queue.queue_read(self.s)
@@ -38,11 +39,13 @@ class Stream:
                     return r
                 r += r2
 
-    async def readinto(self, buf):
+    # async
+    def readinto(self, buf):
         yield core._io_queue.queue_read(self.s)
         return self.s.readinto(buf)
 
-    async def readexactly(self, n):
+    # async
+    def readexactly(self, n):
         r = b""
         while n:
             yield core._io_queue.queue_read(self.s)
@@ -54,7 +57,8 @@ class Stream:
                 n -= len(r2)
         return r
 
-    async def readline(self):
+    # async
+    def readline(self):
         l = b""
         while True:
             yield core._io_queue.queue_read(self.s)
@@ -73,10 +77,11 @@ class Stream:
                 buf = buf[ret:]
         self.out_buf += buf
 
-    async def drain(self):
+    # async
+    def drain(self):
         if not self.out_buf:
             # Drain must always yield, so a tight loop of write+drain can't block the scheduler.
-            return await core.sleep_ms(0)
+            return (yield from core.sleep_ms(0))
         mv = memoryview(self.out_buf)
         off = 0
         while off < len(mv):
@@ -93,7 +98,9 @@ StreamWriter = Stream
 
 
 # Create a TCP stream connection to a remote host
-async def open_connection(host, port):
+#
+# async
+def open_connection(host, port):
     from uerrno import EINPROGRESS
     import usocket as socket
 

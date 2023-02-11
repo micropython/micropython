@@ -12,11 +12,15 @@ on:
       - 'ports/bare-arm/**'
       - 'ports/minimal/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 100
     - name: Install packages
@@ -24,4 +28,18 @@ jobs:
     - name: Build
       run: source tools/ci.sh && ci_code_size_build
     - name: Compute code size difference
-      run: tools/metrics.py diff --error-threshold 0 ~/size0 ~/size1
+      run: tools/metrics.py diff ~/size0 ~/size1 | tee diff
+    - name: Save PR number
+      if: github.event_name == 'pull_request'
+      env:
+        PR_NUMBER: ${{ github.event.number }}
+      run: echo $PR_NUMBER > pr_number
+    - name: Upload diff
+      if: github.event_name == 'pull_request'
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-size-report
+        path: |
+          diff
+          pr_number
+        retention-days: 1

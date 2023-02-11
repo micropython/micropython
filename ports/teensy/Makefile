@@ -1,7 +1,7 @@
 include ../../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
+QSTR_DEFS = qstrdefsport.h $(GEN_PINS_QSTR)
 
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
@@ -66,6 +66,16 @@ $(info Using toolchain from PATH)
 CROSS_COMPILE ?= arm-none-eabi-
 endif
 
+MAKE_PINS = make-pins.py
+BOARD_PINS = teensy_pins.csv
+AF_FILE = mk20dx256_af.csv
+PREFIX_FILE = mk20dx256_prefix.c
+GEN_PINS_SRC = $(BUILD)/pins_gen.c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_PY = $(BUILD)/pins_af.py
+
 CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
 
@@ -75,8 +85,8 @@ INC += -I$(TOP)/ports/stm32
 INC += -I$(BUILD)
 INC += -Icore
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4)
-LDFLAGS = -nostdlib -T mk20dx256.ld -msoft-float -mfloat-abi=soft
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4)
+LDFLAGS += -nostdlib -T mk20dx256.ld -msoft-float -mfloat-abi=soft
 
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
 
@@ -154,10 +164,13 @@ SRC_TEENSY = $(addprefix core/,\
 	yield.c \
 	)
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(SRC_TEENSY:.c=.o))
+OBJ += $(PY_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_TEENSY:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
-OBJ += $(BUILD)/shared/runtime/gchelper_m3.o
-OBJ += $(BUILD)/pins_gen.o
+OBJ += $(BUILD)/shared/runtime/gchelper_thumb2.o
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 all: hex
 hex: $(BUILD)/micropython.hex
@@ -195,16 +208,6 @@ $(BUILD)/%.hex: $(BUILD)/%.elf
 	$(ECHO) "HEX $<"
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
 
-MAKE_PINS = make-pins.py
-BOARD_PINS = teensy_pins.csv
-AF_FILE = mk20dx256_af.csv
-PREFIX_FILE = mk20dx256_prefix.c
-GEN_PINS_SRC = $(BUILD)/pins_gen.c
-GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
-
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(SHARED_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
@@ -224,7 +227,7 @@ $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qst
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
-$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
+$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
 	$(call compile_c)
 
 $(BUILD)/%.pp: $(BUILD)/%.c

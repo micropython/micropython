@@ -39,6 +39,7 @@ DAC2 = const(26)
 
 # Helper functions
 
+
 # Get a *rough* estimate of the current battery voltage
 # If the battery is not present, the charge IC will still report it's trying to charge at X voltage
 # so it will still show a voltage.

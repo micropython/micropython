@@ -91,6 +91,10 @@ General Methods
      - *sda* is a pin object for the SDA line
      - *freq* is the SCL clock rate
 
+   In the case of hardware I2C the actual clock frequency may be lower than the
+   requested frequency. This is dependant on the platform hardware. The actual
+   rate may be determined by printing the I2C object.
+
 .. method:: I2C.deinit()
 
    Turn off the I2C bus.
