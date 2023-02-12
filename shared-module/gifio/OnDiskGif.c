@@ -24,12 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/displayio/OnDiskGif.h"
-#include "shared-bindings/displayio/ColorConverter.h"
-#include "shared-bindings/displayio/Palette.h"
+#include "shared-bindings/gifio/OnDiskGif.h"
 #include "shared-bindings/displayio/Bitmap.h"
-#include "shared-module/displayio/ColorConverter.h"
-#include "shared-module/displayio/Palette.h"
 
 #include <string.h>
 
@@ -124,7 +120,7 @@ static void GIFDraw(GIFDRAW *pDraw) {
     }
 }
 
-void common_hal_displayio_ondiskgif_construct(displayio_ondiskgif_t *self, pyb_file_obj_t *file) {
+void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, pyb_file_obj_t *file) {
     // mp_printf(&mp_plat_print, "Begin OnDiskGif\n");
     self->file = file;
 
@@ -161,35 +157,35 @@ void common_hal_displayio_ondiskgif_construct(displayio_ondiskgif_t *self, pyb_f
     // mp_printf(&mp_plat_print, "GIF_init returned %d %x\n", result, bitmap->data);
 }
 
-uint16_t common_hal_displayio_ondiskgif_get_height(displayio_ondiskgif_t *self) {
+uint16_t common_hal_gifio_ondiskgif_get_height(gifio_ondiskgif_t *self) {
     return (uint16_t)self->gif.iCanvasHeight;
 }
 
-uint16_t common_hal_displayio_ondiskgif_get_width(displayio_ondiskgif_t *self) {
+uint16_t common_hal_gifio_ondiskgif_get_width(gifio_ondiskgif_t *self) {
     return (uint16_t)self->gif.iCanvasWidth;
 }
 
-mp_obj_t common_hal_displayio_ondiskgif_get_bitmap(displayio_ondiskgif_t *self) {
+mp_obj_t common_hal_gifio_ondiskgif_get_bitmap(gifio_ondiskgif_t *self) {
     return MP_OBJ_FROM_PTR(self->bitmap);
 }
 
-int32_t common_hal_displayio_ondiskgif_get_duration(displayio_ondiskgif_t *self) {
+int32_t common_hal_gifio_ondiskgif_get_duration(gifio_ondiskgif_t *self) {
     return self->duration;
 }
 
-int32_t common_hal_displayio_ondiskgif_get_frame_count(displayio_ondiskgif_t *self) {
+int32_t common_hal_gifio_ondiskgif_get_frame_count(gifio_ondiskgif_t *self) {
     return self->frame_count;
 }
 
-int32_t common_hal_displayio_ondiskgif_get_min_delay(displayio_ondiskgif_t *self) {
+int32_t common_hal_gifio_ondiskgif_get_min_delay(gifio_ondiskgif_t *self) {
     return self->min_delay;
 }
 
-int32_t common_hal_displayio_ondiskgif_get_max_delay(displayio_ondiskgif_t *self) {
+int32_t common_hal_gifio_ondiskgif_get_max_delay(gifio_ondiskgif_t *self) {
     return self->max_delay;
 }
 
-uint8_t common_hal_displayio_ondiskgif_play_frame(displayio_ondiskgif_t *self, bool setDirty) {
+uint8_t common_hal_gifio_ondiskgif_play_frame(gifio_ondiskgif_t *self, bool setDirty) {
     int nextDelay = 0;
     int result = GIF_playFrame(&self->gif, &nextDelay, self->bitmap);
 

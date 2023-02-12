@@ -24,28 +24,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKGIF_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKGIF_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKGIF_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKGIF_H
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "py/obj.h"
-
-#include "lib/AnimatedGIF/AnimatedGIF_circuitpy.h"
-#include "Bitmap.h"
-
+#include "shared-module/gifio/OnDiskGif.h"
 #include "extmod/vfs_fat.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    GIFIMAGE gif;
-    pyb_file_obj_t *file;
-    displayio_bitmap_t *bitmap;
-    int32_t duration;
-    int32_t frame_count;
-    int32_t min_delay;
-    int32_t max_delay;
-} displayio_ondiskgif_t;
+extern const mp_obj_type_t gifio_ondiskgif_type;
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKGIF_H
+void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, pyb_file_obj_t *file);
+
+uint32_t common_hal_gifio_ondiskgif_get_pixel(gifio_ondiskgif_t *bitmap,
+    int16_t x, int16_t y);
+
+uint16_t common_hal_gifio_ondiskgif_get_height(gifio_ondiskgif_t *self);
+mp_obj_t common_hal_gifio_ondiskgif_get_pixel_shader(gifio_ondiskgif_t *self);
+mp_obj_t common_hal_gifio_ondiskgif_get_bitmap(gifio_ondiskgif_t *self);
+uint16_t common_hal_gifio_ondiskgif_get_width(gifio_ondiskgif_t *self);
+uint8_t common_hal_gifio_ondiskgif_play_frame(gifio_ondiskgif_t *self, bool setDirty);
+int32_t common_hal_gifio_ondiskgif_get_duration(gifio_ondiskgif_t *self);
+int32_t common_hal_gifio_ondiskgif_get_frame_count(gifio_ondiskgif_t *self);
+int32_t common_hal_gifio_ondiskgif_get_min_delay(gifio_ondiskgif_t *self);
+int32_t common_hal_gifio_ondiskgif_get_max_delay(gifio_ondiskgif_t *self);
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKGIF_H

@@ -27,6 +27,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared-bindings/gifio/GifWriter.h"
+#include "shared-bindings/gifio/OnDiskGif.h"
 #include "shared-bindings/util.h"
 
 //| """Access GIF-format images
@@ -34,6 +35,7 @@
 STATIC const mp_rom_map_elem_t gifio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gifio) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_GifWriter),  MP_ROM_PTR(&gifio_gifwriter_type)},
+    { MP_ROM_QSTR(MP_QSTR_OnDiskGif), MP_ROM_PTR(&gifio_ondiskgif_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(gifio_module_globals, gifio_module_globals_table);
