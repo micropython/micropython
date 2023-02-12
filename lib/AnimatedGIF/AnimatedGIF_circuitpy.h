@@ -137,7 +137,8 @@ typedef struct gif_image_tag
     GIF_CLOSE_CALLBACK *pfnClose;
     GIFFILE GIFFile;
     void *pUser;
-    unsigned char *pFrameBuffer;
+    //unsigned char *pFrameBuffer;
+    unsigned int *pFrameBuffer;
     unsigned char *pPixels, *pOldPixels;
     unsigned char ucLineBuf[MAX_WIDTH]; // current line
     unsigned char ucFileBuf[FILE_BUF_SIZE]; // holds temp data and pixel stack

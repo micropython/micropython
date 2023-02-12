@@ -753,7 +753,7 @@ static void DrawNewPixels(GIFIMAGE *pPage, GIFDRAW *pDraw)
     int x, iPitch = pPage->iCanvasWidth;
 
     s = pDraw->pPixels;
-    d = &pPage->pFrameBuffer[pDraw->iX + (pDraw->y + pDraw->iY)  * iPitch]; // dest pointer in our complete canvas buffer
+    d = (uint8_t*)&pPage->pFrameBuffer[pDraw->iX + (pDraw->y + pDraw->iY)  * iPitch]; // dest pointer in our complete canvas buffer
     if (pDraw->ucDisposalMethod == 2) // restore to background color
     {
         memset(d, pDraw->ucBackground, pDraw->iWidth);
@@ -785,13 +785,13 @@ static void ConvertNewPixels(GIFIMAGE *pPage, GIFDRAW *pDraw)
     uint8_t *d, *s;
     int x;
 
-    s = &pPage->pFrameBuffer[(pPage->iCanvasWidth * (pDraw->iY + pDraw->y)) + pDraw->iX];
-    d = &pPage->pFrameBuffer[pPage->iCanvasHeight * pPage->iCanvasWidth]; // point past bottom of frame buffer
+    s = (uint8_t*)&pPage->pFrameBuffer[(pPage->iCanvasWidth * (pDraw->iY + pDraw->y)) + pDraw->iX];
+    d = (uint8_t*)&pPage->pFrameBuffer[pPage->iCanvasHeight * pPage->iCanvasWidth]; // point past bottom of frame buffer
     if (pPage->ucPaletteType == GIF_PALETTE_RGB565_LE || pPage->ucPaletteType == GIF_PALETTE_RGB565_BE)
     {
         uint16_t *pPal, *pu16;
         pPal = (uint16_t *)pDraw->pPalette;
-        pu16 = (uint16_t *)d;
+        pu16 = (uint16_t *)&pPage->pFrameBuffer[pPage->iCanvasHeight * pPage->iCanvasWidth];
         for (x=0; x<pPage->iWidth; x++)
         {
             *pu16++ = pPal[*s++]; // convert to RGB565 pixels
@@ -899,7 +899,7 @@ static void GIFMakePels(GIFIMAGE *pPage, unsigned int code)
                 if (pPage->ucDrawType == GIF_DRAW_COOKED)
                 {
                     ConvertNewPixels(pPage, &gd); // prepare for output
-                    gd.pPixels = &pPage->pFrameBuffer[pPage->iCanvasWidth * pPage->iCanvasHeight];
+                    gd.pPixels = (uint8_t*)&pPage->pFrameBuffer[pPage->iCanvasWidth * pPage->iCanvasHeight];
                 }
             }
             (*pPage->pfnDraw)(&gd); // callback to handle this line
