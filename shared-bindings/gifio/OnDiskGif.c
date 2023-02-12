@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2023 Mark Komus
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,28 +34,28 @@
 #include "shared-bindings/gifio/OnDiskGif.h"
 
 //| class OnDiskGif:
-//|     """Loads values straight from disk. This minimizes memory use but can lead to
-//|     much slower pixel load times
+//|     """Loads frames of the GIF straight from disk. This minimizes memory use but can
+//|     lead to much slower pixel load times
 //|
 //|     .. code-block:: Python
 //|
 //|       import board
 //|       import gifio
+//|       import displayio
 //|       import time
-//|       import pulseio
 //|
-//|       splash = gifio.Group()
+//|       splash = displayio.Group()
 //|       board.DISPLAY.show(splash)
 //|
-//|       odg = gifio.OnDiskBitmap('/sample.gif')
-//|       odg.play_frame() # Load the first frame
-//|       face = gifio.TileGrid(odg, pixel_shader=gifio.ColorConverter(input_colorspace=gifio.Colorspace.RGB565))
+//|       odg = gifio.OnDiskGif('/sample.gif')
+//|       odg.next_frame() # Load the first frame
+//|       face = displayio.TileGrid(odg, pixel_shader=displayio.ColorConverter(input_colorspace=displayio.Colorspace.RGB565))
 //|       splash.append(face)
 //|       board.DISPLAY.refresh()
 //|
 //|       # Wait forever
 //|       while True:
-//|           gif.play_frame()
+//|           gif.next_frame()
 //|           time.sleep(0.1)"""
 //|
 //|     def __init__(self, file: str) -> None:
@@ -122,9 +122,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_bitmap_obj, gifio_ondiskgif_obj_ge
 MP_PROPERTY_GETTER(gifio_ondiskgif_bitmap_obj,
     (mp_obj_t)&gifio_ondiskgif_get_bitmap_obj);
 
-//|     play_frame: int
-//|     """Play next frame. Returns expected delay until the next frame."""
-STATIC mp_obj_t gifio_ondiskgif_obj_play_frame(size_t n_args, const mp_obj_t *args) {
+//|     def next_frame(self, set_dirty: bool = True) -> int:
+//|         """Loads the next frame. Returns expected delay before the next frame in milliseconds.
+//|
+//|         :param set_dirty: Mark the bitmap as dirty"""
+STATIC mp_obj_t gifio_ondiskgif_obj_next_frame(size_t n_args, const mp_obj_t *args) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(args[0]);
     bool setDirty = mp_const_true;
 
@@ -132,10 +134,10 @@ STATIC mp_obj_t gifio_ondiskgif_obj_play_frame(size_t n_args, const mp_obj_t *ar
         setDirty = mp_obj_is_true(args[1]);
     }
 
-    return MP_OBJ_NEW_SMALL_INT(common_hal_gifio_ondiskgif_play_frame(self, setDirty));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_gifio_ondiskgif_next_frame(self, setDirty));
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gifio_ondiskgif_play_frame_obj, 1, 2, gifio_ondiskgif_obj_play_frame);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gifio_ondiskgif_next_frame_obj, 1, 2, gifio_ondiskgif_obj_next_frame);
 
 //|     duration: int
 //|     """Returns the total duration of the GIF in milliseconds. (read only)"""
@@ -194,7 +196,7 @@ STATIC const mp_rom_map_elem_t gifio_ondiskgif_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&gifio_ondiskgif_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&gifio_ondiskgif_bitmap_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&gifio_ondiskgif_width_obj) },
-    { MP_ROM_QSTR(MP_QSTR_play_frame), MP_ROM_PTR(&gifio_ondiskgif_play_frame_obj) },
+    { MP_ROM_QSTR(MP_QSTR_next_frame), MP_ROM_PTR(&gifio_ondiskgif_next_frame_obj) },
     { MP_ROM_QSTR(MP_QSTR_duration), MP_ROM_PTR(&gifio_ondiskgif_duration_obj) },
     { MP_ROM_QSTR(MP_QSTR_frame_count), MP_ROM_PTR(&gifio_ondiskgif_frame_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_min_delay), MP_ROM_PTR(&gifio_ondiskgif_min_delay_obj) },

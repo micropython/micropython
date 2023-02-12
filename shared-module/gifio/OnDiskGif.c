@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2023 Mark Komus
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -185,7 +185,7 @@ int32_t common_hal_gifio_ondiskgif_get_max_delay(gifio_ondiskgif_t *self) {
     return self->max_delay;
 }
 
-uint8_t common_hal_gifio_ondiskgif_play_frame(gifio_ondiskgif_t *self, bool setDirty) {
+uint8_t common_hal_gifio_ondiskgif_next_frame(gifio_ondiskgif_t *self, bool setDirty) {
     int nextDelay = 0;
     int result = GIF_playFrame(&self->gif, &nextDelay, self->bitmap);
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2023 Mark Komus
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ uint16_t common_hal_gifio_ondiskgif_get_height(gifio_ondiskgif_t *self);
 mp_obj_t common_hal_gifio_ondiskgif_get_pixel_shader(gifio_ondiskgif_t *self);
 mp_obj_t common_hal_gifio_ondiskgif_get_bitmap(gifio_ondiskgif_t *self);
 uint16_t common_hal_gifio_ondiskgif_get_width(gifio_ondiskgif_t *self);
-uint8_t common_hal_gifio_ondiskgif_play_frame(gifio_ondiskgif_t *self, bool setDirty);
+uint8_t common_hal_gifio_ondiskgif_next_frame(gifio_ondiskgif_t *self, bool setDirty);
 int32_t common_hal_gifio_ondiskgif_get_duration(gifio_ondiskgif_t *self);
 int32_t common_hal_gifio_ondiskgif_get_frame_count(gifio_ondiskgif_t *self);
 int32_t common_hal_gifio_ondiskgif_get_min_delay(gifio_ondiskgif_t *self);
