@@ -79,7 +79,16 @@ static void GIFDraw(GIFDRAW *pDraw) {
     uint8_t *s;
     uint16_t *d;
 
-    int32_t row_start = pDraw->y * bitmap->stride;
+    int iWidth = pDraw->iWidth;
+    if (iWidth + pDraw->iX > bitmap->width) {
+        iWidth = bitmap->width - pDraw->iX;
+    }
+
+    if (pDraw->iY + pDraw->y >= bitmap->height || pDraw->iX >= bitmap->width || iWidth < 1) {
+        return;
+    }
+
+    int32_t row_start = (pDraw->y + pDraw->iY) * bitmap->stride;
     uint32_t *row = bitmap->data + row_start;
     s = pDraw->pPixels;
     d = (uint16_t *)row;
@@ -88,20 +97,30 @@ static void GIFDraw(GIFDRAW *pDraw) {
     pPal = (uint16_t *)pDraw->pPalette;
 
     if (pDraw->ucDisposalMethod == 2) { // restore to background color
-        memset(d, pDraw->ucBackground, pDraw->iWidth);
+        // Not supported currently. Need to reset the area the previous frame occupied
+        // to the background color before the previous frame was drawn
+        // See: https://github.com/bitbank2/AnimatedGIF/issues/3
+
+        // To workaround clear the gif.bitmap object yourself as required.
     }
 
-    // We always check for transpancy even if the gif does not have it
-    // as we also convert the color to the palette here
-    // Could separate it but would not sure it would be much a speed up
     uint8_t c, ucTransparent = pDraw->ucTransparent;
-    for (int x = 0; x < pDraw->iWidth; x++)
-    {
-        c = *s++;
-        if (c != ucTransparent) {
-            *d = pPal[c];
+    d += pDraw->iX;
+    if (pDraw->ucHasTransparency == 1) {
+        for (int x = 0; x < iWidth; x++)
+        {
+            c = *s++;
+            if (c != ucTransparent) {
+                *d = pPal[c];
+            }
+            d++;
         }
-        d++;
+    } else {
+        for (int x = 0; x < iWidth; x++)
+        {
+            c = *s++;
+            *d++ = pPal[c];
+        }
     }
 }
 
