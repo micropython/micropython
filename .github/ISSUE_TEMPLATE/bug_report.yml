@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: >-
-        Thanks! for testing out CircuitPython. Now that you have encountered a
+        Thanks for testing out CircuitPython! Now that you have encountered a
         bug... you can file a report for it.
   - type: textarea
     id: firmware
@@ -16,7 +16,6 @@ body:
         Include the version of CircuitPython you're running. You can see it in
         the `boot_out.txt` file, as well as in the `REPL`.
       placeholder: Adafruit CircuitPython 6.2.0 on 2021-03-01; Raspberry Pi Pico with rp2040
-      render: python
     validations:
       required: true
   - type: textarea
@@ -36,7 +35,7 @@ body:
       label: Behavior
       description: What happens when you run the code above? Include error messages (if any).
       placeholder: |
-        ```python
+        ```
         Traceback (most recent call last):
           File "<stdin>", line 1, in <module>
           TimeoutError: Clock stretch too long
