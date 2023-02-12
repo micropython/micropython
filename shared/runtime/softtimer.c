@@ -33,7 +33,7 @@
 #define TICKS_PERIOD 0x80000000
 #define TICKS_DIFF(t1, t0) ((int32_t)(((t1 - t0 + TICKS_PERIOD / 2) & (TICKS_PERIOD - 1)) - TICKS_PERIOD / 2))
 
-extern __IO uint32_t uwTick;
+extern __IO uint32_t MICROPY_SOFT_TIMER_TICKS_MS;
 
 volatile uint32_t soft_timer_next;
 
@@ -50,7 +50,7 @@ STATIC int soft_timer_lt(mp_pairheap_t *n1, mp_pairheap_t *n2) {
 
 STATIC void soft_timer_schedule_systick(uint32_t ticks_ms) {
     uint32_t irq_state = disable_irq();
-    uint32_t uw_tick = uwTick;
+    uint32_t uw_tick = MICROPY_SOFT_TIMER_TICKS_MS;
     if (TICKS_DIFF(ticks_ms, uw_tick) <= 0) {
         soft_timer_next = uw_tick + 1;
     } else {
@@ -77,7 +77,7 @@ void soft_timer_deinit(void) {
 
 // Must be executed at IRQ_PRI_PENDSV
 void soft_timer_handler(void) {
-    uint32_t ticks_ms = uwTick;
+    uint32_t ticks_ms = MICROPY_SOFT_TIMER_TICKS_MS;
     soft_timer_entry_t *heap = soft_timer_heap;
     while (heap != NULL && TICKS_DIFF(heap->expiry_ms, ticks_ms) <= 0) {
         soft_timer_entry_t *entry = heap;
@@ -95,7 +95,7 @@ void soft_timer_handler(void) {
     soft_timer_heap = heap;
     if (heap == NULL) {
         // No more timers left, set largest delay possible
-        soft_timer_next = uwTick;
+        soft_timer_next = MICROPY_SOFT_TIMER_TICKS_MS;
     } else {
         // Set soft_timer_next so SysTick calls us back at the correct time
         soft_timer_schedule_systick(heap->expiry_ms);
@@ -130,7 +130,7 @@ void soft_timer_static_init(soft_timer_entry_t *entry, uint16_t mode, uint32_t d
 
 void soft_timer_insert(soft_timer_entry_t *entry, uint32_t initial_delta_ms) {
     mp_pairheap_init_node(soft_timer_lt, &entry->pairheap);
-    entry->expiry_ms = mp_hal_ticks_ms() + initial_delta_ms;
+    entry->expiry_ms = MICROPY_SOFT_TIMER_TICKS_MS + initial_delta_ms;
     uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
     soft_timer_heap = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &soft_timer_heap->pairheap, &entry->pairheap);
     if (entry == soft_timer_heap) {

@@ -98,6 +98,7 @@
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (1)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (1000000)
 #define MICROPY_PY_MACHINE_TIMER            (1)
+#define MICROPY_SOFT_TIMER_TICKS_MS         systick_ms
 #define MICROPY_PY_OS_DUPTERM               (3)
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
