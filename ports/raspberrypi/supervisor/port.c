@@ -161,10 +161,10 @@ safe_mode_t port_init(void) {
     }
     #endif
     if (board_requests_safe_mode()) {
-        return USER_SAFE_MODE;
+        return SAFE_MODE_USER;
     }
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_port(void) {
@@ -312,7 +312,7 @@ __attribute__((used)) void HardFault_Handler(void) {
     REG_MTB_MASTER = 0x00000000 + 6;
     #endif
 
-    reset_into_safe_mode(HARD_CRASH);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }

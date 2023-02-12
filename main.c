@@ -358,7 +358,7 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     } else {
         serial_write_compressed(translate("Auto-reload is off.\n"));
     }
-    if (safe_mode != NO_SAFE_MODE) {
+    if (safe_mode != SAFE_MODE_NONE) {
         serial_write_compressed(translate("Running in safe mode! Not running saved code.\n"));
     }
 }
@@ -384,11 +384,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
     // Do the filesystem flush check before reload in case another write comes
     // in while we're doing the flush.
-    if (safe_mode == NO_SAFE_MODE) {
+    if (safe_mode == SAFE_MODE_NONE) {
         stack_resize();
         filesystem_flush();
     }
-    if (safe_mode == NO_SAFE_MODE && !autoreload_pending()) {
+    if (safe_mode == SAFE_MODE_NONE && !autoreload_pending()) {
         static const char *const supported_filenames[] = {
             "code.txt", "code.py", "main.py", "main.txt"
         };
@@ -510,7 +510,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
     } else
     #endif
     if (_exec_result.return_code != PYEXEC_EXCEPTION) {
-        if (safe_mode == NO_SAFE_MODE) {
+        if (safe_mode == SAFE_MODE_NONE) {
             color = ALL_DONE;
             blink_count = ALL_DONE_BLINKS;
         } else {
@@ -730,8 +730,32 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
 vstr_t *boot_output;
 
+#if CIRCUITPY_SAFEMODE_PY
+STATIC void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
+    // Don't run if we aren't in safe mode or we won't be able to find safemode.py.
+    if (safe_mode == SAFE_MODE_NONE || !filesystem_present()) {
+        return;
+    }
+
+    supervisor_allocation *heap = allocate_remaining_memory();
+    start_mp(heap);
+
+    static const char *const safemode_py_filenames[] = {"safemode.py", "safemode.txt"};
+    maybe_run_list(safemode_py_filenames, MP_ARRAY_SIZE(safemode_py_filenames));
+
+    // If safemode.py itself caused an error, change the safe_mode state to indicate that.
+    if (_exec_result.exception != MP_OBJ_NULL &&
+        _exec_result.exception != MP_OBJ_SENTINEL) {
+        set_safe_mode(SAFE_MODE_SAFEMODE_PY_ERROR);
+    }
+
+    cleanup_after_vm(heap, _exec_result.exception);
+    _exec_result.exception = NULL;
+}
+#endif
+
 STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
-    if (safe_mode == NO_HEAP) {
+    if (safe_mode == SAFE_MODE_NO_HEAP) {
         return;
     }
 
@@ -739,7 +763,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     // There is USB setup to do even if boot.py is not actually run.
     const bool ok_to_run = filesystem_present()
-        && safe_mode == NO_SAFE_MODE
+        && safe_mode == SAFE_MODE_NONE
         && MP_STATE_VM(vfs_mount_table) != NULL;
 
     static const char *const boot_py_filenames[] = {"boot.py", "boot.txt"};
@@ -913,7 +937,7 @@ STATIC int run_repl(void) {
 
 int __attribute__((used)) main(void) {
     // initialise the cpu and peripherals
-    safe_mode_t safe_mode = port_init();
+    set_safe_mode(port_init());
 
     // Turn on RX and TX LEDs if we have them.
     init_rxtx_leds();
@@ -926,8 +950,8 @@ int __attribute__((used)) main(void) {
     #endif
 
     // Wait briefly to give a reset window where we'll enter safe mode after the reset.
-    if (safe_mode == NO_SAFE_MODE) {
-        safe_mode = wait_for_safe_mode_reset();
+    if (get_safe_mode() == SAFE_MODE_NONE) {
+        set_safe_mode(wait_for_safe_mode_reset());
     }
 
     stack_init();
@@ -956,8 +980,8 @@ int __attribute__((used)) main(void) {
 
     // Check whether CIRCUITPY is available. No need to reset to get safe mode
     // since we haven't run user code yet.
-    if (!filesystem_init(safe_mode == NO_SAFE_MODE, false)) {
-        safe_mode = NO_CIRCUITPY;
+    if (!filesystem_init(get_safe_mode() == SAFE_MODE_NONE, false)) {
+        set_safe_mode(SAFE_MODE_NO_CIRCUITPY);
     }
 
     #if CIRCUITPY_ALARM
@@ -982,16 +1006,23 @@ int __attribute__((used)) main(void) {
     supervisor_set_run_reason(RUN_REASON_STARTUP);
 
     // If not in safe mode turn on autoreload by default but before boot.py in case it wants to change it.
-    if (safe_mode == NO_SAFE_MODE) {
+    if (get_safe_mode() == SAFE_MODE_NONE) {
         autoreload_enable();
     }
 
     // By default our internal flash is readonly to local python code and
-    // writable over USB. Set it here so that boot.py can change it.
+    // writable over USB. Set it here so that safemode.py or boot.py can change it.
     filesystem_set_internal_concurrent_write_protection(true);
     filesystem_set_internal_writable_by_usb(CIRCUITPY_USB == 1);
 
-    run_boot_py(safe_mode);
+    #if CIRCUITPY_SAFEMODE_PY
+    // Run safemode.py if we ARE in safe mode.
+    // If safemode.py does not do a hard reset, and exits normally, we will continue on
+    // and report the safe mode as usual.
+    run_safemode_py(get_safe_mode());
+    #endif
+
+    run_boot_py(get_safe_mode());
 
     supervisor_workflow_start();
 
@@ -1016,7 +1047,7 @@ int __attribute__((used)) main(void) {
                 // If code.py did a fake deep sleep, pretend that we
                 // are running code.py for the first time after a hard
                 // reset. This will preserve any alarm information.
-                skip_repl = run_code_py(safe_mode, &simulate_reset);
+                skip_repl = run_code_py(get_safe_mode(), &simulate_reset);
             } else {
                 skip_repl = false;
             }
@@ -1076,14 +1107,14 @@ void gc_collect(void) {
 }
 
 void NORETURN nlr_jump_fail(void *val) {
-    reset_into_safe_mode(MICROPY_NLR_JUMP_FAIL);
+    reset_into_safe_mode(SAFE_MODE_NLR_JUMP_FAIL);
     while (true) {
     }
 }
 
 #ifndef NDEBUG
 static void NORETURN __fatal_error(const char *msg) {
-    reset_into_safe_mode(MICROPY_FATAL_ERROR);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
     }
 }

@@ -525,6 +525,7 @@ $(filter $(SRC_PATTERNS), \
 	qrio/PixelPolicy.c \
 	qrio/QRInfo.c \
 	supervisor/RunReason.c \
+	supervisor/SafeModeReason.c \
 	supervisor/StatusBar.c \
 	wifi/AuthMode.c \
 	wifi/Packet.c \

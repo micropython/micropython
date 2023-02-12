@@ -211,7 +211,7 @@ safe_mode_t port_init(void) {
     // Turn off SysTick
     SysTick->CTRL = 0;
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void HAL_Delay(uint32_t delay_ms) {
@@ -357,28 +357,28 @@ uint32_t port_get_saved_word(void) {
 }
 
 __attribute__((used)) void MemManage_Handler(void) {
-    reset_into_safe_mode(MEM_MANAGE);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }
 }
 
 __attribute__((used)) void BusFault_Handler(void) {
-    reset_into_safe_mode(MEM_MANAGE);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }
 }
 
 __attribute__((used)) void UsageFault_Handler(void) {
-    reset_into_safe_mode(MEM_MANAGE);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }
 }
 
 __attribute__((used)) void HardFault_Handler(void) {
-    reset_into_safe_mode(HARD_CRASH);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }

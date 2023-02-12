@@ -29,7 +29,7 @@
 #include <stdlib.h>
 
 safe_mode_t wait_for_safe_mode_reset(void) {
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_into_safe_mode(safe_mode_t reason) {
