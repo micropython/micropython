@@ -111,13 +111,13 @@ bool port_has_fixed_stack(void) {
 uint32_t *port_stack_get_limit(void) {
     struct tcb_s *rtcb = this_task();
 
-    return rtcb->adj_stack_ptr - (uint32_t)rtcb->adj_stack_size;
+    return rtcb->stack_base_ptr;
 }
 
 uint32_t *port_stack_get_top(void) {
     struct tcb_s *rtcb = this_task();
 
-    return rtcb->adj_stack_ptr;
+    return rtcb->stack_base_ptr + (uint32_t)rtcb->adj_stack_size;
 }
 
 uint32_t *port_heap_get_bottom(void) {
