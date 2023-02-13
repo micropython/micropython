@@ -141,7 +141,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         }
         if (channel == 1) {
             icnt = 0;
-            while ((pwm->STA_b.FULL1 == 1) & (icnt++ < 150)) {
+            while ((pwm->STA_b.FULL1 == 1) && (icnt++ < 150)) {
                 RUN_BACKGROUND_TASKS;
                 COMPLETE_MEMORY_READS;
             }
@@ -149,14 +149,14 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
             pwm->FIF1 = 0x000000;
         }
         icnt = 0;
-        while ((pwm->STA_b.FULL1 == 1) & (icnt++ < 150)) {
+        while ((pwm->STA_b.FULL1 == 1) && (icnt++ < 150)) {
             RUN_BACKGROUND_TASKS;
             COMPLETE_MEMORY_READS;
         }
         pwm->FIF1 = expanded;
         if (channel == 0) {
             icnt = 0;
-            while ((pwm->STA_b.FULL1 == 1) & (icnt++ < 150)) {
+            while ((pwm->STA_b.FULL1 == 1) && (icnt++ < 150)) {
                 RUN_BACKGROUND_TASKS;
                 COMPLETE_MEMORY_READS;
             }
@@ -166,19 +166,19 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     }
 
     icnt = 0;
-    while ((pwm->STA_b.EMPT1 == 0) & (icnt++ < 2500)) {
+    while ((pwm->STA_b.EMPT1 == 0) && (icnt++ < 2500)) {
         RUN_BACKGROUND_TASKS;
         COMPLETE_MEMORY_READS;
     }
     // Wait for transmission to start.
     icnt = 0;
-    while (((pwm->STA_b.STA1 == 0) & (pwm->STA_b.STA2 == 0)) & (icnt++ < 150)) {
+    while (((pwm->STA_b.STA1 == 0) && (pwm->STA_b.STA2 == 0)) && (icnt++ < 150)) {
         RUN_BACKGROUND_TASKS;
         COMPLETE_MEMORY_READS;
     }
     // Wait for transmission to complete.
     icnt = 0;
-    while (((pwm->STA_b.STA1 == 1) | (pwm->STA_b.STA2 == 1)) & (icnt++ < 150)) {
+    while (((pwm->STA_b.STA1 == 1) | (pwm->STA_b.STA2 == 1)) && (icnt++ < 150)) {
         RUN_BACKGROUND_TASKS;
         COMPLETE_MEMORY_READS;
     }
