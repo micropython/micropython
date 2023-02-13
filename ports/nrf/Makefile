@@ -509,6 +509,15 @@ nrfutil_dfu_deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip -p $(NRFUTIL_PORT) -t 0
 
 deploy: nrfutil_dfu_deploy
+
+else ifeq ($(FLASHER), bossac)
+
+BOSSAC_PORT ?= /dev/ttyACM0
+BOSSAC_OFFSET ?= 0x16000
+
+deploy: $(BUILD)/$(OUTPUT_FILENAME).bin
+	$(Q)bossac -e -w --offset=$(BOSSAC_OFFSET) --port=$(BOSSAC_PORT) -i -d -U -R $<
+
 endif
 
 flash: deploy
