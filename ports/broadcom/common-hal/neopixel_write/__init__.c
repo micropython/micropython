@@ -46,7 +46,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     // Wait to make sure we don't append onto the last transmission. This should only be a tick or
     // two.
     int icnt;
-    while ((port_get_raw_ticks(NULL) < next_start_raw_ticks) &
+    while ((port_get_raw_ticks(NULL) < next_start_raw_ticks) &&
            (next_start_raw_ticks - port_get_raw_ticks(NULL) < 100)) {
         RUN_BACKGROUND_TASKS;
     }
