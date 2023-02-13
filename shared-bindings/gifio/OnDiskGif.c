@@ -110,7 +110,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_height_obj, gifio_ondiskgif_obj_ge
 MP_PROPERTY_GETTER(gifio_ondiskgif_height_obj,
     (mp_obj_t)&gifio_ondiskgif_get_height_obj);
 
-//|     bitmap: Bitmap
+//|     bitmap: displayio.Bitmap
 //|     """The bitmap used to hold the current frame."""
 STATIC mp_obj_t gifio_ondiskgif_obj_get_bitmap(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
