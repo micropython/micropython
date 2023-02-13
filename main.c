@@ -123,8 +123,8 @@ uint8_t value_out = 0;
 #endif
 
 #if MICROPY_ENABLE_PYSTACK
-size_t *_pystack;
-int _pystack_size = CIRCUITPY_PYSTACK_SIZE;
+size_t *pystack;
+int pystack_size = CIRCUITPY_PYSTACK_SIZE;
 #endif
 
 static void reset_devices(void) {
@@ -161,7 +161,7 @@ STATIC void start_mp(supervisor_allocation *heap) {
     readline_init0();
 
     #if MICROPY_ENABLE_PYSTACK
-    mp_pystack_init(_pystack, _pystack + (_pystack_size / sizeof(size_t)));
+    mp_pystack_init(pystack, pystack + (pystack_size / sizeof(size_t)));
     #endif
 
     #if MICROPY_ENABLE_GC
@@ -914,8 +914,10 @@ STATIC int run_repl(void) {
 
 int __attribute__((used)) main(void) {
 
+    #if MICROPY_ENABLE_PYSTACK
     // allocate the pystack
-    _pystack = (size_t *)allocate_memory(_pystack_size, false, false);
+    pystack = (size_t *)allocate_memory(pystack_size, false, false);
+    #endif
 
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
