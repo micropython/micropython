@@ -31,8 +31,6 @@ jobs:
         version: true
     - name: Set up external
       uses: ./.github/actions/deps/external
-      with:
-        apt: false
     - name: Versions
       run: |
         gcc --version

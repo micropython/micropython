@@ -37,6 +37,7 @@ jobs:
       with:
         target: tests
     - name: Set up external
+      if: matrix.test == 'all'
       uses: ./.github/actions/deps/external
     - name: Set up mpy-cross
       uses: ./.github/actions/mpy_cross

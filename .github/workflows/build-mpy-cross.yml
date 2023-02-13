@@ -35,10 +35,6 @@ jobs:
       uses: ./.github/actions/deps/submodules
       with:
         target: mpy-cross
-    - name: Set up external
-      uses: ./.github/actions/deps/external
-      with:
-        python: false
 
     - name: Install toolchain (aarch64)
       if: matrix.mpy-cross == 'static-aarch64'

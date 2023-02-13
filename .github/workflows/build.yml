@@ -179,9 +179,7 @@ jobs:
       uses: ./.github/actions/deps/submodules
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y eatmydata
-        sudo eatmydata apt-get install -y latexmk librsvg2-bin texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
+        sudo apt-get install -y latexmk librsvg2-bin texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
         pip install -r requirements-doc.txt
     - name: Build and Validate Stubs
       run: make check-stubs -j2
