@@ -8,7 +8,7 @@ inputs:
     options:
     - arm
     - aarch
-    - espressif
+    - esp
     - riscv
     - none
 
@@ -42,13 +42,13 @@ runs:
       with:
         release: '10-2020-q4'
 
-    # espressif
-    - name: Get espressif toolchain
-      if: inputs.platform == 'espressif'
+    # esp
+    - name: Get esp toolchain
+      if: inputs.platform == 'esp'
       run: sudo apt-get install -y ninja-build
       shell: bash
     - name: Install IDF tools
-      if: inputs.platform == 'espressif'
+      if: inputs.platform == 'esp'
       run: |
         echo "Installing ESP-IDF tools"
         $IDF_PATH/tools/idf_tools.py --non-interactive install required
@@ -58,7 +58,7 @@ runs:
         rm -rf $IDF_TOOLS_PATH/dist
       shell: bash
     - name: Set environment
-      if: inputs.platform == 'espressif'
+      if: inputs.platform == 'esp'
       run: |
         source $IDF_PATH/export.sh
         echo >> $GITHUB_ENV "IDF_PYTHON_ENV_PATH=$IDF_PYTHON_ENV_PATH"
@@ -75,7 +75,7 @@ runs:
 
     # common
     - name: Cache python dependencies
-      if: inputs.platform != 'espressif'
+      if: inputs.platform != 'esp'
       uses: ./.github/actions/deps/python
       with:
         action: ${{ fromJSON('["restore", "cache"]')[github.job == 'scheduler'] }}

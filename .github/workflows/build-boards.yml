@@ -35,9 +35,8 @@ jobs:
       with:
         python-version: 3.x
     - name: Set up port
-      uses: ./.github/actions/deps/port
-      with:
-        platform: ${{ inputs.platform }}
+      if: inputs.platform == 'esp'
+      uses: ./.github/actions/deps/ports/espressif
     - name: Set up submodules
       id: set-up-submodules
       uses: ./.github/actions/deps/submodules
