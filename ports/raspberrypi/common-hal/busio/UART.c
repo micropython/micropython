@@ -339,3 +339,18 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
     }
     return uart_is_writable(self->uart);
 }
+
+STATIC void pin_never_reset(uint8_t pin) {
+    if (pin != NO_PIN) {
+        never_reset_pin_number(pin);
+    }
+}
+
+void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
+    never_reset_uart(self->uart_id);
+    pin_never_reset(self->tx_pin);
+    pin_never_reset(self->rx_pin);
+    pin_never_reset(self->cts_pin);
+    pin_never_reset(self->rs485_dir_pin);
+    pin_never_reset(self->rts_pin);
+}
