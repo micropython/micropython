@@ -171,7 +171,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     }
     // Wait for transmission to complete.
     icnt = 0;
-    while (((pwm->STA_b.STA1 == 1) | (pwm->STA_b.STA2 == 1)) && (icnt++ < 150)) {
+    while (((pwm->STA_b.STA1 == 1) || (pwm->STA_b.STA2 == 1)) && (icnt++ < 150)) {
         RUN_BACKGROUND_TASKS;
     }
     // Shouldn't be anything left in queue but clear it so the clock doesn't crash if there is
