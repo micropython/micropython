@@ -96,7 +96,7 @@ void Default_Handler(void) {
 void SysTick_Handler(void) {
     #if defined(MCU_SAMD21)
     // Use the phase jitter between the clocks to get some entropy
-    // and accumulate the random number register.
+    // and accumulate the random number register with a "spiced" LCG.
     rng_state = (rng_state * 32310901 + 1) ^ (REG_TC4_COUNT32_COUNT >> 1);
     #endif
 
@@ -107,13 +107,6 @@ void SysTick_Handler(void) {
         pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
     }
 }
-
-#if defined(MCU_SAMD21)
-uint32_t trng_random_u32(void) {
-    mp_hal_delay_ms(320); // wait for ten cycles of the rng_seed register
-    return rng_state;
-}
-#endif
 
 void us_timer_IRQ(void) {
     #if defined(MCU_SAMD21)

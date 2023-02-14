@@ -52,6 +52,23 @@ uint32_t trng_random_u32(void) {
     return REG_TRNG_DATA;
 }
 
+#define TRNG_RANDOM_U32 trng_random_u32()
+#endif // defined(MCU_SAMD51)
+
+#if defined(MCU_SAMD21)
+extern volatile uint32_t rng_state;
+
+uint32_t trng_random_u32(int delay) {
+    mp_hal_delay_ms(delay); // wait a few cycles
+    uint32_t upper = rng_state;
+    mp_hal_delay_ms(delay); // wait again a few cycles
+    return (upper & 0xffff0000) | (rng_state >> 16);
+}
+
+#define trng_start()
+#define TRNG_RANDOM_U32 trng_random_u32(10)
+#endif
+
 #if MICROPY_PY_UOS_URANDOM
 STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
@@ -62,7 +79,7 @@ STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     trng_start();
     for (int i = 0; i < n; i++) {
         if ((i % 4) == 0) {
-            rngval = trng_random_u32();
+            rngval = TRNG_RANDOM_U32;
         }
         vstr.buf[i] = rngval & 0xff;
         rngval >>= 8;
@@ -72,7 +89,6 @@ STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_urandom_obj, mp_uos_urandom);
 
 #endif // MICROPY_PY_UOS_URANDOM
-#endif // defined(MCU_SAMD51)
 
 #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
 bool mp_uos_dupterm_is_builtin_stream(mp_const_obj_t stream) {

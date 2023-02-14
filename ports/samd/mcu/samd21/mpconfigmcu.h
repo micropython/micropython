@@ -22,8 +22,8 @@
 #define MICROPY_PY_CMATH                (0)
 #endif
 
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (trng_random_u32())
-unsigned long trng_random_u32(void);
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (trng_random_u32(300))
+unsigned long trng_random_u32(int delay);
 
 #define VFS_BLOCK_SIZE_BYTES            (1536) // 24x 64B flash pages;
 
@@ -36,6 +36,7 @@ unsigned long trng_random_u32(void);
 #define MICROPY_PY_MACHINE_RTC          (1)
 #endif
 #endif
+#define MICROPY_PY_UOS_URANDOM          (1)
 
 #ifndef MICROPY_PY_MACHINE_PIN_BOARD_CPU
 #define MICROPY_PY_MACHINE_PIN_BOARD_CPU (1)
