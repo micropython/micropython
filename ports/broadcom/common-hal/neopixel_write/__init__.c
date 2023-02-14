@@ -96,9 +96,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         // Wait for the clock to start up.
         COMPLETE_MEMORY_READS;
         icnt = 0;
-        while ((CM_PWM->CS_b.BUSY == 0) && (icnt++ < 1000)) {
-            COMPLETE_MEMORY_READS;
-        }
+        while ((CM_PWM->CS_b.BUSY == 0) && (icnt++ < 1000)) {}
     }
 
     PWM0_Type *pwm = PWM0;
@@ -143,7 +141,6 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
             icnt = 0;
             while ((pwm->STA_b.FULL1 == 1) && (icnt++ < 150)) {
                 RUN_BACKGROUND_TASKS;
-                COMPLETE_MEMORY_READS;
             }
             // Dummy value for the first channel.
             pwm->FIF1 = 0x000000;
@@ -151,14 +148,12 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         icnt = 0;
         while ((pwm->STA_b.FULL1 == 1) && (icnt++ < 150)) {
             RUN_BACKGROUND_TASKS;
-            COMPLETE_MEMORY_READS;
         }
         pwm->FIF1 = expanded;
         if (channel == 0) {
             icnt = 0;
             while ((pwm->STA_b.FULL1 == 1) && (icnt++ < 150)) {
                 RUN_BACKGROUND_TASKS;
-                COMPLETE_MEMORY_READS;
             }
             // Dummy value for the second channel.
             pwm->FIF1 = 0x000000;
@@ -168,23 +163,19 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     icnt = 0;
     while ((pwm->STA_b.EMPT1 == 0) && (icnt++ < 2500)) {
         RUN_BACKGROUND_TASKS;
-        COMPLETE_MEMORY_READS;
     }
     // Wait for transmission to start.
     icnt = 0;
     while (((pwm->STA_b.STA1 == 0) && (pwm->STA_b.STA2 == 0)) && (icnt++ < 150)) {
         RUN_BACKGROUND_TASKS;
-        COMPLETE_MEMORY_READS;
     }
     // Wait for transmission to complete.
     icnt = 0;
     while (((pwm->STA_b.STA1 == 1) | (pwm->STA_b.STA2 == 1)) && (icnt++ < 150)) {
         RUN_BACKGROUND_TASKS;
-        COMPLETE_MEMORY_READS;
     }
     // Shouldn't be anything left in queue but clear it so the clock doesn't crash if there is
     pwm->CTL = PWM0_CTL_CLRF1_Msk;
-    COMPLETE_MEMORY_READS;
 
     gpio_set_function(digitalinout->pin->number, GPIO_FUNCTION_OUTPUT);
 
