@@ -59,7 +59,6 @@ def maybe_preprocess(command, output_dir, fn):
 
 
 if __name__ == "__main__":
-
     idx1 = sys.argv.index("--")
     idx2 = sys.argv.index("--", idx1 + 1)
     output_dir = sys.argv[1]

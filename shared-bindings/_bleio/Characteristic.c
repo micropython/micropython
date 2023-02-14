@@ -256,7 +256,8 @@ MP_PROPERTY_GETTER(bleio_characteristic_service_obj,
 //|         """Set the remote characteristic's CCCD to enable or disable notification and indication.
 //|
 //|         :param bool notify: True if Characteristic should receive notifications of remote writes
-//|         :param float indicate: True if Characteristic should receive indications of remote writes"""
+//|         :param float indicate: True if Characteristic should receive indications of remote writes
+//|         """
 //|         ...
 STATIC mp_obj_t bleio_characteristic_set_cccd(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);

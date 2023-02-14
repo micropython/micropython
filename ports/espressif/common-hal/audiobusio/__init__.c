@@ -80,11 +80,13 @@ void i2s_reset(void) {
     }
 }
 
+#define I2S_WRITE_DELAY pdMS_TO_TICKS(1)
+
 static void i2s_fill_buffer(i2s_t *self) {
     if (self->instance < 0 || self->instance >= I2S_NUM_MAX) {
         return;
     }
-#define STACK_BUFFER_SIZE (512)
+#define STACK_BUFFER_SIZE (4096)
     int16_t signed_samples[STACK_BUFFER_SIZE / sizeof(int16_t)];
 
     if (!self->playing || self->paused || !self->sample || self->stopping) {
@@ -92,7 +94,7 @@ static void i2s_fill_buffer(i2s_t *self) {
 
         size_t bytes_written = 0;
         do {
-            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, sizeof(signed_samples), &bytes_written, 0));
+            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, sizeof(signed_samples), &bytes_written, I2S_WRITE_DELAY));
         } while (bytes_written != 0);
         return;
     }
@@ -120,9 +122,9 @@ static void i2s_fill_buffer(i2s_t *self) {
         size_t bytecount = self->sample_end - self->sample_data;
         if (self->samples_signed && self->channel_count == 2) {
             if (self->bytes_per_sample == 2) {
-                CHECK_ESP_RESULT(i2s_write(self->instance, self->sample_data, bytecount, &bytes_written, 0));
+                CHECK_ESP_RESULT(i2s_write(self->instance, self->sample_data, bytecount, &bytes_written, I2S_WRITE_DELAY));
             } else {
-                CHECK_ESP_RESULT(i2s_write_expand(self->instance, self->sample_data, bytecount, 8, 16, &bytes_written, 0));
+                CHECK_ESP_RESULT(i2s_write_expand(self->instance, self->sample_data, bytecount, 8, 16, &bytes_written, I2S_WRITE_DELAY));
             }
         } else {
             const size_t bytes_per_output_frame = 4;
@@ -151,7 +153,7 @@ static void i2s_fill_buffer(i2s_t *self) {
                 }
             }
             size_t expanded_bytes_written = 0;
-            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, bytes_per_output_frame * framecount, &expanded_bytes_written, 0));
+            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, bytes_per_output_frame * framecount, &expanded_bytes_written, I2S_WRITE_DELAY));
             assert(expanded_bytes_written % 4 == 0);
             bytes_written = expanded_bytes_written / bytes_per_output_frame * bytes_per_input_frame;
         }
@@ -188,8 +190,8 @@ void port_i2s_allocate_init(i2s_t *self, bool left_justified) {
         .bits_per_sample = 16,
         .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
         .communication_format = left_justified ? I2S_COMM_FORMAT_STAND_I2S : I2S_COMM_FORMAT_STAND_I2S,
-        .dma_buf_count = 2,
-        .dma_buf_len = 128, // in _frames_, so 128 is 512 bytes per dma buf
+        .dma_buf_count = 3,
+        .dma_buf_len = 1024, // in _frames_, so 1024 is 4096 bytes per dma buf
         .use_apll = false,
     };
     CHECK_ESP_RESULT(i2s_driver_install(self->instance, &i2s_config, I2S_QUEUE_SIZE, &i2s_queues[self->instance]));
@@ -223,7 +225,11 @@ void port_i2s_play(i2s_t *self, mp_obj_t sample, bool loop) {
 
     audiosample_reset_buffer(self->sample, false, 0);
 
-    CHECK_ESP_RESULT(i2s_set_sample_rates(self->instance, audiosample_sample_rate(sample)));
+    uint32_t sample_rate = audiosample_sample_rate(sample);
+    if (sample_rate != self->i2s_config.sample_rate) {
+        CHECK_ESP_RESULT(i2s_set_sample_rates(self->instance, audiosample_sample_rate(sample)));
+        self->i2s_config.sample_rate = sample_rate;
+    }
 
     background_callback_add(&self->callback, i2s_callback_fun, self);
 }

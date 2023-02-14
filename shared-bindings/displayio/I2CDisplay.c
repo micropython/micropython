@@ -59,7 +59,8 @@
 //|
 //|         :param busio.I2C i2c_bus: The I2C bus that make up the clock and data lines
 //|         :param int device_address: The I2C address of the device
-//|         :param microcontroller.Pin reset: Reset pin. When None only software reset can be used"""
+//|         :param microcontroller.Pin reset: Reset pin. When None only software reset can be used
+//|         """
 //|         ...
 STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_i2c_bus, ARG_device_address, ARG_reset };

@@ -7,8 +7,12 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
+    permissions:
+        issues: write
     steps:
-        - uses: jenschelkopf/issue-label-notification-action@1.3
+        - uses: tekktrik/issue-labeled-ping@v1
           with:
-             recipients: |
-                  ulab=@v923z
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+                user: v923z
+                label: ulab
+                message: Heads up {user} - the "{label}" label was applied to this issue.

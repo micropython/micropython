@@ -62,7 +62,8 @@ STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t
 //|
 //|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, `audiomixer.Mixer` or `audiomp3.MP3Decoder`.
 //|
-//|         The sample must match the `audiomixer.Mixer`'s encoding settings given in the constructor."""
+//|         The sample must match the `audiomixer.Mixer`'s encoding settings given in the constructor.
+//|         """
 //|         ...
 STATIC mp_obj_t audiomixer_mixervoice_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };

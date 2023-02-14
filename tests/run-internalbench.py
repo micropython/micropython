@@ -26,7 +26,6 @@ def run_tests(pyb, test_dict):
     for base_test, tests in sorted(test_dict.items()):
         print(base_test + ":")
         for test_file in tests:
-
             # run MicroPython
             if pyb is None:
                 # run on PC

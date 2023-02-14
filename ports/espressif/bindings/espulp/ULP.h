@@ -29,10 +29,9 @@
 #include "py/obj.h"
 #include "common-hal/espulp/ULP.h"
 
-
 extern const mp_obj_type_t espulp_ulp_type;
 
-void common_hal_espulp_ulp_construct(espulp_ulp_obj_t *self);
+void common_hal_espulp_ulp_construct(espulp_ulp_obj_t *self, espulp_architecture_t arch);
 bool common_hal_espulp_ulp_deinited(espulp_ulp_obj_t *self);
 void common_hal_espulp_ulp_deinit(espulp_ulp_obj_t *self);
 

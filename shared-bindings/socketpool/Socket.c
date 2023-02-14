@@ -379,7 +379,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_setsockopt_obj, 4, 
 //|     def settimeout(self, value: int) -> None:
 //|         """Set the timeout value for this socket.
 //|
-//|         :param ~int value: timeout in seconds.  0 means non-blocking.  None means block indefinitely."""
+//|         :param ~int value: timeout in seconds.  0 means non-blocking.  None means block indefinitely.
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t socketpool_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {

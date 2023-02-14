@@ -16,9 +16,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-env:
-  CACHE_SUBMODULES: "['extmod/ulab', 'lib/', 'tools/']"
-
 jobs:
   test:
     runs-on: ubuntu-20.04
@@ -28,7 +25,7 @@ jobs:
       boards-arm: ${{ steps.set-matrix.outputs.boards-arm }}
       boards-espressif: ${{ steps.set-matrix.outputs.boards-espressif }}
       boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
-      cp-version: ${{ steps.cp-version.outputs.cp-version }}
+      cp-version: ${{ steps.set-up-submodules.outputs.version }}
     steps:
     - name: Dump GitHub context
       run: echo "$GITHUB_CONTEXT"
@@ -45,28 +42,12 @@ jobs:
         python-version: "3.x"
     - name: Duplicate USB VID/PID check
       run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
-    - name: Create submodule status
-      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
-    - name: Cache submodules
-      uses: actions/cache@v3
+    - name: Set up submodules
+      id: set-up-submodules
+      uses: ./.github/actions/fetch_submodules
       with:
-        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
-        key: submodules-common-${{ hashFiles('submodule_status') }}
-    - name: CircuitPython dependencies
-      run: |
-        python tools/ci_fetch_deps.py ${{ github.job }}
-        echo "::group::Fetch history and tags"
-        git fetch --no-recurse-submodules --shallow-since="2021-07-01" --tags https://github.com/adafruit/circuitpython HEAD
-        git fetch --no-recurse-submodules --shallow-since="2021-07-01" origin $GITHUB_SHA
-        git repack -d
-        echo "::endgroup::"
-    - name: CircuitPython version
-      id: cp-version
-      run: |
-        CP_VERSION=$(tools/describe)
-        echo "$CP_VERSION"
-        echo "CP_VERSION=$CP_VERSION" >> $GITHUB_ENV
-        echo "cp-version=$CP_VERSION" >> $GITHUB_OUTPUT
+        cache: "cache"
+        version: true
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -202,17 +183,8 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-    - name: Create submodule status
-      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
-    - name: Restore submodules
-      uses: actions/cache/restore@v3
-      with:
-        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
-        key: submodules-common-${{ hashFiles('submodule_status') }}
-    - name: CircuitPython dependencies
-      run: python tools/ci_fetch_deps.py ${{ github.job }}
-    - name: CircuitPython version
-      run: tools/describe
+    - name: Set up submodules
+      uses: ./.github/actions/fetch_submodules
     - name: Versions
       run: |
         gcc --version
@@ -260,21 +232,12 @@ jobs:
       with:
         submodules: false
         fetch-depth: 1
-    - name: Create submodule status
-      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
-    - name: Restore submodules
-      uses: actions/cache/restore@v3
-      with:
-        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
-        key: submodules-common-${{ hashFiles('submodule_status') }}
-    - name: CircuitPython dependencies
-      run: python tools/ci_fetch_deps.py ${{ github.job }}
-    - name: CircuitPython version
-      run: tools/describe
     - name: Set up python
       uses: actions/setup-python@v4
       with:
         python-version: "3.x"
+    - name: Set up submodules
+      uses: ./.github/actions/fetch_submodules
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -343,16 +306,9 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-    - name: Create submodule status
-      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
-    - name: Restore submodules
-      uses: actions/cache/restore@v3
-      with:
-        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
-        key: submodules-common-${{ hashFiles('submodule_status') }}
-    - name: CircuitPython dependencies
-      id: cp-deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }}
+    - name: Set up submodules
+      id: set-up-submodules
+      uses: ./.github/actions/fetch_submodules
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext mtools
@@ -379,7 +335,7 @@ jobs:
         python3 --version
         mkfs.fat --version || true
     - name: Build mpy-cross
-      if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
+      if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
       run: make -C mpy-cross -j2
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
@@ -425,16 +381,9 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-    - name: Create submodule status
-      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
-    - name: Restore submodules
-      uses: actions/cache/restore@v3
-      with:
-        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
-        key: submodules-common-${{ hashFiles('submodule_status') }}
-    - name: CircuitPython dependencies
-      id: cp-deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }}
+    - name: Set up submodules
+      id: set-up-submodules
+      uses: ./.github/actions/fetch_submodules
     - uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
         release: '10-2020-q4'
@@ -448,7 +397,7 @@ jobs:
         arm-none-eabi-gcc --version
         python3 --version
     - name: Build mpy-cross
-      if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
+      if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
       run: make -C mpy-cross -j2
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
@@ -474,7 +423,6 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 
-
   build-espressif:
     runs-on: ubuntu-22.04
     needs: test
@@ -498,13 +446,6 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
-    - name: Create submodule status
-      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
-    - name: Restore submodules
-      uses: actions/cache/restore@v3
-      with:
-        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
-        key: submodules-common-${{ hashFiles('submodule_status') }}
     - name: Get IDF commit
       id: idf-commit
       run: |
@@ -518,19 +459,13 @@ jobs:
           .git/modules/ports/espressif/esp-idf
           ports/espressif/esp-idf
         key: submodules-idf-${{ steps.idf-commit.outputs.commit }}
-    - name: CircuitPython dependencies
-      id: cp-deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }}
-    - name: CircuitPython version
-      run: tools/describe
     - name: Cache IDF tools
       uses: actions/cache@v3
       with:
         path: ${{ env.IDF_TOOLS_PATH }}
         key: ${{ runner.os }}-Python-${{ steps.setup-python.outputs.python-version }}-tools-idf-${{ steps.idf-commit.outputs.commit }}
-    - name: Clone IDF submodules
-      run: git submodule update --init --depth=1
-      working-directory: ${{ env.IDF_PATH }}
+    - name: Initialize IDF submodules
+      run: git submodule update --init --depth=1 --recursive $IDF_PATH
     - name: Install IDF tools
       run: |
         echo "Installing ESP-IDF tools"
@@ -539,6 +474,9 @@ jobs:
         echo "Installing Python environment and packages"
         $IDF_PATH/tools/idf_tools.py --non-interactive install-python-env
         rm -rf $IDF_TOOLS_PATH/dist
+    - name: Set up submodules
+      id: set-up-submodules
+      uses: ./.github/actions/fetch_submodules
     - name: Install dependencies
       run: |
         source $IDF_PATH/export.sh
@@ -552,7 +490,7 @@ jobs:
         ninja --version
         cmake --version
     - name: Build mpy-cross
-      if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
+      if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
       run: make -C mpy-cross -j2
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
@@ -600,16 +538,9 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-    - name: Create submodule status
-      run: git submodule status ${{ join(fromJSON(env.CACHE_SUBMODULES), ' ') }} >> submodule_status
-    - name: Restore submodules
-      uses: actions/cache/restore@v3
-      with:
-        path: ".git/modules/\n${{ join(fromJSON(env.CACHE_SUBMODULES), '\n') }}"
-        key: submodules-common-${{ hashFiles('submodule_status') }}
-    - name: CircuitPython dependencies
-      id: cp-deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }}
+    - name: Set up submodules
+      id: set-up-submodules
+      uses: ./.github/actions/fetch_submodules
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
@@ -622,7 +553,7 @@ jobs:
         riscv64-unknown-elf-gcc --version
         python3 --version
     - name: Build mpy-cross
-      if: ${{ steps.cp-deps.outputs.frozen_tags == 'True' }}
+      if: ${{ steps.set-up-submodules.outputs.frozen == 'True' }}
       run: make -C mpy-cross -j2
     - name: Setup build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"

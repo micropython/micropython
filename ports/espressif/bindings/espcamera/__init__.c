@@ -29,13 +29,13 @@
 #include "py/mphal.h"
 
 #include "bindings/espidf/__init__.h"
-#include "bindings/esp32_camera/__init__.h"
-#include "bindings/esp32_camera/Camera.h"
+#include "bindings/espcamera/__init__.h"
+#include "bindings/espcamera/Camera.h"
 
 #include "esp_camera.h"
 #include "sensor.h"
 
-//| """Wrapper for the esp32_camera library
+//| """Wrapper for the espcamera library
 //|
 //| This library enables access to any camera sensor supported by the library,
 //| including OV5640 and OV2640.
@@ -45,6 +45,7 @@
 //|     Non-Espressif microcontrollers use the `imagecapture` module together with wrapper libraries such as `adafruit_ov5640 <https://circuitpython.readthedocs.io/projects/ov5640/en/latest/>`_.
 //|
 //| """
+//|
 
 //| class GrabMode:
 //|     """Controls when a new frame is grabbed."""
@@ -56,20 +57,20 @@
 //|     """Except when 1 frame buffer is used, queue will always contain the last ``fb_count`` frames"""
 //|
 
-MAKE_ENUM_VALUE(esp32_camera_grab_mode_type, grab_mode, WHEN_EMPTY, CAMERA_GRAB_WHEN_EMPTY);
-MAKE_ENUM_VALUE(esp32_camera_grab_mode_type, grab_mode, LATEST, CAMERA_GRAB_LATEST);
+MAKE_ENUM_VALUE(espcamera_grab_mode_type, grab_mode, WHEN_EMPTY, CAMERA_GRAB_WHEN_EMPTY);
+MAKE_ENUM_VALUE(espcamera_grab_mode_type, grab_mode, LATEST, CAMERA_GRAB_LATEST);
 
-MAKE_ENUM_MAP(esp32_camera_grab_mode) {
+MAKE_ENUM_MAP(espcamera_grab_mode) {
     MAKE_ENUM_MAP_ENTRY(grab_mode, WHEN_EMPTY),
     MAKE_ENUM_MAP_ENTRY(grab_mode, LATEST),
 };
 
-STATIC MP_DEFINE_CONST_DICT(esp32_camera_grab_mode_locals_dict, esp32_camera_grab_mode_locals_table);
-MAKE_PRINTER(esp32_camera, esp32_camera_grab_mode);
-MAKE_ENUM_TYPE(esp32_camera, GrabMode, esp32_camera_grab_mode);
+STATIC MP_DEFINE_CONST_DICT(espcamera_grab_mode_locals_dict, espcamera_grab_mode_locals_table);
+MAKE_PRINTER(espcamera, espcamera_grab_mode);
+MAKE_ENUM_TYPE(espcamera, GrabMode, espcamera_grab_mode);
 
 camera_grab_mode_t validate_grab_mode(mp_obj_t obj, qstr arg_name) {
-    return cp_enum_value(&esp32_camera_grab_mode_type, obj, arg_name);
+    return cp_enum_value(&espcamera_grab_mode_type, obj, arg_name);
 }
 
 //| class PixelFormat:
@@ -85,22 +86,22 @@ camera_grab_mode_t validate_grab_mode(mp_obj_t obj, qstr arg_name) {
 //|     """A compressed format"""
 //|
 
-MAKE_ENUM_VALUE(esp32_camera_pixel_format_type, pixel_format, RGB565, PIXFORMAT_RGB565);
-MAKE_ENUM_VALUE(esp32_camera_pixel_format_type, pixel_format, GRAYSCALE, PIXFORMAT_GRAYSCALE);
-MAKE_ENUM_VALUE(esp32_camera_pixel_format_type, pixel_format, JPEG, PIXFORMAT_JPEG);
+MAKE_ENUM_VALUE(espcamera_pixel_format_type, pixel_format, RGB565, PIXFORMAT_RGB565);
+MAKE_ENUM_VALUE(espcamera_pixel_format_type, pixel_format, GRAYSCALE, PIXFORMAT_GRAYSCALE);
+MAKE_ENUM_VALUE(espcamera_pixel_format_type, pixel_format, JPEG, PIXFORMAT_JPEG);
 
-MAKE_ENUM_MAP(esp32_camera_pixel_format) {
+MAKE_ENUM_MAP(espcamera_pixel_format) {
     MAKE_ENUM_MAP_ENTRY(pixel_format, RGB565),
     MAKE_ENUM_MAP_ENTRY(pixel_format, GRAYSCALE),
     MAKE_ENUM_MAP_ENTRY(pixel_format, JPEG),
 };
 
-STATIC MP_DEFINE_CONST_DICT(esp32_camera_pixel_format_locals_dict, esp32_camera_pixel_format_locals_table);
-MAKE_PRINTER(esp32_camera, esp32_camera_pixel_format);
-MAKE_ENUM_TYPE(esp32_camera, PixelFormat, esp32_camera_pixel_format);
+STATIC MP_DEFINE_CONST_DICT(espcamera_pixel_format_locals_dict, espcamera_pixel_format_locals_table);
+MAKE_PRINTER(espcamera, espcamera_pixel_format);
+MAKE_ENUM_TYPE(espcamera, PixelFormat, espcamera_pixel_format);
 
 pixformat_t validate_pixel_format(mp_obj_t obj, qstr arg_name) {
-    return cp_enum_value(&esp32_camera_pixel_format_type, obj, arg_name);
+    return cp_enum_value(&espcamera_pixel_format_type, obj, arg_name);
 }
 
 //| class FrameSize:
@@ -173,29 +174,29 @@ pixformat_t validate_pixel_format(mp_obj_t obj, qstr arg_name) {
 //|     """2560x1920"""
 //|
 
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, R96X96, FRAMESIZE_96X96);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, R240X240, FRAMESIZE_240X240);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, QQVGA, FRAMESIZE_QQVGA);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, QCIF, FRAMESIZE_QCIF);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, HQVGA, FRAMESIZE_HQVGA);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, QVGA, FRAMESIZE_QVGA);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, CIF, FRAMESIZE_CIF);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, HVGA, FRAMESIZE_HVGA);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, VGA, FRAMESIZE_VGA);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, SVGA, FRAMESIZE_SVGA);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, XGA, FRAMESIZE_XGA);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, HD, FRAMESIZE_HD);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, SXGA, FRAMESIZE_SXGA);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, UXGA, FRAMESIZE_UXGA);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, FHD, FRAMESIZE_FHD);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, P_HD, FRAMESIZE_P_HD);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, P_3MP, FRAMESIZE_P_3MP);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, QXGA, FRAMESIZE_QXGA);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, QHD, FRAMESIZE_QHD);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, WQXGA, FRAMESIZE_WQXGA);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, P_FHD, FRAMESIZE_P_FHD);
-MAKE_ENUM_VALUE(esp32_camera_frame_size_type, frame_size, QSXGA, FRAMESIZE_QSXGA);
-MAKE_ENUM_MAP(esp32_camera_frame_size) {
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, R96X96, FRAMESIZE_96X96);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, R240X240, FRAMESIZE_240X240);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, QQVGA, FRAMESIZE_QQVGA);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, QCIF, FRAMESIZE_QCIF);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, HQVGA, FRAMESIZE_HQVGA);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, QVGA, FRAMESIZE_QVGA);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, CIF, FRAMESIZE_CIF);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, HVGA, FRAMESIZE_HVGA);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, VGA, FRAMESIZE_VGA);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, SVGA, FRAMESIZE_SVGA);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, XGA, FRAMESIZE_XGA);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, HD, FRAMESIZE_HD);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, SXGA, FRAMESIZE_SXGA);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, UXGA, FRAMESIZE_UXGA);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, FHD, FRAMESIZE_FHD);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, P_HD, FRAMESIZE_P_HD);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, P_3MP, FRAMESIZE_P_3MP);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, QXGA, FRAMESIZE_QXGA);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, QHD, FRAMESIZE_QHD);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, WQXGA, FRAMESIZE_WQXGA);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, P_FHD, FRAMESIZE_P_FHD);
+MAKE_ENUM_VALUE(espcamera_frame_size_type, frame_size, QSXGA, FRAMESIZE_QSXGA);
+MAKE_ENUM_MAP(espcamera_frame_size) {
     MAKE_ENUM_MAP_ENTRY(frame_size, R96X96),
     MAKE_ENUM_MAP_ENTRY(frame_size, R240X240),
     MAKE_ENUM_MAP_ENTRY(frame_size, QQVGA),
@@ -220,12 +221,12 @@ MAKE_ENUM_MAP(esp32_camera_frame_size) {
     MAKE_ENUM_MAP_ENTRY(frame_size, QSXGA),
 };
 
-STATIC MP_DEFINE_CONST_DICT(esp32_camera_frame_size_locals_dict, esp32_camera_frame_size_locals_table);
-MAKE_PRINTER(esp32_camera, esp32_camera_frame_size);
-MAKE_ENUM_TYPE(esp32_camera, FrameSize, esp32_camera_frame_size);
+STATIC MP_DEFINE_CONST_DICT(espcamera_frame_size_locals_dict, espcamera_frame_size_locals_table);
+MAKE_PRINTER(espcamera, espcamera_frame_size);
+MAKE_ENUM_TYPE(espcamera, FrameSize, espcamera_frame_size);
 
 framesize_t validate_frame_size(mp_obj_t obj, qstr arg_name) {
-    return cp_enum_value(&esp32_camera_frame_size_type, obj, arg_name);
+    return cp_enum_value(&espcamera_frame_size_type, obj, arg_name);
 }
 
 //| class GainCeiling:
@@ -242,15 +243,15 @@ framesize_t validate_frame_size(mp_obj_t obj, qstr arg_name) {
 //|     GAIN_128X: GainCeiling
 //|
 
-MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_2X, GAINCEILING_2X);
-MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_4X, GAINCEILING_4X);
-MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_8X, GAINCEILING_8X);
-MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_16X, GAINCEILING_16X);
-MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_32X, GAINCEILING_32X);
-MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_64X, GAINCEILING_64X);
-MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_128X, GAINCEILING_128X);
+MAKE_ENUM_VALUE(espcamera_gain_ceiling_type, gain_ceiling, GAIN_2X, GAINCEILING_2X);
+MAKE_ENUM_VALUE(espcamera_gain_ceiling_type, gain_ceiling, GAIN_4X, GAINCEILING_4X);
+MAKE_ENUM_VALUE(espcamera_gain_ceiling_type, gain_ceiling, GAIN_8X, GAINCEILING_8X);
+MAKE_ENUM_VALUE(espcamera_gain_ceiling_type, gain_ceiling, GAIN_16X, GAINCEILING_16X);
+MAKE_ENUM_VALUE(espcamera_gain_ceiling_type, gain_ceiling, GAIN_32X, GAINCEILING_32X);
+MAKE_ENUM_VALUE(espcamera_gain_ceiling_type, gain_ceiling, GAIN_64X, GAINCEILING_64X);
+MAKE_ENUM_VALUE(espcamera_gain_ceiling_type, gain_ceiling, GAIN_128X, GAINCEILING_128X);
 
-MAKE_ENUM_MAP(esp32_camera_gain_ceiling) {
+MAKE_ENUM_MAP(espcamera_gain_ceiling) {
     MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_2X),
     MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_4X),
     MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_8X),
@@ -260,28 +261,28 @@ MAKE_ENUM_MAP(esp32_camera_gain_ceiling) {
     MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_128X)
 };
 
-STATIC MP_DEFINE_CONST_DICT(esp32_camera_gain_ceiling_locals_dict, esp32_camera_gain_ceiling_locals_table);
-MAKE_PRINTER(esp32_camera, esp32_camera_gain_ceiling);
-MAKE_ENUM_TYPE(esp32_camera, GainCeiling, esp32_camera_gain_ceiling);
+STATIC MP_DEFINE_CONST_DICT(espcamera_gain_ceiling_locals_dict, espcamera_gain_ceiling_locals_table);
+MAKE_PRINTER(espcamera, espcamera_gain_ceiling);
+MAKE_ENUM_TYPE(espcamera, GainCeiling, espcamera_gain_ceiling);
 
 gainceiling_t validate_gain_ceiling(mp_obj_t obj, qstr arg_name) {
-    return cp_enum_value(&esp32_camera_gain_ceiling_type, obj, arg_name);
+    return cp_enum_value(&espcamera_gain_ceiling_type, obj, arg_name);
 }
 
-STATIC const mp_rom_map_elem_t esp32_camera_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32_camera) },
-    { MP_ROM_QSTR(MP_QSTR_Camera), MP_ROM_PTR(&esp32_camera_camera_type), },
-    { MP_ROM_QSTR(MP_QSTR_FrameSize), &esp32_camera_frame_size_type },
-    { MP_ROM_QSTR(MP_QSTR_GainCeiling), &esp32_camera_gain_ceiling_type },
-    { MP_ROM_QSTR(MP_QSTR_GrabMode), &esp32_camera_grab_mode_type },
-    { MP_ROM_QSTR(MP_QSTR_PixelFormat), &esp32_camera_pixel_format_type },
+STATIC const mp_rom_map_elem_t espcamera_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_espcamera) },
+    { MP_ROM_QSTR(MP_QSTR_Camera), MP_ROM_PTR(&espcamera_camera_type), },
+    { MP_ROM_QSTR(MP_QSTR_FrameSize), &espcamera_frame_size_type },
+    { MP_ROM_QSTR(MP_QSTR_GainCeiling), &espcamera_gain_ceiling_type },
+    { MP_ROM_QSTR(MP_QSTR_GrabMode), &espcamera_grab_mode_type },
+    { MP_ROM_QSTR(MP_QSTR_PixelFormat), &espcamera_pixel_format_type },
 };
 
-STATIC MP_DEFINE_CONST_DICT(esp32_camera_module_globals, esp32_camera_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(espcamera_module_globals, espcamera_module_globals_table);
 
-const mp_obj_module_t esp32_camera_module = {
+const mp_obj_module_t espcamera_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&esp32_camera_module_globals,
+    .globals = (mp_obj_dict_t *)&espcamera_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_esp32_camera, esp32_camera_module, CIRCUITPY_ESP32_CAMERA);
+MP_REGISTER_MODULE(MP_QSTR_espcamera, espcamera_module, CIRCUITPY_ESPCAMERA);

@@ -126,7 +126,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_deinit_obj, sdcardio_sdcard_deinit);
 
 
 //|     def readblocks(self, start_block: int, buf: WriteableBuffer) -> None:
-//|
 //|         """Read one or more blocks from the card
 //|
 //|         :param int start_block: The block to start reading from
@@ -166,7 +165,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_sync_obj, sdcardio_sdcard_sync);
 
 
 //|     def writeblocks(self, start_block: int, buf: ReadableBuffer) -> None:
-//|
 //|         """Write one or more blocks to the card
 //|
 //|         :param int start_block: The block to start writing from

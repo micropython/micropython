@@ -215,7 +215,7 @@ def convert_folder(top_level, stub_directory):
         return (ok, total)
 
     error = False
-    for (level, msg) in find_stub_issues(tree):
+    for level, msg in find_stub_issues(tree):
         if level == "ERROR":
             error = True
         print(f"[{level}] {msg}")

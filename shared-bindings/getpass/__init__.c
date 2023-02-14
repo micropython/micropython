@@ -33,9 +33,9 @@
 //|
 //| """
 //| ...
+//|
 
 //| def getpass(prompt: Optional[str] = "Password: ", stream: Optional[io.FileIO] = None) -> str:
-//|
 //|     """Prompt the user without echoing.
 //|
 //|     :param str prompt: The user is prompted using the string ``prompt``, which defaults to ``'Password: '``.

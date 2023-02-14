@@ -1,5 +1,6 @@
 # test for native generators
 
+
 # simple generator with yield and return
 @micropython.native
 def gen1(x):
@@ -15,6 +16,7 @@ try:
     next(g)
 except StopIteration as e:
     print(e.args[0])
+
 
 # using yield from
 @micropython.native

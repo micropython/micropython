@@ -35,7 +35,7 @@
 //|
 //| .. seealso::
 //|
-//|     Espressif microcontrollers use the `esp32_camera` module together.
+//|     Espressif microcontrollers use the `espcamera` module together.
 //|
 //| """
 STATIC const mp_rom_map_elem_t imagecapture_module_globals_table[] = {

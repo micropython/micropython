@@ -38,6 +38,7 @@
 //|     Learn guide <https://learn.adafruit.com/intro-to-rp2040-pio-with-circuitpython>`_.
 //|
 //| """
+//|
 
 //| def pins_are_sequential(pins: List[microcontroller.Pin]) -> bool:
 //|     """Return True if the pins have sequential GPIO numbers, False otherwise"""

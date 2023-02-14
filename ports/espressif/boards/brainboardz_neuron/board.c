@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,16 @@
  * THE SOFTWARE.
  */
 
-// Micropython setup
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#define MICROPY_HW_BOARD_NAME       "Feather ESP32S2 without PSRAM"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+void board_init(void) {
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif
+}
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO33)
-#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO21)
-
-#define MICROPY_HW_LED_STATUS (&pin_GPIO13)
-
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO4)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO3)
-
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
-
-#define DOUBLE_TAP_PIN (&pin_GPIO34)
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

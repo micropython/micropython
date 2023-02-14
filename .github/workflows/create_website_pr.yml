@@ -25,19 +25,10 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-    - name: CircuitPython dependencies
-      run: |
-        python tools/ci_fetch_deps.py ${{ github.job }}
-        echo "::group::Fetch history and tags"
-        git fetch --no-recurse-submodules --shallow-since="2021-07-01" --tags https://github.com/adafruit/circuitpython HEAD
-        git fetch --no-recurse-submodules --shallow-since="2021-07-01" origin $GITHUB_SHA
-        git repack -d
-        echo "::endgroup::"
-    - name: CircuitPython version
-      run: |
-        CP_VERSION=$(tools/describe)
-        echo "$CP_VERSION"
-        echo "CP_VERSION=$CP_VERSION" >> $GITHUB_ENV
+    - name: Set up submodules
+      uses: ./.github/actions/fetch_submodules
+      with:
+        version: true
     - name: Install dependencies
       run: pip install -r requirements-dev.txt
     - name: Versions

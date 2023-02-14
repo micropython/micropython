@@ -94,7 +94,6 @@
 //|         wrap_target: int = 0,
 //|         wrap: int = -1,
 //|     ) -> None:
-//|
 //|         """Construct a StateMachine object on the given pins with the given program.
 //|
 //|         :param ReadableBuffer program: the program to run with the state machine
@@ -659,7 +658,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_readinto_obj, 2, rp2pio_statemach
 //|         :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
 //|         :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``
 //|         :param bool swap_out: For 2- and 4-byte elements, swap (reverse) the byte order for the buffer being transmitted (written)
-//|         :param bool swap_in: For 2- and 4-rx elements, swap (reverse) the byte order for the buffer being received (read)"""
+//|         :param bool swap_in: For 2- and 4-rx elements, swap (reverse) the byte order for the buffer being received (read)
+//|         """
 //|         ...
 
 STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
