@@ -137,7 +137,11 @@ MAKE_ENUM_MAP(supervisor_safe_mode_reason) {
     MAKE_ENUM_MAP_ENTRY(safe_mode_reason, USB_TOO_MANY_INTERFACE_NAMES),
 
 //|     USER: object
-//|     """The user pressed one or more buttons to enter safe mode."""
+//|     """The user pressed one or more buttons to enter safe mode.
+//|     This safe mode does **not** cause ``safemode.py`` to be run, since its purpose
+//|     is to prevent all user code from running.
+//|     This allows errors in ``safemode.py`` to be corrected easily.
+//|     """
 //|
     MAKE_ENUM_MAP_ENTRY(safe_mode_reason, USER),
 

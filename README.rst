@@ -139,8 +139,10 @@ Behavior
    possible to fix code that causes nasty crashes by making it available through mass storage after
    the crash. A reset (the button) is needed after it's fixed to get back into normal mode.
 -  Safe mode may be handled programmatically by providing a ``safemode.py``.
-   ``safemode.py`` is run if the board has reset due to entering safe mode. USB is not
-   available so nothing can be printed. ``safemode.py`` can determine why the safe mode occurred
+   ``safemode.py`` is run if the board has reset due to entering safe mode, unless the safe mode
+   initiated by the user by pressing button(s).
+   USB is not available so nothing can be printed.
+   ``safemode.py`` can determine why the safe mode occurred
    using ``supervisor.runtime.safe_mode_reason``, and take appropriate action. For instance,
    if a hard crash occurred, ``safemode.py`` may do a ``microcontroller.reset()``
    to automatically restart despite the crash.

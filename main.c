@@ -733,7 +733,9 @@ vstr_t *boot_output;
 #if CIRCUITPY_SAFEMODE_PY
 STATIC void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
     // Don't run if we aren't in safe mode or we won't be able to find safemode.py.
-    if (safe_mode == SAFE_MODE_NONE || !filesystem_present()) {
+    // Also don't run if it's a user-initiated safemode (pressing button(s) during boot),
+    // since that's deliberate.
+    if (safe_mode == SAFE_MODE_NONE || safe_mode == SAFE_MODE_USER || !filesystem_present()) {
         return;
     }
 
