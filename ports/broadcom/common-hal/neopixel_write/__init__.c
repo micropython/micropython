@@ -96,7 +96,8 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         // Wait for the clock to start up.
         COMPLETE_MEMORY_READS;
         icnt = 0;
-        while ((CM_PWM->CS_b.BUSY == 0) && (icnt++ < 1000)) {}
+        while ((CM_PWM->CS_b.BUSY == 0) && (icnt++ < 1000)) {
+        }
     }
 
     PWM0_Type *pwm = PWM0;
