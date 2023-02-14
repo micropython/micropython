@@ -525,11 +525,15 @@ $(filter $(SRC_PATTERNS), \
 	qrio/PixelPolicy.c \
 	qrio/QRInfo.c \
 	supervisor/RunReason.c \
-	supervisor/SafeModeReason.c \
 	supervisor/StatusBar.c \
 	wifi/AuthMode.c \
 	wifi/Packet.c \
 )
+
+ifeq ($(CIRCUITPY_SAFEMODE_PY),1)
+SRC_BINDINGS_ENUMS += \
+	supervisor/SafeModeReason.c
+endif
 
 SRC_BINDINGS_ENUMS += \
 	util.c

@@ -31,14 +31,20 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with the contents of your CIRCUITPY drive at \n"
-"https://github.com/adafruit/circuitpython/issues\n"
+"Please file an issue with your program at https://github.com/adafruit/"
+"circuitpython/issues."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"To exit, reset the board without requesting safe mode."
+"Press reset to exit safe mode.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"\n"
+"You are in safe mode because:\n"
 msgstr ""
 
 #: py/obj.c
@@ -536,10 +542,6 @@ msgstr ""
 msgid "Attempt to allocate %d blocks"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when VM not running."
-msgstr ""
-
 #: ports/raspberrypi/audio_dma.c
 msgid "Audio conversion not implemented"
 msgstr ""
@@ -588,7 +590,7 @@ msgid "Bitmap size and bits per value must match"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "Boot device must be first device (interface #0)."
+msgid "Boot device must be first (interface #0)."
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
@@ -790,10 +792,6 @@ msgstr ""
 msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap."
-msgstr ""
-
 #: shared-module/bitbangio/I2C.c
 msgid "Clock stretch too long"
 msgstr ""
@@ -830,10 +828,6 @@ msgstr ""
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate decoder"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "Crash into the HardFault_Handler."
 msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
@@ -1003,6 +997,10 @@ msgstr ""
 msgid "Failed to write internal flash."
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "Fault detected by hardware."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr ""
@@ -1086,6 +1084,15 @@ msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Heap allocation when VM not running."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"Heap was corrupted because the stack was too small. Increase stack size."
 msgstr ""
 
 #: extmod/vfs_posix_file.c py/objstringio.c
@@ -1993,15 +2000,7 @@ msgid "Temperature read timed out"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"The CircuitPython heap was corrupted because the stack was too small.\n"
-"Increase the stack size if you know how. If not:"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"The `microcontroller` module was used to boot into safe mode. Press reset to "
-"exit safe mode."
+msgid "The `microcontroller` module was used to boot into safe mode."
 msgstr ""
 
 #: py/obj.c
@@ -2013,10 +2012,7 @@ msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"The microcontroller's power dipped. Make sure your power supply provides\n"
-"enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY)."
+msgid "The power dipped. Make sure you are providing enough power."
 msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
@@ -2160,6 +2156,10 @@ msgstr ""
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Unable to allocate the heap."
 msgstr ""
 
 #: ports/espressif/common-hal/busio/I2C.c
@@ -2367,10 +2367,6 @@ msgstr ""
 msgid "Writes not supported on Characteristic"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c
-msgid "You are in safe mode because:\n"
-msgstr ""
-
 #: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
 #: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
 #: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
@@ -2385,7 +2381,7 @@ msgid "You pressed button A at start up."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "You pressed the BOOT button at start up."
+msgid "You pressed the BOOT button at start up"
 msgstr ""
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h

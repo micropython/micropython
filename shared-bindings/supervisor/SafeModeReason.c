@@ -31,7 +31,6 @@
 // Reuse the non-Python safe_mode_t enum
 #include "supervisor/shared/safe_mode.h"
 
-#if CIRCUITPY_SAFEMODE_PY
 MAKE_ENUM_VALUE(supervisor_safe_mode_reason_type, safe_mode_reason, NONE, SAFE_MODE_NONE);
 MAKE_ENUM_VALUE(supervisor_safe_mode_reason_type, safe_mode_reason, BROWNOUT, SAFE_MODE_BROWNOUT);
 // alphabetical from here down
@@ -50,15 +49,15 @@ MAKE_ENUM_VALUE(supervisor_safe_mode_reason_type, safe_mode_reason, USB_TOO_MANY
 MAKE_ENUM_VALUE(supervisor_safe_mode_reason_type, safe_mode_reason, USB_TOO_MANY_INTERFACE_NAMES, SAFE_MODE_USB_TOO_MANY_INTERFACE_NAMES);
 MAKE_ENUM_VALUE(supervisor_safe_mode_reason_type, safe_mode_reason, USER, SAFE_MODE_USER);
 MAKE_ENUM_VALUE(supervisor_safe_mode_reason_type, safe_mode_reason, WATCHDOG, SAFE_MODE_WATCHDOG);
-#endif
 
 
 //| class SafeModeReason:
-//|     """The reason that CircuitPython went into safe mode."""
+//|     """The reason that CircuitPython went into safe mode.
+//|
+//|     **Limitations**: Class not available on builds that do not implement ``safemode.py``.
+//|     """
 //|
 MAKE_ENUM_MAP(supervisor_safe_mode_reason) {
-
-    #if CIRCUITPY_SAFEMODE_PY
 
 //|     NONE: object
 //|     """CircuitPython is not in safe mode."""
@@ -146,7 +145,6 @@ MAKE_ENUM_MAP(supervisor_safe_mode_reason) {
 //|     """An internal watchdog timer expired."""
 //|
     MAKE_ENUM_MAP_ENTRY(safe_mode_reason, WATCHDOG),
-    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_safe_mode_reason_locals_dict, supervisor_safe_mode_reason_locals_table);

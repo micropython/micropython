@@ -117,7 +117,10 @@ MP_PROPERTY_GETTER(supervisor_runtime_run_reason_obj,
     (mp_obj_t)&supervisor_runtime_get_run_reason_obj);
 
 //|     safe_mode_reason: SafeModeReason
-//|     """Why CircuitPython went into safe mode this particular time (read-only)."""
+//|     """Why CircuitPython went into safe mode this particular time (read-only).
+//|
+//|     **Limitations**: Raises ``NotImplementedError`` on builds that do not implement ``safemode.py``.
+//|     """
 STATIC mp_obj_t supervisor_runtime_get_safe_mode_reason(mp_obj_t self) {
     #if CIRCUITPY_SAFEMODE_PY
     return cp_enum_find(&supervisor_safe_mode_reason_type, get_safe_mode());
