@@ -46,11 +46,11 @@ PORT_TO_ARCH = {
     "atmel-samd": "arm",
     "broadcom": "aarch",
     "cxd56": "arm",
-    "espressif": "espressif",
+    "espressif": "esp",
     "litex": "riscv",
     "mimxrt10xx": "arm",
     "nrf": "arm",
-    "raspberrypi": "arm",
+    "raspberrypi": "rpi",
     "stm": "arm",
 }
 
@@ -204,29 +204,33 @@ def set_boards_to_build(build_all: bool):
             break
 
     # Split boards by architecture.
-    print("Building boards:")
-    arch_to_boards = {"aarch": [], "arm": [], "riscv": [], "espressif": []}
+    arch_to_boards = {"aarch": [], "arm": [], "esp": [], "riscv": [], "rpi": []}
+
+    # Append previously failed boards
+    for arch in arch_to_boards:
+        arch_to_job = f"build-{arch}"
+        if arch_to_job in last_failed_jobs:
+            for board in last_failed_jobs[arch_to_job]:
+                if not board in boards_to_build:
+                    boards_to_build.append(board)
+
+    build_boards = bool(boards_to_build)
+    print("Building boards:", build_boards)
+    set_output("build-boards", build_boards)
+
+    # Append boards according to arch
     for board in sorted(boards_to_build):
-        print(" ", board)
         port = board_to_port.get(board)
         # A board can appear due to its _deletion_ (rare)
         # if this happens it's not in `board_to_port`.
         if not port:
             continue
-        arch = PORT_TO_ARCH[port]
-        arch_to_boards[arch].append(board)
+        arch_to_boards[PORT_TO_ARCH[port]].append(board)
+        print(" ", board)
 
     # Set the step outputs for each architecture
     for arch in arch_to_boards:
-        # Append previous failed jobs
-        if f"build-{arch}" in last_failed_jobs:
-            failed_boards = last_failed_jobs[f"build-{arch}"]
-            for board in failed_boards:
-                if not board in arch_to_boards[arch]:
-                    print(" ", board)
-                    arch_to_boards[arch].append(board)
-        # Set Output
-        set_output(f"boards-{arch}", json.dumps(sorted(arch_to_boards[arch])))
+        set_output(f"boards-{arch}", json.dumps(arch_to_boards[arch]))
 
 
 def set_docs_to_build(build_doc: bool):

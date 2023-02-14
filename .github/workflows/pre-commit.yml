@@ -24,13 +24,13 @@ jobs:
     - name: Set up python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
-    - name: CircuitPython dependencies
-      run: python tools/ci_fetch_deps.py ${{ github.job }}
+        python-version: 3.x
+    - name: Set up submodules
+      uses: ./.github/actions/deps/submodules
+    - name: Set up external
+      uses: ./.github/actions/deps/external
     - name: Install dependencies
-      run: |
-        sudo apt-get install -y gettext uncrustify
-        pip3 install black polib pyyaml
+      run: sudo apt-get install -y gettext uncrustify
     - name: Run pre-commit
       uses: pre-commit/action@v3.0.0
     - name: Make patch
