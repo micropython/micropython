@@ -17,6 +17,7 @@ for name, f, args in (
     ("trunc", math.trunc, ()),
     ("sqrt", math.sqrt, (-1, 0)),
     ("exp", math.exp, ()),
+    ("log", math.log, ()),
     ("sin", math.sin, ()),
     ("cos", math.cos, ()),
     ("tan", math.tan, ()),
@@ -27,7 +28,7 @@ for name, f, args in (
     ("radians", math.radians, ()),
     ("degrees", math.degrees, ()),
 ):
-    for x in args + (inf, nan):
+    for x in args + (inf, -inf, nan):
         try:
             ans = f(x)
             print("%.4f" % ans)
@@ -39,6 +40,7 @@ for name, f, args in (
 # double argument functions
 for name, f, args in (
     ("pow", math.pow, ((0, 2), (-1, 2), (0, -1), (-1, 2.3), (nan, 0), (1, nan))),
+    ("log", math.log, ()),
     ("fmod", math.fmod, ((1.2, inf), (1.2, -inf), (1.2, 0), (inf, 1.2))),
     ("atan2", math.atan2, ((0, 0), (-inf, inf), (-inf, -inf), (inf, -inf))),
     ("copysign", math.copysign, ()),
