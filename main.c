@@ -379,7 +379,9 @@ STATIC void cleanup_after_vm(stacks combo, mp_obj_t exception) {
     filesystem_flush();
     stop_mp();
     free_memory(combo.heap);
+    #if MICROPY_ENABLE_PYSTACK
     free_memory(combo.pystack);
+    #endif
     supervisor_move_memory();
 
     // Let the workflows know we've reset in case they want to restart.
