@@ -122,6 +122,10 @@
 uint8_t value_out = 0;
 #endif
 
+#if MICROPY_ENABLE_PYSTACK
+#include "shared-module/os/__init__.h"
+#endif
+
 static void reset_devices(void) {
     #if CIRCUITPY_BLEIO_HCI
     bleio_reset();
@@ -156,7 +160,9 @@ STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack
     readline_init0();
 
     #if MICROPY_ENABLE_PYSTACK
-    mp_pystack_init(pystack->ptr, pystack->ptr + (pystack_size / sizeof(size_t)));
+    if (pystack_size > 0) {
+        mp_pystack_init(pystack->ptr, pystack->ptr + (pystack_size / sizeof(size_t)));
+    }
     #endif
 
     #if MICROPY_ENABLE_GC
@@ -398,7 +404,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset, supervisor_
         supervisor_allocation *heap = allocate_remaining_memory();
 
         // Prepare the VM state.
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // stackless doesn't want allocations.
         start_mp(heap, pystack, pystack_size);
+        #pragma GCC diagnostic pop
 
         #if CIRCUITPY_USB
         usb_setup_with_vm();
@@ -743,8 +752,10 @@ STATIC void run_boot_py(safe_mode_t safe_mode, supervisor_allocation *pystack, i
     // Do USB setup even if boot.py is not run.
 
     supervisor_allocation *heap = allocate_remaining_memory();
-
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // stackless doesn't want allocations.
     start_mp(heap, pystack, pystack_size);
+    #pragma GCC diagnostic pop
 
     #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
@@ -846,7 +857,10 @@ STATIC int run_repl(supervisor_allocation *pystack, int pystack_size) {
     stack_resize();
     filesystem_flush();
     supervisor_allocation *heap = allocate_remaining_memory();
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // stackless doesn't want allocations.
     start_mp(heap, pystack, pystack_size);
+    #pragma GCC diagnostic pop
 
     #if CIRCUITPY_USB
     usb_setup_with_vm();
@@ -909,14 +923,6 @@ STATIC int run_repl(supervisor_allocation *pystack, int pystack_size) {
 
 int __attribute__((used)) main(void) {
 
-    #if MICROPY_ENABLE_PYSTACK
-    supervisor_allocation *pystack;
-    int pystack_size = CIRCUITPY_PYSTACK_SIZE;
-
-    // allocate the pystack
-    pystack = allocate_memory(pystack_size, false, false);
-    #endif
-
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
 
@@ -972,6 +978,38 @@ int __attribute__((used)) main(void) {
     // Then reset the alarm system. It's not reset in reset_port(), because that's also called
     // on VM teardown, which would clear any alarm setup.
     alarm_reset();
+    #endif
+
+    // Pystack variables have to exist even in stackless for the function calls
+    supervisor_allocation *pystack;
+    int pystack_size = CIRCUITPY_PYSTACK_SIZE; // Use build default for now.
+    #if MICROPY_ENABLE_PYSTACK
+    // Allocate default at least temporarily, needed for getenv
+    pystack = allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
+
+    // Fetch value if exists from settings.toml
+    #if CIRCUITPY_OS_GETENV
+    // Init needed.
+    supervisor_allocation *heap = allocate_remaining_memory();
+
+    // Leaves size to build default on any failure
+    (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
+    free_memory(heap);
+
+    // Check if value is valid multiple of size_t else revert
+    if ((CIRCUITPY_PYSTACK_SIZE != pystack_size) && (pystack_size > 0) && (pystack_size % sizeof(size_t) != 0)) {
+        pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset to build default
+        // TODO: Find a way to inform the user about it.
+        // Perhaps safemode?
+    }
+
+    if (CIRCUITPY_PYSTACK_SIZE != pystack_size) {
+        free_memory(pystack); // Free the temporary
+        if (pystack_size > 0) { // Allocate new if needed
+            pystack = allocate_memory(pystack_size, false, false);
+        }
+    }
+    #endif
     #endif
 
     // Reset everything and prep MicroPython to run boot.py.
