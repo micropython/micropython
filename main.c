@@ -759,7 +759,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
 vstr_t *boot_output;
 
-STATIC void run_boot_py(safe_mode_t safe_mode) {
+STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     if (safe_mode == NO_HEAP) {
         return;
     }
