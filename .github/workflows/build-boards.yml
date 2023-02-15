@@ -6,14 +6,17 @@ on:
       platform:
         required: true
         type: string
-
       boards:
         required: true
         type: string
-
       cp-version:
         required: true
         type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
 
 jobs:
   build:

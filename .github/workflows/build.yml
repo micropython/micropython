@@ -96,14 +96,13 @@ jobs:
     with:
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
-
   mpy-cross:
     needs: scheduler
     if: needs.scheduler.outputs.build-boards == 'True'
     uses: ./.github/workflows/build-mpy-cross.yml
+    secrets: inherit
     with:
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
-
 
   mpy-cross-mac:
     runs-on: macos-11
@@ -223,41 +222,41 @@ jobs:
         [ -z "$TWINE_USERNAME" ] || echo "Uploading dev release to PyPi"
         [ -z "$TWINE_USERNAME" ] || twine upload circuitpython-stubs/dist/*
 
-
   aarch:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-aarch != '[]' }}
     uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
     with:
       platform: aarch
       boards: ${{ needs.scheduler.outputs.boards-aarch }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
-
   arm:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-arm != '[]' }}
     uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
     with:
       platform: arm
       boards: ${{ needs.scheduler.outputs.boards-arm }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
-
   esp:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-esp != '[]' }}
     uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
     with:
       platform: esp
       boards: ${{ needs.scheduler.outputs.boards-esp }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
-
   riscv:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-riscv != '[]' }}
     uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
     with:
       platform: riscv
       boards: ${{ needs.scheduler.outputs.boards-riscv }}
@@ -267,6 +266,7 @@ jobs:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-rpi != '[]' }}
     uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
     with:
       platform: arm
       boards: ${{ needs.scheduler.outputs.boards-rpi }}
