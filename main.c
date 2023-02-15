@@ -122,8 +122,12 @@
 uint8_t value_out = 0;
 #endif
 
-#if MICROPY_ENABLE_PYSTACK && CIRCUITPY_OS_GETENV
+#if MICROPY_ENABLE_PYSTACK
+supervisor_allocation *pystack;
+mp_int_t pystack_size = 0; // 0 indicated 'not allocated'
+#if CIRCUITPY_OS_GETENV
 #include "shared-module/os/__init__.h"
+#endif
 #endif
 
 static void reset_devices(void) {
@@ -132,7 +136,31 @@ static void reset_devices(void) {
     #endif
 }
 
-STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack, int pystack_size) {
+#if MICROPY_ENABLE_PYSTACK
+STATIC void alloc_pystack(void) {
+    mp_int_t old_pystack_size = pystack_size;
+    pystack_size = CIRCUITPY_PYSTACK_SIZE; // Use build default for now.
+    // Fetch value if exists from settings.toml
+    #if CIRCUITPY_OS_GETENV
+    // Leaves size to build default on any failure
+    (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
+    // Check if value is valid
+    if ((CIRCUITPY_PYSTACK_SIZE != pystack_size) && ((pystack_size < 1) || (pystack_size % sizeof(size_t) != 0))) {
+        pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset to build default
+        // TODO: Find a way to inform the user about it.
+        // Perhaps safemode? Or is it too much?
+    }
+    #endif
+    if (old_pystack_size != pystack_size) {
+        if (old_pystack_size != 0) {
+            free_memory(pystack);
+        }
+        pystack = allocate_memory(pystack_size, false, false);
+    }
+}
+#endif
+
+STATIC void start_mp(supervisor_allocation *heap) {
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -363,7 +391,7 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset, supervisor_allocation *pystack, int pystack_size) {
+STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
     bool serial_connected_at_start = serial_connected();
     bool printed_safe_mode_message = false;
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
@@ -399,13 +427,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset, supervisor_
         };
         #endif
 
+        #if MICROPY_ENABLE_PYSTACK
+        alloc_pystack();
+        #endif
         supervisor_allocation *heap = allocate_remaining_memory();
-
-        // Prepare the VM state.
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // stackless doesn't want allocations.
-        start_mp(heap, pystack, pystack_size);
-        #pragma GCC diagnostic pop
+        start_mp(heap);
 
         #if CIRCUITPY_USB
         usb_setup_with_vm();
@@ -733,7 +759,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset, supervisor_
 
 vstr_t *boot_output;
 
-STATIC void run_boot_py(safe_mode_t safe_mode, supervisor_allocation *pystack, int pystack_size) {
+STATIC void run_boot_py(safe_mode_t safe_mode) {
     if (safe_mode == NO_HEAP) {
         return;
     }
@@ -749,11 +775,11 @@ STATIC void run_boot_py(safe_mode_t safe_mode, supervisor_allocation *pystack, i
 
     // Do USB setup even if boot.py is not run.
 
+    #if MICROPY_ENABLE_PYSTACK
+    alloc_pystack();
+    #endif
     supervisor_allocation *heap = allocate_remaining_memory();
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // stackless doesn't want allocations.
-    start_mp(heap, pystack, pystack_size);
-    #pragma GCC diagnostic pop
+    start_mp(heap);
 
     #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
@@ -850,15 +876,15 @@ STATIC void run_boot_py(safe_mode_t safe_mode, supervisor_allocation *pystack, i
     #endif
 }
 
-STATIC int run_repl(supervisor_allocation *pystack, int pystack_size) {
+STATIC int run_repl(void) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
+    #if MICROPY_ENABLE_PYSTACK
+    alloc_pystack();
+    #endif
     supervisor_allocation *heap = allocate_remaining_memory();
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // stackless doesn't want allocations.
-    start_mp(heap, pystack, pystack_size);
-    #pragma GCC diagnostic pop
+    start_mp(heap);
 
     #if CIRCUITPY_USB
     usb_setup_with_vm();
@@ -978,38 +1004,6 @@ int __attribute__((used)) main(void) {
     alarm_reset();
     #endif
 
-    // Pystack variables have to exist even in stackless for the function calls
-    supervisor_allocation *pystack;
-    mp_int_t pystack_size = CIRCUITPY_PYSTACK_SIZE; // Use build default for now.
-    #if MICROPY_ENABLE_PYSTACK
-    // Allocate default at least temporarily, needed for getenv
-    pystack = allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
-
-    // Fetch value if exists from settings.toml
-    #if CIRCUITPY_OS_GETENV
-    // Init needed.
-    supervisor_allocation *heap = allocate_remaining_memory();
-
-    // Leaves size to build default on any failure
-    (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
-    free_memory(heap);
-    // Convert frame count to allocation size, 384 is the default for 1536 bytes
-    pystack_size = pystack_size * sizeof(size_t);
-
-    // Check if value is valid
-    if ((CIRCUITPY_PYSTACK_SIZE != pystack_size) && (pystack_size < 1)) {
-        pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset to build default
-        // TODO: Find a way to inform the user about it.
-        // Perhaps safemode?
-    }
-
-    if (CIRCUITPY_PYSTACK_SIZE != pystack_size) {
-        free_memory(pystack); // Free the temporary
-        pystack = allocate_memory(pystack_size, false, false); // Allocate new pystack
-    }
-    #endif
-    #endif
-
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
     // Port-independent devices, like CIRCUITPY_BLEIO_HCI.
@@ -1032,7 +1026,7 @@ int __attribute__((used)) main(void) {
     filesystem_set_internal_concurrent_write_protection(true);
     filesystem_set_internal_writable_by_usb(CIRCUITPY_USB == 1);
 
-    run_boot_py(safe_mode, pystack, pystack_size);
+    run_boot_py(safe_mode);
 
     supervisor_workflow_start();
 
@@ -1046,7 +1040,7 @@ int __attribute__((used)) main(void) {
     bool simulate_reset = true;
     for (;;) {
         if (!skip_repl) {
-            exit_code = run_repl(pystack, pystack_size);
+            exit_code = run_repl();
             supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
@@ -1057,7 +1051,7 @@ int __attribute__((used)) main(void) {
                 // If code.py did a fake deep sleep, pretend that we
                 // are running code.py for the first time after a hard
                 // reset. This will preserve any alarm information.
-                skip_repl = run_code_py(safe_mode, &simulate_reset, pystack, pystack_size);
+                skip_repl = run_code_py(safe_mode, &simulate_reset);
             } else {
                 skip_repl = false;
             }
