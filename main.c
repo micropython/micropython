@@ -122,7 +122,7 @@
 uint8_t value_out = 0;
 #endif
 
-#if MICROPY_ENABLE_PYSTACK
+#if MICROPY_ENABLE_PYSTACK && CIRCUITPY_OS_GETENV
 #include "shared-module/os/__init__.h"
 #endif
 
@@ -160,9 +160,7 @@ STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack
     readline_init0();
 
     #if MICROPY_ENABLE_PYSTACK
-    if (pystack_size > 0) {
-        mp_pystack_init(pystack->ptr, pystack->ptr + (pystack_size / sizeof(size_t)));
-    }
+    mp_pystack_init(pystack->ptr, pystack->ptr + (pystack_size / sizeof(size_t)));
     #endif
 
     #if MICROPY_ENABLE_GC
@@ -995,9 +993,11 @@ int __attribute__((used)) main(void) {
     // Leaves size to build default on any failure
     (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
     free_memory(heap);
+    // Convert frame count to allocation size, 384 is the default for 1536 bytes
+    pystack_size = pystack_size * sizeof(size_t);
 
-    // Check if value is valid multiple of size_t else revert
-    if ((CIRCUITPY_PYSTACK_SIZE != pystack_size) && (pystack_size > 0) && (pystack_size % sizeof(size_t) != 0)) {
+    // Check if value is valid
+    if ((CIRCUITPY_PYSTACK_SIZE != pystack_size) && (pystack_size < 1)) {
         pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset to build default
         // TODO: Find a way to inform the user about it.
         // Perhaps safemode?
@@ -1005,9 +1005,7 @@ int __attribute__((used)) main(void) {
 
     if (CIRCUITPY_PYSTACK_SIZE != pystack_size) {
         free_memory(pystack); // Free the temporary
-        if (pystack_size > 0) { // Allocate new if needed
-            pystack = allocate_memory(pystack_size, false, false);
-        }
+        pystack = allocate_memory(pystack_size, false, false); // Allocate new pystack
     }
     #endif
     #endif
