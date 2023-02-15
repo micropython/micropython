@@ -133,24 +133,25 @@ static void reset_devices(void) {
 }
 
 #if MICROPY_ENABLE_PYSTACK
-STATIC mp_int_t fetch_pystack_size(void) {
+STATIC supervisor_allocation __attribute__ ((noinline)) * alloc_pystack(void) {
     mp_int_t pystack_size = CIRCUITPY_PYSTACK_SIZE;
     #if CIRCUITPY_OS_GETENV
     // Fetch value if exists from settings.toml
     // Leaves size to build default on any failure
     (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
     // Check if value is valid
-    if ((CIRCUITPY_PYSTACK_SIZE != pystack_size) && ((pystack_size < 1) || (pystack_size % sizeof(size_t) != 0))) {
+    if ((CIRCUITPY_PYSTACK_SIZE != pystack_size) && ((pystack_size < 384) || (pystack_size % sizeof(size_t) != 0))) {
         pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset
         // TODO: Find a way to inform the user about it.
         // Perhaps safemode? Or is it too much?
     }
     #endif
-    return pystack_size;
+    supervisor_allocation *pystack = allocate_memory(pystack_size, false, false);
+    return pystack;
 }
 #endif
 
-STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack, mp_int_t pystack_size) {
+STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack) {
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -178,7 +179,7 @@ STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack
     readline_init0();
 
     #if MICROPY_ENABLE_PYSTACK
-    mp_pystack_init(pystack->ptr, pystack->ptr + (pystack_size / sizeof(size_t)));
+    mp_pystack_init(pystack->ptr, pystack->ptr + (get_allocation_length(pystack) / sizeof(size_t)));
     #endif
 
     #if MICROPY_ENABLE_GC
@@ -419,11 +420,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         #endif
 
         #if MICROPY_ENABLE_PYSTACK
-        mp_int_t pystack_size = fetch_pystack_size();
-        supervisor_allocation *pystack = allocate_memory(pystack_size, false, false);
+        supervisor_allocation *pystack = alloc_pystack();
         #endif
         supervisor_allocation *heap = allocate_remaining_memory();
-        start_mp(heap, pystack, pystack_size);
+        start_mp(heap, pystack);
 
         #if CIRCUITPY_USB
         usb_setup_with_vm();
@@ -768,11 +768,10 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // Do USB setup even if boot.py is not run.
 
     #if MICROPY_ENABLE_PYSTACK
-    mp_int_t pystack_size = fetch_pystack_size();
-    supervisor_allocation *pystack = allocate_memory(pystack_size, false, false);
+    supervisor_allocation *pystack = alloc_pystack();
     #endif
     supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap, pystack, pystack_size);
+    start_mp(heap, pystack);
 
     #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
@@ -874,11 +873,10 @@ STATIC int run_repl(void) {
     stack_resize();
     filesystem_flush();
     #if MICROPY_ENABLE_PYSTACK
-    mp_int_t pystack_size = fetch_pystack_size();
-    supervisor_allocation *pystack = allocate_memory(pystack_size, false, false);
+    supervisor_allocation *pystack = alloc_pystack();
     #endif
     supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap, pystack, pystack_size);
+    start_mp(heap, pystack);
 
     #if CIRCUITPY_USB
     usb_setup_with_vm();
