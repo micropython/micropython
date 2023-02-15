@@ -196,7 +196,7 @@ class BLETemperatureCentral:
 
     # Disconnect from current device.
     def disconnect(self):
-        if not self._conn_handle:
+        if self._conn_handle is None:
             return
         self._ble.gap_disconnect(self._conn_handle)
         self._reset()
