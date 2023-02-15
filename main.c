@@ -982,7 +982,7 @@ int __attribute__((used)) main(void) {
 
     // Pystack variables have to exist even in stackless for the function calls
     supervisor_allocation *pystack;
-    int pystack_size = CIRCUITPY_PYSTACK_SIZE; // Use build default for now.
+    mp_int_t pystack_size = CIRCUITPY_PYSTACK_SIZE; // Use build default for now.
     #if MICROPY_ENABLE_PYSTACK
     // Allocate default at least temporarily, needed for getenv
     pystack = allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
