@@ -47,7 +47,7 @@ typedef struct {
     uint16_t height;
 } image_size_t;
 
-STATIC const image_size_t image_size_table[] = {
+STATIC const image_size_t isx012_image_size_table[] = {
     { VIDEO_HSIZE_QVGA, VIDEO_VSIZE_QVGA },
     { VIDEO_HSIZE_VGA, VIDEO_VSIZE_VGA },
     { VIDEO_HSIZE_HD, VIDEO_VSIZE_HD },
@@ -57,12 +57,40 @@ STATIC const image_size_t image_size_table[] = {
     { VIDEO_HSIZE_5M, VIDEO_VSIZE_5M },
 };
 
+STATIC const image_size_t isx019_image_size_table[] = {
+    { VIDEO_HSIZE_QVGA, VIDEO_VSIZE_QVGA },
+    { VIDEO_HSIZE_VGA, VIDEO_VSIZE_VGA },
+    { VIDEO_HSIZE_HD, VIDEO_VSIZE_HD },
+    { VIDEO_HSIZE_QUADVGA, VIDEO_VSIZE_QUADVGA },
+};
+
+static const char *get_imgsensor_name() {
+    static struct v4l2_capability cap;
+
+    ioctl(camera_dev.fd, VIDIOC_QUERYCAP, (unsigned long)&cap);
+
+    return (const char *)cap.driver;
+}
+
 static bool camera_check_width_and_height(uint16_t width, uint16_t height) {
-    for (int i = 0; i < MP_ARRAY_SIZE(image_size_table); i++) {
-        if (image_size_table[i].width == width && image_size_table[i].height == height) {
-            return true;
+    const char *sensor;
+
+    sensor = get_imgsensor_name();
+
+    if (strncmp(sensor, "ISX012", strlen("ISX012")) == 0) {
+        for (int i = 0; i < MP_ARRAY_SIZE(isx012_image_size_table); i++) {
+            if (isx012_image_size_table[i].width == width && isx012_image_size_table[i].height == height) {
+                return true;
+            }
+        }
+    } else if (strncmp(sensor, "ISX019", strlen("ISX019"))) {
+        for (int i = 0; i < MP_ARRAY_SIZE(isx019_image_size_table); i++) {
+            if (isx019_image_size_table[i].width == width && isx019_image_size_table[i].height == height) {
+                return true;
+            }
         }
     }
+
     return false;
 }
 
