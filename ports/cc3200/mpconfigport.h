@@ -59,7 +59,6 @@
 #else
 #define MICROPY_CPYTHON_COMPAT                      (0)
 #endif
-#define MICROPY_QSTR_BYTES_IN_HASH                  (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN                    (2)
