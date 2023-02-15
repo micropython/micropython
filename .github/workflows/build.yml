@@ -201,6 +201,11 @@ jobs:
       with:
         name: docs
         path: _build/latex
+    - name: Zip stubs
+      if: >-
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
+        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+      run: zip -9r circuitpython-stubs.zip circuitpython-stubs
     - name: Upload to S3
       uses: ./.github/actions/upload_aws
       with:
