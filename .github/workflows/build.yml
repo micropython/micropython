@@ -96,14 +96,13 @@ jobs:
     with:
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
-
   mpy-cross:
     needs: scheduler
     if: needs.scheduler.outputs.build-boards == 'True'
     uses: ./.github/workflows/build-mpy-cross.yml
+    secrets: inherit
     with:
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
-
 
   mpy-cross-mac:
     runs-on: macos-11
@@ -152,9 +151,9 @@ jobs:
           (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
           (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
       run: |
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross-macos-universal s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-universal --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-11-${{ env.CP_VERSION }}-x64 --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross-macos-universal s3://adafruit-circuit-python/bin/mpy-cross/macos-11/mpy-cross-macos-11-${{ env.CP_VERSION }}-universal --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/macos-11/mpy-cross-macos-11-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/macos-11/mpy-cross-macos-11-${{ env.CP_VERSION }}-x64 --no-progress --region us-east-1
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -201,6 +200,11 @@ jobs:
       with:
         name: docs
         path: _build/latex
+    - name: Zip stubs
+      if: >-
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
+        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+      run: zip -9r circuitpython-stubs.zip circuitpython-stubs
     - name: Upload to S3
       uses: ./.github/actions/upload_aws
       with:
@@ -218,41 +222,41 @@ jobs:
         [ -z "$TWINE_USERNAME" ] || echo "Uploading dev release to PyPi"
         [ -z "$TWINE_USERNAME" ] || twine upload circuitpython-stubs/dist/*
 
-
   aarch:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-aarch != '[]' }}
     uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
     with:
       platform: aarch
       boards: ${{ needs.scheduler.outputs.boards-aarch }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
-
   arm:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-arm != '[]' }}
     uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
     with:
       platform: arm
       boards: ${{ needs.scheduler.outputs.boards-arm }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
-
   esp:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-esp != '[]' }}
     uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
     with:
       platform: esp
       boards: ${{ needs.scheduler.outputs.boards-esp }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
-
   riscv:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-riscv != '[]' }}
     uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
     with:
       platform: riscv
       boards: ${{ needs.scheduler.outputs.boards-riscv }}
@@ -262,6 +266,7 @@ jobs:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-rpi != '[]' }}
     uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
     with:
       platform: arm
       boards: ${{ needs.scheduler.outputs.boards-rpi }}
