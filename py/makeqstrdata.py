@@ -52,7 +52,8 @@ codepoint2name[ord("^")] = "caret"
 codepoint2name[ord("|")] = "pipe"
 codepoint2name[ord("~")] = "tilde"
 
-# static qstrs, should be sorted
+# static qstrs, these must maintain a specific order for .mpy compatibility
+# See QSTR_LAST_STATIC at the top of py/persistentcode.c
 
 static_qstr_list = [
     "",
