@@ -35,6 +35,20 @@ msgid ""
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
 
+#: main.c
+msgid ""
+"\n"
+"WARNING: Allocating pystack failed, defaulting back to build value. \n"
+"\n"
+msgstr ""
+
+#: main.c
+msgid ""
+"\n"
+"WARNING: Invalid CIRCUITPY_PYSTACK_SIZE, defaulting back to build value.\n"
+"\n"
+msgstr ""
+
 #: py/obj.c
 msgid "  File \"%q\""
 msgstr ""

@@ -141,12 +141,15 @@ STATIC supervisor_allocation __attribute__ ((noinline)) * alloc_pystack(void) {
     (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
     // Check if value is valid
     if ((CIRCUITPY_PYSTACK_SIZE != pystack_size) && ((pystack_size < 384) || (pystack_size % sizeof(size_t) != 0))) {
+        serial_write_compressed(translate("\nWARNING: Invalid CIRCUITPY_PYSTACK_SIZE, defaulting back to build value.\n\n"));
         pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset
-        // TODO: Find a way to inform the user about it.
-        // Perhaps safemode? Or is it too much?
     }
     #endif
     supervisor_allocation *pystack = allocate_memory(pystack_size, false, false);
+    if (pystack == NULL) {
+        serial_write_compressed(translate("\nWARNING: Allocating pystack failed, defaulting back to build value. \n\n"));
+        pystack = allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
+    }
     return pystack;
 }
 #endif
