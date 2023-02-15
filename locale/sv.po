@@ -2466,6 +2466,10 @@ msgstr ""
 "Du tryckte på resetknappen under uppstarten. Tryck igen för att avsluta "
 "felsäkert läge."
 
+#: supervisor/shared/micropython.c
+msgid "[truncated due to length]"
+msgstr ""
+
 #: py/objtype.c
 msgid "__init__() should return None"
 msgstr "__init __() ska returnera None"
