@@ -2410,6 +2410,10 @@ msgid ""
 "You pressed the reset button during boot. Press again to exit safe mode."
 msgstr ""
 
+#: supervisor/shared/micropython.c
+msgid "[truncated due to length]"
+msgstr ""
+
 #: py/objtype.c
 msgid "__init__() should return None"
 msgstr ""
