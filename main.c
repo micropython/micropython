@@ -122,18 +122,13 @@
 uint8_t value_out = 0;
 #endif
 
-#if MICROPY_ENABLE_PYSTACK
-size_t *pystack;
-int pystack_size = CIRCUITPY_PYSTACK_SIZE;
-#endif
-
 static void reset_devices(void) {
     #if CIRCUITPY_BLEIO_HCI
     bleio_reset();
     #endif
 }
 
-STATIC void start_mp(supervisor_allocation *heap) {
+STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack, int pystack_size) {
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -161,7 +156,7 @@ STATIC void start_mp(supervisor_allocation *heap) {
     readline_init0();
 
     #if MICROPY_ENABLE_PYSTACK
-    mp_pystack_init(pystack, pystack + (pystack_size / sizeof(size_t)));
+    mp_pystack_init(pystack->ptr, pystack->ptr + (pystack_size / sizeof(size_t)));
     #endif
 
     #if MICROPY_ENABLE_GC
@@ -364,7 +359,7 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
+STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset, supervisor_allocation *pystack, int pystack_size) {
     bool serial_connected_at_start = serial_connected();
     bool printed_safe_mode_message = false;
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
@@ -403,7 +398,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         supervisor_allocation *heap = allocate_remaining_memory();
 
         // Prepare the VM state.
-        start_mp(heap);
+        start_mp(heap, pystack, pystack_size);
 
         #if CIRCUITPY_USB
         usb_setup_with_vm();
@@ -731,7 +726,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
 vstr_t *boot_output;
 
-STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
+STATIC void run_boot_py(safe_mode_t safe_mode, supervisor_allocation *pystack, int pystack_size) {
     if (safe_mode == NO_HEAP) {
         return;
     }
@@ -749,7 +744,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     supervisor_allocation *heap = allocate_remaining_memory();
 
-    start_mp(heap);
+    start_mp(heap, pystack, pystack_size);
 
     #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
@@ -846,12 +841,12 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     #endif
 }
 
-STATIC int run_repl(void) {
+STATIC int run_repl(supervisor_allocation *pystack, int pystack_size) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
     supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap);
+    start_mp(heap, pystack, pystack_size);
 
     #if CIRCUITPY_USB
     usb_setup_with_vm();
@@ -915,8 +910,11 @@ STATIC int run_repl(void) {
 int __attribute__((used)) main(void) {
 
     #if MICROPY_ENABLE_PYSTACK
+    supervisor_allocation *pystack;
+    int pystack_size = CIRCUITPY_PYSTACK_SIZE;
+
     // allocate the pystack
-    pystack = (size_t *)allocate_memory(pystack_size, false, false);
+    pystack = allocate_memory(pystack_size, false, false);
     #endif
 
     // initialise the cpu and peripherals
@@ -998,7 +996,7 @@ int __attribute__((used)) main(void) {
     filesystem_set_internal_concurrent_write_protection(true);
     filesystem_set_internal_writable_by_usb(CIRCUITPY_USB == 1);
 
-    run_boot_py(safe_mode);
+    run_boot_py(safe_mode, pystack, pystack_size);
 
     supervisor_workflow_start();
 
@@ -1012,7 +1010,7 @@ int __attribute__((used)) main(void) {
     bool simulate_reset = true;
     for (;;) {
         if (!skip_repl) {
-            exit_code = run_repl();
+            exit_code = run_repl(pystack, pystack_size);
             supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
@@ -1023,7 +1021,7 @@ int __attribute__((used)) main(void) {
                 // If code.py did a fake deep sleep, pretend that we
                 // are running code.py for the first time after a hard
                 // reset. This will preserve any alarm information.
-                skip_repl = run_code_py(safe_mode, &simulate_reset);
+                skip_repl = run_code_py(safe_mode, &simulate_reset, pystack, pystack_size);
             } else {
                 skip_repl = false;
             }
