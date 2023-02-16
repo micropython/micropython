@@ -35,12 +35,6 @@ msgid ""
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
 
-#: main.c
-msgid ""
-"\n"
-"WARNING: "
-msgstr ""
-
 #: py/obj.c
 msgid "  File \"%q\""
 msgstr ""
@@ -2369,7 +2363,7 @@ msgid "Voltage read timed out"
 msgstr ""
 
 #: main.c
-msgid "WARNING: Your code filename has two extensions\n"
+msgid "WARNING: "
 msgstr ""
 
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
@@ -2428,6 +2422,10 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "You pressed the reset button during boot. Press again to exit safe mode."
+msgstr ""
+
+#: main.c
+msgid "Your code filename has two extensions\n"
 msgstr ""
 
 #: supervisor/shared/micropython.c
