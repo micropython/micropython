@@ -425,11 +425,9 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         };
         #endif
 
-        supervisor_allocation *pystack;
+        volatile supervisor_allocation *pystack = NULL;
         #if MICROPY_ENABLE_PYSTACK
         pystack = allocate_pystack();
-        #else
-        pystack = NULL;
         #endif
         supervisor_allocation *heap = allocate_remaining_memory();
         start_mp(heap, pystack);
@@ -776,11 +774,9 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     // Do USB setup even if boot.py is not run.
 
-    volatile supervisor_allocation *pystack;
+    volatile supervisor_allocation *pystack = NULL;
     #if MICROPY_ENABLE_PYSTACK
     pystack = allocate_pystack();
-    #else
-    pystack = NULL;
     #endif
     supervisor_allocation *heap = allocate_remaining_memory();
     start_mp(heap, pystack);
@@ -884,11 +880,9 @@ STATIC int run_repl(void) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
-    supervisor_allocation *pystack;
+    volatile supervisor_allocation *pystack = NULL;
     #if MICROPY_ENABLE_PYSTACK
     pystack = allocate_pystack();
-    #else
-    pystack = NULL;
     #endif
     supervisor_allocation *heap = allocate_remaining_memory();
     start_mp(heap, pystack);
