@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-02-03 04:15+0000\n"
+"PO-Revision-Date: 2023-02-16 19:15+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2495,7 +2495,7 @@ msgstr ""
 
 #: supervisor/shared/micropython.c
 msgid "[truncated due to length]"
-msgstr ""
+msgstr "[truncado devido ao comprimento]"
 
 #: py/objtype.c
 msgid "__init__() should return None"
