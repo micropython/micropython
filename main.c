@@ -131,7 +131,7 @@ typedef struct {
     supervisor_allocation *pystack;
     #endif
     supervisor_allocation *heap;
-} stacks;
+} vm_memory_t;
 
 static void reset_devices(void) {
     #if CIRCUITPY_BLEIO_HCI
@@ -139,9 +139,8 @@ static void reset_devices(void) {
     #endif
 }
 
-#if MICROPY_ENABLE_PYSTACK
-STATIC stacks __attribute__ ((noinline)) alloc_stacks(void) {
-    stacks res;
+STATIC vm_memory_t allocate_vm_memory(void) {
+    vm_memory_t res;
     #if MICROPY_ENABLE_PYSTACK
     mp_int_t pystack_size = CIRCUITPY_PYSTACK_SIZE;
     #if CIRCUITPY_OS_GETENV
@@ -164,9 +163,8 @@ STATIC stacks __attribute__ ((noinline)) alloc_stacks(void) {
     res.heap = allocate_remaining_memory();
     return res;
 }
-#endif
 
-STATIC void start_mp(stacks combo) {
+STATIC void start_mp(vm_memory_t vm_memory) {
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -194,11 +192,11 @@ STATIC void start_mp(stacks combo) {
     readline_init0();
 
     #if MICROPY_ENABLE_PYSTACK
-    mp_pystack_init(combo.pystack->ptr, combo.pystack->ptr + get_allocation_length(combo.pystack) / sizeof(size_t));
+    mp_pystack_init(vm_memory.pystack->ptr, vm_memory.pystack->ptr + get_allocation_length(vm_memory.pystack) / sizeof(size_t));
     #endif
 
     #if MICROPY_ENABLE_GC
-    gc_init(combo.heap->ptr, combo.heap->ptr + get_allocation_length(combo.heap) / 4);
+    gc_init(vm_memory.heap->ptr, vm_memory.heap->ptr + get_allocation_length(vm_memory.heap) / 4);
     #endif
     mp_init();
     mp_obj_list_init((mp_obj_list_t *)mp_sys_path, 0);
@@ -298,7 +296,7 @@ STATIC void count_strn(void *data, const char *str, size_t len) {
     *(size_t *)data += len;
 }
 
-STATIC void cleanup_after_vm(stacks combo, mp_obj_t exception) {
+STATIC void cleanup_after_vm(vm_memory_t vm_memory, mp_obj_t exception) {
     // Get the traceback of any exception from this run off the heap.
     // MP_OBJ_SENTINEL means "this run does not contribute to traceback storage, don't touch it"
     // MP_OBJ_NULL (=0) means "this run completed successfully, clear any stored traceback"
@@ -378,9 +376,9 @@ STATIC void cleanup_after_vm(stacks combo, mp_obj_t exception) {
     // Free the heap last because other modules may reference heap memory and need to shut down.
     filesystem_flush();
     stop_mp();
-    free_memory(combo.heap);
+    free_memory(vm_memory.heap);
     #if MICROPY_ENABLE_PYSTACK
-    free_memory(combo.pystack);
+    free_memory(vm_memory.pystack);
     #endif
     supervisor_move_memory();
 
@@ -436,8 +434,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         };
         #endif
 
-        stacks combo = alloc_stacks();
-        start_mp(combo);
+        vm_memory_t vm_memory = allocate_vm_memory();
+        start_mp(vm_memory);
 
         #if CIRCUITPY_USB
         usb_setup_with_vm();
@@ -485,7 +483,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
 
         // Finished executing python code. Cleanup includes filesystem flush and a board reset.
-        cleanup_after_vm(combo, _exec_result.exception);
+        cleanup_after_vm(vm_memory, _exec_result.exception);
         _exec_result.exception = NULL;
 
         // If a new next code file was set, that is a reason to keep it (obviously). Stuff this into
@@ -781,8 +779,8 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     // Do USB setup even if boot.py is not run.
 
-    stacks combo = alloc_stacks();
-    start_mp(combo);
+    vm_memory_t vm_memory = allocate_vm_memory();
+    start_mp(vm_memory);
 
     #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
@@ -868,7 +866,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     port_post_boot_py(true);
 
-    cleanup_after_vm(combo, _exec_result.exception);
+    cleanup_after_vm(vm_memory, _exec_result.exception);
     _exec_result.exception = NULL;
 
     port_post_boot_py(false);
@@ -883,8 +881,8 @@ STATIC int run_repl(void) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
-    stacks combo = alloc_stacks();
-    start_mp(combo);
+    vm_memory_t vm_memory = allocate_vm_memory();
+    start_mp(vm_memory);
 
     #if CIRCUITPY_USB
     usb_setup_with_vm();
@@ -927,7 +925,7 @@ STATIC int run_repl(void) {
         exit_code = PYEXEC_DEEP_SLEEP;
     }
     #endif
-    cleanup_after_vm(combo, MP_OBJ_SENTINEL);
+    cleanup_after_vm(vm_memory, MP_OBJ_SENTINEL);
 
     // Also reset bleio. The above call omits it in case workflows should continue. In this case,
     // we're switching straight to another VM so we want to reset.
