@@ -28,25 +28,19 @@ msgid ""
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
 
+#: main.c
+msgid ""
+"\n"
+"Invalid CIRCUITPY_PYSTACK_SIZE\n"
+"\n"
+"\r"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
-msgstr ""
-
-#: main.c
-msgid ""
-"\n"
-"WARNING: Allocating pystack failed, defaulting back to build value.\n"
-"\n"
-msgstr ""
-
-#: main.c
-msgid ""
-"\n"
-"WARNING: Invalid CIRCUITPY_PYSTACK_SIZE, defaulting back to build value.\n"
-"\n"
 msgstr ""
 
 #: py/obj.c
