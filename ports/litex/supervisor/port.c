@@ -71,7 +71,7 @@ safe_mode_t port_init(void) {
     irq_setmask(0);
     irq_setie(1);
     tick_init();
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 extern uint32_t _ebss;

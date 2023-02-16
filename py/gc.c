@@ -518,7 +518,7 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags, bool long_lived) {
     }
 
     if (MP_STATE_MEM(gc_pool_start) == 0) {
-        reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
+        reset_into_safe_mode(SAFE_MODE_GC_ALLOC_OUTSIDE_VM);
     }
 
     GC_ENTER();
@@ -712,7 +712,7 @@ void gc_free(void *ptr) {
         GC_EXIT();
     } else {
         if (MP_STATE_MEM(gc_pool_start) == 0) {
-            reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
+            reset_into_safe_mode(SAFE_MODE_GC_ALLOC_OUTSIDE_VM);
         }
         // get the GC block number corresponding to this pointer
         assert(VERIFY_PTR(ptr));
