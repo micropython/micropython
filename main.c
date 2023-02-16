@@ -149,7 +149,7 @@ STATIC vm_memory_t allocate_vm_memory(void) {
     (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
     // Check if value is valid
     pystack_size = pystack_size - pystack_size % sizeof(size_t); // Round down to multiple of 4.
-    if ((CIRCUITPY_PYSTACK_SIZE != pystack_size) && (pystack_size < 384)) {
+    if (pystack_size < 384) {
         serial_write_compressed(translate("\nWARNING: Invalid CIRCUITPY_PYSTACK_SIZE, defaulting back to build value.\n\n"));
         pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset
     }
