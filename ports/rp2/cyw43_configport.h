@@ -32,6 +32,7 @@
 #include "py/mphal.h"
 #include "pendsv.h"
 
+#define CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE "w43439A0_7_95_49_00_combined.h"
 #define CYW43_WIFI_NVRAM_INCLUDE_FILE   "wifi_nvram_43439.h"
 #define CYW43_IOCTL_TIMEOUT_US          (1000000)
 #define CYW43_SLEEP_MAX                 (10)
