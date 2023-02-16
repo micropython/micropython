@@ -1,0 +1,32 @@
+name: Upload to AWS S3
+
+inputs:
+  source:
+    required: true
+    type: string
+
+  destination:
+    required: false
+    type: string
+
+  AWS_ACCESS_KEY_ID:
+    required: true
+
+  AWS_SECRET_ACCESS_KEY:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Upload to S3
+      if: >-
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') ||
+        (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+      run: >-
+        [ -z "$AWS_ACCESS_KEY_ID" ] ||
+        aws s3 cp ${{ inputs.source }} s3://adafruit-circuit-python/bin/${{ inputs.destination }} --recursive --no-progress --region us-east-1
+      env:
+        AWS_PAGER: ''
+        AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+      shell: bash

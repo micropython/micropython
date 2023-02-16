@@ -40,10 +40,11 @@
 // Instance of GeneratorExit exception - needed by generator.close()
 #if MICROPY_CONST_GENERATOREXIT_OBJ
 const
+mp_obj_exception_t mp_static_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
 #else
 static
+mp_obj_exception_t mp_static_GeneratorExit_obj;
 #endif
-mp_obj_exception_t mp_static_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
 
 /******************************************************************************/
 /* generator wrapper                                                          */
@@ -370,9 +371,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gen_instance_throw_obj, 2, 4, gen_ins
 static mp_obj_t generatorexit(void) {
     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
     MP_STATIC_ASSERT(!MICROPY_CONST_GENERATOREXIT_OBJ);
-    mp_static_GeneratorExit_obj.context = NULL;
-    mp_static_GeneratorExit_obj.cause = NULL;
-    mp_static_GeneratorExit_obj.suppress_context = false;
+    mp_obj_exception_initialize0(&mp_static_GeneratorExit_obj, &mp_type_GeneratorExit);
     #endif
     return MP_OBJ_FROM_PTR(&mp_static_GeneratorExit_obj);
 }

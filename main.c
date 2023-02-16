@@ -960,6 +960,9 @@ int __attribute__((used)) main(void) {
     common_hal_nvm_bytearray_set_bytes(&common_hal_mcu_nvm_obj,0,&value_out,1);
     #endif
 
+    // Start the debug serial
+    serial_early_init();
+
     // Wait briefly to give a reset window where we'll enter safe mode after the reset.
     if (safe_mode == NO_SAFE_MODE) {
         safe_mode = wait_for_safe_mode_reset();
@@ -975,9 +978,6 @@ int __attribute__((used)) main(void) {
     // Early init so that a reset press can cause BLE public advertising.
     supervisor_bluetooth_init();
     #endif
-
-    // Start the debug serial
-    serial_early_init();
 
     #if !INTERNAL_FLASH_FILESYSTEM
     // Set up anything that might need to get done before we try to use SPI flash

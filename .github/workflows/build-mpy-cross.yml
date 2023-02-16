@@ -1,0 +1,70 @@
+name: Build mpy-cross
+
+on:
+  workflow_call:
+    inputs:
+      cp-version:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        mpy-cross: ["static", "static-aarch64", "static-mingw", "static-raspbian"]
+    env:
+      CP_VERSION: ${{ inputs.cp-version }}
+      EX_static-mingw: static.exe
+      OS_static: linux-amd64
+      OS_static-aarch64: linux-aarch64
+      OS_static-mingw: windows
+      OS_static-raspbian: linux-raspbian
+    steps:
+    - name: Set up repository
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        fetch-depth: 1
+    - name: Set up python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+    - name: Set up submodules
+      uses: ./.github/actions/deps/submodules
+      with:
+        target: mpy-cross
+
+    - name: Install toolchain (aarch64)
+      if: matrix.mpy-cross == 'static-aarch64'
+      run: sudo apt-get install -y gcc-aarch64-linux-gnu
+    - name: Install toolchain (mingw)
+      if: matrix.mpy-cross == 'static-mingw'
+      run: sudo apt-get install -y mingw-w64
+
+    - name: Build mpy-cross.${{ matrix.mpy-cross }}
+      run: make -C mpy-cross -j2 -f Makefile.${{ matrix.mpy-cross }}
+
+    - name: Set output
+      run: |
+        echo >> $GITHUB_ENV "EX=${{ env[format('EX_{0}', matrix.mpy-cross)] || matrix.mpy-cross }}"
+        echo >> $GITHUB_ENV "OS=${{ env[format('OS_{0}', matrix.mpy-cross)] }}"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: mpy-cross.${{ env.EX }}
+        path: mpy-cross/mpy-cross.${{ env.EX }}
+    - name: Upload to S3
+      uses: ./.github/actions/upload_aws
+      with:
+        source: mpy-cross/mpy-cross.${{ env.EX }}
+        destination: mpy-cross/${{ env.OS }}/mpy-cross-${{ env.OS }}-${{ env.CP_VERSION }}.${{ env.EX }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

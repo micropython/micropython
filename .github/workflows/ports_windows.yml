@@ -77,7 +77,7 @@ jobs:
         fetch-depth: 1
 
     - name: Set up submodules
-      uses: ./.github/actions/fetch_submodules
+      uses: ./.github/actions/deps/submodules
       with:
         version: true
 

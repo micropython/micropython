@@ -24,13 +24,13 @@ jobs:
     - name: Set up python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: 3.x
     - name: Set up submodules
-      uses: ./.github/actions/fetch_submodules
+      uses: ./.github/actions/deps/submodules
       with:
         version: true
-    - name: Install dependencies
-      run: pip install -r requirements-dev.txt
+    - name: Set up external
+      uses: ./.github/actions/deps/external
     - name: Versions
       run: |
         gcc --version
