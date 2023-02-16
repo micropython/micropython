@@ -38,15 +38,7 @@ msgstr ""
 #: main.c
 msgid ""
 "\n"
-"WARNING: Allocating pystack failed, defaulting back to build value. \n"
-"\n"
-msgstr ""
-
-#: main.c
-msgid ""
-"\n"
-"WARNING: Invalid CIRCUITPY_PYSTACK_SIZE, defaulting back to build value.\n"
-"\n"
+"WARNING: "
 msgstr ""
 
 #: py/obj.c
@@ -390,6 +382,12 @@ msgstr ""
 msgid "*x must be assignment target"
 msgstr ""
 
+#: main.c
+msgid ""
+", defaulting back to build value.\n"
+"\n"
+msgstr ""
+
 #: py/obj.c
 msgid ", in %q\n"
 msgstr ""
@@ -494,6 +492,10 @@ msgstr ""
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
+msgstr ""
+
+#: main.c
+msgid "Allocating pystack failed"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
@@ -1242,6 +1244,10 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
+msgstr ""
+
+#: main.c
+msgid "Invalid CIRCUITPY_PYSTACK_SIZE"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
