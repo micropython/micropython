@@ -35,12 +35,21 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with the contents of your CIRCUITPY drive at \n"
-"https://github.com/adafruit/circuitpython/issues\n"
+"Please file an issue with your program at https://github.com/adafruit/"
+"circuitpython/issues."
 msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
 "\n"
-"Registre um problema com o conteúdo do seu controlador no CIRCUITPY\n"
-"https://github.com/adafruit/circuitpython/issues\n"
+"Press reset to exit safe mode.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"\n"
+"You are in safe mode because:\n"
+msgstr ""
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -94,7 +103,7 @@ msgstr ""
 #: ports/raspberrypi/common-hal/alarm/__init__.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
-#: ports/stm/common-hal/rtc/RTC.c
+#: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
 msgid "%q"
 msgstr "%q"
 
@@ -543,11 +552,6 @@ msgstr "Os valores das matrizes devem ser bytes simples."
 msgid "Attempt to allocate %d blocks"
 msgstr "Tentativa de alocar %d blocos"
 
-#: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when VM not running."
-msgstr ""
-"Tentativa de alocação das pilhas quando o VM não estiver em funcionamento."
-
 #: ports/raspberrypi/audio_dma.c
 msgid "Audio conversion not implemented"
 msgstr "A conversão de áudio ainda não foi implementada"
@@ -600,21 +604,12 @@ msgid "Bitmap size and bits per value must match"
 msgstr "O tamanho do bitmap e os bits por valor devem coincidir"
 
 #: supervisor/shared/safe_mode.c
-msgid "Boot device must be first device (interface #0)."
+msgid "Boot device must be first (interface #0)."
 msgstr ""
-"O dispositivo de inicialização deve ser o primeiro dispositivo (interface "
-"#0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "Ambos os RX e TX são necessários para o controle do fluxo"
-
-#: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
-#: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
-#: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
-#: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
-msgid "Both buttons were pressed at start up.\n"
-msgstr "Ambos os botões foram pressionados na inicialização.\n"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -680,12 +675,6 @@ msgstr "Os buffers devem ter o mesmo tamanho"
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "O pino bus %d já está em uso"
-
-#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
-#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
-#: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
-msgid "Button A was pressed at start up.\n"
-msgstr "O botão A foi pressionado na inicialização.\n"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -823,10 +812,6 @@ msgstr "Escrita CharacteristicBuffer não informada"
 msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "O núcleo principal do CircuitPython falhou feio. Ops!\n"
 
-#: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap."
-msgstr "O CircuitPython não conseguiu alocar o heap."
-
 #: shared-module/bitbangio/I2C.c
 msgid "Clock stretch too long"
 msgstr "Clock se estendeu por tempo demais"
@@ -865,10 +850,6 @@ msgstr "Não foi possível iniciar a interrupção, RX ocupado"
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate decoder"
 msgstr "Não foi possível alocar o decodificador"
-
-#: supervisor/shared/safe_mode.c
-msgid "Crash into the HardFault_Handler."
-msgstr "Falha no HardFault_Handler."
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Channel Init Error"
@@ -961,6 +942,10 @@ msgstr "Houve um erro no fluxo MIDI na posição %d"
 msgid "Error in regex"
 msgstr "Erro no regex"
 
+#: supervisor/shared/safe_mode.c
+msgid "Error in safemode.py."
+msgstr ""
+
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr "Erro: Falha na vinculação"
@@ -1034,8 +1019,8 @@ msgid "Failed to write internal flash."
 msgstr "Falha ao gravar o flash interno."
 
 #: supervisor/shared/safe_mode.c
-msgid "Fatal error."
-msgstr "Erro fatal."
+msgid "Fault detected by hardware."
+msgstr ""
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -1125,6 +1110,15 @@ msgstr "O hardware está ocupado, tente os pinos alternativos"
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr "O hardware está em uso, tente os pinos alternativos"
+
+#: supervisor/shared/safe_mode.c
+msgid "Heap allocation when VM not running."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"Heap was corrupted because the stack was too small. Increase stack size."
+msgstr ""
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1248,6 +1242,10 @@ msgstr "Erro interno #%d"
 msgid "Internal watchdog timer expired."
 msgstr "O temporizador do watchdog interno expirou."
 
+#: supervisor/shared/safe_mode.c
+msgid "Interrupt error."
+msgstr ""
+
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid %q"
 msgstr "%q Inválido"
@@ -1295,10 +1293,6 @@ msgstr "data_pins[%d] inválido"
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Tamanho do pedaço de formato inválido"
-
-#: supervisor/shared/safe_mode.c
-msgid "Invalid memory access."
-msgstr "O acesso da memória é inválido."
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1589,10 +1583,6 @@ msgstr "Este arquivo/diretório não existe"
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
 msgstr "Não há um temporizador disponível"
-
-#: supervisor/shared/safe_mode.c
-msgid "Nordic system firmware failure assertion."
-msgstr "Declaração de falha do firmware do sistema nórdico."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
@@ -2060,63 +2050,20 @@ msgid "Temperature read timed out"
 msgstr "A leitura da temperatura expirou"
 
 #: supervisor/shared/safe_mode.c
-msgid "The BOOT button was pressed at start up.\n"
-msgstr "O botão BOOT foi pressionado na inicialização.\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"The CircuitPython heap was corrupted because the stack was too small.\n"
-"Increase the stack size if you know how. If not:"
+msgid "The `microcontroller` module was used to boot into safe mode."
 msgstr ""
-"A área de alocação dinâmica de variáveis (heap) do CircuitPython foi "
-"corrompido pois a pilha era muito pequena.\n"
-"Aumente o tamanho da pilha se souber como. Senão:"
-
-#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
-msgid "The SW38 button was pressed at start up.\n"
-msgstr "O botão SW38 foi pressionado na inicialização.\n"
-
-#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
-msgid "The VOLUME button was pressed at start up.\n"
-msgstr "O botão VOLUME foi pressionado na inicialização.\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"The `microcontroller` module was used to boot into safe mode. Press reset to "
-"exit safe mode."
-msgstr ""
-"O módulo `microcontrolador` foi utilizado para iniciar em modo seguro. "
-"Pressione reset para encerrar do modo de segurança."
 
 #: py/obj.c
 msgid "The above exception was the direct cause of the following exception:"
 msgstr "A exceção acima foi a causa direta da seguinte exceção:"
-
-#: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
-#: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
-#: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
-#: ports/espressif/boards/m5stack_atom_u/mpconfigboard.h
-msgid "The central button was pressed at start up.\n"
-msgstr "O botão central foi pressionado na inicialização.\n"
-
-#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
-msgid "The left button was pressed at start up.\n"
-msgstr "O botão esquerdo foi pressionado na inicialização.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr "O comprimento dos rgb_pins devem ser 6, 12, 18, 24, ou 30"
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"The microcontroller's power dipped. Make sure your power supply provides\n"
-"enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY)."
+msgid "The power dipped. Make sure you are providing enough power."
 msgstr ""
-"O alimentação do micro controlador diminuiu. Certifique-se de que a sua "
-"fonte de alimentação fornece\n"
-"corrente suficiente para todo o circuito e pressione reset (depois de ejetar "
-"o CIRCUITPY)."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2133,6 +2080,10 @@ msgstr "A taxa de amostragem da amostra não coincide com a do mixer"
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "A amostragem \"signedness\" não coincide com a do mixer"
+
+#: supervisor/shared/safe_mode.c
+msgid "Third-party firmware fatal error."
+msgstr ""
 
 #: shared-module/imagecapture/ParallelImageCapture.c
 msgid "This microcontroller does not support continuous capture."
@@ -2169,10 +2120,6 @@ msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 "O tempo limite é long demais: O comprimento máximo do tempo limite é de %d "
 "segundos"
-
-#: supervisor/shared/safe_mode.c
-msgid "To exit, please reset the board without requesting safe mode."
-msgstr "Para sair, reinicie a placa sem solicitar o modo de segurança."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample"
@@ -2265,6 +2212,10 @@ msgstr "O valor UUID não é um buffer str, int ou byte"
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Não é possível alocar buffers para conversão assinada"
+
+#: supervisor/shared/safe_mode.c
+msgid "Unable to allocate the heap."
+msgstr ""
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2482,16 +2433,45 @@ msgstr "Foi despertado através do alarme.\n"
 msgid "Writes not supported on Characteristic"
 msgstr "A escrita não é compatível na Característica"
 
-#: supervisor/shared/safe_mode.c
-msgid "You are in safe mode because:\n"
-msgstr "Você está no modo de segurança pois:\n"
+#: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
+#: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
+msgid "You pressed both buttons at start up."
+msgstr ""
+
+#: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
+#: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
+#: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
+msgid "You pressed button A at start up."
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"You pressed the reset button during boot. Press again to exit safe mode."
+msgid "You pressed the BOOT button at start up"
 msgstr ""
-"Você pressionou o botão reset durante a inicialização. Pressione-o novamente "
-"para sair do modo de segurança."
+
+#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
+msgid "You pressed the SW38 button at start up."
+msgstr ""
+
+#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+msgid "You pressed the VOLUME button at start up."
+msgstr ""
+
+#: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
+#: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
+#: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
+#: ports/espressif/boards/m5stack_atom_u/mpconfigboard.h
+msgid "You pressed the central button at start up."
+msgstr ""
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "You pressed the left button at start up."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "You pressed the reset button during boot."
+msgstr ""
 
 #: supervisor/shared/micropython.c
 msgid "[truncated due to length]"
@@ -4447,6 +4427,97 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid ""
+#~ "\n"
+#~ "Please file an issue with the contents of your CIRCUITPY drive at \n"
+#~ "https://github.com/adafruit/circuitpython/issues\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Registre um problema com o conteúdo do seu controlador no CIRCUITPY\n"
+#~ "https://github.com/adafruit/circuitpython/issues\n"
+
+#~ msgid "Attempted heap allocation when VM not running."
+#~ msgstr ""
+#~ "Tentativa de alocação das pilhas quando o VM não estiver em funcionamento."
+
+#~ msgid "Boot device must be first device (interface #0)."
+#~ msgstr ""
+#~ "O dispositivo de inicialização deve ser o primeiro dispositivo (interface "
+#~ "#0)."
+
+#~ msgid "Both buttons were pressed at start up.\n"
+#~ msgstr "Ambos os botões foram pressionados na inicialização.\n"
+
+#~ msgid "Button A was pressed at start up.\n"
+#~ msgstr "O botão A foi pressionado na inicialização.\n"
+
+#~ msgid "CircuitPython was unable to allocate the heap."
+#~ msgstr "O CircuitPython não conseguiu alocar o heap."
+
+#~ msgid "Crash into the HardFault_Handler."
+#~ msgstr "Falha no HardFault_Handler."
+
+#~ msgid "Fatal error."
+#~ msgstr "Erro fatal."
+
+#~ msgid "Invalid memory access."
+#~ msgstr "O acesso da memória é inválido."
+
+#~ msgid "Nordic system firmware failure assertion."
+#~ msgstr "Declaração de falha do firmware do sistema nórdico."
+
+#~ msgid "The BOOT button was pressed at start up.\n"
+#~ msgstr "O botão BOOT foi pressionado na inicialização.\n"
+
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Increase the stack size if you know how. If not:"
+#~ msgstr ""
+#~ "A área de alocação dinâmica de variáveis (heap) do CircuitPython foi "
+#~ "corrompido pois a pilha era muito pequena.\n"
+#~ "Aumente o tamanho da pilha se souber como. Senão:"
+
+#~ msgid "The SW38 button was pressed at start up.\n"
+#~ msgstr "O botão SW38 foi pressionado na inicialização.\n"
+
+#~ msgid "The VOLUME button was pressed at start up.\n"
+#~ msgstr "O botão VOLUME foi pressionado na inicialização.\n"
+
+#~ msgid ""
+#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
+#~ "to exit safe mode."
+#~ msgstr ""
+#~ "O módulo `microcontrolador` foi utilizado para iniciar em modo seguro. "
+#~ "Pressione reset para encerrar do modo de segurança."
+
+#~ msgid "The central button was pressed at start up.\n"
+#~ msgstr "O botão central foi pressionado na inicialização.\n"
+
+#~ msgid "The left button was pressed at start up.\n"
+#~ msgstr "O botão esquerdo foi pressionado na inicialização.\n"
+
+#~ msgid ""
+#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY)."
+#~ msgstr ""
+#~ "O alimentação do micro controlador diminuiu. Certifique-se de que a sua "
+#~ "fonte de alimentação fornece\n"
+#~ "corrente suficiente para todo o circuito e pressione reset (depois de "
+#~ "ejetar o CIRCUITPY)."
+
+#~ msgid "To exit, please reset the board without requesting safe mode."
+#~ msgstr "Para sair, reinicie a placa sem solicitar o modo de segurança."
+
+#~ msgid "You are in safe mode because:\n"
+#~ msgstr "Você está no modo de segurança pois:\n"
+
+#~ msgid ""
+#~ "You pressed the reset button during boot. Press again to exit safe mode."
+#~ msgstr ""
+#~ "Você pressionou o botão reset durante a inicialização. Pressione-o "
+#~ "novamente para sair do modo de segurança."
 
 #~ msgid ""
 #~ "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
