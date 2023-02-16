@@ -2494,6 +2494,10 @@ msgstr ""
 "Has presionado el botón de reset durante el arranque. Presiones de nuevo "
 "para salir del modo seguro."
 
+#: supervisor/shared/micropython.c
+msgid "[truncated due to length]"
+msgstr ""
+
 #: py/objtype.c
 msgid "__init__() should return None"
 msgstr "__init__() deberia devolver None"
