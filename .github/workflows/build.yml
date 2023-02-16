@@ -52,6 +52,8 @@ jobs:
         version: true
     - name: Set up external
       uses: ./.github/actions/deps/external
+      with:
+        action: cache
     # Disabled: Needs to be updated
     # - name: Get last commit with checks
     #   id: get-last-commit-with-checks
