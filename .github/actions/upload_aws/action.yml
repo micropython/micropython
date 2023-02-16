@@ -24,7 +24,8 @@ runs:
         (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
       run: >-
         [ -z "$AWS_ACCESS_KEY_ID" ] ||
-        aws s3 cp ${{ inputs.source }} s3://adafruit-circuit-python/bin/${{ inputs.destination }} --recursive --no-progress --region us-east-1
+        aws s3 cp ${{ inputs.source }} s3://adafruit-circuit-python/bin/${{ inputs.destination }}
+        ${{ endsWith(inputs.source, '/') && '--recursive' || '' }} --no-progress --region us-east-1
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
