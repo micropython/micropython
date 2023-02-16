@@ -61,9 +61,8 @@ void common_hal_mcu_disable_interrupts(void) {
 
 void common_hal_mcu_enable_interrupts(void) {
     if (nesting_count == 0) {
-        // This is very very bad because it means there was mismatched disable/enables so we
-        // "HardFault".
-        asm ("bkpt");
+        // This is very very bad because it means there was mismatched disable/enables.
+        reset_into_safe_mode(SAFE_MODE_INTERRUPT_ERROR);
     }
     nesting_count--;
     if (nesting_count > 0) {
@@ -77,7 +76,7 @@ static bool next_reset_to_bootloader = false;
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
     if (runmode == RUNMODE_SAFE_MODE) {
-        safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+        safe_mode_on_next_reset(SAFE_MODE_PROGRAMMATIC);
     }
     if (runmode == RUNMODE_BOOTLOADER) {
         next_reset_to_bootloader = true;

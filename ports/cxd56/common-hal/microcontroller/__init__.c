@@ -74,7 +74,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
     if (runmode == RUNMODE_BOOTLOADER) {
         mp_raise_ValueError(translate("Cannot reset into bootloader because no bootloader is present"));
     } else if (runmode == RUNMODE_SAFE_MODE) {
-        safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+        safe_mode_on_next_reset(SAFE_MODE_PROGRAMMATIC);
     }
 }
 

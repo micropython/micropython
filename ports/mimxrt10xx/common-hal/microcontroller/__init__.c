@@ -52,12 +52,10 @@ void common_hal_mcu_disable_interrupts(void) {
     nesting_count++;
 }
 
-void HardFault_Handler(void);
 void common_hal_mcu_enable_interrupts(void) {
     if (nesting_count == 0) {
-        // This is very very bad because it means there was mismatched disable/enables so we
-        // "HardFault".
-        HardFault_Handler();
+        // This is very very bad because it means there was mismatched disable/enables
+        reset_into_safe_mode(SAFE_MODE_INTERRUPT_ERROR);
     }
     nesting_count--;
     if (nesting_count > 0) {
@@ -80,7 +78,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
         DBL_TAP_REG = DBL_TAP_MAGIC_QUICK_BOOT;
     }
     if (runmode == RUNMODE_SAFE_MODE) {
-        safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+        safe_mode_on_next_reset(SAFE_MODE_PROGRAMMATIC);
     }
 }
 
