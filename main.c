@@ -776,7 +776,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     // Do USB setup even if boot.py is not run.
 
-    supervisor_allocation *pystack;
+    volatile supervisor_allocation *pystack;
     #if MICROPY_ENABLE_PYSTACK
     pystack = allocate_pystack();
     #else
