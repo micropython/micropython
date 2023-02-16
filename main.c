@@ -150,19 +150,13 @@ STATIC vm_memory_t allocate_vm_memory(void) {
     // Check if value is valid
     pystack_size = pystack_size - pystack_size % sizeof(size_t); // Round down to multiple of 4.
     if (pystack_size < 384) {
-        serial_write("\n");
-        serial_write_compressed(translate("WARNING: "));
-        serial_write_compressed(translate("Invalid CIRCUITPY_PYSTACK_SIZE"));
-        serial_write_compressed(translate(", defaulting back to build value.\n\n"));
+        serial_write_compressed(translate("\nWARNING: Invalid CIRCUITPY_PYSTACK_SIZE, defaulting back to build value.\n\n"));
         pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset
     }
     #endif
     res.pystack = allocate_memory(pystack_size, false, false);
     if (res.pystack == NULL) {
-        serial_write("\n");
-        serial_write_compressed(translate("WARNING: "));
-        serial_write_compressed(translate("Allocating pystack failed"));
-        serial_write_compressed(translate(", defaulting back to build value.\n\n"));
+        serial_write_compressed(translate("\nWARNING: Allocating pystack failed, defaulting back to build value.\n\n"));
         res.pystack = allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
     }
     #endif
@@ -471,8 +465,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
             if (!found_main) {
                 found_main = maybe_run_list(double_extension_filenames, MP_ARRAY_SIZE(double_extension_filenames));
                 if (found_main) {
-                    serial_write_compressed(translate("WARNING: "));
-                    serial_write_compressed(translate("Your code filename has two extensions\n"));
+                    serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
                 }
             }
             #else

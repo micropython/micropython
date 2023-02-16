@@ -35,6 +35,20 @@ msgid ""
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
 
+#: main.c
+msgid ""
+"\n"
+"WARNING: Allocating pystack failed, defaulting back to build value.\n"
+"\n"
+msgstr ""
+
+#: main.c
+msgid ""
+"\n"
+"WARNING: Invalid CIRCUITPY_PYSTACK_SIZE, defaulting back to build value.\n"
+"\n"
+msgstr ""
+
 #: py/obj.c
 msgid "  File \"%q\""
 msgstr ""
@@ -376,12 +390,6 @@ msgstr ""
 msgid "*x must be assignment target"
 msgstr ""
 
-#: main.c
-msgid ""
-", defaulting back to build value.\n"
-"\n"
-msgstr ""
-
 #: py/obj.c
 msgid ", in %q\n"
 msgstr ""
@@ -486,10 +494,6 @@ msgstr ""
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
-msgstr ""
-
-#: main.c
-msgid "Allocating pystack failed"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
@@ -1238,10 +1242,6 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
-msgstr ""
-
-#: main.c
-msgid "Invalid CIRCUITPY_PYSTACK_SIZE"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -2363,7 +2363,7 @@ msgid "Voltage read timed out"
 msgstr ""
 
 #: main.c
-msgid "WARNING: "
+msgid "WARNING: Your code filename has two extensions\n"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
@@ -2422,10 +2422,6 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "You pressed the reset button during boot. Press again to exit safe mode."
-msgstr ""
-
-#: main.c
-msgid "Your code filename has two extensions\n"
 msgstr ""
 
 #: supervisor/shared/micropython.c
