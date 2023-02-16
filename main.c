@@ -425,7 +425,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         };
         #endif
 
-        supervisor_allocation *pystack = (supervisor_allocation *)1;
+        supervisor_allocation *pystack = NULL;
         #if MICROPY_ENABLE_PYSTACK
         pystack = allocate_pystack();
         #endif
@@ -767,8 +767,12 @@ STATIC void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
         return;
     }
 
+    supervisor_allocation *pystack = NULL;
+    #if MICROPY_ENABLE_PYSTACK
+    pystack = allocate_pystack();
+    #endif
     supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap);
+    start_mp(heap, pystack);
 
     static const char *const safemode_py_filenames[] = {"safemode.py", "safemode.txt"};
     maybe_run_list(safemode_py_filenames, MP_ARRAY_SIZE(safemode_py_filenames));
@@ -779,7 +783,7 @@ STATIC void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
         set_safe_mode(SAFE_MODE_SAFEMODE_PY_ERROR);
     }
 
-    cleanup_after_vm(heap, _exec_result.exception);
+    cleanup_after_vm(heap, pystack, _exec_result.exception);
     _exec_result.exception = NULL;
 }
 #endif
@@ -800,7 +804,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     // Do USB setup even if boot.py is not run.
 
-    supervisor_allocation *pystack = (supervisor_allocation *)1;
+    supervisor_allocation *pystack = NULL;
     #if MICROPY_ENABLE_PYSTACK
     pystack = allocate_pystack();
     #endif
@@ -906,7 +910,7 @@ STATIC int run_repl(void) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
-    supervisor_allocation *pystack = (supervisor_allocation *)1;
+    supervisor_allocation *pystack = NULL;
     #if MICROPY_ENABLE_PYSTACK
     pystack = allocate_pystack();
     #endif
