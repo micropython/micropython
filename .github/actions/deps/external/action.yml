@@ -1,6 +1,14 @@
 name: Fetch external deps
 
 inputs:
+  action:
+    required: false
+    default: restore
+    type: choice
+    options:
+    - cache
+    - restore
+
   platform:
     required: false
     default: none
@@ -78,7 +86,7 @@ runs:
       if: inputs.platform != 'esp'
       uses: ./.github/actions/deps/python
       with:
-        action: ${{ fromJSON('["restore", "cache"]')[github.job == 'scheduler'] }}
+        action: ${{ inputs.action }}
     - name: Install python dependencies
       run: pip install -r requirements-dev.txt
       shell: bash

@@ -91,7 +91,7 @@ const nvm_bytearray_obj_t common_hal_bleio_nvm_obj = {
 };
 
 STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
-    reset_into_safe_mode(NORDIC_SOFT_DEVICE_ASSERT);
+    reset_into_safe_mode(SAFE_MODE_SDK_FATAL_ERROR);
 }
 
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];

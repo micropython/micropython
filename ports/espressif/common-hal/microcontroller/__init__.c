@@ -108,7 +108,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
             break;
         case RUNMODE_SAFE_MODE:
             // enter safe mode on next boot
-            safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+            safe_mode_on_next_reset(SAFE_MODE_PROGRAMMATIC);
             break;
         case RUNMODE_BOOTLOADER:
             // DFU download

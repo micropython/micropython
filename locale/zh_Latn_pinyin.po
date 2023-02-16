@@ -2472,6 +2472,10 @@ msgstr ""
 "zài qǐ dòng guò chéng zhōng, nín àn xià le chóng zhì àn niǔ. zài cì àn xià "
 "yǐ tuì chū ān quán mó shì."
 
+#: supervisor/shared/micropython.c
+msgid "[truncated due to length]"
+msgstr ""
+
 #: py/objtype.c
 msgid "__init__() should return None"
 msgstr "__init__() fǎnhuí not"

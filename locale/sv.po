@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-01-29 16:16+0000\n"
+"PO-Revision-Date: 2023-02-15 21:55+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -2466,6 +2466,10 @@ msgstr ""
 "Du tryckte på resetknappen under uppstarten. Tryck igen för att avsluta "
 "felsäkert läge."
 
+#: supervisor/shared/micropython.c
+msgid "[truncated due to length]"
+msgstr "[trunkerad på grund av längd]"
+
 #: py/objtype.c
 msgid "__init__() should return None"
 msgstr "__init __() ska returnera None"
@@ -2537,7 +2541,7 @@ msgstr "array har för många dimensioner"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array is too big"
-msgstr ""
+msgstr "matrisen är för stor"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
@@ -3796,7 +3800,7 @@ msgstr "endast mono stöds"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "only ndarrays can be concatenated"
-msgstr ""
+msgstr "endast ndarrays kan sammanfogas"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only oversample=64 is supported"

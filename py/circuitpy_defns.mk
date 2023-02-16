@@ -530,6 +530,11 @@ $(filter $(SRC_PATTERNS), \
 	wifi/Packet.c \
 )
 
+ifeq ($(CIRCUITPY_SAFEMODE_PY),1)
+SRC_BINDINGS_ENUMS += \
+	supervisor/SafeModeReason.c
+endif
+
 SRC_BINDINGS_ENUMS += \
 	util.c
 
