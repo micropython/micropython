@@ -34,8 +34,7 @@
 #include "shared-bindings/gifio/OnDiskGif.h"
 
 //| class OnDiskGif:
-//|     """Loads frames of the GIF straight from disk. This minimizes memory use but can
-//|     lead to much slower pixel load times
+//|     """Loads one frame of a GIF into memory at a time.
 //|
 //|     .. code-block:: Python
 //|
