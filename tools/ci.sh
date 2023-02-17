@@ -49,6 +49,10 @@ function ci_code_size_setup {
 }
 
 function ci_code_size_build {
+    # check the following ports for the change in their code size
+    PORTS_TO_CHECK=bmusp
+    SUBMODULES="lib/berkeley-db-1.xx lib/mbedtls lib/micropython-lib lib/pico-sdk lib/stm32lib lib/tinyusb"
+
     # starts off at either the ref/pull/N/merge FETCH_HEAD, or the current branch HEAD
     git checkout -b pull_request # save the current location
     git remote add upstream https://github.com/micropython/micropython.git
@@ -56,14 +60,16 @@ function ci_code_size_build {
     # build reference, save to size0
     # ignore any errors with this build, in case master is failing
     git checkout `git merge-base --fork-point upstream/master pull_request`
+    git submodule update --init $SUBMODULES
     git show -s
-    tools/metrics.py clean bm
-    tools/metrics.py build bm | tee ~/size0 || true
+    tools/metrics.py clean $PORTS_TO_CHECK
+    tools/metrics.py build $PORTS_TO_CHECK | tee ~/size0 || true
     # build PR/branch, save to size1
     git checkout pull_request
+    git submodule update --init $SUBMODULES
     git log upstream/master..HEAD
-    tools/metrics.py clean bm
-    tools/metrics.py build bm | tee ~/size1
+    tools/metrics.py clean $PORTS_TO_CHECK
+    tools/metrics.py build $PORTS_TO_CHECK | tee ~/size1
 }
 
 ########################################################################################
