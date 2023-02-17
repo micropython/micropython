@@ -133,17 +133,19 @@ static void reset_devices(void) {
 }
 
 #if MICROPY_ENABLE_PYSTACK
-STATIC supervisor_allocation *allocate_pystack(void) {
+STATIC supervisor_allocation *allocate_pystack(safe_mode_t safe_mode) {
     mp_int_t pystack_size = CIRCUITPY_PYSTACK_SIZE;
     #if CIRCUITPY_OS_GETENV && CIRCUITPY_SETTABLE_PYSTACK
     // Fetch value if exists from settings.toml
     // Leaves size to build default on any failure
-    (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
-    // Check if value is valid
-    pystack_size = pystack_size - pystack_size % sizeof(size_t); // Round down to multiple of 4.
-    if (pystack_size < 384) {
-        serial_write_compressed(translate("\nInvalid CIRCUITPY_PYSTACK_SIZE\n\n\r"));
-        pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset
+    if (safe_mode == SAFE_MODE_NONE || safe_mode == SAFE_MODE_USER) {
+        (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
+        // Check if value is valid
+        pystack_size = pystack_size - pystack_size % sizeof(size_t); // Round down to multiple of 4.
+        if (pystack_size < 384) {
+            serial_write_compressed(translate("\nInvalid CIRCUITPY_PYSTACK_SIZE\n\n\r"));
+            pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset
+        }
     }
     #endif
     supervisor_allocation *pystack = allocate_memory(pystack_size, false, false);
@@ -427,7 +429,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
         supervisor_allocation *pystack = NULL;
         #if MICROPY_ENABLE_PYSTACK
-        pystack = allocate_pystack();
+        pystack = allocate_pystack(safe_mode);
         #endif
         supervisor_allocation *heap = allocate_remaining_memory();
         start_mp(heap, pystack);
@@ -769,7 +771,7 @@ STATIC void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
 
     supervisor_allocation *pystack = NULL;
     #if MICROPY_ENABLE_PYSTACK
-    pystack = allocate_pystack();
+    pystack = allocate_pystack(safe_mode);
     #endif
     supervisor_allocation *heap = allocate_remaining_memory();
     start_mp(heap, pystack);
@@ -806,7 +808,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     supervisor_allocation *pystack = NULL;
     #if MICROPY_ENABLE_PYSTACK
-    pystack = allocate_pystack();
+    pystack = allocate_pystack(safe_mode);
     #endif
     supervisor_allocation *heap = allocate_remaining_memory();
     start_mp(heap, pystack);
@@ -906,13 +908,13 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     #endif
 }
 
-STATIC int run_repl(void) {
+STATIC int run_repl(safe_mode_t safe_mode) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
     supervisor_allocation *pystack = NULL;
     #if MICROPY_ENABLE_PYSTACK
-    pystack = allocate_pystack();
+    pystack = allocate_pystack(safe_mode);
     #endif
     supervisor_allocation *heap = allocate_remaining_memory();
     start_mp(heap, pystack);
@@ -1078,7 +1080,7 @@ int __attribute__((used)) main(void) {
     bool simulate_reset = true;
     for (;;) {
         if (!skip_repl) {
-            exit_code = run_repl();
+            exit_code = run_repl(get_safe_mode());
             supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
