@@ -8,6 +8,7 @@ on:
       - 'tools/**'
       - 'py/**'
       - 'extmod/**'
+      - 'shared/**'
       - 'lib/**'
       - 'drivers/**'
       - 'ports/powerpc/**'
