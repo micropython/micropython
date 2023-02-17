@@ -594,6 +594,9 @@ function ci_unix_settrace_stackless_run_tests {
 }
 
 function ci_unix_macos_build {
+    # Install pkg-config to configure libffi paths.
+    brew install pkg-config
+
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix submodules
     #make ${MAKEOPTS} -C ports/unix deplibs
