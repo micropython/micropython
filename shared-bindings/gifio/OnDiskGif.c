@@ -122,29 +122,23 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_bitmap_obj, gifio_ondiskgif_obj_ge
 MP_PROPERTY_GETTER(gifio_ondiskgif_bitmap_obj,
     (mp_obj_t)&gifio_ondiskgif_get_bitmap_obj);
 
-//|     def next_frame(self, set_dirty: bool = True) -> int:
-//|         """Loads the next frame. Returns expected delay before the next frame in milliseconds.
-//|
-//|         :param set_dirty: Mark the bitmap as dirty"""
-STATIC mp_obj_t gifio_ondiskgif_obj_next_frame(size_t n_args, const mp_obj_t *args) {
-    gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(args[0]);
-    bool setDirty = mp_const_true;
+//|     def next_frame(self) -> float:
+//|         """Loads the next frame. Returns expected delay before the next frame in seconds."""
+STATIC mp_obj_t gifio_ondiskgif_obj_next_frame(mp_obj_t self_in) {
+    gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (n_args == 1) {
-        setDirty = mp_obj_is_true(args[1]);
-    }
-
-    return MP_OBJ_NEW_SMALL_INT(common_hal_gifio_ondiskgif_next_frame(self, setDirty));
+    return mp_obj_new_float((float)common_hal_gifio_ondiskgif_next_frame(self, true) / 1000);
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gifio_ondiskgif_next_frame_obj, 1, 2, gifio_ondiskgif_obj_next_frame);
+MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_next_frame_obj, gifio_ondiskgif_obj_next_frame);
 
-//|     duration: int
-//|     """Returns the total duration of the GIF in milliseconds. (read only)"""
+
+//|     duration: float
+//|     """Returns the total duration of the GIF in seconds. (read only)"""
 STATIC mp_obj_t gifio_ondiskgif_obj_get_duration(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return MP_OBJ_NEW_SMALL_INT(common_hal_gifio_ondiskgif_get_duration(self));
+    return mp_obj_new_float((float)common_hal_gifio_ondiskgif_get_duration(self) / 1000);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_duration_obj, gifio_ondiskgif_obj_get_duration);
@@ -165,12 +159,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_frame_count_obj, gifio_ondiskgif_o
 MP_PROPERTY_GETTER(gifio_ondiskgif_frame_count_obj,
     (mp_obj_t)&gifio_ondiskgif_get_frame_count_obj);
 
-//|     min_delay: int
+//|     min_delay: float
 //|     """The minimum delay found between frames. (read only)"""
 STATIC mp_obj_t gifio_ondiskgif_obj_get_min_delay(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return MP_OBJ_NEW_SMALL_INT(common_hal_gifio_ondiskgif_get_min_delay(self));
+    return mp_obj_new_float((float)common_hal_gifio_ondiskgif_get_min_delay(self) / 1000);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_min_delay_obj, gifio_ondiskgif_obj_get_min_delay);
@@ -178,13 +172,13 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_min_delay_obj, gifio_ondiskgif_obj
 MP_PROPERTY_GETTER(gifio_ondiskgif_min_delay_obj,
     (mp_obj_t)&gifio_ondiskgif_get_min_delay_obj);
 
-//|     max_delay: int
+//|     max_delay: float
 //|     """The maximum delay found between frames. (read only)"""
 //|
 STATIC mp_obj_t gifio_ondiskgif_obj_get_max_delay(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return MP_OBJ_NEW_SMALL_INT(common_hal_gifio_ondiskgif_get_max_delay(self));
+    return mp_obj_new_float((float)common_hal_gifio_ondiskgif_get_max_delay(self) / 1000);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_max_delay_obj, gifio_ondiskgif_obj_get_max_delay);
