@@ -92,10 +92,14 @@
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
 #define MICROPY_PY_UOS_INCLUDEFILE              "ports/rp2/moduos.c"
+#ifndef MICROPY_PY_OS_DUPTERM
+#define MICROPY_PY_OS_DUPTERM                   (1)
+#endif
 #define MICROPY_PY_UOS_UNAME                    (1)
 #define MICROPY_PY_UOS_URANDOM                  (1)
 #define MICROPY_PY_URE_MATCH_GROUPS             (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
+#define MICROPY_PY_UHASHLIB_SHA1                (1)
 #define MICROPY_PY_UCRYPTOLIB                   (1)
 #define MICROPY_PY_UTIME_MP_HAL                 (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC       (rosc_random_u32())
@@ -146,14 +150,8 @@
 #ifndef MICROPY_PY_UWEBSOCKET
 #define MICROPY_PY_UWEBSOCKET           (1)
 #endif
-#ifndef MICROPY_PY_UHASHLIB_SHA1
-#define MICROPY_PY_UHASHLIB_SHA1        (1)
-#endif
 #ifndef MICROPY_PY_WEBREPL
 #define MICROPY_PY_WEBREPL              (1)
-#endif
-#ifndef MICROPY_PY_OS_DUPTERM
-#define MICROPY_PY_OS_DUPTERM           (1)
 #endif
 #endif
 
