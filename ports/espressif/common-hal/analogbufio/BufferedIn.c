@@ -242,7 +242,7 @@ uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t
 
         if (ret == ESP_OK) {
             for (uint32_t i = 0; i < ret_num; i += ADC_RESULT_BYTE) {
-                adc_digi_output_data_t *pResult = (adc_digi_output_data_t *) (void *)&result[i];
+                adc_digi_output_data_t *pResult = (adc_digi_output_data_t *)(void *)&result[i];
                 if (check_valid_data(pResult)) {
                     if (captured_bytes < len) {
                         uint16_t *pBuffer = (uint16_t *)(void *)&buffer[captured_bytes];
