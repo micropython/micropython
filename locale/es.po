@@ -465,7 +465,6 @@ msgid "All SPI peripherals are in use"
 msgstr "Todos los periféricos SPI están siendo usados"
 
 #: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Todos los periféricos UART están siendo usados"
 
@@ -2065,7 +2064,8 @@ msgstr "Lectura de temperatura expirada"
 
 #: supervisor/shared/safe_mode.c
 msgid "The `microcontroller` module was used to boot into safe mode."
-msgstr "El modulo `microcontrolador` fue usado para inicializar en modo seguro."
+msgstr ""
+"El modulo `microcontrolador` fue usado para inicializar en modo seguro."
 
 #: py/obj.c
 msgid "The above exception was the direct cause of the following exception:"
@@ -2077,7 +2077,8 @@ msgstr "La longitud de rgb_pins debe ser 6, 12, 18, 24, o 30"
 
 #: supervisor/shared/safe_mode.c
 msgid "The power dipped. Make sure you are providing enough power."
-msgstr "La potencia calló. Asegúrese que está suministrando suficiente energía."
+msgstr ""
+"La potencia calló. Asegúrese que está suministrando suficiente energía."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2178,6 +2179,10 @@ msgstr "Desinicialización de UART"
 #: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "UART init"
 msgstr "Inicialización de UART"
+
+#: ports/raspberrypi/common-hal/busio/UART.c
+msgid "UART peripheral in use"
+msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
