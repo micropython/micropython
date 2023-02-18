@@ -38,7 +38,6 @@ uint32_t common_hal_gifio_ondiskgif_get_pixel(gifio_ondiskgif_t *bitmap,
     int16_t x, int16_t y);
 
 uint16_t common_hal_gifio_ondiskgif_get_height(gifio_ondiskgif_t *self);
-mp_obj_t common_hal_gifio_ondiskgif_get_pixel_shader(gifio_ondiskgif_t *self);
 mp_obj_t common_hal_gifio_ondiskgif_get_bitmap(gifio_ondiskgif_t *self);
 uint16_t common_hal_gifio_ondiskgif_get_width(gifio_ondiskgif_t *self);
 uint8_t common_hal_gifio_ondiskgif_next_frame(gifio_ondiskgif_t *self, bool setDirty);
