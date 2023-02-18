@@ -241,7 +241,7 @@ uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t
         ret = adc_digi_read_bytes(result, NUM_SAMPLES_PER_INTERRUPT, &ret_num, ADC_READ_TIMEOUT_MS);
 
         if (ret == ESP_OK) {
-            for (uint32_t i=0; i<ret_num; i+=ADC_RESULT_BYTE) {
+            for (uint32_t i = 0; i < ret_num; i += ADC_RESULT_BYTE) {
                 adc_digi_output_data_t *pResult = (adc_digi_output_data_t *) (void *)&result[i];
                 if (check_valid_data(pResult)) {
                     if (captured_bytes < len) {
