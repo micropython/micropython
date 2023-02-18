@@ -37,6 +37,7 @@ typedef struct displayio_colorconverter {
     mp_obj_base_t base;
     bool dither;
     uint8_t input_colorspace;
+    _displayio_colorspace_t output_colorspace;
     uint32_t transparent_color;
 } displayio_colorconverter_t;
 
