@@ -156,7 +156,9 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
         // load
         return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_bitmap_get_pixel(self, x, y));
     } else {
-        mp_uint_t value = (mp_uint_t)mp_arg_validate_int_range(mp_obj_get_int(value_obj), 0,(1u << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1, MP_QSTR_value);
+        mp_uint_t value = (mp_uint_t)mp_arg_validate_int_range(
+            mp_obj_get_int(value_obj), 0,
+            (UINT32_MAX >> (32 - common_hal_displayio_bitmap_get_bits_per_value(self))), MP_QSTR_value);
         common_hal_displayio_bitmap_set_pixel(self, x, y, value);
     }
     return mp_const_none;
