@@ -458,7 +458,6 @@ msgid "All SPI peripherals are in use"
 msgstr "Tous les périphériques SPI sont utilisés"
 
 #: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Tous les périphériques UART sont utilisés"
 
@@ -2180,6 +2179,10 @@ msgstr "Dé-initialisation du UART"
 #: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "UART init"
 msgstr "Initialisation UART"
+
+#: ports/raspberrypi/common-hal/busio/UART.c
+msgid "UART peripheral in use"
+msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
