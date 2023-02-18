@@ -54,17 +54,16 @@ jobs:
       uses: ./.github/actions/deps/external
       with:
         action: cache
-    # Disabled: Needs to be updated
-    # - name: Get last commit with checks
-    #   id: get-last-commit-with-checks
-    #   if: github.event_name == 'pull_request'
-    #   working-directory: tools
-    #   run: python3 -u ci_changes_per_commit.py
-    #   env:
-    #     REPO: ${{ github.repository }}
-    #     PULL: ${{ github.event.number }}
-    #     GITHUB_TOKEN: ${{ github.token }}
-    #     EXCLUDE_COMMIT: ${{ github.event.after }}
+    - name: Get last commit with checks
+      id: get-last-commit-with-checks
+      if: github.event_name == 'pull_request'
+      working-directory: tools
+      run: python3 -u ci_changes_per_commit.py
+      env:
+        REPO: ${{ github.repository }}
+        PULL: ${{ github.event.number }}
+        GITHUB_TOKEN: ${{ github.token }}
+        EXCLUDE_COMMIT: ${{ github.event.after }}
     - name: Set up mpy-cross
       uses: ./.github/actions/mpy_cross
       with:
