@@ -95,7 +95,7 @@ void common_hal_analogbufio_bufferedin_construct(analogbufio_bufferedin_obj_t *s
 
     #if defined(CONFIG_IDF_TARGET_ESP32)
     if (pin->adc_index != ADC_UNIT_1) {
-        /* 
+        /*
          * ESP32 only supports ADC1 unit
          * https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
          * Table 29-3
@@ -205,7 +205,7 @@ static bool check_valid_data(const adc_digi_output_data_t *data) {
             return false;
         }
     } else {
-        if ( convert_mode == ADC_CONV_SINGLE_UNIT_1 ) {
+        if (convert_mode == ADC_CONV_SINGLE_UNIT_1) {
             unit = 0;
         } else {
             unit = 1;
@@ -236,12 +236,12 @@ uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t
     mp_printf(&mp_plat_print,"Required bytes: %d\n",len);
     #endif // DEBUG_ANALOGBUFIO
 
-    while(captured_bytes < len) {
+    while (captured_bytes < len) {
         ret_num = 0;
         ret = adc_digi_read_bytes(result, NUM_SAMPLES_PER_INTERRUPT, &ret_num, ADC_READ_TIMEOUT_MS);
 
         if (ret == ESP_OK) {
-            for(uint32_t i=0; i<ret_num; i+=ADC_RESULT_BYTE) {
+            for (uint32_t i=0; i<ret_num; i+=ADC_RESULT_BYTE) {
                 adc_digi_output_data_t *pResult = (adc_digi_output_data_t *) (void *)&result[i];
                 if (check_valid_data(pResult)) {
                     if (captured_bytes < len) {
