@@ -284,7 +284,7 @@ void reset_port(void) {
 //    eic_reset();
 
     #if CIRCUITPY_PWMIO
-    pwmout_reset();
+    reset_all_flexpwm();
     #endif
 
     #if CIRCUITPY_RTC
