@@ -142,7 +142,7 @@ STATIC supervisor_allocation *allocate_pystack(safe_mode_t safe_mode) {
         (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
         // Check if value is valid
         pystack_size = pystack_size - pystack_size % sizeof(size_t); // Round down to multiple of 4.
-        if (pystack_size < 384) {
+        if ((pystack_size < 384) || (pystack_size > 900000)) {
             serial_write_compressed(translate("\nInvalid CIRCUITPY_PYSTACK_SIZE\n\n\r"));
             pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset
         }
