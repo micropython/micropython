@@ -53,8 +53,10 @@ STATIC void check_result(digitalinout_result_t result) {
             return;
         case DIGITALINOUT_PIN_BUSY:
             mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_Pin);
+        #if CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY
         case DIGITALINOUT_INPUT_ONLY:
             mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_direction);
+        #endif
         #if CIRCUITPY_DIGITALIO_HAVE_INVALID_PULL
         case DIGITALINOUT_INVALID_PULL:
             mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_pull);
@@ -67,7 +69,7 @@ STATIC void check_result(digitalinout_result_t result) {
 }
 
 MP_WEAK const mcu_pin_obj_t *common_hal_digitalio_validate_pin(mp_obj_t obj) {
-    return validate_obj_is_free_pin(obj);
+    return validate_obj_is_free_pin(obj, MP_QSTR_pin);
 }
 
 //| class DigitalInOut:

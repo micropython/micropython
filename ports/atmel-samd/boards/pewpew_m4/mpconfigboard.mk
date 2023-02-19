@@ -11,6 +11,7 @@ LONGINT_IMPL = NONE
 
 CIRCUITPY_FULL_BUILD = 0
 
+CIRCUITPY_ANALOGIO = 0
 CIRCUITPY_ALARM = 0
 CIRCUITPY_AUDIOBUSIO = 0
 CIRCUITPY_AUDIOMP3 = 0
@@ -31,14 +32,13 @@ CIRCUITPY_ROTARYIO = 0
 CIRCUITPY_RTC = 0
 CIRCUITPY_SAMD = 0
 CIRCUITPY_TOUCHIO = 0
-CIRCUITPY_USB_CDC = 0
 CIRCUITPY_USB_HID = 0
 CIRCUITPY_USB_MIDI = 0
 CIRCUITPY_VECTORIO = 0
 CIRCUITPY_BUSDEVICE = 0
 CIRCUITPY_BITMAPTOOLS = 0
+CIRCUITPY_WATCHDOG = 0
 
-CIRCUITPY_ANALOGIO = 1
 CIRCUITPY_AUDIOIO = 1
 CIRCUITPY_AUDIOMIXER = 1
 CIRCUITPY_DISPLAYIO = 1
@@ -53,3 +53,13 @@ CIRCUITPY_DISPLAY_FONT = $(TOP)/ports/atmel-samd/boards/ugame10/brutalist-6.bdf
 
 # Override optimization to keep binary small
 OPTIMIZATION_FLAGS = -Os
+
+# We don't have room for the fonts for terminalio for certain languages,
+# so turn off terminalio, and if it's off and displayio is on,
+# force a clean build.
+# Note that we cannot test $(CIRCUITPY_DISPLAYIO) directly with an
+# ifeq, because it's not set yet.
+ifneq (,$(filter $(TRANSLATION),ja ko ru))
+CIRCUITPY_TERMINALIO = 0
+RELEASE_NEEDS_CLEAN_BUILD = $(CIRCUITPY_DISPLAYIO)
+endif

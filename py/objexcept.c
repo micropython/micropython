@@ -155,6 +155,12 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
     mp_obj_tuple_print(print, MP_OBJ_FROM_PTR(o->args), kind);
 }
 
+void mp_obj_exception_initialize0(mp_obj_exception_t *o_exc, const mp_obj_type_t *type) {
+    o_exc->base.type = type;
+    o_exc->args = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
+    mp_obj_exception_clear_traceback(o_exc);
+}
+
 mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, false);
 
@@ -218,19 +224,45 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] != MP_OBJ_NULL) {
         // store/delete attribute
-        if (self == &mp_const_GeneratorExit_obj) {
+        #if MICROPY_CONST_GENERATOREXIT_OBJ
+        if (self == &mp_static_GeneratorExit_obj) {
             mp_raise_AttributeError(MP_ERROR_TEXT("can't set attribute"));
         }
+        #endif
         if (attr == MP_QSTR___traceback__) {
             if (dest[1] == mp_const_none) {
                 self->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
             } else {
                 if (!mp_obj_is_type(dest[1], &mp_type_traceback)) {
-                    mp_raise_TypeError(MP_ERROR_TEXT("invalid traceback"));
+                    mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), MP_QSTR___context__, MP_QSTR_traceback, MP_QSTR_None, mp_obj_get_type(dest[1])->name);
                 }
                 self->traceback = MP_OBJ_TO_PTR(dest[1]);
             }
             dest[0] = MP_OBJ_NULL; // indicate success
+        #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+        } else if (attr == MP_QSTR___cause__) {
+            if (dest[1] == mp_const_none) {
+                self->cause = NULL;
+            } else if (!mp_obj_is_type(dest[1], &mp_type_BaseException)) {
+                self->cause = dest[1];
+            } else {
+                mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), attr, MP_QSTR_BaseException, MP_QSTR_None, mp_obj_get_type(dest[1])->name);
+            }
+            self->suppress_context = true;
+            dest[0] = MP_OBJ_NULL; // indicate success
+        } else if (attr == MP_QSTR___context__) {
+            if (dest[1] == mp_const_none) {
+                self->context = NULL;
+            } else if (!mp_obj_is_type(dest[1], &mp_type_BaseException)) {
+                self->context = dest[1];
+            } else {
+                mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), attr, MP_QSTR_BaseException, MP_QSTR_None, mp_obj_get_type(dest[1])->name);
+            }
+            dest[0] = MP_OBJ_NULL; // indicate success
+        } else if (attr == MP_QSTR___suppress_context__) {
+            self->suppress_context = mp_obj_is_true(dest[1]);
+            dest[0] = MP_OBJ_NULL; // indicate success
+        #endif
         }
         return;
     }
@@ -240,6 +272,14 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         dest[0] = mp_obj_exception_get_value(self_in);
     } else if (attr == MP_QSTR___traceback__) {
         dest[0] = (self->traceback) ? MP_OBJ_FROM_PTR(self->traceback) : mp_const_none;
+    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+    } else if (attr == MP_QSTR___cause__) {
+        dest[0] = (self->cause) ? MP_OBJ_FROM_PTR(self->cause) : mp_const_none;
+    } else if (attr == MP_QSTR___context__) {
+        dest[0] = (self->context) ? MP_OBJ_FROM_PTR(self->context) : mp_const_none;
+    } else if (attr == MP_QSTR___suppress_context__) {
+        dest[0] = mp_obj_new_bool(self->suppress_context);
+    #endif
     #if MICROPY_CPYTHON_COMPAT
     } else if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(self->base.type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
         if (attr == MP_QSTR_errno) {
@@ -549,6 +589,12 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
     // just set the traceback to the empty traceback object
     // we don't want to call any memory management functions here
     self->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
+    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+    self->cause = 0;
+    self->context = 0;
+    self->suppress_context = false;
+    self->marked = false;
+    #endif
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block) {

@@ -148,7 +148,8 @@ STATIC mp_obj_t keypad_event_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_ob
 //|     def __hash__(self) -> int:
 //|         """Returns a hash for the `Event`, so it can be used in dictionaries, etc..
 //|
-//|         Note that as events with different timestamps compare equal, they also hash to the same value."""
+//|         Note that as events with different timestamps compare equal, they also hash to the same value.
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t keypad_event_unary_op(mp_unary_op_t op, mp_obj_t self_in) {

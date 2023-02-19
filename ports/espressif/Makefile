@@ -100,8 +100,6 @@ INC += \
 	-isystem esp-idf/components/soc/include \
 	-isystem esp-idf/components/soc/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/spi_flash/include \
-	-isystem esp-idf/components/ulp/include \
-	-isystem esp-idf/components/ulp/ulp_riscv/include \
 	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/include \
 	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/$(IDF_TARGET)/include
 
@@ -215,7 +213,6 @@ endif
 
 SRC_C += \
 	background.c \
-	fatfs_port.c \
 	mphalport.c \
 	bindings/espidf/__init__.c \
 	boards/$(BOARD)/board.c \
@@ -253,13 +250,22 @@ endif
 
 SRC_C += $(wildcard common-hal/espidf/*.c)
 
-ifneq ($(CIRCUITPY_ESP32_CAMERA),0)
+ifneq ($(CIRCUITPY_ESPCAMERA),0)
 SRC_CAMERA := \
-	$(wildcard common-hal/esp32_camera/*.c) \
-	$(wildcard bindings/esp32_camera/*.c)
+	$(wildcard common-hal/espcamera/*.c) \
+	$(wildcard bindings/espcamera/*.c)
 SRC_C += $(SRC_CAMERA)
 CFLAGS += -isystem esp32-camera/driver/include
 CFLAGS += -isystem esp32-camera/conversions/include
+endif
+
+ifneq ($(CIRCUITPY_ESPULP),0)
+SRC_ULP := \
+	$(wildcard common-hal/espulp/*.c) \
+	$(wildcard bindings/espulp/*.c)
+SRC_C += $(SRC_ULP)
+CFLAGS += -isystem esp-idf/components/ulp/include
+CFLAGS += -isystem esp-idf/components/ulp/ulp_riscv/include
 endif
 
 SRC_COMMON_HAL_EXPANDED = \
@@ -327,7 +333,7 @@ endif
 .PHONY: do-sdkconfig
 do-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
 $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig CMakeLists.txt | $(BUILD)/esp-idf
-	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja -DCIRCUITPY_ESP32_CAMERA=$(CIRCUITPY_ESP32_CAMERA)
+	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja -DCIRCUITPY_ESPCAMERA=$(CIRCUITPY_ESPCAMERA)
 
 # build a lib
 # Adding -d explain -j 1 -v to the ninja line will output debug info
@@ -365,7 +371,7 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
 	                esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
 endif
-ifneq ($(CIRCUITPY_COPROC),0)
+ifneq ($(CIRCUITPY_ESPULP),0)
 	ESP_IDF_COMPONENTS_LINK += ulp
 endif
 
@@ -379,7 +385,7 @@ BINARY_BLOBS += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 ESP_IDF_COMPONENTS_EXPANDED += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 endif
 
-ifneq ($(CIRCUITPY_ESP32_CAMERA),0)
+ifneq ($(CIRCUITPY_ESPCAMERA),0)
 ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/esp32-camera/libesp32-camera.a
 #$(error $(ESP_IDF_COMPONENTS_EXPANDED))
 endif
@@ -423,7 +429,7 @@ esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 
 $(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(BUILD)/esp-idf/esp-idf/newlib/libnewlib.a  -Wl,--end-group -u newlib_include_pthread_impl -Wl,--start-group $(LIBS) -Wl,--end-group $(BUILD)/esp-idf/esp-idf/pthread/libpthread.a  -u __cxx_fatal_exception
+	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(BUILD)/esp-idf/esp-idf/newlib/libnewlib.a  -Wl,--end-group -u newlib_include_pthread_impl -u ld_include_highint_hdl -Wl,--start-group $(LIBS) -Wl,--end-group $(BUILD)/esp-idf/esp-idf/pthread/libpthread.a  -u __cxx_fatal_exception
 
 $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf | tools/build_memory_info.py
 	$(STEPECHO) "Create $@"

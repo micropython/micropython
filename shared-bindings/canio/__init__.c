@@ -58,6 +58,7 @@
 //| For more information on working with this module, refer to
 //| `this Learn Guide on using it <https://learn.adafruit.com/using-canio-circuitpython>`_.
 //| """
+//|
 
 #include "py/obj.h"
 #include "py/enum.h"

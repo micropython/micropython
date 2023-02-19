@@ -32,7 +32,8 @@
 //|         :param List[Tuple[int,int]] points: Vertices for the polygon
 //|         :param int x: Initial screen x position of the 0,0 origin in the points list.
 //|         :param int y: Initial screen y position of the 0,0 origin in the points list.
-//|         :param int color_index: Initial color_index to use when selecting color from the palette."""
+//|         :param int color_index: Initial color_index to use when selecting color from the palette.
+//|         """
 static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pixel_shader, ARG_points_list, ARG_x, ARG_y, ARG_color_index };
     static const mp_arg_t allowed_args[] = {

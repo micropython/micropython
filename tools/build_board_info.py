@@ -10,6 +10,7 @@ import subprocess
 import sys
 import sh
 import base64
+from io import StringIO
 from datetime import date
 from sh.contrib import git
 
@@ -58,9 +59,13 @@ def get_languages(list_all=False):
 
 def get_version_info():
     version = None
-    sha = git("rev-parse", "--short", "HEAD").stdout.decode("utf-8")
+    buffer = StringIO()
+    git("rev-parse", "--short", "HEAD", _out=buffer)
+    sha = buffer.getvalue().strip()
     try:
-        version = git("describe", "--tags", "--exact-match").stdout.decode("utf-8").strip()
+        buffer = StringIO()
+        git("describe", "--tags", "--exact-match", _out=buffer)
+        version = buffer.getvalue().strip()
     except sh.ErrorReturnCode_128:
         # No exact match
         pass

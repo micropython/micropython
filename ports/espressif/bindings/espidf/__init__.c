@@ -37,6 +37,7 @@
 //| """Direct access to a few ESP-IDF details. This module *should not* include any functionality
 //|    that could be implemented by other frameworks. It should only include ESP-IDF specific
 //|    things."""
+//|
 
 //| def heap_caps_get_total_size() -> int:
 //|     """Return the total size of the ESP-IDF, which includes the CircuitPython heap."""
@@ -72,7 +73,8 @@ MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_largest_free_block_obj, espidf_he
 //|     """Erase all data in the non-volatile storage (nvs), including data stored by with `microcontroller.nvm`
 //|
 //|     This is necessary when upgrading from CircuitPython 6.3.0 or earlier to CircuitPython 7.0.0, because the
-//|     layout of data in nvs has changed. The old data will be lost when you perform this operation."""
+//|     layout of data in nvs has changed. The old data will be lost when you perform this operation.
+//|     """
 //|
 STATIC mp_obj_t espidf_erase_nvs(void) {
     ESP_ERROR_CHECK(nvs_flash_deinit());
@@ -132,7 +134,7 @@ STATIC mp_obj_t espidf_get_total_psram(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_get_total_psram_obj, espidf_get_total_psram);
 
 //| def get_reserved_psram() -> int:
-//|     """Returns number of bytes of psram reserved for use by esp-idf, either a board-specific default value or the value defined in ``/.env``."""
+//|     """Returns number of bytes of psram reserved for use by esp-idf, either a board-specific default value or the value defined in ``settings.toml``."""
 //|
 STATIC mp_obj_t espidf_get_reserved_psram(void) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_espidf_get_reserved_psram());

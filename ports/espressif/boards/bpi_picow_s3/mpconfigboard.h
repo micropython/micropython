@@ -31,6 +31,8 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO48)
 
+#define MICROPY_HW_LED_STATUS (&pin_GPIO46)
+
 #define DEFAULT_UART_BUS_RX (&pin_GPIO44)
 #define DEFAULT_UART_BUS_TX (&pin_GPIO43)
 

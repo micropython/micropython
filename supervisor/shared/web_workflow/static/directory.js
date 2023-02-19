@@ -95,7 +95,7 @@ async function refresh_list() {
         if (f.directory) {
             icon = "📁";
         } else if(f.name.endsWith(".txt") ||
-                  f.name.endsWith(".env") ||
+                  f.name.endsWith(".toml") ||
                   f.name.endsWith(".py") ||
                   f.name.endsWith(".js") ||
                   f.name.endsWith(".json")) {

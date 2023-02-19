@@ -41,6 +41,7 @@
 
 //| _DisplayBus = Union["FourWire", "paralleldisplay.ParallelBus", "I2CDisplay"]
 //| """:py:class:`FourWire`, :py:class:`paralleldisplay.ParallelBus` or :py:class:`I2CDisplay`"""
+//|
 
 //| class Display:
 //|     """Manage updating a display over a display bus
@@ -185,7 +186,8 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_init_sequence].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    const mcu_pin_obj_t *backlight_pin = validate_obj_is_free_pin_or_none(args[ARG_backlight_pin].u_obj);
+    const mcu_pin_obj_t *backlight_pin =
+        validate_obj_is_free_pin_or_none(args[ARG_backlight_pin].u_obj, MP_QSTR_backlight_pin);
 
     mp_float_t brightness = mp_obj_get_float(args[ARG_brightness].u_obj);
 
@@ -281,7 +283,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show
 //|
 //|         :param Optional[int] target_frames_per_second: The target frame rate that :py:func:`refresh` should try to
 //|             achieve. Set to `None` for immediate refresh.
-//|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second."""
+//|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second.
+//|         """
 //|         ...
 STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_target_frames_per_second, ARG_minimum_frames_per_second };
@@ -423,15 +426,29 @@ STATIC mp_obj_t displayio_display_obj_get_root_group(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_root_group_obj, displayio_display_obj_get_root_group);
 
-MP_PROPERTY_GETTER(displayio_display_root_group_obj,
-    (mp_obj_t)&displayio_display_get_root_group_obj);
+STATIC mp_obj_t displayio_display_obj_set_root_group(mp_obj_t self_in, mp_obj_t group_in) {
+    displayio_display_obj_t *self = native_display(self_in);
+    displayio_group_t *group = NULL;
+    if (group_in != mp_const_none) {
+        group = MP_OBJ_TO_PTR(native_group(group_in));
+    }
+
+    common_hal_displayio_display_set_root_group(self, group);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_set_root_group_obj, displayio_display_obj_set_root_group);
+
+MP_PROPERTY_GETSET(displayio_display_root_group_obj,
+    (mp_obj_t)&displayio_display_get_root_group_obj,
+    (mp_obj_t)&displayio_display_set_root_group_obj);
 
 
 //|     def fill_row(self, y: int, buffer: WriteableBuffer) -> WriteableBuffer:
 //|         """Extract the pixels from a single row
 //|
 //|         :param int y: The top edge of the area
-//|         :param ~circuitpython_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: The buffer in which to place the pixel data
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

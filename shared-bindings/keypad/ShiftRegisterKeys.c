@@ -98,9 +98,9 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
-    const mcu_pin_obj_t *data = validate_obj_is_free_pin(args[ARG_data].u_obj);
-    const mcu_pin_obj_t *latch = validate_obj_is_free_pin(args[ARG_latch].u_obj);
+    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj, MP_QSTR_clock);
+    const mcu_pin_obj_t *data = validate_obj_is_free_pin(args[ARG_data].u_obj, MP_QSTR_data);
+    const mcu_pin_obj_t *latch = validate_obj_is_free_pin(args[ARG_latch].u_obj, MP_QSTR_latch);
     const bool value_to_latch = args[ARG_value_to_latch].u_bool;
 
     const size_t key_count = (size_t)mp_arg_validate_int_min(args[ARG_key_count].u_int, 1, MP_QSTR_key_count);

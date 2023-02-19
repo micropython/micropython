@@ -102,7 +102,10 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 }
 
 bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
-    return displayio_display_core_show(&self->core, root_group);
+    if (root_group == NULL) {
+        root_group = &circuitpython_splash;
+    }
+    return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
 uint16_t common_hal_framebufferio_framebufferdisplay_get_width(framebufferio_framebufferdisplay_obj_t *self) {
@@ -360,5 +363,16 @@ void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj
 }
 
 mp_obj_t common_hal_framebufferio_framebufferdisplay_get_root_group(framebufferio_framebufferdisplay_obj_t *self) {
+    if (self->core.current_group == NULL) {
+        return mp_const_none;
+    }
     return self->core.current_group;
+}
+
+mp_obj_t common_hal_framebufferio_framebufferdisplay_set_root_group(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
+    bool ok = displayio_display_core_set_root_group(&self->core, root_group);
+    if (!ok) {
+        mp_raise_ValueError(translate("Group already used"));
+    }
+    return mp_const_none;
 }

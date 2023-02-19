@@ -9,6 +9,7 @@
 !atmel-samd/asf/**/*.a
 *.elf
 *.bin
+!*.toml.bin
 *.map
 *.hex
 *.dis

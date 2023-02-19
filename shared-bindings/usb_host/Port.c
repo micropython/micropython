@@ -47,8 +47,8 @@ STATIC mp_obj_t usb_host_port_make_new(const mp_obj_type_t *type,
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
 
-    const mcu_pin_obj_t *dp = validate_obj_is_free_pin(args[0]);
-    const mcu_pin_obj_t *dm = validate_obj_is_free_pin(args[1]);
+    const mcu_pin_obj_t *dp = validate_obj_is_free_pin(args[0], MP_QSTR_dp);
+    const mcu_pin_obj_t *dm = validate_obj_is_free_pin(args[1], MP_QSTR_dm);
 
     usb_host_port_obj_t *self = m_new_obj(usb_host_port_obj_t);
     self->base.type = &usb_host_port_type;

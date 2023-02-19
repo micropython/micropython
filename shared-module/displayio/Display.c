@@ -136,12 +136,15 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
-    common_hal_displayio_display_show(self, &circuitpython_splash);
+    common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
     common_hal_displayio_display_set_auto_refresh(self, auto_refresh);
 }
 
 bool common_hal_displayio_display_show(displayio_display_obj_t *self, displayio_group_t *root_group) {
-    return displayio_display_core_show(&self->core, root_group);
+    if (root_group == NULL) {
+        root_group = &circuitpython_splash;
+    }
+    return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
 uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t *self) {
@@ -206,6 +209,9 @@ mp_obj_t common_hal_displayio_display_get_bus(displayio_display_obj_t *self) {
 }
 
 mp_obj_t common_hal_displayio_display_get_root_group(displayio_display_obj_t *self) {
+    if (self->core.current_group == NULL) {
+        return mp_const_none;
+    }
     return self->core.current_group;
 }
 
@@ -398,6 +404,14 @@ void common_hal_displayio_display_set_auto_refresh(displayio_display_obj_t *self
     self->auto_refresh = auto_refresh;
 }
 
+mp_obj_t common_hal_displayio_display_set_root_group(displayio_display_obj_t *self, displayio_group_t *root_group) {
+    bool ok = displayio_display_core_set_root_group(&self->core, root_group);
+    if (!ok) {
+        mp_raise_ValueError(translate("Group already used"));
+    }
+    return mp_const_none;
+}
+
 void displayio_display_background(displayio_display_obj_t *self) {
     if (self->auto_refresh && (supervisor_ticks_ms64() - self->core.last_refresh) > self->native_ms_per_frame) {
         _refresh_display(self);
@@ -421,7 +435,10 @@ void release_display(displayio_display_obj_t *self) {
 
 void reset_display(displayio_display_obj_t *self) {
     common_hal_displayio_display_set_auto_refresh(self, true);
-    common_hal_displayio_display_show(self, NULL);
+    circuitpython_splash.x = 0; // reset position in case someone moved it.
+    circuitpython_splash.y = 0;
+    supervisor_start_terminal(self->core.width, self->core.height);
+    common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
 }
 
 void displayio_display_collect_ptrs(displayio_display_obj_t *self) {

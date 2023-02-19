@@ -58,7 +58,6 @@ SRC_C += bindings/videocore/__init__.c \
 	     boards/$(BOARD)/pins.c \
 	     background.c \
 	     common-hal/videocore/Framebuffer.c \
-	     fatfs_port.c \
 		 mphalport.c \
 		 lib/sdmmc/sdmmc_cmd.c \
 		 lib/sdmmc/sdmmc_common.c \

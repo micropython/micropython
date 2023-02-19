@@ -147,7 +147,7 @@ STATIC mp_obj_t pwmio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, 
     mp_arg_val_t parsed_args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, args, MP_ARRAY_SIZE(allowed_args), allowed_args, parsed_args);
 
-    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(parsed_args[ARG_pin].u_obj);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(parsed_args[ARG_pin].u_obj, MP_QSTR_pin);
 
     uint16_t duty_cycle = parsed_args[ARG_duty_cycle].u_int;
     uint32_t frequency = parsed_args[ARG_frequency].u_int;

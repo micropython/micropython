@@ -1,5 +1,6 @@
 # test native try handling
 
+
 # deeply nested try (9 deep)
 @micropython.native
 def f():

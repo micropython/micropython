@@ -166,8 +166,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(storage_getmount_obj, storage_getmount);
 //|         extended by setting this to `True`. If this isn't provided or
 //|         set to `None` (default), the existing configuration will be used.
 //|
+//|     .. note:: New firmware starts with storage extended. In case of an existing
+//|          filesystem (e.g. uf2 load), the existing extension setting is preserved.
+//|
 //|     .. warning:: All the data on ``CIRCUITPY`` will be lost, and
-//|          CircuitPython will restart on certain boards."""
+//|         CircuitPython will restart on certain boards."""
 //|     ...
 //|
 
@@ -257,6 +260,10 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|     """The filesystem label, up to 11 case-insensitive bytes.  Note that
 //|     this property can only be set when the device is writable by the
 //|     microcontroller."""
+//|     ...
+//|     readonly: bool
+//|     """``True`` when the device is mounted as readonly by the microcontroller.
+//|     This property cannot be changed, use `storage.remount` instead."""
 //|     ...
 //|
 //|     def mkfs(self) -> None:

@@ -37,6 +37,7 @@
 //| |see_cpython_module| :mod:`cpython:traceback`.
 //| """
 //| ...
+//|
 
 STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *print, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_exc, ARG_value, ARG_tb, ARG_limit, ARG_file, ARG_chain };
@@ -58,6 +59,7 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
     }
     mp_obj_t tb_obj = args[ARG_tb].u_obj;
     mp_obj_t limit_obj = args[ARG_limit].u_obj;
+    bool chain = args[ARG_chain].u_bool;
 
     if (args[ARG_file].u_obj != mp_const_none) {
         if (!is_print_exception) {
@@ -90,6 +92,15 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
 
     mp_obj_exception_t *exc = mp_obj_exception_get_native(value);
     mp_obj_traceback_t *trace_backup = exc->traceback;
+    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+    mp_obj_exception_t *context_backup = exc->context;
+    mp_obj_exception_t *cause_backup = exc->cause;
+
+    if (!chain) {
+        exc->context = NULL;
+        exc->cause = NULL;
+    }
+    #endif
 
     if (tb_obj == MP_OBJ_NULL) {
         /* Print the traceback's exception as is */
@@ -101,6 +112,10 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
 
     shared_module_traceback_print_exception(MP_OBJ_TO_PTR(value), print, limit);
     exc->traceback = trace_backup;
+    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+    exc->context = context_backup;
+    exc->cause = cause_backup;
+    #endif
 }
 
 //| def format_exception(
@@ -128,14 +143,12 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
 //|     these lines are concatenated and printed, exactly the same text is
 //|     printed as does print_exception().
 //|
-//|     .. note:: Setting ``chain`` will have no effect as chained exceptions are not yet implemented.
-//|
 //|     :param exc: The exception. Must be an instance of `BaseException`. Unused if value is specified.
 //|     :param value: If specified, is used in place of ``exc``.
 //|     :param TracebackType tb: When value is alsp specified, ``tb`` is used in place of the exception's own traceback. If `None`, the traceback will not be printed.
 //|     :param int limit: Print up to limit stack trace entries (starting from the caller’s frame) if limit is positive.
 //|                       Otherwise, print the last ``abs(limit)`` entries. If limit is omitted or None, all entries are printed.
-//|     :param bool chain: If `True` then chained exceptions will be printed (note: not yet implemented).
+//|     :param bool chain: If `True` then chained exceptions will be printed.
 //|     """
 //|
 STATIC mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -169,8 +182,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 0, traceback_f
 //|     no traceback will be shown. This is compatible with CPython 3.5 and
 //|     newer.
 //|
-//|     .. note:: Setting ``chain`` will have no effect as chained exceptions are not yet implemented.
-//|
 //|     :param exc: The exception. Must be an instance of `BaseException`. Unused if value is specified.
 //|     :param value: If specified, is used in place of ``exc``.
 //|     :param tb: When value is alsp specified, ``tb`` is used in place of the exception's own traceback. If `None`, the traceback will not be printed.
@@ -178,7 +189,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 0, traceback_f
 //|                       Otherwise, print the last ``abs(limit)`` entries. If limit is omitted or None, all entries are printed.
 //|     :param io.FileIO file: If file is omitted or `None`, the output goes to `sys.stderr`; otherwise it should be an open
 //|                            file or file-like object to receive the output.
-//|     :param bool chain: If `True` then chained exceptions will be printed (note: not yet implemented).
+//|     :param bool chain: If `True` then chained exceptions will be printed.
 //|
 //|     """
 //|     ...

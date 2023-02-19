@@ -130,7 +130,6 @@ endif
 
 SRC_C += \
 	background.c \
-	fatfs_port.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \

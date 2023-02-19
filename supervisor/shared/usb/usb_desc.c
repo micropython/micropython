@@ -228,7 +228,7 @@ static void usb_build_configuration_descriptor(void) {
         if (usb_hid_boot_device() > 0 && descriptor_counts.current_interface > 0) {
             // Hosts using boot devices generally to expect them to be at interface zero,
             // and will not work properly otherwise.
-            reset_into_safe_mode(USB_BOOT_DEVICE_NOT_INTERFACE_ZERO);
+            reset_into_safe_mode(SAFE_MODE_USB_BOOT_DEVICE_NOT_INTERFACE_ZERO);
         }
         descriptor_buf_remaining += usb_hid_add_descriptor(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string,
@@ -258,14 +258,14 @@ static void usb_build_configuration_descriptor(void) {
     if (descriptor_counts.current_endpoint > USB_NUM_ENDPOINT_PAIRS ||
         descriptor_counts.num_in_endpoints > USB_NUM_IN_ENDPOINTS ||
         descriptor_counts.num_out_endpoints > USB_NUM_OUT_ENDPOINTS) {
-        reset_into_safe_mode(USB_TOO_MANY_ENDPOINTS);
+        reset_into_safe_mode(SAFE_MODE_USB_TOO_MANY_ENDPOINTS);
     }
 }
 
 // str must not be on the heap.
 void usb_add_interface_string(uint8_t interface_string_index, const char str[]) {
     if (interface_string_index > MAX_INTERFACE_STRINGS) {
-        reset_into_safe_mode(USB_TOO_MANY_INTERFACE_NAMES);
+        reset_into_safe_mode(SAFE_MODE_USB_TOO_MANY_INTERFACE_NAMES);
     }
 
     collected_interface_strings[interface_string_index].char_str = str;

@@ -106,7 +106,9 @@ STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *pos_args
     // copy in args
     memcpy(args2, pos_args, n_args * sizeof(mp_obj_t));
     // copy in kwargs
-    memcpy(args2 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
+    if (n_kw) {
+        memcpy(args2 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
+    }
     self->subobj[0] = native_base->make_new(native_base, n_args, n_kw, args2);
     m_del(mp_obj_t, args2, n_args + 2 * n_kw);
 

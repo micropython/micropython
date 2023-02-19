@@ -80,7 +80,7 @@ static mp_obj_t gifio_gifwriter_make_new(const mp_obj_type_t *type, size_t n_arg
         file,
         args[ARG_width].u_int,
         args[ARG_height].u_int,
-        (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_colorspace].u_obj),
+        (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_colorspace].u_obj, MP_QSTR_colorspace),
         args[ARG_loop].u_bool,
         args[ARG_dither].u_bool,
         own_file);

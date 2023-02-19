@@ -111,7 +111,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint8_t uart_id = ((((tx != NULL) ? tx->number : rx->number) + 4) / 8) % NUM_UARTS;
 
     if (uart_status[uart_id] != STATUS_FREE) {
-        mp_raise_RuntimeError(translate("All UART peripherals are in use"));
+        mp_raise_ValueError(translate("UART peripheral in use"));
     }
     // These may raise exceptions if pins are already in use.
     self->tx_pin = pin_init(uart_id, tx, 0);
@@ -338,4 +338,19 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
         return false;
     }
     return uart_is_writable(self->uart);
+}
+
+STATIC void pin_never_reset(uint8_t pin) {
+    if (pin != NO_PIN) {
+        never_reset_pin_number(pin);
+    }
+}
+
+void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
+    never_reset_uart(self->uart_id);
+    pin_never_reset(self->tx_pin);
+    pin_never_reset(self->rx_pin);
+    pin_never_reset(self->cts_pin);
+    pin_never_reset(self->rs485_dir_pin);
+    pin_never_reset(self->rts_pin);
 }

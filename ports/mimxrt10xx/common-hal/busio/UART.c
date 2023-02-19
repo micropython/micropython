@@ -113,7 +113,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     bool sigint_enabled) {
 
     self->baudrate = baudrate;
-    self->character_bits = (uint8_t)mp_arg_validate_int_range(self->character_bits, 7, 8, MP_QSTR_bits);
+    self->character_bits = (uint8_t)mp_arg_validate_int_range(bits, 7, 8, MP_QSTR_bits);
     self->timeout_ms = timeout * 1000;
 
 

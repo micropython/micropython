@@ -61,12 +61,13 @@ STATIC void incrementalencoder_interrupt_handler(void *self_in);
 
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
     const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {
-    mp_obj_t pins[] = {MP_OBJ_FROM_PTR(pin_a), MP_OBJ_FROM_PTR(pin_b)};
+    const mcu_pin_obj_t *pins[] = { pin_a, pin_b };
+
     // Start out with swapped to match behavior with other ports.
     self->swapped = true;
     if (!common_hal_rp2pio_pins_are_sequential(2, pins)) {
-        pins[0] = MP_OBJ_FROM_PTR(pin_b);
-        pins[1] = MP_OBJ_FROM_PTR(pin_a);
+        pins[0] = pin_b;
+        pins[1] = pin_a;
         self->swapped = false;
         if (!common_hal_rp2pio_pins_are_sequential(2, pins)) {
             mp_raise_RuntimeError(translate("Pins must be sequential GPIO pins"));

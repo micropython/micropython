@@ -107,6 +107,7 @@ MP_BC_LOAD_GLOBAL = 0x12
 MP_BC_LOAD_ATTR = 0x13
 MP_BC_STORE_ATTR = 0x18
 
+
 # this function mirrors that in py/bc.c
 def mp_opcode_format(bytecode, ip, count_var_uint):
     opcode = bytecode[ip]

@@ -109,6 +109,7 @@ SRC_SDK := \
 	drivers/fsl_ocotp.c \
 	drivers/fsl_pwm.c \
 	drivers/fsl_snvs_hp.c \
+	drivers/fsl_snvs_lp.c \
 	drivers/fsl_tempmon.c \
 	drivers/fsl_trng.c \
 	system_$(CHIP_FAMILY).c \
@@ -121,7 +122,6 @@ SRC_C += \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/flash_config.c \
 	boards/$(BOARD)/pins.c \
-	fatfs_port.c \
 	lib/tinyusb/src/portable/chipidea/ci_hs/dcd_ci_hs.c \
 	mphalport.c \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/clocks.c \

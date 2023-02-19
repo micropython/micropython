@@ -6,24 +6,49 @@ variables are commonly used to store "secrets" such as Wi-Fi passwords and API
 keys. This method *does not* make them secure. It only separates them from the
 code.
 
-CircuitPython supports these by mimicking the `dotenv <https://github.com/theskumar/python-dotenv>`_
-CPython library. Other languages such as Javascript, PHP and Ruby also have
-dotenv libraries.
+CircuitPython uses a file called ``settings.toml`` at the drive root (no
+folder) as the environment.  User code can access the values from the file
+using `os.getenv()`. It is recommended to save any values used repeatedly in a
+variable because `os.getenv()` will parse the ``settings.toml`` file contents
+on every access.
 
-These libraries store environment variables in a ``.env`` file. Here is a simple
-example:
+CircuitPython only supports a subset of the full toml specification, see below
+for more details. The subset is very "Python-like", which is a key reason we
+selected the format.
 
-.. code-block:: bash
+Due to technical limitations it probably also accepts some files that are
+not valid TOML files; bugs of this nature are subject to change (i.e., be
+fixed) without the usual deprecation period for incompatible changes.
 
-  KEY1='value1'
-  # Comment
-  KEY2='value2
-  is multiple lines'
+File format example:
 
-CircuitPython uses the ``.env`` at the drive root (no folder) as the environment.
-User code can access the values from the file using `os.getenv()`. It is
-recommended to save any values used repeatedly in a variable because `os.getenv()`
-will parse the ``/.env`` on every access.
+.. code-block::
+
+   str_key="Hello world" # with trailing comment
+   int_key = 7
+   unicode_key="œuvre"
+   unicode_key2="\\u0153uvre" # same as above
+   unicode_key3="\\U00000153uvre" # same as above
+   escape_codes="supported, including \\r\\n\\"\\\\"
+   # comment
+   [subtable]
+   subvalue="cannot retrieve this using getenv"
+
+
+Details of the toml language subset
+-----------------------------------
+
+* The content is required to be in UTF-8 encoding
+* The supported data types are string and integer
+* Only basic strings are supported, not triple-quoted strings
+* Only integers supported by strtol. (no 0o, no 0b, no underscores 1_000, 011
+  is 9, not 11)
+* Only bare keys are supported
+* Duplicate keys are not diagnosed.
+* Comments are supported
+* Only values from the "root table" can be retrieved
+* due to technical limitations, the content of multi-line
+  strings can erroneously be parsed as a value.
 
 CircuitPython behavior
 ----------------------

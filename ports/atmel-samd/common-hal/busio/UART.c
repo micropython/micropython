@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#if CIRCUITPY_BUSIO_UART
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/UART.h"
@@ -485,3 +486,4 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
     usart_async_get_status(usart_desc_p, &async_status);
     return !(async_status.flags & USART_ASYNC_STATUS_BUSY);
 }
+#endif

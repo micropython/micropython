@@ -1,5 +1,6 @@
 # test native emitter can handle closures correctly
 
+
 # basic closure
 @micropython.native
 def f():
@@ -15,6 +16,7 @@ def f():
 
 print(f()())
 
+
 # closing over an argument
 @micropython.native
 def f(x):
@@ -27,6 +29,7 @@ def f(x):
 
 
 print(f(2)())
+
 
 # closing over an argument and a normal local
 @micropython.native

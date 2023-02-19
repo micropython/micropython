@@ -78,14 +78,10 @@ void mp_init(void) {
 
     #if MICROPY_KBD_EXCEPTION
     // initialise the exception object for raising KeyboardInterrupt
-    MP_STATE_VM(mp_kbd_exception).base.type = &mp_type_KeyboardInterrupt;
-    MP_STATE_VM(mp_kbd_exception).args = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
-    MP_STATE_VM(mp_kbd_exception).traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
+    mp_obj_exception_initialize0(&MP_STATE_VM(mp_kbd_exception), &mp_type_KeyboardInterrupt);
     #endif
 
-    MP_STATE_VM(mp_reload_exception).base.type = &mp_type_ReloadException;
-    MP_STATE_VM(mp_reload_exception).args = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
-    MP_STATE_VM(mp_reload_exception).traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
+    mp_obj_exception_initialize0(&MP_STATE_VM(mp_reload_exception), &mp_type_ReloadException);
 
     // call port specific initialization if any
     #ifdef MICROPY_PORT_INIT_FUNC
@@ -310,7 +306,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
         }
         #else
         if (op == MP_UNARY_OP_INT) {
-            mp_raise_TypeError_varg(MP_ERROR_TEXT("can't convert %q to int"), mp_obj_get_type_qstr(arg));
+            mp_raise_TypeError_varg(MP_ERROR_TEXT("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_int);
         } else {
             mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported type for %q: '%q'"),
                 mp_unary_op_method_name[op], mp_obj_get_type_qstr(arg));
@@ -631,7 +627,7 @@ unsupported_op:
     #endif
 
 zero_division:
-    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("division by zero"));
+    mp_raise_ZeroDivisionError();
 }
 
 mp_obj_t mp_call_function_0(mp_obj_t fun) {
@@ -1247,8 +1243,8 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     mp_raise_AttributeError(MP_ERROR_TEXT("no such attribute"));
     #else
     mp_raise_msg_varg(&mp_type_AttributeError,
-        MP_ERROR_TEXT("'%s' object has no attribute '%q'"),
-        mp_obj_get_type_str(base), attr);
+        MP_ERROR_TEXT("can't set attribute '%q'"),
+        attr);
     #endif
 }
 
@@ -1765,3 +1761,7 @@ NORETURN void mp_raise_recursion_depth(void) {
     mp_raise_RuntimeError(MP_ERROR_TEXT("maximum recursion depth exceeded"));
 }
 #endif
+
+NORETURN void mp_raise_ZeroDivisionError(void) {
+    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("division by zero"));
+}

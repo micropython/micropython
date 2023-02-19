@@ -31,6 +31,7 @@ import sys
 #
 # See examples/stm32f405.csv for example formatting.
 
+
 # Most peripherals (SPI, I2C) output 3 values:
 # peripheral index, alt function, pin string
 def evaluate_periph(inper, inlist, periph, subtype, altfn, pin):

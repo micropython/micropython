@@ -47,6 +47,7 @@
 //| from typing import TypeVar
 //|
 //| _T = TypeVar("_T")
+//|
 
 //| def seed(seed: int) -> None:
 //|     """Sets the starting seed of the random  number generation. Further calls to
@@ -108,7 +109,7 @@ STATIC mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {
             } else if (step < 0) {
                 n = (stop - start + step + 1) / step;
             } else {
-                mp_raise_ValueError(translate("step must be non-zero"));
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("%q step cannot be zero"), MP_QSTR_randrange);
             }
             if (n <= 0) {
                 mp_raise_ValueError(translate("invalid step"));

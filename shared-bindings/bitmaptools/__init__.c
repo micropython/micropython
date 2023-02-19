@@ -50,6 +50,7 @@
 //|     <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_
 //|     for information about using the :py:mod:`displayio` module.
 //| """
+//|
 
 STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
     // Checks if point is None and returns default_value, otherwise decodes integer value
@@ -319,7 +320,7 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
     mp_float_t factor1 = (args[ARG_factor_1].u_obj == mp_const_none) ? MICROPY_FLOAT_CONST(.5) : mp_obj_get_float(args[ARG_factor_1].u_obj);
     mp_float_t factor2 = (args[ARG_factor_2].u_obj == mp_const_none) ? 1 - factor1 : mp_obj_get_float(args[ARG_factor_2].u_obj);
 
-    displayio_colorspace_t colorspace = (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_colorspace].u_obj);
+    displayio_colorspace_t colorspace = (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_colorspace].u_obj, MP_QSTR_colorspace);
 
     if (destination->width != source1->width
         || destination->height != source1->height
@@ -513,13 +514,6 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
     int16_t y1 = args[ARG_y1].u_int;
     int16_t x2 = args[ARG_x2].u_int;
     int16_t y2 = args[ARG_y2].u_int;
-
-    // verify points are within the bitmap boundary (inclusive)
-    if ((x1 < 0) || (x2 < 0) || (y1 < 0) || (y2 < 0) ||
-        (x1 >= destination->width) || (x2 >= destination->width) ||
-        (y1 >= destination->height) || (y2 >= destination->height)) {
-        mp_raise_ValueError(translate("out of range of target"));
-    }
 
     common_hal_bitmaptools_draw_line(destination, x1, y1, x2, y2, value);
 
@@ -741,8 +735,8 @@ STATIC mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_m
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     displayio_bitmap_t *source_bitmap = mp_arg_validate_type(args[ARG_source_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap);
     displayio_bitmap_t *dest_bitmap = mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap);
-    bitmaptools_dither_algorithm_t algorithm = cp_enum_value(&bitmaptools_dither_algorithm_type, args[ARG_algorithm].u_obj);
-    displayio_colorspace_t colorspace = cp_enum_value(&displayio_colorspace_type, args[ARG_source_colorspace].u_obj);
+    bitmaptools_dither_algorithm_t algorithm = cp_enum_value(&bitmaptools_dither_algorithm_type, args[ARG_algorithm].u_obj, MP_QSTR_algorithm);
+    displayio_colorspace_t colorspace = cp_enum_value(&displayio_colorspace_type, args[ARG_source_colorspace].u_obj, MP_QSTR_source_colorspace);
 
     if (source_bitmap->width != dest_bitmap->width || source_bitmap->height != dest_bitmap->height) {
         mp_raise_TypeError(translate("bitmap sizes must match"));

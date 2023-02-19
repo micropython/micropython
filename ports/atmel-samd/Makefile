@@ -79,7 +79,7 @@ endif
 
 ifeq ($(CHIP_FAMILY), same54)
 PERIPHERALS_CHIP_FAMILY=sam_d5x_e5x
-OPTIMIZATION_FLAGS ?= -O2
+OPTIMIZATION_FLAGS ?= -Os
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAME5X -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
@@ -293,7 +293,6 @@ SRC_C += \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	eic_handler.c \
-	fatfs_port.c \
 	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	mphalport.c \
 	reset.c \

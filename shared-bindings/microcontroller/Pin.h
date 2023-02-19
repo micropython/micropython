@@ -33,10 +33,11 @@
 // Type object used in Python. Should be shared between ports.
 extern const mp_obj_type_t mcu_pin_type;
 
-const mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj);
-const mcu_pin_obj_t *validate_obj_is_pin_or_none(mp_obj_t obj);
-const mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj);
-const mcu_pin_obj_t *validate_obj_is_free_pin_or_none(mp_obj_t obj);
+const mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj, qstr arg_name);
+const mcu_pin_obj_t *validate_obj_is_pin_in(mp_obj_t obj, qstr arg_name);
+const mcu_pin_obj_t *validate_obj_is_pin_or_none(mp_obj_t obj, qstr arg_name);
+const mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj, qstr arg_name);
+const mcu_pin_obj_t *validate_obj_is_free_pin_or_none(mp_obj_t obj, qstr arg_name);
 void validate_no_duplicate_pins(mp_obj_t seq, qstr arg_name);
 void validate_no_duplicate_pins_2(mp_obj_t seq1, mp_obj_t seq2, qstr arg_name1, qstr arg_name2);
 void validate_list_is_free_pins(qstr what, const mcu_pin_obj_t **pins_out, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out);

@@ -117,7 +117,8 @@
 //|         :param float seconds_per_frame: Minimum number of seconds between screen refreshes
 //|         :param bool always_toggle_chip_select: When True, chip select is toggled every byte
 //|         :param bool grayscale: When true, the color ram is the low bit of 2-bit grayscale
-//|         :param bool two_byte_sequence_length: When true, use two bytes to define sequence length"""
+//|         :param bool two_byte_sequence_length: When true, use two bytes to define sequence length
+//|         """
 //|         ...
 STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_display_bus, ARG_start_sequence, ARG_stop_sequence, ARG_width, ARG_height,
@@ -167,7 +168,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
     mp_get_buffer_raise(args[ARG_stop_sequence].u_obj, &stop_bufinfo, MP_BUFFER_READ);
 
 
-    const mcu_pin_obj_t *busy_pin = validate_obj_is_free_pin_or_none(args[ARG_busy_pin].u_obj);
+    const mcu_pin_obj_t *busy_pin = validate_obj_is_free_pin_or_none(args[ARG_busy_pin].u_obj, MP_QSTR_busy_pin);
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
@@ -349,6 +350,30 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_bus_obj, displayio_epaperd
 MP_PROPERTY_GETTER(displayio_epaperdisplay_bus_obj,
     (mp_obj_t)&displayio_epaperdisplay_get_bus_obj);
 
+//|     root_group: Group
+//|     """The root group on the epaper display."""
+//|
+STATIC mp_obj_t displayio_epaperdisplay_obj_get_root_group(mp_obj_t self_in) {
+    displayio_epaperdisplay_obj_t *self = native_display(self_in);
+    return common_hal_displayio_epaperdisplay_get_root_group(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_root_group_obj, displayio_epaperdisplay_obj_get_root_group);
+
+STATIC mp_obj_t displayio_epaperdisplay_obj_set_root_group(mp_obj_t self_in, mp_obj_t group_in) {
+    displayio_epaperdisplay_obj_t *self = native_display(self_in);
+    displayio_group_t *group = NULL;
+    if (group_in != mp_const_none) {
+        group = MP_OBJ_TO_PTR(native_group(group_in));
+    }
+
+    common_hal_displayio_epaperdisplay_set_root_group(self, group);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_set_root_group_obj, displayio_epaperdisplay_obj_set_root_group);
+
+MP_PROPERTY_GETSET(displayio_epaperdisplay_root_group_obj,
+    (mp_obj_t)&displayio_epaperdisplay_get_root_group_obj,
+    (mp_obj_t)&displayio_epaperdisplay_set_root_group_obj);
 
 STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_epaperdisplay_show_obj) },
@@ -361,6 +386,7 @@ STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_bus), MP_ROM_PTR(&displayio_epaperdisplay_bus_obj) },
     { MP_ROM_QSTR(MP_QSTR_busy), MP_ROM_PTR(&displayio_epaperdisplay_busy_obj) },
     { MP_ROM_QSTR(MP_QSTR_time_to_refresh), MP_ROM_PTR(&displayio_epaperdisplay_time_to_refresh_obj) },
+    { MP_ROM_QSTR(MP_QSTR_root_group), MP_ROM_PTR(&displayio_epaperdisplay_root_group_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_epaperdisplay_locals_dict, displayio_epaperdisplay_locals_dict_table);
 

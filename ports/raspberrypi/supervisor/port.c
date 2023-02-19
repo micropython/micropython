@@ -62,6 +62,7 @@
 #include "src/rp2_common/hardware_sync/include/hardware/sync.h"
 #include "src/rp2_common/hardware_timer/include/hardware/timer.h"
 #if CIRCUITPY_CYW43
+#include "py/mphal.h"
 #include "pico/cyw43_arch.h"
 #endif
 #include "src/common/pico_time/include/pico/time.h"
@@ -126,6 +127,13 @@ safe_mode_t port_init(void) {
         (&_ld_dtcm_bss_start)[i] = 0;
     }
 
+    #if CIRCUITPY_CYW43
+    never_reset_pin_number(23);
+    never_reset_pin_number(24);
+    never_reset_pin_number(25);
+    never_reset_pin_number(29);
+    #endif
+
     // Reset everything into a known state before board_init.
     reset_port();
 
@@ -139,21 +147,24 @@ safe_mode_t port_init(void) {
     // Check brownout.
 
     #if CIRCUITPY_CYW43
-    never_reset_pin_number(23);
-    never_reset_pin_number(24);
-    never_reset_pin_number(25);
-    never_reset_pin_number(29);
-    if (cyw43_arch_init()) {
+    // A small number of samples of pico w need an additional delay before
+    // initializing the cyw43 chip. Delays inside cyw43_arch_init_with_country
+    // are intended to meet the power on timing requirements, but apparently
+    // are inadequate. We'll back off this long delay based on future testing.
+    mp_hal_delay_ms(1000);
+    // Change this as a placeholder as to how to init with country code.
+    // Default country code is CYW43_COUNTRY_WORLDWIDE)
+    if (cyw43_arch_init_with_country(PICO_CYW43_ARCH_DEFAULT_COUNTRY_CODE)) {
         serial_write("WiFi init failed\n");
     } else {
         cyw_ever_init = true;
     }
     #endif
     if (board_requests_safe_mode()) {
-        return USER_SAFE_MODE;
+        return SAFE_MODE_USER;
     }
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_port(void) {
@@ -301,7 +312,7 @@ __attribute__((used)) void HardFault_Handler(void) {
     REG_MTB_MASTER = 0x00000000 + 6;
     #endif
 
-    reset_into_safe_mode(HARD_CRASH);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }

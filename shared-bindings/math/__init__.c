@@ -86,6 +86,7 @@ STATIC NORETURN void math_error(void) {
 //|
 //| pi: float
 //| """the ratio of a circle's circumference to its diameter"""
+//|
 
 //| def acos(x: float) -> float:
 //|     """Return the inverse cosine of ``x``."""
@@ -371,7 +372,7 @@ STATIC mp_obj_t mp_math_log(size_t n_args, const mp_obj_t *args) {
             #pragma GCC diagnostic ignored "-Wfloat-equal"
         } else if (base == (mp_float_t)1.0) {
             #pragma GCC diagnostic pop
-            mp_raise_msg(&mp_type_ZeroDivisionError, translate("division by zero"));
+            math_error();
         }
         return mp_obj_new_float(l / MICROPY_FLOAT_C_FUN(log)(base));
     }

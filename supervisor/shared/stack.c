@@ -74,7 +74,7 @@ inline bool stack_ok(void) {
 
 inline void assert_heap_ok(void) {
     if (!stack_ok()) {
-        reset_into_safe_mode(HEAP_OVERWRITTEN);
+        reset_into_safe_mode(SAFE_MODE_STACK_OVERFLOW);
     }
 }
 

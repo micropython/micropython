@@ -11,6 +11,7 @@ import argparse
 import re
 import markdown
 
+
 # given a list of (name,regex) pairs, find the first one that matches the given line
 def re_match_first(regexs, line):
     for name, regex in regexs:

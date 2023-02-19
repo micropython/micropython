@@ -373,6 +373,10 @@
 /  SemaphoreHandle_t and etc. A header file for O/S definitions needs to be
 /  included somewhere in the scope of ff.h. */
 
-
+#ifndef FF_FS_MAKE_VOLID
+#define FF_FS_MAKE_VOLID (0)
+#endif
+/* The option FF_FS_MAKE_VOLID enables the use of a function to return a 32-bit volume identifier.
+/  If it is disabled, a Volume ID based on the current time is used. */
 
 /*--- End of configuration options ---*/

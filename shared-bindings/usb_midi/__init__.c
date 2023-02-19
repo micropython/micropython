@@ -42,6 +42,7 @@
 //|
 //| ports: Tuple[Union[PortIn, PortOut], ...]
 //| """Tuple of all MIDI ports. Each item is ether `PortIn` or `PortOut`."""
+//|
 
 //| def disable() -> None:
 //|     """Disable presenting a USB MIDI device to the host.

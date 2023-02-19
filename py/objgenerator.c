@@ -38,7 +38,13 @@
 #include "supervisor/shared/translate/translate.h"
 
 // Instance of GeneratorExit exception - needed by generator.close()
-const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
+#if MICROPY_CONST_GENERATOREXIT_OBJ
+const
+mp_obj_exception_t mp_static_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
+#else
+static
+mp_obj_exception_t mp_static_GeneratorExit_obj;
+#endif
 
 /******************************************************************************/
 /* generator wrapper                                                          */
@@ -362,9 +368,17 @@ STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gen_instance_throw_obj, 2, 4, gen_instance_throw);
 
+static mp_obj_t generatorexit(void) {
+    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+    MP_STATIC_ASSERT(!MICROPY_CONST_GENERATOREXIT_OBJ);
+    mp_obj_exception_initialize0(&mp_static_GeneratorExit_obj, &mp_type_GeneratorExit);
+    #endif
+    return MP_OBJ_FROM_PTR(&mp_static_GeneratorExit_obj);
+}
+
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
     mp_obj_t ret;
-    switch (mp_obj_gen_resume(self_in, mp_const_none, MP_OBJ_FROM_PTR(&mp_const_GeneratorExit_obj), &ret)) {
+    switch (mp_obj_gen_resume(self_in, mp_const_none, generatorexit(), &ret)) {
         case MP_VM_RETURN_YIELD:
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("generator ignored GeneratorExit"));
 

@@ -30,12 +30,14 @@
 #include "supervisor/board.h"
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
+#include "supervisor/shared/reload.h"
 #include "py/runtime.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "bindings/espidf/__init__.h"
+#include "bindings/espulp/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogOut.h"
 #include "common-hal/busio/I2C.h"
@@ -55,7 +57,7 @@
 #include "shared-bindings/microcontroller/RunMode.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/socketpool/__init__.h"
-#include "shared-module/dotenv/__init__.h"
+#include "shared-module/os/__init__.h"
 
 #include "peripherals/rmt.h"
 #include "peripherals/timer.h"
@@ -76,7 +78,7 @@
 #include "shared-bindings/_bleio/__init__.h"
 #endif
 
-#if CIRCUITPY_ESP32_CAMERA
+#if CIRCUITPY_ESPCAMERA
 #include "esp_camera.h"
 #endif
 
@@ -316,30 +318,30 @@ safe_mode_t port_init(void) {
     }
     if (heap == NULL) {
         heap_size = 0;
-        return NO_HEAP;
+        return SAFE_MODE_NO_HEAP;
     }
 
     esp_reset_reason_t reason = esp_reset_reason();
     switch (reason) {
         case ESP_RST_BROWNOUT:
-            return BROWNOUT;
+            return SAFE_MODE_BROWNOUT;
         case ESP_RST_PANIC:
-            return HARD_CRASH;
+            return SAFE_MODE_HARD_FAULT;
         case ESP_RST_INT_WDT:
             // The interrupt watchdog is used internally to make sure that latency sensitive
             // interrupt code isn't blocked. User watchdog resets come through ESP_RST_WDT.
-            return WATCHDOG_RESET;
+            return SAFE_MODE_WATCHDOG;
         case ESP_RST_WDT:
         default:
             break;
     }
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_port(void) {
     // TODO deinit for esp32-camera
-    #if CIRCUITPY_ESP32_CAMERA
+    #if CIRCUITPY_ESPCAMERA
     esp_camera_deinit();
     #endif
 
@@ -365,6 +367,10 @@ void reset_port(void) {
 
     #if CIRCUITPY_DUALBANK
     dualbank_reset();
+    #endif
+
+    #if CIRCUITPY_ESPULP
+    espulp_reset();
     #endif
 
     #if CIRCUITPY_FREQUENCYIO
@@ -511,7 +517,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 // On the ESP we use FreeRTOS notifications instead of interrupts so this is a
 // bit of a misnomer.
 void port_idle_until_interrupt(void) {
-    if (!background_callback_pending()) {
+    if (!background_callback_pending() && !autoreload_pending()) {
         xTaskNotifyWait(0x01, 0x01, NULL, portMAX_DELAY);
     }
 }
@@ -519,7 +525,7 @@ void port_idle_until_interrupt(void) {
 void port_post_boot_py(bool heap_valid) {
     if (!heap_valid && filesystem_present()) {
         mp_int_t reserved;
-        if (dotenv_get_key_int("/.env", "CIRCUITPY_RESERVED_PSRAM", &reserved)) {
+        if (common_hal_os_getenv_int("CIRCUITPY_RESERVED_PSRAM", &reserved) == GETENV_OK) {
             common_hal_espidf_set_reserved_psram(reserved);
         }
         common_hal_espidf_reserve_psram();

@@ -58,7 +58,8 @@
 //|
 //|         :param ~circuitpython_typing.FrameBuffer framebuffer: The framebuffer that the display is connected to
 //|         :param bool auto_refresh: Automatically refresh the screen
-//|         :param int rotation: The rotation of the display in degrees clockwise. Must be in 90 degree increments (0, 90, 180, 270)"""
+//|         :param int rotation: The rotation of the display in degrees clockwise. Must be in 90 degree increments (0, 90, 180, 270)
+//|         """
 //|         ...
 STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_framebuffer, ARG_rotation, ARG_auto_refresh, NUM_ARGS };
@@ -134,7 +135,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_show_obj, framebuffer
 //|         without calls to this.)
 //|
 //|         :param int target_frames_per_second: How many times a second `refresh` should be called and the screen updated.
-//|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second."""
+//|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second.
+//|         """
 //|         ...
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_refresh(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_target_frames_per_second, ARG_minimum_frames_per_second };
@@ -263,7 +265,8 @@ MP_PROPERTY_GETTER(framebufferio_framebufferframebuffer_obj,
 //|         """Extract the pixels from a single row
 //|
 //|         :param int y: The top edge of the area
-//|         :param ~circuitpython_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: The buffer in which to place the pixel data
+//|         """
 //|         ...
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_y, ARG_buffer };
@@ -328,8 +331,24 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_root_group(mp_obj_t sel
 }
 MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_root_group_obj, framebufferio_framebufferdisplay_obj_get_root_group);
 
-MP_PROPERTY_GETTER(framebufferio_framebufferdisplay_root_group_obj,
-    (mp_obj_t)&framebufferio_framebufferdisplay_get_root_group_obj);
+STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_root_group(mp_obj_t self_in, mp_obj_t group_in) {
+    framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
+    displayio_group_t *group = NULL;
+    if (group_in != mp_const_none) {
+        group = MP_OBJ_TO_PTR(native_group(group_in));
+    }
+
+    bool ok = common_hal_framebufferio_framebufferdisplay_set_root_group(self, group);
+    if (!ok) {
+        mp_raise_ValueError(translate("Group already used"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_set_root_group_obj, framebufferio_framebufferdisplay_obj_set_root_group);
+
+MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_root_group_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_get_root_group_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_set_root_group_obj);
 
 STATIC const mp_rom_map_elem_t framebufferio_framebufferdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&framebufferio_framebufferdisplay_show_obj) },

@@ -1,0 +1,85 @@
+name: Build boards
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: string
+      boards:
+        required: true
+        type: string
+      cp-version:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    env:
+      CP_VERSION: ${{ inputs.cp-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        board: ${{ fromJSON(inputs.boards) }}
+    steps:
+    - name: Set up repository
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        fetch-depth: 1
+    - name: Set up python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+    - name: Set up port
+      if: inputs.platform == 'esp'
+      uses: ./.github/actions/deps/ports/espressif
+    - name: Set up submodules
+      id: set-up-submodules
+      uses: ./.github/actions/deps/submodules
+    - name: Set up external
+      uses: ./.github/actions/deps/external
+      with:
+        platform: ${{ inputs.platform }}
+    - name: Set up mpy-cross
+      if: steps.set-up-submodules.outputs.frozen == 'True'
+      uses: ./.github/actions/mpy_cross
+
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+        cmake --version || true
+        ninja --version || true
+        aarch64-none-elf-gcc --version || true
+        arm-none-eabi-gcc --version || true
+        xtensa-esp32-elf-gcc --version || true
+        riscv32-esp-elf-gcc --version || true
+        riscv64-unknown-elf-gcc --version || true
+        mkfs.fat --version || true
+
+    - name: Set up build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
+    - name: Build board
+      run: python3 -u build_release_files.py
+      working-directory: tools
+      env:
+        BOARDS: ${{ matrix.board }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.board }}
+        path: bin/${{ matrix.board }}
+    - name: Upload to S3
+      uses: ./.github/actions/upload_aws
+      with:
+        source: bin/
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

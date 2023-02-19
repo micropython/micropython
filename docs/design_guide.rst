@@ -267,6 +267,14 @@ After the license comment::
 
     """
 
+Version description
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+After the import statements::
+
+    __version__ = "0.0.0+auto.0"
+    __repo__ = "<repo github link>"
+
 
 Class description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

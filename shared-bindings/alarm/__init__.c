@@ -27,12 +27,15 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#if CIRCUITPY_ESPULP
+#include "bindings/espulp/ULPAlarm.h"
+#endif
+
 #include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/SleepMemory.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/alarm/touch/TouchAlarm.h"
-#include "shared-bindings/alarm/coproc/CoprocAlarm.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/supervisor/Runtime.h"
 #include "shared-bindings/time/__init__.h"
@@ -70,6 +73,7 @@
 //| """The most recently triggered alarm. If CircuitPython was sleeping, the alarm that woke it from sleep.
 //| If no alarm occured since the last hard reset or soft restart, value is ``None``.
 //| """
+//|
 
 // wake_alarm is implemented as a dictionary entry, so there's no code here.
 
@@ -77,11 +81,13 @@ STATIC void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     for (size_t i = 0; i < n_args; i++) {
         if (mp_obj_is_type(objs[i], &alarm_pin_pinalarm_type) ||
             mp_obj_is_type(objs[i], &alarm_time_timealarm_type) ||
-            mp_obj_is_type(objs[i], &alarm_touch_touchalarm_type) ||
-            mp_obj_is_type(objs[i], &alarm_coproc_coprocalarm_type)) {
+            #if CIRCUITPY_ESPULP
+            mp_obj_is_type(objs[i], &espulp_ulpalarm_type) ||
+            #endif
+            mp_obj_is_type(objs[i], &alarm_touch_touchalarm_type)) {
             continue;
         }
-        mp_raise_TypeError_varg(translate("Expected an %q"), MP_QSTR_Alarm);
+        mp_raise_TypeError_varg(translate("Expected a kind of %q"), MP_QSTR_Alarm);
     }
 }
 
@@ -202,10 +208,7 @@ STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_o
 
     for (mp_uint_t i = 0; i < num_dios; i++) {
         mp_obj_t dio = mp_obj_subscr(preserve_dios, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
-        if (!mp_obj_is_type(dio, &digitalio_digitalinout_type)) {
-            mp_raise_TypeError_varg(translate("Expected a %q"), MP_QSTR_DigitalInOut);
-        }
-        dios_array[i] = MP_OBJ_TO_PTR(dio);
+        dios_array[i] = mp_arg_validate_type(dio, &digitalio_digitalinout_type, MP_QSTR_alarm);
     }
 
     common_hal_alarm_set_deep_sleep_alarms(n_args, pos_args, num_dios, dios_array);
@@ -256,18 +259,6 @@ STATIC const mp_obj_module_t alarm_touch_module = {
     .globals = (mp_obj_dict_t *)&alarm_touch_globals,
 };
 
-STATIC const mp_map_elem_t alarm_coproc_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_coproc) },
-    { MP_ROM_QSTR(MP_QSTR_CoprocAlarm), MP_OBJ_FROM_PTR(&alarm_coproc_coprocalarm_type) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(alarm_coproc_globals, alarm_coproc_globals_table);
-
-STATIC const mp_obj_module_t alarm_coproc_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&alarm_coproc_globals,
-};
-
 // The module table is mutable because .wake_alarm is a mutable attribute.
 STATIC mp_map_elem_t alarm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_alarm) },
@@ -282,7 +273,6 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_pin), MP_OBJ_FROM_PTR(&alarm_pin_module) },
     { MP_ROM_QSTR(MP_QSTR_time), MP_OBJ_FROM_PTR(&alarm_time_module) },
     { MP_ROM_QSTR(MP_QSTR_touch), MP_OBJ_FROM_PTR(&alarm_touch_module) },
-    { MP_ROM_QSTR(MP_QSTR_coproc), MP_OBJ_FROM_PTR(&alarm_coproc_module) },
 
     { MP_ROM_QSTR(MP_QSTR_SleepMemory),   MP_OBJ_FROM_PTR(&alarm_sleep_memory_type) },
     { MP_ROM_QSTR(MP_QSTR_sleep_memory),  MP_OBJ_FROM_PTR(&alarm_sleep_memory_obj) },

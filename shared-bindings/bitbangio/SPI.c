@@ -35,6 +35,7 @@
 
 #include "shared/runtime/buffer_helper.h"
 #include "shared/runtime/context_manager_helpers.h"
+#include "py/binary.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate/translate.h"
@@ -84,9 +85,9 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
-    const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);
-    const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj);
+    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj, MP_QSTR_clock);
+    const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj, MP_QSTR_mosi);
+    const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj, MP_QSTR_miso);
 
     bitbangio_spi_obj_t *self = m_new_obj(bitbangio_spi_obj_t);
     self->base.type = &bitbangio_spi_type;
@@ -192,9 +193,19 @@ STATIC mp_obj_t bitbangio_spi_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_unlock_obj, bitbangio_spi_obj_unlock);
 
-//|     def write(self, buf: ReadableBuffer) -> None:
+//|     import sys
+//|     def write(self, buf: ReadableBuffer, *, start: int = 0, end: int = sys.maxsize) -> None:
 //|         """Write the data contained in ``buf``. Requires the SPI being locked.
-//|         If the buffer is empty, nothing happens."""
+//|         If the buffer is empty, nothing happens.
+//|
+//|         If ``start`` or ``end`` is provided, then the buffer will be sliced
+//|         as if ``buffer[start:end]`` were passed, but without copying the data.
+//|         The number of bytes written will be the length of ``buffer[start:end]``.
+//|
+//|         :param ReadableBuffer buffer: buffer containing the bytes to write
+//|         :param int start: beginning of buffer slice
+//|         :param int end: end of buffer slice; if not specified, use ``len(buffer)``
+//|         """
 //|         ...
 STATIC mp_obj_t bitbangio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
@@ -211,9 +222,15 @@ STATIC mp_obj_t bitbangio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
+    // Compute bounds in terms of elements, not bytes.
+    int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     int32_t start = args[ARG_start].u_int;
-    size_t length = bufinfo.len;
+    size_t length = bufinfo.len / stride_in_bytes;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
 
     if (length == 0) {
         return mp_const_none;
@@ -267,9 +284,15 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, 
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
+    int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
+    // Compute bounds in terms of elements, not bytes.
     int32_t start = args[ARG_start].u_int;
-    size_t length = bufinfo.len;
+    size_t length = bufinfo.len / stride_in_bytes;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
 
     if (length == 0) {
         return mp_const_none;
@@ -337,15 +360,23 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
 
     mp_buffer_info_t buf_out_info;
     mp_get_buffer_raise(args[ARG_out_buffer].u_obj, &buf_out_info, MP_BUFFER_READ);
+    int out_stride_in_bytes = mp_binary_get_size('@', buf_out_info.typecode, NULL);
     int32_t out_start = args[ARG_out_start].u_int;
-    size_t out_length = buf_out_info.len;
+    size_t out_length = buf_out_info.len / out_stride_in_bytes;
     normalize_buffer_bounds(&out_start, args[ARG_out_end].u_int, &out_length);
 
     mp_buffer_info_t buf_in_info;
     mp_get_buffer_raise(args[ARG_in_buffer].u_obj, &buf_in_info, MP_BUFFER_WRITE);
+    int in_stride_in_bytes = mp_binary_get_size('@', buf_in_info.typecode, NULL);
     int32_t in_start = args[ARG_in_start].u_int;
-    size_t in_length = buf_in_info.len;
+    size_t in_length = buf_in_info.len / in_stride_in_bytes;
     normalize_buffer_bounds(&in_start, args[ARG_in_end].u_int, &in_length);
+
+    // Treat start and length in terms of bytes from now on.
+    out_start *= out_stride_in_bytes;
+    out_length *= out_stride_in_bytes;
+    in_start *= in_stride_in_bytes;
+    in_length *= in_stride_in_bytes;
 
     if (out_length != in_length) {
         mp_raise_ValueError(translate("buffer slices must be of equal length"));

@@ -21,7 +21,7 @@ Full Table of Contents
    ../shared-bindings/index.rst
    supported_ports.rst
    troubleshooting.rst
-   drivers.rst
+   libraries.rst
    workflows
    environment.rst
 
