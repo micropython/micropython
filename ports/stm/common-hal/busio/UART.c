@@ -160,7 +160,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             periph_index, uart_taken);
     } else {
         // both pins cannot be empty
-        mp_raise_ValueError(translate("Supply at least one UART pin"));
+        mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
 
     // Other errors

@@ -179,7 +179,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             break;
         }
     } else {
-        mp_raise_ValueError(translate("Supply at least one UART pin"));
+        mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
 
     if (rx && !rx_config) {
