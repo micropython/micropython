@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-02-17 20:38+0000\n"
+"PO-Revision-Date: 2023-02-20 03:39+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -2182,7 +2182,7 @@ msgstr "Inicialización de UART"
 
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "UART peripheral in use"
-msgstr ""
+msgstr "Periférico UART en uso"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
