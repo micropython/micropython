@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2023 Mark Komus
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +23,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKGIF_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKGIF_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "py/obj.h"
-#include "py/runtime.h"
-#include "py/mphal.h"
-#include "shared-bindings/gifio/GifWriter.h"
-#include "shared-bindings/gifio/OnDiskGif.h"
-#include "shared-bindings/util.h"
 
-//| """Access GIF-format images
-//| """
-STATIC const mp_rom_map_elem_t gifio_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gifio) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GifWriter),  MP_ROM_PTR(&gifio_gifwriter_type)},
-    { MP_ROM_QSTR(MP_QSTR_OnDiskGif), MP_ROM_PTR(&gifio_ondiskgif_type) },
-};
+#include "lib/AnimatedGIF/AnimatedGIF_circuitpy.h"
+#include "shared-module/displayio/Bitmap.h"
 
-STATIC MP_DEFINE_CONST_DICT(gifio_module_globals, gifio_module_globals_table);
+#include "extmod/vfs_fat.h"
 
-const mp_obj_module_t gifio_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&gifio_module_globals,
-};
+typedef struct {
+    mp_obj_base_t base;
+    GIFIMAGE gif;
+    pyb_file_obj_t *file;
+    displayio_bitmap_t *bitmap;
+    int32_t duration;
+    int32_t frame_count;
+    int32_t min_delay;
+    int32_t max_delay;
+} gifio_ondiskgif_t;
 
-MP_REGISTER_MODULE(MP_QSTR_gifio, gifio_module, CIRCUITPY_GIFIO);
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKGIF_H
