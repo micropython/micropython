@@ -1,12 +1,16 @@
-# Select the board to build for: if not given on the command line,
-# then default to PYBV10.
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to PYBV10.
 BOARD ?= PYBV10
+BOARD_DIR ?= $(abspath ../boards/$(BOARD))
+endif
 
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
-
-# Allow the directory containing the board configuration to be specified
-BOARD_DIR ?= $(abspath ../boards/$(BOARD))
 
 # Set USE_MBOOT to 1 so that TEXT0_ADDR gets set properly for those boards
 # that can be built with or without mboot.

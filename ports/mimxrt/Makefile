@@ -2,8 +2,21 @@
 # Parameter Configuration
 # =============================================================================
 
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to TEENSY40.
 BOARD ?= TEENSY40
 BOARD_DIR ?= boards/$(BOARD)
+endif
+
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+    $(error Invalid BOARD specified: $(BOARD_DIR))
+endif
+
 BUILD ?= build-$(BOARD)
 PORT ?= /dev/ttyACM0
 CROSS_COMPILE ?= arm-none-eabi-
@@ -25,9 +38,6 @@ MAKE_FLEXRAM_LD = boards/make-flexram-config.py
 include ../../py/mkenv.mk
 
 # Include micropython configuration board makefile
-ifeq ($(wildcard $(BOARD_DIR)/.),)
-    $(error Invalid BOARD specified: $(BOARD_DIR))
-endif
 include $(BOARD_DIR)/mpconfigboard.mk
 
 # File containing description of content to be frozen into firmware.

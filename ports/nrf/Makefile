@@ -1,11 +1,17 @@
-# Select the board to build for: if not given on the command line,
-# then default to pca10040.
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to pca10040.
 BOARD ?= pca10040
+BOARD_DIR ?= boards/$(BOARD)
+endif
+
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
-
-BOARD_DIR ?= boards/$(BOARD)
 
 # If SoftDevice is selected, try to use that one.
 SD ?=

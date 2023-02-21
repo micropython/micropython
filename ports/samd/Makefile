@@ -1,13 +1,22 @@
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to ADAFRUIT_ITSYBITSY_M4_EXPRESS.
 BOARD ?= ADAFRUIT_ITSYBITSY_M4_EXPRESS
 BOARD_DIR ?= boards/$(BOARD)
-BUILD ?= build-$(BOARD)
-
-CROSS_COMPILE ?= arm-none-eabi-
-UF2CONV ?= $(TOP)/tools/uf2conv.py
+endif
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
+
+BUILD ?= build-$(BOARD)
+
+CROSS_COMPILE ?= arm-none-eabi-
+UF2CONV ?= $(TOP)/tools/uf2conv.py
 
 MCU_SERIES_LOWER = $(shell echo $(MCU_SERIES) | tr '[:upper:]' '[:lower:]')
 
