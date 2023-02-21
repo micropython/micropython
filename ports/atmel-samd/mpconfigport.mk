@@ -57,6 +57,7 @@ CIRCUITPY_ZLIB = 0
 
 ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
 CIRCUITPY_ONEWIREIO ?= 0
+CIRCUITPY_SAFEMODE_PY ?= 0
 CIRCUITPY_USB_IDENTIFICATION ?= 0
 endif
 
@@ -77,10 +78,8 @@ SUPEROPT_VM = 0
 
 CIRCUITPY_LTO_PARTITION = one
 
-ifeq ($(CIRCUITPY_FULL_BUILD),0)
-# On the smallest boards, this saves about 180 bytes. On other boards, it may -increase- space used.
+# On smaller builds this saves about 180 bytes. On other boards, it may -increase- space used, so use with care.
 CFLAGS_BOARD = -fweb -frename-registers
-endif
 
 endif # samd21
 ######################################################################
