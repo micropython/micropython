@@ -64,7 +64,7 @@ STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
     uint32_t width = mp_arg_validate_int_range(mp_obj_get_int(all_args[0]), 1, 32767, MP_QSTR_width);
     uint32_t height = mp_arg_validate_int_range(mp_obj_get_int(all_args[1]), 1, 32767, MP_QSTR_height);
-    uint32_t value_count = mp_arg_validate_int_range(mp_obj_get_int(all_args[2]), 1, 32767, MP_QSTR_value_count);
+    uint32_t value_count = mp_arg_validate_int_range(mp_obj_get_int(all_args[2]), 1, 65535, MP_QSTR_value_count);
     uint32_t bits = 1;
 
     while ((value_count - 1) >> bits) {
