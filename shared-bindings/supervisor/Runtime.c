@@ -168,6 +168,24 @@ STATIC mp_obj_t supervisor_runtime_get_ble_workflow(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_ble_workflow_obj, supervisor_runtime_get_ble_workflow);
 
+STATIC mp_obj_t supervisor_runtime_set_ble_workflow(mp_obj_t self, mp_obj_t state_in) {
+    #if CIRCUITPY_BLE_FILE_SERVICE && CIRCUITPY_SERIAL_BLE
+    if (mp_obj_is_true(state_in)) {
+        supervisor_bluetooth_enable_workflow();
+    } else {
+        supervisor_bluetooth_disable_workflow();
+    }
+    #else
+    mp_raise_NotImplementedError(NULL);
+    #endif
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(supervisor_runtime_set_ble_workflow_obj, supervisor_runtime_set_ble_workflow);
+
+MP_PROPERTY_GETSET(supervisor_runtime_ble_workflow_obj,
+    (mp_obj_t)&supervisor_runtime_get_ble_workflow_obj,
+    (mp_obj_t)&supervisor_runtime_set_ble_workflow_obj);
+
 //|     next_stack_limit: int
 //|     """The size of the stack for the next vm run. If its too large, the default will be used."""
 //|
@@ -187,24 +205,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(supervisor_runtime_set_next_stack_limit_obj, superviso
 MP_PROPERTY_GETSET(supervisor_runtime_next_stack_limit_obj,
     (mp_obj_t)&supervisor_runtime_get_next_stack_limit_obj,
     (mp_obj_t)&supervisor_runtime_set_next_stack_limit_obj);
-
-STATIC mp_obj_t supervisor_runtime_set_ble_workflow(mp_obj_t self, mp_obj_t state_in) {
-    #if CIRCUITPY_BLE_FILE_SERVICE && CIRCUITPY_SERIAL_BLE
-    if (mp_obj_is_true(state_in)) {
-        supervisor_bluetooth_enable_workflow();
-    } else {
-        supervisor_bluetooth_disable_workflow();
-    }
-    #else
-    mp_raise_NotImplementedError(NULL);
-    #endif
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(supervisor_runtime_set_ble_workflow_obj, supervisor_runtime_set_ble_workflow);
-
-MP_PROPERTY_GETSET(supervisor_runtime_ble_workflow_obj,
-    (mp_obj_t)&supervisor_runtime_get_ble_workflow_obj,
-    (mp_obj_t)&supervisor_runtime_set_ble_workflow_obj);
 
 //|     rgb_status_brightness: int
 //|     """Set brightness of status RGB LED from 0-255. This will take effect
@@ -239,7 +239,7 @@ STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_safe_mode_reason), MP_ROM_PTR(&supervisor_runtime_safe_mode_reason_obj) },
     { MP_ROM_QSTR(MP_QSTR_autoreload), MP_ROM_PTR(&supervisor_runtime_autoreload_obj) },
     { MP_ROM_QSTR(MP_QSTR_ble_workflow),  MP_ROM_PTR(&supervisor_runtime_ble_workflow_obj) },
-    { MP_ROM_QSTR(MP_QSTR_next_stack_limit), MP_ROM_PTR(&supervisor_runtime_next_stack_limit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_next_stack_limit),  MP_ROM_PTR(&supervisor_runtime_next_stack_limit_obj) },
     { MP_ROM_QSTR(MP_QSTR_rgb_status_brightness),  MP_ROM_PTR(&supervisor_runtime_rgb_status_brightness_obj) },
 };
 
