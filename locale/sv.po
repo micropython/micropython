@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-02-15 21:55+0000\n"
+"PO-Revision-Date: 2023-02-20 03:39+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -38,18 +38,25 @@ msgid ""
 "Please file an issue with your program at https://github.com/adafruit/"
 "circuitpython/issues."
 msgstr ""
+"\n"
+"Skicka in ett ärende med ditt program till https://github.com/adafruit/"
+"circuitpython/issues."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "Press reset to exit safe mode.\n"
 msgstr ""
+"\n"
+"Tryck reset för att lämna säkert läge.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "You are in safe mode because:\n"
 msgstr ""
+"\n"
+"Du är i säkert läge eftersom:\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -457,7 +464,6 @@ msgid "All SPI peripherals are in use"
 msgstr "All SPI-kringutrustning används"
 
 #: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Alla UART-kringutrustning används"
 
@@ -600,7 +606,7 @@ msgstr "Bitmappstorlek och bitar per värde måste överensstämma"
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first (interface #0)."
-msgstr ""
+msgstr "Boot-enhet måste vara först (gränssnitt #0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
@@ -937,7 +943,7 @@ msgstr "Fel i regex"
 
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
-msgstr ""
+msgstr "Fel i safemode.py."
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
@@ -1013,7 +1019,7 @@ msgstr "Det gick inte att skriva till intern flash."
 
 #: supervisor/shared/safe_mode.c
 msgid "Fault detected by hardware."
-msgstr ""
+msgstr "Fel upptäckt av hårdvara."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -1104,12 +1110,12 @@ msgstr "Hårdvaran används redan, prova alternativa pinnar"
 
 #: supervisor/shared/safe_mode.c
 msgid "Heap allocation when VM not running."
-msgstr ""
+msgstr "Heap-allokering när VM inte körs."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "Heap was corrupted because the stack was too small. Increase stack size."
-msgstr ""
+msgstr "Heap skadades eftersom stacken var för liten. Öka stackstorlek."
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1231,7 +1237,7 @@ msgstr "Intern watchdog-timer har löpt ut."
 
 #: supervisor/shared/safe_mode.c
 msgid "Interrupt error."
-msgstr ""
+msgstr "Interrupt-fel."
 
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid %q"
@@ -2034,7 +2040,7 @@ msgstr "Temperaturavläsning tog för lång tid"
 
 #: supervisor/shared/safe_mode.c
 msgid "The `microcontroller` module was used to boot into safe mode."
-msgstr ""
+msgstr "Modulen `microcontroller` användes för att starta i felsäkert läge."
 
 #: py/obj.c
 msgid "The above exception was the direct cause of the following exception:"
@@ -2046,7 +2052,7 @@ msgstr "Längden på rgb_pins vara 6, 12, 18, 24 eller 30"
 
 #: supervisor/shared/safe_mode.c
 msgid "The power dipped. Make sure you are providing enough power."
-msgstr ""
+msgstr "Spänningen sjönk. Se till att du ger tillräckligt med ström."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2066,7 +2072,7 @@ msgstr "Samplingens signerad/osignerad stämmer inte med mixern"
 
 #: supervisor/shared/safe_mode.c
 msgid "Third-party firmware fatal error."
-msgstr ""
+msgstr "Fel från firmware från tredje part."
 
 #: shared-module/imagecapture/ParallelImageCapture.c
 msgid "This microcontroller does not support continuous capture."
@@ -2146,6 +2152,10 @@ msgstr "UART omstart"
 msgid "UART init"
 msgstr "UART start"
 
+#: ports/raspberrypi/common-hal/busio/UART.c
+msgid "UART peripheral in use"
+msgstr "UART-enhet används redan"
+
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
 msgstr "UART omstart"
@@ -2195,7 +2205,7 @@ msgstr "Det går inte att allokera buffert för signerad konvertering"
 
 #: supervisor/shared/safe_mode.c
 msgid "Unable to allocate the heap."
-msgstr ""
+msgstr "Kan inte allokera heap."
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2415,40 +2425,40 @@ msgstr "Skrivning stöds inte på karaktäristik"
 #: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "You pressed both buttons at start up."
-msgstr ""
+msgstr "Du tryckte ner båda knapparna vid start."
 
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 #: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
 msgid "You pressed button A at start up."
-msgstr ""
+msgstr "Du tryckte ner knapp A vid start."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
-msgstr ""
+msgstr "Du tryckte ner BOOT-knappen vid start"
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "You pressed the SW38 button at start up."
-msgstr ""
+msgstr "Du tryckte ned SW38-knappen vid start."
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
-msgstr ""
+msgstr "Du tryckte ned VOLYM-knappen vid start."
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_u/mpconfigboard.h
 msgid "You pressed the central button at start up."
-msgstr ""
+msgstr "Du tryckte ned mittknappen vid start."
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "You pressed the left button at start up."
-msgstr ""
+msgstr "Du tryckte ned vänster knapp vid start."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the reset button during boot."
-msgstr ""
+msgstr "Du tryckte på reset-knappen under uppstart."
 
 #: supervisor/shared/micropython.c
 msgid "[truncated due to length]"

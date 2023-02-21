@@ -458,7 +458,6 @@ msgid "All SPI peripherals are in use"
 msgstr ""
 
 #: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr ""
 
@@ -2119,6 +2118,10 @@ msgstr ""
 msgid "UART init"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/busio/UART.c
+msgid "UART peripheral in use"
+msgstr ""
+
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
 msgstr ""
@@ -2390,6 +2393,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
+msgstr ""
+
+#: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
+msgid "You pressed the GPIO0 button at start up."
 msgstr ""
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
