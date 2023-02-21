@@ -146,7 +146,7 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     uint32_t my_interrupts = save_and_disable_interrupts();
     #if MICROPY_PY_NETWORK_CYW43
-    if (cyw43_has_pending) {
+    if (cyw43_has_pending && cyw43_poll != NULL) {
         restore_interrupts(my_interrupts);
         return mp_const_none;
     }
