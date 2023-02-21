@@ -2405,6 +2405,10 @@ msgstr ""
 msgid "You pressed the BOOT button at start up"
 msgstr ""
 
+#: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
+msgid "You pressed the GPIO0 button at start up."
+msgstr ""
+
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "You pressed the SW38 button at start up."
 msgstr ""
