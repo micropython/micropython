@@ -131,12 +131,23 @@ STATIC mp_import_stat_t stat_top_level_dir_or_file(qstr mod_name, vstr_t *dest) 
         for (size_t i = 0; i < path_num; i++) {
             vstr_reset(dest);
             size_t p_len;
+            const char *dot, *rest;
             const char *p = mp_obj_str_get_data(path_items[i], &p_len);
             if (p_len > 0) {
                 vstr_add_strn(dest, p, p_len);
                 vstr_add_char(dest, PATH_SEP_CHAR[0]);
             }
-            vstr_add_str(dest, qstr_str(mod_name));
+
+            // Convert the dotted module name to a path.
+            rest = qstr_str(mod_name);
+            dot = strchr(rest, '.');
+            while (dot) {
+                vstr_add_strn(dest, rest, dot-rest);
+                vstr_add_char(dest, PATH_SEP_CHAR[0]);
+                rest=dot+1;
+                dot = strchr(rest, '.');
+            }
+            vstr_add_str(dest, rest);
             mp_import_stat_t stat = stat_dir_or_file(dest);
             if (stat != MP_IMPORT_STAT_NO_EXIST) {
                 return stat;
@@ -361,61 +372,47 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     // Exact-match of built-in (or already-loaded) takes priority.
     mp_obj_t module_obj = mp_module_get_loaded_or_builtin(full_mod_name);
 
-    // Even if we find the module, go through the motions of searching for it
-    // because we may actually be in the process of importing a sub-module.
-    // So we need to (re-)find the correct path to be finding the sub-module
-    // on the next iteration of process_import_at_level.
+    if (module_obj == MP_OBJ_NULL) {
 
-    if (outer_module_obj == MP_OBJ_NULL) {
-        DEBUG_printf("Searching for top-level module\n");
+        DEBUG_printf("Searching for module %s\n", qstr_str(full_mod_name));
 
         // First module in the dotted-name; search for a directory or file
         // relative to all the locations in sys.path.
         stat = stat_top_level_dir_or_file(full_mod_name, path);
 
-        // If the module "foo" doesn't exist on the filesystem, and it's not a
-        // builtin, try and find "ufoo" as a built-in. (This feature was
-        // formerly known as "weak links").
-        #if MICROPY_MODULE_WEAK_LINKS
-        if (stat == MP_IMPORT_STAT_NO_EXIST && module_obj == MP_OBJ_NULL) {
-            qstr umodule_name = make_weak_link_name(path, level_mod_name);
-            module_obj = mp_module_get_builtin(umodule_name);
+        if (outer_module_obj == MP_OBJ_NULL) {
+            // If the module "foo" doesn't exist on the filesystem, and it's not a
+            // builtin, try and find "ufoo" as a built-in. (This feature was
+            // formerly known as "weak links").
+            #if MICROPY_MODULE_WEAK_LINKS
+            if (stat == MP_IMPORT_STAT_NO_EXIST) {
+                qstr umodule_name = make_weak_link_name(path, level_mod_name);
+                module_obj = mp_module_get_builtin(umodule_name);
+            }
+            #elif MICROPY_PY_SYS
+            if (stat == MP_IMPORT_STAT_NO_EXIST && full_mod_name == MP_QSTR_sys) {
+                module_obj = MP_OBJ_FROM_PTR(&mp_module_sys);
+            }
+            #endif
         }
-        #elif MICROPY_PY_SYS
-        if (stat == MP_IMPORT_STAT_NO_EXIST && module_obj == MP_OBJ_NULL && level_mod_name == MP_QSTR_sys) {
-            module_obj = MP_OBJ_FROM_PTR(&mp_module_sys);
-        }
-        #endif
-    } else {
-        DEBUG_printf("Searching for sub-module\n");
-
-        // Add the current part of the module name to the path.
-        vstr_add_char(path, PATH_SEP_CHAR[0]);
-        vstr_add_str(path, qstr_str(level_mod_name));
-
-        // Because it's not top level, we already know which path the parent was found in.
-        stat = stat_dir_or_file(path);
     }
-    DEBUG_printf("Current path: %.*s\n", (int)vstr_len(path), vstr_str(path));
 
     if (module_obj == MP_OBJ_NULL) {
         // Not a built-in and not already-loaded.
-
         if (stat == MP_IMPORT_STAT_NO_EXIST) {
-            // And the file wasn't found -- fail.
+            // If the file wasn't found -- fail.
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_msg(&mp_type_ImportError, MP_ERROR_TEXT("module not found"));
             #else
             mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("no module named '%q'"), full_mod_name);
             #endif
         }
-
         // Not a built-in but found on the filesystem, try and load it.
-
         DEBUG_printf("Found path: %.*s\n", (int)vstr_len(path), vstr_str(path));
 
         // Prepare for loading from the filesystem. Create a new shell module.
         module_obj = mp_obj_new_module(full_mod_name);
+        DEBUG_printf("Prep %p\n", module_obj);
 
         #if MICROPY_MODULE_OVERRIDE_MAIN_IMPORT
         // If this module is being loaded via -m on unix, then
