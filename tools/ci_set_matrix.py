@@ -92,6 +92,9 @@ def set_output(name: str, value):
 
 
 def set_boards_to_build(build_all: bool):
+    if "mpy_cross" in last_failed_jobs or "tests" in last_failed_jobs:
+        build_all = True
+
     # Get boards in json format
     boards_info_json = build_board_info.get_board_mapping()
     all_board_ids = set()
