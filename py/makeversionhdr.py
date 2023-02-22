@@ -86,8 +86,11 @@ def get_version_info_from_mpconfig(repo_path):
 
 
 def make_version_header(repo_path, filename):
-    # Get version info using git, with fallback to py/mpconfig.h
-    info = get_version_info_from_git(repo_path)
+    info = None
+    if "MICROPY_GIT_TAG" in os.environ:
+        info = [os.environ["MICROPY_GIT_TAG"], os.environ["MICROPY_GIT_HASH"]]
+    if info is None:
+        info = get_version_info_from_git(repo_path)
     if info is None:
         info = get_version_info_from_mpconfig(repo_path)
 
