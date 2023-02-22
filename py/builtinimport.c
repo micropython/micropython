@@ -142,9 +142,9 @@ STATIC mp_import_stat_t stat_top_level_dir_or_file(qstr mod_name, vstr_t *dest) 
             rest = qstr_str(mod_name);
             dot = strchr(rest, '.');
             while (dot) {
-                vstr_add_strn(dest, rest, dot-rest);
+                vstr_add_strn(dest, rest, dot - rest);
                 vstr_add_char(dest, PATH_SEP_CHAR[0]);
-                rest=dot+1;
+                rest = dot + 1;
                 dot = strchr(rest, '.');
             }
             vstr_add_str(dest, rest);

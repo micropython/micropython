@@ -16,7 +16,8 @@ import subpkg.foo
 print("Two modules of a split non-namespace package imported")
 
 import subpkg
+
 assert subpkg.one == 1
-assert not hasattr(subpkg,"two")
+assert not hasattr(subpkg, "two")
 
 print("The first module's __init__ is used")
