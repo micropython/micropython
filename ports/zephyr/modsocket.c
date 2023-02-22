@@ -292,6 +292,35 @@ static mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
+static mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
+    socket_obj_t *socket = self_in;
+    socket_check_closed(socket);
+
+    mp_int_t max_len = mp_obj_get_int(len_in);
+    vstr_t vstr;
+    // +1 to accommodate for trailing \0
+    vstr_init_len(&vstr, max_len + 1);
+    struct sockaddr_in6 saddr;
+    socklen_t slen = sizeof(saddr);
+
+    ssize_t recv_len = zsock_recvfrom(socket->ctx, vstr.buf, max_len, 0, (struct sockaddr *)&saddr, &slen);
+    if (recv_len == -1) {
+        vstr_clear(&vstr);
+        mp_raise_OSError(errno);
+    }
+
+    mp_obj_t ret[2];
+    if (recv_len == 0) {
+        ret[0] = mp_const_empty_bytes;
+    } else {
+        vstr.len = recv_len;
+        ret[0] = mp_obj_new_bytes_from_vstr(&vstr);
+    }
+    ret[1] = format_inet_addr((struct sockaddr *)&saddr, 0);
+    return mp_obj_new_tuple(2, ret);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(socket_recvfrom_obj, socket_recvfrom);
+
 static mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     mp_warning(MP_WARN_CAT(RuntimeWarning), "setsockopt() not implemented");
@@ -336,6 +365,7 @@ static const mp_rom_map_elem_t socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&socket_accept_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socket_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&socket_recv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recvfrom), MP_ROM_PTR(&socket_recvfrom_obj) },
     { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
