@@ -43,14 +43,14 @@ from shared_bindings_matrix import (
 )
 
 PORT_TO_ARCH = {
-    "atmel-samd": "arm",
+    "atmel-samd": "atmel",
     "broadcom": "aarch",
     "cxd56": "arm",
     "espressif": "esp",
     "litex": "riscv",
     "mimxrt10xx": "arm",
     "nrf": "arm",
-    "raspberrypi": "rpi",
+    "raspberrypi": "arm",
     "stm": "arm",
 }
 
@@ -92,7 +92,7 @@ def set_output(name: str, value):
 
 
 def set_boards_to_build(build_all: bool):
-    if "mpy_cross" in last_failed_jobs or "tests" in last_failed_jobs:
+    if last_failed_jobs.get("mpy_cross") or last_failed_jobs.get("tests"):
         build_all = True
 
     # Get boards in json format
@@ -207,13 +207,12 @@ def set_boards_to_build(build_all: bool):
             break
 
     # Split boards by architecture.
-    arch_to_boards = {"aarch": [], "arm": [], "esp": [], "riscv": [], "rpi": []}
+    arch_to_boards = {"aarch": [], "arm": [], "atmel": [], "esp": [], "riscv": []}
 
     # Append previously failed boards
     for arch in arch_to_boards:
-        arch_to_job = f"build-{arch}"
-        if arch_to_job in last_failed_jobs:
-            for board in last_failed_jobs[arch_to_job]:
+        if arch in last_failed_jobs:
+            for board in last_failed_jobs[arch]:
                 if not board in boards_to_build:
                     boards_to_build.append(board)
 
@@ -238,7 +237,7 @@ def set_boards_to_build(build_all: bool):
 
 def set_docs_to_build(build_doc: bool):
     if not build_doc:
-        if "build-doc" in last_failed_jobs:
+        if last_failed_jobs.get("build-doc"):
             build_doc = True
         else:
             doc_pattern = re.compile(

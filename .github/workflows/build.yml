@@ -24,9 +24,9 @@ jobs:
       build-boards: ${{ steps.set-matrix.outputs.build-boards }}
       boards-aarch: ${{ steps.set-matrix.outputs.boards-aarch }}
       boards-arm: ${{ steps.set-matrix.outputs.boards-arm }}
+      boards-atmel: ${{ steps.set-matrix.outputs.boards-atmel }}
       boards-esp: ${{ steps.set-matrix.outputs.boards-esp }}
       boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
-      boards-rpi: ${{ steps.set-matrix.outputs.boards-rpi }}
       cp-version: ${{ steps.set-up-submodules.outputs.version }}
     steps:
     - name: Dump GitHub context
@@ -238,6 +238,16 @@ jobs:
       boards: ${{ needs.scheduler.outputs.boards-arm }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
+  atmel:
+    needs: [scheduler, mpy-cross, tests]
+    if: ${{ needs.scheduler.outputs.boards-atmel != '[]' }}
+    uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
+    with:
+      platform: arm
+      boards: ${{ needs.scheduler.outputs.boards-atmel }}
+      cp-version: ${{ needs.scheduler.outputs.cp-version }}
+
   esp:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-esp != '[]' }}
@@ -256,14 +266,4 @@ jobs:
     with:
       platform: riscv
       boards: ${{ needs.scheduler.outputs.boards-riscv }}
-      cp-version: ${{ needs.scheduler.outputs.cp-version }}
-
-  rpi:
-    needs: [scheduler, mpy-cross, tests]
-    if: ${{ needs.scheduler.outputs.boards-rpi != '[]' }}
-    uses: ./.github/workflows/build-boards.yml
-    secrets: inherit
-    with:
-      platform: arm
-      boards: ${{ needs.scheduler.outputs.boards-rpi }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
