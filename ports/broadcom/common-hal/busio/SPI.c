@@ -183,7 +183,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
 
     if (self->index == 1 || self->index == 2) {
         SPI1_Type *p = aux_spi[self->index];
-        uint32_t source_clock = vcmailbox_get_clock_rate_measured(VCMAILBOX_CLOCK_CORE);
+        uint32_t source_clock = vcmailbox_get_clock_rate(VCMAILBOX_CLOCK_CORE);
         uint16_t clock_divider = source_clock / baudrate;
         if (source_clock % baudrate > 0) {
             clock_divider += 2;
