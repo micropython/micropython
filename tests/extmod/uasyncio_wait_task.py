@@ -36,6 +36,10 @@ async def task_raise():
     raise ValueError
 
 
+def exc_handler(loop, ctx):
+    print("Not handled:", repr(ctx["exception"]))
+
+
 async def main():
     print("start")
 
@@ -69,6 +73,16 @@ async def main():
     # Wait on a task that raises an exception
     t = asyncio.create_task(task_raise())
     try:
+        await t
+    except ValueError:
+        print("ValueError")
+
+    # Delay waiting. This complains that "Task exception wasn't retrieved"
+    # even though we do, but MicroPython doesn't have a __del__ handler ...
+    asyncio.get_event_loop().set_exception_handler(exc_handler)
+    t = asyncio.create_task(task_raise())
+    try:
+        await asyncio.sleep(0.1)
         await t
     except ValueError:
         print("ValueError")

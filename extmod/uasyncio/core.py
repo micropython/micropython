@@ -222,6 +222,9 @@ def run_until_complete(main_task=None):
                 _exc_context["exception"] = exc
                 _exc_context["future"] = t
                 Loop.call_exception_handler(_exc_context)
+                # XXX if we do await it later,
+                # leaving t.data as None will cause a fault.
+                t.data = exc
 
 
 # Create a new task from a coroutine and run it until it finishes
