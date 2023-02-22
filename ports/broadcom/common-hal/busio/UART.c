@@ -460,7 +460,7 @@ uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
 
 void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate) {
     if (self->uart_id == 1) {
-        uint32_t source_clock = vcmailbox_get_clock_rate_measured(VCMAILBOX_CLOCK_CORE);
+        uint32_t source_clock = vcmailbox_get_clock_rate(VCMAILBOX_CLOCK_CORE);
         UART1->BAUD = ((source_clock / (baudrate * 8)) - 1);
     } else {
         ARM_UART_PL011_Type *pl011 = uart[self->uart_id];
