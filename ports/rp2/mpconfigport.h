@@ -48,6 +48,11 @@
 #ifndef MICROPY_HW_USB_MSC
 #define MICROPY_HW_USB_MSC (0)
 #endif
+
+#ifndef MICROPY_HW_USB_VENDOR
+#define MICROPY_HW_USB_VENDOR (0)
+#endif
+
 #endif
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL

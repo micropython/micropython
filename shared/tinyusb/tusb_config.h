@@ -58,6 +58,12 @@
 #define CFG_TUD_MSC             (0)
 #endif
 
+#if MICROPY_HW_USB_VENDOR
+#define CFG_TUD_VENDOR            (1)
+#else
+#define CFG_TUD_VENDOR            (0)
+#endif
+
 // CDC Configuration
 #if CFG_TUD_CDC
 #define CFG_TUD_CDC_EP_BUFSIZE  (256)
@@ -74,11 +80,23 @@
 #define CFG_TUD_MSC_BUFSIZE (MICROPY_FATFS_MAX_SS)
 #endif
 
+
+// VENDOR Configuration
+#if CFG_TUD_VENDOR
+#ifndef MICROPY_HW_USB_VENDOR_INTERFACE_STRING
+#define MICROPY_HW_USB_VENDOR_INTERFACE_STRING "Kiwidap CMSIS-DAP"
+#endif
+#define CFG_TUD_VENDOR_EP_BUFSIZE  (64)
+#define CFG_TUD_VENDOR_RX_BUFSIZE  (64)
+#define CFG_TUD_VENDOR_TX_BUFSIZE  (64)
+#endif     
+
 // Define static descriptor size and interface count based on the above config
 
 #define USBD_STATIC_DESC_LEN (TUD_CONFIG_DESC_LEN +                     \
     (CFG_TUD_CDC ? (TUD_CDC_DESC_LEN) : 0) +  \
-    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0)    \
+    (CFG_TUD_MSC ? (TUD_MSC_DESC_LEN) : 0) +  \
+    (CFG_TUD_VENDOR ? (TUD_VENDOR_DESC_LEN) : 0) \
     )
 
 #define USBD_STR_0 (0x00)
@@ -87,6 +105,8 @@
 #define USBD_STR_SERIAL (0x03)
 #define USBD_STR_CDC (0x04)
 #define USBD_STR_MSC (0x05)
+#define USBD_STR_VENDOR (0x06)
+
 
 #define USBD_MAX_POWER_MA (250)
 
@@ -112,8 +132,31 @@
 #endif // CFG_TUD_CDC
 #endif // CFG_TUD_MSC
 
-/* Limits of statically defined USB interfaces, endpoints, strings */
+#if CFG_TUD_VENDOR
+#if CFG_TUD_CDC
 #if CFG_TUD_MSC
+#define USBD_ITF_VENDOR (3)
+#define EPNUM_VENDOR_OUT (0x04)
+#define EPNUM_VENDOR_IN (0x84)
+#else
+#define USBD_ITF_VENDOR (2)
+#define EPNUM_VENDOR_OUT (0x03)
+#define EPNUM_VENDOR_IN (0x83)
+#endif // CFG_TUD_MSC
+#else
+#define USBD_ITF_VENDOR (0)
+#define EPNUM_VENDOR_OUT (0x01)
+#define EPNUM_VENDOR_IN (0x81)
+#endif // CFG_TUD_CDC
+#endif // CFG_TUD_VENDOR
+
+
+/* Limits of statically defined USB interfaces, endpoints, strings */
+#if CFG_TUD_VENDOR
+#define USBD_ITF_STATIC_MAX (USBD_ITF_VENDOR + 1)
+#define USBD_STR_STATIC_MAX (USBD_STR_VENDOR + 1)
+#define USBD_EP_STATIC_MAX (EPNUM_VENDOR_OUT + 1)  
+#elif CFG_TUD_MSC
 #define USBD_ITF_STATIC_MAX (USBD_ITF_MSC + 1)
 #define USBD_STR_STATIC_MAX (USBD_STR_MSC + 1)
 #define USBD_EP_STATIC_MAX (EPNUM_MSC_OUT + 1)
