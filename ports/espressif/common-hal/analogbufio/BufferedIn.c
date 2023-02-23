@@ -243,7 +243,7 @@ uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t
     adc_digi_output_format_t output_format = ADC_DIGI_OUTPUT_FORMAT_TYPE1;
 
     if (bytes_per_sample != 2) {
-        mp_raise_ValueError_varg(translate("%q must be a array of type 'H'"), MP_QSTR_buffer);
+        mp_raise_ValueError_varg(translate("%q must be an array of type 'H'"), MP_QSTR_buffer);
     }
 
     start_dma(self, &convert_mode, &output_format);

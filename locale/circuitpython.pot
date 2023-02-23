@@ -181,7 +181,7 @@ msgid "%q must be >= %d"
 msgstr ""
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
-msgid "%q must be a array of type 'H'"
+msgid "%q must be an array of type 'H'"
 msgstr ""
 
 #: shared-bindings/analogbufio/BufferedIn.c
