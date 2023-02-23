@@ -324,7 +324,3 @@
 [submodule "frozen/Adafruit_CircuitPython_SSD1680"]
 	path = frozen/Adafruit_CircuitPython_SSD1680
 	url = https://github.com/adafruit/Adafruit_CircuitPython_SSD1680
-[submodule "ports/broadcom/peripherals"]
-	path = ports/broadcom/peripherals
-	url = https://github.com/adafruit/broadcom-peripherals.git
-	branch = main-build
