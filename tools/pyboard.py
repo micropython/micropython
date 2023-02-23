@@ -663,15 +663,16 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
     def fname_remote(src):
         if src.startswith(":"):
             src = src[1:]
-        return src
+        # Convert all path separators to "/", because that's what a remote device uses.
+        return src.replace(os.path.sep, "/")
 
     def fname_cp_dest(src, dest):
         _, src = os.path.split(src)
         if dest is None or dest == "":
             dest = src
         elif dest == ".":
-            dest = os.path.join(".", src)
-        elif dest.endswith(os.path.sep):
+            dest = "/".join(".", src)
+        elif dest.endswith("/"):
             dest += src
         return dest
 
