@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Orlando Caro <ocaro@users.noreply.github.com>\n"
+"Last-Translator: Luis Ruiz San Segundo <luisan00@hotmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -710,8 +710,7 @@ msgstr "Buffer no es un bytearray."
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr ""
-"La longitud del buffer %d es demasiado grande. Tiene que ser menor a %d"
+msgstr "La longitud del buffer %d es demasiado grande. Tiene que ser menor a %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
