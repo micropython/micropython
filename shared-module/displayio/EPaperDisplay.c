@@ -388,8 +388,6 @@ STATIC bool _clean_area(displayio_epaperdisplay_obj_t *self) {
     uint16_t width = displayio_display_core_get_width(&self->core);
     uint16_t height = displayio_display_core_get_height(&self->core);
 
-    // Allocated and shared as a uint32_t array so the compiler knows the
-    // alignment everywhere.
     uint8_t buffer[width / 2];
     memset(buffer, 0x77, width / 2);
 
@@ -403,7 +401,7 @@ STATIC bool _clean_area(displayio_epaperdisplay_obj_t *self) {
             // Can't acquire display bus; skip the rest of the data. Try next display.
             return false;
         }
-        self->core.send(self->core.bus, DISPLAY_DATA, self->chip_select, (uint8_t *)buffer, width / 2);
+        self->core.send(self->core.bus, DISPLAY_DATA, self->chip_select, buffer, width / 2);
         displayio_display_core_end_transaction(&self->core);
 
         // TODO(tannewt): Make refresh displays faster so we don't starve other
