@@ -87,6 +87,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
     }
 
+    // BCM_VERSION != 2711 have 3 SPI but as listed in peripherals/gen/pins.c two are on
+    // index 0, once one index 0 SPI is found the other will throw an invalid_pins error.
     for (size_t i = 0; i < NUM_SPI; i++) {
         if (spi_in_use[i]) {
             continue;
@@ -157,6 +159,7 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     common_hal_reset_pin(self->MOSI);
     common_hal_reset_pin(self->MISO);
     self->clock = NULL;
+    spi_in_use[self->index] = false;
 
     if (self->index == 1 ||
         self->index == 2) {
@@ -180,7 +183,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
 
     if (self->index == 1 || self->index == 2) {
         SPI1_Type *p = aux_spi[self->index];
-        uint32_t source_clock = vcmailbox_get_clock_rate_measured(VCMAILBOX_CLOCK_CORE);
+        uint32_t source_clock = vcmailbox_get_clock_rate(VCMAILBOX_CLOCK_CORE);
         uint16_t clock_divider = source_clock / baudrate;
         if (source_clock % baudrate > 0) {
             clock_divider += 2;
@@ -198,7 +201,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         SPI0_Type *p = spi[self->index];
         p->CS = polarity << SPI0_CS_CPOL_Pos |
             phase << SPI0_CS_CPHA_Pos;
-        uint32_t source_clock = vcmailbox_get_clock_rate_measured(VCMAILBOX_CLOCK_CORE);
+        uint32_t source_clock = vcmailbox_get_clock_rate(VCMAILBOX_CLOCK_CORE);
         uint16_t clock_divider = source_clock / baudrate;
         if (source_clock % baudrate > 0) {
             clock_divider += 2;
