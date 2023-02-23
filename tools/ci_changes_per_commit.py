@@ -172,7 +172,7 @@ def get_bad_check_runs(query_check_runs):
 
     run_types = ["failed", "incomplete"]
 
-    regex_matrix = re.compile("^[^\n ]+ \/ (build|run) \([^\n ]+\)$")
+    regex_matrix = re.compile(r"^\S+ \/ (build|run) \(\S+\)$")
 
     while more_pages:
         check_runs = query_check_runs.fetch()["data"]["node"]

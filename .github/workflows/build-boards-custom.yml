@@ -51,20 +51,15 @@ jobs:
       if: inputs.debug || inputs.flags != ''
       run: |
         > custom-build && git add custom-build
-    - name: Get port
-      id: get-port
-      run: |
-        PORT=$(find ports/*/boards/ -type d -name ${{ inputs.board }} | sed 's/^ports\///g;s/\/boards.*//g')
-        if [ -z $PORT ]; then (exit 1); else echo >> $GITHUB_OUTPUT "port=$PORT"; fi
-    - name: Port to platform
-      run: echo >> $GITHUB_ENV "PLATFORM=${{ env[format('PLATFORM_{0}', steps.get-port.outputs.port)] }}"
     - name: Set up python
       uses: actions/setup-python@v4
       with:
         python-version: 3.x
     - name: Set up port
-      if: env.PLATFORM == 'esp'
-      uses: ./.github/actions/deps/ports/espressif
+      id: set-up-port
+      uses: ./.github/actions/deps/ports
+      with:
+        board: ${{ inputs.board }}
     - name: Set up submodules
       id: set-up-submodules
       uses: ./.github/actions/deps/submodules
@@ -75,7 +70,7 @@ jobs:
       uses: ./.github/actions/deps/external
       with:
         action: cache
-        platform: ${{ env.PLATFORM }}
+        platform: ${{ env[format('PLATFORM_{0}', steps.set-up-port.outputs.port)] }}
     - name: Set up mpy-cross
       if: steps.set-up-submodules.outputs.frozen == 'True'
       uses: ./.github/actions/mpy_cross
@@ -96,9 +91,9 @@ jobs:
         mkfs.fat --version || true
     - name: Build board
       run: make -j2 ${{ inputs.flags }} BOARD=${{ inputs.board }} DEBUG=${{ inputs.debug && '1' || '0' }} TRANSLATION=${{ inputs.language }}
-      working-directory: ports/${{ steps.get-port.outputs.port }}
+      working-directory: ports/${{ steps.set-up-port.outputs.port }}
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.board }}-${{ inputs.language }}-${{ inputs.version }}${{ inputs.flags != '' && '-custom' || '' }}${{ inputs.debug && '-debug' || '' }}
-        path: ports/${{ steps.get-port.outputs.port }}/build-${{ inputs.board }}/firmware.*
+        path: ports/${{ steps.set-up-port.outputs.port }}/build-${{ inputs.board }}/firmware.*
