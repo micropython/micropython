@@ -22,12 +22,12 @@ jobs:
     outputs:
       build-doc: ${{ steps.set-matrix.outputs.build-doc }}
       build-boards: ${{ steps.set-matrix.outputs.build-boards }}
+      build-windows: ${{ steps.set-matrix.outputs.build-windows }}
       boards-aarch: ${{ steps.set-matrix.outputs.boards-aarch }}
       boards-arm: ${{ steps.set-matrix.outputs.boards-arm }}
+      boards-atmel: ${{ steps.set-matrix.outputs.boards-atmel }}
       boards-esp: ${{ steps.set-matrix.outputs.boards-esp }}
-      boards-nrf: ${{ steps.set-matrix.outputs.boards-nrf }}
       boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
-      boards-rpi: ${{ steps.set-matrix.outputs.boards-rpi }}
       cp-version: ${{ steps.set-up-submodules.outputs.version }}
     steps:
     - name: Dump GitHub context
@@ -55,24 +55,23 @@ jobs:
       uses: ./.github/actions/deps/external
       with:
         action: cache
-    # Disabled: Needs to be updated
-    # - name: Get last commit with checks
-    #   id: get-last-commit-with-checks
-    #   if: github.event_name == 'pull_request'
-    #   working-directory: tools
-    #   run: python3 -u ci_changes_per_commit.py
-    #   env:
-    #     REPO: ${{ github.repository }}
-    #     PULL: ${{ github.event.number }}
-    #     GITHUB_TOKEN: ${{ github.token }}
-    #     EXCLUDE_COMMIT: ${{ github.event.after }}
     - name: Set up mpy-cross
       uses: ./.github/actions/mpy_cross
       with:
         download: false
+    - name: Get last commit with checks
+      id: get-last-commit-with-checks
+      if: github.event_name == 'pull_request'
+      working-directory: tools
+      run: python3 -u ci_changes_per_commit.py
+      env:
+        REPO: ${{ github.repository }}
+        PULL: ${{ github.event.number }}
+        GITHUB_TOKEN: ${{ github.token }}
+        EXCLUDE_COMMIT: ${{ github.event.pull_request.head.sha }}
     - name: Set head sha
       if: github.event_name == 'pull_request'
-      run: echo "HEAD_SHA=$(git show -s --format=%s $GITHUB_SHA | grep -o -P "(?<=Merge ).*(?= into)")" >> $GITHUB_ENV
+      run: echo "HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
     - name: Set base sha
       if: github.event_name == 'pull_request'
       run: |
@@ -220,6 +219,74 @@ jobs:
         [ -z "$TWINE_USERNAME" ] || echo "Uploading dev release to PyPi"
         [ -z "$TWINE_USERNAME" ] || twine upload circuitpython-stubs/dist/*
 
+  build-windows:
+    runs-on: windows-2022
+    needs: scheduler
+    if: ${{ needs.scheduler.outputs.build-windows == 'True' }}
+    env:
+      CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
+    defaults:
+      run:
+        # We define a custom shell script here, although `msys2.cmd` does neither exist nor is it available in the PATH yet
+        shell: msys2 {0}
+    steps:
+    # We want to change the configuration of the git command that actions/checkout will be using
+    # (since it is not possible to set autocrlf through the action yet, see actions/checkout#226).
+    - run: git config --global core.autocrlf input
+      shell: bash
+    - name: Check python coding (cmd)
+      run: python -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
+      shell: cmd
+    # We use a JS Action, which calls the system terminal or other custom terminals directly, if required
+    - uses: msys2/setup-msys2@v2
+      with:
+        install: base-devel git wget unzip gcc python-pip
+    # The goal of this was to test how things worked when the default file encoding (locale.getpreferedencoding())
+    # was not UTF-8. However, msys2 python does use utf-8 as the preferred file encoding, and using actions/setup-python
+    # python3.8 gave a broken build, so we're not really testing what we wanted to test.
+    # However, commandline length limits are being tested so that does some good.
+    - name: Check python coding (msys2)
+      run: |
+        locale -v
+        which python; python --version
+        python -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
+        which python3; python3 --version
+        python3 -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
+    - name: Install dependencies
+      run: |
+        wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-win32.zip
+        unzip -q -d /tmp gcc-arm.zip
+        tar -C /tmp/gcc-arm-none-* -cf - . | tar -C /usr/local -xf -
+        pip install wheel
+        # requirements_dev.txt doesn't install on windows. (with msys2 python)
+        # instead, pick a subset for what we want to do
+        pip install cascadetoml jinja2 typer click intelhex
+        # check that installed packages work....?
+        which python; python --version; python -c "import cascadetoml"
+        which python3; python3 --version; python3 -c "import cascadetoml"
+    - name: Set up repository
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        fetch-depth: 1
+    - name: Set up submodules
+      uses: ./.github/actions/deps/submodules
+    - name: build mpy-cross
+      run: make -j2 -C mpy-cross
+    - name: build rp2040
+      run: make -j2 -C ports/raspberrypi BOARD=adafruit_feather_rp2040 TRANSLATION=de_DE
+    - name: build samd21
+      run: make -j2 -C ports/atmel-samd BOARD=feather_m0_express TRANSLATION=zh_Latn_pinyin
+    - name: build samd51
+      run: make -j2 -C ports/atmel-samd BOARD=feather_m4_express TRANSLATION=es
+    - name: build nrf
+      run: make -j2 -C ports/nrf BOARD=feather_nrf52840_express TRANSLATION=fr
+    - name: build stm
+      run: make -j2 -C ports/stm BOARD=feather_stm32f405_express TRANSLATION=pt_BR
+    # I gave up trying to do esp builds on windows when I saw
+    # ERROR: Platform MINGW64_NT-10.0-17763-x86_64 appears to be unsupported
+    # https://github.com/espressif/esp-idf/issues/7062
+
   aarch:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-aarch != '[]' }}
@@ -240,6 +307,16 @@ jobs:
       boards: ${{ needs.scheduler.outputs.boards-arm }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
+  atmel:
+    needs: [scheduler, mpy-cross, tests]
+    if: ${{ needs.scheduler.outputs.boards-atmel != '[]' }}
+    uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
+    with:
+      platform: arm
+      boards: ${{ needs.scheduler.outputs.boards-atmel }}
+      cp-version: ${{ needs.scheduler.outputs.cp-version }}
+
   esp:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-esp != '[]' }}
@@ -250,16 +327,6 @@ jobs:
       boards: ${{ needs.scheduler.outputs.boards-esp }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
-  nrf:
-    needs: [scheduler, mpy-cross, tests]
-    if: ${{ needs.scheduler.outputs.boards-nrf != '[]' }}
-    uses: ./.github/workflows/build-boards.yml
-    secrets: inherit
-    with:
-      platform: nrf
-      boards: ${{ needs.scheduler.outputs.boards-nrf }}
-      cp-version: ${{ needs.scheduler.outputs.cp-version }}
-
   riscv:
     needs: [scheduler, mpy-cross, tests]
     if: ${{ needs.scheduler.outputs.boards-riscv != '[]' }}
@@ -268,14 +335,4 @@ jobs:
     with:
       platform: riscv
       boards: ${{ needs.scheduler.outputs.boards-riscv }}
-      cp-version: ${{ needs.scheduler.outputs.cp-version }}
-
-  rpi:
-    needs: [scheduler, mpy-cross, tests]
-    if: ${{ needs.scheduler.outputs.boards-rpi != '[]' }}
-    uses: ./.github/workflows/build-boards.yml
-    secrets: inherit
-    with:
-      platform: arm
-      boards: ${{ needs.scheduler.outputs.boards-rpi }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
