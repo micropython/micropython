@@ -703,3 +703,31 @@ function ci_zephyr_build {
     docker exec zephyr-ci west build -p auto -b mimxrt1050_evk
     docker exec zephyr-ci west build -p auto -b nucleo_wb55rg # for bluetooth
 }
+
+########################################################################################
+# mpy-cross
+
+function ci_mpy_cross_setup {
+    sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu gcc-mingw-w64
+}
+
+function ci_mpy_cross_build {
+    make ${MAKEOPTS} -C mpy-cross BUILD=build-linux-x64
+    make ${MAKEOPTS} -C mpy-cross BUILD=build-linux-aarch64 CROSS_COMPILE=aarch64-linux-gnu-
+    make ${MAKEOPTS} -C mpy-cross BUILD=build-linux-armhf CROSS_COMPILE=arm-linux-gnueabihf-
+    make ${MAKEOPTS} -C mpy-cross BUILD=build-windows-x64 CROSS_COMPILE=x86_64-w64-mingw32-
+}
+
+function ci_mpy_cross_i686_setup {
+    sudo apt-get install gcc-multilib gcc-mingw-w64-i686
+    # Note gcc-mingw-w64-i686 renamed to gcc-mingw-w64-i686-win32 in jammy
+}
+
+function ci_mpy_cross_i686_build {
+    make ${MAKEOPTS} -C mpy-cross MICROPY_FORCE_32BIT=1 BUILD=build-linux-i686
+    make ${MAKEOPTS} -C mpy-cross MICROPY_FORCE_32BIT=1 BUILD=build-windows-i686 CROSS_COMPILE=i686-w64-mingw32-
+}
+
+function ci_mpy_cross_macos_build {
+    make ${MAKEOPTS} -C mpy-cross BUILD=build-macos-x64
+}
