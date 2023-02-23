@@ -180,6 +180,10 @@ msgstr ""
 msgid "%q must be >= %d"
 msgstr ""
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be a array of type 'H'"
+msgstr ""
+
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr ""

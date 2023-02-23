@@ -36,7 +36,7 @@
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
-    uint8_t chan;
+    uint32_t sample_rate;
 } analogbufio_bufferedin_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP32_COMMON_HAL_ANALOGBUFIO_BUFFEREDIN_H
