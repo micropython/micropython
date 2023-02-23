@@ -138,6 +138,7 @@ static void start_dma(analogbufio_bufferedin_obj_t *self, adc_digi_convert_mode_
     #endif // DEBUG_ANALOGBUFIO
     esp_err_t err = adc_digi_initialize(&adc_dma_config);
     if (ESP_OK != err) {
+        stop_dma(self);
         common_hal_analogbufio_bufferedin_deinit(self);
         mp_raise_ValueError_varg(translate("Unable to initialize ADC DMA controller, ErrorCode:%d"),err);
     }
@@ -172,11 +173,13 @@ static void start_dma(analogbufio_bufferedin_obj_t *self, adc_digi_convert_mode_
 
     err = adc_digi_controller_configure(&dig_cfg);
     if (ESP_OK != err) {
+        stop_dma(self);
         common_hal_analogbufio_bufferedin_deinit(self);
         mp_raise_ValueError_varg(translate("Unable to configure ADC DMA controller, ErrorCode:%d"),err);
     }
     err = adc_digi_start();
     if (ESP_OK != err) {
+        stop_dma(self);
         common_hal_analogbufio_bufferedin_deinit(self);
         mp_raise_ValueError_varg(translate("Unable to start ADC DMA controller, ErrorCode:%d"),err);
     }
