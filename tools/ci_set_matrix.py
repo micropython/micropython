@@ -62,6 +62,24 @@ IGNORE = [
 # Files in these directories never influence board builds
 IGNORE_DIRS = ["tests", "docs", ".devcontainer"]
 
+PATTERN_DOCS = (
+    r"^(?:\.github|docs|extmod\/ulab)|"
+    r"^(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|tools\/extract_pyi\.py|conf\.py|requirements-doc\.txt)$|"
+    r"(?:-stubs|\.(?:md|MD|rst|RST))$"
+)
+
+PATTERN_WINDOWS = [
+    ".github/",
+    "extmod/",
+    "lib/",
+    "mpy-cross/",
+    "ports/unix/",
+    "ports/windows/",
+    "py/",
+    "requirements",
+    "tools/",
+]
+
 if len(sys.argv) > 1:
     print("Using files list on commandline")
     changed_files = sys.argv[1:]
@@ -240,21 +258,19 @@ def set_docs_to_build(build_doc: bool):
         if last_failed_jobs.get("build-doc"):
             build_doc = True
         else:
-            doc_pattern = re.compile(
-                r"^(?:\.github\/workflows\/|docs|extmod\/ulab|(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|conf\.py|tools\/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
-            )
+            doc_pattern = re.compile(PATTERN_DOCS)
             github_workspace = os.environ.get("GITHUB_WORKSPACE") or ""
             github_workspace = github_workspace and github_workspace + "/"
-            for p in changed_files:
-                if doc_pattern.search(p) and (
+            for file in changed_files:
+                if doc_pattern.search(file) and (
                     (
                         subprocess.run(
-                            f"git diff -U0 $BASE_SHA...$HEAD_SHA {github_workspace + p} | grep -o -m 1 '^[+-]\/\/|'",
+                            f"git diff -U0 $BASE_SHA...$HEAD_SHA {github_workspace + file} | grep -o -m 1 '^[+-]\/\/|'",
                             capture_output=True,
                             shell=True,
                         ).stdout
                     )
-                    if p.endswith(".c")
+                    if file.endswith(".c")
                     else True
                 ):
                     build_doc = True
@@ -263,6 +279,25 @@ def set_docs_to_build(build_doc: bool):
     # Set the step outputs
     print("Building docs:", build_doc)
     set_output("build-doc", build_doc)
+
+
+def set_windows_to_build(build_windows):
+    if not build_windows:
+        if last_failed_jobs.get("build-windows"):
+            build_windows = True
+        else:
+            for file in changed_files:
+                for pattern in PATTERN_WINDOWS:
+                    if file.startswith(pattern):
+                        build_windows = True
+                        break
+                else:
+                    continue
+                break
+
+    # Set the step outputs
+    print("Building windows:", build_windows)
+    set_output("build-windows", build_windows)
 
 
 def check_changed_files():
@@ -277,6 +312,7 @@ def check_changed_files():
 def main():
     build_all = check_changed_files()
     set_docs_to_build(build_all)
+    set_windows_to_build(build_all)
     set_boards_to_build(build_all)
 
 
