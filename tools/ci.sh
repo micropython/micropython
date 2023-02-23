@@ -675,9 +675,9 @@ function ci_windows_build {
 ########################################################################################
 # ports/zephyr
 
-ZEPHYR_DOCKER_VERSION=v0.21.0
-ZEPHYR_SDK_VERSION=0.13.2
-ZEPHYR_VERSION=v3.1.0
+ZEPHYR_DOCKER_VERSION=v0.24.3
+ZEPHYR_SDK_VERSION=0.15.0
+ZEPHYR_VERSION=v3.2.0
 
 function ci_zephyr_setup {
     docker pull zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
