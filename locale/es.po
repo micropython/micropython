@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-02-22 18:34+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"PO-Revision-Date: 2023-02-23 17:53+0000\n"
+"Last-Translator: Luis Ruiz San Segundo <luisan00@hotmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -35,12 +35,17 @@ msgstr ""
 "Código detenido por la auto-recarga. Recargando pronto.\n"
 
 #: main.c
+#, fuzzy
 msgid ""
 "\n"
 "Invalid CIRCUITPY_PYSTACK_SIZE\n"
 "\n"
 "\r"
 msgstr ""
+"\n"
+"CIRCUITPY_PYSTACK_SIZE no válido\n"
+"\n"
+"\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -58,7 +63,7 @@ msgid ""
 "Press reset to exit safe mode.\n"
 msgstr ""
 "\n"
-"Presione reset para salir de safe mode.\n"
+"Presione reset para salir del modo seguro.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -66,7 +71,7 @@ msgid ""
 "You are in safe mode because:\n"
 msgstr ""
 "\n"
-"Estas in safe mode porque:\n"
+"Estas en modo seguro porque:\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -153,7 +158,7 @@ msgstr "%q está siendo utilizado"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
-msgstr "%q indice fuera de rango"
+msgstr "%q índice fuera de rango"
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
@@ -169,19 +174,19 @@ msgstr "%q es solamente de lectura en esta tarjeta"
 
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
-msgstr "%q tamaño debe ser %d"
+msgstr "%q longitud debe ser %d"
 
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
-msgstr "%q tamaño debe ser %d-%d"
+msgstr "%q longitud debe ser %d-%d"
 
 #: py/argcheck.c
 msgid "%q length must be <= %d"
-msgstr "%q tamaño debe ser <= %d"
+msgstr "%q longitud debe ser <= %d"
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr "%q tamaño debe ser >= %d"
+msgstr "%q longitud debe ser >= %d"
 
 #: py/argcheck.c
 msgid "%q must be %d"
@@ -205,7 +210,7 @@ msgstr "%q debe ser >= %d"
 
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
-msgstr "%q debe ser un byte-matriz o matriz de tipo 'H' o 'B'"
+msgstr "%q debe ser un bytearray o array de tipo 'H' o 'B'"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
@@ -251,7 +256,7 @@ msgstr "%q() toma %d argumentos posicionales pero %d fueron dados"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
-msgstr "%q, %q, y %q deben tener el mismo largo"
+msgstr "%q, %q, y %q deben tener la misma longitud"
 
 #: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
@@ -357,7 +362,7 @@ msgstr "'=' alineación no permitida en el especificador string format"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
-msgstr "'S' y 'O' no son compatibles con los tipos de formato"
+msgstr "'S' y 'O' no son tipos de formato soportados"
 
 #: py/compile.c
 msgid "'align' requires 1 argument"
@@ -431,7 +436,7 @@ msgstr "tipos de 64 bit"
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
-msgstr "El canal EXTINT ya está siendo utilizado"
+msgstr "Un canal de interrupción por hardware ya está en uso"
 
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
@@ -440,7 +445,7 @@ msgstr "ADC2 está siendo usado por WiFi"
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
-msgstr "La dirección debe tener %d bytes de largo"
+msgstr "La dirección debe tener %d bytes de longitud"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
@@ -454,7 +459,7 @@ msgstr "Todos los periféricos CAN están en uso"
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
-msgstr "Todos los periféricos I2C están siendo usados"
+msgstr "Todos los periféricos I2C están en uso"
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
@@ -470,36 +475,36 @@ msgstr "Todos los FIFOs de RX en uso"
 
 #: ports/espressif/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
-msgstr "Todos los periféricos SPI están siendo usados"
+msgstr "Todos los periféricos SPI están en uso"
 
 #: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
-msgstr "Todos los periféricos UART están siendo usados"
+msgstr "Todos los periféricos UART están en uso"
 
 #: ports/nrf/common-hal/countio/Counter.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
-msgstr "Todos los canales esta en uso"
+msgstr "Todos los canales están en uso"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
-msgstr "Todos los canales de eventos estan siendo usados"
+msgstr "Todos los canales de eventos están en uso"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
-msgstr "Todas las máquinas de estado en uso"
+msgstr "Todas las máquinas de estado están en uso"
 
 #: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr ""
 "Todos los canales de eventos de sincronización (sync event channels) están "
-"siendo utilizados"
+"en uso"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
-msgstr "Todos los timers para este pin están siendo utilizados"
+msgstr "Todos los timers para este pin están en uso"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -568,7 +573,7 @@ msgstr "Tratando de localizar %d bloques"
 
 #: ports/raspberrypi/audio_dma.c
 msgid "Audio conversion not implemented"
-msgstr "Conversión de audio no esta implementada"
+msgstr "Conversión de audio no está implementada"
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
@@ -587,12 +592,12 @@ msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
-"Auto-reload habilitado. Simplemente guarda los archivos via USB para "
-"ejecutarlos o entra al REPL para desabilitarlos.\n"
+"Auto-reload habilitado. Simplemente guarda los archivos vía USB para "
+"ejecutarlos o entra al REPL para deshabilitarlo.\n"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
-msgstr "El periférico no maneja el Baudrate"
+msgstr "Baudrate no soportado por el periférico"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -613,7 +618,7 @@ msgstr "Bits depth debe ser múltiplo de 8."
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
-msgstr "El tamaño del mapa de bits y los bits por valor deben cotejar"
+msgstr "El tamaño del mapa de bits y los bits por valor deben coincidir"
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first (interface #0)."
@@ -642,44 +647,43 @@ msgstr "El brillo no se puede ajustar"
 #: shared-bindings/_bleio/UUID.c
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
-msgstr "Búfer + compensado muy pequeños %d %d %d"
+msgstr "Buffer + offset muy pequeños %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr ""
-"Los elementos del búfer deben de ser de una longitud de 4 bytes o menos"
+msgstr "Los elementos del buffer deben tener una longitud de 4 bytes o menos"
 
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
-msgstr "Búfer no es un bytearray."
+msgstr "Buffer no es un bytearray."
 
 #: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
-msgstr "Búfer es muy pequeño"
+msgstr "Buffer es muy pequeño"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr "Longitud del búfer %d es demasiado grande. Tiene que ser menor a %d"
+msgstr "La longitud del buffer %d es demasiado grande. Tiene que ser menor a %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
-msgstr "El tamaño del búfer debe ser múltiplo de 512"
+msgstr "El tamaño del buffer debe ser múltiplo de 512"
 
 #: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr "Búfer deber ser un múltiplo de 512 bytes"
+msgstr "El buffer deber ser un múltiplo de 512 bytes"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
-msgstr "Búfer muy corto por %d bytes"
+msgstr "Buffer muy corto por %d bytes"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
-msgstr "Búferes deben ser del mismo tamaño"
+msgstr "Los buffers deben ser del mismo tamaño"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -766,7 +770,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
-msgstr "No puede hacer pull en un pin de entrada sola."
+msgstr "No puede hacer pull en un pin de solo entrada."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Cannot record to a file"
@@ -1852,7 +1856,7 @@ msgstr ""
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
-"Pretendiendo ir a deep sleep hasta la alarma, CTRL-C or una escritura de "
+"Pretendiendo ir a deep sleep hasta la alarma, CTRL-C o una escritura de "
 "archivo\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -2469,11 +2473,11 @@ msgstr "Usted presionó ambos botones al iniciar."
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 #: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
 msgid "You pressed button A at start up."
-msgstr "Usted presionó el boton A al iniciar."
+msgstr "Usted presionó el botón A al iniciar."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
-msgstr "Usted presionó el boton BOOT al iniciar"
+msgstr "Usted presionó el botón BOOT al iniciar"
 
 #: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
 msgid "You pressed the GPIO0 button at start up."
@@ -2481,30 +2485,30 @@ msgstr "Presionaste el botón GPIO0 al inicio."
 
 #: ports/espressif/boards/espressif_esp32_lyrat/mpconfigboard.h
 msgid "You pressed the Rec button at start up."
-msgstr ""
+msgstr "Presionó el botón Rec al inicio."
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "You pressed the SW38 button at start up."
-msgstr "Usted presionó el boton SW38 al iniciar."
+msgstr "Usted presionó el botón SW38 al iniciar."
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
-msgstr "Usted presionó el boton de Volumén al iniciar."
+msgstr "Usted presionó el botón de volumen al iniciar."
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_u/mpconfigboard.h
 msgid "You pressed the central button at start up."
-msgstr "Usted presionó el boton central al iniciar."
+msgstr "Usted presionó el botón central al iniciar."
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "You pressed the left button at start up."
-msgstr "Usted presionó el boton izquierdo al iniciar."
+msgstr "Usted presionó el botón izquierdo al iniciar."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the reset button during boot."
-msgstr "Usted presionó el boton izquierdo al iniciar."
+msgstr "Presionó el botón de reinicio durante el arranque."
 
 #: supervisor/shared/micropython.c
 msgid "[truncated due to length]"
