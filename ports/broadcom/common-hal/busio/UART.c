@@ -124,7 +124,7 @@ void pl011_IRQHandler(uint8_t index) {
     // Clear the interrupt in case we weren't able to clear it by emptying the
     // FIFO. (This won't clear the FIFO.)
     ARM_UART_PL011_Type *pl011 = uart[index];
-    pl011->ICR = UART0_ICR_RXIC_Msk;
+    pl011->ICR = ARM_UART_PL011_ICR_RXIC_Msk;
 }
 
 void UART0_IRQHandler(void) {
@@ -258,31 +258,31 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
         common_hal_busio_uart_set_baudrate(self, baudrate);
 
-        uint32_t line_control = UART0_LCR_H_FEN_Msk;
-        line_control |= (bits - 5) << UART0_LCR_H_WLEN_Pos;
+        uint32_t line_control = ARM_UART_PL011_LCR_H_FEN_Msk;
+        line_control |= (bits - 5) << ARM_UART_PL011_LCR_H_WLEN_Pos;
         if (stop == 2) {
-            line_control |= UART0_LCR_H_STP2_Msk;
+            line_control |= ARM_UART_PL011_LCR_H_STP2_Msk;
         }
         if (parity != BUSIO_UART_PARITY_NONE) {
-            line_control |= UART0_LCR_H_PEN_Msk;
+            line_control |= ARM_UART_PL011_LCR_H_PEN_Msk;
         }
         if (parity == BUSIO_UART_PARITY_EVEN) {
-            line_control |= UART0_LCR_H_EPS_Msk;
+            line_control |= ARM_UART_PL011_LCR_H_EPS_Msk;
         }
         pl011->LCR_H = line_control;
 
-        uint32_t control = UART0_CR_UARTEN_Msk;
+        uint32_t control = ARM_UART_PL011_CR_UARTEN_Msk;
         if (tx != NULL) {
-            control |= UART0_CR_TXE_Msk;
+            control |= ARM_UART_PL011_CR_TXE_Msk;
         }
         if (rx != NULL) {
-            control |= UART0_CR_RXE_Msk;
+            control |= ARM_UART_PL011_CR_RXE_Msk;
         }
         if (cts != NULL) {
-            control |= UART0_CR_CTSEN_Msk;
+            control |= ARM_UART_PL011_CR_CTSEN_Msk;
         }
         if (rts != NULL) {
-            control |= UART0_CR_RTSEN_Msk;
+            control |= ARM_UART_PL011_CR_RTSEN_Msk;
         }
         pl011->CR = control;
     }
