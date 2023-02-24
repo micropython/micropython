@@ -128,9 +128,9 @@ key = binascii.unhexlify(
     b"8b17a330a306a6fbcf51ba83563aed85a4f886fff1a22423748d83798c"
 )
 
+
 # Server
 def instance0():
-
     multitest.globals(IP=multitest.get_network_ip())
     s = socket.socket()
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

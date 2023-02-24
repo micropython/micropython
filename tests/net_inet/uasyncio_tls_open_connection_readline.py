@@ -1,14 +1,18 @@
-import socket
-import ssl
+# Test simple HTTPS request with uasyncio.open_connection()
 
 try:
     import ubinascii as binascii
-except:
-    import binascii
-try:
-    import usocket as socket
-except:
-    import socket
+    import uasyncio as asyncio
+except ImportError:
+    try:
+        import asyncio
+        import binascii
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
+
+import ssl
+
 
 # This certificate was obtained from micropython.org using openssl:
 # $ openssl s_client -showcerts -connect micropython.org:443 </dev/null 2>/dev/null
@@ -58,46 +62,32 @@ ca_cert_chain = binascii.unhexlify(
     b"44506decce005518fee94964d44eca979cb45bc073a8abb847c2"
 )
 
-
-def main(use_stream=True):
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-
-    # context.verify_mode = ssl.CERT_REQUIRED # enabled by default with
-    # PROTOCOL_TLS_CLIENT
-
-    assert context.verify_mode == ssl.CERT_REQUIRED
-
-    # context.check_hostname = True  # enabled by default with
-    # PROTOCOL_TLS_CLIENT
-    # print(context.get_ciphers())
-
-    # context.load_verify_locations(cafile='certmpy.der') # not sure how to
-    # implement a external file
-    # in a testd
-    # context.set_ciphers('TLS-ECDHE-RSA-WITH-AES-256-CBC-SHA')
-    context.load_verify_locations(cadata=ca_cert_chain)
-
-    context.load_default_certs()  # not implemented in MicroPython just a mock, needed
-    # in CPython to load issuer CA too,
-    # otherwise verification fails.
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    addr = socket.getaddrinfo("micropython.org", 443)[0][-1]
-
-    # CPython can wrap the socket even if not connected yet.
-    # ssl_sock = context.wrap_socket(s, server_hostname='micropython.org')
-    # ssl_sock.connect(addr)
-
-    # MicroPython needs to connect first, CPython can do this too.
-    s.connect(addr)
-    # server_hostname must match CN (Common Name) in the certificate
-    # presented by the server
-    ssl_sock = context.wrap_socket(s, server_hostname="micropython.org")
-    ssl_sock.write(b"GET / HTTP/1.0\r\n\r\n")
-    print(ssl_sock.read(17))
-    # print(ssl_sock.cipher())
-    # print(ssl_sock.getpeercert(True))
-    ssl_sock.close()
+client_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+client_ctx.load_verify_locations(cadata=ca_cert_chain)
+client_ctx.load_default_certs()
 
 
-main()
+async def http_get(url, port, sslctx):
+    reader, writer = await asyncio.open_connection(url, port, ssl=sslctx)
+
+    print("write GET")
+    writer.write(b"GET / HTTP/1.0\r\n\r\n")
+    await writer.drain()
+
+    print("read response")
+    # await asyncio.sleep(1)
+    while True:
+        data = await reader.readline()
+        # avoid printing datetime which makes the test fail
+        if b"GMT" not in data:
+            print("read:", data)
+        if not data:
+            break
+
+    print("close")
+    writer.close()
+    await writer.wait_closed()
+    print("done")
+
+
+asyncio.run(http_get("micropython.org", 443, client_ctx))

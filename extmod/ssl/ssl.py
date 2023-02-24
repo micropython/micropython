@@ -5,6 +5,7 @@ import ussl as _ussl
 PROTOCOL_TLS_CLIENT = const(0)
 PROTOCOL_TLS_SERVER = const(1)
 
+
 # backwards compatibility even after C code is deprecated
 def wrap_socket(
     sock,
@@ -150,7 +151,6 @@ class SSLContext:
         do_handshake_on_connect=True,
         server_hostname=None,
     ):
-
         if self.check_hostname and server_hostname is None:
             raise ValueError("check_hostname requires server_hostname")
         # to be substituted by e.g. _ussl._context_wrap_socket in modussl_mbedtls.c ?:

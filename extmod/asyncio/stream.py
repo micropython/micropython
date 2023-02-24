@@ -2,6 +2,7 @@
 # MIT license; Copyright (c) 2019-2020 Damien P. George
 
 from . import core
+import sys
 
 try:
     import ssl as _ssl
@@ -91,12 +92,18 @@ class Stream:
             if hasattr(self.s, "ssl_pending"):
                 if self.s.ssl_pending():
                     l2 = self.s.readline()
-                    l += l2
+                    if l2:
+                        l += l2
+                    if l2 is None:
+                        continue
                     if not l2 or l[-1] == 10:
                         return l
             yield core._io_queue.queue_read(self.s)
             l2 = self.s.readline()  # may do multiple reads but won't block
-            l += l2
+            if l2:
+                l += l2
+            if l2 is None:
+                continue
             if not l2 or l[-1] == 10:  # \n (check l in case l2 is str)
                 return l
 
@@ -204,10 +211,9 @@ class Server:
                     s2.setblocking(True)
                     try:
                         s2 = ssl.wrap_socket(s2, server_side=True)
-                    except OSError as e:
-                        print(e)
+                    except Exception as e:
+                        sys.print_exception(e)
                         s2.close()
-                        ssl._reload_ctx = True
                         continue
             s2.setblocking(False)
             s2s = Stream(s2, {"peername": addr})
