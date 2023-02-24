@@ -499,7 +499,7 @@ DWORD ff_wtoupper ( /* Returns up-converted code point */
     DWORD uni       /* Unicode code point to be up-converted */
 )
 {
-    #if FF_FS_ASCII_UPPER_ONLY
+    #if FF_FS_CASE_INSENSITIVE_COMPARISON_ASCII_ONLY
     // Only uppercase ASCII characters. Everything else will require the user to
     // pass in an uppercase version.
     if ('a' <= uni && uni <= 'z') {

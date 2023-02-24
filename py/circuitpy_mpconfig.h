@@ -595,7 +595,7 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE (0)
 #endif
 
-#define FF_FS_ASCII_UPPER_ONLY (1)
+#define FF_FS_CASE_INSENSITIVE_COMPARISON_ASCII_ONLY (1)
 
 #define FF_FS_MAKE_VOLID (1)
 
