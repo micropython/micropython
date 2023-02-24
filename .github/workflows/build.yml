@@ -93,7 +93,6 @@ jobs:
 
   tests:
     needs: scheduler
-    if: needs.scheduler.outputs.build-boards == 'True'
     uses: ./.github/workflows/run-tests.yml
     with:
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
@@ -109,7 +108,7 @@ jobs:
   mpy-cross-mac:
     runs-on: macos-11
     needs: scheduler
-    if: ${{ needs.scheduler.outputs.build-boards == 'True' }}
+    if: needs.scheduler.outputs.build-boards == 'True'
     env:
       CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
     steps:
@@ -164,7 +163,7 @@ jobs:
   build-doc:
     runs-on: ubuntu-22.04
     needs: scheduler
-    if: ${{ needs.scheduler.outputs.build-doc == 'True' }}
+    if: needs.scheduler.outputs.build-doc == 'True'
     env:
       CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
     steps:
@@ -222,7 +221,7 @@ jobs:
   build-windows:
     runs-on: windows-2022
     needs: scheduler
-    if: ${{ needs.scheduler.outputs.build-windows == 'True' }}
+    if: needs.scheduler.outputs.build-windows == 'True'
     env:
       CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
     defaults:

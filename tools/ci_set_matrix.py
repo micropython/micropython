@@ -42,7 +42,7 @@ from shared_bindings_matrix import (
     all_ports_all_boards,
 )
 
-PORT_TO_ARCH = {
+PORT_TO_JOB = {
     "atmel-samd": "atmel",
     "broadcom": "aarch",
     "cxd56": "arm",
@@ -110,7 +110,7 @@ def set_output(name: str, value):
 
 
 def set_boards_to_build(build_all: bool):
-    if last_failed_jobs.get("mpy_cross") or last_failed_jobs.get("tests"):
+    if last_failed_jobs.get("mpy-cross") or last_failed_jobs.get("tests"):
         build_all = True
 
     # Get boards in json format
@@ -224,33 +224,32 @@ def set_boards_to_build(build_all: bool):
             boards_to_build = all_board_ids
             break
 
-    # Split boards by architecture.
-    arch_to_boards = {"aarch": [], "arm": [], "atmel": [], "esp": [], "riscv": []}
+    # Split boards by job
+    job_to_boards = {"aarch": [], "arm": [], "atmel": [], "esp": [], "riscv": []}
 
     # Append previously failed boards
-    for arch in arch_to_boards:
-        if arch in last_failed_jobs:
-            for board in last_failed_jobs[arch]:
-                if not board in boards_to_build:
-                    boards_to_build.append(board)
+    for job in job_to_boards:
+        if job in last_failed_jobs:
+            for board in last_failed_jobs[job]:
+                boards_to_build.add(board)
 
     build_boards = bool(boards_to_build)
     print("Building boards:", build_boards)
     set_output("build-boards", build_boards)
 
-    # Append boards according to arch
+    # Append boards according to job
     for board in sorted(boards_to_build):
         port = board_to_port.get(board)
         # A board can appear due to its _deletion_ (rare)
         # if this happens it's not in `board_to_port`.
         if not port:
             continue
-        arch_to_boards[PORT_TO_ARCH[port]].append(board)
+        job_to_boards[PORT_TO_JOB[port]].append(board)
         print(" ", board)
 
-    # Set the step outputs for each architecture
-    for arch in arch_to_boards:
-        set_output(f"boards-{arch}", json.dumps(arch_to_boards[arch]))
+    # Set the step outputs for each job
+    for job in job_to_boards:
+        set_output(f"boards-{job}", json.dumps(job_to_boards[job]))
 
 
 def set_docs_to_build(build_doc: bool):
