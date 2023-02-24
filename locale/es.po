@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-02-23 17:53+0000\n"
-"Last-Translator: Luis Ruiz San Segundo <luisan00@hotmail.com>\n"
+"PO-Revision-Date: 2023-02-24 23:20+0000\n"
+"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -35,7 +35,6 @@ msgstr ""
 "Código detenido por la auto-recarga. Recargando pronto.\n"
 
 #: main.c
-#, fuzzy
 msgid ""
 "\n"
 "Invalid CIRCUITPY_PYSTACK_SIZE\n"
@@ -43,7 +42,7 @@ msgid ""
 "\r"
 msgstr ""
 "\n"
-"CIRCUITPY_PYSTACK_SIZE no válido\n"
+"CIRCUITPY_PYSTACK_SIZE inválido\n"
 "\n"
 "\n"
 
@@ -210,7 +209,7 @@ msgstr "%q debe ser >= %d"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
-msgstr ""
+msgstr "%q debe ser un arreglo de tipo 'H'"
 
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
@@ -610,7 +609,8 @@ msgstr "Por debajo de la tasa mínima de refrescamiento"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
-msgstr "Le reloj de bit y de selector de palabra deben ser pines secuenciales"
+msgstr ""
+"Los pines de reloj de bit y de selector de palabra deben ser secuenciales"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -2255,7 +2255,7 @@ msgstr "Imposible de asignar el heap."
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 #, c-format
 msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr ""
+msgstr "Imposible de configurar el controlador ADC DMA , código de error:%d"
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2278,7 +2278,7 @@ msgstr "Incapaz de inicializar el parser"
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 #, c-format
 msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr ""
+msgstr "No es posible de inicializar el controlador ADC DMA, código de error:%d"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
@@ -2287,7 +2287,7 @@ msgstr "No se pudo leer los datos de la paleta de colores"
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 #, c-format
 msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-msgstr ""
+msgstr "Imposible de iniciar el controlador ADC DMA, código de error:%d"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
