@@ -106,7 +106,10 @@ def _install_json(pyb, package_json_url, index, target, version, mpy):
         _download_file(pyb, file_url, fs_target_path)
     for target_path, url in package_json.get("urls", ()):
         fs_target_path = target + "/" + target_path
-        _download_file(pyb, _rewrite_url(url, version), fs_target_path)
+        _version = version
+        if url.startswith("github:") and "@" in url:
+            url, _version = url.split("@")
+        _download_file(pyb, _rewrite_url(url, _version), fs_target_path)
     for dep, dep_version in package_json.get("deps", ()):
         _install_package(pyb, dep, index, target, dep_version, mpy)
 
