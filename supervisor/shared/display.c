@@ -159,6 +159,14 @@ void supervisor_stop_terminal(void) {
     #endif
 }
 
+bool supervisor_terminal_started(void) {
+    #if CIRCUITPY_TERMINALIO
+    return tilegrid_tiles != NULL;
+    #else
+    return false;
+    #endif
+}
+
 void supervisor_display_move_memory(void) {
     #if CIRCUITPY_TERMINALIO
     displayio_tilegrid_t *scroll_area = &supervisor_terminal_scroll_area_text_grid;
