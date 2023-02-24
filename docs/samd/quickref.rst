@@ -191,7 +191,7 @@ It supports all basic methods listed for that class. ::
 PWM Constructor
 ```````````````
 
-.. class:: PWM(dest, freq, duty_u16, duty_ns, *, invert, device)
+.. class:: PWM(dest, *, freq, duty_u16, duty_ns, invert, device)
   :noindex:
 
     Construct and return a new PWM object using the following parameters:
