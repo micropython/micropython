@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2023-02-24 23:20+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"Last-Translator: Luis Ruiz San Segundo <luisan00@hotmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -2509,7 +2509,7 @@ msgstr "Presionó el botón Rec al inicio."
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "You pressed the SW38 button at start up."
-msgstr "Usted presionó el botón SW38 al iniciar."
+msgstr "Presionó el botón SW38 al iniciar."
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
