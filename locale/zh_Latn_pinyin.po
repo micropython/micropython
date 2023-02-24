@@ -235,10 +235,6 @@ msgstr "%q chāo chū jiè xiàn"
 msgid "%q out of range"
 msgstr "%q chāochū fànwéi"
 
-#: ports/atmel-samd/common-hal/microcontroller/Pin.c
-msgid "%q pin invalid"
-msgstr "%q yǐn jiǎo wúxiào"
-
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr "%q bù cháng bù néng wéi líng"
@@ -1252,9 +1248,11 @@ msgid "Interrupt error."
 msgstr ""
 
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "wú xiào %q"
 
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Wúxiào de %q yǐn jiǎo"
@@ -4435,6 +4433,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "%q yǐn jiǎo wúxiào"
 
 #~ msgid ""
 #~ "\n"

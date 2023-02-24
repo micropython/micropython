@@ -238,10 +238,6 @@ msgstr "%q est hors limites"
 msgid "%q out of range"
 msgstr "%q est hors de porté"
 
-#: ports/atmel-samd/common-hal/microcontroller/Pin.c
-msgid "%q pin invalid"
-msgstr "broche %q invalide"
-
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr "le pas ne peut être zéro dans %q"
@@ -1277,9 +1273,11 @@ msgid "Interrupt error."
 msgstr "Erreur d'interruption."
 
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "%q invalide"
 
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Broche invalide pour '%q'"
@@ -4495,6 +4493,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "broche %q invalide"
 
 #~ msgid ""
 #~ "\n"

@@ -243,10 +243,6 @@ msgstr "%q fora dos limites"
 msgid "%q out of range"
 msgstr "%q fora do alcance"
 
-#: ports/atmel-samd/common-hal/microcontroller/Pin.c
-msgid "%q pin invalid"
-msgstr "%q pino inválido"
-
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr "A etapa %q não pode ser zero"
@@ -1271,9 +1267,11 @@ msgid "Interrupt error."
 msgstr "Erro de interrupção."
 
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "%q Inválido"
 
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Pino do %q inválido"
@@ -4480,6 +4478,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "%q pino inválido"
 
 #~ msgid ""
 #~ "\n"

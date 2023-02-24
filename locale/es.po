@@ -245,10 +245,6 @@ msgstr "%q fuera de limites"
 msgid "%q out of range"
 msgstr "%q fuera de rango"
 
-#: ports/atmel-samd/common-hal/microcontroller/Pin.c
-msgid "%q pin invalid"
-msgstr "pin inválido %q"
-
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr "%q paso no puede ser cero"
@@ -1275,9 +1271,11 @@ msgid "Interrupt error."
 msgstr "Error de interrupción."
 
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "%q inválido"
 
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Pin %q inválido"
@@ -2278,7 +2276,8 @@ msgstr "Incapaz de inicializar el parser"
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 #, c-format
 msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr "No es posible de inicializar el controlador ADC DMA, código de error:%d"
+msgstr ""
+"No es posible de inicializar el controlador ADC DMA, código de error:%d"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
@@ -4479,6 +4478,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "pin inválido %q"
 
 #~ msgid ""
 #~ "\n"
