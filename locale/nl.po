@@ -188,6 +188,10 @@ msgstr ""
 msgid "%q must be >= %d"
 msgstr ""
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr ""
+
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr ""
@@ -2194,6 +2198,11 @@ msgstr "Niet in staat buffers voor gesigneerde conversie te alloceren"
 msgid "Unable to allocate the heap."
 msgstr ""
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "Kan vergrendeling niet maken"
@@ -2212,9 +2221,19 @@ msgstr "Niet in staat een vrije GCLK te vinden"
 msgid "Unable to init parser"
 msgstr "Niet in staat om de parser te initialiseren"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Niet in staat kleurenpalet data te lezen"
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c

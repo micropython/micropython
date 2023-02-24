@@ -196,6 +196,10 @@ msgstr "%q bìxū <= %d"
 msgid "%q must be >= %d"
 msgstr "%q bìxū >= %d"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr ""
+
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr "%q bì xū shì zì jié shù zǔ huò lèi xíng wéi 'H' huò 'B' de shù zǔ"
@@ -2213,6 +2217,11 @@ msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
 msgid "Unable to allocate the heap."
 msgstr ""
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "Wúfǎ chuàngjiàn suǒ"
@@ -2231,9 +2240,19 @@ msgstr "Wúfǎ zhǎodào miǎnfèi de GCLK"
 msgid "Unable to init parser"
 msgstr "Wúfǎ chūshǐhuà jiěxī qì"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Wúfǎ dúqǔ tiáosèbǎn shùjù"
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c

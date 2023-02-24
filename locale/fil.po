@@ -189,6 +189,10 @@ msgstr ""
 msgid "%q must be >= %d"
 msgstr ""
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr ""
+
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr ""
@@ -2189,6 +2193,11 @@ msgstr "Hindi ma-allocate ang buffers para sa naka-sign na conversion"
 msgid "Unable to allocate the heap."
 msgstr ""
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr ""
@@ -2207,8 +2216,18 @@ msgstr "Hindi mahanap ang libreng GCLK"
 msgid "Unable to init parser"
 msgstr "Hindi ma-init ang parser"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
+msgstr ""
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to start ADC DMA controller, ErrorCode:%d"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c

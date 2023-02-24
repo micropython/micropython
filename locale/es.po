@@ -208,6 +208,10 @@ msgstr "%q debe ser <= %d"
 msgid "%q must be >= %d"
 msgstr "%q debe ser >= %d"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr ""
+
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr "%q debe ser un bytearray o array de tipo 'H' o 'B'"
@@ -665,7 +669,8 @@ msgstr "Buffer es muy pequeño"
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr "La longitud del buffer %d es demasiado grande. Tiene que ser menor a %d"
+msgstr ""
+"La longitud del buffer %d es demasiado grande. Tiene que ser menor a %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
@@ -2247,6 +2252,11 @@ msgstr "No se pudieron asignar buffers para la conversión con signo"
 msgid "Unable to allocate the heap."
 msgstr "Imposible de asignar el heap."
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "No se puede crear bloqueo"
@@ -2265,9 +2275,19 @@ msgstr "No se pudo encontrar un GCLK libre"
 msgid "Unable to init parser"
 msgstr "Incapaz de inicializar el parser"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "No se pudo leer los datos de la paleta de colores"
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
