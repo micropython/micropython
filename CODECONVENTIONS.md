@@ -102,7 +102,7 @@ Brew
 This command may work, please raise a new Issue if it doesn't:
 
 ```
-brew install https://github.com/Homebrew/homebrew-core/raw/2b07d8192623365078a8b855a164ebcdf81494a6/Formula/uncrustify.rb
+curl -L https://github.com/Homebrew/homebrew-core/raw/2b07d8192623365078a8b855a164ebcdf81494a6/Formula/uncrustify.rb > uncrustify.rb && brew install uncrustify.rb && rm uncrustify.rb
 ```
 
 Automatic Pre-Commit Hooks
