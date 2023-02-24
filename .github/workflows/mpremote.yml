@@ -11,20 +11,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         # Version is determined from git,
         # should be deep enough to get to latest tag
         fetch-depth: '1000'
     - run: |
         git fetch --prune --unshallow --tags
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v4
     - name: Install build tools
       run: pip install build
     - name: Build mpremote wheel
       run: cd tools/mpremote && python -m build --wheel
     - name: Archive mpremote wheel
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: mpremote
         path: |
