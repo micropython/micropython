@@ -190,9 +190,11 @@ int mp_bluetooth_hci_controller_init(void) {
     // Reset
     cywbt_hci_cmd(0x03, 0x0003, 0, NULL);
 
+    #ifdef MICROPY_HW_BLE_UART_BAUDRATE_DOWNLOAD_FIRMWARE
     // Change baudrate
-    cywbt_set_baudrate(MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY);
-    mp_bluetooth_hci_uart_set_baudrate(MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY);
+    cywbt_set_baudrate(MICROPY_HW_BLE_UART_BAUDRATE_DOWNLOAD_FIRMWARE);
+    mp_bluetooth_hci_uart_set_baudrate(MICROPY_HW_BLE_UART_BAUDRATE_DOWNLOAD_FIRMWARE);
+    #endif
 
     cywbt_download_firmware((const uint8_t*)&cyw43_btfw_4343A1[0]);
 
