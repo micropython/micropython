@@ -57,5 +57,8 @@ void port_finish_background_task(void) {
 }
 #endif
 
+void port_background_tick(void) {
+}
+
 void port_background_task(void) {
 }

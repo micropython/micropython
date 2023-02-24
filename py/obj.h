@@ -419,7 +419,7 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 // Declare a module as a builtin, processed by makemoduledefs.py
 // param module_name: MP_QSTR_<module name>
 // param obj_module: mp_obj_module_t instance
-// prarm enabled_define: used as `#if (enabled_define) around entry`
+// param enabled_define: used as `#if (enabled_define) around entry`
 
 #define MP_REGISTER_MODULE(module_name, obj_module, enabled_define)
 

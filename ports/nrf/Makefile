@@ -275,7 +275,8 @@ endif
 #####################
 .phony: dfu-gen dfu-flash
 
-NRFUTIL = adafruit-nrfutil
+NRFUTIL = nrfutil
+ADAFRUIT_NRFUTIL = adafruit-nrfutil
 
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 	DFU_TOUCH = --touch 1200
@@ -293,14 +294,19 @@ __check_defined = \
 ## Flash with DFU serial
 dfu-flash: $(BUILD)/dfu-package.zip
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
-	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank $(DFU_TOUCH)
+	$(ADAFRUIT_NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank $(DFU_TOUCH)
 
 ## Create DFU package file
 dfu-gen: $(BUILD)/dfu-package.zip
 
 $(BUILD)/dfu-package.zip: $(BUILD)/firmware.hex
-	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
+	$(ADAFRUIT_NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
 
+# Espruino DFU
+$(BUILD)/firmware.espruino.zip: $(BUILD)/firmware.hex
+	$(Q)$(NRFUTIL) pkg generate $(BUILD)/firmware.espruino.zip --application $^ --application-version 0xff --hw-version 52 --sd-req 0xa9,0xae,0xb6 --key-file espruino_dfu_private_key.pem
+
+espruino-dfu-gen: $(BUILD)/firmware.espruino.zip
 
 include $(TOP)/py/mkrules.mk
 

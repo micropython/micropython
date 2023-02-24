@@ -22,3 +22,7 @@ runs:
     - name: Set up espressif port
       if: steps.board-to-port.outputs.port == 'espressif'
       uses: ./.github/actions/deps/ports/espressif
+
+    - name: Set up nrf port
+      if: steps.board-to-port.outputs.port == 'nrf'
+      uses: ./.github/actions/deps/ports/nrf

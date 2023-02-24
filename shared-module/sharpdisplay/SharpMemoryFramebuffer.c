@@ -36,6 +36,7 @@
 #include "supervisor/memory.h"
 
 #define SHARPMEM_BIT_WRITECMD_LSB (0x80)
+#define JDI_BIT_WRITECMD_LSB      (0x90)
 #define SHARPMEM_BIT_VCOM_LSB (0x40)
 
 STATIC uint8_t bitrev(uint8_t n) {
@@ -54,7 +55,11 @@ int common_hal_sharpdisplay_framebuffer_get_height(sharpdisplay_framebuffer_obj_
 }
 
 STATIC int common_hal_sharpdisplay_framebuffer_get_row_stride(sharpdisplay_framebuffer_obj_t *self) {
-    return (self->width + 7) / 8 + 2;
+    if (self->jdi_display) {
+        return (self->width + 1) / 2 + 2;
+    } else {
+        return (self->width + 7) / 8 + 2;
+    }
 }
 
 STATIC int common_hal_sharpdisplay_framebuffer_get_first_pixel_offset(sharpdisplay_framebuffer_obj_t *self) {
@@ -99,10 +104,18 @@ void common_hal_sharpdisplay_framebuffer_get_bufinfo(sharpdisplay_framebuffer_ob
         memset(alloc->ptr, 0, self->bufinfo.len);
 
         uint8_t *data = self->bufinfo.buf;
-        *data++ = SHARPMEM_BIT_WRITECMD_LSB;
+        if (self->jdi_display) {
+            *data++ = JDI_BIT_WRITECMD_LSB;
+        } else {
+            *data++ = SHARPMEM_BIT_WRITECMD_LSB;
+        }
 
         for (int y = 0; y < height; y++) {
-            *data = bitrev(y + 1);
+            if (self->jdi_display) {
+                *data = y + 1;
+            } else {
+                *data = bitrev(y + 1);
+            }
             data += row_stride;
         }
         self->full_refresh = true;
@@ -128,7 +141,14 @@ void common_hal_sharpdisplay_framebuffer_deinit(sharpdisplay_framebuffer_obj_t *
     memset(self, 0, sizeof(*self));
 }
 
-void common_hal_sharpdisplay_framebuffer_construct(sharpdisplay_framebuffer_obj_t *self, busio_spi_obj_t *spi, const mcu_pin_obj_t *chip_select, int baudrate, int width, int height) {
+void common_hal_sharpdisplay_framebuffer_construct(
+    sharpdisplay_framebuffer_obj_t *self,
+    busio_spi_obj_t *spi,
+    const mcu_pin_obj_t *chip_select,
+    int baudrate,
+    int width,
+    int height,
+    bool jdi_display) {
     common_hal_digitalio_digitalinout_construct(&self->chip_select, chip_select);
     common_hal_digitalio_digitalinout_switch_to_output(&self->chip_select, true, DRIVE_MODE_PUSH_PULL);
     common_hal_never_reset_pin(chip_select);
@@ -139,6 +159,7 @@ void common_hal_sharpdisplay_framebuffer_construct(sharpdisplay_framebuffer_obj_
     self->width = width;
     self->height = height;
     self->baudrate = baudrate;
+    self->jdi_display = jdi_display;
 
     common_hal_sharpdisplay_framebuffer_get_bufinfo(self, NULL);
 }
@@ -169,7 +190,8 @@ STATIC void common_hal_sharpdisplay_framebuffer_swapbuffers(sharpdisplay_framebu
     }
 
     // output a trailing zero
-    common_hal_busio_spi_write(self->bus, data, 1);
+    uint8_t zero[2] = {0, 0};
+    common_hal_busio_spi_write(self->bus, zero, self->jdi_display ? 2 : 1);
 
     // set chip select low
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
@@ -191,7 +213,13 @@ STATIC void sharpdisplay_framebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_inf
 }
 
 STATIC int sharpdisplay_framebuffer_get_color_depth(mp_obj_t self_in) {
-    return 1;
+    sharpdisplay_framebuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return self->jdi_display ? 4 : 1;
+}
+
+STATIC bool sharpdisplay_framebuffer_get_grayscale(mp_obj_t self_in) {
+    sharpdisplay_framebuffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return !self->jdi_display;
 }
 
 STATIC int sharpdisplay_framebuffer_get_height(mp_obj_t self_in) {
@@ -234,6 +262,7 @@ const framebuffer_p_t sharpdisplay_framebuffer_proto = {
     .deinit = sharpdisplay_framebuffer_deinit,
     .get_bufinfo = sharpdisplay_framebuffer_get_bufinfo,
     .get_color_depth = sharpdisplay_framebuffer_get_color_depth,
+    .get_grayscale = sharpdisplay_framebuffer_get_grayscale,
     .get_height = sharpdisplay_framebuffer_get_height,
     .get_width = sharpdisplay_framebuffer_get_width,
     .swapbuffers = sharpdisplay_framebuffer_swapbuffers,

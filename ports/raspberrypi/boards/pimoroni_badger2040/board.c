@@ -260,6 +260,10 @@ const uint8_t display_stop_sequence[] = {
     POF, 0x00  // Power off
 };
 
+const uint8_t refresh_sequence[] = {
+    DRF, 0x00
+};
+
 void board_init(void) {
     // Drive the EN_3V3 pin high so the board stays awake on battery power
     enable_pin_obj.base.type = &digitalio_digitalinout_type;
@@ -293,6 +297,7 @@ void board_init(void) {
         display,
         bus,
         display_start_sequence, sizeof(display_start_sequence),
+        0, // start up time
         display_stop_sequence, sizeof(display_stop_sequence),
         296,  // width
         128,  // height
@@ -310,13 +315,14 @@ void board_init(void) {
         DTM1,  // write_color_ram_command
         false,  // color_bits_inverted
         0x000000,  // highlight_color
-        DRF,  // refresh_display_command
+        refresh_sequence, sizeof(refresh_sequence),  // refresh_display_command
         1.0,  // refresh_time
         &pin_GPIO26,  // busy_pin
         false,  // busy_state
         2.0, // seconds_per_frame
         false,  // always_toggle_chip_select
         false, // grayscale
+        false, // acep
         false);  // two_byte_sequence_length
 }
 

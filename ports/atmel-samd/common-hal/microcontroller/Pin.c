@@ -211,5 +211,5 @@ mcu_pin_function_t *mcu_find_pin_function(mcu_pin_function_t *table, const mcu_p
             return table;
         }
     }
-    mp_raise_ValueError_varg(translate("%q pin invalid"), name);
+    mp_raise_ValueError_varg(translate("Invalid %q pin"), name);
 }

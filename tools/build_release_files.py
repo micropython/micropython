@@ -66,13 +66,20 @@ for board in build_boards:
         if clean_build:
             build_dir += "-{language}".format(language=language)
 
+        extensions = [
+            extension.strip()
+            for extension in board_settings["CIRCUITPY_BUILD_EXTENSIONS"].split(",")
+        ]
+
+        artifacts = [os.path.join(build_dir, "firmware." + extension) for extension in extensions]
         make_result = subprocess.run(
-            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} BUILD={build} -j {cores}".format(
+            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} BUILD={build} -j {cores} {artifacts}".format(
                 port=board_info["port"],
                 language=language,
                 board=board,
                 build=build_dir,
                 cores=cores,
+                artifacts=" ".join(artifacts),
             ),
             shell=True,
             stdout=subprocess.PIPE,
@@ -86,10 +93,6 @@ for board in build_boards:
             success = "\033[31mfailed\033[0m"
 
         other_output = ""
-        extensions = [
-            extension.strip()
-            for extension in board_settings["CIRCUITPY_BUILD_EXTENSIONS"].split(",")
-        ]
 
         for extension in extensions:
             temp_filename = "../ports/{port}/{build}/firmware.{extension}".format(

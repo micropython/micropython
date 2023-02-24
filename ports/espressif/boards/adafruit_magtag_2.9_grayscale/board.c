@@ -109,6 +109,10 @@ const uint8_t display_stop_sequence[] = {
     0x02, 0x00  // Power off
 };
 
+const uint8_t refresh_sequence[] = {
+    0x12, 0x00
+};
+
 void board_init(void) {
     // Debug UART
     #ifdef DEBUG
@@ -137,6 +141,7 @@ void board_init(void) {
         display,
         bus,
         display_start_sequence, sizeof(display_start_sequence),
+        0, // start up time
         display_stop_sequence, sizeof(display_stop_sequence),
         296,  // width
         128,  // height
@@ -154,13 +159,14 @@ void board_init(void) {
         0x13,  // write_color_ram_command
         false,  // color_bits_inverted
         0x000000,  // highlight_color
-        0x12,  // refresh_display_command
+        refresh_sequence, sizeof(refresh_sequence),
         1.0,  // refresh_time
         &pin_GPIO5,  // busy_pin
         false,  // busy_state
         5.0, // seconds_per_frame
         false,  // always_toggle_chip_select
         true, // grayscale
+        false, // acep
         false);  // two_byte_sequence_length
 }
 

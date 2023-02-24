@@ -27,4 +27,6 @@
 #ifndef MICROPY_INCLUDED_NRF_BACKGROUND_H
 #define MICROPY_INCLUDED_NRF_BACKGROUND_H
 
+void board_background_task(void);
+
 #endif  // MICROPY_INCLUDED_NRF_BACKGROUND_H

@@ -159,7 +159,12 @@ STATIC mp_uint_t bleio_characteristic_buffer_ioctl(mp_obj_t self_in, mp_uint_t r
 STATIC mp_obj_t bleio_characteristic_buffer_obj_get_in_waiting(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_characteristic_buffer_rx_characters_available(self));
+    uint32_t available = common_hal_bleio_characteristic_buffer_rx_characters_available(self);
+    if (available == 0) {
+        // Only check if connected when none available, otherwise, allow code to continue.
+        raise_error_if_not_connected(self);
+    }
+    return MP_OBJ_NEW_SMALL_INT(available);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_get_in_waiting_obj, bleio_characteristic_buffer_obj_get_in_waiting);
 
