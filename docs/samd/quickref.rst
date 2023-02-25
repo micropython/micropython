@@ -178,11 +178,12 @@ It supports all basic methods listed for that class. ::
 
     from machine import Pin, PWM
 
-    pwm = PWM(Pin(7))      # create PWM object from a pin
-    pwm.freq()             # get current frequency
-    pwm.freq(1000)         # set frequency
-    pwm.duty_u16()         # get current duty cycle, range 0-65535
-    pwm.duty_u16(200)      # set duty cycle, range 0-65535
+    # create PWM object from a pin and set the frequency and duty cycle
+    pwm = PWM(Pin('D7'), freq=2000, duty_u16=32768)
+    pwm.freq()             # get the current frequency
+    pwm.freq(1000)         # set/change the frequency
+    pwm.duty_u16()         # get the current duty cycle, range 0-65535
+    pwm.duty_u16(200)      # set the duty cycle, range 0-65535
     pwm.deinit()           # turn off PWM on the pin
 
     pwm                    # show the PWM objects properties
@@ -213,9 +214,6 @@ PWM Constructor
       - *freq* should be an integer which sets the frequency in Hz for the
         PWM cycle. The valid frequency range is 1 Hz to 24 MHz.
       - *duty_u16* sets the duty cycle as a ratio ``duty_u16 / 65536``.
-        The duty cycle of a X channel can only be changed, if the A and B channel
-        of the respective submodule is not used. Otherwise the duty_16 value of the
-        X channel is 32768 (50%).
       - *duty_ns* sets the pulse width in nanoseconds. The limitation for X channels
         apply as well.
       - *invert*\=True|False. Setting a bit inverts the respective output.

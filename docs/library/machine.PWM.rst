@@ -10,7 +10,8 @@ Example usage::
 
     from machine import PWM
 
-    pwm = PWM(pin)          # create a PWM object on a pin
+    pwm = PWM(pin, freq=50, duty_u16=8192)  # create a PWM object on a pin
+                                            # and set freq and duty
     pwm.duty_u16(32768)     # set duty to 50%
 
     # reinitialise with a period of 200us, duty of 5us
