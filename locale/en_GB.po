@@ -2013,10 +2013,6 @@ msgstr "Stereo right must be on PWM channel B"
 msgid "Stopping AP is not supported."
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "Supply at least one UART pin"
-msgstr "Supply at least one UART pin"
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr "Supply one of monotonic_time or epoch_time"
@@ -4179,8 +4175,6 @@ msgstr "twai_driver_install returned esp-idf error #%d"
 msgid "twai_start returned esp-idf error #%d"
 msgstr "twai_start returned esp-idf error #%d"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx and rx cannot both be None"
@@ -4401,6 +4395,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Supply at least one UART pin"
 
 #~ msgid "%q pin invalid"
 #~ msgstr "%q pin invalid"

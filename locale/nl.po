@@ -2013,10 +2013,6 @@ msgstr ""
 msgid "Stopping AP is not supported."
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "Supply at least one UART pin"
-msgstr "Geef op zijn minst 1 UART pin op"
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr "Geef monotonic_time of epoch_time"
@@ -4187,8 +4183,6 @@ msgstr "twai_driver_install geeft esp-idf fout #%d"
 msgid "twai_start returned esp-idf error #%d"
 msgstr "twai_start geeft esp-idf error #%d"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx en rx kunnen niet beiden None zijn"
@@ -4409,6 +4403,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Geef op zijn minst 1 UART pin op"
 
 #~ msgid "%q pin invalid"
 #~ msgstr "%q pin onjuist"

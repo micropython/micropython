@@ -2036,10 +2036,6 @@ msgstr "Höger stereokanal måste använda PWM kanal B"
 msgid "Stopping AP is not supported."
 msgstr "Stoppa AP stöds inte."
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "Supply at least one UART pin"
-msgstr "Ange minst en UART-pinne"
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr "Ange en av monotonic_time eller epoch_time"
@@ -4218,8 +4214,6 @@ msgstr "twai_driver_install returnerade esp-idf-fel #%d"
 msgid "twai_start returned esp-idf error #%d"
 msgstr "twai_start returnerade esp-idf-fel #%d"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx och rx kan inte båda vara None"
@@ -4440,6 +4434,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Ange minst en UART-pinne"
 
 #~ msgid "%q pin invalid"
 #~ msgstr "Pinne %q ogiltig"
