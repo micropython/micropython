@@ -48,14 +48,15 @@
 //|
 //|       odg = gifio.OnDiskGif('/sample.gif')
 //|       odg.next_frame() # Load the first frame
-//|       face = displayio.TileGrid(odg, pixel_shader=displayio.ColorConverter(input_colorspace=displayio.Colorspace.RGB565))
+//|       # Depending on your display the next line may need Colorspace.RGB565 instead of Colorspace.RGB565_SWAPPED
+//|       face = displayio.TileGrid(odg.bitmap, pixel_shader=displayio.ColorConverter(input_colorspace=displayio.Colorspace.RGB565_SWAPPED))
 //|       splash.append(face)
 //|       board.DISPLAY.refresh()
 //|
 //|       # Wait forever
 //|       while True:
-//|           gif.next_frame()
-//|           time.sleep(0.1)"""
+//|           next_delay = odg.next_frame()
+//|           time.sleep(next_delay)"""
 //|
 //|     def __init__(self, file: str) -> None:
 //|         """Create an OnDiskGif object with the given file.
