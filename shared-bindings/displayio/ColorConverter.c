@@ -73,10 +73,8 @@ STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t 
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_int_t color = mp_arg_validate_type_int(color_obj, MP_QSTR_color);
-    _displayio_colorspace_t colorspace;
-    colorspace.depth = 16;
     uint32_t output_color;
-    common_hal_displayio_colorconverter_convert(self, &colorspace, color, &output_color);
+    common_hal_displayio_colorconverter_convert(self, &self->output_colorspace, color, &output_color);
     return MP_OBJ_NEW_SMALL_INT(output_color);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_convert_obj, displayio_colorconverter_obj_convert);

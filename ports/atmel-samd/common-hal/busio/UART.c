@@ -58,6 +58,8 @@ static void usart_async_rxc_callback(const struct usart_async_descriptor *const 
     // Nothing needs to be done by us.
 }
 
+// shared-bindings validates that the tx and rx are not both missing,
+// and that the pins are distinct.
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx,
     const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts,
@@ -92,10 +94,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     bool have_rts = rts != NULL;
     bool have_cts = cts != NULL;
 
-    if (!have_tx && !have_rx) {
-        mp_raise_ValueError(translate("tx and rx cannot both be None"));
-    }
-
     if (have_rx && receiver_buffer_size > 0 && (receiver_buffer_size & (receiver_buffer_size - 1)) != 0) {
         mp_raise_ValueError_varg(translate("%q must be power of 2"), MP_QSTR_receiver_buffer_size);
     }
@@ -107,6 +105,20 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // This assignment is only here because the usart_async routines take a *const argument.
     struct usart_async_descriptor *const usart_desc_p = (struct usart_async_descriptor *const)&self->usart_desc;
 
+    // Allowed pads for USART. See the SAMD21 and SAMx5x datasheets.
+    // TXPO:
+    // (both)     0x0: TX pad 0; no RTS/CTS
+    // (SAMD21)   0x1: TX pad 2; no RTS/CTS
+    // (SAMx5x)   0x1: reserved
+    // (both)     0x2: TX pad 0; RTS: pad 2, CTS: pad 3
+    // (SAMD21)   0x3: reserved
+    // (SAMx5x)   0x3: TX pad 0; RTS: pad 2; no CTS
+    // RXPO:
+    // 0x0: RX pad 0
+    // 0x1: RX pad 1
+    // 0x2: RX pad 2
+    // 0x3: RX pad 3
+
     for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
         Sercom *potential_sercom = NULL;
         if (have_tx) {
@@ -115,29 +127,71 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 continue;
             }
             potential_sercom = sercom_insts[sercom_index];
+
+            // SAMD21 and SAMx5x have different requirements.
+
             #ifdef SAMD21
-            if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
-                !(tx->sercom[i].pad == 0 ||
-                  tx->sercom[i].pad == 2)) {
+            if (potential_sercom->USART.CTRLA.bit.ENABLE != 0) {
+                // In use.
                 continue;
             }
+            if (tx->sercom[i].pad != 0 &&
+                tx->sercom[i].pad != 2) {
+                // TX must be on pad 0 or 2.
+                continue;
+            }
+            if (have_rts) {
+                if (rts->sercom[i].pad != 2 ||
+                    tx->sercom[i].pad == 2) {
+                    // RTS pin must be on pad 2, so if TX is also on pad 2, not possible
+                    continue;
+                }
+            }
+            if (have_cts) {
+                if (cts->sercom[i].pad != 3 ||
+                    (have_rx && rx->sercom[i].pad == 3)) {
+                    // CTS pin must be on pad 3, so if RX is also on pad 3, not possible
+                    continue;
+                }
+            }
             #endif
+
             #ifdef SAM_D5X_E5X
-            if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
-                !(tx->sercom[i].pad == 0)) {
+            if (potential_sercom->USART.CTRLA.bit.ENABLE != 0) {
+                // In use.
                 continue;
             }
+            if (tx->sercom[i].pad != 0) {
+                // TX must be on pad 0
+                continue;
+            }
+
+            if (have_rts && rts->sercom[i].pad != 2) {
+                // RTS pin must be on pad 2
+                continue;
+            }
+            if (have_cts) {
+                if (cts->sercom[i].pad != 3 ||
+                    (have_rx && rx->sercom[i].pad == 3)) {
+                    // CTS pin must be on pad 3, so if RX is also on pad 3, not possible
+                    continue;
+                }
+            }
             #endif
+
             tx_pinmux = PINMUX(tx->number, (i == 0) ? MUX_C : MUX_D);
             tx_pad = tx->sercom[i].pad;
             if (have_rts) {
                 rts_pinmux = PINMUX(rts->number, (i == 0) ? MUX_C : MUX_D);
             }
-            if (rx == NULL) {
+            if (!have_rx) {
+                // TX only, so don't need to look further.
                 sercom = potential_sercom;
                 break;
             }
         }
+
+        // Have TX, now look for RX match. We know have_rx is true at this point.
         for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
             if (((!have_tx && rx->sercom[j].index < SERCOM_INST_NUM &&
                   sercom_insts[rx->sercom[j].index]->USART.CTRLA.bit.ENABLE == 0) ||
@@ -160,20 +214,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (sercom == NULL) {
         raise_ValueError_invalid_pins();
     }
-    if (!have_tx) {
-        tx_pad = 0;
-        if (rx_pad == 0) {
-            tx_pad = 2;
-        }
-    }
-    if (!have_rx) {
-        rx_pad = (tx_pad + 1) % 4;
-    }
-
     // Set up clocks on SERCOM.
     samd_peripherals_sercom_clock_init(sercom, sercom_index);
 
-    if (rx && receiver_buffer_size > 0) {
+    if (have_rx && receiver_buffer_size > 0) {
         self->buffer_length = receiver_buffer_size;
         if (NULL != receiver_buffer) {
             self->buffer = receiver_buffer;
@@ -204,36 +248,41 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // which don't necessarily match what we need. After calling it, set the values
     // specific to this instantiation of UART.
 
-    // Set pads computed for this SERCOM. Refer to the datasheet for details on pads.
-    // TXPO:
-    // 0x0: TX pad 0; no RTS/CTS
-    // 0x1: reserved
-    // 0x2: TX pad 0; RTS: pad 2, CTS: pad 3
-    // 0x3: TX pad 0; RTS: pad 2; no CTS
-    // RXPO:
-    // 0x0: RX pad 0
-    // 0x1: RX pad 1
-    // 0x2: RX pad 2
-    // 0x3: RX pad 3
+    // See the TXPO/RXPO table above for how RXPO and TXPO are chosen below.
 
-    // Default to TXPO with no RTS/CTS
-    uint8_t computed_txpo = 0;
-    // If we have both CTS (with or without RTS), use second pinout
-    if (have_cts) {
-        computed_txpo = 2;
+    // rxpo maps directly to rx_pad.
+    // Set to 0x0 if no RX, but it doesn't matter because RX will not be enabled.
+    const uint8_t rxpo = have_rx ? rx_pad : 0x0;
+
+    #ifdef SAMD21
+    // SAMD21 has only one txpo value when using either CTS or RTS or both.
+    // TX is on pad 0 or 2, or there is no TX.
+    // 0x0 for pad 0, 0x1 for pad 2.
+    uint8_t txpo;
+    if (tx_pad == 2) {
+        txpo = 0x1;
+    } else {
+        txpo = (have_cts || have_rts) ? 0x2 : 0x0;
     }
-    // If we have RTS only, use the third pinout
-    if (have_rts && !have_cts) {
-        computed_txpo = 3;
-    }
+    #endif
+
+    #ifdef SAM_D5X_E5X
+    // SAMx5x has two different possibilities, per the chart above.
+    // We already know TX is on pad 0, or there is no TX.
+
+    // Without RTS or CTS, txpo can be 0x0.
+    // It's not clear if 0x2 would cover all our cases, but this is known to be safe.
+    uint8_t txpo = (have_rts || have_cts) ? 0x2: 0x0;
+    #endif
 
     // Doing a group mask and set of the registers saves 60 bytes over setting the bitfields individually.
 
     sercom->USART.CTRLA.reg &= ~(SERCOM_USART_CTRLA_TXPO_Msk |
         SERCOM_USART_CTRLA_RXPO_Msk |
         SERCOM_USART_CTRLA_FORM_Msk);
-    sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_TXPO(computed_txpo) |
-        SERCOM_USART_CTRLA_RXPO(rx_pad) |
+    // See chart above for TXPO values and RXPO values.
+    sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_TXPO(txpo) |
+        SERCOM_USART_CTRLA_RXPO(rxpo) |
         (parity == BUSIO_UART_PARITY_NONE ? 0 : SERCOM_USART_CTRLA_FORM(1));
 
     // Enable tx and/or rx based on whether the pins were specified.

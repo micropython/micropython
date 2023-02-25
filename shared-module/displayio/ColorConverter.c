@@ -45,6 +45,7 @@ void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t *s
     self->dither = dither;
     self->transparent_color = NO_TRANSPARENT_COLOR;
     self->input_colorspace = input_colorspace;
+    self->output_colorspace.depth = 16;
 }
 
 uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888) {

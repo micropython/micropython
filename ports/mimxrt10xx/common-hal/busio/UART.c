@@ -179,7 +179,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             break;
         }
     } else {
-        mp_raise_ValueError(translate("Supply at least one UART pin"));
+        // TX and RX are both None. But this is already handled in shared-bindings, so
+        // we won't get here.
     }
 
     if (rx && !rx_config) {
