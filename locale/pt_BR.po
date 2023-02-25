@@ -205,6 +205,10 @@ msgstr "%q deve ser <= %d"
 msgid "%q must be >= %d"
 msgstr "o %q deve ser >= %d"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr ""
+
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr "%q deve ser um bytearray ou uma matriz do tipo 'H' ou 'B'"
@@ -238,10 +242,6 @@ msgstr "%q fora dos limites"
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr "%q fora do alcance"
-
-#: ports/atmel-samd/common-hal/microcontroller/Pin.c
-msgid "%q pin invalid"
-msgstr "%q pino inválido"
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
@@ -1267,9 +1267,11 @@ msgid "Interrupt error."
 msgstr "Erro de interrupção."
 
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "%q Inválido"
 
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Pino do %q inválido"
@@ -2243,6 +2245,11 @@ msgstr "Não é possível alocar buffers para conversão assinada"
 msgid "Unable to allocate the heap."
 msgstr "Não é possível alocar a área de alocação dinâmica de variáveis."
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "Não é possível criar um lock"
@@ -2261,9 +2268,19 @@ msgstr "Não é possível encontrar GCLK livre"
 msgid "Unable to init parser"
 msgstr "Não foi possível iniciar o analisador"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Não foi possível ler os dados da paleta de cores"
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
@@ -4461,6 +4478,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "%q pino inválido"
 
 #~ msgid ""
 #~ "\n"

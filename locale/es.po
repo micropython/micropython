@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-02-23 17:53+0000\n"
+"PO-Revision-Date: 2023-02-24 23:20+0000\n"
 "Last-Translator: Luis Ruiz San Segundo <luisan00@hotmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -35,7 +35,6 @@ msgstr ""
 "Código detenido por la auto-recarga. Recargando pronto.\n"
 
 #: main.c
-#, fuzzy
 msgid ""
 "\n"
 "Invalid CIRCUITPY_PYSTACK_SIZE\n"
@@ -43,7 +42,7 @@ msgid ""
 "\r"
 msgstr ""
 "\n"
-"CIRCUITPY_PYSTACK_SIZE no válido\n"
+"CIRCUITPY_PYSTACK_SIZE inválido\n"
 "\n"
 "\n"
 
@@ -208,6 +207,10 @@ msgstr "%q debe ser <= %d"
 msgid "%q must be >= %d"
 msgstr "%q debe ser >= %d"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr "%q debe ser un arreglo de tipo 'H'"
+
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr "%q debe ser un bytearray o array de tipo 'H' o 'B'"
@@ -241,10 +244,6 @@ msgstr "%q fuera de limites"
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr "%q fuera de rango"
-
-#: ports/atmel-samd/common-hal/microcontroller/Pin.c
-msgid "%q pin invalid"
-msgstr "pin inválido %q"
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
@@ -606,7 +605,8 @@ msgstr "Por debajo de la tasa mínima de refrescamiento"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
-msgstr "Le reloj de bit y de selector de palabra deben ser pines secuenciales"
+msgstr ""
+"Los pines de reloj de bit y de selector de palabra deben ser secuenciales"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -665,7 +665,8 @@ msgstr "Buffer es muy pequeño"
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr "La longitud del buffer %d es demasiado grande. Tiene que ser menor a %d"
+msgstr ""
+"La longitud del buffer %d es demasiado grande. Tiene que ser menor a %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
@@ -1270,9 +1271,11 @@ msgid "Interrupt error."
 msgstr "Error de interrupción."
 
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "%q inválido"
 
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Pin %q inválido"
@@ -2247,6 +2250,11 @@ msgstr "No se pudieron asignar buffers para la conversión con signo"
 msgid "Unable to allocate the heap."
 msgstr "Imposible de asignar el heap."
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+msgstr "Imposible de configurar el controlador ADC DMA , código de error:%d"
+
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "No se puede crear bloqueo"
@@ -2265,9 +2273,20 @@ msgstr "No se pudo encontrar un GCLK libre"
 msgid "Unable to init parser"
 msgstr "Incapaz de inicializar el parser"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+msgstr ""
+"No es posible de inicializar el controlador ADC DMA, código de error:%d"
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "No se pudo leer los datos de la paleta de colores"
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+msgstr "Imposible de iniciar el controlador ADC DMA, código de error:%d"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
@@ -2489,7 +2508,7 @@ msgstr "Presionó el botón Rec al inicio."
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "You pressed the SW38 button at start up."
-msgstr "Usted presionó el botón SW38 al iniciar."
+msgstr "Presionó el botón SW38 al iniciar."
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
@@ -4459,6 +4478,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "pin inválido %q"
 
 #~ msgid ""
 #~ "\n"
