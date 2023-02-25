@@ -35,7 +35,10 @@ typedef struct _machine_pwm_obj_t {
     pyb_pin_obj_t *pin;
     uint8_t active;
     uint8_t channel;
+    int32_t duty_ns;
 } machine_pwm_obj_t;
+
+STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty);
 
 STATIC bool pwm_inited = false;
 
@@ -53,10 +56,12 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 }
 
 STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_freq, ARG_duty };
+    enum { ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_duty, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_duty_u16, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_duty_ns, MP_ARG_INT, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -73,6 +78,15 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     }
     if (args[ARG_duty].u_int != -1) {
         pwm_set_duty(args[ARG_duty].u_int, self->channel);
+    }
+    if (args[ARG_duty_u16].u_int != -1) {
+        pwm_set_duty(args[ARG_duty_u16].u_int * 1000 / 65536, self->channel);
+    }
+    if (args[ARG_duty_ns].u_int != -1) {
+        uint32_t freq = pwm_get_freq(0);
+        if (freq > 0) {
+            pwm_set_duty((uint64_t)args[ARG_duty_ns].u_int * freq / 1000000, self->channel);
+        }
     }
 
     if (pin_mode[self->pin->phys_port] == GPIO_MODE_OPEN_DRAIN) {
@@ -91,6 +105,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->pin = pin;
     self->active = 0;
     self->channel = -1;
+    self->duty_ns = -1;
 
     // start the PWM subsystem if it's not already running
     if (!pwm_inited) {
@@ -118,26 +133,57 @@ STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
 
 STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     pwm_set_freq(freq, 0);
-    pwm_start();
+    if (self->duty_ns != -1) {
+        mp_machine_pwm_duty_set_ns(self, self->duty_ns);
+    } else {
+        pwm_start();
+    }
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
+STATIC void set_active(machine_pwm_obj_t *self, bool set_pin) {
     if (!self->active) {
         pwm_add(self->pin->phys_port, self->pin->periph, self->pin->func);
         self->active = 1;
-
-        if (pin_mode[self->pin->phys_port] == GPIO_MODE_OPEN_DRAIN) {
+        if (set_pin && pin_mode[self->pin->phys_port] == GPIO_MODE_OPEN_DRAIN) {
             mp_hal_pin_open_drain(self->pin->phys_port);
         }
     }
+}
+
+STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
+    set_active(self, true);
     return MP_OBJ_NEW_SMALL_INT(pwm_get_duty(self->channel));
 }
 
 STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
-    if (!self->active) {
-        pwm_add(self->pin->phys_port, self->pin->periph, self->pin->func);
-        self->active = 1;
-    }
+    set_active(self, false);
+    self->duty_ns = -1;
     pwm_set_duty(duty, self->channel);
+    pwm_start();
+}
+
+STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
+    set_active(self, true);
+    return MP_OBJ_NEW_SMALL_INT(pwm_get_duty(self->channel) * 65536 / 1024);
+}
+
+STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty) {
+    set_active(self, false);
+    self->duty_ns = -1;
+    pwm_set_duty(duty * 1024 / 65536, self->channel);
+    pwm_start();
+}
+
+STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
+    set_active(self, true);
+    uint32_t freq = pwm_get_freq(0);
+    return MP_OBJ_NEW_SMALL_INT(pwm_get_duty(self->channel) * 976563 / freq);
+}
+
+STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
+    set_active(self, false);
+    self->duty_ns = duty;
+    uint32_t freq = pwm_get_freq(0);
+    pwm_set_duty(duty * freq / 976562, self->channel); // 1e9/1024 = 976562.5
     pwm_start();
 }
