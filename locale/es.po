@@ -2061,10 +2061,6 @@ msgstr "Estéreo derecho debe estar en el canal PWM B"
 msgid "Stopping AP is not supported."
 msgstr "Parar el AP no esta soportado."
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "Supply at least one UART pin"
-msgstr "Suministre al menos un pin UART"
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr "Suministre monotonic_time o epoch_time"
@@ -4256,8 +4252,6 @@ msgstr "twai_driver_install devolvió esp-idf error #%d"
 msgid "twai_start returned esp-idf error #%d"
 msgstr "twai_start devolvió esp-idf error #%d"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "Ambos tx y rx no pueden ser None"
@@ -4478,6 +4472,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Suministre al menos un pin UART"
 
 #~ msgid "%q pin invalid"
 #~ msgstr "pin inválido %q"

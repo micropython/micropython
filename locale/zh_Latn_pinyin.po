@@ -2030,10 +2030,6 @@ msgstr "lì tǐ shēng yòu cè bì xū zài PWM tōng dào B shàng"
 msgid "Stopping AP is not supported."
 msgstr "bù zhī chí tíng zhǐ AP."
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "Supply at least one UART pin"
-msgstr "Dìngyì zhìshǎo yīgè UART yǐn jiǎo"
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr "tí gòng qí zhōng yī monotonic_time huò epoch_time"
@@ -4211,8 +4207,6 @@ msgstr "twai_driver_install fǎn huí esp-idf cuò wù #%d"
 msgid "twai_start returned esp-idf error #%d"
 msgstr "twai_start fǎn huí esp -idf cuò wù #%d"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx hé rx bùnéng dōu shì wú"
@@ -4433,6 +4427,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Dìngyì zhìshǎo yīgè UART yǐn jiǎo"
 
 #~ msgid "%q pin invalid"
 #~ msgstr "%q yǐn jiǎo wúxiào"

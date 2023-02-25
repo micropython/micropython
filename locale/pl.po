@@ -2000,10 +2000,6 @@ msgstr ""
 msgid "Stopping AP is not supported."
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "Supply at least one UART pin"
-msgstr "Podaj co najmniej jeden pin UART"
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr ""
@@ -4163,8 +4159,6 @@ msgstr ""
 msgid "twai_start returned esp-idf error #%d"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx i rx nie mogą być oba None"
@@ -4385,6 +4379,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Podaj co najmniej jeden pin UART"
 
 #~ msgid "%q pin invalid"
 #~ msgstr "nieprawidłowy pin %q"
