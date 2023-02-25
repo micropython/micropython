@@ -3,6 +3,13 @@
 
 #include "py/obj.h"
 
+#define MICROPYTHON_CHOSEN(prop, i)                         \
+    DT_CHOSEN(DT_CAT3(micropython_, prop, i))
+
+#define MICROPYTHON_CHOSEN_DEVICE(prop, i, _)               \
+    IF_ENABLED(DT_NODE_EXISTS(MICROPYTHON_CHOSEN(prop, i)), \
+               (DEVICE_DT_GET(MICROPYTHON_CHOSEN(prop, i)),))
+
 extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_i2c_type;
 extern const mp_obj_type_t machine_spi_type;

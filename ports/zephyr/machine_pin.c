@@ -49,6 +49,10 @@ typedef struct _machine_pin_irq_obj_t {
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
 const mp_obj_base_t machine_pin_obj_template = {&machine_pin_type};
 
+#define PIN_DEVICE(i, _) MICROPYTHON_CHOSEN_DEVICE(machine_pin, i, _)
+
+STATIC const struct device *const machine_pin_devices[] = {LISTIFY(8, PIN_DEVICE, ())};
+
 void machine_pin_deinit(void) {
     for (machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_list); irq != NULL; irq = irq->next) {
         machine_pin_obj_t *pin = MP_OBJ_TO_PTR(irq->base.parent);
@@ -130,12 +134,22 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     }
     mp_obj_t *items;
     mp_obj_get_array_fixed_n(args[0], 2, &items);
-    const char *drv_name = mp_obj_str_get_str(items[0]);
-    int wanted_pin = mp_obj_get_int(items[1]);
-    const struct device *wanted_port = device_get_binding(drv_name);
+
+    const struct device *wanted_port = NULL;
+    if (mp_obj_is_int(items[0])) {
+        int drv_instance = mp_obj_get_int(items[0]);
+        if (drv_instance < ARRAY_SIZE(machine_pin_devices)) {
+            wanted_port = machine_pin_devices[drv_instance];
+        }
+    } else {
+        const char *drv_name = mp_obj_str_get_str(items[0]);
+        wanted_port = device_get_binding(drv_name);
+    }
     if (!wanted_port) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid port"));
     }
+
+    int wanted_pin = mp_obj_get_int(items[1]);
 
     machine_pin_obj_t *pin = m_new_obj(machine_pin_obj_t);
     pin->base = machine_pin_obj_template;

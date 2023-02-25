@@ -102,7 +102,7 @@ To blink an LED:
     import time
     from machine import Pin
 
-    LED = Pin(("GPIO_1", 21), Pin.OUT)
+    LED = Pin((1, 21), Pin.OUT)
     while True:
         LED.value(1)
         time.sleep(0.5)
@@ -120,8 +120,8 @@ To respond to Pin change IRQs, on a FRDM-K64F board run:
 
     from machine import Pin
 
-    SW2 = Pin(("GPIO_2", 6), Pin.IN)
-    SW3 = Pin(("GPIO_0", 4), Pin.IN)
+    SW2 = Pin((2, 6), Pin.IN)
+    SW3 = Pin((0, 4), Pin.IN)
 
     SW2.irq(lambda t: print("SW2 changed"))
     SW3.irq(lambda t: print("SW3 changed"))

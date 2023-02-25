@@ -36,7 +36,7 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 
     from machine import Pin
 
-    pin = Pin(("GPIO_1", 21), Pin.IN)   # create input pin on GPIO1
+    pin = Pin((1, 21), Pin.IN)          # create input pin on GPIO1
     print(pin)                          # print pin port and number
 
     pin.init(Pin.OUT, Pin.PULL_UP, value=1)     # reinitialize pin
@@ -47,13 +47,13 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     pin.on()                            # set pin to high
     pin.off()                           # set pin to low
 
-    pin = Pin(("GPIO_1", 21), Pin.IN)   # create input pin on GPIO1
+    pin = Pin((1, 21), Pin.IN)                  # create input pin on GPIO1
 
-    pin = Pin(("GPIO_1", 21), Pin.OUT, value=1)         # set pin high on creation
+    pin = Pin((1, 21), Pin.OUT, value=1)        # set pin high on creation
 
-    pin = Pin(("GPIO_1", 21), Pin.IN, Pin.PULL_UP)      # enable internal pull-up resistor
+    pin = Pin((1, 21), Pin.IN, Pin.PULL_UP)     # enable internal pull-up resistor
 
-    switch = Pin(("GPIO_2", 6), Pin.IN)                 # create input pin for a switch
+    switch = Pin((2, 6), Pin.IN)                        # create input pin for a switch
     switch.irq(lambda t: print("SW2 changed"))          # enable an interrupt when switch state is changed
 
 Hardware I2C bus

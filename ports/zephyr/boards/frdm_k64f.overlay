@@ -1,0 +1,15 @@
+/*
+ * Copyright (c) 2023 Intel Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	chosen {
+		micropython,machine-pin0 = &gpioa;
+		micropython,machine-pin1 = &gpiob;
+		micropython,machine-pin2 = &gpioc;
+		micropython,machine-pin3 = &gpiod;
+		micropython,machine-pin4 = &gpioe;
+	};
+};
