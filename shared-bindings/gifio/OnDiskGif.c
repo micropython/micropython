@@ -43,8 +43,9 @@
 //|       import displayio
 //|       import time
 //|
+//|       display = board.DISPLAY
 //|       splash = displayio.Group()
-//|       board.DISPLAY.show(splash)
+//|       display.root_group = splash
 //|
 //|       odg = gifio.OnDiskGif('/sample.gif')
 //|       odg.next_frame() # Load the first frame
