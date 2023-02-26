@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-02-23 17:53+0000\n"
+"PO-Revision-Date: 2023-02-26 06:37+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -207,7 +207,7 @@ msgstr "o %q deve ser >= %d"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
-msgstr ""
+msgstr "%q deve ser uma matriz do tipo 'H'"
 
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
@@ -2244,7 +2244,7 @@ msgstr "Não é possível alocar a área de alocação dinâmica de variáveis."
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 #, c-format
 msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr ""
+msgstr "Não foi possível configurar o controlador ADC DMA, ErrorCode:%d"
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2267,7 +2267,7 @@ msgstr "Não foi possível iniciar o analisador"
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 #, c-format
 msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr ""
+msgstr "Não foi possível inicializar o controlador ADC DMA, ErrorCode:%d"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
@@ -2276,7 +2276,7 @@ msgstr "Não foi possível ler os dados da paleta de cores"
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 #, c-format
 msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-msgstr ""
+msgstr "Não foi possível iniciar o controlador ADC DMA, ErrorCode:%d"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
