@@ -69,7 +69,27 @@ void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
 }
 
 //| class PWMOut:
-//|     """Output a Pulse Width Modulated signal on a given pin."""
+//|     """Output a Pulse Width Modulated signal on a given pin.
+//|
+//|     .. note:: The exact frequencies possible depend on the specific microcontroller.
+//|       If the requested frequency is within the available range, one of the two
+//|       nearest possible frequencies to the requested one is selected.
+//|
+//|       If the requested frequency is outside the range, either (A) a ValueError
+//|       may be raised or (B) the highest or lowest frequency is selected. This
+//|       behavior is microcontroller-dependent, and may depend on whether it's the
+//|       upper or lower bound that is exceeded.
+//|
+//|       In any case, the actual frequency (rounded to 1Hz) is available in the
+//|       ``frequency`` property after construction.
+//|
+//|     .. note:: The frequency is calculated based on a nominal CPU frequency.
+//|       However, depending on the board, the error between the nominal and
+//|       actual CPU frequency can be large (several hundred PPM in the case of
+//|       crystal oscillators and up to ten percent in the case of RC
+//|       oscillators)
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,
@@ -134,7 +154,9 @@ void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
 //|           pwm = pwmio.PWMOut(board.D13, duty_cycle=2 ** 15, frequency=440, variable_frequency=True)
 //|           time.sleep(0.2)
 //|           pwm.frequency = 880
-//|           time.sleep(0.1)"""
+//|           time.sleep(0.1)
+//|
+//|         """
 //|         ...
 STATIC mp_obj_t pwmio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     enum { ARG_pin, ARG_duty_cycle, ARG_frequency, ARG_variable_frequency };
@@ -234,7 +256,8 @@ MP_PROPERTY_GETSET(pwmio_pwmout_duty_cycle_obj,
 //|     for the PWM's duty cycle may need to be recalculated when the frequency
 //|     changes. In these cases, the duty cycle is automatically recalculated
 //|     from the original duty cycle value. This should happen without any need
-//|     to manually re-set the duty cycle."""
+//|     to manually re-set the duty cycle. However, an output glitch may occur during the adjustment.
+//|     """
 //|
 STATIC mp_obj_t pwmio_pwmout_obj_get_frequency(mp_obj_t self_in) {
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
