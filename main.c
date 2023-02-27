@@ -1078,17 +1078,16 @@ int __attribute__((used)) main(void) {
     int exit_code = PYEXEC_FORCED_EXIT;
     bool skip_repl = true;
     bool simulate_reset = true;
-    bool first_run = true;
     for (;;) {
         if (!skip_repl) {
             exit_code = run_repl(get_safe_mode());
             supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
-            if (!first_run) {
+            if (!simulate_reset) {
                 serial_write_compressed(translate("soft reboot\n"));
             }
-            first_run = false;
+            simulate_reset = false;
             if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
                 // If code.py did a fake deep sleep, pretend that we
                 // are running code.py for the first time after a hard
