@@ -28,6 +28,7 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(micropython)
 
 set(MICROPY_PORT_DIR    ${CMAKE_CURRENT_SOURCE_DIR})
+set(MICROPY_BUILD_DIR   ${MICROPY_PORT_DIR}/build)
 set(MICROPY_DIR         ${MICROPY_PORT_DIR}/../..)
 set(MICROPY_TARGET      micropython)
 
@@ -74,7 +75,12 @@ set(MICROPY_SOURCE_LIB
 )
 list(TRANSFORM MICROPY_SOURCE_LIB PREPEND ${MICROPY_DIR}/lib/)
 
+add_custom_command(OUTPUT ${MICROPY_BUILD_DIR}/gen_dt_node_names.h
+    DEPENDS ${MICROPY_BUILD_DIR}/zephyr/edt.pickle ${MICROPY_PORT_DIR}/gen_dt_node_names.py
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PORT_DIR}/gen_dt_node_names.py -i ${MICROPY_BUILD_DIR}/zephyr/edt.pickle -o ${MICROPY_BUILD_DIR}/gen_dt_node_names.h)
+
 set(MICROPY_SOURCE_QSTR
+    ${MICROPY_BUILD_DIR}/gen_dt_node_names.h
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
     ${MICROPY_SOURCE_SHARED}
