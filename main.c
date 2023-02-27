@@ -1012,6 +1012,7 @@ int __attribute__((used)) main(void) {
             if (!simulate_reset) {
                 serial_write_compressed(translate("soft reboot\n"));
             }
+            simulate_reset = false;
             if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
                 // If code.py did a fake deep sleep, pretend that we
                 // are running code.py for the first time after a hard
