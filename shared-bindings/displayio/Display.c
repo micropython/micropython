@@ -240,10 +240,16 @@ static displayio_display_obj_t *native_display(mp_obj_t display_obj) {
 }
 
 //|     def show(self, group: Group) -> None:
-//|         """Switches to displaying the given group of layers. When group is None, the default
+//|         """
+//|         .. note:: `show()` is deprecated and will be removed in CircuitPython 9.0.0.
+//|           Use ``.root_group = group`` instead.
+//|
+//|         Switches to displaying the given group of layers. When group is None, the default
 //|         CircuitPython terminal will be shown.
 //|
-//|         :param Group group: The group to show."""
+//|         :param Group group: The group to show.
+//|
+//|         """
 //|         ...
 STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     displayio_display_obj_t *self = native_display(self_in);
@@ -419,7 +425,9 @@ MP_PROPERTY_GETTER(displayio_display_bus_obj,
     (mp_obj_t)&displayio_display_get_bus_obj);
 
 //|     root_group: Group
-//|     """The root group on the display."""
+//|     """The root group on the display.
+//|     If the root group is set to ``None``, the default CircuitPython terminal will be shown.
+//|     """
 STATIC mp_obj_t displayio_display_obj_get_root_group(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return common_hal_displayio_display_get_root_group(self);
