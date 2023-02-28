@@ -85,8 +85,11 @@
 
 #define CYW43_PIN_WL_REG_ON             pyb_pin_WL_REG_ON
 #define CYW43_PIN_WL_HOST_WAKE          pyb_pin_WL_HOST_WAKE
-#define CYW43_PIN_WL_RFSW_VDD           pyb_pin_WL_RFSW_VDD
 #define CYW43_PIN_WL_SDIO_1             pyb_pin_WL_SDIO_1
+
+#if MICROPY_HW_ENABLE_RF_SWITCH
+#define CYW43_PIN_WL_RFSW_VDD           pyb_pin_WL_RFSW_VDD
+#endif
 
 #define cyw43_schedule_internal_poll_dispatch(func) pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, func)
 
