@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-01-25 03:47+0000\n"
+"PO-Revision-Date: 2023-03-01 17:39+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16\n"
 
 #: main.c
 msgid ""
@@ -41,6 +41,10 @@ msgid ""
 "\n"
 "\r"
 msgstr ""
+"\n"
+"wú xiào CIRCUITPY_PYSTACK_SIZE\n"
+"\n"
+"\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -48,18 +52,25 @@ msgid ""
 "Please file an issue with your program at https://github.com/adafruit/"
 "circuitpython/issues."
 msgstr ""
+"\n"
+"qǐng zài https://github.com/adafruit/circuitpython/issues tí jiāo nín de "
+"chéng xù wèn tí."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "Press reset to exit safe mode.\n"
 msgstr ""
+"\n"
+"àn chóng zhì tuì chū ān quán mó shì.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "You are in safe mode because:\n"
 msgstr ""
+"\n"
+"nín chǔ yú ān quán mó shì, yīn wéi:\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -198,7 +209,7 @@ msgstr "%q bìxū >= %d"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
-msgstr ""
+msgstr "%q bì xū shì lèi xíng wéi 'H' de shù zǔ"
 
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
@@ -609,7 +620,7 @@ msgstr "wèi tú dàxiǎo hé měi gè zhí de wèi shù bìxū pǐpèi"
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first (interface #0)."
-msgstr ""
+msgstr "yǐn dǎo shè bèi bì xū shì dì yī gè (jiē kǒu #0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
@@ -946,7 +957,7 @@ msgstr "Zhèngzé biǎodá shì cuòwù"
 
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
-msgstr ""
+msgstr "safemode.py cuò wù."
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
@@ -1022,7 +1033,7 @@ msgstr "Wúfǎ xiě rù nèibù shǎncún."
 
 #: supervisor/shared/safe_mode.c
 msgid "Fault detected by hardware."
-msgstr ""
+msgstr "yìng jiàn jiǎn cè dào gù zhàng."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -1115,12 +1126,12 @@ msgstr "Shǐyòng de yìngjiàn, qǐng chángshì qítā yǐn jiǎo"
 
 #: supervisor/shared/safe_mode.c
 msgid "Heap allocation when VM not running."
-msgstr ""
+msgstr "VM wèi yùn xíng shí de duī fēn pèi."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "Heap was corrupted because the stack was too small. Increase stack size."
-msgstr ""
+msgstr "duī yǐ sǔn huài, yīn wéi duī zhàn tài xiǎo. zēng jiā duī zhàn dà xiǎo."
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1245,7 +1256,7 @@ msgstr "Nèibù kān mén gǒu dìngshí qì chāoshí."
 
 #: supervisor/shared/safe_mode.c
 msgid "Interrupt error."
-msgstr ""
+msgstr "zhōng duàn cuò wù."
 
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -2044,7 +2055,7 @@ msgstr "Wēndù dòu qǔ chāoshí"
 
 #: supervisor/shared/safe_mode.c
 msgid "The `microcontroller` module was used to boot into safe mode."
-msgstr ""
+msgstr "`microcontroller` mó kuài yòng yú qǐ dòng dào ān quán mó shì."
 
 #: py/obj.c
 msgid "The above exception was the direct cause of the following exception:"
@@ -2056,7 +2067,7 @@ msgstr "Rgb_pins de chángdù bìxū wèi 6,12,18,24 huò 30"
 
 #: supervisor/shared/safe_mode.c
 msgid "The power dipped. Make sure you are providing enough power."
-msgstr ""
+msgstr "lì liàng xià jiàng le. què bǎo nín tí gòng zú gòu de diàn lì."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2076,7 +2087,7 @@ msgstr "Yàngběn de qiānmíng yǔ hǔn yīn qì de qiānmíng bù pǐpèi"
 
 #: supervisor/shared/safe_mode.c
 msgid "Third-party firmware fatal error."
-msgstr ""
+msgstr "dì sān fāng gù jiàn zhì mìng cuò wù."
 
 #: shared-module/imagecapture/ParallelImageCapture.c
 msgid "This microcontroller does not support continuous capture."
@@ -2158,7 +2169,7 @@ msgstr "UART chūshǐhuà"
 
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "UART peripheral in use"
-msgstr ""
+msgstr "UART wài shè shǐ yòng zhōng"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
@@ -2209,12 +2220,12 @@ msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
 
 #: supervisor/shared/safe_mode.c
 msgid "Unable to allocate the heap."
-msgstr ""
+msgstr "wú fǎ fēn pèi duī."
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 #, c-format
 msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr ""
+msgstr "wú fǎ pèi zhì ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2237,7 +2248,7 @@ msgstr "Wúfǎ chūshǐhuà jiěxī qì"
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 #, c-format
 msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr ""
+msgstr "wú fǎ chū shǐ huà ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
@@ -2246,7 +2257,7 @@ msgstr "Wúfǎ dúqǔ tiáosèbǎn shùjù"
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 #, c-format
 msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-msgstr ""
+msgstr "wú fǎ qǐ dòng ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
@@ -2444,52 +2455,52 @@ msgstr "Tèzhēng bù zhīchí xiě rù"
 #: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "You pressed both buttons at start up."
-msgstr ""
+msgstr "nín zài qǐ dòng shí àn xià le liǎng gè àn niǔ."
 
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 #: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
 msgid "You pressed button A at start up."
-msgstr ""
+msgstr "nín zài qǐ dòng shí àn xià le àn niǔ A."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
-msgstr ""
+msgstr "nín zài qǐ dòng shí àn xià le qǐ dòng àn niǔ"
 
 #: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
 msgid "You pressed the GPIO0 button at start up."
-msgstr ""
+msgstr "nín zài qǐ dòng shí àn xià le GPIO0 àn niǔ."
 
 #: ports/espressif/boards/espressif_esp32_lyrat/mpconfigboard.h
 msgid "You pressed the Rec button at start up."
-msgstr ""
+msgstr "nín zài qǐ dòng shí àn xià le lù zhì àn niǔ."
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "You pressed the SW38 button at start up."
-msgstr ""
+msgstr "nín zài qǐ dòng shí àn xià le SW38 àn niǔ."
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
-msgstr ""
+msgstr "nín zài qǐ dòng shí àn xià le yīn liàng àn niǔ."
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_u/mpconfigboard.h
 msgid "You pressed the central button at start up."
-msgstr ""
+msgstr "nín zài qǐ dòng shí àn xià le zhōng yāng àn niǔ."
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "You pressed the left button at start up."
-msgstr ""
+msgstr "nín zài qǐ dòng shí àn xià le zuǒ àn niǔ."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the reset button during boot."
-msgstr ""
+msgstr "nín zài qǐ dòng guò chéng zhōng àn xià le chóng zhì àn niǔ."
 
 #: supervisor/shared/micropython.c
 msgid "[truncated due to length]"
-msgstr ""
+msgstr "[yīn cháng dù ér jié duàn]"
 
 #: py/objtype.c
 msgid "__init__() should return None"
@@ -2562,7 +2573,7 @@ msgstr "shùzǔ yǒu tài duō wéidù"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array is too big"
-msgstr ""
+msgstr "zhèn liè tài dà"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
@@ -3048,6 +3059,8 @@ msgid ""
 "espcamera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
 msgstr ""
+"espcamera.Camera xū yào pèi zhì bǎo liú de PSRAM. yǒu guān shuō míng, qǐng "
+"cān yuè wén dàng."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -3818,7 +3831,7 @@ msgstr "jǐn zhī chí dān shēng dào"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "only ndarrays can be concatenated"
-msgstr ""
+msgstr "zhǐ néng lián jiē ndarray (shù zì)"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only oversample=64 is supported"
