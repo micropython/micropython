@@ -55,7 +55,13 @@ extern TaskHandle_t mp_main_task_handle;
 extern ringbuf_t stdin_ringbuf;
 
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
-void check_esp_err(esp_err_t code);
+#if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_NORMAL
+#define check_esp_err(code) check_esp_err_(code)
+void check_esp_err_(esp_err_t code);
+#else
+#define check_esp_err(code) check_esp_err_(code, __FUNCTION__, __LINE__, __FILE__)
+void check_esp_err_(esp_err_t code, const char *func, const int line, const char *file);
+#endif
 
 uint32_t mp_hal_ticks_us(void);
 __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
