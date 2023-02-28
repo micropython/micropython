@@ -48,22 +48,35 @@
 //|       display.root_group = splash
 //|
 //|       odg = gifio.OnDiskGif('/sample.gif')
+//|
+//|       start = time.monotonic()
 //|       odg.next_frame() # Load the first frame
-//|       # Depending on your display the next line may need Colorspace.RGB565 instead of Colorspace.RGB565_SWAPPED
-//|       face = displayio.TileGrid(odg.bitmap, pixel_shader=displayio.ColorConverter(input_colorspace=displayio.Colorspace.RGB565_SWAPPED))
+//|       end = time.monotonic()
+//|       overhead = end - start
+//|
+//|       face = displayio.TileGrid(
+//|           odg.bitmap,
+//|           pixel_shader=displayio.ColorConverter(
+//|               input_colorspace=displayio.Colorspace.RGB565_SWAPPED
+//|           ),
+//|       )
 //|       splash.append(face)
 //|       board.DISPLAY.refresh()
 //|
-//|       # Wait forever
+//|       # Display repeatedly.
 //|       while True:
+//|           # Sleep for the frame delay specified by the GIF,
+//|           # minus the overhead measured to advance between frames.
+//|           time.sleep(max(0, next_delay - overhead))
 //|           next_delay = odg.next_frame()
-//|           time.sleep(next_delay)"""
+//|     """
 //|
 //|     def __init__(self, file: str) -> None:
-//|         """Create an OnDiskGif object with the given file.
+//|         """Create an `OnDiskGif` object with the given file.
+//|         The GIF frames are decoded into RGB565 big-endian format.
+//|         `displayio` expects little-endian, so the example above uses `Colorspace.RGB565_SWAPPED`.
 //|
 //|         :param file file: The name of the GIF file.
-//|
 //|         """
 //|         ...
 STATIC mp_obj_t gifio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
