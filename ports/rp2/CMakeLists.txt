@@ -18,6 +18,9 @@ endif()
 set(PICO_TINYUSB_PATH ${MICROPY_DIR}/lib/tinyusb)
 # Use the local lwip instead of the one in pico-sdk
 set(PICO_LWIP_PATH ${MICROPY_DIR}/lib/lwip)
+# Use the local uzlib instead of the one in pico-sdk
+set(PICO_UZLIB_SRC_PATH ${MICROPY_DIR}/lib/uzlib)
+set(PICO_CYW43_DRIVER_USES_UZLIB 0)
 
 # Set the location of this port's directory.
 set(MICROPY_PORT_DIR ${CMAKE_SOURCE_DIR})
@@ -251,6 +254,7 @@ if (MICROPY_PY_NETWORK_CYW43)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_PY_NETWORK_CYW43=1
         MICROPY_PY_SOCKET_DEFAULT_TIMEOUT_MS=30000 # default socket timeout
+        CYW43_ENABLE_FIRMWARE_COMPRESSION=1
     )
     if (CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
@@ -266,6 +270,11 @@ if (MICROPY_PY_NETWORK_CYW43)
         cyw43_driver_picow
         cmsis_core
     )
+    target_include_directories(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_DIR}/lib/cyw43-driver
+        ${MICROPY_DIR}/lib/uzlib
+    )
+
 endif()
 
 if (MICROPY_PY_NETWORK_NINAW10)
