@@ -10,7 +10,7 @@
 #include "fsl_flexspi_nor_boot.h"
 
 
-__attribute__((section(".boot_hdr.ivt")))
+__attribute__((section(".boot_hdr.ivt"),used))
 /*************************************
  *  IVT Data
  *************************************/
@@ -25,7 +25,7 @@ const ivt image_vector_table = {
     IVT_RSVD                          /* Reserved = 0 */
 };
 
-__attribute__((section(".boot_hdr.boot_data")))
+__attribute__((section(".boot_hdr.boot_data"),used))
 /*************************************
  *  Boot Data
  *************************************/

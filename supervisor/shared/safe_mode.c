@@ -34,6 +34,7 @@
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
+#include "supervisor/linker.h"
 #include "supervisor/serial.h"
 #include "supervisor/shared/rgb_led_colors.h"
 #include "supervisor/shared/status_leds.h"
@@ -121,12 +122,12 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     return SAFE_MODE_NONE;
 }
 
-void safe_mode_on_next_reset(safe_mode_t reason) {
+void PLACE_IN_ITCM(safe_mode_on_next_reset)(safe_mode_t reason) {
     port_set_saved_word(SAFE_MODE_DATA_GUARD | (reason << 8));
 }
 
 // Don't inline this so it's easy to break on it from GDB.
-void __attribute__((noinline,)) reset_into_safe_mode(safe_mode_t reason) {
+void __attribute__((noinline,)) PLACE_IN_ITCM(reset_into_safe_mode)(safe_mode_t reason) {
     if (_safe_mode > SAFE_MODE_BROWNOUT && reason > SAFE_MODE_BROWNOUT) {
         while (true) {
             // This very bad because it means running in safe mode didn't save us. Only ignore brownout

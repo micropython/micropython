@@ -47,3 +47,18 @@ const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[] = {
 };
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
+
+bool mimxrt10xx_board_reset_pin_number(const mcu_pin_obj_t *pin) {
+    #if CIRCUITPY_SWO_TRACE
+    if (pin == &pin_GPIO_AD_09) {
+        IOMUXC_SetPinMux( /* Add these lines*/
+            IOMUXC_GPIO_AD_09_ARM_TRACE_SWO,
+            0U);
+        IOMUXC_SetPinConfig( /* Add these lines*/
+            IOMUXC_GPIO_AD_09_ARM_TRACE_SWO,
+            0x00F9U);
+        return true;
+    }
+    #endif
+    return false;
+}

@@ -78,8 +78,8 @@ void supervisor_status_bar_update(void) {
         !shared_module_supervisor_status_bar_get_display(&shared_module_supervisor_status_bar_obj);
 
     // Suppress writes to console and/or display if status bar is not enabled for either or both.
-    bool prev_console_disable;
-    bool prev_display_disable;
+    bool prev_console_disable = false;
+    bool prev_display_disable = false;
 
     if (disable_console_writes) {
         prev_console_disable = serial_console_write_disable(true);

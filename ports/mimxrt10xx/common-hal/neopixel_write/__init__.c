@@ -64,9 +64,7 @@ void PLACE_IN_ITCM(common_hal_neopixel_write)(const digitalio_digitalinout_obj_t
     const uint32_t pin = digitalinout->pin->number;
 
     __disable_irq();
-    // Enable DWT in debug core. Useable when interrupts disabled, as opposed to Systick->VAL
-    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+    // Use DWT in debug core. Useable when interrupts disabled, as opposed to Systick->VAL
     DWT->CYCCNT = 0;
 
     for (;;) {
@@ -88,12 +86,12 @@ void PLACE_IN_ITCM(common_hal_neopixel_write)(const digitalio_digitalinout_obj_t
             mask = 0x80;
         }
     }
+    // Enable interrupts again
+    __enable_irq();
 
     // Update the next start.
     next_start_raw_ticks = port_get_raw_ticks(NULL) + 4;
 
-    // Enable interrupts again
-    __enable_irq();
 }
 
 #pragma GCC pop_options

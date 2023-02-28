@@ -121,7 +121,7 @@ if tile_y == 16:
     blinka_size = 16
     c_file.write(
         """\
-uint32_t blinka_bitmap_data[32] = {
+const uint32_t blinka_bitmap_data[32] = {
     0x00000011, 0x11000000,
     0x00000111, 0x53100000,
     0x00000111, 0x56110000,
@@ -145,7 +145,7 @@ else:
     blinka_size = 12
     c_file.write(
         """\
-uint32_t blinka_bitmap_data[28] = {
+const uint32_t blinka_bitmap_data[28] = {
     0x00000111, 0x00000000,
     0x00001153, 0x10000000,
     0x00001156, 0x11000000,
@@ -164,11 +164,11 @@ uint32_t blinka_bitmap_data[28] = {
 
 c_file.write(
     """\
-displayio_bitmap_t blinka_bitmap = {{
+const displayio_bitmap_t blinka_bitmap = {{
     .base = {{.type = &displayio_bitmap_type }},
     .width = {0},
     .height = {0},
-    .data = blinka_bitmap_data,
+    .data = (uint32_t*) blinka_bitmap_data,
     .stride = 2,
     .bits_per_value = 4,
     .x_shift = 3,
@@ -211,7 +211,7 @@ displayio_palette_t blinka_palette = {{
 
 displayio_tilegrid_t supervisor_blinka_sprite = {{
     .base = {{.type = &displayio_tilegrid_type }},
-    .bitmap = &blinka_bitmap,
+    .bitmap = (displayio_bitmap_t*) &blinka_bitmap,
     .pixel_shader = &blinka_palette,
     .x = 0,
     .y = 0,

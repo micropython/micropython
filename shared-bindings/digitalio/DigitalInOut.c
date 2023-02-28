@@ -125,7 +125,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj___exit__(size_t n_args, const mp_obj_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(digitalio_digitalinout_obj___exit___obj, 4, 4, digitalio_digitalinout_obj___exit__);
 
-STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
+STATIC inline void check_for_deinit(digitalio_digitalinout_obj_t *self) {
     if (common_hal_digitalio_digitalinout_deinited(self)) {
         raise_deinited_error();
     }

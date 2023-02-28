@@ -33,6 +33,7 @@
 #include "py/mpstate.h"
 
 #include "supervisor/flash.h"
+#include "supervisor/linker.h"
 
 static mp_vfs_mount_t _mp_vfs;
 static fs_user_mount_t _internal_vfs;
@@ -165,7 +166,7 @@ bool filesystem_init(bool create_allowed, bool force_create) {
     return true;
 }
 
-void filesystem_flush(void) {
+void PLACE_IN_ITCM(filesystem_flush)(void) {
     // Reset interval before next flush.
     filesystem_flush_interval_ms = CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS;
     supervisor_flash_flush();

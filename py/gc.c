@@ -231,7 +231,9 @@ bool gc_is_locked(void) {
 // children: mark the unmarked child blocks and put those newly marked
 // blocks on the stack. When all children have been checked, pop off the
 // topmost block on the stack and repeat with that one.
-STATIC void gc_mark_subtree(size_t block) {
+// We don't instrument these functions because they occur a lot during GC and
+// fill up the output buffer quickly.
+STATIC void MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_mark_subtree)(size_t block) {
     // Start with the block passed in the argument.
     size_t sp = 0;
     for (;;) {
@@ -350,7 +352,7 @@ STATIC void gc_sweep(void) {
 }
 
 // Mark can handle NULL pointers because it verifies the pointer is within the heap bounds.
-STATIC void gc_mark(void *ptr) {
+STATIC void MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_mark)(void *ptr) {
     if (VERIFY_PTR(ptr)) {
         size_t block = BLOCK_FROM_PTR(ptr);
         if (ATB_GET_KIND(block) == AT_HEAD) {
@@ -397,7 +399,7 @@ void gc_collect_ptr(void *ptr) {
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
 __attribute__((no_sanitize_address))
 #endif
-static void *gc_get_ptr(void **ptrs, int i) {
+static void *MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_get_ptr)(void **ptrs, int i) {
     #if MICROPY_DEBUG_VALGRIND
     if (!VALGRIND_CHECK_MEM_IS_ADDRESSABLE(&ptrs[i], sizeof(*ptrs))) {
         return NULL;
