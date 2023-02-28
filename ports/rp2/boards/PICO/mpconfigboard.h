@@ -6,6 +6,7 @@
 #define MICROPY_HW_USB_PID (0x000c)
 
 #define MICROPY_HW_USB_CDC                      (1)
+#define MICROPY_HW_USB_MSC                      (1)
 #define MICROPY_HW_USB_VENDOR                   (1)
 
 #define MICROPY_PY_THREAD                       (1)
