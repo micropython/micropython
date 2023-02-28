@@ -25,7 +25,7 @@ runs:
         inputs.port != 'espressif'
       uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
-        release: '10-2020-q4'
+        release: '12.3.Rel1'
 
     # espressif
     - name: Get espressif toolchain
