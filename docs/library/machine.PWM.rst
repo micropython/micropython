@@ -24,7 +24,7 @@ Example usage::
 Constructors
 ------------
 
-.. class:: PWM(dest, *, freq, duty_u16, duty_ns)
+.. class:: PWM(dest, *, freq, duty_u16, duty_ns, invert)
 
    Construct and return a new PWM object using the following parameters:
 
@@ -35,10 +35,12 @@ Constructors
         PWM cycle.
       - *duty_u16* sets the duty cycle as a ratio ``duty_u16 / 65535``.
       - *duty_ns* sets the pulse width in nanoseconds.
+      - *invert*  inverts the respective output if the value is True
 
    Setting *freq* may affect other PWM objects if the objects share the same
    underlying PWM generator (this is hardware specific).
    Only one of *duty_u16* and *duty_ns* should be specified at a time.
+   *invert* is not available at all ports.
 
 Methods
 -------

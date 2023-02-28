@@ -38,8 +38,8 @@ typedef struct _machine_pwm_obj_t {
     mp_obj_base_t base;
     uint8_t slice;
     uint8_t channel;
+    uint8_t invert;
     uint8_t duty_type;
-    bool freq_set;
     mp_int_t duty;
 } machine_pwm_obj_t;
 
@@ -51,23 +51,26 @@ enum {
 };
 
 STATIC machine_pwm_obj_t machine_pwm_obj[] = {
-    {{&machine_pwm_type}, 0, PWM_CHAN_A, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 0, PWM_CHAN_B, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 1, PWM_CHAN_A, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 1, PWM_CHAN_B, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 2, PWM_CHAN_A, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 2, PWM_CHAN_B, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 3, PWM_CHAN_A, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 3, PWM_CHAN_B, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 4, PWM_CHAN_A, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 4, PWM_CHAN_B, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 5, PWM_CHAN_A, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 5, PWM_CHAN_B, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 6, PWM_CHAN_A, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 6, PWM_CHAN_B, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 7, PWM_CHAN_A, DUTY_NOT_SET, 0, 0 },
-    {{&machine_pwm_type}, 7, PWM_CHAN_B, DUTY_NOT_SET, 0, 0 },
+    {{&machine_pwm_type}, 0, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 0, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 1, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 1, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 2, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 2, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 3, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 3, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 4, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 4, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 5, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 5, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 6, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 6, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 7, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
+    {{&machine_pwm_type}, 7, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
 };
+
+STATIC bool defer_start;
+STATIC bool slice_freq_set[8];
 
 STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
 STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16);
@@ -75,23 +78,30 @@ STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<PWM slice=%u channel=%u>", self->slice, self->channel);
+    mp_printf(print, "<PWM slice=%u channel=%u invert=%u>",
+        self->slice, self->channel, self->invert);
 }
 
 void machine_pwm_start(machine_pwm_obj_t *self) {
     // Start the PWM if properly set.
-    if (self->freq_set && self->duty_type != DUTY_NOT_SET) {
+    if (defer_start == false && slice_freq_set[self->slice] == true && self->duty_type != DUTY_NOT_SET) {
+        if (self->channel == PWM_CHAN_A) {
+            pwm_set_output_polarity(self->slice, self->invert, (self + 1)->invert);
+        } else {
+            pwm_set_output_polarity(self->slice, (self - 1)->invert, self->invert);
+        }
         pwm_set_enabled(self->slice, true);
     }
 }
 
 STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_freq, ARG_duty_u16, ARG_duty_ns };
+    enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq,     MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
         { MP_QSTR_duty_u16, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
         { MP_QSTR_duty_ns,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
+        { MP_QSTR_invert,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
     };
 
     // Parse the arguments.
@@ -99,19 +109,22 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     mp_arg_parse_all(n_args, pos_args, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if ((n_args + kw_args->used) > 0) {
-        if (args[ARG_freq].u_int != VALUE_NOT_SET) {
-            mp_machine_pwm_freq_set(self, args[ARG_freq].u_int);
-        }
-        if (args[ARG_duty_u16].u_int != VALUE_NOT_SET) {
-            mp_machine_pwm_duty_set_u16(self, args[ARG_duty_u16].u_int);
-        }
-        if (args[ARG_duty_ns].u_int != VALUE_NOT_SET) {
-            mp_machine_pwm_duty_set_ns(self, args[ARG_duty_ns].u_int);
-        }
-    } else {
-        machine_pwm_start(self);
+    // defer starting PWM until all provided args are checked.
+    defer_start = true;
+    if (args[ARG_freq].u_int != VALUE_NOT_SET) {
+        mp_machine_pwm_freq_set(self, args[ARG_freq].u_int);
     }
+    if (args[ARG_duty_u16].u_int != VALUE_NOT_SET) {
+        mp_machine_pwm_duty_set_u16(self, args[ARG_duty_u16].u_int);
+    }
+    if (args[ARG_duty_ns].u_int != VALUE_NOT_SET) {
+        mp_machine_pwm_duty_set_ns(self, args[ARG_duty_ns].u_int);
+    }
+    if (args[ARG_invert].u_int != VALUE_NOT_SET) {
+        self->invert = !!args[ARG_invert].u_int;
+    }
+    defer_start = false;
+    machine_pwm_start(self);
 }
 
 // PWM(pin [, args])
@@ -126,7 +139,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     uint slice = pwm_gpio_to_slice_num(gpio);
     uint8_t channel = pwm_gpio_to_channel(gpio);
     machine_pwm_obj_t *self = &machine_pwm_obj[slice * 2 + channel];
-    self->freq_set = false;
+    self->invert = 0;
     self->duty_type = DUTY_NOT_SET;
 
     // Select PWM function for given GPIO.
@@ -143,6 +156,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 // Stop all active slices.
 void machine_pwm_deinit_all(void) {
     for (int i = 0; i < 8; i++) {
+        slice_freq_set[i] = false;
         pwm_set_enabled(machine_pwm_obj[i].slice, false);
     }
 }
@@ -216,14 +230,16 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     }
     pwm_hw->slice[self->slice].div = div16;
     pwm_hw->slice[self->slice].top = top;
-    self->freq_set = true;
+    slice_freq_set[self->slice] = true;
     if (self->duty_type == DUTY_U16) {
         mp_machine_pwm_duty_set_u16(self, self->duty);
     } else if (self->duty_type == DUTY_NS) {
         mp_machine_pwm_duty_set_ns(self, self->duty);
     }
     machine_pwm_obj_t *other = self->channel == PWM_CHAN_A ? self + 1 : self - 1;
-    if (other->duty_type == DUTY_NS) {
+    if (other->duty_type == DUTY_U16) {
+        mp_machine_pwm_duty_set_u16(other, other->duty);
+    } else if (other->duty_type == DUTY_NS) {
         mp_machine_pwm_duty_set_ns(other, other->duty);
     }
 }
