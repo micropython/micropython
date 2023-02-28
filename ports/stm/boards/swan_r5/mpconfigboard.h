@@ -45,6 +45,9 @@
 #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 #define BOARD_HAS_HIGH_SPEED_CRYSTAL (0)
 
+// Increase drive strength of 32kHz external crystal, in line with calculations specified in ST AN2867 sections 3.3, 3.4, and STM32L4 datasheet DS12023 Table 58. LSE oscillator characteristics.
+// The drive strength RCC_LSEDRIVE_LOW is marginal for the 32kHz crystal oscillator stability, and RCC_LSEDRIVE_MEDIUMLOW meets the calculated drive strength with a small margin for parasitic capacitance.
+#define BOARD_LSE_DRIVE_LEVEL RCC_LSEDRIVE_MEDIUMLOW
 
 // Bootloader only
 #ifdef UF2_BOOTLOADER_ENABLED
