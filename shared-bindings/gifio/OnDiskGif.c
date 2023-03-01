@@ -83,7 +83,7 @@
 //|
 //|       # Take over display to drive directly
 //|       display.auto_refresh = False
-//|       bus = display.bus
+//|       display_bus = display.bus
 //|
 //|       # Display repeatedly & directly.
 //|       while True:
@@ -95,8 +95,6 @@
 //|           display_bus.send(42, struct.pack(">hh", 0, odg.bitmap.width - 1))
 //|           display_bus.send(43, struct.pack(">hh", 0, odg.bitmap.height - 1))
 //|           display_bus.send(44, d.bitmap)
-//|
-//|           d.next_frame()
 //|     """
 //|
 //|     def __init__(self, file: str) -> None:
