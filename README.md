@@ -47,7 +47,18 @@ Prerequisites
 Loading the Project Code
 ```
 sudo rshell
-cp subway/* /pyboard/
+rm /pyboard/*            # "Factory Reset" (Does not reset firmware)
+cp subway/*.py /pyboard/ # Don't overwrite config
+cp subway/*    /pyboard/ # Overwrite config
 repl
 # CTRL+D() to restart board. Runs main.py on startup
 ```
+
+First Boot
+=======================
+- connect to "Live Subway Map" Wifi Network
+- navigate to http://192.168.4.1/
+- provide SSID and Password of your LAN
+- connect back to your LAN
+- device should have gotten assigned a DHCP address on your LAN
+    - for now, it just says Hello
