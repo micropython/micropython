@@ -110,6 +110,8 @@ CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DMBOOT_VTOR=$(MBOOT_TEXT0_ADDR)
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
+AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU_$(MCU_SERIES)))
+
 # Configure for nan-boxing object model if requested
 ifeq ($(NANBOX),1)
 CFLAGS += -DMP_CONFIGFILE='"mpconfigport_nanbox.h"'
