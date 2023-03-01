@@ -39,8 +39,14 @@
 #define CYW43_LWIP                      (1)
 #define CYW43_USE_STATS                 (0)
 
+#ifndef CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE
 #define CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE "lib/cyw43-driver/firmware/w4343WA1_7_45_98_50_combined.h"
+#endif
+
+#ifndef CYW43_WIFI_NVRAM_INCLUDE_FILE
 #define CYW43_WIFI_NVRAM_INCLUDE_FILE   "lib/cyw43-driver/firmware/wifi_nvram_1dx.h"
+#endif
+
 #define CYW43_IOCTL_TIMEOUT_US          (1000000)
 #define CYW43_SLEEP_MAX                 (50)
 #define CYW43_NETUTILS                  (1)
