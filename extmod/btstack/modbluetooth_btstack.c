@@ -166,7 +166,7 @@ STATIC void btstack_remove_pending_operation(mp_btstack_pending_op_t *pending_op
 
 // Register a pending background operation -- copies the buffer, and makes it known to the GC.
 STATIC mp_btstack_pending_op_t *btstack_enqueue_pending_operation(uint16_t op_type, uint16_t conn_handle, uint16_t value_handle, const uint8_t *buf, size_t len) {
-    DEBUG_printf("btstack_enqueue_pending_operation op_type=%d conn_handle=%d value_handle=%d len=%zu\n", op_type, conn_handle, value_handle, len);
+    DEBUG_printf("btstack_enqueue_pending_operation op_type=%d conn_handle=%d value_handle=%d len=%lu\n", op_type, conn_handle, value_handle, len);
     mp_btstack_pending_op_t *pending_op = m_new_obj_var(mp_btstack_pending_op_t, uint8_t, len);
     pending_op->op_type = op_type;
     pending_op->conn_handle = conn_handle;
@@ -1079,8 +1079,44 @@ int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t
     return mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, value_handle, value, value_len);
 }
 
+#if !MICROPY_TRACKED_ALLOC
+#error "btstack requires MICROPY_TRACKED_ALLOC"
+#endif
+
+typedef struct {
+    btstack_context_callback_registration_t btstack_registration;
+    int gatts_op;
+    uint16_t conn_handle;
+    uint16_t value_handle;
+    size_t value_len;
+    uint8_t value[];
+} notify_indicate_pending_op_t;
+
+// Called in response to a gatts_notify/indicate being unable to complete, which then calls
+// att_server_request_to_send_notification.
+STATIC void btstack_notify_indicate_ready_handler(void *context) {
+    MICROPY_PY_BLUETOOTH_ENTER
+    notify_indicate_pending_op_t *pending_op = (notify_indicate_pending_op_t *)context;
+    DEBUG_printf("btstack_notify_indicate_ready_handler gatts_op=%d conn_handle=%d value_handle=%d len=%lu\n", pending_op->gatts_op, pending_op->conn_handle, pending_op->value_handle, pending_op->value_len);
+    int err = ERROR_CODE_SUCCESS;
+    switch (pending_op->gatts_op) {
+        case MP_BLUETOOTH_GATTS_OP_NOTIFY:
+            err = att_server_notify(pending_op->conn_handle, pending_op->value_handle, pending_op->value, pending_op->value_len);
+            DEBUG_printf("btstack_notify_indicate_ready_handler: sending notification err=%d\n", err);
+            break;
+        case MP_BLUETOOTH_GATTS_OP_INDICATE:
+            err = att_server_indicate(pending_op->conn_handle, pending_op->value_handle, pending_op->value, pending_op->value_len);
+            DEBUG_printf("btstack_notify_indicate_ready_handler: sending indication err=%d\n", err);
+            break;
+    }
+    assert(err == ERROR_CODE_SUCCESS);
+    (void)err;
+    MICROPY_PY_BLUETOOTH_EXIT
+    m_tracked_free(pending_op);
+}
+
 int mp_bluetooth_gatts_notify_indicate(uint16_t conn_handle, uint16_t value_handle, int gatts_op, const uint8_t *value, size_t value_len) {
-    DEBUG_printf("mp_bluetooth_gatts_notify_indicate\n");
+    DEBUG_printf("mp_bluetooth_gatts_notify_indicate: gatts_op=%d\n", gatts_op);
 
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
@@ -1107,10 +1143,33 @@ int mp_bluetooth_gatts_notify_indicate(uint16_t conn_handle, uint16_t value_hand
     }
     MICROPY_PY_BLUETOOTH_EXIT
 
-    if (err == BTSTACK_ACL_BUFFERS_FULL) {
-        DEBUG_printf("mp_bluetooth_gatts_notify_indicate: ACL buffer full, scheduling callback\n");
+    if (err == BTSTACK_ACL_BUFFERS_FULL || err == ATT_HANDLE_VALUE_INDICATION_IN_PROGRESS) {
+        DEBUG_printf("mp_bluetooth_gatts_notify_indicate: ACL buffer full / indication in progress, scheduling callback\n");
 
-        // TODO: re-implement the handling for this.
+        // Copy the value and ask btstack to let us know when it can be sent.
+        notify_indicate_pending_op_t *pending_op = m_tracked_calloc(1, sizeof(notify_indicate_pending_op_t) + value_len);
+        pending_op->btstack_registration.context = pending_op;
+        pending_op->btstack_registration.callback = &btstack_notify_indicate_ready_handler;
+        pending_op->gatts_op = gatts_op;
+        pending_op->conn_handle = conn_handle;
+        pending_op->value_handle = value_handle;
+        pending_op->value_len = value_len;
+        memcpy(pending_op->value, value, value_len);
+
+        MICROPY_PY_BLUETOOTH_ENTER
+        switch (gatts_op) {
+            case MP_BLUETOOTH_GATTS_OP_NOTIFY:
+                err = att_server_request_to_send_notification(&pending_op->btstack_registration, conn_handle);
+                break;
+            case MP_BLUETOOTH_GATTS_OP_INDICATE:
+                err = att_server_request_to_send_indication(&pending_op->btstack_registration, conn_handle);
+                break;
+        }
+        MICROPY_PY_BLUETOOTH_EXIT
+
+        if (err != ERROR_CODE_SUCCESS) {
+            m_tracked_free(pending_op);
+        }
     }
 
     return btstack_error_to_errno(err);

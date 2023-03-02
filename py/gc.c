@@ -746,7 +746,9 @@ void *gc_alloc_with_finaliser(mp_uint_t n_bytes) {
 // TODO: freeing here does not call finaliser
 void gc_free(void *ptr) {
     if (MP_STATE_THREAD(gc_lock_depth) > 0) {
-        // TODO how to deal with this error?
+        // Cannot free while the GC is locked. However free is an optimisation
+        // to reclaim the memory immediately, this means it will now be left
+        // until the next collection.
         return;
     }
 
