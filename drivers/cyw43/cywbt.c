@@ -35,6 +35,7 @@
 
 #if MICROPY_PY_NETWORK_CYW43
 
+#include "lib/cyw43-driver/src/cyw43_config.h"
 #include "lib/cyw43-driver/firmware/cyw43_btfw_4343A1.h"
 
 // Provided by the port.
