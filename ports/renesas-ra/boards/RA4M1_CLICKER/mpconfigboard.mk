@@ -4,6 +4,9 @@ LD_FILES = boards/RA4M1_CLICKER/ra4m1_clicker.ld
 
 # MicroPython settings
 MICROPY_VFS_FAT = 1
+USE_FSP_LPM = 0
+
+CFLAGS+=-DDEFAULT_DBG_CH=0
 
 # Don't include default frozen modules because MCU is tight on flash space
 FROZEN_MANIFEST ?= boards/RA4M1_CLICKER/manifest.py

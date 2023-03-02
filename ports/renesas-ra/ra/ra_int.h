@@ -29,7 +29,7 @@
 
 #if defined(RA4M1) | defined(RA4W1)
 #define IRQ_MAX 48
-#elif defined(RA6M1) | defined(RA6M2)
+#elif defined(RA6M1) | defined(RA6M2) | defined(RA6M3) | defined(RA6M5)
 #define IRQ_MAX 128
 #else
 #error "CMSIS MCU Series is not specified."

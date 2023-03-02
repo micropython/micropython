@@ -265,34 +265,34 @@ static uint32_t ch_to_idx[SCI_CH_MAX] = {
 
 static R_SCI0_Type *sci_regs[] = {
     #if defined(VECTOR_NUMBER_SCI0_RXI)
-    (R_SCI0_Type *)0x40070000,
+    R_SCI0,
     #endif
     #if defined(VECTOR_NUMBER_SCI1_RXI)
-    (R_SCI0_Type *)0x40070020,
+    R_SCI1,
     #endif
     #if defined(VECTOR_NUMBER_SCI2_RXI)
-    (R_SCI0_Type *)0x40070040,
+    R_SCI2,
     #endif
     #if defined(VECTOR_NUMBER_SCI3_RXI)
-    (R_SCI0_Type *)0x40070060,
+    R_SCI3,
     #endif
     #if defined(VECTOR_NUMBER_SCI4_RXI)
-    (R_SCI0_Type *)0x40070080,
+    R_SCI4,
     #endif
     #if defined(VECTOR_NUMBER_SCI5_RXI)
-    (R_SCI0_Type *)0x400700a0,
+    R_SCI5,
     #endif
     #if defined(VECTOR_NUMBER_SCI6_RXI)
-    (R_SCI0_Type *)0x400700c0,
+    R_SCI6,
     #endif
     #if defined(VECTOR_NUMBER_SCI7_RXI)
-    (R_SCI0_Type *)0x400700e0,
+    R_SCI7,
     #endif
     #if defined(VECTOR_NUMBER_SCI8_RXI)
-    (R_SCI0_Type *)0x40070100,
+    R_SCI8,
     #endif
     #if defined(VECTOR_NUMBER_SCI9_RXI)
-    (R_SCI0_Type *)0x40070120,
+    R_SCI9,
     #endif
 };
 
@@ -408,6 +408,77 @@ static const ra_af_pin_t ra_sci_tx_pins[] = {
     { AF_SCI2, 9, P203 },
     { AF_SCI2, 9, P602 },
 
+    #elif defined(RA6M3)
+
+    { AF_SCI1, 0, P101 },
+    { AF_SCI1, 0, P411 },
+
+    { AF_SCI2, 1, P213 },
+    { AF_SCI2, 1, P709 },
+
+    { AF_SCI1, 2, P112 },
+    { AF_SCI1, 2, P302 },
+
+    { AF_SCI2, 3, P310 },
+    { AF_SCI2, 3, P409 },
+    { AF_SCI2, 3, P707 },
+
+    { AF_SCI1, 4, P205 },
+    { AF_SCI1, 4, P512 },
+    { AF_SCI1, 4, P900 },
+
+    { AF_SCI2, 5, P501 },
+    { AF_SCI2, 5, P805 },
+
+    { AF_SCI1, 6, P305 },
+    { AF_SCI1, 6, P506 },
+
+    { AF_SCI2, 7, P401 },
+    { AF_SCI2, 7, P613 },
+
+    { AF_SCI1, 8, P105 },
+    { AF_SCI1, 8, PA00 },
+
+    { AF_SCI2, 9, P109 },
+    { AF_SCI2, 9, P203 },
+    { AF_SCI2, 9, P602 },
+
+    #elif defined(RA6M5)
+
+    { AF_SCI1, 0, P101 },
+    { AF_SCI1, 0, P411 },
+
+    { AF_SCI2, 1, P213 },
+    { AF_SCI2, 1, P709 },
+
+    { AF_SCI1, 2, P112 },
+    { AF_SCI1, 2, P302 },
+
+    { AF_SCI2, 3, P310 },
+    { AF_SCI2, 3, P409 },
+    { AF_SCI2, 3, P707 },
+
+    { AF_SCI1, 4, P205 },
+    { AF_SCI1, 4, P207 },
+    { AF_SCI1, 4, P512 },
+    { AF_SCI1, 4, P900 },
+
+    { AF_SCI2, 5, P501 },
+    { AF_SCI2, 5, P805 },
+
+    { AF_SCI1, 6, P305 },
+    { AF_SCI1, 6, P506 },
+
+    { AF_SCI2, 7, P401 },
+    { AF_SCI2, 7, P613 },
+
+    { AF_SCI1, 8, P105 },
+    { AF_SCI1, 8, PA00 },
+
+    { AF_SCI2, 9, P109 },
+    { AF_SCI2, 9, P203 },
+    { AF_SCI2, 9, P602 },
+
     #else
     #error "CMSIS MCU Series is not specified."
     #endif
@@ -491,6 +562,41 @@ static const ra_af_pin_t ra_sci_rx_pins[] = {
     { AF_SCI2, 7, P614 },
 
     { AF_SCI1, 8, P104 },
+
+    { AF_SCI2, 9, P110 },
+    { AF_SCI2, 9, P202 },
+    { AF_SCI2, 9, P601 },
+
+    #elif defined(RA6M3) || defined(RA6M5)
+
+    { AF_SCI1, 0, P100 },
+    { AF_SCI1, 0, P410 },
+
+    { AF_SCI2, 1, P212 },
+    { AF_SCI2, 1, P708 },
+
+    { AF_SCI1, 2, P113 },
+    { AF_SCI1, 2, P301 },
+
+    { AF_SCI2, 3, P309 },
+    { AF_SCI2, 3, P408 },
+    { AF_SCI2, 3, P706 },
+
+    { AF_SCI1, 4, P206 },
+    { AF_SCI1, 4, P315 },
+    { AF_SCI1, 4, P511 },
+
+    { AF_SCI2, 5, P502 },
+    { AF_SCI2, 5, P513 },
+
+    { AF_SCI1, 6, P304 },
+    { AF_SCI1, 6, P505 },
+
+    { AF_SCI2, 7, P402 },
+    { AF_SCI2, 7, P614 },
+
+    { AF_SCI1, 8, P104 },
+    { AF_SCI1, 8, P607 },
 
     { AF_SCI2, 9, P110 },
     { AF_SCI2, 9, P202 },
@@ -583,6 +689,93 @@ static const ra_af_pin_t ra_sci_cts_pins[] = {
     { AF_SCI2, 9, P205 },
     { AF_SCI2, 9, P301 },
     { AF_SCI2, 9, P603 },
+
+    #elif defined(RA6M3)
+
+    { AF_SCI1, 0, P103 },
+    { AF_SCI1, 0, P413 },
+
+    { AF_SCI2, 1, P101 },
+    { AF_SCI2, 1, P711 },
+
+    { AF_SCI1, 2, P110 },
+    { AF_SCI1, 2, P203 },
+
+    { AF_SCI2, 3, P312 },
+    { AF_SCI2, 3, P411 },
+    { AF_SCI2, 3, PB01 },
+
+    { AF_SCI1, 4, P401 },
+    { AF_SCI1, 4, P407 },
+
+    { AF_SCI2, 5, P504 },
+    { AF_SCI2, 5, P507 },
+
+    { AF_SCI1, 6, P307 },
+    { AF_SCI1, 6, P503 },
+
+    { AF_SCI2, 7, P403 },
+    { AF_SCI2, 7, P611 },
+
+    { AF_SCI1, 8, P107 },
+    { AF_SCI1, 8, P606 },
+
+    { AF_SCI2, 9, P108 },
+    { AF_SCI2, 9, P205 },
+    { AF_SCI2, 9, P301 },
+    { AF_SCI2, 9, P603 },
+
+    #elif defined(RA6M5)
+
+    { AF_SCI1, 0, P103 },
+    { AF_SCI1, 0, P413 },
+    { AF_SCI1, 0, P414 }, /* CTS only */
+    { AF_SCI1, 0, P800 }, /* CTS only */
+
+    { AF_SCI2, 1, P101 },
+    { AF_SCI2, 1, P711 },
+
+    { AF_SCI1, 2, P110 },
+    { AF_SCI1, 2, P203 },
+
+    { AF_SCI2, 3, P308 }, /* CTS only */
+    { AF_SCI2, 3, P312 },
+    { AF_SCI2, 3, P411 },
+    { AF_SCI2, 3, P412 }, /* CTS only */
+    { AF_SCI2, 3, P705 }, /* CTS only */
+
+    { AF_SCI1, 4, P401 },
+    { AF_SCI1, 4, P402 }, /* CTS only */
+    { AF_SCI1, 4, P407 },
+    { AF_SCI1, 4, P408 }, /* CTS only */
+
+    { AF_SCI2, 5, P500 }, /* CTS only */
+    { AF_SCI2, 5, P504 },
+    { AF_SCI2, 5, P508 },
+
+    { AF_SCI1, 6, P307 },
+    { AF_SCI1, 6, P308 }, /* CTS only */
+    { AF_SCI1, 6, P502 }, /* CTS only */
+    { AF_SCI1, 6, P503 },
+
+    { AF_SCI2, 7, P403 },
+    { AF_SCI2, 7, P404 }, /* CTS only */
+    { AF_SCI2, 7, P610 }, /* CTS only */
+    { AF_SCI2, 7, P611 },
+
+    { AF_SCI1, 8, P107 },
+    { AF_SCI1, 8, P605 }, /* CTS only */
+    { AF_SCI1, 8, P606 },
+    { AF_SCI1, 8, P801 }, /* CTS only */
+
+    { AF_SCI2, 9, P108 },
+    { AF_SCI2, 9, P114 }, /* CTS only */
+    { AF_SCI2, 9, P205 },
+    { AF_SCI2, 9, P206 }, /* CTS only */
+    { AF_SCI2, 9, P301 },
+    { AF_SCI2, 9, P303 }, /* CTS only */
+    { AF_SCI2, 9, P603 },
+    { AF_SCI2, 9, P604 }, /* CTS only */
 
     #else
     #error "CMSIS MCU Series is not specified."

@@ -4,3 +4,5 @@ LD_FILES = boards/EK_RA6M1/ra6m1_ek.ld
 
 # MicroPython settings
 MICROPY_VFS_FAT = 1
+
+CFLAGS+=-DDEFAULT_DBG_CH=0

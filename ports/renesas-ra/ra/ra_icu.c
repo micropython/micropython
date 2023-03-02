@@ -345,6 +345,180 @@ static const ra_icu_pin_t ra_irq_pins[] = {
     { 15, P511 },
     #endif
 
+    #elif defined(RA6M3)
+
+    #if defined(VECTOR_NUMBER_ICU_IRQ0)
+    { 0, P105 },
+    { 0, P206 }, /* DS */
+    { 0, P400 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ1)
+    { 1, P101 },
+    { 1, P104 },
+    { 1, P205 }, /* DS */
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ2)
+    { 2, P100 },
+    { 2, P213 },
+    { 2, P203 }, /* DS */
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ3)
+    { 3, P110 },
+    { 3, P212 },
+    { 3, P202 }, /* DS */
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ4)
+    { 4, P111 },
+    { 4, P402 }, /* DS */
+    { 4, P411 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ5)
+    { 5, P302 },
+    { 5, P401 }, /* DS */
+    { 5, P410 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ6)
+    { 6, P000 }, /* DS */
+    { 6, P301 },
+    { 6, P409 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ7)
+    { 7, P001 }, /* DS */
+    { 7, P408 },
+    { 7, P706 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ8)
+    { 8, P002 }, /* DS */
+    { 8, P305 },
+    { 8, P415 },
+    { 8, P707 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ9)
+    { 9, P004 }, /*  DS */
+    { 9, P304 },
+    { 9, P414 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ10)
+    { 10, P005 }, /* DS */
+    { 10, P709 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ11)
+    { 11, P006 }, /* DS */
+    { 11, P501 },
+    { 11, P708 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ12)
+    { 12, P008 }, /* DS */
+    { 12, P502 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ13)
+    { 13, P009 }, /* DS */
+    { 13, P015 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ14)
+    { 14, P505 },
+    { 14, P512 },
+    { 14, P010 }, /* DS */
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ15)
+    { 15, P506 },
+    { 15, P511 },
+    #endif
+
+    #elif defined(RA6M5)
+
+    #if defined(VECTOR_NUMBER_ICU_IRQ0)
+    { 0, P105 },
+    { 0, P206 }, /* DS */
+    { 0, P400 },
+    { 0, P806 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ1)
+    { 1, P101 },
+    { 1, P104 },
+    { 1, P205 }, /* DS */
+    { 1, P804 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ2)
+    { 2, P100 },
+    { 2, P203 }, /* DS */
+    { 2, P213 },
+    { 2, P803 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ3)
+    { 3, P110 },
+    { 3, P202 }, /* DS */
+    { 3, P212 },
+    { 3, P802 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ4)
+    { 4, P111 },
+    { 4, P402 }, /* DS */
+    { 4, P411 },
+    { 4, PA10 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ5)
+    { 5, P302 },
+    { 5, P401 }, /* DS */
+    { 5, P410 },
+    { 5, PA09 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ6)
+    { 6, P000 }, /* DS */
+    { 6, P301 },
+    { 6, P409 },
+    { 6, PA08 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ7)
+    { 7, P001 }, /* DS */
+    { 7, P408 },
+    { 7, P706 },
+    { 7, P615 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ8)
+    { 8, P002 }, /* DS */
+    { 8, P305 },
+    { 8, P415 },
+    { 8, P707 },
+    { 8, P905 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ9)
+    { 9, P004 }, /*  DS */
+    { 9, P304 },
+    { 9, P414 },
+    { 9, P906 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ10)
+    { 10, P005 }, /* DS */
+    { 10, P709 },
+    { 10, P907 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ11)
+    { 11, P006 }, /* DS */
+    { 11, P501 },
+    { 11, P708 },
+    { 11, P908 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ12)
+    { 12, P008 }, /* DS */
+    { 12, P502 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ13)
+    { 13, P009 }, /* DS */
+    { 13, P015 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ14)
+    { 14, P010 },
+    { 14, P403 }, /* DS */
+    { 14, P505 },
+    { 14, P512 },
+    #endif
+    #if defined(VECTOR_NUMBER_ICU_IRQ15)
+    { 15, P404 }, /* DS */
+    { 15, P506 },
+    { 15, P511 },
+    #endif
+
     #else
     #error "CMSIS MCU Series is not speficied."
     #endif

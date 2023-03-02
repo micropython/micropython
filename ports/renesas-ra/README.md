@@ -6,9 +6,9 @@ Currently supported features are:
 - Filesystem on the internal flash using FatFs.
 - `time` module with sleep, time, and ticks functions.
 - `os` module with VFS support.
-- `machine` module with the following classes: `Pin`, `ADC`, `I2C`, `SPI`,
-   `SoftI2C`, `SoftSPI`, `UART`, `RTC`
-- sdcard driver if frozen driver is installed.
+- `machine` module with the following classes: `Pin`, `ADC`, `PWM`, `DAC`, `I2C`,
+  `SPI`, `SoftI2C`, `SoftSPI`, `UART`, `RTC`, `SDCard`.
+- `sdcard` module for MCUs without native `machine.SDCard` support.
 
 Currently supported board product names are:
 

@@ -52,6 +52,8 @@ void ra_mstpcrc_stop(uint32_t mod_mask);
 void ra_mstpcrc_start(uint32_t mod_mask);
 void ra_mstpcrd_stop(uint32_t mod_mask);
 void ra_mstpcrd_start(uint32_t mod_mask);
+void ra_mstpcre_stop(uint32_t mod_mask);
+void ra_mstpcre_start(uint32_t mod_mask);
 
 /* mask bit definition for Module Stop Control Register B */
 #ifndef R_MSTP_MSTPCRB_MSTPB7_Msk

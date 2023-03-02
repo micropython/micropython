@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2013-2017 Damien P. George
  * Copyright (c) 2021,2022 Renesas Electronics Corporation
+ * Copyright (c) 2023 Vekatech Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -117,6 +118,14 @@
 #define MICROPY_PY_MACHINE_SOFTSPI  (1)
 #define MICROPY_PY_MACHINE_TIMER    (1)
 #define MICROPY_SOFT_TIMER_TICKS_MS uwTick
+#if MICROPY_HW_ENABLE_HW_PWM
+#define MICROPY_PY_MACHINE_PWM      (1)
+#define MICROPY_PY_MACHINE_PWM_DUTY (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/renesas-ra/machine_pwm.c"
+#endif
+#if MICROPY_HW_ENABLE_HW_DAC
+#define MICROPY_PY_MACHINE_DAC      (1)
+#endif
 #endif
 #define MICROPY_HW_SOFTSPI_MIN_DELAY (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (48000000 / 48)
