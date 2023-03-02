@@ -28,6 +28,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef RA6M5
+// #define R_IIC2_BASE            0x4009F200
+#ifndef R_IIC2
+#define R_IIC2             ((R_IIC0_Type *)0x4009F200)
+#endif
+#endif
+
 #define RA_I2C_DEF_TIMEOUT              1000    // 1000 ms
 #define RA_I2C_TIMEOUT_STOP_CONDITION   100000  // counts
 #define RA_I2C_TIMEOUT_BUS_BUSY         100000  // counts

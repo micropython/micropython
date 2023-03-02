@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2018 Damien P. George
  * Copyright (c) 2021,2022 Renesas Electronics Corporation
+ * Copyright (c) 2023 Vekatech Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +62,16 @@
 // If internal flash storage is enabled, whether to use a second segment of flash.
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE_SEGMENT2 (0)
+#endif
+
+// Whether to enable storage on the external QSPI flash of the MCU, instead of the internal flash
+#ifndef MICROPY_HW_HAS_QSPI_FLASH
+#define MICROPY_HW_HAS_QSPI_FLASH (0)
+#endif
+
+// Whether to enable access to SDCARD, through SDHI controller
+#ifndef MICROPY_HW_HAS_SDHI_CARD
+#define MICROPY_HW_HAS_SDHI_CARD (0)
 #endif
 
 // Whether to enable the RTC, exposed as pyb.RTC
@@ -209,6 +220,16 @@
 #define MICROPY_HW_MAX_UART (10)
 #define MICROPY_HW_MAX_LPUART (0)
 
+#elif defined(RA6M5)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ffff7ac)   /* To be fixed */
+// 16 IRQ + 1 EXTI_RTC_WAKEUP defined in exti.h
+#define PYB_EXTI_NUM_VECTORS (17)
+#define MICROPY_HW_MAX_TIMER (2)
+#define MICROPY_HW_MAX_UART (10)
+#define MICROPY_HW_MAX_LPUART (0)
+
+#else
 #error Unsupported MCU series
 #endif
 
@@ -238,6 +259,31 @@
 #define MICROPY_HW_ENABLE_HW_I2C (1)
 #else
 #define MICROPY_HW_ENABLE_HW_I2C (0)
+#endif
+
+#if defined(MICROPY_HW_PWM_0A) || defined(MICROPY_HW_PWM_0B) \
+    || defined(MICROPY_HW_PWM_1A) || defined(MICROPY_HW_PWM_1B) \
+    || defined(MICROPY_HW_PWM_2A) || defined(MICROPY_HW_PWM_2B) \
+    || defined(MICROPY_HW_PWM_3A) || defined(MICROPY_HW_PWM_3B) \
+    || defined(MICROPY_HW_PWM_4A) || defined(MICROPY_HW_PWM_4B) \
+    || defined(MICROPY_HW_PWM_5A) || defined(MICROPY_HW_PWM_5B) \
+    || defined(MICROPY_HW_PWM_6A) || defined(MICROPY_HW_PWM_6B) \
+    || defined(MICROPY_HW_PWM_7A) || defined(MICROPY_HW_PWM_7B) \
+    || defined(MICROPY_HW_PWM_8A) || defined(MICROPY_HW_PWM_8B) \
+    || defined(MICROPY_HW_PWM_9A) || defined(MICROPY_HW_PWM_9B) \
+    || defined(MICROPY_HW_PWM_10A) || defined(MICROPY_HW_PWM_10B) \
+    || defined(MICROPY_HW_PWM_11A) || defined(MICROPY_HW_PWM_11B) \
+    || defined(MICROPY_HW_PWM_12A) || defined(MICROPY_HW_PWM_12B) \
+    || defined(MICROPY_HW_PWM_13A) || defined(MICROPY_HW_PWM_13B)
+#define MICROPY_HW_ENABLE_HW_PWM (1)
+#else
+#define MICROPY_HW_ENABLE_HW_PWM (0)
+#endif
+
+#if defined(MICROPY_HW_DAC0) || defined(MICROPY_HW_DAC1)
+#define MICROPY_HW_ENABLE_HW_DAC (1)
+#else
+#define MICROPY_HW_ENABLE_HW_DAC (0)
 #endif
 
 // Pin definition header file

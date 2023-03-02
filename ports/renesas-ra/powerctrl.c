@@ -175,7 +175,7 @@ const lpm_instance_t g_lpm_standby = {
 #endif
 
 NORETURN void powerctrl_mcu_reset(void) {
-    #if BSP_FEATURE_TZ_HAS_TRUSTZONE
+    #if BSP_TZ_SECURE_BUILD
     R_BSP_NonSecureEnter();
     #else
     NVIC_SystemReset();

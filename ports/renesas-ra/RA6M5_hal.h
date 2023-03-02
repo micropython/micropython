@@ -2,6 +2,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2021 Renesas Electronics Corporation
+ * Copyright (c) 2023 Vekatech Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef PORTS_RA_RA6M1_HAL_H_
-#define PORTS_RA_RA6M1_HAL_H_
+#ifndef PORTS_RA_RA6M5_HAL_H_
+#define PORTS_RA_RA6M5_HAL_H_
 
 #include <stdio.h>
 #include <stdint.h>
@@ -39,7 +40,7 @@
 #define SCI_BAUD    115200
 #define UART_CH     SCI_CH
 #define UART_TxStr  sci_tx_str
-#define PCLK        120000000
+#define PCLK        100000000
 
 #define RA_PRI_SYSTICK  (0)
 #define RA_PRI_UART     (1)
@@ -86,17 +87,17 @@ typedef enum {
 #if !defined(DEBUG_CH)
 #define DEBUG_CH SCI_CH
 #endif
-#if (DEBUG_CH == 0)
-#define DEBUG_TX_PIN    P411
-#define DEBUG_RX_PIN    P410
+#if (DEBUG_CH == 6)
+#define DEBUG_TX_PIN    P506
+#define DEBUG_RX_PIN    P505
 #endif
-#if (DEBUG_CH == 1)
-#define DEBUG_TX_PIN    P401
-#define DEBUG_RX_PIN    P402
+#if (DEBUG_CH == 7)
+#define DEBUG_TX_PIN    P613
+#define DEBUG_RX_PIN    P614
 #endif
 #if (DEBUG_CH == 9)
-#define DEBUG_TX_PIN    P203
-#define DEBUG_RX_PIN    P202
+#define DEBUG_TX_PIN    P109
+#define DEBUG_RX_PIN    P110
 #endif
 #define DEBUG_TXSTR(s)  ra_sci_tx_str(DEBUG_CH, (unsigned char *)s)
 #define DEBUG_TXCH(c)   ra_sci_tx_ch(DEBUG_CH, c)
@@ -105,4 +106,4 @@ typedef enum {
 #define DEBUG_TXCH(c)
 #endif
 
-#endif /* PORTS_RA_RA6M1_HAL_H_ */
+#endif /* PORTS_RA_RA6M5_HAL_H_ */
