@@ -185,7 +185,7 @@ int32_t common_hal_gifio_ondiskgif_get_max_delay(gifio_ondiskgif_t *self) {
     return self->max_delay;
 }
 
-uint8_t common_hal_gifio_ondiskgif_next_frame(gifio_ondiskgif_t *self, bool setDirty) {
+uint32_t common_hal_gifio_ondiskgif_next_frame(gifio_ondiskgif_t *self, bool setDirty) {
     int nextDelay = 0;
     int result = GIF_playFrame(&self->gif, &nextDelay, self->bitmap);
 
