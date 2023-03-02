@@ -104,7 +104,7 @@ INC += \
 	-isystem esp-idf/components/soc/include \
 	-isystem esp-idf/components/soc/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/spi_flash/include \
-	-isystem esp-idf/components/ulp/include \
+	-isystem esp-idf/components/ulp/ulp_fsm/include \
 	-isystem esp-idf/components/ulp/ulp_riscv/include \
 	-isystem esp-idf/components/ulp/ulp_common/include \
 	-isystem esp-idf/components/ulp/ulp_common/include/$(IDF_TARGET) \

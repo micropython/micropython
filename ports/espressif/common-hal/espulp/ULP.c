@@ -90,16 +90,18 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
     ulp_set_wakeup_period(0, 20000);
 
     switch (self->arch) {
+        #ifdef CONFIG_ULP_COPROC_TYPE_FSM
         case FSM:
             ulp_load_binary(0, (const uint8_t *)program, length);
             ulp_run(0);
             break;
+        #endif
+        #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
         case RISCV:
-            #ifndef CONFIG_IDF_TARGET_ESP32
             ulp_riscv_load_binary((const uint8_t *)program, length);
             ulp_riscv_run();
             break;
-            #endif
+        #endif
         default:
             mp_raise_NotImplementedError(NULL);
             break;
@@ -107,12 +109,23 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
 }
 
 void common_hal_espulp_ulp_halt(espulp_ulp_obj_t *self) {
-    #ifdef CONFIG_IDF_TARGET_ESP32
-    mp_raise_NotImplementedError(NULL);
-    #else
-    ulp_riscv_timer_stop();
-    ulp_riscv_halt();
-    #endif
+    switch (self->arch) {
+        /*
+        #ifdef CONFIG_ULP_COPROC_TYPE_FSM
+        case FSM:
+            break;
+        #endif
+        */
+        #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
+        case RISCV:
+            ulp_riscv_timer_stop();
+            ulp_riscv_halt();
+            break;
+        #endif
+        default:
+            mp_raise_NotImplementedError(NULL);
+            break;
+    }
 
     // Release pins we were using.
     for (uint8_t i = 0; i < 32; i++) {
@@ -130,11 +143,19 @@ void common_hal_espulp_ulp_construct(espulp_ulp_obj_t *self, espulp_architecture
         mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_ULP);
     }
 
-    #ifdef CONFIG_IDF_TARGET_ESP32
-    if (self->arch == RISCV) {
-        mp_raise_NotImplementedError(NULL);
+    switch (self->arch) {
+        #ifdef CONFIG_ULP_COPROC_TYPE_FSM
+        case FSM:
+            break;
+        #endif
+        #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
+        case RISCV:
+            break;
+        #endif
+        default:
+            mp_raise_NotImplementedError(NULL);
+            break;
     }
-    #endif
 
     self->arch = arch;
     self->inited = true;
