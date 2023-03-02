@@ -514,19 +514,24 @@ writes from a client to a given characteristic, use
 
     Sends a notification request to a connected client.
 
-    If *data* is not ``None``, then that value is sent to the client as part of
-    the notification. The local value will not be modified.
+    If *data* is ``None`` (the default), then the current local value (as set
+    with :meth:`gatts_write <BLE.gatts_write>`) will be sent.
 
-    Otherwise, if *data* is ``None``, then the current local value (as
-    set with :meth:`gatts_write <BLE.gatts_write>`) will be sent.
+    Otherwise, if *data* is not ``None``, then that value is sent to the client
+    as part of the notification. The local value will not be modified.
 
     **Note:** The notification will be sent regardless of the subscription
     status of the client to this characteristic.
 
-.. method:: BLE.gatts_indicate(conn_handle, value_handle, /)
+.. method:: BLE.gatts_indicate(conn_handle, value_handle, data=None, /)
 
-    Sends an indication request containing the characteristic's current value to
-    a connected client.
+    Sends a indication request to a connected client.
+
+    If *data* is ``None`` (the default), then the current local value (as set
+    with :meth:`gatts_write <BLE.gatts_write>`) will be sent.
+
+    Otherwise, if *data* is not ``None``, then that value is sent to the client
+    as part of the indication. The local value will not be modified.
 
     On acknowledgment (or failure, e.g. timeout), the
     ``_IRQ_GATTS_INDICATE_DONE`` event will be raised.

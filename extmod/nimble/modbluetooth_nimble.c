@@ -1008,7 +1008,7 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
     return ble_hs_err_to_errno(ble_gap_terminate(conn_handle, BLE_ERR_REM_USER_CONN_TERM));
 }
 
-int mp_bluetooth_gatts_read(uint16_t value_handle, uint8_t **value, size_t *value_len) {
+int mp_bluetooth_gatts_read(uint16_t value_handle, const uint8_t **value, size_t *value_len) {
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
@@ -1026,35 +1026,40 @@ int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t
     return err;
 }
 
-// TODO: Could use ble_gatts_chr_updated to send to all subscribed centrals.
-
-int mp_bluetooth_gatts_notify(uint16_t conn_handle, uint16_t value_handle) {
+int mp_bluetooth_gatts_notify_indicate(uint16_t conn_handle, uint16_t value_handle, int gatts_op, const uint8_t *value, size_t value_len) {
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
-    // Confusingly, notify/notify_custom/indicate are "gattc" function (even though they're used by peripherals (i.e. gatt servers)).
+
+    int err = BLE_HS_EINVAL;
+
+    // NULL om in the _custom methods means "use DB value" (NimBLE will call
+    // back into mp_bluetooth_gatts_read for us).
+    struct os_mbuf *om = NULL;
+
+    if (value) {
+        om = ble_hs_mbuf_from_flat(value, value_len);
+        if (om == NULL) {
+            return MP_ENOMEM;
+        }
+    }
+
+    // Note: Confusingly, Nimble's notify/notify_custom and indicate/indicate_custom
+    // are "gattc" functions (even though they're used by peripherals, i.e. gatt servers).
     // See https://www.mail-archive.com/dev@mynewt.apache.org/msg01293.html
-    return ble_hs_err_to_errno(ble_gattc_notify(conn_handle, value_handle));
-}
 
-int mp_bluetooth_gatts_notify_send(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t value_len) {
-    if (!mp_bluetooth_is_active()) {
-        return ERRNO_BLUETOOTH_NOT_ACTIVE;
+    switch (gatts_op) {
+        case MP_BLUETOOTH_GATTS_OP_NOTIFY:
+            err = ble_gattc_notify_custom(conn_handle, value_handle, om);
+            break;
+        case MP_BLUETOOTH_GATTS_OP_INDICATE:
+            // This will raise BLE_GAP_EVENT_NOTIFY_TX with a status when it is
+            // acknowledged (or timeout/error).
+            err = ble_gattc_indicate_custom(conn_handle, value_handle, om);
+            break;
     }
-    struct os_mbuf *om = ble_hs_mbuf_from_flat(value, value_len);
-    if (om == NULL) {
-        return MP_ENOMEM;
-    }
-    return ble_hs_err_to_errno(ble_gattc_notify_custom(conn_handle, value_handle, om));
-}
 
-int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle) {
-    if (!mp_bluetooth_is_active()) {
-        return ERRNO_BLUETOOTH_NOT_ACTIVE;
-    }
-    // This will raise BLE_GAP_EVENT_NOTIFY_TX with a status when it is
-    // acknowledged (or timeout/error).
-    return ble_hs_err_to_errno(ble_gattc_indicate(conn_handle, value_handle));
+    return ble_hs_err_to_errno(err);
 }
 
 int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append) {
