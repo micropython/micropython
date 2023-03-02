@@ -1451,15 +1451,15 @@ STATIC int ble_gattc_attr_write_cb(uint16_t conn_handle, const struct ble_gatt_e
 }
 
 // Write the value to the remote peripheral.
-int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len, unsigned int mode) {
+int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t value_len, unsigned int mode) {
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
     int err;
     if (mode == MP_BLUETOOTH_WRITE_MODE_NO_RESPONSE) {
-        err = ble_gattc_write_no_rsp_flat(conn_handle, value_handle, value, *value_len);
+        err = ble_gattc_write_no_rsp_flat(conn_handle, value_handle, value, value_len);
     } else if (mode == MP_BLUETOOTH_WRITE_MODE_WITH_RESPONSE) {
-        err = ble_gattc_write_flat(conn_handle, value_handle, value, *value_len, &ble_gattc_attr_write_cb, NULL);
+        err = ble_gattc_write_flat(conn_handle, value_handle, value, value_len, &ble_gattc_attr_write_cb, NULL);
     } else {
         err = BLE_HS_EINVAL;
     }

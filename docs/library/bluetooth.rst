@@ -183,12 +183,10 @@ Event Handling
                 conn_handle, value_handle, char_data = data
             elif event == _IRQ_GATTC_READ_DONE:
                 # A gattc_read() has completed.
-                # Note: The value_handle will be zero on btstack (but present on NimBLE).
                 # Note: Status will be zero on success, implementation-specific value otherwise.
                 conn_handle, value_handle, status = data
             elif event == _IRQ_GATTC_WRITE_DONE:
                 # A gattc_write() has completed.
-                # Note: The value_handle will be zero on btstack (but present on NimBLE).
                 # Note: Status will be zero on success, implementation-specific value otherwise.
                 conn_handle, value_handle, status = data
             elif event == _IRQ_GATTC_NOTIFY:

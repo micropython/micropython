@@ -391,7 +391,7 @@ int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start
 int mp_bluetooth_gattc_read(uint16_t conn_handle, uint16_t value_handle);
 
 // Write the value to the remote peripheral.
-int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len, unsigned int mode);
+int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t value_len, unsigned int mode);
 
 // Initiate MTU exchange for a specific connection using the preferred MTU.
 int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle);
