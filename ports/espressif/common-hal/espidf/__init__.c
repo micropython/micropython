@@ -44,7 +44,6 @@
 #else
 #define esp_himem_reserved_area_size() (0)
 #endif
-bool ok_to_reserve_psram = true;
 size_t reserved_psram = DEFAULT_RESERVED_PSRAM;
 #endif
 
@@ -61,9 +60,6 @@ static size_t psram_size_usable(void) {
 bool common_hal_espidf_set_reserved_psram(size_t amount) {
     #ifdef CONFIG_SPIRAM
     if (!esp_psram_is_initialized()) {
-        return false;
-    }
-    if (!ok_to_reserve_psram) {
         return false;
     }
     if (amount > psram_size_usable()) {
@@ -113,11 +109,7 @@ size_t common_hal_espidf_get_total_psram(void) {
 intptr_t common_hal_espidf_get_psram_start(void) {
     #ifdef CONFIG_SPIRAM
     if (esp_psram_is_initialized()) {
-        #ifdef CONFIG_IDF_TARGET_ESP32
         return SOC_EXTRAM_DATA_LOW;
-        #else
-        return SOC_EXTRAM_DATA_HIGH - psram_size_usable();
-        #endif
     }
     #endif
     return 0;
@@ -126,7 +118,7 @@ intptr_t common_hal_espidf_get_psram_start(void) {
 intptr_t common_hal_espidf_get_psram_end(void) {
     #ifdef CONFIG_SPIRAM
     if (esp_psram_is_initialized()) {
-        return common_hal_espidf_get_psram_start() + psram_size_usable();
+        return SOC_EXTRAM_DATA_LOW + psram_size_usable();
     }
     #endif
     return 0;
