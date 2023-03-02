@@ -40,7 +40,7 @@ uint32_t common_hal_gifio_ondiskgif_get_pixel(gifio_ondiskgif_t *bitmap,
 uint16_t common_hal_gifio_ondiskgif_get_height(gifio_ondiskgif_t *self);
 mp_obj_t common_hal_gifio_ondiskgif_get_bitmap(gifio_ondiskgif_t *self);
 uint16_t common_hal_gifio_ondiskgif_get_width(gifio_ondiskgif_t *self);
-uint8_t common_hal_gifio_ondiskgif_next_frame(gifio_ondiskgif_t *self, bool setDirty);
+uint32_t common_hal_gifio_ondiskgif_next_frame(gifio_ondiskgif_t *self, bool setDirty);
 int32_t common_hal_gifio_ondiskgif_get_duration(gifio_ondiskgif_t *self);
 int32_t common_hal_gifio_ondiskgif_get_frame_count(gifio_ondiskgif_t *self);
 int32_t common_hal_gifio_ondiskgif_get_min_delay(gifio_ondiskgif_t *self);
