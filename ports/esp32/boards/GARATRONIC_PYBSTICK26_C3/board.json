@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy_c3.md"
+    ],
+    "docs": "https://github.com/mchobby/pyboard-driver/tree/master/PYBStick-ESP32-C3",
+    "features": [
+        "BLE",
+        "RGB LED",
+        "USB CDC",
+        "WiFi"
+    ],
+    "id": "pybstick26_c3",
+    "images": [
+        "PybStickESP32_05.jpg"
+    ],
+    "mcu": "esp32c3",
+    "product": "PYBSTICK26_ESP32-C3",
+    "thumbnail": "",
+    "url": "https://shop.mchobby.be/product.php?id_product=2505",
+    "vendor": "www.mchobby.be"
+}
