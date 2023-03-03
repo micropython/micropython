@@ -217,6 +217,10 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_HW_USB_PID (0x0005) // RP2 MicroPython
 #endif
 
+#ifndef MICROPY_HW_BOOTSEL_DELAY_US
+#define MICROPY_HW_BOOTSEL_DELAY_US 8
+#endif
+
 // Entering a critical section.
 extern uint32_t mp_thread_begin_atomic_section(void);
 extern void mp_thread_end_atomic_section(uint32_t);
