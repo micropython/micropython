@@ -301,7 +301,7 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
-    SNVS->LPGPR[0] = DBL_TAP_MAGIC;
+    DBL_TAP_REG = DBL_TAP_MAGIC;
     reset();
 }
 
