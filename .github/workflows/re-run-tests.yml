@@ -1,4 +1,4 @@
-name: Run tests
+name: Reusable | Run tests
 
 on:
   workflow_call:

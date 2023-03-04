@@ -1,4 +1,4 @@
-name: Build boards
+name: Reusable | Build boards
 
 on:
   workflow_call:
