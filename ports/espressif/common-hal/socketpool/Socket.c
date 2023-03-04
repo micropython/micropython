@@ -253,9 +253,7 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
     uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Allow timeouts and interrupts
-    while (newsoc == -1 &&
-           !timed_out &&
-           !mp_hal_is_interrupted()) {
+    while (newsoc == -1 && !timed_out) {
         if (self->timeout_ms != (uint)-1 && self->timeout_ms != 0) {
             timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
         }
@@ -267,9 +265,6 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         }
     }
 
-    // New client socket will not be non-blocking by default, so make it non-blocking.
-    lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
-
     if (!timed_out) {
         // harmless on failure but avoiding memcpy is faster
         memcpy((void *)ip, (void *)&accept_addr.sin_addr.s_addr, sizeof(accept_addr.sin_addr.s_addr));
@@ -280,6 +275,10 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
     if (newsoc < 0) {
         return -MP_EBADF;
     }
+
+    // We got a socket. New client socket will not be non-blocking by default, so make it non-blocking.
+    lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
+
     if (!register_open_socket(newsoc)) {
         lwip_close(newsoc);
         return -MP_EBADF;
