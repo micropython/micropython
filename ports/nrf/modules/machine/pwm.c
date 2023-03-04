@@ -97,7 +97,6 @@ STATIC int hard_pwm_find(mp_obj_t id) {
         if (pwm_id >= 0 && pwm_id < MP_ARRAY_SIZE(machine_hard_pwm_obj)) {
             return pwm_id;
         }
-        mp_raise_ValueError(MP_ERROR_TEXT("PWM doesn't exist"));
     }
     return -1;
 }
@@ -231,19 +230,22 @@ STATIC mp_obj_t machine_hard_pwm_make_new(mp_arg_val_t *args) {
     enum { ARG_id, ARG_pin, ARG_freq, ARG_period, ARG_duty, ARG_pulse_width, ARG_mode };
     // get static peripheral object
     int pwm_id = hard_pwm_find(args[ARG_id].u_obj);
+    if (pwm_id < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid or missing PWM id"));
+    }
     const machine_hard_pwm_obj_t *self = &machine_hard_pwm_obj[pwm_id];
 
     // check if PWM pin is set
     if (args[ARG_pin].u_obj != MP_OBJ_NULL) {
         self->p_config->pwm_pin = mp_hal_get_pin_obj(args[ARG_pin].u_obj)->pin;
     } else {
-        // TODO: raise exception.
+        mp_raise_ValueError(MP_ERROR_TEXT("Pin missing"));
     }
 
     if (args[ARG_freq].u_obj != MP_OBJ_NULL) {
         self->p_config->freq = mp_obj_get_int(args[ARG_freq].u_obj);
     } else {
-        self->p_config->freq = 50; // 50 Hz by default.
+        self->p_config->freq = 2; // 4 MHz by default.
     }
 
     if (args[ARG_period].u_obj != MP_OBJ_NULL) {
@@ -294,7 +296,7 @@ STATIC void machine_hard_pwm_init(mp_obj_t self_in, mp_arg_val_t *args) {
 
     uint16_t pulse_width = ((self->p_config->period * self->p_config->duty) / 100);
 
-    // If manual period has been set, override duty-cycle.
+    // If manual pulse width has been set, override duty-cycle.
     if (self->p_config->pulse_width > 0) {
         pulse_width = self->p_config->pulse_width;
     }
