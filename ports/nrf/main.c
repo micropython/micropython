@@ -280,6 +280,10 @@ soft_reset:
         }
     }
 
+    #if MICROPY_PY_MACHINE_HW_PWM
+    pwm_deinit_all();
+    #endif
+
     mp_deinit();
 
     printf("MPY: soft reboot\n");

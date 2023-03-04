@@ -330,7 +330,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/pin.c \
 	machine/timer.c \
 	machine/rtcounter.c \
-	machine/pwm.c \
 	machine/temp.c \
 	uos/moduos.c \
 	uos/microbitfs.c \
