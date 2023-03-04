@@ -40,6 +40,9 @@ include ../../py/mkenv.mk
 # Include micropython configuration board makefile
 include $(BOARD_DIR)/mpconfigboard.mk
 
+# MicroPython feature configurations
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
+
 # File containing description of content to be frozen into firmware.
 FROZEN_MANIFEST ?= boards/manifest.py
 
@@ -290,6 +293,8 @@ SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG),1)
 CFLAGS += -Og
+# Disable text compression in debug builds
+MICROPY_ROM_TEXT_COMPRESSION = 0
 else
 CFLAGS += -Os -DNDEBUG
 endif
