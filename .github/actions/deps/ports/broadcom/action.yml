@@ -5,8 +5,8 @@ runs:
   steps:
     - name: Get broadcom toolchain
       run: |
-        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-10.3-2021.07-x86_64-broadcom64-none-elf.tar.xz
-        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-10.3-2021.07-x86_64-broadcom64-none-elf.tar.xz
+        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
         sudo apt-get install -y mtools
       shell: bash
     - name: Install mkfs.fat

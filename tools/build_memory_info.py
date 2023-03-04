@@ -7,6 +7,8 @@
 
 import re
 import sys
+import json
+
 
 # Handle size constants with K or M suffixes (allowed in .ld but not in Python).
 K_PATTERN = re.compile(r"([0-9]+)[kK]")
@@ -15,11 +17,10 @@ K_REPLACE = r"(\1*1024)"
 M_PATTERN = re.compile(r"([0-9]+)[mM]")
 M_REPLACE = r"(\1*1024*1024)"
 
-print()
-
 text = 0
 data = 0
 bss = 0
+
 # stdin is the linker output.
 for line in sys.stdin:
     # Uncomment to see linker output.
@@ -29,6 +30,7 @@ for line in sys.stdin:
         text, data, bss = map(int, line.split()[:3])
 
 regions = {}
+
 # This file is the linker script.
 with open(sys.argv[1], "r") as f:
     for line in f:
@@ -51,6 +53,11 @@ used_flash = data + text
 free_flash = firmware_region - used_flash
 used_ram = data + bss
 free_ram = ram_region - used_ram
+
+with open(f"{sys.argv[2]}/firmware.size.json", "w") as f:
+    json.dump({"used_flash": used_flash, "firmware_region": firmware_region}, f)
+
+print()
 print(
     "{} bytes used, {} bytes free in flash firmware space out of {} bytes ({}kB).".format(
         used_flash, free_flash, firmware_region, firmware_region / 1024
