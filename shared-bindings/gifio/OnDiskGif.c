@@ -36,6 +36,8 @@
 //| class OnDiskGif:
 //|     """Loads one frame of a GIF into memory at a time.
 //|
+//|     The code can be used in cooperation with displayio but this mode is relatively slow:
+//|
 //|     .. code-block:: Python
 //|
 //|       import board
@@ -69,6 +71,31 @@
 //|           # minus the overhead measured to advance between frames.
 //|           time.sleep(max(0, next_delay - overhead))
 //|           next_delay = odg.next_frame()
+//|
+//|     The displayio Group and TileGrid layers can be bypassed and the image can
+//|     be directly blitted to the full screen. This can give a speed-up of ~4x to
+//|     ~6x depending on the GIF and display. This requires an LCD that uses
+//|     standard codes to set the update area, and which accepts RGB565_SWAPPED
+//|     pixel data directly:
+//|
+//|     .. code-block:: Python
+//|
+//|       # Initial set-up the same as above
+//|
+//|       # Take over display to drive directly
+//|       display.auto_refresh = False
+//|       display_bus = display.bus
+//|
+//|       # Display repeatedly & directly.
+//|       while True:
+//|           # Sleep for the frame delay specified by the GIF,
+//|           # minus the overhead measured to advance between frames.
+//|           time.sleep(max(0, next_delay - overhead))
+//|           next_delay = odg.next_frame()
+//|
+//|           display_bus.send(42, struct.pack(">hh", 0, odg.bitmap.width - 1))
+//|           display_bus.send(43, struct.pack(">hh", 0, odg.bitmap.height - 1))
+//|           display_bus.send(44, d.bitmap)
 //|     """
 //|
 //|     def __init__(self, file: str) -> None:
