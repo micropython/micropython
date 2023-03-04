@@ -79,6 +79,7 @@
 //|     pixel data directly:
 //|
 //|     .. code-block:: Python
+//|
 //|       # Initial set-up the same as above
 //|
 //|       # Take over display to drive directly
