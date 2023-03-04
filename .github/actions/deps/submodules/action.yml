@@ -1,13 +1,18 @@
 name: 'Fetch Submodules'
 
 inputs:
+  target:
+    description: 'The target for ci_fetch_deps'
+    required: false
+    type: string
+
   submodules:
     description: 'The submodules to cache'
     required: false
     default: '["extmod/ulab", "lib/", "tools/"]'
     type: string
 
-  cache:
+  action:
     description: 'The cache action to use'
     required: false
     default: 'restore'
@@ -42,7 +47,7 @@ runs:
       shell: bash
 
     - name: Cache submodules
-      if: ${{ inputs.cache == 'cache' }}
+      if: ${{ inputs.action == 'cache' }}
       uses: actions/cache@v3
       with:
         path: ".git/modules/\n${{ join(fromJSON(steps.create-submodule-status.outputs.submodules), '\n') }}"
@@ -50,7 +55,7 @@ runs:
         enableCrossOsArchive: true
 
     - name: Restore submodules
-      if: ${{ inputs.cache == 'restore' }}
+      if: ${{ inputs.action == 'restore' }}
       uses: actions/cache/restore@v3
       with:
         path: ".git/modules/\n${{ join(fromJSON(steps.create-submodule-status.outputs.submodules), '\n') }}"
@@ -63,7 +68,7 @@ runs:
 
     - name: CircuitPython dependencies
       id: cp-deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board || github.job }}
+      run: python tools/ci_fetch_deps.py ${{ inputs.target || matrix.board || github.job }}
       shell: bash
 
     - name: CircuitPython version

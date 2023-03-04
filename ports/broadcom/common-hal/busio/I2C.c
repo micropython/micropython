@@ -98,7 +98,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->sda_pin = sda;
     self->scl_pin = scl;
 
-    uint32_t source_clock = vcmailbox_get_clock_rate_measured(VCMAILBOX_CLOCK_CORE);
+    uint32_t source_clock = vcmailbox_get_clock_rate(VCMAILBOX_CLOCK_CORE);
     uint16_t clock_divider = source_clock / frequency;
     self->peripheral->DIV_b.CDIV = clock_divider;
 

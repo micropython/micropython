@@ -243,7 +243,7 @@ $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
 MPCONFIGPORT_MK = $(wildcard mpconfigport.mk)
 
 $(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po | $(HEADER_BUILD)
-	$(Q)msgfmt -o $@ $^
+	$(Q)$(PYTHON) $(TOP)/tools/msgfmt.py -o $@ $^
 
 $(HEADER_BUILD)/qstrdefs.preprocessed.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"

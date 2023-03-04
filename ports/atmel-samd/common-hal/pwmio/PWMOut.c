@@ -67,10 +67,6 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     never_reset_pin_number(self->pin->number);
 }
 
-void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    timer_reset_ok(self->timer->index, self->timer->is_tc);
-}
-
 void pwmout_reset(void) {
     // Reset all timers
     for (int i = 0; i < TCC_INST_NUM; i++) {
@@ -267,6 +263,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
+    timer_reset_ok(self->timer->index, self->timer->is_tc);
     const pin_timer_t *t = self->timer;
     if (t->is_tc) {
         Tc *tc = tc_insts[t->index];

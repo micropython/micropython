@@ -138,6 +138,16 @@ Behavior
 -  Adds a safe mode that does not run user code after a hard crash or brown out. This makes it
    possible to fix code that causes nasty crashes by making it available through mass storage after
    the crash. A reset (the button) is needed after it's fixed to get back into normal mode.
+-  Safe mode may be handled programmatically by providing a ``safemode.py``.
+   ``safemode.py`` is run if the board has reset due to entering safe mode, unless the safe mode
+   initiated by the user by pressing button(s).
+   USB is not available so nothing can be printed.
+   ``safemode.py`` can determine why the safe mode occurred
+   using ``supervisor.runtime.safe_mode_reason``, and take appropriate action. For instance,
+   if a hard crash occurred, ``safemode.py`` may do a ``microcontroller.reset()``
+   to automatically restart despite the crash.
+   If the battery is low, but is being charged, ``safemode.py`` may put the board in deep sleep
+   for a while. Or it may simply reset, and have ``code.py`` check the voltage and do the sleep.
 -  RGB status LED indicating CircuitPython state.
    - One green flash - code completed without error.
    - Two red flashes - code ended due to an exception.
@@ -145,9 +155,9 @@ Behavior
 -  Re-runs ``code.py`` or other main file after file system writes by a workflow. (Disable with
    ``supervisor.disable_autoreload()``)
 -  Autoreload is disabled while the REPL is active.
--  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,
-   ``main.txt``
--  Boot is one of these: ``boot.py``, ``boot.txt``
+-  ``code.py`` may also be named``code.txt``, ``main.py``, or ``main.txt``.
+-  ``boot.py`` may also be named ``boot.txt``.
+-  ``safemode.py`` may also be named ``safemode.txt``.
 
 API
 ~~~

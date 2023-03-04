@@ -60,7 +60,7 @@ void common_hal_mcu_disable_interrupts(void) {
 
 void common_hal_mcu_enable_interrupts(void) {
     if (nesting_count == 0) {
-        // reset_into_safe_mode(LOCKING_ERROR);
+        // reset_into_safe_mode(SAFE_MODE_INTERRUPT_ERROR);
     }
     nesting_count--;
     if (nesting_count > 0) {
@@ -79,7 +79,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
             next_reset_to_bootloader = true;
             break;
         case RUNMODE_SAFE_MODE:
-            safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+            safe_mode_on_next_reset(SAFE_MODE_PROGRAMMATIC);
             break;
         default:
             break;

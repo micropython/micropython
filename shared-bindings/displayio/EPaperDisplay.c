@@ -71,14 +71,16 @@
 //|         write_color_ram_command: Optional[int] = None,
 //|         color_bits_inverted: bool = False,
 //|         highlight_color: int = 0x000000,
-//|         refresh_display_command: int,
+//|         refresh_display_command: Union[int, circuitpython_typing.ReadableBuffer],
 //|         refresh_time: float = 40,
 //|         busy_pin: Optional[microcontroller.Pin] = None,
 //|         busy_state: bool = True,
 //|         seconds_per_frame: float = 180,
 //|         always_toggle_chip_select: bool = False,
 //|         grayscale: bool = False,
-//|         two_byte_sequence_length: bool = False
+//|         advanced_color_epaper: bool = False,
+//|         two_byte_sequence_length: bool = False,
+//|         start_up_time: float = 0
 //|     ) -> None:
 //|         """Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `paralleldisplay.ParallelBus`).
 //|
@@ -92,8 +94,8 @@
 //|
 //|         :param display_bus: The bus that the display is connected to
 //|         :type _DisplayBus: displayio.FourWire or paralleldisplay.ParallelBus
-//|         :param ~circuitpython_typing.ReadableBuffer start_sequence: Byte-packed initialization sequence.
-//|         :param ~circuitpython_typing.ReadableBuffer stop_sequence: Byte-packed initialization sequence.
+//|         :param ~circuitpython_typing.ReadableBuffer start_sequence: Byte-packed command sequence.
+//|         :param ~circuitpython_typing.ReadableBuffer stop_sequence: Byte-packed command sequence.
 //|         :param int width: Width in pixels
 //|         :param int height: Height in pixels
 //|         :param int ram_width: RAM width in pixels
@@ -110,14 +112,16 @@
 //|         :param int write_color_ram_command: Command used to write pixels values into the update region
 //|         :param bool color_bits_inverted: True if 0 bits are used to show the color. Otherwise, 1 means to show color.
 //|         :param int highlight_color: RGB888 of source color to highlight with third ePaper color.
-//|         :param int refresh_display_command: Command used to start a display refresh
+//|         :param int refresh_display_command: Command used to start a display refresh. Single int or byte-packed command sequence
 //|         :param float refresh_time: Time it takes to refresh the display before the stop_sequence should be sent. Ignored when busy_pin is provided.
 //|         :param microcontroller.Pin busy_pin: Pin used to signify the display is busy
 //|         :param bool busy_state: State of the busy pin when the display is busy
 //|         :param float seconds_per_frame: Minimum number of seconds between screen refreshes
 //|         :param bool always_toggle_chip_select: When True, chip select is toggled every byte
 //|         :param bool grayscale: When true, the color ram is the low bit of 2-bit grayscale
+//|         :param bool advanced_color_epaper: When true, the display is a 7-color advanced color epaper (ACeP)
 //|         :param bool two_byte_sequence_length: When true, use two bytes to define sequence length
+//|         :param float start_up_time: Time to wait after reset before sending commands
 //|         """
 //|         ...
 STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -127,7 +131,8 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
            ARG_set_current_row_command, ARG_write_black_ram_command, ARG_black_bits_inverted,
            ARG_write_color_ram_command, ARG_color_bits_inverted, ARG_highlight_color,
            ARG_refresh_display_command,  ARG_refresh_time, ARG_busy_pin, ARG_busy_state,
-           ARG_seconds_per_frame, ARG_always_toggle_chip_select, ARG_grayscale, ARG_two_byte_sequence_length };
+           ARG_seconds_per_frame, ARG_always_toggle_chip_select, ARG_grayscale, ARG_advanced_color_epaper,
+           ARG_two_byte_sequence_length, ARG_start_up_time };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_start_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -148,14 +153,16 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
         { MP_QSTR_write_color_ram_command, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_color_bits_inverted, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_highlight_color, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x000000} },
-        { MP_QSTR_refresh_display_command, MP_ARG_INT | MP_ARG_REQUIRED },
+        { MP_QSTR_refresh_display_command, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_refresh_time, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(40)} },
         { MP_QSTR_busy_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_busy_state, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_seconds_per_frame, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(180)} },
         { MP_QSTR_always_toggle_chip_select, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_grayscale, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
+        { MP_QSTR_advanced_color_epaper, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_two_byte_sequence_length, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
+        { MP_QSTR_start_up_time, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(0)} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -177,10 +184,10 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
 
     primary_display_t *disp = allocate_display_or_raise();
     displayio_epaperdisplay_obj_t *self = &disp->epaper_display;
-    ;
 
     mp_float_t refresh_time = mp_obj_get_float(args[ARG_refresh_time].u_obj);
     mp_float_t seconds_per_frame = mp_obj_get_float(args[ARG_seconds_per_frame].u_obj);
+    mp_float_t start_up_time = mp_obj_get_float(args[ARG_start_up_time].u_obj);
 
     mp_int_t write_color_ram_command = NO_COMMAND;
     mp_int_t highlight_color = args[ARG_highlight_color].u_int;
@@ -188,19 +195,40 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
         write_color_ram_command = mp_obj_get_int(args[ARG_write_color_ram_command].u_obj);
     }
 
+    bool two_byte_sequence_length = args[ARG_two_byte_sequence_length].u_bool;
+
+    mp_obj_t refresh_obj = args[ARG_refresh_display_command].u_obj;
+    const uint8_t *refresh_buf;
+    mp_buffer_info_t refresh_bufinfo;
+    size_t refresh_buf_len = 0;
+    mp_int_t refresh_command;
+    if (mp_obj_get_int_maybe(refresh_obj, &refresh_command)) {
+        uint8_t *command_buf = m_malloc(3, true);
+        command_buf[0] = refresh_command;
+        command_buf[1] = 0;
+        command_buf[2] = 0;
+        refresh_buf = command_buf;
+        refresh_buf_len = two_byte_sequence_length? 3: 2;
+    } else if (mp_get_buffer(refresh_obj, &refresh_bufinfo, MP_BUFFER_READ)) {
+        refresh_buf = refresh_bufinfo.buf;
+        refresh_buf_len = refresh_bufinfo.len;
+    } else {
+        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_refresh_display_command);
+    }
+
     self->base.type = &displayio_epaperdisplay_type;
     common_hal_displayio_epaperdisplay_construct(
         self,
         display_bus,
-        start_bufinfo.buf, start_bufinfo.len, stop_bufinfo.buf, stop_bufinfo.len,
+        start_bufinfo.buf, start_bufinfo.len, start_up_time, stop_bufinfo.buf, stop_bufinfo.len,
         args[ARG_width].u_int, args[ARG_height].u_int, args[ARG_ram_width].u_int, args[ARG_ram_height].u_int,
         args[ARG_colstart].u_int, args[ARG_rowstart].u_int, rotation,
         args[ARG_set_column_window_command].u_int, args[ARG_set_row_window_command].u_int,
         args[ARG_set_current_column_command].u_int, args[ARG_set_current_row_command].u_int,
         args[ARG_write_black_ram_command].u_int, args[ARG_black_bits_inverted].u_bool, write_color_ram_command,
-        args[ARG_color_bits_inverted].u_bool, highlight_color, args[ARG_refresh_display_command].u_int, refresh_time,
+        args[ARG_color_bits_inverted].u_bool, highlight_color, refresh_buf, refresh_buf_len, refresh_time,
         busy_pin, args[ARG_busy_state].u_bool, seconds_per_frame,
-        args[ARG_always_toggle_chip_select].u_bool, args[ARG_grayscale].u_bool, args[ARG_two_byte_sequence_length].u_bool
+        args[ARG_always_toggle_chip_select].u_bool, args[ARG_grayscale].u_bool, args[ARG_advanced_color_epaper].u_bool, two_byte_sequence_length
         );
 
     return self;
@@ -214,7 +242,11 @@ static displayio_epaperdisplay_obj_t *native_display(mp_obj_t display_obj) {
 }
 
 //|     def show(self, group: Group) -> None:
-//|         """Switches to displaying the given group of layers. When group is None, the default
+//|         """
+//|         .. note:: `show()` is deprecated and will be removed in CircuitPython 9.0.0.
+//|           Use ``.root_group = group`` instead.
+//|
+//|         Switches to displaying the given group of layers. When group is None, the default
 //|         CircuitPython terminal will be shown.
 //|
 //|         :param Group group: The group to show."""
@@ -351,7 +383,9 @@ MP_PROPERTY_GETTER(displayio_epaperdisplay_bus_obj,
     (mp_obj_t)&displayio_epaperdisplay_get_bus_obj);
 
 //|     root_group: Group
-//|     """The root group on the epaper display."""
+//|     """The root group on the epaper display.
+//|     If the root group is set to ``None``, the default CircuitPython terminal will be shown.
+//|     """
 //|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_root_group(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);

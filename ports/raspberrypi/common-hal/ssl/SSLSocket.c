@@ -260,8 +260,8 @@ mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t 
         // renegotation.
         ret = MP_EWOULDBLOCK;
     }
-    DEBUG("returning [error case] %d\n", -ret);
-    return -ret;
+    DEBUG("raising errno [error case] %d\n", ret);
+    mp_raise_OSError(ret);
 }
 
 mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len) {
@@ -279,8 +279,8 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t
         // renegotation.
         ret = MP_EWOULDBLOCK;
     }
-    DEBUG("returning [error case] %d\n", -ret);
-    return -ret;
+    DEBUG("raising errno [error case] %d\n", ret);
+    mp_raise_OSError(ret);
 }
 
 bool common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port) {

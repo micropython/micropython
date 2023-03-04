@@ -1,0 +1,28 @@
+name: Fetch port deps
+
+inputs:
+  board:
+    required: true
+    type: string
+
+outputs:
+  port:
+    value: ${{ steps.board-to-port.outputs.port }}
+
+runs:
+  using: composite
+  steps:
+    - name: Board to port
+      id: board-to-port
+      run: |
+        PORT=$(find ports/*/boards/ -type d -name ${{ inputs.board }} | sed 's/^ports\///g;s/\/boards.*//g')
+        if [ -z $PORT ]; then (exit 1); else echo >> $GITHUB_OUTPUT "port=$PORT"; fi
+      shell: bash
+
+    - name: Set up espressif port
+      if: steps.board-to-port.outputs.port == 'espressif'
+      uses: ./.github/actions/deps/ports/espressif
+
+    - name: Set up nrf port
+      if: steps.board-to-port.outputs.port == 'nrf'
+      uses: ./.github/actions/deps/ports/nrf

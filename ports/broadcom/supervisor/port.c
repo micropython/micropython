@@ -78,10 +78,10 @@ safe_mode_t port_init(void) {
     // Check brownout.
 
     if (board_requests_safe_mode()) {
-        return USER_SAFE_MODE;
+        return SAFE_MODE_USER;
     }
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_port(void) {

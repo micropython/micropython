@@ -45,6 +45,7 @@ void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t *s
     self->dither = dither;
     self->transparent_color = NO_TRANSPARENT_COLOR;
     self->input_colorspace = input_colorspace;
+    self->output_colorspace.depth = 16;
 }
 
 uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888) {
@@ -52,6 +53,13 @@ uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888) {
     uint32_t g6 = (color_rgb888 >> 10) & 0x3f;
     uint32_t b5 = (color_rgb888 >> 3) & 0x1f;
     return r5 << 11 | g6 << 5 | b5;
+}
+
+uint8_t displayio_colorconverter_compute_rgbd(uint32_t color_rgb888) {
+    uint32_t r1 = (color_rgb888 >> 23) & 0x1;
+    uint32_t g1 = (color_rgb888 >> 15) & 0x1;
+    uint32_t b1 = (color_rgb888 >> 7) & 0x1;
+    return r1 << 3 | g1 << 2 | b1 << 1 /* | dummy */;
 }
 
 uint8_t displayio_colorconverter_compute_luma(uint32_t color_rgb888) {
@@ -94,6 +102,44 @@ uint8_t displayio_colorconverter_compute_hue(uint32_t color_rgb888) {
     }
 
     return hue;
+}
+
+uint8_t displayio_colorconverter_compute_sevencolor(uint32_t color_rgb888) {
+    // This is DDX=1, the default for the displays.
+    uint8_t chroma = displayio_colorconverter_compute_chroma(color_rgb888);
+    if (chroma >= 64) {
+        uint8_t hue = displayio_colorconverter_compute_hue(color_rgb888);
+        // Red 0
+        if (hue < 10) {
+            return 0x4;
+        }
+        // Orange 21
+        if (hue < 21 + 10) {
+            return 0x6;
+        }
+        // Yellow 42
+        if (hue < 42 + 21) {
+            return 0x5;
+        }
+        // Green 85
+        if (hue < 85 + 42) {
+            return 0x2;
+        }
+        // Blue 170
+        if (hue < 170 + 42) {
+            return 0x3;
+        }
+
+        // The rest is red to 255
+        return 0x4;
+    } else {
+        uint8_t luma = displayio_colorconverter_compute_luma(color_rgb888);
+        if (luma >= 128) {
+            return 0x1; // White
+        } else {
+            return 0x0; // Black
+        }
+    }
 }
 
 void displayio_colorconverter_compute_tricolor(const _displayio_colorspace_t *colorspace, uint8_t pixel_hue, uint32_t *color) {
@@ -207,18 +253,9 @@ uint32_t displayio_colorconverter_convert_pixel(displayio_colorspace_t colorspac
     return pixel;
 }
 
-void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t *colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
+void displayio_convert_color(const _displayio_colorspace_t *colorspace, bool dither, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
     uint32_t pixel = input_pixel->pixel;
-
-    if (self->transparent_color == pixel) {
-        output_color->opaque = false;
-        return;
-    }
-
-    pixel = displayio_colorconverter_convert_pixel(self->input_colorspace, pixel);
-
-
-    if (self->dither) {
+    if (dither) {
         uint8_t randr = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x,input_pixel->tile_y));
         uint8_t randg = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x + 33,input_pixel->tile_y));
         uint8_t randb = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x,input_pixel->tile_y + 33));
@@ -272,8 +309,42 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
         output_color->pixel = pixel;
         output_color->opaque = true;
         return;
+    } else if (colorspace->depth == 4) {
+        uint8_t packed;
+        if (colorspace->sevencolor) {
+            packed = displayio_colorconverter_compute_sevencolor(pixel);
+        } else {
+            packed = displayio_colorconverter_compute_rgbd(pixel);
+        }
+        output_color->pixel = packed;
+        output_color->opaque = true;
+        return;
     }
     output_color->opaque = false;
+}
+
+void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t *colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
+    uint32_t pixel = input_pixel->pixel;
+
+    if (self->transparent_color == pixel) {
+        output_color->opaque = false;
+        return;
+    }
+
+    if (!self->dither && self->cached_colorspace == colorspace && self->cached_input_pixel == input_pixel->pixel) {
+        output_color->pixel = self->cached_output_color;
+        return;
+    }
+
+    displayio_input_pixel_t rgb888_pixel = *input_pixel;
+    rgb888_pixel.pixel = displayio_colorconverter_convert_pixel(self->input_colorspace, input_pixel->pixel);
+    displayio_convert_color(colorspace, self->dither, &rgb888_pixel, output_color);
+
+    if (!self->dither) {
+        self->cached_colorspace = colorspace;
+        self->cached_input_pixel = input_pixel->pixel;
+        self->cached_output_color = output_color->pixel;
+    }
 }
 
 

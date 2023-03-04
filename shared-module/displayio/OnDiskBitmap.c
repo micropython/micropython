@@ -90,7 +90,7 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
 
         displayio_palette_t *palette = m_new_obj(displayio_palette_t);
         palette->base.type = &displayio_palette_type;
-        common_hal_displayio_palette_construct(palette, number_of_colors);
+        common_hal_displayio_palette_construct(palette, number_of_colors, false);
 
         if (number_of_colors > 1) {
             uint16_t palette_size = number_of_colors * sizeof(uint32_t);

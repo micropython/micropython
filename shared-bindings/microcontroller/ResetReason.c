@@ -42,7 +42,7 @@ MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, RESCUE_DEBUG, RESET_REASON_
 //|     """The reason the microntroller was last reset"""
 //|
 //|     POWER_ON: object
-//|     """The microntroller was started from power off."""
+//|     """The microcontroller was started from power off."""
 //|
 //|     BROWNOUT: object
 //|     """The microntroller was reset due to too low a voltage."""

@@ -73,18 +73,23 @@ def main():
 
     print("Target:", TARGET)
 
-    if TARGET == "test":
+    if TARGET == "scheduler":
+        # submodules = ["tools/"]
+        submodules = ["extmod/ulab", "lib/", "tools/"]
+    elif TARGET == "tests":
         submodules = ["extmod/ulab", "lib/", "tools/"]
     elif TARGET == "build-doc":
         # used in .readthedocs.yml to generate RTD
-        submodules = ["extmod/ulab", "frozen/"]
-    elif TARGET == "mpy-cross-mac":
+        submodules = ["extmod/ulab"]
+        submodules_tags = ["frozen/"]
+    elif TARGET == "mpy-cross" or TARGET == "mpy-cross-mac":
         submodules = ["tools/"]  # for huffman
-    elif TARGET == "windows":
+    elif TARGET == "build-windows":
         # This builds one board from a number of ports so fill out a bunch of submodules
         submodules = ["extmod/ulab", "lib/", "tools/", "ports/", "data/nvm.toml"]
     elif TARGET == "website":
-        submodules = ["tools/adabot/", "frozen/"]
+        submodules = ["tools/adabot/"]
+        submodules_tags = ["frozen/"]
     elif TARGET == "pre-commit":
         submodules = ["extmod/ulab"]
     else:

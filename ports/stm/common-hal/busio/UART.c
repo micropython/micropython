@@ -85,7 +85,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     bool sigint_enabled) {
 
     // match pins to UART objects
-    USART_TypeDef *USARTx;
+    USART_TypeDef *USARTx = NULL;
 
     uint8_t tx_len = MP_ARRAY_SIZE(mcu_uart_tx_list);
     uint8_t rx_len = MP_ARRAY_SIZE(mcu_uart_rx_list);
@@ -159,8 +159,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         USARTx = assign_uart_or_throw(self, (self->tx != NULL),
             periph_index, uart_taken);
     } else {
-        // both pins cannot be empty
-        mp_raise_ValueError(translate("Supply at least one UART pin"));
+        // TX and RX are both None. But this is already handled in shared-bindings, so
+        // we won't get here.
     }
 
     // Other errors

@@ -89,18 +89,10 @@ void pwmout_never_reset(uint8_t slice, uint8_t ab_channel) {
     never_reset_channel |= _mask(slice, ab_channel);
 }
 
-void pwmout_reset_ok(uint8_t slice, uint8_t ab_channel) {
-    never_reset_channel &= ~_mask(slice, ab_channel);
-}
-
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     pwmout_never_reset(self->slice, self->ab_channel);
 
     never_reset_pin_number(self->pin->number);
-}
-
-void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    pwmout_reset_ok(self->slice, self->ab_channel);
 }
 
 void pwmout_reset(void) {
