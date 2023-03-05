@@ -186,6 +186,11 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_BOARD_ROOT_POINTERS
 #endif
 
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
+#endif
+
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
