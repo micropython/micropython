@@ -42,7 +42,7 @@
 #include "spi.h"
 #include "i2c.h"
 #include "timer.h"
-#if MICROPY_PY_MACHINE_HW_PWM
+#if MICROPY_PY_MACHINE_HW_PWM || MICROPY_PY_MACHINE_SOFT_PWM
 #include "pwm.h"
 #endif
 #if MICROPY_PY_MACHINE_ADC
@@ -235,7 +235,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 #if MICROPY_PY_MACHINE_TIMER_NRF
     { MP_ROM_QSTR(MP_QSTR_Timer),              MP_ROM_PTR(&machine_timer_type) },
 #endif
-#if MICROPY_PY_MACHINE_HW_PWM
+#if MICROPY_PY_MACHINE_HW_PWM || MICROPY_PY_MACHINE_SOFT_PWM
     { MP_ROM_QSTR(MP_QSTR_PWM),                MP_ROM_PTR(&machine_pwm_type) },
 #endif
 #if MICROPY_PY_MACHINE_TEMP

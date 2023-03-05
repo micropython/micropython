@@ -35,6 +35,9 @@
 #define MICROPY_PY_MACHINE_ADC      (0)
 #define MICROPY_PY_MACHINE_TEMP     (1)
 
+#define MICROPY_PY_MACHINE_PWM      (1)
+#define MICROPY_PY_MACHINE_SOFT_PWM (1)
+
 #define MICROPY_HW_ENABLE_RNG       (1)
 
 #define MICROPY_HW_HAS_LED          (1)

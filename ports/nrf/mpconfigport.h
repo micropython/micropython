@@ -202,6 +202,8 @@
 
 #if MICROPY_PY_MACHINE_HW_PWM
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/nrf/modules/machine/pwm.c"
+#elif MICROPY_PY_MACHINE_SOFT_PWM
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/nrf/modules/machine/soft_pwm.c"
 #endif
 
 #ifndef MICROPY_PY_MACHINE_TIMER_NRF
