@@ -110,6 +110,11 @@
 
 #define MP_STATE_PORT MP_STATE_VM
 
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
+#endif
+
 // Miscellaneous settings
 __attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
     __set_PRIMASK(state);

@@ -28,6 +28,7 @@
 
 enum {
     PENDSV_DISPATCH_SOFT_TIMER,  // For later & for having at least one entry
+    MICROPY_BOARD_PENDSV_ENTRIES
     PENDSV_DISPATCH_MAX
 };
 
