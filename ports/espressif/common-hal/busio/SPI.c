@@ -262,9 +262,8 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
 
             for (int i = 0; i < cur_trans; i++) {
                 spi_device_queue_trans(spi_handle[self->host_id], &transactions[i], portMAX_DELAY);
+                RUN_BACKGROUND_TASKS;
             }
-
-            RUN_BACKGROUND_TASKS;
 
             spi_transaction_t *rtrans;
             for (int x = 0; x < cur_trans; x++) {
