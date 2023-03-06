@@ -298,6 +298,9 @@ STATIC bool init_sdcard_fs(void) {
 #endif
 
 void stm32_main(uint32_t reset_mode) {
+    // Low-level MCU initialisation.
+    stm32_system_init();
+
     #if !defined(STM32F0) && defined(MICROPY_HW_VTOR)
     // Change IRQ vector table if configured differently
     SCB->VTOR = MICROPY_HW_VTOR;

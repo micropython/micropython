@@ -1311,6 +1311,9 @@ extern PCD_HandleTypeDef pcd_fs_handle;
 extern PCD_HandleTypeDef pcd_hs_handle;
 
 void stm32_main(uint32_t initial_r0) {
+    // Low-level MCU initialisation.
+    stm32_system_init();
+
     #if defined(STM32H7)
     // Configure write-once power options, and wait for voltage levels to be ready
     PWR->CR3 = PWR_CR3_LDOEN;
