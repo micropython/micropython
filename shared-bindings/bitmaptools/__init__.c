@@ -532,11 +532,43 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_li
 //|     """Draw a polygon conecting points on provided bitmap with provided value
 //|
 //|     :param bitmap dest_bitmap: Destination bitmap that will be written into
-//|     :param int xs: x-pixel position of the polygon's vertices
-//|     :param int ys: y-pixel position of the polygon's vertices
+//|     :param ReadableBuffer xs: x-pixel position of the polygon's vertices
+//|     :param ReadableBuffer ys: y-pixel position of the polygon's vertices
 //|     :param int value: Bitmap palette index that will be written into the
 //|            line in the destination bitmap
 //|     :param bool close: (Optional) Wether to connect first and last point. (True)
+//|
+//|     .. code-block:: Python
+//|
+//|        import board
+//|        import displayio
+//|        import bitmaptools
+//|
+//|        display = board.DISPLAY
+//|        main_group = displayio.Group()
+//|        display.root_group = main_group
+//|
+//|        palette = displayio.Palette(3)
+//|        palette[0] = 0xffffff
+//|        palette[1] = 0x0000ff
+//|        palette[2] = 0xff0000
+//|
+//|        bmp = displayio.Bitmap(128,128, 3)
+//|        bmp.fill(0)
+//|
+//|        xs = bytes([4, 101, 101, 19])
+//|        ys = bytes([4, 19,  121, 101])
+//|        bitmaptools.draw_polygon(bmp, xs, ys, 1)
+//|
+//|        xs = bytes([14, 60, 110])
+//|        ys = bytes([14, 24,  90])
+//|        bitmaptools.draw_polygon(bmp, xs, ys, 2)
+//|
+//|        tilegrid = displayio.TileGrid(bitmap=bmp, pixel_shader=palette)
+//|        main_group.append(tilegrid)
+//|
+//|        while True:
+//|            pass
 //|     """
 //|     ...
 //|
