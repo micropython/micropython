@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Artur Pacholec
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2023 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,21 +25,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
-#include "shared-bindings/digitalio/Pull.h"
+
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    bool output;
-    bool open_drain;
-    digitalio_pull_t pull;
-} digitalio_digitalinout_obj_t;
+    const mcu_pin_obj_t *pin_a, *pin_b;
+    uint8_t state;        // <old A><old B>
+    int8_t sub_count; // count intermediate transitions between detents
+    int8_t divisor; // Number of quadrature edges required per count
+    mp_int_t position;
+} rotaryio_incrementalencoder_obj_t;
 
-void pin_config(const mcu_pin_obj_t *pin, bool open_drain, digitalio_pull_t pull);
 
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+void incrementalencoder_interrupt_handler(uint8_t channel);
