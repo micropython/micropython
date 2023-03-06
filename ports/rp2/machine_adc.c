@@ -30,6 +30,7 @@
 
 #define ADC_IS_VALID_GPIO(gpio) ((gpio) >= 26 && (gpio) <= 29)
 #define ADC_CHANNEL_FROM_GPIO(gpio) ((gpio) - 26)
+#define GPIO_FROM_ADC_CHANNEL(adc_ch) ((adc_ch) + 26)
 #define ADC_CHANNEL_TEMPSENSOR (4)
 
 STATIC uint16_t adc_config_and_read_u16(uint32_t channel) {
@@ -83,6 +84,10 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
         adc_init();
     }
 
+    // Change adc channel arg 0-3 to corresponding gpio number 26-29
+    if (channel >= 0 && channel < ADC_CHANNEL_TEMPSENSOR) {
+        channel = GPIO_FROM_ADC_CHANNEL(channel);
+    }
     if (ADC_IS_VALID_GPIO(channel)) {
         // Configure the GPIO pin in ADC mode.
         adc_gpio_init(channel);
