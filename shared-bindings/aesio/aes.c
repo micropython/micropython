@@ -20,7 +20,7 @@
 //|         self,
 //|         key: ReadableBuffer,
 //|         mode: int = 0,
-//|         iv: Optional[ReadableBuffer] = None,
+//|         IV: Optional[ReadableBuffer] = None,
 //|         segment_size: int = 8,
 //|     ) -> None:
 //|         """Create a new AES state with the given key.
@@ -101,7 +101,7 @@ STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
 //|     def rekey(
 //|         self,
 //|         key: ReadableBuffer,
-//|         iv: Optional[ReadableBuffer] = None,
+//|         IV: Optional[ReadableBuffer] = None,
 //|     ) -> None:
 //|         """Update the AES state with the given key.
 //|
