@@ -213,9 +213,7 @@ def set_boards(build_all: bool):
             break
 
     # Append previously failed boards
-    last_failed_boards = last_failed_jobs.get("boards")
-    if last_failed_boards:
-        boards_to_build.update(last_failed_boards)
+    boards_to_build.update(last_failed_jobs.get("ports") or [])
 
     print("Building boards:", bool(boards_to_build))
 
@@ -236,7 +234,7 @@ def set_boards(build_all: bool):
         port_to_boards_to_build["ports"] = sorted(list(port_to_boards_to_build.keys()))
 
     # Set the step outputs
-    set_output("boards", json.dumps(port_to_boards_to_build))
+    set_output("ports", json.dumps(port_to_boards_to_build))
 
 
 def set_docs(build_doc: bool):

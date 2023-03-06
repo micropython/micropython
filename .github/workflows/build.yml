@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       docs: ${{ steps.set-matrix.outputs.docs }}
-      boards: ${{ steps.set-matrix.outputs.boards }}
+      ports: ${{ steps.set-matrix.outputs.ports }}
       windows: ${{ steps.set-matrix.outputs.windows }}
       cp-version: ${{ steps.set-up-submodules.outputs.version }}
     steps:
@@ -94,7 +94,7 @@ jobs:
 
   mpy-cross:
     needs: scheduler
-    if: needs.scheduler.outputs.boards != '{}'
+    if: needs.scheduler.outputs.ports != '{}'
     uses: ./.github/workflows/re-build-mpy-cross.yml
     secrets: inherit
     with:
@@ -103,7 +103,7 @@ jobs:
   mpy-cross-mac:
     runs-on: macos-11
     needs: scheduler
-    if: needs.scheduler.outputs.boards != '{}'
+    if: needs.scheduler.outputs.ports != '{}'
     env:
       CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
     steps:
@@ -281,15 +281,15 @@ jobs:
     # ERROR: Platform MINGW64_NT-10.0-17763-x86_64 appears to be unsupported
     # https://github.com/espressif/esp-idf/issues/7062
 
-  boards:
+  ports:
     needs: [scheduler, mpy-cross, tests]
-    if: needs.scheduler.outputs.boards != '{}'
+    if: needs.scheduler.outputs.ports != '{}'
     uses: ./.github/workflows/re-build-boards.yml
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        port: ${{ fromJSON(needs.scheduler.outputs.boards).ports }}
+        port: ${{ fromJSON(needs.scheduler.outputs.ports).ports }}
     with:
-      boards: ${{ toJSON(fromJSON(needs.scheduler.outputs.boards)[matrix.port]) }}
+      boards: ${{ toJSON(fromJSON(needs.scheduler.outputs.ports)[matrix.port]) }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}

@@ -16,7 +16,7 @@ on:
         required: false
 
 jobs:
-  build:
+  board:
     runs-on: ubuntu-22.04
     env:
       CP_VERSION: ${{ inputs.cp-version }}

@@ -184,7 +184,7 @@ def get_bad_check_runs(query_check_runs):
 
             for check_run in check_runs[run_type]["nodes"]:
                 name = check_run["name"]
-                if name.startswith("boards") or regex_matrix.search(name):
+                if name.startswith("ports") or regex_matrix.search(name):
                     matrix = name.split(" ", 1)[0]
                     matrix_job = name.rsplit(" (", 1)[1][:-1]
                     bad_runs.setdefault(matrix, []).append(matrix_job)
