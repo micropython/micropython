@@ -48,6 +48,8 @@ static uint8_t pin_map[MICROPY_HW_PIN_EXT_COUNT] = {
     27, // LEDR
     25, // LEDG
     26, // LEDB
+    34, // A4
+    39, // A5
     36, // A6
     35, // A7
 };
