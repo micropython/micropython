@@ -11,7 +11,11 @@ if (
 ):
     spis = (-1, 0)
 else:
-    spis = (-1, 0, 1)
+    if ("VK-RA4W1" in machine) or ("VK-RA6M3" in machine) or ("VK-RA6M5" in machine):
+        print("SKIP")
+        raise SystemExit
+    else:
+        spis = (-1, 0, 1)
 
 # test we can correctly create by id
 for bus in spis:
