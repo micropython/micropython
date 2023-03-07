@@ -88,14 +88,14 @@ jobs:
 
   tests:
     needs: scheduler
-    uses: ./.github/workflows/re-run-tests.yml
+    uses: ./.github/workflows/run-tests.yml
     with:
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
   mpy-cross:
     needs: scheduler
     if: needs.scheduler.outputs.ports != '{}'
-    uses: ./.github/workflows/re-build-mpy-cross.yml
+    uses: ./.github/workflows/build-mpy-cross.yml
     secrets: inherit
     with:
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
@@ -284,7 +284,7 @@ jobs:
   ports:
     needs: [scheduler, mpy-cross, tests]
     if: needs.scheduler.outputs.ports != '{}'
-    uses: ./.github/workflows/re-build-boards.yml
+    uses: ./.github/workflows/build-boards.yml
     secrets: inherit
     strategy:
       fail-fast: false

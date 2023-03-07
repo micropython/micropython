@@ -1,4 +1,4 @@
-name: Reusable | Build mpy-cross
+name: Build mpy-cross
 
 on:
   workflow_call:
