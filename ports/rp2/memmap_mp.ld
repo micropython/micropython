@@ -248,10 +248,17 @@ SECTIONS
     __StackTop = ORIGIN(SCRATCH_Y) + LENGTH(SCRATCH_Y);
     __StackOneBottom = __StackOneTop - SIZEOF(.stack1_dummy);
     __StackBottom = __StackTop - SIZEOF(.stack_dummy);
+    /* Define start and end of GC heap */
+    __GcHeapStart = __bss_end__;
+    __GcHeapEnd   = __StackLimit;
     PROVIDE(__stack = __StackTop);
 
     /* Check if data + heap + stack exceeds RAM limit */
     ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed")
+
+    /* Check GC heap is at least 128 KB */
+    /* On a RP2040 using all SRAM this should always be the case. */
+    ASSERT((__GcHeapEnd - __GcHeapStart) > 128*1024, "GcHeap is too small")
 
     ASSERT( __binary_info_header_end - __logical_binary_start <= 256, "Binary info must be in first 256 bytes of the binary")
     /* todo assert on extra code */
