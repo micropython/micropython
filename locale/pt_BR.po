@@ -845,6 +845,14 @@ msgid ""
 msgstr ""
 "A conexão foi desconectada e não pode mais ser usada. Crie uma nova conexão."
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays have different lengths"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays types have different sizes"
+msgstr ""
+
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
 msgstr "Arquivo .mpy corrompido"
