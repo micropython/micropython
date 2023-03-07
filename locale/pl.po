@@ -819,6 +819,14 @@ msgstr ""
 "Połączenie zostało rozłączone i nie można go już używać. Utwórz nowe "
 "połączenie."
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays have different lengths"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays types have different sizes"
+msgstr ""
+
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
 msgstr "Uszkodzony plik .mpy"

@@ -824,6 +824,14 @@ msgid ""
 "connection."
 msgstr "接続は切断済みでもう使えません。新しい接続を作成してください"
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays have different lengths"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays types have different sizes"
+msgstr ""
+
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
 msgstr "破損した .mpy ファイル"

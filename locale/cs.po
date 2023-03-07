@@ -821,6 +821,14 @@ msgid ""
 msgstr ""
 "Připojení bylo odpojeno a nelze jej dále používat. Vytvořte nové připojení."
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays have different lengths"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays types have different sizes"
+msgstr ""
+
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
 msgstr "Poškozený soubor .mpy"

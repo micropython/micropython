@@ -838,6 +838,14 @@ msgstr ""
 "Соединение было отключено и больше не может использоваться. Создайте новое "
 "соединение."
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays have different lengths"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays types have different sizes"
+msgstr ""
+
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
 msgstr "Файл .mpy поврежден"
