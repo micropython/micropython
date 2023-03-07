@@ -28,6 +28,8 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "py/gc.h"
+
 STATIC bool claimed_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
 STATIC bool never_reset_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
 
@@ -146,6 +148,11 @@ typedef struct {
 } pin_change_interrupt_data;
 
 volatile static pin_change_interrupt_data pcid[MP_ARRAY_SIZE(s_gpioBases)][32];
+
+// The 'data' pointers may be to gc objects, they must be kept alive.
+void pin_gc_collect() {
+    gc_collect_root((void **)&pcid, sizeof(pcid) / sizeof(void *));
+}
 
 void enable_pin_change_interrupt(const mcu_pin_obj_t *pin, gpio_change_interrupt_t func, void *data) {
     int instance = GPIO_GetInstance(pin->gpio);
