@@ -43,7 +43,7 @@ STATIC mp_obj_t mimxrt_usb_mode(mp_obj_t mode_in) {
     } else if (strncmp(s, USB_MODE_VCP_MSC, slen) == 0) {
         set_msc_enabled(true);
     } else {
-        mp_raise_ValueError("Invalid usb_mode");
+        mp_raise_ValueError(MP_ERROR_TEXT("Invalid usb_mode"));
     }
     return mp_const_none;
 }
