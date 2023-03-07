@@ -28,7 +28,7 @@
 //|         :param ~circuitpython_typing.ReadableBuffer key: A 16-, 24-, or 32-byte key
 //|         :param int mode: AES mode to use.  One of: `MODE_ECB`, `MODE_CBC`, or
 //|                          `MODE_CTR`
-//|         :param ~circuitpython_typing.ReadableBuffer iv: Initialization vector to use for CBC or CTR mode
+//|         :param ~circuitpython_typing.ReadableBuffer IV: Initialization vector to use for CBC or CTR mode
 //|
 //|         Additional arguments are supported for legacy reasons.
 //|
@@ -106,7 +106,7 @@ STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
 //|         """Update the AES state with the given key.
 //|
 //|         :param ~circuitpython_typing.ReadableBuffer key: A 16-, 24-, or 32-byte key
-//|         :param ~circuitpython_typing.ReadableBuffer iv: Initialization vector to use
+//|         :param ~circuitpython_typing.ReadableBuffer IV: Initialization vector to use
 //|                                                         for CBC or CTR mode"""
 //|         ...
 STATIC mp_obj_t aesio_aes_rekey(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
