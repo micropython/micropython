@@ -45,7 +45,7 @@ def transfer_file(args):
             if "250" in ftp.cwd("/flash"):
                 if not ftp_directory_exists(ftp, "sys"):
                     print("/flash/sys directory does not exist")
-                    if not "550" in ftp.mkd("sys"):
+                    if "550" not in ftp.mkd("sys"):
                         print("/flash/sys directory created")
                     else:
                         print("Error: cannot create /flash/sys directory")
