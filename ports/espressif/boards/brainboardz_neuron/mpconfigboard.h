@@ -32,8 +32,8 @@
 #define DEFAULT_UART_BUS_RX         (&pin_GPIO44)
 #define DEFAULT_UART_BUS_TX         (&pin_GPIO43)
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO4)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO3)
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
 
 #define DEFAULT_SPI_BUS_SCK (&pin_GPIO14)
 #define DEFAULT_SPI_BUS_MOSI (&pin_GPIO15)
