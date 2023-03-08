@@ -52,6 +52,8 @@ typedef struct {
 // interrupt character.
 STATIC ringbuf_t _incoming_ringbuf;
 STATIC uint8_t _buf[16];
+// make sure background is not called recursively
+STATIC bool in_web_background = false;
 
 static _websocket cp_serial;
 
@@ -244,6 +246,10 @@ void websocket_background(void) {
     if (!websocket_connected()) {
         return;
     }
+    if (in_web_background) {
+        return;
+    }
+    in_web_background = true;
     uint8_t c;
     while (ringbuf_num_empty(&_incoming_ringbuf) > 0 &&
            _read_next_payload_byte(&c)) {
@@ -253,4 +259,5 @@ void websocket_background(void) {
         }
         ringbuf_put(&_incoming_ringbuf, c);
     }
+    in_web_background = false;
 }
