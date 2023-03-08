@@ -677,6 +677,8 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
     return 0;
 }
 
+#if defined(STM32WB)
+
 static void powerctrl_switch_on_HSI(void) {
     LL_RCC_HSI_Enable();
     while (!LL_RCC_HSI_IsReady()) {
@@ -729,9 +731,11 @@ static void powerctrl_low_power_exit_wb55() {
     LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
 }
 
-#endif
+#endif // defined(STM32WB)
 
-#endif // !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
+#endif // defined(STM32WB) || defined(STM32WL)
+
+#endif // !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4)
 
 void powerctrl_enter_stop_mode(void) {
     // Disable IRQs so that the IRQ that wakes the device from stop mode is not
