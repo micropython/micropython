@@ -86,7 +86,7 @@
 #endif
 
 // The F7 & L4 series calls the peripheral SDMMC rather than SDIO, so provide some
-// #defines for backwards compatability.
+// #defines for backwards compatibility.
 
 #define SDIO_CLOCK_EDGE_RISING              SDMMC_CLOCK_EDGE_RISING
 #define SDIO_CLOCK_EDGE_FALLING             SDMMC_CLOCK_EDGE_FALLING

@@ -208,7 +208,7 @@ STATIC mp_uint_t ussl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int 
             // default is to perform complete handshake in constructor, so
             // this should not happen in blocking mode. On the other hand,
             // in nonblocking mode EAGAIN (comparing to the alternative of
-            // looping) is really preferrable.
+            // looping) is really preferable.
             if (o->blocking) {
                 continue;
             } else {

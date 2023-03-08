@@ -113,7 +113,7 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Unpack and check, whther the pin has ADC capability
+    // Unpack and check, whether the pin has ADC capability
     int id = mp_hal_get_pin_obj(args[ARG_id].u_obj);
     adc_config_t adc_config = get_adc_config(id, busy_flags);
 

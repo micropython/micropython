@@ -41,7 +41,7 @@
 #define MICROPY_FLOAT_IMPL             (MICROPY_FLOAT_IMPL_DOUBLE)
 #endif
 
-// Enable arbritrary precision long-int by default.
+// Enable arbitrary precision long-int by default.
 #ifndef MICROPY_LONGINT_IMPL
 #define MICROPY_LONGINT_IMPL           (MICROPY_LONGINT_IMPL_MPZ)
 #endif

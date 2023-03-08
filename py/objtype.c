@@ -619,7 +619,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     mp_obj_t member = dest[0];
     if (member != MP_OBJ_NULL) {
         if (!(self->base.type->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
-            // Class doesn't have any special accessors to check so return straightaway
+            // Class doesn't have any special accessors to check so return straight away
             return;
         }
 

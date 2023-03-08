@@ -150,10 +150,10 @@ STATIC void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     #endif
 
     #if MICROPY_ENABLE_FINALISER
-    // clear ATBs and FTBs
+    // clear ATB's and FTB's
     memset(area->gc_alloc_table_start, 0, gc_finaliser_table_byte_len + area->gc_alloc_table_byte_len + ALLOC_TABLE_GAP_BYTE);
     #else
-    // clear ATBs
+    // clear ATB's
     memset(area->gc_alloc_table_start, 0, area->gc_alloc_table_byte_len + ALLOC_TABLE_GAP_BYTE);
     #endif
 

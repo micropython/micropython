@@ -41,7 +41,7 @@ STATIC soft_timer_entry_t *soft_timer_heap;
 
 static inline int32_t ticks_diff(uint32_t t1, uint32_t t0) {
     // t1 is after t0 (i.e. positive result) if there exists a uint32_t X <= INT_MAX
-    // such that t0 + X = t1. Otherwise t1 is interepreted to be earlier than
+    // such that t0 + X = t1. Otherwise t1 is interpreted to be earlier than
     // t0 (negative result).
     return t1 - t0;
 }

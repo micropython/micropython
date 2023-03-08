@@ -1,6 +1,6 @@
 from machine import Pin, Signal
 
-# Red LED on pin LED_RED also kown as A13
+# Red LED on pin LED_RED also known as A13
 LED = Signal("LED_RED", Pin.OUT)
 
 # Green LED on pin LED_GREEN also known as A14

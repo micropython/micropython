@@ -98,7 +98,7 @@ Note: further tuning of features to include in bluetooth or even setting up the 
 
 ## Compile with freeze manifest
 
-Freeze manifests can be used by definining `FROZEN_MANIFEST` pointing to a
+Freeze manifests can be used by defining `FROZEN_MANIFEST` pointing to a
 `manifest.py`. This can either be done by a `make` invocation or by defining
 it in the specific target board's `mpconfigboard.mk`.
 
@@ -132,8 +132,8 @@ For example:
 ## Set file system size
 
 The size of the file system on the internal flash is configured by the linker
-script parameter `_fs_size`. This can either be overriden by the linker script
-or dynamically through the makefile. By seting a value to the `FS_SIZE`.
+script parameter `_fs_size`. This can either be overridden by the linker script
+or dynamically through the makefile. By setting a value to the `FS_SIZE`.
 The number will be passed directly to the linker scripts in order to calculate
 the start and end of the file system. Note that the parameter value must be in
 linker script syntax as it is passed directly.
@@ -215,7 +215,7 @@ Install the necessary Python packages that will be used for flashing using the b
 The `intelhex` provides the `hexmerge.py` utility which is used by the Makefile
 to trim of the MBR in case SoftDevice flashing is requested.
 
-`nrfutil` as flashing backend also requires a serial port paramter to be defined
+`nrfutil` as flashing backend also requires a serial port parameter to be defined
 in addition to the `deploy` target of make. For example:
 
     make BOARD=nrf52840-mdk-usb-dongle NRFUTIL_PORT=/dev/ttyACM0 deploy

@@ -2,7 +2,7 @@
 # for some of the peripheral devices with many possible assignments.
 # The pin_cap_table is a subset from table 7-1 of the data sheet.
 # It contain the information about pin mux set and pad
-# The eic and adc columns contain the decimal numer for the respecitive
+# The eic and adc columns contain the decimal number for the respecitive
 # quantity, the columns for sercom, tc and tcc have in each cell
 # the device number in the upper nibble, and the pad number in the lower
 # nibble. If a signal is not available, the cell in the csv table is left empty.

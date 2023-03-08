@@ -277,8 +277,8 @@ static void dhcp_server_process(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 
     opt_write_n(&opt, DHCP_OPT_SERVER_ID, 4, &d->ip.addr);
     opt_write_n(&opt, DHCP_OPT_SUBNET_MASK, 4, &d->nm.addr);
-    opt_write_n(&opt, DHCP_OPT_ROUTER, 4, &d->ip.addr); // aka gateway; can have mulitple addresses
-    opt_write_u32(&opt, DHCP_OPT_DNS, DEFAULT_DNS); // can have mulitple addresses
+    opt_write_n(&opt, DHCP_OPT_ROUTER, 4, &d->ip.addr); // aka gateway; can have multiple addresses
+    opt_write_u32(&opt, DHCP_OPT_DNS, DEFAULT_DNS); // can have multiple addresses
     opt_write_u32(&opt, DHCP_OPT_IP_LEASE_TIME, DEFAULT_LEASE_TIME_S);
     *opt++ = DHCP_OPT_END;
     dhcp_socket_sendto(&d->udp, &dhcp_msg, opt - (uint8_t *)&dhcp_msg, 0xffffffff, PORT_DHCP_CLIENT);

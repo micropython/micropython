@@ -894,7 +894,7 @@ STATIC void emit_access_stack(emit_t *emit, int pos, vtype_kind_t *vtype, int re
 }
 
 // does an efficient X=pop(); discard(); push(X)
-// needs a (non-temp) register in case the poped element was stored in the stack
+// needs a (non-temp) register in case the popped element was stored in the stack
 STATIC void emit_fold_stack_top(emit_t *emit, int reg_dest) {
     stack_info_t *si = &emit->stack_info[emit->stack_size - 2];
     si[0] = si[1];

@@ -67,7 +67,7 @@
 ///
 /// You can specify a timeout (in ms):
 ///
-///     i2c.send(b'123', timeout=2000)   # timout after 2 seconds
+///     i2c.send(b'123', timeout=2000)   # timeout after 2 seconds
 ///
 /// A controller must specify the recipient's address:
 ///

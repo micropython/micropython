@@ -436,7 +436,7 @@ STATIC mp_obj_t compute_percent_from_pwm_value(uint32_t period, uint32_t cmp) {
 // Computes the 8-bit value for the DTG field in the BDTR register.
 //
 // 1 tick = 1 count of the timer's clock (source_freq) divided by div.
-// 0-128 ticks in inrements of 1
+// 0-128 ticks in increments of 1
 // 128-256 ticks in increments of 2
 // 256-512 ticks in increments of 8
 // 512-1008 ticks in increments of 16
@@ -554,7 +554,7 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///
 /// Keyword arguments:
 ///
-///   - `freq` - specifies the periodic frequency of the timer. You migh also
+///   - `freq` - specifies the periodic frequency of the timer. You might also
 ///              view this as the frequency with which the timer goes through
 ///              one complete cycle.
 ///
@@ -1009,7 +1009,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 /// If only a channel number is passed, then a previously initialized channel
 /// object is returned (or `None` if there is no previous channel).
 ///
-/// Othwerwise, a TimerChannel object is initialized and returned.
+/// Otherwise, a TimerChannel object is initialized and returned.
 ///
 /// Each channel can be configured to perform pwm, output compare, or
 /// input capture. All channels share the same underlying timer, which means
@@ -1051,7 +1051,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///
 ///   - `polarity` can be one of:
 ///     - `Timer.HIGH` - output is active high
-///     - `Timer.LOW` - output is acive low
+///     - `Timer.LOW` - output is active low
 ///
 /// Optional keyword arguments for Timer.IC modes:
 ///

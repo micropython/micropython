@@ -40,7 +40,7 @@
 #define MP_HAL_PIN_FMT                  "%q"
 extern ringbuf_t stdin_ringbuf;
 
-// Define an alias fo systick_ms, because the shared softtimer.c uses
+// Define an alias for systick_ms, because the shared softtimer.c uses
 // the symbol uwTick for the systick ms counter.
 #define uwTick systick_ms
 

@@ -98,7 +98,7 @@ Methods
        specify them as a tuple of ``pins`` parameter.
 
    In the case of hardware SPI the actual clock frequency may be lower than the
-   requested baudrate. This is dependant on the platform hardware. The actual
+   requested baudrate. This is dependent on the platform hardware. The actual
    rate may be determined by printing the SPI object.
 
 .. method:: SPI.deinit()

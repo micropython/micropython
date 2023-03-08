@@ -163,7 +163,7 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_UART7_RTS        (pyb_pin_BT_RTS)
 #define MICROPY_HW_UART7_CTS        (pyb_pin_BT_CTS)
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL         (pyb_pin_I2C1_SCL)
 #define MICROPY_HW_I2C1_SDA         (pyb_pin_I2C1_SDA)
 

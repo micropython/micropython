@@ -113,7 +113,7 @@ STATIC pybpin_wake_pin_t pybpin_wake_pin[PYBPIN_NUM_WAKE_PINS] =
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 void pin_init0(void) {
-// this initalization also reconfigures the JTAG/SWD pins
+// this initialization also reconfigures the JTAG/SWD pins
 #ifndef DEBUG
     // assign all pins to the GPIO module so that peripherals can be connected to any
     // pins without conflicts after a soft reset
@@ -560,7 +560,7 @@ STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, size_t n_args, const mp_obj
         }
     }
 
-    // get the strenght
+    // get the strength
     uint strength = args[3].u_int;
     pin_validate_drive(strength);
 

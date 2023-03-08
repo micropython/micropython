@@ -29,7 +29,7 @@
 #include "py/misc.h"  // For MP_STRINGIFY.
 #include "py/mpconfig.h"
 
-// Preprocessor directives indentifying the platform.
+// Preprocessor directives identifying the platform.
 // The (u)platform module itself is guarded by MICROPY_PY_UPLATFORM, see the
 // .c file, but these are made available because they're generally usable.
 // TODO: Add more architectures, compilers and libraries.

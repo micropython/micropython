@@ -127,7 +127,7 @@ extern const mp_obj_type_t uos_mbfs_textio_type;
 // Page indexes count down from the end of ROM.
 STATIC uint8_t first_page_index;
 STATIC uint8_t last_page_index;
-// The number of useable chunks in the file system.
+// The number of usable chunks in the file system.
 STATIC uint8_t chunks_in_file_system;
 // Index of chunk to start searches. This is randomised to even out wear.
 STATIC uint8_t start_index;

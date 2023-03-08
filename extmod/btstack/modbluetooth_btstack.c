@@ -883,7 +883,7 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
 
     if (!append) {
         // This will reset the DB.
-        // Becase the DB is statically allocated, there's no problem with just re-initing it.
+        // Because the DB is statically allocated, there's no problem with just re-initing it.
         // Note this would be a memory leak if we enabled HAVE_MALLOC (there's no API to free the existing db).
         att_db_util_init();
 

@@ -553,7 +553,7 @@ STATIC mp_parse_node_t make_node_const_object(parser_t *parser, size_t src_line,
     return (mp_parse_node_t)pn;
 }
 
-// Create a parse node represeting a constant object, possibly optimising the case of
+// Create a parse node representing a constant object, possibly optimising the case of
 // an integer, by putting the (small) integer value directly in the parse node itself.
 STATIC mp_parse_node_t make_node_const_object_optimised(parser_t *parser, size_t src_line, mp_obj_t obj) {
     if (mp_obj_is_small_int(obj)) {
@@ -1002,7 +1002,7 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
 
     #if MICROPY_COMP_CONST_TUPLE
     if (build_tuple(parser, src_line, rule_id, num_args)) {
-        // we built a tuple from this rule so return straightaway
+        // we built a tuple from this rule so return straight away
         return;
     }
     #endif

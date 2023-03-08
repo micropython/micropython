@@ -652,7 +652,7 @@ int mp_bluetooth_init(void) {
     // By default, just register the default gap/gatt service.
     ble_svc_gap_init();
     ble_svc_gatt_init();
-    // The preceeding two calls allocate service definitions on the heap,
+    // The preceding two calls allocate service definitions on the heap,
     // then we must now call gatts_start to register those services
     // and free the heap memory.
     // Otherwise it will be realloc'ed on the next stack startup.
@@ -1537,7 +1537,7 @@ STATIC void destroy_l2cap_channel() {
 
 STATIC void unstall_l2cap_channel(void) {
     // Whenever we send an HCI packet and the sys mempool is now less than 1/4 full,
-    // we can unstall the L2CAP channel if it was marked as "mem_stalled" by
+    // we can un-stall the L2CAP channel if it was marked as "mem_stalled" by
     // mp_bluetooth_l2cap_send. (This happens if the pool is half-empty).
     mp_bluetooth_nimble_l2cap_channel_t *chan = MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan;
     if (!chan || !chan->mem_stalled) {
@@ -1644,7 +1644,7 @@ STATIC int l2cap_channel_event(struct ble_l2cap_event *event, void *arg) {
         case BLE_L2CAP_EVENT_COC_TX_UNSTALLED: {
             DEBUG_printf("l2cap_channel_event: tx_unstalled: conn_handle=%d status=%d\n", event->tx_unstalled.conn_handle, event->tx_unstalled.status);
             assert(event->tx_unstalled.conn_handle == chan->chan->conn_handle);
-            // Don't unstall if we're still waiting for room in the sys pool.
+            // Don't un-stall if we're still waiting for room in the sys pool.
             if (!chan->mem_stalled) {
                 ble_l2cap_get_chan_info(event->receive.chan, &info);
                 // Map status to {0,1} (i.e. "sent everything", or "partial send").
@@ -1802,7 +1802,7 @@ int mp_bluetooth_l2cap_send(uint16_t conn_handle, uint16_t cid, const uint8_t *b
     err = ble_l2cap_send(chan->chan, sdu_tx);
     if (err == BLE_HS_ESTALLED) {
         // Stalled means that this one will still send but any future ones
-        // will fail until we receive an unstalled event.
+        // will fail until we receive an un-stalled event.
         DEBUG_printf("mp_bluetooth_l2cap_send: credit stall\n");
         *stalled = true;
         err = 0;

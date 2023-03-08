@@ -44,7 +44,7 @@ Configuration
 
     Get or set configuration values of the BLE interface.  To get a value the
     parameter name should be quoted as a string, and just one parameter is
-    queried at a time.  To set values use the keyword syntax, and one ore more
+    queried at a time.  To set values use the keyword syntax, and one or more
     parameter can be set at a time.
 
     Currently supported values are:

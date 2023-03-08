@@ -20,7 +20,7 @@
 // USART1 config connected to ST-Link
 #define MICROPY_HW_UART1_TX     (pin_B6)
 #define MICROPY_HW_UART1_RX     (pin_B7)
-// USART2 config connected to PMOD: Flow control is defined and therfore used
+// USART2 config connected to PMOD: Flow control is defined and therefore used
 #define MICROPY_HW_UART2_CTS    (pin_D3)
 #define MICROPY_HW_UART2_RTS    (pin_D4)
 #define MICROPY_HW_UART2_TX     (pin_D5)
