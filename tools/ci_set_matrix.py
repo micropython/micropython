@@ -42,18 +42,6 @@ from shared_bindings_matrix import (
     all_ports_all_boards,
 )
 
-PORT_TO_JOB = {
-    "atmel-samd": "atmel",
-    "broadcom": "aarch",
-    "cxd56": "arm",
-    "espressif": "esp",
-    "litex": "riscv",
-    "mimxrt10xx": "arm",
-    "nrf": "arm",
-    "raspberrypi": "arm",
-    "stm": "arm",
-}
-
 IGNORE = [
     "tools/ci_set_matrix.py",
     "tools/ci_check_duplicate_usb_vid_pid.py",
@@ -109,7 +97,7 @@ def set_output(name: str, value):
         print(f"Would set GitHub actions output {name} to '{value}'")
 
 
-def set_boards_to_build(build_all: bool):
+def set_boards(build_all: bool):
     if last_failed_jobs.get("mpy-cross") or last_failed_jobs.get("tests"):
         build_all = True
 
@@ -224,18 +212,13 @@ def set_boards_to_build(build_all: bool):
             boards_to_build = all_board_ids
             break
 
-    # Split boards by job
-    job_to_boards = {"aarch": [], "arm": [], "atmel": [], "esp": [], "riscv": []}
-
     # Append previously failed boards
-    for job in job_to_boards:
-        if job in last_failed_jobs:
-            for board in last_failed_jobs[job]:
-                boards_to_build.add(board)
+    boards_to_build.update(last_failed_jobs.get("ports") or [])
 
-    build_boards = bool(boards_to_build)
-    print("Building boards:", build_boards)
-    set_output("build-boards", build_boards)
+    print("Building boards:", bool(boards_to_build))
+
+    # Split boards by port
+    port_to_boards_to_build = {}
 
     # Append boards according to job
     for board in sorted(boards_to_build):
@@ -244,17 +227,19 @@ def set_boards_to_build(build_all: bool):
         # if this happens it's not in `board_to_port`.
         if not port:
             continue
-        job_to_boards[PORT_TO_JOB[port]].append(board)
+        port_to_boards_to_build.setdefault(port, []).append(board)
         print(" ", board)
 
-    # Set the step outputs for each job
-    for job in job_to_boards:
-        set_output(f"boards-{job}", json.dumps(job_to_boards[job]))
+    if port_to_boards_to_build:
+        port_to_boards_to_build["ports"] = sorted(list(port_to_boards_to_build.keys()))
+
+    # Set the step outputs
+    set_output("ports", json.dumps(port_to_boards_to_build))
 
 
-def set_docs_to_build(build_doc: bool):
+def set_docs(build_doc: bool):
     if not build_doc:
-        if last_failed_jobs.get("build-doc"):
+        if last_failed_jobs.get("docs"):
             build_doc = True
         else:
             doc_pattern = re.compile(PATTERN_DOCS)
@@ -277,12 +262,12 @@ def set_docs_to_build(build_doc: bool):
 
     # Set the step outputs
     print("Building docs:", build_doc)
-    set_output("build-doc", build_doc)
+    set_output("docs", build_doc)
 
 
-def set_windows_to_build(build_windows):
+def set_windows(build_windows: bool):
     if not build_windows:
-        if last_failed_jobs.get("build-windows"):
+        if last_failed_jobs.get("windows"):
             build_windows = True
         else:
             for file in changed_files:
@@ -296,23 +281,22 @@ def set_windows_to_build(build_windows):
 
     # Set the step outputs
     print("Building windows:", build_windows)
-    set_output("build-windows", build_windows)
-
-
-def check_changed_files():
-    if not changed_files:
-        print("Building all docs/boards")
-        return True
-    else:
-        print("Adding docs/boards to build based on changed files")
-        return False
+    set_output("windows", build_windows)
 
 
 def main():
-    build_all = check_changed_files()
-    set_docs_to_build(build_all)
-    set_windows_to_build(build_all)
-    set_boards_to_build(build_all)
+    # Build all if no changed files
+    build_all = not changed_files
+    print(
+        "Building all docs/boards"
+        if build_all
+        else "Adding docs/boards to build based on changed files"
+    )
+
+    # Set jobs
+    set_docs(build_all)
+    set_windows(build_all)
+    set_boards(build_all)
 
 
 if __name__ == "__main__":

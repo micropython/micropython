@@ -20,7 +20,7 @@
 //|         self,
 //|         key: ReadableBuffer,
 //|         mode: int = 0,
-//|         iv: Optional[ReadableBuffer] = None,
+//|         IV: Optional[ReadableBuffer] = None,
 //|         segment_size: int = 8,
 //|     ) -> None:
 //|         """Create a new AES state with the given key.
@@ -28,7 +28,7 @@
 //|         :param ~circuitpython_typing.ReadableBuffer key: A 16-, 24-, or 32-byte key
 //|         :param int mode: AES mode to use.  One of: `MODE_ECB`, `MODE_CBC`, or
 //|                          `MODE_CTR`
-//|         :param ~circuitpython_typing.ReadableBuffer iv: Initialization vector to use for CBC or CTR mode
+//|         :param ~circuitpython_typing.ReadableBuffer IV: Initialization vector to use for CBC or CTR mode
 //|
 //|         Additional arguments are supported for legacy reasons.
 //|
@@ -98,33 +98,49 @@ STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t aesio_aes_rekey(size_t n_args, const mp_obj_t *pos_args) {
+//|     def rekey(
+//|         self,
+//|         key: ReadableBuffer,
+//|         IV: Optional[ReadableBuffer] = None,
+//|     ) -> None:
+//|         """Update the AES state with the given key.
+//|
+//|         :param ~circuitpython_typing.ReadableBuffer key: A 16-, 24-, or 32-byte key
+//|         :param ~circuitpython_typing.ReadableBuffer IV: Initialization vector to use
+//|                                                         for CBC or CTR mode"""
+//|         ...
+STATIC mp_obj_t aesio_aes_rekey(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     aesio_aes_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    enum { ARG_key, ARG_IV };
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_key, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
+        {MP_QSTR_IV, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(pos_args[1], &bufinfo, MP_BUFFER_READ);
+
+    mp_get_buffer_raise(args[ARG_key].u_obj, &bufinfo, MP_BUFFER_READ);
     const uint8_t *key = bufinfo.buf;
     size_t key_length = bufinfo.len;
-    if (key == NULL) {
-        mp_raise_ValueError(translate("No key was specified"));
-    }
+
     if ((key_length != 16) && (key_length != 24) && (key_length != 32)) {
         mp_raise_ValueError(translate("Key must be 16, 24, or 32 bytes long"));
     }
 
     const uint8_t *iv = NULL;
-    if (n_args > 2) {
-        mp_get_buffer_raise(pos_args[2], &bufinfo, MP_BUFFER_READ);
-        size_t iv_length = bufinfo.len;
-        iv = (const uint8_t *)bufinfo.buf;
-        (void)mp_arg_validate_length(iv_length, AES_BLOCKLEN, MP_QSTR_IV);
+    if (args[ARG_IV].u_obj != NULL &&
+        mp_get_buffer(args[ARG_IV].u_obj, &bufinfo, MP_BUFFER_READ)) {
+        (void)mp_arg_validate_length(bufinfo.len, AES_BLOCKLEN, MP_QSTR_IV);
+
+        iv = bufinfo.buf;
     }
 
     common_hal_aesio_aes_rekey(self, key, key_length, iv);
     return mp_const_none;
 }
-
-MP_DEFINE_CONST_FUN_OBJ_VAR(aesio_aes_rekey_obj, 2, aesio_aes_rekey);
+MP_DEFINE_CONST_FUN_OBJ_KW(aesio_aes_rekey_obj, 1, aesio_aes_rekey);
 
 STATIC void validate_length(aesio_aes_obj_t *self, size_t src_length,
     size_t dest_length) {
