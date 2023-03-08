@@ -5,6 +5,7 @@ require("bundle-networking")
 
 # Utils
 require("time")
+require("senml")
 require("logging")
 
 # Bluetooth
