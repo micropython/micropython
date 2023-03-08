@@ -6,13 +6,12 @@
 # SPDX-License-Identifier: MIT
 
 import csv
+import json
 import os
-import re
 import sys
 
 from elftools.elf.elffile import ELFFile
 
-print()
 
 internal_memory = {
     "esp32": [
@@ -117,8 +116,12 @@ with open(sys.argv[1], "rb") as stream:
 
 # This file is the bin
 used_flash = os.stat(sys.argv[3]).st_size
-
 free_flash = firmware_region - used_flash
+
+with open(f"{sys.argv[4]}/firmware.size.json", "w") as f:
+    json.dump({"used_flash": used_flash, "firmware_region": firmware_region}, f)
+
+print()
 print(
     "{:7} bytes used, {:7} bytes free in flash firmware space out of {} bytes ({}kB).".format(
         used_flash, free_flash, firmware_region, firmware_region / 1024

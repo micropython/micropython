@@ -3,9 +3,6 @@ name: Build boards
 on:
   workflow_call:
     inputs:
-      platform:
-        required: true
-        type: string
       boards:
         required: true
         type: string
@@ -19,7 +16,7 @@ on:
         required: false
 
 jobs:
-  build:
+  board:
     runs-on: ubuntu-22.04
     env:
       CP_VERSION: ${{ inputs.cp-version }}
@@ -38,6 +35,7 @@ jobs:
       with:
         python-version: 3.x
     - name: Set up port
+      id: set-up-port
       uses: ./.github/actions/deps/ports
       with:
         board: ${{ matrix.board }}
@@ -47,7 +45,7 @@ jobs:
     - name: Set up external
       uses: ./.github/actions/deps/external
       with:
-        platform: ${{ inputs.platform }}
+        port: ${{ steps.set-up-port.outputs.port }}
     - name: Set up mpy-cross
       if: steps.set-up-submodules.outputs.frozen == 'True'
       uses: ./.github/actions/mpy_cross

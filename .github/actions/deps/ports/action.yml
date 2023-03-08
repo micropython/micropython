@@ -19,10 +19,18 @@ runs:
         if [ -z $PORT ]; then (exit 1); else echo >> $GITHUB_OUTPUT "port=$PORT"; fi
       shell: bash
 
-    - name: Set up espressif port
+    - name: Set up broadcom
+      if: steps.board-to-port.outputs.port == 'broadcom'
+      uses: ./.github/actions/deps/ports/broadcom
+
+    - name: Set up espressif
       if: steps.board-to-port.outputs.port == 'espressif'
       uses: ./.github/actions/deps/ports/espressif
 
-    - name: Set up nrf port
+    - name: Set up litex
+      if: steps.board-to-port.outputs.port == 'litex'
+      uses: ./.github/actions/deps/ports/litex
+
+    - name: Set up nrf
       if: steps.board-to-port.outputs.port == 'nrf'
       uses: ./.github/actions/deps/ports/nrf

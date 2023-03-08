@@ -32,16 +32,6 @@ run-name: ${{ inputs.board }}-${{ inputs.language }}-${{ inputs.version }}${{ in
 jobs:
   build:
     runs-on: ubuntu-22.04
-    env:
-      PLATFORM_atmel-samd: arm
-      PLATFORM_broadcom: aarch
-      PLATFORM_cxd56: arm
-      PLATFORM_espressif: esp
-      PLATFORM_litex: riscv
-      PLATFORM_mimxrt10xx: arm
-      PLATFORM_nrf: arm
-      PLATFORM_raspberrypi: arm
-      PLATFORM_stm: arm
     steps:
     - name: Set up repository
       run: |
@@ -70,7 +60,7 @@ jobs:
       uses: ./.github/actions/deps/external
       with:
         action: cache
-        platform: ${{ env[format('PLATFORM_{0}', steps.set-up-port.outputs.port)] }}
+        port: ${{ steps.set-up-port.outputs.port }}
     - name: Set up mpy-cross
       if: steps.set-up-submodules.outputs.frozen == 'True'
       uses: ./.github/actions/mpy_cross
