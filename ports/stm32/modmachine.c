@@ -239,7 +239,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     }
 
     #if MICROPY_PY_THREAD
-    pyb_thread_dump();
+    pyb_thread_dump(print);
     #endif
 
     if (n_args == 1) {

@@ -24,9 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
-
 #include "py/obj.h"
 #include "boardctrl.h"
 #include "gccollect.h"
@@ -142,11 +139,11 @@ uint32_t pyb_thread_new(pyb_thread_t *thread, void *stack, size_t stack_len, voi
     return (uint32_t)thread; // success
 }
 
-void pyb_thread_dump(void) {
+void pyb_thread_dump(const mp_print_t *print) {
     if (!pyb_thread_enabled) {
-        printf("THREAD: only main thread\n");
+        mp_printf(print, "THREAD: only main thread\n");
     } else {
-        printf("THREAD:\n");
+        mp_printf(print, "THREAD:\n");
         for (pyb_thread_t *th = pyb_thread_all; th != NULL; th = th->all_next) {
             bool runable = false;
             for (pyb_thread_t *th2 = pyb_thread_cur;; th2 = th2->run_next) {
@@ -158,11 +155,11 @@ void pyb_thread_dump(void) {
                     break;
                 }
             }
-            printf("    id=%p sp=%p sz=%u", th, th->stack, th->stack_len);
+            mp_printf(print, "    id=%p sp=%p sz=%u", th, th->stack, th->stack_len);
             if (runable) {
-                printf(" (runable)");
+                mp_printf(print, " (runable)");
             }
-            printf("\n");
+            mp_printf(print, "\n");
         }
     }
 }
