@@ -91,7 +91,10 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
         args[ARG_firstbit].u_int);
 
     // init the SPI bus
-    spi_init(self->spi, false);
+    int ret = spi_init(self->spi, false);
+    if (ret != 0) {
+        mp_raise_OSError(-ret);
+    }
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -116,7 +119,10 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
         args[ARG_firstbit].u_int);
 
     // re-init the SPI bus
-    spi_init(self->spi, false);
+    int ret = spi_init(self->spi, false);
+    if (ret != 0) {
+        mp_raise_OSError(-ret);
+    }
 }
 
 STATIC void machine_hard_spi_deinit(mp_obj_base_t *self_in) {

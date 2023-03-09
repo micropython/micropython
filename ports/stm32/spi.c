@@ -24,10 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <string.h>
-
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "spi.h"
 #include "extmod/machine_spi.h"
@@ -296,7 +294,7 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
 }
 
 // TODO allow to take a list of pins to use
-void spi_init(const spi_t *self, bool enable_nss_pin) {
+int spi_init(const spi_t *self, bool enable_nss_pin) {
     SPI_HandleTypeDef *spi = self->spi;
     uint32_t irqn = 0;
     const pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
@@ -396,7 +394,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #endif
     } else {
         // SPI does not exist for this board (shouldn't get here, should be checked by caller)
-        return;
+        return -MP_EINVAL;
     }
 
     // init the GPIO lines
@@ -412,10 +410,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     // init the SPI device
     if (HAL_SPI_Init(spi) != HAL_OK) {
         // init error
-        // TODO should raise an exception, but this function is not necessarily going to be
-        // called via Python, so may not be properly wrapped in an NLR handler
-        printf("OSError: HAL_SPI_Init failed\n");
-        return;
+        return -MP_EIO;
     }
 
     // After calling HAL_SPI_Init() it seems that the DMA gets disconnected if
@@ -430,6 +425,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #else
     (void)irqn;
     #endif
+
+    return 0; // success
 }
 
 void spi_deinit(const spi_t *spi_obj) {
@@ -715,8 +712,7 @@ STATIC int spi_proto_ioctl(void *self_in, uint32_t cmd) {
             self->spi->spi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
             spi_set_params(self->spi, 0xffffffff, self->baudrate,
                 self->polarity, self->phase, self->bits, self->firstbit);
-            spi_init(self->spi, false);
-            break;
+            return spi_init(self->spi, false);
 
         case MP_SPI_IOCTL_DEINIT:
             spi_deinit(self->spi);
