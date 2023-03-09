@@ -84,7 +84,7 @@
 #define MP_BLUETOOTH_DEFAULT_ATTR_LEN (20)
 #endif
 
-#define MP_BLUETOOTH_CCCB_LEN (2)
+#define MP_BLUETOOTH_CCCD_LEN (2)
 
 // Advertisement packet lengths
 #define MP_BLUETOOTH_GAP_ADV_MAX_LEN (32)

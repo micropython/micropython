@@ -935,7 +935,11 @@ STATIC int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     entry->data_len = MIN(entry->data_alloc, buffer_size + append_offset);
     memcpy(entry->data + append_offset, buffer, entry->data_len - append_offset);
 
-    mp_bluetooth_gatts_on_write(connection_handle, att_handle);
+    uint16_t handle_uuid = att_uuid_for_handle(att_handle);
+    if (handle_uuid != GATT_CLIENT_CHARACTERISTICS_CONFIGURATION) {
+        // Suppress the Python callback for writes to the CCCD.
+        mp_bluetooth_gatts_on_write(connection_handle, att_handle);
+    }
 
     return 0;
 }
@@ -987,7 +991,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
 
     size_t handle_index = 0;
     size_t descriptor_index = 0;
-    static uint8_t cccb_buf[2] = {0};
+    static uint8_t cccd_buf[2] = {0};
 
     for (size_t i = 0; i < num_characteristics; ++i) {
         uint16_t props = (characteristic_flags[i] & 0x7f) | ATT_PROPERTY_DYNAMIC;
@@ -1003,11 +1007,11 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
             return MP_EINVAL;
         }
         mp_bluetooth_gatts_db_create_entry(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, handles[handle_index], MP_BLUETOOTH_DEFAULT_ATTR_LEN);
-        // If a NOTIFY or INDICATE characteristic is added, then we need to manage a value for the CCCB.
+        // If a NOTIFY or INDICATE characteristic is added, then we need to manage a value for the CCCD.
         if (props & (ATT_PROPERTY_NOTIFY | ATT_PROPERTY_INDICATE)) {
-            // btstack creates the CCCB as the next handle.
-            mp_bluetooth_gatts_db_create_entry(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, handles[handle_index] + 1, MP_BLUETOOTH_CCCB_LEN);
-            int ret = mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, handles[handle_index] + 1, cccb_buf, sizeof(cccb_buf));
+            // btstack automatically creates the CCCD as the next handle if the notify or indicate properties are set.
+            mp_bluetooth_gatts_db_create_entry(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, handles[handle_index] + 1, MP_BLUETOOTH_CCCD_LEN);
+            int ret = mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, handles[handle_index] + 1, cccd_buf, sizeof(cccd_buf));
             if (ret) {
                 return ret;
             }
@@ -1058,9 +1062,48 @@ int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
     if (send_update) {
-        return MP_EOPNOTSUPP;
+        DEBUG_printf("  --> send_update\n");
+        // If a characteristic has notify or indicate set, then btstack automatically creates the CCCD as the next handle.
+        // So if the next handle is a CCCD, then this characteristic must have had notify/indicate set.
+        uint16_t next_handle_uuid = att_uuid_for_handle(value_handle + 1);
+        if (next_handle_uuid != GATT_CLIENT_CHARACTERISTICS_CONFIGURATION) {
+            return MP_EINVAL;
+        }
+        DEBUG_printf("  --> got handle for cccd: %d\n", value_handle + 1);
     }
-    return mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, value_handle, value, value_len);
+    int err = mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, value_handle, value, value_len);
+    if (!send_update || err) {
+        return err;
+    }
+
+    // Read the CCCD value. TODO: These should be per-connection.
+    const uint8_t *cccd;
+    size_t cccd_len;
+    err = mp_bluetooth_gatts_db_read(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, value_handle + 1, &cccd, &cccd_len);
+    if (cccd_len != 2 || err) {
+        return err;
+    }
+
+    // Notify/indicate all active connections.
+    btstack_linked_list_iterator_t it;
+    hci_connections_get_iterator(&it);
+    while (btstack_linked_list_iterator_has_next(&it)) {
+        hci_connection_t *connection = (hci_connection_t *)btstack_linked_list_iterator_next(&it);
+        if (cccd[0] & 1) {
+            err = mp_bluetooth_gatts_notify_indicate(connection->con_handle, value_handle, MP_BLUETOOTH_GATTS_OP_NOTIFY, value, value_len);
+            if (err) {
+                return err;
+            }
+        }
+        if (cccd[0] & 2) {
+            err = mp_bluetooth_gatts_notify_indicate(connection->con_handle, value_handle, MP_BLUETOOTH_GATTS_OP_INDICATE, value, value_len);
+            if (err) {
+                return err;
+            }
+        }
+    }
+
+    return 0;
 }
 
 #if !MICROPY_TRACKED_ALLOC
