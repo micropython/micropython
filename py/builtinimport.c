@@ -574,6 +574,10 @@ mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
 
 #else // MICROPY_ENABLE_EXTERNAL_IMPORT
 
+bool mp_obj_is_package(mp_obj_t module) {
+    return false;
+}
+
 mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
     // Check that it's not a relative import
     if (n_args >= 5 && MP_OBJ_SMALL_INT_VALUE(args[4]) != 0) {
