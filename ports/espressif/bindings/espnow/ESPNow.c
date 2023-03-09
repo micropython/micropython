@@ -118,7 +118,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow___exit___obj, 4, 4, espnow_obj
 //|     def send(
 //|         self,
 //|         message: ReadableBuffer,
-//|         peer: Peer,
+//|         peer: Optional[Peer] = None,
 //|     ) -> None:
 //|         """Send a message to the peer's mac address.
 //|
