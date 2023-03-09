@@ -204,7 +204,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     }
 
     if (ret != 0) {
-        printf("MPY: can't mount flash\n");
+        mp_printf(&mp_plat_print, "MPY: can't mount flash\n");
         return false;
     }
 
@@ -289,7 +289,7 @@ STATIC bool init_sdcard_fs(void) {
     }
 
     if (first_part) {
-        printf("MPY: can't mount SD card\n");
+        mp_printf(&mp_plat_print, "MPY: can't mount SD card\n");
         return false;
     } else {
         return true;
