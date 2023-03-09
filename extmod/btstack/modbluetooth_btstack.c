@@ -172,12 +172,14 @@ STATIC void btstack_packet_handler_att_server(uint8_t packet_type, uint16_t chan
         uint8_t status = att_event_handle_value_indication_complete_get_status(packet);
         mp_bluetooth_gatts_on_indicate_complete(conn_handle, value_handle, status);
     } else if (event_type == ATT_EVENT_MTU_EXCHANGE_COMPLETE) {
+        DEBUG_printf("  --> att mtu exchange complete\n");
         // This is triggered in peripheral mode, when exchange initiated by us or remote.
         uint16_t conn_handle = att_event_mtu_exchange_complete_get_handle(packet);
         uint16_t mtu = att_event_mtu_exchange_complete_get_MTU(packet);
         mp_bluetooth_gatts_on_mtu_exchanged(conn_handle, mtu);
     } else if (event_type == HCI_EVENT_LE_META || event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         // Ignore, duplicated by att_server.c.
+        DEBUG_printf("  --> hci att server event type: le_meta/disconnection (0x%02x)\n", event_type);
     } else {
         DEBUG_printf("  --> hci att server event type: unknown (0x%02x)\n", event_type);
     }
@@ -330,7 +332,8 @@ STATIC void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel
     #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
     } else if (event_type == GATT_EVENT_MTU) {
-        // This is triggered in client mode.
+        // This is triggered in central mode.
+        DEBUG_printf("  --> gatt event mtu\n");
         uint16_t conn_handle = gatt_event_mtu_get_handle(packet);
         uint16_t mtu = gatt_event_mtu_get_MTU(packet);
         mp_bluetooth_gatts_on_mtu_exchanged(conn_handle, mtu);
@@ -1108,6 +1111,14 @@ int mp_bluetooth_gatts_notify_indicate(uint16_t conn_handle, uint16_t value_hand
         mp_bluetooth_gatts_db_read(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, value_handle, &value, &value_len);
     }
 
+    // Even if a lower MTU is negotiated, btstack allows sending a larger
+    // notification/indication. Truncate at the MTU-3 (to match NimBLE).
+    uint16_t current_mtu = att_server_get_mtu(conn_handle);
+    if (current_mtu) {
+        current_mtu -= 3;
+        value_len = MIN(value_len, current_mtu);
+    }
+
     int err = ERROR_CODE_UNKNOWN_HCI_COMMAND;
 
     // Attempt to send immediately. If it succeeds, btstack will copy the buffer.
@@ -1443,9 +1454,9 @@ int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const 
 }
 
 int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle) {
-    DEBUG_printf("mp_bluetooth_exchange_mtu: conn_handle=%d mtu=%d\n", conn_handle, l2cap_max_le_mtu());
+    DEBUG_printf("mp_bluetooth_gattc_exchange_mtu: conn_handle=%d mtu=%d\n", conn_handle, l2cap_max_le_mtu());
 
-    gatt_client_send_mtu_negotiation(&btstack_packet_handler_att_server, conn_handle);
+    gatt_client_send_mtu_negotiation(&btstack_packet_handler_generic, conn_handle);
 
     return 0;
 }
