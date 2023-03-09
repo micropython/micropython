@@ -821,23 +821,6 @@ static uint8_t USBD_CDC_MSC_HID_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 }
 
 static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req) {
-
-    /*
-    printf("SU: %x %x %x %x\n", req->bmRequest, req->bRequest, req->wValue, req->wIndex);
-
-    This is what we get when MSC is IFACE=0 and CDC is IFACE=1,2:
-        SU: 21 22 0 1 -- USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_INTERFACE; CDC_SET_CONTROL_LINE_STATE
-        SU: 21 20 0 1 -- USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_INTERFACE; CDC_SET_LINE_CODING
-        SU: a1 fe 0 0 -- 0x80 | USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_INTERFACE; BOT_GET_MAX_LUN; 0; 0
-        SU: 21 22 3 1 -- USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_INTERFACE; CDC_SET_CONTROL_LINE_STATE
-
-    On a Mac OS X, with MSC then CDC:
-        SU: a1 fe 0 0
-        SU: 21 22 2 1
-        SU: 21 22 3 1
-        SU: 21 20 0 1
-    */
-
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
 
     // Work out the recipient of the setup request
