@@ -27,14 +27,6 @@
 #include "common-hal/espnow/__init__.h"
 
 #include "py/runtime.h"
-#include "shared-bindings/util.h"
-
-// Raise ValueError if the ESPNow object is deinited
-void common_hal_espnow_check_for_deinit(espnow_obj_t *self) {
-    if (common_hal_espnow_deinited(self)) {
-        raise_deinited_error();
-    }
-}
 
 // Return C pointer to byte memory string/bytes/bytearray in obj.
 // Raise ValueError if the length does not match expected len.

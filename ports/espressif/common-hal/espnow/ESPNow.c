@@ -79,9 +79,9 @@ typedef struct {
 static void send_cb(const uint8_t *mac, esp_now_send_status_t status) {
     espnow_obj_t *self = MP_STATE_PORT(espnow_singleton);
     if (status == ESP_NOW_SEND_SUCCESS) {
-        self->send->success++;
+        self->send_success++;
     } else {
-        self->send->failure++;
+        self->send_failure++;
     }
 }
 
@@ -93,7 +93,7 @@ static void recv_cb(const uint8_t *mac, const uint8_t *msg, int msg_len) {
     ringbuf_t *buf = self->recv_buffer;
 
     if (sizeof(espnow_packet_t) + msg_len > ringbuf_num_empty(buf)) {
-        self->read->failure++;
+        self->read_failure++;
         return;
     }
 
@@ -120,7 +120,7 @@ static void recv_cb(const uint8_t *mac, const uint8_t *msg, int msg_len) {
     ringbuf_put_n(buf, mac, ESP_NOW_ETH_ALEN);
     ringbuf_put_n(buf, msg, msg_len);
 
-    self->read->success++;
+    self->read_success++;
 }
 
 bool common_hal_espnow_deinited(espnow_obj_t *self) {
@@ -129,14 +129,9 @@ bool common_hal_espnow_deinited(espnow_obj_t *self) {
 
 // Construct the ESPNow object
 void common_hal_espnow_construct(espnow_obj_t *self, mp_int_t buffer_size, mp_int_t phy_rate) {
-    common_hal_espnow_set_buffer_size(self, buffer_size);
     common_hal_espnow_set_phy_rate(self, phy_rate);
-
-    self->send = espnow_com_new(MP_QSTR_send);
-    self->read = espnow_com_new(MP_QSTR_read);
-
+    self->recv_buffer_size = mp_arg_validate_int_min(buffer_size, MIN_PACKET_LEN, MP_QSTR_buffer_size);
     self->peers = espnow_peers_new();
-
     common_hal_espnow_init(self);
 }
 
@@ -184,10 +179,6 @@ void espnow_reset(void) {
     common_hal_espnow_deinit(MP_STATE_PORT(espnow_singleton));
     MP_STATE_PORT(espnow_singleton) = NULL;
 }
-
-void common_hal_espnow_set_buffer_size(espnow_obj_t *self, mp_int_t value) {
-    self->recv_buffer_size = mp_arg_validate_int_min(value, MIN_PACKET_LEN, MP_QSTR_buffer_size);
-};
 
 void common_hal_espnow_set_phy_rate(espnow_obj_t *self, mp_int_t value) {
     self->phy_rate = mp_arg_validate_int_range(value, 0, WIFI_PHY_RATE_MAX - 1, MP_QSTR_phy_rate);

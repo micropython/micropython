@@ -26,7 +26,5 @@
 
 #pragma once
 
-#include "common-hal/espnow/ESPNow.h"
-
-extern void common_hal_espnow_check_for_deinit(espnow_obj_t *self);
+#include "py/obj.h"
 extern const uint8_t *common_hal_espnow_get_bytes_len(mp_obj_t obj, size_t len);

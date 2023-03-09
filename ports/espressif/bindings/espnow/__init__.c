@@ -27,7 +27,6 @@
 #include "bindings/espnow/__init__.h"
 #include "bindings/espnow/ESPNow.h"
 #include "bindings/espnow/ESPNowPacket.h"
-#include "bindings/espnow/Communicate.h"
 #include "bindings/espnow/Peer.h"
 #include "bindings/espnow/Peers.h"
 
@@ -83,7 +82,6 @@ STATIC const mp_rom_map_elem_t espnow_module_globals_table[] = {
     // module classes
     { MP_ROM_QSTR(MP_QSTR_ESPNow),      MP_ROM_PTR(&espnow_type) },
     { MP_ROM_QSTR(MP_QSTR_ESPNowPacket),MP_ROM_PTR(&espnow_packet_type_obj) },
-    { MP_ROM_QSTR(MP_QSTR_Communicate), MP_ROM_PTR(&espnow_com_type) },
     { MP_ROM_QSTR(MP_QSTR_Peer),        MP_ROM_PTR(&espnow_peer_type) },
     { MP_ROM_QSTR(MP_QSTR_Peers),       MP_ROM_PTR(&espnow_peers_type) },
 };
