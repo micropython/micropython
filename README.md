@@ -120,34 +120,22 @@ import lvgl as lv
 lv.init()
 ```
 
-Then display driver and input driver needs to be registered.
+Then event loop, display driver and input driver needs to be registered.
 Refer to [Porting the library](https://docs.lvgl.io/8.0/porting/index.html) for more information.
 Here is an example of registering SDL drivers on Micropython unix port:
 
 ```python
-import SDL
-SDL.init()
+# Create an event loop and Register SDL display/mouse/keyboard drivers.
+from lv_utils import event_loop
 
-# Register SDL display driver.
+WIDTH = 480
+HEIGHT = 320
 
-draw_buf = lv.disp_draw_buf_t()
-buf1_1 = bytearray(480*10)
-draw_buf.init(buf1_1, None, len(buf1_1)//4)
-disp_drv = lv.disp_drv_t()
-disp_drv.init()
-disp_drv.draw_buf = draw_buf
-disp_drv.flush_cb = SDL.monitor_flush
-disp_drv.hor_res = 480
-disp_drv.ver_res = 320
-disp_drv.register()
-
-# Regsiter SDL mouse driver
-
-indev_drv = lv.indev_drv_t()
-indev_drv.init()
-indev_drv.type = lv.INDEV_TYPE.POINTER
-indev_drv.read_cb = SDL.mouse_read
-indev_drv.register()
+event_loop = event_loop()
+disp_drv = lv.sdl_window_create(WIDTH, HEIGHT)
+mouse = lv.sdl_mouse_create()
+keyboard = lv.sdl_keyboard_create()
+keyboard.set_group(self.group)
 ```
 
 Here is an alternative example, for registering ILI9341 drivers on Micropython ESP32 port:
