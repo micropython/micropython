@@ -148,7 +148,7 @@ msgstr "Index %q je mimo rozsah"
 msgid "%q init failed"
 msgstr "Inicializace %q selhala"
 
-#: shared-bindings/dualbank/__init__.c
+#: ports/espressif/bindings/espnow/Peer.c shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
 msgstr ""
 
@@ -246,7 +246,7 @@ msgstr "%q, %q, a %q musí mít všechny shodnou délku"
 msgid "%q=%q"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s chyba 0x%x"
@@ -514,6 +514,7 @@ msgstr "Již propagujeme."
 msgid "Already have all-matches listener"
 msgstr ""
 
+#: ports/espressif/bindings/espnow/ESPNow.c
 #: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -687,7 +688,7 @@ msgstr "Bloky CBC musí být násobky 16 bajtů"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr "Disk CIRCUITPY nelze nalézt nebo vytvořit."
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "CRC or checksum was invalid"
 msgstr ""
 
@@ -1082,7 +1083,7 @@ msgstr "Funkce vyžaduje zámek"
 msgid "GNSS init"
 msgstr "Inicializace GNSS"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Generic Failure"
 msgstr "Základní chyba"
 
@@ -1267,8 +1268,7 @@ msgstr "Chybné BSSID"
 msgid "Invalid MAC address"
 msgstr "Chybná MAC adresa"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Neplatný argument"
 
@@ -1294,7 +1294,7 @@ msgstr "Neplatná velikost bloku"
 msgid "Invalid multicast MAC address"
 msgstr "Chybná multicastová MAC adresa"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid size"
 msgstr "Chybná velikost"
 
@@ -1303,7 +1303,7 @@ msgstr "Chybná velikost"
 msgid "Invalid socket for TLS"
 msgstr "Chybný soket pro TLS"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid state"
 msgstr "Chybný stav"
 
@@ -1335,7 +1335,7 @@ msgstr ""
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
 msgstr "MAC adresa byla chybná"
 
@@ -1692,11 +1692,11 @@ msgstr ""
 msgid "Operation not permitted"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation or feature not supported"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation timed out"
 msgstr ""
 
@@ -1704,7 +1704,7 @@ msgstr ""
 msgid "Out of MDNS service slots"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Out of memory"
 msgstr ""
 
@@ -1882,7 +1882,7 @@ msgstr ""
 msgid "Read-only filesystem"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Received response was invalid"
 msgstr ""
 
@@ -1902,7 +1902,7 @@ msgstr ""
 msgid "Requested AES mode is unsupported"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Requested resource not found"
 msgstr ""
 
@@ -2353,7 +2353,7 @@ msgstr ""
 msgid "Value length > max_length"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Version was invalid"
 msgstr ""
 

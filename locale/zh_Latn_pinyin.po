@@ -163,7 +163,7 @@ msgstr "%q suǒyǐn chāochū fànwéi"
 msgid "%q init failed"
 msgstr "%q chūshǐhuà shībài"
 
-#: shared-bindings/dualbank/__init__.c
+#: ports/espressif/bindings/espnow/Peer.c shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
 msgstr "%q shì %q"
 
@@ -262,7 +262,7 @@ msgstr "%q, %q, hé %q bì xū cháng dù xiāng tóng"
 msgid "%q=%q"
 msgstr "%q=%q"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s cuò wù 0x%x"
@@ -530,6 +530,7 @@ msgstr "Mùqián zhèngzài guǎngbō."
 msgid "Already have all-matches listener"
 msgstr "yǐjīng yǒu all-matches jiāntīng qì"
 
+#: ports/espressif/bindings/espnow/ESPNow.c
 #: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -703,7 +704,7 @@ msgstr "CBC kuài bìxū shì 16 zìjié de bèishù"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr "zhǎo bú dào huò chuàng jiàn CIRCUITPY qū dòng qì."
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC huò jiàoyàn hé wúxiào"
 
@@ -1103,7 +1104,7 @@ msgstr "Hánshù xūyào suǒdìng"
 msgid "GNSS init"
 msgstr "GNSS chūshǐhuà"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Generic Failure"
 msgstr "tōng yòng gù zhàng"
 
@@ -1293,8 +1294,7 @@ msgstr "Wúxiào de BSSID"
 msgid "Invalid MAC address"
 msgstr "wú xiào de MAC dì zhǐ"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Wúxiào de cānshù"
 
@@ -1320,7 +1320,7 @@ msgstr "Géshì kuài dàxiǎo wúxiào"
 msgid "Invalid multicast MAC address"
 msgstr "wú xiào de duō bō MAC dì zhǐ"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid size"
 msgstr "dà xiǎo wú xiào"
 
@@ -1329,7 +1329,7 @@ msgstr "dà xiǎo wú xiào"
 msgid "Invalid socket for TLS"
 msgstr "TLS de chā zuò wú xiào"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid state"
 msgstr "wú xiào zhuàng tài"
 
@@ -1361,7 +1361,7 @@ msgstr "tú céng yǐ zài zǔ zhōng"
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr "tú céng bìxū shì zǔ huò píng pū wǎng gé zi lèi"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
 msgstr "MAC dì zhǐ wú xiào"
 
@@ -1723,11 +1723,11 @@ msgstr "Yīcì zhǐ néng yǒuyī zhǒng yánsè shì tòumíng de"
 msgid "Operation not permitted"
 msgstr "bù yǔnxǔ cāozuò"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation or feature not supported"
 msgstr "bù zhī chí cāo zuò huò gōng néng"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation timed out"
 msgstr "cāo zuò yǐ fēn shí"
 
@@ -1735,7 +1735,7 @@ msgstr "cāo zuò yǐ fēn shí"
 msgid "Out of MDNS service slots"
 msgstr "chāo chū MDNS fú wù chā cáo"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Out of memory"
 msgstr "nèi cún bù zú"
 
@@ -1916,7 +1916,7 @@ msgstr "Zhǐ dú"
 msgid "Read-only filesystem"
 msgstr "Zhǐ dú wénjiàn xìtǒng"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Received response was invalid"
 msgstr "shōu dào de xiǎng yìng wú xiào"
 
@@ -1936,7 +1936,7 @@ msgstr "RemoteTransmissionRequests xiànzhì wèi 8 gè zì jié"
 msgid "Requested AES mode is unsupported"
 msgstr "Qǐngqiú de AES móshì bù shòu zhīchí"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Requested resource not found"
 msgstr "wèi zhǎo dào qǐng qiú de zī yuán"
 
@@ -2391,7 +2391,7 @@ msgstr "Zhí chángdù != Suǒ xū de gùdìng chángdù"
 msgid "Value length > max_length"
 msgstr "Zhí chángdù > zuìdà chángdù"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Version was invalid"
 msgstr "bǎn běn wú xiào"
 
