@@ -9,8 +9,6 @@ on:
   pull_request:
   release:
     types: [published]
-  check_suite:
-    types: [rerequested]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -64,24 +62,32 @@ jobs:
         PULL: ${{ github.event.number }}
         GITHUB_TOKEN: ${{ github.token }}
         EXCLUDE_COMMIT: ${{ github.event.pull_request.head.sha }}
-    - name: Set head sha
+    - name: Set head sha (pull)
       if: github.event_name == 'pull_request'
       run: echo "HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
-    - name: Set base sha
+    - name: Set base sha (pull)
       if: github.event_name == 'pull_request'
       run: |
         git fetch --no-tags --no-recurse-submodules --depth=$((DEPTH + 1)) origin $HEAD_SHA
         echo "BASE_SHA=$(git rev-list $HEAD_SHA --skip=$DEPTH --max-count=1)" >> $GITHUB_ENV
       env:
         DEPTH: ${{ steps.get-last-commit-with-checks.outputs.commit_depth || github.event.pull_request.commits }}
+    - name: Set head sha (push)
+      if: github.event_name == 'push'
+      run: echo "HEAD_SHA=${{ github.event.after }}" >> $GITHUB_ENV
+    - name: Set base sha (push)
+      if: github.event_name == 'push'
+      run: git cat-file -e $SHA && echo "BASE_SHA=$SHA" >> $GITHUB_ENV || true
+      env:
+        SHA: ${{ github.event.before }}
     - name: Get changes
       id: get-changes
-      if: github.event_name == 'pull_request'
+      if: env.BASE_SHA && env.HEAD_SHA
       run: echo $(git diff $BASE_SHA...$HEAD_SHA --name-only) | echo "changed_files=[\"$(sed "s/ /\", \"/g")\"]" >> $GITHUB_OUTPUT
     - name: Set matrix
       id: set-matrix
-      working-directory: tools
       run: python3 -u ci_set_matrix.py
+      working-directory: tools
       env:
         CHANGED_FILES: ${{ steps.get-changes.outputs.changed_files }}
         LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
