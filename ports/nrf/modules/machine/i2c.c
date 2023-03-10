@@ -48,6 +48,7 @@
 #define nrfx_twi_config_t nrfx_twim_config_t
 
 #define nrfx_twi_init     nrfx_twim_init
+#define nrfx_twi_uninit   nrfx_twim_uninit
 #define nrfx_twi_enable   nrfx_twim_enable
 #define nrfx_twi_xfer     nrfx_twim_xfer
 #define nrfx_twi_disable  nrfx_twim_disable
@@ -59,6 +60,8 @@
 
 #define NRFX_TWI_INSTANCE NRFX_TWIM_INSTANCE
 
+#define NRF_TWI_FREQ_100K NRF_TWIM_FREQ_100K
+#define NRF_TWI_FREQ_250K NRF_TWIM_FREQ_250K
 #define NRF_TWI_FREQ_400K NRF_TWIM_FREQ_400K
 
 #endif
@@ -96,11 +99,12 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
 mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args);
 
-    enum { ARG_id, ARG_scl, ARG_sda };
+    enum { ARG_id, ARG_scl, ARG_sda, ARG_freq };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_scl,      MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_sda,      MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_freq,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
     // parse args
@@ -115,9 +119,20 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     config.scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj)->pin;
     config.sda = mp_hal_get_pin_obj(args[ARG_sda].u_obj)->pin;
 
-    config.frequency = NRF_TWI_FREQ_400K;
+    int freq = NRF_TWI_FREQ_400K;
+    if (args[ARG_freq].u_int != -1) {
+        if (args[ARG_freq].u_int <= 150000) {
+            freq = NRF_TWI_FREQ_100K;
+        } else if (args[ARG_freq].u_int < 320000) {
+            freq = NRF_TWI_FREQ_250K;
+        }
+    }
+    config.frequency = freq;
 
     config.hold_bus_uninit = false;
+
+    // First reset the TWI
+    nrfx_twi_uninit(&self->p_twi);
 
     // Set context to this object.
     nrfx_twi_init(&self->p_twi, &config, NULL, (void *)self);
