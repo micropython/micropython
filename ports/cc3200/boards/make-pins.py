@@ -124,7 +124,7 @@ class Pins:
                     continue
                 if not row[pin_col].isdigit():
                     raise ValueError(
-                        "Invalid pin number {:s} in row {:s}".format(row[pin_col]), row
+                        "Invalid pin number {:s} in row {:s}".format(row[pin_col], row)
                     )
                 # Pin numbers must start from 0 when used with the TI API
                 pin_num = int(row[pin_col]) - 1
