@@ -318,7 +318,6 @@ SRC_C += \
 	machine_pin.c \
 	machine_rtc.c \
 	modmachine.c \
-	modutime.c \
 	extint.c \
 	usrsw.c \
 	flash.c \
