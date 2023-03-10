@@ -171,8 +171,7 @@ def get_bad_check_runs(query_check_runs):
     more_pages = True
 
     run_types = ["failed", "incomplete"]
-
-    regex_matrix = re.compile(r"^\S+ \/ (build|run) \(\S+\)$")
+    have_dependent_jobs = ["scheduler", "mpy-cross", "tests"]
 
     while more_pages:
         check_runs = query_check_runs.fetch()["data"]["node"]
@@ -184,14 +183,15 @@ def get_bad_check_runs(query_check_runs):
 
             for check_run in check_runs[run_type]["nodes"]:
                 name = check_run["name"]
-                if name.startswith("ports") or regex_matrix.search(name):
-                    matrix = name.split(" ", 1)[0]
-                    matrix_job = name.rsplit(" (", 1)[1][:-1]
-                    bad_runs.setdefault(matrix, []).append(matrix_job)
-                elif name != "scheduler":
-                    bad_runs[name] = True
-                else:
+
+                if any([name.startswith(job) for job in have_dependent_jobs]):
                     return {}
+
+                if name.startswith("ports"):
+                    matrix_job = name.rsplit(" (", 1)[1][:-1]
+                    bad_runs.setdefault("ports", []).append(matrix_job)
+                else:
+                    bad_runs[name] = True
 
             if query_check_runs.paginate(
                 check_runs[run_type]["pageInfo"], "after" + run_type_camel
