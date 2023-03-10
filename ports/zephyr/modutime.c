@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 #include "py/smallint.h"
 #include "py/mphal.h"
-#include "extmod/utime_mphal.h"
+#include "extmod/modutime.h"
 
 STATIC mp_obj_t mod_time_time(void) {
     /* The absence of FP support is deliberate. The Zephyr port uses

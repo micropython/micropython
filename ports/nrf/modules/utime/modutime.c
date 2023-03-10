@@ -30,7 +30,7 @@
 #include "py/nlr.h"
 #include "py/smallint.h"
 #include "py/obj.h"
-#include "extmod/utime_mphal.h"
+#include "extmod/modutime.h"
 
 /// \module time - time related functions
 ///

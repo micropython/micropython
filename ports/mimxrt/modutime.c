@@ -27,7 +27,7 @@
 
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
-#include "extmod/utime_mphal.h"
+#include "extmod/modutime.h"
 #include "fsl_snvs_lp.h"
 
 // localtime([secs])

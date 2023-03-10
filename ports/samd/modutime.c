@@ -25,7 +25,7 @@
  */
 
 #include "py/runtime.h"
-#include "extmod/utime_mphal.h"
+#include "extmod/modutime.h"
 #include "shared/timeutils/timeutils.h"
 #include "modmachine.h"
 

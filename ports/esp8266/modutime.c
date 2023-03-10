@@ -35,7 +35,7 @@
 #include "shared/timeutils/timeutils.h"
 #include "modmachine.h"
 #include "user_interface.h"
-#include "extmod/utime_mphal.h"
+#include "extmod/modutime.h"
 
 /// \module time - time related functions
 ///

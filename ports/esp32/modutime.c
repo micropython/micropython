@@ -32,7 +32,7 @@
 
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
-#include "extmod/utime_mphal.h"
+#include "extmod/modutime.h"
 
 STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     timeutils_struct_time_t tm;

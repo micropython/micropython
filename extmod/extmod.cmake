@@ -33,6 +33,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/modusocket.c
     ${MICROPY_EXTMOD_DIR}/modussl_axtls.c
     ${MICROPY_EXTMOD_DIR}/modussl_mbedtls.c
+    ${MICROPY_EXTMOD_DIR}/modutime.c
     ${MICROPY_EXTMOD_DIR}/modutimeq.c
     ${MICROPY_EXTMOD_DIR}/moduwebsocket.c
     ${MICROPY_EXTMOD_DIR}/moduzlib.c
@@ -42,7 +43,6 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/network_ninaw10.c
     ${MICROPY_EXTMOD_DIR}/network_wiznet5k.c
     ${MICROPY_EXTMOD_DIR}/uos_dupterm.c
-    ${MICROPY_EXTMOD_DIR}/utime_mphal.c
     ${MICROPY_EXTMOD_DIR}/vfs.c
     ${MICROPY_EXTMOD_DIR}/vfs_blockdev.c
     ${MICROPY_EXTMOD_DIR}/vfs_fat.c

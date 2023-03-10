@@ -38,7 +38,7 @@
 #include "py/runtime.h"
 #include "py/smallint.h"
 #include "py/mphal.h"
-#include "extmod/utime_mphal.h"
+#include "extmod/modutime.h"
 
 #ifdef _WIN32
 static inline int msec_sleep_tv(struct timeval *tv) {

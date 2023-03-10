@@ -31,7 +31,7 @@
 #include "py/smallint.h"
 #include "py/obj.h"
 #include "shared/timeutils/timeutils.h"
-#include "extmod/utime_mphal.h"
+#include "extmod/modutime.h"
 #include "systick.h"
 #include "portmodules.h"
 #include "rtc.h"

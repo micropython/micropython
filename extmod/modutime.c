@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2013-2023 Damien P. George
  * Copyright (c) 2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,17 +25,56 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
-#if MICROPY_PY_UTIME_MP_HAL
-
-#include <string.h>
-
-#include "py/obj.h"
 #include "py/mphal.h"
-#include "py/smallint.h"
 #include "py/runtime.h"
-#include "extmod/utime_mphal.h"
+#include "py/smallint.h"
+#include "extmod/modutime.h"
+
+#if MICROPY_PY_UTIME
+
+#ifdef MICROPY_PY_UTIME_INCLUDEFILE
+#include MICROPY_PY_UTIME_INCLUDEFILE
+#endif
+
+#if MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME
+
 #include "shared/timeutils/timeutils.h"
+
+// localtime([secs])
+// Convert a time expressed in seconds since the Epoch into an 8-tuple which
+// contains: (year, month, mday, hour, minute, second, weekday, yearday)
+// If secs is not provided or None, then the current time is used.
+// - year    is the full year, eg 2000
+// - month   is 1-12
+// - mday    is 1-31
+// - hour    is 0-23
+// - minute  is 0-59
+// - second  is 0-59
+// - weekday is 0-6 for Mon-Sun
+// - yearday is 1-366
+STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0 || args[0] == mp_const_none) {
+        // Get current date and time.
+        return mp_utime_localtime_get();
+    } else {
+        // Convert given seconds to tuple.
+        mp_int_t seconds = mp_obj_get_int(args[0]);
+        timeutils_struct_time_t tm;
+        timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
+        mp_obj_t tuple[8] = {
+            tuple[0] = mp_obj_new_int(tm.tm_year),
+            tuple[1] = mp_obj_new_int(tm.tm_mon),
+            tuple[2] = mp_obj_new_int(tm.tm_mday),
+            tuple[3] = mp_obj_new_int(tm.tm_hour),
+            tuple[4] = mp_obj_new_int(tm.tm_min),
+            tuple[5] = mp_obj_new_int(tm.tm_sec),
+            tuple[6] = mp_obj_new_int(tm.tm_wday),
+            tuple[7] = mp_obj_new_int(tm.tm_yday),
+        };
+        return mp_obj_new_tuple(8, tuple);
+    }
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_utime_localtime_obj, 0, 1, time_localtime);
 
 // mktime()
 // This is the inverse function of localtime. Its argument is a full 8-tuple
@@ -57,11 +96,35 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_utime_mktime_obj, time_mktime);
 
+#endif // MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME
+
+#if MICROPY_PY_UTIME_TIME_TIME_NS
+
+// time()
+// Return the number of seconds since the Epoch.
+STATIC mp_obj_t time_time(void) {
+    return mp_utime_time_get();
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_utime_time_obj, time_time);
+
+// time_ns()
+// Returns the number of nanoseconds since the Epoch, as an integer.
+STATIC mp_obj_t time_time_ns(void) {
+    return mp_obj_new_int_from_ull(mp_hal_time_ns());
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mp_utime_time_ns_obj, time_time_ns);
+
+#endif // MICROPY_PY_UTIME_TIME_TIME_NS
+
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
+    #ifdef MICROPY_PY_UTIME_CUSTOM_SLEEP
+    mp_utime_sleep(seconds_o);
+    #else
     #if MICROPY_PY_BUILTINS_FLOAT
     mp_hal_delay_ms((mp_uint_t)(1000 * mp_obj_get_float(seconds_o)));
     #else
     mp_hal_delay_ms(1000 * mp_obj_get_int(seconds_o));
+    #endif
     #endif
     return mp_const_none;
 }
@@ -133,10 +196,41 @@ STATIC mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_add_obj, time_ticks_add);
 
-// Returns the number of nanoseconds since the Epoch, as an integer.
-STATIC mp_obj_t time_time_ns(void) {
-    return mp_obj_new_int_from_ull(mp_hal_time_ns());
-}
-MP_DEFINE_CONST_FUN_OBJ_0(mp_utime_time_ns_obj, time_time_ns);
+STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
 
-#endif // MICROPY_PY_UTIME_MP_HAL
+    #if MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME
+    { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&mp_utime_localtime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&mp_utime_localtime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&mp_utime_mktime_obj) },
+    #endif
+
+    #if MICROPY_PY_UTIME_TIME_TIME_NS
+    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_utime_time_obj) },
+    { MP_ROM_QSTR(MP_QSTR_time_ns), MP_ROM_PTR(&mp_utime_time_ns_obj) },
+    #endif
+
+    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mp_utime_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mp_utime_sleep_us_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_ticks_ms), MP_ROM_PTR(&mp_utime_ticks_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mp_utime_ticks_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_utime_ticks_cpu_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
+
+    #ifdef MICROPY_PY_UTIME_EXTRA_GLOBALS
+    MICROPY_PY_UTIME_EXTRA_GLOBALS
+    #endif
+};
+STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
+
+const mp_obj_module_t mp_module_utime = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&mp_module_time_globals,
+};
+
+MP_REGISTER_MODULE(MP_QSTR_utime, mp_module_utime);
+
+#endif // MICROPY_PY_UTIME

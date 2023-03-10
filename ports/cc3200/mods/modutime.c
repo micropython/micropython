@@ -34,7 +34,7 @@
 #include "py/smallint.h"
 #include "py/mphal.h"
 #include "shared/timeutils/timeutils.h"
-#include "extmod/utime_mphal.h"
+#include "extmod/modutime.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
