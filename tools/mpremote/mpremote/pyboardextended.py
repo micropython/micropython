@@ -1,4 +1,4 @@
-import io, os, re, serial, struct, time
+import io, os, re, struct, time
 from errno import EPERM
 from .console import VT_ENABLED
 
