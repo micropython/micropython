@@ -117,7 +117,10 @@
 #define MICROPY_PY_UHEAPQ                           (0)
 #define MICROPY_PY_UHASHLIB                         (0)
 #define MICROPY_PY_USELECT                          (1)
-#define MICROPY_PY_UTIME_MP_HAL                     (1)
+#define MICROPY_PY_UTIME                            (1)
+#define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME    (1)
+#define MICROPY_PY_UTIME_TIME_TIME_NS               (1)
+#define MICROPY_PY_UTIME_INCLUDEFILE                "ports/cc3200/mods/modutime.c"
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF      (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE        (0)
