@@ -309,7 +309,8 @@ function ci_samd_setup {
 function ci_samd_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/samd submodules
-    make ${MAKEOPTS} -C ports/samd
+    make ${MAKEOPTS} -C ports/samd BOARD=ADAFRUIT_ITSYBITSY_M0_EXPRESS
+    make ${MAKEOPTS} -C ports/samd BOARD=ADAFRUIT_ITSYBITSY_M4_EXPRESS
 }
 
 ########################################################################################
