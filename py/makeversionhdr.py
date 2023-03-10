@@ -78,9 +78,7 @@ def get_version_info_from_mpconfig(repo_path):
                 ver_minor = int(line.strip().split()[2])
             elif line.startswith("#define MICROPY_VERSION_MICRO "):
                 ver_micro = int(line.strip().split()[2])
-                git_tag = "v%d.%d" % (ver_major, ver_minor)
-                if ver_micro != 0:
-                    git_tag += ".%d" % (ver_micro,)
+                git_tag = "v%d.%d.%d" % (ver_major, ver_minor, ver_micro)
                 return git_tag, "<no hash>"
     return None
 
