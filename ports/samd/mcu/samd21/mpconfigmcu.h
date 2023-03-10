@@ -31,11 +31,6 @@ unsigned long trng_random_u32(int delay);
 #define MICROPY_HW_UART_TXBUF           (1)
 #endif
 
-#ifndef MICROPY_PY_MACHINE_RTC
-#if MICROPY_HW_XOSC32K
-#define MICROPY_PY_MACHINE_RTC          (1)
-#endif
-#endif
 #define MICROPY_PY_UOS_URANDOM          (1)
 
 #ifndef MICROPY_PY_MACHINE_PIN_BOARD_CPU
