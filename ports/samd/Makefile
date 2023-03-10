@@ -103,7 +103,6 @@ SRC_C += \
 	machine_uart.c \
 	machine_wdt.c \
 	main.c \
-	modutime.c \
 	modmachine.c \
 	modsamd.c \
 	mphalport.c \
