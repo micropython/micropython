@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2023 Damien P. George
  * Copyright (c) 2015 Josef Gajdusek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,43 +25,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <string.h>
-
-#include "py/gc.h"
-#include "py/runtime.h"
-#include "py/mphal.h"
-#include "py/smallint.h"
+#include "py/obj.h"
 #include "shared/timeutils/timeutils.h"
 #include "modmachine.h"
-#include "user_interface.h"
-#include "extmod/modutime.h"
 
-/// \module time - time related functions
-///
-/// The `time` module provides functions for getting the current time and date,
-/// and for sleeping.
-
-/// \function localtime([secs])
-/// Convert a time expressed in seconds since Jan 1, 2000 into an 8-tuple which
-/// contains: (year, month, mday, hour, minute, second, weekday, yearday)
-/// If secs is not provided or None, then the current time from the RTC is used.
-/// year includes the century (for example 2014)
-/// month   is 1-12
-/// mday    is 1-31
-/// hour    is 0-23
-/// minute  is 0-59
-/// second  is 0-59
-/// weekday is 0-6 for Mon-Sun.
-/// yearday is 1-366
-STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
+// Return the localtime as an 8-tuple.
+STATIC mp_obj_t mp_utime_localtime_get(void) {
+    mp_int_t seconds = pyb_rtc_get_us_since_epoch() / 1000 / 1000;
     timeutils_struct_time_t tm;
-    mp_int_t seconds;
-    if (n_args == 0 || args[0] == mp_const_none) {
-        seconds = pyb_rtc_get_us_since_epoch() / 1000 / 1000;
-    } else {
-        seconds = mp_obj_get_int(args[0]);
-    }
     timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
     mp_obj_t tuple[8] = {
         tuple[0] = mp_obj_new_int(tm.tm_year),
@@ -75,39 +46,9 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     };
     return mp_obj_new_tuple(8, tuple);
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
 
-/// \function time()
-/// Returns the number of seconds, as an integer, since the Epoch.
-STATIC mp_obj_t time_time(void) {
+// Returns the number of seconds, as an integer, since the Epoch.
+STATIC mp_obj_t mp_utime_time_get(void) {
     // get date and time
     return mp_obj_new_int(pyb_rtc_get_us_since_epoch() / 1000 / 1000);
 }
-MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
-
-STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
-
-    { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&time_localtime_obj) },
-    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&time_localtime_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&mp_utime_mktime_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mp_utime_sleep_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mp_utime_sleep_us_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_ms), MP_ROM_PTR(&mp_utime_ticks_ms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mp_utime_ticks_us_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_utime_ticks_cpu_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
-    { MP_ROM_QSTR(MP_QSTR_time_ns), MP_ROM_PTR(&mp_utime_time_ns_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);
-
-const mp_obj_module_t utime_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&time_module_globals,
-};
-
-MP_REGISTER_MODULE(MP_QSTR_utime, utime_module);
