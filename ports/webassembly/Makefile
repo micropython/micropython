@@ -28,7 +28,6 @@ SRC_SHARED = $(addprefix shared/,\
 SRC_C = \
 	main.c \
 	mphalport.c \
-	modutime.c \
 
 SRC_QSTR += $(SRC_C) $(SRC_SHARED)
 
