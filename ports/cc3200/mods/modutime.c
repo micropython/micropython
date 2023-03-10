@@ -100,22 +100,6 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
 
-STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
-    size_t len;
-    mp_obj_t *elem;
-
-    mp_obj_get_array(tuple, &len, &elem);
-
-    // localtime generates a tuple of len 8. CPython uses 9, so we accept both.
-    if (len < 8 || len > 9) {
-        mp_raise_TypeError(MP_ERROR_TEXT("invalid argument(s) num/type"));
-    }
-
-    return mp_obj_new_int_from_uint(timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
-                                                     mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5])));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
-
 STATIC mp_obj_t time_time(void) {
     return mp_obj_new_int(pyb_rtc_get_seconds());
 }
@@ -135,7 +119,7 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_gmtime),          MP_ROM_PTR(&time_localtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_localtime),       MP_ROM_PTR(&time_localtime_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mktime),          MP_ROM_PTR(&time_mktime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mktime),          MP_ROM_PTR(&mp_utime_mktime_obj) },
     { MP_ROM_QSTR(MP_QSTR_time),            MP_ROM_PTR(&time_time_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep),           MP_ROM_PTR(&time_sleep_obj) },
 
