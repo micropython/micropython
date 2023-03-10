@@ -114,8 +114,6 @@ CLK PA21 PCC_D? (D32)  BROWN
         gpio_set_pin_pull_mode(functions[i]->pin,
             (i == 1 || i == 5) ? GPIO_PULL_OFF : GPIO_PULL_UP);
         gpio_set_pin_function(functions[i]->pin, GPIO_PIN_FUNCTION_SDIO);
-
-        common_hal_never_reset_pin(functions[i]->obj);
     }
 
     self->num_data = num_data;
@@ -145,6 +143,12 @@ CLK PA21 PCC_D? (D32)  BROWN
     }
 
     if (result != SD_MMC_OK) {
+        for (size_t i = 0; i < MP_ARRAY_SIZE(functions); i++) {
+            if (!functions[i]->obj) {
+                break;
+            }
+            reset_pin_number(functions[i]->obj->number);
+        }
         mp_raise_OSError_msg_varg(translate("%q failure: %d"), MP_QSTR_sd_mmc_check, (int)result);
     }
     // sd_mmc_get_capacity() is in KiB, but our "capacity" is in 512-byte blocks

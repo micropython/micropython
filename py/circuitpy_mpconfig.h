@@ -35,7 +35,8 @@
 #include <stdatomic.h>
 
 // This is CircuitPython.
-#define CIRCUITPY 1
+// Always 1: defined in circuitpy_mpconfig.mk
+// #define CIRCUITPY (1)
 
 // REPR_C encodes qstrs, 31-bit ints, and 30-bit floats in a single 32-bit word.
 #ifndef MICROPY_OBJ_REPR
@@ -72,6 +73,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_ENABLE_DOC_STRING        (0)
 #define MICROPY_ENABLE_FINALISER         (1)
 #define MICROPY_ENABLE_GC                (1)
+#define MICROPY_TRACKED_ALLOC            (CIRCUITPY_SSL_MBEDTLS)
 #define MICROPY_ENABLE_SOURCE_LINE       (1)
 #define MICROPY_EPOCH_IS_1970            (1)
 #define MICROPY_ERROR_REPORTING          (MICROPY_ERROR_REPORTING_NORMAL)
@@ -91,7 +93,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (CIRCUITPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
 #define MICROPY_PERSISTENT_CODE_LOAD     (1)
 
-#define MICROPY_PY_ARRAY                 (1)
+#define MICROPY_PY_ARRAY                 (CIRCUITPY_ARRAY)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN    (1)
 #define MICROPY_PY_ATTRTUPLE             (1)
 
@@ -113,27 +115,37 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_BUILTINS_STR_UNICODE  (1)
 
 #define MICROPY_PY_CMATH                 (0)
-#define MICROPY_PY_COLLECTIONS           (1)
+#define MICROPY_PY_COLLECTIONS           (CIRCUITPY_COLLECTIONS)
 #define MICROPY_PY_DESCRIPTORS           (1)
 #define MICROPY_PY_IO_FILEIO             (1)
 #define MICROPY_PY_GC                    (1)
 // Supplanted by shared-bindings/math
+#define MICROPY_PY_IO                    (CIRCUITPY_IO)
 #define MICROPY_PY_MATH                  (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO  (0)
 // Supplanted by shared-bindings/struct
 #define MICROPY_PY_STRUCT                (0)
-#define MICROPY_PY_SYS                   (1)
+#define MICROPY_PY_SYS                   (CIRCUITPY_SYS)
 #define MICROPY_PY_SYS_MAXSIZE           (1)
 #define MICROPY_PY_SYS_STDFILES          (1)
+// In extmod
+#define MICROPY_PY_UBINASCII             (CIRCUITPY_BINASCII)
+#define MICROPY_PY_UERRNO                (CIRCUITPY_ERRNO)
+// Uses about 80 bytes.
+#define MICROPY_PY_UERRNO_ERRORCODE      (CIRCUITPY_ERRNO)
 // Supplanted by shared-bindings/random
 #define MICROPY_PY_URANDOM               (0)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS   (0)
+// In extmod
+#define MICROPY_PY_UJSON                 (CIRCUITPY_JSON)
+#define MICROPY_PY_URE                   (CIRCUITPY_RE)
 #define MICROPY_PY___FILE__              (1)
 
 #define MICROPY_QSTR_BYTES_IN_HASH       (1)
 #define MICROPY_REPL_AUTO_INDENT         (1)
 #define MICROPY_REPL_EVENT_DRIVEN        (0)
 #define MICROPY_ENABLE_PYSTACK           (1)
+#define CIRCUITPY_SETTABLE_PYSTACK       (1)
 #define MICROPY_STACK_CHECK              (1)
 #define MICROPY_STREAMS_NON_BLOCK        (1)
 #ifndef MICROPY_USE_INTERNAL_PRINTF
@@ -212,6 +224,9 @@ typedef long mp_off_t;
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
 #ifndef MICROPY_CPYTHON_COMPAT
 #define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
+#endif
+#ifndef MICROPY_CPYTHON_EXCEPTION_CHAIN
+#define MICROPY_CPYTHON_EXCEPTION_CHAIN       (CIRCUITPY_FULL_BUILD)
 #endif
 #define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_BUILTINS_POW3)
 #define MICROPY_PY_FSTRINGS                   (1)
@@ -347,26 +362,6 @@ typedef long mp_off_t;
 // This is not a top-level module; it's microcontroller.nvm.
 #if CIRCUITPY_NVM
 extern const struct _mp_obj_module_t nvm_module;
-#endif
-
-// Following modules are implemented in either extmod or py directory.
-
-#define MICROPY_PY_UBINASCII CIRCUITPY_BINASCII
-
-#define MICROPY_PY_UERRNO CIRCUITPY_ERRNO
-// Uses about 80 bytes.
-#define MICROPY_PY_UERRNO_ERRORCODE CIRCUITPY_ERRNO
-
-#define MICROPY_PY_URE CIRCUITPY_RE
-
-#if CIRCUITPY_JSON
-#define MICROPY_PY_UJSON (1)
-#define MICROPY_PY_IO (1)
-#else
-#ifndef MICROPY_PY_IO
-// We don't need MICROPY_PY_IO unless someone else wants it.
-#define MICROPY_PY_IO (0)
-#endif
 #endif
 
 #ifndef ULAB_SUPPORTS_COMPLEX
@@ -564,6 +559,10 @@ void supervisor_run_background_tasks_if_tick(void);
 #error "CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR must be at least 1"
 #endif
 
+#ifndef CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS
+#define CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS (0)
+#endif
+
 #ifndef USB_MIDI_EP_NUM_OUT
 #define USB_MIDI_EP_NUM_OUT (0)
 #endif
@@ -583,6 +582,22 @@ void supervisor_run_background_tasks_if_tick(void);
 #ifndef MICROPY_WRAP_MP_EXECUTE_BYTECODE
 #define MICROPY_WRAP_MP_EXECUTE_BYTECODE PLACE_IN_ITCM
 #endif
+
+#ifndef CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY
+#define CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY (0)
+#endif
+
+#ifndef CIRCUITPY_DIGITALIO_HAVE_INVALID_PULL
+#define CIRCUITPY_DIGITALIO_HAVE_INVALID_PULL (0)
+#endif
+
+#ifndef CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE
+#define CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE (0)
+#endif
+
+#define FF_FS_CASE_INSENSITIVE_COMPARISON_ASCII_ONLY (1)
+
+#define FF_FS_MAKE_VOLID (1)
 
 #define MICROPY_PY_OPTIMIZE_PROPERTY_FLASH_SIZE (CIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE)
 

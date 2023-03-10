@@ -45,6 +45,7 @@
 #endif
 #include "shared-bindings/displayio/Shape.h"
 #include "shared-bindings/displayio/TileGrid.h"
+#include "shared-module/displayio/__init__.h"
 
 //| """Native helpers for driving displays
 //|
@@ -55,9 +56,9 @@
 //| refer to `this Learn guide
 //| <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_.
 //| """
-//|
 
 //| import paralleldisplay
+//|
 
 //| def release_displays() -> None:
 //|     """Releases any actively used displays so their busses and pins can be used again. This will also
@@ -95,6 +96,7 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     #endif
 
     { MP_ROM_QSTR(MP_QSTR_release_displays), MP_ROM_PTR(&displayio_release_displays_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CIRCUITPYTHON_TERMINAL), MP_ROM_PTR(&circuitpython_splash) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_module_globals, displayio_module_globals_table);
 

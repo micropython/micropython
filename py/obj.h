@@ -419,7 +419,7 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 // Declare a module as a builtin, processed by makemoduledefs.py
 // param module_name: MP_QSTR_<module name>
 // param obj_module: mp_obj_module_t instance
-// prarm enabled_define: used as `#if (enabled_define) around entry`
+// param enabled_define: used as `#if (enabled_define) around entry`
 
 #define MP_REGISTER_MODULE(module_name, obj_module, enabled_define)
 
@@ -742,7 +742,6 @@ extern const mp_obj_type_t mp_type_ReloadException;
 extern const mp_obj_type_t mp_type_KeyError;
 extern const mp_obj_type_t mp_type_LookupError;
 extern const mp_obj_type_t mp_type_MemoryError;
-extern const mp_obj_type_t mp_type_MpyError;
 extern const mp_obj_type_t mp_type_NameError;
 extern const mp_obj_type_t mp_type_NotImplementedError;
 extern const mp_obj_type_t mp_type_OSError;
@@ -792,7 +791,9 @@ extern const struct _mp_obj_dict_t mp_const_empty_dict_obj;
 extern const struct _mp_obj_traceback_t mp_const_empty_traceback_obj;
 extern const struct _mp_obj_singleton_t mp_const_ellipsis_obj;
 extern const struct _mp_obj_singleton_t mp_const_notimplemented_obj;
-extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
+#if MICROPY_CONST_GENERATOREXIT_OBJ
+extern const struct _mp_obj_exception_t mp_static_GeneratorExit_obj;
+#endif
 
 // Fixed empty map. Useful when calling keyword-receiving functions
 // without any keywords from C, etc.

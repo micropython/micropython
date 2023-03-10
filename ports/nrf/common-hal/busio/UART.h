@@ -44,7 +44,6 @@ typedef struct {
     ringbuf_t ringbuf;
     uint8_t rx_char;    // EasyDMA buf
     bool rx_paused;     // set by irq if no space in rbuf
-    bool allocated_ringbuf;
 
     uint8_t tx_pin_number;
     uint8_t rx_pin_number;

@@ -104,6 +104,20 @@ mp_obj_t shared_module_qrio_qrdecoder_decode(qrdecoder_qrdecoder_obj_t *self, co
     uint8_t *src = bufinfo->buf;
 
     switch (policy) {
+        case QRIO_RGB565: {
+            uint16_t *src16 = bufinfo->buf;
+            for (int i = 0; i < width * height; i++) {
+                framebuffer[i] = (src16[i] >> 3) & 0xfc;
+            }
+            break;
+        }
+        case QRIO_RGB565_SWAPPED: {
+            uint16_t *src16 = bufinfo->buf;
+            for (int i = 0; i < width * height; i++) {
+                framebuffer[i] = (__builtin_bswap16(src16[i]) >> 3) & 0xfc;
+            }
+            break;
+        }
         case QRIO_EVERY_BYTE:
             memcpy(framebuffer, src, width * height);
             break;
@@ -116,6 +130,7 @@ mp_obj_t shared_module_qrio_qrdecoder_decode(qrdecoder_qrdecoder_obj_t *self, co
             for (int i = 0; i < width * height; i++) {
                 framebuffer[i] = src[2 * i];
             }
+            break;
     }
     quirc_end(self->quirc);
 

@@ -24,13 +24,13 @@ ifeq ($(CHIP_FAMILY),samd21)
 CIRCUITPY_AESIO ?= 0
 CIRCUITPY_ATEXIT ?= 0
 CIRCUITPY_AUDIOMIXER ?= 0
+CIRCUITPY_AUDIOMP3 ?= 0
 CIRCUITPY_BINASCII ?= 0
 CIRCUITPY_BITBANGIO ?= 0
 CIRCUITPY_BITMAPTOOLS ?= 0
-CIRCUITPY_BUSDEVICE ?= 0
-CIRCUITPY_AUDIOMP3 ?= 0
 CIRCUITPY_BLEIO_HCI = 0
 CIRCUITPY_BUILTINS_POW3 ?= 0
+CIRCUITPY_BUSDEVICE ?= 0
 CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE ?= 1
 CIRCUITPY_COUNTIO ?= 0
 # Not enough RAM for framebuffers
@@ -38,10 +38,12 @@ CIRCUITPY_FRAMEBUFFERIO ?= 0
 CIRCUITPY_FREQUENCYIO ?= 0
 CIRCUITPY_GETPASS ?= 0
 CIRCUITPY_GIFIO ?= 0
-CIRCUITPY_I2CPERIPHERAL ?= 0
+CIRCUITPY_I2CTARGET ?= 0
 CIRCUITPY_JSON ?= 0
 CIRCUITPY_KEYPAD ?= 0
 CIRCUITPY_MSGPACK ?= 0
+CIRCUITPY_OS_GETENV ?= 0
+CIRCUITPY_PIXELMAP ?= 0
 CIRCUITPY_RE ?= 0
 CIRCUITPY_SDCARDIO ?= 0
 CIRCUITPY_SYNTHIO ?= 0
@@ -51,12 +53,12 @@ CIRCUITPY_ULAB = 0
 CIRCUITPY_VECTORIO = 0
 CIRCUITPY_ZLIB = 0
 
-# TODO: In CircuitPython 8.0, turn this back on, after `busio.OneWire` is removed.
-# We'd like a smoother transition, but we can't afford the space to have both
-# `busio.OneWire` and `onewireio.OneWire` present on these tiny builds.
+# Turn off a few more things that don't fit in 192kB
 
 ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
 CIRCUITPY_ONEWIREIO ?= 0
+CIRCUITPY_SAFEMODE_PY ?= 0
+CIRCUITPY_USB_IDENTIFICATION ?= 0
 endif
 
 MICROPY_PY_ASYNC_AWAIT = 0
@@ -76,10 +78,8 @@ SUPEROPT_VM = 0
 
 CIRCUITPY_LTO_PARTITION = one
 
-ifeq ($(CIRCUITPY_FULL_BUILD),0)
-# On the smallest boards, this saves about 180 bytes. On other boards, it may -increase- space used.
+# On smaller builds this saves about 180 bytes. On other boards, it may -increase- space used, so use with care.
 CFLAGS_BOARD = -fweb -frename-registers
-endif
 
 endif # samd21
 ######################################################################
@@ -133,3 +133,5 @@ CIRCUITPY_RGBMATRIX ?= $(CIRCUITPY_FRAMEBUFFERIO)
 
 endif # same51
 ######################################################################
+
+CIRCUITPY_BUILD_EXTENSIONS ?= uf2

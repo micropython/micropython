@@ -29,7 +29,7 @@
 #include "shared-bindings/usb_midi/PortIn.h"
 #include "shared-bindings/util.h"
 
-#include "py/ioctl.h"
+#include "py/stream.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
@@ -44,7 +44,6 @@
 //|         PortIn objects are constructed for every corresponding entry in the USB
 //|         descriptor and added to the ``usb_midi.ports`` tuple."""
 //|         ...
-//|
 
 // These are standard stream methods. Code is in py/stream.c.
 //
@@ -57,7 +56,6 @@
 //|         :return: Data read
 //|         :rtype: bytes or None"""
 //|         ...
-//|
 //|     def readinto(self, buf: WriteableBuffer, nbytes: Optional[int] = None) -> Optional[bytes]:
 //|         """Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
 //|         that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
@@ -83,11 +81,11 @@ STATIC mp_uint_t usb_midi_portin_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
 STATIC mp_uint_t usb_midi_portin_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     usb_midi_portin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
-    if (request == MP_IOCTL_POLL) {
+    if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        if ((flags & MP_IOCTL_POLL_RD) && common_hal_usb_midi_portin_bytes_available(self) > 0) {
-            ret |= MP_IOCTL_POLL_RD;
+        if ((flags & MP_STREAM_POLL_RD) && common_hal_usb_midi_portin_bytes_available(self) > 0) {
+            ret |= MP_STREAM_POLL_RD;
         }
     } else {
         *errcode = MP_EINVAL;

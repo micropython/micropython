@@ -582,7 +582,7 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
         || MPY_FEATURE_DECODE_FLAGS(header[2]) != MPY_FEATURE_FLAGS
         || header[3] > mp_small_int_bits()
         || read_uint(reader, NULL) > QSTR_WINDOW_SIZE) {
-        mp_raise_MpyError(MP_ERROR_TEXT("Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info."));
     }
     if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
         byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);

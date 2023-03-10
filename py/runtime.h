@@ -91,7 +91,9 @@ static inline void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_mi
 }
 void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
 void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
+#if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
 NORETURN void mp_arg_error_terse_mismatch(void);
+#endif
 NORETURN void mp_arg_error_unimpl_kw(void);
 
 NORETURN void mp_arg_error_invalid(qstr arg_name);
@@ -108,6 +110,8 @@ mp_uint_t mp_arg_validate_length_range(mp_uint_t length, mp_uint_t min, mp_uint_
 mp_uint_t mp_arg_validate_length(mp_uint_t length, mp_uint_t required_length, qstr arg_name);
 mp_int_t mp_arg_validate_index_range(mp_int_t index, mp_int_t min, mp_int_t max, qstr arg_name);
 mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name);
+mp_obj_t mp_arg_validate_type_in(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name);
+mp_obj_t mp_arg_validate_type_or_none(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name);
 mp_int_t mp_arg_validate_type_int(mp_obj_t obj, qstr arg_name);
 mp_obj_t mp_arg_validate_type_string(mp_obj_t obj, qstr arg_name);
 
@@ -225,8 +229,8 @@ NORETURN void mp_raise_BrokenPipeError(void);
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg);
 NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...);
-NORETURN void mp_raise_MpyError(const compressed_string_t *msg);
 NORETURN void mp_raise_recursion_depth(void);
+NORETURN void mp_raise_ZeroDivisionError(void);
 #endif
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG

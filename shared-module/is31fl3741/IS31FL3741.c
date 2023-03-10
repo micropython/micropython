@@ -148,16 +148,17 @@ void common_hal_is31fl3741_set_led(is31fl3741_IS31FL3741_obj_t *self, uint16_t l
     common_hal_busio_i2c_write(self->i2c, self->device_address, cmd, 2);
 }
 
-void common_hal_is31fl3741_draw_pixel(is31fl3741_IS31FL3741_obj_t *self, int16_t x, int16_t y, uint32_t color, uint16_t *mapping) {
+void common_hal_is31fl3741_draw_pixel(is31fl3741_IS31FL3741_obj_t *self, int16_t x, int16_t y, uint32_t color, uint16_t *mapping, uint8_t display_height) {
     uint8_t r = color >> 16 & 0xFF;
     uint8_t g = color >> 8 & 0xFF;
     uint8_t b = color & 0xFF;
 
-    int16_t x1 = (x * 5 + y) * 3;
+    int16_t x1 = (x * display_height + y) * 3;
     uint16_t ridx = mapping[x1 + 2];
     if (ridx != 65535) {
         uint16_t gidx = mapping[x1 + 1];
         uint16_t bidx = mapping[x1 + 0];
+
         common_hal_is31fl3741_set_led(self, ridx, r, 0);
         common_hal_is31fl3741_set_led(self, gidx, g, 0);
         common_hal_is31fl3741_set_led(self, bidx, b, 0);

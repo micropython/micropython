@@ -57,14 +57,13 @@
 //|
 //|         :param ~microcontroller.Pin pin: the pin to read from"""
 //|         ...
-//|
 STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // 1st argument is the pin
-    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0], MP_QSTR_pin);
 
     touchio_touchin_obj_t *self = m_new_obj(touchio_touchin_obj_t);
     self->base.type = &touchio_touchin_type;
@@ -76,7 +75,6 @@ STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
 //|     def deinit(self) -> None:
 //|         """Deinitialises the TouchIn and releases any hardware resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t touchio_touchin_deinit(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_touchio_touchin_deinit(self);
@@ -93,14 +91,12 @@ STATIC void check_for_deinit(touchio_touchin_obj_t *self) {
 //|     def __enter__(self) -> TouchIn:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t touchio_touchin_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_touchio_touchin_deinit(args[0]);
@@ -112,7 +108,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(touchio_touchin___exit___obj, 4, 4, t
 //|     """Whether the touch pad is being touched or not. (read-only)
 //|
 //|     True when `raw_value` > `threshold`."""
-//|
 STATIC mp_obj_t touchio_touchin_obj_get_value(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -126,7 +121,6 @@ MP_PROPERTY_GETTER(touchio_touchin_value_obj,
 
 //|     raw_value: int
 //|     """The raw touch measurement as an `int`. (read-only)"""
-//|
 STATIC mp_obj_t touchio_touchin_obj_get_raw_value(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -165,10 +159,7 @@ STATIC mp_obj_t touchio_touchin_obj_set_threshold(mp_obj_t self_in, mp_obj_t thr
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     uint32_t new_threshold = mp_obj_get_int(threshold_obj);
-    if (new_threshold < 0 || new_threshold > UINT16_MAX) {
-        // I would use MP_STRINGIFY(UINT16_MAX), but that prints "0xffff" instead of 65536.
-        mp_raise_ValueError(translate("threshold must be in the range 0-65536"));
-    }
+    mp_arg_validate_int_range(new_threshold, 0, UINT16_MAX, MP_QSTR_threshold);
     common_hal_touchio_touchin_set_threshold(self, new_threshold);
     return mp_const_none;
 }

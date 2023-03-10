@@ -27,9 +27,17 @@
 #ifndef CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H
 #define CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H
 
+#include "py/objtuple.h"
 #include "shared-module/adafruit_pixelbuf/PixelBuf.h"
 
 extern const mp_obj_type_t pixelbuf_pixelbuf_type;
+
+typedef union {
+    struct {
+        uint8_t r, g, b, w;
+    };
+    uint32_t rgbw;
+} color_u;
 
 void common_hal_adafruit_pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size_t n,
     pixelbuf_byteorder_details_t *byteorder, mp_float_t brightness, bool auto_write, uint8_t *header,
@@ -48,5 +56,7 @@ void common_hal_adafruit_pixelbuf_pixelbuf_show(mp_obj_t self);
 mp_obj_t common_hal_adafruit_pixelbuf_pixelbuf_get_pixel(mp_obj_t self, size_t index);
 void common_hal_adafruit_pixelbuf_pixelbuf_set_pixel(mp_obj_t self, size_t index, mp_obj_t item);
 void common_hal_adafruit_pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t *values, mp_obj_tuple_t *flatten_to);
+void common_hal_adafruit_pixelbuf_pixelbuf_parse_color(mp_obj_t self, mp_obj_t color, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *w);
+void common_hal_adafruit_pixelbuf_pixelbuf_set_pixel_color(mp_obj_t self, size_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w);
 
 #endif  // CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H

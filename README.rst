@@ -84,17 +84,19 @@ common set of requirements.
 
 If you'd like to use the term "CircuitPython" and Blinka for your product here is what we ask:
 
-* Your product is supported by the primary
+- Your product is supported by the primary
   `"adafruit/circuitpython" <https://github.com/adafruit/circuitpython>`_ repo. This way we can
   update any custom code as we update the CircuitPython internals.
-* Your product is listed on `circuitpython.org <https://circuitpython.org>`__ (source
+- Your product is listed on `circuitpython.org <https://circuitpython.org>`__ (source
   `here <https://github.com/adafruit/circuitpython-org/>`_). This is to ensure that a user of your
   product can always download the latest version of CircuitPython from the standard place.
-* Your product supports at least one standard "`Workflow <https://docs.circuitpython.org/en/latest/docs/workflows.html>`__" for serial and file access:
-  * With a user accessible USB plug which appears as a CIRCUITPY drive when plugged in.
-  * With file and serial access over Bluetooth Low Energy using the BLE Workflow.
-  * With file access over WiFi using the WiFi Workflow with serial access over USB and/or WebSocket.
-* Boards that do not support the USB Workflow should be clearly marked.
+- Your product supports at least one standard "`Workflow <https://docs.circuitpython.org/en/latest/docs/workflows.html>`__" for serial and file access:
+
+  - With a user accessible USB plug which appears as a CIRCUITPY drive when plugged in.
+  - With file and serial access over Bluetooth Low Energy using the BLE Workflow.
+  - With file access over WiFi using the WiFi Workflow with serial access over USB and/or WebSocket.
+
+- Boards that do not support the USB Workflow should be clearly marked.
 
 If you choose not to meet these requirements, then we ask you call your version of CircuitPython
 something else (for example, SuperDuperPython) and not use the Blinka logo. You can say it is
@@ -136,6 +138,16 @@ Behavior
 -  Adds a safe mode that does not run user code after a hard crash or brown out. This makes it
    possible to fix code that causes nasty crashes by making it available through mass storage after
    the crash. A reset (the button) is needed after it's fixed to get back into normal mode.
+-  Safe mode may be handled programmatically by providing a ``safemode.py``.
+   ``safemode.py`` is run if the board has reset due to entering safe mode, unless the safe mode
+   initiated by the user by pressing button(s).
+   USB is not available so nothing can be printed.
+   ``safemode.py`` can determine why the safe mode occurred
+   using ``supervisor.runtime.safe_mode_reason``, and take appropriate action. For instance,
+   if a hard crash occurred, ``safemode.py`` may do a ``microcontroller.reset()``
+   to automatically restart despite the crash.
+   If the battery is low, but is being charged, ``safemode.py`` may put the board in deep sleep
+   for a while. Or it may simply reset, and have ``code.py`` check the voltage and do the sleep.
 -  RGB status LED indicating CircuitPython state.
    - One green flash - code completed without error.
    - Two red flashes - code ended due to an exception.
@@ -143,9 +155,9 @@ Behavior
 -  Re-runs ``code.py`` or other main file after file system writes by a workflow. (Disable with
    ``supervisor.disable_autoreload()``)
 -  Autoreload is disabled while the REPL is active.
--  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,
-   ``main.txt``
--  Boot is one of these: ``boot.py``, ``boot.txt``
+-  ``code.py`` may also be named``code.txt``, ``main.py``, or ``main.txt``.
+-  ``boot.py`` may also be named ``boot.txt``.
+-  ``safemode.py`` may also be named ``safemode.txt``.
 
 API
 ~~~
@@ -218,7 +230,7 @@ Supported         Support status
 ================  ============================================================
 atmel-samd        ``SAMD21`` stable | ``SAMD51`` stable
 cxd56             stable
-espressif         ``ESP32-C3`` beta | ``ESP32-S2`` stable | ``ESP32-S3`` beta
+espressif         ``ESP32`` beta | ``ESP32-C3`` beta | ``ESP32-S2`` stable | ``ESP32-S3`` beta
 litex             alpha
 mimxrt10xx        alpha
 nrf               stable

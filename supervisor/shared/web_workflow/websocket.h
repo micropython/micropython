@@ -35,4 +35,5 @@ void websocket_handoff(socketpool_socket_obj_t *socket);
 bool websocket_connected(void);
 bool websocket_available(void);
 char websocket_read_char(void);
+void websocket_background(void);
 void websocket_write(const char *text, size_t len);

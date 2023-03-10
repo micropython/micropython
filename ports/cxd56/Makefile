@@ -22,39 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Select the board to build for.
-ifeq ($(BOARD),)
-  $(error You must provide a BOARD parameter)
-else
-  ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD specified)
-  endif
-endif
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
-include ../../py/mkenv.mk
-
-# Board-specific
-include boards/$(BOARD)/mpconfigboard.mk
-
-# Port-specific
-include mpconfigport.mk
-
-# CircuitPython-specific
-include $(TOP)/py/circuitpy_mpconfig.mk
-
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-
-# include py core make definitions
-include $(TOP)/py/py.mk
-
-include $(TOP)/supervisor/supervisor.mk
-
-# Include make rules and variables common across CircuitPython builds.
-include $(TOP)/py/circuitpy_defns.mk
+include ../../py/circuitpy_mkenv.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -166,13 +134,13 @@ SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
-                             $(addprefix shared-module/, $(SRC_SHARED_MODULE))
+                             $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
+                             $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 SRC_S = supervisor/cpu.s
 
 SRC_C += \
 	background.c \
-	fatfs_port.c \
 	mphalport.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \

@@ -32,6 +32,8 @@
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO0)
 #define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO2)
 
+#define MICROPY_HW_LED_STATUS (&pin_GPIO13)
+
 #define CIRCUITPY_BOARD_I2C         (1)
 #define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO20, .sda = &pin_GPIO22}}
 
@@ -45,7 +47,7 @@
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO38)
 
 // Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing SW38 button at start up.\n")
+#define BOARD_USER_SAFE_MODE_ACTION translate("You pressed the SW38 button at start up.")
 
 // UART pins attached to the USB-serial converter chip
 #define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)

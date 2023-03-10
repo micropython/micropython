@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <string.h>
 #include "py/mpconfig.h"
-#include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -107,7 +106,8 @@ void pulsein_reset(void) {
     memset(callback_obj_ref, 0, sizeof(callback_obj_ref));
 
     HAL_TIM_Base_DeInit(&tim_handle);
-    tim_clock_disable(stm_peripherals_timer_get_index(tim_handle.Instance));
+    // tim_clock_disable() takes a bitmask of timers.
+    tim_clock_disable(1 << stm_peripherals_timer_get_index(tim_handle.Instance));
     memset(&tim_handle, 0, sizeof(tim_handle));
     refcount = 0;
 }

@@ -42,13 +42,13 @@
 
 STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, const struct os_mbuf *mbuf) {
     size_t len = OS_MBUF_PKTLEN(mbuf);
-    if (len + sizeof(uint16_t) > ringbuf_capacity(&self->ringbuf)) {
+    if (len + sizeof(uint16_t) > ringbuf_size(&self->ringbuf)) {
         // This shouldn't happen but can if our buffer size was much smaller than
         // the writes the client actually makes.
         return;
     }
     // Make room for the new value by dropping the oldest packets first.
-    while (ringbuf_capacity(&self->ringbuf) - ringbuf_num_filled(&self->ringbuf) < len + sizeof(uint16_t)) {
+    while (ringbuf_size(&self->ringbuf) - ringbuf_num_filled(&self->ringbuf) < len + sizeof(uint16_t)) {
         uint16_t packet_length;
         ringbuf_get_n(&self->ringbuf, (uint8_t *)&packet_length, sizeof(uint16_t));
         for (uint16_t i = 0; i < packet_length; i++) {
@@ -164,10 +164,7 @@ void _common_hal_bleio_packet_buffer_construct(
     }
 
     if (incoming) {
-        self->ringbuf.buf = (uint8_t *)incoming_buffer;
-        self->ringbuf.size = incoming_buffer_size;
-        self->ringbuf.iget = 0;
-        self->ringbuf.iput = 0;
+        ringbuf_init(&self->ringbuf, (uint8_t *)incoming_buffer, incoming_buffer_size);
     }
 
     self->packet_queued = false;
@@ -219,8 +216,7 @@ void common_hal_bleio_packet_buffer_construct(
     size_t incoming_buffer_size = 0;
     uint32_t *incoming_buffer = NULL;
     if (incoming) {
-        incoming_buffer_size = buffer_size * (sizeof(uint16_t) + max_packet_size);
-        incoming_buffer = m_malloc(incoming_buffer_size, false);
+        ringbuf_init(&self->ringbuf, (uint8_t *)incoming_buffer, incoming_buffer_size);
     }
 
     uint32_t *outgoing1 = NULL;
@@ -414,5 +410,6 @@ bool common_hal_bleio_packet_buffer_deinited(bleio_packet_buffer_obj_t *self) {
 void common_hal_bleio_packet_buffer_deinit(bleio_packet_buffer_obj_t *self) {
     if (!common_hal_bleio_packet_buffer_deinited(self)) {
         ble_event_remove_handler(packet_buffer_on_ble_client_evt, self);
+        ringbuf_deinit(&self->ringbuf);
     }
 }

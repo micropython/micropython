@@ -19,7 +19,7 @@ limited flash memory, usually on non-Express builds:
 ``binascii``, ``errno``, ``json``, ``re``.
 
 These libraries are not currently enabled in any CircuitPython build, but may be in the future:
-``ctypes``, ``hashlib``, ``zlib``.
+``ctypes``
 
 .. toctree::
    :maxdepth: 1
@@ -31,15 +31,12 @@ These libraries are not currently enabled in any CircuitPython build, but may be
    collections.rst
    errno.rst
    gc.rst
-   hashlib.rst
    io.rst
    json.rst
    re.rst
    sys.rst
-   asyncio.rst
    ctypes.rst
    select.rst
-   zlib.rst
 
 Omitted functions in the ``string`` library
 -------------------------------------------

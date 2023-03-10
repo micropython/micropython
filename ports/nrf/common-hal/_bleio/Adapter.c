@@ -52,8 +52,9 @@
 #include "shared-bindings/_bleio/ScanEntry.h"
 #include "shared-bindings/time/__init__.h"
 
-#if CIRCUITPY_DOTENV
-#include "shared-module/dotenv/__init__.h"
+#if CIRCUITPY_OS_GETENV
+#include "shared-bindings/os/__init__.h"
+#include "shared-module/os/__init__.h"
 #endif
 
 #define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
@@ -90,7 +91,7 @@ const nvm_bytearray_obj_t common_hal_bleio_nvm_obj = {
 };
 
 STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
-    reset_into_safe_mode(NORDIC_SOFT_DEVICE_ASSERT);
+    reset_into_safe_mode(SAFE_MODE_SDK_FATAL_ERROR);
 }
 
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
@@ -343,20 +344,17 @@ STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
     default_ble_name[len - 1] = nibble_to_hex_lower[addr.addr[0] & 0xf];
     default_ble_name[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
 
-    mp_int_t name_len = 0;
-
-    #if CIRCUITPY_DOTENV
+    #if CIRCUITPY_OS_GETENV
     char ble_name[32];
-    name_len = dotenv_get_key("/.env", "CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name) - 1);
-    if (name_len > 0) {
-        ble_name[name_len] = '\0';
-        common_hal_bleio_adapter_set_name(self, (char *)ble_name);
+
+    os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name));
+    if (result == GETENV_OK) {
+        common_hal_bleio_adapter_set_name(self, ble_name);
+        return;
     }
     #endif
 
-    if (name_len <= 0) {
-        common_hal_bleio_adapter_set_name(self, (char *)default_ble_name);
-    }
+    common_hal_bleio_adapter_set_name(self, (char *)default_ble_name);
 }
 
 static void bluetooth_adapter_background(void *data) {
@@ -449,15 +447,23 @@ bool common_hal_bleio_adapter_set_address(bleio_adapter_obj_t *self, bleio_addre
     return sd_ble_gap_addr_set(&local_address) == NRF_SUCCESS;
 }
 
+uint16_t bleio_adapter_get_name(char *buf, uint16_t len) {
+    uint16_t full_len = 0;
+    sd_ble_gap_device_name_get(NULL, &full_len);
+
+    uint32_t err_code = sd_ble_gap_device_name_get((uint8_t *)buf, &len);
+    if (err_code != NRF_SUCCESS) {
+        return 0;
+    }
+    return full_len;
+}
+
 mp_obj_str_t *common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
     uint16_t len = 0;
     sd_ble_gap_device_name_get(NULL, &len);
-    uint8_t buf[len];
-    uint32_t err_code = sd_ble_gap_device_name_get(buf, &len);
-    if (err_code != NRF_SUCCESS) {
-        return NULL;
-    }
-    return mp_obj_new_str((char *)buf, len);
+    char buf[len];
+    bleio_adapter_get_name(buf, len);
+    return mp_obj_new_str(buf, len);
 }
 
 void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char *name) {

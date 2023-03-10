@@ -111,7 +111,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint8_t uart_id = ((((tx != NULL) ? tx->number : rx->number) + 4) / 8) % NUM_UARTS;
 
     if (uart_status[uart_id] != STATUS_FREE) {
-        mp_raise_RuntimeError(translate("All UART peripherals are in use"));
+        mp_raise_ValueError(translate("UART peripheral in use"));
     }
     // These may raise exceptions if pins are already in use.
     self->tx_pin = pin_init(uart_id, tx, 0);
@@ -155,27 +155,33 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uart_set_hw_flow(self->uart, (cts != NULL), (rts != NULL));
 
     if (rx != NULL) {
-        // Initially allocate the UART's buffer in the long-lived part of the
-        // heap. UARTs are generally long-lived objects, but the "make long-
-        // lived" machinery is incapable of moving internal pointers like
-        // self->buffer, so do it manually.  (However, as long as internal
-        // pointers like this are NOT moved, allocating the buffer
-        // in the long-lived pool is not strictly necessary)
-        // (This is a macro.)
-        if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
-            m_malloc_fail(receiver_buffer_size);
-        }
-        active_uarts[uart_id] = self;
-        if (uart_id == 1) {
-            self->uart_irq_id = UART1_IRQ;
-            irq_set_exclusive_handler(self->uart_irq_id, uart1_callback);
+        // Use the provided buffer when given.
+        if (receiver_buffer != NULL) {
+            ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
         } else {
-            self->uart_irq_id = UART0_IRQ;
-            irq_set_exclusive_handler(self->uart_irq_id, uart0_callback);
+            // Initially allocate the UART's buffer in the long-lived part of the
+            // heap. UARTs are generally long-lived objects, but the "make long-
+            // lived" machinery is incapable of moving internal pointers like
+            // self->buffer, so do it manually.  (However, as long as internal
+            // pointers like this are NOT moved, allocating the buffer
+            // in the long-lived pool is not strictly necessary)
+            if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
+                uart_deinit(self->uart);
+                m_malloc_fail(receiver_buffer_size);
+            }
         }
-        irq_set_enabled(self->uart_irq_id, true);
-        uart_set_irq_enables(self->uart, true /* rx has data */, false /* tx needs data */);
     }
+
+    active_uarts[uart_id] = self;
+    if (uart_id == 1) {
+        self->uart_irq_id = UART1_IRQ;
+        irq_set_exclusive_handler(self->uart_irq_id, uart1_callback);
+    } else {
+        self->uart_irq_id = UART0_IRQ;
+        irq_set_exclusive_handler(self->uart_irq_id, uart0_callback);
+    }
+    irq_set_enabled(self->uart_irq_id, true);
+    uart_set_irq_enables(self->uart, true /* rx has data */, false /* tx needs data */);
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -187,7 +193,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         return;
     }
     uart_deinit(self->uart);
-    ringbuf_free(&self->ringbuf);
+    ringbuf_deinit(&self->ringbuf);
     active_uarts[self->uart_id] = NULL;
     uart_status[self->uart_id] = STATUS_FREE;
     reset_pin_number(self->tx_pin);
@@ -332,4 +338,19 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
         return false;
     }
     return uart_is_writable(self->uart);
+}
+
+STATIC void pin_never_reset(uint8_t pin) {
+    if (pin != NO_PIN) {
+        never_reset_pin_number(pin);
+    }
+}
+
+void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
+    never_reset_uart(self->uart_id);
+    pin_never_reset(self->tx_pin);
+    pin_never_reset(self->rx_pin);
+    pin_never_reset(self->cts_pin);
+    pin_never_reset(self->rs485_dir_pin);
+    pin_never_reset(self->rts_pin);
 }

@@ -53,6 +53,7 @@ void new_status_color(uint32_t rgb);
 
 uint32_t color_brightness(uint32_t color, uint8_t brightness);
 void set_status_brightness(uint8_t level);
+uint8_t get_status_brightness(void);
 
 void init_rxtx_leds(void);
 void deinit_rxtx_leds(void);

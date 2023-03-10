@@ -36,15 +36,14 @@
 //|     """For monitoring WiFi packets."""
 //|
 
-//| def __init__(self, channel: Optional[int] = 1, queue: Optional[int] = 128) -> None:
-//|     """Initialize `wifi.Monitor` singleton.
+//|     def __init__(self, channel: Optional[int] = 1, queue: Optional[int] = 128) -> None:
+//|         """Initialize `wifi.Monitor` singleton.
 //|
-//|     :param int channel: The WiFi channel to scan.
-//|     :param int queue: The queue size for buffering the packet.
+//|         :param int channel: The WiFi channel to scan.
+//|         :param int queue: The queue size for buffering the packet.
 //|
-//|     """
-//|     ...
-//|
+//|         """
+//|         ...
 STATIC mp_obj_t wifi_monitor_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_channel, ARG_queue };
     static const mp_arg_t allowed_args[] = {
@@ -69,9 +68,8 @@ STATIC mp_obj_t wifi_monitor_make_new(const mp_obj_type_t *type, size_t n_args, 
     return MP_OBJ_FROM_PTR(self);
 }
 
-//| channel: int
-//| """The WiFi channel to scan."""
-//|
+//|     channel: int
+//|     """The WiFi channel to scan."""
 STATIC mp_obj_t wifi_monitor_obj_get_channel(mp_obj_t self_in) {
     return common_hal_wifi_monitor_get_channel(self_in);
 }
@@ -91,9 +89,8 @@ MP_PROPERTY_GETSET(wifi_monitor_channel_obj,
     (mp_obj_t)&wifi_monitor_get_channel_obj,
     (mp_obj_t)&wifi_monitor_set_channel_obj);
 
-//| queue: int
-//| """The queue size for buffering the packet."""
-//|
+//|     queue: int
+//|     """The queue size for buffering the packet."""
 STATIC mp_obj_t wifi_monitor_obj_get_queue(mp_obj_t self_in) {
     return common_hal_wifi_monitor_get_queue(self_in);
 }
@@ -102,29 +99,26 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_get_queue_obj, wifi_monitor_obj_get_queue
 MP_PROPERTY_GETTER(wifi_monitor_queue_obj,
     (mp_obj_t)&wifi_monitor_get_queue_obj);
 
-//| def deinit(self) -> None:
-//|     """De-initialize `wifi.Monitor` singleton."""
-//|     ...
-//|
+//|     def deinit(self) -> None:
+//|         """De-initialize `wifi.Monitor` singleton."""
+//|         ...
 STATIC mp_obj_t wifi_monitor_obj_deinit(mp_obj_t self_in) {
     common_hal_wifi_monitor_deinit(self_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_deinit_obj, wifi_monitor_obj_deinit);
 
-//| def lost(self) -> int:
-//|     """Returns the packet loss count. The counter resets after each poll."""
-//|     ...
-//|
+//|     def lost(self) -> int:
+//|         """Returns the packet loss count. The counter resets after each poll."""
+//|         ...
 STATIC mp_obj_t wifi_monitor_obj_get_lost(mp_obj_t self_in) {
     return common_hal_wifi_monitor_get_lost(self_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_lost_obj, wifi_monitor_obj_get_lost);
 
-//| def queued(self) -> int:
-//|     """Returns the packet queued count."""
-//|     ...
-//|
+//|     def queued(self) -> int:
+//|         """Returns the packet queued count."""
+//|         ...
 STATIC mp_obj_t wifi_monitor_obj_get_queued(mp_obj_t self_in) {
     if (common_hal_wifi_monitor_deinited()) {
         return mp_obj_new_int_from_uint(0);
@@ -133,9 +127,9 @@ STATIC mp_obj_t wifi_monitor_obj_get_queued(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_queued_obj, wifi_monitor_obj_get_queued);
 
-//| def packet(self) -> dict:
-//|     """Returns the monitor packet."""
-//|     ...
+//|     def packet(self) -> dict:
+//|         """Returns the monitor packet."""
+//|         ...
 //|
 STATIC mp_obj_t wifi_monitor_obj_get_packet(mp_obj_t self_in) {
     if (common_hal_wifi_monitor_deinited()) {

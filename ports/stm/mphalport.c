@@ -28,11 +28,8 @@
 #include <string.h>
 
 #include "py/mphal.h"
-#include "py/mpstate.h"
-#include "py/gc.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
-#include "supervisor/shared/tick.h"
 
 void mp_hal_delay_us(mp_uint_t delay) {
     common_hal_mcu_delay_us(delay);

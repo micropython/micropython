@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "supervisor/board.h"
 #include "supervisor/shared/board.h"
 
 #if CIRCUITPY_DIGITALIO && CIRCUITPY_NEOPIXEL_WRITE
@@ -46,3 +47,20 @@ void board_reset_user_neopixels(const mcu_pin_obj_t *pin, size_t count) {
 }
 
 #endif
+
+// Do-nothing so not all boards need to provide this function.
+MP_WEAK bool board_requests_safe_mode(void) {
+    return false;
+}
+
+// Do-nothing so not all boards need to provide this function.
+MP_WEAK void board_init(void) {
+}
+
+// Do-nothing so not all boards need to provide this function.
+MP_WEAK void board_deinit(void) {
+}
+
+// Do-nothing so not all boards need to provide this function.
+MP_WEAK void reset_board(void) {
+}

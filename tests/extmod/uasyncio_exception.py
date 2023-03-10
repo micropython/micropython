@@ -9,6 +9,7 @@ except ImportError:
         print("SKIP")
         raise SystemExit
 
+
 # main task raising an exception
 async def main():
     print("main start")
@@ -20,6 +21,7 @@ try:
     asyncio.run(main())
 except ValueError as er:
     print("ValueError", er.args[0])
+
 
 # sub-task raising an exception
 async def task():
@@ -39,6 +41,7 @@ try:
     asyncio.run(main())
 except ValueError as er:
     print("ValueError", er.args[0])
+
 
 # main task raising an exception with sub-task not yet scheduled
 # TODO not currently working, task is never scheduled

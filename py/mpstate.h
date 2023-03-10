@@ -119,6 +119,10 @@ typedef struct _mp_state_vm_t {
 
     qstr_pool_t *last_pool;
 
+    #if MICROPY_TRACKED_ALLOC
+    struct _m_tracked_node_t *m_tracked_head;
+    #endif
+
     // non-heap memory for creating a traceback if we can't allocate RAM
     mp_obj_traceback_t mp_emergency_traceback_obj;
 

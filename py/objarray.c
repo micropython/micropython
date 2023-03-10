@@ -458,26 +458,32 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
 
     // allow to extend by anything that has the buffer protocol (extension to CPython)
     mp_buffer_info_t arg_bufinfo;
-    mp_get_buffer_raise(arg_in, &arg_bufinfo, MP_BUFFER_READ);
+    if (mp_get_buffer(arg_in, &arg_bufinfo, MP_BUFFER_READ)) {
+        size_t sz = mp_binary_get_size('@', self->typecode, NULL);
 
-    size_t sz = mp_binary_get_size('@', self->typecode, NULL);
+        // convert byte count to element count
+        size_t len = arg_bufinfo.len / sz;
 
-    // convert byte count to element count
-    size_t len = arg_bufinfo.len / sz;
+        // make sure we have enough room to extend
+        // TODO: alloc policy; at the moment we go conservative
+        if (self->free < len) {
+            self->items = m_renew(byte, self->items, (self->len + self->free) * sz, (self->len + len) * sz);
+            self->free = 0;
+        } else {
+            self->free -= len;
+        }
 
-    // make sure we have enough room to extend
-    // TODO: alloc policy; at the moment we go conservative
-    if (self->free < len) {
-        self->items = m_renew(byte, self->items, (self->len + self->free) * sz, (self->len + len) * sz);
-        self->free = 0;
+        // extend
+        mp_seq_copy((byte *)self->items + self->len * sz, arg_bufinfo.buf, len * sz, byte);
+        self->len += len;
     } else {
-        self->free -= len;
+        // Otherwise argument must be an iterable of items to append
+        mp_obj_t iterable = mp_getiter(arg_in, NULL);
+        mp_obj_t item;
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+            array_append(self_in, item);
+        }
     }
-
-    // extend
-    mp_seq_copy((byte *)self->items + self->len * sz, arg_bufinfo.buf, len * sz, byte);
-    self->len += len;
-
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_extend_obj, array_extend);

@@ -38,7 +38,6 @@
 //| radio: Radio
 //| """Wifi radio used to manage both station and AP modes.
 //| This object is the sole instance of `wifi.Radio`."""
-//|
 
 // Called when wifi is imported.
 STATIC mp_obj_t wifi___init__(void) {

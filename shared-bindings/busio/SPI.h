@@ -70,6 +70,6 @@ uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t *self);
 // This is used by the supervisor to claim SPI devices indefinitely.
 extern void common_hal_busio_spi_never_reset(busio_spi_obj_t *self);
 
-extern busio_spi_obj_t *validate_obj_is_spi_bus(mp_obj_t obj_in);
+extern busio_spi_obj_t *validate_obj_is_spi_bus(mp_obj_t obj_in, qstr arg_name);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_SPI_H

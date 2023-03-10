@@ -36,7 +36,6 @@
 //| """USB Human Interface Device
 //|
 //| The `usb_hid` module allows you to output data as a HID device."""
-//|
 
 //| devices: Tuple[Device, ...]
 //| """Tuple of all active HID device interfaces.
@@ -125,9 +124,7 @@ STATIC mp_obj_t usb_hid_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     const mp_int_t len = mp_obj_get_int(mp_obj_len(devices));
     for (mp_int_t i = 0; i < len; i++) {
         mp_obj_t item = mp_obj_subscr(devices, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
-        if (!mp_obj_is_type(item, &usb_hid_device_type)) {
-            mp_raise_ValueError_varg(translate("non-Device in %q"), MP_QSTR_devices);
-        }
+        mp_arg_validate_type(item, &usb_hid_device_type, MP_QSTR___class__);
     }
 
     uint8_t boot_device =

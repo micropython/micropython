@@ -22,42 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Select the board to build for.
-ifeq ($(BOARD),)
-  $(error You must provide a BOARD parameter)
-else
-  ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD specified)
-  endif
-endif
-
-# If the flash PORT is not given, use the default /dev/tty.SLAB_USBtoUART.
-PORT ?= /dev/tty.SLAB_USBtoUART
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
-include ../../py/mkenv.mk
-
-# Board-specific
-include boards/$(BOARD)/mpconfigboard.mk
-
-# Port-specific
-include mpconfigport.mk
-
-# CircuitPython-specific
-include $(TOP)/py/circuitpy_mpconfig.mk
-
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-
-# include py core make definitions
-include $(TOP)/py/py.mk
-
-include $(TOP)/supervisor/supervisor.mk
-
-# Include make rules and variables common across CircuitPython builds.
-include $(TOP)/py/circuitpy_defns.mk
+include ../../py/circuitpy_mkenv.mk
 
 ifeq ($(IDF_TARGET),esp32c3)
 IDF_TARGET_ARCH = riscv
@@ -98,6 +63,8 @@ INC += \
 	-isystem esp-idf/components/bt/host/nimble/port/include \
 	-isystem esp-idf/components/driver/include \
 	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/efuse/include \
+	-isystem esp-idf/components/efuse/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/esp_adc_cal/include \
 	-isystem esp-idf/components/esp_common/include \
@@ -159,12 +126,9 @@ ifeq ($(DEBUG), 1)
   # CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -DNDEBUG -ggdb3
-	ifeq ($(IDF_TARGET_ARCH),xtensa)
-	  OPTIMIZATION_FLAGS ?= -O2
-	else
-		# RISC-V is larger than xtensa so do -Os for it
-	  OPTIMIZATION_FLAGS ?= -Os
-	endif
+  OPTIMIZATION_FLAGS ?= -O2
+  # RISC-V is larger than xtensa
+  # Use -Os for RISC-V when it overflows
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
@@ -174,6 +138,8 @@ CFLAGS += $(INC) -Werror -Wall -std=gnu11 -Wl,--gc-sections $(BASE_CFLAGS) $(C_D
 
 ifeq ($(IDF_TARGET_ARCH),xtensa)
 CFLAGS += -mlongcalls
+else ifeq ($(IDF_TARGET_ARCH),riscv)
+CFLAGS += -march=rv32imc
 endif
 
 LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-Map=$@.map -Wl,-cref -Wl,--undefined=uxTopUsedPriority
@@ -224,8 +190,12 @@ endif
 
 # TinyUSB defines
 ifeq ($(CIRCUITPY_USB),1)
+ifeq ($(IDF_TARGET),esp32s2)
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_ESP32S2
+else ifeq ($(IDF_TARGET),esp32s3)
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_ESP32S3
+endif
 CFLAGS += \
-	-DCFG_TUSB_MCU=OPT_MCU_ESP32S2 \
 	-DCFG_TUSB_OS=OPT_OS_FREERTOS \
 	-DCFG_TUD_CDC_RX_BUFSIZE=1024 \
 	-DCFG_TUD_CDC_TX_BUFSIZE=1024 \
@@ -233,7 +203,8 @@ CFLAGS += \
 	-DCFG_TUD_MIDI_RX_BUFSIZE=128 \
 	-DCFG_TUD_MIDI_TX_BUFSIZE=128 \
 	-DCFG_TUD_VENDOR_RX_BUFSIZE=128 \
-	-DCFG_TUD_VENDOR_TX_BUFSIZE=128
+	-DCFG_TUD_VENDOR_TX_BUFSIZE=128 \
+	-DCFG_TUD_TASK_QUEUE_SZ=32
 endif
 
 ######################################
@@ -242,7 +213,6 @@ endif
 
 SRC_C += \
 	background.c \
-	fatfs_port.c \
 	mphalport.c \
 	bindings/espidf/__init__.c \
 	boards/$(BOARD)/board.c \
@@ -259,7 +229,6 @@ SRC_C += \
 	peripherals/touch.c
 ifeq ($(IDF_TARGET),esp32s2)
 SRC_C += \
-	cam.c \
 	i2s_lcd_esp32s2_driver.c
 endif
 endif
@@ -277,6 +246,26 @@ endif
 
 ifneq ($(CIRCUITPY_BLEIO),0)
 SRC_C += common-hal/_bleio/ble_events.c
+endif
+
+SRC_C += $(wildcard common-hal/espidf/*.c)
+
+ifneq ($(CIRCUITPY_ESPCAMERA),0)
+SRC_CAMERA := \
+	$(wildcard common-hal/espcamera/*.c) \
+	$(wildcard bindings/espcamera/*.c)
+SRC_C += $(SRC_CAMERA)
+CFLAGS += -isystem esp32-camera/driver/include
+CFLAGS += -isystem esp32-camera/conversions/include
+endif
+
+ifneq ($(CIRCUITPY_ESPULP),0)
+SRC_ULP := \
+	$(wildcard common-hal/espulp/*.c) \
+	$(wildcard bindings/espulp/*.c)
+SRC_C += $(SRC_ULP)
+CFLAGS += -isystem esp-idf/components/ulp/include
+CFLAGS += -isystem esp-idf/components/ulp/ulp_riscv/include
 endif
 
 SRC_COMMON_HAL_EXPANDED = \
@@ -319,11 +308,15 @@ $(BUILD)/esp-idf:
 
 TARGET_SDKCONFIG = esp-idf-config/sdkconfig-$(IDF_TARGET).defaults
 
-UF2_BOOTLOADER ?= $(if $(filter $(IDF_TARGET),esp32s2 esp32s3),1)
+ifeq ($(CIRCUITPY_ESP_FLASH_SIZE), 2MB)
+	FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-ota-no-uf2.defaults
+else
+UF2_BOOTLOADER ?= $(CIRCUITPY_USB)
 ifeq ($(UF2_BOOTLOADER), 1)
 	FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
 else
 	FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
+endif
 endif
 
 ifeq ($(DEBUG), 1)
@@ -337,8 +330,10 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 	SDKCONFIGS := esp-idf-config/sdkconfig-ble.defaults;$(SDKCONFIGS)
 endif
 # create the config headers
-$(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig | $(BUILD)/esp-idf
-	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja
+.PHONY: do-sdkconfig
+do-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
+$(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig CMakeLists.txt | $(BUILD)/esp-idf
+	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja -DCIRCUITPY_ESPCAMERA=$(CIRCUITPY_ESPCAMERA)
 
 # build a lib
 # Adding -d explain -j 1 -v to the ninja line will output debug info
@@ -376,6 +371,9 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
 	                esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
 endif
+ifneq ($(CIRCUITPY_ESPULP),0)
+	ESP_IDF_COMPONENTS_LINK += ulp
+endif
 
 ESP_IDF_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
 
@@ -385,6 +383,11 @@ MBEDTLS_COMPONENTS_LINK_EXPANDED = $(foreach component, $(MBEDTLS_COMPONENTS_LIN
 ifeq ($(IDF_TARGET_ARCH),xtensa)
 BINARY_BLOBS += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 ESP_IDF_COMPONENTS_EXPANDED += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
+endif
+
+ifneq ($(CIRCUITPY_ESPCAMERA),0)
+ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/esp32-camera/libesp32-camera.a
+#$(error $(ESP_IDF_COMPONENTS_EXPANDED))
 endif
 
 # BOOTLOADER_OFFSET is determined by chip type, based on the ROM bootloader, and is not changeable.
@@ -426,12 +429,12 @@ esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 
 $(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(BUILD)/esp-idf/esp-idf/newlib/libnewlib.a  -Wl,--end-group -u newlib_include_pthread_impl -Wl,--start-group $(LIBS) -Wl,--end-group $(BUILD)/esp-idf/esp-idf/pthread/libpthread.a  -u __cxx_fatal_exception
+	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(BUILD)/esp-idf/esp-idf/newlib/libnewlib.a  -Wl,--end-group -u newlib_include_pthread_impl -u ld_include_highint_hdl -Wl,--start-group $(LIBS) -Wl,--end-group $(BUILD)/esp-idf/esp-idf/pthread/libpthread.a  -u __cxx_fatal_exception
 
 $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf | tools/build_memory_info.py
 	$(STEPECHO) "Create $@"
 	$(Q)esptool.py --chip $(IDF_TARGET) elf2image $(FLASH_FLAGS) --elf-sha256-offset 0xb0 -o $@ $^
-	$(Q)$(PYTHON) tools/build_memory_info.py $< $(BUILD)/esp-idf/sdkconfig $@
+	$(Q)$(PYTHON) tools/build_memory_info.py $< $(BUILD)/esp-idf/sdkconfig $@ $(BUILD)
 
 $(BUILD)/firmware.bin: $(BUILD)/circuitpython-firmware.bin | esp-idf-stamp
 	$(Q)$(PYTHON) ../../tools/join_bins.py $@ $(BOOTLOADER_OFFSET) $(BUILD)/esp-idf/bootloader/bootloader.bin $(PARTITION_TABLE_OFFSET) $(BUILD)/esp-idf/partition_table/partition-table.bin $(FIRMWARE_OFFSET) $(BUILD)/circuitpython-firmware.bin

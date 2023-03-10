@@ -29,12 +29,15 @@
 #include <sys/time.h>
 #include "supervisor/board.h"
 #include "supervisor/port.h"
+#include "supervisor/filesystem.h"
+#include "supervisor/shared/reload.h"
 #include "py/runtime.h"
-#include "supervisor/esp_port.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "bindings/espidf/__init__.h"
+#include "bindings/espulp/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogOut.h"
 #include "common-hal/busio/I2C.h"
@@ -54,6 +57,7 @@
 #include "shared-bindings/microcontroller/RunMode.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/socketpool/__init__.h"
+#include "shared-module/os/__init__.h"
 
 #include "peripherals/rmt.h"
 #include "peripherals/timer.h"
@@ -74,34 +78,30 @@
 #include "shared-bindings/_bleio/__init__.h"
 #endif
 
-#if CIRCUITPY_IMAGECAPTURE
-#include "cam.h"
+#if CIRCUITPY_ESPCAMERA
+#include "esp_camera.h"
 #endif
 
 #ifndef CONFIG_IDF_TARGET_ESP32
 #include "soc/cache_memory.h"
 #endif
 
+#include "soc/efuse_reg.h"
 #include "soc/rtc_cntl_reg.h"
 
 #include "esp_debug_helpers.h"
 
+#include "bootloader_flash_config.h"
+#include "esp_efuse.h"
 #include "esp_ipc.h"
+#include "esp_rom_efuse.h"
 
-#ifdef CONFIG_SPIRAM
-#include "esp32/spiram.h"
 #ifdef CONFIG_IDF_TARGET_ESP32
-#include "esp32/himem.h"
-#else
-#define esp_himem_reserved_area_size() (0)
+#include "esp32/rom/efuse.h"
 #endif
 
-static size_t spiram_size_usable(void) {
-    /* SPIRAM chip may be larger than the size we can map into address space */
-    size_t s = MIN(esp_spiram_get_size(), SOC_EXTRAM_DATA_SIZE);
-    return s - esp_himem_reserved_area_size();
-}
-#endif
+#include "esp_log.h"
+#define TAG "port"
 
 uint32_t *heap;
 uint32_t heap_size;
@@ -134,6 +134,97 @@ STATIC void tick_timer_cb(void *arg) {
 }
 
 void sleep_timer_cb(void *arg);
+
+// The ESP-IDF determines these pins at runtime so we do too. This code is based on:
+// https://github.com/espressif/esp-idf/blob/6d85d53ceec30c818a92c2fff8f5437d21c4720f/components/esp_hw_support/port/esp32/spiram_psram.c#L810
+// IO-pins for PSRAM.
+// WARNING: PSRAM shares all but the CS and CLK pins with the flash, so these defines
+// hardcode the flash pins as well, making this code incompatible with either a setup
+// that has the flash on non-standard pins or ESP32s with built-in flash.
+#define PSRAM_SPIQ_SD0_IO          7
+#define PSRAM_SPID_SD1_IO          8
+#define PSRAM_SPIWP_SD3_IO         10
+#define PSRAM_SPIHD_SD2_IO         9
+
+#define FLASH_HSPI_CLK_IO          14
+#define FLASH_HSPI_CS_IO           15
+#define PSRAM_HSPI_SPIQ_SD0_IO     12
+#define PSRAM_HSPI_SPID_SD1_IO     13
+#define PSRAM_HSPI_SPIWP_SD3_IO    2
+#define PSRAM_HSPI_SPIHD_SD2_IO    4
+
+#ifdef CONFIG_SPIRAM
+// PSRAM clock and cs IO should be configured based on hardware design.
+// For ESP32-WROVER or ESP32-WROVER-B module, the clock IO is IO17, the cs IO is IO16,
+// they are the default value for these two configs.
+#define D0WD_PSRAM_CLK_IO          CONFIG_D0WD_PSRAM_CLK_IO  // Default value is 17
+#define D0WD_PSRAM_CS_IO           CONFIG_D0WD_PSRAM_CS_IO   // Default value is 16
+
+#define D2WD_PSRAM_CLK_IO          CONFIG_D2WD_PSRAM_CLK_IO  // Default value is 9
+#define D2WD_PSRAM_CS_IO           CONFIG_D2WD_PSRAM_CS_IO   // Default value is 10
+
+// There is no reason to change the pin of an embedded psram.
+// So define the number of pin directly, instead of configurable.
+#define D0WDR2_V3_PSRAM_CLK_IO    6
+#define D0WDR2_V3_PSRAM_CS_IO     16
+
+// For ESP32-PICO chip, the psram share clock with flash. The flash clock pin is fixed, which is IO6.
+#define PICO_PSRAM_CLK_IO          6
+#define PICO_PSRAM_CS_IO           CONFIG_PICO_PSRAM_CS_IO   // Default value is 10
+
+#define PICO_V3_02_PSRAM_CLK_IO    10
+#define PICO_V3_02_PSRAM_CS_IO     9
+#endif // CONFIG_SPIRAM
+
+static void _never_reset_spi_ram_flash(void) {
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    #if defined(CONFIG_SPIRAM)
+    uint32_t pkg_ver = esp_efuse_get_pkg_ver();
+    if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5) {
+        never_reset_pin_number(D2WD_PSRAM_CLK_IO);
+        never_reset_pin_number(D2WD_PSRAM_CS_IO);
+    } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4 && esp_efuse_get_chip_ver() >= 3) {
+        // This chip is ESP32-PICO-V3 and doesn't have PSRAM.
+    } else if ((pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD2) || (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4)) {
+        never_reset_pin_number(PICO_PSRAM_CLK_IO);
+        never_reset_pin_number(PICO_PSRAM_CS_IO);
+    } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOV302) {
+        never_reset_pin_number(PICO_V3_02_PSRAM_CLK_IO);
+        never_reset_pin_number(PICO_V3_02_PSRAM_CS_IO);
+    } else if ((pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ6) || (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ5)) {
+        never_reset_pin_number(D0WD_PSRAM_CLK_IO);
+        never_reset_pin_number(D0WD_PSRAM_CS_IO);
+    } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D0WDR2V3) {
+        never_reset_pin_number(D0WDR2_V3_PSRAM_CLK_IO);
+        never_reset_pin_number(D0WDR2_V3_PSRAM_CS_IO);
+    }
+    #endif // CONFIG_SPIRAM
+
+    const uint32_t spiconfig = esp_rom_efuse_get_flash_gpio_info();
+    if (spiconfig == ESP_ROM_EFUSE_FLASH_DEFAULT_SPI) {
+        never_reset_pin_number(SPI_IOMUX_PIN_NUM_CLK);
+        never_reset_pin_number(SPI_IOMUX_PIN_NUM_CS);
+        never_reset_pin_number(PSRAM_SPIQ_SD0_IO);
+        never_reset_pin_number(PSRAM_SPID_SD1_IO);
+        never_reset_pin_number(PSRAM_SPIWP_SD3_IO);
+        never_reset_pin_number(PSRAM_SPIHD_SD2_IO);
+    } else if (spiconfig == ESP_ROM_EFUSE_FLASH_DEFAULT_HSPI) {
+        never_reset_pin_number(FLASH_HSPI_CLK_IO);
+        never_reset_pin_number(FLASH_HSPI_CS_IO);
+        never_reset_pin_number(PSRAM_HSPI_SPIQ_SD0_IO);
+        never_reset_pin_number(PSRAM_HSPI_SPID_SD1_IO);
+        never_reset_pin_number(PSRAM_HSPI_SPIWP_SD3_IO);
+        never_reset_pin_number(PSRAM_HSPI_SPIHD_SD2_IO);
+    } else {
+        never_reset_pin_number(EFUSE_SPICONFIG_RET_SPICLK(spiconfig));
+        never_reset_pin_number(EFUSE_SPICONFIG_RET_SPICS0(spiconfig));
+        never_reset_pin_number(EFUSE_SPICONFIG_RET_SPIQ(spiconfig));
+        never_reset_pin_number(EFUSE_SPICONFIG_RET_SPID(spiconfig));
+        never_reset_pin_number(EFUSE_SPICONFIG_RET_SPIHD(spiconfig));
+        never_reset_pin_number(bootloader_flash_get_wp_pin());
+    }
+    #endif // CONFIG_IDF_TARGET_ESP32
+}
 
 safe_mode_t port_init(void) {
     esp_timer_create_args_t args;
@@ -204,16 +295,20 @@ safe_mode_t port_init(void) {
     #endif
 
     #ifdef CONFIG_SPIRAM
-    if (esp_spiram_is_initialized()) {
-        size_t spiram_size = spiram_size_usable();
-        #ifdef CONFIG_IDF_TARGET_ESP32
-        heap = (uint32_t *)SOC_EXTRAM_DATA_LOW;
-        #else
-        heap = (uint32_t *)(SOC_EXTRAM_DATA_HIGH - spiram_size);
-        #endif
-        heap_size = spiram_size / sizeof(uint32_t);
+    {
+        intptr_t heap_start = common_hal_espidf_get_psram_start();
+        intptr_t heap_end = common_hal_espidf_get_psram_end();
+        size_t spiram_size = heap_end - heap_start;
+        if (spiram_size > 0) {
+            heap = (uint32_t *)heap_start;
+            heap_size = (heap_end - heap_start) / sizeof(uint32_t);
+        } else {
+            ESP_LOGE(TAG, "CONFIG_SPIRAM enabled but no spiram heap available");
+        }
     }
     #endif
+
+    _never_reset_spi_ram_flash();
 
     if (heap == NULL) {
         size_t heap_total = heap_caps_get_total_size(MALLOC_CAP_8BIT);
@@ -223,36 +318,34 @@ safe_mode_t port_init(void) {
     }
     if (heap == NULL) {
         heap_size = 0;
-        return NO_HEAP;
+        return SAFE_MODE_NO_HEAP;
     }
 
     esp_reset_reason_t reason = esp_reset_reason();
     switch (reason) {
         case ESP_RST_BROWNOUT:
-            return BROWNOUT;
+            return SAFE_MODE_BROWNOUT;
         case ESP_RST_PANIC:
-            return HARD_CRASH;
+            return SAFE_MODE_HARD_FAULT;
         case ESP_RST_INT_WDT:
             // The interrupt watchdog is used internally to make sure that latency sensitive
             // interrupt code isn't blocked. User watchdog resets come through ESP_RST_WDT.
-            return WATCHDOG_RESET;
+            return SAFE_MODE_WATCHDOG;
         case ESP_RST_WDT:
         default:
             break;
     }
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_port(void) {
-    #if CIRCUITPY_IMAGECAPTURE
-    cam_deinit();
+    // TODO deinit for esp32-camera
+    #if CIRCUITPY_ESPCAMERA
+    esp_camera_deinit();
     #endif
 
     reset_all_pins();
-
-    // A larger delay so the idle task can run and do any IDF cleanup needed.
-    vTaskDelay(4);
 
     #if CIRCUITPY_ANALOGIO
     analogout_reset();
@@ -274,6 +367,10 @@ void reset_port(void) {
 
     #if CIRCUITPY_DUALBANK
     dualbank_reset();
+    #endif
+
+    #if CIRCUITPY_ESPULP
+    espulp_reset();
     #endif
 
     #if CIRCUITPY_FREQUENCYIO
@@ -308,6 +405,9 @@ void reset_port(void) {
     #if CIRCUITPY_WATCHDOG
     watchdog_reset();
     #endif
+
+    // Yield so the idle task can run and do any IDF cleanup needed.
+    port_yield();
 }
 
 void reset_to_bootloader(void) {
@@ -390,6 +490,18 @@ void port_wake_main_task() {
     xTaskNotifyGive(circuitpython_task);
 }
 
+void port_wake_main_task_from_isr() {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    vTaskNotifyGiveFromISR(circuitpython_task, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken == pdTRUE) {
+        portYIELD_FROM_ISR();
+    }
+}
+
+void port_yield() {
+    vTaskDelay(4);
+}
+
 void sleep_timer_cb(void *arg) {
     port_wake_main_task();
 }
@@ -405,8 +517,18 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 // On the ESP we use FreeRTOS notifications instead of interrupts so this is a
 // bit of a misnomer.
 void port_idle_until_interrupt(void) {
-    if (!background_callback_pending()) {
+    if (!background_callback_pending() && !autoreload_pending()) {
         xTaskNotifyWait(0x01, 0x01, NULL, portMAX_DELAY);
+    }
+}
+
+void port_post_boot_py(bool heap_valid) {
+    if (!heap_valid && filesystem_present()) {
+        mp_int_t reserved;
+        if (common_hal_os_getenv_int("CIRCUITPY_RESERVED_PSRAM", &reserved) == GETENV_OK) {
+            common_hal_espidf_set_reserved_psram(reserved);
+        }
+        common_hal_espidf_reserve_psram();
     }
 }
 

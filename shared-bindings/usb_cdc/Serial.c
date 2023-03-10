@@ -29,7 +29,7 @@
 #include "shared-bindings/usb_cdc/Serial.h"
 #include "shared-bindings/util.h"
 
-#include "py/ioctl.h"
+#include "py/stream.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
@@ -42,7 +42,6 @@
 //|         """You cannot create an instance of `usb_cdc.Serial`.
 //|         The available instances are in the ``usb_cdc.serials`` tuple."""
 //|         ...
-//|
 //|     def read(self, size: int = 1) -> bytes:
 //|         """Read at most ``size`` bytes. If ``size`` exceeds the internal buffer size
 //|         only the bytes in the buffer will be read. If `timeout` is > 0 or ``None``,
@@ -52,15 +51,14 @@
 //|         :return: Data read
 //|         :rtype: bytes"""
 //|         ...
-//|
 //|     def readinto(self, buf: WriteableBuffer) -> int:
-//|         """Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
-//|         that many bytes, subject to `timeout`.  Otherwise, read at most ``len(buf)`` bytes.
+//|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes. If `timeout`
+//|         is > 0 or ``None``, keep waiting until the timeout expires or ``len(buf)``
+//|         bytes are available.
 //|
 //|         :return: number of bytes read and stored into ``buf``
-//|         :rtype: bytes"""
+//|         :rtype: int"""
 //|         ...
-//|
 //|     def readline(self, size: int = -1) -> Optional[bytes]:
 //|         r"""Read a line ending in a newline character ("\\n"), including the newline.
 //|         Return everything readable if no newline is found and ``timeout`` is 0.
@@ -73,7 +71,6 @@
 //|         :return: the line read
 //|         :rtype: bytes or None"""
 //|         ...
-//|
 //|     def readlines(self) -> List[Optional[bytes]]:
 //|         """Read multiple lines as a list, using `readline()`.
 //|
@@ -83,18 +80,15 @@
 //|         :return: a list of the line read
 //|         :rtype: list"""
 //|         ...
-//|
 //|     def write(self, buf: ReadableBuffer) -> int:
 //|         """Write as many bytes as possible from the buffer of bytes.
 //|
 //|         :return: the number of bytes written
 //|         :rtype: int"""
 //|         ...
-//|
 //|     def flush(self) -> None:
 //|         """Force out any unwritten bytes, waiting until they are written."""
 //|         ...
-//|
 
 // These three methods are used by the shared stream methods.
 STATIC mp_uint_t usb_cdc_serial_read_stream(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
@@ -120,14 +114,14 @@ STATIC mp_uint_t usb_cdc_serial_ioctl_stream(mp_obj_t self_in, mp_uint_t request
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret = 0;
     switch (request) {
-        case MP_IOCTL_POLL: {
+        case MP_STREAM_POLL: {
             mp_uint_t flags = arg;
             ret = 0;
-            if ((flags & MP_IOCTL_POLL_RD) && common_hal_usb_cdc_serial_get_in_waiting(self) > 0) {
-                ret |= MP_IOCTL_POLL_RD;
+            if ((flags & MP_STREAM_POLL_RD) && common_hal_usb_cdc_serial_get_in_waiting(self) > 0) {
+                ret |= MP_STREAM_POLL_RD;
             }
-            if ((flags & MP_IOCTL_POLL_WR) && common_hal_usb_cdc_serial_get_out_waiting(self) == 0) {
-                ret |= MP_IOCTL_POLL_WR;
+            if ((flags & MP_STREAM_POLL_WR) && common_hal_usb_cdc_serial_get_out_waiting(self) == 0) {
+                ret |= MP_STREAM_POLL_WR;
             }
             break;
         }
@@ -150,7 +144,6 @@ STATIC mp_uint_t usb_cdc_serial_ioctl_stream(mp_obj_t self_in, mp_uint_t request
 //|       Most terminal programs and ``pyserial`` assert DTR when opening a serial connection.
 //|       However, the C# ``SerialPort`` API does not. You must set ``SerialPort.DtrEnable``.
 //|     """
-//|
 STATIC mp_obj_t usb_cdc_serial_get_connected(mp_obj_t self_in) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_usb_cdc_serial_get_connected(self));
@@ -162,7 +155,6 @@ MP_PROPERTY_GETTER(usb_cdc_serial_connected_obj,
 
 //|     in_waiting: int
 //|     """Returns the number of bytes waiting to be read on the USB serial input. (read-only)"""
-//|
 STATIC mp_obj_t usb_cdc_serial_get_in_waiting(mp_obj_t self_in) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(common_hal_usb_cdc_serial_get_in_waiting(self));
@@ -174,7 +166,6 @@ MP_PROPERTY_GETTER(usb_cdc_serial_in_waiting_obj,
 
 //|     out_waiting: int
 //|     """Returns the number of bytes waiting to be written on the USB serial output. (read-only)"""
-//|
 STATIC mp_obj_t usb_cdc_serial_get_out_waiting(mp_obj_t self_in) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(common_hal_usb_cdc_serial_get_out_waiting(self));
@@ -187,7 +178,6 @@ MP_PROPERTY_GETTER(usb_cdc_serial_out_waiting_obj,
 //|     def reset_input_buffer(self) -> None:
 //|         """Clears any unread bytes."""
 //|         ...
-//|
 STATIC mp_obj_t usb_cdc_serial_reset_input_buffer(mp_obj_t self_in) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_usb_cdc_serial_reset_input_buffer(self);
@@ -198,7 +188,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_reset_input_buffer_obj, usb_cdc_serial_
 //|     def reset_output_buffer(self) -> None:
 //|         """Clears any unwritten bytes."""
 //|         ...
-//|
 STATIC mp_obj_t usb_cdc_serial_reset_output_buffer(mp_obj_t self_in) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_usb_cdc_serial_reset_output_buffer(self);
@@ -209,7 +198,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_reset_output_buffer_obj, usb_cdc_serial
 //|     timeout: Optional[float]
 //|     """The initial value of `timeout` is ``None``. If ``None``, wait indefinitely to satisfy
 //|     the conditions of a read operation. If 0, do not wait. If > 0, wait only ``timeout`` seconds."""
-//|
 STATIC mp_obj_t usb_cdc_serial_get_timeout(mp_obj_t self_in) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_float_t timeout = common_hal_usb_cdc_serial_get_timeout(self);

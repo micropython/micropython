@@ -90,7 +90,11 @@ void port_interrupt_after_ticks(uint32_t ticks);
 // may not be a system level sleep.
 void port_idle_until_interrupt(void);
 
-// Execute port specific actions during background tasks.
+// Execute port specific actions during background tick. Only if ticks are enabled.
+void port_background_tick(void);
+
+// Execute port specific actions during background tasks. This is before the
+// background callback system.
 void port_background_task(void);
 
 // Take port specific actions at the beginning and end of background tasks.
@@ -99,8 +103,29 @@ void port_background_task(void);
 void port_start_background_task(void);
 void port_finish_background_task(void);
 
-// Some ports need special handling to wake the main task from an interrupt
-// context or other task.  The port must implement the necessary code in this
-// function.  A default weak implementation is provided that does nothing.
+// Some ports need special handling to wake the main task from another task. The
+// port must implement the necessary code in this function.  A default weak
+// implementation is provided that does nothing.
 void port_wake_main_task(void);
+
+// Some ports need special handling to wake the main task from an interrupt
+// context.  The port must implement the necessary code in this function.  A
+// default weak implementation is provided that does nothing.
+void port_wake_main_task_from_isr(void);
+
+// Some ports may use real RTOS tasks besides the background task framework of
+// CircuitPython. Calling this will yield to other tasks and then return to the
+// CircuitPython task when others are done.
+void port_yield(void);
+
+// Some ports need special handling just after completing boot.py execution.
+// This function is called once while boot.py's VM is still valid, and
+// then a second time after the VM is finalized.
+// A default weak implementation is provided that does nothing.
+void port_post_boot_py(bool heap_valid);
+
+// Some ports want to add information to boot_out.txt.
+// A default weak implementation is provided that does nothing.
+void port_boot_info(void);
+
 #endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

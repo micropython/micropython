@@ -3,5 +3,3 @@
 #
 CONFIG_LWIP_LOCAL_HOSTNAME="lolin-c3-mini"
 # end of LWIP
-
-

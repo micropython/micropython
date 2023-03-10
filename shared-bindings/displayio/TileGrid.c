@@ -48,7 +48,19 @@
 //|
 //|     A single tile grid is also known as a Sprite."""
 //|
-//|     def __init__(self, bitmap: Union[Bitmap, OnDiskBitmap, Shape], *, pixel_shader: Union[ColorConverter, Palette], width: int = 1, height: int = 1, tile_width: Optional[int] = None, tile_height: Optional[int] = None, default_tile: int = 0, x: int = 0, y: int = 0) -> None:
+//|     def __init__(
+//|         self,
+//|         bitmap: Union[Bitmap, OnDiskBitmap, Shape],
+//|         *,
+//|         pixel_shader: Union[ColorConverter, Palette],
+//|         width: int = 1,
+//|         height: int = 1,
+//|         tile_width: Optional[int] = None,
+//|         tile_height: Optional[int] = None,
+//|         default_tile: int = 0,
+//|         x: int = 0,
+//|         y: int = 0
+//|     ) -> None:
 //|         """Create a TileGrid object. The bitmap is source for 2d pixels. The pixel_shader is used to
 //|         convert the value and its location to a display native pixel color. This may be a simple color
 //|         palette lookup, a gradient, a pattern or a color transformer.
@@ -66,7 +78,6 @@
 //|         :param int default_tile: Default tile index to show.
 //|         :param int x: Initial x position of the left edge within the parent.
 //|         :param int y: Initial y position of the top edge within the parent."""
-//|
 STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_bitmap, ARG_pixel_shader, ARG_width, ARG_height, ARG_tile_width, ARG_tile_height, ARG_default_tile, ARG_x, ARG_y };
     static const mp_arg_t allowed_args[] = {
@@ -146,7 +157,6 @@ static displayio_tilegrid_t *native_tilegrid(mp_obj_t tilegrid_obj) {
 
 //|     hidden: bool
 //|     """True when the TileGrid is hidden. This may be False even when a part of a hidden Group."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_hidden(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return mp_obj_new_bool(common_hal_displayio_tilegrid_get_hidden(self));
@@ -167,7 +177,6 @@ MP_PROPERTY_GETSET(displayio_tilegrid_hidden_obj,
 
 //|     x: int
 //|     """X position of the left edge in the parent."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_x(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_x(self));
@@ -189,7 +198,6 @@ MP_PROPERTY_GETSET(displayio_tilegrid_x_obj,
 
 //|     y: int
 //|     """Y position of the top edge in the parent."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_y(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_y(self));
@@ -211,7 +219,6 @@ MP_PROPERTY_GETSET(displayio_tilegrid_y_obj,
 
 //|     width: int
 //|     """Width of the tilegrid in tiles."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_width(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_width(self));
@@ -223,7 +230,6 @@ MP_PROPERTY_GETTER(displayio_tilegrid_width_obj,
 
 //|     height: int
 //|     """Height of the tilegrid in tiles."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_height(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_height(self));
@@ -235,7 +241,6 @@ MP_PROPERTY_GETTER(displayio_tilegrid_height_obj,
 
 //|     tile_width: int
 //|     """Width of a single tile in pixels."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_tile_width(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_tile_width(self));
@@ -247,7 +252,6 @@ MP_PROPERTY_GETTER(displayio_tilegrid_tile_width_obj,
 
 //|     tile_height: int
 //|     """Height of a single tile in pixels."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_tile_height(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_tile_height(self));
@@ -259,7 +263,6 @@ MP_PROPERTY_GETTER(displayio_tilegrid_tile_height_obj,
 
 //|     flip_x: bool
 //|     """If true, the left edge rendered will be the right edge of the right-most tile."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_flip_x(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return mp_obj_new_bool(common_hal_displayio_tilegrid_get_flip_x(self));
@@ -280,7 +283,6 @@ MP_PROPERTY_GETSET(displayio_tilegrid_flip_x_obj,
 
 //|     flip_y: bool
 //|     """If true, the top edge rendered will be the bottom edge of the bottom-most tile."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_flip_y(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return mp_obj_new_bool(common_hal_displayio_tilegrid_get_flip_y(self));
@@ -303,7 +305,6 @@ MP_PROPERTY_GETSET(displayio_tilegrid_flip_y_obj,
 //|     transpose_xy: bool
 //|     """If true, the TileGrid's axis will be swapped. When combined with mirroring, any 90 degree
 //|     rotation can be achieved along with the corresponding mirrored version."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_transpose_xy(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return mp_obj_new_bool(common_hal_displayio_tilegrid_get_transpose_xy(self));
@@ -324,8 +325,7 @@ MP_PROPERTY_GETSET(displayio_tilegrid_transpose_xy_obj,
 
 //|     def contains(self, touch_tuple: tuple) -> bool:
 //|         """Returns True if the first two values in ``touch_tuple`` represent an x,y coordinate
-//|            inside the tilegrid rectangle bounds."""
-//|
+//|         inside the tilegrid rectangle bounds."""
 STATIC mp_obj_t displayio_tilegrid_obj_contains(mp_obj_t self_in, mp_obj_t touch_tuple) {
     displayio_tilegrid_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -342,7 +342,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_contains_obj, displayio_tilegrid_ob
 
 //|     pixel_shader: Union[ColorConverter, Palette]
 //|     """The pixel shader of the tilegrid."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_pixel_shader(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return common_hal_displayio_tilegrid_get_pixel_shader(self);
@@ -365,9 +364,8 @@ MP_PROPERTY_GETSET(displayio_tilegrid_pixel_shader_obj,
     (mp_obj_t)&displayio_tilegrid_get_pixel_shader_obj,
     (mp_obj_t)&displayio_tilegrid_set_pixel_shader_obj);
 
-//|     bitmap: Union[Bitmap,OnDiskBitmap,Shape]
+//|     bitmap: Union[Bitmap, OnDiskBitmap, Shape]
 //|     """The bitmap of the tilegrid."""
-//|
 STATIC mp_obj_t displayio_tilegrid_obj_get_bitmap(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     return common_hal_displayio_tilegrid_get_bitmap(self);
@@ -436,7 +434,6 @@ MP_PROPERTY_GETSET(displayio_tilegrid_bitmap_obj,
 //|
 //|           print(grid[0])"""
 //|         ...
-//|
 //|     def __setitem__(self, index: Union[Tuple[int, int], int], value: int) -> None:
 //|         """Sets the tile index at the given index. The index can either be an x,y tuple or an int equal
 //|         to ``y * width + x``.

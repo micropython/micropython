@@ -102,7 +102,10 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 }
 
 bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
-    return displayio_display_core_show(&self->core, root_group);
+    if (root_group == NULL) {
+        root_group = &circuitpython_splash;
+    }
+    return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
 uint16_t common_hal_framebufferio_framebufferdisplay_get_width(framebufferio_framebufferdisplay_obj_t *self) {
@@ -111,20 +114,6 @@ uint16_t common_hal_framebufferio_framebufferdisplay_get_width(framebufferio_fra
 
 uint16_t common_hal_framebufferio_framebufferdisplay_get_height(framebufferio_framebufferdisplay_obj_t *self) {
     return displayio_display_core_get_height(&self->core);
-}
-
-bool common_hal_framebufferio_framebufferdisplay_get_auto_brightness(framebufferio_framebufferdisplay_obj_t *self) {
-    if (self->framebuffer_protocol->get_auto_brightness) {
-        return self->framebuffer_protocol->get_auto_brightness(self->framebuffer);
-    }
-    return true;
-}
-
-bool common_hal_framebufferio_framebufferdisplay_set_auto_brightness(framebufferio_framebufferdisplay_obj_t *self, bool auto_brightness) {
-    if (self->framebuffer_protocol->set_auto_brightness) {
-        return self->framebuffer_protocol->set_auto_brightness(self->framebuffer, auto_brightness);
-    }
-    return false;
 }
 
 mp_float_t common_hal_framebufferio_framebufferdisplay_get_brightness(framebufferio_framebufferdisplay_obj_t *self) {
@@ -374,5 +363,16 @@ void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj
 }
 
 mp_obj_t common_hal_framebufferio_framebufferdisplay_get_root_group(framebufferio_framebufferdisplay_obj_t *self) {
+    if (self->core.current_group == NULL) {
+        return mp_const_none;
+    }
     return self->core.current_group;
+}
+
+mp_obj_t common_hal_framebufferio_framebufferdisplay_set_root_group(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
+    bool ok = displayio_display_core_set_root_group(&self->core, root_group);
+    if (!ok) {
+        mp_raise_ValueError(translate("Group already used"));
+    }
+    return mp_const_none;
 }

@@ -65,7 +65,6 @@
 //| For more information on using `analogio`, see `this additional Learn guide
 //| <https://learn.adafruit.com/circuitpython-basics-analog-inputs-and-outputs>`_
 //| """
-//|
 
 STATIC const mp_rom_map_elem_t analogio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_analogio) },

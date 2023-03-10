@@ -13,7 +13,6 @@ except AttributeError:
 
 
 class RAMFS:
-
     SEC_SIZE = 512
 
     def __init__(self, blocks):
@@ -69,6 +68,11 @@ try:
     vfs.rename("foo_dir", "/null/file")
 except OSError as e:
     print(e.errno == uerrno.ENOENT)
+
+try:
+    vfs.rename("foo_dir", "foo_dir/inside_itself")
+except OSError as e:
+    print(e.errno == uerrno.EINVAL)
 
 # file in dir
 with open("foo_dir/file-in-dir.txt", "w+t") as f:

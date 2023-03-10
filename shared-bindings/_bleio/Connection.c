@@ -72,11 +72,9 @@ void bleio_connection_ensure_connected(bleio_connection_obj_t *self) {
 //|         Connections may also be made when another device initiates a connection. To use a Connection
 //|         created by a peer, read the `Adapter.connections` property."""
 //|         ...
-//|
 //|     def disconnect(self) -> None:
 //|         """Disconnects from the remote peripheral. Does nothing if already disconnected."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_connection_disconnect(mp_obj_t self_in) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // common_hal_bleio_connection_disconnect() does nothing if already disconnected.
@@ -89,7 +87,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_disconnect_obj, bleio_connecti
 //|     def pair(self, *, bond: bool = True) -> None:
 //|         """Pair to the peer to improve security."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_connection_pair(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -108,7 +105,9 @@ STATIC mp_obj_t bleio_connection_pair(mp_uint_t n_args, const mp_obj_t *pos_args
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_pair_obj, 1, bleio_connection_pair);
 
-//|     def discover_remote_services(self, service_uuids_whitelist: Optional[Iterable[UUID]] = None) -> Tuple[Service, ...]:
+//|     def discover_remote_services(
+//|         self, service_uuids_whitelist: Optional[Iterable[UUID]] = None
+//|     ) -> Tuple[Service, ...]:
 //|         """Do BLE discovery for all services or for the given service UUIDS,
 //|         to find their handles and characteristics, and return the discovered services.
 //|         `Connection.connected` must be True.
@@ -131,7 +130,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_pair_obj, 1, bleio_connection
 //|
 //|         :return: A tuple of `_bleio.Service` objects provided by the remote peripheral."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_connection_discover_remote_services(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -153,7 +151,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_discover_remote_services_obj,
 
 //|     connected: bool
 //|     """True if connected to the remote peer."""
-//|
 STATIC mp_obj_t bleio_connection_get_connected(mp_obj_t self_in) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -167,7 +164,6 @@ MP_PROPERTY_GETTER(bleio_connection_connected_obj,
 
 //|     paired: bool
 //|     """True if paired to the remote peer."""
-//|
 STATIC mp_obj_t bleio_connection_get_paired(mp_obj_t self_in) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -188,7 +184,6 @@ MP_PROPERTY_GETTER(bleio_connection_paired_obj,
 //|
 //|     Apple has additional guidelines that dictate should be a multiple of 15ms except if HID is
 //|     available. When HID is available Apple devices may accept 11.25ms intervals."""
-//|
 STATIC mp_obj_t bleio_connection_get_connection_interval(mp_obj_t self_in) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
 

@@ -26,8 +26,15 @@
 
 #include "supervisor/shared/web_workflow/websocket.h"
 
-// TODO: Remove ESP specific stuff. For now, it is useful as we refine the server.
-#include "esp_log.h"
+#include "py/ringbuf.h"
+#include "py/runtime.h"
+#include "shared/runtime/interrupt_char.h"
+#include "shared-bindings/socketpool/SocketPool.h"
+#include "supervisor/shared/web_workflow/web_workflow.h"
+
+#if CIRCUITPY_STATUS_BAR
+#include "supervisor/shared/status_bar.h"
+#endif
 
 typedef struct {
     socketpool_socket_obj_t socket;
@@ -41,49 +48,48 @@ typedef struct {
     size_t payload_remaining;
 } _websocket;
 
+// Buffer the incoming serial data in the background so that we can look for the
+// interrupt character.
+STATIC ringbuf_t _incoming_ringbuf;
+STATIC uint8_t _buf[16];
+// make sure background is not called recursively
+STATIC bool in_web_background = false;
+
 static _websocket cp_serial;
 
-static const char *TAG = "CP websocket";
-
 void websocket_init(void) {
-    cp_serial.socket.num = -1;
-    cp_serial.socket.connected = false;
+    socketpool_socket_reset(&cp_serial.socket);
+    cp_serial.closed = true;
+
+    ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf) - 1);
 }
 
 void websocket_handoff(socketpool_socket_obj_t *socket) {
-    cp_serial.socket = *socket;
+    if (!cp_serial.closed) {
+        common_hal_socketpool_socket_close(&cp_serial.socket);
+    }
+    socketpool_socket_move(socket, &cp_serial.socket);
     cp_serial.closed = false;
     cp_serial.opcode = 0;
     cp_serial.frame_index = 0;
     cp_serial.frame_len = 2;
-    // Mark the original socket object as closed without telling the lower level.
-    socket->connected = false;
-    socket->num = -1;
+
+    #if CIRCUITPY_STATUS_BAR
+    // Send the title bar for the new client.
+    supervisor_status_bar_request_update(true);
+    #endif
 }
 
 bool websocket_connected(void) {
-    return !cp_serial.closed && common_hal_socketpool_socket_get_connected(&cp_serial.socket);
+    return _incoming_ringbuf.size > 0 && !cp_serial.closed && common_hal_socketpool_socket_get_connected(&cp_serial.socket);
 }
 
 static bool _read_byte(uint8_t *c) {
     int len = socketpool_socket_recv_into(&cp_serial.socket, c, 1);
     if (len != 1) {
-        if (len != -EAGAIN) {
-            ESP_LOGE(TAG, "recv error %d", len);
-        }
         return false;
     }
     return true;
-}
-
-static void _send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
-    int sent = -EAGAIN;
-    while (sent == -EAGAIN) {
-        sent = socketpool_socket_send(socket, buf, len);
-    }
-    if (sent < len) {
-        ESP_LOGE(TAG, "short send on %d err %d len %d", socket->num, sent, len);
-    }
 }
 
 static void _read_next_frame_header(void) {
@@ -94,7 +100,7 @@ static void _read_next_frame_header(void) {
     }
     if (cp_serial.frame_index == 1 && _read_byte(&h)) {
         cp_serial.frame_index++;
-        uint8_t len = h & 0xf;
+        uint8_t len = h & 0x7f;
         cp_serial.masked = (h >> 7) == 1;
         if (len <= 125) {
             cp_serial.payload_remaining = len;
@@ -136,22 +142,19 @@ static void _read_next_frame_header(void) {
                 // Set the TCP socket to send immediately so that we send the payload back before
                 // closing the connection.
                 int nodelay = 1;
-                lwip_setsockopt(cp_serial.socket.num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+                common_hal_socketpool_socket_setsockopt(&cp_serial.socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
             }
             uint8_t frame_header[2];
             frame_header[0] = 1 << 7 | opcode;
-            if (cp_serial.payload_remaining > 125) {
-                ESP_LOGE(TAG, "CLOSE or PING has long payload");
-            }
             frame_header[1] = cp_serial.payload_remaining;
-            _send_raw(&cp_serial.socket, (const uint8_t *)frame_header, 2);
+            web_workflow_send_raw(&cp_serial.socket, (const uint8_t *)frame_header, 2);
         }
 
         if (cp_serial.payload_remaining > 0 && _read_byte(&h)) {
             // Send the payload back to the client.
             cp_serial.frame_index++;
             cp_serial.payload_remaining--;
-            _send_raw(&cp_serial.socket, &h, 1);
+            web_workflow_send_raw(&cp_serial.socket, &h, 1);
         }
 
         if (cp_serial.payload_remaining == 0) {
@@ -188,14 +191,16 @@ bool websocket_available(void) {
     if (!websocket_connected()) {
         return false;
     }
-    _read_next_frame_header();
-    return cp_serial.payload_remaining > 0 && cp_serial.frame_index >= cp_serial.frame_len;
+    websocket_background();
+    return ringbuf_num_filled(&_incoming_ringbuf) > 0;
 }
 
 char websocket_read_char(void) {
-    uint8_t c;
-    _read_next_payload_byte(&c);
-    return c;
+    websocket_background();
+    if (ringbuf_num_filled(&_incoming_ringbuf) > 0) {
+        return ringbuf_get(&_incoming_ringbuf);
+    }
+    return -1;
 }
 
 static void _websocket_send(_websocket *ws, const char *text, size_t len) {
@@ -214,21 +219,45 @@ static void _websocket_send(_websocket *ws, const char *text, size_t len) {
         payload_len = 127;
     }
     frame_header[1] = payload_len;
-    _send_raw(&ws->socket, (const uint8_t *)frame_header, 2);
+    web_workflow_send_raw(&ws->socket, (const uint8_t *)frame_header, 2);
+    uint8_t extended_len[4];
     if (payload_len == 126) {
-        _send_raw(&ws->socket, (const uint8_t *)&len, 2);
+        extended_len[0] = (len >> 8) & 0xff;
+        extended_len[1] = len & 0xff;
+        web_workflow_send_raw(&ws->socket, extended_len, 2);
     } else if (payload_len == 127) {
         uint32_t zero = 0;
         // 64 bits where top four bytes are zero.
-        _send_raw(&ws->socket, (const uint8_t *)&zero, 4);
-        _send_raw(&ws->socket, (const uint8_t *)&len, 4);
+        web_workflow_send_raw(&ws->socket, (const uint8_t *)&zero, 4);
+        extended_len[0] = (len >> 24) & 0xff;
+        extended_len[1] = (len >> 16) & 0xff;
+        extended_len[2] = (len >> 8) & 0xff;
+        extended_len[3] = len & 0xff;
+        web_workflow_send_raw(&ws->socket, extended_len, 4);
     }
-    _send_raw(&ws->socket, (const uint8_t *)text, len);
-    char copy[len];
-    memcpy(copy, text, len);
-    copy[len] = '\0';
+    web_workflow_send_raw(&ws->socket, (const uint8_t *)text, len);
 }
 
 void websocket_write(const char *text, size_t len) {
     _websocket_send(&cp_serial, text, len);
+}
+
+void websocket_background(void) {
+    if (!websocket_connected()) {
+        return;
+    }
+    if (in_web_background) {
+        return;
+    }
+    in_web_background = true;
+    uint8_t c;
+    while (ringbuf_num_empty(&_incoming_ringbuf) > 0 &&
+           _read_next_payload_byte(&c)) {
+        if (c == mp_interrupt_char) {
+            mp_sched_keyboard_interrupt();
+            continue;
+        }
+        ringbuf_put(&_incoming_ringbuf, c);
+    }
+    in_web_background = false;
 }

@@ -183,7 +183,17 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # run the actual test
             try:
-                output_mupy = subprocess.check_output(cmdlist, stderr=subprocess.STDOUT)
+                result = subprocess.run(
+                    cmdlist,
+                    stderr=subprocess.STDOUT,
+                    stdout=subprocess.PIPE,
+                    check=True,
+                    timeout=10,
+                )
+                output_mupy = result.stdout
+            except subprocess.TimeoutExpired as er:
+                had_crash = True
+                output_mupy = (er.output or b"") + b"TIMEOUT"
             except subprocess.CalledProcessError as er:
                 had_crash = True
                 output_mupy = er.output + b"CRASH"
@@ -426,6 +436,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if upy_float_precision < 64:
         skip_tests.add("float/float_divmod.py")  # tested by float/float_divmod_relaxed.py instead
         skip_tests.add("float/float2int_doubleprec_intbig.py")
+        skip_tests.add("float/float_format_ints_doubleprec.py")
         skip_tests.add("float/float_parse_doubleprec.py")
 
     if not has_complex:
@@ -511,8 +522,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/scope_implicit.py")  # requires checking for unbound local
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
         skip_tests.add("basics/unboundlocal.py")  # requires checking for unbound local
-        skip_tests.add(
-            "circuitpython/traceback_test.py"
+        skip_tests.update(
+            (
+                "basics/chained_exception.py",
+                "circuitpython/traceback_test.py",
+                "circuitpython/traceback_test_chained.py",
+            )
         )  # because native doesn't have proper traceback info
         skip_tests.add("extmod/uasyncio_event.py")  # unknown issue
         skip_tests.add("extmod/uasyncio_lock.py")  # requires async with
@@ -868,9 +883,15 @@ the last matching regex is used:
         tests = args.files
 
     if not args.keep_path:
-        # clear search path to make sure tests use only builtin modules and those in extmod
-        os.environ["MICROPYPATH"] = os.pathsep + ".frozen" + os.pathsep + base_path("../extmod")
-
+        # clear search path to make sure tests use only builtin modules and those that can be frozen
+        os.environ["MICROPYPATH"] = os.pathsep.join(
+            [
+                "",
+                ".frozen",
+                base_path("../frozen/Adafruit_CircuitPython_asyncio"),
+                base_path("../frozen/Adafruit_CircuitPython_Ticks"),
+            ]
+        )
     try:
         os.makedirs(args.result_dir, exist_ok=True)
         res = run_tests(pyb, tests, args, args.result_dir, args.jobs)

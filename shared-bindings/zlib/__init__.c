@@ -48,7 +48,9 @@
 //| (commonly used in zlib library and gzip archiver). Compression is not yet implemented."""
 //|
 
-//| def zlib_decompress(data: bytes, wbits: Optional[int] = 0, bufsize: Optional[int] = 0) -> bytes:
+//| def zlib_decompress(
+//|     data: bytes, wbits: Optional[int] = 0, bufsize: Optional[int] = 0
+//| ) -> bytes:
 //|     """Return decompressed *data* as bytes. *wbits* is DEFLATE dictionary window
 //|     size used during compression (8-15, the dictionary size is power of 2 of
 //|     that value). Additionally, if value is positive, *data* is assumed to be

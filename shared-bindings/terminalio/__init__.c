@@ -47,7 +47,6 @@
 //|
 //| FONT: fontio.BuiltinFont
 //| """The built in font"""
-//|
 STATIC const mp_rom_map_elem_t terminalio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_terminalio) },
     { MP_ROM_QSTR(MP_QSTR_Terminal),   MP_OBJ_FROM_PTR(&terminalio_terminal_type) },

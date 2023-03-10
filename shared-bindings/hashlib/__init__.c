@@ -38,7 +38,7 @@
 //| |see_cpython_module| :mod:`cpython:hashlib`.
 //| """
 //|
-//| def new(name, data=b"") -> hashlib.Hash:
+//| def new(name: str, data: bytes = b"") -> hashlib.Hash:
 //|     """Returns a Hash object setup for the named algorithm. Raises ValueError when the named
 //|        algorithm is unsupported.
 //|

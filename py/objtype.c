@@ -106,7 +106,9 @@ STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *pos_args
     // copy in args
     memcpy(args2, pos_args, n_args * sizeof(mp_obj_t));
     // copy in kwargs
-    memcpy(args2 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
+    if (n_kw) {
+        memcpy(args2 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
+    }
     self->subobj[0] = native_base->make_new(native_base, n_args, n_kw, args2);
     m_del(mp_obj_t, args2, n_args + 2 * n_kw);
 
@@ -1181,9 +1183,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);
     for (size_t i = 0; i < bases_len; i++) {
-        if (!mp_obj_is_type(bases_items[i], &mp_type_type)) {
-            mp_raise_TypeError(MP_ERROR_TEXT("type is not an acceptable base type"));
-        }
+        mp_arg_validate_type(bases_items[i], &mp_type_type, MP_QSTR___class__);
         mp_obj_type_t *t = MP_OBJ_TO_PTR(bases_items[i]);
         // TODO: Verify with CPy, tested on function type
         if (t->make_new == NULL) {

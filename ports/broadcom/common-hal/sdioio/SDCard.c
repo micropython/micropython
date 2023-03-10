@@ -122,27 +122,27 @@ STATIC sdmmc_err_t _do_transaction(int slot, sdmmc_command_t *cmdinfo) {
         if (EMMC->STATUS_b.DAT_INHIBIT) {
             return SDMMC_ERR_BUSY;
         }
-        cmd_flags = EMMC_CMDTM_TM_BLKCNT_EN_Msk | EMMC_CMDTM_CMD_ISDATA_Msk;
+        cmd_flags = Arasan_EMMC_Distributor_CMDTM_TM_BLKCNT_EN_Msk | Arasan_EMMC_Distributor_CMDTM_CMD_ISDATA_Msk;
         if (cmdinfo->datalen > cmdinfo->blklen) {
-            cmd_flags |= EMMC_CMDTM_TM_MULTI_BLOCK_Msk;
+            cmd_flags |= Arasan_EMMC_Distributor_CMDTM_TM_MULTI_BLOCK_Msk;
             if ((cmdinfo->flags & SCF_AUTO_STOP) != 0) {
-                cmd_flags |= 1 << EMMC_CMDTM_TM_AUTO_CMD_EN_Pos;
+                cmd_flags |= 1 << Arasan_EMMC_Distributor_CMDTM_TM_AUTO_CMD_EN_Pos;
             }
         }
         if (read) {
-            cmd_flags |= EMMC_CMDTM_TM_DAT_DIR_Msk;
+            cmd_flags |= Arasan_EMMC_Distributor_CMDTM_TM_DAT_DIR_Msk;
         }
-        EMMC->BLKSIZECNT = (cmdinfo->datalen / cmdinfo->blklen) << EMMC_BLKSIZECNT_BLKCNT_Pos |
-            cmdinfo->blklen << EMMC_BLKSIZECNT_BLKSIZE_Pos;
+        EMMC->BLKSIZECNT = (cmdinfo->datalen / cmdinfo->blklen) << Arasan_EMMC_Distributor_BLKSIZECNT_BLKCNT_Pos |
+            cmdinfo->blklen << Arasan_EMMC_Distributor_BLKSIZECNT_BLKSIZE_Pos;
     }
 
     uint32_t response_type = EMMC_CMDTM_CMD_RSPNS_TYPE_RESPONSE_48BITS;
     uint32_t crc = 0;
     if ((cmdinfo->flags & SCF_RSP_CRC) != 0) {
-        crc |= EMMC_CMDTM_CMD_CRCCHK_EN_Msk;
+        crc |= Arasan_EMMC_Distributor_CMDTM_CMD_CRCCHK_EN_Msk;
     }
     if ((cmdinfo->flags & SCF_RSP_IDX) != 0) {
-        crc |= EMMC_CMDTM_CMD_IXCHK_EN_Msk;
+        crc |= Arasan_EMMC_Distributor_CMDTM_CMD_IXCHK_EN_Msk;
     }
     if ((cmdinfo->flags & SCF_RSP_136) != 0) {
         response_type = EMMC_CMDTM_CMD_RSPNS_TYPE_RESPONSE_136BITS;
@@ -152,8 +152,8 @@ STATIC sdmmc_err_t _do_transaction(int slot, sdmmc_command_t *cmdinfo) {
         response_type = EMMC_CMDTM_CMD_RSPNS_TYPE_RESPONSE_NONE;
     }
     uint32_t full_cmd = cmd_flags | crc |
-        cmdinfo->opcode << EMMC_CMDTM_CMD_INDEX_Pos |
-        response_type << EMMC_CMDTM_CMD_RSPNS_TYPE_Pos;
+        cmdinfo->opcode << Arasan_EMMC_Distributor_CMDTM_CMD_INDEX_Pos |
+        response_type << Arasan_EMMC_Distributor_CMDTM_CMD_RSPNS_TYPE_Pos;
     EMMC->CMDTM = full_cmd;
 
     // Wait for an interrupt to indicate completion of the command.
@@ -170,7 +170,7 @@ STATIC sdmmc_err_t _do_transaction(int slot, sdmmc_command_t *cmdinfo) {
         }
         return SDMMC_ERR_TIMEOUT;
     } else {
-        EMMC->INTERRUPT = EMMC_INTERRUPT_CMD_DONE_Msk;
+        EMMC->INTERRUPT = Arasan_EMMC_Distributor_INTERRUPT_CMD_DONE_Msk;
     }
 
     // Transfer the data.
@@ -197,7 +197,7 @@ STATIC sdmmc_err_t _do_transaction(int slot, sdmmc_command_t *cmdinfo) {
                 EMMC->DATA = ((uint32_t *)cmdinfo->data)[i];
             }
         }
-        uint32_t data_done_mask = EMMC_INTERRUPT_ERR_Msk | EMMC_INTERRUPT_DATA_DONE_Msk;
+        uint32_t data_done_mask = Arasan_EMMC_Distributor_INTERRUPT_ERR_Msk | Arasan_EMMC_Distributor_INTERRUPT_DATA_DONE_Msk;
         start_ticks = port_get_raw_ticks(NULL);
         while ((EMMC->INTERRUPT & data_done_mask) == 0 && (port_get_raw_ticks(NULL) - start_ticks) < (size_t)cmdinfo->timeout_ms) {
         }
@@ -282,7 +282,7 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
 
     }
     // Set max timeout
-    EMMC->CONTROL1 |= EMMC_CONTROL1_CLK_INTLEN_Msk | (0xe << EMMC_CONTROL1_DATA_TOUNIT_Pos);
+    EMMC->CONTROL1 |= Arasan_EMMC_Distributor_CONTROL1_CLK_INTLEN_Msk | (0xe << Arasan_EMMC_Distributor_CONTROL1_DATA_TOUNIT_Pos);
 
     EMMC->IRPT_MASK = 0xffffffff;
 

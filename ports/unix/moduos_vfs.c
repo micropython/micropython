@@ -37,6 +37,10 @@
 // These are defined in modos.c
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_errno_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mod_os_getenv_obj);
+#if defined(MICROPY_UNIX_COVERAGE)
+MP_DECLARE_CONST_FUN_OBJ_1(mod_os_getenv_int_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mod_os_getenv_str_obj);
+#endif
 MP_DECLARE_CONST_FUN_OBJ_1(mod_os_putenv_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mod_os_unsetenv_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mod_os_system_obj);
@@ -47,6 +51,10 @@ STATIC const mp_rom_map_elem_t uos_vfs_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mod_os_errno_obj) },
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mod_os_getenv_obj) },
+    #if defined(MICROPY_UNIX_COVERAGE)
+    { MP_ROM_QSTR(MP_QSTR_getenv_int), MP_ROM_PTR(&mod_os_getenv_int_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getenv_str), MP_ROM_PTR(&mod_os_getenv_str_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_putenv), MP_ROM_PTR(&mod_os_putenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_unsetenv), MP_ROM_PTR(&mod_os_unsetenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_system), MP_ROM_PTR(&mod_os_system_obj) },

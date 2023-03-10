@@ -66,10 +66,10 @@ safe_mode_t port_init(void) {
     heap_size = size / sizeof(uint32_t);
 
     if (board_requests_safe_mode()) {
-        return USER_SAFE_MODE;
+        return SAFE_MODE_USER;
     }
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_cpu(void) {
@@ -111,13 +111,13 @@ bool port_has_fixed_stack(void) {
 uint32_t *port_stack_get_limit(void) {
     struct tcb_s *rtcb = this_task();
 
-    return rtcb->adj_stack_ptr - (uint32_t)rtcb->adj_stack_size;
+    return rtcb->stack_base_ptr;
 }
 
 uint32_t *port_stack_get_top(void) {
     struct tcb_s *rtcb = this_task();
 
-    return rtcb->adj_stack_ptr;
+    return rtcb->stack_base_ptr + (uint32_t)rtcb->adj_stack_size;
 }
 
 uint32_t *port_heap_get_bottom(void) {

@@ -46,12 +46,22 @@ mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t *self, const
 mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port, const uint8_t *buf, uint32_t len);
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint32_t timeout_ms);
+int common_hal_socketpool_socket_setsockopt(socketpool_socket_obj_t *self, int level, int optname, const void *value, size_t optlen);
+bool common_hal_socketpool_readable(socketpool_socket_obj_t *self);
+bool common_hal_socketpool_writable(socketpool_socket_obj_t *self);
 
 // Non-allocating versions for internal use.
-int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port);
+int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port, socketpool_socket_obj_t *accepted);
 void socketpool_socket_close(socketpool_socket_obj_t *self);
 int socketpool_socket_send(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len);
 int socketpool_socket_recv_into(socketpool_socket_obj_t *self,
     const uint8_t *buf, uint32_t len);
+
+// Moves self to sock without closing the real socket. self will think its closed afterwards.
+void socketpool_socket_move(socketpool_socket_obj_t *self, socketpool_socket_obj_t *sock);
+
+// Resets the socket object state so it appears closed and disconnected. This only works on
+// uninitialized memory.
+void socketpool_socket_reset(socketpool_socket_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H

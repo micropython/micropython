@@ -44,6 +44,7 @@ PASS = "PASS"
 FAIL = "FAIL"
 NA = "N/A"
 
+
 # Determine if given value is a number
 def _is_number(val):
     try:
@@ -61,7 +62,6 @@ def _deinit_pins(gpios):
 
 # Toggle IO pins while waiting for answer
 def _toggle_wait(pin_gpios):
-
     timestamp = time.monotonic()
     led_state = False
     failed = []
@@ -96,7 +96,6 @@ def buildPin(pin):
 
 
 def run_test(pins):
-
     """
     Toggles all available GPIO on and off repeatedly.
 
@@ -114,7 +113,6 @@ def run_test(pins):
     gpio_pins = analog_pins + digital_pins
 
     if gpio_pins:
-
         # Print out the LEDs found
         print("GPIO pins found:", end=" ")
         for pin in gpio_pins:

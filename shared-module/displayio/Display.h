@@ -45,7 +45,6 @@ typedef struct {
         pwmio_pwmout_obj_t backlight_pwm;
         #endif
     };
-    uint64_t last_backlight_refresh;
     uint64_t last_refresh_call;
     mp_float_t current_brightness;
     uint16_t brightness_command;
@@ -57,8 +56,6 @@ typedef struct {
     bool auto_refresh;
     bool first_manual_refresh;
     bool data_as_commands;
-    bool auto_brightness;
-    bool updating_backlight;
     bool backlight_on_high;
     // new quirk for sh1107
     bool SH1107_addressing;
@@ -67,7 +64,6 @@ typedef struct {
 void displayio_display_background(displayio_display_obj_t *self);
 void release_display(displayio_display_obj_t *self);
 void reset_display(displayio_display_obj_t *self);
-
 void displayio_display_collect_ptrs(displayio_display_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H

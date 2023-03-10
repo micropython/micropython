@@ -1,0 +1,18 @@
+#
+# Serial flasher config
+#
+# CONFIG_ESPTOOLPY_FLASHSIZE_1MB is not set
+CONFIG_ESPTOOLPY_FLASHSIZE_2MB=y
+# CONFIG_ESPTOOLPY_FLASHSIZE_4MB is not set
+# CONFIG_ESPTOOLPY_FLASHSIZE_8MB is not set
+# CONFIG_ESPTOOLPY_FLASHSIZE_16MB is not set
+CONFIG_ESPTOOLPY_FLASHSIZE="2MB"
+CONFIG_ESPTOOLPY_FLASHSIZE_DETECT=y
+# end of Serial flasher config
+
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="esp-idf-config/partitions-2MB-no-ota-no-uf2.csv"
+#
+# Partition Table
+#
+CONFIG_PARTITION_TABLE_FILENAME="esp-idf-config/partitions-2MB-no-ota-no-uf2.csv"
+# end of Partition Table

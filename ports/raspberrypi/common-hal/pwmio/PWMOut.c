@@ -89,18 +89,10 @@ void pwmout_never_reset(uint8_t slice, uint8_t ab_channel) {
     never_reset_channel |= _mask(slice, ab_channel);
 }
 
-void pwmout_reset_ok(uint8_t slice, uint8_t ab_channel) {
-    never_reset_channel &= ~_mask(slice, ab_channel);
-}
-
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     pwmout_never_reset(self->slice, self->ab_channel);
 
     never_reset_pin_number(self->pin->number);
-}
-
-void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    pwmout_reset_ok(self->slice, self->ab_channel);
 }
 
 void pwmout_reset(void) {
@@ -236,14 +228,6 @@ extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uin
     }
     // compare_count is the CC register value, which should be TOP+1 for 100% duty cycle.
     pwm_set_chan_level(self->slice, self->ab_channel, compare_count);
-    // Wait for wrap so that we know our new cc value has been applied. Clear
-    // the internal interrupt and then wait for it to be set. Worst case, we
-    // wait a full cycle.
-    pwm_hw->intr = 1 << self->slice;
-    while ((pwm_hw->en & (1 << self->slice)) != 0 &&
-           (pwm_hw->intr & (1 << self->slice)) == 0 &&
-           !mp_hal_is_interrupted()) {
-    }
 }
 
 uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {

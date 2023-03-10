@@ -1,7 +1,7 @@
 var url_base = window.location;
 var current_path;
 
-var mdns_works = window.location.hostname.endsWith(".local");
+var mdns_works = url_base.hostname.endsWith(".local");
 
 async function find_devices() {
     var version_response = await fetch("/cp/version.json");
@@ -44,7 +44,7 @@ async function find_devices() {
         li.appendChild(a);
         var port = "";
         if (device.port != 80) {
-            port = ":" + version_info.port;
+            port = ":" + device.port;
         }
         var server;
         if (mdns_works) {

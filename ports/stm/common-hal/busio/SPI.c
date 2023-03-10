@@ -28,11 +28,8 @@
 #include <string.h>
 
 #include "shared-bindings/busio/SPI.h"
-#include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/microcontroller/__init__.h"
-#include "supervisor/board.h"
 #include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/microcontroller/Pin.h"
 

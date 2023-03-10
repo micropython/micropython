@@ -26,7 +26,6 @@ CFLAGS += -DCIRCUITPY_QRIO=1
 $(BUILD)/lib/quirc/lib/%.o: CFLAGS += -Wno-shadow -Wno-sign-compare -include shared-module/qrio/quirc_alloc.h
 
 SRC_BITMAP := \
-	$(patsubst ../../%,%,$(wildcard ../../shared-bindings/gifio/*.c ../../shared-module/gifio/*.c)) \
 	shared/runtime/context_manager_helpers.c \
 	displayio_min.c \
 	shared-bindings/aesio/aes.c \
@@ -44,17 +43,18 @@ SRC_BITMAP := \
 	shared-module/displayio/Bitmap.c \
 	shared-module/displayio/ColorConverter.c \
 	shared-module/displayio/ColorConverter.c \
+	shared-module/os/getenv.c \
 	shared-module/rainbowio/__init__.c \
 	shared-module/traceback/__init__.c \
 	shared-module/zlib/__init__.c \
 
-$(info $(SRC_BITMAP))
 SRC_C += $(SRC_BITMAP)
 
 CFLAGS += \
 	-DCIRCUITPY_AESIO=1 \
 	-DCIRCUITPY_BITMAPTOOLS=1 \
 	-DCIRCUITPY_DISPLAYIO_UNIX=1 \
+	-DCIRCUITPY_OS_GETENV=1 \
 	-DCIRCUITPY_GIFIO=1 \
 	-DCIRCUITPY_RAINBOWIO=1 \
 	-DCIRCUITPY_TRACEBACK=1 \

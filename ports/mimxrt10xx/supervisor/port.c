@@ -259,10 +259,10 @@ safe_mode_t port_init(void) {
     // run yet, which uses `never_reset` to protect critical pins from being reset by  `reset_port`.
 
     if (board_requests_safe_mode()) {
-        return USER_SAFE_MODE;
+        return SAFE_MODE_USER;
     }
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_port(void) {
@@ -284,7 +284,7 @@ void reset_port(void) {
 //    eic_reset();
 
     #if CIRCUITPY_PWMIO
-    pwmout_reset();
+    reset_all_flexpwm();
     #endif
 
     #if CIRCUITPY_RTC
@@ -301,7 +301,7 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
-    SNVS->LPGPR[0] = DBL_TAP_MAGIC;
+    DBL_TAP_REG = DBL_TAP_MAGIC;
     reset();
 }
 
@@ -419,7 +419,7 @@ void port_idle_until_interrupt(void) {
  */
 void MemManage_Handler(void);
 __attribute__((used)) void MemManage_Handler(void) {
-    reset_into_safe_mode(MEM_MANAGE);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }
@@ -430,7 +430,7 @@ __attribute__((used)) void MemManage_Handler(void) {
  */
 void BusFault_Handler(void);
 __attribute__((used)) void BusFault_Handler(void) {
-    reset_into_safe_mode(MEM_MANAGE);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }
@@ -441,7 +441,7 @@ __attribute__((used)) void BusFault_Handler(void) {
  */
 void UsageFault_Handler(void);
 __attribute__((used)) void UsageFault_Handler(void) {
-    reset_into_safe_mode(MEM_MANAGE);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }
@@ -452,7 +452,7 @@ __attribute__((used)) void UsageFault_Handler(void) {
  */
 void HardFault_Handler(void);
 __attribute__((used)) void HardFault_Handler(void) {
-    reset_into_safe_mode(HARD_CRASH);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }

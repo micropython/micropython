@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "extmod/vfs.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
 #include "py/objproperty.h"
@@ -37,8 +38,8 @@
 
 //| class SSLContext:
 //|     """Settings related to SSL that can be applied to a socket by wrapping it.
-//|        This is useful to provide SSL certificates to specific connections
-//|        rather than all of them."""
+//|     This is useful to provide SSL certificates to specific connections
+//|     rather than all of them."""
 //|
 
 STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -52,10 +53,50 @@ STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(s);
 }
 
+//|     def load_cert_chain(self, certfile: str, keyfile: str) -> None:
+//|         """Load a private key and the corresponding certificate.
+//|
+//|         The certfile string must be the path to a single file in PEM format
+//|         containing the certificate as well as any number of CA certificates
+//|         needed to establish the certificate's authenticity.  The keyfile string
+//|         must point to a file containing the private key.
+//|         """
+
+STATIC void get_file_contents(mp_obj_t name_obj, mp_buffer_info_t *bufinfo) {
+    mp_obj_t file = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), name_obj, MP_OBJ_NEW_QSTR(MP_QSTR_rb));
+    mp_obj_t dest[2];
+    mp_load_method(file, MP_QSTR_read, dest);
+    mp_obj_t result = mp_call_method_n_kw(0, 0, dest);
+    mp_get_buffer_raise(result, bufinfo, MP_BUFFER_READ);
+}
+
+STATIC mp_obj_t ssl_sslcontext_load_cert_chain(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_certfile, ARG_keyfile };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_certfile, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_keyfile, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+    ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_buffer_info_t cert_buf, key_buf;
+    get_file_contents(args[ARG_certfile].u_obj, &cert_buf);
+    if (args[ARG_keyfile].u_obj != mp_const_none) {
+        get_file_contents(args[ARG_keyfile].u_obj, &key_buf);
+    } else {
+        key_buf = cert_buf;
+    }
+
+    common_hal_ssl_sslcontext_load_cert_chain(self, &cert_buf, &key_buf);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_cert_chain_obj, 1, ssl_sslcontext_load_cert_chain);
+
 //|     def load_verify_locations(self, cadata: Optional[str] = None) -> None:
 //|         """Load a set of certification authority (CA) certificates used to validate
-//|            other peers' certificates."""
-//|
+//|         other peers' certificates."""
 
 STATIC mp_obj_t ssl_sslcontext_load_verify_locations(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_cadata };
@@ -76,7 +117,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_verify_locations_obj, 1, s
 
 //|     def set_default_verify_paths(self) -> None:
 //|         """Load a set of default certification authority (CA) certificates."""
-//|
 
 STATIC mp_obj_t ssl_sslcontext_set_default_verify_paths(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -88,7 +128,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_set_default_verify_paths_obj, 1
 
 //|     check_hostname: bool
 //|     """Whether to match the peer certificate's hostname."""
-//|
 
 STATIC mp_obj_t ssl_sslcontext_get_check_hostname(mp_obj_t self_in) {
     ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -109,9 +148,15 @@ MP_PROPERTY_GETSET(ssl_sslcontext_check_hostname_obj,
     (mp_obj_t)&ssl_sslcontext_get_check_hostname_obj,
     (mp_obj_t)&ssl_sslcontext_set_check_hostname_obj);
 
-//|     def wrap_socket(self, sock: socketpool.Socket, *, server_side: bool = False, server_hostname: Optional[str] = None) -> ssl.SSLSocket:
+//|     def wrap_socket(
+//|         self,
+//|         sock: socketpool.Socket,
+//|         *,
+//|         server_side: bool = False,
+//|         server_hostname: Optional[str] = None
+//|     ) -> ssl.SSLSocket:
 //|         """Wraps the socket into a socket-compatible class that handles SSL negotiation.
-//|            The socket must be of type SOCK_STREAM."""
+//|         The socket must be of type SOCK_STREAM."""
 //|
 
 STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -143,6 +188,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_wrap_socket_obj, 1, ssl_sslcont
 
 STATIC const mp_rom_map_elem_t ssl_sslcontext_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&ssl_sslcontext_wrap_socket_obj) },
+    { MP_ROM_QSTR(MP_QSTR_load_cert_chain), MP_ROM_PTR(&ssl_sslcontext_load_cert_chain_obj) },
     { MP_ROM_QSTR(MP_QSTR_load_verify_locations), MP_ROM_PTR(&ssl_sslcontext_load_verify_locations_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_default_verify_paths), MP_ROM_PTR(&ssl_sslcontext_set_default_verify_paths_obj) },
     { MP_ROM_QSTR(MP_QSTR_check_hostname), MP_ROM_PTR(&ssl_sslcontext_check_hostname_obj) },

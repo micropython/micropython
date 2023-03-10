@@ -49,6 +49,10 @@ char serial_read(void);
 bool serial_bytes_available(void);
 bool serial_connected(void);
 
+// Used for temporarily suppressing output to the console or display.
+bool serial_console_write_disable(bool disabled);
+bool serial_display_write_disable(bool disabled);
+
 // These have no-op versions that are weak and the port can override. They work
 // in tandem with the cross-port mechanics like USB and BLE.
 void port_serial_early_init(void);

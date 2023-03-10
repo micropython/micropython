@@ -60,7 +60,7 @@ void common_hal_mcu_disable_interrupts(void) {
 
 void common_hal_mcu_enable_interrupts(void) {
     if (nesting_count == 0) {
-        // reset_into_safe_mode(LOCKING_ERROR);
+        // reset_into_safe_mode(SAFE_MODE_INTERRUPT_ERROR);
     }
     nesting_count--;
     if (nesting_count > 0) {
@@ -79,7 +79,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
             next_reset_to_bootloader = true;
             break;
         case RUNMODE_SAFE_MODE:
-            safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+            safe_mode_on_next_reset(SAFE_MODE_PROGRAMMATIC);
             break;
         default:
             break;
@@ -149,7 +149,7 @@ watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
 #endif
 
 // This maps MCU pin names to pin objects.
-const mp_rom_map_elem_t mcu_pin_global_dict_table[TOTAL_GPIO_COUNT] = {
+const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO0), MP_ROM_PTR(&pin_GPIO0) },
     { MP_ROM_QSTR(MP_QSTR_GPIO1), MP_ROM_PTR(&pin_GPIO1) },
     { MP_ROM_QSTR(MP_QSTR_GPIO2), MP_ROM_PTR(&pin_GPIO2) },
@@ -173,12 +173,33 @@ const mp_rom_map_elem_t mcu_pin_global_dict_table[TOTAL_GPIO_COUNT] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO20), MP_ROM_PTR(&pin_GPIO20) },
     { MP_ROM_QSTR(MP_QSTR_GPIO21), MP_ROM_PTR(&pin_GPIO21) },
     { MP_ROM_QSTR(MP_QSTR_GPIO22), MP_ROM_PTR(&pin_GPIO22) },
+    #if !defined(IGNORE_GPIO23)
     { MP_ROM_QSTR(MP_QSTR_GPIO23), MP_ROM_PTR(&pin_GPIO23) },
+    #endif
+    #if !defined(IGNORE_GPIO24)
     { MP_ROM_QSTR(MP_QSTR_GPIO24), MP_ROM_PTR(&pin_GPIO24) },
+    #endif
+    #if !defined(IGNORE_GPIO25)
     { MP_ROM_QSTR(MP_QSTR_GPIO25), MP_ROM_PTR(&pin_GPIO25) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_GPIO26), MP_ROM_PTR(&pin_GPIO26) },
     { MP_ROM_QSTR(MP_QSTR_GPIO27), MP_ROM_PTR(&pin_GPIO27) },
     { MP_ROM_QSTR(MP_QSTR_GPIO28), MP_ROM_PTR(&pin_GPIO28) },
     { MP_ROM_QSTR(MP_QSTR_GPIO29), MP_ROM_PTR(&pin_GPIO29) },
+    #if CIRCUITPY_CYW43
+    { MP_ROM_QSTR(MP_QSTR_CYW0), MP_ROM_PTR(&pin_CYW0) },
+    { MP_ROM_QSTR(MP_QSTR_CYW1), MP_ROM_PTR(&pin_CYW1) },
+    { MP_ROM_QSTR(MP_QSTR_CYW2), MP_ROM_PTR(&pin_CYW2) },
+    #endif
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_global_dict_table);
+
+const mcu_pin_obj_t *mcu_get_pin_by_number(int number) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_pin_global_dict_table); i++) {
+        mcu_pin_obj_t *obj = MP_OBJ_TO_PTR(mcu_pin_global_dict_table[i].value);
+        if (obj->base.type == &mcu_pin_type && obj->number == number) {
+            return obj;
+        }
+    }
+    return NULL;
+}

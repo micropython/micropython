@@ -243,7 +243,7 @@ $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
 MPCONFIGPORT_MK = $(wildcard mpconfigport.mk)
 
 $(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po | $(HEADER_BUILD)
-	$(Q)msgfmt -o $@ $^
+	$(Q)$(PYTHON) $(TOP)/tools/msgfmt.py -o $@ $^
 
 $(HEADER_BUILD)/qstrdefs.preprocessed.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
@@ -262,8 +262,15 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/
 	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py --output_type=data $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
-$(PY_BUILD)/translations-$(TRANSLATION).c $(HEADER_BUILD)/compression.generated.h: $(PY_SRC)/maketranslationdata.py $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h
+# Is generated as a side-effect of building compression.generated.h
+# Specifying both in a single rule actually causes the rule to be run twice!
+# This alternative makes it run just once.
+$(PY_BUILD)/translations-$(TRANSLATION).c: $(HEADER_BUILD)/compression.generated.h
+	@true
+
+$(HEADER_BUILD)/compression.generated.h: $(PY_SRC)/maketranslationdata.py $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h
 	$(STEPECHO) "GEN $@"
+	$(Q)mkdir -p $(PY_BUILD)
 	$(Q)$(PYTHON) $(PY_SRC)/maketranslationdata.py --compression_filename $(HEADER_BUILD)/compression.generated.h --translation $(HEADER_BUILD)/$(TRANSLATION).mo --translation_filename $(PY_BUILD)/translations-$(TRANSLATION).c $(HEADER_BUILD)/qstrdefs.preprocessed.h
 
 PY_CORE_O += $(PY_BUILD)/translations-$(TRANSLATION).o

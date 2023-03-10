@@ -53,14 +53,3 @@ void board_init(void) {
     // digitalWrite(PIN_ENABLE_SENSORS_3V3, HIGH);
     // digitalWrite(PIN_ENABLE_I2C_PULLUP, HIGH);
 }
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-
-}
-
-void board_deinit(void) {
-}

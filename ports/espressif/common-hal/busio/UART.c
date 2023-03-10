@@ -49,8 +49,9 @@ static void uart_event_task(void *param) {
     while (true) {
         if (xQueueReceive(self->event_queue, &event, portMAX_DELAY)) {
             switch (event.type) {
+                case UART_BREAK:
                 case UART_PATTERN_DET:
-                    // When the console uart receives CTRL+C, wake the main task and schedule a keyboard interrupt
+                    // When the console uart receives CTRL+C or BREAK, wake the main task and schedule a keyboard interrupt
                     if (self->is_console) {
                         port_wake_main_task();
                         if (mp_interrupt_char == CHAR_CTRL_C) {
@@ -111,9 +112,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     uart_config_t uart_config = {0};
     bool have_rs485_dir = rs485_dir != NULL;
-    if (!have_tx && !have_rx) {
-        mp_raise_ValueError(translate("tx and rx cannot both be None"));
-    }
+
+    // shared-bindings checks that TX and RX are not both None, so we don't need to check here.
 
     // Filter for sane settings for RS485
     if (have_rs485_dir) {

@@ -368,20 +368,20 @@ safe_mode_t port_init(void) {
 
     #ifdef SAMD21
     if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
-        return BROWNOUT;
+        return SAFE_MODE_BROWNOUT;
     }
     #endif
     #ifdef SAM_D5X_E5X
     if (RSTC->RCAUSE.bit.BODVDD == 1 || RSTC->RCAUSE.bit.BODCORE == 1) {
-        return BROWNOUT;
+        return SAFE_MODE_BROWNOUT;
     }
     #endif
 
     if (board_requests_safe_mode()) {
-        return USER_SAFE_MODE;
+        return SAFE_MODE_USER;
     }
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_port(void) {
@@ -644,6 +644,10 @@ void port_disable_tick(void) {
     RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_PER2;
     #endif
     #ifdef SAMD21
+    if (_tick_event_channel == EVSYS_SYNCH_NUM) {
+        return;
+    }
+
     if (_tick_event_channel >= 8) {
         uint8_t value = 1 << (_tick_event_channel - 8);
         EVSYS->INTENCLR.reg = EVSYS_INTENSET_EVDp8(value);
@@ -651,6 +655,7 @@ void port_disable_tick(void) {
         uint8_t value = 1 << _tick_event_channel;
         EVSYS->INTENCLR.reg = EVSYS_INTENSET_EVD(value);
     }
+    disable_event_channel(_tick_event_channel);
     _tick_event_channel = EVSYS_SYNCH_NUM;
     #endif
 }
@@ -715,7 +720,7 @@ __attribute__((used)) void HardFault_Handler(void) {
     REG_MTB_MASTER = 0x00000000 + 6;
     #endif
 
-    reset_into_safe_mode(HARD_CRASH);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }

@@ -27,86 +27,85 @@
 
 #include "ringbuf.h"
 
-bool ringbuf_init(ringbuf_t *r, uint8_t *buf, size_t capacity) {
+bool ringbuf_init(ringbuf_t *r, uint8_t *buf, size_t size) {
     r->buf = buf;
-    r->size = capacity;
-    r->iget = r->iput = 0;
+    r->size = size;
+    r->used = 0;
+    r->next_read = 0;
+    r->next_write = 0;
     return r->buf != NULL;
 }
 
-// Dynamic initialization. This should be accessible from a root pointer.
-// capacity is the number of bytes the ring buffer can hold. The actual
-// size of the buffer is one greater than that, due to how the buffer
-// handles empty and full statuses.
-bool ringbuf_alloc(ringbuf_t *r, size_t capacity, bool long_lived) {
-    r->buf = gc_alloc(capacity + 1, false, long_lived);
-    r->size = capacity + 1;
-    r->iget = r->iput = 0;
-    return r->buf != NULL;
+// Dynamic initialization. This should be accessible from a root pointer..
+bool ringbuf_alloc(ringbuf_t *r, size_t size, bool long_lived) {
+    bool result = ringbuf_init(r, gc_alloc(size, false, long_lived), size);
+    return result;
 }
 
-void ringbuf_free(ringbuf_t *r) {
-    // Free buf by letting gc take care of it. If the VM has finished already,
+void ringbuf_deinit(ringbuf_t *r) {
+    // Free buf by doing nothing and letting gc take care of it. If the VM has finished already,
     // this will be safe.
     r->buf = (uint8_t *)NULL;
     r->size = 0;
     ringbuf_clear(r);
 }
 
-size_t ringbuf_capacity(ringbuf_t *r) {
-    return r->size - 1;
+size_t ringbuf_size(ringbuf_t *r) {
+    return r->size;
 }
 
-// Returns -1 if buffer is empty, else returns byte fetched.
+// Return -1 if buffer is empty, else return byte fetched.
 int ringbuf_get(ringbuf_t *r) {
-    if (r->iget == r->iput) {
+    if (r->used < 1) {
         return -1;
     }
-    uint8_t v = r->buf[r->iget++];
-    if (r->iget >= r->size) {
-        r->iget = 0;
+    uint8_t v = r->buf[r->next_read];
+    r->next_read++;
+    if (r->next_read >= r->size) {
+        r->next_read = 0;
     }
+    r->used--;
     return v;
 }
 
 int ringbuf_get16(ringbuf_t *r) {
-    int v = ringbuf_peek16(r);
-    if (v == -1) {
-        return v;
-    }
-    r->iget += 2;
-    if (r->iget >= r->size) {
-        r->iget -= r->size;
-    }
-    return v;
-}
-
-// Returns -1 if no room in buffer, else returns 0.
-int ringbuf_put(ringbuf_t *r, uint8_t v) {
-    uint32_t iput_new = r->iput + 1;
-    if (iput_new >= r->size) {
-        iput_new = 0;
-    }
-    if (iput_new == r->iget) {
+    if (r->used < 2) {
         return -1;
     }
-    r->buf[r->iput] = v;
-    r->iput = iput_new;
+
+    int high_byte = ringbuf_get(r);
+    int low_byte = ringbuf_get(r);
+    return (high_byte << 8) | low_byte;
+}
+
+// Return -1 if no room in buffer, else return 0.
+int ringbuf_put(ringbuf_t *r, uint8_t v) {
+    if (r->used >= r->size) {
+        return -1;
+    }
+    r->buf[r->next_write] = v;
+    r->next_write++;
+    if (r->next_write >= r->size) {
+        r->next_write = 0;
+    }
+    r->used++;
     return 0;
 }
 
 void ringbuf_clear(ringbuf_t *r) {
-    r->iput = r->iget = 0;
+    r->next_write = 0;
+    r->next_read = 0;
+    r->used = 0;
 }
 
 // Number of free slots that can be written.
 size_t ringbuf_num_empty(ringbuf_t *r) {
-    return (r->size + r->iget - r->iput - 1) % r->size;
+    return r->size - r->used;
 }
 
 // Number of bytes available to read.
 size_t ringbuf_num_filled(ringbuf_t *r) {
-    return (r->size + r->iput - r->iget) % r->size;
+    return r->used;
 }
 
 // If the ring buffer fills up, not all bytes will be written.
@@ -134,37 +133,12 @@ size_t ringbuf_get_n(ringbuf_t *r, uint8_t *buf, size_t bufsize) {
     return bufsize;
 }
 
-int ringbuf_peek16(ringbuf_t *r) {
-    if (r->iget == r->iput) {
-        return -1;
-    }
-    uint32_t iget_a = r->iget + 1;
-    if (iget_a == r->size) {
-        iget_a = 0;
-    }
-    if (iget_a == r->iput) {
-        return -1;
-    }
-    return (r->buf[r->iget] << 8) | (r->buf[iget_a]);
-}
-
 int ringbuf_put16(ringbuf_t *r, uint16_t v) {
-    uint32_t iput_a = r->iput + 1;
-    if (iput_a == r->size) {
-        iput_a = 0;
-    }
-    if (iput_a == r->iget) {
+    if (r->size - r->used < 2) {
         return -1;
     }
-    uint32_t iput_b = iput_a + 1;
-    if (iput_b == r->size) {
-        iput_b = 0;
-    }
-    if (iput_b == r->iget) {
-        return -1;
-    }
-    r->buf[r->iput] = (v >> 8) & 0xff;
-    r->buf[iput_a] = v & 0xff;
-    r->iput = iput_b;
+
+    ringbuf_put(r, (v >> 8) & 0xff);
+    ringbuf_put(r, v & 0xff);
     return 0;
 }

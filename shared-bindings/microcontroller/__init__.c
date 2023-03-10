@@ -55,7 +55,6 @@
 //| """CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
 //| (clock frequency).
 //| This object is an instance of `microcontroller.Processor`."""
-//|
 
 //| cpus: Processor
 //| """CPU information and control, such as ``cpus[0].temperature`` and ``cpus[1].frequency``
@@ -147,12 +146,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 //| This object is the sole instance of `nvm.ByteArray` when available or ``None`` otherwise.
 //|
 //| :type: nvm.ByteArray or None"""
-//|
 
 //| watchdog: Optional[WatchDogTimer]
 //| """Available watchdog timer.
 //| This object is the sole instance of `watchdog.WatchDogTimer` when available or ``None`` otherwise."""
-//|
 
 const mp_obj_module_t mcu_pin_module = {
     .base = { &mp_type_module },

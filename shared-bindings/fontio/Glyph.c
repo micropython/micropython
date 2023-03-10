@@ -31,15 +31,17 @@
 //| class Glyph:
 //|     """Storage of glyph info"""
 //|
-//|     def __init__(self,
-//|                  bitmap: displayio.Bitmap,
-//|                  tile_index: int,
-//|                  width: int,
-//|                  height: int,
-//|                  dx: int,
-//|                  dy: int,
-//|                  shift_x: int,
-//|                  shift_y: int) -> None:
+//|     def __init__(
+//|         self,
+//|         bitmap: displayio.Bitmap,
+//|         tile_index: int,
+//|         width: int,
+//|         height: int,
+//|         dx: int,
+//|         dy: int,
+//|         shift_x: int,
+//|         shift_y: int,
+//|     ) -> None:
 //|         """Named tuple used to capture a single glyph and its attributes.
 //|
 //|         :param bitmap: the bitmap including the glyph

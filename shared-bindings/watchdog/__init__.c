@@ -49,6 +49,7 @@
 //|     w.timeout=2.5 # Set a timeout of 2.5 seconds
 //|     w.mode = WatchDogMode.RAISE
 //|     w.feed()"""
+//|
 
 //| class WatchDogTimeout(Exception):
 //|     """Exception raised when the watchdog timer is set to
@@ -76,6 +77,7 @@
 //|
 //|         print("Exited loop")
 //|     """
+//|
 
 const mp_obj_type_t mp_type_WatchDogTimeout = {
     { &mp_type_type },

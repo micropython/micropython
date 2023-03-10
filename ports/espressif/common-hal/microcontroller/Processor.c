@@ -40,13 +40,13 @@
 
 #include "soc/efuse_reg.h"
 
-#if !defined(CONFIG_IDF_TARGET_ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if !defined(CONFIG_IDF_TARGET_ESP32)
 #include "driver/temp_sensor.h"
 #endif
 
 float common_hal_mcu_processor_get_temperature(void) {
     float tsens_out;
-    #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32)
+    #if defined(CONFIG_IDF_TARGET_ESP32)
     mp_raise_NotImplementedError(NULL);
     #else
     temp_sensor_config_t temp_sensor = TSENS_CONFIG_DEFAULT(); // DEFAULT: range:-10℃ ~  80℃, error < 1℃.
@@ -139,6 +139,7 @@ mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
                 case ESP_SLEEP_WAKEUP_EXT0:
                 case ESP_SLEEP_WAKEUP_EXT1:
                 case ESP_SLEEP_WAKEUP_TOUCHPAD:
+                case ESP_SLEEP_WAKEUP_ULP:
                     return RESET_REASON_DEEP_SLEEP_ALARM;
 
                 case ESP_SLEEP_WAKEUP_UNDEFINED:

@@ -165,7 +165,7 @@ void common_hal_wifi_radio_set_mac_address_ap(wifi_radio_obj_t *self, const uint
     esp_wifi_set_mac(ESP_IF_WIFI_AP, mac);
 }
 
-mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
+mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, uint8_t start_channel, uint8_t stop_channel) {
     if (self->current_scan != NULL) {
         mp_raise_RuntimeError(translate("Already scanning for wifi networks"));
     }
@@ -177,9 +177,12 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
     wifi_scannednetworks_obj_t *scan = m_new_obj(wifi_scannednetworks_obj_t);
     scan->base.type = &wifi_scannednetworks_type;
     self->current_scan = scan;
-    scan->start_channel = 1;
-    scan->end_channel = 11;
+    scan->current_channel_index = 0;
+    scan->start_channel = start_channel;
+    scan->end_channel = stop_channel;
     scan->radio_event_group = self->event_group_handle;
+    scan->done = false;
+    scan->channel_scan_in_progress = false;
     wifi_scannednetworks_scan_next_channel(scan);
     return scan;
 }
@@ -202,20 +205,21 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
     set_mode_station(self, false);
 }
 
-void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode, uint8_t max_connections) {
+void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint32_t authmodes, uint8_t max_connections) {
     set_mode_ap(self, true);
 
-    switch (authmode) {
-        case (1 << AUTHMODE_OPEN):
+    uint8_t authmode = 0;
+    switch (authmodes) {
+        case AUTHMODE_OPEN:
             authmode = WIFI_AUTH_OPEN;
             break;
-        case ((1 << AUTHMODE_WPA) | (1 << AUTHMODE_PSK)):
+        case AUTHMODE_WPA | AUTHMODE_PSK:
             authmode = WIFI_AUTH_WPA_PSK;
             break;
-        case ((1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK)):
+        case AUTHMODE_WPA2 | AUTHMODE_PSK:
             authmode = WIFI_AUTH_WPA2_PSK;
             break;
-        case ((1 << AUTHMODE_WPA) | (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK)):
+        case AUTHMODE_WPA | AUTHMODE_WPA2 | AUTHMODE_PSK:
             authmode = WIFI_AUTH_WPA_WPA2_PSK;
             break;
         default:
@@ -336,6 +340,9 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             return WIFI_RADIO_ERROR_NO_AP_FOUND;
         }
         return self->last_disconnect_reason;
+    } else {
+        // We're connected, allow us to retry if we get disconnected.
+        self->retries_left = self->starting_retries;
     }
     return WIFI_RADIO_ERROR_NONE;
 }

@@ -25,7 +25,7 @@
  */
 
 #include "py/mperrno.h"
-#include "py/ioctl.h"
+#include "py/stream.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
@@ -44,7 +44,13 @@
 //|     When we're the server, we ignore all connections besides the first to subscribe to
 //|     notifications."""
 //|
-//|     def __init__(self, characteristic: Characteristic, *, buffer_size: int, max_packet_size: Optional[int] = None) -> None:
+//|     def __init__(
+//|         self,
+//|         characteristic: Characteristic,
+//|         *,
+//|         buffer_size: int,
+//|         max_packet_size: Optional[int] = None
+//|     ) -> None:
 //|         """Monitor the given Characteristic. Each time a new value is written to the Characteristic
 //|         add the newly-written bytes to a FIFO buffer.
 //|
@@ -59,7 +65,6 @@
 //|         :param int max_packet_size: Maximum size of packets. Overrides value from the characteristic.
 //|           (Remote characteristics may not have the correct length.)"""
 //|         ...
-//|
 STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_characteristic, ARG_buffer_size, ARG_max_packet_size };
     static const mp_arg_t allowed_args[] = {
@@ -101,7 +106,6 @@ STATIC void check_for_deinit(bleio_packet_buffer_obj_t *self) {
 //|         :return: number of bytes read and stored into ``buf``
 //|         :rtype: int"""
 //|         ...
-//|
 STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_obj) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -127,7 +131,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_
 //|         :return: number of bytes written. May include header bytes when packet is empty.
 //|         :rtype: int"""
 //|         ...
-//|
 // TODO: Add a kwarg `merge=False` to dictate whether subsequent writes are merged into a pending
 // one.
 STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -182,7 +185,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_bu
 
 //|     incoming_packet_length: int
 //|     """Maximum length in bytes of a packet we are reading."""
-//|
 STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 

@@ -43,7 +43,17 @@
 //|     """Manage updating a display over SPI four wire protocol in the background while Python code runs.
 //|     It doesn't handle display initialization."""
 //|
-//|     def __init__(self, spi_bus: busio.SPI, *, command: Optional[microcontroller.Pin], chip_select: microcontroller.Pin, reset: Optional[microcontroller.Pin] = None, baudrate: int = 24000000, polarity: int = 0, phase: int = 0) -> None:
+//|     def __init__(
+//|         self,
+//|         spi_bus: busio.SPI,
+//|         *,
+//|         command: Optional[microcontroller.Pin],
+//|         chip_select: microcontroller.Pin,
+//|         reset: Optional[microcontroller.Pin] = None,
+//|         baudrate: int = 24000000,
+//|         polarity: int = 0,
+//|         phase: int = 0
+//|     ) -> None:
 //|         """Create a FourWire object associated with the given pins.
 //|
 //|         The SPI bus and pins are then in use by the display until `displayio.release_displays()` is
@@ -65,7 +75,6 @@
 //|         :param int phase: the edge of the clock that data is captured. First (0)
 //|             or second (1). Rising or falling depends on clock polarity."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset, ARG_baudrate, ARG_polarity, ARG_phase };
     static const mp_arg_t allowed_args[] = {
@@ -80,9 +89,9 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *command = validate_obj_is_free_pin_or_none(args[ARG_command].u_obj);
-    const mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
-    const mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj);
+    const mcu_pin_obj_t *command = validate_obj_is_free_pin_or_none(args[ARG_command].u_obj, MP_QSTR_command);
+    const mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj, MP_QSTR_chip_select);
+    const mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj, MP_QSTR_reset);
 
     mp_obj_t spi = mp_arg_validate_type(args[ARG_spi_bus].u_obj, &busio_spi_type, MP_QSTR_spi_bus);
 
@@ -101,7 +110,6 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
 //|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
 //|         is available."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_fourwire_obj_reset(mp_obj_t self_in) {
     displayio_fourwire_obj_t *self = self_in;
 
@@ -112,7 +120,9 @@ STATIC mp_obj_t displayio_fourwire_obj_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_fourwire_reset_obj, displayio_fourwire_obj_reset);
 
-//|     def send(self, command: int, data: ReadableBuffer, *, toggle_every_byte: bool = False) -> None:
+//|     def send(
+//|         self, command: int, data: ReadableBuffer, *, toggle_every_byte: bool = False
+//|     ) -> None:
 //|         """Sends the given command value followed by the full set of data. Display state, such as
 //|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
 //|         ...

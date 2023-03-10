@@ -33,7 +33,7 @@
 
 #include "py/objstr.h"
 
-const mp_obj_type_t wifi_radio_type;
+extern const mp_obj_type_t wifi_radio_type;
 
 typedef enum {
     // 0 is circuitpython-specific; 1-53 are IEEE; 200+ are Espressif
@@ -77,6 +77,8 @@ extern void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabl
 extern mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *hostname);
 
+
+extern void wifi_radio_get_mac_address(wifi_radio_obj_t *self, uint8_t *mac);
 extern mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_mac_address(wifi_radio_obj_t *self, const uint8_t *mac);
 extern mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self);
@@ -85,13 +87,13 @@ extern void common_hal_wifi_radio_set_mac_address_ap(wifi_radio_obj_t *self, con
 extern mp_float_t common_hal_wifi_radio_get_tx_power(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_tx_power(wifi_radio_obj_t *self, const mp_float_t power);
 
-extern mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self);
+extern mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, uint8_t start_channel, uint8_t stop_channel);
 extern void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self);
 
 extern void common_hal_wifi_radio_start_station(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self);
 
-extern void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode, uint8_t max_connections);
+extern void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint32_t authmodes, uint8_t max_connections);
 extern void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self);
 
 extern void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self);

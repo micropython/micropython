@@ -35,6 +35,8 @@ Failing to install these will prevent from properly building.
 
     pip3 install -r requirements-dev.txt
 
+If you run into an error installing minify_html, you may need to install `rust`.
+
 ### mpy-cross
 
 As part of the build process, mpy-cross is needed to compile .py files into .mpy files.

@@ -37,7 +37,9 @@
 //| class MidiTrack:
 //|     """Simple square-wave MIDI synth"""
 //|
-//|     def __init__(self, buffer: ReadableBuffer, tempo: int, *, sample_rate: int = 11025) -> None:
+//|     def __init__(
+//|         self, buffer: ReadableBuffer, tempo: int, *, sample_rate: int = 11025
+//|     ) -> None:
 //|         """Create a MidiTrack from the given stream of MIDI events. Only "Note On" and "Note Off" events
 //|         are supported; channel numbers and key velocities are ignored. Up to two notes may be on at the
 //|         same time.
@@ -62,7 +64,6 @@
 //|             pass
 //|           print("stopped")"""
 //|         ...
-//|
 STATIC mp_obj_t synthio_miditrack_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_buffer, ARG_tempo, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
@@ -90,7 +91,6 @@ STATIC mp_obj_t synthio_miditrack_make_new(const mp_obj_type_t *type, size_t n_a
 //|     def deinit(self) -> None:
 //|         """Deinitialises the MidiTrack and releases any hardware resources for reuse."""
 //|         ...
-//|
 STATIC mp_obj_t synthio_miditrack_deinit(mp_obj_t self_in) {
     synthio_miditrack_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_synthio_miditrack_deinit(self);
@@ -107,14 +107,12 @@ STATIC void check_for_deinit(synthio_miditrack_obj_t *self) {
 //|     def __enter__(self) -> MidiTrack:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-//|
 STATIC mp_obj_t synthio_miditrack_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_synthio_miditrack_deinit(args[0]);

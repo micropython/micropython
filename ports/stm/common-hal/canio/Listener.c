@@ -105,8 +105,7 @@ STATIC int next_filter(canio_can_obj_t *can) {
             return i;
         }
     }
-    reset_into_safe_mode(MICROPY_FATAL_ERROR);
-    return -1;
+    mp_raise_msg_varg(&mp_type_RuntimeError, translate("%q"), MP_QSTR_Listener);
 }
 
 // IDE = "extended ID" flag of packet header.  We always add this bit to the

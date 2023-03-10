@@ -64,11 +64,11 @@
 
 #include "lib/tinyusb/src/device/usbd.h"
 
-#ifdef CIRCUITPY_AUDIOBUSIO
+#if CIRCUITPY_AUDIOBUSIO
 #include "common-hal/audiobusio/I2SOut.h"
 #endif
 
-#ifdef CIRCUITPY_AUDIOPWMIO
+#if CIRCUITPY_AUDIOPWMIO
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 
@@ -77,7 +77,7 @@ extern void qspi_disable(void);
 #endif
 
 static void power_warning_handler(void) {
-    reset_into_safe_mode(BROWNOUT);
+    reset_into_safe_mode(SAFE_MODE_BROWNOUT);
 }
 
 uint32_t reset_reason_saved = 0;
@@ -204,11 +204,11 @@ safe_mode_t port_init(void) {
         // If USB is connected, then the user might be editing `code.py`,
         // in which case we should reboot into Safe Mode.
         if (usb_reg & POWER_USBREGSTATUS_VBUSDETECT_Msk) {
-            return WATCHDOG_RESET;
+            return SAFE_MODE_WATCHDOG;
         }
     }
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_port(void) {
@@ -399,14 +399,8 @@ void port_idle_until_interrupt(void) {
 
 extern void HardFault_Handler(void);
 void HardFault_Handler(void) {
-    reset_into_safe_mode(HARD_CRASH);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }
 }
-
-#if CIRCUITPY_ALARM
-// in case boards/xxx/board.c does not provide board_deinit()
-MP_WEAK void board_deinit(void) {
-}
-#endif

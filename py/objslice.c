@@ -157,7 +157,7 @@ void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *r
     } else {
         step = mp_obj_get_int(self->step);
         if (step == 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("slice step cannot be zero"));
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("%q step cannot be zero"), MP_QSTR_slice);
         }
     }
 

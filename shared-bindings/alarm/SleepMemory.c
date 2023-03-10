@@ -42,27 +42,27 @@
 //|     instance of :class:`SleepMemory` is available at
 //|     :attr:`alarm.sleep_memory`.
 //|
+//|     **Limitations:** Not supported on RP2040.
+//|
 //|     Usage::
 //|
 //|        import alarm
 //|        alarm.sleep_memory[0] = True
 //|        alarm.sleep_memory[1] = 12
 //|     """
+//|
 
 //|     def __init__(self) -> None:
 //|         """Not used. Access the sole instance through `alarm.sleep_memory`."""
 //|         ...
-//|
 //|     def __bool__(self) -> bool:
 //|         """``sleep_memory`` is ``True`` if its length is greater than zero.
 //|         This is an easy way to check for its existence.
 //|         """
 //|         ...
-//|
 //|     def __len__(self) -> int:
 //|         """Return the length. This is used by (`len`)"""
 //|         ...
-//|
 STATIC mp_obj_t alarm_sleep_memory_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     alarm_sleep_memory_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint16_t len = common_hal_alarm_sleep_memory_get_length(self);
@@ -87,7 +87,6 @@ STATIC MP_DEFINE_CONST_DICT(alarm_sleep_memory_locals_dict, alarm_sleep_memory_l
 //|     def __getitem__(self, index: int) -> int:
 //|         """Returns the value at the given index."""
 //|         ...
-//|
 //|     @overload
 //|     def __setitem__(self, index: slice, value: ReadableBuffer) -> None: ...
 //|     @overload

@@ -296,9 +296,10 @@ include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
 
+TEST_EXTRA ?=
 test: $(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py $(TEST_EXTRA)
 
 test_full: $(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
@@ -308,6 +309,10 @@ test_full: $(PROG) $(TOP)/tests/run-tests.py
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native -d basics float micropython
 	cat $(TOP)/tests/basics/0prelim.py | ./$(PROG) | grep -q 'abc'
+
+.PHONY: print-failures clean-failures
+print-failures clean-failures:
+	../../tests/run-tests.py --$@
 
 test_gcov: test_full
 	gcov -o $(BUILD)/py $(TOP)/py/*.c

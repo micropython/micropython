@@ -12,7 +12,6 @@ EXTERNAL_FLASH_DEVICES = "S25FL216K, GD25Q16C"
 # Turn off features and optimizations for displayio build to make room for additional frozen libs.
 LONGINT_IMPL = NONE
 CIRCUITPY_KEYPAD = 0
-CIRCUITPY_ONEWIREIO = 0
 CIRCUITPY_PIXELBUF = 0
 CIRCUITPY_ROTARYIO = 0
 CIRCUITPY_RTC = 0

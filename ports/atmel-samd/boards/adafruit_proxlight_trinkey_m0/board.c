@@ -27,18 +27,9 @@
 #include "supervisor/board.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "supervisor/shared/board.h"
-#include "hal/include/hal_gpio.h"
-
-void board_init(void) {
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
 
 void reset_board(void) {
     board_reset_user_neopixels(&pin_PA15, 2);
 }
 
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

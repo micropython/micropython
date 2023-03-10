@@ -38,6 +38,10 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 
+#if CIRCUITPY_CYW43
+#include "bindings/cyw43/__init__.h"
+#endif
+
 #include "supervisor/port.h"
 #include "supervisor/shared/workflow.h"
 
@@ -92,6 +96,10 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
     },
 };
 
+// Non-heap alarm object recording alarm (if any) that woke up CircuitPython after light or deep sleep.
+// This object lives across VM instantiations, so none of these objects can contain references to the heap.
+alarm_wake_alarm_union_t alarm_wake_alarm;
+
 void alarm_reset(void) {
     alarm_sleep_memory_reset();
     alarm_pin_pinalarm_reset();
@@ -127,17 +135,17 @@ bool common_hal_alarm_woken_from_sleep(void) {
     return _get_wakeup_cause() != RP_SLEEP_WAKEUP_UNDEF;
 }
 
-mp_obj_t common_hal_alarm_create_wake_alarm(void) {
+mp_obj_t common_hal_alarm_record_wake_alarm(void) {
     // If woken from deep sleep, create a copy alarm similar to what would have
     // been passed in originally. Otherwise, just return none
     uint8_t cause = _get_wakeup_cause();
     switch (cause) {
         case RP_SLEEP_WAKEUP_RTC: {
-            return alarm_time_timealarm_create_wakeup_alarm();
+            return alarm_time_timealarm_record_wake_alarm();
         }
 
         case RP_SLEEP_WAKEUP_GPIO: {
-            return alarm_pin_pinalarm_create_wakeup_alarm();
+            return alarm_pin_pinalarm_record_wake_alarm();
         }
 
         case RP_SLEEP_WAKEUP_UNDEF:
@@ -194,12 +202,19 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
     return wake_alarm;
 }
 
-void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms, size_t n_dios, digitalio_digitalinout_obj_t **preserve_dios) {
+    if (n_dios > 0) {
+        mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_preserve_dios);
+    }
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     bool timealarm_set = alarm_time_timealarm_is_set();
+
+    #if CIRCUITPY_CYW43
+    cyw43_enter_deep_sleep();
+    #endif
 
     // If there's a timealarm, just enter a very deep light sleep
     if (timealarm_set) {
@@ -219,6 +234,9 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
 
     // Reset uses the watchdog. Use scratch registers to store wake reason
     watchdog_hw->scratch[RP_WKUP_SCRATCH_REG] = _get_wakeup_cause();
+
+    // Just before reset, enable the pinalarm interrupt.
+    alarm_pin_pinalarm_entering_deep_sleep();
     reset_cpu();
 }
 

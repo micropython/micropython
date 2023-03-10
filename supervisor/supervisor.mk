@@ -4,19 +4,22 @@ SRC_SUPERVISOR = \
 	supervisor/shared/background_callback.c \
 	supervisor/shared/board.c \
 	supervisor/shared/cpu.c \
+	supervisor/shared/fatfs.c \
 	supervisor/shared/flash.c \
 	supervisor/shared/lock.c \
 	supervisor/shared/memory.c \
 	supervisor/shared/micropython.c \
+	supervisor/shared/port.c \
 	supervisor/shared/reload.c \
 	supervisor/shared/safe_mode.c \
-  supervisor/shared/serial.c \
+	supervisor/shared/serial.c \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \
 	supervisor/shared/tick.c \
 	supervisor/shared/traceback.c \
 	supervisor/shared/translate/translate.c \
-  supervisor/shared/workflow.c
+	supervisor/shared/workflow.c \
+	supervisor/stub/misc.c \
 
 NO_USB ?= $(wildcard supervisor/usb.c)
 
@@ -93,6 +96,12 @@ endif
 
 ifneq ($(wildcard supervisor/serial.c),)
   SRC_SUPERVISOR += supervisor/serial.c
+endif
+
+ifeq ($(CIRCUITPY_STATUS_BAR),1)
+  SRC_SUPERVISOR += \
+    supervisor/shared/status_bar.c \
+
 endif
 
 ifeq ($(CIRCUITPY_USB),1)
@@ -182,9 +191,8 @@ ifeq ($(CIRCUITPY_DISPLAYIO), 1)
   SRC_SUPERVISOR += \
     supervisor/shared/display.c
 
-  ifeq ($(CIRCUITPY_TERMINALIO), 1)
-    SUPERVISOR_O += $(BUILD)/autogen_display_resources-$(TRANSLATION).o
-  endif
+  # Include the display resources because it includes the Blinka logo as well.
+  SUPERVISOR_O += $(BUILD)/autogen_display_resources-$(TRANSLATION).o
 endif
 
 # Preserve double quotes in these values by single-quoting them.

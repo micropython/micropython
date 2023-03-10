@@ -138,7 +138,6 @@ void gc_init(void *start, void *end) {
     MP_STATE_MEM(gc_alloc_table_start) = (byte *)start;
 
     #if MICROPY_ENABLE_FINALISER
-    size_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
     MP_STATE_MEM(gc_finaliser_table_start) = MP_STATE_MEM(gc_alloc_table_start) + MP_STATE_MEM(gc_alloc_table_byte_len) + 1;
     #endif
 
@@ -147,18 +146,16 @@ void gc_init(void *start, void *end) {
     MP_STATE_MEM(gc_pool_end) = end;
 
     #if MICROPY_ENABLE_FINALISER
+    size_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
+    (void)gc_finaliser_table_byte_len; // avoid unused variable diagnostic if asserts are disabled
     assert(MP_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
     #endif
 
-    // Clear ATBs plus one more byte. The extra byte might be read when we read the final ATB and
-    // then try to count its tail. Clearing the byte ensures it is 0 and ends the chain. Without an
-    // FTB, it'll just clear the pool byte early.
-    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_alloc_table_byte_len) + 1);
-
-    #if MICROPY_ENABLE_FINALISER
-    // clear FTBs
-    memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
-    #endif
+    // Clear ATBs & finalisers (if enabled). This also clears the extra byte
+    // which appears between ATBs and finalisers that ensures every chain in
+    // the ATB terminates, rather than erroneously using bits from the
+    // finalisers.
+    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_pool_start) - MP_STATE_MEM(gc_alloc_table_start));
 
     // Set first free ATB index to the start of the heap.
     for (size_t i = 0; i < MICROPY_ATB_INDICES; i++) {
@@ -521,7 +518,7 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags, bool long_lived) {
     }
 
     if (MP_STATE_MEM(gc_pool_start) == 0) {
-        reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
+        reset_into_safe_mode(SAFE_MODE_GC_ALLOC_OUTSIDE_VM);
     }
 
     GC_ENTER();
@@ -715,7 +712,7 @@ void gc_free(void *ptr) {
         GC_EXIT();
     } else {
         if (MP_STATE_MEM(gc_pool_start) == 0) {
-            reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
+            reset_into_safe_mode(SAFE_MODE_GC_ALLOC_OUTSIDE_VM);
         }
         // get the GC block number corresponding to this pointer
         assert(VERIFY_PTR(ptr));

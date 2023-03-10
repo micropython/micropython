@@ -499,6 +499,13 @@ DWORD ff_wtoupper ( /* Returns up-converted code point */
     DWORD uni       /* Unicode code point to be up-converted */
 )
 {
+    #if FF_FS_CASE_INSENSITIVE_COMPARISON_ASCII_ONLY
+    // Only uppercase ASCII characters. Everything else will require the user to
+    // pass in an uppercase version.
+    if ('a' <= uni && uni <= 'z') {
+        uni -= 32;
+    }
+    #else
     const WORD *p;
     WORD uc, bc, nc, cmd;
     static const WORD cvt1[] = {    /* Compressed up conversion table for U+0000 - U+0FFF */
@@ -619,6 +626,7 @@ DWORD ff_wtoupper ( /* Returns up-converted code point */
         }
         uni = uc;
     }
+    #endif
 
     return uni;
 }

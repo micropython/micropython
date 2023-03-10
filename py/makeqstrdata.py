@@ -249,6 +249,7 @@ static_qstr_list = [
     "zip",
 ]
 
+
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr, bytes_hash):
     hash = 5381

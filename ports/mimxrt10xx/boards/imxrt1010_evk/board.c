@@ -26,33 +26,25 @@
  */
 
 #include "supervisor/board.h"
-#include "boards/flash_config.h"
-#include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-void board_init(void) {
-    // SWD Pins
-    common_hal_never_reset_pin(&pin_GPIO_AD_13); // SWDIO
-    common_hal_never_reset_pin(&pin_GPIO_AD_12); // SWCLK
+// These pins should never ever be reset; doing so could interfere with basic operation.
+// Used in common-hal/microcontroller/Pin.c
+const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[] = {
+    &pin_GPIO_AD_13, // SWDIO
+    &pin_GPIO_AD_12, // SWCLK
     // FLEX flash
-    common_hal_never_reset_pin(&pin_GPIO_SD_12);
-    common_hal_never_reset_pin(&pin_GPIO_SD_11);
-    common_hal_never_reset_pin(&pin_GPIO_SD_10);
-    common_hal_never_reset_pin(&pin_GPIO_SD_09);
-    common_hal_never_reset_pin(&pin_GPIO_SD_08);
-    common_hal_never_reset_pin(&pin_GPIO_SD_07);
-    common_hal_never_reset_pin(&pin_GPIO_SD_06);
+    &pin_GPIO_SD_12,
+    &pin_GPIO_SD_11,
+    &pin_GPIO_SD_10,
+    &pin_GPIO_SD_09,
+    &pin_GPIO_SD_08,
+    &pin_GPIO_SD_07,
+    &pin_GPIO_SD_06,
     // USB Pins
-    common_hal_never_reset_pin(&pin_GPIO_12);
-    common_hal_never_reset_pin(&pin_GPIO_13);
-}
+    &pin_GPIO_12,
+    &pin_GPIO_13,
+    NULL,                       // Must end in NULL.
+};
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

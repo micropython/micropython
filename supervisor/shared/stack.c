@@ -74,7 +74,7 @@ inline bool stack_ok(void) {
 
 inline void assert_heap_ok(void) {
     if (!stack_ok()) {
-        reset_into_safe_mode(HEAP_OVERWRITTEN);
+        reset_into_safe_mode(SAFE_MODE_STACK_OVERFLOW);
     }
 }
 
@@ -105,6 +105,10 @@ size_t stack_get_length(void) {
 
 void set_next_stack_size(uint32_t size) {
     next_stack_size = size;
+}
+
+uint32_t get_next_stack_size(void) {
+    return next_stack_size;
 }
 
 uint32_t get_current_stack_size(void) {

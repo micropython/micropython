@@ -29,7 +29,9 @@ for f in args.files:
     if f.name.endswith(".html"):
         uncompressed = minify_html.minify(uncompressed.decode("utf-8")).encode("utf-8")
     elif f.name.endswith(".js"):
-        uncompressed = jsmin.jsmin(uncompressed.decode("utf-8")).encode("utf-8")
+        uncompressed = jsmin.jsmin(uncompressed.decode("utf-8"), quote_chars="'\"`").encode(
+            "utf-8"
+        )
     compressed = gzip.compress(uncompressed)
     clen = len(compressed)
     compressed = ", ".join([hex(x) for x in compressed])
