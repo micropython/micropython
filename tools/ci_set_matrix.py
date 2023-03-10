@@ -68,25 +68,43 @@ PATTERN_WINDOWS = [
     "tools/",
 ]
 
+
+def git_diff(pattern: str):
+    return (
+        subprocess.run(
+            f"git diff {pattern} --name-only",
+            capture_output=True,
+            shell=True,
+        )
+        .stdout.decode("utf-8")
+        .split("\n")[:-1]
+    )
+
+
 if len(sys.argv) > 1:
     print("Using files list on commandline")
     changed_files = sys.argv[1:]
-    last_failed_jobs = {}
+elif os.environ.get("BASE_SHA") and os.environ.get("HEAD_SHA"):
+    print("Using files list by computing diff")
+    changed_files = git_diff("$BASE_SHA...$HEAD_SHA")
+    if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
+        changed_files = list(set(changed_files).intersection(git_diff("$HEAD_SHA~...$HEAD_SHA")))
 else:
-    c = os.environ["CHANGED_FILES"]
-    if c == "":
-        print("CHANGED_FILES is in environment, but value is empty")
-        changed_files = []
-    else:
-        print("Using files list in CHANGED_FILES")
-        changed_files = json.loads(c.replace("\\", ""))
+    print("Using files list in CHANGED_FILES")
+    changed_files = json.loads(os.environ.get("CHANGED_FILES") or "[]")
 
-    j = os.environ["LAST_FAILED_JOBS"]
-    if j == "":
-        print("LAST_FAILED_JOBS is in environment, but value is empty")
-        last_failed_jobs = {}
-    else:
-        last_failed_jobs = json.loads(j)
+print("Using jobs list in LAST_FAILED_JOBS")
+last_failed_jobs = json.loads(os.environ.get("LAST_FAILED_JOBS") or "{}")
+
+
+def print_enclosed(title, content):
+    print("::group::" + title)
+    print(content)
+    print("::endgroup::")
+
+
+print_enclosed("LOG: changed_files", changed_files)
+print_enclosed("LOG: last_failed_jobs", last_failed_jobs)
 
 
 def set_output(name: str, value):

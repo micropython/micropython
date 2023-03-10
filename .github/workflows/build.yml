@@ -80,16 +80,11 @@ jobs:
       run: git cat-file -e $SHA && echo "BASE_SHA=$SHA" >> $GITHUB_ENV || true
       env:
         SHA: ${{ github.event.before }}
-    - name: Get changes
-      id: get-changes
-      if: env.BASE_SHA && env.HEAD_SHA
-      run: echo $(git diff $BASE_SHA...$HEAD_SHA --name-only) | echo "changed_files=[\"$(sed "s/ /\", \"/g")\"]" >> $GITHUB_OUTPUT
     - name: Set matrix
       id: set-matrix
       run: python3 -u ci_set_matrix.py
       working-directory: tools
       env:
-        CHANGED_FILES: ${{ steps.get-changes.outputs.changed_files }}
         LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
 
   tests:
