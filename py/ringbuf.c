@@ -72,7 +72,6 @@ int ringbuf_get16(ringbuf_t *r) {
     if (r->used < 2) {
         return -1;
     }
-
     int high_byte = ringbuf_get(r);
     int low_byte = ringbuf_get(r);
     return (high_byte << 8) | low_byte;
@@ -89,6 +88,15 @@ int ringbuf_put(ringbuf_t *r, uint8_t v) {
         r->next_write = 0;
     }
     r->used++;
+    return 0;
+}
+
+int ringbuf_put16(ringbuf_t *r, uint16_t v) {
+    if (r->size - r->used < 2) {
+        return -1;
+    }
+    ringbuf_put(r, (v >> 8) & 0xff);
+    ringbuf_put(r, v & 0xff);
     return 0;
 }
 
@@ -131,14 +139,4 @@ size_t ringbuf_get_n(ringbuf_t *r, uint8_t *buf, size_t bufsize) {
         buf[i] = b;
     }
     return bufsize;
-}
-
-int ringbuf_put16(ringbuf_t *r, uint16_t v) {
-    if (r->size - r->used < 2) {
-        return -1;
-    }
-
-    ringbuf_put(r, (v >> 8) & 0xff);
-    ringbuf_put(r, v & 0xff);
-    return 0;
 }

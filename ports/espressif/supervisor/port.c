@@ -37,6 +37,7 @@
 #include "freertos/task.h"
 
 #include "bindings/espidf/__init__.h"
+#include "bindings/espnow/__init__.h"
 #include "bindings/espulp/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogOut.h"
@@ -367,6 +368,10 @@ void reset_port(void) {
 
     #if CIRCUITPY_DUALBANK
     dualbank_reset();
+    #endif
+
+    #if CIRCUITPY_ESPNOW
+    espnow_reset();
     #endif
 
     #if CIRCUITPY_ESPULP
