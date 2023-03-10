@@ -35,6 +35,27 @@
 #include "py/smallint.h"
 #include "py/runtime.h"
 #include "extmod/utime_mphal.h"
+#include "shared/timeutils/timeutils.h"
+
+// mktime()
+// This is the inverse function of localtime. Its argument is a full 8-tuple
+// which expresses a time as per localtime. It returns an integer which is
+// the number of seconds since the Epoch (eg 1st Jan 1970, or 1st Jan 2000).
+STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
+    size_t len;
+    mp_obj_t *elem;
+    mp_obj_get_array(tuple, &len, &elem);
+
+    // localtime generates a tuple of len 8. CPython uses 9, so we accept both.
+    if (len < 8 || len > 9) {
+        mp_raise_TypeError(MP_ERROR_TEXT("mktime needs a tuple of length 8 or 9"));
+    }
+
+    return mp_obj_new_int_from_uint(timeutils_mktime(mp_obj_get_int(elem[0]),
+        mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]), mp_obj_get_int(elem[3]),
+        mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5])));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_utime_mktime_obj, time_mktime);
 
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     #if MICROPY_PY_BUILTINS_FLOAT

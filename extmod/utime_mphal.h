@@ -29,6 +29,7 @@
 
 #include "py/obj.h"
 
+MP_DECLARE_CONST_FUN_OBJ_1(mp_utime_mktime_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_utime_sleep_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_utime_sleep_ms_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_utime_sleep_us_obj);
