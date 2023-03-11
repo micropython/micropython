@@ -26,6 +26,9 @@
  */
 
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_I2C
+
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "extmod/machine_i2c.h"
@@ -274,3 +277,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &machine_i2c_p,
     locals_dict, &mp_machine_i2c_locals_dict
     );
+
+#endif

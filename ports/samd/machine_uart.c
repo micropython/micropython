@@ -25,6 +25,9 @@
  * THE SOFTWARE.
  */
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
+
 #include "py/mphal.h"
 #include "py/stream.h"
 #include "py/ringbuf.h"
@@ -59,6 +62,28 @@ typedef struct _machine_uart_obj_t {
 } machine_uart_obj_t;
 
 Sercom *sercom_instance[] = SERCOM_INSTS;
+MP_REGISTER_ROOT_POINTER(void *sercom_table[SERCOM_INST_NUM]);
+
+// Common Sercom functions used by all Serial devices
+void sercom_enable(Sercom *uart, int state) {
+    uart->USART.CTRLA.bit.ENABLE = state; // Set the state on/off
+    // Wait for the Registers to update.
+    while (uart->USART.SYNCBUSY.bit.ENABLE) {
+    }
+}
+
+void sercom_deinit_all(void) {
+    for (int i = 0; i < SERCOM_INST_NUM; i++) {
+        Sercom *uart = sercom_instance[i];
+        uart->USART.INTENCLR.reg = 0xff;
+        sercom_register_irq(i, NULL);
+        sercom_enable(uart, 0);
+        MP_STATE_PORT(sercom_table[i]) = NULL;
+    }
+}
+#endif
+
+#if MICROPY_PY_MACHINE_UART
 
 STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
 
@@ -102,13 +127,6 @@ void common_uart_irq_handler(int uart_id) {
             // Disable the other interrupts, if set by error
             uart->USART.INTENCLR.reg = (uint8_t) ~(SERCOM_USART_INTENCLR_DRE | SERCOM_USART_INTENCLR_RXC);
         }
-    }
-}
-
-void sercom_enable(Sercom *uart, int state) {
-    uart->USART.CTRLA.bit.ENABLE = state; // Set the state on/off
-    // Wait for the Registers to update.
-    while (uart->USART.SYNCBUSY.bit.ENABLE) {
     }
 }
 
@@ -544,3 +562,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &uart_stream_p,
     locals_dict, &machine_uart_locals_dict
     );
+#endif
