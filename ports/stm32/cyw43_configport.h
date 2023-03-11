@@ -131,6 +131,10 @@ static inline void cyw43_sdio_set_irq(bool enable) {
     sdio_enable_irq(enable);
 }
 
+static inline void cyw43_sdio_enable_high_speed_4bit(void) {
+    sdio_enable_high_speed_4bit();
+}
+
 static inline int cyw43_sdio_transfer(uint32_t cmd, uint32_t arg, uint32_t *resp) {
     return sdio_transfer(cmd, arg, resp);
 }
