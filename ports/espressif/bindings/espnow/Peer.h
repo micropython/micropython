@@ -34,4 +34,4 @@ typedef struct {
     esp_now_peer_info_t peer_info;
 } espnow_peer_obj_t;
 
-const mp_obj_type_t espnow_peer_type;
+extern const mp_obj_type_t espnow_peer_type;
