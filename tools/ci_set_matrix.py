@@ -89,7 +89,7 @@ elif os.environ.get("BASE_SHA") and os.environ.get("HEAD_SHA"):
     print("Using files list by computing diff")
     changed_files = git_diff("$BASE_SHA...$HEAD_SHA")
     if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
-        changed_files.intersection_update(git_diff("$HEAD_SHA~...$HEAD_SHA"))
+        changed_files.intersection_update(git_diff("$GITHUB_SHA~...$GITHUB_SHA"))
 else:
     print("Using files list in CHANGED_FILES")
     changed_files = set(json.loads(os.environ.get("CHANGED_FILES") or "[]"))

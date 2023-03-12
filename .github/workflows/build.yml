@@ -67,11 +67,9 @@ jobs:
       run: echo "HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
     - name: Set base sha (pull)
       if: github.event_name == 'pull_request'
-      run: |
-        git fetch --no-tags --no-recurse-submodules --depth=$((DEPTH + 1)) origin $HEAD_SHA
-        echo "BASE_SHA=$(git rev-list $HEAD_SHA --skip=$DEPTH --max-count=1)" >> $GITHUB_ENV
+      run: git cat-file -e $SHA && echo "BASE_SHA=$SHA" >> $GITHUB_ENV || true
       env:
-        DEPTH: ${{ steps.get-last-commit-with-checks.outputs.commit_depth || github.event.pull_request.commits }}
+        SHA: ${{ steps.get-last-commit-with-checks.outputs.commit_sha || github.event.pull_request.base.sha }}
     - name: Set head sha (push)
       if: github.event_name == 'push'
       run: echo "HEAD_SHA=${{ github.event.after }}" >> $GITHUB_ENV
