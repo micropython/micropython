@@ -145,6 +145,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_REPL_AUTO_INDENT         (1)
 #define MICROPY_REPL_EVENT_DRIVEN        (0)
 #define MICROPY_ENABLE_PYSTACK           (1)
+#define CIRCUITPY_SETTABLE_PYSTACK       (1)
 #define MICROPY_STACK_CHECK              (1)
 #define MICROPY_STREAMS_NON_BLOCK        (1)
 #ifndef MICROPY_USE_INTERNAL_PRINTF
@@ -593,6 +594,8 @@ void supervisor_run_background_tasks_if_tick(void);
 #ifndef CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE
 #define CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE (0)
 #endif
+
+#define FF_FS_CASE_INSENSITIVE_COMPARISON_ASCII_ONLY (1)
 
 #define FF_FS_MAKE_VOLID (1)
 

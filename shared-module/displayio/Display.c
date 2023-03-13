@@ -423,7 +423,6 @@ void release_display(displayio_display_obj_t *self) {
     release_display_core(&self->core);
     #if (CIRCUITPY_PWMIO)
     if (self->backlight_pwm.base.type == &pwmio_pwmout_type) {
-        common_hal_pwmio_pwmout_reset_ok(&self->backlight_pwm);
         common_hal_pwmio_pwmout_deinit(&self->backlight_pwm);
     } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_deinit(&self->backlight_inout);

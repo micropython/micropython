@@ -122,8 +122,8 @@
 uint8_t value_out = 0;
 #endif
 
-#if MICROPY_ENABLE_PYSTACK
-static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)]);
+#if MICROPY_ENABLE_PYSTACK && CIRCUITPY_OS_GETENV
+#include "shared-module/os/__init__.h"
 #endif
 
 static void reset_devices(void) {
@@ -132,7 +132,32 @@ static void reset_devices(void) {
     #endif
 }
 
-STATIC void start_mp(supervisor_allocation *heap) {
+#if MICROPY_ENABLE_PYSTACK
+STATIC supervisor_allocation *allocate_pystack(safe_mode_t safe_mode) {
+    mp_int_t pystack_size = CIRCUITPY_PYSTACK_SIZE;
+    #if CIRCUITPY_OS_GETENV && CIRCUITPY_SETTABLE_PYSTACK
+    // Fetch value if exists from settings.toml
+    // Leaves size to build default on any failure
+    if (safe_mode == SAFE_MODE_NONE || safe_mode == SAFE_MODE_USER) {
+        (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
+        // Check if value is valid
+        pystack_size = pystack_size - pystack_size % sizeof(size_t); // Round down to multiple of 4.
+        if ((pystack_size < 384) || (pystack_size > 900000)) {
+            serial_write_compressed(translate("\nInvalid CIRCUITPY_PYSTACK_SIZE\n\n\r"));
+            pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset
+        }
+    }
+    #endif
+    supervisor_allocation *pystack = allocate_memory(pystack_size, false, false);
+    if (pystack == NULL) {
+        serial_write_compressed(translate("\nInvalid CIRCUITPY_PYSTACK_SIZE\n\n\r"));
+        pystack = allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
+    }
+    return pystack;
+}
+#endif
+
+STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack) {
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -160,7 +185,7 @@ STATIC void start_mp(supervisor_allocation *heap) {
     readline_init0();
 
     #if MICROPY_ENABLE_PYSTACK
-    mp_pystack_init(_pystack, _pystack + (sizeof(_pystack) / sizeof(size_t)));
+    mp_pystack_init(pystack->ptr, pystack->ptr + get_allocation_length(pystack) / sizeof(size_t));
     #endif
 
     #if MICROPY_ENABLE_GC
@@ -264,7 +289,7 @@ STATIC void count_strn(void *data, const char *str, size_t len) {
     *(size_t *)data += len;
 }
 
-STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
+STATIC void cleanup_after_vm(supervisor_allocation *heap, supervisor_allocation *pystack, mp_obj_t exception) {
     // Get the traceback of any exception from this run off the heap.
     // MP_OBJ_SENTINEL means "this run does not contribute to traceback storage, don't touch it"
     // MP_OBJ_NULL (=0) means "this run completed successfully, clear any stored traceback"
@@ -345,6 +370,9 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     filesystem_flush();
     stop_mp();
     free_memory(heap);
+    #if MICROPY_ENABLE_PYSTACK
+    free_memory(pystack);
+    #endif
     supervisor_move_memory();
 
     // Let the workflows know we've reset in case they want to restart.
@@ -399,10 +427,12 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         };
         #endif
 
+        supervisor_allocation *pystack = NULL;
+        #if MICROPY_ENABLE_PYSTACK
+        pystack = allocate_pystack(safe_mode);
+        #endif
         supervisor_allocation *heap = allocate_remaining_memory();
-
-        // Prepare the VM state.
-        start_mp(heap);
+        start_mp(heap, pystack);
 
         #if CIRCUITPY_USB
         usb_setup_with_vm();
@@ -450,7 +480,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
 
         // Finished executing python code. Cleanup includes filesystem flush and a board reset.
-        cleanup_after_vm(heap, _exec_result.exception);
+        cleanup_after_vm(heap, pystack, _exec_result.exception);
         _exec_result.exception = NULL;
 
         // If a new next code file was set, that is a reason to keep it (obviously). Stuff this into
@@ -739,8 +769,12 @@ STATIC void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
         return;
     }
 
+    supervisor_allocation *pystack = NULL;
+    #if MICROPY_ENABLE_PYSTACK
+    pystack = allocate_pystack(safe_mode);
+    #endif
     supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap);
+    start_mp(heap, pystack);
 
     static const char *const safemode_py_filenames[] = {"safemode.py", "safemode.txt"};
     maybe_run_list(safemode_py_filenames, MP_ARRAY_SIZE(safemode_py_filenames));
@@ -751,7 +785,7 @@ STATIC void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
         set_safe_mode(SAFE_MODE_SAFEMODE_PY_ERROR);
     }
 
-    cleanup_after_vm(heap, _exec_result.exception);
+    cleanup_after_vm(heap, pystack, _exec_result.exception);
     _exec_result.exception = NULL;
 }
 #endif
@@ -772,9 +806,12 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     // Do USB setup even if boot.py is not run.
 
+    supervisor_allocation *pystack = NULL;
+    #if MICROPY_ENABLE_PYSTACK
+    pystack = allocate_pystack(safe_mode);
+    #endif
     supervisor_allocation *heap = allocate_remaining_memory();
-
-    start_mp(heap);
+    start_mp(heap, pystack);
 
     #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
@@ -860,7 +897,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     port_post_boot_py(true);
 
-    cleanup_after_vm(heap, _exec_result.exception);
+    cleanup_after_vm(heap, pystack, _exec_result.exception);
     _exec_result.exception = NULL;
 
     port_post_boot_py(false);
@@ -871,12 +908,16 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     #endif
 }
 
-STATIC int run_repl(void) {
+STATIC int run_repl(safe_mode_t safe_mode) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
+    supervisor_allocation *pystack = NULL;
+    #if MICROPY_ENABLE_PYSTACK
+    pystack = allocate_pystack(safe_mode);
+    #endif
     supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap);
+    start_mp(heap, pystack);
 
     #if CIRCUITPY_USB
     usb_setup_with_vm();
@@ -919,7 +960,7 @@ STATIC int run_repl(void) {
         exit_code = PYEXEC_DEEP_SLEEP;
     }
     #endif
-    cleanup_after_vm(heap, MP_OBJ_SENTINEL);
+    cleanup_after_vm(heap, pystack, MP_OBJ_SENTINEL);
 
     // Also reset bleio. The above call omits it in case workflows should continue. In this case,
     // we're switching straight to another VM so we want to reset.
@@ -938,6 +979,7 @@ STATIC int run_repl(void) {
 }
 
 int __attribute__((used)) main(void) {
+
     // initialise the cpu and peripherals
     set_safe_mode(port_init());
 
@@ -1038,13 +1080,14 @@ int __attribute__((used)) main(void) {
     bool simulate_reset = true;
     for (;;) {
         if (!skip_repl) {
-            exit_code = run_repl();
+            exit_code = run_repl(get_safe_mode());
             supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!simulate_reset) {
                 serial_write_compressed(translate("soft reboot\n"));
             }
+            simulate_reset = false;
             if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
                 // If code.py did a fake deep sleep, pretend that we
                 // are running code.py for the first time after a hard

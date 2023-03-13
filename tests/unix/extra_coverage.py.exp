@@ -33,17 +33,17 @@ builtins        micropython     _asyncio        _thread
 _uasyncio       aesio           array           binascii
 bitmaptools     btree           cexample        cmath
 collections     cppexample      displayio       errno
-ffi             framebuf        gc              gifio
-hashlib         json            math            qrio
-rainbowio       re              sys             termios
-traceback       ubinascii       uctypes         uerrno
-uheapq          uio             ujson           ulab
-ulab.numpy      ulab.numpy.fft  ulab.numpy.linalg
-ulab.scipy      ulab.scipy.linalg
-ulab.scipy.optimize             ulab.scipy.signal
-ulab.scipy.special              ulab.utils      uos
-urandom         ure             uselect         ustruct
-utime           utimeq          uzlib           zlib
+ffi             framebuf        gc              hashlib
+json            math            qrio            rainbowio
+re              sys             termios         traceback
+ubinascii       uctypes         uerrno          uheapq
+uio             ujson           ulab            ulab.numpy
+ulab.numpy.fft  ulab.numpy.linalg               ulab.scipy
+ulab.scipy.linalg               ulab.scipy.optimize
+ulab.scipy.signal               ulab.scipy.special
+ulab.utils      uos             urandom         ure
+uselect         ustruct         utime           utimeq
+uzlib           zlib
 ime
 
 utime           utimeq

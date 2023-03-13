@@ -30,6 +30,14 @@ msgid ""
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
 
+#: main.c
+msgid ""
+"\n"
+"Invalid CIRCUITPY_PYSTACK_SIZE\n"
+"\n"
+"\r"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
@@ -138,7 +146,7 @@ msgstr "%q poza zakresem"
 msgid "%q init failed"
 msgstr ""
 
-#: shared-bindings/dualbank/__init__.c
+#: ports/espressif/bindings/espnow/Peer.c shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
 msgstr ""
 
@@ -182,6 +190,10 @@ msgstr ""
 msgid "%q must be >= %d"
 msgstr ""
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr ""
+
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr ""
@@ -216,10 +228,6 @@ msgstr ""
 msgid "%q out of range"
 msgstr "%q poza zakresem"
 
-#: ports/atmel-samd/common-hal/microcontroller/Pin.c
-msgid "%q pin invalid"
-msgstr "nieprawidłowy pin %q"
-
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr ""
@@ -236,7 +244,7 @@ msgstr ""
 msgid "%q=%q"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr ""
@@ -504,6 +512,7 @@ msgstr ""
 msgid "Already have all-matches listener"
 msgstr ""
 
+#: ports/espressif/bindings/espnow/ESPNow.c
 #: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -677,7 +686,7 @@ msgstr "Bloki CBC muszą być wielokrotnościami 16 bajtów"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "CRC or checksum was invalid"
 msgstr ""
 
@@ -810,6 +819,14 @@ msgid ""
 msgstr ""
 "Połączenie zostało rozłączone i nie można go już używać. Utwórz nowe "
 "połączenie."
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays have different lengths"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays types have different sizes"
+msgstr ""
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
@@ -1062,7 +1079,7 @@ msgstr "Funkcja wymaga blokady"
 msgid "GNSS init"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Generic Failure"
 msgstr ""
 
@@ -1221,9 +1238,11 @@ msgid "Interrupt error."
 msgstr ""
 
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "Nieprawidłowe %q"
 
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Zła nóżka %q"
@@ -1245,8 +1264,7 @@ msgstr ""
 msgid "Invalid MAC address"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Zły argument"
 
@@ -1272,7 +1290,7 @@ msgstr "Zła wielkość fragmentu formatu"
 msgid "Invalid multicast MAC address"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid size"
 msgstr "Nieprawidłowy rozmiar"
 
@@ -1281,7 +1299,7 @@ msgstr "Nieprawidłowy rozmiar"
 msgid "Invalid socket for TLS"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid state"
 msgstr "Nieprawidłowy stan"
 
@@ -1313,7 +1331,7 @@ msgstr ""
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
 msgstr ""
 
@@ -1669,11 +1687,11 @@ msgstr "W danym momencie przezroczysty może być tylko jeden kolor"
 msgid "Operation not permitted"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation or feature not supported"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation timed out"
 msgstr ""
 
@@ -1681,7 +1699,7 @@ msgstr ""
 msgid "Out of MDNS service slots"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Out of memory"
 msgstr "Brak pamięci"
 
@@ -1857,7 +1875,7 @@ msgstr "Tylko do odczytu"
 msgid "Read-only filesystem"
 msgstr "System plików tylko do odczytu"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Received response was invalid"
 msgstr "Otrzymana odpowiedź była nieprawidłowa"
 
@@ -1877,7 +1895,7 @@ msgstr ""
 msgid "Requested AES mode is unsupported"
 msgstr "Żądany tryb AES nie jest obsługiwany"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Requested resource not found"
 msgstr "Nie znaleziono żądanego zasobu"
 
@@ -1989,10 +2007,6 @@ msgstr ""
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Stopping AP is not supported."
 msgstr ""
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "Supply at least one UART pin"
-msgstr "Podaj co najmniej jeden pin UART"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2173,6 +2187,11 @@ msgstr "Nie udała się alokacja buforów do konwersji ze znakiem"
 msgid "Unable to allocate the heap."
 msgstr ""
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr ""
@@ -2191,9 +2210,19 @@ msgstr "Brak wolnego GCLK"
 msgid "Unable to init parser"
 msgstr "Błąd ustawienia parsera"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Nie można odczytać danych palety"
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
@@ -2317,7 +2346,7 @@ msgstr ""
 msgid "Value length > max_length"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Version was invalid"
 msgstr ""
 
@@ -2393,6 +2422,14 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
+msgstr ""
+
+#: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
+msgid "You pressed the GPIO0 button at start up."
+msgstr ""
+
+#: ports/espressif/boards/espressif_esp32_lyrat/mpconfigboard.h
+msgid "You pressed the Rec button at start up."
 msgstr ""
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
@@ -4130,8 +4167,6 @@ msgstr ""
 msgid "twai_start returned esp-idf error #%d"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx i rx nie mogą być oba None"
@@ -4352,6 +4387,12 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Podaj co najmniej jeden pin UART"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "nieprawidłowy pin %q"
 
 #~ msgid ""
 #~ "\n"

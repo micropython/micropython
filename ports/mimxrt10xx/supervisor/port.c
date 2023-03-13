@@ -284,7 +284,7 @@ void reset_port(void) {
 //    eic_reset();
 
     #if CIRCUITPY_PWMIO
-    pwmout_reset();
+    reset_all_flexpwm();
     #endif
 
     #if CIRCUITPY_RTC
@@ -301,7 +301,7 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
-    SNVS->LPGPR[0] = DBL_TAP_MAGIC;
+    DBL_TAP_REG = DBL_TAP_MAGIC;
     reset();
 }
 

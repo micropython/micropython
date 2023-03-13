@@ -42,18 +42,6 @@ from shared_bindings_matrix import (
     all_ports_all_boards,
 )
 
-PORT_TO_ARCH = {
-    "atmel-samd": "arm",
-    "broadcom": "aarch",
-    "cxd56": "arm",
-    "espressif": "esp",
-    "litex": "riscv",
-    "mimxrt10xx": "arm",
-    "nrf": "arm",
-    "raspberrypi": "rpi",
-    "stm": "arm",
-}
-
 IGNORE = [
     "tools/ci_set_matrix.py",
     "tools/ci_check_duplicate_usb_vid_pid.py",
@@ -61,6 +49,24 @@ IGNORE = [
 
 # Files in these directories never influence board builds
 IGNORE_DIRS = ["tests", "docs", ".devcontainer"]
+
+PATTERN_DOCS = (
+    r"^(?:\.github|docs|extmod\/ulab)|"
+    r"^(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|tools\/extract_pyi\.py|conf\.py|requirements-doc\.txt)$|"
+    r"(?:-stubs|\.(?:md|MD|rst|RST))$"
+)
+
+PATTERN_WINDOWS = [
+    ".github/",
+    "extmod/",
+    "lib/",
+    "mpy-cross/",
+    "ports/unix/",
+    "ports/windows/",
+    "py/",
+    "requirements",
+    "tools/",
+]
 
 if len(sys.argv) > 1:
     print("Using files list on commandline")
@@ -91,7 +97,7 @@ def set_output(name: str, value):
         print(f"Would set GitHub actions output {name} to '{value}'")
 
 
-def set_boards_to_build(build_all: bool):
+def set_boards(build_all: bool):
     # Get boards in json format
     boards_info_json = build_board_info.get_board_mapping()
     all_board_ids = set()
@@ -203,56 +209,49 @@ def set_boards_to_build(build_all: bool):
             boards_to_build = all_board_ids
             break
 
-    # Split boards by architecture.
-    arch_to_boards = {"aarch": [], "arm": [], "esp": [], "riscv": [], "rpi": []}
-
     # Append previously failed boards
-    for arch in arch_to_boards:
-        arch_to_job = f"build-{arch}"
-        if arch_to_job in last_failed_jobs:
-            for board in last_failed_jobs[arch_to_job]:
-                if not board in boards_to_build:
-                    boards_to_build.append(board)
+    boards_to_build.update(last_failed_jobs.get("ports") or [])
 
-    build_boards = bool(boards_to_build)
-    print("Building boards:", build_boards)
-    set_output("build-boards", build_boards)
+    print("Building boards:", bool(boards_to_build))
 
-    # Append boards according to arch
+    # Split boards by port
+    port_to_boards_to_build = {}
+
+    # Append boards according to job
     for board in sorted(boards_to_build):
         port = board_to_port.get(board)
         # A board can appear due to its _deletion_ (rare)
         # if this happens it's not in `board_to_port`.
         if not port:
             continue
-        arch_to_boards[PORT_TO_ARCH[port]].append(board)
+        port_to_boards_to_build.setdefault(port, []).append(board)
         print(" ", board)
 
-    # Set the step outputs for each architecture
-    for arch in arch_to_boards:
-        set_output(f"boards-{arch}", json.dumps(arch_to_boards[arch]))
+    if port_to_boards_to_build:
+        port_to_boards_to_build["ports"] = sorted(list(port_to_boards_to_build.keys()))
+
+    # Set the step outputs
+    set_output("ports", json.dumps(port_to_boards_to_build))
 
 
-def set_docs_to_build(build_doc: bool):
+def set_docs(build_doc: bool):
     if not build_doc:
-        if "build-doc" in last_failed_jobs:
+        if last_failed_jobs.get("docs"):
             build_doc = True
         else:
-            doc_pattern = re.compile(
-                r"^(?:\.github\/workflows\/|docs|extmod\/ulab|(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|conf\.py|tools\/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
-            )
+            doc_pattern = re.compile(PATTERN_DOCS)
             github_workspace = os.environ.get("GITHUB_WORKSPACE") or ""
             github_workspace = github_workspace and github_workspace + "/"
-            for p in changed_files:
-                if doc_pattern.search(p) and (
+            for file in changed_files:
+                if doc_pattern.search(file) and (
                     (
                         subprocess.run(
-                            f"git diff -U0 $BASE_SHA...$HEAD_SHA {github_workspace + p} | grep -o -m 1 '^[+-]\/\/|'",
+                            f"git diff -U0 $BASE_SHA...$HEAD_SHA {github_workspace + file} | grep -o -m 1 '^[+-]\/\/|'",
                             capture_output=True,
                             shell=True,
                         ).stdout
                     )
-                    if p.endswith(".c")
+                    if file.endswith(".c")
                     else True
                 ):
                     build_doc = True
@@ -260,22 +259,41 @@ def set_docs_to_build(build_doc: bool):
 
     # Set the step outputs
     print("Building docs:", build_doc)
-    set_output("build-doc", build_doc)
+    set_output("docs", build_doc)
 
 
-def check_changed_files():
-    if not changed_files:
-        print("Building all docs/boards")
-        return True
-    else:
-        print("Adding docs/boards to build based on changed files")
-        return False
+def set_windows(build_windows: bool):
+    if not build_windows:
+        if last_failed_jobs.get("windows"):
+            build_windows = True
+        else:
+            for file in changed_files:
+                for pattern in PATTERN_WINDOWS:
+                    if file.startswith(pattern):
+                        build_windows = True
+                        break
+                else:
+                    continue
+                break
+
+    # Set the step outputs
+    print("Building windows:", build_windows)
+    set_output("windows", build_windows)
 
 
 def main():
-    build_all = check_changed_files()
-    set_docs_to_build(build_all)
-    set_boards_to_build(build_all)
+    # Build all if no changed files
+    build_all = not changed_files
+    print(
+        "Building all docs/boards"
+        if build_all
+        else "Adding docs/boards to build based on changed files"
+    )
+
+    # Set jobs
+    set_docs(build_all)
+    set_windows(build_all)
+    set_boards(build_all)
 
 
 if __name__ == "__main__":

@@ -192,6 +192,12 @@ bool serial_connected(void) {
     }
     #endif
 
+    #if CIRCUITPY_TERMINALIO
+    if (supervisor_terminal_started()) {
+        return true;
+    }
+    #endif
+
 
     if (port_serial_connected()) {
         return true;

@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-01-13 18:51+0000\n"
+"PO-Revision-Date: 2023-03-01 17:39+0000\n"
 "Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16\n"
 
 #: main.c
 msgid ""
@@ -30,6 +30,18 @@ msgid ""
 msgstr ""
 "\n"
 "Code wurde durch automatisches Neuladen gestoppt. Wird bald neu geladen.\n"
+
+#: main.c
+msgid ""
+"\n"
+"Invalid CIRCUITPY_PYSTACK_SIZE\n"
+"\n"
+"\r"
+msgstr ""
+"\n"
+"Ungültige CIRCUITPY_PYSTACK_SIZE\n"
+"\n"
+"\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -49,6 +61,8 @@ msgid ""
 "\n"
 "You are in safe mode because:\n"
 msgstr ""
+"\n"
+"Sie befinden sich im abgesicherten Modus, weil:\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -141,7 +155,7 @@ msgstr "Der Index %q befindet sich außerhalb des Bereiches"
 msgid "%q init failed"
 msgstr "%q Initialisierung ist gescheitert"
 
-#: shared-bindings/dualbank/__init__.c
+#: ports/espressif/bindings/espnow/Peer.c shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
 msgstr "%q ist %q"
 
@@ -185,6 +199,10 @@ msgstr "%q muss <= %d sein"
 msgid "%q must be >= %d"
 msgstr "%q muss >= %d sein"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr ""
+
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr ""
@@ -220,10 +238,6 @@ msgstr "%q außerhalb der Grenzen"
 msgid "%q out of range"
 msgstr "%q außerhalb des Bereichs"
 
-#: ports/atmel-samd/common-hal/microcontroller/Pin.c
-msgid "%q pin invalid"
-msgstr "%q Pin ungültig"
-
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr "Schritt %q kann nicht Null sein"
@@ -241,7 +255,7 @@ msgstr "%q, %q und %q müssen alle die gleiche Länge haben"
 msgid "%q=%q"
 msgstr "%q=%q"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s Fehler 0x%x"
@@ -509,6 +523,7 @@ msgstr "Bereits am Anbieten (advertising)."
 msgid "Already have all-matches listener"
 msgstr "All-Matchers-Listener bereits vorhanden"
 
+#: ports/espressif/bindings/espnow/ESPNow.c
 #: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -682,7 +697,7 @@ msgstr "CBC-Blöcke müssen ein Vielfaches von 16 Bytes sein"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr "CIRCUITPY-Laufwerk konnte nicht gefunden oder erzeugt werden."
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC oder Checksumme ungültig"
 
@@ -820,6 +835,14 @@ msgid ""
 msgstr ""
 "Die Verbindung wurde getrennt und kann nicht mehr verwendet werden. Erstelle "
 "eine neue Verbindung."
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays have different lengths"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays types have different sizes"
+msgstr ""
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
@@ -1079,7 +1102,7 @@ msgstr "Die Funktion erwartet, dass der 'lock'-Befehl zuvor ausgeführt wurde"
 msgid "GNSS init"
 msgstr "GNSS-Initialisierung"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Generic Failure"
 msgstr "Generischer Fehler"
 
@@ -1242,9 +1265,11 @@ msgid "Interrupt error."
 msgstr ""
 
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "Ungültiger %q"
 
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Ungültiger %q Pin"
@@ -1266,8 +1291,7 @@ msgstr "Ungültige BSSID"
 msgid "Invalid MAC address"
 msgstr "Ungültige MAC-Adresse"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Ungültiges Argument"
 
@@ -1293,7 +1317,7 @@ msgstr "Ungültige format chunk size"
 msgid "Invalid multicast MAC address"
 msgstr "Ungültige Multicast-MAC-Adresse"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid size"
 msgstr "Ungültige Größe"
 
@@ -1302,7 +1326,7 @@ msgstr "Ungültige Größe"
 msgid "Invalid socket for TLS"
 msgstr "Ungültiges Socket für TLS"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid state"
 msgstr "Ungültiger Zustand"
 
@@ -1334,7 +1358,7 @@ msgstr "Ebene ist bereits in der Gruppe"
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr "Ebene muss eine Gruppe oder eine TileGrid Subklasse sein"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
 msgstr "MAC Adresse war ungültig"
 
@@ -1697,11 +1721,11 @@ msgstr "Nur eine Farbe kann transparent sein zu einer Zeit"
 msgid "Operation not permitted"
 msgstr "Operation nicht erlaubt"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation or feature not supported"
 msgstr "Vorgang oder Funktion wird nicht unterstützt"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation timed out"
 msgstr "Zeit für Vorgang abgelaufen"
 
@@ -1709,7 +1733,7 @@ msgstr "Zeit für Vorgang abgelaufen"
 msgid "Out of MDNS service slots"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Out of memory"
 msgstr "Kein Speicher mehr verfügbar"
 
@@ -1891,7 +1915,7 @@ msgstr "Nur lesen möglich, da Schreibgeschützt"
 msgid "Read-only filesystem"
 msgstr "Schreibgeschützte Dateisystem"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Received response was invalid"
 msgstr "Erhaltene Antwort ist ungültig"
 
@@ -1911,7 +1935,7 @@ msgstr "RemoteTransmissionRequests limitiert auf 8 Bytes"
 msgid "Requested AES mode is unsupported"
 msgstr "Der angeforderte AES-Modus wird nicht unterstützt"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Requested resource not found"
 msgstr "Angefragte Ressource nicht gefunden"
 
@@ -2023,10 +2047,6 @@ msgstr "Stereo rechts muss sich auf PWM-Kanal B befinden"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Stopping AP is not supported."
 msgstr ""
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "Supply at least one UART pin"
-msgstr "Gib mindestens einen UART-Pin an"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2213,6 +2233,11 @@ msgstr "Konnte keine Buffer für Vorzeichenumwandlung allozieren"
 msgid "Unable to allocate the heap."
 msgstr ""
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "Lock kann nicht erzeugt werden"
@@ -2231,9 +2256,19 @@ msgstr "Konnte keinen freien GCLK finden"
 msgid "Unable to init parser"
 msgstr "Parser konnte nicht gestartet werden"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Konnte Farbpalettendaten nicht lesen"
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
@@ -2361,7 +2396,7 @@ msgstr "Wert Länge != Erforderliche feste Länge"
 msgid "Value length > max_length"
 msgstr "Länge des Wertes > max_length"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Version was invalid"
 msgstr "Version ist ungültig"
 
@@ -2447,6 +2482,14 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
+msgstr ""
+
+#: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
+msgid "You pressed the GPIO0 button at start up."
+msgstr ""
+
+#: ports/espressif/boards/espressif_esp32_lyrat/mpconfigboard.h
+msgid "You pressed the Rec button at start up."
 msgstr ""
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
@@ -4207,8 +4250,6 @@ msgstr "twai_driver_install gab esp-idf-Fehler zurück #%d"
 msgid "twai_start returned esp-idf error #%d"
 msgstr "twai_start gab esp-idf-Fehler zurück #%d"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx und rx können nicht beide None sein"
@@ -4431,6 +4472,12 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Gib mindestens einen UART-Pin an"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "%q Pin ungültig"
 
 #~ msgid ""
 #~ "\n"

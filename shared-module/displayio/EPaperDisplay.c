@@ -28,6 +28,7 @@
 
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "shared/runtime/interrupt_char.h"
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/I2CDisplay.h"
@@ -47,21 +48,31 @@
 #define DELAY 0x80
 
 void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t *self,
-    mp_obj_t bus, const uint8_t *start_sequence, uint16_t start_sequence_len,
+    mp_obj_t bus, const uint8_t *start_sequence, uint16_t start_sequence_len, mp_float_t start_up_time,
     const uint8_t *stop_sequence, uint16_t stop_sequence_len,
     uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height,
     int16_t colstart, int16_t rowstart, uint16_t rotation,
     uint16_t set_column_window_command, uint16_t set_row_window_command,
     uint16_t set_current_column_command, uint16_t set_current_row_command,
-    uint16_t write_black_ram_command, bool black_bits_inverted, uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t highlight_color, uint16_t refresh_display_command, mp_float_t refresh_time,
-    const mcu_pin_obj_t *busy_pin, bool busy_state, mp_float_t seconds_per_frame, bool chip_select, bool grayscale, bool two_byte_sequence_length) {
+    uint16_t write_black_ram_command, bool black_bits_inverted,
+    uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t highlight_color,
+    const uint8_t *refresh_sequence, uint16_t refresh_sequence_len, mp_float_t refresh_time,
+    const mcu_pin_obj_t *busy_pin, bool busy_state, mp_float_t seconds_per_frame,
+    bool chip_select, bool grayscale, bool acep, bool two_byte_sequence_length) {
+    uint16_t color_depth = 1;
     if (highlight_color != 0x000000) {
         self->core.colorspace.tricolor = true;
         self->core.colorspace.tricolor_hue = displayio_colorconverter_compute_hue(highlight_color);
         self->core.colorspace.tricolor_luma = displayio_colorconverter_compute_luma(highlight_color);
     }
+    if (acep) {
+        self->core.colorspace.sevencolor = true;
+        color_depth = 4; // bits. 7 colors + clean
+        self->acep = acep;
+        grayscale = false;
+    }
 
-    displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation, 1, true, true, 1, true, true);
+    displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation, color_depth, grayscale, true, 1, true, true);
 
     self->set_column_window_command = set_column_window_command;
     self->set_row_window_command = set_row_window_command;
@@ -71,7 +82,6 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t 
     self->black_bits_inverted = black_bits_inverted;
     self->write_color_ram_command = write_color_ram_command;
     self->color_bits_inverted = color_bits_inverted;
-    self->refresh_display_command = refresh_display_command;
     self->refresh_time = refresh_time * 1000;
     self->busy_state = busy_state;
     self->refreshing = false;
@@ -81,8 +91,11 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t 
 
     self->start_sequence = start_sequence;
     self->start_sequence_len = start_sequence_len;
+    self->start_up_time_ms = start_up_time * 1000;
     self->stop_sequence = stop_sequence;
     self->stop_sequence_len = stop_sequence_len;
+    self->refresh_sequence = refresh_sequence;
+    self->refresh_sequence_len = refresh_sequence_len;
 
     self->busy.base.type = &mp_type_NoneType;
     self->two_byte_sequence_length = two_byte_sequence_length;
@@ -193,6 +206,8 @@ STATIC void displayio_epaperdisplay_start_refresh(displayio_epaperdisplay_obj_t 
     // run start sequence
     self->core.bus_reset(self->core.bus);
 
+    common_hal_time_delay_ms(self->start_up_time_ms);
+
     send_command_sequence(self, true, self->start_sequence, self->start_sequence_len);
     displayio_display_core_start_refresh(&self->core);
 }
@@ -211,9 +226,8 @@ uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaper
 
 STATIC void displayio_epaperdisplay_finish_refresh(displayio_epaperdisplay_obj_t *self) {
     // Actually refresh the display now that all pixel RAM has been updated.
-    displayio_display_core_begin_transaction(&self->core);
-    self->core.send(self->core.bus, DISPLAY_COMMAND, self->chip_select, &self->refresh_display_command, 1);
-    displayio_display_core_end_transaction(&self->core);
+    send_command_sequence(self, false, self->refresh_sequence, self->refresh_sequence_len);
+
     supervisor_enable_tick();
     self->refreshing = true;
 
@@ -326,14 +340,18 @@ STATIC bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t *
             memset(mask, 0, mask_length * sizeof(mask[0]));
             memset(buffer, 0, buffer_size * sizeof(buffer[0]));
 
-            self->core.colorspace.grayscale = true;
-            self->core.colorspace.grayscale_bit = 7;
+            if (self->grayscale) {
+                self->core.colorspace.grayscale = true;
+                self->core.colorspace.grayscale_bit = 7;
+            }
             if (pass == 1) {
                 if (self->grayscale) { // 4-color grayscale
                     self->core.colorspace.grayscale_bit = 6;
                     displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
                 } else if (self->core.colorspace.tricolor) {
                     self->core.colorspace.grayscale = false;
+                    displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
+                } else if (self->core.colorspace.sevencolor) {
                     displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
                 }
             } else {
@@ -366,6 +384,36 @@ STATIC bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t *
     return true;
 }
 
+STATIC bool _clean_area(displayio_epaperdisplay_obj_t *self) {
+    uint16_t width = displayio_display_core_get_width(&self->core);
+    uint16_t height = displayio_display_core_get_height(&self->core);
+
+    uint8_t buffer[width / 2];
+    memset(buffer, 0x77, width / 2);
+
+    uint8_t write_command = self->write_black_ram_command;
+    displayio_display_core_begin_transaction(&self->core);
+    self->core.send(self->core.bus, DISPLAY_COMMAND, self->chip_select, &write_command, 1);
+    displayio_display_core_end_transaction(&self->core);
+
+    for (uint16_t j = 0; j < height; j++) {
+        if (!displayio_display_core_begin_transaction(&self->core)) {
+            // Can't acquire display bus; skip the rest of the data. Try next display.
+            return false;
+        }
+        self->core.send(self->core.bus, DISPLAY_DATA, self->chip_select, buffer, width / 2);
+        displayio_display_core_end_transaction(&self->core);
+
+        // TODO(tannewt): Make refresh displays faster so we don't starve other
+        // background tasks.
+        #if CIRCUITPY_USB
+        usb_background();
+        #endif
+    }
+
+    return true;
+}
+
 bool common_hal_displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t *self) {
 
     if (self->refreshing && self->busy.base.type == &digitalio_digitalinout_type) {
@@ -393,6 +441,18 @@ bool common_hal_displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t *s
     if (current_area == NULL) {
         return true;
     }
+    if (self->acep) {
+        displayio_epaperdisplay_start_refresh(self);
+        _clean_area(self);
+        displayio_epaperdisplay_finish_refresh(self);
+        while (self->refreshing && !mp_hal_is_interrupted()) {
+            RUN_BACKGROUND_TASKS;
+        }
+    }
+    if (mp_hal_is_interrupted()) {
+        return false;
+    }
+
     displayio_epaperdisplay_start_refresh(self);
     while (current_area != NULL) {
         displayio_epaperdisplay_refresh_area(self, current_area);

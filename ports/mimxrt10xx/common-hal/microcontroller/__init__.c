@@ -39,8 +39,6 @@
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/translate/translate.h"
 
-#define DBL_TAP_REG              SNVS->LPGPR[3]
-
 void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
 }

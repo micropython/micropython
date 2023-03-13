@@ -1,0 +1,1 @@
+// No analogbufio module functions.

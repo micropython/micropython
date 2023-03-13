@@ -1,0 +1,21 @@
+name: Fetch broadcom port deps
+
+runs:
+  using: composite
+  steps:
+    - name: Get broadcom toolchain
+      run: |
+        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
+        sudo apt-get install -y mtools
+      shell: bash
+    - name: Install mkfs.fat
+      run: |
+        wget https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz
+        tar -xaf dosfstools-4.2.tar.gz
+        cd dosfstools-4.2
+        ./configure
+        make -j 2
+        cd src
+        echo >> $GITHUB_PATH $(pwd)
+      shell: bash

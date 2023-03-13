@@ -6,7 +6,7 @@ name: Update CircuitPython.org
 
 on:
   release:
-    types: [published, rerequested]
+    types: [published]
 
 jobs:
   website:

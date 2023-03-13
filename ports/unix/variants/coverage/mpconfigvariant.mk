@@ -26,7 +26,6 @@ CFLAGS += -DCIRCUITPY_QRIO=1
 $(BUILD)/lib/quirc/lib/%.o: CFLAGS += -Wno-shadow -Wno-sign-compare -include shared-module/qrio/quirc_alloc.h
 
 SRC_BITMAP := \
-	$(patsubst ../../%,%,$(wildcard ../../shared-bindings/gifio/*.c ../../shared-module/gifio/*.c)) \
 	shared/runtime/context_manager_helpers.c \
 	displayio_min.c \
 	shared-bindings/aesio/aes.c \

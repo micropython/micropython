@@ -27,16 +27,19 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "shared/runtime/interrupt_char.h"
 #include "py/ringbuf.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 
+#include "shared/runtime/interrupt_char.h"
+
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Connection.h"
-#include "supervisor/shared/tick.h"
-#include "common-hal/_bleio/CharacteristicBuffer.h"
 #include "shared-bindings/_bleio/CharacteristicBuffer.h"
+
+#include "supervisor/shared/tick.h"
+
+#include "common-hal/_bleio/ble_events.h"
 
 STATIC int characteristic_buffer_on_ble_evt(struct ble_gap_event *event, void *param) {
     bleio_characteristic_buffer_obj_t *self = (bleio_characteristic_buffer_obj_t *)param;

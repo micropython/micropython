@@ -523,6 +523,101 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_line);
 // requires all 6 arguments
 
+//| def draw_polygon(
+//|     dest_bitmap: displayio.Bitmap,
+//|     xs: ReadableBuffer,
+//|     ys: ReadableBuffer,
+//|     value: int,
+//|     close: Optional[bool] = True,
+//| ) -> None:
+//|     """Draw a polygon conecting points on provided bitmap with provided value
+//|
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param ReadableBuffer xs: x-pixel position of the polygon's vertices
+//|     :param ReadableBuffer ys: y-pixel position of the polygon's vertices
+//|     :param int value: Bitmap palette index that will be written into the
+//|            line in the destination bitmap
+//|     :param bool close: (Optional) Wether to connect first and last point. (True)
+//|
+//|     .. code-block:: Python
+//|
+//|        import board
+//|        import displayio
+//|        import bitmaptools
+//|
+//|        display = board.DISPLAY
+//|        main_group = displayio.Group()
+//|        display.root_group = main_group
+//|
+//|        palette = displayio.Palette(3)
+//|        palette[0] = 0xffffff
+//|        palette[1] = 0x0000ff
+//|        palette[2] = 0xff0000
+//|
+//|        bmp = displayio.Bitmap(128,128, 3)
+//|        bmp.fill(0)
+//|
+//|        xs = bytes([4, 101, 101, 19])
+//|        ys = bytes([4, 19,  121, 101])
+//|        bitmaptools.draw_polygon(bmp, xs, ys, 1)
+//|
+//|        xs = bytes([14, 60, 110])
+//|        ys = bytes([14, 24,  90])
+//|        bitmaptools.draw_polygon(bmp, xs, ys, 2)
+//|
+//|        tilegrid = displayio.TileGrid(bitmap=bmp, pixel_shader=palette)
+//|        main_group.append(tilegrid)
+//|
+//|        while True:
+//|            pass
+//|     """
+//|     ...
+//|
+STATIC mp_obj_t bitmaptools_obj_draw_polygon(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_dest_bitmap, ARG_xs, ARG_ys, ARG_value, ARG_close};
+
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_xs, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_ys, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_close, MP_ARG_BOOL, {.u_bool = true}},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj);     // the destination bitmap
+
+    mp_buffer_info_t xs_buf, ys_buf;
+    mp_get_buffer_raise(args[ARG_xs].u_obj, &xs_buf, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[ARG_ys].u_obj, &ys_buf, MP_BUFFER_READ);
+    size_t xs_size = mp_binary_get_size('@', xs_buf.typecode, NULL);
+    size_t ys_size = mp_binary_get_size('@', ys_buf.typecode, NULL);
+    size_t xs_len = xs_buf.len / xs_size;
+    size_t ys_len = ys_buf.len / ys_size;
+    if (xs_size != ys_size) {
+        mp_raise_ValueError(translate("Coordinate arrays types have different sizes"));
+    }
+    if (xs_len != ys_len) {
+        mp_raise_ValueError(translate("Coordinate arrays have different lengths"));
+    }
+
+    uint32_t value, color_depth;
+    value = args[ARG_value].u_int;
+    color_depth = (1 << destination->bits_per_value);
+    if (color_depth <= value) {
+        mp_raise_ValueError(translate("out of range of target"));
+    }
+
+    bool close = args[ARG_close].u_bool;
+
+    common_hal_bitmaptools_draw_polygon(destination, xs_buf.buf, ys_buf.buf, xs_len, xs_size, value, close);
+
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_polygon_obj, 0, bitmaptools_obj_draw_polygon);
+
 //| def arrayblit(
 //|     bitmap: displayio.Bitmap,
 //|     data: ReadableBuffer,
@@ -784,6 +879,7 @@ STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fill_region), MP_ROM_PTR(&bitmaptools_fill_region_obj) },
     { MP_ROM_QSTR(MP_QSTR_boundary_fill), MP_ROM_PTR(&bitmaptools_boundary_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
+    { MP_ROM_QSTR(MP_QSTR_draw_polygon), MP_ROM_PTR(&bitmaptools_draw_polygon_obj) },
     { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&bitmaptools_dither_obj) },
     { MP_ROM_QSTR(MP_QSTR_DitherAlgorithm), MP_ROM_PTR(&bitmaptools_dither_algorithm_type) },
 };

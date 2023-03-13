@@ -1109,7 +1109,7 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *socket,
             break;
     }
     if (ret == (unsigned)-1) {
-        return -_errno;
+        mp_raise_OSError(_errno);
     }
     return ret;
 }

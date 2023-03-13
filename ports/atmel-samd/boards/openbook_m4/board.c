@@ -52,6 +52,10 @@ uint8_t stop_sequence[] = {
     0x02, 0x80, 0xf0  // Power off
 };
 
+uint8_t refresh_sequence[] = {
+    0x12, 0x00
+};
+
 void board_init(void) {
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
     common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL, false);
@@ -74,6 +78,7 @@ void board_init(void) {
         bus,
         start_sequence,
         sizeof(start_sequence),
+        0, // start up time
         stop_sequence,
         sizeof(stop_sequence),
         300, // width
@@ -92,13 +97,15 @@ void board_init(void) {
         NO_COMMAND, // write_color_ram_command (can add this for grayscale eventually)
         false, // color_bits_inverted
         0x000000, // highlight_color
-        0x12, // refresh_display_command
+        refresh_sequence, // refresh_display_sequence
+        sizeof(refresh_sequence),
         40, // refresh_time
         &pin_PA01, // busy_pin
         false, // busy_state
         5, // seconds_per_frame
         false, // chip_select (don't always toggle chip select)
         false, // grayscale
+        false, // acep
         false); // two_byte_sequence_length
 }
 

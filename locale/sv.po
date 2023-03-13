@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-02-17 20:38+0000\n"
+"PO-Revision-Date: 2023-03-08 07:10+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 #: main.c
 msgid ""
@@ -31,6 +31,18 @@ msgid ""
 msgstr ""
 "\n"
 "Koden stoppades av automatisk laddning. Omladdning sker strax.\n"
+
+#: main.c
+msgid ""
+"\n"
+"Invalid CIRCUITPY_PYSTACK_SIZE\n"
+"\n"
+"\r"
+msgstr ""
+"\n"
+"Ogiltig CIRCUITPY_PYSTACK_SIZE\n"
+"\n"
+"\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -148,7 +160,7 @@ msgstr "Index %q ligger utanför intervallet"
 msgid "%q init failed"
 msgstr "%q init misslyckades"
 
-#: shared-bindings/dualbank/__init__.c
+#: ports/espressif/bindings/espnow/Peer.c shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
 msgstr "%q är %q"
 
@@ -192,6 +204,10 @@ msgstr "%q måste vara <= %d"
 msgid "%q must be >= %d"
 msgstr "%q måste vara >= %d"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr "%q måste vara en array av typen 'H'"
+
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr "%q måste vara en bytearray eller array av typen 'H' eller 'B'"
@@ -228,10 +244,6 @@ msgstr "%q är utanför gränserna"
 msgid "%q out of range"
 msgstr "%q utanför intervallet"
 
-#: ports/atmel-samd/common-hal/microcontroller/Pin.c
-msgid "%q pin invalid"
-msgstr "Pinne %q ogiltig"
-
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr "%q steg kan inte vara noll"
@@ -248,7 +260,7 @@ msgstr "%q, %q och %q måste vara lika långa"
 msgid "%q=%q"
 msgstr "%q=%q"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s fel 0x%x"
@@ -516,6 +528,7 @@ msgstr "Annonserar redan."
 msgid "Already have all-matches listener"
 msgstr "Har redan lyssnare för all-matchningar"
 
+#: ports/espressif/bindings/espnow/ESPNow.c
 #: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -689,7 +702,7 @@ msgstr "CBC-block måste vara multiplar om 16 byte"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr "CIRCUITPY-enheten kunde inte hittas eller skapas."
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC eller checksumma var ogiltig"
 
@@ -824,6 +837,14 @@ msgid ""
 msgstr ""
 "Anslutningen har kopplats bort och kan inte längre användas. Skapa en ny "
 "anslutning."
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays have different lengths"
+msgstr "Arrayer för koordinater har olika längd"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Coordinate arrays types have different sizes"
+msgstr "Arrayer för koordinater har olika storlek"
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
@@ -1079,7 +1100,7 @@ msgstr "Funktionen kräver lås"
 msgid "GNSS init"
 msgstr "GNSS start"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Generic Failure"
 msgstr "Allmänt fel"
 
@@ -1240,9 +1261,11 @@ msgid "Interrupt error."
 msgstr "Interrupt-fel."
 
 #: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "Ogiltig %q"
 
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Ogiltig %q-pinne"
@@ -1264,8 +1287,7 @@ msgstr "Ogiltig BSSID"
 msgid "Invalid MAC address"
 msgstr "Ogiltig MAC-adress"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Ogiltigt argument"
 
@@ -1291,7 +1313,7 @@ msgstr "Ogiltig formatsegmentstorlek"
 msgid "Invalid multicast MAC address"
 msgstr "Ogiltig MAC-adress för multicast"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid size"
 msgstr "Ogiltig storlek"
 
@@ -1300,7 +1322,7 @@ msgstr "Ogiltig storlek"
 msgid "Invalid socket for TLS"
 msgstr "Ogiltig socket för TLS"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid state"
 msgstr "Ogiltigt tillstånd"
 
@@ -1332,7 +1354,7 @@ msgstr "Layer är redan med i en grupp"
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr "Layer måste vara en underklass av Group eller TileGrid"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
 msgstr "MAC-adressen var ogiltig"
 
@@ -1694,11 +1716,11 @@ msgstr "Bara en färg kan vara genomskinlig i taget"
 msgid "Operation not permitted"
 msgstr "Åtgärden inte tillåten"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation or feature not supported"
 msgstr "Operation eller funktion stöds inte"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation timed out"
 msgstr "Åtgärden orsakade timeout"
 
@@ -1706,7 +1728,7 @@ msgstr "Åtgärden orsakade timeout"
 msgid "Out of MDNS service slots"
 msgstr "Slut på MDNS-serviceplatser"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Out of memory"
 msgstr "Slut på minne"
 
@@ -1889,7 +1911,7 @@ msgstr "Skrivskyddad"
 msgid "Read-only filesystem"
 msgstr "Skrivskyddat filsystem"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Received response was invalid"
 msgstr "Mottaget svar var ogiltigt"
 
@@ -1909,7 +1931,7 @@ msgstr "RemoteTransmissionRequests begränsad till 8 byte"
 msgid "Requested AES mode is unsupported"
 msgstr "Det begärda AES-läget stöds inte"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Requested resource not found"
 msgstr "Begärd resurs hittades inte"
 
@@ -2021,10 +2043,6 @@ msgstr "Höger stereokanal måste använda PWM kanal B"
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Stopping AP is not supported."
 msgstr "Stoppa AP stöds inte."
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "Supply at least one UART pin"
-msgstr "Ange minst en UART-pinne"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2154,7 +2172,7 @@ msgstr "UART start"
 
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "UART peripheral in use"
-msgstr ""
+msgstr "UART-enhet används redan"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
@@ -2207,6 +2225,11 @@ msgstr "Det går inte att allokera buffert för signerad konvertering"
 msgid "Unable to allocate the heap."
 msgstr "Kan inte allokera heap."
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+msgstr "Kan inte konfigurera ADC DMA controller, Felkod:%d"
+
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "Kan inte skapa lås"
@@ -2225,9 +2248,19 @@ msgstr "Det gick inte att hitta ledig GCLK"
 msgid "Unable to init parser"
 msgstr "Kan inte initiera tolken"
 
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+msgstr "Kan inte konfigurera ADC DMA controller, Felkod:%d"
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Det går inte att läsa färgpalettdata"
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, c-format
+msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+msgstr "Kan inte starta ADC DMA controller, Felkod:%d"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
@@ -2353,7 +2386,7 @@ msgstr "Värdets längde ! = krävd fast längd"
 msgid "Value length > max_length"
 msgstr "Värdets längd > max_length"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Version was invalid"
 msgstr "Versionen var ogiltig"
 
@@ -2436,6 +2469,14 @@ msgstr "Du tryckte ner knapp A vid start."
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
 msgstr "Du tryckte ner BOOT-knappen vid start"
+
+#: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
+msgid "You pressed the GPIO0 button at start up."
+msgstr "Du tryckte på GPIO0-knappen vid start."
+
+#: ports/espressif/boards/espressif_esp32_lyrat/mpconfigboard.h
+msgid "You pressed the Rec button at start up."
+msgstr "Du tryckte ned Rec-knappen vid start."
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "You pressed the SW38 button at start up."
@@ -4181,8 +4222,6 @@ msgstr "twai_driver_install returnerade esp-idf-fel #%d"
 msgid "twai_start returned esp-idf error #%d"
 msgstr "twai_start returnerade esp-idf-fel #%d"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx och rx kan inte båda vara None"
@@ -4403,6 +4442,12 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Ange minst en UART-pinne"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "Pinne %q ogiltig"
 
 #~ msgid ""
 #~ "\n"

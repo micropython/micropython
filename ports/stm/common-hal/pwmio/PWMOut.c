@@ -40,7 +40,8 @@
 STATIC uint8_t tim_channels_taken[TIM_BANK_ARRAY_LEN];
 // Initial frequency timer is set to.
 STATIC uint32_t tim_frequencies[TIM_BANK_ARRAY_LEN];
-STATIC bool never_reset_tim[TIM_BANK_ARRAY_LEN];
+STATIC uint8_t never_reset_tim[TIM_BANK_ARRAY_LEN];
+STATIC TIM_HandleTypeDef *active_handles[TIM_BANK_ARRAY_LEN];
 
 STATIC uint32_t timer_get_internal_duty(uint16_t duty, uint32_t period) {
     // duty cycle is duty/0xFFFF fraction x (number of pulses per period)
@@ -64,10 +65,25 @@ STATIC bool timer_get_optimal_divisors(uint32_t *period, uint32_t *prescaler,
 
 void pwmout_reset(void) {
     for (int i = 0; i < TIM_BANK_ARRAY_LEN; i++) {
-        if (!never_reset_tim[i]) {
-            tim_channels_taken[i] = 0x00;
-            tim_frequencies[i] = 0;
+        if (active_handles[i] == NULL) {
+            continue;
         }
+        for (int c = 0; c < 8; c++) {
+            if ((never_reset_tim[i] & (1 << c)) != 0 ||
+                (tim_channels_taken[i] & (1 << c)) == 0) {
+                continue;
+            }
+            HAL_TIM_PWM_Stop(active_handles[i], c);
+        }
+        // TODO: Actually shut down individual channels and PWM.
+        if (never_reset_tim[i] != 0) {
+            continue;
+        }
+        tim_channels_taken[i] = 0x00;
+        tim_frequencies[i] = 0;
+        stm_peripherals_timer_free(mcu_tim_banks[i]);
+        HAL_TIM_PWM_DeInit(active_handles[i]);
+        active_handles[i] = NULL;
     }
 }
 
@@ -176,6 +192,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         if (HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
             return PWMOUT_INITIALIZATION_ERROR;
         }
+        active_handles[tim_index] = &self->handle;
     }
 
     // Channel/PWM init
@@ -208,15 +225,6 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     }
 }
 
-void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    for (size_t i = 0; i < TIM_BANK_ARRAY_LEN; i++) {
-        if (mcu_tim_banks[i] == self->handle.Instance) {
-            never_reset_tim[i] = false;
-            break;
-        }
-    }
-}
-
 bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t *self) {
     return self->tim == NULL;
 }
@@ -234,9 +242,13 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     }
     common_hal_reset_pin(self->pin);
 
+    never_reset_tim[self->tim->tim_index] &= ~(1 << self->tim->channel_index);
+
     // if reserved timer has no active channels, we can disable it
     if (tim_channels_taken[self->tim->tim_index] == 0) {
         tim_frequencies[self->tim->tim_index] = 0x00;
+        HAL_TIM_PWM_DeInit(&self->handle);
+        active_handles[self->tim->tim_index] = NULL;
         stm_peripherals_timer_free(self->handle.Instance);
     }
 
