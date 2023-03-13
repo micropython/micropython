@@ -1,3 +1,6 @@
+[tool.black]
+line-length = 99
+
 [tool.codespell]
 count = ""
 ignore-regex = '\b[A-Z]{3}\b'
