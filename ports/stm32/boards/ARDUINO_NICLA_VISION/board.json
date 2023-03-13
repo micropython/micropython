@@ -13,7 +13,7 @@
     "images": [
         "ABX00051_01.iso_1000x750.jpg"
     ],
-    "mcu": "STM32H747",
+    "mcu": "stm32h7",
     "product": "Arduino Nicla Vision",
     "thumbnail": "",
     "url": "https://store.arduino.cc/products/nicla-vision",

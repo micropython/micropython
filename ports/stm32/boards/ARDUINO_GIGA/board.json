@@ -13,7 +13,7 @@
     "images": [
         "ABX00063_01.front_1000x750.jpg"
     ],
-    "mcu": "STM32H747",
+    "mcu": "stm32h7",
     "product": "Arduino Giga",
     "thumbnail": "",
     "url": "https://store.arduino.cc/products/giga-r1-wifi",
