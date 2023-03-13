@@ -116,6 +116,12 @@ static inline void cyw43_delay_ms(uint32_t ms) {
     }
 }
 
+// cybt_fw_download_prepare does a malloc for the time being
+extern void *gc_alloc(size_t n_bytes, unsigned int alloc_flags);
+extern void gc_free(void *ptr);
+#define cyw43_malloc(S) gc_alloc(S, false)
+#define cyw43_free(S) gc_free(S)
+
 #define CYW43_EVENT_POLL_HOOK MICROPY_EVENT_POLL_HOOK_FAST
 
 #endif // MICROPY_INCLUDED_RP2_CYW43_CONFIGPORT_H
