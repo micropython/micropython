@@ -109,7 +109,7 @@ Pre-commit also requires some additional programs to be installed through your p
 
  * Standard Unix tools such as make, find, etc
  * The gettext package, any modern version
- * uncrustify version 0.71 (0.72 is also tested)
+ * uncrustify version 0.71 (0.72 is also tested and OK; 0.75 is not OK)
 
 Each time you create a git commit, the pre-commit quality checks will be run.  You can also run them e.g., with `pre-commit run foo.c` or `pre-commit run --all` to run on all files whether modified or not.
 

@@ -152,7 +152,7 @@ msgstr "%q indeksi aralık dışında"
 msgid "%q init failed"
 msgstr "%q init başarısız oldu"
 
-#: shared-bindings/dualbank/__init__.c
+#: ports/espressif/bindings/espnow/Peer.c shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
 msgstr "%q %q dir"
 
@@ -250,7 +250,7 @@ msgstr "%q, %q ve %q aynı uzunlukta olmalıdır"
 msgid "%q=%q"
 msgstr "%q=%q"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s hatası 0x%x"
@@ -519,6 +519,7 @@ msgstr "Halihazırda duyuruluyor."
 msgid "Already have all-matches listener"
 msgstr "Tüm eşleşmelerle eşleşen dinleyiciniz var"
 
+#: ports/espressif/bindings/espnow/ESPNow.c
 #: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -692,7 +693,7 @@ msgstr "CBC blokları 16 baytın katları şeklinde olmalı"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr "CIRCUITPY sürücüsü bulunamadı veya oluşturulamadı."
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC yada checksum geçersiz"
 
@@ -1088,7 +1089,7 @@ msgstr "Fonksiyon kilit gerektirir"
 msgid "GNSS init"
 msgstr "GNSS init"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Generic Failure"
 msgstr ""
 
@@ -1273,8 +1274,7 @@ msgstr "Geçersiz BSSID"
 msgid "Invalid MAC address"
 msgstr "Geçersiz MAC adresi"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Geçersiz argüman"
 
@@ -1301,7 +1301,7 @@ msgstr "Geçersiz biçim yığın boyutu"
 msgid "Invalid multicast MAC address"
 msgstr "Geçersiz multicast MAC adresi"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid size"
 msgstr "Geçersiz boyut"
 
@@ -1310,7 +1310,7 @@ msgstr "Geçersiz boyut"
 msgid "Invalid socket for TLS"
 msgstr "TLS için geçersiz soket"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid state"
 msgstr "Geçersiz durum"
 
@@ -1342,7 +1342,7 @@ msgstr "Katman zaten bir grupta"
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr "Katman, bir Grup ya da TileGrid alt sınıfı olmalıdır"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
 msgstr "MAC adresi geçersiz"
 
@@ -1698,11 +1698,11 @@ msgstr ""
 msgid "Operation not permitted"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation or feature not supported"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation timed out"
 msgstr ""
 
@@ -1710,7 +1710,7 @@ msgstr ""
 msgid "Out of MDNS service slots"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Out of memory"
 msgstr ""
 
@@ -1889,7 +1889,7 @@ msgstr ""
 msgid "Read-only filesystem"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Received response was invalid"
 msgstr ""
 
@@ -1909,7 +1909,7 @@ msgstr ""
 msgid "Requested AES mode is unsupported"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Requested resource not found"
 msgstr ""
 
@@ -2360,7 +2360,7 @@ msgstr ""
 msgid "Value length > max_length"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Version was invalid"
 msgstr ""
 

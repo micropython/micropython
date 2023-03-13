@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2023 MicroDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,14 @@
  * THE SOFTWARE.
  */
 
-// Micropython setup
+#pragma once
 
-#define MICROPY_HW_BOARD_NAME       "Neuron"
-#define MICROPY_HW_MCU_NAME         "ESP32S3"
+#include "py/obj.h"
+#include "esp_now.h"
 
-#define DEFAULT_UART_BUS_RX         (&pin_GPIO44)
-#define DEFAULT_UART_BUS_TX         (&pin_GPIO43)
+typedef struct {
+    mp_obj_base_t base;
+    esp_now_peer_info_t peer_info;
+} espnow_peer_obj_t;
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
-
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO14)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO15)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO13)
+const mp_obj_type_t espnow_peer_type;

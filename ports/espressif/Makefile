@@ -126,9 +126,13 @@ ifeq ($(DEBUG), 1)
   # CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -DNDEBUG -ggdb3
-  OPTIMIZATION_FLAGS ?= -O2
   # RISC-V is larger than xtensa
   # Use -Os for RISC-V when it overflows
+  ifeq ($(IDF_TARGET_ARCH),riscv)
+  OPTIMIZATION_FLAGS ?= -Os
+  else
+  OPTIMIZATION_FLAGS ?= -O2
+  endif
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
@@ -214,7 +218,6 @@ endif
 SRC_C += \
 	background.c \
 	mphalport.c \
-	bindings/espidf/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	shared/netutils/netutils.c \
@@ -248,8 +251,6 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 SRC_C += common-hal/_bleio/ble_events.c
 endif
 
-SRC_C += $(wildcard common-hal/espidf/*.c)
-
 ifneq ($(CIRCUITPY_ESPCAMERA),0)
 SRC_CAMERA := \
 	$(wildcard common-hal/espcamera/*.c) \
@@ -257,6 +258,20 @@ SRC_CAMERA := \
 SRC_C += $(SRC_CAMERA)
 CFLAGS += -isystem esp32-camera/driver/include
 CFLAGS += -isystem esp32-camera/conversions/include
+endif
+
+ifneq ($(CIRCUITPY_ESPIDF),0)
+SRC_ESPIDF := \
+	$(wildcard common-hal/espidf/*.c) \
+	$(wildcard bindings/espidf/*.c)
+SRC_C += $(SRC_ESPIDF)
+endif
+
+ifneq ($(CIRCUITPY_ESPNOW),0)
+SRC_ESPNOW := \
+	$(wildcard common-hal/espnow/*.c) \
+	$(wildcard bindings/espnow/*.c)
+SRC_C += $(SRC_ESPNOW)
 endif
 
 ifneq ($(CIRCUITPY_ESPULP),0)

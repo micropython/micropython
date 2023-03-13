@@ -163,7 +163,7 @@ msgstr "%q índice fuera de rango"
 msgid "%q init failed"
 msgstr "%q inicializado fallido"
 
-#: shared-bindings/dualbank/__init__.c
+#: ports/espressif/bindings/espnow/Peer.c shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
 msgstr "%q es %q"
 
@@ -261,7 +261,7 @@ msgstr "%q, %q, y %q deben tener la misma longitud"
 msgid "%q=%q"
 msgstr "%q=%q"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s error 0x%x"
@@ -531,6 +531,7 @@ msgstr "Ya se encuentra publicando."
 msgid "Already have all-matches listener"
 msgstr "Ya se tiene un escucha de todas las coincidencias"
 
+#: ports/espressif/bindings/espnow/ESPNow.c
 #: ports/espressif/common-hal/espulp/ULP.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -706,7 +707,7 @@ msgstr "Los bloques CBC deben ser múltiplos de 16 bytes"
 msgid "CIRCUITPY drive could not be found or created."
 msgstr "El dispositivo CIRCUITPY no pudo ser encontrado o creado."
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC o suma de comprobación inválida"
 
@@ -1112,7 +1113,7 @@ msgstr "La función requiere lock"
 msgid "GNSS init"
 msgstr "Inicialización GNSS"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Generic Failure"
 msgstr "Fallo Genérico"
 
@@ -1305,8 +1306,7 @@ msgstr "BSSID inválido"
 msgid "Invalid MAC address"
 msgstr "Dirección MAC inválida"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Argumento inválido"
 
@@ -1332,7 +1332,7 @@ msgstr "Formato de fragmento de formato no válido"
 msgid "Invalid multicast MAC address"
 msgstr "Dirección MAC de multidifusión inválida"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid size"
 msgstr "Tamaño incorrecto"
 
@@ -1341,7 +1341,7 @@ msgstr "Tamaño incorrecto"
 msgid "Invalid socket for TLS"
 msgstr "socket invalido para TLS"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid state"
 msgstr "Estado invalido"
 
@@ -1373,7 +1373,7 @@ msgstr "El Layer ya esta en un grupo"
 msgid "Layer must be a Group or TileGrid subclass"
 msgstr "El Layer debe ser un grupo o una subclase de TileGrid"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
 msgstr "La dirección MAC es incorrecta"
 
@@ -1739,11 +1739,11 @@ msgstr "Solo un color puede ser transparente a la vez"
 msgid "Operation not permitted"
 msgstr "La operación no es permitida"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation or feature not supported"
 msgstr "Operación no característica no soportada"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation timed out"
 msgstr "Tiempo de espera agotado"
 
@@ -1751,7 +1751,7 @@ msgstr "Tiempo de espera agotado"
 msgid "Out of MDNS service slots"
 msgstr "No hay slots MDNS de servicio"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Out of memory"
 msgstr "Memoria agotada"
 
@@ -1935,7 +1935,7 @@ msgstr "Solo-lectura"
 msgid "Read-only filesystem"
 msgstr "Sistema de archivos de solo-Lectura"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Received response was invalid"
 msgstr "La respuesta recibida es invalida"
 
@@ -1955,7 +1955,7 @@ msgstr "RemoteTransmissionRequests limitado a 8 bytes"
 msgid "Requested AES mode is unsupported"
 msgstr "El modo AES solicitado no es compatible"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Requested resource not found"
 msgstr "Recurso solicitado no encontrado"
 
@@ -2416,7 +2416,7 @@ msgstr "Tamaño del valor != del tamaño fijo requerido"
 msgid "Value length > max_length"
 msgstr "Tamaño de valor > max_length"
 
-#: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
+#: ports/espressif/common-hal/espidf/__init__.c
 msgid "Version was invalid"
 msgstr "La versión era invalida"
 
