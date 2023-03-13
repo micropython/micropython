@@ -111,7 +111,7 @@
 #define USBD_MAX_POWER_MA (250)
 
 #define USBD_DESC_STR_MAX (20)
-
+/*
 #if CFG_TUD_CDC
 #define USBD_ITF_CDC (0) // needs 2 interfaces
 #define USBD_CDC_EP_CMD (0x81)
@@ -149,9 +149,24 @@
 #define EPNUM_VENDOR_IN (0x81)
 #endif // CFG_TUD_CDC
 #endif // CFG_TUD_VENDOR
+*/
 
+#define USBD_ITF_VENDOR (0)
+#define EPNUM_VENDOR_OUT (0x04)
+#define EPNUM_VENDOR_IN (0x84)
 
-/* Limits of statically defined USB interfaces, endpoints, strings */
+#define USBD_ITF_CDC (1) // needs 2 interfaces
+#define USBD_CDC_EP_CMD (0x81)
+#define USBD_CDC_EP_OUT (0x02)
+#define USBD_CDC_EP_IN (0x82)
+
+#define USBD_ITF_MSC (3)
+#define EPNUM_MSC_OUT (0x03)
+#define EPNUM_MSC_IN (0x83)
+
+#define USBD_ITF_STATIC_MAX 4
+
+/* Limits of statically defined USB interfaces, endpoints, strings 
 #if CFG_TUD_VENDOR
 #define USBD_ITF_STATIC_MAX (USBD_ITF_VENDOR + 1)
 #define USBD_STR_STATIC_MAX (USBD_STR_VENDOR + 1)
@@ -169,6 +184,8 @@
 #define USBD_STR_STATIC_MAX (0)
 #define USBD_EP_STATIC_MAX (0)
 #endif
+*/
+
 
 #endif // MICROPY_HW_ENABLE_USBDEV
 
