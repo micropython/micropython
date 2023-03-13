@@ -57,6 +57,9 @@ static int64_t mp_bluetooth_hci_timer_callback(alarm_id_t id, void *user_data) {
 }
 
 void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
+    if (poll_timer_id != 0) {
+        cancel_alarm(poll_timer_id);
+    }
     poll_timer_id = add_alarm_in_ms(ms, mp_bluetooth_hci_timer_callback, NULL, true);
 }
 
