@@ -42,51 +42,70 @@ from shared_bindings_matrix import (
     all_ports_all_boards,
 )
 
-IGNORE = [
-    "tools/ci_set_matrix.py",
+# Files that never influence board builds
+IGNORE_BOARD = {
+    ".devcontainer",
+    "docs",
+    "tests",
+    "tools/ci_changes_per_commit.py",
     "tools/ci_check_duplicate_usb_vid_pid.py",
-]
-
-# Files in these directories never influence board builds
-IGNORE_DIRS = ["tests", "docs", ".devcontainer"]
+    "tools/ci_set_matrix.py",
+}
 
 PATTERN_DOCS = (
     r"^(?:\.github|docs|extmod\/ulab)|"
-    r"^(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|tools\/extract_pyi\.py|conf\.py|requirements-doc\.txt)$|"
+    r"^(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|tools\/extract_pyi\.py|\.readthedocs\.yml|conf\.py|requirements-doc\.txt)$|"
     r"(?:-stubs|\.(?:md|MD|rst|RST))$"
 )
 
-PATTERN_WINDOWS = [
+PATTERN_WINDOWS = {
     ".github/",
     "extmod/",
     "lib/",
     "mpy-cross/",
     "ports/unix/",
-    "ports/windows/",
     "py/",
-    "requirements",
     "tools/",
-]
+    "requirements-dev.txt",
+}
+
+
+def git_diff(pattern: str):
+    return set(
+        subprocess.run(
+            f"git diff {pattern} --name-only",
+            capture_output=True,
+            shell=True,
+        )
+        .stdout.decode("utf-8")
+        .split("\n")[:-1]
+    )
+
 
 if len(sys.argv) > 1:
     print("Using files list on commandline")
-    changed_files = sys.argv[1:]
-    last_failed_jobs = {}
+    changed_files = set(sys.argv[1:])
+elif os.environ.get("BASE_SHA") and os.environ.get("HEAD_SHA"):
+    print("Using files list by computing diff")
+    changed_files = git_diff("$BASE_SHA...$HEAD_SHA")
+    if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
+        changed_files.intersection_update(git_diff("$GITHUB_SHA~...$GITHUB_SHA"))
 else:
-    c = os.environ["CHANGED_FILES"]
-    if c == "":
-        print("CHANGED_FILES is in environment, but value is empty")
-        changed_files = []
-    else:
-        print("Using files list in CHANGED_FILES")
-        changed_files = json.loads(c.replace("\\", ""))
+    print("Using files list in CHANGED_FILES")
+    changed_files = set(json.loads(os.environ.get("CHANGED_FILES") or "[]"))
 
-    j = os.environ["LAST_FAILED_JOBS"]
-    if j == "":
-        print("LAST_FAILED_JOBS is in environment, but value is empty")
-        last_failed_jobs = {}
-    else:
-        last_failed_jobs = json.loads(j)
+print("Using jobs list in LAST_FAILED_JOBS")
+last_failed_jobs = json.loads(os.environ.get("LAST_FAILED_JOBS") or "{}")
+
+
+def print_enclosed(title, content):
+    print("::group::" + title)
+    print(content)
+    print("::endgroup::")
+
+
+print_enclosed("Log: changed_files", changed_files)
+print_enclosed("Log: last_failed_jobs", last_failed_jobs)
 
 
 def set_output(name: str, value):
@@ -155,11 +174,7 @@ def set_boards(build_all: bool):
                     boards_to_build.update(port_to_boards[port])
                 continue
 
-            # Check the ignore list to see if the file isn't used on board builds.
-            if p in IGNORE:
-                continue
-
-            if any([p.startswith(d) for d in IGNORE_DIRS]):
+            if any([p.startswith(d) for d in IGNORE_BOARD]):
                 continue
 
             # As a (nearly) last resort, for some certain files, we compute the settings from the
@@ -269,7 +284,9 @@ def set_windows(build_windows: bool):
         else:
             for file in changed_files:
                 for pattern in PATTERN_WINDOWS:
-                    if file.startswith(pattern):
+                    if file.startswith(pattern) and not any(
+                        [file.startswith(d) for d in IGNORE_BOARD]
+                    ):
                         build_windows = True
                         break
                 else:
@@ -284,11 +301,7 @@ def set_windows(build_windows: bool):
 def main():
     # Build all if no changed files
     build_all = not changed_files
-    print(
-        "Building all docs/boards"
-        if build_all
-        else "Adding docs/boards to build based on changed files"
-    )
+    print("Running: " + ("all" if build_all else "conditionally"))
 
     # Set jobs
     set_docs(build_all)
