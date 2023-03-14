@@ -84,11 +84,19 @@ STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_ar
 
     return MP_OBJ_FROM_PTR(self);
 }
+
+STATIC void check_for_deinit(displayio_bitmap_t *self) {
+    if (common_hal_displayio_bitmap_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
 //|     width: int
 //|     """Width of the bitmap. (read only)"""
 STATIC mp_obj_t displayio_bitmap_obj_get_width(mp_obj_t self_in) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_bitmap_get_width(self));
 }
 
@@ -102,6 +110,7 @@ MP_PROPERTY_GETTER(displayio_bitmap_width_obj,
 STATIC mp_obj_t displayio_bitmap_obj_get_height(mp_obj_t self_in) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_bitmap_get_height(self));
 }
 
@@ -134,6 +143,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     }
 
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
 
     if (mp_obj_is_type(index_obj, &mp_type_slice)) {
         // TODO(tannewt): Implement subscr after slices support start, stop and step tuples.
@@ -214,6 +224,7 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_for_deinit(self);
 
     int16_t x = args[ARG_x].u_int;
     int16_t y = args[ARG_y].u_int;
@@ -288,6 +299,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_blit_obj, 1, displayio_bitmap_obj_bl
 //|         ...
 STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
 
     mp_uint_t value = (mp_uint_t)mp_obj_get_int(value_obj);
     if ((value >> common_hal_displayio_bitmap_get_bits_per_value(self)) != 0) {
@@ -318,9 +330,10 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_bitmap_fill_obj, displayio_bitmap_obj_fill);
 //|         notified of the "dirty rectangle" that encloses all modified
 //|         pixels."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_bitmap_obj_dirty(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_for_deinit(self);
+
     enum { ARG_x1, ARG_y1, ARG_x2, ARG_y2 };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x1, MP_ARG_INT, {.u_int = 0} },
@@ -344,13 +357,24 @@ STATIC mp_obj_t displayio_bitmap_obj_dirty(size_t n_args, const mp_obj_t *pos_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_dirty_obj, 0, displayio_bitmap_obj_dirty);
 
+//|     def deinit(self) -> None:
+//|         """Release resources allocated by Bitmap."""
+//|         ...
+//|
+STATIC mp_obj_t displayio_bitmap_obj_deinit(mp_obj_t self_in) {
+    displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_displayio_bitmap_deinit(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_bitmap_deinit_obj, displayio_bitmap_obj_deinit);
+
 STATIC const mp_rom_map_elem_t displayio_bitmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_bitmap_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_bitmap_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&displayio_bitmap_blit_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&displayio_bitmap_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_dirty), MP_ROM_PTR(&displayio_bitmap_dirty_obj) },
-
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&displayio_bitmap_deinit_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_bitmap_locals_dict, displayio_bitmap_locals_dict_table);
 

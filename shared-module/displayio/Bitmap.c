@@ -79,6 +79,13 @@ void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self,
     self->dirty_area.y2 = height;
 }
 
+void common_hal_displayio_bitmap_deinit(displayio_bitmap_t *self) {
+    self->data = NULL;
+}
+
+bool common_hal_displayio_bitmap_deinited(displayio_bitmap_t *self) {
+    return self->data == NULL;
+}
 
 uint16_t common_hal_displayio_bitmap_get_height(displayio_bitmap_t *self) {
     return self->height;

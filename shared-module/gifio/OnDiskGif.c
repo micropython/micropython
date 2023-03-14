@@ -156,6 +156,7 @@ void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, pyb_file_obj_
 
 void common_hal_gifio_ondiskgif_deinit(gifio_ondiskgif_t *self) {
     self->file = NULL;
+    common_hal_displayio_bitmap_deinit(self->bitmap);
     self->bitmap = NULL;
 }
 
