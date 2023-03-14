@@ -828,6 +828,46 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _send_chunk(socket, "");
 }
 
+static void _reply_with_diskinfo_json(socketpool_socket_obj_t *socket, _request *request) {
+    _send_str(socket, OK_JSON);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
+    mp_print_t _socket_print = {socket, _print_chunk};
+
+    const char *hostname = "";
+    #if CIRCUITPY_MDNS
+    if (!common_hal_mdns_server_deinited(&mdns)) {
+        hostname = common_hal_mdns_server_get_hostname(&mdns);
+    }
+    #endif
+    _update_encoded_ip();
+    // Note: this leverages the fact that C concats consecutive string literals together.
+    mp_printf(&_socket_print,
+        "{\"web_api_version\": 1, "
+        "\"version\": \"" MICROPY_GIT_TAG "\", "
+        "\"build_date\": \"" MICROPY_BUILD_DATE "\", "
+        "\"board_name\": \"" MICROPY_HW_BOARD_NAME "\", "
+        "\"mcu_name\": \"" MICROPY_HW_MCU_NAME "\", "
+        "\"board_id\": \"" CIRCUITPY_BOARD_ID "\", "
+        "\"creator_id\": %u, "
+        "\"creation_id\": %u, "
+        "\"hostname\": \"%s\", "
+        "\"port\": %d, ", CIRCUITPY_CREATOR_ID, CIRCUITPY_CREATION_ID, hostname, web_api_port, _our_ip_encoded);
+    #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH > 0
+    uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
+    common_hal_mcu_processor_get_uid(raw_id);
+    mp_printf(&_socket_print, "\"UID\": \"");
+    for (uint8_t i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
+        mp_printf(&_socket_print, "%02X", raw_id[i]);
+    }
+    mp_printf(&_socket_print, "\", ");
+    #endif
+    mp_printf(&_socket_print, "\"ip\": \"%s\"}", _our_ip_encoded);
+    // Empty chunk signals the end of the response.
+    _send_chunk(socket, "");
+}
+
+
 // FATFS has a two second timestamp resolution but the BLE API allows for nanosecond resolution.
 // This function truncates the time the time to a resolution storable by FATFS and fills in the
 // FATFS encoded version into fattime.
@@ -1228,6 +1268,8 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             _reply_with_devices_json(socket, request);
         } else if (strcmp(path, "/version.json") == 0) {
             _reply_with_version_json(socket, request);
+        } else if (strcmp(path, "/diskinfo.json") == 0) {
+            _reply_with_diskinfo_json(socket, request);
         } else if (strcmp(path, "/serial/") == 0) {
             if (!request->authenticated) {
                 if (_api_password[0] != '\0') {
