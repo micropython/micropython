@@ -61,12 +61,9 @@ uint16_t common_hal_usb_core_device_get_idProduct(usb_core_device_obj_t *self) {
 }
 
 STATIC xfer_result_t _get_string_result;
-STATIC bool _transfer_done_cb(uint8_t daddr, tusb_control_request_t const *request, xfer_result_t result) {
-    // Store the result so we stop waiting for the transfer. We don't need the other data for now.
-    (void)daddr;
-    (void)request;
-    _get_string_result = result;
-    return true;
+STATIC void _transfer_done_cb(tuh_xfer_t *xfer) {
+    // Store the result so we stop waiting for the transfer.
+    _get_string_result = xfer->result;
 }
 
 STATIC void _wait_for_callback(void) {
@@ -89,7 +86,7 @@ STATIC mp_obj_t _get_string(const uint16_t *temp_buf) {
 mp_obj_t common_hal_usb_core_device_get_serial_number(usb_core_device_obj_t *self) {
     _get_string_result = 0xff;
     uint16_t temp_buf[127];
-    if (!tuh_descriptor_string_serial_get(self->device_number, 0, temp_buf, MP_ARRAY_SIZE(temp_buf), _transfer_done_cb)) {
+    if (!tuh_descriptor_get_serial_string(self->device_number, 0, temp_buf, MP_ARRAY_SIZE(temp_buf), _transfer_done_cb, 0)) {
         return mp_const_none;
     }
     _wait_for_callback();
@@ -99,7 +96,7 @@ mp_obj_t common_hal_usb_core_device_get_serial_number(usb_core_device_obj_t *sel
 mp_obj_t common_hal_usb_core_device_get_product(usb_core_device_obj_t *self) {
     _get_string_result = 0xff;
     uint16_t temp_buf[127];
-    if (!tuh_descriptor_string_product_get(self->device_number, 0, temp_buf, MP_ARRAY_SIZE(temp_buf), _transfer_done_cb)) {
+    if (!tuh_descriptor_get_product_string(self->device_number, 0, temp_buf, MP_ARRAY_SIZE(temp_buf), _transfer_done_cb, 0)) {
         return mp_const_none;
     }
     _wait_for_callback();
@@ -109,7 +106,7 @@ mp_obj_t common_hal_usb_core_device_get_product(usb_core_device_obj_t *self) {
 mp_obj_t common_hal_usb_core_device_get_manufacturer(usb_core_device_obj_t *self) {
     _get_string_result = 0xff;
     uint16_t temp_buf[127];
-    if (!tuh_descriptor_string_manufacturer_get(self->device_number, 0, temp_buf, MP_ARRAY_SIZE(temp_buf), _transfer_done_cb)) {
+    if (!tuh_descriptor_get_manufacturer_string(self->device_number, 0, temp_buf, MP_ARRAY_SIZE(temp_buf), _transfer_done_cb, 0)) {
         return mp_const_none;
     }
     _wait_for_callback();
@@ -125,11 +122,8 @@ mp_obj_t common_hal_usb_core_device_read(usb_core_device_obj_t *self, mp_int_t e
 }
 
 xfer_result_t control_result;
-STATIC bool _control_complete_cb(uint8_t dev_addr, tusb_control_request_t const *request, xfer_result_t result) {
-    (void)dev_addr;
-    (void)request;
-    control_result = result;
-    return true;
+STATIC void _control_complete_cb(tuh_xfer_t *xfer) {
+    control_result = xfer->result;
 }
 
 mp_int_t common_hal_usb_core_device_ctrl_transfer(usb_core_device_obj_t *self,
@@ -145,11 +139,17 @@ mp_int_t common_hal_usb_core_device_ctrl_transfer(usb_core_device_obj_t *self,
         .wIndex = wIndex,
         .wLength = len
     };
+    tuh_xfer_t xfer = {
+        .daddr = self->device_number,
+        .ep_addr = 0,
+        .setup = &request,
+        .buffer = buffer,
+        .complete_cb = _control_complete_cb,
+    };
+
     control_result = XFER_RESULT_STALLED;
-    bool result = tuh_control_xfer(self->device_number,
-        &request,
-        buffer,
-        _control_complete_cb);
+
+    bool result = tuh_control_xfer(&xfer);
     if (!result) {
         mp_raise_usb_core_USBError(NULL);
     }
