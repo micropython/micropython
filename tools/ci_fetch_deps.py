@@ -78,13 +78,13 @@ def main():
         submodules = ["extmod/ulab", "lib/", "tools/"]
     elif TARGET == "tests":
         submodules = ["extmod/ulab", "lib/", "tools/"]
-    elif TARGET == "build-doc":
+    elif TARGET == "docs":
         # used in .readthedocs.yml to generate RTD
         submodules = ["extmod/ulab"]
         submodules_tags = ["frozen/"]
     elif TARGET == "mpy-cross" or TARGET == "mpy-cross-mac":
         submodules = ["tools/"]  # for huffman
-    elif TARGET == "build-windows":
+    elif TARGET == "windows":
         # This builds one board from a number of ports so fill out a bunch of submodules
         submodules = ["extmod/ulab", "lib/", "tools/", "ports/", "data/nvm.toml"]
     elif TARGET == "website":

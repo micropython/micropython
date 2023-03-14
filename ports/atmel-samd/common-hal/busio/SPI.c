@@ -271,10 +271,17 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         size_t bytes_remaining = len;
 
         // Maximum DMA transfer is 65535
-        while (bytes_remaining > 0) {
+        while (1) {
             size_t to_send = (bytes_remaining > 65535) ? 65535 : bytes_remaining;
             status = sercom_dma_write(self->spi_desc.dev.prvt, data + (len - bytes_remaining), to_send);
             bytes_remaining -= to_send;
+            if (bytes_remaining > 0) {
+                // Multi-part transfer; let other things run before doing the next chunk.
+                RUN_BACKGROUND_TASKS;
+            } else {
+                // All done.
+                break;
+            }
         }
     } else {
         struct io_descriptor *spi_io;

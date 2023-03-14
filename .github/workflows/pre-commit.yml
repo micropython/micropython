@@ -5,8 +5,8 @@
 name: pre-commit
 
 on:
-  pull_request:
   push:
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}

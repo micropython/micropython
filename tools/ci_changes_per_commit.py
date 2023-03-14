@@ -167,12 +167,11 @@ def get_commit_depth_and_check_suite(query_commits):
 
 
 def get_bad_check_runs(query_check_runs):
+    bad_runs = {}
     more_pages = True
-    bad_runs_by_matrix = {}
 
     run_types = ["failed", "incomplete"]
-
-    regex_matrix = re.compile(r"^\S+ \/ (build|run) \(\S+\)$")
+    have_dependent_jobs = ["scheduler", "mpy-cross", "tests"]
 
     while more_pages:
         check_runs = query_check_runs.fetch()["data"]["node"]
@@ -184,15 +183,15 @@ def get_bad_check_runs(query_check_runs):
 
             for check_run in check_runs[run_type]["nodes"]:
                 name = check_run["name"]
-                res_matrix = regex_matrix.search(name)
-                if res_matrix:
-                    matrix = name.split(" /", 1)[0]
-                    matrix_job = name.split(" (", 1)[1][:-1]
-                    bad_runs_by_matrix.setdefault(matrix, []).append(matrix_job)
-                elif name != "scheduler":
-                    bad_runs_by_matrix[name] = True
-                else:
+
+                if any([name.startswith(job) for job in have_dependent_jobs]):
                     return {}
+
+                if name.startswith("ports"):
+                    matrix_job = name.rsplit(" (", 1)[1][:-1]
+                    bad_runs.setdefault("ports", []).append(matrix_job)
+                else:
+                    bad_runs[name] = True
 
             if query_check_runs.paginate(
                 check_runs[run_type]["pageInfo"], "after" + run_type_camel
@@ -200,7 +199,7 @@ def get_bad_check_runs(query_check_runs):
                 query_check_runs.variables["include" + run_type_camel] = True
                 more_pages = True
 
-    return bad_runs_by_matrix
+    return bad_runs
 
 
 def set_commit(commit):

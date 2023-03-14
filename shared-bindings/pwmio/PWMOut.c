@@ -271,8 +271,7 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freque
     check_for_deinit(self);
     if (!common_hal_pwmio_pwmout_get_variable_frequency(self)) {
         mp_raise_AttributeError(translate(
-            "PWM frequency not writable when variable_frequency is False on "
-            "construction."));
+            "PWM frequency not writable when variable_frequency is False on construction."));
     }
     mp_int_t freq = mp_obj_get_int(frequency);
     if (freq == 0) {

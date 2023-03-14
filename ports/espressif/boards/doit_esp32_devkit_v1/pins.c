@@ -3,9 +3,10 @@
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
-    // External pins are in silkscreen order, from top to bottom, left side, then right side
+    // External pins are in silkscreen order, from top to bottom, left side
     {MP_ROM_QSTR(MP_QSTR_D15), MP_ROM_PTR(&pin_GPIO15)},
     {MP_ROM_QSTR(MP_QSTR_D2), MP_ROM_PTR(&pin_GPIO2)},
+    {MP_ROM_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_GPIO4)},
     {MP_ROM_QSTR(MP_QSTR_RX2), MP_ROM_PTR(&pin_GPIO16)},
     {MP_ROM_QSTR(MP_QSTR_TX2), MP_ROM_PTR(&pin_GPIO17)},
     {MP_ROM_QSTR(MP_QSTR_D5), MP_ROM_PTR(&pin_GPIO5)},
@@ -16,6 +17,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     {MP_ROM_QSTR(MP_QSTR_TX0), MP_ROM_PTR(&pin_GPIO3)},
     {MP_ROM_QSTR(MP_QSTR_D22), MP_ROM_PTR(&pin_GPIO22)},
     {MP_ROM_QSTR(MP_QSTR_D23), MP_ROM_PTR(&pin_GPIO23)},
+    // External pins are in silkscreen order, from top to bottom, right side
     {MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_GPIO13)},
     {MP_ROM_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_GPIO12)},
     {MP_ROM_QSTR(MP_QSTR_D14), MP_ROM_PTR(&pin_GPIO14)},
@@ -26,6 +28,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     {MP_ROM_QSTR(MP_QSTR_D32), MP_ROM_PTR(&pin_GPIO32)},
     {MP_ROM_QSTR(MP_QSTR_D35), MP_ROM_PTR(&pin_GPIO35)},
     {MP_ROM_QSTR(MP_QSTR_D34), MP_ROM_PTR(&pin_GPIO34)},
+    {MP_ROM_QSTR(MP_QSTR_VN), MP_ROM_PTR(&pin_GPIO39)},
+    {MP_ROM_QSTR(MP_QSTR_VP), MP_ROM_PTR(&pin_GPIO36)},
 
     {MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO2)},
 
@@ -38,6 +42,11 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     {MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_GPIO17)},
     {MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_GPIO16)},
+
+    {MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_GPIO1)},
+    {MP_ROM_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_GPIO3)},
+    {MP_ROM_QSTR(MP_QSTR_D16), MP_ROM_PTR(&pin_GPIO16)},
+    {MP_ROM_QSTR(MP_QSTR_D17), MP_ROM_PTR(&pin_GPIO17)},
 
     {MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj)},
     {MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj)},

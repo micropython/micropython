@@ -215,7 +215,7 @@ ifneq ($(CIRCUITPY_AUDIOBUSIO_PDMIN),0)
 endif
 
 ifneq ($(CIRCUITPY_USB),0)
-SRC_C += lib/tinyusb/src/portable/st/synopsys/dcd_synopsys.c
+SRC_C += lib/tinyusb/src/portable/synopsys/dwc2/dcd_dwc2.c
 endif
 
 SRC_S = \
@@ -268,7 +268,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $^ > $(BUILD)/firmware.objs
 	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
-	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(LD_FILE)
+	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(LD_FILE) $(BUILD)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"

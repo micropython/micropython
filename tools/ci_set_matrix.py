@@ -42,63 +42,70 @@ from shared_bindings_matrix import (
     all_ports_all_boards,
 )
 
-PORT_TO_JOB = {
-    "atmel-samd": "atmel",
-    "broadcom": "aarch",
-    "cxd56": "arm",
-    "espressif": "esp",
-    "litex": "riscv",
-    "mimxrt10xx": "arm",
-    "nrf": "arm",
-    "raspberrypi": "arm",
-    "stm": "arm",
-}
-
-IGNORE = [
-    "tools/ci_set_matrix.py",
+# Files that never influence board builds
+IGNORE_BOARD = {
+    ".devcontainer",
+    "docs",
+    "tests",
+    "tools/ci_changes_per_commit.py",
     "tools/ci_check_duplicate_usb_vid_pid.py",
-]
-
-# Files in these directories never influence board builds
-IGNORE_DIRS = ["tests", "docs", ".devcontainer"]
+    "tools/ci_set_matrix.py",
+}
 
 PATTERN_DOCS = (
     r"^(?:\.github|docs|extmod\/ulab)|"
-    r"^(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|tools\/extract_pyi\.py|conf\.py|requirements-doc\.txt)$|"
+    r"^(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|tools\/extract_pyi\.py|\.readthedocs\.yml|conf\.py|requirements-doc\.txt)$|"
     r"(?:-stubs|\.(?:md|MD|rst|RST))$"
 )
 
-PATTERN_WINDOWS = [
+PATTERN_WINDOWS = {
     ".github/",
     "extmod/",
     "lib/",
     "mpy-cross/",
     "ports/unix/",
-    "ports/windows/",
     "py/",
-    "requirements",
     "tools/",
-]
+    "requirements-dev.txt",
+}
+
+
+def git_diff(pattern: str):
+    return set(
+        subprocess.run(
+            f"git diff {pattern} --name-only",
+            capture_output=True,
+            shell=True,
+        )
+        .stdout.decode("utf-8")
+        .split("\n")[:-1]
+    )
+
 
 if len(sys.argv) > 1:
     print("Using files list on commandline")
-    changed_files = sys.argv[1:]
-    last_failed_jobs = {}
+    changed_files = set(sys.argv[1:])
+elif os.environ.get("BASE_SHA") and os.environ.get("HEAD_SHA"):
+    print("Using files list by computing diff")
+    changed_files = git_diff("$BASE_SHA...$HEAD_SHA")
+    if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
+        changed_files.intersection_update(git_diff("$GITHUB_SHA~...$GITHUB_SHA"))
 else:
-    c = os.environ["CHANGED_FILES"]
-    if c == "":
-        print("CHANGED_FILES is in environment, but value is empty")
-        changed_files = []
-    else:
-        print("Using files list in CHANGED_FILES")
-        changed_files = json.loads(c.replace("\\", ""))
+    print("Using files list in CHANGED_FILES")
+    changed_files = set(json.loads(os.environ.get("CHANGED_FILES") or "[]"))
 
-    j = os.environ["LAST_FAILED_JOBS"]
-    if j == "":
-        print("LAST_FAILED_JOBS is in environment, but value is empty")
-        last_failed_jobs = {}
-    else:
-        last_failed_jobs = json.loads(j)
+print("Using jobs list in LAST_FAILED_JOBS")
+last_failed_jobs = json.loads(os.environ.get("LAST_FAILED_JOBS") or "{}")
+
+
+def print_enclosed(title, content):
+    print("::group::" + title)
+    print(content)
+    print("::endgroup::")
+
+
+print_enclosed("Log: changed_files", changed_files)
+print_enclosed("Log: last_failed_jobs", last_failed_jobs)
 
 
 def set_output(name: str, value):
@@ -109,10 +116,7 @@ def set_output(name: str, value):
         print(f"Would set GitHub actions output {name} to '{value}'")
 
 
-def set_boards_to_build(build_all: bool):
-    if last_failed_jobs.get("mpy-cross") or last_failed_jobs.get("tests"):
-        build_all = True
-
+def set_boards(build_all: bool):
     # Get boards in json format
     boards_info_json = build_board_info.get_board_mapping()
     all_board_ids = set()
@@ -170,11 +174,7 @@ def set_boards_to_build(build_all: bool):
                     boards_to_build.update(port_to_boards[port])
                 continue
 
-            # Check the ignore list to see if the file isn't used on board builds.
-            if p in IGNORE:
-                continue
-
-            if any([p.startswith(d) for d in IGNORE_DIRS]):
+            if any([p.startswith(d) for d in IGNORE_BOARD]):
                 continue
 
             # As a (nearly) last resort, for some certain files, we compute the settings from the
@@ -224,18 +224,13 @@ def set_boards_to_build(build_all: bool):
             boards_to_build = all_board_ids
             break
 
-    # Split boards by job
-    job_to_boards = {"aarch": [], "arm": [], "atmel": [], "esp": [], "riscv": []}
-
     # Append previously failed boards
-    for job in job_to_boards:
-        if job in last_failed_jobs:
-            for board in last_failed_jobs[job]:
-                boards_to_build.add(board)
+    boards_to_build.update(last_failed_jobs.get("ports") or [])
 
-    build_boards = bool(boards_to_build)
-    print("Building boards:", build_boards)
-    set_output("build-boards", build_boards)
+    print("Building boards:", bool(boards_to_build))
+
+    # Split boards by port
+    port_to_boards_to_build = {}
 
     # Append boards according to job
     for board in sorted(boards_to_build):
@@ -244,17 +239,19 @@ def set_boards_to_build(build_all: bool):
         # if this happens it's not in `board_to_port`.
         if not port:
             continue
-        job_to_boards[PORT_TO_JOB[port]].append(board)
+        port_to_boards_to_build.setdefault(port, []).append(board)
         print(" ", board)
 
-    # Set the step outputs for each job
-    for job in job_to_boards:
-        set_output(f"boards-{job}", json.dumps(job_to_boards[job]))
+    if port_to_boards_to_build:
+        port_to_boards_to_build["ports"] = sorted(list(port_to_boards_to_build.keys()))
+
+    # Set the step outputs
+    set_output("ports", json.dumps(port_to_boards_to_build))
 
 
-def set_docs_to_build(build_doc: bool):
+def set_docs(build_doc: bool):
     if not build_doc:
-        if last_failed_jobs.get("build-doc"):
+        if last_failed_jobs.get("docs"):
             build_doc = True
         else:
             doc_pattern = re.compile(PATTERN_DOCS)
@@ -277,17 +274,19 @@ def set_docs_to_build(build_doc: bool):
 
     # Set the step outputs
     print("Building docs:", build_doc)
-    set_output("build-doc", build_doc)
+    set_output("docs", build_doc)
 
 
-def set_windows_to_build(build_windows):
+def set_windows(build_windows: bool):
     if not build_windows:
-        if last_failed_jobs.get("build-windows"):
+        if last_failed_jobs.get("windows"):
             build_windows = True
         else:
             for file in changed_files:
                 for pattern in PATTERN_WINDOWS:
-                    if file.startswith(pattern):
+                    if file.startswith(pattern) and not any(
+                        [file.startswith(d) for d in IGNORE_BOARD]
+                    ):
                         build_windows = True
                         break
                 else:
@@ -296,23 +295,18 @@ def set_windows_to_build(build_windows):
 
     # Set the step outputs
     print("Building windows:", build_windows)
-    set_output("build-windows", build_windows)
-
-
-def check_changed_files():
-    if not changed_files:
-        print("Building all docs/boards")
-        return True
-    else:
-        print("Adding docs/boards to build based on changed files")
-        return False
+    set_output("windows", build_windows)
 
 
 def main():
-    build_all = check_changed_files()
-    set_docs_to_build(build_all)
-    set_windows_to_build(build_all)
-    set_boards_to_build(build_all)
+    # Build all if no changed files
+    build_all = not changed_files
+    print("Running: " + ("all" if build_all else "conditionally"))
+
+    # Set jobs
+    set_docs(build_all)
+    set_windows(build_all)
+    set_boards(build_all)
 
 
 if __name__ == "__main__":

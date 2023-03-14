@@ -9,8 +9,6 @@ on:
   pull_request:
   release:
     types: [published]
-  check_suite:
-    types: [rerequested]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -18,16 +16,11 @@ concurrency:
 
 jobs:
   scheduler:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
-      build-doc: ${{ steps.set-matrix.outputs.build-doc }}
-      build-boards: ${{ steps.set-matrix.outputs.build-boards }}
-      build-windows: ${{ steps.set-matrix.outputs.build-windows }}
-      boards-aarch: ${{ steps.set-matrix.outputs.boards-aarch }}
-      boards-arm: ${{ steps.set-matrix.outputs.boards-arm }}
-      boards-atmel: ${{ steps.set-matrix.outputs.boards-atmel }}
-      boards-esp: ${{ steps.set-matrix.outputs.boards-esp }}
-      boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
+      docs: ${{ steps.set-matrix.outputs.docs }}
+      ports: ${{ steps.set-matrix.outputs.ports }}
+      windows: ${{ steps.set-matrix.outputs.windows }}
       cp-version: ${{ steps.set-up-submodules.outputs.version }}
     steps:
     - name: Dump GitHub context
@@ -69,26 +62,27 @@ jobs:
         PULL: ${{ github.event.number }}
         GITHUB_TOKEN: ${{ github.token }}
         EXCLUDE_COMMIT: ${{ github.event.pull_request.head.sha }}
-    - name: Set head sha
+    - name: Set head sha (pull)
       if: github.event_name == 'pull_request'
       run: echo "HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
-    - name: Set base sha
+    - name: Set base sha (pull)
       if: github.event_name == 'pull_request'
-      run: |
-        git fetch --no-tags --no-recurse-submodules --depth=$((DEPTH + 1)) origin $HEAD_SHA
-        echo "BASE_SHA=$(git rev-list $HEAD_SHA --skip=$DEPTH --max-count=1)" >> $GITHUB_ENV
+      run: git cat-file -e $SHA && echo "BASE_SHA=$SHA" >> $GITHUB_ENV || true
       env:
-        DEPTH: ${{ steps.get-last-commit-with-checks.outputs.commit_depth || github.event.pull_request.commits }}
-    - name: Get changes
-      id: get-changes
-      if: github.event_name == 'pull_request'
-      run: echo $(git diff $BASE_SHA...$HEAD_SHA --name-only) | echo "changed_files=[\"$(sed "s/ /\", \"/g")\"]" >> $GITHUB_OUTPUT
+        SHA: ${{ steps.get-last-commit-with-checks.outputs.commit_sha || github.event.pull_request.base.sha }}
+    - name: Set head sha (push)
+      if: github.event_name == 'push'
+      run: echo "HEAD_SHA=${{ github.event.after }}" >> $GITHUB_ENV
+    - name: Set base sha (push)
+      if: github.event_name == 'push'
+      run: git cat-file -e $SHA && echo "BASE_SHA=$SHA" >> $GITHUB_ENV || true
+      env:
+        SHA: ${{ github.event.before }}
     - name: Set matrix
       id: set-matrix
-      working-directory: tools
       run: python3 -u ci_set_matrix.py
+      working-directory: tools
       env:
-        CHANGED_FILES: ${{ steps.get-changes.outputs.changed_files }}
         LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
 
   tests:
@@ -99,7 +93,7 @@ jobs:
 
   mpy-cross:
     needs: scheduler
-    if: needs.scheduler.outputs.build-boards == 'True'
+    if: needs.scheduler.outputs.ports != '{}'
     uses: ./.github/workflows/build-mpy-cross.yml
     secrets: inherit
     with:
@@ -108,7 +102,7 @@ jobs:
   mpy-cross-mac:
     runs-on: macos-11
     needs: scheduler
-    if: needs.scheduler.outputs.build-boards == 'True'
+    if: needs.scheduler.outputs.ports != '{}'
     env:
       CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
     steps:
@@ -160,10 +154,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  build-doc:
+  docs:
     runs-on: ubuntu-22.04
     needs: scheduler
-    if: needs.scheduler.outputs.build-doc == 'True'
+    if: needs.scheduler.outputs.docs == 'True'
     env:
       CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
     steps:
@@ -218,10 +212,10 @@ jobs:
         [ -z "$TWINE_USERNAME" ] || echo "Uploading dev release to PyPi"
         [ -z "$TWINE_USERNAME" ] || twine upload circuitpython-stubs/dist/*
 
-  build-windows:
+  windows:
     runs-on: windows-2022
     needs: scheduler
-    if: needs.scheduler.outputs.build-windows == 'True'
+    if: needs.scheduler.outputs.windows == 'True'
     env:
       CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
     defaults:
@@ -286,52 +280,15 @@ jobs:
     # ERROR: Platform MINGW64_NT-10.0-17763-x86_64 appears to be unsupported
     # https://github.com/espressif/esp-idf/issues/7062
 
-  aarch:
+  ports:
     needs: [scheduler, mpy-cross, tests]
-    if: ${{ needs.scheduler.outputs.boards-aarch != '[]' }}
+    if: needs.scheduler.outputs.ports != '{}'
     uses: ./.github/workflows/build-boards.yml
     secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        port: ${{ fromJSON(needs.scheduler.outputs.ports).ports }}
     with:
-      platform: aarch
-      boards: ${{ needs.scheduler.outputs.boards-aarch }}
-      cp-version: ${{ needs.scheduler.outputs.cp-version }}
-
-  arm:
-    needs: [scheduler, mpy-cross, tests]
-    if: ${{ needs.scheduler.outputs.boards-arm != '[]' }}
-    uses: ./.github/workflows/build-boards.yml
-    secrets: inherit
-    with:
-      platform: arm
-      boards: ${{ needs.scheduler.outputs.boards-arm }}
-      cp-version: ${{ needs.scheduler.outputs.cp-version }}
-
-  atmel:
-    needs: [scheduler, mpy-cross, tests]
-    if: ${{ needs.scheduler.outputs.boards-atmel != '[]' }}
-    uses: ./.github/workflows/build-boards.yml
-    secrets: inherit
-    with:
-      platform: arm
-      boards: ${{ needs.scheduler.outputs.boards-atmel }}
-      cp-version: ${{ needs.scheduler.outputs.cp-version }}
-
-  esp:
-    needs: [scheduler, mpy-cross, tests]
-    if: ${{ needs.scheduler.outputs.boards-esp != '[]' }}
-    uses: ./.github/workflows/build-boards.yml
-    secrets: inherit
-    with:
-      platform: esp
-      boards: ${{ needs.scheduler.outputs.boards-esp }}
-      cp-version: ${{ needs.scheduler.outputs.cp-version }}
-
-  riscv:
-    needs: [scheduler, mpy-cross, tests]
-    if: ${{ needs.scheduler.outputs.boards-riscv != '[]' }}
-    uses: ./.github/workflows/build-boards.yml
-    secrets: inherit
-    with:
-      platform: riscv
-      boards: ${{ needs.scheduler.outputs.boards-riscv }}
+      boards: ${{ toJSON(fromJSON(needs.scheduler.outputs.ports)[matrix.port]) }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}

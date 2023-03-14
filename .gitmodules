@@ -309,8 +309,7 @@
         branch = circuitpython
 [submodule "ports/raspberrypi/lib/cyw43-driver"]
 	path = ports/raspberrypi/lib/cyw43-driver
-	url = https://github.com/adafruit/cyw43-driver.git
-	branch = circuitpython8
+	url = https://github.com/georgerobotics/cyw43-driver.git
 [submodule "ports/raspberrypi/lib/lwip"]
 	path = ports/raspberrypi/lib/lwip
 	url = https://github.com/adafruit/lwip.git

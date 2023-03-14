@@ -33,17 +33,23 @@ INC_CYW43 := \
 	-isystem lib/cyw43-driver/firmware \
 	-isystem lib/cyw43-driver/src \
 	-isystem lib/lwip/src/include \
+        -isystem sdk/src/rp2_common/pico_async_context/include/ \
 	-isystem sdk/src/rp2_common/pico_cyw43_arch/include/ \
+	-isystem sdk/src/rp2_common/pico_cyw43_driver/include/ \
 	-isystem sdk/src/rp2_common/pico_lwip/include/ \
+        -isystem sdk/src/rp2_common/pico_rand/include/ \
 
 CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25 -DIGNORE_GPIO23 -DIGNORE_GPIO24 -DCYW43_LOGIC_DEBUG=0 -DCYW43_NETUTILS=1
 SRC_SDK_CYW43 := \
 	src/common/pico_sync/sem.c \
-	src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.c \
+	src/rp2_common/pico_async_context/async_context_base.c \
+	src/rp2_common/pico_async_context/async_context_threadsafe_background.c \
 	src/rp2_common/pico_cyw43_arch/cyw43_arch.c \
 	src/rp2_common/pico_cyw43_arch/cyw43_arch_threadsafe_background.c \
-	src/rp2_common/pico_lwip/nosys.c \
-	src/rp2_common/pico_lwip/random.c \
+	src/rp2_common/pico_cyw43_driver/cyw43_driver.c \
+	src/rp2_common/pico_cyw43_driver/cyw43_bus_pio_spi.c \
+	src/rp2_common/pico_lwip/lwip_nosys.c \
+	src/rp2_common/pico_rand/rand.c \
 
 SRC_LWIP := \
 	shared/netutils/netutils.c \
@@ -69,27 +75,15 @@ $(PIOASM):
 	$(Q)cmake -S pioasm -B $(BUILD)/pioasm
 	$(Q)$(MAKE) -C $(BUILD)/pioasm PioasmBuild
 
-$(BUILD)/cyw43_bus_pio_spi.pio.h: sdk/src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.pio $(PIOASM)
+$(BUILD)/cyw43_bus_pio_spi.pio.h: sdk/src/rp2_common/pico_cyw43_driver/cyw43_bus_pio_spi.pio $(PIOASM)
 	$(Q)$(PIOASM) -o c-sdk $< $@
-$(BUILD)/sdk/src/rp2_common/cyw43_driver/cyw43_bus_pio_spi.o: $(BUILD)/cyw43_bus_pio_spi.pio.h
+$(BUILD)/sdk/src/rp2_common/pico_cyw43_driver/cyw43_bus_pio_spi.o: $(BUILD)/cyw43_bus_pio_spi.pio.h
 
-CYW43_FIRMWARE_BIN = 43439A0-7.95.49.00.combined
-
-$(BUILD)/cyw43_resource.o: lib/cyw43-driver/firmware/$(CYW43_FIRMWARE_BIN)
-	$(Q)$(OBJCOPY) -I binary -O elf32-littlearm -B arm \
-		--readonly-text \
-		--rename-section .data=.big_const,contents,alloc,load,readonly,data \
-		--redefine-sym _binary_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_start=fw_43439A0_7_95_49_00_start \
-		--redefine-sym _binary_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_size=fw_43439A0_7_95_49_00_size \
-		--redefine-sym _binary_lib_cyw43_driver_firmware_43439A0_7_95_49_00_combined_end=fw_43439A0_7_95_49_00_end \
-		$< $@
-OBJ_CYW43 := $(BUILD)/cyw43_resource.o
 else
 INC_CYW43 :=
 CFLAGS_CYW43 :=
 SRC_SDK_CYW43 :=
 SRC_CYW43 :=
-OBJ_CYW43 :=
 SRC_LWIP :=
 endif
 
@@ -377,7 +371,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S_UPPER:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/boot2_padded_checksummed.o
-OBJ += $(OBJ_CYW43) $(OBJ_MBEDTLS)
+OBJ += $(OBJ_MBEDTLS)
 
 $(BUILD)/%.o: $(BUILD)/%.S
 	$(STEPECHO) "CC $<"
@@ -417,7 +411,7 @@ $(BUILD)/firmware.elf: $(OBJ) $(LINK_LD)
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
 	$(Q)echo $(PICO_LDFLAGS) > $(BUILD)/firmware.ldflags
 	$(Q)$(CC) -o $@ $(CFLAGS) @$(BUILD)/firmware.ldflags -Wl,-T,$(LINK_LD) -Wl,-Map=$@.map -Wl,-cref -Wl,--gc-sections @$(BUILD)/firmware.objs -Wl,-lc
-	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(LINK_LD)
+	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(LINK_LD) $(BUILD)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
