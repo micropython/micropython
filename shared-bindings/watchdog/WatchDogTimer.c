@@ -71,8 +71,14 @@ STATIC mp_obj_t watchdog_watchdogtimer_feed(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_feed_obj, watchdog_watchdogtimer_feed);
 
 //|     def deinit(self) -> None:
-//|         """Stop the watchdog timer. This may raise an error if the watchdog
-//|         timer cannot be disabled on this platform."""
+//|         """Stop the watchdog timer.
+//|
+//|         :raises RuntimeError: if the watchdog timer cannot be disabled on this platform.
+//|
+//|         .. note:: This is deprecated in ``8.1.0`` and will be removed in ``9.0.0``.
+//|             Set watchdog `mode` to `WatchDogMode.NONE` instead.
+//|
+//|         """
 //|         ...
 STATIC mp_obj_t watchdog_watchdogtimer_deinit(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -94,7 +100,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_timeout(mp_obj_t self_in, mp_obj_
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_float_t timeout = mp_obj_get_float(timeout_obj);
 
-    mp_arg_validate_int_min((int)timeout, 0, MP_QSTR_timeout);
+    mp_arg_validate_int_min(timeout, 0, MP_QSTR_timeout);
 
     common_hal_watchdog_set_timeout(self, timeout);
     return mp_const_none;
@@ -122,27 +128,13 @@ MP_PROPERTY_GETSET(watchdog_watchdogtimer_timeout_obj,
 //|
 STATIC mp_obj_t watchdog_watchdogtimer_obj_get_mode(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return watchdog_watchdogmode_type_to_obj(common_hal_watchdog_get_mode(self));
+    return cp_enum_find(&watchdog_watchdogmode_type, common_hal_watchdog_get_mode(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_get_mode_obj, watchdog_watchdogtimer_obj_get_mode);
 
-STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t mode_obj) {
+STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t obj) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    watchdog_watchdogmode_t current_mode = common_hal_watchdog_get_mode(self);
-    watchdog_watchdogmode_t new_mode = watchdog_watchdogmode_obj_to_type(mode_obj);
-    mp_float_t current_timeout = common_hal_watchdog_get_timeout(self);
-
-    // When setting the mode, the timeout value must be greater than zero
-    if (new_mode == WATCHDOGMODE_RESET || new_mode == WATCHDOGMODE_RAISE) {
-        mp_arg_validate_int_min((int)current_timeout, 0, MP_QSTR_timeout);
-    }
-
-    // Don't allow changing the mode once the watchdog timer has been started
-    if (current_mode == WATCHDOGMODE_RESET && new_mode != WATCHDOGMODE_RESET) {
-        mp_raise_TypeError(translate("WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"));
-    }
-
-    common_hal_watchdog_set_mode(self, new_mode);
+    common_hal_watchdog_set_mode(self, cp_enum_value(&watchdog_watchdogmode_type, obj, MP_QSTR_mode));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(watchdog_watchdogtimer_set_mode_obj, watchdog_watchdogtimer_obj_set_mode);
