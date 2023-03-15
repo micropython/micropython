@@ -38,6 +38,6 @@ struct _watchdog_watchdogtimer_obj_t {
 };
 
 // This needs to be called in order to disable the watchdog
-// void watchdog_reset(void);
+void watchdog_reset(void);
 
 #endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
