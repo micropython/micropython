@@ -25,12 +25,15 @@
  */
 
 #include "py/runtime.h"
-#include "common-hal/watchdog/WatchDogTimer.h"
+
+#include "shared/runtime/pyexec.h"
 
 #include "shared-bindings/watchdog/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-#include "src/rp2_common/hardware_watchdog/include/hardware/watchdog.h"
+#include "common-hal/watchdog/WatchDogTimer.h"
+
+#include "hardware/watchdog.h"
 
 #define WATCHDOG_ENABLE watchdog_enable(self->timeout * 1000, false)
 
@@ -47,7 +50,16 @@ void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
 }
 
 void watchdog_reset(void) {
-    common_hal_watchdog_deinit(&common_hal_mcu_watchdogtimer_obj);
+    watchdog_watchdogtimer_obj_t *self = &common_hal_mcu_watchdogtimer_obj;
+    if (self->mode == WATCHDOGMODE_RESET) {
+        mp_obj_t exception = pyexec_result()->exception;
+        if (exception != MP_OBJ_NULL &&
+            exception != MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) &&
+            exception != MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
+            return;
+        }
+    }
+    common_hal_watchdog_deinit(self);
 }
 
 mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {

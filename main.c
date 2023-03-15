@@ -243,6 +243,12 @@ void supervisor_execution_status(void) {
 }
 #endif
 
+#if CIRCUITPY_WATCHDOG
+pyexec_result_t *pyexec_result(void) {
+    return &_exec_result;
+}
+#endif
+
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
 // Return its index. If no file found, return -1.
 STATIC const char *first_existing_file_in_list(const char *const *filenames, size_t n_filenames) {
