@@ -6,6 +6,7 @@
 
 import json
 import os
+import requests
 import subprocess
 import sys
 import sh
@@ -96,7 +97,19 @@ def get_current_info():
     response = response.json()
 
     git_info = commit_sha, response["sha"]
-    current_list = json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+
+    if response["content"] != "":
+        # if the file is there
+        current_list = json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+    else:
+        # if too big, the file is not included
+        download_url = response["download_url"]
+        response = requests.get(download_url)
+        if not response.ok:
+            print(response.text)
+            raise RuntimeError("cannot get previous files.json")
+        current_list = response.json()
+
     current_info = {}
     for info in current_list:
         current_info[info["id"]] = info
