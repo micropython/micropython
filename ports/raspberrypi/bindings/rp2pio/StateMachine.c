@@ -341,10 +341,7 @@ STATIC mp_obj_t rp2pio_statemachine_run(mp_obj_t self_obj, mp_obj_t instruction_
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(instruction_obj, &bufinfo, MP_BUFFER_READ);
 
-    if (bufinfo.len % 2 != 0) {
-        mp_raise_ValueError(translate("Program size invalid"));
-    }
-    common_hal_rp2pio_statemachine_run(self, bufinfo.buf, (size_t)bufinfo.len / 2);
+    common_hal_rp2pio_statemachine_run(self, bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(rp2pio_statemachine_run_obj, rp2pio_statemachine_run);
