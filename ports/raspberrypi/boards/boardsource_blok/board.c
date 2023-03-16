@@ -24,27 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include "lib/tinyusb/src/device/usbd.h"
-#include "supervisor/background_callback.h"
-#include "supervisor/usb.h"
-#include "src/rp2_common/hardware_irq/include/hardware/irq.h"
-#include "src/rp2_common/pico_platform/include/pico/platform.h"
-#include "src/rp2040/hardware_regs/include/hardware/regs/intctrl.h"
+#include "supervisor/board.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
+#include "supervisor/shared/board.h"
 
-void init_usb_hardware(void) {
+void board_init(void) {
 }
 
-STATIC void _usb_irq_wrapper(void) {
-    usb_irq_handler(0);
+bool board_requests_safe_mode(void) {
+    return false;
 }
 
-void post_usb_init(void) {
-    irq_add_shared_handler(USBCTRL_IRQ, _usb_irq_wrapper,
-        PICO_SHARED_IRQ_HANDLER_LOWEST_ORDER_PRIORITY);
+void reset_board(void) {
+    // turn off any left over LED
+    // board_reset_user_neopixels(&pin_GPIO29, 62);
+}
 
-    // There is a small window where the USB interrupt may be handled by the
-    // pico-sdk instead of CircuitPython. If that is the case, then we'll have
-    // USB events to process that we didn't queue up a background task for. So,
-    // queue one up here even if we might not have anything to do.
-    usb_background_schedule();
+void board_deinit(void) {
 }
