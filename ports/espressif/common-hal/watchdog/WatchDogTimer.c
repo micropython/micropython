@@ -100,7 +100,7 @@ void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_floa
     }
 
     if ((uint64_t)new_timeout > UINT32_MAX) {
-        mp_raise_ValueError_varg(translate("%q must be <= %d"), MP_QSTR_timeout, UINT32_MAX);
+        mp_raise_ValueError_varg(translate("%q must be <= %u"), MP_QSTR_timeout, UINT32_MAX);
     }
     self->timeout = new_timeout;
 

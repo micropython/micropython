@@ -50,22 +50,18 @@
 //|
 
 //|     def __init__(self) -> None:
-//|         """Not currently dynamically supported. Access the sole instance through `microcontroller.watchdog`."""
+//|         """Access the sole instance through `microcontroller.watchdog`."""
 //|         ...
 
 //|     def feed(self) -> None:
 //|         """Feed the watchdog timer. This must be called regularly, otherwise
-//|         the timer will expire."""
+//|         the timer will expire. Silently does nothing if the watchdog isn't active."""
 //|         ...
 STATIC mp_obj_t watchdog_watchdogtimer_feed(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    watchdog_watchdogmode_t current_mode = common_hal_watchdog_get_mode(self);
-
-    if (current_mode == WATCHDOGMODE_NONE) {
-        mp_raise_ValueError(translate("WatchDogTimer is not currently running"));
+    if (common_hal_watchdog_get_mode(self) != WATCHDOGMODE_NONE) {
+        common_hal_watchdog_feed(self);
     }
-
-    common_hal_watchdog_feed(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_feed_obj, watchdog_watchdogtimer_feed);
@@ -89,7 +85,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_deinit_obj, watchdog_wat
 
 //|     timeout: float
 //|     """The maximum number of seconds that can elapse between calls
-//|     to feed()"""
+//|     to `feed()`"""
 STATIC mp_obj_t watchdog_watchdogtimer_obj_get_timeout(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_watchdog_get_timeout(self));
@@ -114,17 +110,16 @@ MP_PROPERTY_GETSET(watchdog_watchdogtimer_timeout_obj,
 //|     mode: WatchDogMode
 //|     """The current operating mode of the WatchDogTimer `watchdog.WatchDogMode`.
 //|
-//|     Setting a WatchDogMode activates the WatchDog::
+//|     Setting a `WatchDogMode` activates the WatchDog::
 //|
-//|       import microcontroller
-//|       import watchdog
+//|       from microcontroller import watchdog as w
+//|       from watchdog import WatchDogMode
 //|
-//|       w = microcontroller.watchdog
 //|       w.timeout = 5
-//|       w.mode = watchdog.WatchDogMode.RAISE
+//|       w.mode = WatchDogMode.RESET
 //|
 //|
-//|     Once set, the WatchDogTimer will perform the specified action if the timer expires."""
+//|     Once set, the `WatchDogTimer` will perform the specified action if the timer expires."""
 //|
 STATIC mp_obj_t watchdog_watchdogtimer_obj_get_mode(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
