@@ -626,6 +626,8 @@ const dma_descr_t dma_SPI_1_RX = { DMA1_Channel1, DMA_REQUEST_SPI1_RX, dma_id_0,
 const dma_descr_t dma_SPI_1_TX = { DMA1_Channel2, DMA_REQUEST_SPI1_TX, dma_id_1,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_RX = { DMA1_Channel1, DMA_REQUEST_SPI2_RX, dma_id_0,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_TX = { DMA1_Channel2, DMA_REQUEST_SPI2_TX, dma_id_1,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_3_RX = { DMA1_Channel1, DMA_REQUEST_SPI3_RX, dma_id_0,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_3_TX = { DMA1_Channel2, DMA_REQUEST_SPI3_TX, dma_id_1,   &dma_init_struct_spi_i2c };
 
 const dma_descr_t dma_I2C_1_RX = { DMA1_Channel3, DMA_REQUEST_I2C1_RX, dma_id_2,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_I2C_1_TX = { DMA1_Channel4, DMA_REQUEST_I2C1_TX, dma_id_3,   &dma_init_struct_spi_i2c };

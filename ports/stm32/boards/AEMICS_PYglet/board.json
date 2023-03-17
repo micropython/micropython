@@ -1,0 +1,16 @@
+{
+    "deploy": [
+        "./deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "id": "AEMICS_PYglet",
+    "images": [
+        "aemics_pyglet_1.png"
+    ],
+    "mcu": "stm32g4",
+    "product": "AEMICS PYglet",
+    "thumbnail": "",
+    "url": "https://www.aemics.nl/pyg/",
+    "vendor": "AEMICS"
+}
