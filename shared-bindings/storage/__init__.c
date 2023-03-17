@@ -266,6 +266,7 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|     This property cannot be changed, use `storage.remount` instead."""
 //|     ...
 //|
+//|     @staticmethod
 //|     def mkfs(self) -> None:
 //|         """Format the block device, deleting any data that may have been there"""
 //|         ...
