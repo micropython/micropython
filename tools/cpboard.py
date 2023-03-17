@@ -81,6 +81,7 @@ class REPL:
             else:
                 timeout_count += 1
                 if timeout is not None and timeout_count >= 100 * timeout:
+                    print("timeout")
                     raise TimeoutError(110, "timeout waiting for", ending)
                 time.sleep(0.01)
         return data
@@ -164,7 +165,10 @@ class Disk:
             self._path = mount[0][1]
         else:
             name = os.path.basename(dev)
-            sh.pmount("-tvfat", dev, name, _timeout=10)
+            try:
+                sh.pmount("-tvfat", dev, name, _timeout=10)
+            except sh.CommandNotFound:
+                raise ValueError()
             self.mountpoint = "/media/" + name
             self._path = self.mountpoint
 
@@ -516,7 +520,10 @@ class CPboard:
         if not part:
             return None
 
-        return Disk(part[0])
+        try:
+            return Disk(part[0])
+        except ValueError:
+            return None
 
     @property
     def firmware(self):
@@ -555,14 +562,17 @@ PyboardError = CPboardError
 class Pyboard:
     def __init__(self, device, baudrate=115200, user="micro", password="python", wait=0):
         self.board = CPboard.from_try_all(device, baudrate=baudrate, wait=wait)
-        with self.board.disk as disk:
-            disk.copy("skip_if.py")
+        disk = self.board.disk
+        if disk:
+            with disk as open_disk:
+                open_disk.copy("skip_if.py")
 
     def close(self):
         self.board.close()
 
     def enter_raw_repl(self):
         self.board.open()
+        self.board.repl.reset()
 
     def exit_raw_repl(self):
         self.close()
@@ -571,7 +581,12 @@ class Pyboard:
         return self.board.execfile(filename)
 
     def exec_(self, command, data_consumer=None):
-        output = self.board.exec(command, timeout=20000)
+        try:
+            output, error = self.board.repl.execute(command, timeout=20000, wait_for_response=True)
+        except OSError as e:
+            raise CPboardError("timeout", e)
+        if error:
+            raise CPboardError("exception", output, error)
         return output
 
 

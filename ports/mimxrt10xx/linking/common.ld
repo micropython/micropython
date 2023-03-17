@@ -6,7 +6,7 @@ Boards can setup reserved flash with _ld_reserved_flash_size in board.ld. */
 
 ENTRY(Reset_Handler)
 
-code_size = 2M;
+code_size = _ld_flash_size >= 4M ? 2M : 1M;
 _ld_default_stack_size = 20K;
 
 /* Default reserved flash to nothing. */
@@ -51,6 +51,20 @@ SECTIONS
         KEEP(* (.boot_hdr.dcd_data))
         . = ALIGN(4);
     } > FLASH_IVT
+
+    /* Align for 256 ISR entries and place first in flash. Otherwise the UF2
+       bootloader can't find it because it uses its own flash_config and ivt. */
+    .isr_vector : ALIGN(4 * 256)
+    {
+        . = ALIGN(4);
+        KEEP(*(.isr_vector))         /* Startup code */
+        . = ALIGN(4);
+    } > ITCM AT> FLASH_FIRMWARE
+    _ld_isr_destination = ADDR(.isr_vector);
+    _ld_isr_flash_copy = LOADADDR(.isr_vector);
+    _ld_isr_size = SIZEOF(.isr_vector);
+    /* Used by the bootloader to start user code. */
+    __VECTOR_TABLE = LOADADDR(.isr_vector);
 
     .text :
     {
@@ -145,19 +159,6 @@ SECTIONS
     _ld_itcm_destination = ADDR(.itcm);
     _ld_itcm_flash_copy = LOADADDR(.itcm);
     _ld_itcm_size = SIZEOF(.itcm);
-
-    /* Align for 256 ISR entries */
-    .isr_vector : ALIGN(4 * 256)
-    {
-        . = ALIGN(4);
-        KEEP(*(.isr_vector))         /* Startup code */
-        . = ALIGN(4);
-    } > ITCM AT> FLASH_FIRMWARE
-    _ld_isr_destination = ADDR(.isr_vector);
-    _ld_isr_flash_copy = LOADADDR(.isr_vector);
-    _ld_isr_size = SIZEOF(.isr_vector);
-    /* Used by the bootloader to start user code. */
-    __VECTOR_TABLE = LOADADDR(.isr_vector);
 
     .dtcm_data :
     {

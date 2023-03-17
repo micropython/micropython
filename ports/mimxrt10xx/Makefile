@@ -182,18 +182,20 @@ $(BUILD)/firmware.elf: $(OBJ) $(LD_FILES)
 	$(STEPECHO) "LINK $@"
 	$(Q)$(CC) -o $@ $(LDFLAGS) $(filter-out %.ld, $^) -Wl,--print-memory-usage -Wl,--start-group $(LIBS) -Wl,--end-group
 
+# -R excludes sections from the output files.
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .flash_config -j .ivt -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $^ $@
+	$(Q)$(OBJCOPY) -O binary -R .stack -R .dtcm_bss $^ $@
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $^ $@-binpart
+	$(Q)$(OBJCOPY) -O binary -R .stack -R .dtcm_bss -R .ivt -R .flash_config $^ $@-binpart
 	$(Q)$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -f MIMXRT10XX -c -o $@ $@-binpart
-	$(Q)rm $@-binpart
+
+# $(Q)rm $@-binpart
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
-	$(Q)$(OBJCOPY) -O ihex -j .flash_config -j .ivt -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $< $@
+	$(Q)$(OBJCOPY) -O ihex -R .stack -R .dtcm_bss $< $@
 
 include $(TOP)/py/mkrules.mk
 
