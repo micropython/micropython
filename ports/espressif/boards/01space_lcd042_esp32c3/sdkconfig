@@ -1,0 +1,6 @@
+# chip is ESP32-C3 FH4
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="Adafruit-QTPy-ESP32C3"
+# end of LWIP
