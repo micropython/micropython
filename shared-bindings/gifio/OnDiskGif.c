@@ -52,7 +52,7 @@
 //|       odg = gifio.OnDiskGif('/sample.gif')
 //|
 //|       start = time.monotonic()
-//|       odg.next_frame() # Load the first frame
+//|       next_delay = odg.next_frame() # Load the first frame
 //|       end = time.monotonic()
 //|       overhead = end - start
 //|
