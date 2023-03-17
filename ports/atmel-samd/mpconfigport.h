@@ -60,7 +60,9 @@
     X(EISDIR) \
     X(EINVAL) \
 
-#define MICROPY_FATFS_EXFAT 0
+#define MICROPY_FATFS_EXFAT    (0)
+// FAT32 mkfs takes about 500 bytes.
+#define MICROPY_FF_MKFS_FAT32 (0)
 
 // Only support simpler HID descriptors on SAMD21.
 #define CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR (1)

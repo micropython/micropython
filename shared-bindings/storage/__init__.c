@@ -266,8 +266,15 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|     This property cannot be changed, use `storage.remount` instead."""
 //|     ...
 //|
+//|     @staticmethod
 //|     def mkfs(self) -> None:
-//|         """Format the block device, deleting any data that may have been there"""
+//|         """Format the block device, deleting any data that may have been there.
+//|
+//|         **Limitations**: On SAMD21 builds, `mkfs()` will raise ``OSError(22)`` when
+//|         attempting to format filesystems larger than 4GB. The extra code to format larger
+//|         filesystems will not fit on these builds. You can still access
+//|         larger filesystems, but you will need to format the filesystem on another device.
+//|         """
 //|         ...
 //|     def open(self, path: str, mode: str) -> None:
 //|         """Like builtin ``open()``"""
