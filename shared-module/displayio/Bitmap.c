@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/gc.h"
 
 enum { ALIGN_BITS = 8 * sizeof(uint32_t) };
 
@@ -84,7 +85,7 @@ void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self,
 
 void common_hal_displayio_bitmap_deinit(displayio_bitmap_t *self) {
     if (self->data_alloc) {
-        m_free(self->data);
+        gc_free(self->data);
     }
     self->data = NULL;
 }
