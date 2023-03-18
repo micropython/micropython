@@ -25,7 +25,10 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
+
+#if MICROPY_HW_ENABLE_USBDEV
+
 #include "tusb.h"
 #include "mp_usbd.h"
 #include "mp_usbd_internal.h"
@@ -126,3 +129,5 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     (void)index;
     return mp_usbd_desc_cfg_static;
 }
+
+#endif

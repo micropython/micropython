@@ -36,8 +36,12 @@
 
 // Board and hardware specific configuration
 #define MICROPY_HW_MCU_NAME                     "RP2040"
+#ifndef MICROPY_HW_ENABLE_UART_REPL
 #define MICROPY_HW_ENABLE_UART_REPL             (0) // useful if there is no USB
+#endif
+#ifndef MICROPY_HW_ENABLE_USBDEV
 #define MICROPY_HW_ENABLE_USBDEV                (1)
+#endif
 
 #if MICROPY_HW_ENABLE_USBDEV
 // Enable USB-CDC serial port

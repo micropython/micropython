@@ -28,7 +28,7 @@
 #include "py/mphal.h"
 #include "modmachine.h"
 
-#if MICROPY_HW_USB_CDC_1200BPS_TOUCH
+#if MICROPY_HW_USB_CDC_1200BPS_TOUCH && MICROPY_HW_ENABLE_USBDEV
 
 #include "tusb.h"
 

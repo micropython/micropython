@@ -26,6 +26,10 @@
 
 #include <stdlib.h>
 
+#include "py/mpconfig.h"
+
+#if MICROPY_HW_ENABLE_USBDEV
+
 #ifndef NO_QSTR
 #include "tusb.h" // TinyUSB is not avaiable when running the string preprocessor
 #include "device/usbd.h"
@@ -35,3 +39,5 @@
 void usbd_task(void) {
     tud_task_ext(0, false);
 }
+
+#endif
