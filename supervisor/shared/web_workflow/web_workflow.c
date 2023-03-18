@@ -49,6 +49,7 @@
 
 #include "shared-bindings/hashlib/__init__.h"
 #include "shared-bindings/hashlib/Hash.h"
+#include "lib/oofatfs/diskio.h"
 
 #if CIRCUITPY_MDNS
 #include "shared-bindings/mdns/RemoteService.h"
@@ -834,35 +835,21 @@ static void _reply_with_diskinfo_json(socketpool_socket_obj_t *socket, _request 
     _send_str(socket, "\r\n");
     mp_print_t _socket_print = {socket, _print_chunk};
 
-    const char *hostname = "";
-    #if CIRCUITPY_MDNS
-    if (!common_hal_mdns_server_deinited(&mdns)) {
-        hostname = common_hal_mdns_server_get_hostname(&mdns);
+    DWORD free_clusters;
+    FATFS *fs = filesystem_circuitpy();
+    FRESULT blk_result = f_getfree(fs, &free_clusters);
+    uint16_t block_size;
+    if (blk_result == FR_OK) {
+        disk_ioctl(fs, GET_SECTOR_SIZE, &block_size);
     }
-    #endif
-    _update_encoded_ip();
-    // Note: this leverages the fact that C concats consecutive string literals together.
+
+    uint16_t total_size = fs->n_fatent - 2;
+
     mp_printf(&_socket_print,
-        "{\"web_api_version\": 1, "
-        "\"version\": \"" MICROPY_GIT_TAG "\", "
-        "\"build_date\": \"" MICROPY_BUILD_DATE "\", "
-        "\"board_name\": \"" MICROPY_HW_BOARD_NAME "\", "
-        "\"mcu_name\": \"" MICROPY_HW_MCU_NAME "\", "
-        "\"board_id\": \"" CIRCUITPY_BOARD_ID "\", "
-        "\"creator_id\": %u, "
-        "\"creation_id\": %u, "
-        "\"hostname\": \"%s\", "
-        "\"port\": %d, ", CIRCUITPY_CREATOR_ID, CIRCUITPY_CREATION_ID, hostname, web_api_port, _our_ip_encoded);
-    #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH > 0
-    uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
-    common_hal_mcu_processor_get_uid(raw_id);
-    mp_printf(&_socket_print, "\"UID\": \"");
-    for (uint8_t i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
-        mp_printf(&_socket_print, "%02X", raw_id[i]);
-    }
-    mp_printf(&_socket_print, "\", ");
-    #endif
-    mp_printf(&_socket_print, "\"ip\": \"%s\"}", _our_ip_encoded);
+        "{\"free\": %d, "
+        "\"block_size\": %d, "
+        "\"total\": %d}", free_clusters * block_size, block_size, total_size * block_size);
+
     // Empty chunk signals the end of the response.
     _send_chunk(socket, "");
 }
