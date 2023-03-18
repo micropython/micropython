@@ -7,4 +7,4 @@ exclude-file = .codespell/exclude-file.txt
 check-filenames =
 check-hidden =
 count =
-skip = .cproject,.git,./lib,./locale
+skip = .cproject,.git,./lib,./locale,ACKNOWLEDGEMENTS

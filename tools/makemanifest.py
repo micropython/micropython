@@ -164,7 +164,7 @@ def system(cmd):
 
 
 def convert_path(path):
-    # Perform variable substituion.
+    # Perform variable substitution.
     for name, value in VARS.items():
         path = path.replace("$({})".format(name), value)
     # Convert to absolute path (so that future operations don't rely on

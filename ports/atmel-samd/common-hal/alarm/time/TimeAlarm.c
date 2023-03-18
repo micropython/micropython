@@ -36,7 +36,7 @@ STATIC volatile bool woke_up = false;
 STATIC mp_float_t wakeup_time;
 
 void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time) {
-    // TODO: when issueing light/seep sleep, throw a ValueError if the
+    // TODO: when issuing light/seep sleep, throw a ValueError if the
     //       time exceeds the maximum value.  For light sleep, max =
     //       2**32 / 16384 = 3 days.  For deep sleep, max = 2**32 / 32
     //       = 1550 days.

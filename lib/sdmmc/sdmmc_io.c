@@ -282,7 +282,7 @@ sdmmc_err_t sdmmc_io_rw_extended(sdmmc_card_t* card, int func,
             return SDMMC_ERR_INVALID_SIZE;
         }
         if (datalen == max_byte_transfer_size) {
-            count = 0;  // See 5.3.1 SDIO simplifed spec
+            count = 0;  // See 5.3.1 SDIO simplified spec
         } else {
             count = datalen;
         }

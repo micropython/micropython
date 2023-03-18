@@ -240,7 +240,7 @@ typedef struct {
     WORD    ftime;          /* Modified time */
     BYTE    fattrib;        /* File attribute */
 #if FF_USE_LFN
-    TCHAR   altname[FF_SFN_BUF + 1];/* Altenative file name */
+    TCHAR   altname[FF_SFN_BUF + 1];/* Alternative file name */
     TCHAR   fname[FF_LFN_BUF + 1];  /* Primary file name */
 #else
     TCHAR   fname[12 + 1];  /* File name */

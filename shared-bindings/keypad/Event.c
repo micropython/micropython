@@ -64,7 +64,7 @@ STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, 
         timestamp = supervisor_ticks_ms();
     }
 
-    (void)mp_obj_get_int_truncated(timestamp); // ensure that timesamp is an integer
+    (void)mp_obj_get_int_truncated(timestamp); // ensure that timestamp is an integer
     common_hal_keypad_event_construct(self, key_number, args[ARG_pressed].u_bool, timestamp);
     return MP_OBJ_FROM_PTR(self);
 }

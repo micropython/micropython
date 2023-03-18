@@ -56,7 +56,7 @@
 //|         An `EventQueue` is created when this object is created and is available in the `events` attribute.
 //|
 //|         :param Sequence[microcontroller.Pin] row_pins: The pins attached to the rows.
-//|         :param Sequence[microcontroller.Pin] column_pins: The pins attached to the colums.
+//|         :param Sequence[microcontroller.Pin] column_pins: The pins attached to the columns.
 //|         :param bool columns_to_anodes: Default ``True``.
 //|           If the matrix uses diodes, the diode anodes are typically connected to the column pins,
 //|           and the cathodes should be connected to the row pins. If your diodes are reversed,

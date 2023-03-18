@@ -116,7 +116,7 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     if (boot_in_safe_mode) {
         return SAFE_MODE_USER;
     }
-    // Restore the original state of the saved word if no reset occured during our wait period.
+    // Restore the original state of the saved word if no reset occurred during our wait period.
     port_set_saved_word(reset_state);
     return SAFE_MODE_NONE;
 }

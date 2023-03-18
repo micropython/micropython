@@ -84,7 +84,7 @@
 * \param SH Defines the Shareability domain for this memory region.
 * \param RO Read-Only: Set to 1 for a read-only memory region.
 * \param NP Non-Privileged: Set to 1 for a non-privileged memory region.
-* \oaram XN eXecute Never: Set to 1 for a non-executable memory region.
+* \param XN eXecute Never: Set to 1 for a non-executable memory region.
 */
 #define ARM_MPU_RBAR(BASE, SH, RO, NP, XN) \
   ((BASE & MPU_RBAR_BASE_Msk) | \

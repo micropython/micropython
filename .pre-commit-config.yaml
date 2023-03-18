@@ -16,7 +16,7 @@ repos:
     hooks:
     -   id: codespell
         #args: [-w]
-        exclude: ^locale/
+        exclude: ^(locale/|lib/)
 -   repo: local
     hooks:
     -   id: translations

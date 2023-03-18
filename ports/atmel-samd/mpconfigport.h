@@ -189,7 +189,7 @@
 // - firmware
 // - internal CIRCUITPY flash filesystem (optional)
 // - internal config, used to store crystalless clock calibration info (optional)
-// - microntroller.nvm (optional)
+// - microcontroller.nvm (optional)
 
 // Define these regions starting up from the bottom of flash:
 

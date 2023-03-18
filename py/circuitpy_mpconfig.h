@@ -393,7 +393,7 @@ extern const struct _mp_obj_module_t nvm_module;
 // Native modules that are weak links can be accessed directly
 // by prepending their name with an underscore. This list should correspond to
 // MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS, assuming you want the native modules
-// to be accessible when overriden.
+// to be accessible when overridden.
 
 #define MICROPY_PORT_BUILTIN_MODULE_ALT_NAMES
 

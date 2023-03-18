@@ -21,10 +21,10 @@ def version_string(path=None, *, valid_semver=False):
         version = tag.strip().decode("utf-8", "strict")
     except subprocess.CalledProcessError:
         describe = subprocess.check_output("git describe --tags", shell=True, cwd=path)
-        tag, additional_commits, commitish = (
+        tag, additional_commits, committish = (
             describe.strip().decode("utf-8", "strict").rsplit("-", maxsplit=2)
         )
-        commitish = commitish[1:]
+        committish = committish[1:]
         if valid_semver:
             version_info = semver.parse_version_info(tag)
             if not version_info.prerelease:
@@ -33,12 +33,12 @@ def version_string(path=None, *, valid_semver=False):
                     + "-alpha.0.plus."
                     + additional_commits
                     + "+"
-                    + commitish
+                    + committish
                 )
             else:
-                version = tag + ".plus." + additional_commits + "+" + commitish
+                version = tag + ".plus." + additional_commits + "+" + committish
         else:
-            version = commitish
+            version = committish
     return version
 
 

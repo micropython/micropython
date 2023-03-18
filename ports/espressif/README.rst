@@ -55,7 +55,7 @@ Connect these pins using a `USB adapter <https://www.adafruit.com/product/4090>`
 
 **UART Connection:**
 
-A `USB to UART convertor <https://www.adafruit.com/product/3309>`_ can be used for connecting to ESP32-C3 to get access to the serial console and REPL and for flashing CircuitPython.
+A `USB to UART converter <https://www.adafruit.com/product/3309>`_ can be used for connecting to ESP32-C3 to get access to the serial console and REPL and for flashing CircuitPython.
 
 The following connections need to be made in this case:
 
@@ -92,7 +92,7 @@ Connect these pins using a `USB adapter <https://www.adafruit.com/product/4090>`
 
 **UART Connection:**
 
-A `USB to UART convertor <https://www.adafruit.com/product/3309>`_ can be used for connecting to ESP32-S2 to get access to the serial console and REPL and for flashing CircuitPython.
+A `USB to UART converter <https://www.adafruit.com/product/3309>`_ can be used for connecting to ESP32-S2 to get access to the serial console and REPL and for flashing CircuitPython.
 
 The following connections need to be made in this case:
 
@@ -129,7 +129,7 @@ Connect these pins using a `USB adapter <https://www.adafruit.com/product/4090>`
 
 **UART Connection:**
 
-A `USB to UART convertor <https://www.adafruit.com/product/3309>`_ can be used for connecting to ESP32-S3 to get access to the serial console and REPL and for flashing CircuitPython.
+A `USB to UART converter <https://www.adafruit.com/product/3309>`_ can be used for connecting to ESP32-S3 to get access to the serial console and REPL and for flashing CircuitPython.
 
 The following connections need to be made in this case:
 

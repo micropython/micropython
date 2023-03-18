@@ -3,7 +3,7 @@
  */
 
 /*-----------------------------------------------------------------------/
-/  Low level disk interface modlue include file   (C)ChaN, 2014          /
+/  Low level disk interface module include file   (C)ChaN, 2014          /
 /-----------------------------------------------------------------------*/
 
 #ifndef _DISKIO_DEFINED
@@ -42,7 +42,7 @@ DRESULT disk_ioctl (void *drv, BYTE cmd, void* buff);
 #define STA_PROTECT     0x04    /* Write protected */
 
 
-/* Command code for disk_ioctrl fucntion */
+/* Command code for disk_ioctrl function */
 
 /* Generic command (Used by FatFs) */
 #define CTRL_SYNC           0   /* Complete pending write process (needed at FF_FS_READONLY == 0) */

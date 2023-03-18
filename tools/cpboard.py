@@ -357,7 +357,7 @@ class CPboard:
         else:
             serials = [serial for serial in os.listdir("/dev/serial/by-path") if portstr in serial]
             if len(serials) != 1:
-                raise RuntimeError("Can't find excatly one matching usb serial device")
+                raise RuntimeError("Can't find exactly one matching usb serial device")
             self.device = os.path.realpath("/dev/serial/by-path/" + serials[0])
             self.usb_dev = device
 

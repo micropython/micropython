@@ -193,7 +193,7 @@ static bool pmic_init(void) {
     }
 
     // Reg: 12h
-    // Enable EXTEN, DCDC1, LDO2 and LDO3
+    // Enable EXTENT, DCDC1, LDO2 and LDO3
     write_buf[0] = AXP192_DCDC13_LDO23_CTRL;
     write_buf[1] = AXP192_DCDC13_LDO23_CTRL_EXTEN |
         AXP192_DCDC13_LDO23_CTRL_LDO3 |
