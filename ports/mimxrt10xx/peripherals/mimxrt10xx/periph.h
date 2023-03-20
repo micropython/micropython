@@ -72,9 +72,9 @@ typedef struct {
         .pin = p_pin, \
     }
 
-extern LPI2C_Type *mcu_i2c_banks[];
-extern LPSPI_Type *mcu_spi_banks[];
-extern LPUART_Type *mcu_uart_banks[];
+extern LPI2C_Type *const mcu_i2c_banks[];
+extern LPSPI_Type *const mcu_spi_banks[];
+extern LPUART_Type *const mcu_uart_banks[];
 
 #ifdef MIMXRT1011_SERIES
 #include "MIMXRT1011/periph.h"
