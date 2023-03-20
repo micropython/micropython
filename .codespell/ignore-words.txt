@@ -7,6 +7,7 @@ pris
 synopsys
 reenable
 dout
+inout
 wel
 iput
 hsi
@@ -17,3 +18,5 @@ dum
 deque
 deques
 extint
+shs
+pass-thru
