@@ -16,8 +16,8 @@ Classes
 
 .. function:: deque(iterable, maxlen[, flags])
 
-    Dequeues (double-ended queues) are a list-like container that support O(1)
-    appends and pops from either side of the deque.  New dequeues are created
+    Deques (double-ended queues) are a list-like container that support O(1)
+    appends and pops from either side of the deque.  New deques are created
     using the following arguments:
 
         - *iterable* must be the empty tuple, and the new deque is created empty.

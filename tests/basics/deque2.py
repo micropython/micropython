@@ -1,4 +1,4 @@
-# Tests for dequeues with "check overflow" flag and other extensions
+# Tests for deques with "check overflow" flag and other extensions
 # wrt to CPython.
 try:
     try:
@@ -22,7 +22,7 @@ try:
 except ValueError:
     print("ValueError")
 
-# Only fixed-size dequeues are supported, so length arg is mandatory
+# Only fixed-size deques are supported, so length arg is mandatory
 try:
     deque(())
 except TypeError:
