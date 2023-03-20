@@ -805,7 +805,7 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _update_encoded_ip();
     // Note: this leverages the fact that C concats consecutive string literals together.
     mp_printf(&_socket_print,
-        "{\"web_api_version\": 1, "
+        "{\"web_api_version\": 2, "
         "\"version\": \"" MICROPY_GIT_TAG "\", "
         "\"build_date\": \"" MICROPY_BUILD_DATE "\", "
         "\"board_name\": \"" MICROPY_HW_BOARD_NAME "\", "
