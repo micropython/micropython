@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-#include "fsl_gpio.h"
+#include "sdk/drivers/igpio/fsl_gpio.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"

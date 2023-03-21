@@ -38,8 +38,8 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 
-#include "fsl_cache.h"
-#include "fsl_flexspi.h"
+#include "sdk/drivers/cache/armv7-m7/fsl_cache.h"
+#include "sdk/drivers/flexspi/fsl_flexspi.h"
 #include "fsl_iomuxc.h"
 
 // defined in linker

@@ -38,8 +38,8 @@
 #include "py/stream.h"
 #include "periph.h"
 
-#include "fsl_lpuart.h"
-#include "fsl_gpio.h"
+#include "sdk/drivers/lpuart/fsl_lpuart.h"
+#include "sdk/drivers/igpio/fsl_gpio.h"
 // ==========================================================
 // Debug code
 // ==========================================================

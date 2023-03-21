@@ -195,6 +195,8 @@ SECTIONS
         . += _ld_default_stack_size;
     } > DTCM
     _ld_stack_top = ORIGIN(DTCM) + LENGTH(DTCM);
+    /* For the SDK's isr vector table */
+    __StackTop = ORIGIN(DTCM) + LENGTH(DTCM);
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }

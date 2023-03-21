@@ -35,7 +35,7 @@
 #include <stdbool.h>
 
 #include "fsl_iomuxc.h"
-#include "fsl_pwm.h"
+#include "sdk/drivers/pwm/fsl_pwm.h"
 #include "py/obj.h"
 
 extern const mp_obj_type_t mcu_pin_type;

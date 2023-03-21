@@ -35,11 +35,7 @@
 #include "fsl_common.h"
 
 void mp_hal_delay_us(mp_uint_t delay) {
-    #if defined(MIMXRT1011_SERIES) || defined(MIMXRT1021_SERIES)
     SDK_DelayAtLeastUs(delay, SystemCoreClock);
-    #else
-    SDK_DelayAtLeastUs(delay);
-    #endif
 }
 
 void mp_hal_disable_all_interrupts(void) {

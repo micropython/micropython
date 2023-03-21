@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
- * Copyright (c) 2019 Artur Pacholec
+ * Copyright (c) 2023 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,35 +24,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
+#include "mpconfigboard.h"
 
-#include "common-hal/microcontroller/Pin.h"
-
-#include "py/ringbuf.h"
-#include "py/obj.h"
-#include "periph.h"
-
-#include "sdk/drivers/lpuart/fsl_lpuart.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    LPUART_Type *uart;
-    lpuart_handle_t handle;
-    uint8_t *ringbuf;
-    uint32_t baudrate;
-    uint32_t timeout_ms;
-    bool rx_ongoing;
-    uint8_t character_bits;
-    uint8_t index;
-    const mcu_pin_obj_t *rx;
-    const mcu_pin_obj_t *tx;
-    const mcu_pin_obj_t *cts;
-    const mcu_pin_obj_t *rts;
-    const mcu_pin_obj_t *rs485_dir;
-    bool rs485_invert;
-
-} busio_uart_obj_t;
-
-void uart_reset(void);
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
+#define XIP_BOOT_HEADER_ENABLE (1)
