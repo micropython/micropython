@@ -143,7 +143,7 @@ void common_hal_espulp_ulp_construct(espulp_ulp_obj_t *self, espulp_architecture
         mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_ULP);
     }
 
-    switch (self->arch) {
+    switch (arch) {
         #ifdef CONFIG_ULP_COPROC_TYPE_FSM
         case FSM:
             break;
