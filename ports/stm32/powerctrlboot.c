@@ -173,15 +173,14 @@ void SystemClock_Config(void) {
 
     #if MICROPY_HW_ENABLE_RNG || MICROPY_HW_ENABLE_USB
     // Enable the 48MHz internal oscillator
-    RCC->CRRCR |= RCC_CRRCR_HSI48ON;
-    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
-    SYSCFG->CFGR3 |= SYSCFG_CFGR3_ENREF_HSI48;
-    while (!(RCC->CRRCR & RCC_CRRCR_HSI48RDY)) {
+    RCC->CR |= RCC_CR_HSI48ON;
+    RCC->APBENR2 |= RCC_APBENR2_SYSCFGEN;
+    while (!(RCC->CR & RCC_CR_HSI48RDY)) {
         // Wait for HSI48 to be ready
     }
 
-    // Select RC48 as HSI48 for USB and RNG
-    RCC->CCIPR |= RCC_CCIPR_HSI48SEL;
+    // Select HSI48 for USB
+    RCC->CCIPR2 &= ~(3 << RCC_CCIPR2_USBSEL_Pos);
 
     #if MICROPY_HW_ENABLE_USB
     // Synchronise HSI48 with 1kHz USB SoF
