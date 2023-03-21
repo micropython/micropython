@@ -49,6 +49,7 @@
 
 #include "shared-bindings/hashlib/__init__.h"
 #include "shared-bindings/hashlib/Hash.h"
+#include "lib/oofatfs/diskio.h"
 
 #if CIRCUITPY_MDNS
 #include "shared-bindings/mdns/RemoteService.h"
@@ -804,7 +805,7 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _update_encoded_ip();
     // Note: this leverages the fact that C concats consecutive string literals together.
     mp_printf(&_socket_print,
-        "{\"web_api_version\": 1, "
+        "{\"web_api_version\": 2, "
         "\"version\": \"" MICROPY_GIT_TAG "\", "
         "\"build_date\": \"" MICROPY_BUILD_DATE "\", "
         "\"board_name\": \"" MICROPY_HW_BOARD_NAME "\", "
@@ -827,6 +828,32 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     // Empty chunk signals the end of the response.
     _send_chunk(socket, "");
 }
+
+static void _reply_with_diskinfo_json(socketpool_socket_obj_t *socket, _request *request) {
+    _send_str(socket, OK_JSON);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
+    mp_print_t _socket_print = {socket, _print_chunk};
+
+    DWORD free_clusters;
+    FATFS *fs = filesystem_circuitpy();
+    FRESULT blk_result = f_getfree(fs, &free_clusters);
+    uint16_t block_size;
+    if (blk_result == FR_OK) {
+        disk_ioctl(fs, GET_SECTOR_SIZE, &block_size);
+    }
+
+    uint16_t total_size = fs->n_fatent - 2;
+
+    mp_printf(&_socket_print,
+        "{\"free\": %d, "
+        "\"block_size\": %d, "
+        "\"total\": %d}", free_clusters * block_size, block_size, total_size * block_size);
+
+    // Empty chunk signals the end of the response.
+    _send_chunk(socket, "");
+}
+
 
 // FATFS has a two second timestamp resolution but the BLE API allows for nanosecond resolution.
 // This function truncates the time the time to a resolution storable by FATFS and fills in the
@@ -1228,6 +1255,8 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             _reply_with_devices_json(socket, request);
         } else if (strcmp(path, "/version.json") == 0) {
             _reply_with_version_json(socket, request);
+        } else if (strcmp(path, "/diskinfo.json") == 0) {
+            _reply_with_diskinfo_json(socket, request);
         } else if (strcmp(path, "/serial/") == 0) {
             if (!request->authenticated) {
                 if (_api_password[0] != '\0') {
