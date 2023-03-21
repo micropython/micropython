@@ -49,7 +49,12 @@ INC += \
 CFLAGS += -ftree-vrp -DNDEBUG
 
 # TinyUSB defines
-CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512 -DCFG_TUD_MSC_BUFSIZE=1024
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512
+ifeq ($(CHIP_FAMILY), MIMXRT1011)
+CFLAGS += -DCFG_TUD_MIDI_RX_BUFSIZE=64 -DCFG_TUD_MIDI_TX_BUFSIZE=64 -DCFG_TUD_MSC_BUFSIZE=512
+else
+CFLAGS += -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=512 -DCFG_TUD_MSC_BUFSIZE=1024
+endif
 
 #Debugging/Optimization
 # Never set -fno-inline because we use inline to move small functions into routines that must be
@@ -76,10 +81,14 @@ CFLAGS += \
 	-g3 -Wno-unused-parameter \
 	-ffunction-sections -fdata-sections -fstack-usage
 
-OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
+OPTIMIZATION_FLAGS ?= -O2
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 CFLAGS += $(OPTIMIZATION_FLAGS)
+
+ifeq ($(CIRCUITPY_SWO_TRACE), 1)
+  CFLAGS += -finstrument-functions -finstrument-functions-exclude-file-list=tinyusb -finstrument-functions-exclude-function-list='USB_OTG1_IRQHandler,usb_irq_handler,nlr_push,CLOCK_EnableClock,CLOCK_SetDiv,CLOCK_SetMux,__DMB,__ISB,__DSB,SCB_EnableICache,SCB_EnableDCache,ARM_MPU_Disable,ARM_MPU_Enable,SCB_DisableDCache,SCB_DisableICache,__enable_irq,__disable_irq,__set_MSP,port_get_raw_ticks,supervisor_ticks_ms64'
+endif
 
 LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH).ld chip_family/$(CHIP_FAMILY).ld common.ld)
 
@@ -171,20 +180,22 @@ all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2 $(BUILD)/firmware.hex
 
 $(BUILD)/firmware.elf: $(OBJ) $(LD_FILES)
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $(filter-out %.ld, $^) -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(CC) -o $@ $(LDFLAGS) $(filter-out %.ld, $^) -Wl,--print-memory-usage -Wl,--start-group $(LIBS) -Wl,--end-group
 
+# -R excludes sections from the output files.
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .flash_config -j .ivt -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $^ $@
+	$(Q)$(OBJCOPY) -O binary -R .stack -R .dtcm_bss $^ $@
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $^ $@-binpart
+	$(Q)$(OBJCOPY) -O binary -R .stack -R .dtcm_bss -R .ivt -R .flash_config $^ $@-binpart
 	$(Q)$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -f MIMXRT10XX -c -o $@ $@-binpart
-	$(Q)rm $@-binpart
+
+# $(Q)rm $@-binpart
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
-	$(Q)$(OBJCOPY) -O ihex -j .flash_config -j .ivt -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $< $@
+	$(Q)$(OBJCOPY) -O ihex -R .stack -R .dtcm_bss $< $@
 
 include $(TOP)/py/mkrules.mk
 

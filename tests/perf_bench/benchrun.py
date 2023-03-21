@@ -4,7 +4,7 @@ def bm_run(N, M):
     except ImportError:
         import time
 
-        ticks_us = lambda: int(time.perf_counter() * 1000000)
+        ticks_us = lambda: int(time.monotonic_ns() // 1000)
         ticks_diff = lambda a, b: a - b
 
     # Pick sensible parameters given N, M

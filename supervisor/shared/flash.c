@@ -132,7 +132,7 @@ static mp_uint_t flash_write_blocks(const uint8_t *src, uint32_t block_num, uint
     }
 }
 
-void supervisor_flash_flush(void) {
+void PLACE_IN_ITCM(supervisor_flash_flush)(void) {
     #if INTERNAL_FLASH_FILESYSTEM
     port_internal_flash_flush();
     #else

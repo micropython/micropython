@@ -6,6 +6,8 @@ USB_HIGHSPEED = 1
 
 # Number of USB endpoint pairs.
 USB_NUM_ENDPOINT_PAIRS = 8
+# Align buffers on the cache boundary so we don't inadvertently load them early.
+CIRCUITPY_TUSB_MEM_ALIGN = 32
 
 INTERNAL_FLASH_FILESYSTEM = 1
 
