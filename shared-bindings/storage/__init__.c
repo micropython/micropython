@@ -267,7 +267,7 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|     ...
 //|
 //|     @staticmethod
-//|     def mkfs(self, block_device: BlockDevice) -> None:
+//|     def mkfs(block_device: BlockDevice) -> None:
 //|         """Format the block device, deleting any data that may have been there.
 //|
 //|         **Limitations**: On SAMD21 builds, `mkfs()` will raise ``OSError(22)`` when
