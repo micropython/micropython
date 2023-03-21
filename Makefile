@@ -324,10 +324,9 @@ clean-stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean
 
 
-# This update will fail because the commits we need aren't the latest on the
-# branch. We can ignore that though because we fix it with the second command.
-# (Only works for git servers that allow sha fetches.)
+# Do blobless partial clones of submodules to save time and space.
+# A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.)
+# so it does not have the idiosyncrasies of a shallow clone.
 .PHONY: fetch-submodules
 fetch-submodules:
-	git submodule update --init -N --depth 1 || true
-	git submodule foreach 'git fetch --tags --depth 1 origin $$sha1 && git checkout -q $$sha1'
+	git submodule update --init --filter=blob:none
