@@ -62,6 +62,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     if ((poll_flags & MP_STREAM_POLL_RD) && stdin_ringbuf.iget != stdin_ringbuf.iput) {
         ret |= MP_STREAM_POLL_RD;
     }
+    if (poll_flags & MP_STREAM_POLL_WR) {
+        ret |= mp_uos_dupterm_poll(poll_flags);
+    }
     return ret;
 }
 

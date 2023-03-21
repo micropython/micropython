@@ -179,6 +179,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
         && uart_rx_any(MP_STATE_PORT(board_stdio_uart))) {
         ret |= MP_STREAM_POLL_RD;
     }
+    if ((poll_flags & MP_STREAM_POLL_WR) && MP_STATE_PORT(board_stdio_uart) != NULL) {
+        ret |= MP_STREAM_POLL_WR;
+    }
     return ret;
 }
 
