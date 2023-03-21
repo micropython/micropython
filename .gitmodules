@@ -33,9 +33,6 @@
 	path = ports/atmel-samd/asf4
 	url = https://github.com/adafruit/asf4.git
 	branch = circuitpython
-[submodule "tools/usb_descriptor"]
-	path = tools/usb_descriptor
-	url = https://github.com/adafruit/usb_descriptor.git
 [submodule "lib/nrfutil"]
 	path = lib/nrfutil
 	url = https://github.com/adafruit/nRF52_nrfutil
