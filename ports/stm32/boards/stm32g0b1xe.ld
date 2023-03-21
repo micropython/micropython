@@ -3,6 +3,7 @@ MEMORY
 {
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 128K
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 352K
+    FLASH_APP (rx)  : ORIGIN = 0x08008000, LENGTH = 320K
     FLASH_FS (rx)   : ORIGIN = 0x08058000, LENGTH = 160K  /* starting @ 352K */
 }
 

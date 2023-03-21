@@ -371,6 +371,9 @@ void SystemClock_Config(void) {
 #if defined(STM32F4) || defined(STM32F7)
 #define AHBxENR AHB1ENR
 #define AHBxENR_GPIOAEN_Pos RCC_AHB1ENR_GPIOAEN_Pos
+#elif defined(STM32G0)
+#define AHBxENR IOPENR
+#define AHBxENR_GPIOAEN_Pos RCC_IOPENR_GPIOAEN_Pos
 #elif defined(STM32H7)
 #define AHBxENR AHB4ENR
 #define AHBxENR_GPIOAEN_Pos RCC_AHB4ENR_GPIOAEN_Pos
@@ -406,7 +409,9 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 /******************************************************************************/
 // FLASH
 
-#if defined(STM32WB)
+#if defined(STM32G0)
+#define FLASH_END (FLASH_BASE + FLASH_SIZE - 1)
+#elif defined(STM32WB)
 #define FLASH_END FLASH_END_ADDR
 #endif
 
@@ -426,6 +431,8 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*016Kg,01*064Kg,07*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32F765xx) || defined(STM32F767xx) || defined(STM32F769xx)
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#elif defined(STM32G0)
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*02Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32H743xx)
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/16*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32H750xx)
@@ -1349,7 +1356,9 @@ void stm32_main(uint32_t initial_r0) {
     #endif
     #endif
 
+    #if __CORTEX_M >= 0x03
     NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+    #endif
 
     #if USE_CACHE && defined(STM32F7)
     SCB_EnableICache();
@@ -1547,7 +1556,13 @@ void I2Cx_EV_IRQHandler(void) {
 
 #if !USE_USB_POLLING
 
-#if defined(STM32WB)
+#if defined(STM32G0)
+
+void USB_UCPD1_2_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+
+#elif defined(STM32WB)
 
 void USB_LP_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_fs_handle);

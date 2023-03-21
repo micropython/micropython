@@ -134,7 +134,12 @@ SRC_C += \
 SRC_O += \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE) \
-	ports/stm32/resethandler.o \
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 g0 l0))
+SRC_O += ports/stm32/resethandler_m0.o
+else
+SRC_O += ports/stm32/resethandler.o
+endif
 
 ifeq ($(MBOOT_ENABLE_PACKING), 1)
 
