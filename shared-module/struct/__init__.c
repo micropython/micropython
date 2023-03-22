@@ -167,7 +167,7 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte *end_p, size
         }
         fmt++;
     }
-    (void)mp_arg_validate_length(n_args, i, MP_QSTR_args);
+    (void)mp_arg_validate_length(n_args, i, MP_QSTR_values);
 }
 
 mp_obj_tuple_t *shared_modules_struct_unpack_from(mp_obj_t fmt_in, byte *p, byte *end_p, bool exact_size) {
