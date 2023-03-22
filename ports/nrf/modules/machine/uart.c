@@ -77,6 +77,7 @@ typedef struct _machine_hard_uart_buf_t {
 #define NRF_UART_HWFC_DISABLED    NRF_UARTE_HWFC_DISABLED
 #define NRF_UART_PARITY_EXCLUDED  NRF_UARTE_PARITY_EXCLUDED
 #define NRFX_UART_EVT_RX_DONE     NRFX_UARTE_EVT_RX_DONE
+#define NRFX_UART_EVT_ERROR       NRFX_UARTE_EVT_ERROR
 
 #define NRF_UART_BAUDRATE_1200    NRF_UARTE_BAUDRATE_1200
 #define NRF_UART_BAUDRATE_2400    NRF_UARTE_BAUDRATE_2400
@@ -136,6 +137,9 @@ STATIC void uart_event_handler(nrfx_uart_event_t const *p_event, void *p_context
         {
             ringbuf_put((ringbuf_t *)&self->buf.rx_ringbuf, chr);
         }
+    } else if (p_event->type == NRFX_UART_EVT_ERROR) {
+        // Perform a read to unlock UART in case of an error
+        nrfx_uart_rx(self->p_uart, &self->buf.rx_buf[0], 1);
     }
 }
 
