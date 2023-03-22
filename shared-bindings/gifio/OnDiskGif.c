@@ -98,6 +98,14 @@
 //|           display_bus.send(42, struct.pack(">hh", 0, odg.bitmap.width - 1))
 //|           display_bus.send(43, struct.pack(">hh", 0, odg.bitmap.height - 1))
 //|           display_bus.send(44, d.bitmap)
+//|
+//|       # The following optional code will free the OnDiskGif and allocated resources
+//|       # after use. This may be required before loading a new GIF in situations
+//|       # where RAM is limited and the first GIF took most of the RAM.
+//|       odg.deinit()
+//|       odg = None
+//|       gc.collect()
+//|
 //|     """
 //|
 //|     def __init__(self, file: str) -> None:
