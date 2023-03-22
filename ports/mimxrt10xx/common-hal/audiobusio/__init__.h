@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Artur Pacholec
- * Copyright (c) 2020 Scott Shawcroft
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,29 +26,34 @@
 
 #pragma once
 
-extern LPI2C_Type *const mcu_i2c_banks[4];
+#include "sdk/drivers/sai/fsl_sai.h"
+#include "py/obj.h"
 
-extern const mcu_periph_obj_t mcu_i2c_sda_list[8];
-extern const mcu_periph_obj_t mcu_i2c_scl_list[8];
+#include "supervisor/background_callback.h"
 
-extern LPSPI_Type *const mcu_spi_banks[4];
 
-extern const mcu_periph_obj_t mcu_spi_sck_list[8];
-extern const mcu_periph_obj_t mcu_spi_mosi_list[8];
-extern const mcu_periph_obj_t mcu_spi_miso_list[8];
+typedef struct {
+    I2S_Type *peripheral;
+    sai_handle_t handle;
+    mp_obj_t sample;
+    uint32_t *buffers[SAI_XFER_QUEUE_SIZE];
+    uint8_t *sample_data, *sample_end;
+    background_callback_t callback;
+    bool playing, paused, loop, stopping;
+    bool samples_signed;
+    uint8_t channel_count, bytes_per_sample;
+    uint8_t buffer_idx;
+    uint32_t sample_rate;
+} i2s_t;
 
-extern LPUART_Type *const mcu_uart_banks[8];
 
-extern const mcu_periph_obj_t mcu_uart_rx_list[16];
-extern const mcu_periph_obj_t mcu_uart_tx_list[16];
-extern const mcu_periph_obj_t mcu_uart_rts_list[10];
-extern const mcu_periph_obj_t mcu_uart_cts_list[10];
-
-extern const mcu_pwm_obj_t mcu_pwm_list[39];
-
-extern const mcu_periph_obj_t mcu_sai_rx_bclk_list[7];
-extern const mcu_periph_obj_t mcu_sai_rx_data0_list[7];
-extern const mcu_periph_obj_t mcu_sai_rx_sync_list[7];
-extern const mcu_periph_obj_t mcu_sai_tx_bclk_list[7];
-extern const mcu_periph_obj_t mcu_sai_tx_data0_list[7];
-extern const mcu_periph_obj_t mcu_sai_tx_sync_list[7];
+void i2s_reset(void);
+void port_i2s_initialize(i2s_t *self, int instance, sai_transceiver_t *config);
+void port_i2s_deinit(i2s_t *self);
+bool port_i2s_deinited(i2s_t *self);
+void port_i2s_play(i2s_t *self, mp_obj_t sample, bool loop);
+void port_i2s_stop(i2s_t *self);
+bool port_i2s_get_playing(i2s_t *self);
+bool port_i2s_get_paused(i2s_t *self);
+void port_i2s_pause(i2s_t *self);
+void port_i2s_resume(i2s_t *self);

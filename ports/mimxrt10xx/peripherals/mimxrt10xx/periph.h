@@ -31,7 +31,7 @@
 #include "pins.h"
 
 typedef struct {
-    uint8_t bank_idx : 4;
+    uint8_t bank_idx : 4; // e.g. the peripheral number
     uint8_t mux_mode : 4;
     uint32_t input_reg;
     uint8_t input_idx;

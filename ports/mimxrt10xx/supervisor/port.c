@@ -36,6 +36,10 @@
 
 #include "fsl_device_registers.h"
 
+#if CIRCUITPY_AUDIOBUSIO
+#include "common-hal/audiobusio/__init__.h"
+#endif
+
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
@@ -414,8 +418,7 @@ void reset_port(void) {
     audioout_reset();
     #endif
     #if CIRCUITPY_AUDIOBUSIO
-    i2sout_reset();
-    // pdmin_reset();
+    i2s_reset();
     #endif
 
     #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE

@@ -166,3 +166,28 @@ const mcu_pwm_obj_t mcu_pwm_list[20] = {
 
     PWM_PIN(PWM1, kPWM_Module_3, kPWM_PwmX, IOMUXC_GPIO_AD_09_FLEXPWM1_PWM3_X, &pin_GPIO_AD_09),
 };
+
+const mcu_periph_obj_t mcu_sai_rx_bclk_list[] = {
+    PERIPH_PIN(1, 0, 0, 0, &pin_GPIO_08),
+    PERIPH_PIN(2, 1, 0, 0, &pin_GPIO_00),
+};
+const mcu_periph_obj_t mcu_sai_rx_data0_list[] = {
+    PERIPH_PIN(1, 0, 0, 0, &pin_GPIO_03),
+    PERIPH_PIN(2, 1, 0, 0, &pin_GPIO_SD_03),
+};
+const mcu_periph_obj_t mcu_sai_rx_sync_list[] = {
+    PERIPH_PIN(1, 0, 0, 0, &pin_GPIO_02),
+    PERIPH_PIN(2, 1, 0, 0, &pin_GPIO_SD_04),
+};
+const mcu_periph_obj_t mcu_sai_tx_bclk_list[] = {
+    PERIPH_PIN(1, 0, 0, 0, &pin_GPIO_06),
+    PERIPH_PIN(2, 1, 0, 0, &pin_GPIO_SD_01),
+};
+const mcu_periph_obj_t mcu_sai_tx_data0_list[] = {
+    PERIPH_PIN(1, 0, 0, 0, &pin_GPIO_04),
+    PERIPH_PIN(2, 1, 0, 0, &pin_GPIO_SD_02),
+};
+const mcu_periph_obj_t mcu_sai_tx_sync_list[] = {
+    PERIPH_PIN(1, 0, 0, 0, &pin_GPIO_07),
+    PERIPH_PIN(2, 1, 0, 0, &pin_GPIO_SD_00),
+};

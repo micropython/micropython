@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Artur Pacholec
- * Copyright (c) 2020 Scott Shawcroft
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,29 +26,22 @@
 
 #pragma once
 
-extern LPI2C_Type *const mcu_i2c_banks[4];
+#include "supervisor/background_callback.h"
+#include "common-hal/microcontroller/Pin.h"
 
-extern const mcu_periph_obj_t mcu_i2c_sda_list[8];
-extern const mcu_periph_obj_t mcu_i2c_scl_list[8];
+#include "common-hal/audiobusio/__init__.h"
 
-extern LPSPI_Type *const mcu_spi_banks[4];
+// Some boards don't implement I2SOut, so suppress any routines from here.
+#if CIRCUITPY_AUDIOBUSIO_I2SOUT
 
-extern const mcu_periph_obj_t mcu_spi_sck_list[8];
-extern const mcu_periph_obj_t mcu_spi_mosi_list[8];
-extern const mcu_periph_obj_t mcu_spi_miso_list[8];
+#include "sdk/drivers/sai/fsl_sai.h"
 
-extern LPUART_Type *const mcu_uart_banks[8];
+typedef struct {
+    mp_obj_base_t base;
+    i2s_t i2s;
+    const mcu_pin_obj_t *bit_clock;
+    const mcu_pin_obj_t *word_select;
+    const mcu_pin_obj_t *data;
+} audiobusio_i2sout_obj_t;
 
-extern const mcu_periph_obj_t mcu_uart_rx_list[16];
-extern const mcu_periph_obj_t mcu_uart_tx_list[16];
-extern const mcu_periph_obj_t mcu_uart_rts_list[10];
-extern const mcu_periph_obj_t mcu_uart_cts_list[10];
-
-extern const mcu_pwm_obj_t mcu_pwm_list[39];
-
-extern const mcu_periph_obj_t mcu_sai_rx_bclk_list[7];
-extern const mcu_periph_obj_t mcu_sai_rx_data0_list[7];
-extern const mcu_periph_obj_t mcu_sai_rx_sync_list[7];
-extern const mcu_periph_obj_t mcu_sai_tx_bclk_list[7];
-extern const mcu_periph_obj_t mcu_sai_tx_data0_list[7];
-extern const mcu_periph_obj_t mcu_sai_tx_sync_list[7];
+#endif
