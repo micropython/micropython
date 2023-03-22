@@ -34,8 +34,8 @@
 #include "py/runtime.h"
 #include "periph.h"
 
-#include "fsl_lpi2c.h"
-#include "fsl_gpio.h"
+#include "sdk/drivers/lpi2c/fsl_lpi2c.h"
+#include "sdk/drivers/igpio/fsl_gpio.h"
 
 #define I2C_CLOCK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllClk) / 8 / (1 + CLOCK_GetDiv(kCLOCK_Lpi2cDiv)))
 #define IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_ALT5 5U

@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "fsl_flexspi.h"
+#include "sdk/drivers/flexspi/fsl_flexspi.h"
 #include "internal_flash.h"
 #include "boards/flash_config.h"
 #include "supervisor/internal_flash.h"

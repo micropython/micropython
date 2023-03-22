@@ -30,8 +30,7 @@ CROSS_COMPILE = arm-none-eabi-
 INC += \
 	-I. \
 	-I../.. \
-	-I../lib/mp-readline \
-	-I../shared/timeutils \
+	-I../../lib/cmsis/inc \
 	-I../../lib/tinyusb/src \
 	-I../../supervisor/shared/usb \
 	-I$(BUILD) \
@@ -42,7 +41,7 @@ INC += \
 	-Isdk/CMSIS/Include \
 	-Isdk/devices/$(CHIP_FAMILY) \
 	-Isdk/devices/$(CHIP_FAMILY)/drivers \
-	-Isdk/devices/$(CHIP_FAMILY)/xip \
+	-Isdk/drivers/common
 
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 
@@ -106,25 +105,26 @@ LDFLAGS += -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -mthumb -mapcs
 BOOTLOADER_SIZE := 0x6000C000
 
 SRC_SDK := \
-	drivers/fsl_adc.c \
-	drivers/fsl_cache.c \
-	drivers/fsl_clock.c \
-	drivers/fsl_common.c \
-	drivers/fsl_flexspi.c \
-	drivers/fsl_gpio.c \
-	drivers/fsl_lpi2c.c \
-	drivers/fsl_lpspi.c \
-	drivers/fsl_lpuart.c \
-	drivers/fsl_ocotp.c \
-	drivers/fsl_pwm.c \
-	drivers/fsl_snvs_hp.c \
-	drivers/fsl_snvs_lp.c \
-	drivers/fsl_tempmon.c \
-	drivers/fsl_trng.c \
-	system_$(CHIP_FAMILY).c \
+	devices/$(CHIP_FAMILY)/drivers/fsl_clock.c \
+	devices/$(CHIP_FAMILY)/system_$(CHIP_FAMILY).c \
+	devices/$(CHIP_FAMILY)/xip/fsl_flexspi_nor_boot.c \
+	drivers/adc_12b1msps_sar/fsl_adc.c \
+	drivers/cache/armv7-m7/fsl_cache.c \
+	drivers/common/fsl_common_arm.c \
+	drivers/common/fsl_common.c \
+	drivers/flexspi/fsl_flexspi.c \
+	drivers/igpio/fsl_gpio.c \
+	drivers/lpi2c/fsl_lpi2c.c \
+	drivers/lpspi/fsl_lpspi.c \
+	drivers/lpuart/fsl_lpuart.c \
+	drivers/ocotp/fsl_ocotp.c \
+	drivers/pwm/fsl_pwm.c \
+	drivers/snvs_hp/fsl_snvs_hp.c \
+	drivers/snvs_lp/fsl_snvs_lp.c \
+	drivers/tempmon/fsl_tempmon.c \
+	drivers/trng/fsl_trng.c \
 
-SRC_SDK := $(addprefix sdk/devices/$(CHIP_FAMILY)/, $(SRC_SDK))
-$(addprefix $(BUILD)/, $(SRC_SDK:.c=.o)): CFLAGS += -Wno-undef -Wno-missing-prototypes -Wno-cast-align
+SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
 
 SRC_C += \
 	background.c \
@@ -191,8 +191,7 @@ $(BUILD)/firmware.uf2: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -R .stack -R .dtcm_bss -R .ivt -R .flash_config $^ $@-binpart
 	$(Q)$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -f MIMXRT10XX -c -o $@ $@-binpart
-
-# $(Q)rm $@-binpart
+	$(Q)rm $@-binpart
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O ihex -R .stack -R .dtcm_bss $< $@
