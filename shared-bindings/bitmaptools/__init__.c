@@ -868,7 +868,55 @@ STATIC mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_dither_obj, 0, bitmaptools_dither);
+// requires all 5 arguments
 
+//| def draw_circle(
+//|     dest_bitmap: displayio.Bitmap, x0: int, y0: int, radius: int, value: int
+//| ) -> None:
+//|     """Draws a circle into a bitmap specified using a center (x0,y0) and radius r.
+//|
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param int x0: x-pixel position of the circle's center
+//|     :param int y0: y-pixel position of the circle's center
+//|     :param int radius: circle's radius
+//|     :param int value: Bitmap palette index that will be written into the
+//|            circle in the destination bitmap"""
+//|     ...
+//|
+STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_dest_bitmap, ARG_x0, ARG_y0, ARG_radius, ARG_value};
+
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_x0, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_y0, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_radius, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj);     // the destination bitmap
+
+    uint32_t value, color_depth;
+    value = args[ARG_value].u_int;
+    color_depth = (1 << destination->bits_per_value);
+    if (color_depth <= value) {
+        mp_raise_ValueError(translate("out of range of target"));
+    }
+
+
+    int16_t x0 = args[ARG_x0].u_int;
+    int16_t y0 = args[ARG_y0].u_int;
+    int16_t radius = args[ARG_radius].u_int;
+
+
+    common_hal_bitmaptools_draw_circle(destination, x0, y0, radius, value);
+
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_circle_obj, 0, bitmaptools_obj_draw_circle);
 
 STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmaptools) },
@@ -880,6 +928,7 @@ STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_boundary_fill), MP_ROM_PTR(&bitmaptools_boundary_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_polygon), MP_ROM_PTR(&bitmaptools_draw_polygon_obj) },
+        { MP_ROM_QSTR(MP_QSTR_draw_circle), MP_ROM_PTR(&bitmaptools_draw_circle_obj) },
     { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&bitmaptools_dither_obj) },
     { MP_ROM_QSTR(MP_QSTR_DitherAlgorithm), MP_ROM_PTR(&bitmaptools_dither_algorithm_type) },
 };
