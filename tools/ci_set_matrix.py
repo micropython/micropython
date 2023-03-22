@@ -82,10 +82,12 @@ def git_diff(pattern: str):
     )
 
 
+compute_diff = bool(os.environ.get("BASE_SHA") and os.environ.get("HEAD_SHA"))
+
 if len(sys.argv) > 1:
     print("Using files list on commandline")
     changed_files = set(sys.argv[1:])
-elif os.environ.get("BASE_SHA") and os.environ.get("HEAD_SHA"):
+elif compute_diff:
     print("Using files list by computing diff")
     changed_files = git_diff("$BASE_SHA...$HEAD_SHA")
     if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
@@ -116,7 +118,7 @@ def set_output(name: str, value):
         print(f"Would set GitHub actions output {name} to '{value}'")
 
 
-def set_boards(build_all=False):
+def set_boards(build_all: bool):
     all_board_ids = set()
     boards_to_build = all_board_ids if build_all else set()
 
@@ -245,43 +247,49 @@ def set_boards(build_all=False):
     set_output("ports", json.dumps(port_to_boards_to_build))
 
 
-def set_docs(run=bool(last_failed_jobs.get("docs"))):
+def set_docs(run: bool):
     if not run:
-        pattern_doc = re.compile(PATTERN_DOCS)
-        github_workspace = os.environ.get("GITHUB_WORKSPACE") or ""
-        github_workspace = github_workspace and github_workspace + "/"
-        for file in changed_files:
-            if pattern_doc.search(file) and (
-                (
-                    subprocess.run(
-                        f"git diff -U0 $BASE_SHA...$HEAD_SHA {github_workspace + file} | grep -o -m 1 '^[+-]\/\/|'",
-                        capture_output=True,
-                        shell=True,
-                    ).stdout
-                )
-                if file.endswith(".c")
-                else True
-            ):
-                run = True
-                break
+        if last_failed_jobs.get("docs"):
+            run = True
+        else:
+            pattern_doc = re.compile(PATTERN_DOCS)
+            github_workspace = os.environ.get("GITHUB_WORKSPACE") or ""
+            github_workspace = github_workspace and github_workspace + "/"
+            for file in changed_files:
+                if pattern_doc.search(file) and (
+                    (
+                        subprocess.run(
+                            f"git diff -U0 $BASE_SHA...$HEAD_SHA {github_workspace + file} | grep -o -m 1 '^[+-]\/\/|'",
+                            capture_output=True,
+                            shell=True,
+                        ).stdout
+                    )
+                    if file.endswith(".c")
+                    else True
+                ):
+                    run = True
+                    break
 
     # Set the step outputs
     print("Building docs:", run)
     set_output("docs", run)
 
 
-def set_windows(run=bool(last_failed_jobs.get("windows"))):
+def set_windows(run: bool):
     if not run:
-        for file in changed_files:
-            for pattern in PATTERN_WINDOWS:
-                if file.startswith(pattern) and not any(
-                    [file.startswith(path) for path in IGNORE_BOARD]
-                ):
-                    run = True
-                    break
-            else:
-                continue
-            break
+        if last_failed_jobs.get("windows"):
+            run = True
+        else:
+            for file in changed_files:
+                for pattern in PATTERN_WINDOWS:
+                    if file.startswith(pattern) and not any(
+                        [file.startswith(path) for path in IGNORE_BOARD]
+                    ):
+                        run = True
+                        break
+                else:
+                    continue
+                break
 
     # Set the step outputs
     print("Building windows:", run)
@@ -289,10 +297,12 @@ def set_windows(run=bool(last_failed_jobs.get("windows"))):
 
 
 def main():
+    run_all = not changed_files and not compute_diff
+    print("Running: " + ("all" if run_all else "conditionally"))
     # Set jobs
-    set_docs()
-    set_windows()
-    set_boards()
+    set_docs(run_all)
+    set_windows(run_all)
+    set_boards(run_all)
 
 
 if __name__ == "__main__":
