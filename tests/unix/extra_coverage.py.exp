@@ -35,15 +35,15 @@ bitmaptools     btree           cexample        cmath
 collections     cppexample      displayio       errno
 ffi             framebuf        gc              hashlib
 json            math            qrio            rainbowio
-re              sys             termios         traceback
-ubinascii       uctypes         uerrno          uheapq
-uio             ujson           ulab            ulab.numpy
-ulab.numpy.fft  ulab.numpy.linalg               ulab.scipy
-ulab.scipy.linalg               ulab.scipy.optimize
-ulab.scipy.signal               ulab.scipy.special
-ulab.utils      uos             urandom         ure
-uselect         ustruct         utime           utimeq
-uzlib           zlib
+re              struct          sys             termios
+traceback       ubinascii       uctypes         uerrno
+uheapq          uio             ujson           ulab
+ulab.numpy      ulab.numpy.fft  ulab.numpy.linalg
+ulab.scipy      ulab.scipy.linalg
+ulab.scipy.optimize             ulab.scipy.signal
+ulab.scipy.special              ulab.utils      uos
+urandom         ure             uselect         utime
+utimeq          uzlib           zlib
 ime
 
 utime           utimeq
