@@ -33,6 +33,7 @@ SRC_BITMAP := \
 	shared-bindings/bitmaptools/__init__.c \
 	shared-bindings/displayio/Bitmap.c \
 	shared-bindings/rainbowio/__init__.c \
+	shared-bindings/struct/__init__.c \
 	shared-bindings/traceback/__init__.c \
 	shared-bindings/util.c \
 	shared-bindings/zlib/__init__.c \
@@ -45,6 +46,7 @@ SRC_BITMAP := \
 	shared-module/displayio/ColorConverter.c \
 	shared-module/os/getenv.c \
 	shared-module/rainbowio/__init__.c \
+	shared-module/struct/__init__.c \
 	shared-module/traceback/__init__.c \
 	shared-module/zlib/__init__.c \
 
@@ -57,6 +59,7 @@ CFLAGS += \
 	-DCIRCUITPY_OS_GETENV=1 \
 	-DCIRCUITPY_GIFIO=1 \
 	-DCIRCUITPY_RAINBOWIO=1 \
+	-DCIRCUITPY_STRUCT=1 \
 	-DCIRCUITPY_TRACEBACK=1 \
 	-DCIRCUITPY_ZLIB=1
 
