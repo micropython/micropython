@@ -39,8 +39,9 @@ void stack_init(void) {
 void stack_resize(void) {
 }
 
-void set_next_stack_size(uint32_t size) {
+bool set_next_stack_size(uint32_t size) {
     (void)size;
+    return true;
 }
 
 uint32_t get_current_stack_size(void) {
