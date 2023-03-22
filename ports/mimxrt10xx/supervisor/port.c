@@ -54,8 +54,8 @@
 
 #include "clocks.h"
 
-#include "fsl_gpio.h"
-#include "fsl_lpuart.h"
+#include "sdk/drivers/igpio/fsl_gpio.h"
+#include "sdk/drivers/lpuart/fsl_lpuart.h"
 
 // Device memories must be accessed in order.
 #define DEVICE 2
@@ -101,6 +101,36 @@ extern uint32_t _ld_itcm_flash_copy;
 extern uint32_t _ld_isr_destination;
 extern uint32_t _ld_isr_size;
 extern uint32_t _ld_isr_flash_copy;
+
+// Remove these once the SDK re-includes them.
+// https://github.com/nxp-mcuxpresso/mcux-sdk/issues/110
+/*! @name GPR14 - GPR14 General Purpose Register */
+/*! @{ */
+#define IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_MASK      (0xF0000U)
+#define IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_SHIFT     (16U)
+/*! CM7_CFGITCMSZ
+ *  0b0000..0 KB (No ITCM)
+ *  0b0011..4 KB
+ *  0b0100..8 KB
+ *  0b0101..16 KB
+ *  0b0110..32 KB
+ *  0b0111..64 KB
+ *  0b1000..128 KB
+ */
+#define IOMUXC_GPR_GPR14_CM7_CFGITCMSZ(x)        (((uint32_t)(((uint32_t)(x)) << IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_SHIFT)) & IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_MASK)
+#define IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_MASK      (0xF00000U)
+#define IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_SHIFT     (20U)
+/*! CM7_CFGDTCMSZ
+ *  0b0000..0 KB (No DTCM)
+ *  0b0011..4 KB
+ *  0b0100..8 KB
+ *  0b0101..16 KB
+ *  0b0110..32 KB
+ *  0b0111..64 KB
+ *  0b1000..128 KB
+ */
+#define IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ(x)        (((uint32_t)(((uint32_t)(x)) << IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_SHIFT)) & IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_MASK)
+/*! @} */
 
 extern void main(void);
 
