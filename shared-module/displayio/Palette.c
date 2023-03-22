@@ -81,7 +81,13 @@ void displayio_palette_get_color(displayio_palette_t *self, const _displayio_col
     }
 
     // Cache results when not dithering.
-    if (!self->dither && self->colors[palette_index].cached_colorspace == colorspace) {
+    _displayio_color_t *color = &self->colors[palette_index];
+    // Check the grayscale settings because EPaperDisplay will change them on
+    // the same object.
+    if (!self->dither &&
+        color->cached_colorspace == colorspace &&
+        color->cached_colorspace_grayscale_bit == colorspace->grayscale_bit &&
+        color->cached_colorspace_grayscale == colorspace->grayscale) {
         output_color->pixel = self->colors[palette_index].cached_color;
         return;
     }
@@ -90,8 +96,10 @@ void displayio_palette_get_color(displayio_palette_t *self, const _displayio_col
     rgb888_pixel.pixel = self->colors[palette_index].rgb888;
     displayio_convert_color(colorspace, self->dither, &rgb888_pixel, output_color);
     if (!self->dither) {
-        self->colors[palette_index].cached_colorspace = colorspace;
-        self->colors[palette_index].cached_color = output_color->pixel;
+        color->cached_colorspace = colorspace;
+        color->cached_color = output_color->pixel;
+        color->cached_colorspace_grayscale = colorspace->grayscale;
+        color->cached_colorspace_grayscale_bit = colorspace->grayscale_bit;
     }
 }
 
