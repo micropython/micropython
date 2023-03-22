@@ -671,7 +671,7 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
         if dest is None or dest == "":
             dest = src
         elif dest == ".":
-            dest = "/".join(".", src)
+            dest = "./" + src
         elif dest.endswith("/"):
             dest += src
         return dest
