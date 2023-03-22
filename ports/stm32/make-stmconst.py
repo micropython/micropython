@@ -72,6 +72,10 @@ class Lexer:
         ("{", re.compile(r"{$")),
         ("}", re.compile(r"}$")),
         (
+            "} _t",
+            re.compile(r"} *([A-Za-z0-9_]+)_t;$"),
+        ),
+        (
             "} TypeDef",
             re.compile(r"} *(?P<id>[A-Z][A-Za-z0-9_]*)_(?P<global>([A-Za-z0-9_]+)?)TypeDef;$"),
         ),
@@ -157,7 +161,7 @@ def parse_file(filename):
                     for i in range(int(d["array"])):
                         regs.append((reg + str(i), offset + i * bits // 8, bits, comment))
                 m = lexer.next_match()
-            if m[0] == "}":
+            if m[0] in ("}", "} _t"):
                 pass
             elif m[0] == "} TypeDef":
                 d = m[1].groupdict()
