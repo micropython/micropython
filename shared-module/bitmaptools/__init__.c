@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "shared/runtime/interrupt_char.h"
 #include "shared-bindings/bitmaptools/__init__.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Palette.h"
@@ -376,6 +377,10 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
         }
 
         mp_obj_list_get(fill_area, &list_length, &fill_points);
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            return;
+        }
     }
 
     // set dirty the area so displayio will draw
