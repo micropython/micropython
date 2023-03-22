@@ -95,6 +95,36 @@ static inline void mpu_config_end(uint32_t irq_state) {
     enable_irq(irq_state);
 }
 
+#elif defined(STM32H5)
+
+#define ST_DEVICE_SIGNATURE_BASE (0x08fff800)
+#define ST_DEVICE_SIGNATURE_LIMIT (0x08ffffff)
+
+static inline void mpu_init(void) {
+    // Configure attribute 0, inner-outer non-cacheable (=0x44).
+    __DMB();
+    MPU->MAIR0 = (MPU->MAIR0 & ~MPU_MAIR0_Attr0_Msk)
+        | 0x44 << MPU_MAIR0_Attr0_Pos;
+
+    // Configure region 0 to make device signature non-cacheable.
+    // This allows the memory region at ST_DEVICE_SIGNATURE_BASE to be readable.
+    __DMB();
+    MPU->RNR = MPU_REGION_NUMBER0;
+    MPU->RBAR = (ST_DEVICE_SIGNATURE_BASE & MPU_RBAR_BASE_Msk)
+        | MPU_ACCESS_NOT_SHAREABLE << MPU_RBAR_SH_Pos
+        | MPU_REGION_ALL_RW << MPU_RBAR_AP_Pos
+        | MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RBAR_XN_Pos;
+    MPU->RLAR = (ST_DEVICE_SIGNATURE_LIMIT & MPU_RLAR_LIMIT_Msk)
+        | MPU_ATTRIBUTES_NUMBER0 << MPU_RLAR_AttrIndx_Pos
+        | MPU_REGION_ENABLE << MPU_RLAR_EN_Pos;
+
+    // Enable the MPU.
+    MPU->CTRL = MPU_PRIVILEGED_DEFAULT | MPU_CTRL_ENABLE_Msk;
+    SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
+    __DMB();
+    __ISB();
+}
+
 #else
 
 static inline void mpu_init(void) {

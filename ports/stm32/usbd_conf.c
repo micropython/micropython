@@ -44,7 +44,7 @@ PCD_HandleTypeDef pcd_fs_handle;
 PCD_HandleTypeDef pcd_hs_handle;
 #endif
 
-#if defined(STM32G0)
+#if defined(STM32G0) || defined(STM32H5)
 #define USB_OTG_FS USB_DRD_FS
 #elif !MICROPY_HW_USB_IS_MULTI_OTG
 // The MCU has a single USB device-only instance
@@ -85,7 +85,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         const uint32_t otg_alt = GPIO_AF0_USB;
         #elif defined(STM32L432xx)
         const uint32_t otg_alt = GPIO_AF10_USB_FS;
-        #elif defined(STM32WB)
+        #elif defined(STM32H5) || defined(STM32WB)
         const uint32_t otg_alt = GPIO_AF10_USB;
         #else
         const uint32_t otg_alt = GPIO_AF10_OTG_FS;
@@ -108,10 +108,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         mp_hal_pin_config(MICROPY_HW_USB_OTG_ID_PIN, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, otg_alt);
         #endif
 
-        #if defined(STM32G0)
+        // Keep USB clock running during sleep or else __WFI() will disable the USB
+        #if defined(STM32G0) || defined(STM32H5)
         __HAL_RCC_USB_CLK_SLEEP_ENABLE();
         #elif defined(STM32H7)
-        // Keep USB clock running during sleep or else __WFI() will disable the USB
         __HAL_RCC_USB2_OTG_FS_CLK_SLEEP_ENABLE();
         __HAL_RCC_USB2_OTG_FS_ULPI_CLK_SLEEP_DISABLE();
         #endif
@@ -123,8 +123,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         __USB_OTG_FS_CLK_ENABLE();
         #endif
 
-        #if defined(STM32L4)
         // Enable VDDUSB
+        #if defined(STM32H5)
+        HAL_PWREx_EnableVddUSB();
+        #elif defined(STM32L4)
         if (__HAL_RCC_PWR_IS_CLK_DISABLED()) {
             __HAL_RCC_PWR_CLK_ENABLE();
             HAL_PWREx_EnableVddUSB();
@@ -138,6 +140,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #if defined(STM32G0)
         NVIC_SetPriority(USB_UCPD1_2_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_UCPD1_2_IRQn);
+        #elif defined(STM32H5)
+        NVIC_SetPriority(USB_DRD_FS_IRQn, IRQ_PRI_OTG_FS);
+        HAL_NVIC_EnableIRQ(USB_DRD_FS_IRQn);
         #elif defined(STM32L0)
         NVIC_SetPriority(USB_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_IRQn);
@@ -437,8 +442,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
         pcd_fs_handle.Init.speed = PCD_SPEED_FULL;
         pcd_fs_handle.Init.lpm_enable = DISABLE;
         pcd_fs_handle.Init.battery_charging_enable = DISABLE;
-        #if MICROPY_HW_USB_IS_MULTI_OTG || defined(STM32G0)
-        #if !defined(STM32G0)
+        #if MICROPY_HW_USB_IS_MULTI_OTG || defined(STM32G0) || defined(STM32H5)
+        #if !defined(STM32G0) && !defined(STM32H5)
         pcd_fs_handle.Init.use_dedicated_ep1 = 0;
         #endif
         pcd_fs_handle.Init.dma_enable = 0;
@@ -447,6 +452,10 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
         #else
         pcd_fs_handle.Init.vbus_sensing_enable = 1;
         #endif
+        #endif
+        #if defined(STM32G0) || defined(STM32H5)
+        pcd_fs_handle.Init.bulk_doublebuffer_enable = DISABLE;
+        pcd_fs_handle.Init.iso_singlebuffer_enable = DISABLE;
         #endif
 
         // Link The driver to the stack

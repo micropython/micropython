@@ -28,6 +28,8 @@
 
 #include "genhdr/pins.h"
 
+extern uint8_t mp_hal_unique_id_address[12];
+
 // For simplicity just convert all HAL errors to one errno.
 static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
     return status == HAL_OK ? 0 : -1;

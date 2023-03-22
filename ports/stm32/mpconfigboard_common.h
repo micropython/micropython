@@ -339,6 +339,16 @@
 #define MICROPY_HW_MAX_UART (5) // UART1-5 + LPUART1
 #define MICROPY_HW_MAX_LPUART (1)
 
+// Configuration for STM32H5 series
+#elif defined(STM32H5)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (mp_hal_unique_id_address)
+#define PYB_EXTI_NUM_VECTORS (58)
+#define MICROPY_HW_MAX_I2C (4)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (12)
+#define MICROPY_HW_MAX_LPUART (1)
+
 // Configuration for STM32H7A3/B3 series
 #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
     defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
@@ -574,9 +584,9 @@
 #endif
 
 // Whether the USB peripheral is device-only, or multiple OTG
-// For STM32G0 the USB peripheral supports device and host mode,
+// For STM32G0 and STM32H5 the USB peripheral supports device and host mode,
 // but otherwise acts like a non-multi-OTG peripheral.
-#if defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
+#if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
 #define MICROPY_HW_USB_IS_MULTI_OTG (0)
 #else
 #define MICROPY_HW_USB_IS_MULTI_OTG (1)
