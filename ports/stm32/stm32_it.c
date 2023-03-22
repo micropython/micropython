@@ -304,6 +304,14 @@ void USB_UCPD1_2_IRQHandler(void) {
 }
 #endif
 
+#elif defined(STM32H5)
+
+#if MICROPY_HW_USB_FS
+void USB_DRD_FS_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+#endif
+
 #elif defined(STM32L0) || defined(STM32L432xx)
 
 #if MICROPY_HW_USB_FS
@@ -404,7 +412,7 @@ void OTG_FS_WKUP_IRQHandler(void) {
 
     #if defined(STM32L4)
     EXTI->PR1 = USB_OTG_FS_WAKEUP_EXTI_LINE;
-    #elif !defined(STM32H7)
+    #elif !defined(STM32H5) && !defined(STM32H7)
     /* Clear EXTI pending Bit*/
     __HAL_USB_FS_EXTI_CLEAR_FLAG();
     #endif
@@ -424,7 +432,7 @@ void OTG_HS_WKUP_IRQHandler(void) {
 
     OTG_CMD_WKUP_Handler(&pcd_hs_handle);
 
-    #if !defined(STM32H7)
+    #if !defined(STM32H5) && !defined(STM32H7)
     /* Clear EXTI pending Bit*/
     __HAL_USB_HS_EXTI_CLEAR_FLAG();
     #endif
@@ -528,7 +536,13 @@ void ETH_WKUP_IRQHandler(void) {
 }
 #endif
 
-#if defined(STM32L1)
+#if defined(STM32H5)
+void TAMP_IRQHandler(void) {
+    IRQ_ENTER(TAMP_IRQn);
+    Handle_EXTI_Irq(EXTI_RTC_TAMP);
+    IRQ_EXIT(TAMP_IRQn);
+}
+#elif defined(STM32L1)
 void TAMPER_STAMP_IRQHandler(void) {
     IRQ_ENTER(TAMPER_STAMP_IRQn);
     Handle_EXTI_Irq(EXTI_RTC_TIMESTAMP);
@@ -542,10 +556,17 @@ void TAMP_STAMP_IRQHandler(void) {
 }
 #endif
 
-void RTC_WKUP_IRQHandler(void) {
+#if defined(STM32H5)
+void RTC_IRQHandler(void)
+#else
+void RTC_WKUP_IRQHandler(void)
+#endif
+{
     IRQ_ENTER(RTC_WKUP_IRQn);
     #if defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
     RTC->MISR &= ~RTC_MISR_WUTMF; // clear wakeup interrupt flag
+    #elif defined(STM32H5)
+    RTC->SCR = RTC_SCR_CWUTF; // clear wakeup interrupt flag
     #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     RTC->SR &= ~RTC_SR_WUTF; // clear wakeup interrupt flag
     #else

@@ -52,7 +52,7 @@
 
 #if !MICROPY_HW_USB_IS_MULTI_OTG
 #define USE_USB_CNTR_SOFM (1)
-#if defined(STM32G0)
+#if defined(STM32G0) || defined(STM32H5)
 #define USB USB_DRD_FS
 #endif
 #else

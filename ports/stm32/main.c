@@ -306,8 +306,10 @@ void stm32_main(uint32_t reset_mode) {
     SCB->VTOR = MICROPY_HW_VTOR;
     #endif
 
+    #if __CORTEX_M != 33
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
+    #endif
 
     // Hook for a board to run code at start up, for example check if a
     // bootloader should be entered instead of the main application.
@@ -335,6 +337,10 @@ void stm32_main(uint32_t reset_mode) {
 
     SCB_EnableICache();
     SCB_EnableDCache();
+
+    #elif defined(STM32H5)
+
+    HAL_ICACHE_Enable();
 
     #elif defined(STM32L4)
 
@@ -387,6 +393,13 @@ void stm32_main(uint32_t reset_mode) {
     MICROPY_BOARD_EARLY_INIT();
 
     // basic sub-system init
+    #if defined(STM32H5)
+    volatile uint32_t *src = (volatile uint32_t *)UID_BASE;
+    uint32_t *dest = (uint32_t *)&mp_hal_unique_id_address[0];
+    dest[0] = src[0];
+    dest[1] = src[1];
+    dest[2] = src[2];
+    #endif
     #if defined(STM32WB)
     rfcore_init();
     #endif

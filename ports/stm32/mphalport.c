@@ -16,6 +16,10 @@ const byte mp_hal_status_to_errno_table[4] = {
     [HAL_TIMEOUT] = MP_ETIMEDOUT,
 };
 
+#if defined(STM32H5)
+uint8_t mp_hal_unique_id_address[12];
+#endif
+
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
@@ -102,7 +106,7 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     #elif defined(STM32G0)
     #define AHBxENR IOPENR
     #define AHBxENR_GPIOAEN_Pos RCC_IOPENR_GPIOAEN_Pos
-    #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #elif defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     #define AHBxENR AHB2ENR
     #define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR_GPIOAEN_Pos
     #endif

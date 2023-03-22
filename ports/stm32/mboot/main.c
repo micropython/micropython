@@ -36,6 +36,7 @@
 #include "i2cslave.h"
 #include "irq.h"
 #include "mboot.h"
+#include "mpu.h"
 #include "powerctrl.h"
 #include "sdcard.h"
 #include "dfu.h"
@@ -377,7 +378,7 @@ void SystemClock_Config(void) {
 #elif defined(STM32H7)
 #define AHBxENR AHB4ENR
 #define AHBxENR_GPIOAEN_Pos RCC_AHB4ENR_GPIOAEN_Pos
-#elif defined(STM32WB)
+#elif defined(STM32H5) || defined(STM32WB)
 #define AHBxENR AHB2ENR
 #define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR_GPIOAEN_Pos
 #endif
@@ -411,6 +412,8 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 
 #if defined(STM32G0)
 #define FLASH_END (FLASH_BASE + FLASH_SIZE - 1)
+#elif defined(STM32H5)
+#define FLASH_END (0x08000000 + 2 * 1024 * 1024)
 #elif defined(STM32WB)
 #define FLASH_END FLASH_END_ADDR
 #endif
@@ -433,6 +436,8 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32G0)
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*02Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#elif defined(STM32H5)
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*08Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32H743xx)
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/16*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32H750xx)
@@ -1314,6 +1319,10 @@ static void leave_bootloader(void) {
     NVIC_SystemReset();
 }
 
+#if defined(STM32H5)
+uint8_t mp_hal_unique_id_address[12];
+#endif
+
 extern PCD_HandleTypeDef pcd_fs_handle;
 extern PCD_HandleTypeDef pcd_hs_handle;
 
@@ -1337,8 +1346,10 @@ void stm32_main(uint32_t initial_r0) {
     // Make sure IRQ vector table points to flash where this bootloader lives.
     SCB->VTOR = MBOOT_VTOR;
 
+    #if __CORTEX_M != 33
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
+    #endif
 
     #if defined(STM32F4)
     #if INSTRUCTION_CACHE_ENABLE
@@ -1387,6 +1398,18 @@ void stm32_main(uint32_t initial_r0) {
     }
 
 enter_bootloader:
+
+    #if defined(STM32H5)
+    // MPU is needed for H5 to access the unique id.
+    mpu_init();
+
+    // Copy unique id to byte-addressable buffer.
+    volatile uint32_t *src = (volatile uint32_t *)UID_BASE;
+    uint32_t *dest = (uint32_t *)&mp_hal_unique_id_address[0];
+    dest[0] = src[0];
+    dest[1] = src[1];
+    dest[2] = src[2];
+    #endif
 
     MBOOT_BOARD_ENTRY_INIT(&initial_r0);
 
@@ -1559,6 +1582,12 @@ void I2Cx_EV_IRQHandler(void) {
 #if defined(STM32G0)
 
 void USB_UCPD1_2_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+
+#elif defined(STM32H5)
+
+void USB_DRD_FS_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_fs_handle);
 }
 

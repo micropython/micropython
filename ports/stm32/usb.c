@@ -59,7 +59,7 @@
 #endif
 
 // Maximum number of endpoints (excluding EP0)
-#if defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32WB)
+#if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32WB)
 #define MAX_ENDPOINT(dev_id) (7)
 #elif defined(STM32L4)
 #define MAX_ENDPOINT(dev_id) (5)

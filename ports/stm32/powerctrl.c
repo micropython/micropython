@@ -31,7 +31,7 @@
 #include "genhdr/pllfreqtable.h"
 #include "extmod/modbluetooth.h"
 
-#if defined(STM32H7)
+#if defined(STM32H5) || defined(STM32H7)
 #define RCC_SR          RSR
 #if defined(STM32H747xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFT2RSTF
@@ -379,7 +379,7 @@ STATIC uint32_t calc_apb2_div(uint32_t wanted_div) {
     #endif
 }
 
-#if defined(STM32F4) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7)
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7)
 
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
     // Return straight away if the clocks are already at the desired frequency
@@ -453,12 +453,19 @@ set_clk:
     // Determine the bus clock dividers
     // Note: AHB freq required to be >= 14.2MHz for USB operation
     RCC_ClkInitStruct.AHBCLKDivider = calc_ahb_div(sysclk / ahb);
-    #if !defined(STM32H7)
+    #if defined(STM32H5)
+    ahb = sysclk >> AHBPrescTable[RCC_ClkInitStruct.AHBCLKDivider >> RCC_CFGR2_HPRE_Pos];
+    #elif defined(STM32H7)
+    // Do nothing.
+    #else
     ahb = sysclk >> AHBPrescTable[RCC_ClkInitStruct.AHBCLKDivider >> RCC_CFGR_HPRE_Pos];
     #endif
     RCC_ClkInitStruct.APB1CLKDivider = calc_apb1_div(ahb / apb1);
     #if !defined(STM32G0)
     RCC_ClkInitStruct.APB2CLKDivider = calc_apb2_div(ahb / apb2);
+    #endif
+    #if defined(STM32H5)
+    RCC_ClkInitStruct.APB3CLKDivider = RCC_HCLK_DIV1;
     #endif
     #if defined(STM32H7)
     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
@@ -842,6 +849,18 @@ void powerctrl_enter_stop_mode(void) {
     HAL_PWREx_EnableOverDrive();
     #endif
 
+    #if defined(STM32H5)
+
+    // Enable PLL1, and switch the system clock source to PLL1P.
+    LL_RCC_PLL1_Enable();
+    while (!LL_RCC_PLL1_IsReady()) {
+    }
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL1);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL1) {
+    }
+
+    #else
+
     // enable PLL
     __HAL_RCC_PLL_ENABLE();
     while (!__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY)) {
@@ -858,6 +877,8 @@ void powerctrl_enter_stop_mode(void) {
     #else
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL) {
     }
+    #endif
+
     #endif
 
     powerctrl_disable_hsi_if_unused();
@@ -967,7 +988,7 @@ void powerctrl_enter_standby_mode(void) {
     #if defined(STM32F0) || defined(STM32L0)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
-    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32WL)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_MISR_ALRAMF | RTC_MISR_ALRBMF | RTC_MISR_WUTMF | RTC_MISR_TSMF)
     #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
@@ -991,7 +1012,7 @@ void powerctrl_enter_standby_mode(void) {
     // clear RTC wake-up flags
     #if defined(SR_BITS)
     RTC->SR &= ~SR_BITS;
-    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32WL)
     RTC->MISR &= ~ISR_BITS;
     #else
     RTC->ISR &= ~ISR_BITS;
@@ -1006,6 +1027,8 @@ void powerctrl_enter_standby_mode(void) {
     PWR->CR2 |= PWR_CR2_CWUPF6 | PWR_CR2_CWUPF5 | PWR_CR2_CWUPF4 | PWR_CR2_CWUPF3 | PWR_CR2_CWUPF2 | PWR_CR2_CWUPF1;
     // Restore EWUP state
     PWR->CSR2 |= csr2_ewup;
+    #elif defined(STM32H5)
+    LL_PWR_ClearFlag_WU();
     #elif defined(STM32H7)
     // Clear and mask D1 EXTIs.
     EXTI_D1->PR1 = 0x3fffffu;
