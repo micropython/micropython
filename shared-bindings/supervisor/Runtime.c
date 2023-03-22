@@ -197,7 +197,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_next_stack_limit_obj, superviso
 STATIC mp_obj_t supervisor_runtime_set_next_stack_limit(mp_obj_t self, mp_obj_t size_obj) {
     mp_int_t size = mp_obj_get_int(size_obj);
     mp_arg_validate_int_min(size, 256, MP_QSTR_size);
-    set_next_stack_size(size);
+    if (!set_next_stack_size(size)) {
+        mp_raise_msg_varg(&mp_type_AttributeError,
+            MP_ERROR_TEXT("can't set attribute '%q'"),
+            MP_QSTR_next_stack_limit);
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(supervisor_runtime_set_next_stack_limit_obj, supervisor_runtime_set_next_stack_limit);
