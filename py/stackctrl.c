@@ -30,8 +30,11 @@
 void mp_stack_ctrl_init(void) {
     // Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
     __asm volatile ("");
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdangling-pointer"
     volatile int stack_dummy;
     MP_STATE_THREAD(stack_top) = (char *)&stack_dummy;
+    #pragma GCC diagnostic pop
 }
 
 void mp_stack_set_top(void *top) {

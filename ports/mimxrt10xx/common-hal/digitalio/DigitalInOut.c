@@ -42,12 +42,14 @@
 
 void pin_config(const mcu_pin_obj_t *pin, bool open_drain, digitalio_pull_t pull) {
     IOMUXC_SetPinConfig(0, 0, 0, 0, pin->cfg_reg,
-        IOMUXC_SW_PAD_CTL_PAD_HYS(1)
-        | IOMUXC_SW_PAD_CTL_PAD_PUS((pull == PULL_UP) ? 2 : 0)
-        | IOMUXC_SW_PAD_CTL_PAD_PUE(pull != PULL_NONE)
+        IOMUXC_SW_PAD_CTL_PAD_PUS((pull == PULL_UP) ? 2 : 0)
+        #if IMXRT10XX
+        | IOMUXC_SW_PAD_CTL_PAD_HYS(1)
         | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-        | IOMUXC_SW_PAD_CTL_PAD_ODE(open_drain)
         | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
+        #endif
+        | IOMUXC_SW_PAD_CTL_PAD_PUE(pull != PULL_NONE)
+        | IOMUXC_SW_PAD_CTL_PAD_ODE(open_drain)
         | IOMUXC_SW_PAD_CTL_PAD_DSE(1)
         | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }

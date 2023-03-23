@@ -52,11 +52,15 @@
 
 
 // arrays use 0 based numbering: UART1 is stored at index 0
-#define MAX_UART 8
-STATIC bool reserved_uart[MAX_UART];
-STATIC bool never_reset_uart[MAX_UART];
+STATIC bool reserved_uart[MP_ARRAY_SIZE(mcu_uart_banks)];
+STATIC bool never_reset_uart[MP_ARRAY_SIZE(mcu_uart_banks)];
 
+#if IMXRT11XX
+#define UART_CLOCK_FREQ (24000000)
+#else
 #define UART_CLOCK_FREQ (CLOCK_GetPllFreq(kCLOCK_PllUsb1) / 6U) / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U)
+#endif
+
 
 static void config_periph_pin(const mcu_periph_obj_t *periph) {
     IOMUXC_SetPinMux(
@@ -67,12 +71,14 @@ static void config_periph_pin(const mcu_periph_obj_t *periph) {
 
     IOMUXC_SetPinConfig(0, 0, 0, 0,
         periph->pin->cfg_reg,
-        IOMUXC_SW_PAD_CTL_PAD_HYS(0)
-        | IOMUXC_SW_PAD_CTL_PAD_PUS(1)
-        | IOMUXC_SW_PAD_CTL_PAD_PUE(1)
+        IOMUXC_SW_PAD_CTL_PAD_PUS(1)
+        #if IMXRT10XX
+        | IOMUXC_SW_PAD_CTL_PAD_HYS(0)
         | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-        | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
         | IOMUXC_SW_PAD_CTL_PAD_SPEED(1)
+        #endif
+        | IOMUXC_SW_PAD_CTL_PAD_PUE(1)
+        | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
         | IOMUXC_SW_PAD_CTL_PAD_DSE(6)
         | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
@@ -288,12 +294,14 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         IOMUXC_SetPinMux(rs485_dir->mux_reg, IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_ALT5, 0, 0, 0, 0);
         DBGPrintf(&mp_plat_print, "\tAfter IOMUXC_SetPinMux\n");
         IOMUXC_SetPinConfig(0, 0, 0, 0, rs485_dir->cfg_reg,
-            IOMUXC_SW_PAD_CTL_PAD_HYS(1)
-            | IOMUXC_SW_PAD_CTL_PAD_PUS(0)
-            | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
+            IOMUXC_SW_PAD_CTL_PAD_PUS(0)
+            #if IMXRT10XX
+            | IOMUXC_SW_PAD_CTL_PAD_HYS(1)
             | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-            | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
             | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
+            #endif
+            | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
+            | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
             | IOMUXC_SW_PAD_CTL_PAD_DSE(1)
             | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
         DBGPrintf(&mp_plat_print, "\tAfter IOMUXC_SetPinConfig\n");

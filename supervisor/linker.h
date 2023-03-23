@@ -29,7 +29,7 @@
 #ifndef MICROPY_INCLUDED_SUPERVISOR_LINKER_H
 #define MICROPY_INCLUDED_SUPERVISOR_LINKER_H
 
-#if defined(IMXRT10XX) || defined(FOMU) || defined(STM32H7) || defined(RASPBERRYPI)
+#if defined(IMXRT1XXX) || defined(FOMU) || defined(STM32H7) || defined(RASPBERRYPI)
 #define PLACE_IN_DTCM_DATA(name) name __attribute__((section(".dtcm_data." #name)))
 #define PLACE_IN_DTCM_BSS(name) name __attribute__((section(".dtcm_bss." #name)))
 // Don't inline ITCM functions because that may pull them out of ITCM into other sections.
