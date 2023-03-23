@@ -32,14 +32,6 @@ msgstr ""
 "\n"
 "Kód byl zastaven kvůli automatickému načtení. K načtení dojde brzy.\n"
 
-#: main.c
-msgid ""
-"\n"
-"Invalid CIRCUITPY_PYSTACK_SIZE\n"
-"\n"
-"\r"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
@@ -1263,6 +1255,10 @@ msgstr "Chybný BLE parametr"
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
 msgstr "Chybné BSSID"
+
+#: main.c
+msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"

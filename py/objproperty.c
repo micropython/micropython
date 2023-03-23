@@ -99,7 +99,7 @@ const mp_obj_type_t mp_type_property = {
 extern const mp_obj_property_t __property_getter_start, __property_getter_end, __property_getset_start, __property_getset_end;
 #endif
 
-const mp_obj_t *mp_obj_property_get(mp_obj_t self_in, size_t *n_proxy) {
+const mp_obj_t *PLACE_IN_ITCM(mp_obj_property_get)(mp_obj_t self_in, size_t *n_proxy) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_property));
     mp_obj_property_t *self = MP_OBJ_TO_PTR(self_in);
     #if MICROPY_PY_OPTIMIZE_PROPERTY_FLASH_SIZE

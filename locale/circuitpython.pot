@@ -28,14 +28,6 @@ msgid ""
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
 
-#: main.c
-msgid ""
-"\n"
-"Invalid CIRCUITPY_PYSTACK_SIZE\n"
-"\n"
-"\r"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
@@ -1251,6 +1243,10 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
+msgstr ""
+
+#: main.c
+msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -2741,7 +2737,7 @@ msgstr ""
 msgid "can't set attribute"
 msgstr ""
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/Runtime.c
 msgid "can't set attribute '%q'"
 msgstr ""
 
@@ -4113,10 +4109,6 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "tobytes can be invoked for dense arrays only"
-msgstr ""
-
-#: shared-module/struct/__init__.c
-msgid "too many arguments provided with the given format"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c

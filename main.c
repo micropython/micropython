@@ -134,26 +134,18 @@ static void reset_devices(void) {
 
 #if MICROPY_ENABLE_PYSTACK
 STATIC supervisor_allocation *allocate_pystack(safe_mode_t safe_mode) {
-    mp_int_t pystack_size = CIRCUITPY_PYSTACK_SIZE;
     #if CIRCUITPY_OS_GETENV && CIRCUITPY_SETTABLE_PYSTACK
-    // Fetch value if exists from settings.toml
-    // Leaves size to build default on any failure
-    if (safe_mode == SAFE_MODE_NONE || safe_mode == SAFE_MODE_USER) {
+    if (safe_mode == SAFE_MODE_NONE) {
+        mp_int_t pystack_size = CIRCUITPY_PYSTACK_SIZE;
         (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
-        // Check if value is valid
-        pystack_size = pystack_size - pystack_size % sizeof(size_t); // Round down to multiple of 4.
-        if ((pystack_size < 384) || (pystack_size > 900000)) {
-            serial_write_compressed(translate("\nInvalid CIRCUITPY_PYSTACK_SIZE\n\n\r"));
-            pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset
+        supervisor_allocation *pystack = allocate_memory(pystack_size >= 384 ? pystack_size : 0, false, false);
+        if (pystack) {
+            return pystack;
         }
+        serial_write_compressed(translate("Invalid CIRCUITPY_PYSTACK_SIZE\n"));
     }
     #endif
-    supervisor_allocation *pystack = allocate_memory(pystack_size, false, false);
-    if (pystack == NULL) {
-        serial_write_compressed(translate("\nInvalid CIRCUITPY_PYSTACK_SIZE\n\n\r"));
-        pystack = allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
-    }
-    return pystack;
+    return allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
 }
 #endif
 

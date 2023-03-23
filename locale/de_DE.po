@@ -31,18 +31,6 @@ msgstr ""
 "\n"
 "Code wurde durch automatisches Neuladen gestoppt. Wird bald neu geladen.\n"
 
-#: main.c
-msgid ""
-"\n"
-"Invalid CIRCUITPY_PYSTACK_SIZE\n"
-"\n"
-"\r"
-msgstr ""
-"\n"
-"Ungültige CIRCUITPY_PYSTACK_SIZE\n"
-"\n"
-"\n"
-
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
@@ -1286,6 +1274,10 @@ msgstr "Ungültiges BLE Parameter"
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
 msgstr "Ungültige BSSID"
+
+#: main.c
+msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
@@ -4472,6 +4464,17 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid ""
+#~ "\n"
+#~ "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ "\n"
+#~ "\r"
+#~ msgstr ""
+#~ "\n"
+#~ "Ungültige CIRCUITPY_PYSTACK_SIZE\n"
+#~ "\n"
+#~ "\n"
 
 #~ msgid "Supply at least one UART pin"
 #~ msgstr "Gib mindestens einen UART-Pin an"

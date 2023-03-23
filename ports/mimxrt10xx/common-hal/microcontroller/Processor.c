@@ -33,8 +33,8 @@
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
-#include "fsl_tempmon.h"
-#include "fsl_ocotp.h"
+#include "sdk/drivers/tempmon/fsl_tempmon.h"
+#include "sdk/drivers/ocotp/fsl_ocotp.h"
 #include "clocks.h"
 
 float common_hal_mcu_processor_get_temperature(void) {

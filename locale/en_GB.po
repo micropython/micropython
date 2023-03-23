@@ -34,14 +34,6 @@ msgstr ""
 "\n"
 "Code stopped by auto-reload. Reloading soon.\n"
 
-#: main.c
-msgid ""
-"\n"
-"Invalid CIRCUITPY_PYSTACK_SIZE\n"
-"\n"
-"\r"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
@@ -1264,6 +1256,10 @@ msgstr "Invalid BLE parameter"
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
 msgstr "Invalid BSSID"
+
+#: main.c
+msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"

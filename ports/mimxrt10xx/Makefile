@@ -30,8 +30,7 @@ CROSS_COMPILE = arm-none-eabi-
 INC += \
 	-I. \
 	-I../.. \
-	-I../lib/mp-readline \
-	-I../shared/timeutils \
+	-I../../lib/cmsis/inc \
 	-I../../lib/tinyusb/src \
 	-I../../supervisor/shared/usb \
 	-I$(BUILD) \
@@ -42,14 +41,19 @@ INC += \
 	-Isdk/CMSIS/Include \
 	-Isdk/devices/$(CHIP_FAMILY) \
 	-Isdk/devices/$(CHIP_FAMILY)/drivers \
-	-Isdk/devices/$(CHIP_FAMILY)/xip \
+	-Isdk/drivers/common
 
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 
 CFLAGS += -ftree-vrp -DNDEBUG
 
 # TinyUSB defines
-CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512 -DCFG_TUD_MSC_BUFSIZE=1024
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512
+ifeq ($(CHIP_FAMILY), MIMXRT1011)
+CFLAGS += -DCFG_TUD_MIDI_RX_BUFSIZE=64 -DCFG_TUD_MIDI_TX_BUFSIZE=64 -DCFG_TUD_MSC_BUFSIZE=512
+else
+CFLAGS += -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=512 -DCFG_TUD_MSC_BUFSIZE=1024
+endif
 
 #Debugging/Optimization
 # Never set -fno-inline because we use inline to move small functions into routines that must be
@@ -76,10 +80,14 @@ CFLAGS += \
 	-g3 -Wno-unused-parameter \
 	-ffunction-sections -fdata-sections -fstack-usage
 
-OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
+OPTIMIZATION_FLAGS ?= -O2
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 CFLAGS += $(OPTIMIZATION_FLAGS)
+
+ifeq ($(CIRCUITPY_SWO_TRACE), 1)
+  CFLAGS += -finstrument-functions -finstrument-functions-exclude-file-list=tinyusb -finstrument-functions-exclude-function-list='USB_OTG1_IRQHandler,usb_irq_handler,nlr_push,CLOCK_EnableClock,CLOCK_SetDiv,CLOCK_SetMux,__DMB,__ISB,__DSB,SCB_EnableICache,SCB_EnableDCache,ARM_MPU_Disable,ARM_MPU_Enable,SCB_DisableDCache,SCB_DisableICache,__enable_irq,__disable_irq,__set_MSP,port_get_raw_ticks,supervisor_ticks_ms64'
+endif
 
 LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH).ld chip_family/$(CHIP_FAMILY).ld common.ld)
 
@@ -97,25 +105,26 @@ LDFLAGS += -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -mthumb -mapcs
 BOOTLOADER_SIZE := 0x6000C000
 
 SRC_SDK := \
-	drivers/fsl_adc.c \
-	drivers/fsl_cache.c \
-	drivers/fsl_clock.c \
-	drivers/fsl_common.c \
-	drivers/fsl_flexspi.c \
-	drivers/fsl_gpio.c \
-	drivers/fsl_lpi2c.c \
-	drivers/fsl_lpspi.c \
-	drivers/fsl_lpuart.c \
-	drivers/fsl_ocotp.c \
-	drivers/fsl_pwm.c \
-	drivers/fsl_snvs_hp.c \
-	drivers/fsl_snvs_lp.c \
-	drivers/fsl_tempmon.c \
-	drivers/fsl_trng.c \
-	system_$(CHIP_FAMILY).c \
+	devices/$(CHIP_FAMILY)/drivers/fsl_clock.c \
+	devices/$(CHIP_FAMILY)/system_$(CHIP_FAMILY).c \
+	devices/$(CHIP_FAMILY)/xip/fsl_flexspi_nor_boot.c \
+	drivers/adc_12b1msps_sar/fsl_adc.c \
+	drivers/cache/armv7-m7/fsl_cache.c \
+	drivers/common/fsl_common_arm.c \
+	drivers/common/fsl_common.c \
+	drivers/flexspi/fsl_flexspi.c \
+	drivers/igpio/fsl_gpio.c \
+	drivers/lpi2c/fsl_lpi2c.c \
+	drivers/lpspi/fsl_lpspi.c \
+	drivers/lpuart/fsl_lpuart.c \
+	drivers/ocotp/fsl_ocotp.c \
+	drivers/pwm/fsl_pwm.c \
+	drivers/snvs_hp/fsl_snvs_hp.c \
+	drivers/snvs_lp/fsl_snvs_lp.c \
+	drivers/tempmon/fsl_tempmon.c \
+	drivers/trng/fsl_trng.c \
 
-SRC_SDK := $(addprefix sdk/devices/$(CHIP_FAMILY)/, $(SRC_SDK))
-$(addprefix $(BUILD)/, $(SRC_SDK:.c=.o)): CFLAGS += -Wno-undef -Wno-missing-prototypes -Wno-cast-align
+SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
 
 SRC_C += \
 	background.c \
@@ -171,20 +180,21 @@ all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2 $(BUILD)/firmware.hex
 
 $(BUILD)/firmware.elf: $(OBJ) $(LD_FILES)
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $(filter-out %.ld, $^) -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(CC) -o $@ $(LDFLAGS) $(filter-out %.ld, $^) -Wl,--print-memory-usage -Wl,--start-group $(LIBS) -Wl,--end-group
 
+# -R excludes sections from the output files.
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .flash_config -j .ivt -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $^ $@
+	$(Q)$(OBJCOPY) -O binary -R .stack -R .dtcm_bss $^ $@
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $^ $@-binpart
+	$(Q)$(OBJCOPY) -O binary -R .stack -R .dtcm_bss -R .ivt -R .flash_config $^ $@-binpart
 	$(Q)$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -f MIMXRT10XX -c -o $@ $@-binpart
 	$(Q)rm $@-binpart
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
-	$(Q)$(OBJCOPY) -O ihex -j .flash_config -j .ivt -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $< $@
+	$(Q)$(OBJCOPY) -O ihex -R .stack -R .dtcm_bss $< $@
 
 include $(TOP)/py/mkrules.mk
 

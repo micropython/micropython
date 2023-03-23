@@ -278,7 +278,7 @@ void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self
     mp_arg_validate_length(tuple_len, 2, MP_QSTR_location);
 
     mp_int_t x = mp_arg_validate_type_int(tuple_items[0], MP_QSTR_x);
-    mp_int_t y = mp_arg_validate_type_int(tuple_items[0], MP_QSTR_y);
+    mp_int_t y = mp_arg_validate_type_int(tuple_items[1], MP_QSTR_y);
     bool dirty = false;
     if (self->x != x) {
         check_bounds_and_set_x(self, x);

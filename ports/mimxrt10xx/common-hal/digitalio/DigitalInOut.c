@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-#include "fsl_gpio.h"
+#include "sdk/drivers/igpio/fsl_gpio.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
@@ -118,7 +118,12 @@ digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
 
 void common_hal_digitalio_digitalinout_set_value(
     digitalio_digitalinout_obj_t *self, bool value) {
-    GPIO_PinWrite(self->pin->gpio, self->pin->number, value);
+    GPIO_Type *gpio = self->pin->gpio;
+    if (value) {
+        gpio->DR_SET = 1 << self->pin->number;
+    } else {
+        gpio->DR_CLEAR = 1 << self->pin->number;
+    }
 }
 
 bool common_hal_digitalio_digitalinout_get_value(

@@ -82,10 +82,12 @@ def git_diff(pattern: str):
     )
 
 
+compute_diff = bool(os.environ.get("BASE_SHA") and os.environ.get("HEAD_SHA"))
+
 if len(sys.argv) > 1:
     print("Using files list on commandline")
     changed_files = set(sys.argv[1:])
-elif os.environ.get("BASE_SHA") and os.environ.get("HEAD_SHA"):
+elif compute_diff:
     print("Using files list by computing diff")
     changed_files = git_diff("$BASE_SHA...$HEAD_SHA")
     if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
@@ -117,25 +119,23 @@ def set_output(name: str, value):
 
 
 def set_boards(build_all: bool):
-    # Get boards in json format
-    boards_info_json = build_board_info.get_board_mapping()
     all_board_ids = set()
-    port_to_boards = {}
+    boards_to_build = all_board_ids if build_all else set()
+
     board_to_port = {}
-    board_settings = {}
-    for board_id in boards_info_json:
-        info = boards_info_json[board_id]
-        if info.get("alias", False):
+    port_to_board = {}
+    board_setting = {}
+
+    for id, info in build_board_info.get_board_mapping().items():
+        if info.get("alias"):
             continue
-        all_board_ids.add(board_id)
         port = info["port"]
-        if port not in port_to_boards:
-            port_to_boards[port] = set()
-        port_to_boards[port].add(board_id)
-        board_to_port[board_id] = port
+        all_board_ids.add(id)
+        board_to_port[id] = port
+        port_to_board.setdefault(port, set()).add(id)
 
     def compute_board_settings(boards):
-        need = set(boards) - set(board_settings.keys())
+        need = set(boards) - set(board_setting.keys())
         if not need:
             return
 
@@ -146,71 +146,68 @@ def set_boards(build_all: bool):
             )
 
         with ThreadPoolExecutor(max_workers=os.cpu_count()) as ex:
-            board_settings.update(ex.map(get_settings, need))
-
-    boards_to_build = all_board_ids
+            board_setting.update(ex.map(get_settings, need))
 
     if not build_all:
-        boards_to_build = set()
-        board_pattern = re.compile(r"^ports/[^/]+/boards/([^/]+)/")
-        port_pattern = re.compile(r"^ports/([^/]+)/")
-        module_pattern = re.compile(
+        pattern_port = re.compile(r"^ports/([^/]+)/")
+        pattern_board = re.compile(r"^ports/[^/]+/boards/([^/]+)/")
+        pattern_module = re.compile(
             r"^(ports/[^/]+/(?:common-hal|bindings)|shared-bindings|shared-module)/([^/]+)/"
         )
-        for p in changed_files:
+
+        for file in changed_files:
+            if len(all_board_ids) == len(boards_to_build):
+                break
+
+            if any([file.startswith(path) for path in IGNORE_BOARD]):
+                continue
+
             # See if it is board specific
-            board_matches = board_pattern.search(p)
+            board_matches = pattern_board.search(file)
             if board_matches:
-                board = board_matches.group(1)
-                boards_to_build.add(board)
+                boards_to_build.add(board_matches.group(1))
                 continue
 
             # See if it is port specific
-            port_matches = port_pattern.search(p)
+            port_matches = pattern_port.search(file)
+            module_matches = pattern_module.search(file)
             port = port_matches.group(1) if port_matches else None
-            module_matches = module_pattern.search(p)
             if port and not module_matches:
                 if port != "unix":
-                    boards_to_build.update(port_to_boards[port])
-                continue
-
-            if any([p.startswith(d) for d in IGNORE_BOARD]):
+                    boards_to_build.update(port_to_board[port])
                 continue
 
             # As a (nearly) last resort, for some certain files, we compute the settings from the
-            # makefile for each board and determine whether to build them that way.
-            if p.startswith("frozen") or p.startswith("supervisor") or module_matches:
-                if port:
-                    board_ids = port_to_boards[port]
-                else:
-                    board_ids = all_board_ids
-                compute_board_settings(board_ids)
-                for board in board_ids:
-                    settings = board_settings[board]
+            # makefile for each board and determine whether to build them that way
+            if file.startswith("frozen") or file.startswith("supervisor") or module_matches:
+                boards = port_to_board[port] if port else all_board_ids
+                compute_board_settings(boards)
 
-                    # Check frozen files to see if they are in each board.
-                    frozen = settings.get("FROZEN_MPY_DIRS", "")
-                    if frozen and p.startswith("frozen") and p in frozen:
-                        boards_to_build.add(board)
-                        continue
+                for board in boards:
+                    settings = board_setting[board]
 
-                    # Check supervisor files. This is useful for limiting workflow changes to the
-                    # relevant boards.
-                    supervisor = settings["SRC_SUPERVISOR"]
-                    if p.startswith("supervisor"):
-                        if p in supervisor:
+                    # Check frozen files to see if they are in each board
+                    if file.startswith("frozen"):
+                        if file in settings.get("FROZEN_MPY_DIRS", ""):
                             boards_to_build.add(board)
                             continue
 
-                        web_workflow = settings["CIRCUITPY_WEB_WORKFLOW"]
-                        while web_workflow.startswith("$("):
-                            web_workflow = settings[web_workflow[2:-1]]
-                        if (
-                            p.startswith("supervisor/shared/web_workflow/static/")
-                            and web_workflow != "0"
-                        ):
+                    # Check supervisor files
+                    # This is useful for limiting workflow changes to the relevant boards
+                    if file.startswith("supervisor"):
+                        if file in settings["SRC_SUPERVISOR"]:
                             boards_to_build.add(board)
                             continue
+
+                        if file.startswith("supervisor/shared/web_workflow/static/"):
+                            web_workflow = settings["CIRCUITPY_WEB_WORKFLOW"]
+
+                            while web_workflow.startswith("$("):
+                                web_workflow = settings[web_workflow[2:-1]]
+
+                            if web_workflow != "0":
+                                boards_to_build.add(board)
+                                continue
 
                     # Check module matches
                     if module_matches:
@@ -218,6 +215,7 @@ def set_boards(build_all: bool):
                         if module in settings["SRC_PATTERNS"]:
                             boards_to_build.add(board)
                             continue
+
                 continue
 
             # Otherwise build it all
@@ -225,7 +223,7 @@ def set_boards(build_all: bool):
             break
 
     # Append previously failed boards
-    boards_to_build.update(last_failed_jobs.get("ports") or [])
+    boards_to_build.update(last_failed_jobs.get("ports", []))
 
     print("Building boards:", bool(boards_to_build))
 
@@ -249,16 +247,16 @@ def set_boards(build_all: bool):
     set_output("ports", json.dumps(port_to_boards_to_build))
 
 
-def set_docs(build_doc: bool):
-    if not build_doc:
+def set_docs(run: bool):
+    if not run:
         if last_failed_jobs.get("docs"):
-            build_doc = True
+            run = True
         else:
-            doc_pattern = re.compile(PATTERN_DOCS)
+            pattern_doc = re.compile(PATTERN_DOCS)
             github_workspace = os.environ.get("GITHUB_WORKSPACE") or ""
             github_workspace = github_workspace and github_workspace + "/"
             for file in changed_files:
-                if doc_pattern.search(file) and (
+                if pattern_doc.search(file) and (
                     (
                         subprocess.run(
                             f"git diff -U0 $BASE_SHA...$HEAD_SHA {github_workspace + file} | grep -o -m 1 '^[+-]\/\/|'",
@@ -269,44 +267,42 @@ def set_docs(build_doc: bool):
                     if file.endswith(".c")
                     else True
                 ):
-                    build_doc = True
+                    run = True
                     break
 
     # Set the step outputs
-    print("Building docs:", build_doc)
-    set_output("docs", build_doc)
+    print("Building docs:", run)
+    set_output("docs", run)
 
 
-def set_windows(build_windows: bool):
-    if not build_windows:
+def set_windows(run: bool):
+    if not run:
         if last_failed_jobs.get("windows"):
-            build_windows = True
+            run = True
         else:
             for file in changed_files:
                 for pattern in PATTERN_WINDOWS:
                     if file.startswith(pattern) and not any(
-                        [file.startswith(d) for d in IGNORE_BOARD]
+                        [file.startswith(path) for path in IGNORE_BOARD]
                     ):
-                        build_windows = True
+                        run = True
                         break
                 else:
                     continue
                 break
 
     # Set the step outputs
-    print("Building windows:", build_windows)
-    set_output("windows", build_windows)
+    print("Building windows:", run)
+    set_output("windows", run)
 
 
 def main():
-    # Build all if no changed files
-    build_all = not changed_files
-    print("Running: " + ("all" if build_all else "conditionally"))
-
+    run_all = not changed_files and not compute_diff
+    print("Running: " + ("all" if run_all else "conditionally"))
     # Set jobs
-    set_docs(build_all)
-    set_windows(build_all)
-    set_boards(build_all)
+    set_docs(run_all)
+    set_windows(run_all)
+    set_boards(run_all)
 
 
 if __name__ == "__main__":

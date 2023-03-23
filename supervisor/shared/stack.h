@@ -37,7 +37,7 @@ void stack_resize(void);
 uint32_t *stack_get_bottom(void);
 size_t stack_get_length(void);
 // Next/current requested stack size.
-void set_next_stack_size(uint32_t size);
+bool set_next_stack_size(uint32_t size);
 uint32_t get_next_stack_size(void);
 uint32_t get_current_stack_size(void);
 bool stack_ok(void);
