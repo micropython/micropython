@@ -71,7 +71,7 @@
 
 //| wake_alarm: Optional[circuitpython_typing.Alarm]
 //| """The most recently triggered alarm. If CircuitPython was sleeping, the alarm that woke it from sleep.
-//| If no alarm occured since the last hard reset or soft restart, value is ``None``.
+//| If no alarm occurred since the last hard reset or soft restart, value is ``None``.
 //| """
 //|
 

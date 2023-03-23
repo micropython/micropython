@@ -176,7 +176,7 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
 
     common_hal_wifi_radio_stop_ap(self);
 
-    // Channel can only be changed after inital powerup and config of ap.
+    // Channel can only be changed after initial powerup and config of ap.
     // Defaults to 1 if not set or invalid (i.e. 13)
     cyw43_wifi_ap_set_channel(&cyw43_state, (const uint32_t)channel);
 

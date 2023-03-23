@@ -157,7 +157,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     // Always initially allocate the UART object within the long-lived heap.
     // This is needed to avoid crashes with certain UART implementations which
-    // cannot accomodate being moved after creation. (See
+    // cannot accommodate being moved after creation. (See
     // https://github.com/adafruit/circuitpython/issues/1056)
     busio_uart_obj_t *self = m_new_ll_obj_with_finaliser(busio_uart_obj_t);
     self->base.type = &busio_uart_type;

@@ -781,7 +781,7 @@ void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bi
 
     bitmaptools_dither_algorithm_info_t *info = algorithms[algorithm];
     // rowdata holds 3 rows of data.  Each one is larger than the input
-    // bitmap's width, beacuse `mx` extra pixels are allocated at the start and
+    // bitmap's width, because `mx` extra pixels are allocated at the start and
     // end of the row so that no conditionals are needed when storing the error data.
     int16_t rowdata[(width + 2 * info->mx) * 3];
     int16_t *rows[3] = {

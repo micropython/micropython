@@ -55,7 +55,7 @@ void common_hal_mcu_disable_interrupts() {
         // Unlike __disable_irq(), this should only be called the first time
         // "is_nested_critical_region" is sd's equivalent of our nesting count
         // so a nested call would store 0 in the global and make the later
-        // exit call not actually reenable interrupts
+        // exit call not actually re-enable interrupts
         //
         // This only disables interrupts of priority 2 through 7; levels 0, 1,
         // and 4, are exclusive to softdevice and should never be used, so

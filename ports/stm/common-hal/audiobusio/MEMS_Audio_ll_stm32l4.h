@@ -148,7 +148,7 @@ typedef struct MemsAudio_STM32L4SAIPDM_t {
     pdm_data_available_t pdm_data_available;
 
     /**
-     * @brief A cound of the number of PDM clients in use.
+     * @brief A count of the number of PDM clients in use.
      */
     uint32_t SAI1_client;
 

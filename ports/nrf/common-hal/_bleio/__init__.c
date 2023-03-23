@@ -249,7 +249,7 @@ void common_hal_bleio_gattc_write(uint16_t handle, uint16_t conn_handle, mp_buff
         }
 
         // Write with response will return NRF_ERROR_BUSY if the response has not been received.
-        // Write without reponse will return NRF_ERROR_RESOURCES if too many writes are pending.
+        // Write without response will return NRF_ERROR_RESOURCES if too many writes are pending.
         if (err_code == NRF_ERROR_BUSY || err_code == NRF_ERROR_RESOURCES) {
             // We could wait for an event indicating the write is complete, but just retrying is easier.
             MICROPY_VM_HOOK_LOOP;

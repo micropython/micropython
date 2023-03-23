@@ -253,7 +253,7 @@ STATIC void emit_write_bytecode_byte_obj(emit_t *emit, int stack_adj, byte b, mp
     emit_write_bytecode_byte(emit, stack_adj, b);
     emit->bytecode_offset = (size_t)MP_ALIGN(emit->bytecode_offset, sizeof(mp_obj_t));
     mp_obj_t *c = (mp_obj_t *)emit_get_cur_to_write_bytecode(emit, sizeof(mp_obj_t));
-    // Verify thar c is already uint-aligned
+    // Verify that c is already uint-aligned
     assert(c == MP_ALIGN(c, sizeof(mp_obj_t)));
     *c = obj;
     #endif
@@ -269,7 +269,7 @@ STATIC void emit_write_bytecode_byte_raw_code(emit_t *emit, int stack_adj, byte 
     emit_write_bytecode_byte(emit, stack_adj, b);
     emit->bytecode_offset = (size_t)MP_ALIGN(emit->bytecode_offset, sizeof(void *));
     void **c = (void **)emit_get_cur_to_write_bytecode(emit, sizeof(void *));
-    // Verify thar c is already uint-aligned
+    // Verify that c is already uint-aligned
     assert(c == MP_ALIGN(c, sizeof(void *)));
     *c = rc;
     #endif

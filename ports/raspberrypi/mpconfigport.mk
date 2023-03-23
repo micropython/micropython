@@ -21,11 +21,11 @@ CIRCUITPY_ROTARYIO ?= 1
 CIRCUITPY_ROTARYIO_SOFTENCODER = 1
 
 # Things that need to be implemented.
-# Use PWM interally
+# Use PWM internally
 CIRCUITPY_FREQUENCYIO = 0
 CIRCUITPY_I2CTARGET = 1
 CIRCUITPY_NVM = 1
-# Use PIO interally
+# Use PIO internally
 CIRCUITPY_PULSEIO ?= 1
 CIRCUITPY_WATCHDOG ?= 1
 

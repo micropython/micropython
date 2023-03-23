@@ -42,7 +42,7 @@
 //|     ) -> None:
 //|         """Create an IncrementalEncoder object associated with the given pins. It tracks the positional
 //|         state of an incremental rotary encoder (also known as a quadrature encoder.) Position is
-//|         relative to the position when the object is contructed.
+//|         relative to the position when the object is constructed.
 //|
 //|         :param ~microcontroller.Pin pin_a: First pin to read pulses from.
 //|         :param ~microcontroller.Pin pin_b: Second pin to read pulses from.

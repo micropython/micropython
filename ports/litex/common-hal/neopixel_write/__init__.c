@@ -72,7 +72,7 @@ static void ledda_init(void) {
     // Set clock register to 12 MHz / 64 kHz - 1
     ledda_write((12000000 / 64000) - 1, LEDDBR);
 
-    // Ensure LED "breathe" effect is diabled
+    // Ensure LED "breathe" effect is disabled
     ledda_write(0, LEDDBCRR);
     ledda_write(0, LEDDBCFR);
 
