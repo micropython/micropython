@@ -32,14 +32,6 @@ msgstr ""
 "\n"
 "Kód byl zastaven kvůli automatickému načtení. K načtení dojde brzy.\n"
 
-#: main.c
-msgid ""
-"\n"
-"Invalid CIRCUITPY_PYSTACK_SIZE\n"
-"\n"
-"\r"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
@@ -192,16 +184,16 @@ msgstr "%q musí být <= %d"
 msgid "%q must be >= %d"
 msgstr "%q musí být >= %d"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-msgid "%q must be array of type 'H'"
-msgstr ""
-
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr ""
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
+msgstr ""
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
 msgstr ""
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
@@ -1241,7 +1233,8 @@ msgstr ""
 msgid "Interrupt error."
 msgstr ""
 
-#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
+#: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr ""
@@ -1263,6 +1256,10 @@ msgstr "Chybný BLE parametr"
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
 msgstr "Chybné BSSID"
+
+#: main.c
+msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
@@ -1534,10 +1531,6 @@ msgstr ""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
 msgstr ""
-
-#: shared-bindings/aesio/aes.c
-msgid "No key was specified"
-msgstr "Nebyl zadán klíč"
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
@@ -1954,7 +1947,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Scan already in progess. Stop with stop_scan."
+msgid "Scan already in progress. Stop with stop_scan."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
@@ -2267,6 +2260,11 @@ msgstr ""
 msgid "Unknown BLE error: %d"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/wifi/__init__.c
+#, c-format
+msgid "Unknown error code %d"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
@@ -2300,11 +2298,6 @@ msgstr ""
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %d"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/wifi/__init__.c
-#, c-format
-msgid "Unkown error code %d"
 msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
@@ -2759,7 +2752,7 @@ msgstr ""
 msgid "can't set attribute"
 msgstr ""
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/Runtime.c
 msgid "can't set attribute '%q'"
 msgstr ""
 
@@ -3059,8 +3052,8 @@ msgid "extra positional arguments given"
 msgstr ""
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
-#: shared-module/gifio/GifWriter.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/gifio/OnDiskGif.c
+#: shared-bindings/synthio/__init__.c shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -4133,10 +4126,6 @@ msgstr ""
 msgid "tobytes can be invoked for dense arrays only"
 msgstr ""
 
-#: shared-module/struct/__init__.c
-msgid "too many arguments provided with the given format"
-msgstr ""
-
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr ""
@@ -4392,6 +4381,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "No key was specified"
+#~ msgstr "Nebyl zadán klíč"
 
 #~ msgid "%q pin invalid"
 #~ msgstr "pin %q není platný"

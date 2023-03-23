@@ -129,14 +129,10 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte *end_p, size
         mp_raise_RuntimeError(translate("buffer too small"));
     }
 
-    size_t i;
+    size_t i = 0;
     byte *p_base = p;
-    for (i = 0; i < n_args;) {
+    while (*fmt) {
         mp_uint_t sz = 1;
-        if (*fmt == '\0') {
-            // more arguments given than used by format string; CPython raises struct.error here
-            mp_raise_RuntimeError(translate("too many arguments provided with the given format"));
-        }
         struct_validate_format(*fmt);
 
         if (unichar_isdigit(*fmt)) {
@@ -144,14 +140,17 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte *end_p, size
         }
 
         if (*fmt == 's') {
-            mp_buffer_info_t bufinfo;
-            mp_get_buffer_raise(args[i++], &bufinfo, MP_BUFFER_READ);
-            mp_uint_t to_copy = sz;
-            if (bufinfo.len < to_copy) {
-                to_copy = bufinfo.len;
+            if (i < n_args) {
+                mp_buffer_info_t bufinfo;
+                mp_get_buffer_raise(args[i], &bufinfo, MP_BUFFER_READ);
+                mp_uint_t to_copy = sz;
+                if (bufinfo.len < to_copy) {
+                    to_copy = bufinfo.len;
+                }
+                memcpy(p, bufinfo.buf, to_copy);
+                memset(p + to_copy, 0, sz - to_copy);
             }
-            memcpy(p, bufinfo.buf, to_copy);
-            memset(p + to_copy, 0, sz - to_copy);
+            i++;
             p += sz;
         } else {
             while (sz--) {
@@ -159,13 +158,16 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte *end_p, size
                 if (*fmt == 'x') {
                     mp_binary_set_val(fmt_type, *fmt, MP_OBJ_NEW_SMALL_INT(0), p_base, &p);
                 } else {
-                    mp_binary_set_val(fmt_type, *fmt, args[i], p_base, &p);
+                    if (i < n_args) {
+                        mp_binary_set_val(fmt_type, *fmt, args[i], p_base, &p);
+                    }
                     i++;
                 }
             }
         }
         fmt++;
     }
+    (void)mp_arg_validate_length(n_args, i, MP_QSTR_values);
 }
 
 mp_obj_tuple_t *shared_modules_struct_unpack_from(mp_obj_t fmt_in, byte *p, byte *end_p, bool exact_size) {

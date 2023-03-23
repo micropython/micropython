@@ -51,6 +51,8 @@ typedef struct {
     uint32_t rgb888;
     const _displayio_colorspace_t *cached_colorspace;
     uint32_t cached_color;
+    uint8_t cached_colorspace_grayscale_bit;
+    bool cached_colorspace_grayscale;
     bool transparent; // This may have additional bits added later for blending.
 } _displayio_color_t;
 

@@ -482,7 +482,7 @@ uint32_t common_hal_frequencyio_frequencyin_get_item(frequencyio_frequencyin_obj
         float time_each_event = self->factor / self->frequency; // get the time for each event during actual period
         float capture_diff = self->factor - self->capture_period; // get the difference of actual and base periods
         // we only need to adjust if the capture_diff can contain 1 or more events
-        // if so, we add how many events could have occured during the diff time
+        // if so, we add how many events could have occurred during the diff time
         if (time_each_event > capture_diff) {
             frequency_adjustment = capture_diff / time_each_event;
         }

@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/gc.h"
 
 enum { ALIGN_BITS = 8 * sizeof(uint32_t) };
 
@@ -48,8 +49,10 @@ void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self,
     self->width = width;
     self->height = height;
     self->stride = stride(width, bits_per_value);
+    self->data_alloc = false;
     if (!data) {
         data = m_malloc(self->stride * height * sizeof(uint32_t), false);
+        self->data_alloc = true;
     }
     self->data = data;
     self->read_only = read_only;
@@ -79,6 +82,16 @@ void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self,
     self->dirty_area.y2 = height;
 }
 
+void common_hal_displayio_bitmap_deinit(displayio_bitmap_t *self) {
+    if (self->data_alloc) {
+        gc_free(self->data);
+    }
+    self->data = NULL;
+}
+
+bool common_hal_displayio_bitmap_deinited(displayio_bitmap_t *self) {
+    return self->data == NULL;
+}
 
 uint16_t common_hal_displayio_bitmap_get_height(displayio_bitmap_t *self) {
     return self->height;
@@ -128,6 +141,9 @@ void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_a
 }
 
 void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only"));
+    }
     // Writes the color index value into a pixel position
     // Must update the dirty area separately
 
@@ -160,6 +176,9 @@ void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y
 
 void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16_t y, displayio_bitmap_t *source,
     int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t skip_index, bool skip_index_none) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only"));
+    }
     // Copy region of "source" bitmap into "self" bitmap at location x,y in the "self"
     // If skip_value is encountered in the source bitmap, it will not be copied.
     // If skip_value is `None`, then all pixels are copied.
@@ -213,6 +232,9 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
 }
 
 void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only"));
+    }
     // update the dirty region
     displayio_area_t a = {x, y, x + 1, y + 1, NULL};
     displayio_bitmap_set_dirty_area(self, &a);
@@ -223,7 +245,7 @@ void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, 
 }
 
 displayio_area_t *displayio_bitmap_get_refresh_areas(displayio_bitmap_t *self, displayio_area_t *tail) {
-    if (self->dirty_area.x1 == self->dirty_area.x2) {
+    if (self->dirty_area.x1 == self->dirty_area.x2 || self->read_only) {
         return tail;
     }
     self->dirty_area.next = tail;
@@ -231,11 +253,17 @@ displayio_area_t *displayio_bitmap_get_refresh_areas(displayio_bitmap_t *self, d
 }
 
 void displayio_bitmap_finish_refresh(displayio_bitmap_t *self) {
+    if (self->read_only) {
+        return;
+    }
     self->dirty_area.x1 = 0;
     self->dirty_area.x2 = 0;
 }
 
 void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only"));
+    }
     displayio_area_t a = {0, 0, self->width, self->height, NULL};
     displayio_bitmap_set_dirty_area(self, &a);
 

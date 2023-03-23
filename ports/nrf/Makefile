@@ -241,7 +241,7 @@ FLASHER ?=
 
 ifeq ($(FLASHER),)
 
-# Also update to bootloader settting to validate application and skip checksum ( app valid = 0x0001, crc = 0x0000 )
+# Also update to bootloader setting to validate application and skip checksum ( app valid = 0x0001, crc = 0x0000 )
 flash: $(BUILD)/firmware.hex
 	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --erasepage $(BOOT_SETTING_ADDR) -f $(MCU_VARIANT)

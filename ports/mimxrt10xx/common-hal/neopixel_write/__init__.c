@@ -64,7 +64,7 @@ void PLACE_IN_ITCM(common_hal_neopixel_write)(const digitalio_digitalinout_obj_t
     const uint32_t pin = digitalinout->pin->number;
 
     __disable_irq();
-    // Use DWT in debug core. Useable when interrupts disabled, as opposed to Systick->VAL
+    // Use DWT in debug core. Usable when interrupts disabled, as opposed to Systick->VAL
     DWT->CYCCNT = 0;
 
     for (;;) {

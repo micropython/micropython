@@ -34,18 +34,6 @@ msgstr ""
 "Le code a été arrêté par l'actualisation automatique. Rechargement "
 "prochain.\n"
 
-#: main.c
-msgid ""
-"\n"
-"Invalid CIRCUITPY_PYSTACK_SIZE\n"
-"\n"
-"\r"
-msgstr ""
-"\n"
-"CIRCUITPY_PYSTACK_SIZE invalide\n"
-"\n"
-"\n"
-
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
@@ -204,10 +192,6 @@ msgstr "%q doit être <= %d"
 msgid "%q must be >= %d"
 msgstr "%q doit être >= %d"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-msgid "%q must be array of type 'H'"
-msgstr ""
-
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr "%q doit être un bytearray ou matrice de type 'H' ou 'B'"
@@ -215,6 +199,10 @@ msgstr "%q doit être un bytearray ou matrice de type 'H' ou 'B'"
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr "%q doit être a bytearray ou array de type 'h', 'H', 'b', ou 'B'"
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr ""
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
@@ -1285,7 +1273,8 @@ msgstr "Le minuteur du watchdog interne a expiré."
 msgid "Interrupt error."
 msgstr "Erreur d'interruption."
 
-#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
+#: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "%q invalide"
@@ -1307,6 +1296,10 @@ msgstr "Paramètre BLE invalide"
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
 msgstr "BSSID invalide"
+
+#: main.c
+msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
@@ -1582,10 +1575,6 @@ msgstr "Programme n'a pas de \"in\""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
 msgstr "Programme n'a aucun \"in\" ni \"out\""
-
-#: shared-bindings/aesio/aes.c
-msgid "No key was specified"
-msgstr "Aucune clé n'a été spécifiée"
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
@@ -2014,8 +2003,8 @@ msgstr "La dimension d'échelle doit être un multiple de 3"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Scan already in progess. Stop with stop_scan."
-msgstr "Scan déjà en cours. Arrêtez avec stop_scan."
+msgid "Scan already in progress. Stop with stop_scan."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -2334,6 +2323,11 @@ msgstr "Erreur BLE inconnue à %s:%d : %d"
 msgid "Unknown BLE error: %d"
 msgstr "Erreur BLE inconnue : %d"
 
+#: ports/raspberrypi/common-hal/wifi/__init__.c
+#, c-format
+msgid "Unknown error code %d"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
@@ -2368,11 +2362,6 @@ msgstr "Faute inconnue du logiciel système : %04x"
 #, c-format
 msgid "Unknown system firmware error: %d"
 msgstr "Erreur du logiciel système inconnue : %d"
-
-#: ports/raspberrypi/common-hal/wifi/__init__.c
-#, c-format
-msgid "Unkown error code %d"
-msgstr "Erreur inconnue %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #: shared-module/_pixelmap/PixelMap.c
@@ -2841,7 +2830,7 @@ msgstr "impossible de définir une taille de bloc de 512"
 msgid "can't set attribute"
 msgstr "attribut non modifiable"
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/Runtime.c
 msgid "can't set attribute '%q'"
 msgstr "attribut '%q' non modifiable"
 
@@ -3153,8 +3142,8 @@ msgid "extra positional arguments given"
 msgstr "argument(s) positionnel(s) supplémentaire(s) donné(s)"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
-#: shared-module/gifio/GifWriter.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/gifio/OnDiskGif.c
+#: shared-bindings/synthio/__init__.c shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
 
@@ -4240,10 +4229,6 @@ msgstr "timestamp hors bornes pour 'time_t' de la plateforme"
 msgid "tobytes can be invoked for dense arrays only"
 msgstr "tobytes ne peut être appelée que pour des matrices dense"
 
-#: shared-module/struct/__init__.c
-msgid "too many arguments provided with the given format"
-msgstr "trop d'arguments fournis avec ce format"
-
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr "Trop de dimensions"
@@ -4499,6 +4484,30 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "No key was specified"
+#~ msgstr "Aucune clé n'a été spécifiée"
+
+#~ msgid "Scan already in progess. Stop with stop_scan."
+#~ msgstr "Scan déjà en cours. Arrêtez avec stop_scan."
+
+#, c-format
+#~ msgid "Unkown error code %d"
+#~ msgstr "Erreur inconnue %d"
+
+#~ msgid "too many arguments provided with the given format"
+#~ msgstr "trop d'arguments fournis avec ce format"
+
+#~ msgid ""
+#~ "\n"
+#~ "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ "\n"
+#~ "\r"
+#~ msgstr ""
+#~ "\n"
+#~ "CIRCUITPY_PYSTACK_SIZE invalide\n"
+#~ "\n"
+#~ "\n"
 
 #~ msgid "Supply at least one UART pin"
 #~ msgstr "Fournissez au moins une broche UART"

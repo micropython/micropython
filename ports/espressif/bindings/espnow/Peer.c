@@ -32,7 +32,7 @@
 #include "common-hal/espnow/__init__.h"
 
 // TODO: check peer already exist
-// TODO: check peer dosen't exist
+// TODO: check peer doesn't exist
 
 //| class Peer:
 //|     """A data class to store parameters specific to a peer."""

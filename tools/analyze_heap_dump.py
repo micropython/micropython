@@ -446,7 +446,7 @@ def do_all_the_things(
                     current_allocation = 1
                 elif block_state == AT_TAIL and current_allocation > 0:
                     # In gc_free the logging happens before the tail is freed. So checking
-                    # current_allocation > 0 ensures we only extend an allocation thats started.
+                    # current_allocation > 0 ensures we only extend an allocation that's started.
                     current_allocation += 1
                 longest_free = max(longest_free, current_free)
         # if current_free > 0:

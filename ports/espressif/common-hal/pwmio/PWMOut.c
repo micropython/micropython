@@ -197,7 +197,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (!taken || self->variable_frequency) {
         ledc_timer_rst(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num);
         reserved_timer_freq[self->tim_handle.timer_num] = 0;
-        // if timer isn't varfreq this will be off aleady
+        // if timer isn't varfreq this will be off already
         varfreq_timers[self->tim_handle.timer_num] = false;
         never_reset_tim[self->tim_handle.timer_num] = false;
     }
