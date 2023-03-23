@@ -153,6 +153,7 @@ void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, pyb_file_obj_
     self->frame_count = info.iFrameCount;
     self->min_delay = info.iMinDelay;
     self->max_delay = info.iMaxDelay;
+}
 
 void common_hal_gifio_ondiskgif_deinit(gifio_ondiskgif_t *self) {
     self->file = NULL;
