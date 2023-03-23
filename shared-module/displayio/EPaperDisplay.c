@@ -60,6 +60,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t 
     const mcu_pin_obj_t *busy_pin, bool busy_state, mp_float_t seconds_per_frame,
     bool chip_select, bool grayscale, bool acep, bool two_byte_sequence_length) {
     uint16_t color_depth = 1;
+    bool core_grayscale = true;
     if (highlight_color != 0x000000) {
         self->core.colorspace.tricolor = true;
         self->core.colorspace.tricolor_hue = displayio_colorconverter_compute_hue(highlight_color);
@@ -70,9 +71,10 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t 
         color_depth = 4; // bits. 7 colors + clean
         self->acep = acep;
         grayscale = false;
+        core_grayscale = false;
     }
 
-    displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation, color_depth, grayscale, true, 1, true, true);
+    displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation, color_depth, core_grayscale, true, 1, true, true);
 
     self->set_column_window_command = set_column_window_command;
     self->set_row_window_command = set_row_window_command;
@@ -340,7 +342,7 @@ STATIC bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t *
             memset(mask, 0, mask_length * sizeof(mask[0]));
             memset(buffer, 0, buffer_size * sizeof(buffer[0]));
 
-            if (self->grayscale) {
+            if (!self->acep) {
                 self->core.colorspace.grayscale = true;
                 self->core.colorspace.grayscale_bit = 7;
             }
