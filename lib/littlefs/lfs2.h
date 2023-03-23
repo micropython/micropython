@@ -159,34 +159,34 @@ struct lfs2_config {
     // information to the block device operations
     void *context;
 
-    // Read a region in a block. Negative error codes are propagated
+    // Read a region in a block. Negative error codes are propogated
     // to the user.
     int (*read)(const struct lfs2_config *c, lfs2_block_t block,
             lfs2_off_t off, void *buffer, lfs2_size_t size);
 
     // Program a region in a block. The block must have previously
-    // been erased. Negative error codes are propagated to the user.
+    // been erased. Negative error codes are propogated to the user.
     // May return LFS2_ERR_CORRUPT if the block should be considered bad.
     int (*prog)(const struct lfs2_config *c, lfs2_block_t block,
             lfs2_off_t off, const void *buffer, lfs2_size_t size);
 
     // Erase a block. A block must be erased before being programmed.
     // The state of an erased block is undefined. Negative error codes
-    // are propagated to the user.
+    // are propogated to the user.
     // May return LFS2_ERR_CORRUPT if the block should be considered bad.
     int (*erase)(const struct lfs2_config *c, lfs2_block_t block);
 
     // Sync the state of the underlying block device. Negative error codes
-    // are propagated to the user.
+    // are propogated to the user.
     int (*sync)(const struct lfs2_config *c);
 
 #ifdef LFS2_THREADSAFE
     // Lock the underlying block device. Negative error codes
-    // are propagated to the user.
+    // are propogated to the user.
     int (*lock)(const struct lfs2_config *c);
 
     // Unlock the underlying block device. Negative error codes
-    // are propagated to the user.
+    // are propogated to the user.
     int (*unlock)(const struct lfs2_config *c);
 #endif
 
@@ -479,7 +479,7 @@ int lfs2_stat(lfs2_t *lfs2, const char *path, struct lfs2_info *info);
 // Returns the size of the attribute, or a negative error code on failure.
 // Note, the returned size is the size of the attribute on disk, irrespective
 // of the size of the buffer. This can be used to dynamically allocate a buffer
-// or check for existence.
+// or check for existance.
 lfs2_ssize_t lfs2_getattr(lfs2_t *lfs2, const char *path,
         uint8_t type, void *buffer, lfs2_size_t size);
 

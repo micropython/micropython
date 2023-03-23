@@ -1449,7 +1449,7 @@ static int lfs2_dir_alloc(lfs2_t *lfs2, lfs2_mdir_t *dir) {
         }
     }
 
-    // zero for reproducibility in case initial block is unreadable
+    // zero for reproducability in case initial block is unreadable
     dir->rev = 0;
 
     // rather than clobbering one of the blocks we just pretend
@@ -1643,7 +1643,7 @@ static int lfs2_dir_compact(lfs2_t *lfs2,
                     return err;
                 }
 
-                // whelp, we tried, if we ran out of space there's not much
+                // welp, we tried, if we ran out of space there's not much
                 // we can do, we'll error later if we've become frozen
                 if (!err) {
                     end = begin;
@@ -4037,7 +4037,7 @@ static int lfs2_fs_relocate(lfs2_t *lfs2,
             lfs2_fs_prepmove(lfs2, 0x3ff, NULL);
         }
 
-        // replace bad pair, either we clean up desync, or no desync occurred
+        // replace bad pair, either we clean up desync, or no desync occured
         lfs2_pair_tole32(newpair);
         err = lfs2_dir_commit(lfs2, &parent, LFS2_MKATTRS(
                 {LFS2_MKTAG_IF(moveid != 0x3ff,

@@ -597,7 +597,7 @@ next_blk:
 
         if (res == TINF_DONE && !d->bfinal) {
             /* the block has ended (without producing more data), but we
-               can't return without data, so start processing next block */
+               can't return without data, so start procesing next block */
             goto next_blk;
         }
 

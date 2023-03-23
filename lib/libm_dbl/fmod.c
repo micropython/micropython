@@ -9,7 +9,7 @@ double fmod(double x, double y)
 	int sx = ux.i>>63;
 	uint64_t i;
 
-	/* in the following uxi should be ux.i, but then gcc wrongly adds */
+	/* in the followings uxi should be ux.i, but then gcc wrongly adds */
 	/* float load/store to inner loops ruining performance and code size */
 	uint64_t uxi = ux.i;
 

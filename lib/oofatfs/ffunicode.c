@@ -3,7 +3,7 @@
 /*------------------------------------------------------------------------*/
 /* This module will occupy a huge memory in the .const section when the    /
 /  FatFs is configured for LFN with DBCS. If the system has any Unicode    /
-/  utility for the code conversion, this module should be modified to use /
+/  utilitiy for the code conversion, this module should be modified to use /
 /  that function to avoid silly memory consumption.                        /
 /-------------------------------------------------------------------------*/
 /*
