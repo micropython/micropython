@@ -123,7 +123,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     rmt_config_t config = RMT_DEFAULT_CONFIG_RX(pin->number, channel);
     config.rx_config.filter_en = true;
     config.rx_config.idle_threshold = 30000; // 30*3=90ms idle required to register a sequence
-    config.clk_div = 240; // All measurements are divided by 3 to accomodate 65ms pulses
+    config.clk_div = 240; // All measurements are divided by 3 to accommodate 65ms pulses
     rmt_config(&config);
     rmt_driver_install(channel, 1000, 0); // TODO: pick a more specific buffer size?
 

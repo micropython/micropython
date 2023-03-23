@@ -523,7 +523,7 @@ def main():
         description="Generate documentation for pyboard API from C files."
     )
     cmd_parser.add_argument(
-        "--outdir", metavar="<output dir>", default="gendoc-out", help="ouput directory"
+        "--outdir", metavar="<output dir>", default="gendoc-out", help="output directory"
     )
     cmd_parser.add_argument("--format", default="html", help="output format: html or rst")
     cmd_parser.add_argument("files", nargs="+", help="input files")

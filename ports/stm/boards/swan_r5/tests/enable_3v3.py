@@ -5,7 +5,7 @@ import digitalio
 import supervisor
 import time
 
-# Scenario: Enable 3V3 pin defintiion
+# Scenario: Enable 3V3 pin definition
 # Then the symbol "board.ENABLE_3V3" is defined
 assert board.ENABLE_3V3 is not None
 
