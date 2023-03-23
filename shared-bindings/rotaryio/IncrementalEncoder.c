@@ -76,7 +76,7 @@ STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, 
     const mcu_pin_obj_t *pin_b = validate_obj_is_free_pin(args[ARG_pin_b].u_obj, MP_QSTR_pin_b);
 
     // Make long-lived because some implementations use a pointer to the object as interrupt-handler data.
-    rotaryio_incrementalencoder_obj_t *self = m_new_ll_obj(rotaryio_incrementalencoder_obj_t);
+    rotaryio_incrementalencoder_obj_t *self = m_new_ll_obj_with_finaliser(rotaryio_incrementalencoder_obj_t);
     self->base.type = &rotaryio_incrementalencoder_type;
 
     common_hal_rotaryio_incrementalencoder_construct(self, pin_a, pin_b);
@@ -171,6 +171,7 @@ MP_PROPERTY_GETSET(rotaryio_incrementalencoder_position_obj,
 STATIC const mp_rom_map_elem_t rotaryio_incrementalencoder_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&rotaryio_incrementalencoder_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&rotaryio_incrementalencoder_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&rotaryio_incrementalencoder___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_position), MP_ROM_PTR(&rotaryio_incrementalencoder_position_obj) },
