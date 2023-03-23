@@ -119,8 +119,3 @@ void claim_pin(const mcu_pin_obj_t *pin) {
 void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
     common_hal_reset_pin((mcu_pin_obj_t *)(mcu_pin_globals.map.table[pin_no].value));
 }
-
-// The 'data' pointers may be to gc objects, they must be kept alive.
-void pin_gc_collect() {
-    gc_collect_root((void **)&pcid, sizeof(pcid) / sizeof(void *));
-}

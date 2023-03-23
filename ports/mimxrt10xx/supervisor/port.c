@@ -555,10 +555,6 @@ void port_idle_until_interrupt(void) {
     common_hal_mcu_enable_interrupts();
 }
 
-void port_gc_collect(void) {
-    pin_gc_collect();
-}
-
 // Catch faults where the memory access violates MPU settings.
 void MemManage_Handler(void);
 __attribute__((used)) void PLACE_IN_ITCM(MemManage_Handler)(void) {

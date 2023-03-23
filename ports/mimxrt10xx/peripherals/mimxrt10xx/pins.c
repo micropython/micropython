@@ -1,5 +1,10 @@
 #include "peripherals/mimxrt10xx/pins.h"
 
+typedef struct {
+    gpio_change_interrupt_t *func;
+    void *data;
+} pin_change_interrupt_data;
+
 /* Array of GPIO peripheral base address. */
 static GPIO_Type *const s_gpioBases[] = GPIO_BASE_PTRS;
 static uint32_t GPIO_GetInstance(GPIO_Type *base) {
@@ -23,7 +28,7 @@ static uint32_t GPIO_GetInstance(GPIO_Type *base) {
 static const IRQn_Type low_irqs[] = GPIO_COMBINED_LOW_IRQS;
 static const IRQn_Type high_irqs[] = GPIO_COMBINED_HIGH_IRQS;
 
-volatile pin_change_interrupt_data pcid[MP_ARRAY_SIZE(s_gpioBases)][32];
+static volatile pin_change_interrupt_data pcid[MP_ARRAY_SIZE(s_gpioBases)][32];
 
 void enable_pin_change_interrupt(const mcu_pin_obj_t *pin, gpio_change_interrupt_t func, void *data) {
     int instance = GPIO_GetInstance(pin->gpio);
