@@ -187,10 +187,6 @@ msgstr "%q muss <= %d sein"
 msgid "%q must be >= %d"
 msgstr "%q muss >= %d sein"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-msgid "%q must be array of type 'H'"
-msgstr ""
-
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr ""
@@ -199,6 +195,10 @@ msgstr ""
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 "%q muss ein Byte-Array oder ein array vom Typ 'h', 'H', 'b', oder 'B' sein"
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr ""
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
@@ -1252,7 +1252,8 @@ msgstr "Der Interne WatchDog Timer ist abgelaufen."
 msgid "Interrupt error."
 msgstr ""
 
-#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
+#: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "Ungültiger %q"
@@ -1550,10 +1551,6 @@ msgstr "Nicht in Programm"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
 msgstr "Kein Ein oder Aus in Programm"
-
-#: shared-bindings/aesio/aes.c
-msgid "No key was specified"
-msgstr "Es wurde kein Schlüssel angegeben"
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
@@ -1979,8 +1976,8 @@ msgstr "Maßstabs-Abmeßungen müssen durch 3 teilbar sein"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Scan already in progess. Stop with stop_scan."
-msgstr "Scannen bereits in Bearbeitung. Stoppe mit stop_scan."
+msgid "Scan already in progress. Stop with stop_scan."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -2298,6 +2295,11 @@ msgstr "Unbekannter BLE-Fehler bei %s:%d: %d"
 msgid "Unknown BLE error: %d"
 msgstr "Unbekannter BLE-Fehler: %d"
 
+#: ports/raspberrypi/common-hal/wifi/__init__.c
+#, c-format
+msgid "Unknown error code %d"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
@@ -2332,11 +2334,6 @@ msgstr "Unbekannter Systemfirmware Fehler: %04x"
 #, c-format
 msgid "Unknown system firmware error: %d"
 msgstr "Unbekannter System-Firmware-Fehler: %d"
-
-#: ports/raspberrypi/common-hal/wifi/__init__.c
-#, c-format
-msgid "Unkown error code %d"
-msgstr "Unbekannter Fehlercode %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #: shared-module/_pixelmap/PixelMap.c
@@ -2808,7 +2805,7 @@ msgstr "Kann Blockgröße von 512 nicht setzen"
 msgid "can't set attribute"
 msgstr "kann Attribut nicht setzen"
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/Runtime.c
 msgid "can't set attribute '%q'"
 msgstr ""
 
@@ -3116,8 +3113,8 @@ msgid "extra positional arguments given"
 msgstr "Es wurden zusätzliche Argumente ohne Schlüsselwort angegeben"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
-#: shared-module/gifio/GifWriter.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/gifio/OnDiskGif.c
+#: shared-bindings/synthio/__init__.c shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr "Die Datei muss eine im Byte-Modus geöffnete Datei sein"
 
@@ -4203,10 +4200,6 @@ msgstr "Zeitstempel außerhalb des Bereichs für Plattform time_t"
 msgid "tobytes can be invoked for dense arrays only"
 msgstr "tobytes kann nur für dichte Arrays aufgerufen werden"
 
-#: shared-module/struct/__init__.c
-msgid "too many arguments provided with the given format"
-msgstr "zu viele Argumente mit dem angegebenen Format"
-
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr "zu viele Dimensionen"
@@ -4464,6 +4457,19 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "No key was specified"
+#~ msgstr "Es wurde kein Schlüssel angegeben"
+
+#~ msgid "Scan already in progess. Stop with stop_scan."
+#~ msgstr "Scannen bereits in Bearbeitung. Stoppe mit stop_scan."
+
+#, c-format
+#~ msgid "Unkown error code %d"
+#~ msgstr "Unbekannter Fehlercode %d"
+
+#~ msgid "too many arguments provided with the given format"
+#~ msgstr "zu viele Argumente mit dem angegebenen Format"
 
 #~ msgid ""
 #~ "\n"
