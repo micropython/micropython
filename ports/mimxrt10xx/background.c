@@ -35,9 +35,6 @@ void PLACE_IN_ITCM(port_background_task)(void) {
 }
 
 void port_background_tick(void) {
-    #if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
-    audio_dma_background();
-    #endif
 }
 
 void port_start_background_task(void) {
