@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-03-09 10:38+0000\n"
+"PO-Revision-Date: 2023-03-23 17:26+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -1292,7 +1292,7 @@ msgstr "BSSID inválido"
 
 #: main.c
 msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-msgstr ""
+msgstr "CIRCUITPY_PYSTACK_SIZE inválido\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
