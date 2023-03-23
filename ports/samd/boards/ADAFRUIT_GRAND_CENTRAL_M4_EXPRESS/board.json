@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Micro USB",
+        "RGB LED",
+        "SPI Flash"
+    ],
+    "mcu": "samd51",
+    "product": "Grand Central M4 Express",
+    "images": [
+        "grand_central_m4_express.jpg"
+    ],
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/4064",
+    "vendor": "Adafruit"
+}
