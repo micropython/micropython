@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-03-08 07:10+0000\n"
+"PO-Revision-Date: 2023-03-23 17:26+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1273,7 +1273,7 @@ msgstr "Ogiltig BSSID"
 
 #: main.c
 msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-msgstr ""
+msgstr "Ogiltig CIRCUITPY_PYSTACK_SIZE\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
