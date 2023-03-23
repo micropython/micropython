@@ -45,9 +45,6 @@ extern const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[];
 // the port-default reset behavior.
 extern bool mimxrt10xx_board_reset_pin_number(const mcu_pin_obj_t *pin);
 
-typedef void (gpio_change_interrupt_t)(void *data);
-void disable_pin_change_interrupt(const mcu_pin_obj_t *pin);
-void enable_pin_change_interrupt(const mcu_pin_obj_t *pin, gpio_change_interrupt_t func, void *data);
 void pin_gc_collect(void);
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_MICROCONTROLLER_PIN_H

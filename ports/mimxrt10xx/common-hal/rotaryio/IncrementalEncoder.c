@@ -33,7 +33,7 @@
 
 #include "py/runtime.h"
 
-#include "fsl_gpio.h"
+#include "sdk/drivers/igpio/fsl_gpio.h"
 static void encoder_change(void *self_in) {
     rotaryio_incrementalencoder_obj_t *self = self_in;
 
