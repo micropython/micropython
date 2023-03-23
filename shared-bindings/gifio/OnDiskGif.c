@@ -268,6 +268,17 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_max_delay_obj, gifio_ondiskgif_obj
 MP_PROPERTY_GETTER(gifio_ondiskgif_max_delay_obj,
     (mp_obj_t)&gifio_ondiskgif_get_max_delay_obj);
 
+//|     def deinit(self) -> None:
+//|         """Release resources allocated by OnDiskGif."""
+//|         ...
+//|
+STATIC mp_obj_t gifio_ondiskgif_obj_deinit(mp_obj_t self_in) {
+    gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_gifio_ondiskgif_deinit(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_deinit_obj, gifio_ondiskgif_obj_deinit);
+
 STATIC const mp_rom_map_elem_t gifio_ondiskgif_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&gifio_ondiskgif_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
