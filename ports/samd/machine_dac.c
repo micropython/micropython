@@ -72,7 +72,8 @@ static uint8_t dac_vref_table[] = {
 #define MAX_DAC_VALUE       (4095)
 #define DEFAULT_DAC_VREF    (2)
 #define MAX_DAC_VREF        (3)
-static bool dac_init = false;
+static bool dac_init[2] = {false, false};
+
 #endif
 
 
@@ -91,10 +92,10 @@ static mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
     uint8_t id = args[ARG_id].u_int;
     dac_obj_t *self = NULL;
-    if (0 <= id && id <= MP_ARRAY_SIZE(dac_obj)) {
+    if (0 <= id && id < MP_ARRAY_SIZE(dac_obj)) {
         self = &dac_obj[id];
     } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid Pin for DAC"));
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid id for DAC"));
     }
 
     uint8_t vref = args[ARG_vref].u_int;
@@ -102,9 +103,10 @@ static mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         self->vref = vref;
     }
 
-    Dac *dac = dac_bases[0]; // Just one DAC
+    Dac *dac = dac_bases[0]; // Just one DAC register block
 
-    // Init DAC
+    // initialize DAC
+
     #if defined(MCU_SAMD21)
 
     // Configuration SAMD21
@@ -127,21 +129,39 @@ static mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
     // Configuration SAMD51
     // Enable APBD clocks and PCHCTRL clocks; GCLK3 at 8 MHz
-    dac_init = true;
-    MCLK->APBDMASK.reg |= MCLK_APBDMASK_DAC;
-    GCLK->PCHCTRL[DAC_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK3 | GCLK_PCHCTRL_CHEN;
 
-    // Reset DAC registers
-    dac->CTRLA.bit.SWRST = 1;
-    while (dac->CTRLA.bit.SWRST) {
-    }
-    dac->CTRLB.reg = DAC_CTRLB_REFSEL(dac_vref_table[self->vref]);
-    dac->DACCTRL[self->id].reg = DAC_DACCTRL_ENABLE | DAC_DACCTRL_REFRESH(2) | DAC_DACCTRL_CCTRL_CC12M;
+    if (!(dac_init[0] | dac_init[1])) {
+        MCLK->APBDMASK.reg |= MCLK_APBDMASK_DAC;
+        GCLK->PCHCTRL[DAC_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK3 | \
+            GCLK_PCHCTRL_CHEN;
 
-    // Enable DAC and wait to be ready
-    dac->CTRLA.bit.ENABLE = 1;
-    while (dac->SYNCBUSY.bit.ENABLE) {
+        // Reset DAC registers
+        dac->CTRLA.bit.SWRST = 1;
+        while (dac->CTRLA.bit.SWRST) {
+        }
+        dac->CTRLB.reg = DAC_CTRLB_REFSEL(dac_vref_table[self->vref]);
+
     }
+
+    // Modify DAC config - requires disabling see Section 47.6.2.3 of data sheet
+    if (!dac_init[self->id]) {
+        // Disable DAC and wait
+        dac->CTRLA.bit.ENABLE = 0;
+        while (dac->SYNCBUSY.bit.ENABLE) {
+        }
+
+        // Modify configuration
+        dac->DACCTRL[self->id].reg = DAC_DACCTRL_ENABLE | \
+            DAC_DACCTRL_REFRESH(2) | DAC_DACCTRL_CCTRL_CC12M;
+        dac->DATA[self->id].reg = 0;
+        dac_init[self->id] = true;
+
+        // Enable DAC and wait
+        dac->CTRLA.bit.ENABLE = 1;
+        while (dac->SYNCBUSY.bit.ENABLE) {
+        }
+    }
+
     #endif
 
     // Set the port as given in self->gpio_id as DAC
