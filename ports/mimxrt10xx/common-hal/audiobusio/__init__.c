@@ -38,11 +38,6 @@
 #define SAI_CLOCK_FREQ (CLOCK_GetFreq(kCLOCK_AudioPllClk) / (SAI_CLOCK_SOURCE_DIVIDER + 1U) / \
     (SAI_CLOCK_SOURCE_PRE_DIVIDER + 1U))
 
-// must match what's in clocks.c (but that's a C file so there's no way to include it)
-// This is 480MMHz * (18/17) / 8 (around 63.5MHz) and there's no partiuclar
-// logic to this value that I was able to determine.
-#define BOARD_BOOTCLOCKRUN_SAI1_CLK_ROOT 63529411UL
-
 #define AUDIO_BUFFER_FRAME_COUNT (128) // in uint32_t; there are 4, giving 2048 bytes. In all they hold 10ms @ stereo 16-bit 48kHz before all buffers drain
 
 /*
