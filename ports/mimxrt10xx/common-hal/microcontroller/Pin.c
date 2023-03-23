@@ -29,6 +29,8 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
+#include "py/gc.h"
+
 STATIC bool claimed_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
 STATIC bool never_reset_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
 
@@ -85,6 +87,7 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
         return;
     }
 
+    disable_pin_change_interrupt(pin);
     never_reset_pins[pin->mux_idx] = false;
     claimed_pins[pin->mux_idx] = false;
     *(uint32_t *)pin->mux_reg = pin->mux_reset;

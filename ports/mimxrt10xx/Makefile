@@ -137,6 +137,7 @@ SRC_C += \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/clocks.c \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/periph.c \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/pins.c \
+	peripherals/mimxrt10xx/pins.c \
 	reset.c \
 	supervisor/flexspi_nor_flash_ops.c
 
