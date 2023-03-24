@@ -120,14 +120,16 @@ STATIC void mvlsb_fill_rect(const mp_obj_framebuf_t *fb, unsigned int x, unsigne
 // Functions for RGB565 format
 
 STATIC void rgb565_setpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, uint32_t col) {
-    ((uint16_t *)fb->buf)[x + y * fb->stride] = col;
+    ((uint16_t *)fb->buf)[x + y * fb->stride] = (col << 8) | (col >> 8);
 }
 
 STATIC uint32_t rgb565_getpixel(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y) {
-    return ((uint16_t *)fb->buf)[x + y * fb->stride];
+    uint16_t col = ((uint16_t *)fb->buf)[x + y * fb->stride];
+    return (col << 8) | (col >> 8);
 }
 
 STATIC void rgb565_fill_rect(const mp_obj_framebuf_t *fb, unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint32_t col) {
+    col = (col << 8) | (col >> 8);
     uint16_t *b = &((uint16_t *)fb->buf)[x + y * fb->stride];
     while (h--) {
         for (unsigned int ww = w; ww; --ww) {
