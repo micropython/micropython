@@ -415,11 +415,12 @@ otherwise.
 
 .. method:: deinit()
 
-Deinitialize the DAC and release the resources used by it, especially the DMA channel
-and the Timer. On most SAMD21 boards, there is just one timer available for
+Deinitialize the DAC and release all resources used by it, especially the DMA channels
+and the Timers. On most SAMD21 boards, there is just one timer available for
 dac.write_timed() and adc.read_timed_into(). So they cannot run both at the same time,
 and releasing the timer may be important. The DAC driver consumes a substantial amount
-of current. deinit() will reduce that as well.
+of current. deinit() will reduce that as well. After calling deinit(), the
+DAC objects cannot be used any more and must be recreated.
 
 
 Software SPI bus
