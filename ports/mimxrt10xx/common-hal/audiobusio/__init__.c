@@ -284,7 +284,6 @@ static void i2s_fill_buffer(i2s_t *self) {
 
 static void i2s_callback_fun(void *self_in) {
     i2s_t *self = self_in;
-    mp_printf(&mp_plat_print, ".");
     i2s_fill_buffer(self);
 }
 
