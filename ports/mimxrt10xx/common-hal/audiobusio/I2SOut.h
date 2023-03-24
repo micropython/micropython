@@ -26,13 +26,12 @@
 
 #pragma once
 
+// Some boards don't implement I2SOut, so suppress any routines from here.
 #if CIRCUITPY_AUDIOBUSIO_I2SOUT
 #include "supervisor/background_callback.h"
 #include "common-hal/microcontroller/Pin.h"
 
 #include "common-hal/audiobusio/__init__.h"
-
-// Some boards don't implement I2SOut, so suppress any routines from here.
 
 typedef struct {
     mp_obj_base_t base;
