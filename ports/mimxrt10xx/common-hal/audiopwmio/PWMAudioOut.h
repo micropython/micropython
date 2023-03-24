@@ -32,8 +32,6 @@
 
 #include "common-hal/audiobusio/__init__.h"
 
-// Some boards don't implement I2SOut, so suppress any routines from here.
-
 typedef struct {
     mp_obj_base_t base;
     i2s_t i2s;
