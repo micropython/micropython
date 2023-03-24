@@ -1,6 +1,9 @@
 freeze("$(PORT_DIR)/modules")
 include("$(MPY_DIR)/extmod/uasyncio")
 
+package("ST7735", base_path="$(PORT_DIR)/libraries")
+package("CircuitOS", base_path="$(PORT_DIR)/libraries")
+
 # Useful networking-related packages.
 require("bundle-networking")
 
