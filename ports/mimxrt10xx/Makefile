@@ -119,6 +119,7 @@ SRC_SDK := \
 	drivers/lpuart/fsl_lpuart.c \
 	drivers/ocotp/fsl_ocotp.c \
 	drivers/pwm/fsl_pwm.c \
+	drivers/sai/fsl_sai.c \
 	drivers/snvs_hp/fsl_snvs_hp.c \
 	drivers/snvs_lp/fsl_snvs_lp.c \
 	drivers/tempmon/fsl_tempmon.c \
@@ -136,6 +137,7 @@ SRC_C += \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/clocks.c \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/periph.c \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/pins.c \
+	peripherals/mimxrt10xx/pins.c \
 	reset.c \
 	supervisor/flexspi_nor_flash_ops.c
 
@@ -146,11 +148,6 @@ SRC_C += \
 
 endif
 
-# TODO
-#ifeq ($(CIRCUITPY_AUDIOBUSIO),1)
-#SRC_C += peripherals/samd/i2s.c peripherals/samd/$(CHIP_FAMILY)/i2s.c
-#endif
-#
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
                           $(addprefix common-hal/, $(SRC_COMMON_HAL))

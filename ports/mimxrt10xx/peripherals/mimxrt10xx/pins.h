@@ -72,6 +72,10 @@ typedef struct {
         .pad_reset = p_pad_reset, \
     }
 
+typedef void (gpio_change_interrupt_t)(void *data);
+void disable_pin_change_interrupt(const mcu_pin_obj_t *pin);
+void enable_pin_change_interrupt(const mcu_pin_obj_t *pin, gpio_change_interrupt_t func, void *data);
+
 #ifdef MIMXRT1011_SERIES
 #include "MIMXRT1011/pins.h"
 #elif defined(MIMXRT1021_SERIES)

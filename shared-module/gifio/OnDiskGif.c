@@ -32,6 +32,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
+
 static int32_t GIFReadFile(GIFFILE *pFile, uint8_t *pBuf, int32_t iLen) {
     // mp_printf(&mp_plat_print, "GifReadFile len %d ", iLen);
     uint32_t iBytesRead;
@@ -153,8 +154,16 @@ void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, pyb_file_obj_
     self->frame_count = info.iFrameCount;
     self->min_delay = info.iMinDelay;
     self->max_delay = info.iMaxDelay;
+}
 
-    // mp_printf(&mp_plat_print, "GIF_init returned %d %x\n", result, bitmap->data);
+void common_hal_gifio_ondiskgif_deinit(gifio_ondiskgif_t *self) {
+    self->file = NULL;
+    common_hal_displayio_bitmap_deinit(self->bitmap);
+    self->bitmap = NULL;
+}
+
+bool common_hal_gifio_ondiskgif_deinited(gifio_ondiskgif_t *self) {
+    return self->bitmap == NULL;
 }
 
 uint16_t common_hal_gifio_ondiskgif_get_height(gifio_ondiskgif_t *self) {

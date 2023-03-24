@@ -44,7 +44,7 @@ typedef struct {
 } i2s_lcd_config_t;
 
 /**
- * @brief Initilize i2s lcd driver.
+ * @brief Initialize i2s lcd driver.
  *
  * @param config configuration of i2s
  *

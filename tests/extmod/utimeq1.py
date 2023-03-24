@@ -125,7 +125,7 @@ assert edge_case(MODULO_HALF - 1, -100) == diff
 
 # We expect diff to be always positive, per the definition of heappop() which should return
 # the smallest value.
-# This is the edge case where this invariant breaks, due to assymetry of two's-complement
+# This is the edge case where this invariant breaks, due to asymmetry of two's-complement
 # range - there's one more negative integer than positive, so heappushing values like below
 # will then make ticks_diff() return the minimum negative value. We could make heappop
 # return them in a different order, but ticks_diff() result would be the same. Conclusion:

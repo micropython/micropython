@@ -128,4 +128,8 @@ void port_post_boot_py(bool heap_valid);
 // A default weak implementation is provided that does nothing.
 void port_boot_info(void);
 
+// Some ports want to mark additional pointers as gc roots.
+// A default weak implementation is provided that does nothing.
+void port_gc_collect(void);
+
 #endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

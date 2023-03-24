@@ -150,7 +150,7 @@ struct bt_att_read_mult_req {
     uint16_t handles[];
 } __packed;
 
-/* Read Multiple Respose */
+/* Read Multiple Response */
 #define BT_ATT_OP_READ_MULT_RSP                 0x0f
 struct bt_att_read_mult_rsp {
     uint8_t _dummy[0];
@@ -243,7 +243,7 @@ struct bt_att_read_mult_vl_req {
     uint16_t handles[];
 } __packed;
 
-/* Read Multiple Respose */
+/* Read Multiple Response */
 #define BT_ATT_OP_READ_MULT_VL_RSP              0x21
 struct bt_att_read_mult_vl_rsp {
     uint16_t len;

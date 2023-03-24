@@ -59,6 +59,7 @@ INC += -I. \
 ifeq ($(CHIP_FAMILY), samd21)
 PERIPHERALS_CHIP_FAMILY=samd21
 OPTIMIZATION_FLAGS ?= -Os
+
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD21 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=128 -DCFG_TUD_MSC_BUFSIZE=512
 endif
@@ -101,24 +102,26 @@ ifeq ($(DEBUG), 1)
   endif
 else
   CFLAGS += -DNDEBUG
-  # -finline-limit can shrink the image size.
-  # -finline-limit=80 or so is similar to not having it on.
-  # There is no simple default value, though.
 
-  # Do a default shrink for small builds.
-  ifndef CFLAGS_INLINE_LIMIT
-    ifeq ($(CIRCUITPY_FULL_BUILD),0)
-      CFLAGS_INLINE_LIMIT = 50
+  # Do a default shrink for small builds, including all SAMD21 builds.
+  ifeq ($(CIRCUITPY_FULL_BUILD),0)
+    SHRINK_BUILD = 1
+  else
+    ifeq ($(CHIP_FAMILY), samd21)
+      SHRINK_BUILD = 1
     endif
   endif
 
-  ifdef CFLAGS_INLINE_LIMIT
-    CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
+  # -finline-limit can shrink the image size.
+  # -finline-limit=80 or so is similar to not having it on.
+  # There is no simple default value, though.
+  ifeq ($(SHRINK_BUILD), 1)
+    CFLAGS += -finline-limit=45
   endif
 
-  ifeq ($(CIRCUITPY_FULL_BUILD),0)
-    CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
-  endif
+  # We used to do this but it seems to not reduce space any more, at least in gcc 11.
+  # Leave it here, commented out, just for reference.
+  # --param inline-unit-growth=15 --param max-inline-insns-auto=20
 
   ifdef CFLAGS_BOARD
     CFLAGS += $(CFLAGS_BOARD)

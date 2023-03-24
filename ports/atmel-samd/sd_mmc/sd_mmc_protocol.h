@@ -73,8 +73,8 @@ extern "C" {
  * Responses types:
  *
  * R1, R3, R4 & R5 use a 48 bits response protected by a 7bit CRC checksum
- * - R1 receiv data not specified
- * - R3 receiv OCR
+ * - R1 receive data not specified
+ * - R3 receive OCR
  * - R4, R5 RCA management (MMC only)
  * - R6, R7 RCA management (SD only)
  *
@@ -115,14 +115,14 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SDMMC_RESP_CRC (1lu << 12)
 // ! Card may send busy
 #define SDMMC_RESP_BUSY (1lu << 13)
-// Open drain for a braodcast command (bc)
+// Open drain for a broadcast command (bc)
 // or to enter in inactive state (MCI only)
 #define SDMMC_CMD_OPENDRAIN (1lu << 14)
 // ! To signal a data write operation
 #define SDMMC_CMD_WRITE (1lu << 15)
-// ! To signal a SDIO tranfer in multi byte mode
+// ! To signal a SDIO transfer in multi byte mode
 #define SDMMC_CMD_SDIO_BYTE (1lu << 16)
-// ! To signal a SDIO tranfer in block mode
+// ! To signal a SDIO transfer in block mode
 #define SDMMC_CMD_SDIO_BLOCK (1lu << 17)
 // ! To signal a data transfer in stream mode
 #define SDMMC_CMD_STREAM (1lu << 18)
@@ -132,7 +132,7 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SDMMC_CMD_MULTI_BLOCK (1lu << 20)
 // ! @}
 
-// ! \name Set of flags to define a reponse type
+// ! \name Set of flags to define a response type
 // ! @{
 #define SDMMC_CMD_NO_RESP (0)
 #define SDMMC_CMD_R1 (SDMMC_RESP_PRESENT | SDMMC_RESP_CRC)
@@ -324,7 +324,7 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SD_MCI_ACMD41_SD_SEND_OP_COND (41 | SDMMC_CMD_R3 | SDMMC_CMD_OPENDRAIN)
 /**
  * ACMD41(R1): Send host capacity support information (HCS) and activates the
- * card's initilization process
+ * card's initialization process
  */
 #define SD_SPI_ACMD41_SD_SEND_OP_COND (41 | SDMMC_CMD_R1)
 /**
@@ -440,7 +440,7 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SDIO_R5_ERROR (1lu << 11)                                                    /**< General error */
 #define SDIO_R5_FUNC_NUM (1lu << 9)                                                  /**< Invalid function number */
 #define SDIO_R5_OUT_OF_RANGE (1lu << 8)                                              /**< Argument out of range */
-#define SDIO_R5_STATUS_ERR (SDIO_R5_ERROR | SDIO_R5_FUNC_NUM | SDIO_R5_OUT_OF_RANGE) // !< Errro status bits mask
+#define SDIO_R5_STATUS_ERR (SDIO_R5_ERROR | SDIO_R5_FUNC_NUM | SDIO_R5_OUT_OF_RANGE) // !< Error status bits mask
                                                                                      // ! @}
 
 // ! \name SDIO state (in R6)

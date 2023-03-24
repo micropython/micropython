@@ -43,7 +43,7 @@
 //| Common container for board base pin names. These will vary from board to
 //| board so don't expect portability when using this module.
 //|
-//| Another common use of this module is to use serial communciation buses with
+//| Another common use of this module is to use serial communication buses with
 //| the default pins and settings.  For more information about serial communcication
 //| in CircuitPython, see the :mod:`busio`.
 //|
