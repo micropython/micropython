@@ -7,6 +7,11 @@ package("CircuitOS", base_path="$(PORT_DIR)/libraries")
 # Useful networking-related packages.
 require("bundle-networking")
 
+require("urequests")
+require("mip")
+require("ntptime")
+require("webrepl")
+
 # Require some micropython-lib modules.
 require("dht")
 require("ds18x20")
