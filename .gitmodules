@@ -324,3 +324,6 @@
 	path = ports/broadcom/peripherals
 	url = https://github.com/adafruit/broadcom-peripherals.git
 	branch = main-build
+[submodule "frozen/circuitpython-pcf85063a"]
+	path = frozen/circuitpython-pcf85063a
+	url = https://github.com/bablokb/circuitpython-pcf85063a
