@@ -1,0 +1,19 @@
+{
+    "vendor": "CircuitMess",
+    "product": "Chatter 2.0",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/pages/chatter-2-0",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32",
+    "features": [
+        "USB-C",
+        "BLE",
+        "WiFi",
+        "LoRa"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}
