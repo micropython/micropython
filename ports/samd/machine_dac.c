@@ -48,15 +48,16 @@ typedef struct _dac_obj_t {
     bool initialized;
     uint8_t vref;
     mp_hal_pin_obj_t gpio_id;
+    #if MICROPY_PY_MACHINE_DAC_TIMED
     int8_t dma_channel;
     int8_t tc_index;
     bool busy;
     uint32_t count;
     mp_obj_t callback;
+    #endif
 } dac_obj_t;
 Dac *const dac_bases[] = DAC_INSTS;
 static void dac_init(dac_obj_t *self);
-static mp_obj_t dac_deinit(mp_obj_t self_in);
 
 #if defined(MCU_SAMD21)
 
@@ -87,6 +88,8 @@ static uint8_t dac_vref_table[] = {
 };
 
 #endif // defined SAMD21 or SAMD51
+
+#if MICROPY_PY_MACHINE_DAC_TIMED
 
 void dac_irq_handler(int dma_channel) {
     dac_obj_t *self;
@@ -126,6 +129,8 @@ void dac_irq_handler(int dma_channel) {
     #endif
 }
 
+#endif
+
 static mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     const mp_obj_t *all_args) {
 
@@ -133,7 +138,9 @@ static mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_vref,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_DAC_VREF} },
+        #if MICROPY_PY_MACHINE_DAC_TIMED
         { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        #endif
     };
 
     // Parse the arguments.
@@ -153,15 +160,17 @@ static mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         self->vref = vref;
     }
 
+    #if MICROPY_PY_MACHINE_DAC_TIMED
     self->callback = args[ARG_callback].u_obj;
     if (self->callback == mp_const_none) {
         self->callback = MP_OBJ_NULL;
     }
-
     self->dma_channel = -1;
     self->tc_index = -1;
-    self->initialized = false;
     self->busy = false;
+    #endif
+
+    self->initialized = false;
 
     dac_init(self);
     // Set the port as given in self->gpio_id as DAC
@@ -238,9 +247,11 @@ static mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
     if (self->initialized == false) {
         mp_raise_OSError(MP_ENODEV);
     }
+    #if MICROPY_PY_MACHINE_DAC_TIMED
     if (self->busy != false) {
         mp_raise_OSError(MP_EBUSY);
     }
+    #endif
 
     int value = mp_obj_get_int(value_in);
 
@@ -256,6 +267,8 @@ static mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(dac_write_obj, dac_write);
+
+#if MICROPY_PY_MACHINE_DAC_TIMED
 
 static mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
     Dac *dac = dac_bases[0]; // Just one DAC used
@@ -386,12 +399,26 @@ static mp_obj_t machine_dac_busy(mp_obj_t self_in) {
     return self->busy ? mp_const_true : mp_const_false;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_dac_busy_obj, machine_dac_busy);
+#else
+
+void dac_deinit_all(void) {
+    // Reset the DAC to lower the current consumption as SAMD21
+    dac_bases[0]->CTRLA.bit.SWRST = 1;
+    dac_obj[0].initialized = false;
+    #if defined(MCU_SAMD51)
+    dac_obj[1].initialized = false;
+    #endif
+}
+
+#endif
 
 static const mp_rom_map_elem_t dac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&dac_write_obj) },
+    #if MICROPY_PY_MACHINE_DAC_TIMED
     { MP_ROM_QSTR(MP_QSTR_busy), MP_ROM_PTR(&machine_dac_busy_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&dac_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_timed), MP_ROM_PTR(&dac_write_timed_obj) },
+    #endif
 };
 
 static MP_DEFINE_CONST_DICT(dac_locals_dict, dac_locals_dict_table);

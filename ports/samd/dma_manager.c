@@ -30,6 +30,8 @@
 #include "dma_manager.h"
 #include "samd_soc.h"
 
+#if MICROPY_HW_DMA_MANAGER
+
 // Set a number of dma channels managed here. samd21 has 21 dma channels, samd51
 // has 32 channels, as defined by the lib macro DMAC_CH_NUM.
 // At first, we use a smaller number here to save RAM. May be increased as needed.
@@ -129,3 +131,5 @@ void dac_stop_dma(int dma_channel, bool wait) {
     }
     #endif
 }
+
+#endif

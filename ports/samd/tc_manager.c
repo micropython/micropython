@@ -29,6 +29,8 @@
 #include "sam.h"
 #include "tc_manager.h"
 
+#if MICROPY_HW_TC_MANAGER
+
 // List of channel flags: true: channel used, false: channel available
 // Two Tc instances are used by the usec counter and cannot be assigned.
 #if defined(MCU_SAMD21)
@@ -179,3 +181,5 @@ void tc_deinit(void) {
     instance_flag[0] = instance_flag[1] = true;
     #endif
 }
+
+#endif
