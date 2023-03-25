@@ -50,8 +50,10 @@ typedef struct _machine_adc_obj_t {
     uint8_t avg;
     uint8_t bits;
     uint8_t vref;
+    #if MICROPY_PY_MACHINE_ADC_READ_TIMED
     int8_t dma_channel;
     int8_t tc_index;
+    #endif
 } machine_adc_obj_t;
 
 #define DEFAULT_ADC_BITS    12
@@ -74,9 +76,11 @@ static uint8_t adc_vref_table[] = {
 
 typedef struct _device_mgmt_t {
     bool init;
+    #if MICROPY_PY_MACHINE_ADC_READ_TIMED
     bool busy;
     mp_obj_t callback;
     mp_obj_t self;
+    #endif
 } device_mgmt_t;
 
 device_mgmt_t device_mgmt[ADC_INST_NUM];
@@ -105,10 +109,7 @@ typedef struct _device_mgmt_t {
     #endif
 } device_mgmt_t;
 
-device_mgmt_t device_mgmt[ADC_INST_NUM] = {
-    { 0, 0, -1, MP_OBJ_NULL, MP_OBJ_NULL},
-    { 0, 0, -1, MP_OBJ_NULL, MP_OBJ_NULL}
-};
+device_mgmt_t device_mgmt[ADC_INST_NUM];
 
 #endif  // defined(MCU_SAMD21)
 
@@ -124,6 +125,8 @@ static uint8_t resolution[] = {
 static void adc_init(machine_adc_obj_t *self);
 
 extern mp_int_t log2i(mp_int_t num);
+
+#if MICROPY_PY_MACHINE_ADC_READ_TIMED
 
 // Active just for SAMD21, stops the freerun mode
 // For SAMD51, just the INT flag is reset.
@@ -154,6 +157,7 @@ void adc_irq_handler(int dma_channel) {
     }
     #endif
 }
+#endif
 
 static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
@@ -173,7 +177,9 @@ static mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
         { MP_QSTR_bits,     MP_ARG_INT, {.u_int = DEFAULT_ADC_BITS} },
         { MP_QSTR_average,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_ADC_AVG} },
         { MP_QSTR_vref,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_ADC_VREF} },
+        #if MICROPY_PY_MACHINE_ADC_READ_TIMED
         { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        #endif
     };
 
     // Parse the arguments.
@@ -201,6 +207,11 @@ static mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     if (0 <= vref && vref <= MAX_ADC_VREF) {
         self->vref = vref;
     }
+    // flag the device/channel as being in use.
+    ch_busy_flags |= (1 << (self->adc_config.device * 16 + self->adc_config.channel));
+    device_mgmt[self->adc_config.device].init = false;
+
+    #if MICROPY_PY_MACHINE_ADC_READ_TIMED
     device_mgmt[adc_config.device].callback = args[ARG_callback].u_obj;
     if (device_mgmt[adc_config.device].callback == mp_const_none) {
         device_mgmt[adc_config.device].callback = MP_OBJ_NULL;
@@ -212,6 +223,7 @@ static mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     ch_busy_flags |= (1 << (self->adc_config.device * 16 + self->adc_config.channel));
     self->dma_channel = -1;
     self->tc_index = -1;
+    #endif
 
     adc_init(self);
 
@@ -223,9 +235,12 @@ static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     Adc *adc = adc_bases[self->adc_config.device];
     // Set the reference voltage. Default: external AREFA.
     adc->REFCTRL.reg = adc_vref_table[self->vref];
+
+    #if MICROPY_PY_MACHINE_ADC_READ_TIMED
     if (device_mgmt[self->adc_config.device].busy != 0) {
         mp_raise_OSError(MP_EBUSY);
     }
+    #endif
 
     // Set Input channel and resolution
     // Select the pin as positive input and gnd as negative input reference, non-diff mode by default
@@ -372,6 +387,9 @@ static mp_int_t machine_adc_busy(mp_obj_t self_in) {
     return device_mgmt[self->adc_config.device].busy ? true : false;
 }
 
+#endif
+
+#if MICROPY_PY_MACHINE_ADC_READ_TIMED
 void adc_deinit_all(void) {
     ch_busy_flags = 0;
     device_mgmt[0].init = 0;
@@ -381,6 +399,15 @@ void adc_deinit_all(void) {
     device_mgmt[1].dma_channel = -1;
     #endif
 }
+#else
+void adc_deinit_all(void) {
+    ch_busy_flags = 0;
+    device_mgmt[0].init = 0;
+    #if defined(MCU_SAMD51)
+    device_mgmt[1].init = 0;
+    #endif
+}
+#endif
 
 static void adc_init(machine_adc_obj_t *self) {
     // ADC & clock init is done only once per ADC
