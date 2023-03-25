@@ -90,8 +90,12 @@ void samd_main(void) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        #if MICROPY_HW_DMA_MANAGER
         dma_deinit();
+        #endif
+        #if MICROPY_HW_TC_MANAGER
         tc_deinit();
+        #endif
         #if MICROPY_PY_MACHINE_ADC
         adc_deinit_all();
         #endif
