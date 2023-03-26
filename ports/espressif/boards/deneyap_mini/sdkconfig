@@ -1,0 +1,4 @@
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="DeneyapMini"
+# end of LWIP
