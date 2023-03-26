@@ -324,9 +324,24 @@ clean-stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean
 
 
-# Do blobless partial clones of submodules to save time and space.
+# If available, do blobless partial clones of submodules to save time and space.
 # A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.)
 # so it does not have the idiosyncrasies of a shallow clone.
+#
+# If not available, do a fetch that will fail, and then fix it up with a second fetch.
+# (Only works for git servers that allow sha fetches.)
 .PHONY: fetch-submodules
 fetch-submodules:
-	git submodule update --init --filter=blob:none
+	git submodule sync
+	#####################################################################################
+	# NOTE: Ideally, use git version 2.36.0 or later, to do partial clones of submodules.
+	# If an older git is used, submodules will be cloned with a shallow clone of depth 1.
+	# You will see a git usage message first if the git version is too old to do
+	# clones of submodules.
+	#####################################################################################
+	git submodule update --init --filter=blob:none || git submodule update --init -N --depth 1 || git submodule foreach 'git fetch --tags --depth 1 origin $$sha1 && git checkout -q $$sha1' || echo 'make fetch-submodules FAILED'
+
+.PHONY: remove-submodules
+remove-submodules:
+	git submodule deinit -f --all
+	rm -rf .git/modules/*
