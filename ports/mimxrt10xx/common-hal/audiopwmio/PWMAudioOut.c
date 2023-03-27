@@ -87,7 +87,6 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *s
     const mcu_periph_obj_t *left_periph = find_pin_function(mcu_mqs_left_list, left_channel, &instance, MP_QSTR_left_channel);
     const mcu_periph_obj_t *right_periph = find_pin_function(mcu_mqs_right_list, right_channel, &instance, MP_QSTR_right_channel);
 
-    mp_printf(&mp_plat_print, "note: peripheral %d\n", instance);
     sai_transceiver_t config;
     SAI_GetClassicI2SConfig(&config, kSAI_WordWidth16bits, kSAI_Stereo, 1U << 0u);
     config.frameSync.frameSyncEarly = false;
