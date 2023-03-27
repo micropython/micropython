@@ -1,4 +1,4 @@
-from machine import Pin
+from machine import Pin, Signal
 
 
 class Input:
@@ -88,3 +88,37 @@ class InputShift(Input):
 	def LH(self, pin: Pin):
 		pin.value(0)
 		pin.value(1)
+
+
+class InputGPIO(Input):
+
+	def __init__(self, pins: [int], inverted: bool = False):
+		super().__init__(len(pins))
+
+		self.pins = []
+		self.signals = []
+
+		for i in range(len(pins)):
+			pin = Pin(pins[i], mode=Pin.IN)
+			signal = Signal(pin, invert=inverted)
+
+			self.pins.append(pin)
+			self.signals.append(signal)
+
+	def scan(self):
+		state: [int] = []
+
+		for i in range(len(self.signals)):
+			signal = self.signals[i]
+			state.append(signal.value())
+
+		for i in range(len(state)):
+			if state[i] == 1:
+				self.pressed(i)
+			else:
+				self.released(i)
+
+
+
+
+#
