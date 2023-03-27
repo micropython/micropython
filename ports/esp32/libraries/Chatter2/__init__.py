@@ -1,6 +1,6 @@
 from ST7735 import TFT, TFTColor
 from machine import SPI, Pin, Signal
-from CircuitOS import ShiftInput, Piezo
+from CircuitOS import InputShift, Piezo
 from .Pins import *
 import framebuf
 
@@ -12,7 +12,7 @@ tft = TFT(spiTFT, aDC=Pins.TFT_DC, aReset=Pins.TFT_RST, aCS=Pins.TFT_CS)
 blPin = Pin(Pins.BL, mode=Pin.OUT, value=True)
 backlight = Signal(blPin, invert=True)
 
-buttons = ShiftInput(dataPin=Pins.INP_DATA, clockPin=Pins.INP_SCK, loadPin=Pins.INP_PL, numShifts=2)
+buttons = InputShift(dataPin=Pins.INP_DATA, clockPin=Pins.INP_SCK, loadPin=Pins.INP_PL, numShifts=2)
 
 piezo = Piezo(Pins.BUZZ)
 

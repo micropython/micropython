@@ -55,7 +55,7 @@ class Input:
 		pass
 
 
-class ShiftInput(Input):
+class InputShift(Input):
 
 	def __init__(self, dataPin: int, clockPin: int, loadPin: int, numShifts: int = 1):
 		self.numShifts = numShifts
