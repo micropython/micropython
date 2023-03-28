@@ -56,6 +56,10 @@
 //|         :param int quiescent_value: The output value when no signal is present. Samples should start
 //|             and end with this value to prevent audible popping.
 //|
+//|         **Limitations:** On mimxrt10xx, low sample rates may have an audible
+//|         "carrier" frequency. The manufacturer datasheet states that the "MQS" peripheral
+//|         is intended for 44 kHz or 48kHz input signals.
+//|
 //|         Simple 8ksps 440 Hz sin wave::
 //|
 //|           import audiocore
