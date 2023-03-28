@@ -38,8 +38,8 @@ msgid ""
 "circuitpython/issues."
 msgstr ""
 "\n"
-"Bitte erstellen Sie ein Problem (Issue) für Ihr Programm unter https://github"
-".com/adafruit/circuitpython/issues."
+"Bitte erstellen Sie ein Problem (Issue) für Ihr Programm unter https://"
+"github.com/adafruit/circuitpython/issues."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -413,10 +413,6 @@ msgstr "0.0 zu einer komplexen Potenz"
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() wird nicht unterstützt"
-
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr "64 bit-Typen"
 
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -1306,6 +1302,10 @@ msgstr "Ungültiges Byte %.*s"
 #, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "Ungültige data_pins[%d]"
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -4468,6 +4468,9 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "64 bit types"
+#~ msgstr "64 bit-Typen"
 
 #~ msgid "No key was specified"
 #~ msgstr "Es wurde kein Schlüssel angegeben"

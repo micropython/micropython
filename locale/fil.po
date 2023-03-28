@@ -402,10 +402,6 @@ msgstr "0.0 para sa complex power"
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() hindi suportado"
 
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1281,6 +1277,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c

@@ -407,10 +407,6 @@ msgstr "0.0を複素数でべき乗"
 msgid "3-arg pow() not supported"
 msgstr "引数3つのpow()は非対応"
 
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1282,6 +1278,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
