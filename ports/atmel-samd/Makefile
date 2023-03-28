@@ -116,12 +116,12 @@ else
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
   ifeq ($(SHRINK_BUILD), 1)
-    CFLAGS += -finline-limit=45
+    CFLAGS += -finline-limit=45 --param max-inline-insns-auto=110
   endif
 
   # We used to do this but it seems to not reduce space any more, at least in gcc 11.
   # Leave it here, commented out, just for reference.
-  # --param inline-unit-growth=15 --param max-inline-insns-auto=20
+  # --param inline-unit-growth=15
 
   ifdef CFLAGS_BOARD
     CFLAGS += $(CFLAGS_BOARD)
