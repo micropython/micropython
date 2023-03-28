@@ -62,14 +62,11 @@
 //|         ...
 STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
-    uint32_t width = mp_obj_get_int(all_args[0]);
-    uint32_t height = mp_obj_get_int(all_args[1]);
-    uint32_t value_count = mp_obj_get_int(all_args[2]);
+    uint32_t width = mp_arg_validate_int_range(mp_obj_get_int(all_args[0]), 1, 32767, MP_QSTR_width);
+    uint32_t height = mp_arg_validate_int_range(mp_obj_get_int(all_args[1]), 1, 32767, MP_QSTR_height);
+    uint32_t value_count = mp_arg_validate_int_range(mp_obj_get_int(all_args[2]), 1, 65535, MP_QSTR_value_count);
     uint32_t bits = 1;
 
-    if (value_count == 0) {
-        mp_raise_ValueError(translate("value_count must be > 0"));
-    }
     while ((value_count - 1) >> bits) {
         if (bits < 8) {
             bits <<= 1;
@@ -154,28 +151,24 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     uint16_t x = 0;
     uint16_t y = 0;
     if (mp_obj_is_small_int(index_obj)) {
-        mp_int_t i = MP_OBJ_SMALL_INT_VALUE(index_obj);
+        mp_int_t i = mp_arg_validate_int_min(MP_OBJ_SMALL_INT_VALUE(index_obj), 0, MP_QSTR_index);
         uint16_t width = common_hal_displayio_bitmap_get_width(self);
         x = i % width;
         y = i / width;
     } else {
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(index_obj, 2, &items);
-        x = mp_obj_get_int(items[0]);
-        y = mp_obj_get_int(items[1]);
-        if (x >= common_hal_displayio_bitmap_get_width(self) || y >= common_hal_displayio_bitmap_get_height(self)) {
-            mp_raise_IndexError(translate("pixel coordinates out of bounds"));
-        }
+        x = mp_arg_validate_int_range(mp_obj_get_int(items[0]), 0, self->width - 1, MP_QSTR_x);
+        y = mp_arg_validate_int_range(mp_obj_get_int(items[1]), 0, self->height - 1, MP_QSTR_y);
     }
 
     if (value_obj == MP_OBJ_SENTINEL) {
         // load
         return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_bitmap_get_pixel(self, x, y));
     } else {
-        mp_uint_t value = (mp_uint_t)mp_obj_get_int(value_obj);
-        if ((value >> common_hal_displayio_bitmap_get_bits_per_value(self)) != 0) {
-            mp_raise_ValueError(translate("pixel value requires too many bits"));
-        }
+        mp_uint_t value = (mp_uint_t)mp_arg_validate_int_range(
+            mp_obj_get_int(value_obj), 0,
+            (UINT32_MAX >> (32 - common_hal_displayio_bitmap_get_bits_per_value(self))), MP_QSTR_value);
         common_hal_displayio_bitmap_set_pixel(self, x, y, value);
     }
     return mp_const_none;
@@ -226,8 +219,9 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
 
-    int16_t x = args[ARG_x].u_int;
-    int16_t y = args[ARG_y].u_int;
+    // Check x,y are within self (target) bitmap boundary
+    int16_t x = mp_arg_validate_int_range(args[ARG_x].u_int, 0, self->width - 1, MP_QSTR_x);
+    int16_t y = mp_arg_validate_int_range(args[ARG_y].u_int, 0, self->height - 1, MP_QSTR_y);
 
     displayio_bitmap_t *source = mp_arg_validate_type(args[ARG_source].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap);
 
@@ -237,32 +231,21 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
         mp_raise_ValueError(translate("source palette too large"));
     }
 
-    int16_t x1 = args[ARG_x1].u_int;
-    int16_t y1 = args[ARG_y1].u_int;
+    // Check x1,y1,x2,y2 are within source bitmap boundary
+    int16_t x1 = mp_arg_validate_int_range(args[ARG_x1].u_int, 0, source->width - 1, MP_QSTR_x1);
+    int16_t y1 = mp_arg_validate_int_range(args[ARG_y1].u_int, 0, source->height - 1, MP_QSTR_y1);
     int16_t x2, y2;
     // if x2 or y2 is None, then set as the maximum size of the source bitmap
     if (args[ARG_x2].u_obj == mp_const_none) {
         x2 = source->width;
     } else {
-        x2 = mp_obj_get_int(args[ARG_x2].u_obj);
+        x2 = mp_arg_validate_int_range(mp_obj_get_int(args[ARG_x2].u_obj), 0, source->width, MP_QSTR_x2);
     }
     // int16_t y2;
     if (args[ARG_y2].u_obj == mp_const_none) {
         y2 = source->height;
     } else {
-        y2 = mp_obj_get_int(args[ARG_y2].u_obj);
-    }
-
-    // Check x,y are within self (target) bitmap boundary
-    if ((x < 0) || (y < 0) || (x > self->width) || (y > self->height)) {
-        mp_raise_ValueError(translate("out of range of target"));
-    }
-    // Check x1,y1,x2,y2 are within source bitmap boundary
-    if ((x1 < 0) || (x1 > source->width) ||
-        (y1 < 0) || (y1 > source->height) ||
-        (x2 < 0) || (x2 > source->width) ||
-        (y2 < 0) || (y2 > source->height)) {
-        mp_raise_ValueError(translate("out of range of source"));
+        y2 = mp_arg_validate_int_range(mp_obj_get_int(args[ARG_y2].u_obj), 0, source->height, MP_QSTR_y2);
     }
 
     // Ensure x1 < x2 and y1 < y2
@@ -301,10 +284,7 @@ STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) 
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
-    mp_uint_t value = (mp_uint_t)mp_obj_get_int(value_obj);
-    if ((value >> common_hal_displayio_bitmap_get_bits_per_value(self)) != 0) {
-        mp_raise_ValueError(translate("pixel value requires too many bits"));
-    }
+    mp_uint_t value = (mp_uint_t)mp_arg_validate_int_range(mp_obj_get_int(value_obj), 0,(1u << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1,MP_QSTR_value);
     common_hal_displayio_bitmap_fill(self, value);
 
     return mp_const_none;
