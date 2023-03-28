@@ -405,10 +405,6 @@ msgstr "0.0 elevato alla potenza di un numero complesso"
 msgid "3-arg pow() not supported"
 msgstr "pow() con tre argmomenti non supportata"
 
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr "Tipo 64 bits"
-
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1283,6 +1279,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
@@ -4414,6 +4414,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "64 bit types"
+#~ msgstr "Tipo 64 bits"
 
 #~ msgid "too many arguments provided with the given format"
 #~ msgstr "troppi argomenti forniti con il formato specificato"
