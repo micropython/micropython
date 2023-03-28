@@ -44,7 +44,7 @@
 //|         lmk: Optional[bytes],
 //|         channel: int = 0,
 //|         interface: int = 0,
-//|         encrypt: bool = False,
+//|         encrypted: bool = False,
 //|     ) -> None:
 //|         """Construct a new peer object.
 //|
@@ -52,17 +52,17 @@
 //|         :param bytes lmk: The Local Master Key (lmk) of the peer.
 //|         :param int channel: The peer's channel. Default: 0 ie. use the current channel.
 //|         :param int interface: The WiFi interface to use. Default: 0 ie. STA.
-//|         :param bool encrypt: Whether or not to use encryption.
+//|         :param bool encrypted: Whether or not to use encryption.
 //|         """
 //|         ...
 STATIC mp_obj_t espnow_peer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_mac, ARG_lmk, ARG_channel, ARG_interface, ARG_encrypt };
+    enum { ARG_mac, ARG_lmk, ARG_channel, ARG_interface, ARG_encrypted };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mac,      MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_lmk,      MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
         { MP_QSTR_channel,  MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
         { MP_QSTR_interface,MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
-        { MP_QSTR_encrypt,  MP_ARG_BOOL | MP_ARG_KW_ONLY,{ .u_bool = false } },
+        { MP_QSTR_encrypted,MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = false } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -82,7 +82,7 @@ STATIC mp_obj_t espnow_peer_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     self->peer_info.ifidx = (wifi_interface_t)mp_arg_validate_int_range(args[ARG_interface].u_int, 0, 1, MP_QSTR_interface);
 
-    self->peer_info.encrypt = args[ARG_encrypt].u_bool;
+    self->peer_info.encrypt = args[ARG_encrypted].u_bool;
 
     const mp_obj_t lmk = args[ARG_lmk].u_obj;
     if (lmk != mp_const_none) {
