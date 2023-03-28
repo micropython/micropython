@@ -42,18 +42,23 @@
 
 /*
  * AUDIO PLL setting: Frequency = Fref * (DIV_SELECT + NUM / DENOM)
- *                              = 24 * (32 + 77/100)
- *                              = 786.48 MHz
+ *                              = 24 * (32 + 96 / 125) = 24 * (32.768)
+ *                              = 786.432 MHz = 48kHz * 16384
+ *
+ * This default clocking is used during initial configuration; it also works well for
+ * frequencies that evenly divide 192kHz, such as 8/12/24/48kHz. However, it doesn't work
+ * well for 44.1/22/11kHz, so there's the possibility of using a different
+ * setting when playing a particular sample.
  */
 const clock_audio_pll_config_t audioPllConfig = {
     .loopDivider = 32,  /* PLL loop divider. Valid range for DIV_SELECT divider value: 27~54. */
     .postDivider = 1,   /* Divider after the PLL, should only be 1, 2, 4, 8, 16. */
-    .numerator = 77,    /* 30 bit numerator of fractional loop divider. */
-    .denominator = 100, /* 30 bit denominator of fractional loop divider */
+    .numerator = 96,    /* 30 bit numerator of fractional loop divider. */
+    .denominator = 125, /* 30 bit denominator of fractional loop divider */
 };
 
 static I2S_Type *const i2s_instances[] = I2S_BASE_PTRS;
-static uint8_t i2s_in_use;
+static uint8_t i2s_in_use, i2s_playing;
 
 static I2S_Type *SAI_GetPeripheral(int idx) {
     if (idx < 0 || idx >= (int)MP_ARRAY_SIZE(i2s_instances)) {
@@ -344,7 +349,11 @@ void port_i2s_deinit(i2s_t *self) {
     }
     SAI_TransferAbortSend(self->peripheral, &self->handle);
     i2s_clock_off(self->peripheral);
-    i2s_in_use &= ~(1 << SAI_GetInstance(self->peripheral));
+
+    uint32_t instance_mask = 1 << SAI_GetInstance(self->peripheral);
+    i2s_in_use &= ~instance_mask;
+    i2s_playing &= ~instance_mask;
+
     if (!i2s_in_use) {
         CCM_ANALOG->PLL_AUDIO = CCM_ANALOG_PLL_AUDIO_BYPASS_MASK | CCM_ANALOG_PLL_AUDIO_POWERDOWN_MASK | CCM_ANALOG_PLL_AUDIO_BYPASS_CLK_SRC(kCLOCK_PllClkSrc24M);
     }
@@ -354,13 +363,51 @@ void port_i2s_deinit(i2s_t *self) {
     }
 }
 
+static uint32_t gcd(uint32_t a, uint32_t b) {
+    while (b) {
+        uint32_t tmp = a % b;
+        a = b;
+        b = tmp;
+    }
+    return a;
+}
+
+static void set_sai_clocking_for_sample_rate(uint32_t sample_rate) {
+    mp_arg_validate_int_range((mp_uint_t)sample_rate, 4000, 192000, MP_QSTR_sample_rate);
+
+    uint32_t target_rate = sample_rate;
+    // ensure the PWM rate of MQS will be adequately high
+    while (target_rate < 175000) {
+        target_rate <<= 1;
+    }
+    target_rate *= 4096; // various prescalers divide by this much
+    uint32_t div = gcd(target_rate % 24000000, 24000000);
+    clock_audio_pll_config_t config = {
+        .loopDivider = target_rate / 24000000,
+        .postDivider = 1,
+        .numerator = (target_rate % 24000000) / div,
+        .denominator = 24000000 / div,
+    };
+    CLOCK_InitAudioPll(&config);
+}
+
 void port_i2s_play(i2s_t *self, mp_obj_t sample, bool loop) {
     self->sample = sample;
     self->loop = loop;
     self->bytes_per_sample = audiosample_bits_per_sample(sample) / 8;
     self->channel_count = audiosample_channel_count(sample);
+    int instance = SAI_GetInstance(self->peripheral);
+    i2s_playing |= (1 << instance);
     uint32_t sample_rate = audiosample_sample_rate(sample);
     if (sample_rate != self->sample_rate) {
+        if (__builtin_popcount(i2s_playing) <= 1) {
+            // as this is the first/only i2s instance playing audio, we can
+            // safely change the overall clock used by the SAI peripheral, to
+            // get more accurate frequency reproduction. If another i2s
+            // instance is playing, then we can't touch the audio PLL and have
+            // to live with what we can get, which may be inaccurate
+            set_sai_clocking_for_sample_rate(sample_rate);
+        }
         SAI_TxSetBitClockRate(self->peripheral, SAI_CLOCK_FREQ, sample_rate, 16, 2);
         self->sample_rate = sample_rate;
     }
