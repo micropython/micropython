@@ -31,9 +31,6 @@
 #include "bindings/espnow/Peer.h"
 #include "common-hal/espnow/__init__.h"
 
-// TODO: check peer already exist
-// TODO: check peer doesn't exist
-
 //| class Peer:
 //|     """A data class to store parameters specific to a peer."""
 //|
@@ -62,7 +59,7 @@ STATIC mp_obj_t espnow_peer_make_new(const mp_obj_type_t *type, size_t n_args, s
         { MP_QSTR_lmk,      MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
         { MP_QSTR_channel,  MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
         { MP_QSTR_interface,MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
-        { MP_QSTR_encrypted,MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = false } },
+        { MP_QSTR_encrypted,MP_ARG_BOOL | MP_ARG_KW_ONLY,{ .u_bool = false } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
