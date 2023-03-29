@@ -68,12 +68,27 @@ int nina_bsp_init(void) {
     mp_hal_pin_input(MICROPY_HW_NINA_GPIO0);
 
     // Initialize SPI.
+    #ifdef MICROPY_HW_WIFI_SPI_SCK
+    mp_obj_t spi_obj = MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIFI_SPI_SCK);
+    mp_obj_t miso_obj = MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIFI_SPI_MISO);
+    mp_obj_t mosi_obj = MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIFI_SPI_MOSI);
+    mp_obj_t args[] = {
+        MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIFI_SPI_ID),
+        MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIFI_SPI_BAUDRATE),
+        MP_ROM_QSTR(MP_QSTR_sck), mp_pin_make_new(NULL, 1, 0, &spi_obj),
+        MP_ROM_QSTR(MP_QSTR_miso), mp_pin_make_new(NULL, 1, 0, &miso_obj),
+        MP_ROM_QSTR(MP_QSTR_mosi), mp_pin_make_new(NULL, 1, 0, &mosi_obj),
+    };
+    MP_STATE_PORT(mp_wifi_spi) = MP_OBJ_TYPE_GET_SLOT(&machine_spi_type, make_new)(
+        (mp_obj_t)&machine_spi_type, 2, 3, args);
+    #else
     mp_obj_t args[] = {
         MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIFI_SPI_ID),
         MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIFI_SPI_BAUDRATE),
     };
-
-    MP_STATE_PORT(mp_wifi_spi) = MP_OBJ_TYPE_GET_SLOT(&machine_spi_type, make_new)((mp_obj_t)&machine_spi_type, 2, 0, args);
+    MP_STATE_PORT(mp_wifi_spi) = MP_OBJ_TYPE_GET_SLOT(&machine_spi_type, make_new)(
+        (mp_obj_t)&machine_spi_type, 2, 0, args);
+    #endif
     return 0;
 }
 
