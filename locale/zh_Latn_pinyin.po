@@ -416,10 +416,6 @@ msgstr "0.0 de fùshù cì mì"
 msgid "3-arg pow() not supported"
 msgstr "bù zhī chí 3-arg pow()"
 
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr "64 wèi lèixíng"
-
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1304,6 +1300,10 @@ msgstr "wú xiào zì jié %.*s"
 #, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "wú xiào data_pins[%d]"
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -4433,6 +4433,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "64 bit types"
+#~ msgstr "64 wèi lèixíng"
 
 #~ msgid "No key was specified"
 #~ msgstr "Wèi zhǐdìng mì yào"

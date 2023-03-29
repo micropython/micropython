@@ -56,6 +56,10 @@
 //|         :param int quiescent_value: The output value when no signal is present. Samples should start
 //|             and end with this value to prevent audible popping.
 //|
+//|         **Limitations:** On mimxrt10xx, low sample rates may have an audible
+//|         "carrier" frequency. The manufacturer datasheet states that the "MQS" peripheral
+//|         is intended for 44 kHz or 48kHz input signals.
+//|
 //|         Simple 8ksps 440 Hz sin wave::
 //|
 //|           import audiocore
@@ -114,7 +118,12 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_
         validate_obj_is_free_pin_or_none(args[ARG_right_channel].u_obj, MP_QSTR_right_channel);
 
     // create AudioOut object from the given pin
-    audiopwmio_pwmaudioout_obj_t *self = m_new_obj(audiopwmio_pwmaudioout_obj_t);
+    // The object is made long-lived because many implementations keep
+    // a pointer to the object (e.g., for the interrupt handler), which
+    // will not work properly if the object is moved. It is created
+    // with a finaliser as some ports use these (rather than 'reset' functions)
+    // to ensure resources are collected at interpreter shutdown.
+    audiopwmio_pwmaudioout_obj_t *self = m_new_ll_obj_with_finaliser(audiopwmio_pwmaudioout_obj_t);
     self->base.type = &audiopwmio_pwmaudioout_type;
     common_hal_audiopwmio_pwmaudioout_construct(self, left_channel_pin, right_channel_pin, args[ARG_quiescent_value].u_int);
 
@@ -249,6 +258,7 @@ MP_PROPERTY_GETTER(audiopwmio_pwmaudioout_paused_obj,
 STATIC const mp_rom_map_elem_t audiopwmio_pwmaudioout_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiopwmio_pwmaudioout_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&audiopwmio_pwmaudioout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audiopwmio_pwmaudioout___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_play), MP_ROM_PTR(&audiopwmio_pwmaudioout_play_obj) },

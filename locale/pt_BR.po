@@ -417,10 +417,6 @@ msgstr "0,0 para uma potência complexa"
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() não compatível"
 
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr "Tipos 64 bit"
-
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1312,6 +1308,10 @@ msgstr "Byte %.*s inválido"
 #, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "data_pins[%d] inválido"
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -4465,6 +4465,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "64 bit types"
+#~ msgstr "Tipos 64 bit"
 
 #~ msgid "No key was specified"
 #~ msgstr "Nenhuma chave foi definida"

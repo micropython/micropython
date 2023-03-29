@@ -414,10 +414,6 @@ msgstr "0,0 till ett komplext nummer"
 msgid "3-arg pow() not supported"
 msgstr "3-arguments pow() stöds inte"
 
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr "64-bitars typer"
-
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1297,6 +1293,10 @@ msgstr "Ogiltig byte %.*s"
 #, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "Ogiltig data_pins[%d]"
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -4427,6 +4427,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "64 bit types"
+#~ msgstr "64-bitars typer"
 
 #~ msgid "No key was specified"
 #~ msgstr "Ingen nyckel angavs"

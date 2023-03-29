@@ -53,7 +53,7 @@ static void espnow_check_for_deinit(espnow_obj_t *self) {
 //| class ESPNow:
 //|     """Provides access to the ESP-NOW protocol."""
 //|
-//|     def __init__(self, buffer_size: Optional[int], phy_rate: Optional[int]) -> None:
+//|     def __init__(self, buffer_size: int = 526, phy_rate: int = 0) -> None:
 //|         """Allocate and initialize `ESPNow` instance as a singleton.
 //|
 //|         :param int buffer_size: The size of the internal ring buffer. Default: 526 bytes.

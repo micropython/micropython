@@ -408,11 +408,6 @@ msgstr "0.0 σε μία σύνθετη δύναμη"
 msgid "3-arg pow() not supported"
 msgstr "pow() με 3 παραμέτρους δεν υποστηρίζεται"
 
-#: shared-module/msgpack/__init__.c
-#, fuzzy
-msgid "64 bit types"
-msgstr "64 bit τύποι"
-
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1290,6 +1285,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
@@ -4389,6 +4388,10 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#, fuzzy
+#~ msgid "64 bit types"
+#~ msgstr "64 bit τύποι"
 
 #~ msgid "%q pin invalid"
 #~ msgstr "%q άκυρο pin"

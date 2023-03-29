@@ -54,4 +54,7 @@ extern const mcu_periph_obj_t mcu_sai_tx_bclk_list[2];
 extern const mcu_periph_obj_t mcu_sai_tx_data0_list[2];
 extern const mcu_periph_obj_t mcu_sai_tx_sync_list[2];
 
+extern const mcu_periph_obj_t mcu_mqs_left_list[1];
+extern const mcu_periph_obj_t mcu_mqs_right_list[1];
+
 #endif // MICROPY_INCLUDED_MIMXRT10XX_MIMXRT1011_PERIPHERALS_MIMXRT1011_PERIPH_H

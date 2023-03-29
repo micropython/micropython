@@ -407,10 +407,6 @@ msgstr "0.0 в комплексную степень"
 msgid "3-arg pow() not supported"
 msgstr "3-аргументный pow() не поддерживается"
 
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr "64-битные типы"
-
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1315,6 +1311,10 @@ msgstr "Неверный байт %.*s"
 #, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "Неверный data_pins[%d]"
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -4429,6 +4429,9 @@ msgstr "zi должно быть типа float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
+
+#~ msgid "64 bit types"
+#~ msgstr "64-битные типы"
 
 #~ msgid "No key was specified"
 #~ msgstr "Ключ не был указан"

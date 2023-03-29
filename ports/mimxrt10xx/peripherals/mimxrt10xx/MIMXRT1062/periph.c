@@ -362,3 +362,13 @@ const mcu_periph_obj_t mcu_sai_tx_sync_list[] = {
     PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_39),
     PERIPH_PIN(3, 8, 0, 0, &pin_GPIO_SD_B1_02),
 };
+const mcu_periph_obj_t mcu_mqs_left_list[] = {
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_14),
+    PERIPH_PIN(3, 2, 0, 0, &pin_GPIO_B0_01),
+    PERIPH_PIN(3, 1, 0, 0, &pin_GPIO_AD_B0_05),
+};
+const mcu_periph_obj_t mcu_mqs_right_list[] = {
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_13),
+    PERIPH_PIN(3, 2, 0, 0, &pin_GPIO_B0_00),
+    PERIPH_PIN(3, 1, 0, 0, &pin_GPIO_AD_B0_04),
+};
