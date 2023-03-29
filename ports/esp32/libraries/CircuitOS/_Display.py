@@ -5,12 +5,14 @@ import ST7735
 class Display(framebuf.FrameBuffer):
 
 	def __init__(self, tft: ST7735.TFT, width: int, height: int):
-		self.__buffer = bytearray(width * height * 2)
-		self.__tft = tft
-		super().__init__(self.__buffer, 160, 128, framebuf.RGB565)
+		self.buffer = bytearray(width * height * 2)
+		self.tft = tft
+		self.width = width
+		self.height = height
+		super().__init__(self.buffer, width, height, framebuf.RGB565)
 
 	def commit(self):
-		self.__tft.image(0, 0, 160, 128, self.__buffer)
+		self.tft.image(0, 0, self.width, self.height, self.buffer)
 
 	class Color:
 
