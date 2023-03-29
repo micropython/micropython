@@ -1,0 +1,18 @@
+{
+    "vendor": "CircuitMess",
+    "product": "Batmobile™",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32",
+    "features": [
+        "USB-C",
+        "BLE",
+        "WiFi"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}
