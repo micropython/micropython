@@ -33,9 +33,8 @@
 //| """ESP-NOW Module
 //|
 //| The `espnow` module provides an interface to the
-//| `ESP-NOW <https://www.espressif.com/en/products/software/esp-now/overview>`_
-//| protocol provided by Espressif on its SoCs
-//| (`API docs <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/network/esp_now.html>`_).
+//| `ESP-NOW <https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-reference/network/esp_now.html>`_
+//| protocol provided by Espressif on its SoCs.
 //|
 //| **Sender**
 //|

@@ -34,6 +34,8 @@
 #include "nvs_flash.h"
 #include "components/heap/include/esp_heap_caps.h"
 
+//| import builtins
+//|
 //| """Direct access to a few ESP-IDF details. This module *should not* include any functionality
 //|    that could be implemented by other frameworks. It should only include ESP-IDF specific
 //|    things."""
@@ -95,6 +97,13 @@ STATIC void espidf_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
     mp_obj_exception_print(print, o_in, kind);
 }
 
+//| class IDFError(builtins.OSError):
+//|     """Raised when an ``ESP-IDF`` function returns an error code.
+//|     `esp_err_t <https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-reference/error-codes.html>`_
+//|     """
+//|
+//|     ...
+//|
 const mp_obj_type_t mp_type_espidf_IDFError = {
     { &mp_type_type },
     .name = MP_QSTR_IDFError,
@@ -104,11 +113,8 @@ const mp_obj_type_t mp_type_espidf_IDFError = {
     .parent = &mp_type_OSError,
 };
 
-
-//| import builtins
-//|
 //| class MemoryError(builtins.MemoryError):
-//|     """Raised when an ESP IDF memory allocation fails."""
+//|     """Raised when an ``ESP-IDF`` memory allocation fails."""
 //|
 //|     ...
 //|
