@@ -97,7 +97,7 @@
 //|
 //|           display_bus.send(42, struct.pack(">hh", 0, odg.bitmap.width - 1))
 //|           display_bus.send(43, struct.pack(">hh", 0, odg.bitmap.height - 1))
-//|           display_bus.send(44, d.bitmap)
+//|           display_bus.send(44, odg.bitmap)
 //|
 //|       # The following optional code will free the OnDiskGif and allocated resources
 //|       # after use. This may be required before loading a new GIF in situations
