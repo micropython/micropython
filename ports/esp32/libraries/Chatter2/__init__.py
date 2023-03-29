@@ -12,7 +12,7 @@ tft = TFT(spiTFT, aDC=Pins.TFT_DC, aReset=Pins.TFT_RST, aCS=Pins.TFT_CS)
 blPin = Pin(Pins.BL, mode=Pin.OUT, value=True)
 backlight = Signal(blPin, invert=True)
 
-buttons = InputShift(dataPin=Pins.INP_DATA, clockPin=Pins.INP_SCK, loadPin=Pins.INP_PL, numShifts=2)
+buttons = InputShift(pin_data=Pins.INP_DATA, pin_clock=Pins.INP_SCK, pin_load=Pins.INP_PL, count=2)
 
 piezo = Piezo(Pins.BUZZ)
 
@@ -20,7 +20,6 @@ display = Display(tft, 160, 128)
 
 
 def begin():
-	tft = TFT(spiTFT, aDC=Pins.TFT_DC, aReset=Pins.TFT_RST, aCS=Pins.TFT_CS)
 	tft.initr()
 	tft.rotation(1)
 	tft.rgb(False)

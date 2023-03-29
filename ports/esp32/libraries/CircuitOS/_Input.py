@@ -3,53 +3,56 @@ from machine import Pin, Signal
 
 class Input:
 
-	def __init__(self, numButtons: int):
-		self.numButtons = numButtons
+	def __init__(self, num_buttons: int):
+		self.numButtons = num_buttons
 
-		self.__state: [] = [False] * numButtons
-		self.__onPress: [] = [None] * numButtons
-		self.__onRelease: [] = [None] * numButtons
-
-		self._loopTask = None
+		self.__state: [] = [False] * num_buttons
+		self.__on_press: [] = [None] * num_buttons
+		self.__on_release: [] = [None] * num_buttons
 
 		pass
 
 	def state(self, i: int):
-		if i >= self.numButtons: return False
+		if i >= self.numButtons:
+			return False
 
 		return self.__state[i]
 
-	def onPress(self, i: int, callback):
-		if i >= self.numButtons: return
+	def on_press(self, i: int, callback):
+		if i >= self.numButtons:
+			return
 
-		self.__onPress[i] = callback
+		self.__on_press[i] = callback
 
-	def onRelease(self, i: int, callback):
-		if i >= self.numButtons: return
+	def on_release(self, i: int, callback):
+		if i >= self.numButtons:
+			return
 
-		self.__onRelease[i] = callback
+		self.__on_release[i] = callback
 
 	async def loop(self):
 		while True:
 			self.scan()
 
 	def pressed(self, i: int):
-		if i >= self.numButtons: return
+		if i >= self.numButtons:
+			return
 
 		old = self.__state[i]
 		self.__state[i] = True
 
-		if old is not self.__state[i] and self.__onPress[i] is not None:
-			self.__onPress[i]()
+		if old is not self.__state[i] and self.__on_press[i] is not None:
+			self.__on_press[i]()
 
 	def released(self, i: int):
-		if i >= self.numButtons: return
+		if i >= self.numButtons:
+			return
 
 		old = self.__state[i]
 		self.__state[i] = False
 
-		if old is not self.__state[i] and self.__onRelease[i] is not None:
-			self.__onRelease[i]()
+		if old is not self.__state[i] and self.__on_release[i] is not None:
+			self.__on_release[i]()
 
 	def scan(self):
 		pass
@@ -57,23 +60,23 @@ class Input:
 
 class InputShift(Input):
 
-	def __init__(self, dataPin: int, clockPin: int, loadPin: int, numShifts: int = 1):
-		self.numShifts = numShifts
-		self.dataPin: Pin = Pin(dataPin, mode=Pin.IN)
-		self.clockPin: Pin = Pin(clockPin, mode=Pin.OUT, value=1)
-		self.loadPin: Pin = Pin(loadPin, mode=Pin.OUT, value=1)
+	def __init__(self, pin_data: int, pin_clock: int, pin_load: int, count: int = 1):
+		self.numShifts = count
+		self.pin_data: Pin = Pin(pin_data, mode=Pin.IN)
+		self.pin_clock: Pin = Pin(pin_clock, mode=Pin.OUT, value=1)
+		self.pin_load: Pin = Pin(pin_load, mode=Pin.OUT, value=1)
 
-		self.bitState = [0] * numShifts * 8
+		self.bitState = [0] * count * 8
 
-		super().__init__(numShifts * 8)
+		super().__init__(count * 8)
 
 	def scan(self):
-		self.clockPin.value(0)
-		self.LH(self.loadPin)
+		self.pin_clock.value(0)
+		self.LH(self.pin_load)
 
 		for i in range(self.numShifts * 8):
-			self.bitState[self.numShifts * 8 - i - 1] = self.dataPin.value()
-			self.HL(self.clockPin)
+			self.bitState[self.numShifts * 8 - i - 1] = self.pin_data.value()
+			self.HL(self.pin_clock)
 
 		for i in range(self.numShifts * 8):
 			if self.bitState[i]:
@@ -81,11 +84,13 @@ class InputShift(Input):
 			else:
 				self.pressed(i)
 
-	def HL(self, pin: Pin):
+	@staticmethod
+	def HL(pin: Pin):
 		pin.value(1)
 		pin.value(0)
 
-	def LH(self, pin: Pin):
+	@staticmethod
+	def LH(pin: Pin):
 		pin.value(0)
 		pin.value(1)
 
@@ -117,8 +122,3 @@ class InputGPIO(Input):
 				self.pressed(i)
 			else:
 				self.released(i)
-
-
-
-
-#

@@ -14,7 +14,7 @@ class S3Error:
 
 class S3Interface:
 	
-	class __Command:
+	class Command:
 		ID = const(0x1)
 		Mode = const(0x2)
 		Frame = const(0x3)
@@ -49,14 +49,14 @@ class S3Interface:
 	def begin(self):
 		self.reset()
 
-		self.send(self.__Command.ID)
+		self.send(self.Command.ID)
 		self.wait_ready()
 		id_ = self.recv()
 
 		return id_ == self.S3_ID
 
 	def end(self):
-		self.send(self.__Command.Shutdown)
+		self.send(self.Command.Shutdown)
 		sleep_ms(100)
 		self.spi.deinit()
 		self.__cs.init(mode=Pin.IN)
@@ -88,20 +88,20 @@ class S3Interface:
 		self.spi.init()
 
 	def get_error(self):
-		self.send(self.__Command.Error)
+		self.send(self.Command.Error)
 		self.wait_ready()
 		return self.recv()
 
 	def get_version(self):
-		self.send(self.__Command.Version)
+		self.send(self.Command.Version)
 		self.wait_ready()
 		return self.recv()
 
 	def set_mode(self, mode):
-		self.send(self.__Command.Mode, mode)
+		self.send(self.Command.Mode, mode)
 
 	def get_frame_gray(self):
-		self.send(self.__Command.FrameGray)
+		self.send(self.Command.FrameGray)
 		self.wait_ready()
 
 		self.__cs.value(0)
@@ -111,7 +111,7 @@ class S3Interface:
 		return self.recv_buf[:160 * 120]
 
 	def get_frame(self):
-		self.send(self.__Command.Frame)
+		self.send(self.Command.Frame)
 		self.wait_ready()
 
 		self.__cs.value(0)
@@ -134,18 +134,17 @@ class S3Interface:
 
 		return DriveInfo.deserialize(self.recv_buf)
 
-
 	def set_hue(self, hue: int):
-		self.send(self.__Command.Hue, hue)
+		self.send(self.Command.Hue, hue)
 
 	def set_shake(self, shake: bool):
-		self.send(self.__Command.Shake, shake)
+		self.send(self.Command.Shake, shake)
 
 	def send(self, byte1, byte2=0, byte3=0, byte4=0):
 		data = bytearray([byte1, byte2, byte3, byte4])
 		self.send_data(data)
 
-	def send_data(self, data: list|tuple|bytearray):
+	def send_data(self, data: list | tuple | bytearray):
 		self.wait_ready()
 		self.__cs.value(0)
 		self.spi.write(data)

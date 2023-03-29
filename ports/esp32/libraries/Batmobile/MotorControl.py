@@ -15,17 +15,17 @@ class MotorControl:
 		"""
 		:param pins: Pin pairs for the motors. Order: FrontLeft, FrontRight, BackLeft, BackRight.
 		"""
-		self.__pins = []
-		self.__PWM = []
+		self.pins = []
+		self.PWM = []
 		self.__values = [0] * 4
 
 		for i in range(4):
 			pinA = Pin(pins[i][0], mode=Pin.OUT, value=1)
 			pinB = Pin(pins[i][1], mode=Pin.OUT, value=1)
-			self.__pins.append((pinA, pinB))
+			self.pins.append((pinA, pinB))
 
-			pwm = PWM(self.__pins[i][0], freq=1000, duty=1023)
-			self.__PWM.append(pwm)
+			pwm = PWM(self.pins[i][0], freq=1000, duty=1023)
+			self.PWM.append(pwm)
 
 	def set(self, motor: int, value: int):
 		if motor < 0 or motor >= 4:
@@ -33,8 +33,8 @@ class MotorControl:
 
 		value = min(max(value, -100), 100)
 
-		pins = self.__pins[motor]
-		pwm = self.__PWM[motor]
+		pins = self.pins[motor]
+		pwm = self.PWM[motor]
 
 		if value == 0:
 			pwm.duty(1023)
@@ -66,33 +66,33 @@ class MotorControl:
 
 		return self.__values[motor]
 
-	def setFR(self, value: int):
+	def set_FR(self, value: int):
 		self.set(Motor.FrontRight, value)
 
-	def setFL(self, value: int):
+	def set_FL(self, value: int):
 		self.set(Motor.FrontLeft, value)
 
-	def setBR(self, value: int):
+	def set_BR(self, value: int):
 		self.set(Motor.BackRight, value)
 
-	def setBL(self, value: int):
+	def set_BL(self, value: int):
 		self.set(Motor.BackLeft, value)
 
-	def getFR(self):
+	def get_FR(self):
 		return self.get(Motor.FrontRight)
 
-	def getFL(self):
+	def get_FL(self):
 		return self.get(Motor.FrontLeft)
 
-	def getBR(self):
+	def get_BR(self):
 		return self.get(Motor.BackRight)
 
-	def getBL(self):
+	def get_BL(self):
 		return self.get(Motor.BackLeft)
 
-	def setAll(self, val: int | [int] | (int, int, int, int)):
+	def set_all(self, val: int | [int] | (int, int, int, int)):
 		if type(val) == int:
-			self.setAll((val, val, val, val))
+			self.set_all((val, val, val, val))
 			return
 
 		if type(val) == tuple or type(val) == list:
@@ -102,9 +102,9 @@ class MotorControl:
 		for i in range(4):
 			self.set(i, val[i])
 
-	def getAll(self):
+	def get_all(self):
 		return tuple(self.get(i) for i in range(4))
 
-	def stopAll(self):
-		self.setAll((0, 0, 0, 0))
+	def stop_all(self):
+		self.set_all((0, 0, 0, 0))
 
