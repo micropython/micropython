@@ -30,6 +30,7 @@
 #define MICROPY_HW_MCU_NAME         "ESP32"
 
 #define MICROPY_HW_LED_STATUS       (&pin_GPIO10)
+#define MICROPY_HW_LED_STATUS_INVERTED (1)
 
 #define CIRCUITPY_BOARD_I2C         (2)
 #define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO22, .sda = &pin_GPIO21}, \
