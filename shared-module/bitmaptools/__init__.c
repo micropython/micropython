@@ -928,8 +928,8 @@ STATIC void draw_circle(displayio_bitmap_t *destination,
 
     int16_t d, yb;
 
-    mp_arg_validate_int_range(x0, SHRT_MIN, SHRT_MAX, MP_QSTR_x);
-    mp_arg_validate_int_range(y0, SHRT_MIN, SHRT_MAX, MP_QSTR_y);
+    mp_arg_validate_int_range(x, SHRT_MIN, SHRT_MAX, MP_QSTR_x);
+    mp_arg_validate_int_range(y, SHRT_MIN, SHRT_MAX, MP_QSTR_y);
 
     x = MIN(x, destination->width);
     x = MAX(0, x);
