@@ -65,7 +65,7 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
     uint32_t value);
 
 void common_hal_bitmaptools_draw_circle(displayio_bitmap_t *destination,
-    int16_t x0, int16_t y0,
+    int16_t x, int16_t y,
     int16_t radius,
     uint32_t value);
 
