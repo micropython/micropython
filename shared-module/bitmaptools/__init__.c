@@ -934,7 +934,7 @@ STATIC void draw_circle(displayio_bitmap_t *destination,
     x = MIN(x, destination->width);
     x = MAX(0, x);
     y = MIN(y, destination->height);
-    y = MIN(0, y);
+    y = MAX(0, y);
 
     BITMAP_DEBUG("x, y, radius    (%4d, %4d, %4d)\n", x, y, radius);
 
@@ -942,7 +942,7 @@ STATIC void draw_circle(displayio_bitmap_t *destination,
     d = 3 - 2 * radius;
 
     // Bresenham's circle algorithm
-    for (int xb = 0; x <= yb; xb++) {
+    for (int xb = 0; xb <= yb; xb++) {
         displayio_bitmap_write_pixel(destination, xb + x, yb + y, value);
         displayio_bitmap_write_pixel(destination, -xb + x, -yb + y, value);
         displayio_bitmap_write_pixel(destination, -xb + x, yb + y, value);
