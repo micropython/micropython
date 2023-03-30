@@ -7,6 +7,9 @@
 #define MICROPY_EMIT_THUMB              (1)
 #define MICROPY_EMIT_INLINE_THUMB       (1)
 
+// Python internal features
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
+
 #define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
 
 #ifndef MICROPY_PY_BUILTINS_COMPLEX
