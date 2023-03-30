@@ -5,7 +5,7 @@ from ustruct import unpack_from
 class DriveMode:
 	Idle = const(0)
 	Manual = const(1)
-	Ball = const(2)
+	Balls = const(2)
 	Line = const(3)
 	Marker = const(4)
 	QRScan = const(5)
@@ -89,7 +89,7 @@ class DriveInfo:
 		aruco_markers = []
 		qr_markers = []
 
-		if mode == DriveMode.Ball:
+		if mode == DriveMode.Balls:
 			balls, offset = DriveInfo.deserialize_ball(buf, offset)
 		elif mode == DriveMode.Marker:
 			aruco_markers, offset = DriveInfo.deserialize_aruco(buf, offset)
