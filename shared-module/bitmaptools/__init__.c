@@ -931,6 +931,11 @@ STATIC void draw_circle(displayio_bitmap_t *destination,
     mp_arg_validate_int_range(x0, SHRT_MIN, SHRT_MAX, MP_QSTR_x0);
     mp_arg_validate_int_range(y0, SHRT_MIN, SHRT_MAX, MP_QSTR_y0);
 
+    x0 = MIN(x0, destination->width);
+    x0 = MAX(0, x0);
+    y0 = MIN(y0, destination->height);
+    y0 = MIN(0, y0);
+
     BITMAP_DEBUG("x, y, radius    (%4d, %4d, %4d)\n", x0, y0, radius);
 
     y = radius;

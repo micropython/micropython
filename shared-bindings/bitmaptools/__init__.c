@@ -871,20 +871,48 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_dither_obj, 0, bitmaptools_dither);
 // requires all 5 arguments
 
 //| def draw_circle(
-//|     dest_bitmap: displayio.Bitmap, x0: int, y0: int, radius: int, value: int
+//|     dest_bitmap: displayio.Bitmap, x: int, y: int, radius: int, value: int
 //| ) -> None:
 //|     """Draws a circle into a bitmap specified using a center (x0,y0) and radius r.
 //|
 //|     :param bitmap dest_bitmap: Destination bitmap that will be written into
-//|     :param int x0: x-pixel position of the circle's center
-//|     :param int y0: y-pixel position of the circle's center
+//|     :param int x: x-pixel position of the circle's center
+//|     :param int y: y-pixel position of the circle's center
 //|     :param int radius: circle's radius
 //|     :param int value: Bitmap palette index that will be written into the
-//|            circle in the destination bitmap"""
+//|            circle in the destination bitmap
+//|
+//|     .. code-block:: Python
+//|
+//|        import board
+//|        import displayio
+//|        import bitmaptools
+//|
+//|        display = board.DISPLAY
+//|        main_group = displayio.Group()
+//|        display.root_group = main_group
+//|
+//|        palette = displayio.Palette(2)
+//|        palette[0] = 0xffffff
+//|        palette[1] = 0x440044
+//|
+//|        bmp = displayio.Bitmap(128,128, 2)
+//|        bmp.fill(0)
+//|
+//|        bitmaptools.circle(64,64, 32, 1)
+//|
+//|        tilegrid = displayio.TileGrid(bitmap=bmp, pixel_shader=palette)
+//|        main_group.append(tilegrid)
+//|
+//|        while True:
+//|            pass
+//|
+//|     """
+//|
 //|     ...
 //|
 STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum {ARG_dest_bitmap, ARG_x0, ARG_y0, ARG_radius, ARG_value};
+    enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_radius, ARG_value};
 
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
@@ -906,12 +934,21 @@ STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_a
     }
 
 
-    int16_t x0 = args[ARG_x0].u_int;
-    int16_t y0 = args[ARG_y0].u_int;
+    int16_t x = args[ARG_x].u_int;
+    int16_t y = args[ARG_y].u_int;
     int16_t radius = args[ARG_radius].u_int;
 
+    if (x < 0 || x >= destination->width) {
+        mp_raise_ValueError(translate("out of range of target"));
+    }
+    if (y < 0 || y >= destination->height) {
+        mp_raise_ValueError(translate("out of range of target"));
+    }
+    if (radius < 0) {
+        mp_raise_ValueError(translate("radius must be greater than zero"));
+    }
 
-    common_hal_bitmaptools_draw_circle(destination, x0, y0, radius, value);
+    common_hal_bitmaptools_draw_circle(destination, x, y, radius, value);
 
     return mp_const_none;
 }
