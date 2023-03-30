@@ -706,8 +706,6 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
         case MOD_NETWORK_SOCK_STREAM: {
             // Register the socket object as our callback argument.
             tcp_arg(socket->pcb.tcp, (void *)socket);
-            // Register our error callback.
-            tcp_err(socket->pcb.tcp, _lwip_tcp_error);
             break;
         }
         case MOD_NETWORK_SOCK_DGRAM: {
@@ -916,10 +914,11 @@ void socketpool_socket_close(socketpool_socket_obj_t *socket) {
         case SOCKETPOOL_SOCK_STREAM: {
             // Deregister callback (pcb.tcp is set to NULL below so must deregister now)
             tcp_arg(socket->pcb.tcp, NULL);
-            tcp_err(socket->pcb.tcp, NULL);
-            tcp_recv(socket->pcb.tcp, NULL);
 
             if (socket->pcb.tcp->state != LISTEN) {
+                tcp_err(socket->pcb.tcp, NULL);
+                tcp_recv(socket->pcb.tcp, NULL);
+
                 // Schedule a callback to abort the connection if it's not cleanly closed after
                 // the given timeout.  The callback must be set before calling tcp_close since
                 // the latter may free the pcb; if it doesn't then the callback will be active.
@@ -977,6 +976,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *socket,
             // Register our receive callback.
             MICROPY_PY_LWIP_ENTER
             tcp_recv(socket->pcb.tcp, _lwip_tcp_recv);
+            tcp_err(socket->pcb.tcp, _lwip_tcp_error);
             socket->state = STATE_CONNECTING;
             err = tcp_connect(socket->pcb.tcp, &dest, port, _lwip_tcp_connected);
             if (err != ERR_OK) {
