@@ -961,7 +961,7 @@ STATIC void draw_circle(displayio_bitmap_t *destination,
 }
 
 void common_hal_bitmaptools_draw_circle(displayio_bitmap_t *destination,
-    int16_t x0, int16_t y0,
+    int16_t x, int16_t y,
     int16_t radius,
     uint32_t value) {
 
@@ -969,10 +969,10 @@ void common_hal_bitmaptools_draw_circle(displayio_bitmap_t *destination,
     // update the dirty area
     int16_t xbb0, xbb1, ybb0, ybb1;
 
-    xbb0 = x0 - radius;
-    xbb1 = x0 + radius;
-    ybb0 = y0 - radius;
-    ybb1 = y0 + radius;
+    xbb0 = x - radius;
+    xbb1 = x + radius;
+    ybb0 = y - radius;
+    ybb1 = y + radius;
 
     displayio_area_t area = { xbb0, ybb0, xbb1, ybb1, NULL };
     displayio_area_t bitmap_area = { 0, 0, destination->width, destination->height, NULL };
@@ -980,5 +980,5 @@ void common_hal_bitmaptools_draw_circle(displayio_bitmap_t *destination,
 
     displayio_bitmap_set_dirty_area(destination, &area);
 
-    draw_circle(destination, x0, y0, radius, value);
+    draw_circle(destination, x, y, radius, value);
 }
