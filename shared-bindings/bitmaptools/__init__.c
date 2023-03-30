@@ -915,7 +915,7 @@ STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_a
     enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_radius, ARG_value};
 
     static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
         {MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT},
         {MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT},
         {MP_QSTR_radius, MP_ARG_REQUIRED | MP_ARG_INT},
