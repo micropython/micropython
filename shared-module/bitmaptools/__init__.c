@@ -923,39 +923,39 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
 }
 
 STATIC void draw_circle(displayio_bitmap_t *destination,
-    int16_t x0, int16_t y0,
+    int16_t x, int16_t y,
     int16_t radius, uint32_t value) {
 
-    int16_t d, y;
+    int16_t d, yb;
 
-    mp_arg_validate_int_range(x0, SHRT_MIN, SHRT_MAX, MP_QSTR_x0);
-    mp_arg_validate_int_range(y0, SHRT_MIN, SHRT_MAX, MP_QSTR_y0);
+    mp_arg_validate_int_range(x0, SHRT_MIN, SHRT_MAX, MP_QSTR_x);
+    mp_arg_validate_int_range(y0, SHRT_MIN, SHRT_MAX, MP_QSTR_y);
 
-    x0 = MIN(x0, destination->width);
-    x0 = MAX(0, x0);
-    y0 = MIN(y0, destination->height);
-    y0 = MIN(0, y0);
+    x = MIN(x, destination->width);
+    x = MAX(0, x);
+    y = MIN(y, destination->height);
+    y = MIN(0, y);
 
-    BITMAP_DEBUG("x, y, radius    (%4d, %4d, %4d)\n", x0, y0, radius);
+    BITMAP_DEBUG("x, y, radius    (%4d, %4d, %4d)\n", x, y, radius);
 
-    y = radius;
+    yb = radius;
     d = 3 - 2 * radius;
 
     // Bresenham's circle algorithm
-    for (int x = 0; x <= y; x++) {
-        displayio_bitmap_write_pixel(destination, x + x0, y + y0, value);
-        displayio_bitmap_write_pixel(destination, -x + x0, -y + y0, value);
-        displayio_bitmap_write_pixel(destination, -x + x0, y + y0, value);
-        displayio_bitmap_write_pixel(destination, x + x0, -y + y0, value);
-        displayio_bitmap_write_pixel(destination, y + x0, x + y0, value);
-        displayio_bitmap_write_pixel(destination, -y + x0, x + y0, value);
-        displayio_bitmap_write_pixel(destination, -y + x0, -x + y0, value);
-        displayio_bitmap_write_pixel(destination, y + x0, -x + y0, value);
+    for (int xb = 0; x <= yb; xb++) {
+        displayio_bitmap_write_pixel(destination, xb + x, yb + y, value);
+        displayio_bitmap_write_pixel(destination, -xb + x, -yb + y, value);
+        displayio_bitmap_write_pixel(destination, -xb + x, yb + y, value);
+        displayio_bitmap_write_pixel(destination, xb + x, -yb + y, value);
+        displayio_bitmap_write_pixel(destination, yb + x, xb + y, value);
+        displayio_bitmap_write_pixel(destination, -yb + x, xb + y, value);
+        displayio_bitmap_write_pixel(destination, -yb + x, -xb + y, value);
+        displayio_bitmap_write_pixel(destination, yb + x, -xb + y, value);
         if (d <= 0) {
-            d = d + (4 * x) + 6;
+            d = d + (4 * xb) + 6;
         } else {
-            d = d + 4 * (x - y) + 10;
-            y = y - 1;
+            d = d + 4 * (xb - yb) + 10;
+            yb = yb - 1;
         }
     }
 }
