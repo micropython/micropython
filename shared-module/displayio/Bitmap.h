@@ -45,6 +45,7 @@ typedef struct {
     displayio_area_t dirty_area;
     uint16_t bitmask;
     bool read_only;
+    bool data_alloc; // did bitmap allocate data or someone else
 } displayio_bitmap_t;
 
 void displayio_bitmap_finish_refresh(displayio_bitmap_t *self);

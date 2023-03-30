@@ -33,7 +33,7 @@
 
 //| """Support for MP3-compressed audio files
 //|
-//| For more infomration about working with MP3 files in CircuitPython,
+//| For more information about working with MP3 files in CircuitPython,
 //| see `this CircuitPython Essentials Learn guide page
 //| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-mp3-audio>`_.
 //| """

@@ -89,7 +89,7 @@ STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_arg
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj, MP_QSTR_pin);
 
     // Make object long-lived to avoid moving between imports
-    pulseio_pulsein_obj_t *self = m_new_ll_obj(pulseio_pulsein_obj_t);
+    pulseio_pulsein_obj_t *self = m_new_ll_obj_with_finaliser(pulseio_pulsein_obj_t);
     self->base.type = &pulseio_pulsein_type;
 
     common_hal_pulseio_pulsein_construct(self, pin, args[ARG_maxlen].u_int,
@@ -277,6 +277,7 @@ STATIC mp_obj_t pulsein_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t va
 STATIC const mp_rom_map_elem_t pulseio_pulsein_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pulseio_pulsein_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&pulseio_pulsein_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&pulseio_pulsein___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&pulseio_pulsein_pause_obj) },

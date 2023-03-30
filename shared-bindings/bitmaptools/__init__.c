@@ -530,14 +530,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_li
 //|     value: int,
 //|     close: Optional[bool] = True,
 //| ) -> None:
-//|     """Draw a polygon conecting points on provided bitmap with provided value
+//|     """Draw a polygon connecting points on provided bitmap with provided value
 //|
 //|     :param bitmap dest_bitmap: Destination bitmap that will be written into
 //|     :param ReadableBuffer xs: x-pixel position of the polygon's vertices
 //|     :param ReadableBuffer ys: y-pixel position of the polygon's vertices
 //|     :param int value: Bitmap palette index that will be written into the
 //|            line in the destination bitmap
-//|     :param bool close: (Optional) Wether to connect first and last point. (True)
+//|     :param bool close: (Optional) Whether to connect first and last point. (True)
 //|
 //|     .. code-block:: Python
 //|
@@ -630,7 +630,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_polygon_obj, 0, bitmaptools_obj_draw
 //|     """Inserts pixels from ``data`` into the rectangle of width×height pixels with the upper left corner at ``(x,y)``
 //|
 //|     The values from ``data`` are taken modulo the number of color values
-//|     avalable in the destination bitmap.
+//|     available in the destination bitmap.
 //|
 //|     If x1 or y1 are not specified, they are taken as 0.  If x2 or y2
 //|     are not specified, or are given as -1, they are taken as the width
@@ -722,7 +722,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_arrayblit_obj, 0, bitmaptools_arrayblit);
 //|     :param typing.BinaryIO file: A file opened in binary mode
 //|     :param int bits_per_pixel: Number of bits per pixel.  Values 1, 2, 4, 8, 16, 24, and 32 are supported;
 //|     :param int element_size: Number of bytes per element.  Values of 1, 2, and 4 are supported, except that 24 ``bits_per_pixel`` requires 1 byte per element.
-//|     :param bool reverse_pixels_in_element: If set, the first pixel in a word is taken from the Most Signficant Bits; otherwise, it is taken from the Least Significant Bits.
+//|     :param bool reverse_pixels_in_element: If set, the first pixel in a word is taken from the Most Significant Bits; otherwise, it is taken from the Least Significant Bits.
 //|     :param bool swap_bytes_in_element: If the ``element_size`` is not 1, then reverse the byte order of each element read.
 //|     :param bool reverse_rows: Reverse the direction of the row loading (required for some bitmap images).
 //|     """
@@ -782,7 +782,7 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_readinto_obj, 0, bitmaptools_readinto);
 
 //| class DitherAlgorithm:
-//|     """Identifies the algorith for dither to use"""
+//|     """Identifies the algorithm for dither to use"""
 //|
 //|     Atkinson: "DitherAlgorithm"
 //|     """The classic Atkinson dither, often associated with the Hypercard esthetic"""

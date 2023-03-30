@@ -248,7 +248,7 @@ STATIC int _discovered_characteristic_cb(uint16_t conn_handle,
         ((chr->properties & BLE_GATT_CHR_PROP_WRITE) != 0 ? CHAR_PROP_WRITE : 0) |
         ((chr->properties & BLE_GATT_CHR_PROP_WRITE_NO_RSP) != 0 ? CHAR_PROP_WRITE_NO_RESPONSE : 0);
 
-    // Call common_hal_bleio_characteristic_construct() to initalize some fields and set up evt handler.
+    // Call common_hal_bleio_characteristic_construct() to initialize some fields and set up evt handler.
     common_hal_bleio_characteristic_construct(
         characteristic, service, chr->val_handle, uuid,
         props, SECURITY_MODE_OPEN, SECURITY_MODE_OPEN,

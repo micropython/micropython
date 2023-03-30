@@ -147,7 +147,7 @@ STATIC mp_obj_t mod_os_remove(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
 
     // Note that POSIX requires remove() to be able to delete a directory
-    // too (act as rmdir()). This is POSIX extenstion to ANSI C semantics
+    // too (act as rmdir()). This is POSIX extension to ANSI C semantics
     // of that function. But Python remove() follows ANSI C, and explicitly
     // required to raise exception on attempt to remove a directory. Thus,
     // call POSIX unlink() here.

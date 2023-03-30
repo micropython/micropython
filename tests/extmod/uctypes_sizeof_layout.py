@@ -13,7 +13,7 @@ desc = {
 # uctypes.NATIVE is default
 print(uctypes.sizeof(desc) == uctypes.sizeof(desc, uctypes.NATIVE))
 
-# Here we assume that that we run on a platform with convential ABI
+# Here we assume that that we run on a platform with conventional ABI
 # (which rounds up structure size based on max alignment). For platforms
 # where that doesn't hold, this tests should be just disabled in the runner.
 print(uctypes.sizeof(desc, uctypes.NATIVE) > uctypes.sizeof(desc, uctypes.LITTLE_ENDIAN))

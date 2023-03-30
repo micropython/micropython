@@ -30,6 +30,8 @@
 
 #include "py/runtime.h"
 #include "py/objproperty.h"
+#include "shared/runtime/context_manager_helpers.h"
+#include "shared-bindings/util.h"
 #include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/gifio/OnDiskGif.h"
 
@@ -95,7 +97,15 @@
 //|
 //|           display_bus.send(42, struct.pack(">hh", 0, odg.bitmap.width - 1))
 //|           display_bus.send(43, struct.pack(">hh", 0, odg.bitmap.height - 1))
-//|           display_bus.send(44, d.bitmap)
+//|           display_bus.send(44, odg.bitmap)
+//|
+//|       # The following optional code will free the OnDiskGif and allocated resources
+//|       # after use. This may be required before loading a new GIF in situations
+//|       # where RAM is limited and the first GIF took most of the RAM.
+//|       odg.deinit()
+//|       odg = None
+//|       gc.collect()
+//|
 //|     """
 //|
 //|     def __init__(self, file: str) -> None:
@@ -125,11 +135,34 @@ STATIC mp_obj_t gifio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
+STATIC void check_for_deinit(gifio_ondiskgif_t *self) {
+    if (common_hal_gifio_ondiskgif_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
+//|     def __enter__(self) -> OnDiskGif:
+//|         """No-op used by Context Managers."""
+//|         ...
+//  Provided by context manager helper.
+
+//|     def __exit__(self) -> None:
+//|         """Automatically deinitializes the GIF when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
+STATIC mp_obj_t gifio_ondiskgif_obj___exit__(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    common_hal_gifio_ondiskgif_deinit(args[0]);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gifio_ondiskgif___exit___obj, 4, 4, gifio_ondiskgif_obj___exit__);
+
 //|     width: int
 //|     """Width of the gif. (read only)"""
 STATIC mp_obj_t gifio_ondiskgif_obj_get_width(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_gifio_ondiskgif_get_width(self));
 }
 
@@ -143,6 +176,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_width_obj,
 STATIC mp_obj_t gifio_ondiskgif_obj_get_height(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_gifio_ondiskgif_get_height(self));
 }
 
@@ -155,6 +189,8 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_height_obj,
 //|     """The bitmap used to hold the current frame."""
 STATIC mp_obj_t gifio_ondiskgif_obj_get_bitmap(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
+
+    check_for_deinit(self);
     return common_hal_gifio_ondiskgif_get_bitmap(self);
 }
 
@@ -168,6 +204,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_bitmap_obj,
 STATIC mp_obj_t gifio_ondiskgif_obj_next_frame(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
+    check_for_deinit(self);
     return mp_obj_new_float((float)common_hal_gifio_ondiskgif_next_frame(self, true) / 1000);
 }
 
@@ -179,6 +216,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_next_frame_obj, gifio_ondiskgif_obj_ne
 STATIC mp_obj_t gifio_ondiskgif_obj_get_duration(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
+    check_for_deinit(self);
     return mp_obj_new_float((float)common_hal_gifio_ondiskgif_get_duration(self) / 1000);
 }
 
@@ -192,6 +230,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_duration_obj,
 STATIC mp_obj_t gifio_ondiskgif_obj_get_frame_count(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_gifio_ondiskgif_get_frame_count(self));
 }
 
@@ -205,6 +244,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_frame_count_obj,
 STATIC mp_obj_t gifio_ondiskgif_obj_get_min_delay(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
+    check_for_deinit(self);
     return mp_obj_new_float((float)common_hal_gifio_ondiskgif_get_min_delay(self) / 1000);
 }
 
@@ -219,6 +259,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_min_delay_obj,
 STATIC mp_obj_t gifio_ondiskgif_obj_get_max_delay(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
+    check_for_deinit(self);
     return mp_obj_new_float((float)common_hal_gifio_ondiskgif_get_max_delay(self) / 1000);
 }
 
@@ -227,7 +268,21 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_max_delay_obj, gifio_ondiskgif_obj
 MP_PROPERTY_GETTER(gifio_ondiskgif_max_delay_obj,
     (mp_obj_t)&gifio_ondiskgif_get_max_delay_obj);
 
+//|     def deinit(self) -> None:
+//|         """Release resources allocated by OnDiskGif."""
+//|         ...
+//|
+STATIC mp_obj_t gifio_ondiskgif_obj_deinit(mp_obj_t self_in) {
+    gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_gifio_ondiskgif_deinit(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_deinit_obj, gifio_ondiskgif_obj_deinit);
+
 STATIC const mp_rom_map_elem_t gifio_ondiskgif_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&gifio_ondiskgif_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&gifio_ondiskgif___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&gifio_ondiskgif_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&gifio_ondiskgif_bitmap_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&gifio_ondiskgif_width_obj) },

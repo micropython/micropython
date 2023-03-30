@@ -1111,6 +1111,8 @@ void gc_collect(void) {
     // have lost their references in the VM even though they are mounted.
     gc_collect_root((void **)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
 
+    port_gc_collect();
+
     background_callback_gc_collect();
 
     #if CIRCUITPY_ALARM
@@ -1141,6 +1143,10 @@ void gc_collect(void) {
     // range.
     gc_collect_root((void **)sp, ((mp_uint_t)port_stack_get_top() - sp) / sizeof(mp_uint_t));
     gc_collect_end();
+}
+
+// Ports may provide an implementation of this function if it is needed
+MP_WEAK void port_gc_collect() {
 }
 
 void NORETURN nlr_jump_fail(void *val) {
