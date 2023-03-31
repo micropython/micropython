@@ -204,16 +204,20 @@ audioio_get_buffer_result_t synthio_miditrack_get_buffer(synthio_miditrack_obj_t
     if (active_channels) {
         int16_t loudness = 0x3fff / (1 + active_channels);
         for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
-            uint8_t octave = span.note[chan] / 12;
-            uint16_t base_freq = notes[span.note[chan] % 12];
             if (span.note[chan] == SILENCE) {
+                self->accum[chan] = 0;
                 continue;
             }
+            uint8_t octave = span.note[chan] / 12;
+            uint16_t base_freq = notes[span.note[chan] % 12];
+            uint32_t accum = self->accum[chan];
+            uint32_t rate = base_freq * 2;
             for (uint16_t i = 0; i < span.dur; i++) {
-                int16_t semiperiod =
-                    ((base_freq * i * 2) / sample_rate) >> (10 - octave);
+                accum += rate;
+                int16_t semiperiod = (accum / sample_rate) >> (10 - octave);
                 self->buffer[i] += semiperiod % 2 ? loudness : -loudness;
             }
+            self->accum[chan] = accum;
         }
     }
 

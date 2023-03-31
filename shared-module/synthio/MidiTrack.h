@@ -44,6 +44,7 @@ typedef struct {
     synthio_midi_span_t *track;
     uint16_t next_span;
     uint16_t total_spans;
+    uint32_t accum[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
 } synthio_miditrack_obj_t;
 
 
