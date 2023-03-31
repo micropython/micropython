@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy_s2.md"
+    ],
+    "docs": "",
+    "features": [
+        "RGB LED",
+        "Breadboard Friendly",
+        "STEMMA QT/QWIIC",
+        "WiFi",
+        "SPIRAM",
+        "USB-C"
+    ],
+    "id": "dym_mpv20",
+    "images": [
+        "deneyapminiv2.jpg"
+    ],
+    "mcu": "esp32s2",
+    "product": "Deneyap Mini v2",
+    "thumbnail": "",
+    "url": "https://deneyapkart.org/",
+    "vendor": "T3 Foundation"
+}
