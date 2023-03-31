@@ -1,4 +1,4 @@
-# Deneyap Kart G MicroPython Helper Library
+# Deneyap Kart 1A v2 Helper Library
 
 from micropython import const
 from machine import Pin
@@ -6,23 +6,23 @@ from machine import Pin
 # Pin Assignments
 
 # SPI
-SPI_MOSI = const(6)
-SPI_MISO = const(5)
-SPI_CLK = const(4)
+SPI_MOSI = const(39)
+SPI_MISO = const(40)
+SPI_CLK = const(41)
 
 # I2C
-I2C_SDA = const(8)
-I2C_SCL = const(2)
+I2C_SDA = const(47)
+I2C_SCL = const(21)
 
 # UART
-UART_TX = const(21)
-UART_RX = const(20)
+UART_TX = const(43)
+UART_RX = const(44)
 
 # RGB LED
-RGBLED = const(10)
+RGBLED = const(48)
 
 # BUTTON
-GPKEY = const(9)
+GPKEY = const(0)
 
 # Built-in peripherals
 
