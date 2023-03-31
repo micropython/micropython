@@ -105,6 +105,14 @@ typedef struct {
     uint8_t bssid[NINA_MAC_ADDR_LEN];
 } nina_netinfo_t;
 
+typedef struct {
+    mp_obj_type_t *spi;
+    mp_hal_pin_obj_t gpio1;
+    mp_hal_pin_obj_t ack;
+    mp_hal_pin_obj_t reset;
+    mp_hal_pin_obj_t gpio0;
+} nina_wiring_t;
+
 typedef int (*nina_scan_callback_t)(nina_scan_result_t *, void *);
 
 int nina_init(void);
@@ -140,4 +148,5 @@ int nina_socket_poll(int fd, uint8_t *flags);
 int nina_socket_setsockopt(int fd, uint32_t level, uint32_t opt, const void *optval, uint16_t optlen);
 int nina_socket_getsockopt(int fd, uint32_t level, uint32_t opt, void *optval, uint16_t optlen);
 int nina_socket_getpeername(int fd, uint8_t *ip, uint16_t *port);
+void nina_bsp_wiring(mp_obj_type_t *spi, mp_obj_type_t *gpio1, mp_obj_type_t *ack, mp_obj_type_t *reset, mp_obj_type_t *gpio0);
 #endif // MICROPY_INCLUDED_DRIVERS_NINAW10_NINA_WIFI_DRV_H

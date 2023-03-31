@@ -145,13 +145,39 @@ STATIC mp_obj_t network_ninaw10_timer_callback(mp_obj_t none_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_timer_callback_obj, network_ninaw10_timer_callback);
 
-STATIC mp_obj_t network_ninaw10_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+STATIC mp_obj_t network_ninaw10_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_mode, ARG_wiring };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_mode, MP_ARG_INT, {.u_int = MOD_NETWORK_STA_IF} },
+        { MP_QSTR_wiring, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+    // Parse args.
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     mp_obj_t nina_obj;
-    if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
+    if (args[ARG_mode].u_int == MOD_NETWORK_STA_IF) {
         nina_obj = MP_OBJ_FROM_PTR(&network_nina_wl_sta);
     } else {
         nina_obj = MP_OBJ_FROM_PTR(&network_nina_wl_ap);
+    }
+    // Specify how the NINA/ESP32 is wired to the host board by a tuple
+    // (spi_obj, GPIO1_pin, ACK_pin, GPIO0_pin, RESET_pin [, uart_obj])
+    if (args[ARG_wiring].u_obj != mp_const_none) {
+        if (mp_obj_is_type(args[ARG_wiring].u_obj, &mp_type_tuple)) {
+            mp_obj_t *items;
+            mp_obj_get_array_fixed_n(args[ARG_wiring].u_obj, 5, &items);
+            if (!(mp_obj_is_type(items[0], &machine_spi_type) &&
+                  mp_obj_is_type(items[1], &machine_pin_type) &&
+                  mp_obj_is_type(items[2], &machine_pin_type) &&
+                  mp_obj_is_type(items[3], &machine_pin_type) &&
+                  mp_obj_is_type(items[4], &machine_pin_type))) {
+                mp_raise_TypeError(MP_ERROR_TEXT("wrong argument type"));
+            }
+            nina_bsp_wiring(items[0], items[1], items[2], items[3], items[4]);
+        } else {
+            mp_raise_TypeError(MP_ERROR_TEXT("must be a tuple"));
+        }
     }
     // Register with network module
     mod_network_register_nic(nina_obj);
