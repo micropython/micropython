@@ -40,7 +40,7 @@
 //|     def __init__(
 //|         self, buffer: ReadableBuffer, *, channel_count: int = 1, sample_rate: int = 8000
 //|     ) -> None:
-//|         """Create a RawSample based on the given buffer of signed values. If channel_count is more than
+//|         """Create a RawSample based on the given buffer of values. If channel_count is more than
 //|         1 then each channel's samples should alternate. In other words, for a two channel buffer, the
 //|         first sample will be for channel 1, the second sample will be for channel two, the third for
 //|         channel 1 and so on.

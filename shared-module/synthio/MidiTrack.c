@@ -27,7 +27,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/synthio/MidiTrack.h"
 
-#define LOUDNESS 0x4000  // 0.5
 #define BITS_PER_SAMPLE 16
 #define BYTES_PER_SAMPLE (BITS_PER_SAMPLE / 8)
 #define SILENCE 0x80
@@ -47,36 +46,51 @@ STATIC uint8_t parse_note(const uint8_t *buffer, uint32_t len, uint32_t *pos) {
     return note;
 }
 
-STATIC void terminate_span(synthio_miditrack_obj_t *self, uint16_t *dur, uint16_t *max_dur) {
+STATIC void terminate_span(synthio_miditrack_obj_t *self, uint16_t *dur) {
     if (*dur) {
         self->track[self->total_spans - 1].dur = *dur;
-        if (*dur > *max_dur) {
-            *max_dur = *dur;
-        }
         *dur = 0;
     } else {
         self->total_spans--;
     }
 }
 
-STATIC void add_span(synthio_miditrack_obj_t *self, uint8_t note1, uint8_t note2) {
-    synthio_midi_span_t span = { 0, {note1, note2} };
+STATIC void add_span(synthio_miditrack_obj_t *self, const synthio_midi_span_t *span) {
     self->track = m_realloc(self->track,
         (self->total_spans + 1) * sizeof(synthio_midi_span_t));
-    self->track[self->total_spans++] = span;
+    self->track[self->total_spans++] = *span;
+}
+
+STATIC int find_channel_with_note(const synthio_midi_span_t *span, uint8_t note) {
+    for (int i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
+        if (span->note[i] == note) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+STATIC void change_span_note(synthio_miditrack_obj_t *self, uint8_t old_note, uint8_t new_note, uint16_t *dur) {
+    synthio_midi_span_t span = self->track[self->total_spans - 1];
+    int channel = find_channel_with_note(&span, old_note);
+    if (channel != -1) {
+        terminate_span(self, dur);
+        span.note[channel] = new_note;
+        add_span(self, &span);
+    }
 }
 
 void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
     const uint8_t *buffer, uint32_t len, uint32_t tempo, uint32_t sample_rate) {
 
-    synthio_midi_span_t initial = { 0, {SILENCE, SILENCE} };
+    synthio_midi_span_t initial = { 0, {[0 ... (CIRCUITPY_SYNTHIO_MAX_CHANNELS - 1)] = SILENCE} };
     self->sample_rate = sample_rate;
     self->track = m_malloc(sizeof(synthio_midi_span_t), false);
     self->next_span = 0;
     self->total_spans = 1;
     *self->track = initial;
 
-    uint16_t dur = 0, max_dur = 0;
+    uint16_t dur = 0;
     uint32_t pos = 0;
     while (pos < len) {
         uint8_t c;
@@ -91,37 +105,19 @@ void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
             raise_midi_stream_error(pos);
         }
 
+        // dur is carried over here so that if a note on/off message doesn't actually produce a change, the
+        // underlying "span" is extended. Otherwise, it is zeroed out in the call to `terminate_span`.
         dur += delta * sample_rate / tempo;
 
         switch (buffer[pos++] >> 4) {
             case 8: { // Note Off
                 uint8_t note = parse_note(buffer, len, &pos);
-
-                // Ignore if not a note which is playing
-                synthio_midi_span_t last_span = self->track[self->total_spans - 1];
-                if (last_span.note[0] == note || last_span.note[1] == note) {
-                    terminate_span(self, &dur, &max_dur);
-                    if (last_span.note[0] == note) {
-                        add_span(self, last_span.note[1], SILENCE);
-                    } else {
-                        add_span(self, last_span.note[0], SILENCE);
-                    }
-                }
+                change_span_note(self, note, SILENCE, &dur);
                 break;
             }
             case 9: { // Note On
                 uint8_t note = parse_note(buffer, len, &pos);
-
-                // Ignore if two notes are already playing
-                synthio_midi_span_t last_span = self->track[self->total_spans - 1];
-                if (last_span.note[1] == SILENCE) {
-                    terminate_span(self, &dur, &max_dur);
-                    if (last_span.note[0] == SILENCE) {
-                        add_span(self, note, SILENCE);
-                    } else {
-                        add_span(self, last_span.note[0], note);
-                    }
-                }
+                change_span_note(self, SILENCE, note, &dur);
                 break;
             }
             case 10:
@@ -142,8 +138,12 @@ void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
                 raise_midi_stream_error(pos);
         }
     }
-    terminate_span(self, &dur, &max_dur);
+    terminate_span(self, &dur);
 
+    uint16_t max_dur = 0;
+    for (int i = 0; i < self->total_spans; i++) {
+        max_dur = MAX(self->track[i].dur, max_dur);
+    }
     self->buffer_length = max_dur * BYTES_PER_SAMPLE;
     self->buffer = m_malloc(self->buffer_length, false);
 }
@@ -177,6 +177,16 @@ void synthio_miditrack_reset_buffer(synthio_miditrack_obj_t *self,
 STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
                                  12544, 13290, 14080, 14917, 15804}; // 9th octave
 
+static int count_active_channels(synthio_midi_span_t *span) {
+    int result = 0;
+    for (int i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
+        if (span->note[i] != SILENCE) {
+            result += 1;
+        }
+    }
+    return result;
+}
+
 audioio_get_buffer_result_t synthio_miditrack_get_buffer(synthio_miditrack_obj_t *self,
     bool single_channel_output, uint8_t channel, uint8_t **buffer, uint32_t *buffer_length) {
 
@@ -187,19 +197,26 @@ audioio_get_buffer_result_t synthio_miditrack_get_buffer(synthio_miditrack_obj_t
 
     synthio_midi_span_t span = self->track[self->next_span++];
     *buffer_length = span.dur * BYTES_PER_SAMPLE;
-    uint8_t octave1 = span.note[0] / 12; // 0..10
-    uint8_t octave2 = span.note[1] / 12; // 0..10
-    int32_t base_freq1 = notes[span.note[0] % 12];
-    int32_t base_freq2 = notes[span.note[1] % 12];
-    int32_t sample_rate = self->sample_rate;
+    memset(self->buffer, 0, *buffer_length);
 
-    for (uint16_t i = 0; i < span.dur; i++) {
-        int16_t semiperiod1 = span.note[0] == SILENCE ? 0 :
-            ((base_freq1 * i * 2) / sample_rate) >> (10 - octave1);
-        int16_t semiperiod2 = span.note[1] == SILENCE ? semiperiod1 :
-            ((base_freq2 * i * 2) / sample_rate) >> (10 - octave2);
-        self->buffer[i] = ((semiperiod1 % 2 + semiperiod2 % 2) - 1) * LOUDNESS;
+    int32_t sample_rate = self->sample_rate;
+    int active_channels = count_active_channels(&span);
+    if (active_channels) {
+        int16_t loudness = 0x3fff / (1 + active_channels);
+        for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
+            uint8_t octave = span.note[chan] / 12;
+            uint16_t base_freq = notes[span.note[chan] % 12];
+            if (span.note[chan] == SILENCE) {
+                continue;
+            }
+            for (uint16_t i = 0; i < span.dur; i++) {
+                int16_t semiperiod =
+                    ((base_freq * i * 2) / sample_rate) >> (10 - octave);
+                self->buffer[i] += semiperiod % 2 ? loudness : -loudness;
+            }
+        }
     }
+
     *buffer = (uint8_t *)self->buffer;
 
     return self->next_span >= self->total_spans ?

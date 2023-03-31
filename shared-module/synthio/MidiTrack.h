@@ -33,7 +33,7 @@
 
 typedef struct {
     uint16_t dur;
-    uint8_t note[2];
+    uint8_t note[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
 } synthio_midi_span_t;
 
 typedef struct {
