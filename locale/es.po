@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-03-25 02:42+0000\n"
+"PO-Revision-Date: 2023-03-31 14:39+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -1315,7 +1315,7 @@ msgstr "Inválidos los data_pins[%d]"
 
 #: shared-module/msgpack/__init__.c
 msgid "Invalid format"
-msgstr ""
+msgstr "Formato inválido"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
