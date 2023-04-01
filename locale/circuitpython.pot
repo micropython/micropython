@@ -3900,10 +3900,6 @@ msgstr ""
 msgid "queue overflow"
 msgstr ""
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "radius must be greater than zero"
-msgstr ""
-
 #: py/parse.c
 msgid "raw f-strings are not supported"
 msgstr ""
