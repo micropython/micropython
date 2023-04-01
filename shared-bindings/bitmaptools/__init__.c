@@ -938,9 +938,9 @@ STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_a
     int16_t y = args[ARG_y].u_int;
     int16_t radius = args[ARG_radius].u_int;
 
-    mp_arg_validate_int_range(x, 0, destination->width, MP_QSTR_x)
-    mp_arg_validate_int_range(y, 0, destination->height, MP_QSTR_y)
-    mp_arg_validate_int_min(radius, 0, MP_QSTR_radius)
+    mp_arg_validate_int_range(x, 0, destination->width, MP_QSTR_x);
+    mp_arg_validate_int_range(y, 0, destination->height, MP_QSTR_y);
+    mp_arg_validate_int_min(radius, 0, MP_QSTR_radius);
 
     common_hal_bitmaptools_draw_circle(destination, x, y, radius, value);
 
