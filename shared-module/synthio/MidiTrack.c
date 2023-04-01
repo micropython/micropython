@@ -94,9 +94,7 @@ void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
     *self->track = initial;
     self->waveform = waveform;
     self->waveform_length = waveform_length;
-    (void)mp_arg_validate_length_min(waveform_length, 2, MP_QSTR_waveform);
-    mp_printf(&mp_plat_print, "note: waveform_length = %d\n", waveform_length);
-    mp_printf(&mp_plat_print, "waveform[0:2] = %d %d\n", waveform[0], waveform[1]);
+    mp_arg_validate_length_range(waveform_length, 2, 1024, MP_QSTR_waveform);
 
     uint16_t dur = 0;
     uint32_t pos = 0;
@@ -217,7 +215,7 @@ audioio_get_buffer_result_t synthio_miditrack_get_buffer(synthio_miditrack_obj_t
     int32_t sample_rate = self->sample_rate;
     int active_channels = count_active_channels(&span);
     const int16_t *waveform = self->waveform;
-    int16_t waveform_length = self->waveform_length;
+    uint32_t waveform_length = self->waveform_length;
     int16_t *out_buffer = self->buffer;
     if (active_channels) {
         int16_t loudness = 0x3fff / (1 + active_channels);
@@ -229,13 +227,20 @@ audioio_get_buffer_result_t synthio_miditrack_get_buffer(synthio_miditrack_obj_t
             uint8_t octave = span.note[chan] / 12;
             uint16_t base_freq = notes[span.note[chan] % 12];
             uint32_t accum = self->accum[chan];
-            uint32_t rate = base_freq * waveform_length;
+#define SHIFT (16)
+            // rate = base_freq * waveform_length
+            // den = sample_rate * 2 ^ (10 - octave)
+            // den = sample_rate * 2 ^ 10 / 2^octave
+            // dds_rate = 2^SHIFT * rate / den
+            // dds_rate = 2^(SHIFT-10+octave) * base_freq * waveform_length / sample_rate
+            uint32_t dds_rate = (sample_rate / 2 + ((uint64_t)(base_freq * waveform_length) << (SHIFT - 10 + octave))) / sample_rate;
+
             for (uint16_t i = 0; i < dur; i++) {
-                accum += rate;
-                int16_t idx = ((accum / sample_rate) >> (10 - octave)) % waveform_length;
-                if (chan == 0 && i < 10) {
-                    mp_printf(&mp_plat_print, "%d %d %d\n", accum, idx, waveform[idx]);
+                accum += dds_rate;
+                if (accum > waveform_length << SHIFT) {
+                    accum -= waveform_length << SHIFT;
                 }
+                int16_t idx = accum >> SHIFT;
                 out_buffer[i] += (waveform[idx] * loudness) / 65536;
             }
             self->accum[chan] = accum;
