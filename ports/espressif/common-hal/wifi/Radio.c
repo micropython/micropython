@@ -243,7 +243,7 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
 }
 
 bool common_hal_wifi_radio_get_ap_active(wifi_radio_obj_t *self) {
-    return self->ap_mode;
+    return self->ap_mode && esp_netif_is_netif_up(self->ap_netif);
 }
 
 void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
