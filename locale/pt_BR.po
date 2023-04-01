@@ -135,6 +135,7 @@ msgid "%q in %q must be of type %q, not %q"
 msgstr "%q em %q deve ser do tipo %q e não %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -1259,6 +1260,7 @@ msgstr "O temporizador do watchdog interno expirou."
 msgid "Interrupt error."
 msgstr "Erro de interrupção."
 
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1266,6 +1268,7 @@ msgid "Invalid %q"
 msgstr "%q Inválido"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Pino do %q inválido"
@@ -3924,11 +3927,7 @@ msgstr "a matriz externa é muito pequena"
 msgid "out must be a float dense array"
 msgstr "deve ser uma matriz densa flutuante"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "out of range of source"
-msgstr "fora do alcance da fonte"
-
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
 msgstr "fora do alcance do alvo"
 
@@ -3955,13 +3954,9 @@ msgstr "os parâmetros devem ser registradores na sequência a2 até a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "os parâmetros devem ser registradores na sequência r0 até r3"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "pixel coordinates out of bounds"
 msgstr "as coordenadas do pixel estão fora dos limites"
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "pixel value requires too many bits"
-msgstr "o valor do pixel requer bits demais"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
@@ -4375,10 +4370,6 @@ msgstr "o valor deve caber em %d byte(s)"
 msgid "value out of range of target"
 msgstr "valor fora do alcance do alvo"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "value_count must be > 0"
-msgstr "o value_count deve ser > 0"
-
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "o watchdog não foi inicializado"
@@ -4465,6 +4456,15 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "out of range of source"
+#~ msgstr "fora do alcance da fonte"
+
+#~ msgid "pixel value requires too many bits"
+#~ msgstr "o valor do pixel requer bits demais"
+
+#~ msgid "value_count must be > 0"
+#~ msgstr "o value_count deve ser > 0"
 
 #~ msgid "64 bit types"
 #~ msgstr "Tipos 64 bit"
