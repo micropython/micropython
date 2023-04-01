@@ -242,6 +242,10 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     esp_wifi_set_config(WIFI_IF_AP, config);
 }
 
+bool common_hal_wifi_radio_get_ap_active(wifi_radio_obj_t *self) {
+    return self->ap_mode && esp_netif_is_netif_up(self->ap_netif);
+}
+
 void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
     set_mode_ap(self, false);
 }
@@ -345,6 +349,10 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
         self->retries_left = self->starting_retries;
     }
     return WIFI_RADIO_ERROR_NONE;
+}
+
+bool common_hal_wifi_radio_get_connected(wifi_radio_obj_t *self) {
+    return self->sta_mode && esp_netif_is_netif_up(self->netif);
 }
 
 mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
