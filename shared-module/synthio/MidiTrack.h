@@ -39,11 +39,13 @@ typedef struct {
 typedef struct {
     mp_obj_base_t base;
     uint32_t sample_rate;
-    uint16_t *buffer;
+    int16_t *buffer;
     uint16_t buffer_length;
     uint16_t remaining_dur;
     uint16_t next_span;
     uint16_t total_spans;
+    uint16_t waveform_length;
+    const int16_t *waveform;
     uint32_t accum[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
     synthio_midi_span_t *track;
 } synthio_miditrack_obj_t;

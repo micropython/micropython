@@ -35,6 +35,8 @@
 #include "shared-bindings/synthio/__init__.h"
 #include "shared-bindings/synthio/MidiTrack.h"
 
+int16_t shared_bindings_synthio_square_wave[] = {-32768, 32767};
+
 //| """Support for MIDI synthesis"""
 //|
 //| def from_file(file: typing.BinaryIO, *, sample_rate: int = 11025) -> MidiTrack:
@@ -43,6 +45,7 @@
 //|
 //|     :param typing.BinaryIO file: Already opened MIDI file
 //|     :param int sample_rate: The desired playback sample rate; higher sample rate requires more memory
+//|     :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit)
 //|
 //|
 //|     Playing a MIDI file from flash::
@@ -63,10 +66,11 @@
 //|     ...
 //|
 STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_file, ARG_sample_rate };
+    enum { ARG_file, ARG_sample_rate, ARG_waveform };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 11025} },
+        { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -74,6 +78,18 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
     pyb_file_obj_t *file = MP_OBJ_TO_PTR(args[ARG_file].u_obj);
+
+    mp_buffer_info_t bufinfo_waveform = {
+        .buf = shared_bindings_synthio_square_wave,
+        .len = 4
+    };
+
+    if (args[ARG_waveform].u_obj != mp_const_none) {
+        mp_get_buffer_raise(args[ARG_waveform].u_obj, &bufinfo_waveform, MP_BUFFER_READ);
+        if (bufinfo_waveform.typecode != 'h') {
+            mp_raise_ValueError_varg(translate("%q must be array of type 'h'"), MP_QSTR_waveform);
+        }
+    }
 
     uint8_t chunk_header[14];
     f_rewind(&file->fp);
@@ -114,7 +130,7 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
     result->base.type = &synthio_miditrack_type;
 
     common_hal_synthio_miditrack_construct(result, buffer, track_size,
-        tempo, args[ARG_sample_rate].u_int);
+        tempo, args[ARG_sample_rate].u_int, bufinfo_waveform.buf, bufinfo_waveform.len / 2);
 
     #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
     m_free(buffer, track_size);
