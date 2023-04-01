@@ -29,7 +29,6 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiocore/__init__.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/audiocore/WaveFile.h"
@@ -37,10 +36,57 @@
 
 //| """Support for audio samples"""
 
+#if CIRCUITPY_AUDIOCORE_DEBUG
+// (no docstrings so that the debug functions are not shown on docs.circuitpython.org)
+STATIC mp_obj_t audiocore_get_buffer(mp_obj_t sample_in) {
+    uint8_t *buffer = NULL;
+    uint32_t buffer_length = 0;
+    audioio_get_buffer_result_t gbr = audiosample_get_buffer(sample_in, false, 0, &buffer, &buffer_length);
+
+    mp_obj_t result[2] = {mp_obj_new_int_from_uint(gbr), mp_const_none};
+
+    if (gbr != GET_BUFFER_ERROR) {
+        // copies the data because the gc semantics of get_buffer are unclear
+        result[1] = mp_obj_new_bytes(buffer, buffer_length);
+    }
+
+    return mp_obj_new_tuple(2, result);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(audiocore_get_buffer_obj, audiocore_get_buffer);
+
+STATIC mp_obj_t audiocore_get_structure(mp_obj_t sample_in) {
+    bool single_buffer, samples_signed;
+    uint32_t max_buffer_length;
+    uint8_t spacing;
+
+    audiosample_get_buffer_structure(sample_in, false, &single_buffer, &samples_signed, &max_buffer_length, &spacing);
+    mp_obj_t result[4] = {
+        mp_obj_new_int_from_uint(single_buffer),
+        mp_obj_new_int_from_uint(samples_signed),
+        mp_obj_new_int_from_uint(max_buffer_length),
+        mp_obj_new_int_from_uint(spacing),
+    };
+    return mp_obj_new_tuple(4, result);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(audiocore_get_structure_obj, audiocore_get_structure);
+
+STATIC mp_obj_t audiocore_reset_buffer(mp_obj_t sample_in) {
+    audiosample_reset_buffer(sample_in, false, 0);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(audiocore_reset_buffer_obj, audiocore_reset_buffer);
+
+#endif
+
 STATIC const mp_rom_map_elem_t audiocore_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiocore) },
     { MP_ROM_QSTR(MP_QSTR_RawSample), MP_ROM_PTR(&audioio_rawsample_type) },
     { MP_ROM_QSTR(MP_QSTR_WaveFile), MP_ROM_PTR(&audioio_wavefile_type) },
+    #if CIRCUITPY_AUDIOCORE_DEBUG
+    { MP_ROM_QSTR(MP_QSTR_get_buffer), MP_ROM_PTR(&audiocore_get_buffer_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset_buffer), MP_ROM_PTR(&audiocore_reset_buffer_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_structure), MP_ROM_PTR(&audiocore_get_structure_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(audiocore_module_globals, audiocore_module_globals_table);

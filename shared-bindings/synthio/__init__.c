@@ -30,6 +30,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "extmod/vfs_fat.h"
+#include "extmod/vfs_posix.h"
 
 #include "shared-bindings/synthio/__init__.h"
 #include "shared-bindings/synthio/MidiTrack.h"
@@ -115,7 +116,11 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
     common_hal_synthio_miditrack_construct(result, buffer, track_size,
         tempo, args[ARG_sample_rate].u_int);
 
+    #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+    m_free(buffer, track_size);
+    #else
     m_free(buffer);
+    #endif
 
     return MP_OBJ_FROM_PTR(result);
 }

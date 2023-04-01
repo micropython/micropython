@@ -57,8 +57,7 @@ STATIC void terminate_span(synthio_miditrack_obj_t *self, uint16_t *dur) {
 }
 
 STATIC void add_span(synthio_miditrack_obj_t *self, const synthio_midi_span_t *span) {
-    self->track = m_realloc(self->track,
-        (self->total_spans + 1) * sizeof(synthio_midi_span_t));
+    self->track = m_renew(synthio_midi_span_t, self->track, self->total_spans, self->total_spans + 1);
     self->track[self->total_spans++] = *span;
 }
 
@@ -151,9 +150,9 @@ void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
 }
 
 void common_hal_synthio_miditrack_deinit(synthio_miditrack_obj_t *self) {
-    m_free(self->buffer);
+    m_del(uint8_t, self->buffer, self->buffer_length);
     self->buffer = NULL;
-    m_free(self->track);
+    m_del(synthio_midi_span_t, self->track, self->total_spans + 1);
     self->track = NULL;
 }
 bool common_hal_synthio_miditrack_deinited(synthio_miditrack_obj_t *self) {
