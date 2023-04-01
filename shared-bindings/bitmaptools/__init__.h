@@ -64,6 +64,11 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
     int16_t x1, int16_t y1,
     uint32_t value);
 
+void common_hal_bitmaptools_draw_circle(displayio_bitmap_t *destination,
+    int16_t x, int16_t y,
+    int16_t radius,
+    uint32_t value);
+
 void common_hal_bitmaptools_draw_polygon(displayio_bitmap_t *destination, void *xs, void *ys, size_t points_len, int point_size, uint32_t value, bool close);
 void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, mp_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_word, bool swap_bytes, bool reverse_rows);
 void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int element_size, int x1, int y1, int x2, int y2, bool skip_specified, uint32_t skip_index);
