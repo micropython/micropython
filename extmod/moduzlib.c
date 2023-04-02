@@ -125,9 +125,35 @@ STATIC mp_uint_t decompio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     return o->decomp.dest - (byte *)buf;
 }
 
+STATIC mp_obj_t mod_uzlib_reset(size_t n_args, const mp_obj_t *args) {
+    mp_obj_decompio_t *o = args[0];
+    TINF_DATA *decomp = &o->decomp;
+    unsigned char *dict_ring = decomp->dict_ring;
+    unsigned int dict_size = decomp->dict_size;
+    memset(&o->decomp, 0, sizeof(o->decomp));
+    o->decomp.readSource = read_src_stream;
+    o->src_stream = args[1];
+    o->eof = false;
+    decomp->dict_ring = dict_ring;
+    decomp->dict_size = dict_size;
+    uzlib_zlib_parse_header(decomp);
+    for (uint i=0; i<dict_size; ++i) {
+      dict_ring[i] = 0;
+    }
+    decomp->eof = 0;
+    decomp->bitcount = 0;
+    decomp->bfinal = 0;
+    decomp->btype = -1;
+    decomp->dict_idx = 0;
+    decomp->curlen = 0;
+    return o;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_reset_obj, 1, 3, mod_uzlib_reset);
+
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t decompio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&mod_uzlib_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
 };
