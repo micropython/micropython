@@ -27,11 +27,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/synthio/MidiTrack.h"
 
-#define BITS_PER_SAMPLE (16)
-#define BYTES_PER_SAMPLE (BITS_PER_SAMPLE / 8)
-#define MAX_DUR (512)
-#define SILENCE (0x80)
-
 
 STATIC NORETURN void raise_midi_stream_error(uint32_t pos) {
     mp_raise_ValueError_varg(translate("Error in MIDI stream at position %d"), pos);
@@ -86,14 +81,13 @@ void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
     const uint8_t *buffer, uint32_t len, uint32_t tempo, uint32_t sample_rate,
     const int16_t *waveform, uint16_t waveform_length) {
 
-    synthio_midi_span_t initial = { 0, {[0 ... (CIRCUITPY_SYNTHIO_MAX_CHANNELS - 1)] = SILENCE} };
-    self->sample_rate = sample_rate;
+    self->synth.sample_rate = sample_rate;
     self->track = m_malloc(sizeof(synthio_midi_span_t), false);
+    *self->track = ((synthio_midi_span_t) { 0, {[0 ... (CIRCUITPY_SYNTHIO_MAX_CHANNELS - 1)] = SYNTHIO_SILENCE} });
     self->next_span = 0;
     self->total_spans = 1;
-    *self->track = initial;
-    self->waveform = waveform;
-    self->waveform_length = waveform_length;
+    self->synth.waveform = waveform;
+    self->synth.waveform_length = waveform_length;
     mp_arg_validate_length_range(waveform_length, 2, 1024, MP_QSTR_waveform);
 
     uint16_t dur = 0;
@@ -118,12 +112,12 @@ void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
         switch (buffer[pos++] >> 4) {
             case 8: { // Note Off
                 uint8_t note = parse_note(buffer, len, &pos);
-                change_span_note(self, note, SILENCE, &dur);
+                change_span_note(self, note, SYNTHIO_SILENCE, &dur);
                 break;
             }
             case 9: { // Note On
                 uint8_t note = parse_note(buffer, len, &pos);
-                change_span_note(self, SILENCE, note, &dur);
+                change_span_note(self, SYNTHIO_SILENCE, note, &dur);
                 break;
             }
             case 10:
@@ -150,25 +144,23 @@ void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
     for (int i = 0; i < self->total_spans; i++) {
         max_dur = MAX(self->track[i].dur, max_dur);
     }
-    self->buffer_length = MIN(MAX_DUR, max_dur) * BYTES_PER_SAMPLE;
-    self->buffer = m_malloc(self->buffer_length, false);
+    synthio_synth_init(&self->synth, max_dur);
 }
 
 void common_hal_synthio_miditrack_deinit(synthio_miditrack_obj_t *self) {
-    m_del(uint8_t, self->buffer, self->buffer_length);
-    self->buffer = NULL;
+    synthio_synth_deinit(&self->synth);
     m_del(synthio_midi_span_t, self->track, self->total_spans + 1);
     self->track = NULL;
 }
 bool common_hal_synthio_miditrack_deinited(synthio_miditrack_obj_t *self) {
-    return self->buffer == NULL;
+    return synthio_synth_deinited(&self->synth);
 }
 
 uint32_t common_hal_synthio_miditrack_get_sample_rate(synthio_miditrack_obj_t *self) {
-    return self->sample_rate;
+    return self->synth.sample_rate;
 }
 uint8_t common_hal_synthio_miditrack_get_bits_per_sample(synthio_miditrack_obj_t *self) {
-    return BITS_PER_SAMPLE;
+    return SYNTHIO_BITS_PER_SAMPLE;
 }
 uint8_t common_hal_synthio_miditrack_get_channel_count(synthio_miditrack_obj_t *self) {
     return 1;
@@ -177,87 +169,28 @@ uint8_t common_hal_synthio_miditrack_get_channel_count(synthio_miditrack_obj_t *
 void synthio_miditrack_reset_buffer(synthio_miditrack_obj_t *self,
     bool single_channel_output, uint8_t channel) {
 
-    self->remaining_dur = 0;
+    self->synth.span.dur = 0;
     self->next_span = 0;
-}
-
-STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
-                                 12544, 13290, 14080, 14917, 15804}; // 9th octave
-
-static int count_active_channels(synthio_midi_span_t *span) {
-    int result = 0;
-    for (int i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
-        if (span->note[i] != SILENCE) {
-            result += 1;
-        }
-    }
-    return result;
 }
 
 audioio_get_buffer_result_t synthio_miditrack_get_buffer(synthio_miditrack_obj_t *self,
     bool single_channel_output, uint8_t channel, uint8_t **buffer, uint32_t *buffer_length) {
-    synthio_midi_span_t span = self->track[self->next_span - !!self->remaining_dur];
 
-    if (self->remaining_dur == 0) {
+    if (self->synth.span.dur == 0) {
         if (self->next_span >= self->total_spans) {
             *buffer_length = 0;
             return GET_BUFFER_DONE;
         }
-        self->next_span++;
-        self->remaining_dur = span.dur;
+        self->synth.span = self->track[self->next_span++];
     }
 
-    uint16_t dur = MIN(MAX_DUR, self->remaining_dur);
-    self->remaining_dur -= dur;
-    *buffer_length = dur * BYTES_PER_SAMPLE;
-    memset(self->buffer, 0, *buffer_length);
+    synthio_synth_synthesize(&self->synth, buffer, buffer_length);
 
-    int32_t sample_rate = self->sample_rate;
-    int active_channels = count_active_channels(&span);
-    const int16_t *waveform = self->waveform;
-    uint32_t waveform_length = self->waveform_length;
-    int16_t *out_buffer = self->buffer;
-    if (active_channels) {
-        int16_t loudness = 0x3fff / (1 + active_channels);
-        for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
-            if (span.note[chan] == SILENCE) {
-                self->accum[chan] = 0;
-                continue;
-            }
-            uint8_t octave = span.note[chan] / 12;
-            uint16_t base_freq = notes[span.note[chan] % 12];
-            uint32_t accum = self->accum[chan];
-#define SHIFT (16)
-            // rate = base_freq * waveform_length
-            // den = sample_rate * 2 ^ (10 - octave)
-            // den = sample_rate * 2 ^ 10 / 2^octave
-            // dds_rate = 2^SHIFT * rate / den
-            // dds_rate = 2^(SHIFT-10+octave) * base_freq * waveform_length / sample_rate
-            uint32_t dds_rate = (sample_rate / 2 + ((uint64_t)(base_freq * waveform_length) << (SHIFT - 10 + octave))) / sample_rate;
-
-            for (uint16_t i = 0; i < dur; i++) {
-                accum += dds_rate;
-                if (accum > waveform_length << SHIFT) {
-                    accum -= waveform_length << SHIFT;
-                }
-                int16_t idx = accum >> SHIFT;
-                out_buffer[i] += (waveform[idx] * loudness) / 65536;
-            }
-            self->accum[chan] = accum;
-        }
-    }
-
-    *buffer = (uint8_t *)self->buffer;
-
-    return (self->remaining_dur == 0 && self->next_span >= self->total_spans) ?
+    return (self->synth.span.dur == 0 && self->next_span >= self->total_spans) ?
            GET_BUFFER_DONE : GET_BUFFER_MORE_DATA;
 }
 
 void synthio_miditrack_get_buffer_structure(synthio_miditrack_obj_t *self, bool single_channel_output,
     bool *single_buffer, bool *samples_signed, uint32_t *max_buffer_length, uint8_t *spacing) {
-
-    *single_buffer = true;
-    *samples_signed = true;
-    *max_buffer_length = self->buffer_length;
-    *spacing = 1;
+    return synthio_synth_get_buffer_structure(&self->synth, single_channel_output, single_buffer, samples_signed, max_buffer_length, spacing);
 }

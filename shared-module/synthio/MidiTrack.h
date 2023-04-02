@@ -32,21 +32,10 @@
 #include "shared-module/synthio/__init__.h"
 
 typedef struct {
-    uint16_t dur;
-    uint8_t note[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
-} synthio_midi_span_t;
-
-typedef struct {
     mp_obj_base_t base;
-    uint32_t sample_rate;
-    int16_t *buffer;
-    uint16_t buffer_length;
-    uint16_t remaining_dur;
+    synthio_synth_t synth;
     uint16_t next_span;
     uint16_t total_spans;
-    uint16_t waveform_length;
-    const int16_t *waveform;
-    uint32_t accum[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
     synthio_midi_span_t *track;
 } synthio_miditrack_obj_t;
 
