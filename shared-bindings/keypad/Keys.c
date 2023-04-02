@@ -73,6 +73,7 @@
 //|         ...
 
 STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    #if CIRCUITPY_KEYPAD_KEYS
     keypad_keys_obj_t *self = m_new_obj(keypad_keys_obj_t);
     self->base.type = &keypad_keys_type;
     enum { ARG_pins, ARG_value_when_pressed, ARG_pull, ARG_interval, ARG_max_events };
@@ -106,8 +107,13 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, s
     common_hal_keypad_keys_construct(self, num_pins, pins_array, value_when_pressed, args[ARG_pull].u_bool, interval, max_events);
 
     return MP_OBJ_FROM_PTR(self);
+    #else
+    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_Keys);
+
+    #endif
 }
 
+#if CIRCUITPY_KEYPAD_KEYS
 //|     def deinit(self) -> None:
 //|         """Stop scanning and release the pins."""
 //|         ...
@@ -162,10 +168,13 @@ STATIC const mp_rom_map_elem_t keypad_keys_locals_dict_table[] = {
 };
 
 STATIC MP_DEFINE_CONST_DICT(keypad_keys_locals_dict, keypad_keys_locals_dict_table);
+#endif
 
 const mp_obj_type_t keypad_keys_type = {
     { &mp_type_type },
     .name = MP_QSTR_Keys,
     .make_new = keypad_keys_make_new,
+    #if CIRCUITPY_KEYPAD_KEYS
     .locals_dict = (mp_obj_t)&keypad_keys_locals_dict,
+    #endif
 };
