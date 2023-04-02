@@ -49,3 +49,10 @@ void nlr_pop(void) {
     nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
     *top = (*top)->prev;
 }
+
+#if MICROPY_ENABLE_VM_ABORT
+NORETURN void nlr_jump_abort(void) {
+    MP_STATE_THREAD(nlr_top) = MP_STATE_VM(nlr_abort);
+    nlr_jump(NULL);
+}
+#endif

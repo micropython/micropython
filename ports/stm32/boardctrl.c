@@ -89,6 +89,9 @@ void boardctrl_maybe_enter_mboot(size_t n_args, const void *args_in) {
 
 #if !MICROPY_HW_USES_BOOTLOADER
 STATIC uint update_reset_mode(uint reset_mode) {
+    // Note: Must use HAL_Delay here as MicroPython is not yet initialised
+    // and mp_hal_delay_ms will attempt to invoke the scheduler.
+
     #if MICROPY_HW_HAS_SWITCH
     if (switch_get()) {
 
@@ -100,7 +103,7 @@ STATIC uint update_reset_mode(uint reset_mode) {
             led_state(3, reset_mode & 2);
             led_state(4, reset_mode & 4);
             for (uint j = 0; j < 30; ++j) {
-                mp_hal_delay_ms(20);
+                HAL_Delay(20);
                 if (!switch_get()) {
                     goto select_mode;
                 }
@@ -115,13 +118,13 @@ STATIC uint update_reset_mode(uint reset_mode) {
             led_state(2, 0);
             led_state(3, 0);
             led_state(4, 0);
-            mp_hal_delay_ms(50);
+            HAL_Delay(50);
             led_state(2, reset_mode & 1);
             led_state(3, reset_mode & 2);
             led_state(4, reset_mode & 4);
-            mp_hal_delay_ms(50);
+            HAL_Delay(50);
         }
-        mp_hal_delay_ms(400);
+        HAL_Delay(400);
 
         #elif defined(MICROPY_HW_LED1)
 
@@ -134,11 +137,11 @@ STATIC uint update_reset_mode(uint reset_mode) {
                     break;
                 }
                 led_state(1, 1);
-                mp_hal_delay_ms(100);
+                HAL_Delay(100);
                 led_state(1, 0);
-                mp_hal_delay_ms(200);
+                HAL_Delay(200);
             }
-            mp_hal_delay_ms(400);
+            HAL_Delay(400);
             if (!switch_get()) {
                 break;
             }
@@ -150,11 +153,11 @@ STATIC uint update_reset_mode(uint reset_mode) {
         for (uint i = 0; i < 2; i++) {
             for (uint j = 0; j < reset_mode; j++) {
                 led_state(1, 1);
-                mp_hal_delay_ms(100);
+                HAL_Delay(100);
                 led_state(1, 0);
-                mp_hal_delay_ms(200);
+                HAL_Delay(200);
             }
-            mp_hal_delay_ms(400);
+            HAL_Delay(400);
         }
         #else
         #error Need a reset mode update method

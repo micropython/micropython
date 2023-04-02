@@ -54,6 +54,10 @@ if (MICROPY_PY_NETWORK_CYW43)
     set(PICO_CYW43_DRIVER_PATH ${MICROPY_DIR}/lib/cyw43-driver)
 endif()
 
+# Necessary submodules for all boards.
+string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/mbedtls)
+string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/tinyusb)
+
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
@@ -83,15 +87,17 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/shared/netutils/netutils.c
     ${MICROPY_DIR}/shared/netutils/trace.c
     ${MICROPY_DIR}/shared/readline/readline.c
-    ${MICROPY_DIR}/shared/runtime/gchelper_m0.s
+    ${MICROPY_DIR}/shared/runtime/gchelper_thumb1.s
     ${MICROPY_DIR}/shared/runtime/gchelper_native.c
     ${MICROPY_DIR}/shared/runtime/interrupt_char.c
     ${MICROPY_DIR}/shared/runtime/mpirq.c
     ${MICROPY_DIR}/shared/runtime/pyexec.c
     ${MICROPY_DIR}/shared/runtime/stdout_helpers.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
-    ${MICROPY_DIR}/shared/runtime/tinyusb_helpers.c
     ${MICROPY_DIR}/shared/timeutils/timeutils.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_cdc_common.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_usbd.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_usbd_descriptor.c
 )
 
 set(MICROPY_SOURCE_DRIVERS
@@ -121,10 +127,11 @@ set(MICROPY_SOURCE_PORT
     pendsv.c
     rp2_flash.c
     rp2_pio.c
-    tusb_port.c
     uart.c
+    usbd.c
     msc_disk.c
     mbedtls/mbedtls_port.c
+    ${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c
 )
 
 set(MICROPY_SOURCE_QSTR
@@ -147,6 +154,7 @@ set(MICROPY_SOURCE_QSTR
     ${PROJECT_SOURCE_DIR}/modutime.c
     ${PROJECT_SOURCE_DIR}/rp2_flash.c
     ${PROJECT_SOURCE_DIR}/rp2_pio.c
+    ${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c
 )
 
 set(PICO_SDK_COMPONENTS
@@ -229,6 +237,11 @@ if(MICROPY_BLUETOOTH_NIMBLE)
     list(APPEND MICROPY_INC_CORE ${NIMBLE_INCLUDE})
 endif()
 
+# tinyusb helper
+target_include_directories(${MICROPY_TARGET} PRIVATE
+    ${MICROPY_DIR}/shared/tinyusb/
+)
+
 if (MICROPY_PY_NETWORK_CYW43)
     string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/cyw43-driver)
     if((NOT (${ECHO_SUBMODULES})) AND NOT EXISTS ${MICROPY_DIR}/lib/cyw43-driver/src/cyw43.h)
@@ -237,7 +250,6 @@ if (MICROPY_PY_NETWORK_CYW43)
 
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_PY_NETWORK_CYW43=1
-        MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER=1
         MICROPY_PY_SOCKET_DEFAULT_TIMEOUT_MS=30000 # default socket timeout
     )
     if (CMAKE_BUILD_TYPE MATCHES Debug)
@@ -246,8 +258,8 @@ if (MICROPY_PY_NETWORK_CYW43)
     )
     endif()
 
-    list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_DIR}/extmod/network_cyw43.c
+    list(APPEND MICROPY_SOURCE_PORT
+        machine_pin_cyw43.c
     )
 
     target_link_libraries(${MICROPY_TARGET}
@@ -270,14 +282,16 @@ if (MICROPY_PY_NETWORK_NINAW10)
         ${MICROPY_DIR}/drivers/ninaw10/nina_bt_hci.c
         ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_drv.c
         ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_bsp.c
-    )
-
-    list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_DIR}/extmod/network_ninaw10.c
+        ${MICROPY_DIR}/drivers/ninaw10/machine_pin_nina.c
     )
 endif()
 
 if (MICROPY_PY_NETWORK_WIZNET5K)
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/wiznet5k)
+    if((NOT (${ECHO_SUBMODULES})) AND NOT EXISTS ${MICROPY_DIR}/lib/wiznet5k/README.md)
+        message(FATAL_ERROR " wiznet5k not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
+    endif()
+
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_PY_NETWORK_WIZNET5K=1
         WIZCHIP_PREFIXED_EXPORTS=1
@@ -308,12 +322,6 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DNS/dns.c
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DHCP/dhcp.c
     )
-
-    list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_DIR}/extmod/network_wiznet5k.c
-    )
-
-    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/wiznet5k)
 endif()
 
 # Add qstr sources for extmod and usermod, in case they are modified by components above.
@@ -405,9 +413,11 @@ endif()
 
 pico_add_extra_outputs(${MICROPY_TARGET})
 
+pico_find_compiler(PICO_COMPILER_SIZE ${PICO_GCC_TRIPLE}-size)
+
 add_custom_command(TARGET ${MICROPY_TARGET}
     POST_BUILD
-    COMMAND arm-none-eabi-size --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
+    COMMAND ${PICO_COMPILER_SIZE} --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
     VERBATIM
 )
 
@@ -419,3 +429,37 @@ endforeach()
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
+
+set(MICROPY_BOARDS_DIR "${MICROPY_PORT_DIR}/boards")
+set(GEN_PINS_AF_CSV "${MICROPY_BOARDS_DIR}/rp2_af.csv")
+set(GEN_PINS_PREFIX "${MICROPY_BOARDS_DIR}/rp2_prefix.c")
+set(GEN_PINS_MKPINS "${MICROPY_BOARDS_DIR}/make-pins.py")
+set(GEN_PINS_SRC "${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c")
+set(GEN_PINS_HDR "${MICROPY_GENHDR_DIR}/pins.h")
+set(GEN_PINS_QSTR "${CMAKE_BINARY_DIR}/pins_qstr.h")
+set(GEN_PINS_AF_CONST "${MICROPY_GENHDR_DIR}/pins_af_const.h")
+set(GEN_PINS_AF_PY "${CMAKE_BINARY_DIR}/pins_af.py")
+
+if(EXISTS "${MICROPY_BOARDS_DIR}/${MICROPY_BOARD}/pins.csv")
+    set(GEN_PINS_BOARD_CSV "${MICROPY_BOARDS_DIR}/${MICROPY_BOARD}/pins.csv")
+    set(GEN_PINS_CSV_ARG --board "${GEN_PINS_BOARD_CSV}")
+endif()
+
+target_sources(${MICROPY_TARGET} PRIVATE
+    ${GEN_PINS_HDR}
+)
+
+# Generate pins
+add_custom_command(
+    OUTPUT ${GEN_PINS_HDR} ${GEN_PINS_SRC} ${GEN_PINS_QSTR}
+    COMMAND ${Python3_EXECUTABLE} ${GEN_PINS_MKPINS} ${GEN_PINS_CSV_ARG} --af ${GEN_PINS_AF_CSV} --prefix ${GEN_PINS_PREFIX}
+    --hdr ${GEN_PINS_HDR} --qstr ${GEN_PINS_QSTR} --af-const ${GEN_PINS_AF_CONST} --af-py ${GEN_PINS_AF_PY} > ${GEN_PINS_SRC}
+    DEPENDS
+        ${GEN_PINS_AF_CSV}
+        ${GEN_PINS_BOARD_CSV}
+        ${GEN_PINS_MKPINS}
+        ${GEN_PINS_PREFIX}
+        ${MICROPY_MPVERSION}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)

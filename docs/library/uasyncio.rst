@@ -149,12 +149,18 @@ class ThreadSafeFlag
 
     Create a new flag which can be used to synchronise a task with code running
     outside the uasyncio loop, such as other threads, IRQs, or scheduler
-    callbacks.  Flags start in the cleared state.
+    callbacks.  Flags start in the cleared state.  The class does not currently
+    work under the Unix build of MicroPython.
 
 .. method:: ThreadSafeFlag.set()
 
-    Set the flag.  If there is a task waiting on the event, it will be scheduled
+    Set the flag.  If there is a task waiting on the flag, it will be scheduled
     to run.
+
+.. method:: ThreadSafeFlag.clear()
+
+    Clear the flag. This may be used to ensure that a possibly previously-set
+    flag is clear before waiting for it.
 
 .. method:: ThreadSafeFlag.wait()
 

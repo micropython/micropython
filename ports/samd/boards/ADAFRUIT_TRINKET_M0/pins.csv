@@ -1,0 +1,20 @@
+# Pin rows contain Pin number and pin name.
+# Pin rows start with PIN_
+# If the pin name is omitted, the pin number is added as name.
+# Empty lines and lines not starting with PIN_ are ignored
+
+PIN_PA08,D0
+PIN_PA02,D1
+PIN_PA09,D2
+PIN_PA07,D3
+PIN_PA06,D4
+PIN_PA00,DOTSTAR_DATA
+PIN_PA01,DOTSTAR_CLK
+
+PIN_PA10,LED
+
+PIN_PA24,USB_DM
+PIN_PA25,USB_DP
+
+PIN_PA30,SWCLK
+PIN_PA31,SWDIO

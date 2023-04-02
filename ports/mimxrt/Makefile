@@ -2,20 +2,32 @@
 # Parameter Configuration
 # =============================================================================
 
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to TEENSY40.
 BOARD ?= TEENSY40
 BOARD_DIR ?= boards/$(BOARD)
+endif
+
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+    $(error Invalid BOARD specified: $(BOARD_DIR))
+endif
+
 BUILD ?= build-$(BOARD)
 PORT ?= /dev/ttyACM0
 CROSS_COMPILE ?= arm-none-eabi-
-GIT_SUBMODULES = lib/tinyusb lib/nxp_driver lib/lwip lib/mbedtls
+GIT_SUBMODULES += lib/tinyusb lib/nxp_driver
 
 # MicroPython feature configurations
-FROZEN_MANIFEST ?= boards/manifest.py
 MICROPY_VFS_LFS2 ?= 1
 MICROPY_VFS_FAT ?= 1
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
+QSTR_DEFS += qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
 # Generation scripts
@@ -26,10 +38,13 @@ MAKE_FLEXRAM_LD = boards/make-flexram-config.py
 include ../../py/mkenv.mk
 
 # Include micropython configuration board makefile
-ifeq ($(wildcard $(BOARD_DIR)/.),)
-    $(error Invalid BOARD specified: $(BOARD_DIR))
-endif
 include $(BOARD_DIR)/mpconfigboard.mk
+
+# MicroPython feature configurations
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
+
+# File containing description of content to be frozen into firmware.
+FROZEN_MANIFEST ?= boards/manifest.py
 
 # Include py core make definitions
 include $(TOP)/py/py.mk
@@ -49,7 +64,6 @@ GEN_FLEXRAM_CONFIG_SRC = $(BUILD)/flexram_config.s
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
 
 # =============================================================================
@@ -102,13 +116,12 @@ SRC_ETH_C += \
 	hal/phy/device/phydp83848/fsl_phydp83848.c \
 	hal/phy/device/phyksz8081/fsl_phyksz8081.c \
 	hal/phy/device/phylan8720/fsl_phylan8720.c \
+	hal/phy/device/phyrtl8211f/fsl_phyrtl8211f.c \
 	hal/phy/mdio/enet/fsl_enet_mdio.c
 endif
 
 # NXP SDK sources
 SRC_HAL_IMX_C += \
-	$(MCU_DIR)/drivers/fsl_adc.c \
-	$(MCU_DIR)/drivers/fsl_cache.c \
 	$(MCU_DIR)/drivers/fsl_clock.c \
 	$(MCU_DIR)/drivers/fsl_common.c \
 	$(MCU_DIR)/drivers/fsl_dmamux.c \
@@ -125,9 +138,8 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_pwm.c \
 	$(MCU_DIR)/drivers/fsl_sai.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
-	$(MCU_DIR)/drivers/fsl_trng.c \
 	$(MCU_DIR)/drivers/fsl_wdog.c \
-	$(MCU_DIR)/system_$(MCU_SERIES).c \
+	$(MCU_DIR)/system_$(MCU_SERIES)$(MCU_CORE).c \
 	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
 
 ifeq ($(MICROPY_HW_SDRAM_AVAIL),1)
@@ -138,9 +150,27 @@ ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_usdhc.c
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
 SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_qtmr.c
+endif
+
+ifeq ($(MCU_SERIES), MIMXRT1176)
+INC += -I$(TOP)/$(MCU_DIR)/drivers/cm7
+
+SRC_HAL_IMX_C += \
+	$(MCU_DIR)/drivers/cm7/fsl_cache.c \
+	$(MCU_DIR)/drivers/fsl_dcdc.c \
+	$(MCU_DIR)/drivers/fsl_pmu.c \
+	$(MCU_DIR)/drivers/fsl_common_arm.c \
+	$(MCU_DIR)/drivers/fsl_anatop_ai.c \
+	$(MCU_DIR)/drivers/fsl_caam.c \
+	$(MCU_DIR)/drivers/fsl_lpadc.c
+else
+SRC_HAL_IMX_C += \
+	$(MCU_DIR)/drivers/fsl_adc.c \
+	$(MCU_DIR)/drivers/fsl_cache.c \
+	$(MCU_DIR)/drivers/fsl_trng.c
 endif
 
 # C source files
@@ -151,10 +181,6 @@ SRC_C += \
 	drivers/bus/softspi.c \
 	drivers/dht/dht.c \
 	eth.c \
-	extmod/modnetwork.c \
-	extmod/modonewire.c \
-	extmod/modusocket.c \
-	extmod/uos_dupterm.c \
 	fatfs_port.c \
 	hal/pwm_backport.c \
 	led.c \
@@ -167,7 +193,6 @@ SRC_C += \
 	machine_rtc.c \
 	machine_sdcard.c \
 	machine_spi.c \
-	machine_timer.c \
 	machine_uart.c \
 	machine_wdt.c \
 	main.c \
@@ -183,6 +208,11 @@ SRC_C += \
 	pendsv.c \
 	pin.c \
 	sdcard.c \
+	systick.c \
+	ticks.c \
+	tusb_port.c \
+
+SHARED_SRC_C += \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
 	shared/netutils/dhcpserver.c \
@@ -193,26 +223,21 @@ SRC_C += \
 	shared/runtime/interrupt_char.c \
 	shared/runtime/mpirq.c \
 	shared/runtime/pyexec.c \
+	shared/runtime/softtimer.c \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
-	systick.c \
-	ticks.c \
-	tusb_port.c \
-	$(SRC_TINYUSB_C) \
-	$(SRC_HAL_IMX_C) \
-	$(SRC_ETH_C)
 
 # Add sources for respective board flash type
 ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash qspi_hyper_flash))
     # Add hal/flexspi_nor_flash.c or hal/flashspi_hyper_flash.c respectively
-    SRC_C += hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).c
+    SRC_HAL_C += hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).c
     #
     # Add custom (board specific) or default configuration
     ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
-        SRC_C += $(BOARD_DIR)/$(MICROPY_HW_FLASH_TYPE)_config.c
+        SRC_HAL_C += $(BOARD_DIR)/$(MICROPY_HW_FLASH_TYPE)_config.c
     else
-        SRC_C += hal/$(MICROPY_HW_FLASH_TYPE)_config.c
+        SRC_HAL_C += hal/$(MICROPY_HW_FLASH_TYPE)_config.c
     endif
 else
     $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
@@ -249,49 +274,17 @@ SUPPORTS_HARDWARE_FP_DOUBLE = 0
 
 # Assembly source files
 SRC_SS = \
-	$(MCU_DIR)/gcc/startup_$(MCU_SERIES).S \
+	$(MCU_DIR)/gcc/startup_$(MCU_SERIES)$(MCU_CORE).S \
 	hal/resethandler_MIMXRT10xx.S
 
-SRC_S += shared/runtime/gchelper_m3.s \
+SRC_S += shared/runtime/gchelper_thumb2.s \
 
 # =============================================================================
 # QSTR Sources
 # =============================================================================
 
-# All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
-ifeq ($(MICROPY_PY_LWIP),1)
-SRC_QSTR += \
-	extmod/modlwip.c \
-	extmod/modnetwork.c \
-	extmod/modusocket.c \
-	extmod/moduwebsocket.c \
-	network_lan.c
-endif
-
 # List of sources for qstr extraction
-SRC_QSTR += \
-	extmod/modonewire.c \
-	extmod/uos_dupterm.c \
-	machine_adc.c \
-	machine_i2s.c \
-	machine_led.c \
-	machine_pin.c \
-	machine_pwm.c \
-	machine_rtc.c \
-	machine_sdcard.c \
-	machine_spi.c \
-	machine_timer.c \
-	machine_uart.c \
-	machine_wdt.c \
-	mimxrt_flash.c \
-	modmachine.c \
-	modmimxrt.c \
-	modutime.c \
-	pin.c \
-	shared/readline/readline.c \
-	shared/runtime/mpirq.c \
-	shared/runtime/sys_stdio_mphal.c \
-	$(GEN_PINS_SRC)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 
 # =============================================================================
 # Compiler Flags
@@ -300,6 +293,8 @@ SRC_QSTR += \
 CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG),1)
 CFLAGS += -Og
+# Disable text compression in debug builds
+MICROPY_ROM_TEXT_COMPRESSION = 0
 else
 CFLAGS += -Os -DNDEBUG
 endif
@@ -317,11 +312,11 @@ CFLAGS += \
 	-D__STARTUP_INITIALIZE_RAMFUNCTION \
 	-DBOARD_$(BOARD) \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
-	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX \
+	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT \
 	-DCLOCK_CONFIG_H='<boards/$(MCU_SERIES)_clock_config.h>' \
-	-DCPU_$(MCU_SERIES) \
+	-DCPU_$(MCU_SERIES)$(MCU_CORE) \
 	-DCPU_$(MCU_VARIANT) \
-	-DCPU_HEADER_H='<$(MCU_SERIES).h>' \
+	-DCPU_HEADER_H='<$(MCU_SERIES)$(MCU_CORE).h>' \
 	-DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
 	-DI2C_RETRY_TIMES=1000000 \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
@@ -383,17 +378,18 @@ endif
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
 ifeq ($(MICROPY_PY_LWIP),1)
 CFLAGS += \
-	-DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1 \
-	-DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
+	-DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1
 endif
 
-CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += $(CFLAGS_EXTRA)
+
+MPY_CROSS_FLAGS += -march=armv7m
 
 # =============================================================================
 # Linker Flags
 # =============================================================================
 
-LDFLAGS = \
+LDFLAGS += \
 	--cref \
 	--gc-sections \
 	--print-memory-usage \
@@ -428,14 +424,17 @@ ifeq ($(MICROPY_FLOAT_IMPL),double)
 $(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
-
 OBJ += $(PY_O)
 OBJ += $(LIBM_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
-OBJ += $(BUILD)/pins_gen.o
+OBJ += $(addprefix $(BUILD)/, $(SRC_TINYUSB_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_HAL_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_HAL_IMX_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_ETH_C:.c=.o))
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 # Workaround for bug in older gcc, warning on "static usbd_device_t _usbd_dev = { 0 };"
 $(BUILD)/lib/tinyusb/src/device/usbd.o: CFLAGS += -Wno-missing-braces
@@ -474,9 +473,8 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 
 $(GEN_FLEXRAM_CONFIG_SRC):
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_FLEXRAM_LD) -d $(TOP)/$(MCU_DIR)/$(MCU_SERIES).h \
-		-f $(TOP)/$(MCU_DIR)/$(MCU_SERIES)_features.h -l boards/$(MCU_SERIES).ld -c $(MCU_SERIES) > $(GEN_FLEXRAM_CONFIG_SRC)
-
+	$(Q)$(PYTHON) $(MAKE_FLEXRAM_LD) -d $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE).h \
+		-f $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE)_features.h -l boards/$(MCU_SERIES).ld -c $(MCU_SERIES) > $(GEN_FLEXRAM_CONFIG_SRC)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_gen.c and pins.h
@@ -486,7 +484,7 @@ $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h: $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PR
 		--iomux $(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h) \
 		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
 
-$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
+$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
 	$(call compile_c)
 
 include $(TOP)/py/mkrules.mk

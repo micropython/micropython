@@ -3,6 +3,11 @@
 # This file is part of the MicroPython project, http://micropython.org/
 # The MIT License (MIT)
 # Copyright (c) 2020 Damien P. George
+#
+# run-multitests.py
+# Runs a test suite that relies on two micropython instances/devices
+# interacting in some way. Typically used to test networking / bluetooth etc.
+
 
 import sys, os, time, re, select
 import argparse
@@ -10,15 +15,26 @@ import itertools
 import subprocess
 import tempfile
 
-sys.path.append("../tools")
+test_dir = os.path.abspath(os.path.dirname(__file__))
+
+if os.path.abspath(sys.path[0]) == test_dir:
+    # remove the micropython/tests dir from path to avoid
+    # accidentally importing tests like micropython/const.py
+    sys.path.pop(0)
+
+sys.path.insert(0, test_dir + "/../tools")
 import pyboard
 
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3.exe")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/windows/micropython.exe")
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", test_dir + "/../ports/windows/build-standard/micropython.exe"
+    )
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/unix/micropython")
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", test_dir + "/../ports/unix/build-standard/micropython"
+    )
 
 # For diff'ing test output
 DIFF = os.getenv("MICROPY_DIFF", "diff -u")
@@ -74,6 +90,12 @@ class multitest:
             except:
                 ip = HOST_IP
         return ip
+    @staticmethod
+    def expect_reboot(resume, delay_ms=0):
+        print("WAIT_FOR_REBOOT", resume, delay_ms)
+    @staticmethod
+    def output_metric(data):
+        print("OUTPUT_METRIC", data)
 
 {}
 
@@ -293,6 +315,7 @@ def run_test_on_instances(test_file, num_instances, instances):
     skip = False
     injected_globals = ""
     output = [[] for _ in range(num_instances)]
+    output_metrics = []
 
     # If the test calls get_network_ip() then inject HOST_IP so that devices can know
     # the IP address of the host.  Do this lazily to not require a TCP/IP connection
@@ -362,10 +385,27 @@ def run_test_on_instances(test_file, num_instances, instances):
                 last_read_time[idx] = time.time()
                 if out is not None and not any(m in out for m in IGNORE_OUTPUT_MATCHES):
                     trace_instance_output(idx, out)
+                    if out.startswith("WAIT_FOR_REBOOT"):
+                        _, resume, delay_ms = out.split(" ")
+
+                        if wait_for_reboot(instance, delay_ms):
+                            # Restart the test code, resuming from requested instance block
+                            if not resume.startswith("instance{}".format(idx)):
+                                raise SystemExit(
+                                    'ERROR: resume function must start with "instance{}"'.format(
+                                        idx
+                                    )
+                                )
+                            append_code = APPEND_CODE_TEMPLATE.format(injected_globals, resume[8:])
+                            instance.start_file(test_file, append=append_code)
+                            last_read_time[idx] = time.time()
+
                     if out.startswith("BROADCAST "):
                         for instance2 in instances:
                             if instance2 is not instance:
                                 instance2.write(bytes(out, "ascii") + b"\r\n")
+                    elif out.startswith("OUTPUT_METRIC "):
+                        output_metrics.append(out.split(" ", 1)[1])
                     else:
                         output[idx].append(out)
                 if err is not None:
@@ -387,7 +427,39 @@ def run_test_on_instances(test_file, num_instances, instances):
         output_str += "--- instance{} ---\n".format(idx)
         output_str += "\n".join(lines) + "\n"
 
-    return error, skip, output_str
+    return error, skip, output_str, output_metrics
+
+
+def wait_for_reboot(instance, extra_timeout_ms=0):
+    # Monitor device responses for reboot banner, waiting for idle.
+    extra_timeout = float(extra_timeout_ms) * 1000
+    INITIAL_TIMEOUT = 1 + extra_timeout
+    FULL_TIMEOUT = 5 + extra_timeout
+    t_start = t_last_activity = time.monotonic()
+    while True:
+        t = time.monotonic()
+        out, err = instance.readline()
+        if err is not None:
+            print("Reboot: communication error", err)
+            return False
+        if out:
+            t_last_activity = t
+            # Check for reboot banner, see py/pyexec.c "reset friendly REPL"
+            if re.match(r"^MicroPython v\d+\.\d+\.\d+.* on .*; .* with .*$", out):
+                time.sleep(0.1)
+                break
+
+        if t_last_activity == t_start:
+            if t - t_start > INITIAL_TIMEOUT:
+                print("Reboot: missed initial Timeout")
+                return False
+        else:
+            if t - t_start > FULL_TIMEOUT:
+                print("Reboot: Timeout")
+                return False
+
+    instance.pyb.enter_raw_repl()
+    return True
 
 
 def print_diff(a, b):
@@ -415,7 +487,9 @@ def run_tests(test_files, instances_truth, instances_test):
         sys.stdout.flush()
 
         # Run test on test instances
-        error, skip, output_test = run_test_on_instances(test_file, num_instances, instances_test)
+        error, skip, output_test, output_metrics = run_test_on_instances(
+            test_file, num_instances, instances_test
+        )
 
         if not skip:
             # Check if truth exists in a file, and read it in
@@ -425,7 +499,7 @@ def run_tests(test_files, instances_truth, instances_test):
                     output_truth = f.read()
             else:
                 # Run test on truth instances to get expected output
-                _, _, output_truth = run_test_on_instances(
+                _, _, output_truth, _ = run_test_on_instances(
                     test_file, num_instances, instances_truth
                 )
 
@@ -454,6 +528,11 @@ def run_tests(test_files, instances_truth, instances_test):
                 print("### DIFF ###")
                 print_diff(output_truth, output_test)
 
+        # Print test output metrics, if there are any.
+        if output_metrics:
+            for metric in output_metrics:
+                print(test_file, ": ", metric, sep="")
+
         if cmd_args.show_output:
             print()
 
@@ -471,7 +550,10 @@ def run_tests(test_files, instances_truth, instances_test):
 def main():
     global cmd_args
 
-    cmd_parser = argparse.ArgumentParser(description="Run network tests for MicroPython")
+    cmd_parser = argparse.ArgumentParser(
+        description="Run network tests for MicroPython",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     cmd_parser.add_argument(
         "-s", "--show-output", action="store_true", help="show test output after running"
     )
@@ -488,11 +570,19 @@ def main():
         default=1,
         help="repeat the test with this many permutations of the instance order",
     )
+    cmd_parser.epilog = (
+        "Supported instance types:\r\n"
+        " -i pyb:<port>   physical device (eg. pyboard) on provided repl port.\n"
+        " -i micropython  unix micropython instance, path customised with MICROPY_MICROPYTHON env.\n"
+        " -i cpython      desktop python3 instance, path customised with MICROPY_CPYTHON3 env.\n"
+        " -i exec:<path>  custom program run on provided path.\n"
+        "Each instance arg can optionally have custom env provided, eg. <cmd>,ENV=VAR,ENV=VAR...\n"
+    )
     cmd_parser.add_argument("files", nargs="+", help="input test files")
     cmd_args = cmd_parser.parse_args()
 
     # clear search path to make sure tests use only builtin modules and those in extmod
-    os.environ["MICROPYPATH"] = os.pathsep + "../extmod"
+    os.environ["MICROPYPATH"] = os.pathsep.join(("", ".frozen", "../extmod"))
 
     test_files = prepare_test_file_list(cmd_args.files)
     max_instances = max(t[1] for t in test_files)

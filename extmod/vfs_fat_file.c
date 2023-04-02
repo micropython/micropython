@@ -170,23 +170,20 @@ STATIC const mp_rom_map_elem_t vfs_fat_rawfile_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(vfs_fat_rawfile_locals_dict, vfs_fat_rawfile_locals_dict_table);
 
-#if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t vfs_fat_fileio_stream_p = {
     .read = file_obj_read,
     .write = file_obj_write,
     .ioctl = file_obj_ioctl,
 };
 
-const mp_obj_type_t mp_type_vfs_fat_fileio = {
-    { &mp_type_type },
-    .name = MP_QSTR_FileIO,
-    .print = file_obj_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_fat_fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
-};
-#endif
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_fat_fileio,
+    MP_QSTR_FileIO,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, file_obj_print,
+    protocol, &vfs_fat_fileio_stream_p,
+    locals_dict, &vfs_fat_rawfile_locals_dict
+    );
 
 STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
     .read = file_obj_read,
@@ -195,15 +192,14 @@ STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
     .is_text = true,
 };
 
-const mp_obj_type_t mp_type_vfs_fat_textio = {
-    { &mp_type_type },
-    .name = MP_QSTR_TextIOWrapper,
-    .print = file_obj_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_fat_textio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_fat_textio,
+    MP_QSTR_TextIOWrapper,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, file_obj_print,
+    protocol, &vfs_fat_textio_stream_p,
+    locals_dict, &vfs_fat_rawfile_locals_dict
+    );
 
 // Factory function for I/O stream classes
 STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in) {
@@ -230,11 +226,9 @@ STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_i
             case '+':
                 mode |= FA_READ | FA_WRITE;
                 break;
-            #if MICROPY_PY_IO_FILEIO
             case 'b':
                 type = &mp_type_vfs_fat_fileio;
                 break;
-            #endif
             case 't':
                 type = &mp_type_vfs_fat_textio;
                 break;

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Renesas Electronics Corporation
+ * Copyright (c) 2021,2022 Renesas Electronics Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,47 +69,42 @@ enum AF_INDEX {
     AF_END = 0xff,
 };
 
-#define  GPIO_MODE_INPUT        1
-#define  GPIO_MODE_OUTPUT_PP    2
-#define  GPIO_MODE_OUTPUT_OD    3
-#define  GPIO_MODE_AF_PP        4
-#define  GPIO_MODE_AF_OD        5
-#define  GPIO_MODE_ANALOG       6
-#define  GPIO_MODE_IT_RISING    7
-#define  GPIO_MODE_IT_FALLING   8
-#define  GPIO_MODE_IT_RISING_FALLING 9
-#define  GPIO_MODE_EVT_RISING   10
-#define  GPIO_MODE_EVT_FALLING  11
-#define  GPIO_MODE_EVT_RISING_FALLING   12
-#define  GPIO_NOPULL            13
-#define  GPIO_PULLUP            14
-#define  GPIO_PULLDOWN          15
-#define  GPIO_PULLHOLD          16
-#define  GPIO_LOW_POWER         17
-#define  GPIO_MED_POWER         18
-#define  GPIO_HIGH_POWER        19
-#define  GPIO_NOTOUCH_POWER     20
-#define  GPIO_IRQ_LOWLEVEL      21
-#define  GPIO_IRQ_HIGHLEVEL     22
+#define  GPIO_MODE_INPUT        0
+#define  GPIO_MODE_OUTPUT_PP    1
+#define  GPIO_MODE_OUTPUT_OD    2
+#define  GPIO_MODE_AF_PP        3
+#define  GPIO_MODE_AF_OD        4
+#define  GPIO_MODE_ANALOG       5
+
+#define  GPIO_IRQ_FALLING       0x1
+#define  GPIO_IRQ_RISING        0x2
+#define  GPIO_IRQ_LOWLEVEL      0x4
+#define  GPIO_IRQ_HIGHLEVEL     0x8
+
+#define  GPIO_NOPULL            0
+#define  GPIO_PULLUP            1
+#define  GPIO_PULLDOWN          2
+
+#define  GPIO_LOW_POWER         0
+#define  GPIO_MID_POWER         1
+#define  GPIO_MID_FAST_POWER    2
+#define  GPIO_HIGH_POWER        3
 
 #define IS_GPIO_MODE(MODE) (((MODE) == GPIO_MODE_INPUT) || \
     ((MODE) == GPIO_MODE_OUTPUT_PP) || \
     ((MODE) == GPIO_MODE_OUTPUT_OD) || \
     ((MODE) == GPIO_MODE_AF_PP) || \
     ((MODE) == GPIO_MODE_AF_OD) || \
-    ((MODE) == GPIO_MODE_IT_RISING) || \
-    ((MODE) == GPIO_MODE_IT_FALLING) || \
-    ((MODE) == GPIO_MODE_IT_RISING_FALLING) || \
-    ((MODE) == GPIO_MODE_EVT_RISING) || \
-    ((MODE) == GPIO_MODE_EVT_FALLING) || \
-    ((MODE) == GPIO_MODE_EVT_RISING_FALLING) || \
     ((MODE) == GPIO_MODE_ANALOG))
 
 #define IS_GPIO_DRIVE(DRIVE) (((DRIVE) == GPIO_LOW_POWER) || \
-    ((DRIVE) == GPIO_MED_POWER) || \
+    ((DRIVE) == GPIO_MID_POWER) || \
+    ((DRIVE) == GPIO_MID_FAST_POWER) || \
     ((DRIVE) == GPIO_HIGH_POWER))
 
-#define IS_GPIO_PULL(PULL) (((PULL) == GPIO_NOPULL) || ((PULL) == GPIO_PULLUP))
+#define IS_GPIO_PULL(PULL) (((PULL) == GPIO_NOPULL) || \
+    ((PULL) == GPIO_PULLUP) || \
+    ((PULL) == GPIO_PULLDOWN))
 
 #define IS_GPIO_AF(AF)   ((AF) <= (uint8_t)0x1F)
 

@@ -47,8 +47,8 @@ For running PIO programs, see :class:`rp2.StateMachine`.
       `PIO.SHIFT_LEFT` or `PIO.SHIFT_RIGHT`.
     - *push_thresh* is the threshold in bits before auto-push or conditional
       re-pushing is triggered.
-    - *pull_thresh* is the threshold in bits before auto-push or conditional
-      re-pushing is triggered.
+    - *pull_thresh* is the threshold in bits before auto-pull or conditional
+      re-pulling is triggered.
 
     The remaining parameters are:
 
@@ -65,6 +65,17 @@ For running PIO programs, see :class:`rp2.StateMachine`.
 
     >>> rp2.asm_pio_encode("set(0, 1)", 0)
     57345
+
+.. function:: bootsel_button()
+
+    Temporarily turns the QSPI_SS pin into an input and reads its value,
+    returning 1 for low and 0 for high.
+    On a typical RP2040 board with a BOOTSEL button, a return value of 1
+    indicates that the button is pressed.
+
+    Since this function temporarily disables access to the external flash
+    memory, it also temporarily disables interrupts and the other core to
+    prevent them from trying to execute code from flash.
 
 .. class:: PIOASMError
 

@@ -27,19 +27,32 @@
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
 
 #include <stdint.h>
+#include "hardware/flash.h"
 #include "hardware/spi.h"
 #include "hardware/sync.h"
 #include "pico/binary_info.h"
 #include "pico/multicore.h"
 #include "mpconfigboard.h"
-#if MICROPY_HW_USB_MSC
-#include "hardware/flash.h"
-#endif
 
 // Board and hardware specific configuration
 #define MICROPY_HW_MCU_NAME                     "RP2040"
+#ifndef MICROPY_HW_ENABLE_UART_REPL
 #define MICROPY_HW_ENABLE_UART_REPL             (0) // useful if there is no USB
+#endif
+#ifndef MICROPY_HW_ENABLE_USBDEV
 #define MICROPY_HW_ENABLE_USBDEV                (1)
+#endif
+
+#if MICROPY_HW_ENABLE_USBDEV
+// Enable USB-CDC serial port
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC (1)
+#endif
+// Enable USB Mass Storage with FatFS filesystem.
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC (0)
+#endif
+#endif
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
@@ -83,10 +96,14 @@
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
 #define MICROPY_PY_UOS_INCLUDEFILE              "ports/rp2/moduos.c"
+#ifndef MICROPY_PY_OS_DUPTERM
+#define MICROPY_PY_OS_DUPTERM                   (1)
+#endif
 #define MICROPY_PY_UOS_UNAME                    (1)
 #define MICROPY_PY_UOS_URANDOM                  (1)
 #define MICROPY_PY_URE_MATCH_GROUPS             (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
+#define MICROPY_PY_UHASHLIB_SHA1                (1)
 #define MICROPY_PY_UCRYPTOLIB                   (1)
 #define MICROPY_PY_UTIME_MP_HAL                 (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC       (rosc_random_u32())
@@ -128,6 +145,10 @@
 
 // By default networking should include sockets, ssl, websockets, webrepl, dupterm.
 #if MICROPY_PY_NETWORK
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-rp2"
+#endif
+
 #ifndef MICROPY_PY_USOCKET
 #define MICROPY_PY_USOCKET              (1)
 #endif
@@ -137,14 +158,8 @@
 #ifndef MICROPY_PY_UWEBSOCKET
 #define MICROPY_PY_UWEBSOCKET           (1)
 #endif
-#ifndef MICROPY_PY_UHASHLIB_SHA1
-#define MICROPY_PY_UHASHLIB_SHA1        (1)
-#endif
 #ifndef MICROPY_PY_WEBREPL
 #define MICROPY_PY_WEBREPL              (1)
-#endif
-#ifndef MICROPY_PY_OS_DUPTERM
-#define MICROPY_PY_OS_DUPTERM           (1)
 #endif
 #endif
 
@@ -167,18 +182,14 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #ifndef MICROPY_PY_USOCKET_EXTENDED_STATE
 #define MICROPY_PY_USOCKET_EXTENDED_STATE   (1)
 #endif
-extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
+extern const struct _mp_obj_type_t mod_network_nic_type_nina;
 #define MICROPY_HW_NIC_NINAW10              { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
 #else
 #define MICROPY_HW_NIC_NINAW10
 #endif
 
 #if MICROPY_PY_NETWORK_WIZNET5K
-#if MICROPY_PY_LWIP
 extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
-#else
-extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
-#endif
 #define MICROPY_HW_NIC_WIZNET5K             { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
 #else
 #define MICROPY_HW_NIC_WIZNET5K
@@ -194,9 +205,25 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
     MICROPY_HW_NIC_WIZNET5K \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
+#endif
+
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
+
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID (0x2E8A) // Raspberry Pi
+#endif
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID (0x0005) // RP2 MicroPython
+#endif
+
+#ifndef MICROPY_HW_BOOTSEL_DELAY_US
+#define MICROPY_HW_BOOTSEL_DELAY_US 8
+#endif
 
 // Entering a critical section.
 extern uint32_t mp_thread_begin_atomic_section(void);
@@ -210,7 +237,7 @@ extern void mp_thread_end_atomic_section(uint32_t);
 #define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
 
 #if MICROPY_HW_ENABLE_USBDEV
-#define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task_ext(uint32_t, bool); tud_task_ext(0, false);
+#define MICROPY_HW_USBDEV_TASK_HOOK extern void usbd_task(void); usbd_task();
 #define MICROPY_VM_HOOK_COUNT (10)
 #define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
 #define MICROPY_VM_HOOK_POLL if (get_core_num() == 0 && --vm_hook_divisor == 0) { \
@@ -253,10 +280,3 @@ typedef intptr_t mp_off_t;
 extern uint32_t rosc_random_u32(void);
 extern void lwip_lock_acquire(void);
 extern void lwip_lock_release(void);
-
-extern uint32_t cyw43_country_code;
-extern void cyw43_irq_init(void);
-extern void cyw43_post_poll_hook(void);
-
-#define CYW43_POST_POLL_HOOK cyw43_post_poll_hook();
-#define MICROPY_CYW43_COUNTRY cyw43_country_code

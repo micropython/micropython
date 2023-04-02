@@ -18,8 +18,8 @@ As the factory setting, following size is allocated for the file system:
 ---------------  -------------------
  EK-RA4M1           36KB ( 36864B)
  EK-RA4W1           64KB ( 65536B)
- EK-RA6M1          128KB (131072B)
- EK-RA6M2          256KB (262144B)
+ EK-RA6M1           64KB ( 65536B)
+ EK-RA6M2          128KB (131072B)
  RA4M1 CLICKER      36KB ( 36864B)
 ===============  ===================
 

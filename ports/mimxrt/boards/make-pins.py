@@ -21,6 +21,9 @@ regexes = [
     r"IOMUXC_(?P<pin>GPIO_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
     r"IOMUXC_(?P<pin>GPIO_AD_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
     r"IOMUXC_(?P<pin>GPIO_SD_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_(?P<pin>GPIO_EMC_B\d_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_(?P<pin>GPIO_DISP_B\d_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_(?P<pin>GPIO_LPSR_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
 ]
 
 
@@ -62,11 +65,22 @@ class Pin(object):
 
     def parse_adc(self, adc_str):
         adc_regex = r"ADC(?P<instance>\d*)_IN(?P<channel>\d*)"
+        lpadc_regex = r"ADC(?P<instance>\d*)_CH(?P<channel>\d*)"  # LPADC for MIMXRT11xx chips
 
         matches = re.finditer(adc_regex, adc_str, re.MULTILINE)
         for match in matches:
             self.adc_fns.append(
                 AdcFunction(instance=match.group("instance"), channel=match.group("channel"))
+            )
+
+        matches = re.finditer(lpadc_regex, adc_str, re.MULTILINE)
+        for match in matches:
+            self.adc_fns.append(
+                AdcFunction(
+                    peripheral="LPADC",
+                    instance=match.group("instance"),
+                    channel=match.group("channel"),
+                )
             )
 
     def parse_af(self, af_idx, af_strs_in):
@@ -104,18 +118,16 @@ class Pin(object):
             self.print_pin_af()
             self.print_pin_adc()
 
-            if self.adc_fns:
-                print(
-                    "const machine_pin_obj_t pin_{0} = PIN({0}, {1}, {2}, pin_{0}_af, {3}, pin_{0}_adc);\n".format(
-                        self.name, self.gpio, int(self.pin), len(self.adc_fns)
-                    )
+            print(
+                "const machine_pin_obj_t pin_{0} = {1}({0}, {2}, {3}, pin_{0}_af, {4}, {5});\n".format(
+                    self.name,
+                    "PIN_LPSR" if "LPSR" in self.name else "PIN",
+                    self.gpio,
+                    int(self.pin),
+                    len(self.adc_fns),
+                    "pin_{}_adc".format(self.name) if self.adc_fns else "NULL",
                 )
-            else:
-                print(
-                    "const machine_pin_obj_t pin_{0} = PIN({0}, {1}, {2}, pin_{0}_af, {3}, NULL);\n".format(
-                        self.name, self.gpio, int(self.pin), len(self.adc_fns)
-                    )
-                )
+            )
         else:
             raise ValueError("Pin '{}' has no alternative functions".format(self.name))
 
@@ -126,13 +138,14 @@ class Pin(object):
 class AdcFunction(object):
     """Holds the information associated with a pins ADC function."""
 
-    def __init__(self, instance, channel):
+    def __init__(self, instance, channel, peripheral="ADC"):
+        self.peripheral = peripheral
         self.instance = instance
         self.channel = channel
 
     def print(self):
         """Prints the C representation of this AF."""
-        print(f"    PIN_ADC(ADC{self.instance}, {self.channel}),")
+        print(f"    PIN_ADC({self.peripheral}{self.instance}, {self.channel}),")
 
 
 class AlternateFunction(object):
@@ -190,11 +203,8 @@ class Pins(object):
                 if pin and row[0]:  # Only add board pins that have a name
                     self.board_pins.append(NamedPin(row[0], pin.pad, pin.idx))
 
-    def parse_af_file(self, filename, iomux_filename, pad_col, af_start_col):
-        af_end_col = af_start_col + MAX_AF
-
+    def parse_af_file(self, filename, iomux_filename):
         iomux_pin_config = dict()
-
         with open(iomux_filename, "r") as ipt:
             input_str = ipt.read()
             for regex in regexes:
@@ -213,16 +223,23 @@ class Pins(object):
         with open(filename, "r") as csvfile:
             rows = csv.reader(csvfile)
             header = next(rows)
+            # Extract indexes from header row
+            pad_col = header.index("Pad")
+            adc_col = header.index("ADC")
+            acmp_col = header.index("ACMP")
+            #
             for idx, row in enumerate(rows):
                 pad = row[pad_col]
                 gpio, pin = row[6].split("_")
                 pin_number = pin.lstrip("IO")
-
                 pin = Pin(pad, gpio, pin_number, idx=idx)
+
+                if any(s in pad for s in ("SNVS", "WAKEUP")):
+                    continue
 
                 # Parse alternate functions
                 af_idx = 0
-                for af_idx, af in enumerate(row[af_start_col:af_end_col]):
+                for af_idx, af in enumerate(row[(pad_col + 1) : adc_col]):
                     if af and af_supported(af):
                         pin.add_af(
                             AlternateFunction(
@@ -235,7 +252,7 @@ class Pins(object):
                             )
                         )
 
-                pin.parse_adc(row[ADC_COL])
+                pin.parse_adc(row[adc_col])
 
                 self.cpu_pins.append(pin)
 
@@ -363,7 +380,7 @@ def main():
 
     if args.af_filename:
         print("// --af {:s}".format(args.af_filename))
-        pins.parse_af_file(args.af_filename, args.iomux_filename, 0, 1)
+        pins.parse_af_file(args.af_filename, args.iomux_filename)
 
     if args.board_filename:
         print("// --board {:s}".format(args.board_filename))

@@ -49,9 +49,17 @@ A MicroPython user C module is a directory with the following files:
   in your ``micropython.mk`` to a local make variable,
   eg ``EXAMPLE_MOD_DIR := $(USERMOD_DIR)``
 
-  Your ``micropython.mk`` must add your modules source files relative to your
-  expanded copy of ``$(USERMOD_DIR)`` to ``SRC_USERMOD``, eg
-  ``SRC_USERMOD += $(EXAMPLE_MOD_DIR)/example.c``
+  Your ``micropython.mk`` must add your modules source files to the
+  ``SRC_USERMOD_C`` or ``SRC_USERMOD_LIB_C`` variables. The former will be
+  processed for ``MP_QSTR_`` and ``MP_REGISTER_MODULE`` definitions, the latter
+  will not (e.g. helpers and library code that isn't MicroPython-specific).
+  These paths should include your expaned copy of ``$(USERMOD_DIR)``, e.g.::
+
+    SRC_USERMOD_C += $(EXAMPLE_MOD_DIR)/modexample.c
+    SRC_USERMOD_LIB_C += $(EXAMPLE_MOD_DIR)/utils/algorithm.c
+
+  Similarly, use ``SRC_USERMOD_CXX`` and ``SRC_USERMOD_LIB_CXX`` for C++
+  source files.
 
   If you have custom compiler options (like ``-I`` to add directories to search
   for header files), these should be added to ``CFLAGS_USERMOD`` for C code
@@ -87,9 +95,12 @@ A MicroPython user C module is a directory with the following files:
 Basic example
 -------------
 
-This simple module named ``cexample`` provides a single function
-``cexample.add_ints(a, b)`` which adds the two integer args together and returns
-the result. It can be found in the MicroPython source tree
+The ``cexample`` module provides examples for a function and a class. The
+``cexample.add_ints(a, b)`` function adds two integer args together and returns
+the result. The ``cexample.Timer()`` type creates timers that can be used to
+measure the elapsed time since the object is instantiated.
+
+The module can be found in the MicroPython source tree
 `in the examples directory <https://github.com/micropython/micropython/tree/master/examples/usercmodule/cexample>`_
 and has a source file and a Makefile fragment with content as described above::
 
@@ -264,3 +275,13 @@ can now be accessed in Python just like any other builtin module, e.g.
     import cexample
     print(cexample.add_ints(1, 3))
     # should display 4
+
+.. code-block:: python
+
+    from cexample import Timer
+    from time import sleep_ms
+
+    watch = Timer()
+    sleep_ms(1000)
+    print(watch.time())
+    # should display approximately 1000

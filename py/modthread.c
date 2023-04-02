@@ -116,11 +116,12 @@ STATIC const mp_rom_map_elem_t thread_lock_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(thread_lock_locals_dict, thread_lock_locals_dict_table);
 
-STATIC const mp_obj_type_t mp_type_thread_lock = {
-    { &mp_type_type },
-    .name = MP_QSTR_lock,
-    .locals_dict = (mp_obj_dict_t *)&thread_lock_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_thread_lock,
+    MP_QSTR_lock,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &thread_lock_locals_dict
+    );
 
 /****************************************************************/
 // _thread module

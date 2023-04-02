@@ -20,13 +20,13 @@ print(inp.read())
 print(buf.seek(0, 1))
 
 
-# zlib bitstream
-inp = zlib.DecompIO(io.BytesIO(b"x\x9c30\xa0=\x00\x00\xb3q\x12\xc1"))
+# zlib bitstream (with 256 byte window size)
+inp = zlib.DecompIO(io.BytesIO(b"\x08\x9930\xa0=\x00\x00\xb3q\x12\xc1"))
 print(inp.read(10))
 print(inp.read())
 
 # zlib bitstream, wrong checksum
-inp = zlib.DecompIO(io.BytesIO(b"x\x9c30\xa0=\x00\x00\xb3q\x12\xc0"))
+inp = zlib.DecompIO(io.BytesIO(b"\x08\x9930\xa0=\x00\x00\xb3q\x12\xc0"))
 try:
     print(inp.read())
 except OSError as e:

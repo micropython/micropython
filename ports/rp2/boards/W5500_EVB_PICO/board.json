@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "Castellated Pads",
+        "Ethernet",
+        "Micro USB"
+    ],
+    "images": [
+        "W5500-EVB-Pico.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Wiznet W5500-EVB-Pico",
+    "thumbnail": "",
+    "url": "https://www.wiznet.io/product-item/w5500-evb-pico/",
+    "vendor": "Wiznet"
+}

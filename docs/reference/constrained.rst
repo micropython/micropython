@@ -392,6 +392,8 @@ Symbol Meaning
    F   float
    B   byte code
    M   module
+   S   string or bytes
+   A   bytearray
 ====== =================
 
 Each letter represents a single block of memory, a block being 16 bytes. So each

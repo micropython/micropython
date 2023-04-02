@@ -35,7 +35,6 @@
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS       (0)
 #define MICROPY_PY_MATH_FACTORIAL               (0)
 #define MICROPY_PY_MATH_ISCLOSE                 (0)
-#define MICROPY_PY_IO_FILEIO                    (MICROPY_VFS)
 #define MICROPY_PY_SYS_PS1_PS2                  (0)
 #define MICROPY_PY_UBINASCII_CRC32              (0)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS          (0)
@@ -72,6 +71,12 @@
 #define MICROPY_PY_MACHINE_SOFTI2C  (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_SOFTSPI  (1)
+#define MICROPY_PY_NETWORK (1)
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp8266"
+#endif
+#define MICROPY_PY_NETWORK_INCLUDEFILE "ports/esp8266/modnetwork.h"
+#define MICROPY_PY_NETWORK_MODULE_GLOBALS_INCLUDEFILE "ports/esp8266/modnetwork_globals.h"
 #define MICROPY_PY_UWEBSOCKET       (1)
 #define MICROPY_PY_ONEWIRE          (1)
 #define MICROPY_PY_WEBREPL          (1)

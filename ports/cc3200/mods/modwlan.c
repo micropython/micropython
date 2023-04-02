@@ -1285,14 +1285,13 @@ STATIC const mp_rom_map_elem_t wlan_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
 
-const mod_network_nic_type_t mod_network_nic_type_wlan = {
-    .base = {
-        { &mp_type_type },
-        .name = MP_QSTR_WLAN,
-        .make_new = wlan_make_new,
-        .locals_dict = (mp_obj_t)&wlan_locals_dict,
-    },
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mod_network_nic_type_wlan,
+    MP_QSTR_WLAN,
+    MP_TYPE_FLAG_NONE,
+    make_new, wlan_make_new,
+    locals_dict, &wlan_locals_dict
+    );
 
 STATIC const mp_irq_methods_t wlan_irq_methods = {
     .init = wlan_irq,

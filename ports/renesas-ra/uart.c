@@ -420,6 +420,16 @@ mp_uint_t uart_tx_avail(machine_uart_obj_t *self) {
     return ra_sci_tx_wait(ch);
 }
 
+mp_uint_t uart_tx_busy(machine_uart_obj_t *self) {
+    int ch = (int)self->uart_id;
+    return ra_sci_tx_busy(ch);
+}
+
+mp_uint_t uart_tx_txbuf(machine_uart_obj_t *self) {
+    int ch = (int)self->uart_id;
+    return ra_sci_tx_bufsize(ch);
+}
+
 // Waits at most timeout milliseconds for at least 1 char to become ready for
 // reading (from buf or for direct reading).
 // Returns true if something available, false if not.

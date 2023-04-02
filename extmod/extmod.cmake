@@ -37,6 +37,10 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/moduwebsocket.c
     ${MICROPY_EXTMOD_DIR}/moduzlib.c
     ${MICROPY_EXTMOD_DIR}/modwebrepl.c
+    ${MICROPY_EXTMOD_DIR}/network_cyw43.c
+    ${MICROPY_EXTMOD_DIR}/network_lwip.c
+    ${MICROPY_EXTMOD_DIR}/network_ninaw10.c
+    ${MICROPY_EXTMOD_DIR}/network_wiznet5k.c
     ${MICROPY_EXTMOD_DIR}/uos_dupterm.c
     ${MICROPY_EXTMOD_DIR}/utime_mphal.c
     ${MICROPY_EXTMOD_DIR}/vfs.c
@@ -93,6 +97,7 @@ if(MICROPY_PY_BTREE)
     )
 
     list(APPEND MICROPY_DEF_CORE
+        MICROPY_PY_BTREE=1
         __DBINTERFACE_PRIVATE=1
         "virt_fd_t=void*"
     )
@@ -187,8 +192,12 @@ if(MICROPY_SSL_MBEDTLS)
         ${MICROPY_LIB_MBEDTLS_DIR}/library/xtea.c
     )
 
+    if(NOT MBEDTLS_CONFIG_FILE)
+        set(MBEDTLS_CONFIG_FILE "${MICROPY_PORT_DIR}/mbedtls/mbedtls_config.h")
+    endif()
+
     target_compile_definitions(micropy_lib_mbedtls INTERFACE
-        MBEDTLS_CONFIG_FILE="${MICROPY_PORT_DIR}/mbedtls/mbedtls_config.h"
+        MBEDTLS_CONFIG_FILE="${MBEDTLS_CONFIG_FILE}"
     )
 
     list(APPEND MICROPY_INC_CORE

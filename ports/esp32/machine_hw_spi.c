@@ -267,21 +267,15 @@ STATIC void machine_hw_spi_init_internal(
 
     // Select DMA channel based on the hardware SPI host
     int dma_chan = 0;
+    #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C3
+    dma_chan = SPI_DMA_CH_AUTO;
+    #else
     if (self->host == HSPI_HOST) {
-        #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C3
-        dma_chan = 3;
-        #else
         dma_chan = 1;
-        #endif
-    #ifdef FSPI_HOST
-    } else if (self->host == FSPI_HOST) {
-        dma_chan = 1;
-    #endif
-    #ifdef VSPI_HOST
-    } else if (self->host == VSPI_HOST) {
+    } else {
         dma_chan = 2;
-    #endif
     }
+    #endif
 
     ret = spi_bus_initialize(self->host, &buscfg, dma_chan);
     switch (ret) {
@@ -496,7 +490,7 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
         self = &machine_hw_spi_obj[1];
         default_pins = &machine_hw_spi_default_pins[1];
     }
-    self->base.type = &machine_hw_spi_type;
+    self->base.type = &machine_spi_type;
 
     int8_t sck, mosi, miso;
 
@@ -539,17 +533,26 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return MP_OBJ_FROM_PTR(self);
 }
 
+spi_host_device_t machine_hw_spi_get_host(mp_obj_t in) {
+    if (mp_obj_get_type(in) != &machine_spi_type) {
+        mp_raise_ValueError(MP_ERROR_TEXT("expecting a SPI object"));
+    }
+    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *)in;
+    return self->host;
+}
+
 STATIC const mp_machine_spi_p_t machine_hw_spi_p = {
     .init = machine_hw_spi_init,
     .deinit = machine_hw_spi_deinit,
     .transfer = machine_hw_spi_transfer,
 };
 
-const mp_obj_type_t machine_hw_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .print = machine_hw_spi_print,
-    .make_new = machine_hw_spi_make_new,
-    .protocol = &machine_hw_spi_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_spi_type,
+    MP_QSTR_SPI,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_hw_spi_make_new,
+    print, machine_hw_spi_print,
+    protocol, &machine_hw_spi_p,
+    locals_dict, &mp_machine_spi_locals_dict
+    );

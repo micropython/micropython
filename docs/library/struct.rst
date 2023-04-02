@@ -6,11 +6,58 @@
 
 |see_cpython_module| :mod:`python:struct`.
 
-Supported size/byte order prefixes: ``@``, ``<``, ``>``, ``!``.
+The following byte orders are supported:
 
-Supported format codes: ``b``, ``B``, ``h``, ``H``, ``i``, ``I``, ``l``,
-``L``, ``q``, ``Q``, ``s``, ``P``, ``f``, ``d`` (the latter 2 depending
-on the floating-point support).
++-----------+------------------------+----------+-----------+
+| Character | Byte order             | Size     | Alignment |
++===========+========================+==========+===========+
+| @         | native                 | native   | native    |
++-----------+------------------------+----------+-----------+
+| <         | little-endian          | standard | none      |
++-----------+------------------------+----------+-----------+
+| >         | big-endian             | standard | none      |
++-----------+------------------------+----------+-----------+
+| !         | network (= big-endian) | standard | none      |
++-----------+------------------------+----------+-----------+
+
+The following data types are supported:
+
++--------+--------------------+-------------------+---------------+
+| Format | C Type             | Python type       | Standard size |
++========+====================+===================+===============+
+| b      | signed char        | integer           | 1             |
++--------+--------------------+-------------------+---------------+
+| B      | unsigned char      | integer           | 1             |
++--------+--------------------+-------------------+---------------+
+| h      | short              | integer           | 2             |
++--------+--------------------+-------------------+---------------+
+| H      | unsigned short     | integer           | 2             |
++--------+--------------------+-------------------+---------------+
+| i      | int                | integer (`1<fn>`) | 4             |
++--------+--------------------+-------------------+---------------+
+| I      | unsigned int       | integer (`1<fn>`) | 4             |
++--------+--------------------+-------------------+---------------+
+| l      | long               | integer (`1<fn>`) | 4             |
++--------+--------------------+-------------------+---------------+
+| L      | unsigned long      | integer (`1<fn>`) | 4             |
++--------+--------------------+-------------------+---------------+
+| q      | long long          | integer (`1<fn>`) | 8             |
++--------+--------------------+-------------------+---------------+
+| Q      | unsigned long long | integer (`1<fn>`) | 8             |
++--------+--------------------+-------------------+---------------+
+| f      | float              | float (`2<fn>`)   | 4             |
++--------+--------------------+-------------------+---------------+
+| d      | double             | float (`2<fn>`)   | 8             |
++--------+--------------------+-------------------+---------------+
+| s      | char[]             | bytes             |               |
++--------+--------------------+-------------------+---------------+
+| P      | void *             | integer           |               |
++--------+--------------------+-------------------+---------------+
+
+.. _fn:
+
+(1) Requires long support when used with values larger than 30 bits.
+(2) Requires floating point support.
 
 .. admonition:: Difference to CPython
    :class: attention
@@ -43,5 +90,5 @@ Functions
 .. function:: unpack_from(fmt, data, offset=0, /)
 
    Unpack from the *data* starting at *offset* according to the format string
-   *fmt*. *offset* may be negative to count from the end of *buffer*. The return
+   *fmt*. *offset* may be negative to count from the end of *data*. The return
    value is a tuple of the unpacked values.

@@ -32,6 +32,11 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
             ret |= MP_STREAM_POLL_RD;
         }
     }
+    if (poll_flags & MP_STREAM_POLL_WR) {
+        if (MP_STATE_PORT(pyb_stdio_uart) != NULL || usb_vcp_is_enabled()) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+    }
     return ret;
 }
 

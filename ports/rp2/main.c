@@ -42,7 +42,9 @@
 #include "modmachine.h"
 #include "modrp2.h"
 #include "mpbthciport.h"
+#include "mpnetworkport.h"
 #include "genhdr/mpversion.h"
+#include "mp_usbd.h"
 
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
@@ -57,16 +59,8 @@
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
 
-#ifndef MICROPY_GC_HEAP_SIZE
-#if MICROPY_PY_LWIP
-#define MICROPY_GC_HEAP_SIZE 166 * 1024
-#else
-#define MICROPY_GC_HEAP_SIZE 192 * 1024
-#endif
-#endif
-
 extern uint8_t __StackTop, __StackBottom;
-static char gc_heap[MICROPY_GC_HEAP_SIZE];
+extern uint8_t __GcHeapStart, __GcHeapEnd;
 
 // Embed version info in the binary in machine readable form
 bi_decl(bi_program_version_string(MICROPY_GIT_TAG));
@@ -82,20 +76,22 @@ int main(int argc, char **argv) {
     bi_decl(bi_program_feature("UART REPL"))
     setup_default_uart();
     mp_uart_init();
+    #else
+    #ifndef NDEBUG
+    stdio_init_all();
+    #endif
     #endif
 
     #if MICROPY_HW_ENABLE_USBDEV
+    #if MICROPY_HW_USB_CDC
     bi_decl(bi_program_feature("USB REPL"))
+    #endif
     tusb_init();
     #endif
 
     #if MICROPY_PY_THREAD
     bi_decl(bi_program_feature("thread support"))
     mp_thread_init();
-    #endif
-
-    #ifndef NDEBUG
-    stdio_init_all();
     #endif
 
     // Start and initialise the RTC
@@ -114,7 +110,7 @@ int main(int argc, char **argv) {
     // Initialise stack extents and GC heap.
     mp_stack_set_top(&__StackTop);
     mp_stack_set_limit(&__StackTop - &__StackBottom - 256);
-    gc_init(&gc_heap[0], &gc_heap[MP_ARRAY_SIZE(gc_heap)]);
+    gc_init(&__GcHeapStart, &__GcHeapEnd);
 
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
@@ -231,7 +227,7 @@ void gc_collect(void) {
 }
 
 void nlr_jump_fail(void *val) {
-    printf("FATAL: uncaught exception %p\n", val);
+    mp_printf(&mp_plat_print, "FATAL: uncaught exception %p\n", val);
     mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));
     for (;;) {
         __breakpoint();

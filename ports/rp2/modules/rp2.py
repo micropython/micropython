@@ -116,7 +116,7 @@ class PIOASMEmit:
             if label is None:
                 label = 0
             else:
-                if not label in self.labels:
+                if label not in self.labels:
                     raise PIOASMError("unknown label {}".format(label))
                 label = self.labels[label]
             self.prog[_PROG_DATA].append(instr | label)

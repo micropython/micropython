@@ -37,3 +37,7 @@ f2(*iter(range(4)), **{'a': 1})
 
 # case where *args is not a tuple/list and takes up most of the memory allocated for **kwargs
 f2(*iter(range(100)), **{str(i): i for i in range(100)})
+
+# regression test - iterable with unknown len() was exactly using preallocated
+# memory causing args 4 and 5 to overflow the allocated arg array
+print(1, *iter((1, 2, 3)), *iter((1, 2, 3)), 4, 5, sep=",")

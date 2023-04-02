@@ -182,15 +182,13 @@ STATIC mp_obj_t float_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
     return mp_obj_float_binary_op(op, lhs_val, rhs_in);
 }
 
-const mp_obj_type_t mp_type_float = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
-    .name = MP_QSTR_float,
-    .print = float_print,
-    .make_new = float_make_new,
-    .unary_op = float_unary_op,
-    .binary_op = float_binary_op,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_float, MP_QSTR_float, MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    make_new, float_make_new,
+    print, float_print,
+    unary_op, float_unary_op,
+    binary_op, float_binary_op
+    );
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 

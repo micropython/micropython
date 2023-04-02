@@ -31,10 +31,6 @@
 #include "fsl_iomuxc.h"
 #include "pin.h"
 
-#if FSL_USDHC_DRIVER_VERSION == 0x020208
-#define USHDC_USE_TRANSFER_NONBLOCKING_10XX  (1)
-#endif
-
 #define SDCARD_VOLTAGE_WINDOW_SD                (0x80100000U)
 #define SDCARD_HIGH_CAPACITY                    (0x40000000U)
 #define SDCARD_SWITCH_1_8V_CAPACITY             ((uint32_t)0x01000000U)
@@ -144,16 +140,6 @@ enum
 };
 
 // ---
-// SD Card transfer status
-// ---
-typedef enum
-{
-    SDCARD_TRANSFER_SUCCESS = 0,
-    SDCARD_TRANSFER_ERROR,
-    SDCARD_TRANSFER_PENDING
-} sdcard_transfer_status_t;
-
-// ---
 // SD Card type definitions
 // ---
 typedef struct _cid_t {
@@ -220,9 +206,6 @@ mimxrt_sdcard_obj_t mimxrt_sdcard_objs[] =
     #endif
 };
 
-volatile status_t sdcard_transfer_status;
-volatile bool sdcard_transfer_done;
-
 // ---
 // Local function declarations
 // ---
@@ -286,16 +269,6 @@ void sdcard_card_removed_callback(USDHC_Type *base, void *userData) {
     USDHC_ClearInterruptStatusFlags(base, kUSDHC_CardRemovalFlag);
 }
 
-#if USHDC_USE_TRANSFER_NONBLOCKING_10XX
-
-void sdcard_transfer_complete_callback(USDHC_Type *base, usdhc_handle_t *handle, status_t status, void *userData) {
-    sdcard_transfer_status = status;
-    sdcard_transfer_done = true;
-    USDHC_ClearInterruptStatusFlags(base, kUSDHC_CommandCompleteFlag | kUSDHC_DataCompleteFlag);
-}
-
-#endif
-
 void sdcard_dummy_callback(USDHC_Type *base, void *userData) {
     return;
 }
@@ -331,36 +304,12 @@ static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handl
     dma_config.admaTable = sdcard_adma_descriptor_table;
     dma_config.admaTableWords = DMA_DESCRIPTOR_BUFFER_SIZE;
 
-    #if USHDC_USE_TRANSFER_NONBLOCKING_10XX
-
-    uint32_t retry_ctr = 0UL;
-
-    do {
-        status = USDHC_TransferNonBlocking(base, handle, &dma_config, transfer);
-        retry_ctr++;
-    } while (!(status == kStatus_Success) && (retry_ctr < 1000000UL));
-
-    if (status == kStatus_Success) {
-        for (int i = 0; i < timeout_ms * 100; i++) {
-            if ((sdcard_transfer_done == true) && (sdcard_transfer_status == kStatus_Success)) {
-                sdcard_transfer_done = false;
-                return kStatus_Success;
-            }
-            ticks_delay_us64(10);
-        }
-        return kStatus_Timeout;
-    } else {
-        sdcard_error_recovery(base);
-        return status;
-    }
-
-    #else // USHDC_USE_TRANSFER_NONBLOCKING_10XX
-
     // Wait while the card is busy before a transfer
     status = kStatus_Timeout;
     for (int i = 0; i < timeout_ms * 100; i++) {
         // Wait until Data0 is low any more. Low indicates "Busy".
-        if ((transfer->data->txData == NULL) || (USDHC_GetPresentStatusFlags(base) & (uint32_t)kUSDHC_Data0LineLevelFlag) != 0) {
+        if (((transfer->data->txData == NULL) && (transfer->data->rxData == NULL)) ||
+            (USDHC_GetPresentStatusFlags(base) & (uint32_t)kUSDHC_Data0LineLevelFlag) != 0) {
             // Not busy anymore or no TX-Data
             status = USDHC_TransferBlocking(base, &dma_config, transfer);
             if (status != kStatus_Success) {
@@ -372,7 +321,6 @@ static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handl
     }
     return status;
 
-    #endif // USHDC_USE_TRANSFER_NONBLOCKING_11XX
 }
 
 static void sdcard_decode_csd(mimxrt_sdcard_obj_t *card, csd_t *csd) {
@@ -770,18 +718,15 @@ void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
     (void)sdcard_reset(card);
     card->base_clk = base_clk;
 
-    #if USHDC_USE_TRANSFER_NONBLOCKING_10XX
     usdhc_transfer_callback_t callbacks = {
         .CardInserted = sdcard_card_inserted_callback,
         .CardRemoved = sdcard_card_removed_callback,
         .SdioInterrupt = sdcard_dummy_callback,
         .BlockGap = sdcard_dummy_callback,
-        .TransferComplete = sdcard_transfer_complete_callback,
         .ReTuning = sdcard_dummy_callback,
     };
 
     USDHC_TransferCreateHandle(card->usdhc_inst, &card->handle, &callbacks, NULL);
-    #endif // USHDC_USE_TRANSFER_NONBLOCKING_10XX
 }
 
 void sdcard_deinit(mimxrt_sdcard_obj_t *card) {
@@ -1052,8 +997,6 @@ bool sdcard_power_off(mimxrt_sdcard_obj_t *card) {
 bool sdcard_detect(mimxrt_sdcard_obj_t *card) {
     bool detect = false;
 
-    #if USHDC_USE_TRANSFER_NONBLOCKING_10XX
-
     #if defined MICROPY_USDHC1 && USDHC1_AVAIL
     if ((card->usdhc_inst == USDHC1) && (sdcard_usdhc1_state.inserted == true)) {
         return true;
@@ -1064,8 +1007,6 @@ bool sdcard_detect(mimxrt_sdcard_obj_t *card) {
         return true;
     }
     #endif
-
-    #endif // USHDC_USE_TRANSFER_NONBLOCKING_10XX
 
     if (card->pins->cd_b.pin) {
         detect = USDHC_DetectCardInsert(card->usdhc_inst);

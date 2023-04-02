@@ -120,13 +120,13 @@ class PowerUp3:
         return int(self.char_batt_lvl.read()[0])
 
     def speed(self, new_speed=None):
-        if new_speed == None:
+        if new_speed is None:
             return int(self.char_control_speed.read()[0])
         else:
             self.char_control_speed.write(bytearray([new_speed]))
 
     def angle(self, new_angle=None):
-        if new_angle == None:
+        if new_angle is None:
             return int(self.char_control_angle.read()[0])
         else:
             self.char_control_angle.write(bytearray([new_angle]))
@@ -187,7 +187,6 @@ class PowerUp3:
         self.old_speed = 0
 
         while True:
-
             time.sleep_ms(100)
 
             # read out new angle

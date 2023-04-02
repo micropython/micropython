@@ -226,6 +226,11 @@ typedef struct _mp_state_vm_t {
     uint8_t sched_idx;
     #endif
 
+    #if MICROPY_ENABLE_VM_ABORT
+    bool vm_abort;
+    nlr_buf_t *nlr_abort;
+    #endif
+
     #if MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make the VM/runtime thread-safe.
     mp_thread_mutex_t gil_mutex;
@@ -297,8 +302,10 @@ extern mp_state_ctx_t mp_state_ctx;
 #if MICROPY_PY_THREAD
 extern mp_state_thread_t *mp_thread_get_state(void);
 #define MP_STATE_THREAD(x) (mp_thread_get_state()->x)
+#define mp_thread_is_main_thread() (mp_thread_get_state() == &mp_state_ctx.thread)
 #else
 #define MP_STATE_THREAD(x)  MP_STATE_MAIN_THREAD(x)
+#define mp_thread_is_main_thread() (true)
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPSTATE_H

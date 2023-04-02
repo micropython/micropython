@@ -20,15 +20,14 @@ include ../../py/mkenv.mk
 CROSS_COMPILE ?= arm-none-eabi-
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -march=armv7e-m -mabi=aapcs -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion
-CFLAGS = -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4) -Os
+CFLAGS += -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4) -Os
 CFLAGS += -g -ffunction-sections -fdata-sections -fno-common -fsigned-char -mno-unaligned-access
 CFLAGS += -Iboards/$(BOARD)
-CFLAGS += $(CFLAGS_MOD)
 
 # Workaround gcc 12.1 bug.
 CFLAGS += -Wno-array-bounds
 
-LDFLAGS = -Wl,-nostdlib -Wl,--gc-sections -Wl,-Map=$@.map
+LDFLAGS += -Wl,-nostdlib -Wl,--gc-sections -Wl,-Map=$@.map
 
 FLASH_SIZE_WIPY = 2M
 FLASH_SIZE_LAUNCHXL = 1M

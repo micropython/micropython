@@ -1274,6 +1274,14 @@ STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, id_in
     }
 }
 
+STATIC void compile_declare_global_or_nonlocal(compiler_t *comp, mp_parse_node_t pn, id_info_t *id_info, bool is_global) {
+    if (is_global) {
+        compile_declare_global(comp, pn, id_info);
+    } else {
+        compile_declare_nonlocal(comp, pn, id_info);
+    }
+}
+
 STATIC void compile_global_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->pass == MP_PASS_SCOPE) {
         bool is_global = MP_PARSE_NODE_STRUCT_KIND(pns) == PN_global_stmt;
@@ -1288,11 +1296,7 @@ STATIC void compile_global_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_
         for (size_t i = 0; i < n; i++) {
             qstr qst = MP_PARSE_NODE_LEAF_ARG(nodes[i]);
             id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, ID_INFO_KIND_UNDECIDED);
-            if (is_global) {
-                compile_declare_global(comp, (mp_parse_node_t)pns, id_info);
-            } else {
-                compile_declare_nonlocal(comp, (mp_parse_node_t)pns, id_info);
-            }
+            compile_declare_global_or_nonlocal(comp, (mp_parse_node_t)pns, id_info, is_global);
         }
     }
 }
@@ -2133,13 +2137,30 @@ STATIC void compile_namedexpr_helper(compiler_t *comp, mp_parse_node_t pn_name, 
     }
     compile_node(comp, pn_expr);
     EMIT(dup_top);
-    scope_t *old_scope = comp->scope_cur;
-    if (SCOPE_IS_COMP_LIKE(comp->scope_cur->kind)) {
-        // Use parent's scope for assigned value so it can "escape"
-        comp->scope_cur = comp->scope_cur->parent;
+
+    qstr target = MP_PARSE_NODE_LEAF_ARG(pn_name);
+
+    // When a variable is assigned via := in a comprehension then that variable is bound to
+    // the parent scope.  Any global or nonlocal declarations in the parent scope are honoured.
+    // For details see: https://peps.python.org/pep-0572/#scope-of-the-target
+    if (comp->pass == MP_PASS_SCOPE && SCOPE_IS_COMP_LIKE(comp->scope_cur->kind)) {
+        id_info_t *id_info_parent = mp_emit_common_get_id_for_modification(comp->scope_cur->parent, target);
+        if (id_info_parent->kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
+            scope_find_or_add_id(comp->scope_cur, target, ID_INFO_KIND_GLOBAL_EXPLICIT);
+        } else {
+            id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, target, ID_INFO_KIND_UNDECIDED);
+            bool is_global = comp->scope_cur->parent->parent == NULL; // comprehension is defined in outer scope
+            if (!is_global && id_info->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+                // Variable was already referenced but now needs to be closed over, so reset the kind
+                // such that scope_check_to_close_over() is called in compile_declare_nonlocal().
+                id_info->kind = ID_INFO_KIND_UNDECIDED;
+            }
+            compile_declare_global_or_nonlocal(comp, pn_name, id_info, is_global);
+        }
     }
-    compile_store_id(comp, MP_PARSE_NODE_LEAF_ARG(pn_name));
-    comp->scope_cur = old_scope;
+
+    // Do the store to the target variable.
+    compile_store_id(comp, target);
 }
 
 STATIC void compile_namedexpr(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -3427,7 +3448,7 @@ STATIC void scope_compute_things(scope_t *scope) {
 #if !MICROPY_PERSISTENT_CODE_SAVE
 STATIC
 #endif
-mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl, mp_module_context_t *context) {
+void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl, mp_compiled_module_t *cm) {
     // put compiler state on the stack, it's relatively small
     compiler_t comp_state = {0};
     compiler_t *comp = &comp_state;
@@ -3568,26 +3589,24 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
     }
 
     // construct the global qstr/const table for this module
-    mp_compiled_module_t cm;
-    cm.rc = module_scope->raw_code;
-    cm.context = context;
+    cm->rc = module_scope->raw_code;
     #if MICROPY_PERSISTENT_CODE_SAVE
-    cm.has_native = false;
+    cm->has_native = false;
     #if MICROPY_EMIT_NATIVE
     if (emit_native != NULL) {
-        cm.has_native = true;
+        cm->has_native = true;
     }
     #endif
     #if MICROPY_EMIT_INLINE_ASM
     if (comp->emit_inline_asm != NULL) {
-        cm.has_native = true;
+        cm->has_native = true;
     }
     #endif
-    cm.n_qstr = comp->emit_common.qstr_map.used;
-    cm.n_obj = comp->emit_common.const_obj_list.len;
+    cm->n_qstr = comp->emit_common.qstr_map.used;
+    cm->n_obj = comp->emit_common.const_obj_list.len;
     #endif
     if (comp->compile_error == MP_OBJ_NULL) {
-        mp_emit_common_populate_module_context(&comp->emit_common, source_file, context);
+        mp_emit_common_populate_module_context(&comp->emit_common, source_file, cm->context);
 
         #if MICROPY_DEBUG_PRINTERS
         // now that the module context is valid, the raw codes can be printed
@@ -3595,7 +3614,7 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
             for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
                 mp_raw_code_t *rc = s->raw_code;
                 if (rc->kind == MP_CODE_BYTECODE) {
-                    mp_bytecode_print(&mp_plat_print, rc, &cm.context->constants);
+                    mp_bytecode_print(&mp_plat_print, rc, &cm->context->constants);
                 }
             }
         }
@@ -3629,14 +3648,13 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
     if (comp->compile_error != MP_OBJ_NULL) {
         nlr_raise(comp->compile_error);
     }
-
-    return cm;
 }
 
 mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl) {
-    mp_module_context_t *context = m_new_obj(mp_module_context_t);
-    context->module.globals = mp_globals_get();
-    mp_compiled_module_t cm = mp_compile_to_raw_code(parse_tree, source_file, is_repl, context);
+    mp_compiled_module_t cm;
+    cm.context = m_new_obj(mp_module_context_t);
+    cm.context->module.globals = mp_globals_get();
+    mp_compile_to_raw_code(parse_tree, source_file, is_repl, &cm);
     // return function that executes the outer module
     return mp_make_function_from_raw_code(cm.rc, cm.context, NULL);
 }

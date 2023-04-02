@@ -296,7 +296,15 @@ void DebugMon_Handler(void) {
 /*  file (startup_stm32f4xx.s).                                               */
 /******************************************************************************/
 
-#if defined(STM32L0) || defined(STM32L432xx)
+#if defined(STM32G0)
+
+#if MICROPY_HW_USB_FS
+void USB_UCPD1_2_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+#endif
+
+#elif defined(STM32L0) || defined(STM32L432xx)
 
 #if MICROPY_HW_USB_FS
 void USB_IRQHandler(void) {
@@ -520,11 +528,19 @@ void ETH_WKUP_IRQHandler(void) {
 }
 #endif
 
+#if defined(STM32L1)
+void TAMPER_STAMP_IRQHandler(void) {
+    IRQ_ENTER(TAMPER_STAMP_IRQn);
+    Handle_EXTI_Irq(EXTI_RTC_TIMESTAMP);
+    IRQ_EXIT(TAMPER_STAMP_IRQn);
+}
+#else
 void TAMP_STAMP_IRQHandler(void) {
     IRQ_ENTER(TAMP_STAMP_IRQn);
     Handle_EXTI_Irq(EXTI_RTC_TIMESTAMP);
     IRQ_EXIT(TAMP_STAMP_IRQn);
 }
+#endif
 
 void RTC_WKUP_IRQHandler(void) {
     IRQ_ENTER(RTC_WKUP_IRQn);
@@ -698,6 +714,12 @@ void TIM6_DAC_LPTIM1_IRQHandler(void) {
     timer_irq_handler(6);
     IRQ_EXIT(TIM6_DAC_LPTIM1_IRQn);
 }
+#elif defined(STM32L1)
+void TIM6_IRQHandler(void) {
+    IRQ_ENTER(TIM6_IRQn);
+    timer_irq_handler(6);
+    IRQ_EXIT(TIM6_IRQn);
+}
 #else
 void TIM6_DAC_IRQHandler(void) {
     IRQ_ENTER(TIM6_DAC_IRQn);
@@ -761,6 +783,26 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void) {
     IRQ_ENTER(TIM8_TRG_COM_TIM14_IRQn);
     timer_irq_handler(14);
     IRQ_EXIT(TIM8_TRG_COM_TIM14_IRQn);
+}
+#endif
+
+#if defined(STM32L1)
+void TIM9_IRQHandler(void) {
+    IRQ_ENTER(TIM9_IRQn);
+    timer_irq_handler(9);
+    IRQ_EXIT(TIM9_IRQn);
+}
+
+void TIM10_IRQHandler(void) {
+    IRQ_ENTER(TIM9_IRQn);
+    timer_irq_handler(10);
+    IRQ_EXIT(TIM9_IRQn);
+}
+
+void TIM11_IRQHandler(void) {
+    IRQ_ENTER(TIM9_IRQn);
+    timer_irq_handler(11);
+    IRQ_EXIT(TIM9_IRQn);
 }
 #endif
 

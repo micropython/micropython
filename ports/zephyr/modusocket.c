@@ -289,7 +289,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     }
 
     vstr.len = len;
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
@@ -353,14 +353,15 @@ STATIC const mp_stream_p_t socket_stream_p = {
     .ioctl = sock_ioctl,
 };
 
-STATIC const mp_obj_type_t socket_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_socket,
-    .print = socket_print,
-    .make_new = socket_make_new,
-    .protocol = &socket_stream_p,
-    .locals_dict = (mp_obj_t)&socket_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    socket_type,
+    MP_QSTR_socket,
+    MP_TYPE_FLAG_NONE,
+    make_new, socket_make_new,
+    print, socket_print,
+    protocol, &socket_stream_p,
+    locals_dict, &socket_locals_dict
+    );
 
 //
 // getaddrinfo() implementation

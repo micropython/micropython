@@ -177,19 +177,21 @@ STATIC MP_DEFINE_CONST_DICT(hash_locals_dict, hash_locals_dict_table);
 //    .locals_dict = (mp_obj_t)&hash_locals_dict,
 //};
 
-STATIC const mp_obj_type_t sha1_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_sha1,
-    .make_new = hash_make_new,
-    .locals_dict = (mp_obj_t)&hash_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    sha1_type,
+    MP_QSTR_sha1,
+    MP_TYPE_FLAG_NONE,
+    make_new, hash_make_new,
+    locals_dict, &hash_locals_dict
+    );
 
-STATIC const mp_obj_type_t sha256_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_sha256,
-    .make_new = hash_make_new,
-    .locals_dict = (mp_obj_t)&hash_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    sha256_type,
+    MP_QSTR_sha256,
+    MP_TYPE_FLAG_NONE,
+    make_new, hash_make_new,
+    locals_dict, &hash_locals_dict
+    );
 
 STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_uhashlib) },

@@ -410,13 +410,14 @@ STATIC const mp_rom_map_elem_t pyb_timer_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_locals_dict, pyb_timer_locals_dict_table);
 
-const mp_obj_type_t pyb_timer_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Timer,
-    .print = pyb_timer_print,
-    .make_new = pyb_timer_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_timer_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_timer_type,
+    MP_QSTR_Timer,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_timer_make_new,
+    locals_dict, &pyb_timer_locals_dict,
+    print, pyb_timer_print
+    );
 
 #if defined(TIMER_CHANNEL)
 /*
@@ -502,12 +503,13 @@ STATIC const mp_rom_map_elem_t pyb_timer_channel_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_channel_locals_dict, pyb_timer_channel_locals_dict_table);
 
-STATIC const mp_obj_type_t pyb_timer_channel_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_TimerChannel,
-    .print = pyb_timer_channel_print,
-    .locals_dict = (mp_obj_dict_t *)&pyb_timer_channel_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_timer_channel_type,
+    MP_QSTR_TimerChannel,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &pyb_timer_channel_locals_dict,
+    print, pyb_timer_channel_print
+    );
 #endif
 
 STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_obj_t callback) {

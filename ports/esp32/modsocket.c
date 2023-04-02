@@ -214,7 +214,7 @@ static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struc
     };
 
     mp_obj_t port = portx;
-    if (mp_obj_is_small_int(port)) {
+    if (mp_obj_is_integer(port)) {
         // This is perverse, because lwip_getaddrinfo promptly converts it back to an int, but
         // that's the API we have to work with ...
         port = mp_obj_str_binary_op(MP_BINARY_OP_MODULO, mp_obj_new_str_via_qstr("%s", 2), port);
@@ -552,7 +552,7 @@ mp_obj_t _socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in,
     }
 
     vstr.len = ret;
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
 STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
@@ -785,13 +785,14 @@ STATIC const mp_stream_p_t socket_stream_p = {
     .ioctl = socket_stream_ioctl
 };
 
-STATIC const mp_obj_type_t socket_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_socket,
-    .make_new = socket_make_new,
-    .protocol = &socket_stream_p,
-    .locals_dict = (mp_obj_t)&socket_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    socket_type,
+    MP_QSTR_socket,
+    MP_TYPE_FLAG_NONE,
+    make_new, socket_make_new,
+    protocol, &socket_stream_p,
+    locals_dict, &socket_locals_dict
+    );
 
 STATIC mp_obj_t esp_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     // TODO support additional args beyond the first two

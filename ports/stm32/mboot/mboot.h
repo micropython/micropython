@@ -169,6 +169,7 @@ typedef uint32_t mboot_addr_t;
 
 extern volatile uint32_t systick_ms;
 extern uint8_t _estack[ELEM_DATA_SIZE];
+extern int32_t first_writable_flash_sector;
 
 void systick_init(void);
 void led_init(void);

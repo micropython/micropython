@@ -78,6 +78,7 @@
 #define MICROPY_VFS_FAT                             (1)
 #define MICROPY_PY_ASYNC_AWAIT (0)
 #define MICROPY_PY_ALL_SPECIAL_METHODS              (1)
+#define MICROPY_PY_BUILTINS_BYTES_HEX               (1)
 #define MICROPY_PY_BUILTINS_INPUT                   (1)
 #define MICROPY_PY_BUILTINS_HELP                    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT               cc3200_help_text
@@ -104,7 +105,6 @@
 #define MICROPY_PY_SYS_STDFILES                     (1)
 #define MICROPY_PY_CMATH                            (0)
 #define MICROPY_PY_IO                               (1)
-#define MICROPY_PY_IO_FILEIO                        (1)
 #define MICROPY_PY_UERRNO                           (1)
 #define MICROPY_PY_UERRNO_ERRORCODE                 (0)
 #define MICROPY_PY_THREAD                           (1)

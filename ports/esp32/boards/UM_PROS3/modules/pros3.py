@@ -28,6 +28,7 @@ SPI_CLK = const(36)
 I2C_SDA = const(8)
 I2C_SCL = const(9)
 
+
 # Helper functions
 def set_ldo2_power(state):
     """Enable or Disable power to the second LDO"""

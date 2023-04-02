@@ -30,19 +30,13 @@
 #include "extmod/machine_i2c.h"
 #include "modmachine.h"
 #include CLOCK_CONFIG_H
+#include "pin.h"
 
 #include "fsl_iomuxc.h"
 #include "fsl_lpi2c.h"
 
 #define DEFAULT_I2C_FREQ        (400000)
 #define DEFAULT_I2C_DRIVE       (6)
-
-// Select USB1 PLL (480 MHz) as master lpi2c clock source
-#define LPI2C_CLOCK_SOURCE_SELECT (0U)
-// Clock divider for master lpi2c clock source
-#define LPI2C_CLOCK_SOURCE_DIVIDER (1U)
-// Get frequency of lpi2c clock = 30 MHz
-#define LPI2C_CLOCK_FREQUENCY ((CLOCK_GetFreq(kCLOCK_Usb1PllClk) / 8) / (LPI2C_CLOCK_SOURCE_DIVIDER + 1U))
 
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
@@ -197,11 +191,12 @@ STATIC const mp_machine_i2c_p_t machine_i2c_p = {
     .transfer_single = machine_i2c_transfer_single,
 };
 
-const mp_obj_type_t machine_i2c_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2C,
-    .print = machine_i2c_print,
-    .make_new = machine_i2c_make_new,
-    .protocol = &machine_i2c_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_i2c_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_i2c_type,
+    MP_QSTR_I2C,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_i2c_make_new,
+    print, machine_i2c_print,
+    protocol, &machine_i2c_p,
+    locals_dict, &mp_machine_i2c_locals_dict
+    );

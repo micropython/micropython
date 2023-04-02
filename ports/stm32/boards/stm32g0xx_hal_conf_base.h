@@ -27,16 +27,42 @@
 #ifndef MICROPY_INCLUDED_STM32G0XX_HAL_CONF_BASE_H
 #define MICROPY_INCLUDED_STM32G0XX_HAL_CONF_BASE_H
 
+// Enable various HAL modules
+#define HAL_MODULE_ENABLED
+#define HAL_ADC_MODULE_ENABLED
+#define HAL_CORTEX_MODULE_ENABLED
+#define HAL_DMA_MODULE_ENABLED
+#define HAL_EXTI_MODULE_ENABLED
+#define HAL_FLASH_MODULE_ENABLED
+#define HAL_GPIO_MODULE_ENABLED
+#define HAL_I2C_MODULE_ENABLED
+#define HAL_PCD_MODULE_ENABLED
+#define HAL_PWR_MODULE_ENABLED
+#define HAL_RCC_MODULE_ENABLED
+#define HAL_RTC_MODULE_ENABLED
+#define HAL_SPI_MODULE_ENABLED
+#define HAL_TIM_MODULE_ENABLED
+#define HAL_UART_MODULE_ENABLED
+#define HAL_USART_MODULE_ENABLED
+
 // Oscillator values in Hz
-// These must come before the HAL headers because stm32g0xx_ll_rcc.h will define HSI_VALUE unless already defined
 #define HSI_VALUE    (16000000)
 #define LSI_VALUE    (32000)
 #if defined(STM32G0C1xx) || defined(STM32G0B1xx) || defined(STM32G0B0xx)
 #define HSI48_VALUE   48000000
 #endif
 
-// Include various HAL modules for convenience
+// SysTick has the highest priority
+#define TICK_INT_PRIORITY (0x00)
 
+// Miscellaneous HAL settings
+#define  USE_RTOS                     0
+#define  PREFETCH_ENABLE              1
+#define  INSTRUCTION_CACHE_ENABLE     1
+#define  USE_SPI_CRC                  1
+#define  USE_HAL_CRYP_SUSPEND_RESUME  1
+
+// Include various HAL modules for convenience
 #include "stm32g0xx_hal_rcc.h"
 #include "stm32g0xx_hal_gpio.h"
 #include "stm32g0xx_hal_dma.h"
@@ -68,37 +94,9 @@
 #include "stm32g0xx_hal_uart.h"
 #include "stm32g0xx_hal_usart.h"
 #include "stm32g0xx_hal_wwdg.h"
-
 #include "stm32g0xx_ll_lpuart.h"
 #include "stm32g0xx_ll_rtc.h"
 #include "stm32g0xx_ll_usart.h"
-
-// Enable various HAL modules
-#define HAL_MODULE_ENABLED
-#define HAL_ADC_MODULE_ENABLED
-#define HAL_CORTEX_MODULE_ENABLED
-#define HAL_DMA_MODULE_ENABLED
-#define HAL_EXTI_MODULE_ENABLED
-#define HAL_FLASH_MODULE_ENABLED
-#define HAL_GPIO_MODULE_ENABLED
-#define HAL_I2C_MODULE_ENABLED
-#define HAL_PWR_MODULE_ENABLED
-#define HAL_RCC_MODULE_ENABLED
-#define HAL_RTC_MODULE_ENABLED
-#define HAL_SPI_MODULE_ENABLED
-#define HAL_TIM_MODULE_ENABLED
-#define HAL_UART_MODULE_ENABLED
-#define HAL_USART_MODULE_ENABLED
-
-// SysTick has the highest priority
-#define TICK_INT_PRIORITY (0x00)
-
-// Miscellaneous HAL settings
-#define  USE_RTOS                     0
-#define  PREFETCH_ENABLE              1
-#define  INSTRUCTION_CACHE_ENABLE     1
-#define  USE_SPI_CRC                  1
-#define  USE_HAL_CRYP_SUSPEND_RESUME  1
 
 // HAL parameter assertions are disabled
 #define assert_param(expr) ((void)0)

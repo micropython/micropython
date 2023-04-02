@@ -36,11 +36,8 @@
 #include "extmod/network_cyw43.h"
 #include "modnetwork.h"
 
-#if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
 #include "lib/cyw43-driver/src/cyw43.h"
-#else
-#include "drivers/cyw43/cyw43.h"
-#endif
+#include "lib/cyw43-driver/src/cyw43_country.h"
 
 typedef struct _network_cyw43_obj_t {
     mp_obj_base_t base;
@@ -124,11 +121,8 @@ STATIC mp_obj_t network_cyw43_active(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         return mp_obj_new_bool(cyw43_tcpip_link_status(self->cyw, self->itf));
     } else {
-        #if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
-        cyw43_wifi_set_up(self->cyw, self->itf, mp_obj_is_true(args[1]), MICROPY_CYW43_COUNTRY);
-        #else
-        cyw43_wifi_set_up(self->cyw, self->itf, mp_obj_is_true(args[1]));
-        #endif
+        uint32_t country = CYW43_COUNTRY(mod_network_country_code[0], mod_network_country_code[1], 0);
+        cyw43_wifi_set_up(self->cyw, self->itf, mp_obj_is_true(args[1]), country);
         return mp_const_none;
     }
 }
@@ -232,7 +226,7 @@ STATIC mp_obj_t network_cyw43_connect(size_t n_args, const mp_obj_t *pos_args, m
         { MP_QSTR_auth, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CYW43_CHANNEL_NONE} },
     };
 
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -244,13 +238,18 @@ STATIC mp_obj_t network_cyw43_connect(size_t n_args, const mp_obj_t *pos_args, m
         args[ARG_security] = args[ARG_auth];
     }
 
+    // Extract the SSID.
     mp_buffer_info_t ssid;
     mp_get_buffer_raise(args[ARG_ssid].u_obj, &ssid, MP_BUFFER_READ);
+
+    // Extract the key, if given.
     mp_buffer_info_t key;
     key.buf = NULL;
     if (args[ARG_key].u_obj != mp_const_none) {
         mp_get_buffer_raise(args[ARG_key].u_obj, &key, MP_BUFFER_READ);
     }
+
+    // Extract the BSSID, if given.
     mp_buffer_info_t bssid;
     bssid.buf = NULL;
     if (args[ARG_bssid].u_obj != mp_const_none) {
@@ -259,8 +258,25 @@ STATIC mp_obj_t network_cyw43_connect(size_t n_args, const mp_obj_t *pos_args, m
             mp_raise_ValueError(NULL);
         }
     }
+
+    // Extract the security type, if given.
+    uint32_t auth_type;
+    if (args[ARG_security].u_int == -1) {
+        if (key.buf == NULL || key.len == 0) {
+            // Default to open when no password set.
+            auth_type = CYW43_AUTH_OPEN;
+        } else {
+            // Default to WPA2 otherwise. All other modes require the security
+            // kwarg to be set explicitly.
+            auth_type = CYW43_AUTH_WPA2_MIXED_PSK;
+        }
+    } else {
+        auth_type = args[ARG_security].u_int;
+    }
+
+    // Start the WiFi join procedure.  It will run in the background.
     int ret = cyw43_wifi_join(self->cyw, ssid.len, ssid.buf, key.len, key.buf,
-        args[ARG_security].u_int, bssid.buf, args[ARG_channel].u_int);
+        auth_type, bssid.buf, args[ARG_channel].u_int);
     if (ret != 0) {
         mp_raise_OSError(-ret);
     }
@@ -365,11 +381,9 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                     return mp_obj_new_str((const char *)buf, len);
                 }
             }
-            #if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
             case MP_QSTR_security: {
                 return MP_OBJ_NEW_SMALL_INT(cyw43_wifi_ap_get_auth(self->cyw));
             }
-            #endif
             case MP_QSTR_mac: {
                 uint8_t buf[6];
                 cyw43_wifi_get_mac(self->cyw, self->itf, buf);
@@ -380,6 +394,10 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                 memcpy(buf, "qtxpower\x00\x00\x00\x00\x00", 13);
                 cyw43_ioctl(self->cyw, CYW43_IOCTL_GET_VAR, 13, buf, self->itf);
                 return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf) / 4);
+            }
+            case MP_QSTR_hostname: {
+                // TODO: Deprecated. Use network.hostname() instead.
+                return mp_obj_new_str(mod_network_hostname, strlen(mod_network_hostname));
             }
             default:
                 mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
@@ -453,6 +471,16 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                         cyw43_ioctl(self->cyw, CYW43_IOCTL_SET_VAR, 9 + 4, buf, self->itf);
                         break;
                     }
+                    case MP_QSTR_hostname: {
+                        // TODO: Deprecated. Use network.hostname(name) instead.
+                        size_t len;
+                        const char *str = mp_obj_str_get_data(args[0], &len);
+                        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
+                            mp_raise_ValueError(NULL);
+                        }
+                        strcpy(mod_network_hostname, str);
+                        break;
+                    }
                     default:
                         mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }
@@ -483,12 +511,13 @@ STATIC const mp_rom_map_elem_t network_cyw43_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(network_cyw43_locals_dict, network_cyw43_locals_dict_table);
 
-const mp_obj_type_t mp_network_cyw43_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_CYW43,
-    .print = network_cyw43_print,
-    .make_new = network_cyw43_make_new,
-    .locals_dict = (mp_obj_dict_t *)&network_cyw43_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_network_cyw43_type,
+    MP_QSTR_CYW43,
+    MP_TYPE_FLAG_NONE,
+    make_new, network_cyw43_make_new,
+    print, network_cyw43_print,
+    locals_dict, &network_cyw43_locals_dict
+    );
 
 #endif // MICROPY_PY_NETWORK_CYW43

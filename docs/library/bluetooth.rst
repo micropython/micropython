@@ -166,7 +166,7 @@ Event Handling
                 conn_handle, status = data
             elif event == _IRQ_GATTC_CHARACTERISTIC_RESULT:
                 # Called for each characteristic found by gattc_discover_services().
-                conn_handle, def_handle, value_handle, properties, uuid = data
+                conn_handle, end_handle, value_handle, properties, uuid = data
             elif event == _IRQ_GATTC_CHARACTERISTIC_DONE:
                 # Called once service discovery is complete.
                 # Note: Status will be zero on success, implementation-specific value otherwise.

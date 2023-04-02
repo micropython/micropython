@@ -8,35 +8,41 @@ defined in `PEP 596 <https://www.python.org/dev/peps/pep-0596/#features-for-3-9>
 and a detailed description of the changes can be found in
 `What's New in Python 3.9 <https://docs.python.org/3/whatsnew/3.9.html>`_
 
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | **Features:**                                          |                                                    | **Status**   |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 573 <https://www.python.org/dev/peps/pep-0573/>`_ | fast access to module state from methods of C      |              |
-  |                                                        | extension types                                    |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 584 <https://www.python.org/dev/peps/pep-0584/>`_ | union operators added to dict                      |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 585 <https://www.python.org/dev/peps/pep-0584/>`_ | type hinting generics in standard collections      |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 593 <https://www.python.org/dev/peps/pep-0593/>`_ | flexible function and variable annotations         |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 602 <https://www.python.org/dev/peps/pep-0602/>`_ | CPython adopts an annual release cycle. Instead of |              |
-  |                                                        | annual, aiming for two month release cycle         |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 614 <https://www.python.org/dev/peps/pep-0614/>`_ | relaxed grammar restrictions on decorators         |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 615 <https://www.python.org/dev/peps/pep-0615/>`_ | the IANA Time Zone Database is now present in the  |              |
-  |                                                        | standard library in the zoneinfo module            |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 616 <https://www.python.org/dev/peps/pep-0616/>`_ | string methods to remove prefixes and suffixes     |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 617 <https://www.python.org/dev/peps/pep-0617/>`_ | CPython now uses a new parser based on PEG         |              |
-  +--------------------------------------------------------+----------------------------------------------------+--------------+
+.. table::
+  :widths: 20 60 20
+
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | **Features**                                           |                                                    | **Status**           |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 573 <https://www.python.org/dev/peps/pep-0573/>`_ | Fast access to module state from methods of C      | Not relevant         |
+  |                                                        | extension types                                    |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 584 <https://www.python.org/dev/peps/pep-0584/>`_ | Union operators added to dict                      | Complete [#pep584]_  |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 585 <https://www.python.org/dev/peps/pep-0584/>`_ | Type hinting generics in standard collections      |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 593 <https://www.python.org/dev/peps/pep-0593/>`_ | Flexible function and variable annotations         |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 602 <https://www.python.org/dev/peps/pep-0602/>`_ | CPython adopts an annual release cycle. Instead of | Not relevant         |
+  |                                                        | annual, aiming for two month release cycle         |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 614 <https://www.python.org/dev/peps/pep-0614/>`_ | Relaxed grammar restrictions on decorators         |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 615 <https://www.python.org/dev/peps/pep-0615/>`_ | The IANA Time Zone Database is now present in the  |                      |
+  |                                                        | standard library in the zoneinfo module            |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 616 <https://www.python.org/dev/peps/pep-0616/>`_ | String methods to remove prefixes and suffixes     |                      |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
+  | `PEP 617 <https://www.python.org/dev/peps/pep-0617/>`_ | CPython now uses a new parser based on PEG         | Not relevant         |
+  +--------------------------------------------------------+----------------------------------------------------+----------------------+
 
 Other Language Changes:
 
+.. table::
+  :widths: 90 10
+
   +-------------------------------------------------------------------------------------------------------------+---------------+
-  | *__import__()* now raises *ImportError* instead of *ValueError*                                             | Completed     |
+  | *__import__()* now raises *ImportError* instead of *ValueError*                                             | Complete      |
   +-------------------------------------------------------------------------------------------------------------+---------------+
   | Python now gets the absolute path of the script filename specified on the command line (ex: *python3*       |               |
   | *script.py*): the *__file__* attribute of the *__main__* module became an absolute path, rather than a      |               |
@@ -62,8 +68,11 @@ Other Language Changes:
 
 Changes to built-in modules:
 
+.. table::
+  :widths: 90 10
+
   +---------------------------------------------------------------------------------------------------------------+---------------+
-  | `asyncio`                                                                                                                     |
+  | `asyncio <https://docs.python.org/3/whatsnew/3.9.html#asyncio>`_                                                              |
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | Due to significant security concerns, the reuse_address parameter of *asyncio.loop.create_datagram_endpoint()*|               |
   | is no longer supported                                                                                        |               |
@@ -82,13 +91,13 @@ Changes to built-in modules:
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | *asyncio* now raises *TyperError* when calling incompatible methods with an *ssl.SSLSocket* socket            |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
-  | `gc`                                                                                                                          |
+  | `gc <https://docs.python.org/3/whatsnew/3.9.html#gc>`_                                                                        |
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | Garbage collection does not block on resurrected objects                                                      |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | Added a new function *gc.is_finalized()* to check if an object has been finalized by the garbage collector    |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
-  | `math`                                                                                                                        |
+  | `math <https://docs.python.org/3/whatsnew/3.9.html#math>`_                                                                    |
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | Expanded the *math.gcd()* function to handle multiple arguments. Formerly, it only supported two arguments    |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
@@ -98,24 +107,28 @@ Changes to built-in modules:
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | Added *math.ulp()*: return the value of the least significant bit of a float                                  |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
-  | `os`                                                                                                                          |
+  | `os <https://docs.python.org/3/whatsnew/3.9.html#os>`_                                                                        |
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | Exposed the Linux-specific *os.pidfd_open()* and *os.P_PIDFD*                                                 |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
-  | The *os.unsetenv()* function is now also available on Windows                                                 | Completed     |
+  | The *os.unsetenv()* function is now also available on Windows                                                 | Complete      |
   +---------------------------------------------------------------------------------------------------------------+---------------+
-  | The *os.putenv()* and *os.unsetenv()* functions are now always available                                      | Completed     |
+  | The *os.putenv()* and *os.unsetenv()* functions are now always available                                      | Complete      |
   +---------------------------------------------------------------------------------------------------------------+---------------+
   |  Added *os.waitstatus_to_exitcode()* function: convert a wait status to an exit code                          |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
-  | `random`                                                                                                                      |
+  | `random <https://docs.python.org/3/whatsnew/3.9.html#random>`_                                                                |
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | Added a new *random.Random.randbytes* method: generate random bytes                                           |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
-  | `sys`                                                                                                                         |
+  | `sys <https://docs.python.org/3/whatsnew/3.9.html#sys>`_                                                                      |
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | Added a new *sys.platlibdir* attribute: name of the platform-specific library directory                       |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | Previously, *sys.stderr* was block-buffered when non-interactive. Now stderr defaults to always being         |               |
   | line-buffered                                                                                                 |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
+
+.. rubric:: Notes
+
+.. [#pep584] PEP 584 ``dict`` union operator is only available on MicroPython builds with ``MICROPY_CPYTHON_COMPAT`` enabled.

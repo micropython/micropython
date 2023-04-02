@@ -49,11 +49,6 @@ print(buf.write(bytearray(16)))
 # function defined in C++ code
 print("cpp", extra_cpp_coverage())
 
-# test user C module
-import cexample
-
-print(cexample.add_ints(3, 2))
-
 # test user C module mixed with C++ code
 import cppexample
 
@@ -96,3 +91,8 @@ import frzmpy3
 from frzqstr import returns_NULL
 
 print(returns_NULL())
+
+# test for freeze_mpy
+import frozentest
+
+print(frozentest.__file__)

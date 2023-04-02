@@ -113,7 +113,7 @@ static void board_led_pattern(int reset_mode, uint16_t brightness) {
 }
 
 static void board_button_init(void) {
-    mp_hal_pin_config(pin_A1, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pyb_pin_BUTTONS_ADC, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
     adc_config(ADC1, 12);
 }
 

@@ -103,7 +103,7 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     // This is a statically-allocated UART (see machine_uart.c), and doesn't
     // contain any heap pointers other than the ringbufs (which are already
     // root pointers), so no need to track this as a root pointer.
-    mp_bthci_uart = machine_uart_type.make_new((mp_obj_t)&machine_uart_type, 2, 2, args);
+    mp_bthci_uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, 2, 2, args);
 
     // Start the HCI polling to process any initial events/packets.
     mp_bluetooth_hci_start_polling();
@@ -128,7 +128,7 @@ int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate) {
 
 int mp_bluetooth_hci_uart_any(void) {
     int errcode = 0;
-    const mp_stream_p_t *proto = (mp_stream_p_t *)machine_uart_type.protocol;
+    const mp_stream_p_t *proto = (mp_stream_p_t *)MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, protocol);
 
     mp_uint_t ret = proto->ioctl(mp_bthci_uart, MP_STREAM_POLL, MP_STREAM_POLL_RD, &errcode);
     if (errcode != 0) {
@@ -142,7 +142,7 @@ int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
     debug_printf("mp_bluetooth_hci_uart_write\n");
 
     int errcode = 0;
-    const mp_stream_p_t *proto = (mp_stream_p_t *)machine_uart_type.protocol;
+    const mp_stream_p_t *proto = (mp_stream_p_t *)MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, protocol);
 
     mp_bluetooth_hci_controller_wakeup();
 
@@ -159,7 +159,7 @@ int mp_bluetooth_hci_uart_readchar(void) {
     if (mp_bluetooth_hci_uart_any()) {
         int errcode = 0;
         uint8_t buf = 0;
-        const mp_stream_p_t *proto = (mp_stream_p_t *)machine_uart_type.protocol;
+        const mp_stream_p_t *proto = (mp_stream_p_t *)MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, protocol);
         if (proto->read(mp_bthci_uart, (void *)&buf, 1, &errcode) < 0) {
             error_printf("mp_bluetooth_hci_uart_readchar: failed to read UART %d\n", errcode);
             return -1;

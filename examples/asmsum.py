@@ -1,6 +1,5 @@
 @micropython.asm_thumb
 def asm_sum_words(r0, r1):
-
     # r0 = len
     # r1 = ptr
     # r2 = sum
@@ -25,7 +24,6 @@ def asm_sum_words(r0, r1):
 
 @micropython.asm_thumb
 def asm_sum_bytes(r0, r1):
-
     # r0 = len
     # r1 = ptr
     # r2 = sum

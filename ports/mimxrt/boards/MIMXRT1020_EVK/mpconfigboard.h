@@ -1,6 +1,8 @@
 #define MICROPY_HW_BOARD_NAME "i.MX RT1020 EVK"
 #define MICROPY_HW_MCU_NAME   "MIMXRT1021DAG5A"
 
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-1020evk"
+
 // i.MX RT1020 EVK has 1 board LED
 // Todo: think about replacing the define with searching in the generated pins?
 #define MICROPY_HW_LED1_PIN (pin_GPIO_AD_B0_05)
@@ -73,6 +75,7 @@
 #define I2S_IOMUXC_GPR_MODE { 0, kIOMUXC_GPR_SAI1MClkOutputDir, kIOMUXC_GPR_SAI2MClkOutputDir }
 #define I2S_DMA_REQ_SRC_RX { 0, kDmaRequestMuxSai1Rx, kDmaRequestMuxSai2Rx }
 #define I2S_DMA_REQ_SRC_TX { 0, kDmaRequestMuxSai1Tx, kDmaRequestMuxSai2Tx }
+#define I2S_AUDIO_PLL_CLOCK (2U)
 
 #define I2S_GPIO(_hwid, _fn, _mode, _pin, _iomux) \
     { \
@@ -158,8 +161,8 @@
 #define ENET_PHY_OPS        phyksz8081_ops
 
 // Etherner PIN definitions
-#define ENET_RESET_PIN      pin_GPIO_AD_B0_04
-#define ENET_INT_PIN        pin_GPIO_AD_B1_06
+#define ENET_RESET_PIN      &pin_GPIO_AD_B0_04
+#define ENET_INT_PIN        &pin_GPIO_AD_B1_06
 
 #define IOMUX_TABLE_ENET \
     { IOMUXC_GPIO_AD_B0_08_ENET_REF_CLK1, 1, 0xB0E9u }, \

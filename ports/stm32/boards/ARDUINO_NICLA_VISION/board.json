@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "./deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "16MB Flash",
+        "Dual-core processor",
+        "USB High Speed Phy",
+        "CYW43 WiFi/BT Module",
+        "NXP SE050 crypto device"
+    ],
+    "images": [
+        "ABX00051_01.iso_1000x750.jpg"
+    ],
+    "mcu": "stm32h7",
+    "product": "Arduino Nicla Vision",
+    "thumbnail": "",
+    "url": "https://store.arduino.cc/products/nicla-vision",
+    "vendor": "Arduino"
+}

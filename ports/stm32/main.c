@@ -48,7 +48,9 @@
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
 #include "lwip/apps/mdns.h"
-#include "drivers/cyw43/cyw43.h"
+#if MICROPY_PY_NETWORK_CYW43
+#include "lib/cyw43-driver/src/cyw43.h"
+#endif
 #endif
 
 #if MICROPY_PY_BLUETOOTH
@@ -182,7 +184,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     if (len != -1) {
         // Detected a littlefs filesystem so create correct block device for it
         mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR_len), MP_OBJ_NEW_SMALL_INT(len) };
-        bdev = pyb_flash_type.make_new(&pyb_flash_type, 0, 1, args);
+        bdev = MP_OBJ_TYPE_GET_SLOT(&pyb_flash_type, make_new)(&pyb_flash_type, 0, 1, args);
     }
 
     #endif
@@ -202,7 +204,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     }
 
     if (ret != 0) {
-        printf("MPY: can't mount flash\n");
+        mp_printf(&mp_plat_print, "MPY: can't mount flash\n");
         return false;
     }
 
@@ -287,7 +289,7 @@ STATIC bool init_sdcard_fs(void) {
     }
 
     if (first_part) {
-        printf("MPY: can't mount SD card\n");
+        mp_printf(&mp_plat_print, "MPY: can't mount SD card\n");
         return false;
     } else {
         return true;
@@ -296,6 +298,9 @@ STATIC bool init_sdcard_fs(void) {
 #endif
 
 void stm32_main(uint32_t reset_mode) {
+    // Low-level MCU initialisation.
+    stm32_system_init();
+
     #if !defined(STM32F0) && defined(MICROPY_HW_VTOR)
     // Change IRQ vector table if configured differently
     SCB->VTOR = MICROPY_HW_VTOR;
@@ -374,7 +379,9 @@ void stm32_main(uint32_t reset_mode) {
     // Enable D2 SRAM1/2/3 clocks.
     __HAL_RCC_D2SRAM1_CLK_ENABLE();
     __HAL_RCC_D2SRAM2_CLK_ENABLE();
+    #if defined(__HAL_RCC_D2SRAM3_CLK_ENABLE)
     __HAL_RCC_D2SRAM3_CLK_ENABLE();
+    #endif
     #endif
 
     MICROPY_BOARD_EARLY_INIT();

@@ -5,7 +5,8 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  FLASH (rx)         : ORIGIN = 0x00000000, LENGTH = 0x00100000  /* 1MB */
+  FLASH (rx)         : ORIGIN = 0x00000000, LENGTH = 0x000e0000  /* 896KB/1MB */
+  FLASH_FS (r)       : ORIGIN = 0x000e0000, LENGTH = 0x00020000  /* 128KB/1MB */
   RAM (rwx)          : ORIGIN = 0x1FFE0000, LENGTH = 0x00060000  /* 384KB */
   DATA_FLASH (rx)    : ORIGIN = 0x40100000, LENGTH = 0x00008000  /* 32KB */
   ID_CODE (rx)       : ORIGIN = 0x0100A150, LENGTH = 0x00000010  /* 32bytes */
@@ -296,3 +297,6 @@ _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = __HeapBase;	/* heap starts just after statically allocated memory */
 _heap_end = __HeapLimit;	/* tunable */
+
+_micropy_hw_internal_flash_storage_start = ORIGIN(FLASH_FS);
+_micropy_hw_internal_flash_storage_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);

@@ -119,7 +119,7 @@ typedef long mp_off_t;
 #define MP_PLAT_PRINT_STRN(str, len) (void)0
 
 // We need to provide a declaration/definition of alloca()
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 #include <stdlib.h>
 #elif defined(_WIN32)
 #include <malloc.h>

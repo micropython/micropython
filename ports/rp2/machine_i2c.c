@@ -35,13 +35,23 @@
 #define DEFAULT_I2C_FREQ (400000)
 
 #ifndef MICROPY_HW_I2C0_SCL
+#if PICO_DEFAULT_I2C == 0
+#define MICROPY_HW_I2C0_SCL (PICO_DEFAULT_I2C_SCL_PIN)
+#define MICROPY_HW_I2C0_SDA (PICO_DEFAULT_I2C_SDA_PIN)
+#else
 #define MICROPY_HW_I2C0_SCL (9)
 #define MICROPY_HW_I2C0_SDA (8)
 #endif
+#endif
 
 #ifndef MICROPY_HW_I2C1_SCL
+#if PICO_DEFAULT_I2C == 1
+#define MICROPY_HW_I2C1_SCL (PICO_DEFAULT_I2C_SCL_PIN)
+#define MICROPY_HW_I2C1_SDA (PICO_DEFAULT_I2C_SDA_PIN)
+#else
 #define MICROPY_HW_I2C1_SCL (7)
 #define MICROPY_HW_I2C1_SDA (6)
+#endif
 #endif
 
 // SDA/SCL on even/odd pins, I2C0/I2C1 on even/odd pairs of pins.
@@ -58,8 +68,8 @@ typedef struct _machine_i2c_obj_t {
 } machine_i2c_obj_t;
 
 STATIC machine_i2c_obj_t machine_i2c_obj[] = {
-    {{&machine_hw_i2c_type}, i2c0, 0, MICROPY_HW_I2C0_SCL, MICROPY_HW_I2C0_SDA, 0},
-    {{&machine_hw_i2c_type}, i2c1, 1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 0},
+    {{&machine_i2c_type}, i2c0, 0, MICROPY_HW_I2C0_SCL, MICROPY_HW_I2C0_SDA, 0},
+    {{&machine_i2c_type}, i2c1, 1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 0},
 };
 
 STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -166,11 +176,12 @@ STATIC const mp_machine_i2c_p_t machine_i2c_p = {
     .transfer_single = machine_i2c_transfer_single,
 };
 
-const mp_obj_type_t machine_hw_i2c_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2C,
-    .print = machine_i2c_print,
-    .make_new = machine_i2c_make_new,
-    .protocol = &machine_i2c_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_i2c_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_i2c_type,
+    MP_QSTR_I2C,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_i2c_make_new,
+    print, machine_i2c_print,
+    protocol, &machine_i2c_p,
+    locals_dict, &mp_machine_i2c_locals_dict
+    );
