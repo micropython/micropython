@@ -42,7 +42,7 @@ Functions
    Update a `DecompIO` to use a new stream object.  This is exactly like
    creating a new `DecompIO` object, except the buffer (usually 32k) is
    reused and therefore doesn't have to be reallocated.  This can 
-   prevent random `MemoryError`s due to memory fragmentation when
+   prevent a random `MemoryError` due to memory fragmentation when
    processing large numbers of streams.
    
    The buffer sizes of the two streams must match, or this will throw
