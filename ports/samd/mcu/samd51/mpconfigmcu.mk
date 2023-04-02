@@ -6,6 +6,9 @@ MICROPY_VFS_LFS2 ?= 1
 MICROPY_VFS_FAT ?= 1
 FROZEN_MANIFEST ?= mcu/$(MCU_SERIES_LOWER)/manifest.py
 
+MICROPY_PY_BLUETOOTH ?= 1
+MICROPY_BLUETOOTH_NIMBLE ?= 1
+
 SRC_S += shared/runtime/gchelper_thumb2.s
 
 SRC_C += \
@@ -40,3 +43,13 @@ LIBM_SRC_C +=  $(addprefix lib/libm/,\
 	wf_lgamma.c \
 	wf_tgamma.c \
 	)
+
+SRC_C += \
+    mpbthciport.c \
+    mpnimbleport.c
+
+INC += \
+	-I$(TOP)/extmod/nimble \
+    -I$(TOP)/lib/mynewt-nimble/nimble/host/include \
+    -I$(TOP)/lib/mynewt-nimble/nimble/include \
+    -I$(TOP)/lib/mynewt-nimble/porting/nimble/include

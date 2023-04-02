@@ -33,6 +33,7 @@ FROZEN_MANIFEST ?= boards/manifest.py
 # Include py core make definitions
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
+include ${TOP}/extmod/nimble/nimble.mk
 
 GIT_SUBMODULES += lib/asf4 lib/tinyusb
 

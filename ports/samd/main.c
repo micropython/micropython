@@ -33,6 +33,8 @@
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
+#include "extmod/modbluetooth.h"
+#include "mpbthciport.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 extern void adc_deinit_all(void);
@@ -43,6 +45,10 @@ extern void sercom_deinit_all(void);
 void samd_main(void) {
     mp_stack_set_top(&_estack);
     mp_stack_set_limit(&_estack - &_sstack - 1024);
+
+    #if MICROPY_PY_BLUETOOTH
+    mp_bluetooth_hci_init();
+    #endif
 
     for (;;) {
         gc_init(&_sheap, &_eheap);
@@ -85,6 +91,9 @@ void samd_main(void) {
         pin_irq_deinit_all();
         pwm_deinit_all();
         sercom_deinit_all();
+        #if MICROPY_PY_BLUETOOTH
+        mp_bluetooth_deinit();
+        #endif
         soft_timer_deinit();
         gc_sweep_all();
         mp_deinit();

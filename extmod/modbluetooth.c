@@ -84,7 +84,7 @@ typedef struct {
 
 STATIC const mp_obj_type_t mp_type_bluetooth_ble;
 
-mp_obj_t mp_bluetooth_interface_config = NULL;
+mp_obj_t mp_bluetooth_interface_config = MP_ROM_NONE;
 
 // TODO: this seems like it could be generic?
 STATIC mp_obj_t bluetooth_handle_errno(int err) {
@@ -266,7 +266,7 @@ STATIC mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args,
     (void)n_kw;
     (void)all_args;
     if (MP_STATE_VM(bluetooth) == MP_OBJ_NULL) {
-        if (n_args > 0 && mp_obj_is_type(all_args[0], &machine_uart_type)) {  // UART object given
+        if (n_args > 0) {  // Store the argument, but check it later.
             mp_bluetooth_interface_config = all_args[0];
         }
         mp_obj_bluetooth_ble_t *o = m_new0(mp_obj_bluetooth_ble_t, 1);

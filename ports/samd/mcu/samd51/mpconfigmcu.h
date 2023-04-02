@@ -32,6 +32,10 @@ unsigned long trng_random_u32(void);
 #define MICROPY_PY_MACHINE_PIN_BOARD_CPU (1)
 #endif
 
+// Dummy defines for Bluetooth UART
+#define MICROPY_HW_BLE_UART_BAUDRATE        (115200)
+#define MICROPY_HW_BLE_UART_ID              (1)
+
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN            (1)
 #define MICROPY_FATFS_RPATH                 (2)
