@@ -147,14 +147,14 @@ STATIC mp_obj_t mod_uzlib_set_stream(size_t n_args, const mp_obj_t *args) {
         dict_opt = mp_obj_get_int(args[2]);
     }
     uint dict_sz = calc_dict_sz(dict_opt, o);
-    
+
     if (dict_sz != dict_size) {
         mp_raise_ValueError(MP_ERROR_TEXT("compression header buffer sizes must match (to reuse buffer)"));
     }
 
 //    dict_opt = uzlib_zlib_parse_header(decomp);
-    for (uint i=0; i<dict_size; ++i) {
-      dict_ring[i] = 0;
+    for (uint i = 0; i < dict_size; ++i) {
+        dict_ring[i] = 0;
     }
     decomp->eof = 0;
     decomp->bitcount = 0;
