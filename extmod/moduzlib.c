@@ -66,21 +66,8 @@ STATIC int read_src_stream(TINF_DATA *data) {
     return c;
 }
 
-STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 2, false);
-    mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
-    mp_obj_decompio_t *o = mp_obj_malloc(mp_obj_decompio_t, type);
-    memset(&o->decomp, 0, sizeof(o->decomp));
-    o->decomp.readSource = read_src_stream;
-    o->src_stream = args[0];
-    o->eof = false;
-
-    mp_int_t dict_opt = 0;
+STATIC uint calc_dict_sz(mp_int_t dict_opt, mp_obj_decompio_t *o) {
     uint dict_sz;
-    if (n_args > 1) {
-        dict_opt = mp_obj_get_int(args[1]);
-    }
-
     if (dict_opt >= 16) {
         int st = uzlib_gzip_parse_header(&o->decomp);
         if (st != TINF_OK) {
@@ -100,6 +87,23 @@ STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size
     } else {
         dict_sz = 1 << -dict_opt;
     }
+    return dict_sz;
+}
+
+STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
+    mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
+    mp_obj_decompio_t *o = mp_obj_malloc(mp_obj_decompio_t, type);
+    memset(&o->decomp, 0, sizeof(o->decomp));
+    o->decomp.readSource = read_src_stream;
+    o->src_stream = args[0];
+    o->eof = false;
+
+    mp_int_t dict_opt = 0;
+    if (n_args > 1) {
+        dict_opt = mp_obj_get_int(args[1]);
+    }
+    uint dict_sz = calc_dict_sz(dict_opt, o);
 
     uzlib_uncompress_init(&o->decomp, m_new(byte, dict_sz), dict_sz);
     return MP_OBJ_FROM_PTR(o);
@@ -126,6 +130,7 @@ STATIC mp_uint_t decompio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
 }
 
 STATIC mp_obj_t mod_uzlib_reset(size_t n_args, const mp_obj_t *args) {
+    mp_get_stream_raise(args[1], MP_STREAM_OP_READ);
     mp_obj_decompio_t *o = args[0];
     TINF_DATA *decomp = &o->decomp;
     unsigned char *dict_ring = decomp->dict_ring;
@@ -136,7 +141,18 @@ STATIC mp_obj_t mod_uzlib_reset(size_t n_args, const mp_obj_t *args) {
     o->eof = false;
     decomp->dict_ring = dict_ring;
     decomp->dict_size = dict_size;
-    uzlib_zlib_parse_header(decomp);
+
+    mp_int_t dict_opt = 0;
+    if (n_args > 2) {
+        dict_opt = mp_obj_get_int(args[2]);
+    }
+    uint dict_sz = calc_dict_sz(dict_opt, o);
+    
+    if (dict_sz != dict_size) {
+        mp_raise_ValueError(MP_ERROR_TEXT("compression header buffer sizes must match (to reuse buffer)"));
+    }
+
+//    dict_opt = uzlib_zlib_parse_header(decomp);
     for (uint i=0; i<dict_size; ++i) {
       dict_ring[i] = 0;
     }
