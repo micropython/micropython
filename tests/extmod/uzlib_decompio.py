@@ -35,7 +35,7 @@ except OSError as e:
 
 inp = zlib.DecompIO(io.BytesIO(b'x\x9c+.)JM\xcc5\x04\x00\x0b\xe0\x02\xbe'))
 assert inp.read()==b'stream1'
-inp.reset(io.BytesIO(b'x\x9c+.)JM\xcc5\x02\x00\x0b\xe1\x02\xbf'))
+inp.set_stream(io.BytesIO(b'x\x9c+.)JM\xcc5\x02\x00\x0b\xe1\x02\xbf'))
 assert inp.read()==b'stream2'
 
 
