@@ -34,8 +34,7 @@
 
 #include "shared-bindings/synthio/__init__.h"
 #include "shared-bindings/synthio/MidiTrack.h"
-
-int16_t shared_bindings_synthio_square_wave[] = {-32768, 32767};
+#include "shared-bindings/synthio/Synthesizer.h"
 
 //| """Support for MIDI synthesis"""
 //|
@@ -79,17 +78,9 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
     pyb_file_obj_t *file = MP_OBJ_TO_PTR(args[ARG_file].u_obj);
 
-    mp_buffer_info_t bufinfo_waveform = {
-        .buf = shared_bindings_synthio_square_wave,
-        .len = 4
-    };
 
-    if (args[ARG_waveform].u_obj != mp_const_none) {
-        mp_get_buffer_raise(args[ARG_waveform].u_obj, &bufinfo_waveform, MP_BUFFER_READ);
-        if (bufinfo_waveform.typecode != 'h') {
-            mp_raise_ValueError_varg(translate("%q must be array of type 'h'"), MP_QSTR_waveform);
-        }
-    }
+    mp_buffer_info_t bufinfo_waveform;
+    synthio_synth_parse_waveform(&bufinfo_waveform, args[ARG_waveform].u_obj);
 
     uint8_t chunk_header[14];
     f_rewind(&file->fp);
@@ -146,6 +137,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(synthio_from_file_obj, 1, synthio_from_file);
 STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_synthio) },
     { MP_ROM_QSTR(MP_QSTR_MidiTrack), MP_ROM_PTR(&synthio_miditrack_type) },
+    { MP_ROM_QSTR(MP_QSTR_Synthesizer), MP_ROM_PTR(&synthio_synthesizer_type) },
     { MP_ROM_QSTR(MP_QSTR_from_file), MP_ROM_PTR(&synthio_from_file_obj) },
 };
 

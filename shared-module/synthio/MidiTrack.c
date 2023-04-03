@@ -57,21 +57,10 @@ STATIC void add_span(synthio_miditrack_obj_t *self, const synthio_midi_span_t *s
     self->track[self->total_spans++] = *span;
 }
 
-STATIC int find_channel_with_note(const synthio_midi_span_t *span, uint8_t note) {
-    for (int i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
-        if (span->note[i] == note) {
-            return i;
-        }
-    }
-    return -1;
-}
-
 STATIC void change_span_note(synthio_miditrack_obj_t *self, uint8_t old_note, uint8_t new_note, uint16_t *dur) {
     synthio_midi_span_t span = self->track[self->total_spans - 1];
-    int channel = find_channel_with_note(&span, old_note);
-    if (channel != -1) {
+    if (synthio_span_change_note(&span, old_note, new_note)) {
         terminate_span(self, dur);
-        span.note[channel] = new_note;
         add_span(self, &span);
         *dur = 0;
     }
@@ -83,12 +72,11 @@ void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
 
     self->synth.sample_rate = sample_rate;
     self->track = m_malloc(sizeof(synthio_midi_span_t), false);
-    *self->track = ((synthio_midi_span_t) { 0, {[0 ... (CIRCUITPY_SYNTHIO_MAX_CHANNELS - 1)] = SYNTHIO_SILENCE} });
+    synthio_span_init(self->track);
     self->next_span = 0;
     self->total_spans = 1;
     self->synth.waveform = waveform;
     self->synth.waveform_length = waveform_length;
-    mp_arg_validate_length_range(waveform_length, 2, 1024, MP_QSTR_waveform);
 
     uint16_t dur = 0;
     uint32_t pos = 0;

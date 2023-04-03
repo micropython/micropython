@@ -85,17 +85,8 @@ STATIC mp_obj_t synthio_miditrack_make_new(const mp_obj_type_t *type, size_t n_a
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    mp_buffer_info_t bufinfo_waveform = {
-        .buf = shared_bindings_synthio_square_wave,
-        .len = 4
-    };
-
-    if (args[ARG_waveform].u_obj != mp_const_none) {
-        mp_get_buffer_raise(args[ARG_waveform].u_obj, &bufinfo_waveform, MP_BUFFER_READ);
-        if (bufinfo_waveform.typecode != 'h') {
-            mp_raise_ValueError_varg(translate("%q must be array of type 'h'"), MP_QSTR_waveform);
-        }
-    }
+    mp_buffer_info_t bufinfo_waveform;
+    synthio_synth_parse_waveform(&bufinfo_waveform, args[ARG_waveform].u_obj);
 
     synthio_miditrack_obj_t *self = m_new_obj(synthio_miditrack_obj_t);
     self->base.type = &synthio_miditrack_type;

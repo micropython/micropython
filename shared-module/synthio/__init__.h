@@ -48,9 +48,13 @@ typedef struct {
     uint32_t accum[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
 } synthio_synth_t;
 
+void synthio_span_init(synthio_midi_span_t *span);
 void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **buffer, uint32_t *buffer_length);
 void synthio_synth_deinit(synthio_synth_t *synth);
 bool synthio_synth_deinited(synthio_synth_t *synth);
 void synthio_synth_init(synthio_synth_t *synth, uint16_t max_dur);
 void synthio_synth_get_buffer_structure(synthio_synth_t *synth, bool single_channel_output,
     bool *single_buffer, bool *samples_signed, uint32_t *max_buffer_length, uint8_t *spacing);
+void synthio_synth_parse_waveform(mp_buffer_info_t *bufinfo_waveform, mp_obj_t waveform_obj);
+bool synthio_span_change_note(synthio_midi_span_t *span, uint8_t old_note, uint8_t new_note);
+int synthio_span_count_active_channels(synthio_midi_span_t *span);

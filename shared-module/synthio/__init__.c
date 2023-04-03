@@ -1,9 +1,39 @@
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Artyom Skrobov
+ * Copyright (c) 2023 Jeff Epler for Adafruit Industries
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include "shared-module/synthio/__init__.h"
+#include "py/runtime.h"
+
+STATIC const int16_t square_wave[] = {-32768, 32767};
 
 STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
                                  12544, 13290, 14080, 14917, 15804}; // 9th octave
 
-STATIC int count_active_channels(synthio_midi_span_t *span) {
+int synthio_span_count_active_channels(synthio_midi_span_t *span) {
     int result = 0;
     for (int i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
         if (span->note[i] != SYNTHIO_SILENCE) {
@@ -20,7 +50,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **buffer, uint32_t
     memset(synth->buffer, 0, synth->buffer_length);
 
     int32_t sample_rate = synth->sample_rate;
-    int active_channels = count_active_channels(&synth->span);
+    int active_channels = synthio_span_count_active_channels(&synth->span);
     const int16_t *waveform = synth->waveform;
     uint32_t waveform_length = synth->waveform_length;
     int16_t *out_buffer = synth->buffer;
@@ -78,4 +108,40 @@ void synthio_synth_get_buffer_structure(synthio_synth_t *synth, bool single_chan
     *samples_signed = true;
     *max_buffer_length = synth->buffer_length;
     *spacing = 1;
+}
+
+void synthio_synth_parse_waveform(mp_buffer_info_t *bufinfo_waveform, mp_obj_t waveform_obj) {
+    *bufinfo_waveform = ((mp_buffer_info_t) { .buf = (void *)square_wave, .len = 4 });
+
+    if (waveform_obj != mp_const_none) {
+        mp_get_buffer_raise(waveform_obj, bufinfo_waveform, MP_BUFFER_READ);
+        if (bufinfo_waveform->typecode != 'h') {
+            mp_raise_ValueError_varg(translate("%q must be array of type 'h'"), MP_QSTR_waveform);
+        }
+    }
+    mp_arg_validate_length_range(bufinfo_waveform->len / 2, 2, 1024, MP_QSTR_waveform);
+}
+
+void synthio_span_init(synthio_midi_span_t *span) {
+    span->dur = 0;
+    for (size_t i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) { span->note[i] = SYNTHIO_SILENCE;
+    }
+}
+
+STATIC int find_channel_with_note(const synthio_midi_span_t *span, uint8_t note) {
+    for (int i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
+        if (span->note[i] == note) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+bool synthio_span_change_note(synthio_midi_span_t *span, uint8_t old_note, uint8_t new_note) {
+    int channel = find_channel_with_note(span, old_note);
+    if (channel != -1) {
+        span->note[channel] = new_note;
+        return true;
+    }
+    return false;
 }
