@@ -84,7 +84,7 @@ typedef struct {
 
 STATIC const mp_obj_type_t mp_type_bluetooth_ble;
 
-mp_obj_t mp_bluetooth_interface_config = MP_ROM_NONE;
+mp_obj_t mp_bluetooth_interface_config = 0;
 
 // TODO: this seems like it could be generic?
 STATIC mp_obj_t bluetooth_handle_errno(int err) {

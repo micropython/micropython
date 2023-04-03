@@ -29,13 +29,14 @@
 
 #include "py/mphal.h"
 
-#if MICROPY_PY_BLUETOOTH && MICROPY_PY_NETWORK_NINAW10
+#if MICROPY_PY_BLUETOOTH
 
 #include <stdio.h>
 #include <string.h>
 
 #include "py/runtime.h"
 #include "extmod/mpbthci.h"
+#include "mpbthciport.h"
 
 #define HCI_COMMAND_PACKET      (0x01)
 #define HCI_ACLDATA_PACKET      (0x02)
@@ -58,6 +59,12 @@ extern uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
 static int nina_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *param_buf) {
     uint8_t *buf = mp_bluetooth_hci_cmd_buf;
+
+    // Clear the UART input buffer before sending the reset command.
+    // The ESP32 reset message may stick in it.
+    while (mp_bluetooth_hci_uart_any()) {
+        mp_bluetooth_hci_uart_readchar();
+    }
 
     buf[0] = HCI_COMMAND_PACKET;
     buf[1] = ocf;
@@ -119,20 +126,52 @@ static int nina_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *param
     return buf[6];
 }
 
+extern mp_bluetooth_wiring_t mp_bluetooth_wiring;
+
 int mp_bluetooth_hci_controller_init(void) {
     // This is called immediately after the UART is initialised during stack initialisation.
-    mp_hal_pin_output(MICROPY_HW_NINA_GPIO1);
-    mp_hal_pin_output(MICROPY_HW_NINA_RESET);
-
-    mp_hal_pin_write(MICROPY_HW_NINA_GPIO1, 0);
-    mp_hal_pin_write(MICROPY_HW_NINA_RESET, 0);
+    #ifdef MICROPY_HW_NINA_GPIO1
+    if (mp_bluetooth_wiring.gpio1 == PIN_NOT_SET) {
+        mp_bluetooth_wiring.gpio1 = MICROPY_HW_NINA_GPIO1;
+    }
+    #endif
+    #ifdef MICROPY_HW_NINA_RESET
+    if (mp_bluetooth_wiring.reset == PIN_NOT_SET) {
+        mp_bluetooth_wiring.reset = MICROPY_HW_NINA_RESET;
+    }
+    #endif
+    #ifdef MICROPY_HW_NINA_MISO
+    if (mp_bluetooth_wiring.rts == PIN_NOT_SET) {
+        mp_bluetooth_wiring.rts = MICROPY_HW_NINA_MISO;
+    }
+    #endif
+    #ifdef MICROPY_HW_NINA_ACK
+    if (mp_bluetooth_wiring.cts == PIN_NOT_SET) {
+        mp_bluetooth_wiring.cts = MICROPY_HW_NINA_ACK;
+    }
+    #endif
+    // set the pin modes
+    mp_hal_pin_output(mp_bluetooth_wiring.gpio1);
+    mp_hal_pin_output(mp_bluetooth_wiring.reset);
+    // care for dedicated setting of RTS/CTS
+    if (mp_bluetooth_wiring.rts != PIN_NOT_SET) {
+        mp_hal_pin_output(mp_bluetooth_wiring.rts);
+        mp_hal_pin_write(mp_bluetooth_wiring.rts, 0);
+    }
+    if (mp_bluetooth_wiring.cts != PIN_NOT_SET) {
+        mp_hal_pin_input(mp_bluetooth_wiring.cts);
+        mp_hal_pin_write(mp_bluetooth_wiring.rts, 0);
+    }
+    // Switch to Bluetooth mode.
+    mp_hal_pin_write(mp_bluetooth_wiring.gpio1, 0);
+    mp_hal_pin_write(mp_bluetooth_wiring.reset, 0);
     mp_hal_delay_ms(100);
 
-    mp_hal_pin_write(MICROPY_HW_NINA_RESET, 1);
+    mp_hal_pin_write(mp_bluetooth_wiring.reset, 1);
     mp_hal_delay_ms(750);
 
-    // The UART must be re-initialize here because the GPIO1/RX pin is used initially
-    // to reset the module in Bluetooth mode. This will change back the pin to UART RX.
+    // The UART must be re-initialize here because the GPIO1/RX pin may be used initially
+    // to reset the module in Bluetooth mode. Then this will change back the pin to UART RX.
     mp_bluetooth_hci_uart_init(0, 0);
 
     // Send reset command
@@ -142,8 +181,8 @@ int mp_bluetooth_hci_controller_init(void) {
 
 int mp_bluetooth_hci_controller_deinit(void) {
     // Reset module
-    mp_hal_pin_output(MICROPY_HW_NINA_RESET);
-    mp_hal_pin_write(MICROPY_HW_NINA_RESET, 0);
+    mp_hal_pin_output(mp_bluetooth_wiring.reset);
+    mp_hal_pin_write(mp_bluetooth_wiring.reset, 0);
     return 0;
 }
 

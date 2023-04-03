@@ -14,6 +14,7 @@ SRC_S += shared/runtime/gchelper_thumb2.s
 SRC_C += \
 	fatfs_port.c \
 	drivers/dht/dht.c \
+	drivers/ninaw10/nina_bt_hci.c
 
 LIBM_SRC_C +=  $(addprefix lib/libm/,\
 	acoshf.c \

@@ -106,15 +106,36 @@ void mp_bluetooth_hci_poll_now(void) {
 
 mp_obj_t mp_bthci_uart;
 extern mp_obj_t mp_bluetooth_interface_config;
+mp_bluetooth_wiring_t mp_bluetooth_wiring = {
+    NULL, 0, 0, 0, 0
+};
 
 int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     debug_printf("mp_bluetooth_hci_uart_init\n");
 
-    if (mp_bluetooth_interface_config != MP_ROM_NONE) {
-        if (mp_obj_is_type(mp_bluetooth_interface_config, &machine_uart_type)) {
-            mp_bthci_uart = mp_bluetooth_interface_config;
+    if (mp_bluetooth_interface_config != 0) {
+        if (mp_obj_is_type(mp_bluetooth_interface_config, &mp_type_tuple)) {
+            mp_obj_t *items;
+            mp_obj_get_array_fixed_n(mp_bluetooth_interface_config, 5, &items);
+            if (!(mp_obj_is_type(items[0], &machine_uart_type) &&
+                  mp_obj_is_type(items[1], &machine_pin_type) &&
+                  mp_obj_is_type(items[2], &machine_pin_type) &&
+                  mp_obj_is_type(items[3], &machine_pin_type) &&
+                  mp_obj_is_type(items[4], &machine_pin_type))) {
+                mp_raise_TypeError(MP_ERROR_TEXT("ble_init - wrong argument type"));
+            }
+            mp_bthci_uart = items[0];
+            mp_bluetooth_wiring.uart = items[0];
+            if (items[1] != mp_const_none) {
+               mp_bluetooth_wiring.rts = mp_hal_get_pin_obj(items[1]);
+            }
+            if (items[2] != mp_const_none) {
+                mp_bluetooth_wiring.cts = mp_hal_get_pin_obj(items[2]);
+            }
+            mp_bluetooth_wiring.gpio1 = mp_hal_get_pin_obj(items[3]);
+            mp_bluetooth_wiring.reset = mp_hal_get_pin_obj(items[4]);
         } else {
-           mp_raise_ValueError(MP_ERROR_TEXT("not an UART")); 
+            mp_raise_TypeError(MP_ERROR_TEXT("ble_init - must be a tuple or list")); 
         }
     } else {
         #if defined(MICROPY_HW_BLE_UART_ID) && defined(MICROPY_HW_BLE_UART_TX) && defined(MICROPY_HW_BLE_UART_RX)
