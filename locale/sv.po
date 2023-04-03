@@ -134,6 +134,7 @@ msgid "%q in %q must be of type %q, not %q"
 msgstr "%q i %q måste vara av typen %q, inte %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -1244,6 +1245,7 @@ msgstr "Intern watchdog-timer har löpt ut."
 msgid "Interrupt error."
 msgstr "Interrupt-fel."
 
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1251,6 +1253,7 @@ msgid "Invalid %q"
 msgstr "Ogiltig %q"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Ogiltig %q-pinne"
@@ -3887,11 +3890,7 @@ msgstr "matrisen för out är för liten"
 msgid "out must be a float dense array"
 msgstr "out måste vara en float dense array"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "out of range of source"
-msgstr "utanför räckvidd för source"
-
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
 msgstr "utanför räckvidd för target"
 
@@ -3916,13 +3915,9 @@ msgstr "parametrarna måste registreras i följd a2-a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "parametrarna måste registreras i följd r0-r3"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "pixel coordinates out of bounds"
 msgstr "pixelkoordinater utanför gränserna"
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "pixel value requires too many bits"
-msgstr "pixelvärdet kräver för många bitar"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
@@ -4337,10 +4332,6 @@ msgstr "värdet måste passa i %d byte(s)"
 msgid "value out of range of target"
 msgstr "värde utanför målintervall"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "value_count must be > 0"
-msgstr "value_count måste vara > 0"
-
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "watchdog är inte initierad"
@@ -4427,6 +4418,15 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "out of range of source"
+#~ msgstr "utanför räckvidd för source"
+
+#~ msgid "pixel value requires too many bits"
+#~ msgstr "pixelvärdet kräver för många bitar"
+
+#~ msgid "value_count must be > 0"
+#~ msgstr "value_count måste vara > 0"
 
 #~ msgid "64 bit types"
 #~ msgstr "64-bitars typer"
