@@ -52,7 +52,7 @@ void samd_main(void) {
         readline_init0();
 
         // Execute _boot.py to set up the filesystem.
-        pyexec_frozen_module("_boot.py");
+        pyexec_frozen_module("_boot.py", false);
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");

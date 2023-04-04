@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     // do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
     // do_str("for i in range(10):\r\n  print(i)", MP_PARSE_FILE_INPUT);
     #else
-    pyexec_frozen_module("frozentest.py");
+    pyexec_frozen_module("frozentest.py", false);
     #endif
     mp_deinit();
     return 0;

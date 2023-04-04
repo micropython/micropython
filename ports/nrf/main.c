@@ -184,7 +184,7 @@ soft_reset:
     int ret = mp_vfs_mount_and_chdir_protected((mp_obj_t)&nrf_flash_obj, mount_point);
 
     if ((ret == -MP_ENODEV) || (ret == -MP_EIO)) {
-        pyexec_frozen_module("_mkfs.py"); // Frozen script for formatting flash filesystem.
+        pyexec_frozen_module("_mkfs.py", false); // Frozen script for formatting flash filesystem.
         ret = mp_vfs_mount_and_chdir_protected((mp_obj_t)&nrf_flash_obj, mount_point);
     }
 
