@@ -497,6 +497,10 @@ STATIC int network_ninaw10_socket_socket(mod_network_socket_obj_t *socket, int *
             socket_type = NINA_SOCKET_TYPE_UDP;
             break;
 
+        case MOD_NETWORK_SOCK_RAW:
+            socket_type = NINA_SOCKET_TYPE_RAW;
+            break;
+
         default:
             *_errno = MP_EINVAL;
             return -1;
