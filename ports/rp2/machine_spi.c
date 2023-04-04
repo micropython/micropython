@@ -38,6 +38,22 @@
 #define DEFAULT_SPI_BITS        (8)
 #define DEFAULT_SPI_FIRSTBIT    (SPI_MSB_FIRST)
 
+#ifdef MICROPY_HW_SPI_NO_DEFAULT_PINS
+
+// With no default SPI, need to require the pin args.
+#define MICROPY_HW_SPI0_SCK     (0)
+#define MICROPY_HW_SPI0_MOSI    (0)
+#define MICROPY_HW_SPI0_MISO    (0)
+#define MICROPY_HW_SPI1_SCK     (0)
+#define MICROPY_HW_SPI1_MOSI    (0)
+#define MICROPY_HW_SPI1_MISO    (0)
+#define MICROPY_SPI_PINS_ARG_OPTS MP_ARG_REQUIRED
+
+#else
+
+// Most boards do not require pin args.
+#define MICROPY_SPI_PINS_ARG_OPTS 0
+
 #ifndef MICROPY_HW_SPI0_SCK
 #if PICO_DEFAULT_SPI == 0
 #define MICROPY_HW_SPI0_SCK     (PICO_DEFAULT_SPI_SCK_PIN)
@@ -60,6 +76,8 @@
 #define MICROPY_HW_SPI1_MOSI    (11)
 #define MICROPY_HW_SPI1_MISO    (8)
 #endif
+#endif
+
 #endif
 
 // SPI0 can be GP{0..7,16..23}, SPI1 can be GP{8..15,24..29}.
@@ -116,9 +134,9 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_BITS} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
-        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_sck,      MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_mosi,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_miso,     MICROPY_SPI_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     // Parse the arguments.
