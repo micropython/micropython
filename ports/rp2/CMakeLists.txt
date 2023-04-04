@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.13)
 
 # Set build type to reduce firmware size
 if(NOT CMAKE_BUILD_TYPE)
@@ -43,6 +43,12 @@ include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 # Set the PICO_BOARD if it's not already set (allow a board to override it).
 if(NOT PICO_BOARD)
     string(TOLOWER ${MICROPY_BOARD} PICO_BOARD)
+endif()
+
+# Set the amount of C heap, if it's not already set.
+# If a board uses malloc then it must set this to at least 4096.
+if(NOT MICROPY_C_HEAP_SIZE)
+    set(MICROPY_C_HEAP_SIZE 0)
 endif()
 
 # Enable extmod components that will be configured by extmod.cmake.
@@ -363,6 +369,10 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
 target_compile_options(${MICROPY_TARGET} PRIVATE
     -Wall
     -Werror
+)
+
+target_link_options(${MICROPY_TARGET} PRIVATE
+    -Wl,--defsym=__micropy_c_heap_size__=${MICROPY_C_HEAP_SIZE}
 )
 
 set_source_files_properties(
