@@ -15,13 +15,25 @@ This class provides a driver for WiFi network processors.  Example usage::
 
 Constructors
 ------------
-.. class:: WLAN(interface_id)
+.. class:: WLAN(interface_id [, wiring=paramter])
 
 Create a WLAN network interface object. Supported interfaces are
 ``network.STA_IF`` (station aka client, connects to upstream WiFi access
 points) and ``network.AP_IF`` (access point, allows other WiFi clients to
 connect). Availability of the methods below depends on interface type.
 For example, only STA interface may `WLAN.connect()` to an access point.
+At ports which allow to connect an external WLAN device like the
+NINA W102, the optional paramter wiring ``wiring`` can be supplied
+to define the physical connection to the WLAN module, like the SPI
+object and control pins. The number and type of parameters depend
+on the WLAN module and are checked by it's driver. So typically 
+``wiring`` is a tuple of several items. Example for the NINA W102::
+
+    import network
+    # enable station interface with wiring
+    nic = network.WLAN(network.STA_IF, wiring=(SPI_obj, CS_pin, Busy_pin, RST_pin, GP0_pin))
+
+
 
 Methods
 -------

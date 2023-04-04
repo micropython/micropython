@@ -25,9 +25,15 @@ class BLE
 Constructor
 -----------
 
-.. class:: BLE()
+.. class:: BLE([wiring])
 
-    Returns the singleton BLE object.
+    Returns the singleton BLE object. At ports which allow to connect an
+    external Bluetooth device like the NINA W102, the optional paramter
+    wiring ``'wiring'`` can be supplied to define the physical connection
+    to the Bluetooth module, like the UART object and control pins.
+    The number and type of parameters depend on the Bluetooth module and
+    are checked by it's driver. So typically ``'wiring'`` is a tuple
+    of several items.
 
 Configuration
 -------------
