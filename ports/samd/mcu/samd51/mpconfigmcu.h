@@ -46,6 +46,9 @@ unsigned long trng_random_u32(void);
 #ifndef MICROPY_HW_UART_TXBUF
 #define MICROPY_HW_UART_TXBUF           (1)
 #endif
+#ifndef MICROPY_HW_UART_RTSCTS
+#define MICROPY_HW_UART_RTSCTS          (1)
+#endif
 
 #define CPU_FREQ                        (120000000)
 #define DFLL48M_FREQ                    (48000000)
