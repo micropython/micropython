@@ -66,7 +66,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
     const int16_t *waveform = synth->waveform;
     uint32_t waveform_length = synth->waveform_length;
     if (active_channels) {
-        int16_t loudness = 0x3fff / (1 + active_channels);
+        int16_t loudness = 0xffff / (1 + 2 * active_channels);
         for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
             if (synth->span.note[chan] == SYNTHIO_SILENCE) {
                 synth->accum[chan] = 0;
