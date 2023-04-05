@@ -119,7 +119,7 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
     #endif
 }
 
-#if CIRCUITPY_KEYPAD_KEYMATRIX
+#if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
 //|     def deinit(self) -> None:
 //|         """Stop scanning and release the pins."""
 //|         ...
@@ -180,7 +180,7 @@ const mp_obj_type_t keypad_shiftregisterkeys_type = {
     { &mp_type_type },
     .name = MP_QSTR_ShiftRegisterKeys,
     .make_new = keypad_shiftregisterkeys_make_new,
-    #if CIRCUITPY_KEYPAD_KEYMATRIX
+    #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
     .locals_dict = (mp_obj_t)&keypad_shiftregisterkeys_locals_dict,
     #endif
 };
