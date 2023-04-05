@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2021 Artyom Skrobov
+ * Copyright (c) 2023 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,4 +27,27 @@
 
 #pragma once
 
-extern int16_t shared_bindings_synthio_square_wave[];
+#include "py/obj.h"
+
+#include "shared-module/synthio/__init__.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    synthio_synth_t synth;
+} synthio_synthesizer_obj_t;
+
+
+// These are not available from Python because it may be called in an interrupt.
+void synthio_synthesizer_reset_buffer(synthio_synthesizer_obj_t *self,
+    bool single_channel_output,
+    uint8_t channel);
+
+audioio_get_buffer_result_t synthio_synthesizer_get_buffer(synthio_synthesizer_obj_t *self,
+    bool single_channel_output,
+    uint8_t channel,
+    uint8_t **buffer,
+    uint32_t *buffer_length); // length in bytes
+
+void synthio_synthesizer_get_buffer_structure(synthio_synthesizer_obj_t *self, bool single_channel_output,
+    bool *single_buffer, bool *samples_signed,
+    uint32_t *max_buffer_length, uint8_t *spacing);

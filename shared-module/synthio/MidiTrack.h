@@ -32,18 +32,11 @@
 #include "shared-module/synthio/__init__.h"
 
 typedef struct {
-    uint16_t dur;
-    uint8_t note[2];
-} synthio_midi_span_t;
-
-typedef struct {
     mp_obj_base_t base;
-    uint32_t sample_rate;
-    uint16_t *buffer;
-    uint16_t buffer_length;
-    synthio_midi_span_t *track;
+    synthio_synth_t synth;
     uint16_t next_span;
     uint16_t total_spans;
+    synthio_midi_span_t *track;
 } synthio_miditrack_obj_t;
 
 

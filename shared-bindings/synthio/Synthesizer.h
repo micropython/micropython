@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 DeanM for Adafruit Industries
+ * Copyright (c) 2021 Artyom Skrobov
+ * Copyright (c) 2023 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +24,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_
-#define SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_
 
-#include "shared-module/audiomixer/MixerVoice.h"
-#include "shared-module/audiomixer/Mixer.h"
+#pragma once
 
-extern const mp_obj_type_t audiomixer_mixer_type;
-extern const mp_obj_type_t audiomixer_mixervoice_type;
+#include "shared-module/synthio/Synthesizer.h"
 
-void common_hal_audiomixer_mixervoice_construct(audiomixer_mixervoice_obj_t *self);
-void common_hal_audiomixer_mixervoice_set_parent(audiomixer_mixervoice_obj_t *self, audiomixer_mixer_obj_t *parent);
-void common_hal_audiomixer_mixervoice_play(audiomixer_mixervoice_obj_t *self, mp_obj_t sample, bool loop);
-void common_hal_audiomixer_mixervoice_stop(audiomixer_mixervoice_obj_t *self);
-mp_float_t common_hal_audiomixer_mixervoice_get_level(audiomixer_mixervoice_obj_t *self);
-void common_hal_audiomixer_mixervoice_set_level(audiomixer_mixervoice_obj_t *self, mp_float_t gain);
+extern const mp_obj_type_t synthio_synthesizer_type;
 
-bool common_hal_audiomixer_mixervoice_get_playing(audiomixer_mixervoice_obj_t *self);
+void common_hal_synthio_synthesizer_construct(synthio_synthesizer_obj_t *self,
+    uint32_t sample_rate, const int16_t *waveform, uint16_t waveform_len);
 
-#endif /* SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_ */
+void common_hal_synthio_synthesizer_deinit(synthio_synthesizer_obj_t *self);
+bool common_hal_synthio_synthesizer_deinited(synthio_synthesizer_obj_t *self);
+uint32_t common_hal_synthio_synthesizer_get_sample_rate(synthio_synthesizer_obj_t *self);
+uint8_t common_hal_synthio_synthesizer_get_bits_per_sample(synthio_synthesizer_obj_t *self);
+uint8_t common_hal_synthio_synthesizer_get_channel_count(synthio_synthesizer_obj_t *self);
+void common_hal_synthio_synthesizer_release(synthio_synthesizer_obj_t *self, mp_obj_t to_release);
+void common_hal_synthio_synthesizer_press(synthio_synthesizer_obj_t *self, mp_obj_t to_press);
+void common_hal_synthio_synthesizer_release_all(synthio_synthesizer_obj_t *self);
+mp_obj_t common_hal_synthio_synthesizer_get_pressed_notes(synthio_synthesizer_obj_t *self);

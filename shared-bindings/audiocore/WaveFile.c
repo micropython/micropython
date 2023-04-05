@@ -32,6 +32,7 @@
 #include "shared-bindings/audiocore/WaveFile.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate/translate.h"
+#include "extmod/vfs_posix.h"
 
 //| class WaveFile:
 //|     """Load a wave file for audio playback
