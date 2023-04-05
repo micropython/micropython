@@ -33,6 +33,9 @@ SRC_BITMAP := \
 	shared-bindings/audiocore/__init__.c \
 	shared-bindings/audiocore/RawSample.c \
 	shared-bindings/audiocore/WaveFile.c \
+	shared-bindings/audiomixer/__init__.c \
+	shared-bindings/audiomixer/Mixer.c \
+	shared-bindings/audiomixer/MixerVoice.c \
 	shared-bindings/bitmaptools/__init__.c \
 	shared-bindings/displayio/Bitmap.c \
 	shared-bindings/rainbowio/__init__.c \
@@ -48,6 +51,9 @@ SRC_BITMAP := \
 	shared-module/audiocore/__init__.c \
 	shared-module/audiocore/RawSample.c \
 	shared-module/audiocore/WaveFile.c \
+	shared-module/audiomixer/__init__.c \
+	shared-module/audiomixer/Mixer.c \
+	shared-module/audiomixer/MixerVoice.c \
 	shared-module/bitmaptools/__init__.c \
 	shared-module/displayio/area.c \
 	shared-module/displayio/Bitmap.c \
@@ -67,6 +73,7 @@ SRC_C += $(SRC_BITMAP)
 CFLAGS += \
 	-DCIRCUITPY_AESIO=1 \
 	-DCIRCUITPY_AUDIOCORE=1 \
+	-DCIRCUITPY_AUDIOMIXER=1 \
 	-DCIRCUITPY_AUDIOCORE_DEBUG=1 \
 	-DCIRCUITPY_BITMAPTOOLS=1 \
 	-DCIRCUITPY_DISPLAYIO_UNIX=1 \

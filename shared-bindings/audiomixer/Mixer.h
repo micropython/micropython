@@ -28,7 +28,6 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOMIXER_MIXER_H
 
 #include "shared-module/audiomixer/Mixer.h"
-#include "shared-bindings/audiocore/RawSample.h"
 
 extern const mp_obj_type_t audiomixer_mixer_type;
 extern const mp_obj_type_t audiomixer_mixervoice_type;

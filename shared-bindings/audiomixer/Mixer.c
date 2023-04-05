@@ -33,8 +33,6 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate/translate.h"
 

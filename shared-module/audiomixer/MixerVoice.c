@@ -42,12 +42,12 @@ void common_hal_audiomixer_mixervoice_set_parent(audiomixer_mixervoice_obj_t *se
     self->parent = parent;
 }
 
-float common_hal_audiomixer_mixervoice_get_level(audiomixer_mixervoice_obj_t *self) {
-    return (float)self->level / (1 << 15);
+mp_float_t common_hal_audiomixer_mixervoice_get_level(audiomixer_mixervoice_obj_t *self) {
+    return (mp_float_t)self->level / (1 << 15);
 }
 
-void common_hal_audiomixer_mixervoice_set_level(audiomixer_mixervoice_obj_t *self, float level) {
-    self->level = level * (1 << 15);
+void common_hal_audiomixer_mixervoice_set_level(audiomixer_mixervoice_obj_t *self, mp_float_t level) {
+    self->level = (uint16_t)(level * (1 << 15));
 }
 
 void common_hal_audiomixer_mixervoice_play(audiomixer_mixervoice_obj_t *self, mp_obj_t sample, bool loop) {
