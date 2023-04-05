@@ -160,6 +160,9 @@ STATIC int find_channel_with_note(const synthio_midi_span_t *span, uint8_t note)
 }
 
 bool synthio_span_change_note(synthio_midi_span_t *span, uint8_t old_note, uint8_t new_note) {
+    if (new_note != SYNTHIO_SILENCE && find_channel_with_note(span, new_note) != -1) {
+        return false; // note already pressed, do nothing
+    }
     int channel = find_channel_with_note(span, old_note);
     if (channel != -1) {
         span->note[channel] = new_note;
