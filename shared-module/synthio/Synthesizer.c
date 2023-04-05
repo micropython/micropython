@@ -58,12 +58,13 @@ uint8_t common_hal_synthio_synthesizer_get_channel_count(synthio_synthesizer_obj
 
 void synthio_synthesizer_reset_buffer(synthio_synthesizer_obj_t *self,
     bool single_channel_output, uint8_t channel) {
+    synthio_synth_reset_buffer(&self->synth, single_channel_output, channel);
 }
 
 audioio_get_buffer_result_t synthio_synthesizer_get_buffer(synthio_synthesizer_obj_t *self,
     bool single_channel_output, uint8_t channel, uint8_t **buffer, uint32_t *buffer_length) {
     self->synth.span.dur = SYNTHIO_MAX_DUR;
-    synthio_synth_synthesize(&self->synth, buffer, buffer_length);
+    synthio_synth_synthesize(&self->synth, buffer, buffer_length, single_channel_output ? channel : 0);
     return GET_BUFFER_MORE_DATA;
 }
 

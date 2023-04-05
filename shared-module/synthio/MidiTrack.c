@@ -156,7 +156,7 @@ uint8_t common_hal_synthio_miditrack_get_channel_count(synthio_miditrack_obj_t *
 
 void synthio_miditrack_reset_buffer(synthio_miditrack_obj_t *self,
     bool single_channel_output, uint8_t channel) {
-
+    synthio_synth_reset_buffer(&self->synth, single_channel_output, channel);
     self->synth.span.dur = 0;
     self->next_span = 0;
 }
@@ -172,7 +172,7 @@ audioio_get_buffer_result_t synthio_miditrack_get_buffer(synthio_miditrack_obj_t
         self->synth.span = self->track[self->next_span++];
     }
 
-    synthio_synth_synthesize(&self->synth, buffer, buffer_length);
+    synthio_synth_synthesize(&self->synth, buffer, buffer_length, single_channel_output ? 0 : channel);
 
     return (self->synth.span.dur == 0 && self->next_span >= self->total_spans) ?
            GET_BUFFER_DONE : GET_BUFFER_MORE_DATA;

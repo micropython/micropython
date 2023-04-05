@@ -44,16 +44,27 @@ int synthio_span_count_active_channels(synthio_midi_span_t *span) {
 }
 
 
-void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **buffer, uint32_t *buffer_length) {
+void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t *buffer_length, uint8_t channel) {
+
+    if (channel == synth->other_channel) {
+        *buffer_length = synth->last_buffer_length;
+        *bufptr = (uint8_t *)(synth->buffers[synth->other_buffer_index] + channel);
+        return;
+    }
+
+    synth->buffer_index = !synth->buffer_index;
+    synth->other_channel = 1 - channel;
+    synth->other_buffer_index = synth->buffer_index;
+    int16_t *out_buffer = (int16_t *)(void *)synth->buffers[synth->buffer_index];
+
     uint16_t dur = MIN(SYNTHIO_MAX_DUR, synth->span.dur);
     synth->span.dur -= dur;
-    memset(synth->buffer, 0, synth->buffer_length);
+    memset(out_buffer, 0, synth->buffer_length);
 
     int32_t sample_rate = synth->sample_rate;
     int active_channels = synthio_span_count_active_channels(&synth->span);
     const int16_t *waveform = synth->waveform;
     uint32_t waveform_length = synth->waveform_length;
-    int16_t *out_buffer = synth->buffer;
     if (active_channels) {
         int16_t loudness = 0x3fff / (1 + active_channels);
         for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
@@ -84,27 +95,38 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **buffer, uint32_t
         }
     }
 
-    *buffer_length = dur * SYNTHIO_BYTES_PER_SAMPLE;
-    *buffer = (uint8_t *)synth->buffer;
+    *buffer_length = synth->last_buffer_length = dur * SYNTHIO_BYTES_PER_SAMPLE;
+    *bufptr = (uint8_t *)out_buffer;
+}
+
+void synthio_synth_reset_buffer(synthio_synth_t *synth, bool single_channel_output, uint8_t channel) {
+    if (single_channel_output && channel == 1) {
+        return;
+    }
+    synth->other_channel = -1;
 }
 
 bool synthio_synth_deinited(synthio_synth_t *synth) {
-    return synth->buffer == NULL;
+    return synth->buffers[0] == NULL;
 }
 
 void synthio_synth_deinit(synthio_synth_t *synth) {
-    m_del(uint8_t, synth->buffer, synth->buffer_length);
-    synth->buffer = NULL;
+    m_del(uint8_t, synth->buffers[0], synth->buffer_length);
+    m_del(uint8_t, synth->buffers[1], synth->buffer_length);
+    synth->buffers[0] = NULL;
+    synth->buffers[1] = NULL;
 }
 
 void synthio_synth_init(synthio_synth_t *synth, uint16_t max_dur) {
     synth->buffer_length = MIN(SYNTHIO_MAX_DUR, max_dur) * SYNTHIO_BYTES_PER_SAMPLE;
-    synth->buffer = m_malloc(synth->buffer_length, false);
+    synth->buffers[0] = m_malloc(synth->buffer_length, false);
+    synth->buffers[1] = m_malloc(synth->buffer_length, false);
+    synth->other_channel = -1;
 }
 
 void synthio_synth_get_buffer_structure(synthio_synth_t *synth, bool single_channel_output,
     bool *single_buffer, bool *samples_signed, uint32_t *max_buffer_length, uint8_t *spacing) {
-    *single_buffer = true;
+    *single_buffer = false;
     *samples_signed = true;
     *max_buffer_length = synth->buffer_length;
     *spacing = 1;
