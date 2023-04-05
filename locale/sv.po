@@ -207,6 +207,10 @@ msgstr ""
 msgid "%q must be array of type 'H'"
 msgstr "%q måste vara en array av typen 'H'"
 
+#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+msgid "%q must be array of type 'h'"
+msgstr ""
+
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or %q, not %q"
