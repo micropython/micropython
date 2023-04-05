@@ -33,10 +33,9 @@
 
 #include "py/runtime.h"
 #include "shared-module/audiocore/__init__.h"
-#include "shared-module/audiocore/RawSample.h"
 
-#if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
-#include "periph.h"
+#if defined(__arm__) && __arm__
+#include "cmsis_compiler.h"
 #endif
 
 void common_hal_audiomixer_mixer_construct(audiomixer_mixer_obj_t *self,
