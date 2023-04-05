@@ -82,7 +82,7 @@
 //|         ...
 
 STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    #if CIRCUITPY_KEYPAD_KEYMATRIX
+    #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
     keypad_shiftregisterkeys_obj_t *self = m_new_obj(keypad_shiftregisterkeys_obj_t);
     self->base.type = &keypad_shiftregisterkeys_type;
     enum { ARG_clock, ARG_data, ARG_latch, ARG_value_to_latch, ARG_key_count, ARG_value_when_pressed, ARG_interval, ARG_max_events };
