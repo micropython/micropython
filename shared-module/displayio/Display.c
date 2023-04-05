@@ -439,7 +439,9 @@ void reset_display(displayio_display_obj_t *self) {
     circuitpython_splash.x = 0; // reset position in case someone moved it.
     circuitpython_splash.y = 0;
     supervisor_start_terminal(self->core.width, self->core.height);
-    common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
+    if (!circuitpython_splash.in_group) {
+        common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
+    }
 }
 
 void displayio_display_collect_ptrs(displayio_display_obj_t *self) {
