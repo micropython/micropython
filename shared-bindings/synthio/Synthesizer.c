@@ -36,9 +36,20 @@
 #include "shared-bindings/synthio/__init__.h"
 #include "supervisor/shared/translate/translate.h"
 
-//| class Synth:
+//| class Synthesizer:
 //|     def __init__(self, *, sample_rate: int = 11025, waveform: ReadableBuffer = None) -> None:
-//|         """Create a synthesizer object."""
+//|         """Create a synthesizer object.
+//|
+//|         This API is experimental.
+//|
+//|         At least 2 simultaneous notes are supported.  mimxrt10xx and rp2040 platforms support up to
+//|         12 notes.
+//|
+//|         Notes use MIDI note numbering, with 60 being C4 or Middle C, approximately 262Hz.
+//|
+//|         :param int sample_rate: The desired playback sample rate; higher sample rate requires more memory
+//|         :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit). It is permitted to modify this buffer during synthesis. This can be used, for instance, to control the overall volume or timbre of the notes.
+//|         """
 STATIC mp_obj_t synthio_synthesizer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_sample_rate, ARG_waveform };
     static const mp_arg_t allowed_args[] = {
@@ -69,7 +80,11 @@ STATIC void check_for_deinit(synthio_synthesizer_obj_t *self) {
 }
 
 //|     def press(self, /, press: Sequence[int] = ()) -> None:
-//|         """Turn some notes on. Notes use MIDI numbering, with 60 being middle C."""
+//|         """Turn some notes on. Notes use MIDI numbering, with 60 being middle C, approximately 262Hz.
+//|
+//|         Pressing a note that was already pressed has no effect.
+//|
+//|         :param Sequence[int] press: Any sequence of integer notes."""
 STATIC mp_obj_t synthio_synthesizer_press(mp_obj_t self_in, mp_obj_t press) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -81,7 +96,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_press_obj, synthio_synthesi
 //|     def release_then_press(
 //|         self, release: Sequence[int] = (), press: Sequence[int] = ()
 //|     ) -> None:
-//|         """Turn some notes on and/or off. Notes use MIDI numbering, with 60 being middle C."""
+//|         """Turn some notes on and/or off. Notes use MIDI numbering, with 60 being middle C.
+//|
+//|         It is OK to release note that was not actually turned on.
+//|
+//|         Pressing a note that was already pressed has no effect.
+//|
+//|         Releasing and pressing the note again has little effect, but does reset the phase
+//|         of the note, which may be perceptible as a small glitch.
+//|
+//|         :param Sequence[int] release: Any sequence of integer notes.
+//|         :param Sequence[int] press: Any sequence of integer notes."""
 STATIC mp_obj_t synthio_synthesizer_release_then_press(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_release, ARG_press };
     static const mp_arg_t allowed_args[] = {
@@ -102,7 +127,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_release_then_press_obj, 1,
 
 //
 //|     def release_all_then_press(self, /, press: Sequence[int]) -> None:
-//|         """Turn any currently-playing notes off, then turn on the given notes"""
+//|         """Turn any currently-playing notes off, then turn on the given notes
+//|
+//|         Releasing and pressing the note again has little effect, but does reset the phase
+//|         of the note, which may be perceptible as a small glitch.
+//|
+//|         :param Sequence[int] press: Any sequence of integer notes."""
 STATIC mp_obj_t synthio_synthesizer_release_all_then_press(mp_obj_t self_in, mp_obj_t press) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -173,6 +203,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_get_pressed_obj, synthio_synthesiz
 MP_PROPERTY_GETTER(synthio_synthesizer_pressed_obj,
     (mp_obj_t)&synthio_synthesizer_get_pressed_obj);
 
+//|     max_polyphony: int
+//|     """Maximum polyphony of the synthesizer (read-only class property)"""
+//|
+
 STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_press), MP_ROM_PTR(&synthio_synthesizer_press_obj) },
@@ -185,6 +219,7 @@ STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&synthio_synthesizer_sample_rate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_max_polyphony), MP_ROM_INT(CIRCUITPY_SYNTHIO_MAX_CHANNELS) },
     { MP_ROM_QSTR(MP_QSTR_pressed), MP_ROM_PTR(&synthio_synthesizer_pressed_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(synthio_synthesizer_locals_dict, synthio_synthesizer_locals_dict_table);

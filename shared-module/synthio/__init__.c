@@ -66,7 +66,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
     const int16_t *waveform = synth->waveform;
     uint32_t waveform_length = synth->waveform_length;
     if (active_channels) {
-        int16_t loudness = 0x3fff / (1 + active_channels);
+        int16_t loudness = 0xffff / (1 + 2 * active_channels);
         for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
             if (synth->span.note[chan] == SYNTHIO_SILENCE) {
                 synth->accum[chan] = 0;
@@ -160,6 +160,9 @@ STATIC int find_channel_with_note(const synthio_midi_span_t *span, uint8_t note)
 }
 
 bool synthio_span_change_note(synthio_midi_span_t *span, uint8_t old_note, uint8_t new_note) {
+    if (new_note != SYNTHIO_SILENCE && find_channel_with_note(span, new_note) != -1) {
+        return false; // note already pressed, do nothing
+    }
     int channel = find_channel_with_note(span, old_note);
     if (channel != -1) {
         span->note[channel] = new_note;
