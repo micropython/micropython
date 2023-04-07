@@ -49,23 +49,20 @@
 #endif
 
 int nina_bsp_init(void) {
+    #if defined(MICROPY_HW_NINA_GPIO0)
+    mp_hal_pin_input(MICROPY_HW_NINA_GPIO0);
+    #endif
     mp_hal_pin_output(MICROPY_HW_NINA_GPIO1);
     mp_hal_pin_input(MICROPY_HW_NINA_ACK);
     mp_hal_pin_output(MICROPY_HW_NINA_RESET);
-    mp_hal_pin_output(MICROPY_HW_NINA_GPIO0);
 
     // Reset module in WiFi mode
     mp_hal_pin_write(MICROPY_HW_NINA_GPIO1, 1);
-    mp_hal_pin_write(MICROPY_HW_NINA_GPIO0, 1);
-
     mp_hal_pin_write(MICROPY_HW_NINA_RESET, 0);
     mp_hal_delay_ms(100);
 
     mp_hal_pin_write(MICROPY_HW_NINA_RESET, 1);
     mp_hal_delay_ms(750);
-
-    mp_hal_pin_write(MICROPY_HW_NINA_GPIO0, 0);
-    mp_hal_pin_input(MICROPY_HW_NINA_GPIO0);
 
     // Initialize SPI.
     mp_obj_t args[] = {
@@ -84,9 +81,6 @@ int nina_bsp_deinit(void) {
     mp_hal_pin_output(MICROPY_HW_NINA_RESET);
     mp_hal_pin_write(MICROPY_HW_NINA_RESET, 0);
     mp_hal_delay_ms(100);
-
-    mp_hal_pin_output(MICROPY_HW_NINA_GPIO0);
-    mp_hal_pin_write(MICROPY_HW_NINA_GPIO0, 1);
     return 0;
 }
 
@@ -105,7 +99,11 @@ int nina_bsp_atomic_exit(void) {
 }
 
 int nina_bsp_read_irq(void) {
+    #if defined(MICROPY_HW_NINA_GPIO0)
     return mp_hal_pin_read(MICROPY_HW_NINA_GPIO0);
+    #else
+    return 0;
+    #endif
 }
 
 int nina_bsp_spi_slave_select(uint32_t timeout) {
