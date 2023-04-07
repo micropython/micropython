@@ -171,7 +171,7 @@ STATIC mp_obj_t network_ninaw10_make_new(const mp_obj_type_t *type, size_t n_arg
                   mp_obj_is_type(items[1], &machine_pin_type) &&
                   mp_obj_is_type(items[2], &machine_pin_type) &&
                   mp_obj_is_type(items[3], &machine_pin_type) &&
-                  mp_obj_is_type(items[4], &machine_pin_type))) {
+                  (mp_obj_is_type(items[4], &machine_pin_type) || items[4] == mp_const_none))) {
                 mp_raise_TypeError(MP_ERROR_TEXT("wrong argument type"));
             }
             nina_bsp_wiring(items[0], items[1], items[2], items[3], items[4]);

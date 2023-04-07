@@ -48,7 +48,7 @@
 #define debug_printf(...)
 #endif
 
-#define PIN_NOT_SET     (0)
+#define PIN_NOT_SET     ((mp_hal_pin_obj_t)0xffffffff)
 
 nina_wiring_t nina_wiring = {
     NULL,
@@ -63,7 +63,9 @@ void nina_bsp_wiring(mp_obj_type_t *spi, mp_obj_type_t *gpio1, mp_obj_type_t *ac
     nina_wiring.gpio1 = mp_hal_get_pin_obj(gpio1);
     nina_wiring.ack = mp_hal_get_pin_obj(ack);
     nina_wiring.reset = mp_hal_get_pin_obj(reset);
-    nina_wiring.gpio0 = mp_hal_get_pin_obj(gpio0);
+    if (gpio0 != mp_const_none) {
+        nina_wiring.gpio0 = mp_hal_get_pin_obj(gpio0);
+    }
 }
 
 int nina_bsp_init(void) {
@@ -90,11 +92,12 @@ int nina_bsp_init(void) {
     mp_hal_pin_output(nina_wiring.gpio1);
     mp_hal_pin_input(nina_wiring.ack);
     mp_hal_pin_output(nina_wiring.reset);
-    mp_hal_pin_output(nina_wiring.gpio0);
+    if (nina_wiring.gpio0 != PIN_NOT_SET) {
+        mp_hal_pin_input(nina_wiring.gpio0);
+    }
 
     // Reset module in WiFi mode
     mp_hal_pin_write(nina_wiring.gpio1, 1);
-    mp_hal_pin_write(nina_wiring.gpio0, 1);
 
     mp_hal_pin_write(nina_wiring.reset, 0);
     mp_hal_delay_ms(100);
@@ -144,8 +147,6 @@ int nina_bsp_deinit(void) {
     mp_hal_pin_write(nina_wiring.reset, 0);
     mp_hal_delay_ms(100);
 
-    mp_hal_pin_output(nina_wiring.gpio0);
-    mp_hal_pin_write(nina_wiring.gpio0, 1);
     return 0;
 }
 
@@ -164,7 +165,7 @@ int nina_bsp_atomic_exit(void) {
 }
 
 int nina_bsp_read_irq(void) {
-    return mp_hal_pin_read(nina_wiring.gpio0);
+    return nina_wiring.gpio0 != PIN_NOT_SET ? mp_hal_pin_read(nina_wiring.gpio0) : 0;
 }
 
 int nina_bsp_spi_slave_select(uint32_t timeout) {
