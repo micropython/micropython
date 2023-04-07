@@ -303,15 +303,12 @@ void supervisor_start_web_workflow(void) {
         return;
     }
 
-    mp_int_t new_port = web_api_port;
     // (leaves new_port unchanged on any failure)
-    (void)common_hal_os_getenv_int("CIRCUITPY_WEB_API_PORT", &new_port);
+    (void)common_hal_os_getenv_int("CIRCUITPY_WEB_API_PORT", &web_api_port);
 
     bool first_start = pool.base.type != &socketpool_socketpool_type;
-    bool port_changed = new_port != web_api_port;
 
     if (first_start) {
-        port_changed = false;
         pool.base.type = &socketpool_socketpool_type;
         common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
 
@@ -320,6 +317,11 @@ void supervisor_start_web_workflow(void) {
 
         websocket_init();
     }
+
+    if (!common_hal_socketpool_socket_get_closed(&active)) {
+        common_hal_socketpool_socket_close(&active);
+    }
+
     #if CIRCUITPY_MDNS
     // Try to start MDNS if the user deinited it.
     if (mdns.base.type != &mdns_server_type ||
@@ -330,24 +332,10 @@ void supervisor_start_web_workflow(void) {
             common_hal_mdns_server_set_instance_name(&mdns, MICROPY_HW_BOARD_NAME);
         }
     }
+    if (!common_hal_mdns_server_deinited(&mdns)) {
+        common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
+    }
     #endif
-    if (port_changed) {
-        common_hal_socketpool_socket_close(&listening);
-    }
-    if (first_start || port_changed) {
-        web_api_port = new_port;
-        #if CIRCUITPY_MDNS
-        if (!common_hal_mdns_server_deinited(&mdns)) {
-            common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
-        }
-        #endif
-        socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
-        common_hal_socketpool_socket_settimeout(&listening, 0);
-        // Bind to any ip.
-        common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port);
-        common_hal_socketpool_socket_listen(&listening, 1);
-    }
-
 
     const size_t api_password_len = sizeof(_api_password) - 1;
     result = common_hal_os_getenv_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
@@ -355,6 +343,16 @@ void supervisor_start_web_workflow(void) {
         _api_password[0] = ':';
         _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
     }
+
+    if (common_hal_socketpool_socket_get_closed(&listening)) {
+        socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
+        common_hal_socketpool_socket_settimeout(&listening, 0);
+        // Bind to any ip. (Not checking for failures)
+        common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port);
+        common_hal_socketpool_socket_listen(&listening, 1);
+    }
+    // Wake polling thread (maybe)
+    socketpool_socket_poll_resume();
     #endif
 }
 
@@ -513,7 +511,7 @@ static void _cors_header(socketpool_socket_obj_t *socket, _request *request) {
     _send_strs(socket,
         "Access-Control-Allow-Credentials: true\r\n",
         "Vary: Origin, Accept, Upgrade\r\n",
-        "Access-Control-Allow-Origin: ", request->origin, "\r\n",
+        "Access-Control-Allow-Origin: *\r\n",
         NULL);
 }
 
@@ -1080,6 +1078,10 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         #else
         _reply_missing(socket, request);
         #endif
+
+// For now until CORS is sorted, allow always the origin requester.
+// Note: caller knows who we are better than us. CORS is not security
+//       unless browser cooperates. Do not rely on mDNS or IP.
     } else if (strlen(request->origin) > 0 && !_origin_ok(request->origin)) {
         _reply_forbidden(socket, request);
     } else if (strncmp(request->path, "/fs/", 4) == 0) {
@@ -1323,9 +1325,14 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     uint8_t c;
     // This code assumes header lines are terminated with \r\n
     while (more && !error) {
+
         int len = socketpool_socket_recv_into(socket, &c, 1);
         if (len != 1) {
             more = false;
+            if (len == 0 || len == -MP_ENOTCONN) {
+                // Disconnect - clear 'in-progress'
+                _reset_request(request);
+            }
             break;
         }
         if (!request->in_progress) {
@@ -1452,6 +1459,7 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     }
     bool reload = _reply(socket, request);
     _reset_request(request);
+    common_hal_socketpool_socket_close(socket);
     autoreload_resume(AUTORELOAD_SUSPEND_WEB);
     if (reload) {
         autoreload_trigger();
@@ -1459,45 +1467,52 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
 }
 
 
-void supervisor_web_workflow_background(void) {
-    // Track if we have more to do. For example, we should start processing a
-    // request immediately after we accept the socket.
-    bool more_to_do = true;
-    while (more_to_do) {
-        more_to_do = false;
+void supervisor_web_workflow_background(void *data) {
+    while (true) {
         // If we have a request in progress, continue working on it. Do this first
         // so that we can accept another socket after finishing this request.
         if (common_hal_socketpool_socket_get_connected(&active)) {
             _process_request(&active, &active_request);
+            if (active_request.in_progress) {
+                break;
+            }
         } else {
-            // Close the active socket if it is no longer connected.
-            common_hal_socketpool_socket_close(&active);
+            // Close the active socket if necessary
+            if (!common_hal_socketpool_socket_get_closed(&active)) {
+                common_hal_socketpool_socket_close(&active);
+            }
         }
-
         // Otherwise, see if we have another socket to accept.
         if ((!common_hal_socketpool_socket_get_connected(&active) ||
              (!active_request.in_progress && !active_request.new_socket)) &&
             !common_hal_socketpool_socket_get_closed(&listening)) {
             uint32_t ip;
             uint32_t port;
+            if (!common_hal_socketpool_socket_get_closed(&active)) {
+                common_hal_socketpool_socket_close(&active);
+            }
             int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port, &active);
             if (newsoc == -EBADF) {
                 common_hal_socketpool_socket_close(&listening);
-                return;
+                break;
             }
             if (newsoc > 0) {
                 common_hal_socketpool_socket_settimeout(&active, 0);
-
                 _reset_request(&active_request);
                 // Mark new sockets, otherwise we may accept another before the first
                 // could start its request.
                 active_request.new_socket = true;
-                more_to_do = true;
+                continue;
             }
+            break;
         }
-
         websocket_background();
+        break;
     }
+    // Resume polling
+    socketpool_socket_poll_resume();
+
+    return;
 }
 
 void supervisor_stop_web_workflow(void) {
