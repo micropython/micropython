@@ -439,8 +439,8 @@ struct _supervisor_allocation_node;
     const char *readline_hist[8]; \
     struct _supervisor_allocation_node *first_embedded_allocation; \
 
-void supervisor_run_background_tasks_if_tick(void);
-#define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())
+void background_callback_run_all(void);
+#define RUN_BACKGROUND_TASKS (background_callback_run_all())
 
 #define MICROPY_VM_HOOK_LOOP RUN_BACKGROUND_TASKS;
 #define MICROPY_VM_HOOK_RETURN RUN_BACKGROUND_TASKS;
