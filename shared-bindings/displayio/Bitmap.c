@@ -151,15 +151,27 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     uint16_t x = 0;
     uint16_t y = 0;
     if (mp_obj_is_small_int(index_obj)) {
-        mp_int_t i = mp_arg_validate_int_min(MP_OBJ_SMALL_INT_VALUE(index_obj), 0, MP_QSTR_index);
-        uint16_t width = common_hal_displayio_bitmap_get_width(self);
-        x = i % width;
-        y = i / width;
+        mp_int_t i = MP_OBJ_SMALL_INT_VALUE(index_obj);
+        int total_length = self->width * self->height;
+        if (i < 0 || i >= total_length) {
+            mp_raise_IndexError_varg(translate("%q must be %d-%d"), MP_QSTR_index, 0, total_length - 1);
+        }
+
+        x = i % self->width;
+        y = i / self->width;
     } else {
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(index_obj, 2, &items);
-        x = mp_arg_validate_int_range(mp_obj_get_int(items[0]), 0, self->width - 1, MP_QSTR_x);
-        y = mp_arg_validate_int_range(mp_obj_get_int(items[1]), 0, self->height - 1, MP_QSTR_y);
+        mp_int_t x_in = mp_obj_get_int(items[0]);
+        if (x_in < 0 || x_in >= self->width) {
+            mp_raise_IndexError_varg(translate("%q must be %d-%d"), MP_QSTR_x, 0, self->width - 1);
+        }
+        mp_int_t y_in = mp_obj_get_int(items[1]);
+        if (y_in < 0 || y_in >= self->height) {
+            mp_raise_IndexError_varg(translate("%q must be %d-%d"), MP_QSTR_y, 0, self->height - 1);
+        }
+        x = x_in;
+        y = y_in;
     }
 
     if (value_obj == MP_OBJ_SENTINEL) {

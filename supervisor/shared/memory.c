@@ -77,6 +77,8 @@ enum {
             // Maximum needs of one display: max(4 if RGBMATRIX, 1 if SHARPDISPLAY, 0)
             #if CIRCUITPY_RGBMATRIX
             4
+            #elif CIRCUITPY_PICODVI
+            2
             #elif CIRCUITPY_SHARPDISPLAY
             1
             #else

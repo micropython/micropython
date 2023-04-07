@@ -278,14 +278,8 @@ endif
 ifeq ($(CIRCUITPY_PIXELMAP),1)
 SRC_PATTERNS += _pixelmap/%
 endif
-ifeq ($(CIRCUITPY_QRIO),1)
-SRC_PATTERNS += qrio/%
-endif
-ifeq ($(CIRCUITPY_RAINBOWIO),1)
-SRC_PATTERNS += rainbowio/%
-endif
-ifeq ($(CIRCUITPY_RGBMATRIX),1)
-SRC_PATTERNS += rgbmatrix/%
+ifeq ($(CIRCUITPY_PICODVI),1)
+SRC_PATTERNS += picodvi/%
 endif
 ifeq ($(CIRCUITPY_PS2IO),1)
 SRC_PATTERNS += ps2io/%
@@ -296,8 +290,17 @@ endif
 ifeq ($(CIRCUITPY_PWMIO),1)
 SRC_PATTERNS += pwmio/%
 endif
+ifeq ($(CIRCUITPY_QRIO),1)
+SRC_PATTERNS += qrio/%
+endif
+ifeq ($(CIRCUITPY_RAINBOWIO),1)
+SRC_PATTERNS += rainbowio/%
+endif
 ifeq ($(CIRCUITPY_RANDOM),1)
 SRC_PATTERNS += random/%
+endif
+ifeq ($(CIRCUITPY_RGBMATRIX),1)
+SRC_PATTERNS += rgbmatrix/%
 endif
 ifeq ($(CIRCUITPY_RP2PIO),1)
 SRC_PATTERNS += rp2pio/%

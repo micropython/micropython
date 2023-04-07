@@ -47,8 +47,12 @@
 #if CIRCUITPY_SHARPDISPLAY
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
+// Port unique frame buffers.
 #if CIRCUITPY_VIDEOCORE
 #include "bindings/videocore/Framebuffer.h"
+#endif
+#if CIRCUITPY_PICODVI
+#include "bindings/picodvi/Framebuffer.h"
 #endif
 
 typedef struct {
@@ -70,6 +74,9 @@ typedef struct {
         #endif
         #if CIRCUITPY_VIDEOCORE
         videocore_framebuffer_obj_t videocore;
+        #endif
+        #if CIRCUITPY_PICODVI
+        picodvi_framebuffer_obj_t picodvi;
         #endif
     };
     union {

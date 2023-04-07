@@ -1,9 +1,11 @@
+#pragma once
+
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2023 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +26,26 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
+#include "py/obj.h"
 
-#include "bindings/picodvi/Framebuffer.h"
-#include "shared-module/displayio/__init__.h"
-#include "shared-bindings/framebufferio/FramebufferDisplay.h"
+#include "supervisor/memory.h"
 
-void board_init(void) {
-    picodvi_framebuffer_obj_t *fb = &allocate_display_bus()->picodvi;
-    fb->base.type = &picodvi_framebuffer_type;
-    common_hal_picodvi_framebuffer_construct(fb, 640, 480,
-        &pin_GPIO17, &pin_GPIO16,
-        &pin_GPIO19, &pin_GPIO18,
-        &pin_GPIO21, &pin_GPIO20,
-        &pin_GPIO23, &pin_GPIO22,
-        8);
+#include "lib/PicoDVI/software/libdvi/dvi.h"
 
-    framebufferio_framebufferdisplay_obj_t *display = &displays[0].framebuffer_display;
-    display->base.type = &framebufferio_framebufferdisplay_type;
-    common_hal_framebufferio_framebufferdisplay_construct(
-        display,
-        MP_OBJ_FROM_PTR(fb),
-        0,
-        true);
-}
-
-// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
+typedef struct {
+    mp_obj_base_t base;
+    supervisor_allocation *allocation;
+    uint32_t *framebuffer;
+    size_t framebuffer_len; // in words
+    size_t tmdsbuf_size; // in words
+    struct dvi_inst dvi;
+    mp_uint_t width;
+    mp_uint_t height;
+    uint tmds_lock;
+    uint colour_lock;
+    uint16_t next_scanline;
+    uint16_t pitch; // Number of words between rows. (May be more than a width's worth.)
+    uint8_t color_depth;
+    uint8_t pwm_slice;
+    int8_t pin_pair[4];
+} picodvi_framebuffer_obj_t;
