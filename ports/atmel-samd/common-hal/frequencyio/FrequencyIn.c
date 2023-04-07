@@ -156,7 +156,7 @@ void frequencyin_interrupt_handler(uint8_t index) {
             }
 
             // Check if we've reached the upper limit of detection
-            if (!supervisor_background_tasks_ok() || self->errored_too_fast) {
+            if (!supervisor_background_ticks_ok() || self->errored_too_fast) {
                 self->errored_too_fast = true;
                 frequencyin_emergency_cancel_capture(i);
             }
