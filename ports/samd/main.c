@@ -84,9 +84,9 @@ void samd_main(void) {
         adc_deinit_all();
         pin_irq_deinit_all();
         pwm_deinit_all();
-        sercom_deinit_all();
         soft_timer_deinit();
         gc_sweep_all();
+        sercom_deinit_all();
         mp_deinit();
     }
 }
