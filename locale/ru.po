@@ -129,6 +129,7 @@ msgid "%q in %q must be of type %q, not %q"
 msgstr ""
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -406,10 +407,6 @@ msgstr "0.0 в комплексную степень"
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
 msgstr "3-аргументный pow() не поддерживается"
-
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr "64-битные типы"
 
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -1266,6 +1263,7 @@ msgstr "Внутренний сторожевой таймер истек."
 msgid "Interrupt error."
 msgstr ""
 
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1273,6 +1271,7 @@ msgid "Invalid %q"
 msgstr "Недопустимый %q"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Недопустимый пин %q"
@@ -1315,6 +1314,10 @@ msgstr "Неверный байт %.*s"
 #, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "Неверный data_pins[%d]"
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -3890,11 +3893,7 @@ msgstr ""
 msgid "out must be a float dense array"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "out of range of source"
-msgstr ""
-
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
 msgstr ""
 
@@ -3919,12 +3918,8 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr ""
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "pixel coordinates out of bounds"
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "pixel value requires too many bits"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
@@ -4339,10 +4334,6 @@ msgstr ""
 msgid "value out of range of target"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "value_count must be > 0"
-msgstr ""
-
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr ""
@@ -4429,6 +4420,9 @@ msgstr "zi должно быть типа float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
+
+#~ msgid "64 bit types"
+#~ msgstr "64-битные типы"
 
 #~ msgid "No key was specified"
 #~ msgstr "Ключ не был указан"

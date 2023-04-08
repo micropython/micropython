@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-03-23 17:26+0000\n"
+"PO-Revision-Date: 2023-03-31 14:39+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 #: main.c
 msgid ""
@@ -135,6 +135,7 @@ msgid "%q in %q must be of type %q, not %q"
 msgstr "%q em %q deve ser do tipo %q e não %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -416,10 +417,6 @@ msgstr "0,0 para uma potência complexa"
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() não compatível"
-
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr "Tipos 64 bit"
 
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -1263,6 +1260,7 @@ msgstr "O temporizador do watchdog interno expirou."
 msgid "Interrupt error."
 msgstr "Erro de interrupção."
 
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1270,6 +1268,7 @@ msgid "Invalid %q"
 msgstr "%q Inválido"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Pino do %q inválido"
@@ -1312,6 +1311,10 @@ msgstr "Byte %.*s inválido"
 #, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "data_pins[%d] inválido"
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
+msgstr "Formato inválido"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -1992,7 +1995,7 @@ msgstr "As dimensões da escala devem ser poder ser divididas por 3"
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progress. Stop with stop_scan."
-msgstr ""
+msgstr "Digitalização já em andamento. Pare com stop_scan."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -2314,7 +2317,7 @@ msgstr "Houve um erro BLE desconhecido: %d"
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
 msgid "Unknown error code %d"
-msgstr ""
+msgstr "Código de erro desconhecido %d"
 
 #: shared-bindings/wifi/Radio.c
 #, c-format
@@ -3924,11 +3927,7 @@ msgstr "a matriz externa é muito pequena"
 msgid "out must be a float dense array"
 msgstr "deve ser uma matriz densa flutuante"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "out of range of source"
-msgstr "fora do alcance da fonte"
-
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
 msgstr "fora do alcance do alvo"
 
@@ -3955,13 +3954,9 @@ msgstr "os parâmetros devem ser registradores na sequência a2 até a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "os parâmetros devem ser registradores na sequência r0 até r3"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "pixel coordinates out of bounds"
 msgstr "as coordenadas do pixel estão fora dos limites"
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "pixel value requires too many bits"
-msgstr "o valor do pixel requer bits demais"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
@@ -4375,10 +4370,6 @@ msgstr "o valor deve caber em %d byte(s)"
 msgid "value out of range of target"
 msgstr "valor fora do alcance do alvo"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "value_count must be > 0"
-msgstr "o value_count deve ser > 0"
-
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "o watchdog não foi inicializado"
@@ -4465,6 +4456,18 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "out of range of source"
+#~ msgstr "fora do alcance da fonte"
+
+#~ msgid "pixel value requires too many bits"
+#~ msgstr "o valor do pixel requer bits demais"
+
+#~ msgid "value_count must be > 0"
+#~ msgstr "o value_count deve ser > 0"
+
+#~ msgid "64 bit types"
+#~ msgstr "Tipos 64 bit"
 
 #~ msgid "No key was specified"
 #~ msgstr "Nenhuma chave foi definida"

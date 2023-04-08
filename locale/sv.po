@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-03-23 17:26+0000\n"
+"PO-Revision-Date: 2023-03-31 14:39+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 #: main.c
 msgid ""
@@ -134,6 +134,7 @@ msgid "%q in %q must be of type %q, not %q"
 msgstr "%q i %q måste vara av typen %q, inte %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -413,10 +414,6 @@ msgstr "0,0 till ett komplext nummer"
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
 msgstr "3-arguments pow() stöds inte"
-
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr "64-bitars typer"
 
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -1248,6 +1245,7 @@ msgstr "Intern watchdog-timer har löpt ut."
 msgid "Interrupt error."
 msgstr "Interrupt-fel."
 
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1255,6 +1253,7 @@ msgid "Invalid %q"
 msgstr "Ogiltig %q"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Ogiltig %q-pinne"
@@ -1297,6 +1296,10 @@ msgstr "Ogiltig byte %.*s"
 #, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "Ogiltig data_pins[%d]"
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
+msgstr "Ogiltigt format"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -1973,7 +1976,7 @@ msgstr "Skaldimension måste vara delbar med 3"
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progress. Stop with stop_scan."
-msgstr ""
+msgstr "Skanning pågår redan. Stoppa med stop_scan."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -2290,7 +2293,7 @@ msgstr "Okänt BLE-fel: %d"
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
 msgid "Unknown error code %d"
-msgstr ""
+msgstr "Okänd felkod %d"
 
 #: shared-bindings/wifi/Radio.c
 #, c-format
@@ -3887,11 +3890,7 @@ msgstr "matrisen för out är för liten"
 msgid "out must be a float dense array"
 msgstr "out måste vara en float dense array"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "out of range of source"
-msgstr "utanför räckvidd för source"
-
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
 msgstr "utanför räckvidd för target"
 
@@ -3916,13 +3915,9 @@ msgstr "parametrarna måste registreras i följd a2-a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "parametrarna måste registreras i följd r0-r3"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "pixel coordinates out of bounds"
 msgstr "pixelkoordinater utanför gränserna"
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "pixel value requires too many bits"
-msgstr "pixelvärdet kräver för många bitar"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
@@ -4337,10 +4332,6 @@ msgstr "värdet måste passa i %d byte(s)"
 msgid "value out of range of target"
 msgstr "värde utanför målintervall"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "value_count must be > 0"
-msgstr "value_count måste vara > 0"
-
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "watchdog är inte initierad"
@@ -4427,6 +4418,18 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "out of range of source"
+#~ msgstr "utanför räckvidd för source"
+
+#~ msgid "pixel value requires too many bits"
+#~ msgstr "pixelvärdet kräver för många bitar"
+
+#~ msgid "value_count must be > 0"
+#~ msgstr "value_count måste vara > 0"
+
+#~ msgid "64 bit types"
+#~ msgstr "64-bitars typer"
 
 #~ msgid "No key was specified"
 #~ msgstr "Ingen nyckel angavs"

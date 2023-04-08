@@ -53,11 +53,13 @@ static void espnow_check_for_deinit(espnow_obj_t *self) {
 //| class ESPNow:
 //|     """Provides access to the ESP-NOW protocol."""
 //|
-//|     def __init__(self, buffer_size: Optional[int], phy_rate: Optional[int]) -> None:
+//|     def __init__(self, buffer_size: int = 526, phy_rate: int = 0) -> None:
 //|         """Allocate and initialize `ESPNow` instance as a singleton.
 //|
 //|         :param int buffer_size: The size of the internal ring buffer. Default: 526 bytes.
-//|         :param int phy_rate: The ESP-NOW physical layer rate. Default: 1 Mbps."""
+//|         :param int phy_rate: The ESP-NOW physical layer rate. Default: 1 Mbps.
+//|             `wifi_phy_rate_t <https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-reference/network/esp_wifi.html#_CPPv415wifi_phy_rate_t>`_
+//|         """
 //|         ...
 STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_buffer_size, ARG_phy_rate };
@@ -71,7 +73,7 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 
     espnow_obj_t *self = MP_STATE_PORT(espnow_singleton);
 
-    if (self != NULL) {
+    if (!common_hal_espnow_deinited(self)) {
         mp_raise_RuntimeError(translate("Already running"));
     }
 
@@ -244,7 +246,9 @@ MP_PROPERTY_GETTER(espnow_buffer_size_obj,
     (mp_obj_t)&espnow_get_buffer_size_obj);
 
 //|     phy_rate: int
-//|     """The ESP-NOW physical layer rate."""
+//|     """The ESP-NOW physical layer rate.
+//|     `wifi_phy_rate_t <https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-reference/network/esp_wifi.html#_CPPv415wifi_phy_rate_t>`_
+//|     """
 //|
 STATIC mp_obj_t espnow_get_phy_rate(const mp_obj_t self_in) {
     espnow_obj_t *self = MP_OBJ_TO_PTR(self_in);

@@ -261,6 +261,7 @@ void supervisor_start_web_workflow(void) {
     const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
     if (reset_reason != RESET_REASON_POWER_ON &&
         reset_reason != RESET_REASON_RESET_PIN &&
+        reset_reason != RESET_REASON_DEEP_SLEEP_ALARM &&
         reset_reason != RESET_REASON_UNKNOWN &&
         reset_reason != RESET_REASON_SOFTWARE) {
         return;

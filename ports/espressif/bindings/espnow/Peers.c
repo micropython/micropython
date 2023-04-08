@@ -35,8 +35,6 @@
 
 #include "esp_now.h"
 
-// TODO: Check for deinit
-
 //| class Peers:
 //|     """Maintains a `list` of `Peer` internally and only exposes a subset of `list` methods."""
 //|

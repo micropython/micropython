@@ -123,6 +123,7 @@ msgid "%q in %q must be of type %q, not %q"
 msgstr ""
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -401,10 +402,6 @@ msgstr "0.0 para sa complex power"
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() hindi suportado"
-
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr ""
 
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -1233,6 +1230,7 @@ msgstr ""
 msgid "Interrupt error."
 msgstr ""
 
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1240,6 +1238,7 @@ msgid "Invalid %q"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Mali ang %q pin"
@@ -1281,6 +1280,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
@@ -3862,11 +3865,7 @@ msgstr ""
 msgid "out must be a float dense array"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "out of range of source"
-msgstr ""
-
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
 msgstr ""
 
@@ -3891,14 +3890,10 @@ msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence a2 hanggang a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence r0 hanggang r3"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 #, fuzzy
 msgid "pixel coordinates out of bounds"
 msgstr "wala sa sakop ang address"
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "pixel value requires too many bits"
-msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
@@ -4310,10 +4305,6 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "value out of range of target"
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "value_count must be > 0"
 msgstr ""
 
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c

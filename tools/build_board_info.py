@@ -136,10 +136,10 @@ def create_pr(changes, updated, git_info, user):
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
     if changes["new_boards"]:
-        boards = "New boards:\n* " + "\n* ".join(changes["new_boards"])
+        boards = "New boards:\n* " + "\n* ".join(sorted(changes["new_boards"]))
     languages = ""
     if changes["new_languages"]:
-        languages = "New languages:\n* " + "\n* ".join(changes["new_languages"])
+        languages = "New languages:\n* " + "\n* ".join(sorted(changes["new_languages"]))
     message = "Automated website update for release {} by Blinka.\n\n{}\n\n{}\n".format(
         changes["new_release"], boards, languages
     )
