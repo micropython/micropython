@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-03-25 02:42+0000\n"
+"PO-Revision-Date: 2023-04-07 00:49+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -135,6 +135,7 @@ msgid "%q in %q must be of type %q, not %q"
 msgstr "%q em %q deve ser do tipo %q e não %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -204,6 +205,10 @@ msgstr "%q deve ser um bytearray ou uma matriz do tipo 'h', 'H', 'b', ou 'B'"
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
 msgstr "%q deve ser uma matriz do tipo 'H'"
+
+#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+msgid "%q must be array of type 'h'"
+msgstr "%q deve ser uma matriz do tipo 'h'"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
@@ -1259,6 +1264,7 @@ msgstr "O temporizador do watchdog interno expirou."
 msgid "Interrupt error."
 msgstr "Erro de interrupção."
 
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1266,6 +1272,7 @@ msgid "Invalid %q"
 msgstr "%q Inválido"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Pino do %q inválido"
@@ -1311,7 +1318,7 @@ msgstr "data_pins[%d] inválido"
 
 #: shared-module/msgpack/__init__.c
 msgid "Invalid format"
-msgstr ""
+msgstr "Formato inválido"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -3924,11 +3931,7 @@ msgstr "a matriz externa é muito pequena"
 msgid "out must be a float dense array"
 msgstr "deve ser uma matriz densa flutuante"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "out of range of source"
-msgstr "fora do alcance da fonte"
-
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
 msgstr "fora do alcance do alvo"
 
@@ -3955,13 +3958,9 @@ msgstr "os parâmetros devem ser registradores na sequência a2 até a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "os parâmetros devem ser registradores na sequência r0 até r3"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "pixel coordinates out of bounds"
 msgstr "as coordenadas do pixel estão fora dos limites"
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "pixel value requires too many bits"
-msgstr "o valor do pixel requer bits demais"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
@@ -4375,10 +4374,6 @@ msgstr "o valor deve caber em %d byte(s)"
 msgid "value out of range of target"
 msgstr "valor fora do alcance do alvo"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "value_count must be > 0"
-msgstr "o value_count deve ser > 0"
-
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "o watchdog não foi inicializado"
@@ -4465,6 +4460,15 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "out of range of source"
+#~ msgstr "fora do alcance da fonte"
+
+#~ msgid "pixel value requires too many bits"
+#~ msgstr "o valor do pixel requer bits demais"
+
+#~ msgid "value_count must be > 0"
+#~ msgstr "o value_count deve ser > 0"
 
 #~ msgid "64 bit types"
 #~ msgstr "Tipos 64 bit"

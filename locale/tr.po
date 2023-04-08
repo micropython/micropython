@@ -130,6 +130,7 @@ msgid "%q in %q must be of type %q, not %q"
 msgstr ""
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -198,6 +199,10 @@ msgstr "%q 'h', 'H', 'b' ya da 'B' tipi bir bytearray ya da array olmalı"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
+msgstr ""
+
+#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+msgid "%q must be array of type 'h'"
 msgstr ""
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
@@ -1235,6 +1240,7 @@ msgstr "Dahili bekçi zamanlayıcısının süresi doldu."
 msgid "Interrupt error."
 msgstr ""
 
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1242,6 +1248,7 @@ msgid "Invalid %q"
 msgstr "Geçersiz %q"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Geersi %q pin"
@@ -3849,11 +3856,7 @@ msgstr ""
 msgid "out must be a float dense array"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "out of range of source"
-msgstr ""
-
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
 msgstr ""
 
@@ -3878,12 +3881,8 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr ""
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "pixel coordinates out of bounds"
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "pixel value requires too many bits"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
@@ -4296,10 +4295,6 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "value out of range of target"
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "value_count must be > 0"
 msgstr ""
 
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c

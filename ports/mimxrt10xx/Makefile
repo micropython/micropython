@@ -38,7 +38,6 @@ INC += \
 	-Iboards/$(BOARD) \
 	-Iperipherals/ \
 	-Iperipherals/mimxrt10xx/ \
-	-Isdk/CMSIS/Include \
 	-Isdk/devices/$(CHIP_FAMILY) \
 	-Isdk/devices/$(CHIP_FAMILY)/drivers \
 	-Isdk/drivers/common

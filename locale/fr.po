@@ -134,6 +134,7 @@ msgid "%q in %q must be of type %q, not %q"
 msgstr "%q dans %q doit être de type %q, pas %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -202,6 +203,10 @@ msgstr "%q doit être a bytearray ou array de type 'h', 'H', 'b', ou 'B'"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
+msgstr ""
+
+#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+msgid "%q must be array of type 'h'"
 msgstr ""
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
@@ -1269,6 +1274,7 @@ msgstr "Le minuteur du watchdog interne a expiré."
 msgid "Interrupt error."
 msgstr "Erreur d'interruption."
 
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1276,6 +1282,7 @@ msgid "Invalid %q"
 msgstr "%q invalide"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Broche invalide pour '%q'"
@@ -3943,11 +3950,7 @@ msgstr "matrice de sortie est trop petite"
 msgid "out must be a float dense array"
 msgstr "la matrice sortante doit être de type float"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "out of range of source"
-msgstr "dépassement des bornes de source"
-
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
 msgstr "dépassement des bornes de target"
 
@@ -3972,13 +3975,9 @@ msgstr "les paramètres doivent être des registres dans la séquence a2 à a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "les paramètres doivent être des registres dans la séquence r0 à r3"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "pixel coordinates out of bounds"
 msgstr "coordonnées de pixel hors limites"
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "pixel value requires too many bits"
-msgstr "la valeur du pixel requiet trop de bits"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
@@ -4394,10 +4393,6 @@ msgstr "la valeur doit tenir dans %d octet(s)"
 msgid "value out of range of target"
 msgstr "valeur hors de porté de la cible"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "value_count must be > 0"
-msgstr "'value_count' doit être > 0"
-
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "chien de garde (watchdog) non initialisé"
@@ -4484,6 +4479,15 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "out of range of source"
+#~ msgstr "dépassement des bornes de source"
+
+#~ msgid "pixel value requires too many bits"
+#~ msgstr "la valeur du pixel requiet trop de bits"
+
+#~ msgid "value_count must be > 0"
+#~ msgstr "'value_count' doit être > 0"
 
 #~ msgid "64 bit types"
 #~ msgstr "types à 64 bit"

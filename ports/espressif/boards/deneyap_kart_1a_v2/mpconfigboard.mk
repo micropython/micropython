@@ -1,4 +1,4 @@
-USB_VID = 0x239A
+USB_VID = 0x303A
 USB_PID = 0x8148
 
 USB_PRODUCT = "Deneyap Kart 1A v2"
