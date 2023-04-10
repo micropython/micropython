@@ -43,11 +43,9 @@ static alarm_id_t poll_timer_id = 0;
 
 uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
-// Prevent double-enqueuing of the scheduled task.
-STATIC volatile bool events_task_is_scheduled;
+static mp_sched_node_t mp_bluetooth_hci_sched_node;
 
 void mp_bluetooth_hci_init(void) {
-    events_task_is_scheduled = false;
 }
 
 static int64_t mp_bluetooth_hci_timer_callback(alarm_id_t id, void *user_data) {
@@ -65,25 +63,16 @@ void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
 
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
 // This task is scheduled periodically via a timer, or immediately after UART RX IRQ.
-STATIC mp_obj_t run_events_scheduled_task(mp_obj_t none_in) {
-    (void)none_in;
-    events_task_is_scheduled = false;
-    // This will process all HCI data, and run any callouts or events.
+STATIC void run_events_scheduled_task(mp_sched_node_t *node) {
+    (void)node;
+    // This will process all buffered HCI UART data, and run any callouts or events.
     mp_bluetooth_hci_poll();
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(run_events_scheduled_task_obj, run_events_scheduled_task);
 
 // Called periodically (systick) or directly (e.g. UART RX IRQ) in order to
 // request that processing happens ASAP in the scheduler.
 void mp_bluetooth_hci_poll_now(void) {
-    if (!events_task_is_scheduled) {
-        events_task_is_scheduled = mp_sched_schedule(MP_OBJ_FROM_PTR(&run_events_scheduled_task_obj), mp_const_none);
-        if (!events_task_is_scheduled) {
-            // The schedule queue is full, set callback to try again soon.
-            mp_bluetooth_hci_poll_in_ms(5);
-        }
-    }
+    mp_sched_schedule_node(&mp_bluetooth_hci_sched_node, run_events_scheduled_task);
 }
 
 #if defined(MICROPY_HW_BLE_UART_ID)
@@ -91,7 +80,6 @@ void mp_bluetooth_hci_poll_now(void) {
 mp_obj_t mp_bthci_uart;
 
 STATIC void mp_bluetooth_hci_start_polling(void) {
-    events_task_is_scheduled = false;
     mp_bluetooth_hci_poll_now();
 }
 
