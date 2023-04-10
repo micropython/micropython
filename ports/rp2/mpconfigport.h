@@ -283,7 +283,7 @@ extern uint32_t rosc_random_u32(void);
 extern void lwip_lock_acquire(void);
 extern void lwip_lock_release(void);
 
-#if MICROPY_PY_BLUETOOTH_CYW43
+#if MICROPY_PY_BLUETOOTH || MICROPY_PY_BLUETOOTH_CYW43
 // Bluetooth code only runs in the scheduler, no locking/mutex required.
 #define MICROPY_PY_BLUETOOTH_ENTER uint32_t atomic_state = 0;
 #define MICROPY_PY_BLUETOOTH_EXIT (void)atomic_state;
