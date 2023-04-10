@@ -59,6 +59,7 @@ INC += -I. \
 ifeq ($(CHIP_FAMILY), samd21)
 PERIPHERALS_CHIP_FAMILY=samd21
 OPTIMIZATION_FLAGS ?= -Os
+
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD21 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=128 -DCFG_TUD_MSC_BUFSIZE=512
 endif
@@ -101,24 +102,23 @@ ifeq ($(DEBUG), 1)
   endif
 else
   CFLAGS += -DNDEBUG
+
+  # Do a default shrink for small builds, including all SAMD21 builds.
   # -finline-limit can shrink the image size.
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
-
-  # Do a default shrink for small builds.
-  ifndef CFLAGS_INLINE_LIMIT
-    ifeq ($(CIRCUITPY_FULL_BUILD),0)
-      CFLAGS_INLINE_LIMIT = 50
+  ifeq ($(CIRCUITPY_FULL_BUILD),0)
+    CFLAGS += -finline-limit=45
+  else
+    ifeq ($(CHIP_FAMILY), samd21)
+      # max-inline-insns-auto increases the size of SAMD51 builds.
+      CFLAGS += -finline-limit=45 --param max-inline-insns-auto=110
     endif
   endif
 
-  ifdef CFLAGS_INLINE_LIMIT
-    CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
-  endif
-
-  ifeq ($(CIRCUITPY_FULL_BUILD),0)
-    CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
-  endif
+  # We used to do this but it seems to not reduce space any more, at least in gcc 11.
+  # Leave it here, commented out, just for reference.
+  # --param inline-unit-growth=15
 
   ifdef CFLAGS_BOARD
     CFLAGS += $(CFLAGS_BOARD)
@@ -366,7 +366,7 @@ all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 $(BUILD)/firmware.elf: $(OBJ) $(GENERATED_LD_FILE)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
-	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--print-memory-usage -Wl,--start-group $(LIBS) -Wl,--end-group
 	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE) $(BUILD)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf

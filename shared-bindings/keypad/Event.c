@@ -64,7 +64,7 @@ STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, 
         timestamp = supervisor_ticks_ms();
     }
 
-    (void)mp_obj_get_int_truncated(timestamp); // ensure that timesamp is an integer
+    (void)mp_obj_get_int_truncated(timestamp); // ensure that timestamp is an integer
     common_hal_keypad_event_construct(self, key_number, args[ARG_pressed].u_bool, timestamp);
     return MP_OBJ_FROM_PTR(self);
 }
@@ -167,9 +167,9 @@ STATIC mp_obj_t keypad_event_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 
 STATIC void keypad_event_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<Event: key_number %d %s>",
+    mp_printf(print, "<Event: key_number %d %q>",
         common_hal_keypad_event_get_key_number(self),
-        common_hal_keypad_event_get_pressed(self) ? "pressed" : "released");
+        common_hal_keypad_event_get_pressed(self) ? MP_QSTR_pressed : MP_QSTR_released);
 }
 
 STATIC const mp_rom_map_elem_t keypad_event_locals_dict_table[] = {

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Kevin Matocha
+ * Copyright (c) 2021 Kevin Matocha, Jose David Montoya
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "shared/runtime/interrupt_char.h"
 #include "shared-bindings/bitmaptools/__init__.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Palette.h"
@@ -38,6 +39,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#define BITMAP_DEBUG(...) (void)0
+// #define BITMAP_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16_t oy,
     int16_t dest_clip0_x, int16_t dest_clip0_y,
@@ -376,6 +380,10 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
         }
 
         mp_obj_list_get(fill_area, &list_length, &fill_points);
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            return;
+        }
     }
 
     // set dirty the area so displayio will draw
@@ -776,7 +784,7 @@ void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bi
 
     bitmaptools_dither_algorithm_info_t *info = algorithms[algorithm];
     // rowdata holds 3 rows of data.  Each one is larger than the input
-    // bitmap's width, beacuse `mx` extra pixels are allocated at the start and
+    // bitmap's width, because `mx` extra pixels are allocated at the start and
     // end of the row so that no conditionals are needed when storing the error data.
     int16_t rowdata[(width + 2 * info->mx) * 3];
     int16_t *rows[3] = {
@@ -912,4 +920,65 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
             }
         }
     }
+}
+
+STATIC void draw_circle(displayio_bitmap_t *destination,
+    int16_t x, int16_t y,
+    int16_t radius, uint32_t value) {
+
+    int16_t d, yb;
+
+    mp_arg_validate_int_range(x, SHRT_MIN, SHRT_MAX, MP_QSTR_x);
+    mp_arg_validate_int_range(y, SHRT_MIN, SHRT_MAX, MP_QSTR_y);
+
+    x = MIN(x, destination->width);
+    x = MAX(0, x);
+    y = MIN(y, destination->height);
+    y = MAX(0, y);
+
+    BITMAP_DEBUG("x, y, radius    (%4d, %4d, %4d)\n", x, y, radius);
+
+    yb = radius;
+    d = 3 - 2 * radius;
+
+    // Bresenham's circle algorithm
+    for (int xb = 0; xb <= yb; xb++) {
+        displayio_bitmap_write_pixel(destination, xb + x, yb + y, value);
+        displayio_bitmap_write_pixel(destination, -xb + x, -yb + y, value);
+        displayio_bitmap_write_pixel(destination, -xb + x, yb + y, value);
+        displayio_bitmap_write_pixel(destination, xb + x, -yb + y, value);
+        displayio_bitmap_write_pixel(destination, yb + x, xb + y, value);
+        displayio_bitmap_write_pixel(destination, -yb + x, xb + y, value);
+        displayio_bitmap_write_pixel(destination, -yb + x, -xb + y, value);
+        displayio_bitmap_write_pixel(destination, yb + x, -xb + y, value);
+        if (d <= 0) {
+            d = d + (4 * xb) + 6;
+        } else {
+            d = d + 4 * (xb - yb) + 10;
+            yb = yb - 1;
+        }
+    }
+}
+
+void common_hal_bitmaptools_draw_circle(displayio_bitmap_t *destination,
+    int16_t x, int16_t y,
+    int16_t radius,
+    uint32_t value) {
+
+
+    // update the dirty area
+    int16_t xbb0, xbb1, ybb0, ybb1;
+
+    xbb0 = x - radius;
+    xbb1 = x + radius;
+    ybb0 = y - radius;
+    ybb1 = y + radius;
+
+    displayio_area_t area = { xbb0, ybb0, xbb1, ybb1, NULL };
+    displayio_area_t bitmap_area = { 0, 0, destination->width, destination->height, NULL };
+    displayio_area_compute_overlap(&area, &bitmap_area, &area);
+
+    displayio_bitmap_set_dirty_area(destination, &area);
+
+    draw_circle(destination, x, y, radius, value);
 }

@@ -33,7 +33,7 @@
 
 // This background function should be called repeatedly. It cannot be done based
 // on events.
-void supervisor_web_workflow_background(void);
+void supervisor_web_workflow_background(void *data);
 bool supervisor_web_workflow_status_dirty(void);
 void supervisor_web_workflow_status(void);
 void supervisor_start_web_workflow(void);

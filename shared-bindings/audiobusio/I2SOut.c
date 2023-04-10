@@ -97,7 +97,7 @@
 //|         ...
 STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if !CIRCUITPY_AUDIOBUSIO_I2SOUT
-    mp_raise_NotImplementedError(translate("I2SOut not available"));
+    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_I2SOut);
     return NULL;                // Not reachable.
     #else
     enum { ARG_bit_clock, ARG_word_select, ARG_data, ARG_left_justified };

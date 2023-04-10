@@ -182,6 +182,18 @@ endif
 ifeq ($(CIRCUITPY__EVE),1)
 SRC_PATTERNS += _eve/%
 endif
+ifeq ($(CIRCUITPY_ESPCAMERA),1)
+SRC_PATTERNS += espcamera/%
+endif
+ifeq ($(CIRCUITPY_ESPIDF),1)
+SRC_PATTERNS += espidf/%
+endif
+ifeq ($(CIRCUITPY_ESPNOW),1)
+SRC_PATTERNS += espnow/%
+endif
+ifeq ($(CIRCUITPY_ESPULP),1)
+SRC_PATTERNS += espulp/%
+endif
 ifeq ($(CIRCUITPY_FLOPPYIO),1)
 SRC_PATTERNS += floppyio/%
 endif
@@ -636,6 +648,7 @@ SRC_SHARED_MODULE_ALL = \
 	supervisor/__init__.c \
 	supervisor/StatusBar.c \
 	synthio/MidiTrack.c \
+	synthio/Synthesizer.c \
 	synthio/__init__.c \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \

@@ -127,6 +127,24 @@ static bool pmic_init(void) {
         return false;
     }
 
+    // Reg: 3Ah
+    // APS Low battery warning level 1: 3.695V
+    write_buf[0] = AXP192_APS_LOW_BATT_LEVEL_1;
+    write_buf[1] = AXP192_APS_LOW_BATT_VOLTAGE_3_695V;
+    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    if (rc != 0) {
+        return false;
+    }
+
+    // Reg: 3Bh
+    // APS Low battery warning level 2: 3.600V
+    write_buf[0] = AXP192_APS_LOW_BATT_LEVEL_2;
+    write_buf[1] = AXP192_APS_LOW_BATT_VOLTAGE_3_600V;
+    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    if (rc != 0) {
+        return false;
+    }
+
     // Reg: 82h
     // ADC all on
     write_buf[0] = AXP192_ADC_ENABLE_1;
@@ -193,7 +211,7 @@ static bool pmic_init(void) {
     }
 
     // Reg: 12h
-    // Enable EXTEN, DCDC1, LDO2 and LDO3
+    // Enable CTRL_EXTEN, DCDC1, LDO2 and LDO3
     write_buf[0] = AXP192_DCDC13_LDO23_CTRL;
     write_buf[1] = AXP192_DCDC13_LDO23_CTRL_EXTEN |
         AXP192_DCDC13_LDO23_CTRL_LDO3 |
@@ -204,10 +222,58 @@ static bool pmic_init(void) {
         return false;
     }
 
-    // Reg: 28h
+    // Reg: 26h
     // DCDC1 (ESP32 VDD): 3.350V
     write_buf[0] = AXP192_DCDC1_OUT_VOLTAGE;
     write_buf[1] = AXP192_DCDC1_OUT_VOLTAGE_3_350V;
+    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    if (rc != 0) {
+        return false;
+    }
+
+    // Reg: 40h
+    // IRQ enable control register 1
+    write_buf[0] = AXP192_IRQ_1_ENABLE;
+    write_buf[1] = AXP192_IRQ_X_DISABLE_ALL;
+    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    if (rc != 0) {
+        return false;
+    }
+
+    // Reg: 41h
+    // IRQ enable control register 2
+    write_buf[0] = AXP192_IRQ_2_ENABLE;
+    write_buf[1] = AXP192_IRQ_X_DISABLE_ALL;
+    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    if (rc != 0) {
+        return false;
+    }
+
+    // Reg: 42h
+    // IRQ enable control register 3
+    // Enable power on key short and long press interrupt
+    write_buf[0] = AXP192_IRQ_2_ENABLE;
+    write_buf[1] = AXP192_IRQ_3_PEK_SHORT_PRESS |
+        AXP192_IRQ_3_PEK_LONG_PRESS;
+    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    if (rc != 0) {
+        return false;
+    }
+
+    // Reg: 43h
+    // IRQ enable control register 4
+    // Enable power on key short and long press interrupt
+    write_buf[0] = AXP192_IRQ_2_ENABLE;
+    write_buf[1] = AXP192_IRQ_4_LOW_VOLTAGE_WARNING;
+    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    if (rc != 0) {
+        return false;
+    }
+
+    // Reg: 44h
+    // IRQ enable control register 5
+    write_buf[0] = AXP192_IRQ_2_ENABLE;
+    write_buf[1] = AXP192_IRQ_X_DISABLE_ALL;
     rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
@@ -279,7 +345,17 @@ void board_init(void) {
     }
 
     if (!display_init()) {
-        mp_printf(&mp_plat_print, "could not initialize ili9342c LCD");
+        mp_printf(&mp_plat_print, "could not initialize the display");
         return;
     }
+}
+
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    // Set IR led gpio high to prevent power drain from the led
+    if (pin_number == 9) {
+        gpio_set_direction(pin_number, GPIO_MODE_DEF_OUTPUT);
+        gpio_set_level(pin_number, true);
+        return true;
+    }
+    return false;
 }

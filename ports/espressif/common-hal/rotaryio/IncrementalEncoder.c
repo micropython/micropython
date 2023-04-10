@@ -69,7 +69,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         .unit = unit,
     };
 
-    // Reinitalize same unit, CHANNEL_1 with different parameters.
+    // Reinitialize same unit, CHANNEL_1 with different parameters.
     peripherals_pcnt_reinit(&pcnt_config_channel_1);
 
     self->pin_a = pin_a->number;

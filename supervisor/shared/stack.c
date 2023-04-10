@@ -35,7 +35,7 @@
 extern uint32_t _estack;
 
 // Requested size.
-static uint32_t next_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
+static uint32_t next_stack_size = 0;
 static uint32_t current_stack_size = 0;
 // Actual location and size, may be larger than requested.
 static uint32_t *stack_limit = NULL;
@@ -49,11 +49,15 @@ static void allocate_stack(void) {
         stack_limit = port_stack_get_limit();
         stack_length = (port_stack_get_top() - stack_limit) * sizeof(uint32_t);
         current_stack_size = stack_length;
+        next_stack_size = stack_length;
     } else {
         mp_uint_t regs[10];
         mp_uint_t sp = cpu_get_regs_and_sp(regs);
 
         mp_uint_t c_size = (mp_uint_t)port_stack_get_top() - sp;
+        if (next_stack_size == 0) {
+            next_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
+        }
         supervisor_allocation *stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true, false);
         if (stack_alloc == NULL) {
             stack_alloc = allocate_memory(c_size + CIRCUITPY_DEFAULT_STACK_SIZE + EXCEPTION_STACK_SIZE, true, false);
@@ -103,8 +107,12 @@ size_t stack_get_length(void) {
     return stack_length;
 }
 
-void set_next_stack_size(uint32_t size) {
+bool set_next_stack_size(uint32_t size) {
+    if (port_has_fixed_stack()) {
+        return false;
+    }
     next_stack_size = size;
+    return true;
 }
 
 uint32_t get_next_stack_size(void) {

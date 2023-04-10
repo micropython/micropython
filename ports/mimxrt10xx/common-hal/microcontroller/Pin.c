@@ -25,8 +25,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "shared-bindings/microcontroller/__init__.h"
+#include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/__init__.h"
+
+#include "py/gc.h"
 
 STATIC bool claimed_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
 STATIC bool never_reset_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
@@ -84,6 +87,7 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
         return;
     }
 
+    disable_pin_change_interrupt(pin);
     never_reset_pins[pin->mux_idx] = false;
     claimed_pins[pin->mux_idx] = false;
     *(uint32_t *)pin->mux_reg = pin->mux_reset;
@@ -115,4 +119,20 @@ void claim_pin(const mcu_pin_obj_t *pin) {
 
 void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
     common_hal_reset_pin((mcu_pin_obj_t *)(mcu_pin_globals.map.table[pin_no].value));
+}
+
+const mcu_periph_obj_t *find_pin_function_sz(const mcu_periph_obj_t *list, size_t sz, const mcu_pin_obj_t *pin, int *instance, uint16_t name) {
+    if (!pin) {
+        return NULL;
+    }
+    for (size_t i = 0; i < sz; i++) {
+        if (*instance != -1 && *instance != list[i].bank_idx) {
+            continue;
+        }
+        if (pin == list[i].pin) {
+            *instance = list[i].bank_idx;
+            return &list[i];
+        }
+    }
+    mp_raise_ValueError_varg(translate("Invalid %q pin"), name);
 }

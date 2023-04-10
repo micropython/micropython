@@ -107,7 +107,7 @@ void raise_cyw_error(int err) {
             mp_errno = MP_ETIMEDOUT;
             break;
         default:
-            mp_raise_OSError_msg_varg(translate("Unkown error code %d"), err);
+            mp_raise_OSError_msg_varg(translate("Unknown error code %d"), err);
     }
     mp_raise_OSError(mp_errno);
 }

@@ -46,15 +46,7 @@
 #if CIRCUITPY_WEB_WORKFLOW
 #include "supervisor/shared/web_workflow/web_workflow.h"
 #endif
-static background_callback_t workflow_background_cb;
-
-static bool workflow_started = false;
-
-static void workflow_background(void *data) {
-    #if CIRCUITPY_WEB_WORKFLOW
-    supervisor_web_workflow_background();
-    #endif
-}
+static background_callback_t workflow_background_cb = {NULL, NULL};
 
 // Called during a VM reset. Doesn't actually reset things.
 void supervisor_workflow_reset(void) {
@@ -63,31 +55,18 @@ void supervisor_workflow_reset(void) {
     #endif
 
     #if CIRCUITPY_WEB_WORKFLOW
-    supervisor_start_web_workflow();
+    if (workflow_background_cb.fun) {
+        supervisor_start_web_workflow();
+        supervisor_workflow_request_background();
+    }
     #endif
-
-    workflow_background_cb.fun = workflow_background;
-    workflow_background_cb.data = NULL;
-    supervisor_workflow_request_background();
 }
 
 void supervisor_workflow_request_background(void) {
-    if (!workflow_started) {
-        return;
+    if (workflow_background_cb.fun) {
+        workflow_background_cb.data = NULL;
+        background_callback_add_core(&workflow_background_cb);
     }
-    background_callback_add_core(&workflow_background_cb);
-}
-
-// Return true as soon as USB communication with host has started,
-// even before enumeration is done.
-// Not that some chips don't notice when USB is unplugged after first being plugged in,
-// so this is not perfect, but tud_suspended() check helps.
-bool supervisor_workflow_connecting(void) {
-    #if CIRCUITPY_USB
-    return tud_connected() && !tud_suspended();
-    #else
-    return false;
-    #endif
 }
 
 // Return true if host has completed connection to us (such as USB enumeration).
@@ -120,9 +99,10 @@ void supervisor_workflow_start(void) {
 
     #if CIRCUITPY_WEB_WORKFLOW
     supervisor_start_web_workflow();
+    memset(&workflow_background_cb, 0, sizeof(workflow_background_cb));
+    workflow_background_cb.fun = supervisor_web_workflow_background;
     #endif
 
-    workflow_started = true;
 }
 
 FRESULT supervisor_workflow_mkdir_parents(FATFS *fs, char *path) {

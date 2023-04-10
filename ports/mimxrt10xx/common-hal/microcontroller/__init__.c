@@ -36,6 +36,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "supervisor/linker.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/translate/translate.h"
 
@@ -43,14 +44,14 @@ void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
 }
 
-volatile uint32_t nesting_count = 0;
-void common_hal_mcu_disable_interrupts(void) {
+volatile uint32_t PLACE_IN_DTCM_BSS(nesting_count) = 0;
+void PLACE_IN_ITCM(common_hal_mcu_disable_interrupts)(void) {
     __disable_irq();
     __DMB();
     nesting_count++;
 }
 
-void common_hal_mcu_enable_interrupts(void) {
+void PLACE_IN_ITCM(common_hal_mcu_enable_interrupts)(void) {
     if (nesting_count == 0) {
         // This is very very bad because it means there was mismatched disable/enables
         reset_into_safe_mode(SAFE_MODE_INTERRUPT_ERROR);

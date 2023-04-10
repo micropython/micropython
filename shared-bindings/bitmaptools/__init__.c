@@ -530,14 +530,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_li
 //|     value: int,
 //|     close: Optional[bool] = True,
 //| ) -> None:
-//|     """Draw a polygon conecting points on provided bitmap with provided value
+//|     """Draw a polygon connecting points on provided bitmap with provided value
 //|
 //|     :param bitmap dest_bitmap: Destination bitmap that will be written into
 //|     :param ReadableBuffer xs: x-pixel position of the polygon's vertices
 //|     :param ReadableBuffer ys: y-pixel position of the polygon's vertices
 //|     :param int value: Bitmap palette index that will be written into the
 //|            line in the destination bitmap
-//|     :param bool close: (Optional) Wether to connect first and last point. (True)
+//|     :param bool close: (Optional) Whether to connect first and last point. (True)
 //|
 //|     .. code-block:: Python
 //|
@@ -630,7 +630,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_polygon_obj, 0, bitmaptools_obj_draw
 //|     """Inserts pixels from ``data`` into the rectangle of width×height pixels with the upper left corner at ``(x,y)``
 //|
 //|     The values from ``data`` are taken modulo the number of color values
-//|     avalable in the destination bitmap.
+//|     available in the destination bitmap.
 //|
 //|     If x1 or y1 are not specified, they are taken as 0.  If x2 or y2
 //|     are not specified, or are given as -1, they are taken as the width
@@ -722,7 +722,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_arrayblit_obj, 0, bitmaptools_arrayblit);
 //|     :param typing.BinaryIO file: A file opened in binary mode
 //|     :param int bits_per_pixel: Number of bits per pixel.  Values 1, 2, 4, 8, 16, 24, and 32 are supported;
 //|     :param int element_size: Number of bytes per element.  Values of 1, 2, and 4 are supported, except that 24 ``bits_per_pixel`` requires 1 byte per element.
-//|     :param bool reverse_pixels_in_element: If set, the first pixel in a word is taken from the Most Signficant Bits; otherwise, it is taken from the Least Significant Bits.
+//|     :param bool reverse_pixels_in_element: If set, the first pixel in a word is taken from the Most Significant Bits; otherwise, it is taken from the Least Significant Bits.
 //|     :param bool swap_bytes_in_element: If the ``element_size`` is not 1, then reverse the byte order of each element read.
 //|     :param bool reverse_rows: Reverse the direction of the row loading (required for some bitmap images).
 //|     """
@@ -782,7 +782,7 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_readinto_obj, 0, bitmaptools_readinto);
 
 //| class DitherAlgorithm:
-//|     """Identifies the algorith for dither to use"""
+//|     """Identifies the algorithm for dither to use"""
 //|
 //|     Atkinson: "DitherAlgorithm"
 //|     """The classic Atkinson dither, often associated with the Hypercard esthetic"""
@@ -868,7 +868,86 @@ STATIC mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_dither_obj, 0, bitmaptools_dither);
+// requires all 5 arguments
 
+//| def draw_circle(
+//|     dest_bitmap: displayio.Bitmap, x: int, y: int, radius: int, value: int
+//| ) -> None:
+//|     """Draws a circle into a bitmap specified using a center (x0,y0) and radius r.
+//|
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param int x: x-pixel position of the circle's center
+//|     :param int y: y-pixel position of the circle's center
+//|     :param int radius: circle's radius
+//|     :param int value: Bitmap palette index that will be written into the
+//|            circle in the destination bitmap
+//|
+//|     .. code-block:: Python
+//|
+//|        import board
+//|        import displayio
+//|        import bitmaptools
+//|
+//|        display = board.DISPLAY
+//|        main_group = displayio.Group()
+//|        display.root_group = main_group
+//|
+//|        palette = displayio.Palette(2)
+//|        palette[0] = 0xffffff
+//|        palette[1] = 0x440044
+//|
+//|        bmp = displayio.Bitmap(128,128, 2)
+//|        bmp.fill(0)
+//|
+//|        bitmaptools.circle(64,64, 32, 1)
+//|
+//|        tilegrid = displayio.TileGrid(bitmap=bmp, pixel_shader=palette)
+//|        main_group.append(tilegrid)
+//|
+//|        while True:
+//|            pass
+//|
+//|     """
+//|
+//|     ...
+//|
+STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_radius, ARG_value};
+
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_radius, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj);     // the destination bitmap
+
+    uint32_t value, color_depth;
+    value = args[ARG_value].u_int;
+    color_depth = (1 << destination->bits_per_value);
+    if (color_depth <= value) {
+        mp_raise_ValueError(translate("out of range of target"));
+    }
+
+
+    int16_t x = args[ARG_x].u_int;
+    int16_t y = args[ARG_y].u_int;
+    int16_t radius = args[ARG_radius].u_int;
+
+    mp_arg_validate_int_range(x, 0, destination->width, MP_QSTR_x);
+    mp_arg_validate_int_range(y, 0, destination->height, MP_QSTR_y);
+    mp_arg_validate_int_min(radius, 0, MP_QSTR_radius);
+
+    common_hal_bitmaptools_draw_circle(destination, x, y, radius, value);
+
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_circle_obj, 0, bitmaptools_obj_draw_circle);
 
 STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmaptools) },
@@ -880,6 +959,7 @@ STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_boundary_fill), MP_ROM_PTR(&bitmaptools_boundary_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_polygon), MP_ROM_PTR(&bitmaptools_draw_polygon_obj) },
+    { MP_ROM_QSTR(MP_QSTR_draw_circle), MP_ROM_PTR(&bitmaptools_draw_circle_obj) },
     { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&bitmaptools_dither_obj) },
     { MP_ROM_QSTR(MP_QSTR_DitherAlgorithm), MP_ROM_PTR(&bitmaptools_dither_algorithm_type) },
 };

@@ -33,9 +33,6 @@
 	path = ports/atmel-samd/asf4
 	url = https://github.com/adafruit/asf4.git
 	branch = circuitpython
-[submodule "tools/usb_descriptor"]
-	path = tools/usb_descriptor
-	url = https://github.com/adafruit/usb_descriptor.git
 [submodule "lib/nrfutil"]
 	path = lib/nrfutil
 	url = https://github.com/adafruit/nRF52_nrfutil
@@ -103,7 +100,7 @@
 	url = https://github.com/adafruit/Adafruit_MP3
 [submodule "ports/mimxrt10xx/sdk"]
 	path = ports/mimxrt10xx/sdk
-	url = https://github.com/adafruit/MIMXRT10xx_SDK
+	url = https://github.com/nxp-mcuxpresso/mcux-sdk.git
 [submodule "frozen/Adafruit_CircuitPython_Register"]
 	path = frozen/Adafruit_CircuitPython_Register
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Register.git

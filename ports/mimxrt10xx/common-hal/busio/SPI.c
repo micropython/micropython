@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "periph.h"
 
-#include "fsl_lpspi.h"
+#include "sdk/drivers/lpspi/fsl_lpspi.h"
 
 #include <stdio.h>
 

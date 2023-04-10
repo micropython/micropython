@@ -35,7 +35,7 @@
 #include <stdbool.h>
 
 #include "fsl_iomuxc.h"
-#include "fsl_pwm.h"
+#include "sdk/drivers/pwm/fsl_pwm.h"
 #include "py/obj.h"
 
 extern const mp_obj_type_t mcu_pin_type;
@@ -71,6 +71,10 @@ typedef struct {
         .mux_reset = p_mux_reset, \
         .pad_reset = p_pad_reset, \
     }
+
+typedef void (gpio_change_interrupt_t)(void *data);
+void disable_pin_change_interrupt(const mcu_pin_obj_t *pin);
+void enable_pin_change_interrupt(const mcu_pin_obj_t *pin, gpio_change_interrupt_t func, void *data);
 
 #ifdef MIMXRT1011_SERIES
 #include "MIMXRT1011/pins.h"

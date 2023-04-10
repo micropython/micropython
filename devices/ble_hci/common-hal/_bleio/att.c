@@ -96,7 +96,7 @@ STATIC uint8_t bleio_properties_to_ble_spec_properties(uint8_t bleio_properties)
     return ble_spec_properties;
 }
 
-// FIX not currently used; reenable when used.
+// FIX not currently used; re-enable when used.
 #if 0
 STATIC uint8_t ble_spec_properties_to_bleio_properties(uint8_t ble_spec_properties) {
     uint8_t bleio_properties = 0;
@@ -964,7 +964,7 @@ static void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t d
     // Keep track of the first one to make sure.
     size_t sizeof_first_service_uuid = 0;
 
-    // Size of a single bt_att_group_data chunk. Start with the intial size, and
+    // Size of a single bt_att_group_data chunk. Start with the initial size, and
     // add the uuid size in the loop below.
     size_t data_length = sizeof(struct bt_att_group_data);
 

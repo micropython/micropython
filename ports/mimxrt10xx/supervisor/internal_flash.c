@@ -38,8 +38,8 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 
-#include "fsl_cache.h"
-#include "fsl_flexspi.h"
+#include "sdk/drivers/cache/armv7-m7/fsl_cache.h"
+#include "sdk/drivers/flexspi/fsl_flexspi.h"
 #include "fsl_iomuxc.h"
 
 // defined in linker
@@ -53,8 +53,15 @@ uint8_t _flash_cache[SECTOR_SIZE] __attribute__((aligned(4)));
 uint32_t _flash_page_addr = NO_CACHE;
 
 void PLACE_IN_ITCM(supervisor_flash_init)(void) {
-    // Update the LUT to make sure all entries are available.
-    FLEXSPI_UpdateLUT(FLEXSPI, 0, (const uint32_t *)&qspiflash_config.memConfig.lookupTable, 64);
+    // Update the LUT to make sure all entries are available. Copy the values to
+    // memory first so that we don't read from the flash as we update the LUT.
+    uint32_t lut_copy[64];
+    memcpy(lut_copy, (const uint32_t *)&qspiflash_config.memConfig.lookupTable, 64 * sizeof(uint32_t));
+    FLEXSPI_UpdateLUT(FLEXSPI, 0, lut_copy, 64);
+    // Make sure everything is flushed after updating the LUT.
+    __DSB();
+    __ISB();
+    flexspi_nor_init();
 }
 
 static inline uint32_t lba2addr(uint32_t block) {
@@ -79,20 +86,21 @@ void PLACE_IN_ITCM(port_internal_flash_flush)(void) {
     if (memcmp(_flash_cache, (void *)_flash_page_addr, SECTOR_SIZE) != 0) {
         volatile uint32_t sector_addr = (_flash_page_addr - FlexSPI_AMBA_BASE);
 
-        __disable_irq();
+        // Disable interrupts of priority 8+. They likely use code in flash
+        // itself. Higher priority interrupts (<8) should ensure all of their
+        // code is in RAM.
+        __set_BASEPRI(8 << (8 - __NVIC_PRIO_BITS));
         status = flexspi_nor_flash_erase_sector(FLEXSPI, sector_addr);
-        __enable_irq();
+        __set_BASEPRI(0U);
         if (status != kStatus_Success) {
-            printf("Page erase failure %ld!\r\n", status);
             return;
         }
 
         for (int i = 0; i < SECTOR_SIZE / FLASH_PAGE_SIZE; ++i) {
-            __disable_irq();
+            __set_BASEPRI(8 << (8 - __NVIC_PRIO_BITS));
             status = flexspi_nor_flash_page_program(FLEXSPI, sector_addr + i * FLASH_PAGE_SIZE, (void *)_flash_cache + i * FLASH_PAGE_SIZE);
-            __enable_irq();
+            __set_BASEPRI(0U);
             if (status != kStatus_Success) {
-                printf("Page program failure %ld!\r\n", status);
                 return;
             }
         }
@@ -103,11 +111,17 @@ void PLACE_IN_ITCM(port_internal_flash_flush)(void) {
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
-    // Must write out anything in cache before trying to read.
-    supervisor_flash_flush();
+    for (size_t i = 0; i < num_blocks; i++) {
+        uint32_t src = lba2addr(block + i);
+        uint32_t page_addr = src & ~(SECTOR_SIZE - 1);
+        // Copy from the cache if our page matches the cached one.
+        if (page_addr == _flash_page_addr) {
+            src = ((uint32_t)&_flash_cache) + (src - page_addr);
+        }
 
-    uint32_t src = lba2addr(block);
-    memcpy(dest, (uint8_t *)src, FILESYSTEM_BLOCK_SIZE * num_blocks);
+        memcpy(dest + FILESYSTEM_BLOCK_SIZE * i, (uint8_t *)src, FILESYSTEM_BLOCK_SIZE);
+    }
+
     return 0; // success
 }
 
@@ -141,5 +155,5 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
     return 0; // success
 }
 
-void supervisor_flash_release_cache(void) {
+void PLACE_IN_ITCM(supervisor_flash_release_cache)(void) {
 }

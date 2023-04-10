@@ -119,7 +119,7 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
     for (uint8_t i = 1; i <= 14; i++) {
         if ((touch_channel_mask & 1 << i) != 0) {
             touch_pad_t touch_channel = (touch_pad_t)i;
-            // intialize touchpad
+            // initialize touchpad
             peripherals_touch_init(touch_channel);
 
             // wait for touch data to reset
@@ -166,7 +166,7 @@ void alarm_touch_touchalarm_prepare_for_deep_sleep(void) {
     peripherals_touch_never_reset(false);
     peripherals_touch_reset();
 
-    // intialize touchpad
+    // initialize touchpad
     peripherals_touch_init(touch_channel);
 
     #if !defined(CONFIG_IDF_TARGET_ESP32)

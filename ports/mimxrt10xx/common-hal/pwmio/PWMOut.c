@@ -33,7 +33,7 @@
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-#include "fsl_pwm.h"
+#include "sdk/drivers/pwm/fsl_pwm.h"
 
 #include "supervisor/shared/translate/translate.h"
 #include "periph.h"
@@ -240,7 +240,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
 
         // Disable all fault inputs
         flexpwm->SM[submodule].DISMAP[0] = 0;
-        flexpwm->SM[submodule].DISMAP[1] = 0;
 
         PWM_SetPwmLdok(flexpwm, sm_mask, false);
         flexpwm->SM[submodule].CTRL = PWM_CTRL_FULL_MASK | PWM_CTRL_PRSC(self->prescaler);

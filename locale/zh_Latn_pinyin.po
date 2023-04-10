@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-03-01 17:39+0000\n"
+"PO-Revision-Date: 2023-04-09 17:51+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 #: main.c
 msgid ""
@@ -33,18 +33,6 @@ msgstr ""
 "\n"
 "dài mǎ yīn zì dòng chóng xīn jiā zǎi ér tíng zhǐ. jí jiāng chóng xīn jiā "
 "zǎi.\n"
-
-#: main.c
-msgid ""
-"\n"
-"Invalid CIRCUITPY_PYSTACK_SIZE\n"
-"\n"
-"\r"
-msgstr ""
-"\n"
-"wú xiào CIRCUITPY_PYSTACK_SIZE\n"
-"\n"
-"\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -149,6 +137,7 @@ msgid "%q in %q must be of type %q, not %q"
 msgstr "%q zhōng de %q bì xū shì %q lèi xíng, ér bù shì %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -207,10 +196,6 @@ msgstr "%q bìxū <= %d"
 msgid "%q must be >= %d"
 msgstr "%q bìxū >= %d"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-msgid "%q must be array of type 'H'"
-msgstr "%q bì xū shì lèi xíng wéi 'H' de shù zǔ"
-
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr "%q bì xū shì zì jié shù zǔ huò lèi xíng wéi 'H' huò 'B' de shù zǔ"
@@ -219,6 +204,14 @@ msgstr "%q bì xū shì zì jié shù zǔ huò lèi xíng wéi 'H' huò 'B' de s
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 "%q bì xū shì zì jié shù zǔ huò lèi xíng wéi 'h', 'H', 'b', huò 'B' de shù zǔ"
+
+#: ports/espressif/common-hal/analogbufio/BufferedIn.c
+msgid "%q must be array of type 'H'"
+msgstr "%q bì xū shì lèi xíng wéi 'H' de shù zǔ"
+
+#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+msgid "%q must be array of type 'h'"
+msgstr "%q bìxū shì lèixíng wéi 'h' de shùzǔ"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
@@ -427,10 +420,6 @@ msgstr "0.0 de fùshù cì mì"
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
 msgstr "bù zhī chí 3-arg pow()"
-
-#: shared-module/msgpack/__init__.c
-msgid "64 bit types"
-msgstr "64 wèi lèixíng"
 
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -841,11 +830,11 @@ msgstr "Liánjiē yǐ duàn kāi, wúfǎ zài shǐyòng. Chuàngjiàn yīgè xī
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays have different lengths"
-msgstr ""
+msgstr "zuòbiāo shùzǔ jùyǒu bùtóng de chángdù"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
-msgstr ""
+msgstr "zuòbiāo shùzǔ lèixíng jùyǒu bùtóng de dàxiǎo"
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
@@ -1267,12 +1256,15 @@ msgstr "Nèibù kān mén gǒu dìngshí qì chāoshí."
 msgid "Interrupt error."
 msgstr "zhōng duàn cuò wù."
 
-#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
+#: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "wú xiào %q"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Wúxiào de %q yǐn jiǎo"
@@ -1289,6 +1281,10 @@ msgstr "wú xiào BLE cān shù"
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
 msgstr "Wúxiào de BSSID"
+
+#: main.c
+msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+msgstr "wú xiào CIRCUITPY_PYSTACK_SIZE\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
@@ -1311,6 +1307,10 @@ msgstr "wú xiào zì jié %.*s"
 #, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "wú xiào data_pins[%d]"
+
+#: shared-module/msgpack/__init__.c
+msgid "Invalid format"
+msgstr "géshì wúxiào"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -1561,10 +1561,6 @@ msgstr "chéng xù zhōng méi yǒu"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
 msgstr "chéng xù zhōng méi yǒu jìn chū"
-
-#: shared-bindings/aesio/aes.c
-msgid "No key was specified"
-msgstr "Wèi zhǐdìng mì yào"
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
@@ -1988,8 +1984,8 @@ msgstr "bǐ lì chǐ cùn bì xū chú yǐ 3"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Scan already in progess. Stop with stop_scan."
-msgstr "Zhèngzài jìn háng sǎomiáo. Shǐyòng stop_scan tíngzhǐ."
+msgid "Scan already in progress. Stop with stop_scan."
+msgstr "Sǎomiáo yǐ zài jìnxíng zhōng. Shǐyòng stop_scan tíngzhǐ."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -2303,6 +2299,11 @@ msgstr "%s:%d: %d chù chū xiàn wèi zhī BLE cuò wù"
 msgid "Unknown BLE error: %d"
 msgstr "wèi zhī de BLE cuò wù: %d"
 
+#: ports/raspberrypi/common-hal/wifi/__init__.c
+#, c-format
+msgid "Unknown error code %d"
+msgstr "Wèizhī cuòwù dàimǎ %d"
+
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
@@ -2337,11 +2338,6 @@ msgstr "wèi zhī xì tǒng gù jiàn cuò wù: %04x"
 #, c-format
 msgid "Unknown system firmware error: %d"
 msgstr "wèi zhī de xì tǒng gù jiàn cuò wù: %d"
-
-#: ports/raspberrypi/common-hal/wifi/__init__.c
-#, c-format
-msgid "Unkown error code %d"
-msgstr "wèi zhī cuò wù dài %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #: shared-module/_pixelmap/PixelMap.c
@@ -2803,7 +2799,7 @@ msgstr "wúfǎ shèzhì 512 kuài dàxiǎo"
 msgid "can't set attribute"
 msgstr "wúfǎ shèzhì shǔxìng"
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/Runtime.c
 msgid "can't set attribute '%q'"
 msgstr "wú fǎ shè zhì shǔ xìng '%q'"
 
@@ -3111,8 +3107,8 @@ msgid "extra positional arguments given"
 msgstr "gěi chūle éwài de wèizhì cānshù"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
-#: shared-module/gifio/GifWriter.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/gifio/OnDiskGif.c
+#: shared-bindings/synthio/__init__.c shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr "wénjiàn bìxū shì zài zì jié móshì xià dǎkāi de wénjiàn"
 
@@ -3902,11 +3898,7 @@ msgstr "chū zhèn liè tài xiǎo"
 msgid "out must be a float dense array"
 msgstr "chū bì xū shì yí gè fú dòng mì jí zhèn liè"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "out of range of source"
-msgstr "yuán fàn wéi wài"
-
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
 msgstr "mù biāo fàn wéi wài"
 
@@ -3931,13 +3923,9 @@ msgstr "cānshù bìxū shì xùliè a2 zhì a5 de dēngjì shù"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "cānshù bìxū shì xùliè r0 zhì r3 de dēngjì qì"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "pixel coordinates out of bounds"
 msgstr "xiàngsù zuòbiāo chāochū biānjiè"
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "pixel value requires too many bits"
-msgstr "xiàngsù zhí xūyào tài duō wèi"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
@@ -4189,10 +4177,6 @@ msgstr "time_t shíjiān chuō chāochū píngtái fànwéi"
 msgid "tobytes can be invoked for dense arrays only"
 msgstr "tobytes zhǐ néng duì mì jí shù zǔ diào yòng"
 
-#: shared-module/struct/__init__.c
-msgid "too many arguments provided with the given format"
-msgstr "tígōng jǐ dìng géshì de cānshù tài duō"
-
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr "chǐ cùn tài duō"
@@ -4358,10 +4342,6 @@ msgstr "Zhí bìxū fúhé %d zì jié"
 msgid "value out of range of target"
 msgstr "zhí fàn wéi wài de mù biāo"
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "value_count must be > 0"
-msgstr "zhí jìshù bìxū wèi > 0"
-
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "wèi chū shǐ huà jiān shì qì"
@@ -4448,6 +4428,42 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "out of range of source"
+#~ msgstr "yuán fàn wéi wài"
+
+#~ msgid "pixel value requires too many bits"
+#~ msgstr "xiàngsù zhí xūyào tài duō wèi"
+
+#~ msgid "value_count must be > 0"
+#~ msgstr "zhí jìshù bìxū wèi > 0"
+
+#~ msgid "64 bit types"
+#~ msgstr "64 wèi lèixíng"
+
+#~ msgid "No key was specified"
+#~ msgstr "Wèi zhǐdìng mì yào"
+
+#~ msgid "Scan already in progess. Stop with stop_scan."
+#~ msgstr "Zhèngzài jìn háng sǎomiáo. Shǐyòng stop_scan tíngzhǐ."
+
+#, c-format
+#~ msgid "Unkown error code %d"
+#~ msgstr "wèi zhī cuò wù dài %d"
+
+#~ msgid "too many arguments provided with the given format"
+#~ msgstr "tígōng jǐ dìng géshì de cānshù tài duō"
+
+#~ msgid ""
+#~ "\n"
+#~ "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ "\n"
+#~ "\r"
+#~ msgstr ""
+#~ "\n"
+#~ "wú xiào CIRCUITPY_PYSTACK_SIZE\n"
+#~ "\n"
+#~ "\n"
 
 #~ msgid "Supply at least one UART pin"
 #~ msgstr "Dìngyì zhìshǎo yīgè UART yǐn jiǎo"

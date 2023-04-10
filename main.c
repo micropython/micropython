@@ -134,26 +134,18 @@ static void reset_devices(void) {
 
 #if MICROPY_ENABLE_PYSTACK
 STATIC supervisor_allocation *allocate_pystack(safe_mode_t safe_mode) {
-    mp_int_t pystack_size = CIRCUITPY_PYSTACK_SIZE;
     #if CIRCUITPY_OS_GETENV && CIRCUITPY_SETTABLE_PYSTACK
-    // Fetch value if exists from settings.toml
-    // Leaves size to build default on any failure
-    if (safe_mode == SAFE_MODE_NONE || safe_mode == SAFE_MODE_USER) {
+    if (safe_mode == SAFE_MODE_NONE) {
+        mp_int_t pystack_size = CIRCUITPY_PYSTACK_SIZE;
         (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
-        // Check if value is valid
-        pystack_size = pystack_size - pystack_size % sizeof(size_t); // Round down to multiple of 4.
-        if ((pystack_size < 384) || (pystack_size > 900000)) {
-            serial_write_compressed(translate("\nInvalid CIRCUITPY_PYSTACK_SIZE\n\n\r"));
-            pystack_size = CIRCUITPY_PYSTACK_SIZE; // Reset
+        supervisor_allocation *pystack = allocate_memory(pystack_size >= 384 ? pystack_size : 0, false, false);
+        if (pystack) {
+            return pystack;
         }
+        serial_write_compressed(translate("Invalid CIRCUITPY_PYSTACK_SIZE\n"));
     }
     #endif
-    supervisor_allocation *pystack = allocate_memory(pystack_size, false, false);
-    if (pystack == NULL) {
-        serial_write_compressed(translate("\nInvalid CIRCUITPY_PYSTACK_SIZE\n\n\r"));
-        pystack = allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
-    }
-    return pystack;
+    return allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
 }
 #endif
 
@@ -1119,6 +1111,8 @@ void gc_collect(void) {
     // have lost their references in the VM even though they are mounted.
     gc_collect_root((void **)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
 
+    port_gc_collect();
+
     background_callback_gc_collect();
 
     #if CIRCUITPY_ALARM
@@ -1149,6 +1143,10 @@ void gc_collect(void) {
     // range.
     gc_collect_root((void **)sp, ((mp_uint_t)port_stack_get_top() - sp) / sizeof(mp_uint_t));
     gc_collect_end();
+}
+
+// Ports may provide an implementation of this function if it is needed
+MP_WEAK void port_gc_collect() {
 }
 
 void NORETURN nlr_jump_fail(void *val) {

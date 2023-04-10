@@ -229,7 +229,7 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 /******************************************************************************/
 /* dict methods                                                               */
 
-STATIC void mp_ensure_not_fixed(const mp_obj_dict_t *dict) {
+STATIC void PLACE_IN_ITCM(mp_ensure_not_fixed)(const mp_obj_dict_t * dict) {
     if (dict->map.is_fixed) {
         mp_raise_TypeError(NULL);
     }
@@ -643,7 +643,7 @@ size_t mp_obj_dict_len(mp_obj_t self_in) {
     return self->map.used;
 }
 
-mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
+mp_obj_t PLACE_IN_ITCM(mp_obj_dict_store)(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_ensure_not_fixed(self);

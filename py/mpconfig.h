@@ -1827,6 +1827,17 @@ typedef double mp_float_t;
 #define MP_WEAK __attribute__((weak))
 #endif
 
+// Modifier for functions which should not be instrumented when tracing with
+// -finstrument-functions
+#ifndef MP_NO_INSTRUMENT
+#define MP_NO_INSTRUMENT __attribute__((no_instrument_function))
+#endif
+
+// Modifier for functions which should ideally inlined
+#ifndef MP_INLINE
+#define MP_INLINE inline MP_NO_INSTRUMENT
+#endif
+
 // Modifier for functions which should be never inlined
 #ifndef MP_NOINLINE
 #define MP_NOINLINE __attribute__((noinline))
@@ -1845,6 +1856,12 @@ typedef double mp_float_t;
 // Condition is likely to be false, to help branch prediction
 #ifndef MP_UNLIKELY
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
+#endif
+
+// Modifier for functions which aren't often used. Calls will also be considered
+// unlikely. Section names are `.text.unlikely` for use in linker scripts.
+#ifndef MP_COLD
+#define MP_COLD __attribute__((cold))
 #endif
 
 // To annotate that code is unreachable

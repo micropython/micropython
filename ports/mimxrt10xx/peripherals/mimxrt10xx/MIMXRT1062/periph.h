@@ -27,18 +27,18 @@
 #ifndef MICROPY_INCLUDED_MIMXRT10XX_MIMXRT1062_PERIPHERALS_MIMXRT1011_PERIPH_H
 #define MICROPY_INCLUDED_MIMXRT10XX_MIMXRT1062_PERIPHERALS_MIMXRT1011_PERIPH_H
 
-extern LPI2C_Type *mcu_i2c_banks[4];
+extern LPI2C_Type *const mcu_i2c_banks[4];
 
 extern const mcu_periph_obj_t mcu_i2c_sda_list[9];
 extern const mcu_periph_obj_t mcu_i2c_scl_list[9];
 
-extern LPSPI_Type *mcu_spi_banks[4];
+extern LPSPI_Type *const mcu_spi_banks[4];
 
 extern const mcu_periph_obj_t mcu_spi_sck_list[8];
 extern const mcu_periph_obj_t mcu_spi_mosi_list[8];
 extern const mcu_periph_obj_t mcu_spi_miso_list[8];
 
-extern LPUART_Type *mcu_uart_banks[8];
+extern LPUART_Type *const mcu_uart_banks[8];
 
 extern const mcu_periph_obj_t mcu_uart_rx_list[18];
 extern const mcu_periph_obj_t mcu_uart_tx_list[18];
@@ -46,5 +46,15 @@ extern const mcu_periph_obj_t mcu_uart_rts_list[9];
 extern const mcu_periph_obj_t mcu_uart_cts_list[9];
 
 extern const mcu_pwm_obj_t mcu_pwm_list[67];
+
+extern const mcu_periph_obj_t mcu_sai_rx_bclk_list[7];
+extern const mcu_periph_obj_t mcu_sai_rx_data0_list[7];
+extern const mcu_periph_obj_t mcu_sai_rx_sync_list[7];
+extern const mcu_periph_obj_t mcu_sai_tx_bclk_list[7];
+extern const mcu_periph_obj_t mcu_sai_tx_data0_list[7];
+extern const mcu_periph_obj_t mcu_sai_tx_sync_list[7];
+
+extern const mcu_periph_obj_t mcu_mqs_left_list[3];
+extern const mcu_periph_obj_t mcu_mqs_right_list[3];
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_MIMXRT1062_PERIPHERALS_MIMXRT1011_PERIPH_H

@@ -220,18 +220,22 @@ static void usb_background_do(void *unused) {
     usb_background();
 }
 
-void usb_background_schedule(void) {
+void PLACE_IN_ITCM(usb_background_schedule)(void) {
     background_callback_add(&usb_callback, usb_background_do, NULL);
 }
 
-void usb_irq_handler(int instance) {
+void PLACE_IN_ITCM(usb_irq_handler)(int instance) {
+    #if CFG_TUSB_MCU != OPT_MCU_RP2040
+    // For rp2040, IRQ handler is already installed and invoked automatically
     if (instance == CIRCUITPY_USB_DEVICE_INSTANCE) {
         tud_int_handler(instance);
-    } else if (instance == CIRCUITPY_USB_HOST_INSTANCE) {
-        #if CIRCUITPY_USB_HOST
-        tuh_int_handler(instance);
-        #endif
     }
+    #if CIRCUITPY_USB_HOST
+    else if (instance == CIRCUITPY_USB_HOST_INSTANCE) {
+        tuh_int_handler(instance);
+    }
+    #endif
+    #endif
 
     usb_background_schedule();
 }

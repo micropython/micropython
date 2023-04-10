@@ -30,7 +30,7 @@
 #include "py/mphal.h"
 #include "mimxrt10xx/periph.h"
 
-LPI2C_Type *mcu_i2c_banks[4] = { LPI2C1, LPI2C2, LPI2C3, LPI2C4 };
+LPI2C_Type *const mcu_i2c_banks[4] = { LPI2C1, LPI2C2, LPI2C3, LPI2C4 };
 
 const mcu_periph_obj_t mcu_i2c_sda_list[8] = {
     PERIPH_PIN(1, 6, kIOMUXC_LPI2C1_SDA_SELECT_INPUT, 0, &pin_GPIO_EMC_03),
@@ -60,7 +60,7 @@ const mcu_periph_obj_t mcu_i2c_scl_list[8] = {
     PERIPH_PIN(4, 3, kIOMUXC_LPI2C4_SCL_SELECT_INPUT, 1, &pin_GPIO_SD_B1_02),
 };
 
-LPSPI_Type *mcu_spi_banks[4] = { LPSPI1, LPSPI2, LPSPI3, LPSPI4 };
+LPSPI_Type *const mcu_spi_banks[4] = { LPSPI1, LPSPI2, LPSPI3, LPSPI4 };
 
 const mcu_periph_obj_t mcu_spi_sck_list[8] = {
     PERIPH_PIN(1, 4, kIOMUXC_LPSPI1_SCK_SELECT_INPUT, 0, &pin_GPIO_SD_B0_02),
@@ -104,7 +104,7 @@ const mcu_periph_obj_t mcu_spi_miso_list[8] = {
     PERIPH_PIN(4, 4, kIOMUXC_LPSPI2_SDI_SELECT_INPUT, 1, &pin_GPIO_EMC_35),
 };
 
-LPUART_Type *mcu_uart_banks[8] = { LPUART1, LPUART2, LPUART3, LPUART4, LPUART5, LPUART6, LPUART7, LPUART8 };
+LPUART_Type *const mcu_uart_banks[8] = { LPUART1, LPUART2, LPUART3, LPUART4, LPUART5, LPUART6, LPUART7, LPUART8 };
 
 const mcu_periph_obj_t mcu_uart_rx_list[16] = {
     PERIPH_PIN(1, 2, 0, 0, &pin_GPIO_AD_B0_07),
@@ -255,4 +255,69 @@ const mcu_pwm_obj_t mcu_pwm_list[39] = {
     PWM_PIN(PWM2, kPWM_Module_1, kPWM_PwmX, IOMUXC_GPIO_EMC_11_FLEXPWM2_PWMX01, &pin_GPIO_EMC_11),
     PWM_PIN(PWM2, kPWM_Module_2, kPWM_PwmX, IOMUXC_GPIO_EMC_12_FLEXPWM2_PWMX02, &pin_GPIO_EMC_12),
     PWM_PIN(PWM2, kPWM_Module_3, kPWM_PwmX, IOMUXC_GPIO_EMC_13_FLEXPWM2_PWMX03, &pin_GPIO_EMC_13),
+};
+
+const mcu_periph_obj_t mcu_sai_rx_bclk_list[] = {
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_14),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_19),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_AD_B1_06),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_EMC_09),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_SD_B0_02),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_29),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_SD_B1_09),
+};
+const mcu_periph_obj_t mcu_sai_rx_data0_list[] = {
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_13),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_21),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_AD_B1_05),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_EMC_08),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_SD_B0_03),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_30),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_SD_B1_11),
+};
+const mcu_periph_obj_t mcu_sai_rx_sync_list[] = {
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_15),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_28),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_AD_B1_04),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_EMC_07),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_SD_B0_01),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_30),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_SD_B1_10),
+};
+const mcu_periph_obj_t mcu_sai_tx_bclk_list[] = {
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_11),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_26),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_AD_B1_01),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_EMC_04),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_SD_B0_04),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_33),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_SD_B0_06),
+};
+const mcu_periph_obj_t mcu_sai_tx_data0_list[] = {
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_12),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_25),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_AD_B1_03),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_EMC_06),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_SD_B0_04),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_32),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_SD_B1_08),
+};
+const mcu_periph_obj_t mcu_sai_tx_sync_list[] = {
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_10),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_EMC_27),
+    PERIPH_PIN(1, 3, 0, 0, &pin_GPIO_AD_B1_02),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_EMC_05),
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_SD_B0_06),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_34),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_SD_B1_07),
+};
+const mcu_periph_obj_t mcu_mqs_left_list[] = {
+    PERIPH_PIN(3, 1, 0, 0, &pin_GPIO_AD_B0_07),
+    PERIPH_PIN(3, 2, 0, 0, &pin_GPIO_EMC_17),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_38),
+};
+const mcu_periph_obj_t mcu_mqs_right_list[] = {
+    PERIPH_PIN(3, 1, 0, 0, &pin_GPIO_AD_B0_06),
+    PERIPH_PIN(3, 2, 0, 0, &pin_GPIO_EMC_16),
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_37),
 };

@@ -62,7 +62,7 @@
 //
 // The "data" / "tail" construct is so that the struct's last member is a
 // "flexible array".  However, the _only_ member is not permitted to be
-// a flexible member, so we have to declare the first byte as a separte
+// a flexible member, so we have to declare the first byte as a separate
 // member of the structure.
 //
 // For translations where length needs 8 bits, this saves about 1.5
