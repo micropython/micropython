@@ -241,7 +241,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 //|     """Returns a string of *size* random bytes based on a hardware True Random
 //|     Number Generator. When not available, it will raise a NotImplementedError.
 //|
-//|     **Limitations:** Not yet available on nRF. Not available on SAMD21 due to lack of hardware.
+//|     **Limitations:** Not available on SAMD21 due to lack of hardware.
 //|     """
 //|     ...
 //|
