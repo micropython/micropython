@@ -23,7 +23,11 @@ SERVICE_UUID = bluetooth.UUID("A5A5A5A5-FFFF-9999-1111-5A5A5A5A5A5A")
 CHAR_UUID = bluetooth.UUID("00000000-1111-2222-3333-444444444444")
 CHAR = (
     CHAR_UUID,
-    bluetooth.FLAG_READ | bluetooth.FLAG_WRITE | bluetooth.FLAG_NOTIFY | bluetooth.FLAG_INDICATE,
+    bluetooth.FLAG_READ
+    | bluetooth.FLAG_WRITE
+    | bluetooth.FLAG_WRITE_NO_RESPONSE
+    | bluetooth.FLAG_NOTIFY
+    | bluetooth.FLAG_INDICATE,
 )
 SERVICE = (
     SERVICE_UUID,
@@ -125,6 +129,13 @@ def instance0():
         ble.gatts_indicate(conn_handle, char_handle)
         wait_for_event(_IRQ_GATTS_INDICATE_DONE, TIMEOUT_MS)
 
+        # D
+        # Wait for a write to the characteristic from the central,
+        # then reply with no-payload notification.
+        wait_for_event(_IRQ_GATTS_WRITE, TIMEOUT_MS)
+        print("gatts_notify")
+        ble.gatts_notify(conn_handle, char_handle)
+
         # Wait for the central to disconnect.
         wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS)
     finally:
@@ -179,6 +190,11 @@ def instance1():
         print("gattc_read")  # Read the new value set immediately before indication.
         ble.gattc_read(conn_handle, value_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
+
+        # Write-without-response, which will trigger another notification with that value.
+        ble.gattc_write(conn_handle, value_handle, "central3", 0)
+        # D
+        wait_for_event(_IRQ_GATTC_NOTIFY, TIMEOUT_MS)
 
         # Disconnect from peripheral.
         print("gap_disconnect:", ble.gap_disconnect(conn_handle))
