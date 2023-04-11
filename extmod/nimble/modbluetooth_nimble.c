@@ -851,6 +851,7 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
     switch (ctxt->op) {
         case BLE_GATT_ACCESS_OP_READ_CHR:
         case BLE_GATT_ACCESS_OP_READ_DSC: {
+            DEBUG_printf("write for %d %d (op=%d)\n", conn_handle, value_handle, ctxt->op);
             // Allow Python code to override (by using gatts_write), or deny (by returning false) the read.
             // Note this will be a no-op if the ringbuffer implementation is being used (i.e. the stack isn't
             // run in the scheduler). The ringbuffer is not used on STM32 and Unix-H4 only.
@@ -872,6 +873,7 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
         }
         case BLE_GATT_ACCESS_OP_WRITE_CHR:
         case BLE_GATT_ACCESS_OP_WRITE_DSC:
+            DEBUG_printf("write for %d %d (op=%d)\n", conn_handle, value_handle, ctxt->op);
             entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle);
             if (!entry) {
                 return BLE_ATT_ERR_ATTR_NOT_FOUND;
@@ -963,7 +965,14 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
                 descriptors[j].uuid = create_nimble_uuid(descriptor_uuids[descriptor_index], NULL);
                 descriptors[j].access_cb = characteristic_access_cb;
                 // NimBLE doesn't support security/privacy options on descriptors.
-                descriptors[j].att_flags = (uint8_t)descriptor_flags[descriptor_index];
+                uint8_t desc_att_flags = 0;
+                if (descriptor_flags[descriptor_index] & MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ) {
+                    desc_att_flags |= BLE_ATT_F_READ;
+                }
+                if (descriptor_flags[descriptor_index] & (MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE | MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_NO_RESPONSE)) {
+                    desc_att_flags |= BLE_ATT_F_WRITE;
+                }
+                descriptors[j].att_flags = desc_att_flags;
                 descriptors[j].min_key_size = 0;
                 // Unlike characteristic, Nimble doesn't provide an automatic way to remember the handle, so use the arg.
                 descriptors[j].arg = &handles[handle_index];
