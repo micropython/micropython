@@ -39,7 +39,7 @@
 
 // Bluetooth config.
 #define MICROPY_HW_BLE_UART_ID          (1)
-#define MICROPY_HW_BLE_UART_BAUDRATE    (119600)
+#define MICROPY_HW_BLE_UART_BAUDRATE    (115200)
 
 // WiFi/NINA-W10 config.
 #define MICROPY_HW_WIFI_SPI_ID          (1)
