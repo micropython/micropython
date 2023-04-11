@@ -44,8 +44,8 @@
 // #define CIRCUITPY_CONSOLE_UART_RX (&pin_PC11)
 
 // USART2 + ST link
-#define CIRCUITPY_CONSOLE_UART_TX (&pin_PA02)
-#define CIRCUITPY_CONSOLE_UART_RX (&pin_PA03)
+// #define CIRCUITPY_CONSOLE_UART_TX (&pin_PA02)
+// #define CIRCUITPY_CONSOLE_UART_RX (&pin_PA03)
 
 // Status LEDs
 #define MICROPY_HW_LED_STATUS (&pin_PA05)
