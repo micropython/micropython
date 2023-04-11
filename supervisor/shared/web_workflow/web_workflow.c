@@ -125,6 +125,7 @@ static socketpool_socket_obj_t active;
 static _request active_request;
 
 static char _api_password[64];
+static char web_instance_name[50];
 
 // Store the encoded IP so we don't duplicate work.
 static uint32_t _encoded_ip = 0;
@@ -269,7 +270,6 @@ void supervisor_start_web_workflow(void) {
 
     char ssid[33];
     char password[64];
-    char web_instance_name[50];
 
     os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_WIFI_SSID", ssid, sizeof(ssid));
     if (result != GETENV_OK) {
@@ -335,8 +335,7 @@ void supervisor_start_web_workflow(void) {
         mdns_server_construct(&mdns, true);
         mdns.base.type = &mdns_server_type;
         if (!common_hal_mdns_server_deinited(&mdns)) {
-            char *instance_name = strndup(web_instance_name, strlen(web_instance_name));
-            common_hal_mdns_server_set_instance_name(&mdns, instance_name);
+            common_hal_mdns_server_set_instance_name(&mdns, web_instance_name);
         }
     }
     if (!common_hal_mdns_server_deinited(&mdns)) {
