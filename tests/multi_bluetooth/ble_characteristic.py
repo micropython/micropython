@@ -90,10 +90,12 @@ def wait_for_event(event, timeout_ms):
 def instance0():
     multitest.globals(BDADDR=ble.config("mac"))
     ((char_handle,),) = ble.gatts_register_services(SERVICES)
-    print("gap_advertise")
-    ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")
     multitest.next()
     try:
+        print("gap_advertise")
+        ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")
+        multitest.broadcast("peripheral:adv")
+
         # Write initial characteristic value.
         ble.gatts_write(char_handle, "periph0")
 
@@ -146,6 +148,8 @@ def instance0():
 def instance1():
     multitest.next()
     try:
+        multitest.wait("peripheral:adv")
+
         # Connect to peripheral and then disconnect.
         print("gap_connect")
         ble.gap_connect(*BDADDR)
