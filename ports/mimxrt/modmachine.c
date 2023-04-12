@@ -38,7 +38,9 @@
 #include "pin.h"
 #include "modmachine.h"
 #include "fsl_wdog.h"
+#if FSL_FEATURE_BOOT_ROM_HAS_ROMAPI
 #include "fsl_romapi.h"
+#endif
 
 #if MICROPY_PY_MACHINE
 
