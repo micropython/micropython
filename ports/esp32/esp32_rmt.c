@@ -326,12 +326,12 @@ STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *args) {
         check_esp_err(rmt_wait_tx_done(self->channel_id, portMAX_DELAY));
     }
 
-    check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false));
-
     if (self->loop_en) {
         check_esp_err(rmt_set_tx_intr_en(self->channel_id, false));
         check_esp_err(rmt_set_tx_loop_mode(self->channel_id, true));
     }
+
+    check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false));
 
     return mp_const_none;
 }
