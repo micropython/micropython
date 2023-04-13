@@ -125,6 +125,7 @@ static socketpool_socket_obj_t active;
 static _request active_request;
 
 static char _api_password[64];
+static char web_instance_name[50];
 
 // Store the encoded IP so we don't duplicate work.
 static uint32_t _encoded_ip = 0;
@@ -283,6 +284,11 @@ void supervisor_start_web_workflow(void) {
         return;
     }
 
+    result = common_hal_os_getenv_str("CIRCUITPY_WEB_INSTANCE_NAME", web_instance_name, sizeof(web_instance_name));
+    if (result != GETENV_OK || web_instance_name[0] == '\0') {
+        strcpy(web_instance_name, MICROPY_HW_BOARD_NAME);
+    }
+
     if (!common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
         common_hal_wifi_init(false);
         common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, true);
@@ -329,7 +335,7 @@ void supervisor_start_web_workflow(void) {
         mdns_server_construct(&mdns, true);
         mdns.base.type = &mdns_server_type;
         if (!common_hal_mdns_server_deinited(&mdns)) {
-            common_hal_mdns_server_set_instance_name(&mdns, MICROPY_HW_BOARD_NAME);
+            common_hal_mdns_server_set_instance_name(&mdns, web_instance_name);
         }
     }
     if (!common_hal_mdns_server_deinited(&mdns)) {
@@ -796,9 +802,11 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     mp_print_t _socket_print = {socket, _print_chunk};
 
     const char *hostname = "";
+    const char *instance_name = "";
     #if CIRCUITPY_MDNS
     if (!common_hal_mdns_server_deinited(&mdns)) {
         hostname = common_hal_mdns_server_get_hostname(&mdns);
+        instance_name = common_hal_mdns_server_get_instance_name(&mdns);
     }
     #endif
     _update_encoded_ip();
@@ -807,13 +815,13 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
         "{\"web_api_version\": 2, "
         "\"version\": \"" MICROPY_GIT_TAG "\", "
         "\"build_date\": \"" MICROPY_BUILD_DATE "\", "
-        "\"board_name\": \"" MICROPY_HW_BOARD_NAME "\", "
+        "\"board_name\": \"%s\", "
         "\"mcu_name\": \"" MICROPY_HW_MCU_NAME "\", "
         "\"board_id\": \"" CIRCUITPY_BOARD_ID "\", "
         "\"creator_id\": %u, "
         "\"creation_id\": %u, "
         "\"hostname\": \"%s\", "
-        "\"port\": %d, ", CIRCUITPY_CREATOR_ID, CIRCUITPY_CREATION_ID, hostname, web_api_port, _our_ip_encoded);
+        "\"port\": %d, ", instance_name, CIRCUITPY_CREATOR_ID, CIRCUITPY_CREATION_ID, hostname, web_api_port, _our_ip_encoded);
     #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH > 0
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
     common_hal_mcu_processor_get_uid(raw_id);
