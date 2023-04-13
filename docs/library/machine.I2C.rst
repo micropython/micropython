@@ -52,7 +52,7 @@ Example usage::
 Constructors
 ------------
 
-.. class:: I2C(id, *, scl, sda, freq=400000)
+.. class:: I2C(id, *, scl, sda, freq=400000, timeout=50000)
 
    Construct and return a new I2C object using the following parameters:
 
@@ -62,6 +62,8 @@ Constructors
       - *sda* should be a pin object specifying the pin to use for SDA.
       - *freq* should be an integer which sets the maximum frequency
         for SCL.
+      - *timeout* is the maximum time in microseconds to allow for I2C
+        transactions.  This parameter is not allowed on some ports.
 
    Note that some ports/boards will have default values of *scl* and *sda*
    that can be changed in this constructor.  Others will have fixed values
