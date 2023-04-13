@@ -38,7 +38,7 @@
 #include "components/hal/include/hal/gpio_hal.h"
 #include "common-hal/microcontroller/Pin.h"
 
-#include "axp192.h"
+#include "../../pmic/axp192/axp192.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
@@ -65,7 +65,7 @@ uint8_t display_init_sequence[] = {
     0x29,DELAY,0x78,            // Display on then delay 0x78 (120ms)
 };
 
-static bool pmic_set_power_source(uint8_t source, busio_i2c_obj_t *internal_i2c) {
+static bool pmic_set_power_source(uint8_t source, busio_i2c_obj_t *i2c) {
     int rc;
     uint8_t read_buf[1];
     uint8_t write_buf[2];
@@ -75,24 +75,24 @@ static bool pmic_set_power_source(uint8_t source, busio_i2c_obj_t *internal_i2c)
         case PMIC_POWER_SOURCE_USB:
             // Set GPIO to 3.3V (when LDO OUTPUT mode is active)
             write_buf[0] = AXP192_GPIO0_LDO_VOLTAGE;
-            rc = common_hal_busio_i2c_write_read(internal_i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
+            rc = common_hal_busio_i2c_write_read(i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
             if (rc != 0) {
                 return false;
             }
             write_buf[1] = (read_buf[0] & ~AXP192_GPIO0_LDO_VOLTAGE_MASK) | AXP192_GPIO0_LDO_VOLTAGE_3_3V;
-            rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+            rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
             if (rc != 0) {
                 return false;
             }
             // Set GPIO0 to LDO_OUTPUT to set N_VBUSEN high
             // When N_VBUSEN is high IPSOUT do not select VBUS as source (BUS_5V)
             write_buf[0] = AXP192_GPIO0_FUNCTION;
-            rc = common_hal_busio_i2c_write_read(internal_i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
+            rc = common_hal_busio_i2c_write_read(i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
             if (rc != 0) {
                 return false;
             }
             write_buf[1] = (read_buf[0] & ~AXP192_GPIO0_FUNCTION_MASK) | AXP192_GPIO0_FUNCTION_LDO_OUTPUT;
-            rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+            rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
             if (rc != 0) {
                 return false;
             }
@@ -100,12 +100,12 @@ static bool pmic_set_power_source(uint8_t source, busio_i2c_obj_t *internal_i2c)
             #if M5STACK_CORE2_5V_OUTPUT_ENABLE_DEFAULT
             // Set EXTENT output high to enable 5V power boost
             write_buf[0] = AXP192_EXTEN_DCDC2_CTRL;
-            rc = common_hal_busio_i2c_write_read(internal_i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
+            rc = common_hal_busio_i2c_write_read(i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
             if (rc != 0) {
                 return false;
             }
             write_buf[1] = read_buf[0] | AXP192_EXTEN_DCDC2_CTRL_EXTEN;
-            rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+            rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
             if (rc != 0) {
                 return false;
             }
@@ -113,12 +113,12 @@ static bool pmic_set_power_source(uint8_t source, busio_i2c_obj_t *internal_i2c)
 
             // Enable VBUS-IPSOUT when N_VBUSEN is high
             write_buf[0] = AXP192_VBUS_IPSOUT;
-            rc = common_hal_busio_i2c_write_read(internal_i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
+            rc = common_hal_busio_i2c_write_read(i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
             if (rc != 0) {
                 return false;
             }
             write_buf[1] = read_buf[0] & ~AXP192_VBUS_IPSOUT_IGNORE_VBUSEN;
-            rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+            rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
             if (rc != 0) {
                 return false;
             }
@@ -128,24 +128,24 @@ static bool pmic_set_power_source(uint8_t source, busio_i2c_obj_t *internal_i2c)
         case PMIC_POWER_SOURCE_M_BUS:
             // Enable VBUS-IPSOUT regardless of f N_VBUSEN
             write_buf[0] = AXP192_VBUS_IPSOUT;
-            rc = common_hal_busio_i2c_write_read(internal_i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
+            rc = common_hal_busio_i2c_write_read(i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
             if (rc != 0) {
                 return false;
             }
             write_buf[1] = read_buf[0] | AXP192_VBUS_IPSOUT_IGNORE_VBUSEN;
-            rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+            rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
             if (rc != 0) {
                 return false;
             }
 
             // Set EXTENT output low to disable 5V power boost
             write_buf[0] = AXP192_EXTEN_DCDC2_CTRL;
-            rc = common_hal_busio_i2c_write_read(internal_i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
+            rc = common_hal_busio_i2c_write_read(i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
             if (rc != 0) {
                 return false;
             }
             write_buf[1] = read_buf[0] & ~AXP192_EXTEN_DCDC2_CTRL_EXTEN;
-            rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+            rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
             if (rc != 0) {
                 return false;
             }
@@ -153,12 +153,12 @@ static bool pmic_set_power_source(uint8_t source, busio_i2c_obj_t *internal_i2c)
             // Set GPIO0 to float and the pull down resistor set N_VBUSEN low
             // When N_VBUSEN is low IPSOUT select VBUS as source (BUS_5V)
             write_buf[0] = AXP192_GPIO0_FUNCTION;
-            rc = common_hal_busio_i2c_write_read(internal_i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
+            rc = common_hal_busio_i2c_write_read(i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
             if (rc != 0) {
                 return false;
             }
             write_buf[1] = (read_buf[0] & ~AXP192_GPIO0_FUNCTION_MASK) | AXP192_GPIO0_FUNCTION_FLOATING;
-            rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+            rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
             if (rc != 0) {
                 return false;
             }
@@ -170,147 +170,14 @@ static bool pmic_set_power_source(uint8_t source, busio_i2c_obj_t *internal_i2c)
     }
 }
 
-static bool pmic_disable_all_irq(busio_i2c_obj_t *i2c) {
-    int rc;
-    // uint8_t read_buf[1];
-    uint8_t write_buf[2];
-
-    // Reg: 40h
-    // IRQ enable control register 1
-    write_buf[0] = AXP192_IRQ_1_ENABLE;
-    write_buf[1] = AXP192_IRQ_X_DISABLE_ALL;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 41h
-    // IRQ enable control register 2
-    write_buf[0] = AXP192_IRQ_2_ENABLE;
-    write_buf[1] = AXP192_IRQ_X_DISABLE_ALL;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 42h
-    // IRQ enable control register 3
-    // Enable power on key short and long press interrupt
-    write_buf[0] = AXP192_IRQ_3_ENABLE;
-    write_buf[1] = AXP192_IRQ_X_DISABLE_ALL;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 43h
-    // IRQ enable control register 4
-    // Enable power on key short and long press interrupt
-    write_buf[0] = AXP192_IRQ_4_ENABLE;
-    write_buf[1] = AXP192_IRQ_X_DISABLE_ALL;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 4Ah
-    // IRQ enable control register 5
-    write_buf[0] = AXP192_IRQ_5_ENABLE;
-    write_buf[1] = AXP192_IRQ_X_DISABLE_ALL;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    return true;
-}
-
-static bool pmic_clear_all_irq(busio_i2c_obj_t *i2c) {
-    int rc;
-    // uint8_t read_buf[1];
-    uint8_t write_buf[2];
-
-    // Reg: 44h
-    // IRQ enable control register 1
-    write_buf[0] = AXP192_IRQ_1_STATUS;
-    write_buf[1] = AXP192_IRQ_X_CLEAR_STATUS;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 45h
-    // IRQ enable control register 2
-    write_buf[0] = AXP192_IRQ_2_STATUS;
-    write_buf[1] = AXP192_IRQ_X_CLEAR_STATUS;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 46h
-    // IRQ enable control register 3
-    write_buf[0] = AXP192_IRQ_3_STATUS;
-    write_buf[1] = AXP192_IRQ_X_CLEAR_STATUS;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 47h
-    // IRQ enable control register 4
-    write_buf[0] = AXP192_IRQ_4_STATUS;
-    write_buf[1] = AXP192_IRQ_X_CLEAR_STATUS;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 4Ah
-    // IRQ enable control register 5
-    write_buf[0] = AXP192_IRQ_5_STATUS;
-    write_buf[1] = AXP192_IRQ_X_CLEAR_STATUS;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    return true;
-}
-
-static bool pmic_enable_default_irq(busio_i2c_obj_t *i2c) {
-    int rc;
-    // uint8_t read_buf[1];
-    uint8_t write_buf[2];
-
-    // Reg: 42h
-    // IRQ enable control register 3
-    // Enable power on key short and long press interrupt
-    write_buf[0] = AXP192_IRQ_2_ENABLE;
-    write_buf[1] = AXP192_IRQ_3_PEK_SHORT_PRESS |
-        AXP192_IRQ_3_PEK_LONG_PRESS;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 43h
-    // IRQ enable control register 4
-    // Enable power on key short and long press interrupt
-    write_buf[0] = AXP192_IRQ_2_ENABLE;
-    write_buf[1] = AXP192_IRQ_4_LOW_VOLTAGE_WARNING;
-    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    return true;
-}
-
-static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
+static bool pmic_init(busio_i2c_obj_t *i2c) {
     int rc;
     uint8_t read_buf[1];
     uint8_t write_buf[2];
+
+    if (!pmic_common_init(i2c)) {
+        return false;
+    }
 
     // Reg: 30h
     // The VBUS-IPSOUT path can be selected to be opened regardless of the status of N_VBUSEN
@@ -319,29 +186,7 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
     write_buf[0] = AXP192_VBUS_IPSOUT;
     write_buf[1] = AXP192_VBUS_IPSOUT_VBUS_LIMIT_CURRENT |
         AXP192_VBUS_IPSOUT_VBUS_LIMIT_CURRENT_500mA;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 31h
-    // VOFF Shutdown voltage setting ( 3.0V )
-    write_buf[0] = AXP192_POWER_OFF_VOLTAGE;
-    write_buf[1] = AXP192_POWER_OFF_VOLTAGE_3_0V;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 32h
-    // Charge function enable control bit, including internal and external channels
-    // Charging target voltage: 4.2V
-    // Charging end current: End charging when charging current is less than 10% setting
-    // Internal path charging current: 100mA
-    write_buf[0] = AXP192_POWER_OFF_BATT_CHGLED_CTRL;
-    write_buf[1] = AXP192_POWER_OFF_BATT_CHGLED_CTRL_BATT_MONITOR_ON |
-        AXP192_POWER_OFF_BATT_CHGLED_CTRL_N_OE_SHUTDOWN_DELAY_2_0S;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
     }
@@ -356,89 +201,7 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
         AXP192_CHARGING_CTRL1_VOLTAGE_4_20V |
         AXP192_CHARGING_CTRL1_CHARGING_THRESH_10PERC |
         AXP192_CHARGING_CTRL1_CURRENT_360mA;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 35h
-    // Enable RTC battery charge: 3.0V, 200uA
-    write_buf[0] = AXP192_BACKUP_BATT;
-    write_buf[1] = AXP192_BACKUP_BATT_CHARGING_ENABLE |
-        AXP192_BACKUP_BATT_CHARGING_VOLTAGE_3_0V |
-        AXP192_BACKUP_BATT_CHARGING_CURRENT_200uA;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 36h
-    // Power on:  Short press 128ms
-    // Power off: Long press 1s
-    // Power OK delay 64ms
-    // Power off delay 4s
-    write_buf[0] = AXP192_PEK;
-    write_buf[1] = AXP192_PEK_SHORT_PRESS_128mS |
-        AXP192_PEK_LONG_PRESS_1_0S |
-        AXP192_PEK_LONG_PRESS_POWER_OFF |
-        AXP192_PEK_PWROK_DELAY_64mS |
-        AXP192_PEK_POWER_OFF_TIME_4S;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 3Ah
-    // APS Low battery warning level 1: 3.695V
-    write_buf[0] = AXP192_APS_LOW_BATT_LEVEL_1;
-    write_buf[1] = AXP192_APS_LOW_BATT_VOLTAGE_3_695V;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 3Bh
-    // APS Low battery warning level 2: 3.600V
-    write_buf[0] = AXP192_APS_LOW_BATT_LEVEL_2;
-    write_buf[1] = AXP192_APS_LOW_BATT_VOLTAGE_3_600V;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 82h
-    // ADC all on
-    write_buf[0] = AXP192_ADC_ENABLE_1;
-    write_buf[1] = AXP192_ADC_ENABLE_1_BATT_VOL |
-        AXP192_ADC_ENABLE_1_BATT_CUR |
-        AXP192_ADC_ENABLE_1_ACIN_VOL |
-        AXP192_ADC_ENABLE_1_ACIN_CUR |
-        AXP192_ADC_ENABLE_1_VBUS_VOL |
-        AXP192_ADC_ENABLE_1_VBUS_CUR |
-        AXP192_ADC_ENABLE_1_APS_VOL |
-        AXP192_ADC_ENABLE_1_TS_PIN;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 83h
-    // ADC temperature on
-    write_buf[0] = AXP192_ADC_ENABLE_2;
-    write_buf[1] = AXP192_ADC_ENABLE_2_TEMP_MON;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
-    if (rc != 0) {
-        return false;
-    }
-
-    // Reg: 84h
-    // ADC 25Hz
-    write_buf[0] = AXP192_ADC_TS;
-    write_buf[1] = AXP192_ADC_TS_SAMPLE_25HZ |
-        AXP192_ADC_TS_OUT_CUR_80uA |
-        AXP192_ADC_TS_PIN_TEMP_MON |
-        AXP192_ADC_TS_PIN_OUT_SAVE_ENG;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
     }
@@ -447,7 +210,7 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
     // PWM1 frequency
     write_buf[0] = AXP192_PWM1_OUTPUT_FREQUECY;
     write_buf[1] = 0x00;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
     }
@@ -456,7 +219,7 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
     // PWM1 duty cycle Y1
     write_buf[0] = AXP192_PWM1_DUTY_RATIO_Y1;
     write_buf[1] = 0xFF;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
     }
@@ -465,7 +228,7 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
     // PWM1 duty cycle Y2
     write_buf[0] = AXP192_PWM1_DUTY_RATIO_Y2;
     write_buf[1] = 0xFF;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
     }
@@ -474,7 +237,7 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
     // Speaker off (GPIO2 output low)
     write_buf[0] = AXP192_GPIO2_FUNCTION;
     write_buf[1] = AXP192_GPIO2_FUNCTION_LOW_OUTPUT;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
     }
@@ -485,7 +248,7 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
     write_buf[0] = AXP192_LDO23_OUT_VOLTAGE;
     write_buf[1] = AXP192_LDO23_OUT_VOLTAGE_LDO2_3_3V |
         AXP192_LDO23_OUT_VOLTAGE_LDO3_1_8V;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
     }
@@ -494,7 +257,7 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
     // DCDC1 (ESP32 VDD): 3.350V
     write_buf[0] = AXP192_DCDC1_OUT_VOLTAGE;
     write_buf[1] = AXP192_DCDC1_OUT_VOLTAGE_3_350V;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
     }
@@ -503,7 +266,7 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
     // DCDC3 (TFT backlight): 3.0V
     write_buf[0] = AXP192_DCDC3_OUT_VOLTAGE;
     write_buf[1] = AXP192_DCDC3_OUT_VOLTAGE_3_0V;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
     }
@@ -517,7 +280,7 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
     write_buf[1] = AXP192_DCDC13_LDO23_CTRL_LDO2 |
         AXP192_DCDC13_LDO23_CTRL_DCDC3 |
         AXP192_DCDC13_LDO23_CTRL_DCDC1;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
     }
@@ -527,7 +290,7 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
     // PWM duty cycle is set to 100% therefore sys led is off
     write_buf[0] = AXP192_GPIO1_FUNCTION;
     write_buf[1] = AXP192_GPIO1_FUNCTION_PWM1_OUTPUT;
-    rc = common_hal_busio_i2c_write(internal_i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
+    rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
     if (rc != 0) {
         return false;
     }
@@ -539,25 +302,29 @@ static bool pmic_init(busio_i2c_obj_t *internal_i2c) {
     * disable VBUS and rely on ACIN (USB_5V) as power source.
     */
     write_buf[0] = AXP192_INPUT_POWER_STATE;
-    rc = common_hal_busio_i2c_write_read(internal_i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
+    rc = common_hal_busio_i2c_write_read(i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
     if (rc != 0) {
         return false;
     }
     uint8_t powersource = (read_buf[0] & AXP192_INPUT_POWER_STATE_VBUS_AVAILABLE) ?
         PMIC_POWER_SOURCE_M_BUS : PMIC_POWER_SOURCE_USB;
-    if (!pmic_set_power_source(powersource, internal_i2c)) {
+    if (!pmic_set_power_source(powersource, i2c)) {
         return false;
     }
 
-    if (!pmic_disable_all_irq(internal_i2c)) {
+    if (!pmic_disable_all_irq(i2c)) {
         return false;
     }
 
-    if (!pmic_clear_all_irq(internal_i2c)) {
+    if (!pmic_clear_all_irq(i2c)) {
         return false;
     }
 
-    if (!pmic_enable_default_irq(internal_i2c)) {
+    if (!pmic_enable_power_key_press_irq(i2c)) {
+        return false;
+    }
+
+    if (!pmic_enable_low_battery_irq(i2c)) {
         return false;
     }
 

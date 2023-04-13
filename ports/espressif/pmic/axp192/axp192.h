@@ -28,6 +28,8 @@
 #ifndef MICROPY_AXP192_H
 #define MICROPY_AXP192_H
 
+#include "shared-bindings/busio/I2C.h"
+
 #define AXP192_I2C_ADDRESS 0x34
 
 #define AXP192_INPUT_POWER_STATE 0x00
@@ -282,5 +284,11 @@
 #define AXP192_PWM1_OUTPUT_FREQUECY 0x98
 #define AXP192_PWM1_DUTY_RATIO_Y1 0x99
 #define AXP192_PWM1_DUTY_RATIO_Y2 0x9A
+
+bool pmic_common_init(busio_i2c_obj_t *i2c);
+bool pmic_disable_all_irq(busio_i2c_obj_t *i2c);
+bool pmic_clear_all_irq(busio_i2c_obj_t *i2c);
+bool pmic_enable_power_key_press_irq(busio_i2c_obj_t *i2c);
+bool pmic_enable_low_battery_irq(busio_i2c_obj_t *i2c);
 
 #endif

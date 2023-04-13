@@ -11,6 +11,8 @@ M5STACK_CORE2_5V_OUTPUT_ENABLE_DEFAULT = 1
 
 CFLAGS += -DM5STACK_CORE2_5V_OUTPUT_ENABLE_DEFAULT=$(M5STACK_CORE2_5V_OUTPUT_ENABLE_DEFAULT)
 
+SRC_C += pmic/axp192/axp192.c
+
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Display_Text
