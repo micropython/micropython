@@ -34,9 +34,10 @@
 typedef struct {
     mp_obj_base_t base;
     synthio_synth_t synth;
-    uint16_t next_span;
-    uint16_t total_spans;
-    synthio_midi_span_t *track;
+    mp_buffer_info_t track;
+    // invariant: after initial startup, pos always points just after an encoded duration, i.e., at a midi message (or at EOF)
+    size_t pos;
+    uint32_t tempo;
 } synthio_miditrack_obj_t;
 
 
