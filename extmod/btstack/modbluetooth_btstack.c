@@ -693,6 +693,13 @@ int mp_bluetooth_init(void) {
     gatt_client_listen_for_characteristic_value_updates(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->notification, &btstack_packet_handler_generic, GATT_CLIENT_ANY_CONNECTION, NULL);
     #endif // MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 
+    // Always include at least the standard GAP and GATT default services. A
+    // peripheral (likely a server) will almost always override this with its
+    // own services, but a central should get the default services, e.g. so
+    // the remote end can find out its GAP name.
+    mp_bluetooth_gatts_register_service_begin(false);
+    mp_bluetooth_gatts_register_service_end();
+
     return 0;
 }
 
