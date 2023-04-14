@@ -99,12 +99,12 @@ static bool pmic_set_power_source(uint8_t source, busio_i2c_obj_t *i2c) {
 
             #if M5STACK_CORE2_5V_OUTPUT_ENABLE_DEFAULT
             // Set EXTENT output high to enable 5V power boost
-            write_buf[0] = AXP192_EXTEN_DCDC2_CTRL;
+            write_buf[0] = AXP192_DCDC13_LDO23_CTRL;
             rc = common_hal_busio_i2c_write_read(i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
             if (rc != 0) {
                 return false;
             }
-            write_buf[1] = read_buf[0] | AXP192_EXTEN_DCDC2_CTRL_EXTEN;
+            write_buf[1] = read_buf[0] | AXP192_DCDC13_LDO23_CTRL_EXTEN;
             rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
             if (rc != 0) {
                 return false;
@@ -139,12 +139,12 @@ static bool pmic_set_power_source(uint8_t source, busio_i2c_obj_t *i2c) {
             }
 
             // Set EXTENT output low to disable 5V power boost
-            write_buf[0] = AXP192_EXTEN_DCDC2_CTRL;
+            write_buf[0] = AXP192_DCDC13_LDO23_CTRL;
             rc = common_hal_busio_i2c_write_read(i2c, AXP192_I2C_ADDRESS, write_buf, 1, read_buf, sizeof(read_buf));
             if (rc != 0) {
                 return false;
             }
-            write_buf[1] = read_buf[0] & ~AXP192_EXTEN_DCDC2_CTRL_EXTEN;
+            write_buf[1] = read_buf[0] & ~AXP192_DCDC13_LDO23_CTRL_EXTEN;
             rc = common_hal_busio_i2c_write(i2c, AXP192_I2C_ADDRESS, write_buf, sizeof(write_buf));
             if (rc != 0) {
                 return false;
