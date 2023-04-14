@@ -1,0 +1,18 @@
+{
+    "vendor": "CircuitMess",
+    "product": "CircuitPet",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/products/circuitpet-diy-handheld-virtual-pet-ages-11",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32",
+    "features": [
+        "USB-C",
+        "BLE",
+        "WiFi"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}
