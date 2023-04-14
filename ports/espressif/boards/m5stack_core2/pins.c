@@ -32,7 +32,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D27), MP_ROM_PTR(&pin_GPIO27) },
     { MP_ROM_QSTR(MP_QSTR_A27), MP_ROM_PTR(&pin_GPIO27) },
 
-    { MP_ROM_QSTR(MP_QSTR_I2S_DATA_SPK), MP_ROM_PTR(&pin_GPIO2) },
+    { MP_ROM_QSTR(MP_QSTR_I2S_SDO), MP_ROM_PTR(&pin_GPIO2) },
     { MP_ROM_QSTR(MP_QSTR_D2), MP_ROM_PTR(&pin_GPIO2) },
 
     { MP_ROM_QSTR(MP_QSTR_A35), MP_ROM_PTR(&pin_GPIO35) },
@@ -63,13 +63,15 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_D19), MP_ROM_PTR(&pin_GPIO19) },
 
-    { MP_ROM_QSTR(MP_QSTR_I2S_WS_SPK), MP_ROM_PTR(&pin_GPIO0) },
-    { MP_ROM_QSTR(MP_QSTR_I2S_PDM_CLOCK_MIC), MP_ROM_PTR(&pin_GPIO0) },
+    { MP_ROM_QSTR(MP_QSTR_I2S_LRC), MP_ROM_PTR(&pin_GPIO0) },
+    { MP_ROM_QSTR(MP_QSTR_I2S_PDM_MIC_CLOCK), MP_ROM_PTR(&pin_GPIO0) },
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_GPIO0) },
 
-    { MP_ROM_QSTR(MP_QSTR_I2S_PDM_DATA_MIC), MP_ROM_PTR(&pin_GPIO34) },
+    { MP_ROM_QSTR(MP_QSTR_I2S_PDM_MIC_DATA), MP_ROM_PTR(&pin_GPIO34) },
     { MP_ROM_QSTR(MP_QSTR_D34), MP_ROM_PTR(&pin_GPIO34) },
     { MP_ROM_QSTR(MP_QSTR_A34), MP_ROM_PTR(&pin_GPIO34) },
+
+    { MP_ROM_QSTR(MP_QSTR_I2S_SCK), MP_ROM_PTR(&pin_GPIO12) },
 
     // tft
     { MP_ROM_QSTR(MP_QSTR_TFT_CS), MP_ROM_PTR(&pin_GPIO5) },
