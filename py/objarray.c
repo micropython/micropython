@@ -31,6 +31,7 @@
 
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "py/objproperty.h"
 #include "py/objstr.h"
 #include "py/objarray.h"
 
@@ -270,15 +271,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(memoryview_cast_obj, memoryview_cast);
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
-STATIC void memoryview_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    if (dest[0] != MP_OBJ_NULL) {
-        return;
-    }
-    if (attr == MP_QSTR_itemsize) {
-        mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
-        dest[0] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
-    }
+STATIC mp_obj_t memoryview_itemsize_get(mp_obj_t self_in) {
+    mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
 }
+MP_DEFINE_CONST_FUN_OBJ_1(memoryview_itemsize_get_obj, memoryview_itemsize_get);
+
+MP_PROPERTY_GETTER(memoryview_itemsize_obj, (mp_obj_t)&memoryview_itemsize_get_obj);
 #endif
 
 #endif
@@ -785,9 +784,14 @@ const mp_obj_type_t mp_type_bytearray = {
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
 
-#if MICROPY_CPYTHON_COMPAT
+#if MICROPY_CPYTHON_COMPAT || MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
 STATIC const mp_rom_map_elem_t memoryview_locals_dict_table[] = {
+    #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_cast), MP_ROM_PTR(&memoryview_cast_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+    { MP_ROM_QSTR(MP_QSTR_itemsize), MP_ROM_PTR(&memoryview_itemsize_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(memoryview_locals_dict, memoryview_locals_dict_table);
@@ -798,11 +802,8 @@ const mp_obj_type_t mp_type_memoryview = {
     .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_memoryview,
     .make_new = memoryview_make_new,
-    #if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT || MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
     .locals_dict = (mp_obj_dict_t *)&memoryview_locals_dict,
-    #endif
-    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
-    .attr = memoryview_attr,
     #endif
     MP_TYPE_EXTENDED_FIELDS(
         .getiter = array_iterator_new,
