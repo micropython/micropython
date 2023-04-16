@@ -367,7 +367,10 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
     }
 
     if (authmodes != AUTHMODE_OPEN) {
-        mp_arg_validate_length_range(password.len, 8, 63, MP_QSTR_password);
+        mp_arg_validate_length_range(password.len, 8, 64, MP_QSTR_password);
+        if (password.len==64) {
+            mp_arg_validate_valid_hex_password(password.len, password.buf);
+        }
     }
 
     common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, authmodes, args[ARG_max_connections].u_int);
@@ -445,7 +448,10 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
     if (args[ARG_password].u_obj != mp_const_none) {
         mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
         if (password.len != 0) {
-            mp_arg_validate_length_range(password.len, 8, 63, MP_QSTR_password);
+            mp_arg_validate_length_range(password.len, 8, 64, MP_QSTR_password);
+            if (password.len==64) {
+                mp_arg_validate_valid_hex_password(password.len, password.buf);
+            }
         }
     }
 
