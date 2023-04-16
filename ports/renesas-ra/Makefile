@@ -427,7 +427,7 @@ $(PY_BUILD)/formatfloat.o: COPT += -Os
 $(PY_BUILD)/parsenum.o: COPT += -Os
 $(PY_BUILD)/mpprint.o: COPT += -Os
 
-all: $(TOP)/lib/fsp/README.md $(BUILD)/firmware.hex
+all: $(TOP)/lib/fsp/README.md $(BUILD)/firmware.hex $(BUILD)/firmware.bin
 
 # For convenience, automatically fetch required submodules if they don't exist
 $(TOP)/lib/fsp/README.md:
@@ -442,7 +442,7 @@ endef
 
 define GENERATE_BIN
 	$(ECHO) "GEN $(1)"
-	$(Q)$(OBJCOPY) -O binary $(addprefix -j ,$(3)) $(2) $(1)
+	$(Q)$(OBJCOPY) -I ihex -O binary $(2) $(1)
 endef
 
 define GENERATE_HEX
@@ -450,19 +450,10 @@ define GENERATE_HEX
 	$(Q)$(OBJCOPY) -O ihex $(2) $(1)
 endef
 
-.PHONY: 
+.PHONY:
 
-# A board should specify TEXT0_ADDR if to use a different location than the
-# default for the firmware memory location.  A board can also optionally define
-# TEXT1_ADDR to split the firmware into two sections; see below for details.
-TEXT0_ADDR ?= 0x00000000
-
-# No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
-
-TEXT0_SECTIONS ?= .isr_vector .text .data
-
-$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
-	$(call GENERATE_BIN,$@,$^,$(TEXT0_SECTIONS))
+$(BUILD)/firmware.bin: $(BUILD)/firmware.hex
+	$(call GENERATE_BIN,$@,$^)
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(call GENERATE_HEX,$@,$^)
