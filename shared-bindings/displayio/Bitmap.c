@@ -220,8 +220,8 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
     check_for_deinit(self);
 
     // Check x,y are within self (target) bitmap boundary
-    int16_t x = mp_arg_validate_int_range(args[ARG_x].u_int, 0, self->width, MP_QSTR_x);
-    int16_t y = mp_arg_validate_int_range(args[ARG_y].u_int, 0, self->height, MP_QSTR_y);
+    int16_t x = mp_arg_validate_int_range(args[ARG_x].u_int, 0, MAX(0, self->width - 1), MP_QSTR_x);
+    int16_t y = mp_arg_validate_int_range(args[ARG_y].u_int, 0, MAX(0, self->height - 1), MP_QSTR_y);
 
     displayio_bitmap_t *source = mp_arg_validate_type(args[ARG_source].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap);
 
@@ -232,8 +232,8 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
     }
 
     // Check x1,y1,x2,y2 are within source bitmap boundary
-    int16_t x1 = mp_arg_validate_int_range(args[ARG_x1].u_int, 0, source->width, MP_QSTR_x1);
-    int16_t y1 = mp_arg_validate_int_range(args[ARG_y1].u_int, 0, source->height, MP_QSTR_y1);
+    int16_t x1 = mp_arg_validate_int_range(args[ARG_x1].u_int, 0, MAX(0, source->width - 1), MP_QSTR_x1);
+    int16_t y1 = mp_arg_validate_int_range(args[ARG_y1].u_int, 0, MAX(0, source->height - 1), MP_QSTR_y1);
     int16_t x2, y2;
     // if x2 or y2 is None, then set as the maximum size of the source bitmap
     if (args[ARG_x2].u_obj == mp_const_none) {
