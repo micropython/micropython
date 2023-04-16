@@ -1,4 +1,5 @@
 from machine import Pin, Signal
+import uasyncio
 
 
 class Input:
@@ -33,6 +34,7 @@ class Input:
 	async def loop(self):
 		while True:
 			self.scan()
+			await uasyncio.sleep_ms(0)
 
 	def pressed(self, i: int):
 		if i >= self.numButtons:

@@ -24,7 +24,8 @@ class Pins:
     POT_R = const(36)
 
     RGB_CLK = const(12)
-    RGB_DATA = const({ 5, 2, 26, 13 })
+    RGB_DATA = [5, 2, 26, 13]
+
 class Buttons:
     BTN_5 = const(6)
     BTN_4 = const(3)
