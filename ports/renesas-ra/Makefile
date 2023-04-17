@@ -44,7 +44,7 @@ FROZEN_MANIFEST ?= boards/manifest.py
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/fsp
+GIT_SUBMODULES += lib/fsp lib/tinyusb
 
 MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
@@ -69,6 +69,9 @@ INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/inc
 INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/inc/api
 INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/inc/instances
 INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/src/bsp/cmsis/Device/RENESAS/Include
+INC += -I$(TOP)/lib/tinyusb/hw
+INC += -I$(TOP)/lib/tinyusb/src
+INC += -I$(TOP)/shared/tinyusb
 #INC += -Ilwip_inc
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2 RA6M5))
 INC += -Ira
@@ -82,6 +85,7 @@ INC += -Idebug
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += -DRA_HAL_H='<$(CMSIS_MCU)_hal.h>'
 CFLAGS += -DRA_CFG_H='<$(FSP_BOARD_NAME)_conf.h>'
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_RAXXX
 
 # Basic Cortex-M flags
 CFLAGS_CORTEX_M = -mthumb
@@ -171,6 +175,27 @@ SHARED_SRC_C += $(addprefix shared/,\
 	runtime/stdout_helpers.c \
 	runtime/sys_stdio_mphal.c \
 	timeutils/timeutils.c \
+	tinyusb/mp_cdc_common.c \
+	tinyusb/mp_usbd.c \
+	tinyusb/mp_usbd_descriptor.c \
+	)
+
+# TinyUSB Stack source
+TINYUSB_SRC_C += $(addprefix lib/tinyusb/,\
+	src/class/cdc/cdc_device.c \
+	src/class/dfu/dfu_rt_device.c \
+	src/class/hid/hid_device.c \
+	src/class/midi/midi_device.c \
+	src/class/msc/msc_device.c \
+	src/class/usbtmc/usbtmc_device.c \
+	src/class/vendor/vendor_device.c \
+	src/common/tusb_fifo.c \
+	src/device/usbd.c \
+	src/device/usbd_control.c \
+	src/portable/renesas/rusb2/dcd_rusb2.c \
+	src/portable/renesas/rusb2/hcd_rusb2.c \
+	src/portable/renesas/rusb2/rusb2_common.c \
+	src/tusb.c \
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
@@ -307,6 +332,7 @@ SRC_C += \
 	flashbdev.c \
 	storage.c \
 	fatfs_port.c \
+	usbd.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_C += $(addprefix $(BOARD_DIR)/ra_gen/,\
@@ -401,6 +427,7 @@ OBJ += $(LIBM_O)
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
