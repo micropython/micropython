@@ -59,7 +59,7 @@ bool common_hal_onewireio_onewire_reset(onewireio_onewire_obj_t *self) {
     common_hal_mcu_delay_us(70);
     bool value = common_hal_digitalio_digitalinout_get_value(&self->pin);
     common_hal_mcu_delay_us(410);
-    // test if bus returned high (idle) and not stck at low
+    // test if bus returned high (idle) and not stuck at low
     bool idle = common_hal_digitalio_digitalinout_get_value(&self->pin);
     common_hal_mcu_enable_interrupts();
     return value || !idle;
