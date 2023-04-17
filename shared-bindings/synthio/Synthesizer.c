@@ -92,7 +92,20 @@ STATIC mp_obj_t synthio_synthesizer_press(mp_obj_t self_in, mp_obj_t press) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_press_obj, synthio_synthesizer_press);
-//
+//|     def release(self, /, release: Sequence[int] = ()) -> None:
+//|         """Turn some notes off. Notes use MIDI numbering, with 60 being middle C, approximately 262Hz.
+//|
+//|         Releasing a note that was already released has no effect.
+//|
+//|         :param Sequence[int] release: Any sequence of integer notes."""
+STATIC mp_obj_t synthio_synthesizer_release(mp_obj_t self_in, mp_obj_t release) {
+    synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_synthio_synthesizer_release(self, release);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_release_obj, synthio_synthesizer_release);
+
 //|     def release_then_press(
 //|         self, release: Sequence[int] = (), press: Sequence[int] = ()
 //|     ) -> None:
@@ -210,6 +223,7 @@ MP_PROPERTY_GETTER(synthio_synthesizer_pressed_obj,
 STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_press), MP_ROM_PTR(&synthio_synthesizer_press_obj) },
+    { MP_ROM_QSTR(MP_QSTR_release), MP_ROM_PTR(&synthio_synthesizer_release_obj) },
     { MP_ROM_QSTR(MP_QSTR_release_all), MP_ROM_PTR(&synthio_synthesizer_release_all_obj) },
     { MP_ROM_QSTR(MP_QSTR_release_then_press), MP_ROM_PTR(&synthio_synthesizer_release_then_press_obj) },
     { MP_ROM_QSTR(MP_QSTR_release_all_then_press), MP_ROM_PTR(&synthio_synthesizer_release_all_then_press_obj) },
