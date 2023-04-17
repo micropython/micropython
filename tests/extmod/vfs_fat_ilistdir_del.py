@@ -11,7 +11,7 @@ except (ImportError, AttributeError):
 
 
 class RAMBlockDevice:
-    ERASE_BLOCK_SIZE = 4096
+    ERASE_BLOCK_SIZE = 512
 
     def __init__(self, blocks):
         self.data = bytearray(blocks * self.ERASE_BLOCK_SIZE)
@@ -72,7 +72,7 @@ def test(bdev, vfs_class):
 
 
 try:
-    bdev = RAMBlockDevice(30)
+    bdev = RAMBlockDevice(50)
 except MemoryError:
     print("SKIP")
     raise SystemExit

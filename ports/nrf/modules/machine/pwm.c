@@ -70,6 +70,7 @@ typedef struct {
     pwm_mode_t mode[NRF_PWM_CHANNEL_COUNT];
     pwm_duty_t duty_mode[NRF_PWM_CHANNEL_COUNT];
     uint32_t duty[NRF_PWM_CHANNEL_COUNT];
+    uint16_t pwm_seq[4];
     pwm_run_t active;
     bool defer_start;
     int8_t freq_div;
@@ -137,7 +138,7 @@ STATIC int hard_pwm_find() {
             return j * NRF_PWM_CHANNEL_COUNT;
         }
     }
-    mp_raise_ValueError(MP_ERROR_TEXT("no free PWM object"));
+    mp_raise_ValueError(MP_ERROR_TEXT("all PWM devices in use"));
 }
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -166,12 +167,12 @@ static const mp_arg_t allowed_args[] = {
     { MP_QSTR_duty_u16, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     { MP_QSTR_duty_ns,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     { MP_QSTR_invert,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-    { MP_QSTR_id,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+    { MP_QSTR_device,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     { MP_QSTR_channel,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
 };
 
 STATIC void mp_machine_pwm_init_helper(const machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_pin, ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns, ARG_invert, ARG_id, ARG_channel };
+    enum { ARG_pin, ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns, ARG_invert, ARG_device, ARG_channel };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -199,7 +200,7 @@ STATIC void mp_machine_pwm_init_helper(const machine_pwm_obj_t *self, size_t n_a
 
 
 STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_pin, ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns, ARG_invert, ARG_id, ARG_channel };
+    enum { ARG_pin, ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns, ARG_invert, ARG_device, ARG_channel };
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -217,9 +218,9 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     // If just the ID is given, use channel 0
     // If none is given, attempt to find an unused object.
     int pwm_id = -1;
-    if (args[ARG_id].u_int != -1) {
-        if (args[ARG_id].u_int >= 0 && args[ARG_id].u_int < MP_ARRAY_SIZE(machine_hard_pwm_instances)) {
-            pwm_id = args[ARG_id].u_int * NRF_PWM_CHANNEL_COUNT;
+    if (args[ARG_device].u_int != -1) {
+        if (args[ARG_device].u_int >= 0 && args[ARG_device].u_int < MP_ARRAY_SIZE(machine_hard_pwm_instances)) {
+            pwm_id = args[ARG_device].u_int * NRF_PWM_CHANNEL_COUNT;
             if (args[ARG_channel].u_int != -1) {
                 if (args[ARG_channel].u_int >= 0 && args[ARG_channel].u_int < NRF_PWM_CHANNEL_COUNT) {
                     pwm_id += args[ARG_channel].u_int;
@@ -363,28 +364,25 @@ STATIC void machine_hard_pwm_start(const machine_pwm_obj_t *self) {
 
     nrfx_pwm_init(self->p_pwm, &config, NULL, NULL);
 
-    volatile static uint16_t pwm_seq[4];
-
     for (int i = 0; i < NRF_PWM_CHANNEL_COUNT; i++) {
         uint16_t pulse_width = 0;
         if (self->p_config->duty_mode[i] == DUTY_PERCENT) {
             pulse_width = ((period * self->p_config->duty[i]) / 100);
         } else if (self->p_config->duty_mode[i] == DUTY_U16) {
             pulse_width = ((period * self->p_config->duty[i]) / 65536);
-        }
-        if (self->p_config->duty_mode[i] == DUTY_NS) {
+        } else if (self->p_config->duty_mode[i] == DUTY_NS) {
             pulse_width = (uint64_t)self->p_config->duty[i] * tick_freq / 1000000000ULL;
         }
 
         if (self->p_config->mode[i] == MODE_HIGH_LOW) {
-            pwm_seq[i] = 0x8000 | pulse_width;
+            self->p_config->pwm_seq[i] = 0x8000 | pulse_width;
         } else {
-            pwm_seq[i] = pulse_width;
+            self->p_config->pwm_seq[i] = pulse_width;
         }
     }
 
     const nrf_pwm_sequence_t pwm_sequence = {
-        .values.p_raw = (const uint16_t *)&pwm_seq,
+        .values.p_raw = (const uint16_t *)&self->p_config->pwm_seq,
         .length = 4,
         .repeats = 0,
         .end_delay = 0

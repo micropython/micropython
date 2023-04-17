@@ -486,13 +486,33 @@ STATIC int network_ninaw10_socket_listening(mod_network_socket_obj_t *socket, in
 STATIC int network_ninaw10_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
     debug_printf("socket_socket(%d %d %d)\n", socket->domain, socket->type, socket->proto);
 
+    uint8_t socket_type;
+
+    switch (socket->type) {
+        case MOD_NETWORK_SOCK_STREAM:
+            socket_type = NINA_SOCKET_TYPE_TCP;
+            break;
+
+        case MOD_NETWORK_SOCK_DGRAM:
+            socket_type = NINA_SOCKET_TYPE_UDP;
+            break;
+
+        case MOD_NETWORK_SOCK_RAW:
+            socket_type = NINA_SOCKET_TYPE_RAW;
+            break;
+
+        default:
+            *_errno = MP_EINVAL;
+            return -1;
+    }
+
     if (socket->domain != MOD_NETWORK_AF_INET) {
         *_errno = MP_EAFNOSUPPORT;
         return -1;
     }
 
     // open socket
-    int fd = nina_socket_socket(socket->type, socket->proto);
+    int fd = nina_socket_socket(socket_type, socket->proto);
     if (fd < 0) {
         nina_socket_errno(_errno);
         debug_printf("socket_socket() -> errno %d\n", *_errno);
@@ -522,20 +542,6 @@ STATIC void network_ninaw10_socket_close(mod_network_socket_obj_t *socket) {
 
 STATIC int network_ninaw10_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     debug_printf("socket_bind(%d, %d)\n", socket->fileno, port);
-    uint8_t type;
-    switch (socket->type) {
-        case MOD_NETWORK_SOCK_STREAM:
-            type = NINA_SOCKET_TYPE_TCP;
-            break;
-
-        case MOD_NETWORK_SOCK_DGRAM:
-            type = NINA_SOCKET_TYPE_UDP;
-            break;
-
-        default:
-            *_errno = MP_EINVAL;
-            return -1;
-    }
 
     int ret = nina_socket_bind(socket->fileno, ip, port);
     if (ret < 0) {
