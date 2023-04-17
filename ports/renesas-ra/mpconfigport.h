@@ -37,6 +37,28 @@
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 #endif
 
+#ifndef MICROPY_HW_ENABLE_USBDEV
+#define MICROPY_HW_ENABLE_USBDEV    (0)
+#endif
+#ifndef MICROPY_HW_ENABLE_UART_REPL
+#define MICROPY_HW_ENABLE_UART_REPL (1) // useful if there is no USB
+#endif
+
+#if MICROPY_HW_ENABLE_USBDEV
+// Enable USB-CDC serial port
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC      (1)
+#endif
+// Enable USB Mass Storage with FatFS filesystem.
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC    (0)
+#endif
+// RA unique ID is 16 bytes (hex string == 32)
+#ifndef MICROPY_HW_USB_DESC_STR_MAX
+#define MICROPY_HW_USB_DESC_STR_MAX (32)
+#endif
+#endif
+
 // memory allocation policies
 #ifndef MICROPY_GC_STACK_ENTRY_TYPE
 #if MICROPY_HW_SDRAM_SIZE
@@ -139,6 +161,11 @@
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
+#if MICROPY_HW_USB_MSC
+// Set FatFS block size to flash sector size to avoid caching
+// the flash sector in memory to support smaller block sizes.
+#define MICROPY_FATFS_MAX_SS           (FLASH_SECTOR_SIZE)
+#endif
 
 #if MICROPY_PY_MACHINE
 #define MACHINE_BUILTIN_MODULE_CONSTANTS \
@@ -152,6 +179,15 @@
     MACHINE_BUILTIN_MODULE_CONSTANTS \
 
 #define MP_STATE_PORT MP_STATE_VM
+
+// Miscellaneous settings
+
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID  (0xf055)
+#endif
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID  (0x9800)
+#endif
 
 // type definitions for the specific machine
 
@@ -190,10 +226,25 @@ static inline mp_uint_t disable_irq(void) {
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
+#if MICROPY_HW_ENABLE_USBDEV
+#define MICROPY_HW_USBDEV_TASK_HOOK extern void usbd_task(void); usbd_task();
+#define MICROPY_VM_HOOK_COUNT (10)
+#define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
+#define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \
+        vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
+        MICROPY_HW_USBDEV_TASK_HOOK \
+}
+#define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
+#define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
+#else
+#define MICROPY_HW_USBDEV_TASK_HOOK
+#endif
+
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
+        MICROPY_HW_USBDEV_TASK_HOOK \
         mp_handle_pending(true); \
         if (pyb_thread_enabled) { \
             MP_THREAD_GIL_EXIT(); \
@@ -209,6 +260,7 @@ static inline mp_uint_t disable_irq(void) {
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
+        MICROPY_HW_USBDEV_TASK_HOOK \
         mp_handle_pending(true); \
         __WFI(); \
     } while (0);

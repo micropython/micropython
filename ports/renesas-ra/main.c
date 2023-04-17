@@ -62,6 +62,7 @@
 #include "usrsw.h"
 #include "rtc.h"
 #include "storage.h"
+#include "tusb.h"
 
 #define RA_EARLY_PRINT  1       /* for enabling mp_print in boardctrl. */
 
@@ -258,6 +259,10 @@ int main(void) {
     boardctrl_state_t state;
     state.reset_mode = 1;
     state.log_soft_reset = false;
+
+    #if MICROPY_HW_ENABLE_USBDEV
+    tusb_init();
+    #endif
 
     MICROPY_BOARD_BEFORE_SOFT_RESET_LOOP(&state);
 
