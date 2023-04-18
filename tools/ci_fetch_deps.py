@@ -43,6 +43,7 @@ PORT_DEPS = {
         "lib/tinyusb/",
         "data/nvm.toml/",
     ],
+    "silabs": ["extmod/ulab/", "data/nvm.toml/"],
     "stm": ["extmod/ulab/", "lib/mp3/", "lib/protomatter/", "lib/tinyusb/", "data/nvm.toml/"]
     # omit unix which is part of the "test" target below
 }
