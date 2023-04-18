@@ -34,7 +34,7 @@
 #include "mp_usbd_internal.h"
 
 #define USBD_CDC_CMD_MAX_SIZE (8)
-#define USBD_CDC_IN_OUT_MAX_SIZE (64)
+#define USBD_CDC_IN_OUT_MAX_SIZE ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 64)
 
 const tusb_desc_device_t mp_usbd_desc_device_static = {
     .bLength = sizeof(tusb_desc_device_t),

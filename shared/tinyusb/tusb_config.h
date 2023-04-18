@@ -43,7 +43,9 @@
 #define MICROPY_HW_USB_CDC_INTERFACE_STRING "Board CDC"
 #endif
 
+#ifndef CFG_TUSB_RHPORT0_MODE
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE)
+#endif
 
 #if MICROPY_HW_USB_CDC
 #define CFG_TUD_CDC             (1)
@@ -59,8 +61,8 @@
 
 // CDC Configuration
 #if CFG_TUD_CDC
-#define CFG_TUD_CDC_RX_BUFSIZE  (256)
-#define CFG_TUD_CDC_TX_BUFSIZE  (256)
+#define CFG_TUD_CDC_RX_BUFSIZE  ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 256)
+#define CFG_TUD_CDC_TX_BUFSIZE  ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 256)
 #endif
 
 // MSC Configuration
