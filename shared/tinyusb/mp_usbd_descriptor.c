@@ -57,15 +57,15 @@ const uint8_t mp_usbd_desc_cfg_static[USBD_STATIC_DESC_LEN] = {
     TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_STATIC_MAX, USBD_STR_0, USBD_STATIC_DESC_LEN,
         0, USBD_MAX_POWER_MA),
 
-    #if CFG_TUD_VENDOR
-    TUD_VENDOR_DESCRIPTOR(USBD_ITF_VENDOR, USBD_STR_VENDOR, EPNUM_VENDOR_OUT, EPNUM_VENDOR_IN, 64),
-    #endif
     #if CFG_TUD_CDC
     TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
         USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
     #endif
     #if CFG_TUD_MSC
     TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, 5, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64),
+    #endif
+    #if CFG_TUD_VENDOR
+    TUD_VENDOR_DESCRIPTOR(USBD_ITF_VENDOR, USBD_STR_VENDOR, EPNUM_VENDOR_OUT, EPNUM_VENDOR_IN, 64),
     #endif
 
 };
@@ -139,7 +139,8 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     return mp_usbd_desc_cfg_static;
 }
 
-<<<<<<< HEAD
+#if CFG_TUD_VENDOR
+
 //--------------------------------------------------------------------+
 // BOS Descriptor
 //--------------------------------------------------------------------+
@@ -242,7 +243,6 @@ bool tud_vendor_control_xfer_cb( uint8_t rhport, uint8_t stage,
     // stall unknown request
     return false;
 }
+#endif //CFG_TUD_VENDOR
 
-=======
 #endif
->>>>>>> remotes/micropython/master
