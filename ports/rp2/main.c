@@ -42,6 +42,7 @@
 #include "modmachine.h"
 #include "modrp2.h"
 #include "mpbthciport.h"
+#include "mpnetworkport.h"
 #include "genhdr/mpversion.h"
 #include "mp_usbd.h"
 
@@ -58,16 +59,8 @@
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
 
-#ifndef MICROPY_GC_HEAP_SIZE
-#if MICROPY_PY_LWIP
-#define MICROPY_GC_HEAP_SIZE 166 * 1024
-#else
-#define MICROPY_GC_HEAP_SIZE 192 * 1024
-#endif
-#endif
-
 extern uint8_t __StackTop, __StackBottom;
-__attribute__((section(".uninitialized_bss"))) static char gc_heap[MICROPY_GC_HEAP_SIZE];
+extern uint8_t __GcHeapStart, __GcHeapEnd;
 
 // Embed version info in the binary in machine readable form
 bi_decl(bi_program_version_string(MICROPY_GIT_TAG));
@@ -83,6 +76,10 @@ int main(int argc, char **argv) {
     bi_decl(bi_program_feature("UART REPL"))
     setup_default_uart();
     mp_uart_init();
+    #else
+    #ifndef NDEBUG
+    stdio_init_all();
+    #endif
     #endif
 
     #if MICROPY_HW_ENABLE_USBDEV
@@ -95,10 +92,6 @@ int main(int argc, char **argv) {
     #if MICROPY_PY_THREAD
     bi_decl(bi_program_feature("thread support"))
     mp_thread_init();
-    #endif
-
-    #ifndef NDEBUG
-    stdio_init_all();
     #endif
 
     // Start and initialise the RTC
@@ -117,7 +110,7 @@ int main(int argc, char **argv) {
     // Initialise stack extents and GC heap.
     mp_stack_set_top(&__StackTop);
     mp_stack_set_limit(&__StackTop - &__StackBottom - 256);
-    gc_init(&gc_heap[0], &gc_heap[MP_ARRAY_SIZE(gc_heap)]);
+    gc_init(&__GcHeapStart, &__GcHeapEnd);
 
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
@@ -175,9 +168,9 @@ int main(int argc, char **argv) {
 
         // Execute _boot.py to set up the filesystem.
         #if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
-        pyexec_frozen_module("_boot_fat.py");
+        pyexec_frozen_module("_boot_fat.py", false);
         #else
-        pyexec_frozen_module("_boot.py");
+        pyexec_frozen_module("_boot.py", false);
         #endif
 
         // Execute user scripts.

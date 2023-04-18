@@ -40,14 +40,12 @@ static alarm_id_t lwip_alarm_id = -1;
 
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
-#include "lib/cyw43-driver/src/cyw43_country.h"
 #include "lib/cyw43-driver/src/cyw43_stats.h"
 #include "hardware/irq.h"
 
 #define CYW43_IRQ_LEVEL GPIO_IRQ_LEVEL_HIGH
 #define CYW43_SHARED_IRQ_HANDLER_PRIORITY PICO_SHARED_IRQ_HANDLER_HIGHEST_ORDER_PRIORITY
 
-uint32_t cyw43_country_code = CYW43_COUNTRY_WORLDWIDE;
 volatile int cyw43_has_pending = 0;
 
 static void gpio_irq_handler(void) {

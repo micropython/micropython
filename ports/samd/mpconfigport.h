@@ -60,6 +60,7 @@
 #define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_STATIC_NODES      (1)
 #define MICROPY_MODULE_WEAK_LINKS           (1)
+#define MICROPY_HW_ENABLE_USBDEV            (1)
 #define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
 
 // Control over Python builtins
@@ -92,12 +93,14 @@
 #define MICROPY_PY_UZLIB                    (1)
 #define MICROPY_PY_UASYNCIO                 (1)
 #define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_RTC              (1)
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (1)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (1000000)
 #define MICROPY_PY_MACHINE_TIMER            (1)
+#define MICROPY_SOFT_TIMER_TICKS_MS         systick_ms
 #define MICROPY_PY_OS_DUPTERM               (3)
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
@@ -108,6 +111,11 @@
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 
 #define MP_STATE_PORT MP_STATE_VM
+
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
+#endif
 
 // Miscellaneous settings
 __attribute__((always_inline)) static inline void enable_irq(uint32_t state) {

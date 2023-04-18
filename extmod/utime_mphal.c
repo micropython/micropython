@@ -103,7 +103,7 @@ STATIC mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
     // The latter requires excluding delta=-TICKS_PERIOD/2.
     //
     // This unsigned comparison is equivalent to a signed comparison of:
-    //   delta <= TICKS_PERIOD/2 || delta >= TICKS_PERIOD/2
+    //   delta <= -TICKS_PERIOD/2 || delta >= TICKS_PERIOD/2
     if (delta + MICROPY_PY_UTIME_TICKS_PERIOD / 2 - 1 >= MICROPY_PY_UTIME_TICKS_PERIOD - 1) {
         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("ticks interval overflow"));
     }

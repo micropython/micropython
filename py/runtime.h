@@ -75,6 +75,9 @@ void mp_deinit(void);
 
 void mp_sched_exception(mp_obj_t exc);
 void mp_sched_keyboard_interrupt(void);
+#if MICROPY_ENABLE_VM_ABORT
+void mp_sched_vm_abort(void);
+#endif
 void mp_handle_pending(bool raise_exc);
 
 #if MICROPY_ENABLE_SCHEDULER

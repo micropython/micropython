@@ -28,6 +28,24 @@
 #include "irq.h"
 #include "powerctrl.h"
 
+#if defined(STM32WB)
+void stm32_system_init(void) {
+    if (RCC->CR == 0x00000560 && RCC->CFGR == 0x00070005) {
+        // Wake from STANDBY with HSI enabled as system clock.  The second core likely
+        // also needs HSI to remain enabled, so do as little as possible here.
+        #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
+        // set CP10 and CP11 Full Access.
+        SCB->CPACR |= (3 << (10 * 2)) | (3 << (11 * 2));
+        #endif
+        // Disable all interrupts.
+        RCC->CIER = 0x00000000;
+    } else {
+        // Other start-up (eg POR), use standard system init code.
+        SystemInit();
+    }
+}
+#endif
+
 void powerctrl_config_systick(void) {
     // Configure SYSTICK to run at 1kHz (1ms interval)
     SysTick->CTRL |= SYSTICK_CLKSOURCE_HCLK;
@@ -155,15 +173,14 @@ void SystemClock_Config(void) {
 
     #if MICROPY_HW_ENABLE_RNG || MICROPY_HW_ENABLE_USB
     // Enable the 48MHz internal oscillator
-    RCC->CRRCR |= RCC_CRRCR_HSI48ON;
-    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
-    SYSCFG->CFGR3 |= SYSCFG_CFGR3_ENREF_HSI48;
-    while (!(RCC->CRRCR & RCC_CRRCR_HSI48RDY)) {
+    RCC->CR |= RCC_CR_HSI48ON;
+    RCC->APBENR2 |= RCC_APBENR2_SYSCFGEN;
+    while (!(RCC->CR & RCC_CR_HSI48RDY)) {
         // Wait for HSI48 to be ready
     }
 
-    // Select RC48 as HSI48 for USB and RNG
-    RCC->CCIPR |= RCC_CCIPR_HSI48SEL;
+    // Select HSI48 for USB
+    RCC->CCIPR2 &= ~(3 << RCC_CCIPR2_USBSEL_Pos);
 
     #if MICROPY_HW_ENABLE_USB
     // Synchronise HSI48 with 1kHz USB SoF
@@ -298,21 +315,20 @@ void SystemClock_Config(void) {
 }
 #elif defined(STM32WB)
 
-#include "stm32wbxx_ll_hsem.h"
-
-// This semaphore protected access to the CLK48 configuration.
-// CPU1 should hold this semaphore while the USB peripheral is in use.
-// See AN5289 and https://github.com/micropython/micropython/issues/6316.
-#define CLK48_SEMID (5)
-
 void SystemClock_Config(void) {
+    while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
+    }
+
     // Enable the 32MHz external oscillator
     RCC->CR |= RCC_CR_HSEON;
     while (!(RCC->CR & RCC_CR_HSERDY)) {
     }
 
     // Prevent CPU2 from disabling CLK48.
-    while (LL_HSEM_1StepLock(HSEM, CLK48_SEMID)) {
+    // This semaphore protected access to the CLK48 configuration.
+    // CPU1 should hold this semaphore while the USB peripheral is in use.
+    // See AN5289 and https://github.com/micropython/micropython/issues/6316.
+    while (LL_HSEM_1StepLock(HSEM, CFG_HW_CLK48_CONFIG_SEMID)) {
     }
 
     // Use HSE and the PLL to get a 64MHz SYSCLK
@@ -349,6 +365,9 @@ void SystemClock_Config(void) {
 
     SystemCoreClockUpdate();
     powerctrl_config_systick();
+
+    // Release RCC semaphore
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
 }
 
 #elif defined(STM32WL)

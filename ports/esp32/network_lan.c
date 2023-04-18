@@ -331,7 +331,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     return MP_OBJ_FROM_PTR(&lan_obj);
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(get_lan_obj, 0, get_lan);
+MP_DEFINE_CONST_FUN_OBJ_KW(esp_network_get_lan_obj, 0, get_lan);
 
 STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
     lan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -423,7 +423,7 @@ STATIC const mp_rom_map_elem_t lan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&lan_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&lan_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&lan_config_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_network_ifconfig_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(lan_if_locals_dict, lan_if_locals_dict_table);

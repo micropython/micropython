@@ -42,8 +42,10 @@ The :mod:`machine` module::
     machine.freq(96_000_000)  # set the CPU frequency to 96 MHz
 
 The range accepted by the function call is 1_000_000 to 200_000_000 (1 MHz to 200 MHz)
-for SAMD51 and 1_000_000 to 48_000_000 (1 MHz to 48 MHz) for SAMD21. The safe
-range for SAMD51 according to the data sheet is 96 MHz to 120 MHz.
+for SAMD51 and 1_000_000 to 54_000_000 (1 MHz to 54 MHz) for SAMD21. The safe
+range for SAMD51 according to the data sheet is up to 120 MHz, for the SAMD21 up to 48Mhz.
+Frequencies below 48Mhz are set by dividing 48Mhz by an integer, limiting the number of
+discrete frequencies to 24Mhz, 16Mhz, 12MHz, and so on.
 At frequencies below 8 MHz USB will be disabled. Changing the frequency below 48 MHz
 impacts the baud rates of UART, I2C and SPI. These have to be set again after
 changing the CPU frequency. The ms and µs timers are not affected by the frequency

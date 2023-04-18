@@ -1,9 +1,7 @@
 # Pin rows contain Pin number and pin name.
 # Pin rows start with PIN_
-# LED rows start with LED_
 # If the pin name is omitted, the pin number is added as name.
-# Rows for empty entries have to start with '-'
-# Empty lines and lines starting with # are ignored
+# Empty lines and lines not starting with PIN_ are ignored
 
 PIN_PA08,D0
 PIN_PA02,D1

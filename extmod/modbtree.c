@@ -24,16 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <errno.h> // for declaration of global errno variable
-#include <fcntl.h>
-
 #include "py/runtime.h"
 #include "py/stream.h"
 
 #if MICROPY_PY_BTREE
 
+#include <stdio.h>
+#include <errno.h> // for declaration of global errno variable
+#include <fcntl.h>
 #include <db.h>
 #include <../../btree/btree.h>
 

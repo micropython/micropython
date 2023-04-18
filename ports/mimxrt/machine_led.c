@@ -44,7 +44,7 @@ STATIC mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // Check led id is in range
     if (!(1 <= led_id && led_id <= NUM_LEDS)) {
-        mp_raise_msg_varg(&mp_type_ValueError, "LED(%d) doesn't exist", led_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("LED(%d) doesn't exist"), led_id);
     }
 
     // Return reference to static object

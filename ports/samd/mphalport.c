@@ -147,7 +147,7 @@ uint64_t mp_hal_ticks_us_64(void) {
         us64_upper++;
     }
     #if defined(MCU_SAMD21)
-    return ((uint64_t)us64_upper << 32) | us64_lower;
+    return ((uint64_t)us64_upper << 31) | (us64_lower >> 1);
     #elif defined(MCU_SAMD51)
     return ((uint64_t)us64_upper << 28) | (us64_lower >> 4);
     #endif
@@ -160,6 +160,10 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     poll_cdc_interfaces();
     if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
         ret |= MP_STREAM_POLL_RD;
+    }
+
+    if ((poll_flags & MP_STREAM_POLL_WR) && tud_cdc_connected() && tud_cdc_write_available() > 0) {
+        ret |= MP_STREAM_POLL_WR;
     }
 
     #if MICROPY_PY_OS_DUPTERM

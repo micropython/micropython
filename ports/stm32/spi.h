@@ -66,7 +66,7 @@ extern const mp_obj_type_t machine_spi_type;
 #define SPI_TRANSFER_TIMEOUT(len) ((len) + 100)
 
 void spi_init0(void);
-void spi_init(const spi_t *spi, bool enable_nss_pin);
+int spi_init(const spi_t *spi, bool enable_nss_pin);
 void spi_deinit(const spi_t *spi_obj);
 int spi_find_index(mp_obj_t id);
 void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,

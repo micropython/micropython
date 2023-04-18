@@ -38,7 +38,7 @@
 #include "py/stream.h" // for mp_obj_print
 
 // Allocates an object and also sets type, for mp_obj_malloc{,_var} macros.
-void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type) {
+MP_NOINLINE void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type) {
     mp_obj_base_t *base = (mp_obj_base_t *)m_malloc(num_bytes);
     base->type = type;
     return base;

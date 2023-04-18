@@ -45,11 +45,13 @@ typedef struct _wlan_if_obj_t {
     int if_id;
 } wlan_if_obj_t;
 
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(get_wlan_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(get_lan_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(ppp_make_new_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(esp_config_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(esp_network_initialize_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_get_wlan_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_get_lan_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(esp_network_ppp_make_new_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_ifconfig_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_config_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj);
 
 NORETURN void esp_exceptions_helper(esp_err_t e);
 

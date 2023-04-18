@@ -92,6 +92,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
 #define MICROPY_PY_MACHINE_TIMER            (1)
+#define MICROPY_SOFT_TIMER_TICKS_MS         systick_ms
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_UPLATFORM                (1)
 
@@ -101,22 +102,27 @@ uint32_t trng_random_u32(void);
 #define MICROPY_FATFS_MAX_SS                (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
-// If MICROPY_PY_LWIP is defined, add network support
-#if MICROPY_PY_LWIP
-
+#ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK                  (1)
+#endif
+#ifndef MICROPY_PY_USOCKET
 #define MICROPY_PY_USOCKET                  (1)
-#define MICROPY_PY_UWEBSOCKET               (1)
-#define MICROPY_PY_WEBREPL                  (1)
-#define MICROPY_PY_UHASHLIB_SHA1            (1)
-#define MICROPY_PY_LWIP_SOCK_RAW            (1)
-#define MICROPY_HW_ETH_MDC                  (1)
+#endif
+#define MICROPY_PY_UWEBSOCKET               (MICROPY_PY_LWIP)
+#define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
+#define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
+#define MICROPY_PY_USSL_FINALISER           (MICROPY_PY_USSL)
+// #define MICROPY_PY_UHASHLIB_MD5             (MICROPY_PY_USSL)
+#define MICROPY_PY_UHASHLIB_SHA1            (MICROPY_PY_USSL)
+// #define MICROPY_PY_UCRYPTOLIB               (MICROPY_PY_USSL)
 
 // Prevent the "LWIP task" from running.
 #define MICROPY_PY_LWIP_ENTER   MICROPY_PY_PENDSV_ENTER
 #define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
 #define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
 
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
 #endif
 
 // For regular code that wants to prevent "background tasks" from running.
@@ -160,7 +166,7 @@ static inline void restore_irq_pri(uint32_t basepri) {
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
-#if defined(MICROPY_HW_ETH_MDC)
+#if defined(IOMUX_TABLE_ENET)
 extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH                  { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
 #else
@@ -179,6 +185,11 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 #ifndef MICROPY_BOARD_ROOT_POINTERS
 #define MICROPY_BOARD_ROOT_POINTERS
+#endif
+
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
 #endif
 
 #define MP_STATE_PORT MP_STATE_VM

@@ -161,7 +161,7 @@ soft_reset:
     #endif
 
     // run boot-up scripts
-    pyexec_frozen_module("_boot.py");
+    pyexec_frozen_module("_boot.py", false);
     pyexec_file_if_exists("boot.py");
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         int ret = pyexec_file_if_exists("main.py");

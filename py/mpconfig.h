@@ -904,6 +904,16 @@ typedef double mp_float_t;
 #define MICROPY_USE_INTERNAL_PRINTF (1)
 #endif
 
+// The mp_print_t printer used for printf output when MICROPY_USE_INTERNAL_PRINTF is enabled
+#ifndef MICROPY_INTERNAL_PRINTF_PRINTER
+#define MICROPY_INTERNAL_PRINTF_PRINTER (&mp_plat_print)
+#endif
+
+// Whether to support mp_sched_vm_abort to asynchronously abort to the top level.
+#ifndef MICROPY_ENABLE_VM_ABORT
+#define MICROPY_ENABLE_VM_ABORT (0)
+#endif
+
 // Support for internal scheduler
 #ifndef MICROPY_ENABLE_SCHEDULER
 #define MICROPY_ENABLE_SCHEDULER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
@@ -1733,6 +1743,10 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_WRAP_MP_SCHED_SCHEDULE
 #define MICROPY_WRAP_MP_SCHED_SCHEDULE(f) f
+#endif
+
+#ifndef MICROPY_WRAP_MP_SCHED_VM_ABORT
+#define MICROPY_WRAP_MP_SCHED_VM_ABORT(f) f
 #endif
 
 /*****************************************************************************/

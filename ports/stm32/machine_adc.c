@@ -315,7 +315,13 @@ STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     #if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     ADC_Common_TypeDef *adc_common = ADC12_COMMON;
     #elif defined(STM32H7)
+    #if defined(ADC_VER_V5_V90)
+    if (adc != ADC3) {
+        adc->PCSEL_RES0 |= 1 << channel;
+    }
+    #else
     adc->PCSEL |= 1 << channel;
+    #endif
     ADC_Common_TypeDef *adc_common = adc == ADC3 ? ADC3_COMMON : ADC12_COMMON;
     #elif defined(STM32L4)
     ADC_Common_TypeDef *adc_common = ADCx_COMMON;

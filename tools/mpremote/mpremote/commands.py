@@ -122,9 +122,9 @@ def do_filesystem(state, args):
     if command == "cat":
         # Don't be verbose by default when using cat, so output can be
         # redirected to something.
-        verbose = args.verbose == True
+        verbose = args.verbose is True
     else:
-        verbose = args.verbose != False
+        verbose = args.verbose is not False
 
     if command == "cp" and args.recursive:
         if paths[-1] != ":":

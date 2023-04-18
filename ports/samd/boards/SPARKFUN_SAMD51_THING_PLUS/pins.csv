@@ -1,14 +1,10 @@
 # Pin rows contain Pin number and pin name.
 # Pin rows start with PIN_
-# LED rows start with LED_
 # If the pin name is omitted, the pin number is added as name.
-# Rows for empty entries have to start with '-'
-# Empty lines and lines not starting with PIN_ or LED_ are ignored
+# Empty lines and lines not starting with PIN_ are ignored
 
 PIN_PA13,D0
 PIN_PA12,D1
-PIN_PB23,RXD
-PIN_PB22,TXD
 PIN_PA06,D4
 PIN_PA15,D5
 PIN_PA20,D6

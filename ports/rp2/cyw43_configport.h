@@ -30,8 +30,10 @@
 #include "py/mpconfig.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "extmod/modnetwork.h"
 #include "pendsv.h"
 
+#define CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE "w43439A0_7_95_49_00_combined.h"
 #define CYW43_WIFI_NVRAM_INCLUDE_FILE   "wifi_nvram_43439.h"
 #define CYW43_IOCTL_TIMEOUT_US          (1000000)
 #define CYW43_SLEEP_MAX                 (10)
@@ -46,6 +48,8 @@
 #define CYW43_THREAD_ENTER              MICROPY_PY_LWIP_ENTER
 #define CYW43_THREAD_EXIT               MICROPY_PY_LWIP_EXIT
 #define CYW43_THREAD_LOCK_CHECK
+
+#define CYW43_HOST_NAME                 mod_network_hostname
 
 #define CYW43_SDPCM_SEND_COMMON_WAIT \
     if (get_core_num() == 0) { \

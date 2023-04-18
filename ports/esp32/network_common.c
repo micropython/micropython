@@ -48,8 +48,6 @@
 #define DNS_MAIN ESP_NETIF_DNS_MAIN
 #endif
 
-#define MODNETWORK_INCLUDE_CONSTANTS (1)
-
 NORETURN void esp_exceptions_helper(esp_err_t e) {
     switch (e) {
         case ESP_ERR_WIFI_NOT_INIT:
@@ -144,7 +142,7 @@ STATIC mp_obj_t esp_initialize() {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_initialize_obj, esp_initialize);
+MP_DEFINE_CONST_FUN_OBJ_0(esp_network_initialize_obj, esp_initialize);
 
 STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -207,12 +205,12 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_ifconfig_obj, 1, 2, esp_ifconfig);
 
 STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj, 0, 1, esp_phy_mode);
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
 #define TEST_WIFI_AUTH_MAX 9
@@ -220,98 +218,3 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode)
 #define TEST_WIFI_AUTH_MAX 8
 #endif
 _Static_assert(WIFI_AUTH_MAX == TEST_WIFI_AUTH_MAX, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
-
-STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
-    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_initialize_obj) },
-
-    #if MICROPY_PY_NETWORK_WLAN
-    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
-    #endif
-
-    #if MICROPY_PY_NETWORK_LAN
-    { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&get_lan_obj) },
-    #endif
-    { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&ppp_make_new_obj) },
-    { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
-
-    #if MODNETWORK_INCLUDE_CONSTANTS
-
-    #if MICROPY_PY_NETWORK_WLAN
-    { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(WIFI_IF_STA)},
-    { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(WIFI_IF_AP)},
-
-    { MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(WIFI_PROTOCOL_11B) },
-    { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(WIFI_PROTOCOL_11G) },
-    { MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(WIFI_PROTOCOL_11N) },
-    { MP_ROM_QSTR(MP_QSTR_MODE_LR), MP_ROM_INT(WIFI_PROTOCOL_LR) },
-
-    { MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(WIFI_AUTH_OPEN) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(WIFI_AUTH_WEP) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(WIFI_AUTH_WPA_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA2_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA_WPA2_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_ENTERPRISE), MP_ROM_INT(WIFI_AUTH_WPA2_ENTERPRISE) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA3_PSK), MP_ROM_INT(WIFI_AUTH_WPA3_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_WPA3_PSK), MP_ROM_INT(WIFI_AUTH_WPA2_WPA3_PSK) },
-    #if ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(4, 3, 0)
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WAPI_PSK), MP_ROM_INT(WIFI_AUTH_WAPI_PSK) },
-    #endif
-    { MP_ROM_QSTR(MP_QSTR_AUTH_MAX), MP_ROM_INT(WIFI_AUTH_MAX) },
-    #endif
-
-    #if MICROPY_PY_NETWORK_LAN
-    { MP_ROM_QSTR(MP_QSTR_PHY_LAN8710), MP_ROM_INT(PHY_LAN8710) },
-    { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
-    { MP_ROM_QSTR(MP_QSTR_PHY_IP101), MP_ROM_INT(PHY_IP101) },
-    { MP_ROM_QSTR(MP_QSTR_PHY_RTL8201), MP_ROM_INT(PHY_RTL8201) },
-    { MP_ROM_QSTR(MP_QSTR_PHY_DP83848), MP_ROM_INT(PHY_DP83848) },
-    #if ESP_IDF_VERSION_MINOR >= 3
-    // PHY_KSZ8041 is new in ESP-IDF v4.3
-    { MP_ROM_QSTR(MP_QSTR_PHY_KSZ8041), MP_ROM_INT(PHY_KSZ8041) },
-    #endif
-    #if ESP_IDF_VERSION_MINOR >= 4
-    // PHY_KSZ8081 is new in ESP-IDF v4.4
-    { MP_ROM_QSTR(MP_QSTR_PHY_KSZ8081), MP_ROM_INT(PHY_KSZ8081) },
-    #endif
-
-    #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
-    { MP_ROM_QSTR(MP_QSTR_PHY_KSZ8851SNL), MP_ROM_INT(PHY_KSZ8851SNL) },
-    #endif
-    #if CONFIG_ETH_SPI_ETHERNET_DM9051
-    { MP_ROM_QSTR(MP_QSTR_PHY_DM9051), MP_ROM_INT(PHY_DM9051) },
-    #endif
-    #if CONFIG_ETH_SPI_ETHERNET_W5500
-    { MP_ROM_QSTR(MP_QSTR_PHY_W5500), MP_ROM_INT(PHY_W5500) },
-    #endif
-
-    { MP_ROM_QSTR(MP_QSTR_ETH_INITIALIZED), MP_ROM_INT(ETH_INITIALIZED)},
-    { MP_ROM_QSTR(MP_QSTR_ETH_STARTED), MP_ROM_INT(ETH_STARTED)},
-    { MP_ROM_QSTR(MP_QSTR_ETH_STOPPED), MP_ROM_INT(ETH_STOPPED)},
-    { MP_ROM_QSTR(MP_QSTR_ETH_CONNECTED), MP_ROM_INT(ETH_CONNECTED)},
-    { MP_ROM_QSTR(MP_QSTR_ETH_DISCONNECTED), MP_ROM_INT(ETH_DISCONNECTED)},
-    { MP_ROM_QSTR(MP_QSTR_ETH_GOT_IP), MP_ROM_INT(ETH_GOT_IP)},
-    #endif
-
-    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STAT_IDLE)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STAT_CONNECTING)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(STAT_GOT_IP)},
-    // Errors from the ESP-IDF
-    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(WIFI_REASON_NO_AP_FOUND)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(WIFI_REASON_AUTH_FAIL)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_BEACON_TIMEOUT), MP_ROM_INT(WIFI_REASON_BEACON_TIMEOUT)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_ASSOC_FAIL), MP_ROM_INT(WIFI_REASON_ASSOC_FAIL)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_HANDSHAKE_TIMEOUT), MP_ROM_INT(WIFI_REASON_HANDSHAKE_TIMEOUT)},
-    #endif
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
-
-const mp_obj_module_t mp_module_network = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_network_globals,
-};
-
-// Note: This port doesn't define MICROPY_PY_NETWORK so this will not conflict
-// with the common implementation provided by extmod/modnetwork.c.
-MP_REGISTER_MODULE(MP_QSTR_network, mp_module_network);

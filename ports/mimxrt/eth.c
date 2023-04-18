@@ -31,7 +31,7 @@
 #include "py/mperrno.h"
 #include "ticks.h"
 
-#if defined(MICROPY_HW_ETH_MDC)
+#if defined(IOMUX_TABLE_ENET)
 
 #include "pin.h"
 #include "shared/netutils/netutils.h"
@@ -559,7 +559,7 @@ STATIC void eth_lwip_init(eth_t *self) {
     n->name[0] = 'e';
     n->name[1] = (self == &eth_instance0 ? '0' : '1');
     netif_add(n, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, eth_netif_init, ethernet_input);
-    netif_set_hostname(n, "MPY");
+    netif_set_hostname(n, mod_network_hostname);
     netif_set_default(n);
     netif_set_up(n);
 
@@ -639,4 +639,4 @@ void eth_low_power_mode(eth_t *self, bool enable) {
     ENET_EnableSleepMode(ENET, enable);
     #endif
 }
-#endif // defined(MICROPY_HW_ETH_MDC)
+#endif // defined(IOMUX_TABLE_ENET)

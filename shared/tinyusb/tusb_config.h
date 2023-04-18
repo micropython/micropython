@@ -27,8 +27,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_TINYUSB_TUSB_CONFIG_H
 #define MICROPY_INCLUDED_SHARED_TINYUSB_TUSB_CONFIG_H
 
-#include <py/mpconfig.h>
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 
 #if MICROPY_HW_ENABLE_USBDEV
 

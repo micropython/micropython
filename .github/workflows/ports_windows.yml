@@ -8,6 +8,7 @@ on:
       - 'tools/**'
       - 'py/**'
       - 'extmod/**'
+      - 'shared/**'
       - 'lib/**'
       - 'ports/unix/**'
       - 'ports/windows/**'

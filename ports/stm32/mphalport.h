@@ -14,7 +14,7 @@
 #elif defined(STM32G4)
 #define MICROPY_PLATFORM_VERSION "HAL1.3.0"
 #elif defined(STM32H7)
-#define MICROPY_PLATFORM_VERSION "HAL1.6.0"
+#define MICROPY_PLATFORM_VERSION "HAL1.11.0"
 #elif defined(STM32L0)
 #define MICROPY_PLATFORM_VERSION "HAL1.11.2"
 #elif defined(STM32L1)

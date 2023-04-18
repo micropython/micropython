@@ -2,13 +2,26 @@
 #
 # This is a simple wrapper around cmake
 
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to PICO.
 BOARD ?= PICO
+BOARD_DIR ?= boards/$(BOARD)
+endif
+
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+$(error Invalid BOARD specified: $(BOARD_DIR))
+endif
  
 BUILD ?= build-$(BOARD)
 
 $(VERBOSE)MAKESILENT = -s
 
-CMAKE_ARGS = -DMICROPY_BOARD=$(BOARD)
+CMAKE_ARGS = -DMICROPY_BOARD=$(BOARD) -DMICROPY_BOARD_DIR=$(abspath $(BOARD_DIR))
 
 ifdef USER_C_MODULES
 CMAKE_ARGS += -DUSER_C_MODULES=${USER_C_MODULES}

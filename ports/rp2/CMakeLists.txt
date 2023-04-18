@@ -250,7 +250,6 @@ if (MICROPY_PY_NETWORK_CYW43)
 
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_PY_NETWORK_CYW43=1
-        MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER=1
         MICROPY_PY_SOCKET_DEFAULT_TIMEOUT_MS=30000 # default socket timeout
     )
     if (CMAKE_BUILD_TYPE MATCHES Debug)
@@ -261,10 +260,6 @@ if (MICROPY_PY_NETWORK_CYW43)
 
     list(APPEND MICROPY_SOURCE_PORT
         machine_pin_cyw43.c
-    )
-
-    list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_DIR}/extmod/network_cyw43.c
     )
 
     target_link_libraries(${MICROPY_TARGET}
@@ -288,10 +283,6 @@ if (MICROPY_PY_NETWORK_NINAW10)
         ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_drv.c
         ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_bsp.c
         ${MICROPY_DIR}/drivers/ninaw10/machine_pin_nina.c
-    )
-
-    list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_DIR}/extmod/network_ninaw10.c
     )
 endif()
 
@@ -330,10 +321,6 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
         ${MICROPY_DIR}/lib/wiznet5k/Ethernet/wizchip_conf.c
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DNS/dns.c
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DHCP/dhcp.c
-    )
-
-    list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_DIR}/extmod/network_wiznet5k.c
     )
 endif()
 

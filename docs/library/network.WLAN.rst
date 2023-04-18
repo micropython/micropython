@@ -130,7 +130,7 @@ Methods
    hidden         Whether SSID is hidden (boolean)
    security       Security protocol supported (enumeration, see module constants)
    key            Access key (string)
-   hostname       The hostname that will be sent to DHCP (STA interfaces) and mDNS (if supported, both STA and AP)
+   hostname       The hostname that will be sent to DHCP (STA interfaces) and mDNS (if supported, both STA and AP). (Deprecated, use :func:`network.hostname` instead)
    reconnects     Number of reconnect attempts to make (integer, 0=none, -1=unlimited)
    txpower        Maximum transmit power in dBm (integer or float)
    =============  ===========

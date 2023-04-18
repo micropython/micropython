@@ -78,16 +78,17 @@ def get_version_info_from_mpconfig(repo_path):
                 ver_minor = int(line.strip().split()[2])
             elif line.startswith("#define MICROPY_VERSION_MICRO "):
                 ver_micro = int(line.strip().split()[2])
-                git_tag = "v%d.%d" % (ver_major, ver_minor)
-                if ver_micro != 0:
-                    git_tag += ".%d" % (ver_micro,)
+                git_tag = "v%d.%d.%d" % (ver_major, ver_minor, ver_micro)
                 return git_tag, "<no hash>"
     return None
 
 
 def make_version_header(repo_path, filename):
-    # Get version info using git, with fallback to py/mpconfig.h
-    info = get_version_info_from_git(repo_path)
+    info = None
+    if "MICROPY_GIT_TAG" in os.environ:
+        info = [os.environ["MICROPY_GIT_TAG"], os.environ["MICROPY_GIT_HASH"]]
+    if info is None:
+        info = get_version_info_from_git(repo_path)
     if info is None:
         info = get_version_info_from_mpconfig(repo_path)
 

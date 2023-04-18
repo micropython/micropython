@@ -31,6 +31,7 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/modnetwork.h"
 #include "shared/netutils/netutils.h"
 #include "queue.h"
 #include "user_interface.h"
@@ -38,8 +39,6 @@
 #include "spi_flash.h"
 #include "ets_alt_task.h"
 #include "lwip/dns.h"
-
-#define MODNETWORK_INCLUDE_CONSTANTS (1)
 
 typedef struct _wlan_if_obj_t {
     mp_obj_base_t base;
@@ -71,7 +70,7 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
     }
     return MP_OBJ_FROM_PTR(&wlan_objs[idx]);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(get_wlan_obj, 0, 1, get_wlan);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_get_wlan_obj, 0, 1, get_wlan);
 
 STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -152,6 +151,9 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     if (set_config) {
         error_check(wifi_station_set_config(&config), "Cannot set STA config");
     }
+
+    wifi_station_set_hostname(mod_network_hostname);
+
     error_check(wifi_station_connect(), "Cannot connect to AP");
 
     return mp_const_none;
@@ -399,11 +401,13 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     }
                     case MP_QSTR_hostname:
                     case MP_QSTR_dhcp_hostname: {
-                        req_if = STATION_IF;
-                        if (self->if_id == STATION_IF) {
-                            const char *s = mp_obj_str_get_str(kwargs->table[i].value);
-                            wifi_station_set_hostname((char *)s);
+                        // TODO: Deprecated. Use network.hostname(name) instead.
+                        size_t len;
+                        const char *str = mp_obj_str_get_data(kwargs->table[i].value, &len);
+                        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
+                            mp_raise_ValueError(NULL);
                         }
+                        strcpy(mod_network_hostname, str);
                         break;
                     }
                     case MP_QSTR_protocol: {
@@ -474,12 +478,8 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         case MP_QSTR_hostname:
         case MP_QSTR_dhcp_hostname: {
             req_if = STATION_IF;
-            char *s = wifi_station_get_hostname();
-            if (s == NULL) {
-                val = MP_OBJ_NEW_QSTR(MP_QSTR_);
-            } else {
-                val = mp_obj_new_str(s, strlen(s));
-            }
+            // TODO: Deprecated. Use network.hostname() instead.
+            val = mp_obj_new_str(mod_network_hostname, strlen(mod_network_hostname));
             break;
         }
         case MP_QSTR_protocol: {
@@ -530,43 +530,4 @@ STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode);
-
-STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
-    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
-    { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
-
-    #if MODNETWORK_INCLUDE_CONSTANTS
-    { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(STATION_IF)},
-    { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(SOFTAP_IF)},
-
-    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STATION_IDLE)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STATION_CONNECTING)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(STATION_WRONG_PASSWORD)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(STATION_NO_AP_FOUND)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(STATION_CONNECT_FAIL)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(STATION_GOT_IP)},
-
-    { MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(PHY_MODE_11B) },
-    { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(PHY_MODE_11G) },
-    { MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(PHY_MODE_11N) },
-
-    { MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(AUTH_OPEN) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(AUTH_WEP) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(AUTH_WPA_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(AUTH_WPA2_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(AUTH_WPA_WPA2_PSK) },
-    #endif
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
-
-const mp_obj_module_t network_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_network_globals,
-};
-
-// Note: This port doesn't define MICROPY_PY_NETWORK so this will not conflict
-// with the common implementation provided by extmod/modnetwork.c.
-MP_REGISTER_MODULE(MP_QSTR_network, network_module);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj, 0, 1, esp_phy_mode);

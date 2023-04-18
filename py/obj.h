@@ -418,7 +418,7 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 
 #define MP_DEFINE_CONST_DICT(dict_name, table_name) MP_DEFINE_CONST_DICT_WITH_SIZE(dict_name, table_name, MP_ARRAY_SIZE(table_name))
 
-// These macros are used to declare and define constant staticmethond and classmethod objects
+// These macros are used to declare and define constant staticmethod and classmethod objects
 // You can put "static" in front of the definitions to make them local
 
 #define MP_DECLARE_CONST_STATICMETHOD_OBJ(obj_name) extern const mp_rom_obj_static_class_method_t obj_name

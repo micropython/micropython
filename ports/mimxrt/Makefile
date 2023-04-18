@@ -2,15 +2,27 @@
 # Parameter Configuration
 # =============================================================================
 
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to TEENSY40.
 BOARD ?= TEENSY40
 BOARD_DIR ?= boards/$(BOARD)
+endif
+
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+    $(error Invalid BOARD specified: $(BOARD_DIR))
+endif
+
 BUILD ?= build-$(BOARD)
 PORT ?= /dev/ttyACM0
 CROSS_COMPILE ?= arm-none-eabi-
 GIT_SUBMODULES += lib/tinyusb lib/nxp_driver
 
 # MicroPython feature configurations
-FROZEN_MANIFEST ?= boards/manifest.py
 MICROPY_VFS_LFS2 ?= 1
 MICROPY_VFS_FAT ?= 1
 
@@ -26,10 +38,13 @@ MAKE_FLEXRAM_LD = boards/make-flexram-config.py
 include ../../py/mkenv.mk
 
 # Include micropython configuration board makefile
-ifeq ($(wildcard $(BOARD_DIR)/.),)
-    $(error Invalid BOARD specified: $(BOARD_DIR))
-endif
 include $(BOARD_DIR)/mpconfigboard.mk
+
+# MicroPython feature configurations
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
+
+# File containing description of content to be frozen into firmware.
+FROZEN_MANIFEST ?= boards/manifest.py
 
 # Include py core make definitions
 include $(TOP)/py/py.mk
@@ -137,7 +152,8 @@ endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
 SRC_HAL_IMX_C += \
-	$(MCU_DIR)/drivers/fsl_qtmr.c
+	$(MCU_DIR)/drivers/fsl_qtmr.c \
+	$(MCU_DIR)/drivers/fsl_romapi.c
 endif
 
 ifeq ($(MCU_SERIES), MIMXRT1176)
@@ -213,19 +229,31 @@ SHARED_SRC_C += \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
 
-# Add sources for respective board flash type
-ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash qspi_hyper_flash))
-    # Add hal/flexspi_nor_flash.c or hal/flashspi_hyper_flash.c respectively
-    SRC_HAL_C += hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).c
-    #
-    # Add custom (board specific) or default configuration
-    ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
-        SRC_HAL_C += $(BOARD_DIR)/$(MICROPY_HW_FLASH_TYPE)_config.c
-    else
-        SRC_HAL_C += hal/$(MICROPY_HW_FLASH_TYPE)_config.c
-    endif
+# Set flash driver name, base address and internal flash flag, based on the flash type.
+ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash))
+    MICROPY_HW_FLASH_BASE = 0x60000000
+    FLEXSPI_FLASH_TYPE = $(MICROPY_HW_FLASH_TYPE)
+else ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_hyper_flash))
+    MICROPY_HW_FLASH_BASE = 0x60000000
+    FLEXSPI_FLASH_TYPE = $(MICROPY_HW_FLASH_TYPE)
+else ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),internal))
+    # The internal flash is an SPI NOR Flash.
+    MICROPY_HW_FLASH_BASE = 0x70000000
+    FLEXSPI_FLASH_TYPE = qspi_nor_flash
+    CFLAGS += -DMICROPY_HW_FLASH_INTERNAL
 else
     $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
+endif
+
+# Add sources for respective board flash type
+# Add hal/flexspi_nor_flash.c or hal/flashspi_hyper_flash.c respectively
+SRC_HAL_C += hal/flexspi_$(subst qspi_,,$(FLEXSPI_FLASH_TYPE)).c
+#
+# Add custom (board specific) or default configuration
+ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
+    SRC_HAL_C += $(BOARD_DIR)/$(FLEXSPI_FLASH_TYPE)_config.c
+else
+    SRC_HAL_C += hal/$(FLEXSPI_FLASH_TYPE)_config.c
 endif
 
 # Math library source files
@@ -278,6 +306,8 @@ SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG),1)
 CFLAGS += -Og
+# Disable text compression in debug builds
+MICROPY_ROM_TEXT_COMPRESSION = 0
 else
 CFLAGS += -Os -DNDEBUG
 endif
@@ -324,18 +354,14 @@ CFLAGS += \
 	-Wno-error=unused-parameter
 
 # Configure respective board flash type
-ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash qspi_hyper_flash))
-    # Add hal/flexspi_nor_flash.h or hal/flexspi_hyper_flash.h respectively
-    CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).h\"
-    #
-    # Add custom (board specific) or default configuration
-    ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
-        CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
-    else
-        CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
-    endif
+# Add hal/flexspi_nor_flash.h or hal/flexspi_hyper_flash.h respectively
+CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_$(subst qspi_,,$(FLEXSPI_FLASH_TYPE)).h\"
+#
+# Add custom (board specific) or default configuration
+ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
+    CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
 else
-    $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
+    CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
 endif
 
 # Configure floating point support
@@ -382,7 +408,7 @@ LDFLAGS += \
 #	the C preprocessor. Therefore keep LDDEFINES separated from LDFLAGS!
 
 LDDEFINES = \
-	-DMICROPY_HW_FLASH_TYPE=$(MICROPY_HW_FLASH_TYPE) \
+	-DMICROPY_HW_FLASH_BASE=$(MICROPY_HW_FLASH_BASE) \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE)
 
 ifdef MICROPY_HW_FLASH_RESERVED

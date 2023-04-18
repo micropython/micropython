@@ -14,7 +14,7 @@
 #define MICROPY_USE_INTERNAL_ERRNO      (0)
 
 // Enable externally controlled pins.
-#define MICROPY_HW_PIN_EXT_COUNT        (5)
+#define MICROPY_HW_PIN_EXT_COUNT        (7)
 
 // Enable USB Mass Storage with FatFS filesystem.
 #define MICROPY_HW_USB_MSC              (1)

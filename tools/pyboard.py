@@ -287,11 +287,15 @@ class Pyboard:
             for attempt in range(wait + 1):
                 try:
                     if os.name == "nt":
-                        # Windows does not set DTR or RTS by default
                         self.serial = serial.Serial(**serial_kwargs)
-                        self.serial.dtr = True
-                        self.serial.rts = False
                         self.serial.port = device
+                        portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
+                        if portinfo and portinfo[0].manufacturer != "Microsoft":
+                            # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
+                            # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
+                            # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
+                            self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
+                            self.serial.rts = False  # RTS False = EN High = MCU enabled
                         self.serial.open()
                     else:
                         self.serial = serial.Serial(device, **serial_kwargs)
@@ -663,15 +667,16 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
     def fname_remote(src):
         if src.startswith(":"):
             src = src[1:]
-        return src
+        # Convert all path separators to "/", because that's what a remote device uses.
+        return src.replace(os.path.sep, "/")
 
     def fname_cp_dest(src, dest):
         _, src = os.path.split(src)
         if dest is None or dest == "":
             dest = src
         elif dest == ".":
-            dest = os.path.join(".", src)
-        elif dest.endswith(os.path.sep):
+            dest = "./" + src
+        elif dest.endswith("/"):
             dest += src
         return dest
 

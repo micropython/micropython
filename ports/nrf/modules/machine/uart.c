@@ -77,6 +77,7 @@ typedef struct _machine_hard_uart_buf_t {
 #define NRF_UART_HWFC_DISABLED    NRF_UARTE_HWFC_DISABLED
 #define NRF_UART_PARITY_EXCLUDED  NRF_UARTE_PARITY_EXCLUDED
 #define NRFX_UART_EVT_RX_DONE     NRFX_UARTE_EVT_RX_DONE
+#define NRFX_UART_EVT_ERROR       NRFX_UARTE_EVT_ERROR
 
 #define NRF_UART_BAUDRATE_1200    NRF_UARTE_BAUDRATE_1200
 #define NRF_UART_BAUDRATE_2400    NRF_UARTE_BAUDRATE_2400
@@ -98,15 +99,15 @@ typedef struct _machine_hard_uart_buf_t {
 typedef struct _machine_hard_uart_obj_t {
     mp_obj_base_t       base;
     const nrfx_uart_t * p_uart;      // Driver instance
-    machine_hard_uart_buf_t *buf;
+    machine_hard_uart_buf_t buf;
+    uint16_t timeout;       // timeout waiting for first char (in ms)
+    uint16_t timeout_char;  // timeout waiting between chars (in ms)
 } machine_hard_uart_obj_t;
 
 static const nrfx_uart_t instance0 = NRFX_UART_INSTANCE(0);
 
-STATIC machine_hard_uart_buf_t machine_hard_uart_buf[1];
-
-STATIC const machine_hard_uart_obj_t machine_hard_uart_obj[] = {
-    {{&machine_uart_type}, .p_uart = &instance0, .buf = &machine_hard_uart_buf[0]},
+STATIC machine_hard_uart_obj_t machine_hard_uart_obj[] = {
+    {{&machine_uart_type}, .p_uart = &instance0}
 };
 
 void uart_init0(void) {
@@ -124,45 +125,48 @@ STATIC int uart_find(mp_obj_t id) {
 STATIC void uart_event_handler(nrfx_uart_event_t const *p_event, void *p_context) {
     machine_hard_uart_obj_t *self = p_context;
     if (p_event->type == NRFX_UART_EVT_RX_DONE) {
-        int chr = self->buf->rx_buf[0];
-        nrfx_uart_rx(self->p_uart, &self->buf->rx_buf[0], 1);
+        nrfx_uart_rx(self->p_uart, &self->buf.rx_buf[0], 1);
+        int chr = self->buf.rx_buf[0];
         #if !MICROPY_PY_BLE_NUS && MICROPY_KBD_EXCEPTION
         if (chr == mp_interrupt_char) {
-            self->buf->rx_ringbuf.iget = 0;
-            self->buf->rx_ringbuf.iput = 0;
+            self->buf.rx_ringbuf.iget = 0;
+            self->buf.rx_ringbuf.iput = 0;
             mp_sched_keyboard_interrupt();
         } else
         #endif
         {
-            ringbuf_put((ringbuf_t*)&self->buf->rx_ringbuf, chr);
+            ringbuf_put((ringbuf_t *)&self->buf.rx_ringbuf, chr);
         }
+    } else if (p_event->type == NRFX_UART_EVT_ERROR) {
+        // Perform a read to unlock UART in case of an error
+        nrfx_uart_rx(self->p_uart, &self->buf.rx_buf[0], 1);
     }
 }
 
-bool uart_rx_any(const machine_hard_uart_obj_t *self) {
-    return self->buf->rx_ringbuf.iput != self->buf->rx_ringbuf.iget;
+bool uart_rx_any(machine_hard_uart_obj_t *self) {
+    return self->buf.rx_ringbuf.iput != self->buf.rx_ringbuf.iget;
 }
 
-int uart_rx_char(const machine_hard_uart_obj_t * self) {
-    return ringbuf_get((ringbuf_t*)&self->buf->rx_ringbuf);
+int uart_rx_char(machine_hard_uart_obj_t *self) {
+    return ringbuf_get((ringbuf_t *)&self->buf.rx_ringbuf);
 }
 
-STATIC nrfx_err_t uart_tx_char(const machine_hard_uart_obj_t * self, int c) {
+STATIC nrfx_err_t uart_tx_char(machine_hard_uart_obj_t *self, int c) {
     while (nrfx_uart_tx_in_progress(self->p_uart)) {
         ;
     }
-    self->buf->tx_buf[0] = c;
-    return nrfx_uart_tx(self->p_uart, &self->buf->tx_buf[0], 1);
+    self->buf.tx_buf[0] = c;
+    return nrfx_uart_tx(self->p_uart, &self->buf.tx_buf[0], 1);
 }
 
 
-void uart_tx_strn(const machine_hard_uart_obj_t *uart_obj, const char *str, uint len) {
+void uart_tx_strn(machine_hard_uart_obj_t *uart_obj, const char *str, uint len) {
     for (const char *top = str + len; str < top; str++) {
         uart_tx_char(uart_obj, *str);
     }
 }
 
-void uart_tx_strn_cooked(const machine_hard_uart_obj_t *uart_obj, const char *str, uint len) {
+void uart_tx_strn_cooked(machine_hard_uart_obj_t *uart_obj, const char *str, uint len) {
     for (const char *top = str + len; str < top; str++) {
         if (*str == '\n') {
             uart_tx_char(uart_obj, '\r');
@@ -184,10 +188,12 @@ STATIC void machine_hard_uart_print(const mp_print_t *print, mp_obj_t self_in, m
 ///   - `id`is bus id.
 ///   - `baudrate` is the clock rate.
 STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_baudrate };
+    enum { ARG_id, ARG_baudrate, ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
 
     // parse args
@@ -196,7 +202,7 @@ STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_a
 
     // get static peripheral object
     int uart_id = uart_find(args[ARG_id].u_obj);
-    const machine_hard_uart_obj_t * self = &machine_hard_uart_obj[uart_id];
+    machine_hard_uart_obj_t *self = &machine_hard_uart_obj[uart_id];
 
     nrfx_uart_config_t config;
 
@@ -238,19 +244,21 @@ STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_a
     config.pselrts = MICROPY_HW_UART1_RTS;
     config.pselcts = MICROPY_HW_UART1_CTS;
 #endif
+    self->timeout = args[ARG_timeout].u_int;
+    self->timeout_char = args[ARG_timeout_char].u_int;
 
     // Set context to this instance of UART
     config.p_context = (void *)self;
 
     // Initialise ring buffer
-    self->buf->rx_ringbuf.buf = self->buf->rx_ringbuf_array;
-    self->buf->rx_ringbuf.size = sizeof(self->buf->rx_ringbuf_array);
-    self->buf->rx_ringbuf.iget = 0;
-    self->buf->rx_ringbuf.iput = 0;
+    self->buf.rx_ringbuf.buf = self->buf.rx_ringbuf_array;
+    self->buf.rx_ringbuf.size = sizeof(self->buf.rx_ringbuf_array);
+    self->buf.rx_ringbuf.iget = 0;
+    self->buf.rx_ringbuf.iput = 0;
 
     // Enable event callback and start asynchronous receive
     nrfx_uart_init(self->p_uart, &config, uart_event_handler);
-    nrfx_uart_rx(self->p_uart, &self->buf->rx_buf[0], 1);
+    nrfx_uart_rx(self->p_uart, &self->buf.rx_buf[0], 1);
 
 #if NRFX_UART_ENABLED
     nrfx_uart_rx_enable(self->p_uart);
@@ -286,20 +294,29 @@ STATIC mp_obj_t machine_hard_uart_readchar(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hard_uart_readchar_obj, machine_hard_uart_readchar);
 
+// uart.any()
+STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
+    machine_hard_uart_obj_t *self = self_in;
+    return MP_OBJ_NEW_SMALL_INT(ringbuf_avail((ringbuf_t *)&self->buf.rx_ringbuf));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
+
 // uart.sendbreak()
 STATIC mp_obj_t machine_hard_uart_sendbreak(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hard_uart_sendbreak_obj, machine_hard_uart_sendbreak);
 
-// Since uart.write() waits up to the last byte, uart.txdone() always returns True.
+// uart.txdone()
 STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
-    return mp_const_true;
+    machine_hard_uart_obj_t *self = self_in;
+    return mp_obj_new_bool(!nrfx_uart_tx_in_progress(self->p_uart));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
 
 STATIC const mp_rom_map_elem_t machine_hard_uart_locals_dict_table[] = {
     // instance methods
+    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
@@ -321,14 +338,25 @@ STATIC const mp_rom_map_elem_t machine_hard_uart_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(machine_hard_uart_locals_dict, machine_hard_uart_locals_dict_table);
 
 STATIC mp_uint_t machine_hard_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
-    const machine_hard_uart_obj_t *self = self_in;
+    machine_hard_uart_obj_t *self = self_in;
     byte *buf = buf_in;
+    uint32_t t = self->timeout + mp_hal_ticks_ms();
 
     // read the data
     for (size_t i = 0; i < size; i++) {
         while (!uart_rx_any(self)) {
+            if ((int32_t)(mp_hal_ticks_ms() - t) >= 0) { // timed out
+                if (i == 0) {
+                    *errcode = MP_EAGAIN;
+                    return MP_STREAM_ERROR;
+                } else {
+                    return i;
+                }
+            }
+            MICROPY_EVENT_POLL_HOOK;
         }
         buf[i] = uart_rx_char(self);
+        t = self->timeout_char + mp_hal_ticks_ms();
     }
 
     return size;
@@ -336,14 +364,12 @@ STATIC mp_uint_t machine_hard_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_
 
 STATIC mp_uint_t machine_hard_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_hard_uart_obj_t *self = self_in;
-    const byte *buf = buf_in;
 
-    nrfx_err_t err = NRFX_SUCCESS;
-    for (int i = 0; i < size; i++) {
-        err = uart_tx_char(self, (int)((uint8_t *)buf)[i]);
-    }
-
+    nrfx_err_t err = nrfx_uart_tx(self->p_uart, buf_in, size);
     if (err == NRFX_SUCCESS) {
+        while (nrfx_uart_tx_in_progress(self->p_uart)) {
+            MICROPY_EVENT_POLL_HOOK;
+        }
         // return number of bytes written
         return size;
     } else {
@@ -355,9 +381,20 @@ STATIC mp_uint_t machine_hard_uart_write(mp_obj_t self_in, const void *buf_in, m
 STATIC mp_uint_t machine_hard_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_hard_uart_obj_t *self = self_in;
     (void)self;
+    mp_uint_t ret = 0;
 
-    if (request == MP_STREAM_FLUSH) {
-        // Since uart.write() waits up to the last byte, uart.flush() always succeds.
+    if (request == MP_STREAM_POLL) {
+        uintptr_t flags = arg;
+        if ((flags & MP_STREAM_POLL_RD) && uart_rx_any(self) != 0) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        if ((flags & MP_STREAM_POLL_WR) && !nrfx_uart_tx_in_progress(self->p_uart)) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+    } else if (request == MP_STREAM_FLUSH) {
+        while (nrfx_uart_tx_in_progress(self->p_uart)) {
+            MICROPY_EVENT_POLL_HOOK;
+        }
         return 0;
     }
     return MP_STREAM_ERROR;

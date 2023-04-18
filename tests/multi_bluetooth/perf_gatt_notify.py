@@ -90,7 +90,7 @@ def instance0():
 
         ticks_end = time.ticks_ms()
         ticks_total = time.ticks_diff(ticks_end, ticks_start)
-        print(
+        multitest.output_metric(
             "Acknowledged {} notifications in {} ms. {} ms/notification.".format(
                 _NUM_NOTIFICATIONS, ticks_total, ticks_total // _NUM_NOTIFICATIONS
             )
