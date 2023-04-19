@@ -62,10 +62,9 @@
 //|         for the changed clock. This also allocates a very large framebuffer
 //|         and is most likely to succeed the earlier it is attempted.
 //|
-//|         Each *_dp and *_dn pair of pins must be neighboring, such as 19 and
-//|         20. They must also be ordered the same way. In other words, dp must
-//|         be less than dn for all pairs or dp must be greater than dn for all
-//|         pairs.
+//|         Each dp and dn pair of pins must be neighboring, such as 19 and 20.
+//|         They must also be ordered the same way. In other words, dp must be
+//|         less than dn for all pairs or dp must be greater than dn for all pairs.
 //|
 //|         The framebuffer pixel format varies depending on color_depth:
 //|         * 1 - Each bit is a pixel. Either white (1) or black (0).
