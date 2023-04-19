@@ -1002,7 +1002,7 @@ STATIC_FILE(edit_js);
 STATIC_FILE(style_css);
 STATIC_FILE(serial_html);
 STATIC_FILE(serial_js);
-STATIC_FILE(blinka_16x16_ico);
+STATIC_FILE(blinka_32x32_ico);
 
 static void _reply_static(socketpool_socket_obj_t *socket, _request *request, const uint8_t *response, size_t response_len, const char *content_type) {
     uint32_t total_length = response_len;
@@ -1303,7 +1303,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         } else if (strcmp(request->path, "/favicon.ico") == 0) {
             // TODO: Autogenerate this based on the blinka bitmap and change the
             // palette based on MAC address.
-            _REPLY_STATIC(socket, request, blinka_16x16_ico);
+            _REPLY_STATIC(socket, request, blinka_32x32_ico);
         } else {
             _reply_missing(socket, request);
         }

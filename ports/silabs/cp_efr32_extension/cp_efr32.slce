@@ -1,0 +1,10 @@
+id: cp_efr32
+label:  CircuitPython support
+version: 1.0.0
+sdk:
+  id: "gecko_sdk"
+  version: 4.2.1
+component_path:
+  - path: ../boards/devkit_xg24_brd2601b/
+  - path: ../boards/explorerkit_xg24_brd2703a/
+  - path: ../boards/sparkfun_thingplus_matter_mgm240p_brd2704a/

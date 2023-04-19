@@ -324,3 +324,10 @@
 	path = ports/broadcom/peripherals
 	url = https://github.com/adafruit/broadcom-peripherals.git
 	branch = main-build
+[submodule "ports/silabs/gecko_sdk"]
+	path = ports/silabs/gecko_sdk
+	url = https://github.com/SiliconLabs/gecko_sdk.git
+	branch = v4.2.1
+[submodule "ports/silabs/tools/slc_cli_linux"]
+	path = ports/silabs/tools/slc_cli_linux
+	url = https://github.com/SiliconLabs/circuitpython_slc_cli_linux
