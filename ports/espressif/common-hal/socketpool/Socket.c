@@ -88,7 +88,6 @@ STATIC void socket_select_task(void *arg) {
         }
 
         assert(num_triggered > 0);
-        assert(!FD_ISSET(socket_change_fd, &excptfds));
 
         // Notice event trigger
         if (FD_ISSET(socket_change_fd, &readfds)) {
