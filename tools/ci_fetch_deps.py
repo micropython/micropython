@@ -88,6 +88,7 @@ def main():
     elif TARGET == "windows":
         # This builds one board from a number of ports so fill out a bunch of submodules
         for port in ("atmel-samd", "nrf", "raspberrypi", "stm"):
+            submodules.append(f"ports/{port}")
             submodules.extend(PORT_DEPS[port])
         unique_submodules = set(submodules)
         submodules = list(unique_submodules)
