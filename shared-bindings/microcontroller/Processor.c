@@ -70,8 +70,12 @@
 //|     **Limitations:** On most boards, ``frequency`` is read-only. Setting
 //|     the ``frequency`` is possible on RP2040 boards and some i.MX boards.
 //|
-//|     .. warning:: On RP2040 boards changing the frequency may cause issues
-//|        with other subsystems, such as USB, PWM, and PIO.
+//|     .. warning:: Overclocking likely voids your warranties and may reduce
+//|       the lifetime of the chip.
+//|
+//|     .. warning:: Changing the frequency may cause issues with other
+//|       subsystems, such as USB, PWM, and PIO. To minimize issues, set the CPU
+//|       frequency before initializing other systems.
 //|     """
 
 #if CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY

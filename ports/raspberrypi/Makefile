@@ -129,6 +129,7 @@ INC += \
         -isystem sdk/src/rp2_common/hardware_sync/include/ \
         -isystem sdk/src/rp2_common/hardware_timer/include/ \
         -isystem sdk/src/rp2_common/hardware_uart/include/ \
+        -isystem sdk/src/rp2_common/hardware_vreg/include/ \
         -isystem sdk/src/rp2_common/hardware_watchdog/include/ \
         -isystem sdk/src/rp2_common/hardware_xosc/include/ \
         -isystem sdk/src/rp2_common/pico_multicore/include/ \
@@ -216,6 +217,7 @@ SRC_SDK := \
 	src/rp2_common/hardware_sync/sync.c \
 	src/rp2_common/hardware_timer/timer.c \
 	src/rp2_common/hardware_uart/uart.c \
+	src/rp2_common/hardware_vreg/vreg.c \
 	src/rp2_common/hardware_watchdog/watchdog.c \
 	src/rp2_common/hardware_xosc/xosc.c \
 	src/rp2_common/pico_bootrom/bootrom.c \

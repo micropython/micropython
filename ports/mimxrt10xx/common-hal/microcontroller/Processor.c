@@ -59,6 +59,7 @@ void common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self,
         freq != 720 && freq != 816 && freq != 912 && freq != 960 && freq != 1008) {
         mp_raise_ValueError(translate("Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"));
     }
+    SystemCoreClock = setarmclock(frequency);
 }
 
 
