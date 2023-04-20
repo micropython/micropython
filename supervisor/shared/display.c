@@ -189,14 +189,14 @@ void supervisor_display_move_memory(void) {
     #if CIRCUITPY_DISPLAYIO
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         #if CIRCUITPY_RGBMATRIX
-        if (displays[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
-            rgbmatrix_rgbmatrix_obj_t *pm = &displays[i].rgbmatrix;
+        if (display_buses[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
+            rgbmatrix_rgbmatrix_obj_t *pm = &display_buses[i].rgbmatrix;
             common_hal_rgbmatrix_rgbmatrix_reconstruct(pm, NULL);
         }
         #endif
         #if CIRCUITPY_SHARPDISPLAY
-        if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
-            sharpdisplay_framebuffer_obj_t *sharp = &displays[i].sharpdisplay;
+        if (display_buses[i].bus_base.type == &sharpdisplay_framebuffer_type) {
+            sharpdisplay_framebuffer_obj_t *sharp = &display_buses[i].sharpdisplay;
             common_hal_sharpdisplay_framebuffer_reconstruct(sharp);
         }
         #endif
