@@ -130,6 +130,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -168,11 +169,11 @@ msgstr "Délka %q musí být <= %d"
 msgid "%q length must be >= %d"
 msgstr "Délka %q musí být >= %d"
 
-#: py/argcheck.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 msgid "%q must be %d"
 msgstr "%q musí být %d"
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/displayio/Bitmap.c
 msgid "%q must be %d-%d"
 msgstr "%q musí být %d-%d"
 
@@ -472,6 +473,7 @@ msgstr "Všechny kanály jsou používány"
 msgid "All event channels in use"
 msgstr "Všechny kanály událostí jsou již používány"
 
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr ""
@@ -480,6 +482,7 @@ msgstr ""
 msgid "All sync event channels in use"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "Všechny časovače pro tento pin jsou používány"
@@ -1234,7 +1237,9 @@ msgid "Interrupt error."
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
-#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
+#: ports/raspberrypi/bindings/picodvi/Framebuffer.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
