@@ -218,9 +218,6 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     #if MICROPY_PY_UJSON && !CIRCUITPY
     { MP_ROM_QSTR(MP_QSTR_ujson), MP_ROM_PTR(&mp_module_ujson) },
     #endif
-    #if CIRCUITPY_ULAB
-    { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
-    #endif
     #if MICROPY_PY_URE && !CIRCUITPY
     { MP_ROM_QSTR(MP_QSTR_ure), MP_ROM_PTR(&mp_module_ure) },
     #endif

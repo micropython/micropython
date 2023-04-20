@@ -1,0 +1,87 @@
+name: 'Fetch Submodules'
+
+inputs:
+  target:
+    description: 'The target for ci_fetch_deps'
+    required: false
+    type: string
+
+  submodules:
+    description: 'The submodules to cache'
+    required: false
+    default: '["extmod/ulab", "lib/", "tools/"]'
+    type: string
+
+  action:
+    description: 'The cache action to use'
+    required: false
+    default: 'restore'
+    type: choice
+    options:
+    - cache
+    - restore
+
+  version:
+    description: 'Whether to generate CP version'
+    required: false
+    default: false
+    type: boolean
+
+outputs:
+  frozen:
+    description: 'Whether frozen submodules were fetched'
+    value: ${{ steps.cp-deps.outputs.frozen_tags }}
+
+  version:
+    description: 'The CP version'
+    value: ${{ steps.cp-version.outputs.cp-version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create submodule status
+      id: create-submodule-status
+      run: |
+        git submodule status ${{ join(fromJSON(inputs.submodules), ' ') }} >> submodule_status
+        echo $(cut -d ' ' -f 2 submodule_status) | echo "submodules=[\"$(sed "s/ /\", \"/g")\"]" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Cache submodules
+      if: ${{ inputs.action == 'cache' }}
+      uses: actions/cache@v3
+      with:
+        path: ".git/modules/\n${{ join(fromJSON(steps.create-submodule-status.outputs.submodules), '\n') }}"
+        key: submodules-common-${{ hashFiles('submodule_status') }}
+        enableCrossOsArchive: true
+
+    - name: Restore submodules
+      if: ${{ inputs.action == 'restore' }}
+      uses: actions/cache/restore@v3
+      with:
+        path: ".git/modules/\n${{ join(fromJSON(steps.create-submodule-status.outputs.submodules), '\n') }}"
+        key: submodules-common-${{ hashFiles('submodule_status') }}
+        enableCrossOsArchive: true
+
+    - name: Remove submodule status
+      run: rm submodule_status
+      shell: bash
+
+    - name: CircuitPython dependencies
+      id: cp-deps
+      run: python tools/ci_fetch_deps.py ${{ inputs.target || matrix.board || github.job }}
+      shell: bash
+
+    - name: CircuitPython version
+      id: cp-version
+      if: ${{ inputs.version == 'true' }}
+      run: |
+        echo "::group::Fetch history and tags"
+        git fetch --no-recurse-submodules --shallow-since="2021-07-01" --tags https://github.com/adafruit/circuitpython HEAD
+        git fetch --no-recurse-submodules --shallow-since="2021-07-01" origin $GITHUB_SHA
+        git repack -d
+        echo "::endgroup::"
+        CP_VERSION=$(tools/describe)
+        echo "$CP_VERSION"
+        echo "CP_VERSION=$CP_VERSION" >> $GITHUB_ENV
+        echo "cp-version=$CP_VERSION" >> $GITHUB_OUTPUT
+      shell: bash

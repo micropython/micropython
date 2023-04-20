@@ -240,7 +240,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_send_obj, ssl_sslsocket_send);
 //|     def settimeout(self, value: int) -> None:
 //|         """Set the timeout value for this socket.
 //|
-//|         :param ~int value: timeout in seconds.  0 means non-blocking.  None means block indefinitely."""
+//|         :param ~int value: timeout in seconds.  0 means non-blocking.  None means block indefinitely.
+//|         """
 //|         ...
 STATIC mp_obj_t ssl_sslsocket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);

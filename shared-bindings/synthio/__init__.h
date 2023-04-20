@@ -24,11 +24,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SYNTHIO___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SYNTHIO___INIT___H
+#pragma once
 
-#include "py/obj.h"
-
-// Nothing now.
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_SYNTHIO___INIT___H
+extern int16_t shared_bindings_synthio_square_wave[];

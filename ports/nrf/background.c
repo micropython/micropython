@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "background.h"
+
 #include "py/runtime.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/port.h"
@@ -42,16 +44,25 @@
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 
-void port_start_background_task(void) {
-}
-void port_finish_background_task(void) {
+void port_start_background_tick(void) {
 }
 
-void port_background_task(void) {
+void port_finish_background_tick(void) {
+}
+
+void port_background_tick(void) {
     #if CIRCUITPY_AUDIOPWMIO
     audiopwmout_background();
     #endif
     #if CIRCUITPY_AUDIOBUSIO
     i2s_background();
     #endif
+}
+
+// Allow boards to override this.
+MP_WEAK void board_background_task(void) {
+}
+
+void port_background_task(void) {
+    board_background_task();
 }

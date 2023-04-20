@@ -90,6 +90,8 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
         return;
     }
 
+    pwmout_dev[self->number].reset = true;
+
     ioctl(pwmout_dev[self->number].fd, PWMIOC_STOP, 0);
     close(pwmout_dev[self->number].fd);
     pwmout_dev[self->number].fd = -1;
@@ -132,10 +134,6 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     never_reset_pin_number(self->pin->number);
 
     pwmout_dev[self->number].reset = false;
-}
-
-void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    pwmout_dev[self->number].reset = true;
 }
 
 void pwmout_reset(void) {

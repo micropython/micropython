@@ -55,7 +55,7 @@ void common_hal_mcu_disable_interrupts() {
         // Unlike __disable_irq(), this should only be called the first time
         // "is_nested_critical_region" is sd's equivalent of our nesting count
         // so a nested call would store 0 in the global and make the later
-        // exit call not actually reenable interrupts
+        // exit call not actually re-enable interrupts
         //
         // This only disables interrupts of priority 2 through 7; levels 0, 1,
         // and 4, are exclusive to softdevice and should never be used, so
@@ -68,9 +68,8 @@ void common_hal_mcu_disable_interrupts() {
 
 void common_hal_mcu_enable_interrupts() {
     if (nesting_count == 0) {
-        // This is very very bad because it means there was mismatched disable/enables so we
-        // crash.
-        reset_into_safe_mode(HARD_CRASH);
+        // This is very very bad because it means there was mismatched disable/enables.
+        reset_into_safe_mode(SAFE_MODE_INTERRUPT_ERROR);
     }
     nesting_count--;
     if (nesting_count > 0) {
@@ -82,13 +81,13 @@ void common_hal_mcu_enable_interrupts() {
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
     enum { DFU_MAGIC_UF2_RESET = 0x57 };
-    if (runmode == RUNMODE_BOOTLOADER) {
-        NRF_POWER->GPREGRET = DFU_MAGIC_UF2_RESET;
+    if (runmode == RUNMODE_BOOTLOADER || runmode == RUNMODE_UF2) {
+        sd_power_gpregret_set(0,DFU_MAGIC_UF2_RESET);
     } else {
-        NRF_POWER->GPREGRET = 0;
+        sd_power_gpregret_set(0,0);
     }
     if (runmode == RUNMODE_SAFE_MODE) {
-        safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+        safe_mode_on_next_reset(SAFE_MODE_PROGRAMMATIC);
     }
 }
 

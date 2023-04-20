@@ -37,7 +37,7 @@
 #include "shared-bindings/util.h"
 
 MP_WEAK const mcu_pin_obj_t *common_hal_analogio_analogin_validate_pin(mp_obj_t obj) {
-    return validate_obj_is_free_pin(obj);
+    return validate_obj_is_free_pin(obj, MP_QSTR_pin);
 }
 
 //| class AnalogIn:

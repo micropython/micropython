@@ -289,6 +289,11 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
             }
             pio_gpio_init(self->pio, pin_number);
         }
+
+        // Use lowest drive level for all State Machine outputs. (#7515
+        // workaround). Remove if/when Pin objects get a drive_strength
+        // property and use that value instead.
+        gpio_set_drive_strength(pin_number, GPIO_DRIVE_STRENGTH_2MA);
     }
 
     pio_sm_config c = {0, 0, 0};

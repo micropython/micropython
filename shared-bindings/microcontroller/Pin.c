@@ -93,23 +93,24 @@ const mp_obj_type_t mcu_pin_type = {
         )
 };
 
-const mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj) {
-    if (!mp_obj_is_type(obj, &mcu_pin_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), mcu_pin_type.name);
-    }
-    return MP_OBJ_TO_PTR(obj);
+const mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj, qstr arg_name) {
+    return MP_OBJ_TO_PTR(mp_arg_validate_type(obj, &mcu_pin_type, arg_name));
+}
+
+const mcu_pin_obj_t *validate_obj_is_pin_in(mp_obj_t obj, qstr arg_name) {
+    return MP_OBJ_TO_PTR(mp_arg_validate_type_in(obj, &mcu_pin_type, arg_name));
 }
 
 // Validate that the obj is a pin or None. Return an mcu_pin_obj_t* or NULL, correspondingly.
-const mcu_pin_obj_t *validate_obj_is_pin_or_none(mp_obj_t obj) {
+const mcu_pin_obj_t *validate_obj_is_pin_or_none(mp_obj_t obj, qstr arg_name) {
     if (obj == mp_const_none) {
         return NULL;
     }
-    return validate_obj_is_pin(obj);
+    return validate_obj_is_pin(obj, arg_name);
 }
 
-const mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj) {
-    const mcu_pin_obj_t *pin = validate_obj_is_pin(obj);
+const mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj, qstr arg_name) {
+    const mcu_pin_obj_t *pin = validate_obj_is_pin(obj, arg_name);
     assert_pin_free(pin);
     return pin;
 }
@@ -120,11 +121,11 @@ void validate_no_duplicate_pins(mp_obj_t seq, qstr arg_name) {
 
     for (size_t pin_cnt = 0; pin_cnt < num_pins; pin_cnt++) {
         mp_obj_t pin1_obj = mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(pin_cnt), MP_OBJ_SENTINEL);
-        const mcu_pin_obj_t *pin1 = validate_obj_is_pin(pin1_obj);
+        const mcu_pin_obj_t *pin1 = validate_obj_is_pin_in(pin1_obj, arg_name);
 
         for (size_t pin_cnt_2 = pin_cnt + 1; pin_cnt_2 < num_pins; pin_cnt_2++) {
             mp_obj_t pin2_obj = mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(pin_cnt_2), MP_OBJ_SENTINEL);
-            const mcu_pin_obj_t *pin2 = validate_obj_is_pin(pin2_obj);
+            const mcu_pin_obj_t *pin2 = validate_obj_is_pin_in(pin2_obj, arg_name);
             if (pin1 == pin2) {
                 mp_raise_TypeError_varg(translate("%q contains duplicate pins"), arg_name);
             }
@@ -141,11 +142,11 @@ void validate_no_duplicate_pins_2(mp_obj_t seq1, mp_obj_t seq2, qstr arg_name1, 
 
     for (size_t pin_cnt_1 = 0; pin_cnt_1 < num_pins_1; pin_cnt_1++) {
         mp_obj_t pin1_obj = mp_obj_subscr(seq1, MP_OBJ_NEW_SMALL_INT(pin_cnt_1), MP_OBJ_SENTINEL);
-        const mcu_pin_obj_t *pin1 = validate_obj_is_pin(pin1_obj);
+        const mcu_pin_obj_t *pin1 = validate_obj_is_pin_in(pin1_obj, arg_name1);
 
         for (size_t pin_cnt_2 = 0; pin_cnt_2 < num_pins_2; pin_cnt_2++) {
             mp_obj_t pin2_obj = mp_obj_subscr(seq2, MP_OBJ_NEW_SMALL_INT(pin_cnt_2), MP_OBJ_SENTINEL);
-            const mcu_pin_obj_t *pin2 = validate_obj_is_pin(pin2_obj);
+            const mcu_pin_obj_t *pin2 = validate_obj_is_pin_in(pin2_obj, arg_name2);
             if (pin1 == pin2) {
                 mp_raise_TypeError_varg(translate("%q and %q contain duplicate pins"), arg_name1, arg_name2);
             }
@@ -159,16 +160,18 @@ void validate_list_is_free_pins(qstr what, const mcu_pin_obj_t **pins_out, mp_in
     mp_arg_validate_length_max(len, max_pins, what);
     *count_out = len;
     for (mp_int_t i = 0; i < len; i++) {
-        pins_out[i] = validate_obj_is_free_pin(mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
+        pins_out[i] =
+            validate_obj_is_pin_in(mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL), what);
+        assert_pin_free(pins_out[i]);
     }
 }
 
 // Validate that the obj is a free pin or None. Return an mcu_pin_obj_t* or NULL, correspondingly.
-const mcu_pin_obj_t *validate_obj_is_free_pin_or_none(mp_obj_t obj) {
+const mcu_pin_obj_t *validate_obj_is_free_pin_or_none(mp_obj_t obj, qstr arg_name) {
     if (obj == mp_const_none) {
         return NULL;
     }
-    const mcu_pin_obj_t *pin = validate_obj_is_pin(obj);
+    const mcu_pin_obj_t *pin = validate_obj_is_pin(obj, arg_name);
     assert_pin_free(pin);
     return pin;
 }

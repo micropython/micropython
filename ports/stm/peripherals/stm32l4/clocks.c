@@ -39,6 +39,8 @@
 #error HSE support needs to be added for the L4 family.
 #elif !BOARD_HAS_LOW_SPEED_CRYSTAL
   #error LSE clock source required
+#elif !defined(BOARD_LSE_DRIVE_LEVEL)
+  #error BOARD_LSE_DRIVE_LEVEL is not defined for this board. The board should define the drive strength of 32kHz external crystal in line with calculations specified in ST AN2867 sections 3.3, 3.4, and STM32L4 datasheet DS12023 Table 58, LSE oscillator characteristics.
 #endif
 
 void Error_Handler(void) {
@@ -57,7 +59,7 @@ void stm32_peripherals_clocks_init(void) {
 
     // Configure LSE Drive
     HAL_PWR_EnableBkUpAccess();
-    __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
+    __HAL_RCC_LSEDRIVE_CONFIG(BOARD_LSE_DRIVE_LEVEL);
     __HAL_RCC_PWR_CLK_ENABLE();
 
     /** Configure the main internal regulator output voltage

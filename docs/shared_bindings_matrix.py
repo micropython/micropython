@@ -31,7 +31,18 @@ import functools
 
 from concurrent.futures import ThreadPoolExecutor
 
-SUPPORTED_PORTS = ['atmel-samd', 'broadcom', 'cxd56', 'espressif', 'litex', 'mimxrt10xx', 'nrf', 'raspberrypi', 'stm']
+SUPPORTED_PORTS = [
+    "atmel-samd",
+    "broadcom",
+    "cxd56",
+    "espressif",
+    "litex",
+    "mimxrt10xx",
+    "nrf",
+    "raspberrypi",
+    "silabs",
+    "stm",
+]
 
 ALIASES_BY_BOARD = {
     "circuitplayground_express": [
@@ -44,16 +55,11 @@ ALIASES_BY_BOARD = {
 }
 
 ALIASES_BRAND_NAMES = {
-    "circuitplayground_express_4h":
-        "Adafruit Circuit Playground Express 4-H",
-    "circuitplayground_express_digikey_pycon2019":
-        "Circuit Playground Express Digi-Key PyCon 2019",
-    "edgebadge":
-        "Adafruit EdgeBadge",
-    "pyportal_pynt":
-        "Adafruit PyPortal Pynt",
-    "gemma_m0_pycon2018":
-        "Adafruit Gemma M0 PyCon 2018",
+    "circuitplayground_express_4h": "Adafruit Circuit Playground Express 4-H",
+    "circuitplayground_express_digikey_pycon2019": "Circuit Playground Express Digi-Key PyCon 2019",
+    "edgebadge": "Adafruit EdgeBadge",
+    "pyportal_pynt": "Adafruit PyPortal Pynt",
+    "gemma_m0_pycon2018": "Adafruit Gemma M0 PyCon 2018",
 }
 
 ADDITIONAL_MODULES = {
@@ -72,7 +78,19 @@ ADDITIONAL_MODULES = {
     "usb": "CIRCUITPY_USB_HOST",
 }
 
-MODULES_NOT_IN_SHARED_BINDINGS = ["_asyncio", "array", "binascii", "builtins", "collections", "errno", "json", "re", "select", "sys", "ulab"]
+MODULES_NOT_IN_BINDINGS = [
+    "_asyncio",
+    "array",
+    "binascii",
+    "builtins",
+    "collections",
+    "errno",
+    "json",
+    "re",
+    "select",
+    "sys",
+    "ulab",
+]
 
 FROZEN_EXCLUDES = ["examples", "docs", "tests", "utils", "conf.py", "setup.py"]
 """Files and dirs at the root of a frozen directory that should be ignored.
@@ -83,16 +101,23 @@ repository_urls = {}
 
 root_dir = pathlib.Path(__file__).resolve().parent.parent
 
+
 def get_circuitpython_root_dir():
-    """ The path to the root './circuitpython' directory.
-    """
+    """The path to the root './circuitpython' directory."""
     return root_dir
 
-def get_shared_bindings():
-    """ Get a list of modules in shared-bindings based on folder names.
-    """
-    shared_bindings_dir = get_circuitpython_root_dir() / "shared-bindings"
-    return [item.name for item in shared_bindings_dir.iterdir()] + MODULES_NOT_IN_SHARED_BINDINGS
+
+def get_bindings():
+    """Get a list of modules in shared-bindings and ports/*/bindings based on folder names."""
+    shared_bindings_modules = [
+        module.name
+        for module in (get_circuitpython_root_dir() / "shared-bindings").iterdir()
+        if module.is_dir()
+    ]
+    bindings_modules = []
+    for d in get_circuitpython_root_dir().glob("ports/*/bindings"):
+        bindings_modules.extend(module.name for module in d.iterdir() if d.is_dir())
+    return shared_bindings_modules + bindings_modules + MODULES_NOT_IN_BINDINGS
 
 
 def get_board_mapping():
@@ -124,8 +149,7 @@ def get_board_mapping():
 
 
 def read_mpconfig():
-    """ Open 'circuitpy_mpconfig.mk' and return the contents.
-    """
+    """Open 'circuitpy_mpconfig.mk' and return the contents."""
     configs = []
     cpy_mpcfg = get_circuitpython_root_dir() / "py" / "circuitpy_mpconfig.mk"
     with open(cpy_mpcfg) as mpconfig:
@@ -135,14 +159,14 @@ def read_mpconfig():
 
 
 def build_module_map():
-    """ Establish the base of the JSON file, based on the contents from
-        `configs`. Base will contain module names, if they're part of
-        the `FULL_BUILD`, or their default value (0, 1, or a list of
-        modules that determine default [see audiocore, audiomixer, etc.]).
+    """Establish the base of the JSON file, based on the contents from
+    `configs`. Base will contain module names, if they're part of
+    the `FULL_BUILD`, or their default value (0, 1, or a list of
+    modules that determine default [see audiocore, audiomixer, etc.]).
 
     """
     base = dict()
-    modules = get_shared_bindings()
+    modules = get_bindings()
     configs = read_mpconfig()
     full_build = False
     for module in modules:
@@ -150,7 +174,7 @@ def build_module_map():
         if module in ADDITIONAL_MODULES:
             search_identifier = ADDITIONAL_MODULES[module]
         else:
-            search_identifier = 'CIRCUITPY_'+module.lstrip("_").upper()
+            search_identifier = "CIRCUITPY_" + module.lstrip("_").upper()
         re_pattern = f"{re.escape(search_identifier)}\s*\??=\s*(.+)"
         find_config = re.findall(re_pattern, configs)
         if not find_config:
@@ -173,21 +197,22 @@ def build_module_map():
 
     return base
 
-def get_settings_from_makefile(port_dir, board_name):
-    """ Invoke make in a mode which prints the database, then parse it for
-        settings.
 
-        This means that the effect of all Makefile directives is taken
-        into account, without having to re-encode the logic that sets them
-        in this script, something that has proved error-prone
+def get_settings_from_makefile(port_dir, board_name):
+    """Invoke make in a mode which prints the database, then parse it for
+    settings.
+
+    This means that the effect of all Makefile directives is taken
+    into account, without having to re-encode the logic that sets them
+    in this script, something that has proved error-prone
     """
     contents = subprocess.run(
-            ["make", "-C", port_dir, f"BOARD={board_name}", "-qp", "print-CC"],
-            encoding="utf-8",
-            errors="replace",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
+        ["make", "-C", port_dir, f"BOARD={board_name}", "-qp", "print-CC"],
+        encoding="utf-8",
+        errors="replace",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     # Make signals errors with exit status 2; 0 and 1 are "non-error" statuses
     if contents.returncode not in (0, 1):
         error_msg = (
@@ -197,22 +222,23 @@ def get_settings_from_makefile(port_dir, board_name):
         raise RuntimeError(error_msg)
 
     settings = {}
-    for line in contents.stdout.split('\n'):
+    for line in contents.stdout.split("\n"):
         # Handle both = and := definitions.
-        m = re.match(r'^([A-Z][A-Z0-9_]*) :?= (.*)$', line)
+        m = re.match(r"^([A-Z][A-Z0-9_]*) :?= (.*)$", line)
         if m:
             settings[m.group(1)] = m.group(2)
 
     return settings
+
 
 def get_repository_url(directory):
     if directory in repository_urls:
         return repository_urls[directory]
     readme = None
     for readme_path in (
-            os.path.join(directory, "README.rst"),
-            os.path.join(os.path.dirname(directory), "README.rst")
-        ):
+        os.path.join(directory, "README.rst"),
+        os.path.join(os.path.dirname(directory), "README.rst"),
+    ):
         if os.path.exists(readme_path):
             readme = readme_path
             break
@@ -220,7 +246,10 @@ def get_repository_url(directory):
     if readme:
         with open(readme, "r") as fp:
             for line in fp.readlines():
-                if m := re.match("\s+:target:\s+(http\S+(docs.circuitpython|readthedocs)\S+)\s*", line):
+                if m := re.match(
+                    "\s+:target:\s+(http\S+(docs.circuitpython|readthedocs)\S+)\s*",
+                    line,
+                ):
                     path = m.group(1)
                     break
                 if m := re.search("<(http[^>]+)>", line):
@@ -233,11 +262,12 @@ def get_repository_url(directory):
             errors="replace",
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            cwd=directory
+            cwd=directory,
         )
         path = contents.stdout.strip()
     repository_urls[directory] = path
     return path
+
 
 def frozen_modules_from_dirs(frozen_mpy_dirs, withurl):
     """
@@ -261,34 +291,36 @@ def frozen_modules_from_dirs(frozen_mpy_dirs, withurl):
                 else:
                     frozen_modules.append(sub.name[:-3])
                 continue
-            if next(sub.glob("**/*.py"), None): # tests if not empty
+            if next(sub.glob("**/*.py"), None):  # tests if not empty
                 if withurl:
                     frozen_modules.append((sub.name, url_repository))
                 else:
                     frozen_modules.append(sub.name)
     return frozen_modules
 
-def lookup_setting(settings, key, default=''):
+
+def lookup_setting(settings, key, default=""):
     while True:
         value = settings.get(key, default)
-        if not value.startswith('$'):
+        if not value.startswith("$"):
             break
         key = value[2:-1]
     return value
 
+
 @functools.cache
 def all_ports_all_boards(ports=SUPPORTED_PORTS):
     for port in ports:
-
         port_dir = get_circuitpython_root_dir() / "ports" / port
         for entry in (port_dir / "boards").iterdir():
             if not entry.is_dir():
                 continue
             yield (port, entry)
 
+
 def support_matrix_by_board(use_branded_name=True, withurl=True):
-    """ Compiles a list of the available core modules available for each
-        board.
+    """Compiles a list of the available core modules available for each
+    board.
     """
     base = build_module_map()
 
@@ -300,8 +332,9 @@ def support_matrix_by_board(use_branded_name=True, withurl=True):
         if use_branded_name:
             with open(entry / "mpconfigboard.h") as get_name:
                 board_contents = get_name.read()
-            board_name_re = re.search(r"(?<=MICROPY_HW_BOARD_NAME)\s+(.+)",
-                                      board_contents)
+            board_name_re = re.search(
+                r"(?<=MICROPY_HW_BOARD_NAME)\s+(.+)", board_contents
+            )
             if board_name_re:
                 board_name = board_name_re.group(1).strip('"')
         else:
@@ -309,56 +342,69 @@ def support_matrix_by_board(use_branded_name=True, withurl=True):
 
         board_modules = []
         for module in base:
-            key = base[module]['key']
-            if int(lookup_setting(settings, key, '0')):
-                board_modules.append(base[module]['name'])
+            key = base[module]["key"]
+            if int(lookup_setting(settings, key, "0")):
+                board_modules.append(base[module]["name"])
         board_modules.sort()
 
         if "CIRCUITPY_BUILD_EXTENSIONS" in settings:
             board_extensions = [
-                extension.strip() for extension in
-                settings["CIRCUITPY_BUILD_EXTENSIONS"].split(",")
+                extension.strip()
+                for extension in settings["CIRCUITPY_BUILD_EXTENSIONS"].split(",")
             ]
         else:
             raise OSError(f"Board extensions undefined: {board_name}.")
 
         frozen_modules = []
         if "FROZEN_MPY_DIRS" in settings:
-            frozen_modules = frozen_modules_from_dirs(settings["FROZEN_MPY_DIRS"], withurl)
+            frozen_modules = frozen_modules_from_dirs(
+                settings["FROZEN_MPY_DIRS"], withurl
+            )
             if frozen_modules:
                 frozen_modules.sort()
 
         # generate alias boards too
-        board_matrix = [(
-            board_name, {
-                "modules": board_modules,
-                "frozen_libraries": frozen_modules,
-                "extensions": board_extensions,
-            }
-        )]
+        board_matrix = [
+            (
+                board_name,
+                {
+                    "modules": board_modules,
+                    "frozen_libraries": frozen_modules,
+                    "extensions": board_extensions,
+                },
+            )
+        ]
         if entry.name in ALIASES_BY_BOARD:
             for alias in ALIASES_BY_BOARD[entry.name]:
                 if use_branded_name:
                     if alias in ALIASES_BRAND_NAMES:
                         alias = ALIASES_BRAND_NAMES[alias]
                     else:
-                        alias = alias.replace("_"," ").title()
-                board_matrix.append((
-                    alias, {
-                        "modules": board_modules,
-                        "frozen_libraries": frozen_modules,
-                        "extensions": board_extensions,
-                    },
-                ))
+                        alias = alias.replace("_", " ").title()
+                board_matrix.append(
+                    (
+                        alias,
+                        {
+                            "modules": board_modules,
+                            "frozen_libraries": frozen_modules,
+                            "extensions": board_extensions,
+                        },
+                    )
+                )
 
-        return board_matrix # this is now a list of (board,modules)
+        return board_matrix  # this is now a list of (board,modules)
 
     executor = ThreadPoolExecutor(max_workers=os.cpu_count())
     mapped_exec = executor.map(support_matrix, all_ports_all_boards())
     # flatmap with comprehensions
-    boards = dict(sorted([board for matrix in mapped_exec for board in matrix], key=lambda x: x[0]))
+    boards = dict(
+        sorted(
+            [board for matrix in mapped_exec for board in matrix], key=lambda x: x[0]
+        )
+    )
 
     return boards
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print(json.dumps(support_matrix_by_board(), indent=2))

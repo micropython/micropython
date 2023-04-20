@@ -31,9 +31,9 @@
 #include "common-hal/microcontroller/Pin.h"
 
 extern const mp_obj_type_t cyw43_pin_type;
-const mcu_pin_obj_t *validate_obj_is_free_pin_including_cyw43(mp_obj_t obj);
-const mcu_pin_obj_t *validate_obj_is_free_pin_or_gpio29(mp_obj_t obj);
-const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj);
+const mcu_pin_obj_t *validate_obj_is_free_pin_including_cyw43(mp_obj_t obj, qstr arg_name);
+const mcu_pin_obj_t *validate_obj_is_free_pin_or_gpio29(mp_obj_t obj, qstr arg_name);
+const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj, qstr arg_name);
 
 #define CONSTANT_CYW43_PM_VALUE(pm_mode, pm2_sleep_ret_ms, li_beacon_period, li_dtim_period, li_assoc) \
     (li_assoc << 20 | /* listen interval sent to ap */ \

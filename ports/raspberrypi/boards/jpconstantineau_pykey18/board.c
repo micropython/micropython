@@ -31,7 +31,7 @@
 
 void reset_board(void) {
     // turn off any left over LED
-    board_reset_user_neopixels(&pin_GPIO29, 62);
+    board_reset_user_neopixels(&pin_GPIO29, 19);
 }
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

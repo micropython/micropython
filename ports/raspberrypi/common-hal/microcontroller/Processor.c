@@ -38,6 +38,7 @@
 #include "src/rp2_common/hardware_adc/include/hardware/adc.h"
 #include "src/rp2_common/hardware_clocks/include/hardware/clocks.h"
 #include "src/rp2_common/hardware_vreg/include/hardware/vreg.h"
+#include "src/rp2_common/hardware_watchdog/include/hardware/watchdog.h"
 
 #include "src/rp2040/hardware_regs/include/hardware/regs/vreg_and_chip_reset.h"
 #include "src/rp2040/hardware_regs/include/hardware/regs/watchdog.h"
@@ -93,7 +94,6 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
 mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
     mcu_reset_reason_t reason = RESET_REASON_UNKNOWN;
 
-    uint32_t watchdog_reset_reg = watchdog_hw->reason;
     uint32_t chip_reset_reg = vreg_and_chip_reset_hw->chip_reset;
 
     if (chip_reset_reg & VREG_AND_CHIP_RESET_CHIP_RESET_HAD_PSM_RESTART_BITS) {
@@ -111,13 +111,14 @@ mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
 
     // Check watchdog after chip reset since watchdog doesn't clear chip_reset, while chip_reset clears the watchdog
 
-    if (watchdog_reset_reg & WATCHDOG_REASON_TIMER_BITS) {
-        // This bit can also be set during a software reset because the pico-sdk performs a software reset by setting an extremely low timeout on the watchdog, rather than triggering a watchdog reset manually
-        reason = RESET_REASON_WATCHDOG;
+    // The watchdog is used for software reboots such as resetting after copying a UF2 via the bootloader.
+    if (watchdog_caused_reboot()) {
+        reason = RESET_REASON_SOFTWARE;
     }
 
-    if (watchdog_reset_reg & WATCHDOG_REASON_FORCE_BITS) {
-        reason = RESET_REASON_SOFTWARE;
+    // Actual watchdog usage will set a special value that this function detects.
+    if (watchdog_enable_caused_reboot()) {
+        reason = RESET_REASON_WATCHDOG;
     }
 
     return reason;

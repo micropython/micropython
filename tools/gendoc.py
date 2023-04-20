@@ -11,6 +11,7 @@ import argparse
 import re
 import markdown
 
+
 # given a list of (name,regex) pairs, find the first one that matches the given line
 def re_match_first(regexs, line):
     for name, regex in regexs:
@@ -522,7 +523,7 @@ def main():
         description="Generate documentation for pyboard API from C files."
     )
     cmd_parser.add_argument(
-        "--outdir", metavar="<output dir>", default="gendoc-out", help="ouput directory"
+        "--outdir", metavar="<output dir>", default="gendoc-out", help="output directory"
     )
     cmd_parser.add_argument("--format", default="html", help="output format: html or rst")
     cmd_parser.add_argument("files", nargs="+", help="input files")

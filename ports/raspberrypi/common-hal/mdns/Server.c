@@ -36,18 +36,30 @@
 #include "lwip/apps/mdns.h"
 #include "lwip/prot/dns.h"
 
+// Track if we've inited the LWIP MDNS at all. It expects to only init once.
+// Subsequent times, we restart it.
 STATIC bool inited = false;
+// Track if we are globally inited. This essentially forces one inited MDNS
+// object at a time. (But ignores MDNS objects that are deinited.)
+STATIC bool object_inited = false;
 
 #define NETIF_STA (&cyw43_state.netif[CYW43_ITF_STA])
 #define NETIF_AP (&cyw43_state.netif[CYW43_ITF_AP])
 
 void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
-    if (inited) {
+    if (object_inited) {
+        // Mark the object as deinit since another is already using MDNS.
+        self->inited = false;
         return;
     }
 
-    mdns_resp_init();
-    inited = true;
+    if (!inited) {
+        mdns_resp_init();
+        inited = true;
+    } else {
+        mdns_resp_restart(NETIF_STA);
+    }
+    self->inited = true;
 
     uint8_t mac[6];
     wifi_radio_get_mac_address(&common_hal_wifi_radio_obj, mac);
@@ -68,19 +80,23 @@ void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_
         mp_raise_ValueError(translate("mDNS only works with built-in WiFi"));
         return;
     }
-    if (inited) {
+    if (object_inited) {
         mp_raise_RuntimeError(translate("mDNS already initialized"));
     }
     mdns_server_construct(self, false);
 }
 
 void common_hal_mdns_server_deinit(mdns_server_obj_t *self) {
-    inited = false;
+    if (common_hal_mdns_server_deinited(self)) {
+        return;
+    }
+    self->inited = false;
+    object_inited = false;
     mdns_resp_remove_netif(NETIF_STA);
 }
 
 bool common_hal_mdns_server_deinited(mdns_server_obj_t *self) {
-    return !mdns_resp_netif_active(NETIF_STA);
+    return !self->inited;
 }
 
 const char *common_hal_mdns_server_get_hostname(mdns_server_obj_t *self) {
@@ -215,7 +231,6 @@ STATIC void alloc_search_result_cb(struct mdns_answer *answer, const char *varpa
     if ((flags & MDNS_SEARCH_RESULT_FIRST) != 0) {
         // first
         mdns_remoteservice_obj_t *service = gc_alloc(sizeof(mdns_remoteservice_obj_t), 0, false);
-        mp_printf(&mp_plat_print, "found service %p\n", service);
         if (service == NULL) {
             // alloc fails
             mdns_search_stop(state->request_id);

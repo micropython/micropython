@@ -26,7 +26,7 @@ SECTIONS
         . = ALIGN(4);
         KEEP(*(.isr_vector)) /* Startup code */
 
-        /* This first flash block is 16K annd the isr vectors only take up
+        /* This first flash block is 16K and the isr vectors only take up
            about 400 bytes. Micropython pads this with files, but this didn't
            work with the size of Circuitpython's ff object. */
 

@@ -136,7 +136,9 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
-    common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
+    if (!circuitpython_splash.in_group) {
+        common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
+    }
     common_hal_displayio_display_set_auto_refresh(self, auto_refresh);
 }
 
@@ -423,7 +425,6 @@ void release_display(displayio_display_obj_t *self) {
     release_display_core(&self->core);
     #if (CIRCUITPY_PWMIO)
     if (self->backlight_pwm.base.type == &pwmio_pwmout_type) {
-        common_hal_pwmio_pwmout_reset_ok(&self->backlight_pwm);
         common_hal_pwmio_pwmout_deinit(&self->backlight_pwm);
     } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_deinit(&self->backlight_inout);
@@ -438,7 +439,9 @@ void reset_display(displayio_display_obj_t *self) {
     circuitpython_splash.x = 0; // reset position in case someone moved it.
     circuitpython_splash.y = 0;
     supervisor_start_terminal(self->core.width, self->core.height);
-    common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
+    if (!circuitpython_splash.in_group) {
+        common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
+    }
 }
 
 void displayio_display_collect_ptrs(displayio_display_obj_t *self) {

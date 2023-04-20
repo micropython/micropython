@@ -33,7 +33,7 @@
 
 #include "shared-bindings/os/__init__.h"
 
-#include "fsl_trng.h"
+#include "sdk/drivers/trng/fsl_trng.h"
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,

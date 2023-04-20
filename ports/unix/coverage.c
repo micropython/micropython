@@ -456,7 +456,7 @@ STATIC mp_obj_t extra_coverage(void) {
     {
         mp_printf(&mp_plat_print, "# VM\n");
 
-        // call mp_execute_bytecode with invalide bytecode (should raise NotImplementedError)
+        // call mp_execute_bytecode with invalid bytecode (should raise NotImplementedError)
         mp_obj_fun_bc_t fun_bc;
         fun_bc.bytecode = (const byte *)"\x01"; // just needed for n_state
         mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, mp_obj_t, 1);

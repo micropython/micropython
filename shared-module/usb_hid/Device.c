@@ -293,24 +293,40 @@ uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t
 // Callback invoked when we receive Set_Report request through control endpoint
 void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize) {
     (void)itf;
-    if (report_type == HID_REPORT_TYPE_INVALID) {
-        report_id = buffer[0];
-        buffer++;
-        bufsize--;
+
+    usb_hid_device_obj_t *hid_device = NULL;
+    size_t id_idx;
+
+    if (report_id == 0 && report_type == HID_REPORT_TYPE_INVALID) {
+        // This could be a report with a non-zero report ID in the first byte, or
+        // it could be for report ID 0.
+        // Heuristic: see if there's a device with report ID 0, and if its report length matches
+        // the size of the incoming buffer. In that case, assume the first byte is not the report ID,
+        // but is data. Otherwise use the first byte as the report id.
+        if (usb_hid_get_device_with_report_id(0, &hid_device, &id_idx) &&
+            hid_device &&
+            hid_device->out_report_buffers[id_idx] &&
+            hid_device->out_report_lengths[id_idx] == bufsize) {
+            // Use as is, with report_id 0.
+        } else {
+            // No matching report ID 0, so use the first byte as the report ID.
+            report_id = buffer[0];
+            buffer++;
+            bufsize--;
+        }
     } else if (report_type != HID_REPORT_TYPE_OUTPUT && report_type != HID_REPORT_TYPE_FEATURE) {
         return;
     }
 
-    usb_hid_device_obj_t *hid_device;
-    size_t id_idx;
-    // Find device with this report id, and get the report id index.
-    if (usb_hid_get_device_with_report_id(report_id, &hid_device, &id_idx)) {
+    // report_id might be changed due to parsing above, so test again.
+    if ((report_id == 0 && report_type == HID_REPORT_TYPE_INVALID) ||
+        // Fetch the matching device if we don't already have the report_id 0 device.
+        (usb_hid_get_device_with_report_id(report_id, &hid_device, &id_idx) &&
+         hid_device &&
+         hid_device->out_report_buffers[id_idx] &&
+         hid_device->out_report_lengths[id_idx] == bufsize)) {
         // If a report of the correct size has been read, save it in the proper OUT report buffer.
-        if (hid_device &&
-            hid_device->out_report_buffers[id_idx] &&
-            hid_device->out_report_lengths[id_idx] >= bufsize) {
-            memcpy(hid_device->out_report_buffers[id_idx], buffer, bufsize);
-            hid_device->out_report_buffers_updated[id_idx] = true;
-        }
+        memcpy(hid_device->out_report_buffers[id_idx], buffer, bufsize);
+        hid_device->out_report_buffers_updated[id_idx] = true;
     }
 }

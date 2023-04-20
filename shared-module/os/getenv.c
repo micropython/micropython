@@ -72,7 +72,7 @@ STATIC void close_file(file_arg *active_file) {
     // nothing
 }
 STATIC bool is_eof(file_arg *active_file) {
-    return f_eof(active_file);
+    return f_eof(active_file) || f_error(active_file);
 }
 
 // Return 0 if there is no next character (EOF).

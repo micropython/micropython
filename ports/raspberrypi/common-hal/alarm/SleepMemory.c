@@ -34,7 +34,6 @@ void alarm_sleep_memory_reset(void) {
 }
 
 uint32_t common_hal_alarm_sleep_memory_get_length(alarm_sleep_memory_obj_t *self) {
-    mp_raise_NotImplementedError(translate("Sleep Memory not available"));
     return 0;
 }
 

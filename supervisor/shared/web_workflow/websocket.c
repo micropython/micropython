@@ -42,7 +42,6 @@ typedef struct {
     uint8_t frame_len;
     uint8_t payload_len_size;
     bool masked;
-    bool closed;
     uint8_t mask[4];
     int frame_index;
     size_t payload_remaining;
@@ -52,22 +51,23 @@ typedef struct {
 // interrupt character.
 STATIC ringbuf_t _incoming_ringbuf;
 STATIC uint8_t _buf[16];
+// make sure background is not called recursively
+STATIC bool in_web_background = false;
 
 static _websocket cp_serial;
 
 void websocket_init(void) {
     socketpool_socket_reset(&cp_serial.socket);
-    cp_serial.closed = true;
 
     ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf) - 1);
 }
 
 void websocket_handoff(socketpool_socket_obj_t *socket) {
-    if (!cp_serial.closed) {
+    if (!common_hal_socketpool_socket_get_closed(&cp_serial.socket)) {
         common_hal_socketpool_socket_close(&cp_serial.socket);
     }
+
     socketpool_socket_move(socket, &cp_serial.socket);
-    cp_serial.closed = false;
     cp_serial.opcode = 0;
     cp_serial.frame_index = 0;
     cp_serial.frame_len = 2;
@@ -79,12 +79,14 @@ void websocket_handoff(socketpool_socket_obj_t *socket) {
 }
 
 bool websocket_connected(void) {
-    return _incoming_ringbuf.size > 0 && !cp_serial.closed && common_hal_socketpool_socket_get_connected(&cp_serial.socket);
+    return _incoming_ringbuf.size > 0 &&
+           !common_hal_socketpool_socket_get_closed(&cp_serial.socket) &&
+           common_hal_socketpool_socket_get_connected(&cp_serial.socket);
 }
 
 static bool _read_byte(uint8_t *c) {
     int len = socketpool_socket_recv_into(&cp_serial.socket, c, 1);
-    if (len != 1) {
+    if (len < 1) {
         return false;
     }
     return true;
@@ -158,8 +160,6 @@ static void _read_next_frame_header(void) {
         if (cp_serial.payload_remaining == 0) {
             cp_serial.frame_index = 0;
             if (cp_serial.opcode == 0x8) {
-                cp_serial.closed = true;
-
                 common_hal_socketpool_socket_close(&cp_serial.socket);
             }
         }
@@ -244,6 +244,10 @@ void websocket_background(void) {
     if (!websocket_connected()) {
         return;
     }
+    if (in_web_background) {
+        return;
+    }
+    in_web_background = true;
     uint8_t c;
     while (ringbuf_num_empty(&_incoming_ringbuf) > 0 &&
            _read_next_payload_byte(&c)) {
@@ -253,4 +257,5 @@ void websocket_background(void) {
         }
         ringbuf_put(&_incoming_ringbuf, c);
     }
+    in_web_background = false;
 }

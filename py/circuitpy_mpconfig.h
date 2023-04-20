@@ -145,6 +145,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_REPL_AUTO_INDENT         (1)
 #define MICROPY_REPL_EVENT_DRIVEN        (0)
 #define MICROPY_ENABLE_PYSTACK           (1)
+#define CIRCUITPY_SETTABLE_PYSTACK       (1)
 #define MICROPY_STACK_CHECK              (1)
 #define MICROPY_STREAMS_NON_BLOCK        (1)
 #ifndef MICROPY_USE_INTERNAL_PRINTF
@@ -252,6 +253,10 @@ typedef long mp_off_t;
 
 #ifndef MICROPY_FATFS_EXFAT
 #define MICROPY_FATFS_EXFAT           (CIRCUITPY_FULL_BUILD)
+#endif
+
+#ifndef MICROPY_FF_MKFS_FAT32
+#define MICROPY_FF_MKFS_FAT32           (CIRCUITPY_FULL_BUILD)
 #endif
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
@@ -388,7 +393,7 @@ extern const struct _mp_obj_module_t nvm_module;
 // Native modules that are weak links can be accessed directly
 // by prepending their name with an underscore. This list should correspond to
 // MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS, assuming you want the native modules
-// to be accessible when overriden.
+// to be accessible when overridden.
 
 #define MICROPY_PORT_BUILTIN_MODULE_ALT_NAMES
 
@@ -434,8 +439,8 @@ struct _supervisor_allocation_node;
     const char *readline_hist[8]; \
     struct _supervisor_allocation_node *first_embedded_allocation; \
 
-void supervisor_run_background_tasks_if_tick(void);
-#define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())
+void background_callback_run_all(void);
+#define RUN_BACKGROUND_TASKS (background_callback_run_all())
 
 #define MICROPY_VM_HOOK_LOOP RUN_BACKGROUND_TASKS;
 #define MICROPY_VM_HOOK_RETURN RUN_BACKGROUND_TASKS;
@@ -582,6 +587,18 @@ void supervisor_run_background_tasks_if_tick(void);
 #define MICROPY_WRAP_MP_EXECUTE_BYTECODE PLACE_IN_ITCM
 #endif
 
+#ifndef MICROPY_WRAP_MP_LOAD_GLOBAL
+#define MICROPY_WRAP_MP_LOAD_GLOBAL PLACE_IN_ITCM
+#endif
+
+#ifndef MICROPY_WRAP_MP_LOAD_NAME
+#define MICROPY_WRAP_MP_LOAD_NAME PLACE_IN_ITCM
+#endif
+
+#ifndef MICROPY_WRAP_MP_OBJ_GET_TYPE
+#define MICROPY_WRAP_MP_OBJ_GET_TYPE PLACE_IN_ITCM
+#endif
+
 #ifndef CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY
 #define CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY (0)
 #endif
@@ -593,6 +610,8 @@ void supervisor_run_background_tasks_if_tick(void);
 #ifndef CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE
 #define CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE (0)
 #endif
+
+#define FF_FS_CASE_INSENSITIVE_COMPARISON_ASCII_ONLY (1)
 
 #define FF_FS_MAKE_VOLID (1)
 

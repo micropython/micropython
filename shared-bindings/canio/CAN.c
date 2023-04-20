@@ -77,8 +77,8 @@ STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *rx_pin = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
-    const mcu_pin_obj_t *tx_pin = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);
+    const mcu_pin_obj_t *rx_pin = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj, MP_QSTR_rx);
+    const mcu_pin_obj_t *tx_pin = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj, MP_QSTR_tx);
     if (!rx_pin && !tx_pin) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
@@ -233,11 +233,7 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
 
     canio_match_obj_t *matches[nmatch];
     for (size_t i = 0; i < nmatch; i++) {
-        const mp_obj_type_t *type = mp_obj_get_type(match_objects[i]);
-        if (type != &canio_match_type) {
-            mp_raise_TypeError_varg(translate("expected '%q' but got '%q'"), MP_QSTR_Match, type->name);
-        }
-        matches[i] = MP_OBJ_TO_PTR(match_objects[i]);
+        matches[i] = mp_arg_validate_type_in(match_objects[i], &canio_match_type, MP_QSTR_matches);
     }
 
     float timeout = args[ARG_timeout].u_obj ? mp_obj_get_float(args[ARG_timeout].u_obj) : 10.0f;
@@ -272,7 +268,7 @@ STATIC mp_obj_t canio_can_send(mp_obj_t self_in, mp_obj_t message_in) {
     common_hal_canio_can_check_for_deinit(self);
     const mp_obj_type_t *message_type = mp_obj_get_type(message_in);
     if (message_type != &canio_message_type && message_type != &canio_remote_transmission_request_type) {
-        mp_raise_TypeError_varg(translate("expected '%q' or '%q' but got '%q'"), MP_QSTR_Message, MP_QSTR_RemoteTransmissionRequest, message_type->name);
+        mp_raise_TypeError_varg(translate("%q must be of type %q or %q, not %q"), MP_QSTR_message, MP_QSTR_Message, MP_QSTR_RemoteTransmissionRequest, message_type->name);
     }
 
     canio_message_obj_t *message = message_in;

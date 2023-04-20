@@ -65,5 +65,5 @@ MAKE_PRINTER(countio, countio_edge);
 MAKE_ENUM_TYPE(countio, Edge, countio_edge);
 
 countio_edge_t validate_edge(mp_obj_t obj, qstr arg_name) {
-    return cp_enum_value(&countio_edge_type, mp_arg_validate_type(obj, &countio_edge_type, arg_name));
+    return cp_enum_value(&countio_edge_type, obj, arg_name);
 }

@@ -32,8 +32,6 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate/translate.h"
 
@@ -62,7 +60,8 @@ STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t
 //|
 //|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, `audiomixer.Mixer` or `audiomp3.MP3Decoder`.
 //|
-//|         The sample must match the `audiomixer.Mixer`'s encoding settings given in the constructor."""
+//|         The sample must match the `audiomixer.Mixer`'s encoding settings given in the constructor.
+//|         """
 //|         ...
 STATIC mp_obj_t audiomixer_mixervoice_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
@@ -114,7 +113,7 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_set_level(size_t n_args, const mp_obj_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    float level = mp_obj_get_float(args[ARG_level].u_obj);
+    mp_float_t level = mp_obj_get_float(args[ARG_level].u_obj);
 
     if (level > 1 || level < 0) {
         mp_raise_ValueError(translate("level must be between 0 and 1"));

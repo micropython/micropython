@@ -182,6 +182,18 @@ endif
 ifeq ($(CIRCUITPY__EVE),1)
 SRC_PATTERNS += _eve/%
 endif
+ifeq ($(CIRCUITPY_ESPCAMERA),1)
+SRC_PATTERNS += espcamera/%
+endif
+ifeq ($(CIRCUITPY_ESPIDF),1)
+SRC_PATTERNS += espidf/%
+endif
+ifeq ($(CIRCUITPY_ESPNOW),1)
+SRC_PATTERNS += espnow/%
+endif
+ifeq ($(CIRCUITPY_ESPULP),1)
+SRC_PATTERNS += espulp/%
+endif
 ifeq ($(CIRCUITPY_FLOPPYIO),1)
 SRC_PATTERNS += floppyio/%
 endif
@@ -530,6 +542,11 @@ $(filter $(SRC_PATTERNS), \
 	wifi/Packet.c \
 )
 
+ifeq ($(CIRCUITPY_SAFEMODE_PY),1)
+SRC_BINDINGS_ENUMS += \
+	supervisor/SafeModeReason.c
+endif
+
 SRC_BINDINGS_ENUMS += \
 	util.c
 
@@ -592,6 +609,7 @@ SRC_SHARED_MODULE_ALL = \
 	getpass/__init__.c \
 	gifio/__init__.c \
 	gifio/GifWriter.c \
+	gifio/OnDiskGif.c \
 	imagecapture/ParallelImageCapture.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
@@ -630,6 +648,7 @@ SRC_SHARED_MODULE_ALL = \
 	supervisor/__init__.c \
 	supervisor/StatusBar.c \
 	synthio/MidiTrack.c \
+	synthio/Synthesizer.c \
 	synthio/__init__.c \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \
@@ -695,6 +714,13 @@ SRC_MOD += $(addprefix lib/protomatter/src/, \
 	core.c \
 )
 $(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces -Wno-missing-prototypes
+endif
+
+ifeq ($(CIRCUITPY_GIFIO),1)
+SRC_MOD += $(addprefix lib/AnimatedGIF/, \
+	gif.c \
+)
+$(BUILD)/lib/AnimatedGIF/gif.o: CFLAGS += -DCIRCUITPY
 endif
 
 ifeq ($(CIRCUITPY_ZLIB),1)

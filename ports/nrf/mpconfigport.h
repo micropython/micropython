@@ -65,7 +65,7 @@
 // This also includes mpconfigboard.h.
 #include "py/circuitpy_mpconfig.h"
 
-// Definitions that might be overriden by mpconfigboard.h
+// Definitions that might be overridden by mpconfigboard.h
 
 #ifndef CIRCUITPY_INTERNAL_NVM_SIZE
 #define CIRCUITPY_INTERNAL_NVM_SIZE (8 * 1024)

@@ -91,7 +91,7 @@ const nvm_bytearray_obj_t common_hal_bleio_nvm_obj = {
 };
 
 STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
-    reset_into_safe_mode(NORDIC_SOFT_DEVICE_ASSERT);
+    reset_into_safe_mode(SAFE_MODE_SDK_FATAL_ERROR);
 }
 
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
@@ -190,7 +190,7 @@ STATIC uint32_t ble_stack_enable(void) {
         return err_code;
     }
 
-    // Increase the GATT Server attribute size to accomodate both the CircuitPython built-in service
+    // Increase the GATT Server attribute size to accommodate both the CircuitPython built-in service
     // and anything the user does.
     memset(&ble_conf, 0, sizeof(ble_conf));
     // Each increment to the BLE_GATTS_ATTR_TAB_SIZE_DEFAULT multiplier costs 1408 bytes.
@@ -529,7 +529,7 @@ STATIC bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
 mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t *prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
     if (self->scan_results != NULL) {
         if (!shared_module_bleio_scanresults_get_done(self->scan_results)) {
-            mp_raise_bleio_BluetoothError(translate("Scan already in progess. Stop with stop_scan."));
+            mp_raise_bleio_BluetoothError(translate("Scan already in progress. Stop with stop_scan."));
         }
         self->scan_results = NULL;
     }

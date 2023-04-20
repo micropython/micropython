@@ -50,7 +50,7 @@
 /******************************************************************************/
 /* builtin functions                                                          */
 
-STATIC mp_obj_t fun_builtin_0_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_0_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)args;
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_0));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
@@ -68,7 +68,7 @@ const mp_obj_type_t mp_type_fun_builtin_0 = {
         ),
 };
 
-STATIC mp_obj_t fun_builtin_1_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_1_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_1));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
@@ -85,7 +85,7 @@ const mp_obj_type_t mp_type_fun_builtin_1 = {
         ),
 };
 
-STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_2_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_2));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
@@ -102,7 +102,7 @@ const mp_obj_type_t mp_type_fun_builtin_2 = {
         ),
 };
 
-STATIC mp_obj_t fun_builtin_3_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_3_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_3));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
@@ -119,7 +119,7 @@ const mp_obj_type_t mp_type_fun_builtin_3 = {
         ),
 };
 
-STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_var_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_var));
     mp_obj_fun_builtin_var_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -418,7 +418,7 @@ mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byt
 
 #if MICROPY_EMIT_NATIVE
 
-STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t PLACE_IN_ITCM(fun_native_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
     mp_obj_fun_bc_t *self = self_in;
     mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)self->bytecode);
@@ -505,7 +505,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
     }
 }
 
-STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t PLACE_IN_ITCM(fun_asm_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 
     mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);

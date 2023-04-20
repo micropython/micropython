@@ -48,9 +48,13 @@
 //|
 //|     def __init__(
 //|         self,
-//|         tx: microcontroller.Pin,
-//|         rx: microcontroller.Pin,
+//|         tx: Optional[microcontroller.Pin] = None,
+//|         rx: Optional[microcontroller.Pin] = None,
 //|         *,
+//|         rts: Optional[microcontroller.Pin] = None,
+//|         cts: Optional[microcontroller.Pin] = None,
+//|         rs485_dir: Optional[microcontroller.Pin] = None,
+//|         rs485_invert: bool = False,
 //|         baudrate: int = 9600,
 //|         bits: int = 8,
 //|         parity: Optional[Parity] = None,
@@ -74,11 +78,13 @@
 //|         :param float timeout:  the timeout in seconds to wait for the first character and between subsequent characters when reading. Raises ``ValueError`` if timeout >100 seconds.
 //|         :param int receiver_buffer_size: the character length of the read buffer (0 to disable). (When a character is 9 bits the buffer will be 2 * receiver_buffer_size bytes.)
 //|
+//|         ``tx`` and ``rx`` cannot both be ``None``.
+//|
 //|         *New in CircuitPython 4.0:* ``timeout`` has incompatibly changed units from milliseconds to seconds.
 //|         The new upper limit on ``timeout`` is meant to catch mistaken use of milliseconds.
 //|
 //|         **Limitations:** RS485 is not supported on SAMD, nRF, Broadcom, Spresense, or STM.
-//|         On i.MX and Raspberry Pi RP2040 support is implemented in software:
+//|         On i.MX and Raspberry Pi RP2040, RS485 support is implemented in software:
 //|         The timing for the ``rs485_dir`` pin signal is done on a best-effort basis, and may not meet
 //|         RS485 specifications intermittently.
 //|         """
@@ -116,11 +122,21 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *rx = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
-    const mcu_pin_obj_t *tx = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);
-
+    const mcu_pin_obj_t *rx = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj, MP_QSTR_rx);
+    const mcu_pin_obj_t *tx = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj, MP_QSTR_tx);
+    const mcu_pin_obj_t *rts = validate_obj_is_free_pin_or_none(args[ARG_rts].u_obj, MP_QSTR_rts);
+    const mcu_pin_obj_t *cts = validate_obj_is_free_pin_or_none(args[ARG_cts].u_obj, MP_QSTR_cts);
+    const mcu_pin_obj_t *rs485_dir = validate_obj_is_free_pin_or_none(args[ARG_rs485_dir].u_obj, MP_QSTR_rs485_dir);
     if ((tx == NULL) && (rx == NULL)) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
+    }
+
+    // Pins must be distinct.
+    if ((tx != NULL && (tx == rx || tx == rts || tx == cts || tx == rs485_dir)) ||
+        (rx != NULL && (rx == rts || rx == cts || rx == rs485_dir)) ||
+        (rts != NULL && (rts == cts || rts == rs485_dir)) ||
+        (cts != NULL && (cts == rs485_dir))) {
+        raise_ValueError_invalid_pins();
     }
 
     uint8_t bits = (uint8_t)mp_arg_validate_int_range(args[ARG_bits].u_int, 5, 9, MP_QSTR_bits);
@@ -137,15 +153,11 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     validate_timeout(timeout);
 
-    const mcu_pin_obj_t *rts = validate_obj_is_free_pin_or_none(args[ARG_rts].u_obj);
-    const mcu_pin_obj_t *cts = validate_obj_is_free_pin_or_none(args[ARG_cts].u_obj);
-    const mcu_pin_obj_t *rs485_dir = validate_obj_is_free_pin_or_none(args[ARG_rs485_dir].u_obj);
-
     const bool rs485_invert = args[ARG_rs485_invert].u_bool;
 
     // Always initially allocate the UART object within the long-lived heap.
     // This is needed to avoid crashes with certain UART implementations which
-    // cannot accomodate being moved after creation. (See
+    // cannot accommodate being moved after creation. (See
     // https://github.com/adafruit/circuitpython/issues/1056)
     busio_uart_obj_t *self = m_new_ll_obj_with_finaliser(busio_uart_obj_t);
     self->base.type = &busio_uart_type;

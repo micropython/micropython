@@ -27,16 +27,19 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "shared/runtime/interrupt_char.h"
 #include "py/ringbuf.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 
+#include "shared/runtime/interrupt_char.h"
+
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Connection.h"
-#include "supervisor/shared/tick.h"
-#include "common-hal/_bleio/CharacteristicBuffer.h"
 #include "shared-bindings/_bleio/CharacteristicBuffer.h"
+
+#include "supervisor/shared/tick.h"
+
+#include "common-hal/_bleio/ble_events.h"
 
 STATIC int characteristic_buffer_on_ble_evt(struct ble_gap_event *event, void *param) {
     bleio_characteristic_buffer_obj_t *self = (bleio_characteristic_buffer_obj_t *)param;
@@ -49,7 +52,19 @@ STATIC int characteristic_buffer_on_ble_evt(struct ble_gap_event *event, void *p
                 event->notify_rx.attr_handle == self->characteristic->handle) {
                 const struct os_mbuf *m = event->notify_rx.om;
                 while (m != NULL) {
-                    ringbuf_put_n(&self->ringbuf, m->om_data, m->om_len);
+                    const uint8_t *data = m->om_data;
+                    uint16_t len = m->om_len;
+                    if (self->watch_for_interrupt_char) {
+                        for (uint16_t i = 0; i < len; i++) {
+                            if (data[i] == mp_interrupt_char) {
+                                mp_sched_keyboard_interrupt();
+                            } else {
+                                ringbuf_put(&self->ringbuf, data[i]);
+                            }
+                        }
+                    } else {
+                        ringbuf_put_n(&self->ringbuf, data, len);
+                    }
                     m = SLIST_NEXT(m, om_next);
                 }
             }
@@ -69,9 +84,11 @@ void _common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buff
     bleio_characteristic_obj_t *characteristic,
     mp_float_t timeout,
     uint8_t *buffer, size_t buffer_size,
-    void *static_handler_entry) {
+    void *static_handler_entry,
+    bool watch_for_interrupt_char) {
     self->characteristic = characteristic;
     self->timeout_ms = timeout * 1000;
+    self->watch_for_interrupt_char = watch_for_interrupt_char;
     ringbuf_init(&self->ringbuf, buffer, buffer_size);
 
     if (static_handler_entry != NULL) {
@@ -87,7 +104,7 @@ void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffe
     mp_float_t timeout,
     size_t buffer_size) {
     uint8_t *buffer = m_malloc(buffer_size, true);
-    _common_hal_bleio_characteristic_buffer_construct(self, characteristic, timeout, buffer, buffer_size, NULL);
+    _common_hal_bleio_characteristic_buffer_construct(self, characteristic, timeout, buffer, buffer_size, NULL, false);
 }
 
 uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_t *self, uint8_t *data, size_t len, int *errcode) {

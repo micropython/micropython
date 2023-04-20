@@ -34,7 +34,7 @@
 #include "py/obj.h"
 #include "periph.h"
 
-#include "fsl_lpuart.h"
+#include "sdk/drivers/lpuart/fsl_lpuart.h"
 
 typedef struct {
     mp_obj_base_t base;

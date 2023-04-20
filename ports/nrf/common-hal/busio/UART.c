@@ -183,9 +183,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("All UART peripherals are in use"));
     }
 
-    if ((tx == NULL) && (rx == NULL)) {
-        mp_raise_ValueError(translate("tx and rx cannot both be None"));
-    }
+    // shared-bindings checks that TX and RX are not both None, so we don't need to check here.
 
     mp_arg_validate_int_min(receiver_buffer_size, 1, MP_QSTR_receiver_buffer_size);
 

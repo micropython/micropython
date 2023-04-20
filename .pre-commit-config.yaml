@@ -8,9 +8,19 @@ repos:
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
-        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|ports/espressif/esp-idf-config/.*|ports/espressif/boards/.*/sdkconfig)'
+        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*)'
     -   id: trailing-whitespace
-        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|lib/mbedtls_errors/.*)'
+        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|lib/mbedtls_errors/generate_errors.diff)'
+-   repo: https://github.com/codespell-project/codespell
+    rev: v2.2.4
+    hooks:
+    -   id: codespell
+        args: [-w]
+        exclude: |
+          (?x)^(
+            locale/|
+            lib/
+          )
 -   repo: local
     hooks:
     -   id: translations

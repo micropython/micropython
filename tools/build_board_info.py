@@ -6,10 +6,12 @@
 
 import json
 import os
+import requests
 import subprocess
 import sys
 import sh
 import base64
+from io import StringIO
 from datetime import date
 from sh.contrib import git
 
@@ -58,9 +60,13 @@ def get_languages(list_all=False):
 
 def get_version_info():
     version = None
-    sha = git("rev-parse", "--short", "HEAD").stdout.decode("utf-8")
+    buffer = StringIO()
+    git("rev-parse", "--short", "HEAD", _out=buffer)
+    sha = buffer.getvalue().strip()
     try:
-        version = git("describe", "--tags", "--exact-match").stdout.decode("utf-8").strip()
+        buffer = StringIO()
+        git("describe", "--tags", "--exact-match", _out=buffer)
+        version = buffer.getvalue().strip()
     except sh.ErrorReturnCode_128:
         # No exact match
         pass
@@ -91,7 +97,19 @@ def get_current_info():
     response = response.json()
 
     git_info = commit_sha, response["sha"]
-    current_list = json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+
+    if response["content"] != "":
+        # if the file is there
+        current_list = json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+    else:
+        # if too big, the file is not included
+        download_url = response["download_url"]
+        response = requests.get(download_url)
+        if not response.ok:
+            print(response.text)
+            raise RuntimeError("cannot get previous files.json")
+        current_list = response.json()
+
     current_info = {}
     for info in current_list:
         current_info[info["id"]] = info
@@ -118,10 +136,10 @@ def create_pr(changes, updated, git_info, user):
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
     if changes["new_boards"]:
-        boards = "New boards:\n* " + "\n* ".join(changes["new_boards"])
+        boards = "New boards:\n* " + "\n* ".join(sorted(changes["new_boards"]))
     languages = ""
     if changes["new_languages"]:
-        languages = "New languages:\n* " + "\n* ".join(changes["new_languages"])
+        languages = "New languages:\n* " + "\n* ".join(sorted(changes["new_languages"]))
     message = "Automated website update for release {} by Blinka.\n\n{}\n\n{}\n".format(
         changes["new_release"], boards, languages
     )

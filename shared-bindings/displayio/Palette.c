@@ -40,28 +40,53 @@
 //|     """Map a pixel palette_index to a full color. Colors are transformed to the display's format internally to
 //|     save memory."""
 //|
-//|     def __init__(self, color_count: int) -> None:
+//|     def __init__(self, color_count: int, *, dither: bool = False) -> None:
 //|         """Create a Palette object to store a set number of colors.
 //|
-//|         :param int color_count: The number of colors in the Palette"""
+//|         :param int color_count: The number of colors in the Palette
+//|         :param bool dither: When true, dither the RGB color before converting to the display's color space
+//|         """
 //|         ...
 // TODO(tannewt): Add support for other color formats.
 // TODO(tannewt): Add support for 8-bit alpha blending.
 //|
 STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_color_count };
+    enum { ARG_color_count, ARG_dither };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_color_count, MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_dither, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     displayio_palette_t *self = m_new_obj(displayio_palette_t);
     self->base.type = &displayio_palette_type;
-    common_hal_displayio_palette_construct(self, args[ARG_color_count].u_int);
+    common_hal_displayio_palette_construct(self, mp_arg_validate_int_range(args[ARG_color_count].u_int, 1, 32767, MP_QSTR_color_count), args[ARG_dither].u_bool);
 
     return MP_OBJ_FROM_PTR(self);
 }
+
+//|     dither: bool
+//|     """When `True` the Palette dithers the output color by adding random
+//|     noise when truncating to display bitdepth"""
+STATIC mp_obj_t displayio_palette_obj_get_dither(mp_obj_t self_in) {
+    displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(common_hal_displayio_palette_get_dither(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_palette_get_dither_obj, displayio_palette_obj_get_dither);
+
+STATIC mp_obj_t displayio_palette_obj_set_dither(mp_obj_t self_in, mp_obj_t dither) {
+    displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_displayio_palette_set_dither(self, mp_obj_is_true(dither));
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_set_dither_obj, displayio_palette_obj_set_dither);
+
+MP_PROPERTY_GETSET(displayio_palette_dither_obj,
+    (mp_obj_t)&displayio_palette_get_dither_obj,
+    (mp_obj_t)&displayio_palette_set_dither_obj);
 
 //|     def __bool__(self) -> bool: ...
 //|     def __len__(self) -> int:
@@ -185,6 +210,7 @@ STATIC mp_obj_t displayio_palette_obj_is_transparent(mp_obj_t self_in, mp_obj_t 
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_is_transparent_obj, displayio_palette_obj_is_transparent);
 
 STATIC const mp_rom_map_elem_t displayio_palette_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&displayio_palette_dither_obj) },
     { MP_ROM_QSTR(MP_QSTR_make_transparent), MP_ROM_PTR(&displayio_palette_make_transparent_obj) },
     { MP_ROM_QSTR(MP_QSTR_make_opaque), MP_ROM_PTR(&displayio_palette_make_opaque_obj) },
     { MP_ROM_QSTR(MP_QSTR_is_transparent), MP_ROM_PTR(&displayio_palette_is_transparent_obj) },

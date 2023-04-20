@@ -11,6 +11,7 @@ import subprocess
 import shutil
 import build_board_info as build_info
 import time
+import json
 
 sys.path.append("../docs")
 from shared_bindings_matrix import get_settings_from_makefile
@@ -18,7 +19,7 @@ from shared_bindings_matrix import get_settings_from_makefile
 for port in build_info.SUPPORTED_PORTS:
     result = subprocess.run("rm -rf ../ports/{port}/build*".format(port=port), shell=True)
 
-PARALLEL = "-j 5"
+PARALLEL = "-j 4"
 if "GITHUB_ACTION" in os.environ:
     PARALLEL = "-j 2"
 
@@ -28,6 +29,11 @@ if "BOARDS" in os.environ:
     build_boards = os.environ["BOARDS"].split()
 
 sha, version = build_info.get_version_info()
+
+build_all = os.environ.get("GITHUB_EVENT_NAME") != "pull_request"
+
+LANGUAGE_FIRST = "en_US"
+LANGUAGE_THRESHOLD = 10 * 1024
 
 languages = build_info.get_languages()
 
@@ -43,6 +49,9 @@ for board in build_boards:
     os.makedirs(bin_directory, exist_ok=True)
     board_info = all_boards[board]
     board_settings = get_settings_from_makefile("../ports/" + board_info["port"], board)
+
+    languages.remove(LANGUAGE_FIRST)
+    languages.insert(0, LANGUAGE_FIRST)
 
     for language in languages:
         bin_directory = "../bin/{board}/{language}".format(board=board, language=language)
@@ -66,13 +75,20 @@ for board in build_boards:
         if clean_build:
             build_dir += "-{language}".format(language=language)
 
+        extensions = [
+            extension.strip()
+            for extension in board_settings["CIRCUITPY_BUILD_EXTENSIONS"].split(",")
+        ]
+
+        artifacts = [os.path.join(build_dir, "firmware." + extension) for extension in extensions]
         make_result = subprocess.run(
-            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} BUILD={build} -j {cores}".format(
+            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} BUILD={build} -j {cores} {artifacts}".format(
                 port=board_info["port"],
                 language=language,
                 board=board,
                 build=build_dir,
                 cores=cores,
+                artifacts=" ".join(artifacts),
             ),
             shell=True,
             stdout=subprocess.PIPE,
@@ -86,10 +102,6 @@ for board in build_boards:
             success = "\033[31mfailed\033[0m"
 
         other_output = ""
-        extensions = [
-            extension.strip()
-            for extension in board_settings["CIRCUITPY_BUILD_EXTENSIONS"].split(",")
-        ]
 
         for extension in extensions:
             temp_filename = "../ports/{port}/{build}/firmware.{extension}".format(
@@ -126,5 +138,17 @@ for board in build_boards:
 
         # Flush so we will see something before 10 minutes has passed.
         print(flush=True)
+
+        if (not build_all) and (language is LANGUAGE_FIRST) and (exit_status is 0):
+            try:
+                with open(
+                    f"../ports/{board_info['port']}/{build_dir}/firmware.size.json", "r"
+                ) as f:
+                    firmware = json.load(f)
+                    if firmware["used_flash"] + LANGUAGE_THRESHOLD < firmware["firmware_region"]:
+                        print("Skipping languages")
+                        break
+            except FileNotFoundError:
+                pass
 
 sys.exit(exit_status)

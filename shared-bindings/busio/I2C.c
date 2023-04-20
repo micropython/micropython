@@ -33,6 +33,7 @@
 
 #include "shared/runtime/buffer_helper.h"
 #include "shared/runtime/context_manager_helpers.h"
+#include "py/binary.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate/translate.h"
 
@@ -47,7 +48,6 @@
 //|         frequency: int = 100000,
 //|         timeout: int = 255
 //|     ) -> None:
-//|
 //|         """I2C is a two-wire protocol for communicating between devices.  At the
 //|         physical level it consists of 2 wires: SCL and SDA, the clock and data
 //|         lines respectively.
@@ -80,8 +80,8 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
-    const mcu_pin_obj_t *sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
+    const mcu_pin_obj_t *scl = validate_obj_is_free_pin(args[ARG_scl].u_obj, MP_QSTR_scl);
+    const mcu_pin_obj_t *sda = validate_obj_is_free_pin(args[ARG_sda].u_obj, MP_QSTR_sda);
 
     common_hal_busio_i2c_construct(self, scl, sda, args[ARG_frequency].u_int, args[ARG_timeout].u_int);
     return (mp_obj_t)self;
@@ -207,11 +207,17 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
 
-    size_t length = bufinfo.len;
+    // Compute bounds in terms of elements, not bytes.
+    int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
+    size_t length = bufinfo.len / stride_in_bytes;
     int32_t start = args[ARG_start].u_int;
     const int32_t end = args[ARG_end].u_int;
     normalize_buffer_bounds(&start, end, &length);
     mp_arg_validate_length_min(length, 1, MP_QSTR_buffer);
+
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
 
     uint8_t status =
         common_hal_busio_i2c_read(self, args[ARG_address].u_int, ((uint8_t *)bufinfo.buf) + start, length);
@@ -260,11 +266,17 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
     // get the buffer to write the data from
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
+    int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
 
-    size_t length = bufinfo.len;
+    // Compute bounds in terms of elements, not bytes.
+    size_t length = bufinfo.len / stride_in_bytes;
     int32_t start = args[ARG_start].u_int;
     const int32_t end = args[ARG_end].u_int;
     normalize_buffer_bounds(&start, end, &length);
+
+    // Treat start and length in terms of bytes from now on.
+    start *= stride_in_bytes;
+    length *= stride_in_bytes;
 
     // do the transfer
     uint8_t status =
@@ -331,23 +343,29 @@ STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *p
 
     mp_buffer_info_t out_bufinfo;
     mp_get_buffer_raise(args[ARG_out_buffer].u_obj, &out_bufinfo, MP_BUFFER_READ);
-
-    size_t out_length = out_bufinfo.len;
+    int out_stride_in_bytes = mp_binary_get_size('@', out_bufinfo.typecode, NULL);
+    size_t out_length = out_bufinfo.len / out_stride_in_bytes;
     int32_t out_start = args[ARG_out_start].u_int;
     const int32_t out_end = args[ARG_out_end].u_int;
     normalize_buffer_bounds(&out_start, out_end, &out_length);
 
     mp_buffer_info_t in_bufinfo;
     mp_get_buffer_raise(args[ARG_in_buffer].u_obj, &in_bufinfo, MP_BUFFER_WRITE);
-
-    size_t in_length = in_bufinfo.len;
+    int in_stride_in_bytes = mp_binary_get_size('@', in_bufinfo.typecode, NULL);
+    size_t in_length = in_bufinfo.len / in_stride_in_bytes;
     int32_t in_start = args[ARG_in_start].u_int;
     const int32_t in_end = args[ARG_in_end].u_int;
     normalize_buffer_bounds(&in_start, in_end, &in_length);
     mp_arg_validate_length_min(in_length, 1, MP_QSTR_out_buffer);
 
+    // Treat start and length in terms of bytes from now on.
+    out_start *= out_stride_in_bytes;
+    out_length *= out_stride_in_bytes;
+    in_start *= in_stride_in_bytes;
+    in_length *= in_stride_in_bytes;
+
     uint8_t status = common_hal_busio_i2c_write_read(self, args[ARG_address].u_int,
-        ((uint8_t *)out_bufinfo.buf) + out_start, out_length,((uint8_t *)in_bufinfo.buf) + in_start, in_length);
+        ((uint8_t *)out_bufinfo.buf) + out_start, out_length, ((uint8_t *)in_bufinfo.buf) + in_start, in_length);
     if (status != 0) {
         mp_raise_OSError(status);
     }

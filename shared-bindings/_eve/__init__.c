@@ -93,7 +93,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc_obj, _cc);
 //|         :param int func: specifies the test function, one of ``NEVER``, ``LESS``, ``LEQUAL``, ``GREATER``, ``GEQUAL``, ``EQUAL``, ``NOTEQUAL``, or ``ALWAYS``. Range 0-7. The initial value is ALWAYS(7)
 //|         :param int ref: specifies the reference value for the alpha test. Range 0-255. The initial value is 0
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _alphafunc(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
@@ -109,7 +110,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(alphafunc_obj, _alphafunc);
 //|
 //|         :param int prim: graphics primitive.
 //|
-//|         Valid primitives are ``BITMAPS``, ``POINTS``, ``LINES``, ``LINE_STRIP``, ``EDGE_STRIP_R``, ``EDGE_STRIP_L``, ``EDGE_STRIP_A``, ``EDGE_STRIP_B`` and ``RECTS``."""
+//|         Valid primitives are ``BITMAPS``, ``POINTS``, ``LINES``, ``LINE_STRIP``, ``EDGE_STRIP_R``, ``EDGE_STRIP_L``, ``EDGE_STRIP_A``, ``EDGE_STRIP_B`` and ``RECTS``.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _begin(mp_obj_t self, mp_obj_t a0) {
@@ -137,7 +139,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmapextformat_obj, _bitmapextformat);
 //|
 //|         :param int handle: bitmap handle. Range 0-31. The initial value is 0
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _bitmaphandle(mp_obj_t self, mp_obj_t a0) {
@@ -218,7 +221,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapsize_obj, 6, 6, _bitmapsize);
 //|     def BitmapSource(self, addr: int) -> None:
 //|         """Set the source address for bitmap graphics
 //|
-//|         :param int addr: Bitmap start address, pixel-aligned. May be in SRAM or flash. Range 0-16777215"""
+//|         :param int addr: Bitmap start address, pixel-aligned. May be in SRAM or flash. Range 0-16777215
+//|         """
 //|         ...
 
 STATIC mp_obj_t _bitmapsource(mp_obj_t self, mp_obj_t a0) {
@@ -255,7 +259,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapswizzle_obj, 5, 5, _bitmapswizz
 //|
 //|         The initial value is **p** = 0, **v** = 256. This represents the value 1.0.
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _bitmaptransforma(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
@@ -274,7 +279,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforma_obj, _bitmaptransforma);
 //|
 //|         The initial value is **p** = 0, **v** = 0. This represents the value 0.0.
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _bitmaptransformb(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
@@ -290,7 +296,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformb_obj, _bitmaptransformb);
 //|
 //|         :param int v: The :math:`c` component of the bitmap transform matrix, in signed 15.8 bit fixed-point form. Range 0-16777215. The initial value is 0
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _bitmaptransformc(mp_obj_t self, mp_obj_t a0) {
@@ -308,7 +315,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformc_obj, _bitmaptransformc);
 //|
 //|         The initial value is **p** = 0, **v** = 0. This represents the value 0.0.
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _bitmaptransformd(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
@@ -327,7 +335,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformd_obj, _bitmaptransformd);
 //|
 //|         The initial value is **p** = 0, **v** = 256. This represents the value 1.0.
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _bitmaptransforme(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
@@ -343,7 +352,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforme_obj, _bitmaptransforme);
 //|
 //|         :param int v: The :math:`f` component of the bitmap transform matrix, in signed 15.8 bit fixed-point form. Range 0-16777215. The initial value is 0
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _bitmaptransformf(mp_obj_t self, mp_obj_t a0) {
@@ -359,7 +369,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformf_obj, _bitmaptransformf);
 //|         :param int src: specifies how the source blending factor is computed.  One of ``ZERO``, ``ONE``, ``SRC_ALPHA``, ``DST_ALPHA``, ``ONE_MINUS_SRC_ALPHA`` or ``ONE_MINUS_DST_ALPHA``. Range 0-7. The initial value is SRC_ALPHA(2)
 //|         :param int dst: specifies how the destination blending factor is computed, one of the same constants as **src**. Range 0-7. The initial value is ONE_MINUS_SRC_ALPHA(4)
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _blendfunc(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
@@ -388,7 +399,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(call_obj, _call);
 //|
 //|         :param int cell: bitmap cell number. Range 0-127. The initial value is 0
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _cell(mp_obj_t self, mp_obj_t a0) {
@@ -403,7 +415,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cell_obj, _cell);
 //|
 //|         :param int alpha: alpha value used when the color buffer is cleared. Range 0-255. The initial value is 0
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _clearcolora(mp_obj_t self, mp_obj_t a0) {
@@ -420,7 +433,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(clearcolora_obj, _clearcolora);
 //|         :param int green: green value used when the color buffer is cleared. Range 0-255. The initial value is 0
 //|         :param int blue: blue value used when the color buffer is cleared. Range 0-255. The initial value is 0
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _clearcolorrgb(size_t n_args, const mp_obj_t *args) {
@@ -454,7 +468,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(clear_obj, 1, 4, _clear);
 //|
 //|         :param int s: value used when the stencil buffer is cleared. Range 0-255. The initial value is 0
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _clearstencil(mp_obj_t self, mp_obj_t a0) {
@@ -469,7 +484,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(clearstencil_obj, _clearstencil);
 //|
 //|         :param int s: value used when the tag buffer is cleared. Range 0-255. The initial value is 0
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 
 STATIC mp_obj_t _cleartag(mp_obj_t self, mp_obj_t a0) {
     uint32_t s = mp_obj_get_int_truncated(a0);
@@ -483,7 +499,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cleartag_obj, _cleartag);
 //|
 //|         :param int alpha: alpha for the current color. Range 0-255. The initial value is 255
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _colora(mp_obj_t self, mp_obj_t a0) {
@@ -501,7 +518,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(colora_obj, _colora);
 //|         :param int b: allow updates to the frame buffer blue component. Range 0-1. The initial value is 1
 //|         :param int a: allow updates to the frame buffer alpha component. Range 0-1. The initial value is 1
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _colormask(size_t n_args, const mp_obj_t *args) {
@@ -521,7 +539,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(colormask_obj, 5, 5, _colormask);
 //|         :param int green: green for the current color. Range 0-255. The initial value is 255
 //|         :param int blue: blue for the current color. Range 0-255. The initial value is 255
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _colorrgb(size_t n_args, const mp_obj_t *args) {
@@ -547,7 +566,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(display_obj, _display);
 //|     def End(self) -> None:
 //|         """End drawing a graphics primitive
 //|
-//|         :meth:`Vertex2ii` and :meth:`Vertex2f` calls are ignored until the next :meth:`Begin`."""
+//|         :meth:`Vertex2ii` and :meth:`Vertex2f` calls are ignored until the next :meth:`Begin`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _end(mp_obj_t self) {
@@ -599,7 +619,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(nop_obj, _nop);
 //|
 //|         :param int addr: Address in graphics SRAM, 2-byte aligned. Range 0-4194303. The initial value is 0
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _palettesource(mp_obj_t self, mp_obj_t a0) {
@@ -648,7 +669,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(savecontext_obj, _savecontext);
 //|         :param int width: The width of the scissor clip rectangle, in pixels. Range 0-4095. The initial value is hsize
 //|         :param int height: The height of the scissor clip rectangle, in pixels. Range 0-4095. The initial value is 2048
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _scissorsize(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
@@ -665,7 +687,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(scissorsize_obj, _scissorsize);
 //|         :param int x: The :math:`x` coordinate of the scissor clip rectangle, in pixels. Range 0-2047. The initial value is 0
 //|         :param int y: The :math:`y` coordinate of the scissor clip rectangle, in pixels. Range 0-2047. The initial value is 0
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _scissorxy(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
@@ -683,7 +706,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(scissorxy_obj, _scissorxy);
 //|         :param int ref: specifies the reference value for the stencil test. Range 0-255. The initial value is 0
 //|         :param int mask: specifies a mask that is ANDed with the reference value and the stored stencil value. Range 0-255. The initial value is 255
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _stencilfunc(size_t n_args, const mp_obj_t *args) {
@@ -700,7 +724,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stencilfunc_obj, 4, 4, _stencilfunc);
 //|
 //|         :param int mask: the mask used to enable writing stencil bits. Range 0-255. The initial value is 255
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _stencilmask(mp_obj_t self, mp_obj_t a0) {
@@ -716,7 +741,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(stencilmask_obj, _stencilmask);
 //|         :param int sfail: specifies the action to take when the stencil test fails, one of ``KEEP``, ``ZERO``, ``REPLACE``, ``INCR``, ``INCR_WRAP``, ``DECR``, ``DECR_WRAP``, and ``INVERT``. Range 0-7. The initial value is KEEP(1)
 //|         :param int spass: specifies the action to take when the stencil test passes, one of the same constants as **sfail**. Range 0-7. The initial value is KEEP(1)
 //|
-//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         These values are part of the graphics context and are saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _stencilop(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
@@ -732,7 +758,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(stencilop_obj, _stencilop);
 //|
 //|         :param int mask: allow updates to the tag buffer. Range 0-1. The initial value is 1
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _tagmask(mp_obj_t self, mp_obj_t a0) {
@@ -747,7 +774,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(tagmask_obj, _tagmask);
 //|
 //|         :param int s: tag value. Range 0-255. The initial value is 255
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _tag(mp_obj_t self, mp_obj_t a0) {
@@ -857,7 +885,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(vertex2f_obj, _vertex2f);
 //|
 //|         :param float width: line width in pixels. Range 0-511. The initial value is 1
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _linewidth(mp_obj_t self, mp_obj_t a0) {
@@ -872,7 +901,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(linewidth_obj, _linewidth);
 //|
 //|         :param float size: point diameter in pixels. Range 0-1023. The initial value is 1
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _pointsize(mp_obj_t self, mp_obj_t a0) {
@@ -887,7 +917,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pointsize_obj, _pointsize);
 //|
 //|         :param float x: signed x-coordinate in pixels. Range ±4095. The initial value is 0
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 STATIC mp_obj_t _vertextranslatex(mp_obj_t self, mp_obj_t a0) {
@@ -902,7 +933,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatex_obj, _vertextranslatex);
 //|
 //|         :param float y: signed y-coordinate in pixels. Range ±4095. The initial value is 0
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 
@@ -918,7 +950,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatey_obj, _vertextranslatey);
 //|
 //|         :param int frac: Number of fractional bits in X,Y coordinates, 0-4. Range 0-7. The initial value is 4
 //|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`.
+//|         """
 //|         ...
 
 // }

@@ -1,2 +1,2 @@
 # For uploading artifacts
-awscli
+# awscli

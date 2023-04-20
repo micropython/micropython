@@ -44,8 +44,8 @@
 
 extern Protomatter_core *_PM_protoPtr;
 
-STATIC uint8_t validate_pin(mp_obj_t obj) {
-    const mcu_pin_obj_t *result = validate_obj_is_free_pin(obj);
+STATIC uint8_t validate_pin(mp_obj_t obj, qstr arg_name) {
+    const mcu_pin_obj_t *result = validate_obj_is_free_pin(obj, arg_name);
     return common_hal_mcu_pin_number(result);
 }
 
@@ -210,9 +210,9 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     uint8_t rgb_count, addr_count;
     uint8_t rgb_pins[MP_ARRAY_SIZE(self->rgb_pins)];
     uint8_t addr_pins[MP_ARRAY_SIZE(self->addr_pins)];
-    uint8_t clock_pin = validate_pin(args[ARG_clock_pin].u_obj);
-    uint8_t latch_pin = validate_pin(args[ARG_latch_pin].u_obj);
-    uint8_t output_enable_pin = validate_pin(args[ARG_output_enable_pin].u_obj);
+    uint8_t clock_pin = validate_pin(args[ARG_clock_pin].u_obj, MP_QSTR_clock_pin);
+    uint8_t latch_pin = validate_pin(args[ARG_latch_pin].u_obj, MP_QSTR_latch_pin);
+    uint8_t output_enable_pin = validate_pin(args[ARG_output_enable_pin].u_obj, MP_QSTR_output_enable_pin);
     mp_int_t bit_depth = mp_arg_validate_int_range(args[ARG_bit_depth].u_int, 1, 6, MP_QSTR_bit_depth);
 
     validate_pins(MP_QSTR_rgb_pins, rgb_pins, MP_ARRAY_SIZE(self->rgb_pins), args[ARG_rgb_list].u_obj, &rgb_count);

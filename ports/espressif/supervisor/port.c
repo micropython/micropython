@@ -37,6 +37,7 @@
 #include "freertos/task.h"
 
 #include "bindings/espidf/__init__.h"
+#include "bindings/espnow/__init__.h"
 #include "bindings/espulp/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogOut.h"
@@ -78,7 +79,7 @@
 #include "shared-bindings/_bleio/__init__.h"
 #endif
 
-#if CIRCUITPY_ESP32_CAMERA
+#if CIRCUITPY_ESPCAMERA
 #include "esp_camera.h"
 #endif
 
@@ -318,30 +319,30 @@ safe_mode_t port_init(void) {
     }
     if (heap == NULL) {
         heap_size = 0;
-        return NO_HEAP;
+        return SAFE_MODE_NO_HEAP;
     }
 
     esp_reset_reason_t reason = esp_reset_reason();
     switch (reason) {
         case ESP_RST_BROWNOUT:
-            return BROWNOUT;
+            return SAFE_MODE_BROWNOUT;
         case ESP_RST_PANIC:
-            return HARD_CRASH;
+            return SAFE_MODE_HARD_FAULT;
         case ESP_RST_INT_WDT:
             // The interrupt watchdog is used internally to make sure that latency sensitive
             // interrupt code isn't blocked. User watchdog resets come through ESP_RST_WDT.
-            return WATCHDOG_RESET;
+            return SAFE_MODE_WATCHDOG;
         case ESP_RST_WDT:
         default:
             break;
     }
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_port(void) {
     // TODO deinit for esp32-camera
-    #if CIRCUITPY_ESP32_CAMERA
+    #if CIRCUITPY_ESPCAMERA
     esp_camera_deinit();
     #endif
 
@@ -367,6 +368,10 @@ void reset_port(void) {
 
     #if CIRCUITPY_DUALBANK
     dualbank_reset();
+    #endif
+
+    #if CIRCUITPY_ESPNOW
+    espnow_reset();
     #endif
 
     #if CIRCUITPY_ESPULP

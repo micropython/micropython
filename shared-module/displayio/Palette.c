@@ -28,9 +28,18 @@
 
 #include "shared-module/displayio/ColorConverter.h"
 
-void common_hal_displayio_palette_construct(displayio_palette_t *self, uint16_t color_count) {
+void common_hal_displayio_palette_construct(displayio_palette_t *self, uint16_t color_count, bool dither) {
     self->color_count = color_count;
     self->colors = (_displayio_color_t *)m_malloc(color_count * sizeof(_displayio_color_t), false);
+    self->dither = dither;
+}
+
+void common_hal_displayio_palette_set_dither(displayio_palette_t *self, bool dither) {
+    self->dither = dither;
+}
+
+bool common_hal_displayio_palette_get_dither(displayio_palette_t *self) {
+    return self->dither;
 }
 
 void common_hal_displayio_palette_make_opaque(displayio_palette_t *self, uint32_t palette_index) {
@@ -56,12 +65,7 @@ void common_hal_displayio_palette_set_color(displayio_palette_t *self, uint32_t 
         return;
     }
     self->colors[palette_index].rgb888 = color;
-    self->colors[palette_index].luma = displayio_colorconverter_compute_luma(color);
-    self->colors[palette_index].rgb565 = displayio_colorconverter_compute_rgb565(color);
-
-    uint8_t chroma = displayio_colorconverter_compute_chroma(color);
-    self->colors[palette_index].chroma = chroma;
-    self->colors[palette_index].hue = displayio_colorconverter_compute_hue(color);
+    self->colors[palette_index].cached_colorspace = NULL;
     self->needs_refresh = true;
 }
 
@@ -69,40 +73,34 @@ uint32_t common_hal_displayio_palette_get_color(displayio_palette_t *self, uint3
     return self->colors[palette_index].rgb888;
 }
 
-bool displayio_palette_get_color(displayio_palette_t *self, const _displayio_colorspace_t *colorspace, uint32_t palette_index, uint32_t *color) {
+void displayio_palette_get_color(displayio_palette_t *self, const _displayio_colorspace_t *colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
+    uint32_t palette_index = input_pixel->pixel;
     if (palette_index > self->color_count || self->colors[palette_index].transparent) {
-        return false; // returns transparent
+        output_color->opaque = false;
+        return;
     }
 
-    if (colorspace->tricolor) {
-        uint8_t luma = self->colors[palette_index].luma;
-        *color = luma >> (8 - colorspace->depth);
-        // Chroma 0 means the color is a gray and has no hue so never color based on it.
-        if (self->colors[palette_index].chroma <= 16) {
-            if (!colorspace->grayscale) {
-                *color = 0;
-            }
-            return true;
-        }
-        uint8_t pixel_hue = self->colors[palette_index].hue;
-        displayio_colorconverter_compute_tricolor(colorspace, pixel_hue, color);
-    } else if (colorspace->grayscale) {
-        size_t bitmask = (1 << colorspace->depth) - 1;
-        *color = (self->colors[palette_index].luma >> colorspace->grayscale_bit) & bitmask;
-    } else if (colorspace->depth == 16) {
-        uint16_t packed = self->colors[palette_index].rgb565;
-        if (colorspace->reverse_bytes_in_word) {
-            // swap bytes
-            packed = __builtin_bswap16(packed);
-        }
-        *color = packed;
-    } else if (colorspace->depth == 32) {
-        *color = self->colors[palette_index].rgb888;
-    } else {
-        return false;
+    // Cache results when not dithering.
+    _displayio_color_t *color = &self->colors[palette_index];
+    // Check the grayscale settings because EPaperDisplay will change them on
+    // the same object.
+    if (!self->dither &&
+        color->cached_colorspace == colorspace &&
+        color->cached_colorspace_grayscale_bit == colorspace->grayscale_bit &&
+        color->cached_colorspace_grayscale == colorspace->grayscale) {
+        output_color->pixel = self->colors[palette_index].cached_color;
+        return;
     }
 
-    return true;
+    displayio_input_pixel_t rgb888_pixel = *input_pixel;
+    rgb888_pixel.pixel = self->colors[palette_index].rgb888;
+    displayio_convert_color(colorspace, self->dither, &rgb888_pixel, output_color);
+    if (!self->dither) {
+        color->cached_colorspace = colorspace;
+        color->cached_color = output_color->pixel;
+        color->cached_colorspace_grayscale = colorspace->grayscale;
+        color->cached_colorspace_grayscale_bit = colorspace->grayscale_bit;
+    }
 }
 
 bool displayio_palette_needs_refresh(displayio_palette_t *self) {

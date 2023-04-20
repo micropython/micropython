@@ -9,7 +9,7 @@ CIRCUITPY_ESP_FLASH_MODE = dio
 CIRCUITPY_ESP_FLASH_FREQ = 40m
 CIRCUITPY_ESP_FLASH_SIZE = 4MB
 
-CIRCUITPY_ESP32_CAMERA = 0
+CIRCUITPY_ESPCAMERA = 0
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_PortalBase

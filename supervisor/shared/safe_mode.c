@@ -34,6 +34,7 @@
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
+#include "supervisor/linker.h"
 #include "supervisor/serial.h"
 #include "supervisor/shared/rgb_led_colors.h"
 #include "supervisor/shared/status_leds.h"
@@ -43,20 +44,28 @@
 #define SAFE_MODE_DATA_GUARD 0xad0000af
 #define SAFE_MODE_DATA_GUARD_MASK 0xff0000ff
 
-static safe_mode_t current_safe_mode;
+static safe_mode_t _safe_mode;
+
+safe_mode_t get_safe_mode(void) {
+    return _safe_mode;
+}
+
+void set_safe_mode(safe_mode_t safe_mode) {
+    _safe_mode = safe_mode;
+}
 
 safe_mode_t wait_for_safe_mode_reset(void) {
     uint32_t reset_state = port_get_saved_word();
-    safe_mode_t safe_mode = NO_SAFE_MODE;
+    safe_mode_t safe_mode = SAFE_MODE_NONE;
     if ((reset_state & SAFE_MODE_DATA_GUARD_MASK) == SAFE_MODE_DATA_GUARD) {
         safe_mode = (reset_state & ~SAFE_MODE_DATA_GUARD_MASK) >> 8;
     }
-    if (safe_mode != NO_SAFE_MODE) {
+    if (safe_mode != SAFE_MODE_NONE) {
         port_set_saved_word(SAFE_MODE_DATA_GUARD);
-        current_safe_mode = safe_mode;
+        _safe_mode = safe_mode;
         return safe_mode;
     } else {
-        current_safe_mode = 0;
+        _safe_mode = SAFE_MODE_NONE;
     }
 
     const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
@@ -64,12 +73,12 @@ safe_mode_t wait_for_safe_mode_reset(void) {
         reset_reason != RESET_REASON_RESET_PIN &&
         reset_reason != RESET_REASON_UNKNOWN &&
         reset_reason != RESET_REASON_SOFTWARE) {
-        return NO_SAFE_MODE;
+        return SAFE_MODE_NONE;
     }
-    #ifdef CIRCUITPY_SKIP_SAFE_MODE_WAIT
-    return NO_SAFE_MODE;
+    #if CIRCUITPY_SKIP_SAFE_MODE_WAIT
+    return SAFE_MODE_NONE;
     #endif
-    port_set_saved_word(SAFE_MODE_DATA_GUARD | (MANUAL_SAFE_MODE << 8));
+    port_set_saved_word(SAFE_MODE_DATA_GUARD | (SAFE_MODE_USER << 8));
     // Wait for a while to allow for reset.
 
     #if CIRCUITPY_STATUS_LED
@@ -106,20 +115,20 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     status_led_deinit();
     #endif
     if (boot_in_safe_mode) {
-        return USER_SAFE_MODE;
+        return SAFE_MODE_USER;
     }
-    // Restore the original state of the saved word if no reset occured during our wait period.
+    // Restore the original state of the saved word if no reset occurred during our wait period.
     port_set_saved_word(reset_state);
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
-void safe_mode_on_next_reset(safe_mode_t reason) {
+void PLACE_IN_ITCM(safe_mode_on_next_reset)(safe_mode_t reason) {
     port_set_saved_word(SAFE_MODE_DATA_GUARD | (reason << 8));
 }
 
 // Don't inline this so it's easy to break on it from GDB.
-void __attribute__((noinline,)) reset_into_safe_mode(safe_mode_t reason) {
-    if (current_safe_mode > BROWNOUT && reason > BROWNOUT) {
+void __attribute__((noinline,)) PLACE_IN_ITCM(reset_into_safe_mode)(safe_mode_t reason) {
+    if (_safe_mode > SAFE_MODE_BROWNOUT && reason > SAFE_MODE_BROWNOUT) {
         while (true) {
             // This very bad because it means running in safe mode didn't save us. Only ignore brownout
             // because it may be due to a switch bouncing.
@@ -133,105 +142,95 @@ void __attribute__((noinline,)) reset_into_safe_mode(safe_mode_t reason) {
 
 
 void print_safe_mode_message(safe_mode_t reason) {
-    if (reason == NO_SAFE_MODE) {
+    if (reason == SAFE_MODE_NONE) {
         return;
     }
 
-    serial_write("\r\n");
-    serial_write_compressed(translate("You are in safe mode because:\n"));
+    serial_write_compressed(translate("\nYou are in safe mode because:\n"));
 
     const compressed_string_t *message = NULL;
 
     // First check for safe mode reasons that do not necessarily reflect bugs.
 
     switch (reason) {
-        case USER_SAFE_MODE:
+        case SAFE_MODE_BROWNOUT:
+            message = translate("The power dipped. Make sure you are providing enough power.");
+            break;
+        case SAFE_MODE_USER:
             #if defined(BOARD_USER_SAFE_MODE_ACTION)
             message = BOARD_USER_SAFE_MODE_ACTION;
             #elif defined(CIRCUITPY_BOOT_BUTTON)
-            message = translate("The BOOT button was pressed at start up.\n");
-            #endif
-            #if defined(BOARD_USER_SAFE_MODE_ACTION) || defined(CIRCUITPY_BOOT_BUTTON)
-            // Output a user safe mode string if it's set.
-            serial_write_compressed(message);
-            message = translate("To exit, please reset the board without requesting safe mode.");
-            // The final piece is printed below.
+            message = translate("You pressed the BOOT button at start up");
+            #else
+            message = translate("You pressed the reset button during boot.");
             #endif
             break;
-        case MANUAL_SAFE_MODE:
-            message = translate("You pressed the reset button during boot. Press again to exit safe mode.");
+        case SAFE_MODE_NO_CIRCUITPY:
+            message = translate("CIRCUITPY drive could not be found or created.");
             break;
-        case PROGRAMMATIC_SAFE_MODE:
-            message = translate("The `microcontroller` module was used to boot into safe mode. Press reset to exit safe mode.");
+        case SAFE_MODE_PROGRAMMATIC:
+            message = translate("The `microcontroller` module was used to boot into safe mode.");
             break;
-        case BROWNOUT:
-            message = translate("The microcontroller's power dipped. Make sure your power supply provides\nenough power for the whole circuit and press reset (after ejecting CIRCUITPY).");
+        #if CIRCUITPY_SAFEMODE_PY
+        case SAFE_MODE_SAFEMODE_PY_ERROR:
+            message = translate("Error in safemode.py.");
             break;
-        case USB_TOO_MANY_ENDPOINTS:
+        #endif
+        case SAFE_MODE_STACK_OVERFLOW:
+            message = translate("Heap was corrupted because the stack was too small. Increase stack size.");
+            break;
+        case SAFE_MODE_USB_TOO_MANY_ENDPOINTS:
             message = translate("USB devices need more endpoints than are available.");
             break;
-        case USB_TOO_MANY_INTERFACE_NAMES:
+        case SAFE_MODE_USB_TOO_MANY_INTERFACE_NAMES:
             message = translate("USB devices specify too many interface names.");
             break;
-        case USB_BOOT_DEVICE_NOT_INTERFACE_ZERO:
-            message = translate("Boot device must be first device (interface #0).");
+        case SAFE_MODE_USB_BOOT_DEVICE_NOT_INTERFACE_ZERO:
+            message = translate("Boot device must be first (interface #0).");
             break;
-        case WATCHDOG_RESET:
+        case SAFE_MODE_WATCHDOG:
             message = translate("Internal watchdog timer expired.");
-            break;
-        case NO_CIRCUITPY:
-            message = translate("CIRCUITPY drive could not be found or created.");
             break;
         default:
             break;
     }
 
     if (message) {
+        // Non-crash safe mode.
         serial_write_compressed(message);
-        serial_write("\r\n");
-        return;
+    } else {
+        // Something worse happened.
+        serial_write_compressed(translate("CircuitPython core code crashed hard. Whoops!\n"));
+        switch (reason) {
+            case SAFE_MODE_GC_ALLOC_OUTSIDE_VM:
+                message = translate("Heap allocation when VM not running.");
+                break;
+            case SAFE_MODE_FLASH_WRITE_FAIL:
+                message = translate("Failed to write internal flash.");
+                break;
+            case SAFE_MODE_HARD_FAULT:
+                message = translate("Fault detected by hardware.");
+                break;
+            case SAFE_MODE_INTERRUPT_ERROR:
+                message = translate("Interrupt error.");
+                break;
+            case SAFE_MODE_NLR_JUMP_FAIL:
+                message = translate("NLR jump failed. Likely memory corruption.");
+                break;
+            case SAFE_MODE_NO_HEAP:
+                message = translate("Unable to allocate the heap.");
+                break;
+            case SAFE_MODE_SDK_FATAL_ERROR:
+                message = translate("Third-party firmware fatal error.");
+                break;
+            default:
+                message = translate("Unknown reason.");
+                break;
+        }
+        serial_write_compressed(message);
+        serial_write_compressed(translate("\nPlease file an issue with your program at https://github.com/adafruit/circuitpython/issues."));
     }
 
-    // Something worse happened.
-
-    serial_write_compressed(translate("CircuitPython core code crashed hard. Whoops!\n"));
-
-    switch (reason) {
-        case HARD_CRASH:
-            message = translate("Crash into the HardFault_Handler.");
-            break;
-        case MICROPY_NLR_JUMP_FAIL:
-            message = translate("NLR jump failed. Likely memory corruption.");
-            break;
-        case MICROPY_FATAL_ERROR:
-            message = translate("Fatal error.");
-            break;
-        case NO_HEAP:
-            message = translate("CircuitPython was unable to allocate the heap.");
-            break;
-        case HEAP_OVERWRITTEN:
-            message = translate("The CircuitPython heap was corrupted because the stack was too small.\nIncrease the stack size if you know how. If not:");
-            break;
-        case GC_ALLOC_OUTSIDE_VM:
-            message = translate("Attempted heap allocation when VM not running.");
-            break;
-            #ifdef SOFTDEVICE_PRESENT
-        // defined in ports/nrf/bluetooth/bluetooth_common.mk
-        // will print "Unknown reason" if somehow encountered on other ports
-        case NORDIC_SOFT_DEVICE_ASSERT:
-            message = translate("Nordic system firmware failure assertion.");
-            break;
-            #endif
-        case FLASH_WRITE_FAIL:
-            message = translate("Failed to write internal flash.");
-            break;
-        case MEM_MANAGE:
-            message = translate("Invalid memory access.");
-            break;
-        default:
-            message = translate("Unknown reason.");
-            break;
-    }
-    serial_write_compressed(message);
-    serial_write_compressed(translate("\nPlease file an issue with the contents of your CIRCUITPY drive at \nhttps://github.com/adafruit/circuitpython/issues\n"));
+    // Always tell user how to get out of safe mode.
+    serial_write_compressed(translate("\nPress reset to exit safe mode.\n"));
 }

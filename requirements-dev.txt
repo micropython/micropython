@@ -6,6 +6,7 @@ typer
 sh
 click
 cpp-coveralls
+
 requests
 requests-cache
 
@@ -13,8 +14,8 @@ requests-cache
 polib
 
 # For pre-commit
-pyyaml
 black
+pyyaml
 pre-commit
 
 # for combining the Nordic SoftDevice with CircuitPython
@@ -23,12 +24,13 @@ intelhex
 # for building & testing natmods
 pyelftools
 
-# for stubs and annotations
-adafruit-circuitpython-typing
-
 # for mbedtls certificate store
 cryptography
 
 # for web workflow minify
 minify_html
 jsmin
+
+# for Silicon Labs Configurator (SLC)
+websockets
+colorama

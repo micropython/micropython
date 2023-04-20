@@ -37,10 +37,12 @@ typedef struct {
     const mcu_pin_obj_t *pin;
     const mcu_pwm_obj_t *pwm;
     bool variable_frequency;
+    uint8_t flexpwm_index;
     uint8_t prescaler;
-    uint16_t duty_cycle, duty_scaled, pulse_count;
+    uint16_t duty_cycle;
+    uint16_t pulse_count;
 } pwmio_pwmout_obj_t;
 
-void pwmout_reset(void);
+void reset_all_flexpwm(void);
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_PWMIO_PWMOUT_H

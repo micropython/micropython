@@ -97,7 +97,7 @@ static bool write_flash(uint32_t address, const uint8_t *data, uint32_t data_len
     if (flash_device == NULL) {
         return false;
     }
-    // Don't bother writing if the data is all 1s. Thats equivalent to the flash
+    // Don't bother writing if the data is all 1s. That's equivalent to the flash
     // state after an erase.
     if (!flash_device->no_erase_cmd) {
         // Only do this if the device has an erase command

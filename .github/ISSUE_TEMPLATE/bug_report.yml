@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: >-
-        Thanks! for testing out CircuitPython. Now that you have encountered a
+        Thanks for testing out CircuitPython! Now that you have encountered a
         bug... you can file a report for it.
   - type: textarea
     id: firmware

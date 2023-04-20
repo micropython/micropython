@@ -29,7 +29,9 @@
 #include "supervisor/memory.h"
 #include "py/runtime.h"
 
+#include "esp_now.h"
 #include "esp_log.h"
+
 #define TAG "espidf"
 
 #ifdef CONFIG_SPIRAM
@@ -180,14 +182,19 @@ void raise_esp_error(esp_err_t err) {
 
     // tests must be in descending order
     MP_STATIC_ASSERT(ESP_ERR_FLASH_BASE > ESP_ERR_MESH_BASE);
-    MP_STATIC_ASSERT(ESP_ERR_MESH_BASE > ESP_ERR_WIFI_BASE);
+    MP_STATIC_ASSERT(ESP_ERR_MESH_BASE > ESP_ERR_ESPNOW_BASE);
+    MP_STATIC_ASSERT(ESP_ERR_ESPNOW_BASE > ESP_ERR_WIFI_BASE);
+
     if (err >= ESP_ERR_FLASH_BASE) {
         group = "Flash";
     } else if (err >= ESP_ERR_MESH_BASE) {
         group = "Mesh";
+    } else if (err >= ESP_ERR_ESPNOW_BASE) {
+        group = "ESP-NOW";
     } else if (err >= ESP_ERR_WIFI_BASE) {
         group = "WiFi";
     }
+
     mp_raise_msg_varg(exception_type, translate("%s error 0x%x"), group, err);
 }
 

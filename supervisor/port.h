@@ -90,14 +90,19 @@ void port_interrupt_after_ticks(uint32_t ticks);
 // may not be a system level sleep.
 void port_idle_until_interrupt(void);
 
-// Execute port specific actions during background tasks.
+// Execute port specific actions during background tick. Only if ticks are enabled.
+void port_background_tick(void);
+
+// Execute port specific actions during background tasks. This is before the
+// background callback system and happens *very* often. Use
+// port_background_tick() when possible.
 void port_background_task(void);
 
-// Take port specific actions at the beginning and end of background tasks.
+// Take port specific actions at the beginning and end of background ticks.
 // This is used e.g., to set a monitoring pin for debug purposes.  "Actual
-// work" should be done in port_background_task() instead.
-void port_start_background_task(void);
-void port_finish_background_task(void);
+// work" should be done in port_background_tick() instead.
+void port_start_background_tick(void);
+void port_finish_background_tick(void);
 
 // Some ports need special handling to wake the main task from another task. The
 // port must implement the necessary code in this function.  A default weak
@@ -123,5 +128,9 @@ void port_post_boot_py(bool heap_valid);
 // Some ports want to add information to boot_out.txt.
 // A default weak implementation is provided that does nothing.
 void port_boot_info(void);
+
+// Some ports want to mark additional pointers as gc roots.
+// A default weak implementation is provided that does nothing.
+void port_gc_collect(void);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

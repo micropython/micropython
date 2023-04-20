@@ -34,7 +34,8 @@ typedef struct {
     mp_obj_base_t base;
     const char *hostname;
     const char *instance_name;
-    // "cpy-" "XXXXXX" "\0"
-    char default_hostname[4 + 6 + 1];
+    char default_hostname[sizeof("cpy-XXXXXX")];
     const char *service_type[MDNS_MAX_SERVICES];
+    // Track if this object owns access to the underlying MDNS service.
+    bool inited;
 } mdns_server_obj_t;

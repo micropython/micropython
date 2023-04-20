@@ -74,6 +74,10 @@ CIRCUITPY_WEB_API_PORT
 ~~~~~~~~~~~~~~~~~~~~~~
 TCP port number used for the web HTTP API. Defaults to 80 when omitted.
 
+CIRCUITPY_WEB_INSTANCE_NAME
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Name the board advertises as for the WEB workflow. Defaults to human readable board name if omitted.
+
 CIRCUITPY_WIFI_PASSWORD
 ~~~~~~~~~~~~~~~~~~~~~~~
 Wi-Fi password used to auto connect to CIRCUITPY_WIFI_SSID.

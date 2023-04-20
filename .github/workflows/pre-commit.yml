@@ -5,8 +5,8 @@
 name: pre-commit
 
 on:
-  pull_request:
   push:
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -16,24 +16,25 @@ jobs:
   pre-commit:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3
+    - name: Set up repository
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        fetch-depth: 1
+    - name: Set up python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
-    - name: Install deps
+        python-version: 3.x
+    - name: Set up submodules
+      uses: ./.github/actions/deps/submodules
+    - name: Set up external
+      uses: ./.github/actions/deps/external
+    - name: Install dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install -y gettext uncrustify
-        pip3 install black polib pyyaml
-    - name: Populate selected submodules
-      run: git submodule update --init extmod/ulab
-    - name: Set PY
-      run: echo >>$GITHUB_ENV PY="$(python -c 'import hashlib, sys;print(hashlib.sha256(sys.version.encode()+sys.executable.encode()).hexdigest())')"
-    - uses: actions/cache@v3
-      with:
-        path: ~/.cache/pre-commit
-        key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
-    - uses: pre-commit/action@v3.0.0
+    - name: Run pre-commit
+      uses: pre-commit/action@v3.0.0
     - name: Make patch
       if: failure()
       run: git diff > ~/pre-commit.patch

@@ -39,7 +39,7 @@ try:
 except NotImplementedError:
     print("NotImplementedError")
 
-# uPy raises TypeError, shold be ValueError
+# uPy raises TypeError, should be ValueError
 try:
     "%c" % b"\x01\x02"
 except (TypeError, ValueError):
@@ -111,6 +111,7 @@ try:
 except NotImplementedError:
     print("NotImplementedError")
 
+
 # can't assign attributes to a function
 def f():
     pass
@@ -127,6 +128,7 @@ try:
 except TypeError:
     print("TypeError")
 
+
 # test when object explicitly listed at not-last position in parent tuple
 # this is not compliant with CPython because of illegal MRO
 class A:
@@ -139,6 +141,7 @@ class B(object, A):
 
 
 B().foo()
+
 
 # can't assign property (or other special accessors) to already-subclassed class
 class A:

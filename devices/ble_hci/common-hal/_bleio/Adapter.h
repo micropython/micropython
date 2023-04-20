@@ -65,7 +65,7 @@ typedef struct _bleio_adapter_obj_t {
     uint16_t manufacturer;
     uint16_t lmp_subversion;
 
-    // Used to monitor advertising timeout for legacy avertising.
+    // Used to monitor advertising timeout for legacy advertising.
     uint64_t advertising_start_ticks;
     uint64_t advertising_timeout_msecs;  // If zero, do not check.
 

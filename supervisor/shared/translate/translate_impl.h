@@ -48,7 +48,9 @@ inline
 #if !CIRCUITPY_LTO || CIRCUITPY_DEBUG < 1
 __attribute__((always_inline))
 #endif
-const compressed_string_t *translate(const char *original) {
+// Prevent instrumenting this because that disables the inlining we rely of for code size
+// optimization.
+__attribute__((no_instrument_function)) const compressed_string_t *translate(const char *original) {
     #ifndef NO_QSTR
     #define QDEF(id, hash, len, str)
     #define TRANSLATION(english_id, number) if (strcmp(original, english_id) == 0) { return &translation##number; } else

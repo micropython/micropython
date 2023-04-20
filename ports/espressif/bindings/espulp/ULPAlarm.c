@@ -27,25 +27,36 @@
 #include "bindings/espulp/ULPAlarm.h"
 
 #include "py/runtime.h"
+#include "py/objproperty.h"
 
 //| class ULPAlarm:
 //|     """Trigger an alarm when the ULP requests wake-up."""
 //|
-//|     def __init__(self) -> None:
+//|     def __init__(self, ulp: ULP) -> None:
 //|         """Create an alarm that will be triggered when the ULP requests wake-up.
 //|
 //|         The alarm is not active until it is passed to an `alarm`-enabling function, such as
 //|         `alarm.light_sleep_until_alarms()` or `alarm.exit_and_deep_sleep_until_alarms()`.
 //|
-//|         """
+//|         :param ULP ulp: The ulp instance"""
 //|         ...
 //|
-STATIC mp_obj_t espulp_ulpalarm_make_new(const mp_obj_type_t *type,
-    size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t espulp_ulpalarm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_ulp };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_ulp, MP_ARG_REQUIRED | MP_ARG_OBJ },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     espulp_ulpalarm_obj_t *self = m_new_obj(espulp_ulpalarm_obj_t);
     self->base.type = &espulp_ulpalarm_type;
-    common_hal_espulp_ulpalarm_construct(self);
+
+    espulp_ulp_obj_t *ulp = mp_arg_validate_type(args[ARG_ulp].u_obj, &espulp_ulp_type, MP_QSTR_ulp);
+
+    common_hal_espulp_ulpalarm_construct(self, ulp);
+
     return MP_OBJ_FROM_PTR(self);
 }
 

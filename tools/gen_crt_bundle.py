@@ -72,7 +72,6 @@ class CertificateBundle:
             os.remove(ca_bundle_bin_file)
 
     def add_from_path(self, crts_path):
-
         found = False
         for file_path in os.listdir(crts_path):
             found |= self.add_from_file(os.path.join(crts_path, file_path))
@@ -161,7 +160,6 @@ class CertificateBundle:
         return bundle
 
     def add_with_filter(self, crts_path, filter_path):
-
         filter_set = set()
         with open(filter_path, "r", encoding="utf-8") as f:
             csv_reader = csv.reader(f, delimiter=",")

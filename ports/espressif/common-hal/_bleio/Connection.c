@@ -30,21 +30,24 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "shared/runtime/interrupt_char.h"
 #include "py/gc.h"
 #include "py/objlist.h"
 #include "py/objstr.h"
 #include "py/qstr.h"
 #include "py/runtime.h"
+
+#include "shared/runtime/interrupt_char.h"
+
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
 #include "shared-bindings/_bleio/Attribute.h"
 #include "shared-bindings/_bleio/Characteristic.h"
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
+
 #include "supervisor/shared/tick.h"
 
-// #include "common-hal/_bleio/bonding.h"
+#include "common-hal/_bleio/ble_events.h"
 
 #include "host/ble_att.h"
 
@@ -245,7 +248,7 @@ STATIC int _discovered_characteristic_cb(uint16_t conn_handle,
         ((chr->properties & BLE_GATT_CHR_PROP_WRITE) != 0 ? CHAR_PROP_WRITE : 0) |
         ((chr->properties & BLE_GATT_CHR_PROP_WRITE_NO_RSP) != 0 ? CHAR_PROP_WRITE_NO_RESPONSE : 0);
 
-    // Call common_hal_bleio_characteristic_construct() to initalize some fields and set up evt handler.
+    // Call common_hal_bleio_characteristic_construct() to initialize some fields and set up evt handler.
     common_hal_bleio_characteristic_construct(
         characteristic, service, chr->val_handle, uuid,
         props, SECURITY_MODE_OPEN, SECURITY_MODE_OPEN,

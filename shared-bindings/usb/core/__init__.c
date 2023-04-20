@@ -40,6 +40,7 @@
 //|
 //| This is a subset of the PyUSB core module.
 //| """
+//|
 
 //| class USBError(OSError):
 //|     """Catchall exception for USB related errors."""

@@ -29,8 +29,11 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#include "bindings/espulp/ULP.h"
+
 typedef struct {
     mp_obj_base_t base;
+    espulp_ulp_obj_t *ulp;
 } espulp_ulpalarm_obj_t;
 
 mp_obj_t espulp_ulpalarm_find_triggered_alarm(const size_t n_alarms, const mp_obj_t *alarms);

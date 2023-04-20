@@ -158,7 +158,7 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
     _private_advertising = true;
     // Advertise with less power when doing so publicly to reduce who can hear us. This will make it
     // harder for someone with bad intentions to pair from a distance.
-    if (!bonded) {
+    if (!bonded || boot_in_discovery_mode) {
         tx_power = -20;
         adv = public_advertising_data;
         adv_len = sizeof(public_advertising_data);
@@ -179,7 +179,7 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
     }
     uint32_t status = _common_hal_bleio_adapter_start_advertising(&common_hal_bleio_adapter_obj,
         true,
-        bonded, // Advertise anonymously if we are bonded
+        _private_advertising, // Advertise anonymously if we are privately advertising
         timeout,
         interval,
         adv,

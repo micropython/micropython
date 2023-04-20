@@ -43,6 +43,7 @@ typedef struct _mp_obj_exception_t {
 
 void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
+void mp_obj_exception_initialize0(mp_obj_exception_t *o_exc, const mp_obj_type_t *type);
 mp_obj_exception_t *mp_obj_exception_get_native(mp_obj_t self_in);
 
 #define MP_DEFINE_EXCEPTION(exc_name, base_name) \
