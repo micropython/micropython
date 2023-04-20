@@ -37,6 +37,8 @@
 #include "shared/runtime/softtimer.h"
 #include "shared/tinyusb/mp_usbd.h"
 #include "clock_config.h"
+#include "extmod/modbluetooth.h"
+#include "mpbthciport.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 extern void adc_deinit_all(void);
@@ -52,11 +54,12 @@ void samd_main(void) {
         gc_init(&_sheap, &_eheap);
         mp_init();
 
+        #if MICROPY_PY_BLUETOOTH
+        mp_bluetooth_hci_init();
+        #endif
+
         // Initialise sub-systems.
         readline_init0();
-        #if MICROPY_PY_BLUETOOTH
-        // mp_bluetooth_hci_init();
-        #endif
         #if MICROPY_PY_NETWORK
         mod_network_init();
         #endif
