@@ -100,14 +100,13 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
             desc_str = MICROPY_HW_USB_CDC_INTERFACE_STRING;
             break;
         #endif
-        #if CFG_TUD_VENDOR
+        #if CFG_TUD_VENDOR || CFG_TUD_MSC
         case USBD_STR_VENDOR:
+            #if CFG_TUD_VENDOR
             desc_str = MICROPY_HW_USB_VENDOR_INTERFACE_STRING;
-            break;
-        #endif
-        #if CFG_TUD_MSC
-        case USBD_STR_MSC:
+            #else
             desc_str = MICROPY_HW_USB_MSC_INTERFACE_STRING;
+            #endif
             break;
         #endif
         default:
