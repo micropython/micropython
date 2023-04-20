@@ -39,7 +39,11 @@
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
 
-#if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
+#if MICROPY_HW_USB_VENDOR
+#include "main.h"
+#endif
+
+#if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC || MICROPY_HW_USB_VENDOR
 
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
 #define MICROPY_HW_STDIN_BUFFER_LEN 512
@@ -89,12 +93,40 @@ void tud_cdc_rx_cb(uint8_t itf) {
 
 #endif
 
+#if MICROPY_HW_USB_VENDOR
+
+void poll_vendor_interfaces(void) {
+    if (check_web_serial_connected() && ringbuf_free(&stdin_ringbuf)) {
+        for (uint8_t itf = 0; itf < CFG_TUD_VENDOR; itf++) {
+            tud_vendor_rx_cb(itf);
+        }
+    }
+}
+
+void tud_vendor_rx_cb(uint8_t itf) {
+    uint32_t available_bytes = tud_vendor_n_available(itf);
+    for (; available_bytes > 0; available_bytes--) {
+        uint8_t buf[1];
+        tud_vendor_n_read(itf, buf, sizeof(uint8_t));
+        if (buf[0] == mp_interrupt_char) {
+            mp_sched_keyboard_interrupt();
+        } else {
+            ringbuf_put(&stdin_ringbuf, buf[0]);
+        }
+    }
+}
+
+#endif
+
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
     #if MICROPY_HW_USB_CDC
     poll_cdc_interfaces();
     #endif
-    #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
+    #if MICROPY_HW_USB_VENDOR
+    poll_vendor_interfaces();
+    #endif
+    #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC || MICROPY_HW_USB_VENDOR
     if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
         ret |= MP_STREAM_POLL_RD;
     }
@@ -103,6 +135,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
         ret |= MP_STREAM_POLL_WR;
         #else
         if (tud_cdc_connected() && tud_cdc_write_available() > 0) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+        if (check_web_serial_connected() && tud_vendor_write_available() > 0) {
             ret |= MP_STREAM_POLL_WR;
         }
         #endif
@@ -119,6 +154,9 @@ int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         #if MICROPY_HW_USB_CDC
         poll_cdc_interfaces();
+        #endif
+        #if MICROPY_HW_USB_VENDOR
+        poll_vendor_interfaces();
         #endif
 
         int c = ringbuf_get(&stdin_ringbuf);
@@ -158,6 +196,23 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             }
             uint32_t n2 = tud_cdc_write(str + i, n);
             tud_cdc_write_flush();
+            i += n2;
+        }
+    }
+    #endif
+
+    #if MICROPY_HW_USB_VENDOR
+    if (check_web_serial_connected()) {
+        for (uint32_t i = 0; i < len;) {
+            uint32_t n = len - i;
+            if (n > 128) {
+                n = 128;
+            }
+            while (n > tud_vendor_write_available()) {
+                MICROPY_EVENT_POLL_HOOK
+            }
+            uint32_t n2 = tud_vendor_write(str + i, n);
+            tud_vendor_flush();
             i += n2;
         }
     }

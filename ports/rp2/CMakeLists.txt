@@ -62,6 +62,7 @@ string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/tinyusb)
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
 include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
+include(${PICO_TINYUSB_PATH}/hw/bsp/rp2040/family.cmake)
 
 # Define the top-level project
 project(${MICROPY_TARGET})
@@ -98,6 +99,7 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/shared/tinyusb/mp_cdc_common.c
     ${MICROPY_DIR}/shared/tinyusb/mp_usbd.c
     ${MICROPY_DIR}/shared/tinyusb/mp_usbd_descriptor.c
+    ${PICO_TINYUSB_PATH}/hw/bsp/rp2040/family.c
 )
 
 set(MICROPY_SOURCE_DRIVERS
@@ -127,6 +129,7 @@ set(MICROPY_SOURCE_PORT
     pendsv.c
     rp2_flash.c
     rp2_pio.c
+    tusb_port.c
     uart.c
     usbd.c
     msc_disk.c
@@ -356,6 +359,7 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
     ${MICROPY_INC_CORE}
     ${MICROPY_INC_USERMOD}
     ${MICROPY_BOARD_DIR}
+    ${PICO_TINYUSB_PATH}/src
     "${PROJECT_SOURCE_DIR}"
     "${CMAKE_BINARY_DIR}"
 )
