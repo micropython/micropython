@@ -29,6 +29,7 @@
 
 #include <string.h>
 
+#include "py/unicode.h"
 #include "py/runtime.h"
 #include "py/objproperty.h"
 
@@ -68,6 +69,14 @@ STATIC bool hostname_valid(const char *ptr, size_t len) {
     }
     // check length of last part
     return !(partlen > 63);
+}
+
+STATIC void validate_hex_password(const uint8_t *buf, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        if (!unichar_isxdigit(buf[i])) {
+            mp_raise_ValueError_varg(translate("Invalid hex password"));
+        }
+    }
 }
 
 
@@ -321,6 +330,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|         ``OPEN`` will be used when the password is the empty string,
 //|         otherwise ``authmode`` will be ``WPA_WPA2_PSK``.
 //|
+//|         The length of ``password`` must be 8-63 characters if it is ASCII,
+//|         or exactly 64 hexadecimal characters if it is the hex form of the 256-bit key.
+//|
 //|         If ``max_connections`` is given, the access point will allow up to
 //|         that number of stations to connect."""
 //|         ...
@@ -367,7 +379,10 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
     }
 
     if (authmodes != AUTHMODE_OPEN) {
-        mp_arg_validate_length_range(password.len, 8, 63, MP_QSTR_password);
+        mp_arg_validate_length_range(password.len, 8, 64, MP_QSTR_password);
+        if (password.len == 64) {
+            validate_hex_password(password.buf, password.len);
+        }
     }
 
     common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, authmodes, args[ARG_max_connections].u_int);
@@ -405,6 +420,9 @@ MP_PROPERTY_GETTER(wifi_radio_ap_active_obj,
 //|     ) -> None:
 //|         """Connects to the given ssid and waits for an ip address. Reconnections are handled
 //|         automatically once one connection succeeds.
+//|
+//|         The length of ``password`` must be 0 if there is no password, 8-63 characters if it is ASCII,
+//|         or exactly 64 hexadecimal characters if it is the hex form of the 256-bit key.
 //|
 //|         By default, this will scan all channels and connect to the access point (AP) with the
 //|         given ``ssid`` and greatest signal strength (rssi).
@@ -445,7 +463,10 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
     if (args[ARG_password].u_obj != mp_const_none) {
         mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
         if (password.len != 0) {
-            mp_arg_validate_length_range(password.len, 8, 63, MP_QSTR_password);
+            mp_arg_validate_length_range(password.len, 8, 64, MP_QSTR_password);
+            if (password.len == 64) {
+                validate_hex_password(password.buf, password.len);
+            }
         }
     }
 
