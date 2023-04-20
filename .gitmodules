@@ -331,3 +331,7 @@
 [submodule "ports/silabs/tools/slc_cli_linux"]
 	path = ports/silabs/tools/slc_cli_linux
 	url = https://github.com/SiliconLabs/circuitpython_slc_cli_linux
+[submodule "ports/raspberrypi/lib/PicoDVI"]
+	path = ports/raspberrypi/lib/PicoDVI
+	url = https://github.com/circuitpython/PicoDVI.git
+	branch = circuitpython

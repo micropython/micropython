@@ -57,6 +57,7 @@ uint32_t displayio_colorconverter_dither_noise_2(uint32_t x, uint32_t y);
 void displayio_convert_color(const _displayio_colorspace_t *colorspace, bool dither, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color);
 
 uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888);
+uint8_t displayio_colorconverter_compute_rgb332(uint32_t color_rgb888);
 uint8_t displayio_colorconverter_compute_rgbd(uint32_t color_rgb888);
 uint8_t displayio_colorconverter_compute_luma(uint32_t color_rgb888);
 uint8_t displayio_colorconverter_compute_chroma(uint32_t color_rgb888);

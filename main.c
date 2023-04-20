@@ -153,11 +153,15 @@ STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
-    // to recover from limit hit.  (Limit is measured in bytes.)
+    // to recover from limit hit.  (Limit is measured in bytes.) The top of the
+    // stack is set to our current state. Not the actual top.
     mp_stack_ctrl_init();
 
-    if (stack_get_bottom() != NULL) {
-        mp_stack_set_limit(stack_get_length() - 1024);
+    uint32_t *stack_bottom = stack_get_bottom();
+    if (stack_bottom != NULL) {
+        size_t stack_length = stack_get_length();
+        mp_stack_set_top(stack_bottom + (stack_length / sizeof(uint32_t)));
+        mp_stack_set_limit(stack_length - 1024);
     }
 
 

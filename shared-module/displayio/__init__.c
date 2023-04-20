@@ -152,6 +152,10 @@ void common_hal_displayio_release_displays(void) {
         } else if (displays[i].bus_base.type == &videocore_framebuffer_type) {
             common_hal_videocore_framebuffer_deinit(&displays[i].videocore);
         #endif
+        #if CIRCUITPY_PICODVI
+        } else if (displays[i].bus_base.type == &picodvi_framebuffer_type) {
+            common_hal_picodvi_framebuffer_deinit(&displays[i].picodvi);
+        #endif
         }
         displays[i].fourwire_bus.base.type = &mp_type_NoneType;
     }
@@ -265,6 +269,13 @@ void reset_displays(void) {
             }
             // The framebuffer is allocated outside of the heap so it doesn't
             // need to be moved.
+        #endif
+        #if CIRCUITPY_PICODVI
+        } else if (displays[i].bus_base.type == &picodvi_framebuffer_type) {
+            picodvi_framebuffer_obj_t *vc = &displays[i].picodvi;
+            if (!any_display_uses_this_framebuffer(&vc->base)) {
+                common_hal_picodvi_framebuffer_deinit(vc);
+            }
         #endif
         } else {
             // Not an active display bus.

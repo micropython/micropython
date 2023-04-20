@@ -24,29 +24,25 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
+#include <stdint.h>
+
+#include "py/obj.h"
+#include "py/runtime.h"
 
 #include "bindings/picodvi/Framebuffer.h"
-#include "shared-module/displayio/__init__.h"
-#include "shared-bindings/framebufferio/FramebufferDisplay.h"
 
-void board_init(void) {
-    picodvi_framebuffer_obj_t *fb = &allocate_display_bus()->picodvi;
-    fb->base.type = &picodvi_framebuffer_type;
-    common_hal_picodvi_framebuffer_construct(fb, 640, 480,
-        &pin_GPIO17, &pin_GPIO16,
-        &pin_GPIO19, &pin_GPIO18,
-        &pin_GPIO21, &pin_GPIO20,
-        &pin_GPIO23, &pin_GPIO22,
-        8);
+//| """Low-level routines for interacting with PicoDVI Output"""
 
-    framebufferio_framebufferdisplay_obj_t *display = &displays[0].framebuffer_display;
-    display->base.type = &framebufferio_framebufferdisplay_type;
-    common_hal_framebufferio_framebufferdisplay_construct(
-        display,
-        MP_OBJ_FROM_PTR(fb),
-        0,
-        true);
-}
+STATIC const mp_rom_map_elem_t picodvi_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_picodvi) },
+    { MP_ROM_QSTR(MP_QSTR_Framebuffer), MP_ROM_PTR(&picodvi_framebuffer_type) },
+};
 
-// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
+STATIC MP_DEFINE_CONST_DICT(picodvi_module_globals, picodvi_module_globals_table);
+
+const mp_obj_module_t picodvi_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&picodvi_module_globals,
+};
+
+MP_REGISTER_MODULE(MP_QSTR_picodvi, picodvi_module, CIRCUITPY_PICODVI);
