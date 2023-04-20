@@ -113,6 +113,9 @@ msgstr ""
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
+#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+#: shared-bindings/keypad/ShiftRegisterKeys.c
 msgid "%q"
 msgstr "%q"
 
@@ -208,7 +211,7 @@ msgstr "%q debe ser un byte-matriz o matriz de tipo 'h', 'H', 'b', o 'B'"
 msgid "%q must be array of type 'H'"
 msgstr "%q debe ser un arreglo de tipo 'H'"
 
-#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be array of type 'h'"
 msgstr "%q debe ser una matriz de tipo 'h'"
 
@@ -1154,10 +1157,6 @@ msgstr "Error en la inicialización I2C"
 msgid "I2C peripheral in use"
 msgstr "Dispositivo I2C en uso"
 
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr "I2SOut no disponible"
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
@@ -1327,6 +1326,10 @@ msgstr "Formato inválido"
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Formato de fragmento de formato no válido"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid hex password"
+msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1763,10 +1766,6 @@ msgstr "Los elementos del búfer de salida deben ser de una longitud <= 4 bytes"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "El sobremuestreo debe ser un múltiplo de 8."
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "PDMIn not available"
-msgstr "PDMIn no esta disponible"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -4460,6 +4459,12 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "I2SOut not available"
+#~ msgstr "I2SOut no disponible"
+
+#~ msgid "PDMIn not available"
+#~ msgstr "PDMIn no esta disponible"
 
 #~ msgid "out of range of source"
 #~ msgstr "fuera de rango de fuente"

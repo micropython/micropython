@@ -104,6 +104,9 @@ msgstr "%dアドレスピン、%dRGBピン、%dタイルは%dの高さを指示�
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
+#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+#: shared-bindings/keypad/ShiftRegisterKeys.c
 #, fuzzy
 msgid "%q"
 msgstr "%q"
@@ -200,7 +203,7 @@ msgstr ""
 msgid "%q must be array of type 'H'"
 msgstr ""
 
-#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be array of type 'h'"
 msgstr ""
 
@@ -1128,10 +1131,6 @@ msgstr ""
 msgid "I2C peripheral in use"
 msgstr ""
 
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr "I2SOutが利用できません"
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
@@ -1294,6 +1293,10 @@ msgstr ""
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "フォーマットチャンクのサイズが不正"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid hex password"
+msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1722,10 +1725,6 @@ msgstr ""
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "オーバーサンプルは8の倍数でなければなりません"
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "PDMIn not available"
-msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -4385,6 +4384,9 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "I2SOut not available"
+#~ msgstr "I2SOutが利用できません"
 
 #~ msgid "out of range of source"
 #~ msgstr "ソースが範囲外"

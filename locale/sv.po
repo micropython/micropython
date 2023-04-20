@@ -110,6 +110,9 @@ msgstr ""
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
+#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+#: shared-bindings/keypad/ShiftRegisterKeys.c
 msgid "%q"
 msgstr "%q"
 
@@ -207,7 +210,7 @@ msgstr ""
 msgid "%q must be array of type 'H'"
 msgstr "%q måste vara en array av typen 'H'"
 
-#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be array of type 'h'"
 msgstr "%q måste vara en matris av typen 'h'"
 
@@ -1140,10 +1143,6 @@ msgstr "I2C-initieringsfel"
 msgid "I2C peripheral in use"
 msgstr "I2C-enhet används redan"
 
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr "I2SOut är inte tillgängligt"
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr "Antal element i buffert måste vara <= 4 byte"
@@ -1308,6 +1307,10 @@ msgstr "Ogiltigt format"
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Ogiltig formatsegmentstorlek"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid hex password"
+msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1740,10 +1743,6 @@ msgstr "Element i utbuffer måste vara <= 4 byte långa"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Översampling måste vara multipel av 8."
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "PDMIn not available"
-msgstr "PDMIn inte tillgänglig"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -4422,6 +4421,12 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "I2SOut not available"
+#~ msgstr "I2SOut är inte tillgängligt"
+
+#~ msgid "PDMIn not available"
+#~ msgstr "PDMIn inte tillgänglig"
 
 #~ msgid "out of range of source"
 #~ msgstr "utanför räckvidd för source"

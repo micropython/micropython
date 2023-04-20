@@ -111,6 +111,9 @@ msgstr ""
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
+#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+#: shared-bindings/keypad/ShiftRegisterKeys.c
 msgid "%q"
 msgstr "%q"
 
@@ -206,7 +209,7 @@ msgstr "%q deve ser um bytearray ou uma matriz do tipo 'h', 'H', 'b', ou 'B'"
 msgid "%q must be array of type 'H'"
 msgstr "%q deve ser uma matriz do tipo 'H'"
 
-#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be array of type 'h'"
 msgstr "%q deve ser uma matriz do tipo 'h'"
 
@@ -1151,10 +1154,6 @@ msgstr "Erro de inicialização do I2C"
 msgid "I2C peripheral in use"
 msgstr "Periférico I2C em uso"
 
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr "O I2SOut não está disponível"
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr "Os elementos In-buffer devem ter um comprimento de <= 4 bytes"
@@ -1323,6 +1322,10 @@ msgstr "Formato inválido"
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Tamanho do pedaço de formato inválido"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid hex password"
+msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1756,10 +1759,6 @@ msgstr "Os elementos Out-buffer devem ter um comprimento de <= 4 bytes"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "A superamostragem deve ser um múltiplo de 8."
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "PDMIn not available"
-msgstr "O PDMIn não está disponível"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -4460,6 +4459,12 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "I2SOut not available"
+#~ msgstr "O I2SOut não está disponível"
+
+#~ msgid "PDMIn not available"
+#~ msgstr "O PDMIn não está disponível"
 
 #~ msgid "out of range of source"
 #~ msgstr "fora do alcance da fonte"
