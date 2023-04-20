@@ -110,6 +110,9 @@ msgstr ""
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
+#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+#: shared-bindings/keypad/ShiftRegisterKeys.c
 msgid "%q"
 msgstr "%q"
 
@@ -206,7 +209,7 @@ msgstr ""
 msgid "%q must be array of type 'H'"
 msgstr "%q muss ein Array vom Typ 'H' sein"
 
-#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be array of type 'h'"
 msgstr ""
 
@@ -1147,10 +1150,6 @@ msgstr "I2C-Initialisierungsfehler"
 msgid "I2C peripheral in use"
 msgstr "I2C Peripherie in Verwendung"
 
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr "I2SOut nicht verfügbar"
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr "In-Puffer-Elemente müssen <= 4 Bytes lang sein"
@@ -1317,6 +1316,10 @@ msgstr "Ungültiges Format"
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Ungültige format chunk size"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid hex password"
+msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1750,10 +1753,6 @@ msgstr "Out-Buffer-Elemente müssen <= 4 bytes lang sein"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Oversample muss ein Vielfaches von 8 sein."
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "PDMIn not available"
-msgstr "PDMIn nicht verfügbar"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -4463,6 +4462,12 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "I2SOut not available"
+#~ msgstr "I2SOut nicht verfügbar"
+
+#~ msgid "PDMIn not available"
+#~ msgstr "PDMIn nicht verfügbar"
 
 #~ msgid "out of range of source"
 #~ msgstr "Außerhalb des Bereichs der Quelle"
