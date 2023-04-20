@@ -82,3 +82,13 @@
         I2S_GPIO(1, WS, TX, GPIO_07, IOMUXC_GPIO_07_SAI1_TX_SYNC),  \
         I2S_GPIO(1, SD, TX, GPIO_04, IOMUXC_GPIO_04_SAI1_TX_DATA00),  \
     }
+
+#define MICROPY_HW_WIFI_SPI_ID     (0)
+#define MICROPY_HW_WIFI_SPI_BAUDRATE (8000000)
+
+// NINA_ACK: D7 = GPIO_AD_02
+#define MICROPY_HW_NINA_ACK       (&pin_GPIO_AD_02)
+// NINA_CS: D10 = GPIO_AD_05
+#define MICROPY_HW_NINA_CS        (&pin_GPIO_AD_05)
+// Adafruit shield: NINA_RESET: D5 = GPIO_01
+#define MICROPY_HW_NINA_RESET     (&pin_GPIO_01)

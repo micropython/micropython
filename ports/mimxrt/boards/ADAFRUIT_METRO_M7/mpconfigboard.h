@@ -58,9 +58,12 @@
 #define MICROPY_HW_WIFI_SPI_ID       (0)
 #define MICROPY_HW_WIFI_SPI_BAUDRATE (8000000)
 
-#define MICROPY_HW_NINA_ACK          pin_find(MP_OBJ_NEW_QSTR(MP_QSTR_ESP_BUSY))
-#define MICROPY_HW_NINA_CS           pin_find(MP_OBJ_NEW_QSTR(MP_QSTR_ESP_CS))
-#define MICROPY_HW_NINA_RESET        pin_find(MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RESET))
+// ESP_BUSY: GPIO_AD_11
+#define MICROPY_HW_NINA_ACK          (&pin_GPIO_AD_11)
+// ESP_CS: GPIO_AD_14
+#define MICROPY_HW_NINA_CS           (&pin_GPIO_AD_14)
+// ESP_RESET: GPIO_AD_07
+#define MICROPY_HW_NINA_RESET        (&pin_GPIO_AD_07)
 
 // BLE definitions
 #define MICROPY_PY_BLUETOOTH_NINAW10 (1)
@@ -68,5 +71,7 @@
 #define MICROPY_HW_BLE_UART_ID       (1)
 #define MICROPY_HW_BLE_UART_BAUDRATE (115200)
 
-#define MICROPY_HW_NINA_RTS          pin_find(MP_OBJ_NEW_QSTR(MP_QSTR_MOSI))
+// MOSI == RTS: GPIO_AD_04
+#define MICROPY_HW_NINA_RTS          (&pin_GPIO_AD_04)
+// CTS == NINA_ACK:  GPIO_AD_11
 #define MICROPY_HW_NINA_CTS          MICROPY_HW_NINA_ACK
