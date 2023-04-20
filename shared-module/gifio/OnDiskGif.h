@@ -39,15 +39,11 @@
 #include "extmod/vfs_fat.h"
 
 typedef struct {
-    displayio_bitmap_t *bitmap;
-    displayio_palette_t *palette;
-} gifio_ondiskgif_displayio_objs_t;
-
-typedef struct {
     mp_obj_base_t base;
     GIFIMAGE gif;
     pyb_file_obj_t *file;
-    gifio_ondiskgif_displayio_objs_t displayio_objs;
+    displayio_bitmap_t *bitmap;
+    displayio_palette_t *palette;
     int32_t duration;
     int32_t frame_count;
     int32_t min_delay;

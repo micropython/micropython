@@ -126,18 +126,18 @@ STATIC mp_obj_t gifio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t arg = all_args[0];
-    if (mp_obj_is_str(arg)) {
-        arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));
+    mp_obj_t filename = all_args[0];
+    if (mp_obj_is_str(filename)) {
+        filename = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), filename, MP_ROM_QSTR(MP_QSTR_rb));
     }
 
-    if (!mp_obj_is_type(arg, &mp_type_fileio)) {
+    if (!mp_obj_is_type(filename, &mp_type_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
 
     gifio_ondiskgif_t *self = m_new_obj(gifio_ondiskgif_t);
     self->base.type = &gifio_ondiskgif_type;
-    common_hal_gifio_ondiskgif_construct(self, MP_OBJ_TO_PTR(arg), args[ARG_use_palette].u_bool);
+    common_hal_gifio_ondiskgif_construct(self, MP_OBJ_TO_PTR(filename), args[ARG_use_palette].u_bool);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -207,7 +207,7 @@ MP_PROPERTY_GETTER(gifio_ondiskgif_bitmap_obj,
     (mp_obj_t)&gifio_ondiskgif_get_bitmap_obj);
 
 //|     palette: displayio.Palette
-//|     """The palette for the current frame."""
+//|     """The palette for the current frame if it exists."""
 STATIC mp_obj_t gifio_ondiskgif_obj_get_palette(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
 
