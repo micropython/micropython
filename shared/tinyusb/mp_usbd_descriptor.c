@@ -39,7 +39,11 @@
 const tusb_desc_device_t mp_usbd_desc_device_static = {
     .bLength = sizeof(tusb_desc_device_t),
     .bDescriptorType = TUSB_DESC_DEVICE,
+    #ifdef MICROPY_HW_USB_VENDOR
     .bcdUSB = 0x0210,
+    #else
+    .bcdUSB = 0x0200,
+    #endif
     .bDeviceClass = TUSB_CLASS_MISC,
     .bDeviceSubClass = MISC_SUBCLASS_COMMON,
     .bDeviceProtocol = MISC_PROTOCOL_IAD,
