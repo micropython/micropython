@@ -120,6 +120,17 @@ SRC_ETH_C += \
 	hal/phy/mdio/enet/fsl_enet_mdio.c
 endif
 
+ifeq ($(MICROPY_PY_NETWORK_NINAW10),1)
+CFLAGS += -DMICROPY_PY_NETWORK_NINAW10=1
+INC += -I$(TOP)/drivers/ninaw10
+
+SRC_C += \
+    drivers/ninaw10/nina_bt_hci.c \
+    drivers/ninaw10/nina_wifi_drv.c \
+    drivers/ninaw10/nina_wifi_bsp.c \
+    drivers/ninaw10/machine_pin_nina.c
+endif
+
 # NXP SDK sources
 SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_clock.c \
@@ -219,6 +230,7 @@ SRC_C += \
 	mpnetworkport.c \
 	msc_disk.c \
 	network_lan.c \
+	nina_wifi_bsp.c \
 	pendsv.c \
 	pin.c \
 	sdcard.c \
