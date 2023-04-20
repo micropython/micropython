@@ -16,3 +16,15 @@
 #define MICROPY_HW_NINA_ACK        (21)
 #define MICROPY_HW_NINA_CS         (23)
 #define MICROPY_HW_NINA_RESET      (22)
+
+// defines for BLE
+#define MICROPY_PY_BLUETOOTH_NINAW10 (1)
+
+#define MICROPY_HW_BLE_UART_ID       (5)
+#define MICROPY_HW_BLE_UART_BAUDRATE (115200)
+
+#define MICROPY_HW_BLE_UART_TX       (48)
+#define MICROPY_HW_BLE_UART_RX       (49)
+
+#define MICROPY_HW_NINA_RTS          (55)
+#define MICROPY_HW_NINA_CTS          (21)
