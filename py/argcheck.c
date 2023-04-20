@@ -268,19 +268,6 @@ mp_int_t mp_arg_validate_type_int(mp_obj_t obj, qstr arg_name) {
     return an_int;
 }
 
-mp_int_t mp_arg_validate_valid_hex_password(mp_uint_t length, uint8_t *buf) {
-    unsigned int i=0;
-    while (i<length) {
-        if (!(('0' <= buf[i] && buf[i] <= '9') ||
-              ('a' <= buf[i] && buf[i] <= 'f') ||
-              ('A' <= buf[i] && buf[i] <= 'F'))) {
-            mp_raise_ValueError_varg(translate("Invalid hex character in password."));
-        }
-        i++;
-    }
-    return 0;
-}
-
 NORETURN void mp_arg_error_invalid(qstr arg_name) {
     mp_raise_ValueError_varg(translate("Invalid %q"), arg_name);
 }

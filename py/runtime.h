@@ -114,7 +114,6 @@ mp_obj_t mp_arg_validate_type_in(mp_obj_t obj, const mp_obj_type_t *type, qstr a
 mp_obj_t mp_arg_validate_type_or_none(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name);
 mp_int_t mp_arg_validate_type_int(mp_obj_t obj, qstr arg_name);
 mp_obj_t mp_arg_validate_type_string(mp_obj_t obj, qstr arg_name);
-mp_int_t mp_arg_validate_valid_hex_password(mp_uint_t length, uint8_t *buf);
 
 static MP_INLINE mp_obj_dict_t *mp_locals_get(void) {
     return MP_STATE_THREAD(dict_locals);
