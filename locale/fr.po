@@ -141,6 +141,7 @@ msgstr "%q dans %q doit être de type %q, pas %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -179,11 +180,11 @@ msgstr "La longeur de %q doit être <= %d"
 msgid "%q length must be >= %d"
 msgstr "La longeur de %q doit être >= %d"
 
-#: py/argcheck.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 msgid "%q must be %d"
 msgstr "%q doit être %d"
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/displayio/Bitmap.c
 msgid "%q must be %d-%d"
 msgstr "%q doit être %d-%d"
 
@@ -483,6 +484,7 @@ msgstr "Tout les canaux sont utilisés"
 msgid "All event channels in use"
 msgstr "Tous les canaux d'événements sont utilisés"
 
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr "Tous les automates finis sont utilisés"
@@ -491,6 +493,7 @@ msgstr "Tous les automates finis sont utilisés"
 msgid "All sync event channels in use"
 msgstr "Tout les canaux d'événements sync sont utilisés"
 
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "Tous les minuteurs pour cette broche sont utilisés"
@@ -1277,7 +1280,9 @@ msgid "Interrupt error."
 msgstr "Erreur d'interruption."
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
-#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
+#: ports/raspberrypi/bindings/picodvi/Framebuffer.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
