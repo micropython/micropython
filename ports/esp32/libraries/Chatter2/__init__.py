@@ -1,6 +1,6 @@
 from ST7735 import TFT
 from machine import SPI, Pin, Signal
-from CircuitOS import InputShift, Piezo, Display
+from CircuitOS import InputShift, Piezo, Display, PanelST7735
 from .Pins import *
 
 
@@ -16,7 +16,7 @@ buttons = InputShift(pin_data=Pins.INP_DATA, pin_clock=Pins.INP_SCK, pin_load=Pi
 
 piezo = Piezo(Pins.BUZZ)
 
-display = Display(tft, 160, 128)
+display = Display(PanelST7735(tft), 160, 128)
 
 
 def begin():
