@@ -233,11 +233,6 @@ SRC_LIB_C += $(addprefix lib/,\
         libm/roundf.c \
         )
 
-SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
-        nrfx_uarte.c \
-        nrfx_twim.c \
-        )
-
 include drivers/secureboot/secureboot.mk
 
 endif
@@ -263,11 +258,13 @@ endif
 SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 	prs/nrfx_prs.c \
 	nrfx_uart.c \
+        nrfx_uarte.c \
 	nrfx_adc.c \
 	nrfx_saadc.c \
 	nrfx_temp.c \
 	nrfx_rng.c \
 	nrfx_twi.c \
+        nrfx_twim.c \
 	nrfx_spi.c \
 	nrfx_spim.c \
 	nrfx_rtc.c \
@@ -319,6 +316,7 @@ SRC_C += $(addprefix lib/tinyusb/src/,\
 	tusb.c \
 	portable/nordic/nrf5x/dcd_nrf5x.c \
 	)
+
 endif
 
 DRIVERS_SRC_C += $(addprefix modules/,\

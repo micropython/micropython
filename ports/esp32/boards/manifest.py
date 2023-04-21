@@ -2,6 +2,7 @@ freeze("$(PORT_DIR)/modules")
 include("$(MPY_DIR)/extmod/uasyncio")
 
 package("ST7735", base_path="$(PORT_DIR)/libraries")
+package("ILI9341", base_path="$(PORT_DIR)/libraries")
 package("CircuitOS", base_path="$(PORT_DIR)/libraries")
 package("i2c_bm8563", base_path="$(PORT_DIR)/libraries")
 

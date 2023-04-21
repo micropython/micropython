@@ -31,7 +31,7 @@
 #include "py/mperrno.h"
 #include "ticks.h"
 
-#if defined(MICROPY_HW_ETH_MDC)
+#if defined(IOMUX_TABLE_ENET)
 
 #include "pin.h"
 #include "shared/netutils/netutils.h"
@@ -639,4 +639,4 @@ void eth_low_power_mode(eth_t *self, bool enable) {
     ENET_EnableSleepMode(ENET, enable);
     #endif
 }
-#endif // defined(MICROPY_HW_ETH_MDC)
+#endif // defined(IOMUX_TABLE_ENET)

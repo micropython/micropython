@@ -314,6 +314,14 @@ STATIC mp_obj_t network_cyw43_status(size_t n_args, const mp_obj_t *args) {
 
     // one argument: return status based on query parameter
     switch (mp_obj_str_get_qstr(args[1])) {
+        case MP_QSTR_rssi: {
+            if (self->itf != CYW43_ITF_STA) {
+                mp_raise_ValueError(MP_ERROR_TEXT("STA required"));
+            }
+            int32_t rssi;
+            cyw43_wifi_get_rssi(self->cyw, &rssi);
+            return mp_obj_new_int(rssi);
+        }
         case MP_QSTR_stations: {
             // return list of connected stations
             if (self->itf != CYW43_ITF_AP) {
@@ -474,7 +482,7 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                     case MP_QSTR_hostname: {
                         // TODO: Deprecated. Use network.hostname(name) instead.
                         size_t len;
-                        const char *str = mp_obj_str_get_data(args[0], &len);
+                        const char *str = mp_obj_str_get_data(e->value, &len);
                         if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
                             mp_raise_ValueError(NULL);
                         }

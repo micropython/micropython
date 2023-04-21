@@ -1,6 +1,6 @@
 from ST7735 import TFT
 from machine import SPI, Pin, Signal
-from CircuitOS import InputGPIO, Display
+from CircuitOS import InputGPIO, Display, PanelST7735
 from .Pins import *
 
 
@@ -12,7 +12,7 @@ backlight = Signal(blPin, invert=True)
 
 buttons = InputGPIO(Buttons.Pins, inverted=True)
 
-display = Display(tft, 160, 128)
+display = Display(PanelST7735(tft), 160, 128)
 
 
 def begin():

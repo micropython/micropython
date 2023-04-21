@@ -325,7 +325,7 @@ soft_reset:
 
     // Run optional frozen boot code.
     #ifdef MICROPY_BOARD_FROZEN_BOOT_FILE
-    pyexec_frozen_module(MICROPY_BOARD_FROZEN_BOOT_FILE);
+    pyexec_frozen_module(MICROPY_BOARD_FROZEN_BOOT_FILE, false);
     #endif
 
     // Run boot.py (or whatever else a board configures at this stage).

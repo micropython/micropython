@@ -1,0 +1,19 @@
+{
+    "vendor": "CircuitMess",
+    "product": "ByteBoi",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/pages/byteboi",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32",
+    "features": [
+        "USB-C",
+        "BLE",
+        "WiFi",
+        "SPIRAM"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}

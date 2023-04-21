@@ -67,8 +67,8 @@ const uint8_t mp_usbd_desc_cfg_static[USBD_STATIC_DESC_LEN] = {
 };
 
 const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
-    char serial_buf[USBD_DESC_STR_MAX + 1]; // Includes terminating NUL byte
-    static uint16_t desc_wstr[USBD_DESC_STR_MAX + 1]; // Includes prefix uint16_t
+    char serial_buf[MICROPY_HW_USB_DESC_STR_MAX + 1]; // Includes terminating NUL byte
+    static uint16_t desc_wstr[MICROPY_HW_USB_DESC_STR_MAX + 1]; // Includes prefix uint16_t
     const char *desc_str;
     uint16_t desc_len;
 
@@ -109,7 +109,7 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
 
         // Convert from narrow string to wide string
         desc_len = 2;
-        for (int i = 0; i < USBD_DESC_STR_MAX && desc_str[i] != 0; i++) {
+        for (int i = 0; i < MICROPY_HW_USB_DESC_STR_MAX && desc_str[i] != 0; i++) {
             desc_wstr[1 + i] = desc_str[i];
             desc_len += 2;
         }
