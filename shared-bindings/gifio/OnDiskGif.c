@@ -206,7 +206,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_bitmap_obj, gifio_ondiskgif_obj_ge
 MP_PROPERTY_GETTER(gifio_ondiskgif_bitmap_obj,
     (mp_obj_t)&gifio_ondiskgif_get_bitmap_obj);
 
-//|     palette: displayio.Palette
+//|     palette: Optional[displayio.Palette]
 //|     """The palette for the current frame if it exists."""
 STATIC mp_obj_t gifio_ondiskgif_obj_get_palette(mp_obj_t self_in) {
     gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
