@@ -99,7 +99,7 @@ void samd_main(void) {
         mod_network_deinit();
         #endif
         #if MICROPY_PY_BLUETOOTH
-        // mp_bluetooth_deinit();
+        mp_bluetooth_deinit();
         #endif
         #if MICROPY_PY_MACHINE_ADC
         adc_deinit_all();
