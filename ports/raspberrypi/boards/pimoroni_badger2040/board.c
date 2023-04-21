@@ -274,12 +274,12 @@ void board_init(void) {
     common_hal_digitalio_digitalinout_never_reset(&enable_pin_obj);
 
     // Set up the SPI object used to control the display
-    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
+    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO18, &pin_GPIO19, &pin_GPIO16, false);
     common_hal_busio_spi_never_reset(spi);
 
     // Set up the DisplayIO pin object
-    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
@@ -291,7 +291,7 @@ void board_init(void) {
         0); // Phase
 
     // Set up the DisplayIO epaper object
-    displayio_epaperdisplay_obj_t *display = &displays[0].epaper_display;
+    displayio_epaperdisplay_obj_t *display = &allocate_display()->epaper_display;
     display->base.type = &displayio_epaperdisplay_type;
     common_hal_displayio_epaperdisplay_construct(
         display,
@@ -329,10 +329,8 @@ void board_init(void) {
 void board_deinit(void) {
     displayio_epaperdisplay_obj_t *display = &displays[0].epaper_display;
     if (display->base.type == &displayio_epaperdisplay_type) {
-        size_t i = 0;
         while (common_hal_displayio_epaperdisplay_get_busy(display)) {
             RUN_BACKGROUND_TASKS;
-            i++;
         }
     }
     common_hal_displayio_release_displays();

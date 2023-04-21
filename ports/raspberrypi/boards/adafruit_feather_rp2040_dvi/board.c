@@ -40,7 +40,7 @@ void board_init(void) {
         &pin_GPIO23, &pin_GPIO22,
         8);
 
-    framebufferio_framebufferdisplay_obj_t *display = &displays[0].framebuffer_display;
+    framebufferio_framebufferdisplay_obj_t *display = &allocate_display()->framebuffer_display;
     display->base.type = &framebufferio_framebufferdisplay_type;
     common_hal_framebufferio_framebufferdisplay_construct(
         display,
