@@ -106,7 +106,8 @@ void board_init(void) {
         false, // chip_select (don't always toggle chip select)
         false, // grayscale
         false, // acep
-        false); // two_byte_sequence_length
+        false, // two_byte_sequence_length
+        false); // address_little_endian
 }
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
