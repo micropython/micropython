@@ -31,6 +31,8 @@
 typedef struct _machine_mem_obj_t {
     mp_obj_base_t base;
     unsigned elem_size; // in bytes
+    uintptr_t begin;
+    uintptr_t end;
 } machine_mem_obj_t;
 
 extern const mp_obj_type_t machine_mem_type;
@@ -40,10 +42,10 @@ extern const machine_mem_obj_t machine_mem16_obj;
 extern const machine_mem_obj_t machine_mem32_obj;
 
 #if defined(MICROPY_MACHINE_MEM_GET_READ_ADDR)
-uintptr_t MICROPY_MACHINE_MEM_GET_READ_ADDR(mp_obj_t addr_o, uint align);
+uintptr_t MICROPY_MACHINE_MEM_GET_READ_ADDR(machine_mem_obj_t *self, uintptr_t addr);
 #endif
 #if defined(MICROPY_MACHINE_MEM_GET_WRITE_ADDR)
-uintptr_t MICROPY_MACHINE_MEM_GET_WRITE_ADDR(mp_obj_t addr_o, uint align);
+uintptr_t MICROPY_MACHINE_MEM_GET_WRITE_ADDR(machine_mem_obj_t *self, uintptr_t addr);
 #endif
 
 #endif // MICROPY_INCLUDED_EXTMOD_MACHINE_MEM_H

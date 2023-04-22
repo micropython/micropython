@@ -28,9 +28,15 @@ except TypeError:
     print("TypeError")
 
 try:
-    machine.mem8[0:1]
-except TypeError:
-    print("TypeError")
+    machine.mem8[-1]
+except IndexError:
+    print("IndexError")
+
+try:
+    mem = machine.mem8[0:1]
+    mem[1]
+except IndexError:
+    print("IndexError")
 
 try:
     machine.mem8[0:1] = 10

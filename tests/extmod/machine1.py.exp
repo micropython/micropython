@@ -1,8 +1,9 @@
-<8-bit memory>
+<8-bit memory at 00000000 address>
 ValueError
 ValueError
 TypeError
-TypeError
+IndexError
+IndexError
 TypeError
 TypeError
 TypeError
