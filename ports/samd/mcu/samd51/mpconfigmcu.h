@@ -24,6 +24,9 @@
 #ifndef MICROPY_PY_CMATH
 #define MICROPY_PY_CMATH                (0)
 #endif
+// Enable MD5 hash.
+#define MICROPY_PY_UHASHLIB_MD5         (MICROPY_SSL_MBEDTLS)
+#define MICROPY_TRACKED_ALLOC           (MICROPY_SSL_MBEDTLS)
 
 #define MICROPY_PY_OS_SYNC              (1)
 #define MICROPY_PY_OS_URANDOM           (1)

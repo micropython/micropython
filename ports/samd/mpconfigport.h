@@ -134,6 +134,52 @@
 
 #define MP_STATE_PORT MP_STATE_VM
 
+// By default networking should include sockets, ssl, websockets, webrepl, dupterm.
+#if MICROPY_PY_NETWORK
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-samd"
+#endif
+
+#ifndef MICROPY_PY_SOCKET
+#define MICROPY_PY_SOCKET                   (1)
+#endif
+#ifndef MICROPY_PY_SSL
+#define MICROPY_PY_SSL                      (1)
+#endif
+#ifndef MICROPY_PY_WEBSOCKET
+#define MICROPY_PY_WEBSOCKET                (1)
+#endif
+#ifndef MICROPY_PY_WEBREPL
+#define MICROPY_PY_WEBREPL                  (1)
+#endif
+
+#if MICROPY_PY_NETWORK_NINAW10
+// This Network interface requires the extended socket state.
+#ifndef MICROPY_PY_SOCKET_EXTENDED_STATE
+#define MICROPY_PY_SOCKET_EXTENDED_STATE    (1)
+#endif
+extern const struct _mp_obj_type_t mod_network_nic_type_nina;
+extern const struct _mp_obj_type_t mod_network_nic_type_wlan;
+#define MICROPY_HW_NIC_WLAN     { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_wlan) },
+#define MICROPY_HW_NIC_NINAW10  { MP_ROM_QSTR(MP_QSTR_NinaW10), MP_ROM_PTR(&mod_network_nic_type_nina) },
+
+#else
+
+#define MICROPY_HW_NIC_NINAW10
+
+#endif // MICROPY_PY_NETWORK_NINAW10
+
+#ifndef MICROPY_BOARD_NETWORK_INTERFACES
+#define MICROPY_BOARD_NETWORK_INTERFACES
+#endif
+
+#define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_WLAN \
+    MICROPY_HW_NIC_NINAW10 \
+    MICROPY_BOARD_NETWORK_INTERFACES
+
+#endif  // MICROPY_PY_NETWORK
+
 // Additional entries for use with pendsv_schedule_dispatch.
 #ifndef MICROPY_BOARD_PENDSV_ENTRIES
 #define MICROPY_BOARD_PENDSV_ENTRIES
