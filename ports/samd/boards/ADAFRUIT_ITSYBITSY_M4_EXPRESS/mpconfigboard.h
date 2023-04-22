@@ -4,3 +4,15 @@
 #define MICROPY_HW_DFLL_USB_SYNC    (1)
 
 #define MICROPY_HW_QSPIFLASH        GD25Q16C
+#define MICROPY_HW_DFLL_USB_SYNC   (1)
+
+#define MICROPY_HW_WIFI_SPI_ID     (1)
+#define MICROPY_HW_WIFI_SPI_BAUDRATE (8000000)
+
+#define MICROPY_HW_WIFI_SPI_MOSI   (0)
+#define MICROPY_HW_WIFI_SPI_MISO   (55)
+#define MICROPY_HW_WIFI_SPI_SCK    (1)
+
+#define MICROPY_HW_NINA_CS         (22)
+#define MICROPY_HW_NINA_ACK        (21)
+#define MICROPY_HW_NINA_RESET      (23)

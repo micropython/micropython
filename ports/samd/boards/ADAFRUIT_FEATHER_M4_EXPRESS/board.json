@@ -14,6 +14,9 @@
         "feather_m4_express.jpg"
     ],
     "mcu": "samd51",
+    "variants": {
+        "WLAN": "WiFi support using a ESP32 module with NINA firmware"
+    },
     "product": "Feather M4 Express",
     "thumbnail": "",
     "url": "https://www.adafruit.com/product/3857",
