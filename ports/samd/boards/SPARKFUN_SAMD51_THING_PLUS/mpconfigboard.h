@@ -13,3 +13,14 @@
 // the board's external flash.
 #define MICROPY_HW_SPIFLASH         (1)
 #define MICROPY_HW_SPIFLASH_ID      (0)
+
+#define MICROPY_HW_WIFI_SPI_ID     (4)
+#define MICROPY_HW_WIFI_SPI_BAUDRATE (8000000)
+
+#define MICROPY_HW_WIFI_SPI_MOSI   (44)
+#define MICROPY_HW_WIFI_SPI_MISO   (43)
+#define MICROPY_HW_WIFI_SPI_SCK    (45)
+
+#define MICROPY_HW_NINA_ACK        (16)
+#define MICROPY_HW_NINA_CS         (17)
+#define MICROPY_HW_NINA_RESET      (19)

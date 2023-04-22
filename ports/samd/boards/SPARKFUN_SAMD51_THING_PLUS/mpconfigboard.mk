@@ -6,3 +6,4 @@ TEXT0 = 0x4000
 # The ?='s allow overriding in mpconfigboard.mk.
 # MicroPython settings
 MICROPY_HW_CODESIZE ?= 1008K
+BOARD_VARIANTS += "wlan"

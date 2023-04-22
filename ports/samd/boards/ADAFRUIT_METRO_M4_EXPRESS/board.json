@@ -16,7 +16,7 @@
     ],
     "mcu": "samd51",
     "variants": {
-        "wlan": "WLAN without SSL support"
+        "wlan": "WLAN using the on-board Airlift module"
     },
     "product": "Metro M4 Express Airlift",
     "thumbnail": "",

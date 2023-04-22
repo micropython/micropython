@@ -5,3 +5,14 @@
 
 #define MICROPY_HW_SPIFLASH         (1)
 #define MICROPY_HW_SPIFLASH_ID      (5)
+
+#define MICROPY_HW_WIFI_SPI_ID     (4)
+#define MICROPY_HW_WIFI_SPI_BAUDRATE (8000000)
+
+#define MICROPY_HW_WIFI_SPI_MOSI   (42)
+#define MICROPY_HW_WIFI_SPI_MISO   (12)
+#define MICROPY_HW_WIFI_SPI_SCK    (43)
+
+#define MICROPY_HW_NINA_CS         (17)
+#define MICROPY_HW_NINA_ACK        (16)
+#define MICROPY_HW_NINA_RESET      (19)

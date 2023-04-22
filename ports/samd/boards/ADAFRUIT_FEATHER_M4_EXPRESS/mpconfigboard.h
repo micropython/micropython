@@ -5,3 +5,14 @@
 #define MICROPY_HW_MCU_OSC32KULP    (1)
 
 #define MICROPY_HW_QSPIFLASH        GD25Q16C
+
+#define MICROPY_HW_WIFI_SPI_ID     (1)
+#define MICROPY_HW_WIFI_SPI_BAUDRATE (8000000)
+
+#define MICROPY_HW_WIFI_SPI_MOSI   (55)
+#define MICROPY_HW_WIFI_SPI_MISO   (54)
+#define MICROPY_HW_WIFI_SPI_SCK    (17)
+
+#define MICROPY_HW_NINA_ACK        (21)
+#define MICROPY_HW_NINA_CS         (23)
+#define MICROPY_HW_NINA_RESET      (22)
