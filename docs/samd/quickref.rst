@@ -414,6 +414,47 @@ has the same methods as software SPI above::
     i2c = I2C(2, scl=Pin("SCL"), sda=Pin("SDA"), freq=400_000)
     i2c.writeto(0x76, b"Hello World")
 
+
+WLAN
+----
+
+SAMD51 MCUs support networking using a ESP32 based extension module with NINA firmware.
+Some SAMD51 are already equipped with such a module. For some boards
+add-on modules are available which can be stacked to that board. But
+any generic ESP32 or a ESP32 WROOM module can be used for that purpose.
+Since the WLAN module's wiring may vary, it must be specified when
+setting up the connection. The example below shows the set-up
+for a Adafruit ItsyBitsy M4 module with the matching add-on board,
+for which the wiring is defined in the firmware::
+
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)       # activate the interface
+    wlan.scan()             # scan for access points
+    wlan.isconnected()      # check if the station is connected to an AP
+    wlan.connect('ssid', 'key') # connect to an AP
+    wlan.config('mac')      # get the interface's MAC address
+    wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
+
+If no default wiring exist or the wiring differs from the default, it
+can be specified with the alternative NinaW10 WLAN class e.g.::
+
+    import network
+    from machine import SPI, Pin
+    spi=SPI(1, 8000000, sck="SCK", mosi="MOSI", miso="MISO")
+    wlan = network.NinaW10(network.STA_IF, spi=spi, cs=Pin("D13"), busy=Pin("D11"), reset=Pin("D12"))
+
+In that case, all wiring parameters must be specified, even if some of them
+match the default connection. For further details, see :ref:`NinaW10 class <network.NinaW10>`.
+
+Notes:
+
+  - All supported SAMD51 boards provide basic WLAN support. SSL is at the moment only
+    included for boards with a SAMD51x20 MCU. SSL requires a lot of code space. 
+  - If feasible, pull the RESET line low with an external resistor. A good value 
+    is 2.2 kOhm. This forces the GPIO lines of the module to high impedance when
+    not being used.
+
+
 OneWire driver
 --------------
 
