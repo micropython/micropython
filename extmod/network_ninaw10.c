@@ -145,18 +145,44 @@ STATIC mp_obj_t network_ninaw10_timer_callback(mp_obj_t none_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_timer_callback_obj, network_ninaw10_timer_callback);
 
-STATIC mp_obj_t network_ninaw10_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+STATIC mp_obj_t network_ninaw10_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_interface, ARG_spi, ARG_cs, ARG_busy, ARG_reset };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_interface, MP_ARG_INT, {.u_int = MOD_NETWORK_STA_IF} },
+        { MP_QSTR_spi, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_cs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_busy, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_reset, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+    // Parse args.
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     mp_obj_t nina_obj;
-    if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
+    if (args[ARG_interface].u_int == MOD_NETWORK_STA_IF) {
         nina_obj = MP_OBJ_FROM_PTR(&network_nina_wl_sta);
     } else {
         nina_obj = MP_OBJ_FROM_PTR(&network_nina_wl_ap);
     }
+    nina_bsp_wiring(args[ARG_spi].u_obj, args[ARG_cs].u_obj, args[ARG_busy].u_obj, args[ARG_reset].u_obj);
+
     // Register with network module
     mod_network_register_nic(nina_obj);
     return nina_obj;
 }
+
+STATIC mp_obj_t network_wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_interface };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_interface, MP_ARG_INT, {.u_int = MOD_NETWORK_STA_IF} },
+    };
+    // Just use the shim to check the argument and reject forbidden ones.
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    // Everything else is done in network_ninaw10_make_new()
+    return network_ninaw10_make_new(type, n_args, n_kw, all_args);
+}
+
 
 STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
     nina_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -847,6 +873,15 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_nina,
     MP_TYPE_FLAG_NONE,
     make_new, network_ninaw10_make_new,
+    locals_dict, &nina_locals_dict,
+    protocol, &mod_network_nic_protocol_nina
+    );
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mod_network_nic_type_wlan,
+    MP_QSTR_wlan,
+    MP_TYPE_FLAG_NONE,
+    make_new, network_wlan_make_new,
     locals_dict, &nina_locals_dict,
     protocol, &mod_network_nic_protocol_nina
     );
