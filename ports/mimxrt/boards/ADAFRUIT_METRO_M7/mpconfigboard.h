@@ -75,3 +75,22 @@
 #define MICROPY_HW_NINA_RTS          (&pin_GPIO_AD_04)
 // CTS == NINA_ACK:  GPIO_AD_11
 #define MICROPY_HW_NINA_CTS          MICROPY_HW_NINA_ACK
+<<<<<<< Updated upstream
+=======
+
+#else
+
+// ESP_BUSY: GPIO_11
+#define MICROPY_HW_NINA_ACK          (pin_GPIO_11)
+// ESP_CS: GPIO_06
+#define MICROPY_HW_NINA_CS           (pin_GPIO_06)
+// ESP_RESET: GPIO_SD_01
+#define MICROPY_HW_NINA_RESET        (pin_GPIO_SD_01)
+
+// MOSI == RTS: GPIO_AD_04
+#define MICROPY_HW_NINA_RTS          (pin_GPIO_AD_04)
+// CTS == NINA_ACK:  GPIO_11
+#define MICROPY_HW_NINA_CTS          MICROPY_HW_NINA_ACK
+
+#endif
+>>>>>>> Stashed changes
