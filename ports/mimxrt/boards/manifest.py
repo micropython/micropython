@@ -3,6 +3,7 @@ include("$(MPY_DIR)/extmod/asyncio")
 require("onewire")
 require("ds18x20")
 require("dht")
+require("neopixel")
 include(
     "$(MPY_LIB_DIR)/micropython/bluetooth/aioble/manifest.py",
     client=True,
