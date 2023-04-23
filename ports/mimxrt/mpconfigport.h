@@ -57,6 +57,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_STACK_CHECK_MARGIN          (1024)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
+#define MICROPY_SCHEDULER                   (1)
 #define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_STATIC_NODES      (1)
@@ -146,7 +147,7 @@ uint32_t trng_random_u32(void);
 #endif
 
 #ifndef MICROPY_PY_SSL
-#define MICROPY_PY_SSL                      (1)
+#define MICROPY_PY_SSL                      (0)
 #endif
 #define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP || MICROPY_PY_NETWORK_NINAW10)
 #define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP || MICROPY_PY_NETWORK_NINAW10)
@@ -156,6 +157,12 @@ uint32_t trng_random_u32(void);
 #endif
 #define MICROPY_PY_LWIP_PPP                 (MICROPY_PY_NETWORK_PPP_LWIP)
 
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
+#endif
+
+#if MICROPY_PY_BLUETOOTH
+
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
 #endif
@@ -164,8 +171,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
 #endif
 
-#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
-#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
+// Bluetooth code only runs in the scheduler, no locking/mutex required.
+#define MICROPY_PY_BLUETOOTH_ENTER uint32_t atomic_state = 0;
+#define MICROPY_PY_BLUETOOTH_EXIT (void)atomic_state;
 #endif
 
 #define MICROPY_HW_ENABLE_USBDEV            (1)
