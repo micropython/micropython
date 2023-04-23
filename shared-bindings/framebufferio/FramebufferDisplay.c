@@ -324,6 +324,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_fill_row_obj, 1, fra
 
 //|     root_group: displayio.Group
 //|     """The root group on the display.
+//|     If the root group is set to displayio.CIRCUITPYTHON_TERMINAL, the default CircuitPython terminal will be shown.
 //|     If the root group is set to ``None``, no output will be shown.
 //|     """
 //|
