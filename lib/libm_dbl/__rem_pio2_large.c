@@ -366,9 +366,9 @@ recompute:
 
 	/* chop off zero terms */
 	if (z == 0.0) {
+		t = jz;
 		while (iq[--jz] == 0);
 		q0 -= (t - jz) * 24;
-
 	} else { /* break z into 24-bit if necessary */
 		z = scalbn(z,-q0);
 		if (z >= 0x1p24) {
