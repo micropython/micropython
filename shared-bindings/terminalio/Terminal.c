@@ -85,6 +85,9 @@ STATIC mp_obj_t terminalio_terminal_make_new(const mp_obj_type_t *type, size_t n
 
     fontio_builtinfont_t *font = mp_arg_validate_type(args[ARG_font].u_obj, &fontio_builtinfont_type, MP_QSTR_font);
 
+    mp_arg_validate_int_min(scroll_area->width_in_tiles, 2, MP_QSTR_scroll_area_width);
+    mp_arg_validate_int_min(scroll_area->height_in_tiles, 2, MP_QSTR_scroll_area_height);
+
     terminalio_terminal_obj_t *self = m_new_obj(terminalio_terminal_obj_t);
     self->base.type = &terminalio_terminal_type;
 
