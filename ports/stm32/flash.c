@@ -133,7 +133,7 @@ static const flash_layout_t flash_layout[] = {
 #error Unsupported processor
 #endif
 
-#if defined(STM32H723xx)
+#if defined(STM32H723xx) || defined(STM32H750xx)
 
 // get the bank of a given flash address
 static uint32_t get_bank(uint32_t addr) {

@@ -1,5 +1,5 @@
 from machine import Pin, Signal
-import uasyncio
+from .Devices.PCA95XX import PCA95XX
 
 
 class Input:
@@ -32,9 +32,11 @@ class Input:
 		self.__on_release[i] = callback
 
 	async def loop(self):
+		from uasyncio import sleep_ms
+
 		while True:
 			self.scan()
-			await uasyncio.sleep_ms(0)
+			await sleep_ms(0)
 
 	def pressed(self, i: int):
 		if i >= self.numButtons:
@@ -124,3 +126,31 @@ class InputGPIO(Input):
 				self.pressed(i)
 			else:
 				self.released(i)
+
+
+class InputExpander(Input):
+
+	def __init__(self, expander: PCA95XX):
+		super().__init__(16)
+
+		self.expander = expander
+		self.buttons = []
+
+	def scan(self):
+		state = self.expander.state_read()
+
+		for i in range(len(self.buttons)):
+			pin = self.buttons[i]
+
+			if ((state >> pin) & 1) == 1:
+				self.released(pin)
+			else:
+				self.pressed(pin)
+
+	def register_button(self, pin: int):
+		if pin >= 16:
+			return
+
+		self.expander.pin_mode(pin, Pin.IN)
+		self.buttons.append(pin)
+

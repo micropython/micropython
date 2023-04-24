@@ -152,7 +152,8 @@ endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
 SRC_HAL_IMX_C += \
-	$(MCU_DIR)/drivers/fsl_qtmr.c
+	$(MCU_DIR)/drivers/fsl_qtmr.c \
+	$(MCU_DIR)/drivers/fsl_romapi.c
 endif
 
 ifeq ($(MCU_SERIES), MIMXRT1176)
@@ -228,19 +229,31 @@ SHARED_SRC_C += \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
 
-# Add sources for respective board flash type
-ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash qspi_hyper_flash))
-    # Add hal/flexspi_nor_flash.c or hal/flashspi_hyper_flash.c respectively
-    SRC_HAL_C += hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).c
-    #
-    # Add custom (board specific) or default configuration
-    ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
-        SRC_HAL_C += $(BOARD_DIR)/$(MICROPY_HW_FLASH_TYPE)_config.c
-    else
-        SRC_HAL_C += hal/$(MICROPY_HW_FLASH_TYPE)_config.c
-    endif
+# Set flash driver name, base address and internal flash flag, based on the flash type.
+ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash))
+    MICROPY_HW_FLASH_BASE = 0x60000000
+    FLEXSPI_FLASH_TYPE = $(MICROPY_HW_FLASH_TYPE)
+else ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_hyper_flash))
+    MICROPY_HW_FLASH_BASE = 0x60000000
+    FLEXSPI_FLASH_TYPE = $(MICROPY_HW_FLASH_TYPE)
+else ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),internal))
+    # The internal flash is an SPI NOR Flash.
+    MICROPY_HW_FLASH_BASE = 0x70000000
+    FLEXSPI_FLASH_TYPE = qspi_nor_flash
+    CFLAGS += -DMICROPY_HW_FLASH_INTERNAL
 else
     $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
+endif
+
+# Add sources for respective board flash type
+# Add hal/flexspi_nor_flash.c or hal/flashspi_hyper_flash.c respectively
+SRC_HAL_C += hal/flexspi_$(subst qspi_,,$(FLEXSPI_FLASH_TYPE)).c
+#
+# Add custom (board specific) or default configuration
+ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
+    SRC_HAL_C += $(BOARD_DIR)/$(FLEXSPI_FLASH_TYPE)_config.c
+else
+    SRC_HAL_C += hal/$(FLEXSPI_FLASH_TYPE)_config.c
 endif
 
 # Math library source files
@@ -341,18 +354,14 @@ CFLAGS += \
 	-Wno-error=unused-parameter
 
 # Configure respective board flash type
-ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash qspi_hyper_flash))
-    # Add hal/flexspi_nor_flash.h or hal/flexspi_hyper_flash.h respectively
-    CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).h\"
-    #
-    # Add custom (board specific) or default configuration
-    ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
-        CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
-    else
-        CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
-    endif
+# Add hal/flexspi_nor_flash.h or hal/flexspi_hyper_flash.h respectively
+CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_$(subst qspi_,,$(FLEXSPI_FLASH_TYPE)).h\"
+#
+# Add custom (board specific) or default configuration
+ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
+    CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
 else
-    $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
+    CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
 endif
 
 # Configure floating point support
@@ -399,7 +408,7 @@ LDFLAGS += \
 #	the C preprocessor. Therefore keep LDDEFINES separated from LDFLAGS!
 
 LDDEFINES = \
-	-DMICROPY_HW_FLASH_TYPE=$(MICROPY_HW_FLASH_TYPE) \
+	-DMICROPY_HW_FLASH_BASE=$(MICROPY_HW_FLASH_BASE) \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE)
 
 ifdef MICROPY_HW_FLASH_RESERVED

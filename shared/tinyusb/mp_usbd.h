@@ -33,7 +33,7 @@
 void mp_usbd_task(void);
 
 // Function to be implemented in port code.
-// Can write a string up to USBD_DESC_STR_MAX characters long, plus terminating byte.
+// Can write a string up to MICROPY_HW_USB_DESC_STR_MAX characters long, plus terminating byte.
 extern void mp_usbd_port_get_serial_number(char *buf);
 
 #endif // MICROPY_INCLUDED_SHARED_TINYUSB_USBD_H
