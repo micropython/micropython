@@ -1,0 +1,89 @@
+name: psoc6 port
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'shared/**'
+      - 'lib/**'
+      - 'drivers/**'
+      - 'ports/psoc6/**'
+
+jobs:
+  server-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        board: [CY8CPROTO-062-4343W]
+    outputs:
+      commit_sha: ${{ steps.commit_sha.outputs.sha_short }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install packages
+        run: source tools/ci.sh && ci_psoc6_setup
+      - name: Build
+        run: source tools/ci.sh && ci_psoc6_build ${{ matrix.board }}
+
+      # Steps only relevant for Infineon fork 
+      # with self-hosted runner available
+      - name: Gets commit SHA
+        if: success() && github.repository_owner == 'jaenrig-ifx'
+        id: commit_sha
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Save firmware bin
+        if: success() && github.repository_owner == 'jaenrig-ifx'
+        uses: actions/upload-artifact@v3
+        with: 
+          name: mpy-psoc6_${{ matrix.board }}_${{ steps.commit_sha.outputs.sha_short }}
+          path: ports/psoc6/build/firmware.hex
+
+  # Jobs only relevant for Infineon fork 
+  on-target-test:
+    if: github.repository_owner == 'jaenrig-ifx'
+    runs-on: self-hosted
+    needs: server-build
+    strategy:
+      matrix:
+        board: [CY8CPROTO-062-4343W]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download binaries
+      uses: actions/download-artifact@v3
+    - name: Setup device
+      run: |
+        cd tools/psoc6
+        cp ../../mpy-psoc6_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/firmware.hex .
+        source mpy-psoc6.sh && openocd_download_install && mpy_firmware_deploy ${{ matrix.board }} firmware.hex
+        cd ../..
+    - name: Run tests
+      run: cd tests && ./run-tests.py --target psoc6 --device /dev/ttyACM0 -d psoc6
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [server-build, on-target-test]
+    strategy:
+      matrix:
+        board: [CY8CPROTO-062-4343W]
+    if: startsWith(github.ref, 'refs/tags/v') && github.repository_owner == 'jaenrig-ifx'
+    steps:
+    - name: Download binaries
+      uses: actions/download-artifact@v3
+    - name: Prepare release assets
+      run: | 
+        cd mpy-psoc6_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}
+        mv firmware.hex ../mpy-psoc6_${{ matrix.board }}.hex
+    - name: Build release changelog
+      id: build_changelog
+      uses: mikepenz/release-changelog-builder-action@v3
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Micropython PSoC6 ${{  github.ref_name  }}
+        files: mpy-psoc6_${{ matrix.board }}.hex
+        body: ${{steps.build_changelog.outputs.changelog}}
