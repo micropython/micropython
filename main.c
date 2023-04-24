@@ -716,9 +716,15 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
             // time_to_next_change is in ms and ticks are slightly shorter so
             // we'll undersleep just a little. It shouldn't matter.
-            port_interrupt_after_ticks(time_to_next_change);
-            #endif
+            if (time_to_next_change > 0) {
+                port_interrupt_after_ticks(time_to_next_change);
+                port_idle_until_interrupt();
+            }
+            #else
+            // No status LED can we sleep until we are interrupted by some
+            // interaction.
             port_idle_until_interrupt();
+            #endif
         }
     }
 

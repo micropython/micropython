@@ -257,6 +257,7 @@ uint32_t port_get_saved_word(void) {
 }
 
 static volatile bool ticks_enabled;
+static volatile bool _woken_up;
 
 uint64_t port_get_raw_ticks(uint8_t *subticks) {
     uint64_t microseconds = time_us_64();
@@ -268,6 +269,7 @@ STATIC void _tick_callback(uint alarm_num) {
         supervisor_tick();
         hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), 977));
     }
+    _woken_up = true;
 }
 
 // Enable 1/1024 second tick.
@@ -291,11 +293,12 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     if (!ticks_enabled) {
         hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), ticks * 977));
     }
+    _woken_up = false;
 }
 
 void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
-    if (!background_callback_pending() && !tud_task_event_ready()) {
+    if (!background_callback_pending() && !tud_task_event_ready() && !_woken_up) {
         __DSB();
         __WFI();
     }
