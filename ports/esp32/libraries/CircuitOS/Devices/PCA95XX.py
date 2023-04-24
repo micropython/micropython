@@ -21,7 +21,6 @@ class PCA95XX:
 		try:
 			self.bus.readfrom_mem(self.addr, 0x00, 1)
 		except OSError:
-			print("OS Error")
 			return False
 
 		self.state_out = 0xffff
