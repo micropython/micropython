@@ -1,0 +1,2 @@
+SoftI2C(scl=48, sda=49, freq=500000)
+[]
