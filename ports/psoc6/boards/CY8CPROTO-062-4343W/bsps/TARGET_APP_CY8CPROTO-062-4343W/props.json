@@ -1,0 +1,66 @@
+{
+    "core": {
+        "version": "4.0.0.29660"
+    },
+    "opt": {
+        "props": {
+            "capabilities": [
+                "adc",
+                "anycloud",
+                "bsp_gen4",
+                "bt",
+                "capsense",
+                "capsense_button",
+                "capsense_linear_slider",
+                "cat1",
+                "cat1a",
+                "comp",
+                "csd",
+                "cy8cproto_062_4343w",
+                "cyw4343w",
+                "cyw43xxx",
+                "dma",
+                "flash_2048k",
+                "hal",
+                "i2c",
+                "i2s",
+                "led",
+                "low_power",
+                "lptimer",
+                "mcu_gp",
+                "memory",
+                "memory_qspi",
+                "multi_core",
+                "nor_flash",
+                "pdm",
+                "psoc6",
+                "qspi",
+                "rtc",
+                "sdhc",
+                "smart_io",
+                "spi",
+                "sram_1024k",
+                "std_crypto",
+                "switch",
+                "uart",
+                "usb_device",
+                "wifi"
+            ],
+            "dependencies": {
+                "cat1cm0p": "latest-v1.X",
+                "core-lib": "latest-v1.X",
+                "core-make": "latest-v3.X",
+                "mtb-hal-cat1": "latest-v2.X",
+                "mtb-pdl-cat1": "latest-v3.X",
+                "recipe-make-cat1a": "latest-v2.X"
+            },
+            "docs_dir": "docs",
+            "flow_version": "2.0",
+            "min_tools": "3.0.0",
+            "template": {
+                "id": "mtb-template-cat1",
+                "version": "release-v1.0.0"
+            }
+        }
+    }
+}
