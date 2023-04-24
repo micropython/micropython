@@ -252,6 +252,48 @@ function ci_powerpc_build {
 }
 
 ########################################################################################
+# ports/psoc6
+
+MPY_MTB_CI_DOCKER_VERSION=0.3.0
+
+function ci_psoc6_setup {
+    # Access to serial device 
+    if [ "$1" = "--dev-access" ]; then
+        device_flag=--device=/dev/ttyACM0
+    else
+        device_flag=
+    fi
+
+    docker pull ifxmakers/mpy-mtb-ci:${MPY_MTB_CI_DOCKER_VERSION}
+    docker run --name mtb-ci --rm --privileged -d -it ${device_flag} \
+      -v "$(pwd)":/micropython \
+      -w /micropython/ports/psoc6 \
+      ifxmakers/mpy-mtb-ci:${MPY_MTB_CI_DOCKER_VERSION}
+    docker ps -a
+
+    # This command prevents the issue "fatal: detected dubious ownership in repository at '/micropython'""
+    docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython"
+    docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython/lib/micropython-lib"
+    docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython/lib/mbedtls"
+    docker exec mtb-ci /bin/bash -c "git config --global --add safe.directory /micropython/lib/lwip"
+}
+
+function ci_psoc6_build {
+    board=$1
+    docker exec mtb-ci make mpy_mtb_init
+    docker exec mtb-ci make submodules
+    docker exec mtb-ci make BOARD=${board}
+}
+
+function ci_psoc6_deploy {
+    docker exec mtb-ci make mpy_program
+}
+
+function ci_psoc6_run_tests {
+    docker exec mtb-ci /bin/bash -c "cd ../../tests && ./run-tests.py --target psoc6 --device /dev/ttyACM0 -d psoc6"
+}
+
+########################################################################################
 # ports/qemu-arm
 
 function ci_qemu_arm_setup {

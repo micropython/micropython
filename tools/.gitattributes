@@ -1,1 +1,2 @@
 *.tar.gz binary
+*.cmd text eol=crlf
