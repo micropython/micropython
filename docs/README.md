@@ -18,6 +18,7 @@ preferably in a virtualenv:
 
      pip install sphinx
      pip install sphinx_rtd_theme
+     pip install sphinx-tabs
 
 In `micropython/docs`, build the docs:
 

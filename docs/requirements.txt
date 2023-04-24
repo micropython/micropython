@@ -1,0 +1,2 @@
+sphinx-tabs
+sphinxemoji==0.1.8
