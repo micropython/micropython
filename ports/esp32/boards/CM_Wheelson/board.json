@@ -1,0 +1,19 @@
+{
+    "vendor": "CircuitMess",
+    "product": "Wheelson",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/pages/wheelson",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32",
+    "features": [
+        "USB-C",
+        "BLE",
+        "WiFi",
+        "SPIRAM"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}
