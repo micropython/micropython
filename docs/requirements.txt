@@ -1,2 +1,4 @@
 sphinx~=7.2.6
 sphinxcontrib.jquery==4.1
+sphinx-tabs
+sphinxemoji==0.1.8
