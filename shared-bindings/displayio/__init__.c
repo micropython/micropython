@@ -57,6 +57,10 @@
 //| <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_.
 //| """
 
+//| CIRCUITPYTHON_TERMINAL: Group
+//| """The `displayio.Group` that is the displayed serial terminal (REPL)."""
+//|
+
 //| import paralleldisplay
 //|
 
