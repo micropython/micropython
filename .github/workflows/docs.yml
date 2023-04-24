@@ -17,6 +17,8 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
     - name: Install Python packages
-      run: pip install Sphinx
+      run: |
+        pip install Sphinx
+        pip install sphinx-tabs
     - name: Build docs
       run: make -C docs/ html
