@@ -1673,6 +1673,10 @@ static MP_DEFINE_CONST_OBJ_TYPE(
 // Support functions for memory protection. lwIP has its own memory management
 // routines for its internal structures, and since they might be called in
 // interrupt handlers, they need some protection.
+
+// These functions are to be provided by the operating system.
+// In case of no operating system, the following default ones provided.
+#if NO_SYS
 sys_prot_t sys_arch_protect() {
     return (sys_prot_t)MICROPY_BEGIN_ATOMIC_SECTION();
 }
@@ -1680,6 +1684,7 @@ sys_prot_t sys_arch_protect() {
 void sys_arch_unprotect(sys_prot_t state) {
     MICROPY_END_ATOMIC_SECTION((mp_uint_t)state);
 }
+#endif
 
 /******************************************************************************/
 // Polling callbacks for the interfaces connected to lwIP. Right now it calls
