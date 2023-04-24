@@ -142,7 +142,7 @@ STATIC mp_obj_t picodvi_framebuffer_make_new(const mp_obj_type_t *type, size_t n
 
 //|     def deinit(self) -> None:
 //|         """Free the resources (pins, timers, etc.) associated with this
-//|         rgbmatrix instance.  After deinitialization, no further operations
+//|         `picodvi.Framebuffer` instance.  After deinitialization, no further operations
 //|         may be performed."""
 //|         ...
 STATIC mp_obj_t picodvi_framebuffer_deinit(mp_obj_t self_in) {
