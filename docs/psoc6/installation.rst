@@ -13,7 +13,11 @@ You can easily download from your OS terminal with the following command:
 
         .. code-block:: bash
 
+<<<<<<< HEAD
             curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
+=======
+            curl -s -L https://raw.githubusercontent.com/jaenrig-ifx/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
         Add execution rights to the script:       
         
@@ -27,10 +31,17 @@ You can easily download from your OS terminal with the following command:
 
             .. code-block:: bash
 
+<<<<<<< HEAD
                 curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
 
 
 Find all the available commands and options by running the script with the command help:
+=======
+                curl.exe -s -L https://raw.githubusercontent.com/jaenrig-ifx/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
+
+
+Find all the available commands an options by running the script with the command help:
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
 .. tabs::
 
@@ -44,14 +55,22 @@ Find all the available commands and options by running the script with the comma
 
             .. code-block:: bash
             
+<<<<<<< HEAD
                 mpy-psoc6.cmd help
+=======
+                ./mpy-psoc6.sh help
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
 .. _psoc6_quick_start:
 
 Quick Start
 ------------
 
+<<<<<<< HEAD
 With the ``mpy-psoc6`` utility script downloaded, the fastest way to get you up and running with
+=======
+With the ``mpy-psoc6`` utility script donwloaded, the fastest way to get you up and running with
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 micropython is to run the ``quick-start`` command of the script:
 
 .. tabs::
@@ -75,8 +94,13 @@ The command will take care of the following:
 * Launch Arduino Lab MicroPython IDE
 
 This command is supporting the getting started tutorial for the first time. Once you get familiar
+<<<<<<< HEAD
 with MicroPython and its environment, the ``device-setup`` command will be more appropriate to
 install MicroPython on PSoC6™ boards, and upgrade your device with the latest firmware. 
+=======
+with MicroPython and its environment, the ``device-setup`` command will be more appropiate to
+install MicroPython on PSoC6™ boards, and upgrade your device with the lastest firmware. 
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
 Device setup
 -------------
@@ -91,13 +115,21 @@ MicropPython firmware version:
         
             .. code-block:: bash
 
+<<<<<<< HEAD
                 ./mpy-psoc6.sh device-setup
+=======
+                ./mpy-psoc6.sh setup-device
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
     .. group-tab:: Windows
 
             .. code-block:: bash
                 
+<<<<<<< HEAD
                 mpy-psoc6.cmd device-setup
+=======
+                mpy-psoc6.cmd setup-device
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
 
 You can run any command any time you want to upgrade to the latest MicroPython firmware version.
@@ -110,7 +142,11 @@ This command will take care of the following steps:
 Install a previous version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+<<<<<<< HEAD
 If you want to setup the device with a previous firmware version, you can check the list of available release in the `GitHub release section <https://github.com/infineon/MicroPython/releases>`_. 
+=======
+If you want to setup the device with a previous firmware version, you can check the list of available release in the `GitHub release section <https://github.com/jaenrig-ifx/MicroPython/releases>`_. 
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
 The ``device-setup`` command can as well assist you with this process. In this case the board and the desired
 version need to be passed as arguments.
@@ -121,13 +157,21 @@ version need to be passed as arguments.
         
             .. code-block:: bash
 
+<<<<<<< HEAD
                 ./mpy-psoc6.sh device-setup CY8CPROTO-062-4343W v0.1.1
+=======
+                ./mpy-psoc6.sh setup-device CY8CPROTO-062-4343W v0.1.1
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
     .. group-tab:: Windows
 
             .. code-block:: bash
                 
+<<<<<<< HEAD
                 mpy-psoc6.cmd device-setup CY8CPROTO-062-4343W v0.1.1
+=======
+                mpy-psoc6.cmd setup-device  CY8CPROTO-062-4343W v0.1.1
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
 .. warning::
     
@@ -159,6 +203,7 @@ The board needs to be specified, and the path and name of the ``.hex`` file:
                 
                 mpy-psoc6.cmd firmware-deploy CY8CPROTO-062-4343W pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
 
+<<<<<<< HEAD
 Erasing the device (external) file system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -184,11 +229,17 @@ Use the ``device-erase`` command to erase of the external memory of your PSoC6�
     
     This command flashes the PSoC6™ controller with a custom program to delete the external memory. Thus, MicroPython will be removed from the
     microcontroller. Use any of the script commands described above to reinstall MicroPython. 
+=======
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
 Getting the firmware
 ^^^^^^^^^^^^^^^^^^^^
 
+<<<<<<< HEAD
 The binary *.hex* files are available in the `GitHub release section <https://github.com/infineon/MicroPython/releases>`_. 
+=======
+The binary *.hex* files are available in the `GitHub release section <https://github.com/jaenrig-ifx/MicroPython/releases>`_. 
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 All PSoC6™ firmware versions for each of the supported boards can be found there. 
 
 

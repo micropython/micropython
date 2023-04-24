@@ -37,7 +37,11 @@ In your computer terminal, type the following commands and follow the instructio
 
         .. code-block:: bash
 
+<<<<<<< HEAD
             curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
+=======
+            curl -s -L https://raw.githubusercontent.com/jaenrig-ifx/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
         Add execution rights to the script and run the script:       
         
@@ -52,7 +56,11 @@ In your computer terminal, type the following commands and follow the instructio
 
             .. code-block:: bash
 
+<<<<<<< HEAD
                 curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
+=======
+                curl.exe -s -L https://raw.githubusercontent.com/jaenrig-ifx/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
         
         And run the script:
 
@@ -64,7 +72,11 @@ These commands will download and run the :ref:`quick-start <psoc6_quick_start>` 
 care of all the necessary installation steps.
 
 If everything went fine, your PSoC6™ board is now running MicroPython and Arduino IDE for
+<<<<<<< HEAD
 Micropython is now started. If you run into any trouble, please let us know `here <https://github.com/infineon/micropython/issues>`_ :) 
+=======
+Micropython is now started. If you run into any trouble, please let us know `here <https://github.com/jaenrig-ifx/micropython/issues>`_ :) 
+>>>>>>> 2ec74ccc6 (docs: Added docs and docs conf for PSoC6 port.)
 
 Select your serial port of your PSoC6™ board by clicking on the connect icon on the menu bar:
 
