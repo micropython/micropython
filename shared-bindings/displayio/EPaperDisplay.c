@@ -384,7 +384,7 @@ MP_PROPERTY_GETTER(displayio_epaperdisplay_bus_obj,
 
 //|     root_group: Group
 //|     """The root group on the epaper display.
-//|     If the root group is set to displayio.CIRCUITPYTHON_TERMINAL, the default CircuitPython terminal will be shown.
+//|     If the root group is set to `displayio.CIRCUITPYTHON_TERMINAL`, the default CircuitPython terminal will be shown.
 //|     If the root group is set to ``None``, no output will be shown.
 //|     """
 //|
