@@ -478,8 +478,12 @@ static bool _origin_ok(_request *request) {
             return true;
         }
         // DEBUG: OK if origin is 'localhost' (ignoring port #)
-        *strchrnul(&request->origin[PREFIX_HTTP_LEN], ':') = '\0';
+        char *cptr = strchrnul(&request->origin[PREFIX_HTTP_LEN], ':');
+        char csave = *cptr; // NULL or colon
+        *cptr = '\0';
         if (strcmp(&request->origin[PREFIX_HTTP_LEN], "localhost") == 0) {
+            // Restore removed colon if non-null host terminator
+            *cptr = csave;
             return true;
         }
     }
