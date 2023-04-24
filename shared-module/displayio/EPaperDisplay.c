@@ -139,7 +139,8 @@ STATIC const displayio_area_t *displayio_epaperdisplay_get_refresh_areas(display
     if (self->core.current_group != NULL) {
         first_area = displayio_group_get_refresh_areas(self->core.current_group, NULL);
     }
-    if (first_area != NULL) {
+    if (first_area != NULL && self->core.row_command == NO_COMMAND) {
+        // Do a full refresh if the display doesn't support partial updates.
         self->core.area.next = NULL;
         return &self->core.area;
     }
