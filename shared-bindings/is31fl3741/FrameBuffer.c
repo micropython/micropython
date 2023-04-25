@@ -162,7 +162,7 @@ STATIC mp_obj_t is31fl3741_FrameBuffer_set_brightness(mp_obj_t self_in, mp_obj_t
     check_for_deinit(self);
     mp_float_t brightness = mp_obj_get_float(value_in);
     if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
+        mp_raise_ValueError_varg(translate("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
     }
 
     uint8_t current = (uint8_t)(brightness * 0xFF);
