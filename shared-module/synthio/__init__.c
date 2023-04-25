@@ -36,6 +36,12 @@ STATIC const int16_t square_wave[] = {-32768, 32767};
 STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
                                  12544, 13290, 14080, 14917, 15804}; // 9th octave
 
+mp_float_t common_hal_synthio_midi_to_hz_float(mp_int_t arg) {
+    uint8_t octave = arg / 12;
+    uint16_t base_freq = notes[arg % 12];
+    return MICROPY_FLOAT_C_FUN(ldexp)(base_freq, octave - 10);
+}
+
 STATIC int16_t convert_time_to_rate(uint32_t sample_rate, mp_obj_t time_in, int16_t difference) {
     mp_float_t time = mp_obj_get_float(time_in);
     int num_samples = (int)MICROPY_FLOAT_C_FUN(round)(time * sample_rate);

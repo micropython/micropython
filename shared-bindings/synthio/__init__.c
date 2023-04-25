@@ -262,12 +262,19 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(synthio_from_file_obj, 1, synthio_from_file);
 
+STATIC mp_obj_t midi_to_hz(mp_obj_t arg) {
+    mp_int_t note = mp_arg_validate_int_range(mp_obj_get_int(arg), 1, 127, MP_QSTR_note);
+    return mp_obj_new_float(common_hal_synthio_midi_to_hz_float(note));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_midi_to_hz_obj, midi_to_hz);
+
 STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_synthio) },
     { MP_ROM_QSTR(MP_QSTR_MidiTrack), MP_ROM_PTR(&synthio_miditrack_type) },
     { MP_ROM_QSTR(MP_QSTR_Synthesizer), MP_ROM_PTR(&synthio_synthesizer_type) },
     { MP_ROM_QSTR(MP_QSTR_from_file), MP_ROM_PTR(&synthio_from_file_obj) },
     { MP_ROM_QSTR(MP_QSTR_Envelope), MP_ROM_PTR(&synthio_envelope_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_midi_to_hz), MP_ROM_PTR(&synthio_midi_to_hz_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(synthio_module_globals, synthio_module_globals_table);
