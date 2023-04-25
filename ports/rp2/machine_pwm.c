@@ -48,6 +48,9 @@ enum {
     DUTY_NS
 };
 
+// Maximum "top" is set at 65534 to be able to achieve 100% duty with 65535.
+#define TOP_MAX 65534
+
 STATIC machine_pwm_obj_t machine_pwm_obj[] = {
     {{&machine_pwm_type}, 0, PWM_CHAN_A, DUTY_NOT_SET, 0},
     {{&machine_pwm_type}, 0, PWM_CHAN_B, DUTY_NOT_SET, 0},
@@ -132,8 +135,6 @@ STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
 
 STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     // Set the frequency, making "top" as large as possible for maximum resolution.
-    // Maximum "top" is set at 65534 to be able to achieve 100% duty with 65535.
-    #define TOP_MAX 65534
     uint32_t source_hz = clock_get_hz(clk_sys);
     uint32_t div16;
     uint32_t top;
@@ -184,6 +185,13 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
 
 STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     uint32_t top = pwm_hw->slice[self->slice].top;
+
+    if (top > TOP_MAX) {
+        // Fix the RP2040 default top of 65535, which does not allow
+        // 100% duty cycle.
+        top = TOP_MAX;
+        pwm_hw->slice[self->slice].top = TOP_MAX;
+    }
 
     // Use rounding here to set it as accurately as possible.
     uint32_t cc = (duty_u16 * (top + 1) + 65535 / 2) / 65535;
