@@ -38,6 +38,13 @@
 #include <assert.h>
 #include "uzlib.h"
 
+#if defined(__GNUC__) && (__GNUC__ >= 5)
+  #define OPTIMIZE_O3 __attribute__((optimize("-O3")))
+#else
+  #pragma message("WARNING: skipping uzlib_uncompress optimization")
+  #define OPTIMIZE_O3
+#endif
+
 #define UZLIB_DUMP_ARRAY(heading, arr, size) \
     { \
         printf("%s", heading); \
@@ -519,6 +526,7 @@ void uzlib_uncompress_init(uzlib_uncomp_t *d, void *dict, unsigned int dictLen)
 }
 
 /* inflate next output bytes from compressed stream */
+OPTIMIZE_O3
 int uzlib_uncompress(uzlib_uncomp_t *d)
 {
     do {
