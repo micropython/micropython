@@ -31,7 +31,7 @@ def get_version_info_from_git(repo_path):
     # Note: git describe doesn't work if no tag is available
     try:
         git_tag = subprocess.check_output(
-            ["git", "describe", "--tags", "--dirty", "--always", "--match", "v[1-9].*"],
+            ["git", "describe", "--tags", "--dirty", "--always", "--match", "v[0-9].*"],
             cwd=repo_path,
             stderr=subprocess.STDOUT,
             universal_newlines=True,
