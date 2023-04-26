@@ -189,7 +189,7 @@ MP_PROPERTY_GETSET(supervisor_runtime_ble_workflow_obj,
 //|     next_stack_limit: int
 //|     """The size of the stack for the next vm run. If its too large, the default will be used.
 //|
-//|     **Limitations**: Stack size is fixed at startup on ``espressif`` port and this will have no effect.
+//|     **Limitations**: Stack size is fixed at startup on the ``espressif`` port; setting this will have no effect.
 //|     """
 STATIC mp_obj_t supervisor_runtime_get_next_stack_limit(mp_obj_t self) {
     return mp_obj_new_int(get_next_stack_size());
