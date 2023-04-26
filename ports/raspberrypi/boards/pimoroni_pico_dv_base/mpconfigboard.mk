@@ -1,7 +1,7 @@
-USB_VID = 0x239A
-USB_PID = 0x80F4
-USB_PRODUCT = "Pimoroni PICO dv"
-USB_MANUFACTURER = "Raspberry Pi"
+USB_VID = 0x2E8A
+USB_PID =  0x1059
+USB_PRODUCT = "Pimoroni Pico DV Demo Base for Pico"
+USB_MANUFACTURER = "Pimoroni"
 
 CHIP_VARIANT = RP2040
 CHIP_FAMILY = rp2
