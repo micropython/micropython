@@ -37,7 +37,7 @@ In your computer terminal, type the following commands and follow the instructio
 
         .. code-block:: bash
 
-            curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
+            curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
 
         Add execution rights to the script and run the script:       
         
@@ -52,7 +52,7 @@ In your computer terminal, type the following commands and follow the instructio
 
             .. code-block:: bash
 
-                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
+                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
         
         And run the script:
 

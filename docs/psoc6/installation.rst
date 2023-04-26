@@ -13,7 +13,7 @@ You can easily download from your OS terminal with the following command:
 
         .. code-block:: bash
 
-            curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
+            curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
 
         Add execution rights to the script:       
         
@@ -27,10 +27,10 @@ You can easily download from your OS terminal with the following command:
 
             .. code-block:: bash
 
-                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
+                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
 
 
-Find all the available commands an options by running the script with the command help:
+Find all the available commands and options by running the script with the command help:
 
 .. tabs::
 
@@ -44,7 +44,7 @@ Find all the available commands an options by running the script with the comman
 
             .. code-block:: bash
             
-                ./mpy-psoc6.sh help
+                ./mpy-psoc6.cmd help
 
 .. _psoc6_quick_start:
 
@@ -91,13 +91,13 @@ MicropPython firmware version:
         
             .. code-block:: bash
 
-                ./mpy-psoc6.sh setup-device
+                ./mpy-psoc6.sh device-setup
 
     .. group-tab:: Windows
 
             .. code-block:: bash
                 
-                mpy-psoc6.cmd setup-device
+                mpy-psoc6.cmd device-setup
 
 
 You can run any command any time you want to upgrade to the latest MicroPython firmware version.
@@ -121,13 +121,13 @@ version need to be passed as arguments.
         
             .. code-block:: bash
 
-                ./mpy-psoc6.sh setup-device CY8CPROTO-062-4343W v0.1.1
+                ./mpy-psoc6.sh device-setup CY8CPROTO-062-4343W v0.1.1
 
     .. group-tab:: Windows
 
             .. code-block:: bash
                 
-                mpy-psoc6.cmd setup-device  CY8CPROTO-062-4343W v0.1.1
+                mpy-psoc6.cmd device-setup CY8CPROTO-062-4343W v0.1.1
 
 .. warning::
     
