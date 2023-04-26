@@ -31,11 +31,11 @@ jobs:
       # Steps only relevant for Infineon fork 
       # with self-hosted runner available
       - name: Gets commit SHA
-        if: success() && github.repository_owner == 'jaenrig-ifx'
+        if: success() && github.repository_owner == 'infineon'
         id: commit_sha
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Save firmware bin
-        if: success() && github.repository_owner == 'jaenrig-ifx'
+        if: success() && github.repository_owner == 'infineon'
         uses: actions/upload-artifact@v3
         with: 
           name: mpy-psoc6_${{ matrix.board }}_${{ steps.commit_sha.outputs.sha_short }}
@@ -43,7 +43,7 @@ jobs:
 
   # Jobs only relevant for Infineon fork 
   on-target-test:
-    if: github.repository_owner == 'jaenrig-ifx'
+    if: github.repository_owner == 'infineon'
     runs-on: self-hosted
     needs: server-build
     strategy:
@@ -68,7 +68,7 @@ jobs:
     strategy:
       matrix:
         board: [CY8CPROTO-062-4343W]
-    if: startsWith(github.ref, 'refs/tags/v') && github.repository_owner == 'jaenrig-ifx'
+    if: startsWith(github.ref, 'refs/tags/v') && github.repository_owner == 'infineon'
     steps:
     - name: Download binaries
       uses: actions/download-artifact@v3
