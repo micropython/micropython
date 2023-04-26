@@ -30,8 +30,8 @@ working with this port it may be useful to get an overview of the microcontrolle
     quick reference are certainyly supported.
     Check :ref:`here <psoc6_feature_list>` for a complete list of currently enabled or implemented modules as well as not yet implemented functionality.
     
-    Please, consider opening an `issue <https://github.com/jaenrig-ifx/micropython/issues>`_ or
-    `discussion <https://github.com/jaenrig-ifx/micropython/discussionsh>`_ on GitHub for any clarification
+    Please, consider opening an `issue <https://github.com/infineon/micropython/issues>`_ or
+    `discussion <https://github.com/infineon/micropython/discussionsh>`_ on GitHub for any clarification
     required on available features or requests for missing ones. 
 
 General board control
