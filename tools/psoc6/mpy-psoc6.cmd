@@ -86,7 +86,7 @@ exit /b 0
     )
 
     echo Downloading MicroPython PSoC6 port %version% for %board% board...
-    curl.exe -s -L https://github.com/jaenrig-ifx/micropython/releases/%sub_url%/mpy-psoc6_%board%.hex > mpy-psoc6_%board%.hex
+    curl.exe -s -L https://github.com/infineon/micropython/releases/%sub_url%/mpy-psoc6_%board%.hex > mpy-psoc6_%board%.hex
 
 exit /b 0
 

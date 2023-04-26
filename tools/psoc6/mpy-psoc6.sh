@@ -60,7 +60,7 @@ function mpy_firmware_download {
     else
         sub_url="download/${version}"
     fi
-    curl -s -L https://github.com/jaenrig-ifx/micropython/releases/${sub_url}/mpy-psoc6_${board}.hex > mpy-psoc6_${board}.hex
+    curl -s -L https://github.com/infineon/micropython/releases/${sub_url}/mpy-psoc6_${board}.hex > mpy-psoc6_${board}.hex
    
 }
 
