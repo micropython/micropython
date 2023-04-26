@@ -13,7 +13,7 @@ You can easily download from your OS terminal with the following command:
 
         .. code-block:: bash
 
-            curl -s -L https://raw.githubusercontent.com/jaenrig-ifx/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
+            curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
 
         Add execution rights to the script:       
         
@@ -27,7 +27,7 @@ You can easily download from your OS terminal with the following command:
 
             .. code-block:: bash
 
-                curl.exe -s -L https://raw.githubusercontent.com/jaenrig-ifx/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
+                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports/psoc6/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
 
 
 Find all the available commands an options by running the script with the command help:
@@ -110,7 +110,7 @@ This command will take care of the following steps:
 Install a previous version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you want to setup the device with a previous firmware version, you can check the list of available release in the `GitHub release section <https://github.com/jaenrig-ifx/MicroPython/releases>`_. 
+If you want to setup the device with a previous firmware version, you can check the list of available release in the `GitHub release section <https://github.com/infineon/MicroPython/releases>`_. 
 
 The ``device-setup`` command can as well assist you with this process. In this case the board and the desired
 version need to be passed as arguments.
@@ -163,7 +163,7 @@ The board needs to be specified, and the path and name of the ``.hex`` file:
 Getting the firmware
 ^^^^^^^^^^^^^^^^^^^^
 
-The binary *.hex* files are available in the `GitHub release section <https://github.com/jaenrig-ifx/MicroPython/releases>`_. 
+The binary *.hex* files are available in the `GitHub release section <https://github.com/infineon/MicroPython/releases>`_. 
 All PSoC6™ firmware versions for each of the supported boards can be found there. 
 
 
