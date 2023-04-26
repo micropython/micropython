@@ -33,8 +33,7 @@
 #define MS_OS_20_DESC_LEN  0xB2
 
 // BOS Descriptor is required for webUSB
-uint8_t const desc_bos[] =
-{
+uint8_t const desc_bos[] = {
 	// total length, number of device caps
 	TUD_BOS_DESCRIPTOR(BOS_TOTAL_LEN, 2),
 
@@ -45,13 +44,11 @@ uint8_t const desc_bos[] =
 	TUD_BOS_MS_OS_20_DESCRIPTOR(MS_OS_20_DESC_LEN, VENDOR_REQUEST_MICROSOFT)
 };
 
-uint8_t const * tud_descriptor_bos_cb(void)
-{
+uint8_t const * tud_descriptor_bos_cb(void) {
 	return desc_bos;
 }
 
-uint8_t const desc_ms_os_20[] =
-{
+uint8_t const desc_ms_os_20[] = {
 	// Set header: length, type, windows version, total length
 	U16_TO_U8S_LE(0x000A), U16_TO_U8S_LE(MS_OS_20_SET_HEADER_DESCRIPTOR), U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(MS_OS_20_DESC_LEN),
 

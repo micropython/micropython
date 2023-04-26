@@ -68,14 +68,6 @@
 #include "main.h"
 #endif
 
-#ifndef MICROPY_GC_HEAP_SIZE
-#if MICROPY_PY_LWIP
-#define MICROPY_GC_HEAP_SIZE 166 * 1024
-#else
-#define MICROPY_GC_HEAP_SIZE 192 * 1024
-#endif
-#endif
-
 extern uint8_t __StackTop, __StackBottom;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
 
@@ -391,7 +383,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
         break;
 
         case TUSB_REQ_TYPE_CLASS:
-			if (request->bRequest == 0x22) {
+			if (request->bRequest == VENDOR_REQUEST_WEBUSB_CONNECTION) {
 
 				int status = true;
 
