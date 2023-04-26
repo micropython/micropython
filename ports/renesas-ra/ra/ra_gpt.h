@@ -1,10 +1,7 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
- *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2021, 2022 Renesas Electronics Corporation
+ * Copyright (c) 2023 Vekatech Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,17 +22,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RA_SPI_H
-#define MICROPY_INCLUDED_RA_SPI_H
+#ifndef RA_RA_GPT_H_
+#define RA_RA_GPT_H_
 
-// A transfer of "len" bytes should take len*8*1000/baudrate milliseconds.
-// To simplify the calculation we assume the baudrate is never less than 8kHz
-// and use that value for the baudrate in the formula, plus a small constant.
-#define SPI_TRANSFER_TIMEOUT(len) ((len) + 100)
+#include <stdint.h>
 
-void spi_init0(void);
-void spi_deinit(uint32_t ch);
-int spi_find_index(mp_obj_t id);
-void spi_transfer(uint32_t ch, uint32_t bits, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout);
+void ra_gpt_timer_start(uint32_t ch);
+void ra_gpt_timer_stop(uint32_t ch);
+void ra_gpt_timer_set_freq(uint32_t ch, float freq);
+float ra_gpt_timer_get_freq(uint32_t ch);
+void ra_gpt_timer_set_period(uint32_t ch, uint32_t ns);
+uint32_t ra_gpt_timer_get_period(uint32_t ch);
+void ra_gpt_timer_set_duty(uint32_t ch, uint8_t id, uint32_t duty);
+uint32_t ra_gpt_timer_get_duty(uint32_t ch, uint8_t id);
+void ra_gpt_timer_init(uint32_t pwm_pin, uint32_t ch, uint8_t id, uint32_t duty, float freq);
+void ra_gpt_timer_deinit(uint32_t pwm_pin, uint32_t ch, uint8_t id);
+bool ra_gpt_timer_is_pwm_pin(uint32_t pin);
 
-#endif // MICROPY_INCLUDED_RA_SPI_H
+#endif /* RA_RA_GPT_H_ */

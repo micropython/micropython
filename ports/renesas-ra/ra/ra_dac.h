@@ -1,10 +1,7 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
- *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2021, 2022 Renesas Electronics Corporation
+ * Copyright (c) 2023 Vekatech Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,17 +22,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RA_SPI_H
-#define MICROPY_INCLUDED_RA_SPI_H
 
-// A transfer of "len" bytes should take len*8*1000/baudrate milliseconds.
-// To simplify the calculation we assume the baudrate is never less than 8kHz
-// and use that value for the baudrate in the formula, plus a small constant.
-#define SPI_TRANSFER_TIMEOUT(len) ((len) + 100)
 
-void spi_init0(void);
-void spi_deinit(uint32_t ch);
-int spi_find_index(mp_obj_t id);
-void spi_transfer(uint32_t ch, uint32_t bits, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout);
+#ifndef RA_RA_DAC_H_
+#define RA_RA_DAC_H_
 
-#endif // MICROPY_INCLUDED_RA_SPI_H
+#include <stdint.h>
+
+void ra_dac_start(uint8_t ch);
+void ra_dac_stop(uint8_t ch);
+uint8_t ra_dac_is_running(uint8_t ch);
+uint16_t ra_dac_read(uint8_t ch);
+void ra_dac_write(uint8_t ch, uint16_t val);
+void ra_dac_init(uint32_t dac_pin, uint8_t ch);
+void ra_dac_deinit(uint32_t dac_pin, uint8_t ch);
+bool ra_dac_is_dac_pin(uint32_t pin);
+
+#endif /* RA_RA_DAC_H_ */

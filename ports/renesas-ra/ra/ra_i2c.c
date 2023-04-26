@@ -305,9 +305,14 @@ static void ra_i2c_clock_calc(uint32_t baudrate, uint8_t *cks, uint8_t *brh, uin
         *cks = 1;
         *brh = 9;
         *brl = 20;
-    } else {
+    } else if (baudrate >= 100000) {
         // assume clock is 100000Hz (PCLKB 32MHz)
         *cks = 3;
+        *brh = 15;
+        *brl = 18;
+    } else {
+        // assume clock is 50000Hz (PCLKB 32MHz)
+        *cks = 4;
         *brh = 15;
         *brl = 18;
     }
@@ -458,7 +463,9 @@ static void ra_i2c_iceri_isr(R_IIC0_Type *i2c_inst) {
     }
     // Check Start
     if (i2c_inst->ICSR2_b.START != 0) {
-        action->m_status = RA_I2C_STATUS_Started;
+        if (action->m_status == RA_I2C_STATUS_Idle) {
+            action->m_status = RA_I2C_STATUS_Started;
+        }
         i2c_inst->ICSR2_b.START = 0;
     }
     // Check Stop
@@ -504,8 +511,8 @@ static void ra_i2c_icrxi_isr(R_IIC0_Type *i2c_inst) {
 static void ra_i2c_ictxi_isr(R_IIC0_Type *i2c_inst) {
     xaction_t *action = current_xaction;
     xaction_unit_t *unit = current_xaction_unit;
-
-    if (action->m_status == RA_I2C_STATUS_Started) {
+    // When STIE is already checked.        When TIE occurs before STIE
+    if (action->m_status == RA_I2C_STATUS_Started || action->m_status == RA_I2C_STATUS_Idle) {
         i2c_inst->ICDRT = action->m_address;  // I2C send slave address
         action->m_status = RA_I2C_STATUS_AddrWriteCompleted;
         return;

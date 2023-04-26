@@ -16,47 +16,15 @@ endif
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
-ifeq ($(BOARD),RA4M1_CLICKER)
-BOARD_LOW = ra4m1_ek
-CMSIS_MCU_LOW = ra4m1
-CMSIS_MCU_CAP = RA4M1
-USE_FSP_LPM = 0
-endif
-
-ifeq ($(BOARD),RA4M1_EK)
-BOARD_LOW = ra4m1_ek
-CMSIS_MCU_LOW = ra4m1
-CMSIS_MCU_CAP = RA4M1
-USE_FSP_LPM = 0
-endif
-
-ifeq ($(BOARD),RA4W1_EK)
-BOARD_LOW = ra4w1_ek
-CMSIS_MCU_LOW = ra4w1
-CMSIS_MCU_CAP = RA4W1
-USE_FSP_LPM = 1
-endif
-
-ifeq ($(BOARD),RA6M1_EK)
-BOARD_LOW = ra6m1_ek
-CMSIS_MCU_LOW = ra6m1
-CMSIS_MCU_CAP = RA6M1
-USE_FSP_LPM = 1
-endif
-
-ifeq ($(BOARD),RA6M2_EK)
-BOARD_LOW = ra6m2_ek
-CMSIS_MCU_LOW = ra6m2
-CMSIS_MCU_CAP = RA6M2
-USE_FSP_LPM = 1
-endif
-
 # select use wrapper function of FSP library
 USE_FSP_FLASH = 1
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
 include $(BOARD_DIR)/mpconfigboard.mk
+
+USE_FSP_LPM ?= 1
+FSP_BOARD_NAME ?= $(shell echo $(BOARD) | tr '[:upper:]' '[:lower:]')
 
 # Files that are generated and needed before the QSTR build.
 #QSTR_GENERATED_HEADERS = $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
@@ -109,6 +77,7 @@ INC += -Idebug
 
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += -DRA_HAL_H='<$(CMSIS_MCU)_hal.h>'
+CFLAGS += -DRA_CFG_H='<$(FSP_BOARD_NAME)_conf.h>'
 
 # Basic Cortex-M flags
 CFLAGS_CORTEX_M = -mthumb
@@ -312,6 +281,7 @@ SRC_C += \
 	gccollect.c \
 	help.c \
 	machine_adc.c \
+	machine_dac.c \
 	machine_i2c.c \
 	machine_spi.c \
 	machine_uart.c \
@@ -343,10 +313,13 @@ SRC_O += \
 SRC_O += \
 	shared/runtime/gchelper_thumb2.o
 
-HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/board/$(BOARD_LOW)/,\
+FSP_BOARD_DIR = $(HAL_DIR)/ra/board/$(FSP_BOARD_NAME)
+ifneq ($(wildcard $(TOP)/$(FSP_BOARD_DIR)/.),)
+HAL_SRC_C += $(addprefix $(FSP_BOARD_DIR)/,\
 	board_init.c \
 	board_leds.c \
 	)
+endif
 
 HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/fsp/src/bsp/mcu/all/,\
 	bsp_clocks.c \
@@ -388,6 +361,7 @@ endif
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2))
 HAL_SRC_C += $(addprefix ra/,\
 	ra_adc.c \
+	ra_dac.c \
 	ra_flash.c \
 	ra_gpio.c \
 	ra_i2c.c \
@@ -398,6 +372,7 @@ HAL_SRC_C += $(addprefix ra/,\
 	ra_sci.c \
 	ra_spi.c \
 	ra_timer.c \
+	ra_gpt.c \
 	ra_utils.c \
 	)
 
