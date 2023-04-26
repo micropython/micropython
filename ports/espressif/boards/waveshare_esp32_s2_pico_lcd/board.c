@@ -64,7 +64,8 @@ uint8_t display_init_sequence[] = {
 };
 
 static void display_init(void) {
-    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
+    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    busio_spi_obj_t *spi = &bus->inline_bus;
 
     common_hal_busio_spi_construct(
         spi,
@@ -75,7 +76,6 @@ static void display_init(void) {
 
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
 
     common_hal_displayio_fourwire_construct(
@@ -89,7 +89,7 @@ static void display_init(void) {
         0               // phase
         );
 
-    displayio_display_obj_t *display = &displays[0].display;
+    displayio_display_obj_t *display = &allocate_display()->display;
     display->base.type = &displayio_display_type;
 
     common_hal_displayio_display_construct(

@@ -54,7 +54,7 @@ uint8_t display_init_sequence[] = { // SSD1306
 static void display_init(void) {
     busio_i2c_obj_t *i2c = common_hal_board_create_i2c(0);
 
-    displayio_i2cdisplay_obj_t *bus = &displays[0].i2cdisplay_bus;
+    displayio_i2cdisplay_obj_t *bus = &allocate_display_bus()->i2cdisplay_bus;
     bus->base.type = &displayio_i2cdisplay_type;
     common_hal_displayio_i2cdisplay_construct(bus,
         i2c,
@@ -62,7 +62,7 @@ static void display_init(void) {
         &pin_GPIO18 // reset
         );
 
-    displayio_display_obj_t *display = &displays[0].display;
+    displayio_display_obj_t *display = &allocate_display()->display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,

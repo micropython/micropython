@@ -79,6 +79,9 @@ typedef struct {
         picodvi_framebuffer_obj_t picodvi;
         #endif
     };
+} primary_display_bus_t;
+
+typedef struct {
     union {
         mp_obj_base_t display_base;
         displayio_display_obj_t display;
@@ -89,6 +92,7 @@ typedef struct {
     };
 } primary_display_t;
 
+extern primary_display_bus_t display_buses[CIRCUITPY_DISPLAY_LIMIT];
 extern primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
 extern displayio_group_t circuitpython_splash;
@@ -99,7 +103,7 @@ void displayio_gc_collect(void);
 
 primary_display_t *allocate_display(void);
 primary_display_t *allocate_display_or_raise(void);
-primary_display_t *allocate_display_bus(void);
-primary_display_t *allocate_display_bus_or_raise(void);
+primary_display_bus_t *allocate_display_bus(void);
+primary_display_bus_t *allocate_display_bus_or_raise(void);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H

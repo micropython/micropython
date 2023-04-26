@@ -78,7 +78,7 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    paralleldisplay_parallelbus_obj_t *bus = &displays[0].parallel_bus;
+    paralleldisplay_parallelbus_obj_t *bus = &allocate_display_bus()->parallel_bus;
     bus->base.type = &paralleldisplay_parallelbus_type;
     common_hal_paralleldisplay_parallelbus_construct(bus,
         &pin_PA16, // Data0
@@ -89,7 +89,7 @@ void board_init(void) {
         &pin_PA00, // Reset
         0); // Frequency
 
-    displayio_display_obj_t *display = &displays[0].display;
+    displayio_display_obj_t *display = &allocate_display()->display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,
