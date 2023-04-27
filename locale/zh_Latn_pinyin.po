@@ -1322,7 +1322,7 @@ msgstr "Géshì kuài dàxiǎo wúxiào"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid hex password"
-msgstr ""
+msgstr "Shíliù jìn zhì mìmǎ wúxiào"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
