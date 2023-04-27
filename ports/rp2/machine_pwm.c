@@ -142,13 +142,13 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->invert = 0;
     self->duty_type = DUTY_NOT_SET;
 
-    // Select PWM function for given GPIO.
-    gpio_set_function(gpio, GPIO_FUNC_PWM);
-
     // Process the remaining parameters.
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
     mp_machine_pwm_init_helper(self, n_args - 1, all_args + 1, &kw_args);
+
+    // Select PWM function for given GPIO.
+    gpio_set_function(gpio, GPIO_FUNC_PWM);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -189,10 +189,14 @@ uint32_t get_slice_hz_ceil(uint32_t div16) {
 }
 
 STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
-    uint32_t div16 = pwm_hw->slice[self->slice].div;
-    uint32_t top = pwm_hw->slice[self->slice].top;
-    uint32_t pwm_freq = get_slice_hz_round(div16 * (top + 1));
-    return MP_OBJ_NEW_SMALL_INT(pwm_freq);
+    if (slice_freq_set[self->slice] == true) {
+        uint32_t div16 = pwm_hw->slice[self->slice].div;
+        uint32_t top = pwm_hw->slice[self->slice].top;
+        uint32_t pwm_freq = get_slice_hz_round(div16 * (top + 1));
+        return MP_OBJ_NEW_SMALL_INT(pwm_freq);
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(0);
+    }
 }
 
 STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
@@ -245,19 +249,27 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
-    uint32_t top = pwm_hw->slice[self->slice].top;
-    uint32_t cc = pwm_hw->slice[self->slice].cc;
-    cc = (cc >> (self->channel ? PWM_CH0_CC_B_LSB : PWM_CH0_CC_A_LSB)) & 0xffff;
+    if (self->duty_type != DUTY_NOT_SET && slice_freq_set[self->slice] == true) {
+        uint32_t top = pwm_hw->slice[self->slice].top;
+        uint32_t cc = pwm_hw->slice[self->slice].cc;
+        cc = (cc >> (self->channel ? PWM_CH0_CC_B_LSB : PWM_CH0_CC_A_LSB)) & 0xffff;
 
-    // Use rounding (instead of flooring) here to give as accurate an
-    // estimate as possible.
-    return MP_OBJ_NEW_SMALL_INT((cc * 65535 + (top + 1) / 2) / (top + 1));
+        // Use rounding (instead of flooring) here to give as accurate an
+        // estimate as possible.
+        return MP_OBJ_NEW_SMALL_INT((cc * 65535 + (top + 1) / 2) / (top + 1));
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(0);
+    }
 }
 
 STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     uint32_t top = pwm_hw->slice[self->slice].top;
 
+    // Limit duty_u16 to 65535
     // Use rounding here to set it as accurately as possible.
+    if (duty_u16 > 65535) {
+        duty_u16 = 65535;
+    }
     uint32_t cc = (duty_u16 * (top + 1) + 65535 / 2) / 65535;
     pwm_set_chan_level(self->slice, self->channel, cc);
     self->duty = duty_u16;
@@ -266,17 +278,22 @@ STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
-    uint32_t slice_hz = get_slice_hz_round(pwm_hw->slice[self->slice].div);
-    uint32_t cc = pwm_hw->slice[self->slice].cc;
-    cc = (cc >> (self->channel ? PWM_CH0_CC_B_LSB : PWM_CH0_CC_A_LSB)) & 0xffff;
-    return MP_OBJ_NEW_SMALL_INT(((uint64_t)cc * 1000000000ULL + slice_hz / 2) / slice_hz);
+    if (self->duty_type != DUTY_NOT_SET && slice_freq_set[self->slice] == true) {
+        uint32_t slice_hz = get_slice_hz_round(pwm_hw->slice[self->slice].div);
+        uint32_t cc = pwm_hw->slice[self->slice].cc;
+        cc = (cc >> (self->channel ? PWM_CH0_CC_B_LSB : PWM_CH0_CC_A_LSB)) & 0xffff;
+        return MP_OBJ_NEW_SMALL_INT(((uint64_t)cc * 1000000000ULL + slice_hz / 2) / slice_hz);
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(0);
+    }
 }
 
 STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     uint32_t slice_hz = get_slice_hz_round(pwm_hw->slice[self->slice].div);
     uint32_t cc = ((uint64_t)duty_ns * slice_hz + 500000000ULL) / 1000000000ULL;
-    if (cc > 65535) {
-        mp_raise_ValueError(MP_ERROR_TEXT("duty larger than period"));
+    uint32_t top = pwm_hw->slice[self->slice].top;
+    if (cc > (top + 1)) {
+        cc = top + 1;
     }
     pwm_set_chan_level(self->slice, self->channel, cc);
     self->duty = duty_ns;
