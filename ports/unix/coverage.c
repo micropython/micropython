@@ -539,7 +539,7 @@ STATIC mp_obj_t extra_coverage(void) {
     {
         mp_printf(&mp_plat_print, "# VM\n");
 
-        // call mp_execute_bytecode with invalide bytecode (should raise NotImplementedError)
+        // call mp_execute_bytecode with invalid bytecode (should raise NotImplementedError)
         mp_module_context_t context;
         mp_obj_fun_bc_t fun_bc;
         fun_bc.context = &context;

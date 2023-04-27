@@ -592,7 +592,7 @@ friendly_repl_reset:
             // If the user gets to here and interrupts are disabled then
             // they'll never see the prompt, traceback etc. The USB REPL needs
             // interrupts to be enabled or no transfers occur. So we try to
-            // do the user a favor and reenable interrupts.
+            // do the user a favor and re-enable interrupts.
             if (query_irq() == IRQ_STATE_DISABLED) {
                 enable_irq(IRQ_STATE_ENABLED);
                 mp_hal_stdout_tx_str("MPY: enabling IRQs\r\n");

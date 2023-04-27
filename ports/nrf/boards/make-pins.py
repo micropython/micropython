@@ -13,7 +13,7 @@ SUPPORTED_FN = {"UART": ["RX", "TX", "CTS", "RTS"]}
 def parse_pin(name_str):
     """Parses a string and returns a pin-num."""
     if len(name_str) < 1:
-        raise ValueError("Expecting pin name to be at least 4 charcters.")
+        raise ValueError("Expecting pin name to be at least 4 characters.")
     if name_str[0] != "P":
         raise ValueError("Expecting pin name to start with P")
     pin_str = name_str[1:].split("/")[0]

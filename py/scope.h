@@ -50,7 +50,7 @@ typedef struct _id_info_t {
     uint8_t kind;
     uint8_t flags;
     // when it's an ID_INFO_KIND_LOCAL this is the unique number of the local
-    // whet it's an ID_INFO_KIND_CELL/FREE this is the unique number of the closed over variable
+    // when it's an ID_INFO_KIND_CELL/FREE this is the unique number of the closed over variable
     uint16_t local_num;
     qstr qst;
 } id_info_t;

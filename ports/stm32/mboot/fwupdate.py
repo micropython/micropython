@@ -252,7 +252,7 @@ def update_app_elements(
         _ELEM_TYPE_FSLOAD, struct.pack("<B", mount_point) + bytes(filename, "ascii")
     )
     if status_addr is not None:
-        # mboot will write 0 to status_addr on succes, or a negative number on failure
+        # mboot will write 0 to status_addr on success, or a negative number on failure
         machine.mem32[status_addr] = 1
         elems += _create_element(_ELEM_TYPE_STATUS, struct.pack("<L", status_addr))
     elems += _create_element(_ELEM_TYPE_END, b"")

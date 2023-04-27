@@ -156,7 +156,7 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_LPUART1_TX       (pin_A9)
 #define MICROPY_HW_LPUART1_RX       (pin_A10)
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL         (pin_B8)
 #define MICROPY_HW_I2C1_SDA         (pin_B9)
 

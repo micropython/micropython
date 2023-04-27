@@ -414,7 +414,7 @@ STATIC void pre_process_options(int argc, char **argv) {
                     #if MICROPY_PY_THREAD
                     mp_thread_is_realtime_enabled = true;
                     #endif
-                    // main thread was already intialized before the option
+                    // main thread was already initialized before the option
                     // was parsed, so we have to enable realtime here.
                     mp_thread_set_realtime();
                 #endif

@@ -799,9 +799,9 @@ const usb_descriptor_list_t usb_descriptor_list[] = {
 
 #if 0
 // 0x00 = not used
-// 0x19 = Recieve only
+// 0x19 = Receive only
 // 0x15 = Transmit only
-// 0x1D = Transmit & Recieve
+// 0x1D = Transmit & Receive
 //
 const uint8_t usb_endpoint_config_table[NUM_ENDPOINTS] =
 {

@@ -85,7 +85,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     init->CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     init->CRCPolynomial = 0;
 
-    // set configurable paramaters
+    // set configurable parameters
     spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
         args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
         args[ARG_firstbit].u_int);

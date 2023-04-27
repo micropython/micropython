@@ -357,7 +357,7 @@ int usbd_cdc_tx_flow(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len) {
     }
 }
 
-// timout in milliseconds.
+// timeout in milliseconds.
 // Returns number of bytes written to the device.
 int usbd_cdc_tx(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len, uint32_t timeout) {
     for (uint32_t i = 0; i < len; i++) {
@@ -430,7 +430,7 @@ int usbd_cdc_rx_num(usbd_cdc_itf_t *cdc) {
     return rx_waiting;
 }
 
-// timout in milliseconds.
+// timeout in milliseconds.
 // Returns number of bytes read from the device.
 int usbd_cdc_rx(usbd_cdc_itf_t *cdc, uint8_t *buf, uint32_t len, uint32_t timeout) {
     // loop to read bytes

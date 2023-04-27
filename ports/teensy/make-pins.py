@@ -18,7 +18,7 @@ SUPPORTED_FN = {
 def parse_port_pin(name_str):
     """Parses a string and returns a (port-num, pin-num) tuple."""
     if len(name_str) < 4:
-        raise ValueError("Expecting pin name to be at least 4 charcters.")
+        raise ValueError("Expecting pin name to be at least 4 characters.")
     if name_str[0:2] != "PT":
         raise ValueError("Expecting pin name to start with PT")
     if name_str[2] not in ("A", "B", "C", "D", "E", "Z"):

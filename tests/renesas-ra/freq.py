@@ -1,16 +1,16 @@
 #
 # definitions
 #
-MACHINE_RA4M1_CLICKER = "RA4M1_CLICKER with RA4M1"
-MACHINE_RA4M1_EK = "RA4M1_EK with RA4M1"
-MACHINE_RA4W1_EK = "RA4W1_EK with RA4W1"
-MACHINE_RA6M1_EK = "RA6M1_EK with RA6M1"
-MACHINE_RA6M2_EK = "RA6M2_EK with RA6M2"
+MACHINE_RA4M1_CLICKER = "RA4M1 CLICKER with RA4M1"
+MACHINE_EK_RA4M1 = "EK-RA4M1 with RA4M1"
+MACHINE_EK_RA4W1 = "EK-RA4W1 with RA4W1"
+MACHINE_EK_RA6M1 = "EK-RA6M1 with RA6M1"
+MACHINE_EK_RA6M2 = "EK-RA6M2 with RA6M2"
 SYSCLK_RA4M1_CLICKER = 48000000
-SYSCLK_RA4M1_EK = 48000000
-SYSCLK_RA4W1_EK = 48000000
-SYSCLK_RA6M1_EK = 120000000
-SYSCLK_RA6M2_EK = 120000000
+SYSCLK_EK_RA4M1 = 48000000
+SYSCLK_EK_RA4W1 = 48000000
+SYSCLK_EK_RA6M1 = 120000000
+SYSCLK_EK_RA6M2 = 120000000
 
 #
 # machine
@@ -34,26 +34,26 @@ if m == MACHINE_RA4M1_CLICKER:
         print("freq: NG")
 
 
-if m == MACHINE_RA4M1_EK:
-    if f == SYSCLK_RA4M1_EK:
+if m == MACHINE_EK_RA4M1:
+    if f == SYSCLK_EK_RA4M1:
         print("freq: OK")
     else:
         print("freq: NG")
 
-if m == MACHINE_RA4W1_EK:
-    if f == SYSCLK_RA4W1_EK:
+if m == MACHINE_EK_RA4W1:
+    if f == SYSCLK_EK_RA4W1:
         print("freq: OK")
     else:
         print("freq: NG")
 
-if m == MACHINE_RA6M1_EK:
-    if f == SYSCLK_RA6M1_EK:
+if m == MACHINE_EK_RA6M1:
+    if f == SYSCLK_EK_RA6M1:
         print("freq: OK")
     else:
         print("freq: NG")
 
-if m == MACHINE_RA6M2_EK:
-    if f == SYSCLK_RA6M2_EK:
+if m == MACHINE_EK_RA6M2:
+    if f == SYSCLK_EK_RA6M2:
         print("freq: OK")
     else:
         print("freq: NG")

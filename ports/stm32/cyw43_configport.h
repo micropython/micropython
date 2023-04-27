@@ -32,6 +32,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "extmod/modnetwork.h"
+#include "extint.h"
 #include "pendsv.h"
 #include "sdio.h"
 
@@ -112,6 +113,12 @@ static inline void cyw43_delay_ms(uint32_t ms) {
     uint32_t start = mp_hal_ticks_us();
     while (mp_hal_ticks_us() - start < us) {
         MICROPY_EVENT_POLL_HOOK;
+    }
+}
+
+static inline void cyw43_hal_pin_config_irq_falling(cyw43_hal_pin_obj_t pin, int enable) {
+    if (enable) {
+        extint_set(pin, GPIO_MODE_IT_FALLING);
     }
 }
 

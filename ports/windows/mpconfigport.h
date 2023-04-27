@@ -140,7 +140,9 @@
 #define MICROPY_PY_UOS_SYSTEM       (1)
 #define MICROPY_PY_UOS_URANDOM      (1)
 #define MICROPY_PY_UTIME            (1)
-#define MICROPY_PY_UTIME_MP_HAL     (1)
+#define MICROPY_PY_UTIME_TIME_TIME_NS (1)
+#define MICROPY_PY_UTIME_CUSTOM_SLEEP (1)
+#define MICROPY_PY_UTIME_INCLUDEFILE "ports/unix/modutime.c"
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UZLIB            (1)

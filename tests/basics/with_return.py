@@ -30,7 +30,7 @@ def f():
                 return (i, j)
 print(f())
 
-# multiple for loops within nested withs
+# multiple for loops within nested with's
 def f():
     with CtxMgr(1):
         for i in [1, 2]:
@@ -41,7 +41,7 @@ def f():
                             return (i, j, k, l)
 print(f())
 
-# multiple for loops that are optimised, and nested withs
+# multiple for loops that are optimised, and nested with's
 def f():
     with CtxMgr(1):
         for i in range(1, 3):

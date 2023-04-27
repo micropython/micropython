@@ -150,10 +150,10 @@ STATIC void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     #endif
 
     #if MICROPY_ENABLE_FINALISER
-    // clear ATBs and FTBs
+    // clear ATB's and FTB's
     memset(area->gc_alloc_table_start, 0, gc_finaliser_table_byte_len + area->gc_alloc_table_byte_len + ALLOC_TABLE_GAP_BYTE);
     #else
-    // clear ATBs
+    // clear ATB's
     memset(area->gc_alloc_table_start, 0, area->gc_alloc_table_byte_len + ALLOC_TABLE_GAP_BYTE);
     #endif
 
@@ -746,7 +746,9 @@ void *gc_alloc_with_finaliser(mp_uint_t n_bytes) {
 // TODO: freeing here does not call finaliser
 void gc_free(void *ptr) {
     if (MP_STATE_THREAD(gc_lock_depth) > 0) {
-        // TODO how to deal with this error?
+        // Cannot free while the GC is locked. However free is an optimisation
+        // to reclaim the memory immediately, this means it will now be left
+        // until the next collection.
         return;
     }
 

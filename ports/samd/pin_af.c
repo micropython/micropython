@@ -121,7 +121,7 @@ const char *pin_name(int id) {
     return "-";
 }
 
-// Test, wether the given pin is defined and has signals for sercom.
+// Test, whether the given pin is defined and has signals for sercom.
 // If that applies return the alt_fct and pad_nr.
 // If not, an error will be raised.
 
@@ -136,7 +136,7 @@ sercom_pad_config_t get_sercom_config(int pin_id, uint8_t sercom_nr) {
     }
 }
 
-// Test, wether the given pin is defined as ADC.
+// Test, whether the given pin is defined as ADC.
 // If that applies return the adc instance and channel.
 // If not, an error will be raised.
 
@@ -158,7 +158,7 @@ adc_config_t get_adc_config(int pin_id, int32_t flag) {
     }
 }
 
-// Test, wether the given pin is defined and has signals for pwm.
+// Test, whether the given pin is defined and has signals for pwm.
 // If that applies return the alt_fct, tcc number and channel number.
 // If not, an error will be raised.
 // The function either supplies a channel from a wanted device, or

@@ -44,7 +44,6 @@ set(MICROPY_SOURCE_PORT
     modbluetooth_zephyr.c
     modmachine.c
     modusocket.c
-    modutime.c
     modzephyr.c
     modzsensor.c
     mphalport.c

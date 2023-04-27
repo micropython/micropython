@@ -350,7 +350,7 @@ STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
     /*
     // Bug: Sometimes duty is not set right now.
     // Not a bug. It's a feature. The duty is applied at the beginning of the next signal period.
-    // Bug: It has been experimentally established that the duty is setted during 2 signal periods, but 1 period is expected.
+    // Bug: It has been experimentally established that the duty is set during 2 signal periods, but 1 period is expected.
     // See https://github.com/espressif/esp-idf/issues/7288
     if (duty != get_duty_u16(self)) {
         PWM_DBG("set_duty_u16(%u), get_duty_u16():%u, channel_duty:%d, duty_resolution:%d, freq_hz:%d", duty, get_duty_u16(self), channel_duty, timer.duty_resolution, timer.freq_hz);
@@ -510,7 +510,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
         }
     }
     if ((freq <= 0) || (freq > 40000000)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("freqency must be from 1Hz to 40MHz"));
+        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be from 1Hz to 40MHz"));
     }
 
     int timer_idx;
@@ -607,7 +607,7 @@ STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     self->duty_x = 0;
 }
 
-// Set's and get's methods of PWM class
+// Set and get methods of PWM class
 
 STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     pwm_is_active(self);
@@ -617,7 +617,7 @@ STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
 STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     pwm_is_active(self);
     if ((freq <= 0) || (freq > 40000000)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("freqency must be from 1Hz to 40MHz"));
+        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be from 1Hz to 40MHz"));
     }
     if (freq == timers[TIMER_IDX(self->mode, self->timer)].freq_hz) {
         return;

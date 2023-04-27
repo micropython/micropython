@@ -41,7 +41,7 @@
 #define MICROPY_FLOAT_IMPL             (MICROPY_FLOAT_IMPL_DOUBLE)
 #endif
 
-// Enable arbritrary precision long-int by default.
+// Enable arbitrary precision long-int by default.
 #ifndef MICROPY_LONGINT_IMPL
 #define MICROPY_LONGINT_IMPL           (MICROPY_LONGINT_IMPL_MPZ)
 #endif
@@ -96,7 +96,9 @@
 
 // Enable the unix-specific "time" module.
 #define MICROPY_PY_UTIME               (1)
-#define MICROPY_PY_UTIME_MP_HAL        (1)
+#define MICROPY_PY_UTIME_TIME_TIME_NS  (1)
+#define MICROPY_PY_UTIME_CUSTOM_SLEEP  (1)
+#define MICROPY_PY_UTIME_INCLUDEFILE   "ports/unix/modutime.c"
 
 // Enable the utimeq module used by the previous (v2) version of uasyncio.
 #define MICROPY_PY_UTIMEQ              (1)

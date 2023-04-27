@@ -202,7 +202,6 @@ SRC_C += \
 	mimxrt_sdram.c \
 	modmachine.c \
 	modmimxrt.c \
-	modutime.c \
 	mphalport.c \
 	mpnetworkport.c \
 	network_lan.c \

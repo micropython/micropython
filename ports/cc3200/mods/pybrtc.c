@@ -76,7 +76,7 @@ STATIC void rtc_msec_add(uint16_t msecs_1, uint32_t *secs, uint16_t *msecs_2);
  ******************************************************************************/
 __attribute__ ((section (".boot")))
 void pyb_rtc_pre_init(void) {
-    // only if comming out of a power-on reset
+    // only if coming out of a power-on reset
     if (MAP_PRCMSysResetCauseGet() == PRCM_POWER_ON) {
         // Mark the RTC in use first
         MAP_PRCMRTCInUseSet();
@@ -118,7 +118,7 @@ void pyb_rtc_repeat_alarm (pyb_rtc_obj_t *self) {
 
         pyb_rtc_get_time(&c_seconds, &c_mseconds);
 
-        // substract the time elapsed between waking up and setting up the alarm again
+        // subtract the time elapsed between waking up and setting up the alarm again
         int32_t wake_ms = ((c_seconds * 1000) + c_mseconds) - ((self->alarm_time_s * 1000) + self->alarm_time_ms);
         int32_t next_alarm = self->alarm_ms - wake_ms;
         next_alarm = next_alarm > 0 ? next_alarm : PYB_RTC_MIN_ALARM_TIME_MS;
