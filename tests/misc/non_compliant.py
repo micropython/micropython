@@ -39,7 +39,7 @@ try:
 except NotImplementedError:
     print("NotImplementedError")
 
-# uPy raises TypeError, shold be ValueError
+# uPy raises TypeError, should be ValueError
 try:
     "%c" % b"\x01\x02"
 except (TypeError, ValueError):

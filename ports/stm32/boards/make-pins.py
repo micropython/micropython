@@ -80,7 +80,7 @@ CONDITIONAL_VAR = {
 def parse_port_pin(name_str):
     """Parses a string and returns a (port-num, pin-num) tuple."""
     if len(name_str) < 3:
-        raise ValueError("Expecting pin name to be at least 3 charcters.")
+        raise ValueError("Expecting pin name to be at least 3 characters.")
     if name_str[0] != "P":
         raise ValueError("Expecting pin name to start with P")
     if name_str[1] < "A" or name_str[1] > "K":

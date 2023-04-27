@@ -24,7 +24,7 @@ SUPPORTED_FN = {
 def parse_pin(name_str):
     """Parses a string and returns a pin number."""
     if len(name_str) < 2:
-        raise ValueError("Expecting pin name to be at least 2 charcters.")
+        raise ValueError("Expecting pin name to be at least 2 characters.")
     if not name_str.startswith("GPIO") and not name_str.startswith("EXT_GPIO"):
         raise ValueError("Expecting pin name to start with EXT_/GPIO")
     return int(re.findall(r"\d+$", name_str)[0])

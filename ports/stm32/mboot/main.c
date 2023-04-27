@@ -1077,7 +1077,7 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
             //
             //     dfu-util -l
             //
-            // See: https://my.st.com/52d187b7 for the algorithim used.
+            // See: https://my.st.com/52d187b7 for the algorithm used.
             uint8_t *id = (uint8_t *)MP_HAL_UNIQUE_ID_ADDRESS;
             char serial_buf[16];
             format_hex(&serial_buf[0], id[11]);
@@ -1145,7 +1145,7 @@ static uint8_t pyb_usbdd_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
     if (req->bmRequest == 0x21) {
         // host-to-device request
         if (req->wLength == 0) {
-            // no data, process command straightaway
+            // no data, process command straight away
             dfu_handle_rx(self->bRequest, self->wValue, 0, NULL);
         } else {
             // have data, prepare to receive it
@@ -1538,7 +1538,7 @@ void PendSV_Handler(void) {
 void SysTick_Handler(void) {
     systick_ms += 1;
 
-    // Read the systick control regster. This has the side effect of clearing
+    // Read the systick control register. This has the side effect of clearing
     // the COUNTFLAG bit, which makes the logic in mp_hal_ticks_us
     // work properly.
     SysTick->CTRL;

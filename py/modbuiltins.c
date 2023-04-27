@@ -79,7 +79,7 @@ STATIC mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args) 
     meta_args[2] = class_locals; // dict of members
     mp_obj_t new_class = mp_call_function_n_kw(meta, 3, 0, meta_args);
 
-    // store into cell if neede
+    // store into cell if needed
     if (cell != mp_const_none) {
         mp_obj_cell_set(cell, new_class);
     }

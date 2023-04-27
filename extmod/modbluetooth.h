@@ -84,7 +84,7 @@
 #define MP_BLUETOOTH_DEFAULT_ATTR_LEN (20)
 #endif
 
-#define MP_BLUETOOTH_CCCB_LEN (2)
+#define MP_BLUETOOTH_CCCD_LEN (2)
 
 // Advertisement packet lengths
 #define MP_BLUETOOTH_GAP_ADV_MAX_LEN (32)
@@ -185,6 +185,10 @@
 #define MP_BLUETOOTH_PASSKEY_ACTION_INPUT               (2)
 #define MP_BLUETOOTH_PASSKEY_ACTION_DISPLAY             (3)
 #define MP_BLUETOOTH_PASSKEY_ACTION_NUMERIC_COMPARISON  (4)
+
+// These are the ops for mp_bluetooth_gatts_notify_indicate.
+#define MP_BLUETOOTH_GATTS_OP_NOTIFY                    (1)
+#define MP_BLUETOOTH_GATTS_OP_INDICATE                  (2)
 
 /*
 These aren't included in the module for space reasons, but can be used
@@ -333,15 +337,11 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
 int mp_bluetooth_gatts_register_service_end(void);
 
 // Read the value from the local gatts db (likely this has been written by a central).
-int mp_bluetooth_gatts_read(uint16_t value_handle, uint8_t **value, size_t *value_len);
+int mp_bluetooth_gatts_read(uint16_t value_handle, const uint8_t **value, size_t *value_len);
 // Write a value to the local gatts db (ready to be queried by a central). Optionally send notifications/indications.
 int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t value_len, bool send_update);
-// Notify the central that it should do a read.
-int mp_bluetooth_gatts_notify(uint16_t conn_handle, uint16_t value_handle);
-// Notify the central, including a data payload. (Note: does not set the gatts db value).
-int mp_bluetooth_gatts_notify_send(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t value_len);
-// Indicate the central.
-int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle);
+// Send a notification/indication to the central, optionally with custom payload (otherwise the DB value is used).
+int mp_bluetooth_gatts_notify_indicate(uint16_t conn_handle, uint16_t value_handle, int gatts_op, const uint8_t *value, size_t value_len);
 
 // Resize and enable/disable append-mode on a value.
 // Append-mode means that remote writes will append and local reads will clear after reading.
@@ -391,7 +391,7 @@ int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start
 int mp_bluetooth_gattc_read(uint16_t conn_handle, uint16_t value_handle);
 
 // Write the value to the remote peripheral.
-int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len, unsigned int mode);
+int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t value_len, unsigned int mode);
 
 // Initiate MTU exchange for a specific connection using the preferred MTU.
 int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle);
@@ -508,7 +508,7 @@ STATIC inline void mp_bluetooth_gatts_db_reset(mp_gatts_db_t db) {
 
 void mp_bluetooth_gatts_db_create_entry(mp_gatts_db_t db, uint16_t handle, size_t len);
 mp_bluetooth_gatts_db_entry_t *mp_bluetooth_gatts_db_lookup(mp_gatts_db_t db, uint16_t handle);
-int mp_bluetooth_gatts_db_read(mp_gatts_db_t db, uint16_t handle, uint8_t **value, size_t *value_len);
+int mp_bluetooth_gatts_db_read(mp_gatts_db_t db, uint16_t handle, const uint8_t **value, size_t *value_len);
 int mp_bluetooth_gatts_db_write(mp_gatts_db_t db, uint16_t handle, const uint8_t *value, size_t value_len);
 int mp_bluetooth_gatts_db_resize(mp_gatts_db_t db, uint16_t handle, size_t len, bool append);
 

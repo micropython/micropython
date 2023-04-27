@@ -67,7 +67,7 @@ STATIC int cywbt_hci_cmd_raw(size_t len, uint8_t *buf) {
         buf[i] = uart_rx_char(&mp_bluetooth_hci_uart_obj);
     }
 
-    // expect a comand complete event (event 0x0e)
+    // expect a command complete event (event 0x0e)
     if (buf[0] != 0x04 || buf[1] != 0x0e) {
         printf("unknown response: %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3]);
         return -1;

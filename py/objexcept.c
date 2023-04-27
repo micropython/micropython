@@ -217,7 +217,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     mp_obj_tuple_t *o_tuple;
     if (n_args == 0) {
-        // No args, can use the empty tuple straightaway
+        // No args, can use the empty tuple straight away
         o_tuple = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
     } else {
         // Try to allocate memory for the tuple containing the args

@@ -164,7 +164,7 @@ __attribute__((naked)) void PendSV_Handler(void) {
         "bl pyb_thread_next\n"          // get next thread to execute
         "mov lr, r4\n"                  // restore lr
         "mov sp, r0\n"                  // switch stacks
-        "msr primask, r5\n"             // reenable interrupts
+        "msr primask, r5\n"             // re-enable interrupts
         "vpop {s16-s31}\n"
         "pop {r4-r11, lr}\n"
         "bx lr\n"                       // return from interrupt; will return to new thread

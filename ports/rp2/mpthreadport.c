@@ -36,7 +36,7 @@ extern uint8_t __StackTop, __StackBottom;
 
 void *core_state[2];
 
-// This will be non-NULL while Python code is execting.
+// This will be non-NULL while Python code is executing.
 STATIC void *(*core1_entry)(void *) = NULL;
 
 STATIC void *core1_arg = NULL;

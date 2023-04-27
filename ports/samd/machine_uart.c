@@ -507,7 +507,7 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
         }
     } else if (request == MP_STREAM_FLUSH) {
         // The timeout is defined by the buffer size and the baudrate.
-        // Take the worst case assumtions at 13 bit symbol size times 2.
+        // Take the worst case assumptions at 13 bit symbol size times 2.
         uint64_t timeout = mp_hal_ticks_ms_64() + (3
             #if MICROPY_HW_UART_TXBUF
             + self->write_buffer.size

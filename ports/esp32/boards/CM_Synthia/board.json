@@ -1,0 +1,18 @@
+{
+    "vendor": "CircuitMess",
+    "product": "Synthia",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/products/synthia-diy-synth-ages-11",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32",
+    "features": [
+        "USB-C",
+        "BLE",
+        "WiFi"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}

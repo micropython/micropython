@@ -644,7 +644,7 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t a
             ret |= MP_STREAM_POLL_WR;
         }
     } else if (request == MP_STREAM_FLUSH) {
-        // Since uart.write() waits up to the last byte, uart.flush() always succeds.
+        // Since uart.write() waits up to the last byte, uart.flush() always succeeds.
         ret = 0;
     } else {
         *errcode = MP_EINVAL;

@@ -269,7 +269,7 @@ DSTATUS sd_disk_init (void) {
                 //  Fill in the RCA
                 sd_disk_info.usRCA = (ulResp[0] >> 16);
 
-                // Get tha card capacity
+                // Get the card capacity
                 CardCapacityGet(&sd_disk_info);
             }
 

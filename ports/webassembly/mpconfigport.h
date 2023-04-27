@@ -53,7 +53,6 @@
 #define MICROPY_VFS                 (1)
 #endif
 #define MICROPY_VFS_POSIX           (MICROPY_VFS)
-#define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_SYS_PLATFORM     "webassembly"
 #define MICROPY_PY_SYS_STDFILES     (0)
 

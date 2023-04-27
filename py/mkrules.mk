@@ -34,7 +34,7 @@ QSTR_GEN_CXXFLAGS += $(QSTR_GEN_FLAGS)
 # tree.
 #
 # So for example, py/map.c would have an object file name py/map.o
-# The object files will go into the build directory and mantain the same
+# The object files will go into the build directory and maintain the same
 # directory structure as the source tree. So the final dependency will look
 # like this:
 #
@@ -192,7 +192,7 @@ endif
 ifneq ($(PROG),)
 # Build a standalone executable (unix does this)
 
-# The executable should have an .exe extension for builds targetting 'pure'
+# The executable should have an .exe extension for builds targeting 'pure'
 # Windows, i.e. msvc or mingw builds, but not when using msys or cygwin's gcc.
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring mingw,$(COMPILER_TARGET)))

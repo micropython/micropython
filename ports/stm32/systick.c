@@ -43,7 +43,7 @@ void SysTick_Handler(void) {
     uint32_t uw_tick = uwTick + 1;
     uwTick = uw_tick;
 
-    // Read the systick control regster. This has the side effect of clearing
+    // Read the systick control register. This has the side effect of clearing
     // the COUNTFLAG bit, which makes the logic in mp_hal_ticks_us
     // work properly.
     SysTick->CTRL;

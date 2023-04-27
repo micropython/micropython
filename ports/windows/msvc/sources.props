@@ -17,9 +17,9 @@
     <PyExtModSource Include="$(PyBaseDir)extmod\modurandom.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modure.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moduselect.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\modutime.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modutimeq.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moduzlib.c" />
-    <PyExtModSource Include="$(PyBaseDir)extmod\utime_mphal.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\virtpin.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\vfs.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\vfs_posix.c" />

@@ -33,6 +33,7 @@
 #include "hardware/i2c.h"
 
 #define DEFAULT_I2C_FREQ (400000)
+#define DEFAULT_I2C_TIMEOUT (50000)
 
 #ifndef MICROPY_HW_I2C0_SCL
 #if PICO_DEFAULT_I2C == 0
@@ -65,6 +66,7 @@ typedef struct _machine_i2c_obj_t {
     uint8_t scl;
     uint8_t sda;
     uint32_t freq;
+    uint32_t timeout;
 } machine_i2c_obj_t;
 
 STATIC machine_i2c_obj_t machine_i2c_obj[] = {
@@ -74,17 +76,18 @@ STATIC machine_i2c_obj_t machine_i2c_obj[] = {
 
 STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2C(%u, freq=%u, scl=%u, sda=%u)",
-        self->i2c_id, self->freq, self->scl, self->sda);
+    mp_printf(print, "I2C(%u, freq=%u, scl=%u, sda=%u, timeout=%u)",
+        self->i2c_id, self->freq, self->scl, self->sda, self->timeout);
 }
 
 mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_freq, ARG_scl, ARG_sda };
+    enum { ARG_id, ARG_freq, ARG_scl, ARG_sda, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_TIMEOUT} },
     };
 
     // Parse args.
@@ -121,6 +124,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         self->freq = args[ARG_freq].u_int;
         i2c_init(self->i2c_inst, self->freq);
         self->freq = i2c_set_baudrate(self->i2c_inst, self->freq);
+        self->timeout = args[ARG_timeout].u_int;
         gpio_set_function(self->scl, GPIO_FUNC_I2C);
         gpio_set_function(self->sda, GPIO_FUNC_I2C);
         gpio_set_pulls(self->scl, true, 0);
@@ -135,14 +139,14 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     int ret;
     bool nostop = !(flags & MP_MACHINE_I2C_FLAG_STOP);
     if (flags & MP_MACHINE_I2C_FLAG_READ) {
-        ret = i2c_read_blocking(self->i2c_inst, addr, buf, len, nostop);
+        ret = i2c_read_timeout_us(self->i2c_inst, addr, buf, len, nostop, self->timeout);
     } else {
         if (len == 0) {
             // Workaround issue with hardware I2C not accepting zero-length writes.
             mp_machine_soft_i2c_obj_t soft_i2c = {
                 .base = { &mp_machine_soft_i2c_type },
                 .us_delay = 500000 / self->freq + 1,
-                .us_timeout = 50000,
+                .us_timeout = self->timeout,
                 .scl = self->scl,
                 .sda = self->sda,
             };
@@ -157,7 +161,7 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
             gpio_set_function(self->sda, GPIO_FUNC_I2C);
             return ret;
         } else {
-            ret = i2c_write_blocking(self->i2c_inst, addr, buf, len, nostop);
+            ret = i2c_write_timeout_us(self->i2c_inst, addr, buf, len, nostop, self->timeout);
         }
     }
     if (ret < 0) {

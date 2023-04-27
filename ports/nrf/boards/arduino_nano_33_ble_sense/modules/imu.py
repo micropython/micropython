@@ -23,7 +23,7 @@ import time
 
 class IMU:
     def __init__(self, bus):
-        """Initalizes Gyro, Accelerometer and Magnetometer using default values."""
+        """Initializes Gyro, Accelerometer and Magnetometer using default values."""
         if 0x68 in bus.scan():
             from bmm150 import BMM150
             from bmi270 import BMI270

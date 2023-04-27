@@ -137,7 +137,7 @@ STATIC uint8_t channel_decode(char channel) {
     }
 }
 
-// decode the AF objects module and Port numer. Returns NULL if it is not a FLEXPWM object
+// decode the AF objects module and Port number. Returns NULL if it is not a FLEXPWM object
 STATIC const machine_pin_af_obj_t *af_name_decode_flexpwm(const machine_pin_af_obj_t *af_obj,
     uint8_t *module, uint8_t *submodule, uint8_t *channel) {
     const char *str;
@@ -171,7 +171,7 @@ STATIC uint8_t qtmr_decode(char channel) {
     }
 }
 
-// decode the AF objects module and Port numer. Returns NULL if it is not a QTMR object
+// decode the AF objects module and Port number. Returns NULL if it is not a QTMR object
 STATIC const machine_pin_af_obj_t *af_name_decode_qtmr(const machine_pin_af_obj_t *af_obj, uint8_t *module, uint8_t *channel) {
     const char *str;
     size_t len;
@@ -558,7 +558,7 @@ void machine_pwm_deinit_all(void) {
 
     for (int i = 1; i < ARRAY_SIZE(pwm_bases); i++) {
         PWM_StopTimer(pwm_bases[i], 0x0f); // Stop all submodules
-        pwm_bases[i]->OUTEN = 0; // Disable ouput on all submodules, all channels
+        pwm_bases[i]->OUTEN = 0; // Disable output on all submodules, all channels
     }
 
     #ifdef FSL_FEATURE_SOC_TMR_COUNT

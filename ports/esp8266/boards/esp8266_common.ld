@@ -164,7 +164,6 @@ SECTIONS
         *hspi.o(.literal*, .text*)
         *modesp.o(.literal* .text*)
         *moduos.o(.literal* .text*)
-        *modutime.o(.literal* .text*)
         *modlwip.o(.literal* .text*)
         *modsocket.o(.literal* .text*)
         *modonewire.o(.literal* .text*)

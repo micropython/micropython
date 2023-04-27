@@ -480,7 +480,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
                 // do encoding into the adv buffer
                 if (sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]) != 0) {
-                    mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("can't encode UUID into advertisment packet"));
+                    mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("can't encode UUID into advertisement packet"));
                 }
 
                 BLE_DRIVER_LOG("encoded uuid for service %u: ", 0);
@@ -528,7 +528,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
                 // do encoding into the adv buffer
                 if (sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]) != 0) {
-                    mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("can't encode UUID into advertisment packet"));
+                    mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("can't encode UUID into advertisement packet"));
                 }
 
                 BLE_DRIVER_LOG("encoded uuid for service %u: ", 0);
@@ -552,7 +552,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
     if ((p_adv_params->data_len > 0) && (p_adv_params->p_data != NULL)) {
         if (p_adv_params->data_len + byte_pos > BLE_GAP_ADV_MAX_SIZE) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("can't fit data into advertisment packet"));
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("can't fit data into advertisement packet"));
         }
 
         memcpy(adv_data, p_adv_params->p_data, p_adv_params->data_len);
@@ -590,12 +590,12 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
 #if (BLUETOOTH_SD == 110)
     m_adv_params.fp                          = BLE_GAP_ADV_FP_ANY;
-    m_adv_params.timeout                     = 0;                                   // infinite advertisment
+    m_adv_params.timeout                     = 0;                                   // infinite advertisement
 #else
     m_adv_params.properties.anonymous        = 0;
     m_adv_params.properties.include_tx_power = 0;
     m_adv_params.filter_policy               = 0;
-    m_adv_params.max_adv_evts                = 0; // infinite advertisment
+    m_adv_params.max_adv_evts                = 0; // infinite advertisement
     m_adv_params.primary_phy                 = BLE_GAP_PHY_AUTO;
     m_adv_params.secondary_phy               = BLE_GAP_PHY_AUTO;
     m_adv_params.scan_req_notification       = 0; // Do not raise scan request notifications when scanned.
@@ -606,12 +606,12 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 #if (BLUETOOTH_SD == 110)
     if ((err_code = sd_ble_gap_adv_data_set(adv_data, byte_pos, NULL, 0)) != 0) {
         mp_raise_msg_varg(&mp_type_OSError,
-            MP_ERROR_TEXT("Can not apply advertisment data. status: 0x" HEX2_FMT), (uint16_t)err_code);
+            MP_ERROR_TEXT("Can not apply advertisement data. status: 0x" HEX2_FMT), (uint16_t)err_code);
     }
 #else
     if ((err_code = sd_ble_gap_adv_set_configure(&m_adv_handle, &m_adv_data, &m_adv_params)) != 0) {
         mp_raise_msg_varg(&mp_type_OSError,
-            MP_ERROR_TEXT("Can not apply advertisment data. status: 0x" HEX2_FMT), (uint16_t)err_code);
+            MP_ERROR_TEXT("Can not apply advertisement data. status: 0x" HEX2_FMT), (uint16_t)err_code);
     }
 #endif
     BLE_DRIVER_LOG("Set Adv data size: " UINT_FMT "\n", byte_pos);
@@ -626,7 +626,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 #endif
     if (err_code != 0) {
         mp_raise_msg_varg(&mp_type_OSError,
-            MP_ERROR_TEXT("Can not start advertisment. status: 0x" HEX2_FMT), (uint16_t)err_code);
+            MP_ERROR_TEXT("Can not start advertisement. status: 0x" HEX2_FMT), (uint16_t)err_code);
     }
 
     m_adv_in_progress = true;
@@ -641,12 +641,12 @@ void ble_drv_advertise_stop(void) {
 #if (BLUETOOTH_SD == 110)
         if ((err_code = sd_ble_gap_adv_stop()) != 0) {
             mp_raise_msg_varg(&mp_type_OSError,
-                MP_ERROR_TEXT("Can not stop advertisment. status: 0x" HEX2_FMT), (uint16_t)err_code);
+                MP_ERROR_TEXT("Can not stop advertisement. status: 0x" HEX2_FMT), (uint16_t)err_code);
         }
 #else
         if ((err_code = sd_ble_gap_adv_stop(m_adv_handle)) != 0) {
             mp_raise_msg_varg(&mp_type_OSError,
-                MP_ERROR_TEXT("Can not stop advertisment. status: 0x" HEX2_FMT), (uint16_t)err_code);
+                MP_ERROR_TEXT("Can not stop advertisement. status: 0x" HEX2_FMT), (uint16_t)err_code);
         }
 #endif
     }

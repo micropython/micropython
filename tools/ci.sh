@@ -29,12 +29,23 @@ function ci_code_formatting_run {
 }
 
 ########################################################################################
+# code spelling
+
+function ci_code_spell_setup {
+    pip3 install codespell tomli
+}
+
+function ci_code_spell_run {
+    codespell
+}
+
+########################################################################################
 # commit formatting
 
 function ci_commit_formatting_run {
     git remote add upstream https://github.com/micropython/micropython.git
     git fetch --depth=100 upstream  master
-    # For a PR, upstream/master..HEAD ends with a merge commit into master, exlude that one.
+    # For a PR, upstream/master..HEAD ends with a merge commit into master, exclude that one.
     tools/verifygitlog.py -v upstream/master..HEAD --no-merges
 }
 
@@ -272,7 +283,10 @@ function ci_renesas_ra_board_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/renesas-ra submodules
     make ${MAKEOPTS} -C ports/renesas-ra BOARD=RA4M1_CLICKER
-    make ${MAKEOPTS} -C ports/renesas-ra BOARD=RA6M2_EK
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M2
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M1
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4M1
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4W1
 }
 
 ########################################################################################
@@ -306,7 +320,8 @@ function ci_samd_setup {
 function ci_samd_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/samd submodules
-    make ${MAKEOPTS} -C ports/samd
+    make ${MAKEOPTS} -C ports/samd BOARD=ADAFRUIT_ITSYBITSY_M0_EXPRESS
+    make ${MAKEOPTS} -C ports/samd BOARD=ADAFRUIT_ITSYBITSY_M4_EXPRESS
 }
 
 ########################################################################################

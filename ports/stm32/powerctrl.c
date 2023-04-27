@@ -382,7 +382,7 @@ STATIC uint32_t calc_apb2_div(uint32_t wanted_div) {
 #if defined(STM32F4) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7)
 
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
-    // Return straightaway if the clocks are already at the desired frequency
+    // Return straight away if the clocks are already at the desired frequency
     if (sysclk == HAL_RCC_GetSysClockFreq()
         && ahb == HAL_RCC_GetHCLKFreq()
         && apb1 == HAL_RCC_GetPCLK1Freq()
@@ -659,7 +659,7 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
         powerctrl_config_systick();
     }
 
-    // Return straightaway if the clocks are already at the desired frequency.
+    // Return straight away if the clocks are already at the desired frequency.
     if (ahb == HAL_RCC_GetHCLKFreq()
         && apb1 == HAL_RCC_GetPCLK1Freq()
         && apb2 == HAL_RCC_GetPCLK2Freq()) {

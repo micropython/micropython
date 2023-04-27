@@ -111,7 +111,7 @@ void TASK_Servers(void *pvParameters) {
                 ftp_reset();
             }
             // and we should also close all user sockets. We do it here
-            // for convinience and to save on code size.
+            // for convenience and to save on code size.
             modusocket_close_all_user_sockets();
         }
 

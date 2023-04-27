@@ -103,7 +103,7 @@ Constructor
      - ``ibuf`` specifies internal buffer length (bytes)
 
    For all ports, DMA runs continuously in the background and allows user applications to perform other operations while
-   sample data is transfered between the internal buffer and the I2S peripheral unit.
+   sample data is transferred between the internal buffer and the I2S peripheral unit.
    Increasing the size of the internal buffer has the potential to increase the time that user applications can perform non-I2S operations
    before underflow (e.g. ``write`` method) or overflow (e.g. ``readinto`` method).
 

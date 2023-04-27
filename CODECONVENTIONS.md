@@ -255,7 +255,7 @@ Documentation conventions
 =========================
 
 MicroPython generally follows CPython in documentation process and
-conventions. reStructuredText syntax is used for the documention.
+conventions. reStructuredText syntax is used for the documentation.
 
 Specific conventions/suggestions:
 

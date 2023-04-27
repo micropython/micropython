@@ -484,7 +484,7 @@ def get_memory_layout(device):
 
 
 def list_dfu_devices(*args, **kwargs):
-    """Prints a lits of devices detected in DFU mode."""
+    """Prints a list of devices detected in DFU mode."""
     devices = get_dfu_devices(*args, **kwargs)
     if not devices:
         raise SystemExit("No DFU capable devices found")

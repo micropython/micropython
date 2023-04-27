@@ -32,8 +32,11 @@ class Input:
 		self.__on_release[i] = callback
 
 	async def loop(self):
+		from uasyncio import sleep_ms
+
 		while True:
 			self.scan()
+			await sleep_ms(1)
 
 	def pressed(self, i: int):
 		if i >= self.numButtons:

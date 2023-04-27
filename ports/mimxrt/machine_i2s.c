@@ -826,7 +826,7 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
 
     memset(self->edmaTcd, 0, sizeof(edma_tcd_t));
 
-    // continuous DMA operation is acheived using the scatter/gather feature, with one TCD linked back to itself
+    // continuous DMA operation is achieved using the scatter/gather feature, with one TCD linked back to itself
     EDMA_TcdSetTransferConfig(self->edmaTcd, &transferConfig, self->edmaTcd);
     EDMA_TcdEnableInterrupts(self->edmaTcd, kEDMA_MajorInterruptEnable | kEDMA_HalfInterruptEnable);
     EDMA_InstallTCD(DMA0, self->dma_channel, self->edmaTcd);
