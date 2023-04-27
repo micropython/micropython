@@ -24,3 +24,6 @@ CIRCUITPY_PICODVI = 1
 CFLAGS += -DCYW43_PIN_WL_HOST_WAKE=24 -DCYW43_PIN_WL_REG_ON=23 -DCYW43_WL_GPIO_COUNT=3 -DCYW43_WL_GPIO_LED_PIN=0
 # Must be accompanied by a linker script change
 CFLAGS += -DCIRCUITPY_FIRMWARE_SIZE='(1536 * 1024)'
+
+# Include these Python libraries in firmware.
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_SD
