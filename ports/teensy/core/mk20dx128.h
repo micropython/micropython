@@ -1018,7 +1018,7 @@ extern "C" {
 #define MCG_C6_VDIV0(n)			(uint8_t)((n) & 0x1F)		// VCO 0 Divider
 #define MCG_C6_CME0			(uint8_t)0x20			// Clock Monitor Enable
 #define MCG_C6_PLLS			(uint8_t)0x40			// PLL Select, Controls whether the PLL or FLL output is selected as the MCG source when CLKS[1:0]=00.
-#define MCG_C6_LOLIE0			(uint8_t)0x80			// Loss of Lock Interrrupt Enable
+#define MCG_C6_LOLIE0			(uint8_t)0x80			// Loss of Lock Interrupt Enable
 #define MCG_S			*(volatile uint8_t  *)0x40064006 // MCG Status Register
 #define MCG_S_IRCST			(uint8_t)0x01			// Internal Reference Clock Status
 #define MCG_S_OSCINIT0			(uint8_t)0x02			// OSC Initialization,	resets to 0, is set to 1 after the initialization cycles of the crystal oscillator

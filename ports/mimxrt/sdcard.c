@@ -223,7 +223,7 @@ void sdcard_card_removed_callback(USDHC_Type *base, void *userData);
 void sdcard_transfer_complete_callback(USDHC_Type *base, usdhc_handle_t *handle, status_t status, void *userData);
 void sdcard_dummy_callback(USDHC_Type *base, void *userData);
 
-// SD Card commmands
+// SD Card commands
 static bool sdcard_cmd_go_idle_state(mimxrt_sdcard_obj_t *card);
 static bool sdcard_cmd_oper_cond(mimxrt_sdcard_obj_t *card);
 static bool sdcard_cmd_app_cmd(mimxrt_sdcard_obj_t *card);

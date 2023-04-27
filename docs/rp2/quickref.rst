@@ -96,7 +96,7 @@ Programmable IO (PIO)
 ---------------------
 
 PIO is useful to build low-level IO interfaces from scratch.  See the :mod:`rp2` module
-for detailed explaination of the assembly instructions.
+for detailed explanation of the assembly instructions.
 
 Example using PIO to blink an LED at 1Hz::
 

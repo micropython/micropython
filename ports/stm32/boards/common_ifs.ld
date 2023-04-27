@@ -24,7 +24,7 @@ SECTIONS
         . = ALIGN(4);
         KEEP(*(.isr_vector)) /* Startup code */
 
-        /* This first flash block is 16K annd the isr vectors only take up
+        /* This first flash block is 16K and the isr vectors only take up
            about 400 bytes. So we pull in a couple of object files to pad it
            out. */
 

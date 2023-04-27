@@ -29,7 +29,7 @@
 
 /* Examples:
 
-Advertisment:
+Advertisement:
 
 from ubluepy import Peripheral
 p = Peripheral()

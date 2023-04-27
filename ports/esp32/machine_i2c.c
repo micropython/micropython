@@ -62,7 +62,7 @@
 #error "unsupported I2C for ESP32 SoC variant"
 #endif
 
-#define I2C_DEFAULT_TIMEOUT_US (10000) // 10ms
+#define I2C_DEFAULT_TIMEOUT_US (50000) // 50ms
 
 typedef struct _machine_hw_i2c_obj_t {
     mp_obj_base_t base;

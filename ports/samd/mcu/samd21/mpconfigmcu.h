@@ -14,6 +14,10 @@
 #define MICROPY_PY_BUILTINS_COMPLEX     (0)
 #endif
 
+#ifndef MICROPY_PY_UTIME
+#define MICROPY_PY_UTIME                (1)
+#endif
+
 #ifndef MICROPY_PY_MATH
 #define MICROPY_PY_MATH                 (1)
 #endif

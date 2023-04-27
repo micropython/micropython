@@ -125,14 +125,14 @@ void check_usb_recovery_mode(void) {
 
 // Purpose of the #defines for the clock configuration.
 //
-// Both CPU and periperal devices are clocked by the DFLL48M clock.
+// Both CPU and peripheral devices are clocked by the DFLL48M clock.
 // DFLL48M is either free running, or controlled by the 32kHz crystal, or
 // Synchronized with the USB clock.
 //
 // #define MICROPY_HW_XOSC32K (0 | 1)
 //
 // If MICROPY_HW_XOSC32K = 1, the 32kHz crystal is used as input for GCLK 1, which
-// serves as refernce clock source for the DFLL48M oscillator,
+// serves as reference clock source for the DFLL48M oscillator,
 // The crystal is used, unless MICROPY_HW_MCU_OSC32KULP is set.
 // In that case GCLK1 (and the CPU clock) is driven by the 32K Low power oscillator.
 // The reason for offering this option is a design flaw of the Adafruit
@@ -147,11 +147,11 @@ void check_usb_recovery_mode(void) {
 // not exactly 48Mhz and has a substantional temperature drift.
 //
 // If MICROPY_HW_DFLL_USB_SYNC = 1, the DFLL48 is synchronized with the 1 kHz USB sync
-// signal. If after boot there is no USB sync withing 500ms, the configuratuion falls
+// signal. If after boot there is no USB sync within 500ms, the configuration falls
 // back to a free running 48Mhz oscillator.
 //
 // In all modes, the 48MHz signal has a substantial jitter, largest when
-// MICROPY_HW_DFLL_USB_SYNC is active. That is caused by the repective
+// MICROPY_HW_DFLL_USB_SYNC is active. That is caused by the respective
 // reference frequencies of 32kHz or 1 kHz being low. That affects most
 // PWM. Std Dev at 1kHz 0.156Hz (w. Crystal) up to 0.4 Hz (with USB sync).
 //
@@ -171,7 +171,7 @@ void init_clocks(uint32_t cpu_freq) {
     // GCLK5: 48MHz, source: DFLL48M, usage: USB
     // GCLK8: 1kHz,  source: XOSC32K or OSCULP32K, usage: WDT and RTC
     // DFLL48M: Reference sources:
-    //          - in closed loop mode: eiter XOSC32K or OSCULP32K or USB clock
+    //          - in closed loop mode: either XOSC32K or OSCULP32K or USB clock
     //            from GCLK4.
     //          - in open loop mode: None
     // FDPLL96M: Reference source GCLK1

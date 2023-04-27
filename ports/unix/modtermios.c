@@ -75,7 +75,7 @@ STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t
         // We don't export TCSANOW and friends to save on code space. Then
         // common lazy sense says that passing 0 should be godo enough, and
         // it is e.g. for glibc. But for other libc's it's not, so set just
-        // treat 0 as defauling to TCSANOW.
+        // treat 0 as defaulting to TCSANOW.
         when = TCSANOW;
     }
 

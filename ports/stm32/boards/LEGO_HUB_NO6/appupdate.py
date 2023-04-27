@@ -1,4 +1,4 @@
-# Application firmware update funcion for LEGO_HUB_NO6.
+# Application firmware update function for LEGO_HUB_NO6.
 # MIT license; Copyright (c) 2022 Damien P. George
 
 from micropython import const

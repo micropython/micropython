@@ -69,7 +69,7 @@ automatically adapt to the changes you specify.  If you need to
 create a new type of interface, you'll need to write the code which
 sends and receives packets, and presents an API to the user.
 
-Finally, edit usb_inst.cpp, which creats instances of the C++
+Finally, edit usb_inst.cpp, which creates instances of the C++
 objects for each combination.
 
 Some operating systems, especially Windows, may cache USB device

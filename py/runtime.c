@@ -450,7 +450,7 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                     } else {
                         // standard precision is enough for right-shift
                         if (rhs_val >= (mp_int_t)(sizeof(lhs_val) * MP_BITS_PER_BYTE)) {
-                            // Shifting to big amounts is underfined behavior
+                            // Shifting to big amounts is undefined behavior
                             // in C and is CPU-dependent; propagate sign bit.
                             rhs_val = sizeof(lhs_val) * MP_BITS_PER_BYTE - 1;
                         }

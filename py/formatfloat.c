@@ -39,7 +39,7 @@
   Routine for converting a arbitrary floating
   point number into a string.
 
-  The code in this funcion was inspired from Fred Bayer's pdouble.c.
+  The code in this function was inspired from Fred Bayer's pdouble.c.
   Since pdouble.c was released as Public Domain, I'm releasing this
   code as public domain as well.
 

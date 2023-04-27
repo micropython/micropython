@@ -53,7 +53,7 @@ def generate_eddystone_adv_packet(url):
         constants.ad_types.AD_TYPE_SERVICE_DATA, service_data
     )
 
-    # generate advertisment packet
+    # generate advertisement packet
     packet = bytearray([])
     packet.extend(packet_flags)
     packet.extend(packet_uuid16)

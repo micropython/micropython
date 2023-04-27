@@ -74,7 +74,7 @@
 #define MICROPY_OPT_COMPUTED_GOTO               (1)
 
 // Python internal features
-#define MICROPY_TRACKED_ALLOC                   (MICROPY_SSL_MBEDTLS)
+#define MICROPY_TRACKED_ALLOC                   (MICROPY_SSL_MBEDTLS || MICROPY_BLUETOOTH_BTSTACK)
 #define MICROPY_READER_VFS                      (1)
 #define MICROPY_ENABLE_GC                       (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
@@ -105,7 +105,9 @@
 #define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
 #define MICROPY_PY_UHASHLIB_SHA1                (1)
 #define MICROPY_PY_UCRYPTOLIB                   (1)
-#define MICROPY_PY_UTIME_MP_HAL                 (1)
+#define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_UTIME_TIME_TIME_NS           (1)
+#define MICROPY_PY_UTIME_INCLUDEFILE            "ports/rp2/modutime.c"
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC       (rosc_random_u32())
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new

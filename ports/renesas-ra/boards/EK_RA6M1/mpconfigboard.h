@@ -1,5 +1,5 @@
 // MCU config
-#define MICROPY_HW_BOARD_NAME       "RA6M1_EK"
+#define MICROPY_HW_BOARD_NAME       "EK-RA6M1"
 #define MICROPY_HW_MCU_NAME         "RA6M1"
 #define MICROPY_HW_MCU_SYSCLK       120000000
 #define MICROPY_HW_MCU_PCLK         60000000

@@ -307,7 +307,7 @@ STATIC int eth_mac_init(eth_t *self) {
     #endif
 
     #if defined(STM32H7)
-    // don't skip 32bit words since our desriptors are continuous in memory
+    // don't skip 32bit words since our descriptors are continuous in memory
     ETH->DMACCR &= ~(ETH_DMACCR_DSL_Msk);
     #endif
 

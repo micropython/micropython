@@ -94,7 +94,6 @@
     <ClCompile Include="$(PyBaseDir)ports\unix\gccollect.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\input.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\main.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\modtime.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\modmachine.c" />
     <ClCompile Include="$(PyVariantDir)*.c" />
   </ItemGroup>

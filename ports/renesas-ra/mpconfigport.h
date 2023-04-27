@@ -99,10 +99,9 @@
 #define MICROPY_PY_UOS_SYNC         (1)
 #define MICROPY_PY_UOS_UNAME        (1)
 #define MICROPY_PY_UOS_URANDOM      (MICROPY_HW_ENABLE_RNG)
-#ifndef MICROPY_PY_UTIME
-#define MICROPY_PY_UTIME            (1)
-#endif
-#define MICROPY_PY_UTIME_MP_HAL     (MICROPY_PY_UTIME)
+#define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_UTIME_TIME_TIME_NS (1)
+#define MICROPY_PY_UTIME_INCLUDEFILE "ports/renesas-ra/modutime.c"
 #ifndef MICROPY_PY_UTIMEQ
 #define MICROPY_PY_UTIMEQ           (1)
 #endif

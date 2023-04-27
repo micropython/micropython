@@ -32,6 +32,7 @@ SRC_EXTMOD_C += \
 	extmod/modusocket.c \
 	extmod/modussl_axtls.c \
 	extmod/modussl_mbedtls.c \
+	extmod/modutime.c \
 	extmod/modutimeq.c \
 	extmod/moduwebsocket.c \
 	extmod/moduzlib.c \
@@ -41,7 +42,6 @@ SRC_EXTMOD_C += \
 	extmod/network_ninaw10.c \
 	extmod/network_wiznet5k.c \
 	extmod/uos_dupterm.c \
-	extmod/utime_mphal.c \
 	extmod/vfs.c \
 	extmod/vfs_blockdev.c \
 	extmod/vfs_fat.c \

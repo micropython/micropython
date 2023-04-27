@@ -172,11 +172,11 @@ void check_usb_recovery_mode(void) {
 // not exactly 48Mhz and has a substantional temperature drift.
 //
 // If MICROPY_HW_DFLL_USB_SYNC = 1, the DFLL48 is synchronized with the 1 kHz USB sync
-// signal. If after boot there is no USB sync withing 500ms, the configuratuion falls
+// signal. If after boot there is no USB sync within 500ms, the configuration falls
 // back to a free running 48Mhz oscillator.
 //
 // In all modes, the 48MHz signal has a substantial jitter, largest when
-// MICROPY_HW_DFLL_USB_SYNC is active. That is caused by the repective
+// MICROPY_HW_DFLL_USB_SYNC is active. That is caused by the respective
 // reference frequencies of 32kHz or 1 kHz being low. That affects most
 // PWM. Std Dev at 1kHz 0.156Hz (w. Crystal) up to 0.4 Hz (with USB sync).
 //
@@ -195,7 +195,7 @@ void init_clocks(uint32_t cpu_freq) {
     // GCLK4: 32kHz, source: XOSC32K, if crystal present, usage: DFLL48M reference
     // GCLK5: 48MHz, source: DFLL48M, usage: USB
     // DFLL48M: Reference sources:
-    //          - in closed loop mode: eiter XOSC32K or OSCULP32K or USB clock
+    //          - in closed loop mode: either XOSC32K or OSCULP32K or USB clock
     //          - in open loop mode: None
     // DPLL0: 48 - 200 MHz
 

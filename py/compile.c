@@ -3493,7 +3493,7 @@ void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool 
             }
         }
 
-        // update maximim number of labels needed
+        // update maximum number of labels needed
         if (comp->next_label > max_num_labels) {
             max_num_labels = comp->next_label;
         }

@@ -105,7 +105,7 @@ typedef enum {
     NINA_CMD_AP_GET_BSSID           = 0x3C,
     NINA_CMD_AP_GET_CHANNEL         = 0x3D,
 
-    // Disonnect/status commands.
+    // Disconnect/status commands.
     NINA_CMD_DISCONNECT             = 0x30,
     NINA_CMD_CONN_STATUS            = 0x20,
     NINA_CMD_CONN_REASON            = 0x1F,
