@@ -36,7 +36,7 @@ class Input:
 
 		while True:
 			self.scan()
-			await sleep_ms(0)
+			await sleep_ms(1)
 
 	def pressed(self, i: int):
 		if i >= self.numButtons:
