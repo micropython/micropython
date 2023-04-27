@@ -206,6 +206,11 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_SDCARD_D3        (pin_B4)
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (0)
 
+// FDCAN bus
+#define MICROPY_HW_CAN1_NAME        "FDCAN1"
+#define MICROPY_HW_CAN1_TX          (pin_H13)
+#define MICROPY_HW_CAN1_RX          (pin_B8)
+
 // USB config
 #define MICROPY_HW_USB_HS           (1)
 #define MICROPY_HW_USB_HS_ULPI_NXT  (pin_H4)
