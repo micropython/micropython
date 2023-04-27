@@ -37,7 +37,7 @@
 
 #include "src/rp2_common/hardware_irq/include/hardware/irq.h"
 
-#if CIRCUITPY_AUDIOPWMIO || CIRCUITPY_AUDIOBUSIO
+#if CIRCUITPY_AUDIOCORE
 
 void audio_dma_reset(void) {
     for (size_t channel = 0; channel < NUM_DMA_CHANNELS; channel++) {

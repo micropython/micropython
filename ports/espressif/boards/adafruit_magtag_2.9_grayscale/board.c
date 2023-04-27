@@ -120,11 +120,11 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO44);
     #endif /* DEBUG */
 
-    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
+    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
@@ -135,7 +135,7 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_epaperdisplay_obj_t *display = &displays[0].epaper_display;
+    displayio_epaperdisplay_obj_t *display = &allocate_display()->epaper_display;
     display->base.type = &displayio_epaperdisplay_type;
     common_hal_displayio_epaperdisplay_construct(
         display,
@@ -167,7 +167,8 @@ void board_init(void) {
         false,  // always_toggle_chip_select
         true, // grayscale
         false, // acep
-        false);  // two_byte_sequence_length
+        false,  // two_byte_sequence_length
+        false); // address_little_endian
 }
 
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {

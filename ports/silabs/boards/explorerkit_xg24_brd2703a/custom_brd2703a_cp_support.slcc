@@ -1,0 +1,20 @@
+id: custom_brd2703a_cp_support
+label: CircuitPython BRD2703A support
+description: >
+  CircuitPython Board support for BRD2703A.
+package: custom
+category: Custom
+quality: production
+root_path: ../boards/explorerkit_xg24_brd2703a
+include:
+  - path: ''
+    file_list:
+      - path: mpconfigboard.h
+source:
+  - path: board.c
+provides:
+  - name: custom_brd2703a_cp_support
+requires:
+  - name: efr32mg24b210f1536im48
+recommends:
+  - id: bt_rail_compatibility_fix

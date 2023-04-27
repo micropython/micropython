@@ -50,15 +50,10 @@ typedef struct {
     uint16_t brightness_command;
     uint16_t native_frames_per_second;
     uint16_t native_ms_per_frame;
-    uint8_t set_column_command;
-    uint8_t set_row_command;
     uint8_t write_ram_command;
     bool auto_refresh;
     bool first_manual_refresh;
-    bool data_as_commands;
     bool backlight_on_high;
-    // new quirk for sh1107
-    bool SH1107_addressing;
 } displayio_display_obj_t;
 
 void displayio_display_background(displayio_display_obj_t *self);

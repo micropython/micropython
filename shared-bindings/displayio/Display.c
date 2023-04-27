@@ -358,7 +358,7 @@ STATIC mp_obj_t displayio_display_obj_set_brightness(mp_obj_t self_in, mp_obj_t 
     displayio_display_obj_t *self = native_display(self_in);
     mp_float_t brightness = mp_obj_get_float(brightness_obj);
     if (brightness < 0 || brightness > 1.0) {
-        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
+        mp_raise_ValueError_varg(translate("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
     }
     bool ok = common_hal_displayio_display_set_brightness(self, brightness);
     if (!ok) {
@@ -426,7 +426,8 @@ MP_PROPERTY_GETTER(displayio_display_bus_obj,
 
 //|     root_group: Group
 //|     """The root group on the display.
-//|     If the root group is set to ``None``, the default CircuitPython terminal will be shown.
+//|     If the root group is set to `displayio.CIRCUITPYTHON_TERMINAL`, the default CircuitPython terminal will be shown.
+//|     If the root group is set to ``None``, no output will be shown.
 //|     """
 STATIC mp_obj_t displayio_display_obj_get_root_group(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);

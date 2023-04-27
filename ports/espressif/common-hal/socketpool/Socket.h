@@ -48,3 +48,5 @@ typedef struct {
 } socketpool_socket_obj_t;
 
 void socket_user_reset(void);
+// Unblock workflow socket select thread (platform specific)
+void socketpool_socket_poll_resume(void);

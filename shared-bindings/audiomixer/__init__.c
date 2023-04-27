@@ -29,7 +29,6 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiomixer/Mixer.h"
 
 //| """Support for audio mixing"""

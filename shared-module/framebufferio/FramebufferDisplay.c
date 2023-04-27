@@ -72,7 +72,10 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         fb_getter_default(get_pixels_in_byte_share_row, false),
         fb_getter_default(get_bytes_per_cell, 2),
         fb_getter_default(get_reverse_pixels_in_byte, false),
-        fb_getter_default(get_reverse_pixels_in_word, false)
+        fb_getter_default(get_reverse_pixels_in_word, false),
+        // Region update related settings that aren't used by framebuffer display.
+        NO_COMMAND, NO_COMMAND, NO_COMMAND, NO_COMMAND,
+        false, false, false, false
         );
 
     self->first_pixel_offset = fb_getter_default(get_first_pixel_offset, 0);

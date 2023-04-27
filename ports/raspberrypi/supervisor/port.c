@@ -228,14 +228,14 @@ bool port_has_fixed_stack(void) {
 }
 
 // From the linker script
-extern uint32_t __HeapLimit;
-extern uint32_t __StackTop;
+extern uint32_t _ld_cp_dynamic_mem_start;
+extern uint32_t _ld_cp_dynamic_mem_end;
 uint32_t *port_stack_get_limit(void) {
-    return &__HeapLimit;
+    return &_ld_cp_dynamic_mem_start;
 }
 
 uint32_t *port_stack_get_top(void) {
-    return &__StackTop;
+    return &_ld_cp_dynamic_mem_end;
 }
 
 uint32_t *port_heap_get_bottom(void) {
@@ -246,16 +246,18 @@ uint32_t *port_heap_get_top(void) {
     return port_stack_get_top();
 }
 
-extern uint32_t __scratch_x_start__;
 void port_set_saved_word(uint32_t value) {
-    __scratch_x_start__ = value;
+    // Store in a watchdog scratch register instead of RAM. 4-7 are used by the
+    // sdk. 0 is used by alarm. 1-3 are free.
+    watchdog_hw->scratch[1] = value;
 }
 
 uint32_t port_get_saved_word(void) {
-    return __scratch_x_start__;
+    return watchdog_hw->scratch[1];
 }
 
 static volatile bool ticks_enabled;
+static volatile bool _woken_up;
 
 uint64_t port_get_raw_ticks(uint8_t *subticks) {
     uint64_t microseconds = time_us_64();
@@ -267,6 +269,7 @@ STATIC void _tick_callback(uint alarm_num) {
         supervisor_tick();
         hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), 977));
     }
+    _woken_up = true;
 }
 
 // Enable 1/1024 second tick.
@@ -290,11 +293,12 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     if (!ticks_enabled) {
         hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), ticks * 977));
     }
+    _woken_up = false;
 }
 
 void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
-    if (!background_callback_pending() && !tud_task_event_ready()) {
+    if (!background_callback_pending() && !tud_task_event_ready() && !_woken_up) {
         __DSB();
         __WFI();
     }
@@ -305,14 +309,12 @@ void port_idle_until_interrupt(void) {
  * \brief Default interrupt handler for unused IRQs.
  */
 extern void HardFault_Handler(void); // provide a prototype to avoid a missing-prototypes diagnostic
-__attribute__((used)) void HardFault_Handler(void) {
-    #ifdef ENABLE_MICRO_TRACE_BUFFER
-    // Turn off the micro trace buffer so we don't fill it up in the infinite
-    // loop below.
-    REG_MTB_MASTER = 0x00000000 + 6;
-    #endif
-
-    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
+__attribute__((used)) void __not_in_flash_func(HardFault_Handler)(void) {
+    // Only safe mode from core 0 which is running CircuitPython. Core 1 faulting
+    // should not be fatal to CP. (Fingers crossed.)
+    if (get_core_num() == 0) {
+        reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
+    }
     while (true) {
         asm ("nop;");
     }

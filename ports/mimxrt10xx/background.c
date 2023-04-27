@@ -37,8 +37,8 @@ void PLACE_IN_ITCM(port_background_task)(void) {
 void port_background_tick(void) {
 }
 
-void port_start_background_task(void) {
+void port_start_background_tick(void) {
 }
 
-void port_finish_background_task(void) {
+void port_finish_background_tick(void) {
 }

@@ -66,7 +66,7 @@ def cannot_determine_version():
 CircuitPython must be built from a git clone with tags.
 If you cloned from a fork, fetch the tags from adafruit/circuitpython as follows:
 
-    git fetch --tags --recurse-submodules=no --shallow-since="2021-07-01" https://github.com/adafruit/circuitpython HEAD"""
+    make fetch-tags"""
     )
 
 

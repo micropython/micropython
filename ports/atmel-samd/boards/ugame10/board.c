@@ -70,7 +70,7 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
+    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
     common_hal_displayio_fourwire_construct(bus,
@@ -82,7 +82,7 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_display_obj_t *display = &displays[0].display;
+    displayio_display_obj_t *display = &allocate_display()->display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,

@@ -190,7 +190,7 @@ void reset_board_buses(void) {
         bool display_using_i2c = false;
         #if CIRCUITPY_DISPLAYIO
         for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-            if (displays[i].bus_base.type == &displayio_i2cdisplay_type && displays[i].i2cdisplay_bus.bus == &i2c_obj[instance]) {
+            if (display_buses[i].bus_base.type == &displayio_i2cdisplay_type && display_buses[i].i2cdisplay_bus.bus == &i2c_obj[instance]) {
                 display_using_i2c = true;
                 break;
             }
@@ -211,13 +211,13 @@ void reset_board_buses(void) {
         bool display_using_spi = false;
         #if CIRCUITPY_DISPLAYIO
         for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-            mp_const_obj_t bus_type = displays[i].bus_base.type;
-            if (bus_type == &displayio_fourwire_type && displays[i].fourwire_bus.bus == &spi_obj[instance]) {
+            mp_const_obj_t bus_type = display_buses[i].bus_base.type;
+            if (bus_type == &displayio_fourwire_type && display_buses[i].fourwire_bus.bus == &spi_obj[instance]) {
                 display_using_spi = true;
                 break;
             }
             #if CIRCUITPY_SHARPDISPLAY
-            if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type && displays[i].sharpdisplay.bus == &spi_obj[instance]) {
+            if (bus_type == &sharpdisplay_framebuffer_type && display_buses[i].sharpdisplay.bus == &spi_obj[instance]) {
                 display_using_spi = true;
                 break;
             }

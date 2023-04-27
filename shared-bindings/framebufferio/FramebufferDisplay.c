@@ -194,7 +194,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_brightness(mp_obj_t sel
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     mp_float_t brightness = mp_obj_get_float(brightness_obj);
     if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
+        mp_raise_ValueError_varg(translate("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
     }
     bool ok = common_hal_framebufferio_framebufferdisplay_set_brightness(self, brightness);
     if (!ok) {
@@ -323,7 +323,10 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, con
 MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_fill_row_obj, 1, framebufferio_framebufferdisplay_obj_fill_row);
 
 //|     root_group: displayio.Group
-//|     """The root group on the display."""
+//|     """The root group on the display.
+//|     If the root group is set to `displayio.CIRCUITPYTHON_TERMINAL`, the default CircuitPython terminal will be shown.
+//|     If the root group is set to ``None``, no output will be shown.
+//|     """
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_root_group(mp_obj_t self_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);

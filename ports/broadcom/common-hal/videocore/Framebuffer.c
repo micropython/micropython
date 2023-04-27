@@ -42,6 +42,7 @@ void common_hal_videocore_framebuffer_deinit(videocore_framebuffer_obj_t *self) 
     if (vcmailbox_release_framebuffer()) {
         self->framebuffer = NULL;
     }
+    self->base.type = &mp_type_NoneType;
 }
 
 bool common_hal_videocore_framebuffer_deinited(videocore_framebuffer_obj_t *self) {
