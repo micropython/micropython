@@ -27,7 +27,7 @@ class Buttons:
     A: int = const(2)
     B: int = const(3)
 
-    # Maps Buttons [0-6] to their respective GPIO pins
+    # Maps Buttons [0-3] to their respective GPIO pins
     Pins: [int] = const([
         const(32),
         const(27),
