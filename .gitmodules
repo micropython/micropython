@@ -335,3 +335,6 @@
 	path = ports/raspberrypi/lib/PicoDVI
 	url = https://github.com/circuitpython/PicoDVI.git
 	branch = circuitpython
+[submodule "frozen/circuitpython-pcf85063a"]
+	path = frozen/circuitpython-pcf85063a
+	url = https://github.com/bablokb/circuitpython-pcf85063a
