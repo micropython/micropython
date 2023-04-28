@@ -90,7 +90,9 @@
 #define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
 #define MICROPY_PY_URE_DEBUG                    (1)
 
-#define MICROPY_PY_UTIME_MP_HAL                 (1)
+#define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_UTIME_TIME_TIME_NS            (1)
+#define MICROPY_PY_UTIME_INCLUDEFILE             "ports/psoc6/modules/time/modutime.c"
 
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
