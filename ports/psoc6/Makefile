@@ -139,8 +139,6 @@ MOD_SRC_C += $(addprefix modules/,\
 	psoc6/psoc6_fatfs.c \
 	psoc6/psoc6_flash.c \
 	psoc6/psoc6_qspi_flash.c \
-	\
-	time/modutime.c \
 	)
 
 ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
