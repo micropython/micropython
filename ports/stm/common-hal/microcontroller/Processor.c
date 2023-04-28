@@ -96,7 +96,7 @@ float common_hal_mcu_processor_get_temperature(void) {
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 80.0;
     return (((float)value * adc_refcor - *ADC_CAL1) / core_temp_avg_slope) + 30.0f;
     #else
-    return false;
+    return NAN;
     #endif
 }
 
@@ -129,7 +129,7 @@ float common_hal_mcu_processor_get_voltage(void) {
 
     return adc_refcor * 3.3f;
     #else
-    return false;
+    return NAN;
     #endif
 }
 

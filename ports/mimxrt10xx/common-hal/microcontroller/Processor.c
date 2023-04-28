@@ -54,7 +54,7 @@ float common_hal_mcu_processor_get_temperature(void) {
 
     return temp;
     #else
-    return 0;
+    return NAN;
     #endif
 }
 
