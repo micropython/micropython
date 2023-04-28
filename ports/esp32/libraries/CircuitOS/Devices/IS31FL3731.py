@@ -22,7 +22,7 @@ class IS31FL3731:
     ISSI_COMMANDREGISTER = const(0xFD)
     ISSI_BANK_FUNCTIONREG = const(0x0B)
 
-    def __init__(self, i2c: I2C, addr: int):
+    def __init__(self, i2c: I2C, addr: int = 0x74):
         self.i2c = i2c
         self.addr = addr
 

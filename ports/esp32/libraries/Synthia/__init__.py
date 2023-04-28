@@ -14,7 +14,7 @@ slider_right = Slider(Pins.POT_R, min=220, max=720, ema_a=0.01, reverse=True)
 
 
 i2c = I2C(0, sda=Pin(Pins.I2C_SDA), scl=Pin(Pins.I2C_SCL))
-charlie = IS31FL3731(i2c, 0x74)
+charlie = IS31FL3731(i2c)
 matrix_out = MatrixOutputCharlie(charlie)
 matrix_buf = MatrixOutputBuffered(matrix_out)
 
