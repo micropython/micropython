@@ -11,7 +11,7 @@
 
 
 // enums to map MPY parameters to CYHAL params to avoid confusion
-// these are used as returns from functions and comparisions to MP_QSTRs in mapping functions
+// these are used as returns from functions and comparisons to MP_QSTRs in mapping functions
 // enum to hold pin modes
 enum {GPIO_MODE_IN, GPIO_MODE_OUT, GPIO_MODE_OPEN_DRAIN, GPIO_MODE_ALT, GPIO_MODE_ALT_OPEN_DRAIN, GPIO_MODE_ANALOG};
 
