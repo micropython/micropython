@@ -1,0 +1,18 @@
+{
+    "vendor": "CircuitMess",
+    "product": "Jay-D",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/products/jay-d",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32",
+    "features": [
+        "USB-C",
+        "BLE",
+        "WiFi"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}
