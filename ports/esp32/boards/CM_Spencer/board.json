@@ -1,0 +1,17 @@
+{
+    "vendor": "CircuitMess",
+    "product": "Spencer",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/pages/spencer",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32",
+    "features": [
+        "BLE",
+        "WiFi"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}
