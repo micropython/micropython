@@ -31,7 +31,7 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     // for an explanation.
 
     // An increment of 1 ms is added to the delay. In principle
-    // that should be correted by some internal behaviour or RTOS
+    // that should be corrected by some internal behaviour or RTOS
     // but it does not seem to work like this, as we are always
     // getting one more second in our Test 1 of tests/psoc/time.py.
 
