@@ -3,31 +3,20 @@
 
 
 #define MICROPY_PY_PYB_LEGACY       (0)
-//#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_TIMER     (1)
-#define MICROPY_HW_ENABLE_SERVO     (0)
+#define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
+#define MICROPY_HW_ENABLE_ADC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_SDCARD    (1)
-#define MICROPY_HW_ENABLE_MMCARD    (0)
+#define MICROPY_HW_ENABLE_MMCARD    (1)
 
-/*
-#define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_RNG       (1)
-#define MICROPY_HW_ENABLE_ADC       (1)
-#define MICROPY_HW_ENABLE_DAC       (1)
-#define MICROPY_HW_ENABLE_USB       (0)
-#define MICROPY_HW_ENABLE_SDCARD    (1)
-#define MICROPY_HW_HAS_SWITCH       (1)
-#define MICROPY_HW_HAS_FLASH        (1)
-*/
-
-#define MICROPY_BOARD_EARLY_INIT    NUCLEO_H743ZI_board_early_init
-void NUCLEO_H743ZI_board_early_init(void);
+#define MICROPY_BOARD_EARLY_INIT    NUCLEO_H7A3_board_early_init
+void NUCLEO_H7A3_board_early_init(void);
 
 // Settings for 280 MHz cpu clock.
 // Values from stm32cubemx clock configuration.
