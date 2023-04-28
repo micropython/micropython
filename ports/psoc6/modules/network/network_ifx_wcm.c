@@ -850,7 +850,7 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
                         break;
                     }
                     case MP_QSTR_pm: {
-                        // TODO: Implement pm? What is pm in the cyw43? power managament
+                        // TODO: Implement pm? What is pm in the cyw43? power management
                         break;
                     }
                     case MP_QSTR_trace: {

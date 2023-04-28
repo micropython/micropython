@@ -196,5 +196,5 @@ typedef intptr_t mp_off_t;
 
 
 // Board specific settings.
-// DO NOT ADD ANY POT SPECIFC OPTIONS BELOW THE FOLLOWING LINE !
+// DO NOT ADD ANY POT SPECIFIC OPTIONS BELOW THE FOLLOWING LINE !
 #include "mpconfigboard.h"
