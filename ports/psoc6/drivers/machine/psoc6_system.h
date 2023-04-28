@@ -23,15 +23,15 @@ void system_reset(void);
 // macros defined here: cy_syslib.h
 uint32_t system_reset_cause(void);
 
-// helper function to generate random alpha-numeric hash
+// helper function to generate random alphanumeric hash
 uint8_t system_rand_hash(uint8_t length);
 
 // function to disable global IRQs
-// returns alpha-numeric hash to enable IRQs later
+// returns alphanumeric hash to enable IRQs later
 // see: https://docs.zephyrproject.org/apidoc/latest/group__isr__apis.html#ga19fdde73c3b02fcca6cf1d1e67631228
 uint8_t system_disable_global_irq(void);
 // function to enable global IRQs
-// uses passed alpha-numeric key to verify and enable IRQs
+// uses passed alphanumeric key to verify and enable IRQs
 bool system_enable_global_irq(uint8_t state);
 
 #endif // MICROPY_INCLUDED_PSOC6_PIN_H

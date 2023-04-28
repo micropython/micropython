@@ -23,7 +23,7 @@ en_hsiom_sel_t pin_get_hsiom_func(uint32_t pin) {
 }
 
 // function to get cypdl drive modes, correlated to cyhal drive modes in file: cyhal_gpio.c
-// Note: drive modes are enumed in cy_gpio.h and are also distinguised for pins with input buffer on or off (configured as input or output respectively)
+// Note: drive modes are enumed in cy_gpio.h and are also distinguished for pins with input buffer on or off (configured as input or output respectively)
 uint32_t gpio_get_drive(uint32_t pin) {
     return Cy_GPIO_GetDrivemode(CYHAL_GET_PORTADDR(pin), CYHAL_GET_PIN(pin));
 }

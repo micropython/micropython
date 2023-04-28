@@ -213,7 +213,7 @@ Two possible solutions to this issue:
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mplogger_print("%q constructor invoked\n", MP_QSTR_Pin);
 
-    // Inspects the arguement list and checks number of arguements - Function signature from mpy side
+    // Inspects the argument list and checks number of arguments - Function signature from mpy side
     // Signature: mp_arg_check_num(n_args, n_kw, self->n_args_min, self->n_args_max, self->is_kw);
     mp_arg_check_num(n_args, n_kw, 1, 6, true);
 

@@ -37,7 +37,7 @@
  * Compiling Mbed TLS for Cortex-M0/0+/1/M23 cores with optimization enabled and on ARMC6 compiler results in errors.
  * These cores lack the required full Thumb-2 support, causing the inline assembly to require more registers than available.
  * The workaround is to use 'MULADDC_CANNOT_USE_R7' compilation flag, or without optimization flag,
- * but note that this will compile without the assmebly optimization.
+ * but note that this will compile without the assembly optimization.
  *
  * To read more about this issue, refer to https://github.com/ARMmbed/mbed-os/pull/14529/commits/86e7bc559b0d1a055bf84ea9249763d2349fb6e8
  */
@@ -783,7 +783,7 @@
  * \note This option has no influence on the protection against the
  *       triple handshake attack. Even if it is disabled, Mbed TLS will
  *       still ensure that certificates do not change during renegotiation,
- *       for exaple by keeping a hash of the peer's certificate.
+ *       for example by keeping a hash of the peer's certificate.
  *
  * Comment this macro to disable storing the peer's certificate
  * after the handshake.

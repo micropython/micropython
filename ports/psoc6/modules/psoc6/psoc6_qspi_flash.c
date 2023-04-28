@@ -43,7 +43,7 @@
 #include "cy_serial_flash_qspi.h"
 #include "cycfg_qspi_memslot.h"
 
-#define FLASH_BASE        (0x00)  // absolute address of xip/qspi flash. Does not depend on ld file values since xip isnt used
+#define FLASH_BASE        (0x00)  // absolute address of xip/qspi flash. Does not depend on ld file values since xip isn't used
 #define FLASH_SIZE        (0x4000000)  // qspi flash is 512 Mb / 64 MB in size
 
 #define FLASH_SECTOR_SIZE (0x40000) // 256 KB sector size uniform (depends on cfg register). See Table 46 of https://www.infineon.com/dgdl/Infineon-S25HS256T_S25HS512T_S25HS01GT_S25HL256T_S25HL512T_S25HL01GT_256-Mb_(32-MB)_512-Mb_(64-MB)_1-Gb_(128-MB)_HS-T_(1.8-V)_HL-T_(3.0-V)_Semper_Flash_with_Quad_SPI-DataSheet-v02_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ee674b86ee3&da=t
