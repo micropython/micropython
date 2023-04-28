@@ -53,13 +53,26 @@ typedef struct {
     _displayio_colorspace_t colorspace;
     int16_t colstart;
     int16_t rowstart;
+
+    // Refresh area related.
+    uint16_t column_command;
+    uint16_t row_command;
+    uint16_t set_current_column_command;
+    uint16_t set_current_row_command;
+    bool data_as_commands;
+    bool always_toggle_chip_select;
+    bool SH1107_addressing;
+    bool address_little_endian;
+
     bool full_refresh; // New group means we need to refresh the whole display.
     bool refresh_in_progress;
 } displayio_display_core_t;
 
 void displayio_display_core_construct(displayio_display_core_t *self,
     mp_obj_t bus, uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height, int16_t colstart, int16_t rowstart, uint16_t rotation,
-    uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word);
+    uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word,
+    uint16_t column_command, uint16_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command,
+    bool data_as_commands, bool always_toggle_chip_select, bool SH1107_addressing, bool address_little_endian);
 
 bool displayio_display_core_set_root_group(displayio_display_core_t *self, displayio_group_t *root_group);
 
@@ -75,10 +88,7 @@ bool displayio_display_core_bus_free(displayio_display_core_t *self);
 bool displayio_display_core_begin_transaction(displayio_display_core_t *self);
 void displayio_display_core_end_transaction(displayio_display_core_t *self);
 
-void displayio_display_core_set_region_to_update(displayio_display_core_t *self, uint8_t column_command,
-    uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command,
-    bool data_as_commands, bool always_toggle_chip_select,
-    displayio_area_t *area, bool SH1107_addressing);
+void displayio_display_core_set_region_to_update(displayio_display_core_t *self, displayio_area_t *area);
 
 void release_display_core(displayio_display_core_t *self);
 

@@ -55,11 +55,11 @@ void board_init(void) {
     busio_i2c_obj_t *i2c = common_hal_board_create_i2c(0);
 
     // What we would do if it wasn't the shared board I2C: (for reference)
-    // busio_i2c_obj_t *i2c = &displays[0].i2cdisplay_bus.inline_bus;
+    // busio_i2c_obj_t *i2c = &allocate_display_bus()->i2cdisplay_bus.inline_bus;
     // common_hal_busio_i2c_construct(i2c, &pin_GPIO23, &pin_GPIO22, 100000, 0);
     // common_hal_busio_i2c_never_reset(i2c);
 
-    displayio_i2cdisplay_obj_t *bus = &displays[0].i2cdisplay_bus;
+    displayio_i2cdisplay_obj_t *bus = &allocate_display_bus()->i2cdisplay_bus;
     bus->base.type = &displayio_i2cdisplay_type;
     common_hal_displayio_i2cdisplay_construct(bus,
         i2c,
@@ -67,7 +67,7 @@ void board_init(void) {
         NULL
         );
 
-    displayio_display_obj_t *display = &displays[0].display;
+    displayio_display_obj_t *display = &allocate_display()->display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,

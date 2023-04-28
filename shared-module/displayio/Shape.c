@@ -63,15 +63,17 @@ void common_hal_displayio_shape_construct(displayio_shape_t *self, uint32_t widt
 }
 
 void common_hal_displayio_shape_set_boundary(displayio_shape_t *self, uint16_t y, uint16_t start_x, uint16_t end_x) {
-    if (y < 0 || y >= self->height || (self->mirror_y && y >= self->half_height)) {
-        mp_raise_ValueError(translate("y value out of bounds"));
+    uint16_t max_y = self->height - 1;
+    if (self->mirror_y) {
+        max_y = self->half_height - 1;
     }
-    if (start_x < 0 || start_x >= self->width || end_x < 0 || end_x >= self->width) {
-        mp_raise_ValueError(translate("x value out of bounds"));
+    mp_arg_validate_int_range(y, 0, max_y, MP_QSTR_y);
+    uint16_t max_x = self->width - 1;
+    if (self->mirror_x) {
+        max_x = self->half_width - 1;
     }
-    if (self->mirror_x && (start_x >= self->half_width || end_x >= self->half_width)) {
-        mp_raise_ValueError_varg(translate("Maximum x value when mirrored is %d"), self->half_width);
-    }
+    mp_arg_validate_int_range(start_x, 0, max_x, MP_QSTR_start_x);
+    mp_arg_validate_int_range(end_x, 0, max_x, MP_QSTR_end_x);
 
     uint16_t lower_x, upper_x, lower_y, upper_y;
 

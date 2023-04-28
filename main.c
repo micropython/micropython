@@ -153,11 +153,15 @@ STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
-    // to recover from limit hit.  (Limit is measured in bytes.)
+    // to recover from limit hit.  (Limit is measured in bytes.) The top of the
+    // stack is set to our current state. Not the actual top.
     mp_stack_ctrl_init();
 
-    if (stack_get_bottom() != NULL) {
-        mp_stack_set_limit(stack_get_length() - 1024);
+    uint32_t *stack_bottom = stack_get_bottom();
+    if (stack_bottom != NULL) {
+        size_t stack_length = stack_get_length();
+        mp_stack_set_top(stack_bottom + (stack_length / sizeof(uint32_t)));
+        mp_stack_set_limit(stack_length - 1024);
     }
 
 
@@ -712,9 +716,15 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
             // time_to_next_change is in ms and ticks are slightly shorter so
             // we'll undersleep just a little. It shouldn't matter.
-            port_interrupt_after_ticks(time_to_next_change);
-            #endif
+            if (time_to_next_change > 0) {
+                port_interrupt_after_ticks(time_to_next_change);
+                port_idle_until_interrupt();
+            }
+            #else
+            // No status LED can we sleep until we are interrupted by some
+            // interaction.
             port_idle_until_interrupt();
+            #endif
         }
     }
 

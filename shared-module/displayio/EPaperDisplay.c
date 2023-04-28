@@ -58,28 +58,30 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t 
     uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t highlight_color,
     const uint8_t *refresh_sequence, uint16_t refresh_sequence_len, mp_float_t refresh_time,
     const mcu_pin_obj_t *busy_pin, bool busy_state, mp_float_t seconds_per_frame,
-    bool chip_select, bool grayscale, bool acep, bool two_byte_sequence_length) {
+    bool chip_select, bool grayscale, bool acep, bool two_byte_sequence_length, bool address_little_endian) {
     uint16_t color_depth = 1;
     bool core_grayscale = true;
     if (highlight_color != 0x000000) {
         self->core.colorspace.tricolor = true;
         self->core.colorspace.tricolor_hue = displayio_colorconverter_compute_hue(highlight_color);
         self->core.colorspace.tricolor_luma = displayio_colorconverter_compute_luma(highlight_color);
+    } else {
+        self->core.colorspace.tricolor = false;
     }
+    self->acep = acep;
+    self->core.colorspace.sevencolor = acep;
     if (acep) {
-        self->core.colorspace.sevencolor = true;
         color_depth = 4; // bits. 7 colors + clean
-        self->acep = acep;
         grayscale = false;
         core_grayscale = false;
     }
 
-    displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation, color_depth, core_grayscale, true, 1, true, true);
+    displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height,
+        colstart, rowstart, rotation, color_depth, core_grayscale, true, 1, true, true,
+        set_column_window_command, set_row_window_command, set_current_column_command, set_current_row_command,
+        false /* data_as_commands */, chip_select,
+        false /* SH1107_addressing */, address_little_endian);
 
-    self->set_column_window_command = set_column_window_command;
-    self->set_row_window_command = set_row_window_command;
-    self->set_current_column_command = set_current_column_command;
-    self->set_current_row_command = set_current_row_command;
     self->write_black_ram_command = write_black_ram_command;
     self->black_bits_inverted = black_bits_inverted;
     self->write_color_ram_command = write_color_ram_command;
@@ -137,7 +139,8 @@ STATIC const displayio_area_t *displayio_epaperdisplay_get_refresh_areas(display
     if (self->core.current_group != NULL) {
         first_area = displayio_group_get_refresh_areas(self->core.current_group, NULL);
     }
-    if (first_area != NULL && self->set_row_window_command == NO_COMMAND) {
+    if (first_area != NULL && self->core.row_command == NO_COMMAND) {
+        // Do a full refresh if the display doesn't support partial updates.
         self->core.area.next = NULL;
         return &self->core.area;
     }
@@ -310,10 +313,8 @@ STATIC bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t *
     for (uint8_t pass = 0; pass < passes; pass++) {
         uint16_t remaining_rows = displayio_area_height(&clipped);
 
-        if (self->set_row_window_command != NO_COMMAND) {
-            displayio_display_core_set_region_to_update(&self->core, self->set_column_window_command,
-                self->set_row_window_command, self->set_current_column_command, self->set_current_row_command,
-                false, self->chip_select, &clipped, false /* SH1107_addressing */);
+        if (self->core.row_command != NO_COMMAND) {
+            displayio_display_core_set_region_to_update(&self->core, &clipped);
         }
 
         uint8_t write_command = self->write_black_ram_command;

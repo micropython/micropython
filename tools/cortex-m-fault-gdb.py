@@ -17,7 +17,7 @@ MMFAR = SCB + 0x034  # (R/W)  MemManage Fault Address Register */
 BFAR = SCB + 0x038  # (R/W)  BusFault Address Register */
 AFSR = SCB + 0x03C  # (R/W)  Auxiliary Fault Status Register */
 
-PARTS = {0xC27: "Cortex M7"}
+PARTS = {0xC27: "Cortex M7", 0xC60: "Cortex M0+"}
 
 EXCEPTIONS = {
     0: "Thread mode",
@@ -40,18 +40,35 @@ class CortexMFault(gdb.Command):
         i = gdb.selected_inferior()
         return i.read_memory(address, 4).cast("I")[0]
 
-    def invoke(self, arg, from_tty):
-        cpuid = self._read(CPUID)
-        implementer = cpuid >> 24
-        if implementer != 0x41:
-            raise RuntimeError()
-        variant = (cpuid >> 20) & 0xF
-        constant = (cpuid >> 16) & 0xF
-        if constant != 0xF:
-            raise RuntimeError()
-        revision = cpuid & 0xF
-        part_no = (cpuid >> 4) & 0xFFF
-        print(PARTS[part_no])
+    def _armv6m_fault(self):
+        vtor = self._read(VTOR)
+        print("vtor", hex(vtor))
+
+        icsr = self._read(ICSR)
+        if (icsr & (1 << 23)) != 0:
+            print("No preempted exceptions")
+        else:
+            print("Another exception was preempted")
+        vectactive = icsr & 0x1FF
+        print(hex(icsr), vectactive)
+        if vectactive != 0:
+            if vectactive in EXCEPTIONS:
+                vectactive = EXCEPTIONS[vectactive]
+            else:
+                vectactive -= 16
+
+            print("Active interrupt:", vectactive)
+
+        vectpending = (icsr >> 12) & 0x1FF
+        if vectpending != 0:
+            if vectpending in EXCEPTIONS:
+                vectpending = EXCEPTIONS[vectpending]
+            else:
+                vectpending -= 16
+
+            print("Pending interrupt:", vectpending)
+
+    def _armv7m_fault(self):
         icsr = self._read(ICSR)
         if (icsr & (1 << 11)) != 0:
             print("No preempted exceptions")
@@ -65,6 +82,7 @@ class CortexMFault(gdb.Command):
                 print(vectactive - 16)
 
         vtor = self._read(VTOR)
+        print("vtor", hex(vtor))
         # print(hex(self._read(SHCSR)))
         cfsr = self._read(CFSR)
         ufsr = cfsr >> 16
@@ -101,6 +119,24 @@ class CortexMFault(gdb.Command):
         if (hfsr & (1 << 1)) != 0:
             print("Bus fault when reading vector table")
             print("VTOR", hex(vtor))
+
+    def invoke(self, arg, from_tty):
+        cpuid = self._read(CPUID)
+        implementer = cpuid >> 24
+        if implementer != 0x41:
+            raise RuntimeError()
+        variant = (cpuid >> 20) & 0xF
+        architecture = (cpuid >> 16) & 0xF
+        revision = cpuid & 0xF
+        part_no = (cpuid >> 4) & 0xFFF
+        print(PARTS[part_no])
+
+        if architecture == 0xF:
+            self._armv7m_fault()
+        elif architecture == 0xC:
+            self._armv6m_fault()
+        else:
+            raise RuntimeError(f"Unknown architecture {architecture:x}")
 
 
 CortexMFault()

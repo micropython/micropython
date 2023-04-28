@@ -47,7 +47,9 @@
 
 void displayio_display_core_construct(displayio_display_core_t *self,
     mp_obj_t bus, uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height, int16_t colstart, int16_t rowstart, uint16_t rotation,
-    uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word) {
+    uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word,
+    uint16_t column_command, uint16_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command,
+    bool data_as_commands, bool always_toggle_chip_select, bool SH1107_addressing, bool address_little_endian) {
     self->colorspace.depth = color_depth;
     self->colorspace.grayscale = grayscale;
     self->colorspace.grayscale_bit = 8 - color_depth;
@@ -60,6 +62,15 @@ void displayio_display_core_construct(displayio_display_core_t *self,
     self->colstart = colstart;
     self->rowstart = rowstart;
     self->last_refresh = 0;
+
+    self->column_command = column_command;
+    self->row_command = row_command;
+    self->set_current_column_command = set_current_column_command;
+    self->set_current_row_command = set_current_row_command;
+    self->data_as_commands = data_as_commands;
+    self->always_toggle_chip_select = always_toggle_chip_select;
+    self->SH1107_addressing = SH1107_addressing;
+    self->address_little_endian = address_little_endian;
 
     // (framebufferdisplay already validated its 'bus' is a buffer-protocol object)
     if (bus) {
@@ -214,10 +225,7 @@ void displayio_display_core_end_transaction(displayio_display_core_t *self) {
     self->end_transaction(self->bus);
 }
 
-void displayio_display_core_set_region_to_update(displayio_display_core_t *self, uint8_t column_command,
-    uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command,
-    bool data_as_commands, bool always_toggle_chip_select,
-    displayio_area_t *area, bool SH1107_addressing) {
+void displayio_display_core_set_region_to_update(displayio_display_core_t *self, displayio_area_t *area) {
     uint16_t x1 = area->x1 + self->colstart;
     uint16_t x2 = area->x2 + self->colstart;
     uint16_t y1 = area->y1 + self->rowstart;
@@ -239,17 +247,17 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
     y2 -= 1;
 
     display_chip_select_behavior_t chip_select = CHIP_SELECT_UNTOUCHED;
-    if (always_toggle_chip_select || data_as_commands) {
+    if (self->always_toggle_chip_select || self->data_as_commands) {
         chip_select = CHIP_SELECT_TOGGLE_EVERY_BYTE;
     }
 
     // Set column.
     displayio_display_core_begin_transaction(self);
     uint8_t data[5];
-    data[0] = column_command;
+    data[0] = self->column_command;
     uint8_t data_length = 1;
     display_byte_type_t data_type = DISPLAY_DATA;
-    if (!data_as_commands) {
+    if (!self->data_as_commands) {
         self->send(self->bus, DISPLAY_COMMAND, CHIP_SELECT_UNTOUCHED, data, 1);
         data_length = 0;
     } else {
@@ -260,6 +268,10 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
         data[data_length++] = x1;
         data[data_length++] = x2;
     } else {
+        if (self->address_little_endian) {
+            x1 = __builtin_bswap16(x1);
+            x2 = __builtin_bswap16(x2);
+        }
         data[data_length++] = x1 >> 8;
         data[data_length++] = x1 & 0xff;
         data[data_length++] = x2 >> 8;
@@ -268,7 +280,7 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
 
     // Quirk for SH1107 "SH1107_addressing"
     //     Column lower command = 0x00, Column upper command = 0x10
-    if (SH1107_addressing) {
+    if (self->SH1107_addressing) {
         data[0] = ((x1 >> 4) & 0x0F) | 0x10; // 0x10 to 0x17
         data[1] = x1 & 0x0F; // 0x00 to 0x0F
         data_length = 2;
@@ -277,10 +289,11 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
     self->send(self->bus, data_type, chip_select, data, data_length);
     displayio_display_core_end_transaction(self);
 
-    if (set_current_column_command != NO_COMMAND) {
-        uint8_t command = set_current_column_command;
+    if (self->set_current_column_command != NO_COMMAND) {
+        uint8_t command = self->set_current_column_command;
         displayio_display_core_begin_transaction(self);
         self->send(self->bus, DISPLAY_COMMAND, chip_select, &command, 1);
+        // Only send the first half of data because it is the first coordinate.
         self->send(self->bus, DISPLAY_DATA, chip_select, data, data_length / 2);
         displayio_display_core_end_transaction(self);
     }
@@ -288,9 +301,9 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
 
     // Set row.
     displayio_display_core_begin_transaction(self);
-    data[0] = row_command;
+    data[0] = self->row_command;
     data_length = 1;
-    if (!data_as_commands) {
+    if (!self->data_as_commands) {
         self->send(self->bus, DISPLAY_COMMAND, CHIP_SELECT_UNTOUCHED, data, 1);
         data_length = 0;
     }
@@ -299,6 +312,10 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
         data[data_length++] = y1;
         data[data_length++] = y2;
     } else {
+        if (self->address_little_endian) {
+            y1 = __builtin_bswap16(y1);
+            y2 = __builtin_bswap16(y2);
+        }
         data[data_length++] = y1 >> 8;
         data[data_length++] = y1 & 0xff;
         data[data_length++] = y2 >> 8;
@@ -307,7 +324,7 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
 
     // Quirk for SH1107 "SH1107_addressing"
     //     Page address command = 0xB0
-    if (SH1107_addressing) {
+    if (self->SH1107_addressing) {
         // set the page to our y value
         data[0] = 0xB0 | y1;
         data_length = 1;
@@ -316,10 +333,11 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
     self->send(self->bus, data_type, chip_select, data, data_length);
     displayio_display_core_end_transaction(self);
 
-    if (set_current_row_command != NO_COMMAND) {
-        uint8_t command = set_current_row_command;
+    if (self->set_current_row_command != NO_COMMAND) {
+        uint8_t command = self->set_current_row_command;
         displayio_display_core_begin_transaction(self);
         self->send(self->bus, DISPLAY_COMMAND, chip_select, &command, 1);
+        // Only send the first half of data because it is the first coordinate.
         self->send(self->bus, DISPLAY_DATA, chip_select, data, data_length / 2);
         displayio_display_core_end_transaction(self);
     }

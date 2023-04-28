@@ -32,13 +32,19 @@
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
 #include "shared-bindings/synthio/MidiTrack.h"
+#include "shared-bindings/synthio/__init__.h"
 #include "supervisor/shared/translate/translate.h"
 
 //| class MidiTrack:
-//|     """Simple square-wave MIDI synth"""
+//|     """Simple MIDI synth"""
 //|
 //|     def __init__(
-//|         self, buffer: ReadableBuffer, tempo: int, *, sample_rate: int = 11025
+//|         self,
+//|         buffer: ReadableBuffer,
+//|         tempo: int,
+//|         *,
+//|         sample_rate: int = 11025,
+//|         waveform: ReadableBuffer = None
 //|     ) -> None:
 //|         """Create a MidiTrack from the given stream of MIDI events. Only "Note On" and "Note Off" events
 //|         are supported; channel numbers and key velocities are ignored. Up to two notes may be on at the
@@ -47,6 +53,7 @@
 //|         :param ~circuitpython_typing.ReadableBuffer buffer: Stream of MIDI events, as stored in a MIDI file track chunk
 //|         :param int tempo: Tempo of the streamed events, in MIDI ticks per second
 //|         :param int sample_rate: The desired playback sample rate; higher sample rate requires more memory
+//|         :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit)
 //|
 //|         Simple melody::
 //|
@@ -65,11 +72,12 @@
 //|           print("stopped")"""
 //|         ...
 STATIC mp_obj_t synthio_miditrack_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_buffer, ARG_tempo, ARG_sample_rate };
+    enum { ARG_buffer, ARG_tempo, ARG_sample_rate, ARG_waveform };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_tempo, MP_ARG_INT | MP_ARG_REQUIRED },
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 11025} },
+        { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -77,13 +85,18 @@ STATIC mp_obj_t synthio_miditrack_make_new(const mp_obj_type_t *type, size_t n_a
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
+    mp_buffer_info_t bufinfo_waveform;
+    synthio_synth_parse_waveform(&bufinfo_waveform, args[ARG_waveform].u_obj);
+
     synthio_miditrack_obj_t *self = m_new_obj(synthio_miditrack_obj_t);
     self->base.type = &synthio_miditrack_type;
 
     common_hal_synthio_miditrack_construct(self,
         (uint8_t *)bufinfo.buf, bufinfo.len,
         args[ARG_tempo].u_int,
-        args[ARG_sample_rate].u_int);
+        args[ARG_sample_rate].u_int,
+        bufinfo_waveform.buf,
+        bufinfo_waveform.len / 2);
 
     return MP_OBJ_FROM_PTR(self);
 }

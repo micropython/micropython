@@ -543,7 +543,6 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self,
                     ((uint8_t *)buffer)[offset / pixels_per_byte] |= output_pixel.pixel << shift;
                 }
             }
-            (void)input_pixel;
         }
     }
     return full_coverage;
