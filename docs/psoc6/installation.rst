@@ -51,7 +51,7 @@ Find all the available commands and options by running the script with the comma
 Quick Start
 ------------
 
-With the ``mpy-psoc6`` utility script donwloaded, the fastest way to get you up and running with
+With the ``mpy-psoc6`` utility script downloaded, the fastest way to get you up and running with
 micropython is to run the ``quick-start`` command of the script:
 
 .. tabs::
@@ -75,8 +75,8 @@ The command will take care of the following:
 * Launch Arduino Lab MicroPython IDE
 
 This command is supporting the getting started tutorial for the first time. Once you get familiar
-with MicroPython and its environment, the ``device-setup`` command will be more appropiate to
-install MicroPython on PSoC6™ boards, and upgrade your device with the lastest firmware. 
+with MicroPython and its environment, the ``device-setup`` command will be more appropriate to
+install MicroPython on PSoC6™ boards, and upgrade your device with the latest firmware. 
 
 Device setup
 -------------
