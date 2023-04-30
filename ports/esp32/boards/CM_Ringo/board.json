@@ -1,0 +1,17 @@
+{
+    "vendor": "CircuitMess",
+    "product": "Ringo",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/products/ringo-diy-cell-phone",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32",
+    "features": [
+        "BLE",
+        "WiFi"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}
