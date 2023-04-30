@@ -10,7 +10,7 @@ class PCA95XX:
 	REG_INV = 0x04
 	REG_CONF = 0x06
 
-	def __init__(self, bus: I2C, addr: int):
+	def __init__(self, bus: I2C, addr: int = 0x74):
 		self.bus = bus
 		self.addr = addr
 

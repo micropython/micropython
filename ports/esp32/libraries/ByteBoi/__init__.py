@@ -5,7 +5,7 @@ from .Pins import *
 
 i2c = I2C(0, sda=Pin(Pins.I2C_SDA), scl=Pin(Pins.I2C_SCL))
 
-expander = PCA95XX(i2c, 0x74)
+expander = PCA95XX(i2c)
 
 variant = 1
 if expander.begin():
