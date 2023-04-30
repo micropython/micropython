@@ -53,6 +53,10 @@
 #include "mbedtls/aria.h"
 #endif
 
+#if defined(MBEDTLS_ASN1_PARSE_C)
+#include "mbedtls/asn1.h"
+#endif
+
 #if defined(MBEDTLS_BASE64_C)
 #include "mbedtls/base64.h"
 #endif
@@ -378,6 +382,7 @@ static const struct ssl_errs mbedtls_high_level_error_tab[] = {
         { -(MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS), "SSL_ASYNC_IN_PROGRESS" },
         { -(MBEDTLS_ERR_SSL_EARLY_MESSAGE), "SSL_EARLY_MESSAGE" },
         { -(MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS), "SSL_CRYPTO_IN_PROGRESS" },
+        { -(MBEDTLS_ERR_SSL_BAD_CONFIG), "SSL_BAD_CONFIG" },
 #endif /* MBEDTLS_SSL_TLS_C */
 
 #if defined(MBEDTLS_X509_USE_C) || defined(MBEDTLS_X509_CREATE_C)
