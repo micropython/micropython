@@ -36,8 +36,6 @@
 #include "shared-module/framebufferio/FramebufferDisplay.h"
 
 //| class Framebuffer:
-//|     """A PicoDVI managed frame buffer."""
-//|
 //|     def __init__(
 //|         self,
 //|         width: int,
@@ -54,13 +52,14 @@
 //|         color_depth: int = 8,
 //|     ) -> None:
 //|         """Create a Framebuffer object with the given dimensions. Memory is
-//|            allocated outside of onto the heap and then moved outside on VM
-//|            end.
+//|         allocated outside of onto the heap and then moved outside on VM end.
 //|
-//|         This will change the system clock speed to match the DVI signal.
-//|         Make sure to initialize other objects after this one so they account
-//|         for the changed clock. This also allocates a very large framebuffer
-//|         and is most likely to succeed the earlier it is attempted.
+//|         .. warning:: This will change the system clock speed to match the DVI signal.
+//|            Make sure to initialize other objects after this one so they account
+//|            for the changed clock.
+//|
+//|         This allocates a very large framebuffer and is most likely to succeed
+//|         the earlier it is attempted.
 //|
 //|         Each dp and dn pair of pins must be neighboring, such as 19 and 20.
 //|         They must also be ordered the same way. In other words, dp must be
@@ -82,7 +81,7 @@
 //|         `framebufferio.FramebufferDisplay`.
 //|
 //|         :param int width: the width of the target display signal. Only 320, 400, 640 or 800 is currently supported depending on color_depth.
-//|         :param int height: the height of the target display signal. Only 240 or 480 is currently supported depenting on color_depth.
+//|         :param int height: the height of the target display signal. Only 240 or 480 is currently supported depending on color_depth.
 //|         :param ~microcontroller.Pin clk_dp: the positive clock signal pin
 //|         :param ~microcontroller.Pin clk_dn: the negative clock signal pin
 //|         :param ~microcontroller.Pin red_dp: the positive red signal pin
@@ -160,8 +159,7 @@ static void check_for_deinit(picodvi_framebuffer_obj_t *self) {
 }
 
 //|     width: int
-//|     """The width of the framebuffer, in pixels. It may be doubled for output (and half of what
-//|        width was given to __init__.)"""
+//|     """The width of the framebuffer, in pixels. It may be doubled for output."""
 STATIC mp_obj_t picodvi_framebuffer_get_width(mp_obj_t self_in) {
     picodvi_framebuffer_obj_t *self = (picodvi_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
@@ -172,8 +170,7 @@ MP_PROPERTY_GETTER(picodvi_framebuffer_width_obj,
     (mp_obj_t)&picodvi_framebuffer_get_width_obj);
 
 //|     height: int
-//|     """The width of the framebuffer, in pixels. It may be doubled for output (and half of what
-//|        width was given to __init__.)"""
+//|     """The width of the framebuffer, in pixels. It may be doubled for output."""
 //|
 STATIC mp_obj_t picodvi_framebuffer_get_height(mp_obj_t self_in) {
     picodvi_framebuffer_obj_t *self = (picodvi_framebuffer_obj_t *)self_in;

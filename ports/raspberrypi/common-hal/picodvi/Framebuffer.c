@@ -144,17 +144,23 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
 
     bool color_framebuffer = color_depth >= 8;
     const struct dvi_timing *timing = NULL;
-    if ((!color_framebuffer && width == 640 && height == 480) ||
-        (color_framebuffer && width == 320 && height == 240)) {
+    if ((width == 640 && height == 480) ||
+        (width == 320 && height == 240)) {
         timing = &dvi_timing_640x480p_60hz;
-    } else if ((!color_framebuffer && width == 800 && height == 480) ||
-               (color_framebuffer && width == 400 && height == 240)) {
+    } else if ((width == 800 && height == 480) ||
+               (width == 400 && height == 240)) {
         timing = &dvi_timing_800x480p_60hz;
     } else {
         if (height != 480 && height != 240) {
             mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_height);
         }
         mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_width);
+    }
+
+    // If the width is > 400, then it must not be color frame buffer and vice
+    // versa.
+    if ((width > 400) == color_framebuffer) {
+        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_color_depth);
     }
 
     bool invert_diffpairs = clk_dn->number < clk_dp->number;
