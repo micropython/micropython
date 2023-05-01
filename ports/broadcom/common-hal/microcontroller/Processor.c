@@ -26,6 +26,8 @@
 
 #include "shared-bindings/microcontroller/Processor.h"
 
+#include <math.h>
+
 #include "peripherals/broadcom/vcmailbox.h"
 
 float common_hal_mcu_processor_get_temperature(void) {
