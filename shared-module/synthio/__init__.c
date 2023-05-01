@@ -27,6 +27,7 @@
 
 #include "shared-module/synthio/__init__.h"
 #include "shared-bindings/synthio/__init__.h"
+#include "shared-module/synthio/Note.h"
 #include "py/runtime.h"
 #include <math.h>
 #include <stdlib.h>
@@ -35,6 +36,14 @@ STATIC const int16_t square_wave[] = {-32768, 32767};
 
 STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
                                  12544, 13290, 14080, 14917, 15804}; // 9th octave
+
+static int32_t round_float_to_int(mp_float_t f) {
+    return (int32_t)(f + MICROPY_FLOAT_CONST(0.5));
+}
+
+static int64_t round_float_to_int64(mp_float_t f) {
+    return (int64_t)(f + MICROPY_FLOAT_CONST(0.5));
+}
 
 mp_float_t common_hal_synthio_midi_to_hz_float(mp_int_t arg) {
     uint8_t octave = arg / 12;
@@ -52,7 +61,7 @@ STATIC int16_t convert_time_to_rate(uint32_t sample_rate, mp_obj_t time_in, int1
     return (difference < 0) ? -result : result;
 }
 
-STATIC void synthio_envelope_definition_set(synthio_envelope_definition_t *envelope, mp_obj_t obj, uint32_t sample_rate) {
+void synthio_envelope_definition_set(synthio_envelope_definition_t *envelope, mp_obj_t obj, uint32_t sample_rate) {
     if (obj == mp_const_none) {
         envelope->attack_level = 32767;
         envelope->sustain_level = 32767;
@@ -141,7 +150,7 @@ STATIC void synthio_envelope_state_release(synthio_envelope_state_t *state, synt
 STATIC uint32_t synthio_synth_sum_envelope(synthio_synth_t *synth) {
     uint32_t result = 0;
     for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
-        if (synth->span.note[chan] != SYNTHIO_SILENCE) {
+        if (synth->span.note_obj[chan] != SYNTHIO_SILENCE) {
             result += synth->envelope_state[chan].level;
         }
     }
@@ -168,12 +177,10 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
 
     int32_t sample_rate = synth->sample_rate;
     uint32_t total_envelope = synthio_synth_sum_envelope(synth);
-    const int16_t *waveform = synth->waveform;
-    uint32_t waveform_length = synth->waveform_length;
     if (total_envelope > 0) {
         uint16_t ovl_loudness = 0x7fffffff / MAX(0x8000, total_envelope);
         for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
-            if (synth->span.note[chan] == SYNTHIO_SILENCE) {
+            if (synth->span.note_obj[chan] == SYNTHIO_SILENCE) {
                 synth->accum[chan] = 0;
                 continue;
             }
@@ -182,25 +189,52 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
 
             if (synth->envelope_state[chan].level == 0) {
                 // note is truly finished
-                synth->span.note[chan] = SYNTHIO_SILENCE;
+                synth->span.note_obj[chan] = SYNTHIO_SILENCE;
             }
-            uint8_t octave = synth->span.note[chan] / 12;
-            uint16_t base_freq = notes[synth->span.note[chan] % 12];
+
+            uint32_t dds_rate;
+            const int16_t *waveform = synth->waveform;
+            uint32_t waveform_length = synth->waveform_length;
+            mp_obj_t note_obj = synth->span.note_obj[chan];
+            if (mp_obj_is_small_int(note_obj)) {
+                uint8_t note = mp_obj_get_int(note_obj);
+                uint8_t octave = note / 12;
+                uint16_t base_freq = notes[note % 12];
+                // rate = base_freq * waveform_length
+                // den = sample_rate * 2 ^ (10 - octave)
+                // den = sample_rate * 2 ^ 10 / 2^octave
+                // dds_rate = 2^SHIFT * rate / den
+                // dds_rate = 2^(SHIFT-10+octave) * base_freq * waveform_length / sample_rate
+                dds_rate = (sample_rate / 2 + ((uint64_t)(base_freq * waveform_length) << (SYNTHIO_FREQUENCY_SHIFT - 10 + octave))) / sample_rate;
+            } else {
+                synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
+                int32_t frequency_scaled = synthio_note_step(note, sample_rate, dur, &loudness);
+                if (note->waveform_buf.buf) {
+                    waveform = note->waveform_buf.buf;
+                    waveform_length = note->waveform_buf.len / 2;
+                }
+                dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)frequency_scaled * waveform_length, sample_rate);
+            }
+
             uint32_t accum = synth->accum[chan];
-#define SHIFT (16)
-            // rate = base_freq * waveform_length
-            // den = sample_rate * 2 ^ (10 - octave)
-            // den = sample_rate * 2 ^ 10 / 2^octave
-            // dds_rate = 2^SHIFT * rate / den
-            // dds_rate = 2^(SHIFT-10+octave) * base_freq * waveform_length / sample_rate
-            uint32_t dds_rate = (sample_rate / 2 + ((uint64_t)(base_freq * waveform_length) << (SHIFT - 10 + octave))) / sample_rate;
+            uint32_t lim = waveform_length << SYNTHIO_FREQUENCY_SHIFT;
+            if (dds_rate > lim / 2) {
+                // beyond nyquist, can't play note
+                continue;
+            }
+
+            // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
+            if (accum > lim) {
+                accum %= lim;
+            }
 
             for (uint16_t i = 0; i < dur; i++) {
                 accum += dds_rate;
-                if (accum > waveform_length << SHIFT) {
-                    accum -= waveform_length << SHIFT;
+                // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
+                if (accum > lim) {
+                    accum -= lim;
                 }
-                int16_t idx = accum >> SHIFT;
+                int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
                 out_buffer[i] += (waveform[idx] * loudness) / 65536;
             }
             synth->accum[chan] = accum;
@@ -209,7 +243,18 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
 
     // advance envelope states
     for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
-        synthio_envelope_state_step(&synth->envelope_state[chan], &synth->envelope_definition, dur);
+        mp_obj_t note_obj = synth->span.note_obj[chan];
+        if (note_obj == SYNTHIO_SILENCE) {
+            continue;
+        }
+        synthio_envelope_definition_t *def = &synth->envelope_definition;
+        if (!mp_obj_is_small_int(note_obj)) {
+            synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
+            if (note->envelope_obj != mp_const_none) {
+                def = &note->envelope_def;
+            }
+        }
+        synthio_envelope_state_step(&synth->envelope_state[chan], def, dur);
     }
 
     *buffer_length = synth->last_buffer_length = dur * SYNTHIO_BYTES_PER_SAMPLE;
@@ -254,7 +299,7 @@ void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, const int1
     synthio_synth_envelope_set(synth, envelope_obj);
 
     for (size_t i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
-        synth->span.note[i] = SYNTHIO_SILENCE;
+        synth->span.note_obj[i] = SYNTHIO_SILENCE;
     }
 }
 
@@ -283,16 +328,16 @@ void synthio_synth_parse_waveform(mp_buffer_info_t *bufinfo_waveform, mp_obj_t w
     parse_common(bufinfo_waveform, waveform_obj, MP_QSTR_waveform);
 }
 
-STATIC int find_channel_with_note(synthio_synth_t *synth, uint8_t note) {
+STATIC int find_channel_with_note(synthio_synth_t *synth, mp_obj_t note) {
     for (int i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
-        if (synth->span.note[i] == note) {
+        if (synth->span.note_obj[i] == note) {
             return i;
         }
     }
     if (note == SYNTHIO_SILENCE) {
         // we need a victim note that is releasing. simple algorithm: lowest numbered slot
         for (int i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
-            if (SYNTHIO_VOICE_IS_RELEASING(synth, i)) {
+            if (!SYNTHIO_NOTE_IS_PLAYING(synth, i)) {
                 return i;
             }
         }
@@ -300,7 +345,7 @@ STATIC int find_channel_with_note(synthio_synth_t *synth, uint8_t note) {
     return -1;
 }
 
-bool synthio_span_change_note(synthio_synth_t *synth, uint8_t old_note, uint8_t new_note) {
+bool synthio_span_change_note(synthio_synth_t *synth, mp_obj_t old_note, mp_obj_t new_note) {
     int channel;
     if (new_note != SYNTHIO_SILENCE && (channel = find_channel_with_note(synth, new_note)) != -1) {
         // note already playing, re-strike
@@ -313,11 +358,47 @@ bool synthio_span_change_note(synthio_synth_t *synth, uint8_t old_note, uint8_t 
         if (new_note == SYNTHIO_SILENCE) {
             synthio_envelope_state_release(&synth->envelope_state[channel], &synth->envelope_definition);
         } else {
-            synth->span.note[channel] = new_note;
+            synth->span.note_obj[channel] = new_note;
             synthio_envelope_state_init(&synth->envelope_state[channel], &synth->envelope_definition);
             synth->accum[channel] = 0;
         }
         return true;
     }
     return false;
+}
+
+uint64_t synthio_frequency_convert_float_to_scaled(mp_float_t val) {
+    return round_float_to_int64(val * (1 << SYNTHIO_FREQUENCY_SHIFT));
+}
+
+uint32_t synthio_frequency_convert_float_to_dds(mp_float_t frequency_hz, int32_t sample_rate) {
+    return synthio_frequency_convert_scaled_to_dds(synthio_frequency_convert_float_to_scaled(frequency_hz), sample_rate);
+}
+
+uint32_t synthio_frequency_convert_scaled_to_dds(uint64_t frequency_scaled, int32_t sample_rate) {
+    return (sample_rate / 2 + frequency_scaled) / sample_rate;
+}
+
+void synthio_lfo_set(synthio_lfo_state_t *state, const synthio_lfo_descr_t *descr, uint32_t sample_rate) {
+    state->amplitude_scaled = round_float_to_int(descr->amplitude * 32768);
+    state->dds = synthio_frequency_convert_float_to_dds(descr->frequency * 65536, sample_rate);
+}
+
+int synthio_lfo_step(synthio_lfo_state_t *state, uint16_t dur) {
+    uint32_t phase = state->phase;
+    uint16_t whole_phase = phase >> 16;
+
+    // advance the phase accumulator
+    state->phase = phase + state->dds * dur;
+
+    // create a triangle wave, it's quick and easy
+    int v;
+    if (whole_phase < 16384) { // ramp from 0 to amplitude
+        v = (state->amplitude_scaled * whole_phase);
+    } else if (whole_phase < 49152) { // ramp from +amplitude to -amplitude
+        v = (state->amplitude_scaled * (32768 - whole_phase));
+    } else { // from -amplitude to 0
+        v = (state->amplitude_scaled * (whole_phase - 65536));
+    }
+    return v / 16384 + state->offset_scaled;
 }

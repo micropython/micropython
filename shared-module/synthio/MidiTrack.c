@@ -33,7 +33,7 @@ STATIC void print_midi_stream_error(synthio_miditrack_obj_t *self) {
     self->pos = self->track.len;
 }
 
-STATIC uint8_t parse_note(synthio_miditrack_obj_t *self) {
+STATIC mp_obj_t parse_note(synthio_miditrack_obj_t *self) {
     uint8_t *buffer = self->track.buf;
     size_t len = self->track.len;
     if (self->pos + 1 >= len) {
@@ -43,7 +43,7 @@ STATIC uint8_t parse_note(synthio_miditrack_obj_t *self) {
     if (note > 127 || buffer[(self->pos)++] > 127) {
         print_midi_stream_error(self);
     }
-    return note;
+    return MP_OBJ_NEW_SMALL_INT(note);
 }
 
 static int decode_duration(synthio_miditrack_obj_t *self) {
@@ -72,12 +72,12 @@ static void decode_until_pause(synthio_miditrack_obj_t *self) {
     do {
         switch (buffer[self->pos++] >> 4) {
             case 8: { // Note Off
-                uint8_t note = parse_note(self);
+                mp_obj_t note = parse_note(self);
                 synthio_span_change_note(&self->synth, note, SYNTHIO_SILENCE);
                 break;
             }
             case 9: { // Note On
-                uint8_t note = parse_note(self);
+                mp_obj_t note = parse_note(self);
                 synthio_span_change_note(&self->synth, SYNTHIO_SILENCE, note);
                 break;
             }

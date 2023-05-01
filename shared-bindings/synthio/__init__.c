@@ -35,6 +35,7 @@
 
 #include "shared-bindings/synthio/__init__.h"
 #include "shared-bindings/synthio/MidiTrack.h"
+#include "shared-bindings/synthio/Note.h"
 #include "shared-bindings/synthio/Synthesizer.h"
 
 #define default_attack_time (MICROPY_FLOAT_CONST(0.1))
@@ -157,7 +158,6 @@ const mp_obj_namedtuple_type_t synthio_envelope_type_obj = {
     },
 };
 
-
 //| def from_file(
 //|     file: typing.BinaryIO,
 //|     *,
@@ -271,6 +271,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(synthio_midi_to_hz_obj, midi_to_hz);
 STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_synthio) },
     { MP_ROM_QSTR(MP_QSTR_MidiTrack), MP_ROM_PTR(&synthio_miditrack_type) },
+    { MP_ROM_QSTR(MP_QSTR_Note), MP_ROM_PTR(&synthio_note_type) },
     { MP_ROM_QSTR(MP_QSTR_Synthesizer), MP_ROM_PTR(&synthio_synthesizer_type) },
     { MP_ROM_QSTR(MP_QSTR_from_file), MP_ROM_PTR(&synthio_from_file_obj) },
     { MP_ROM_QSTR(MP_QSTR_Envelope), MP_ROM_PTR(&synthio_envelope_type_obj) },

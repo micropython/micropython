@@ -26,6 +26,8 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/synthio/Synthesizer.h"
+#include "shared-bindings/synthio/Note.h"
+#include "shared-module/synthio/Note.h"
 
 
 
@@ -72,40 +74,58 @@ void synthio_synthesizer_get_buffer_structure(synthio_synthesizer_obj_t *self, b
 
 void common_hal_synthio_synthesizer_release_all(synthio_synthesizer_obj_t *self) {
     for (size_t i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
-        if (self->synth.span.note[i] != SYNTHIO_SILENCE) {
-            synthio_span_change_note(&self->synth, self->synth.span.note[i], SYNTHIO_SILENCE);
+        if (self->synth.span.note_obj[i] != SYNTHIO_SILENCE) {
+            synthio_span_change_note(&self->synth, self->synth.span.note_obj[i], SYNTHIO_SILENCE);
         }
     }
 }
+
+STATIC mp_obj_t validate_note(mp_obj_t note_in) {
+    if (mp_obj_is_small_int(note_in)) {
+        mp_arg_validate_int_range(mp_obj_get_int(note_in), 0, 127, MP_QSTR_note);
+    } else {
+        const mp_obj_type_t *note_type = mp_obj_get_type(note_in);
+        if (note_type != &synthio_note_type) {
+            mp_raise_TypeError_varg(translate("%q must be of type %q or %q, not %q"), MP_QSTR_note, MP_QSTR_int, MP_QSTR_Note, note_type->name);
+        }
+    }
+    return note_in;
+}
+
 void common_hal_synthio_synthesizer_release(synthio_synthesizer_obj_t *self, mp_obj_t to_release) {
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(to_release, &iter_buf);
     mp_obj_t item;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        synthio_span_change_note(&self->synth, mp_arg_validate_int_range(mp_obj_get_int(item), 0, 127, MP_QSTR_note), SYNTHIO_SILENCE);
+        synthio_span_change_note(&self->synth, validate_note(item), SYNTHIO_SILENCE);
     }
 }
 
 void common_hal_synthio_synthesizer_press(synthio_synthesizer_obj_t *self, mp_obj_t to_press) {
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(to_press, &iter_buf);
-    mp_obj_t item;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        synthio_span_change_note(&self->synth, SYNTHIO_SILENCE, mp_arg_validate_int_range(mp_obj_get_int(item), 0, 127, MP_QSTR_note));
+    mp_obj_t note_obj;
+    while ((note_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if (synthio_span_change_note(&self->synth, SYNTHIO_SILENCE, validate_note(note_obj))) {
+            if (!mp_obj_is_small_int(note_obj)) {
+                synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
+                synthio_note_start(note, self->synth.sample_rate);
+            }
+        }
     }
 }
 
 mp_obj_t common_hal_synthio_synthesizer_get_pressed_notes(synthio_synthesizer_obj_t *self) {
     int count = 0;
     for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
-        if (self->synth.span.note[chan] != SYNTHIO_SILENCE && self->synth.envelope_state[chan].state != SYNTHIO_ENVELOPE_STATE_RELEASE) {
+        if (self->synth.span.note_obj[chan] != SYNTHIO_SILENCE && SYNTHIO_NOTE_IS_PLAYING(&self->synth, chan)) {
             count += 1;
         }
     }
     mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(count, NULL));
     for (size_t chan = 0, j = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
-        if (self->synth.span.note[chan] != SYNTHIO_SILENCE && self->synth.envelope_state[chan].state != SYNTHIO_ENVELOPE_STATE_RELEASE) {
-            result->items[j++] = MP_OBJ_NEW_SMALL_INT(self->synth.span.note[chan]);
+        if (self->synth.span.note_obj[chan] != SYNTHIO_SILENCE && SYNTHIO_NOTE_IS_PLAYING(&self->synth, chan)) {
+            result->items[j++] = self->synth.span.note_obj[chan];
         }
     }
     return MP_OBJ_FROM_PTR(result);

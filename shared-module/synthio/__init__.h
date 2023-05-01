@@ -29,14 +29,16 @@
 #define SYNTHIO_BITS_PER_SAMPLE (16)
 #define SYNTHIO_BYTES_PER_SAMPLE (SYNTHIO_BITS_PER_SAMPLE / 8)
 #define SYNTHIO_MAX_DUR (256)
-#define SYNTHIO_SILENCE (0x80)
-#define SYNTHIO_VOICE_IS_RELEASING(synth, i) (synth->envelope_state[i].state == SYNTHIO_ENVELOPE_STATE_RELEASE)
+#define SYNTHIO_SILENCE (mp_const_none)
+#define SYNTHIO_NOTE_IS_SIMPLE(note) (mp_obj_is_small_int(note))
+#define SYNTHIO_NOTE_IS_PLAYING(synth, i) ((synth)->envelope_state[(i)].state != SYNTHIO_ENVELOPE_STATE_RELEASE)
+#define SYNTHIO_FREQUENCY_SHIFT (16)
 
 #include "shared-module/audiocore/__init__.h"
 
 typedef struct {
     uint16_t dur;
-    uint8_t note[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
+    mp_obj_t note_obj[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
 } synthio_midi_span_t;
 
 typedef struct {
@@ -73,6 +75,15 @@ typedef struct synthio_synth {
     synthio_envelope_state_t envelope_state[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
 } synthio_synth_t;
 
+typedef struct {
+    mp_float_t amplitude, frequency;
+} synthio_lfo_descr_t;
+
+typedef struct {
+    uint32_t amplitude_scaled, offset_scaled, dds, phase;
+} synthio_lfo_state_t;
+
+
 void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **buffer, uint32_t *buffer_length, uint8_t channel);
 void synthio_synth_deinit(synthio_synth_t *synth);
 bool synthio_synth_deinited(synthio_synth_t *synth);
@@ -84,6 +95,14 @@ void synthio_synth_reset_buffer(synthio_synth_t *synth, bool single_channel_outp
 void synthio_synth_parse_waveform(mp_buffer_info_t *bufinfo_waveform, mp_obj_t waveform_obj);
 void synthio_synth_parse_envelope(uint16_t *envelope_sustain_index, mp_buffer_info_t *bufinfo_envelope, mp_obj_t envelope_obj, mp_obj_t envelope_hold_obj);
 
-bool synthio_span_change_note(synthio_synth_t *synth, uint8_t old_note, uint8_t new_note);
+bool synthio_span_change_note(synthio_synth_t *synth, mp_obj_t old_note, mp_obj_t new_note);
 
 void synthio_envelope_step(synthio_envelope_definition_t *definition, synthio_envelope_state_t *state, int n_samples);
+void synthio_envelope_definition_set(synthio_envelope_definition_t *envelope, mp_obj_t obj, uint32_t sample_rate);
+
+uint64_t synthio_frequency_convert_float_to_scaled(mp_float_t frequency_hz);
+uint32_t synthio_frequency_convert_float_to_dds(mp_float_t frequency_hz, int32_t sample_rate);
+uint32_t synthio_frequency_convert_scaled_to_dds(uint64_t frequency_scaled, int32_t sample_rate);
+
+void synthio_lfo_set(synthio_lfo_state_t *state, const synthio_lfo_descr_t *descr, uint32_t sample_rate);
+int synthio_lfo_step(synthio_lfo_state_t *state, uint16_t dur);
