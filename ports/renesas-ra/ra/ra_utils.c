@@ -27,7 +27,7 @@
 #include "ra_utils.h"
 
 static R_SYSTEM_Type *system_reg = (R_SYSTEM_Type *)0x4001E000;
-static R_MSTP_Type *mstp_reg = (R_MSTP_Type *)0x40047000;
+static R_MSTP_Type *mstp_reg = (R_MSTP_Type *)R_MSTP;
 
 void ra_mstpcra_stop(uint32_t mod_mask) {
     system_reg->PRCR = 0xa502;
