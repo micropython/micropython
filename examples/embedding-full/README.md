@@ -1,12 +1,14 @@
-Example of embedding MicroPython in a standalone C application (minimal)
-========================================================================
+Example of embedding MicroPython in a standalone C application (full)
+=====================================================================
 
-This directory contains a simple example of how to embed a minimal version of
-MicroPython in an existing C application.
-See also _embedding-full_ for a more full-featured version.
+This directory contains a simple example of how to embed a full-featured
+version of MicroPython in an existing C application.
+See also _embedding_ for a more minimal version.
 
 A C application is represented here by the file `main.c`.  It executes two
 simple Python scripts which print things to the standard output.
+Functions used by the MicroPython core that need to be provided by the
+application are implemented in `mphal.c`.
 
 Building the example
 --------------------
