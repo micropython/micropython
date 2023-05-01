@@ -89,6 +89,7 @@ SYSTEM_FILE ?= lib/fsp/ra/fsp/src/bsp/cmsis/Device/RENESAS/Source/system.o
 # Select the cross compile prefix
 CROSS_COMPILE ?= arm-none-eabi-
 
+INC += -imacros boards/compiler_barrier.h
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
