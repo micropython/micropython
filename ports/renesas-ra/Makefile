@@ -342,11 +342,6 @@ SRC_O += \
 SRC_O += \
 	shared/runtime/gchelper_thumb2.o
 
-HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/board/$(BOARD_LOW)/,\
-	board_init.c \
-	board_leds.c \
-	)
-
 HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/fsp/src/bsp/mcu/all/,\
 	bsp_clocks.c \
 	bsp_common.c \
