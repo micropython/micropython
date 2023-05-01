@@ -29,3 +29,6 @@
 // Can be enabled if you provide an implementation of
 // mp_hal_set_interrupt_char() in mphal.c.
 #define MICROPY_KBD_EXCEPTION                   (0)
+
+// We have our own implementation of mp_hal_stdout_tx_strn_cooked().
+#undef MP_PLAT_PRINT_STRN
