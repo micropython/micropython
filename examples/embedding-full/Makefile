@@ -15,7 +15,10 @@ CFLAGS += -I$(EMBED_DIR)/port
 CFLAGS += -Wall -Og -fno-common
 
 SRC += main.c mphal.c
-SRC += $(wildcard $(EMBED_DIR)/*/*.c) $(wildcard $(EMBED_DIR)/*/*/*.c)
+SRC += $(wildcard $(EMBED_DIR)/*/*.c)
+# Filter out lib because the files in there cannot be compiled separately, they
+# are #included by other .c files.
+SRC += $(filter-out $(EMBED_DIR)/lib/%.c,$(wildcard $(EMBED_DIR)/*/*/*.c))
 OBJ += $(SRC:.c=.o)
 
 $(PROG): $(OBJ)

@@ -5,5 +5,8 @@
 # Set the location of the top of the MicroPython repository.
 MICROPYTHON_TOP = ../..
 
+# Include modules from extmod in the output.
+EMBED_EXTRA = extmod
+
 # Include the main makefile fragment to build the MicroPython component.
 include $(MICROPYTHON_TOP)/ports/embed/embed.mk
