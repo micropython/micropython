@@ -26,6 +26,32 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 #endif
 
+#if MICROPY_PY_ASYNCIO
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    return 0;
+}
+
+#endif
+
+#if MICROPY_PY_TIME
+
+void mp_hal_delay_ms(mp_uint_t ms) {
+}
+
+void mp_hal_delay_us(mp_uint_t us) {
+}
+
+mp_uint_t mp_hal_ticks_us(void) {
+	return 0;
+}
+
+mp_uint_t mp_hal_ticks_cpu(void) {
+	return 0;
+}
+
+#endif
+
 // Text-mode standard output
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     // This is a simplistic implementation for demonstration purposes. A real

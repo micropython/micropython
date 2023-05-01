@@ -19,6 +19,9 @@
 // Requires shared/readline/readline.h, don't bother as we have no input.
 #define MICROPY_PY_BUILTINS_INPUT               (0)
 
+// Requires MICROPY_EVENT_POLL_HOOK, don't bother as we have no pollable objects.
+#define MICROPY_PY_SELECT                       (0)
+
 // Can be enabled once extmod/moductypes.c is included in the build.
 #define MICROPY_PY_UCTYPES                      (0)
 

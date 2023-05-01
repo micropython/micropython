@@ -28,6 +28,12 @@ static const char *example_2 =
     "help('modules')\n"
     "import sys\n"
     "help(sys)\n"
+    "import os\n"
+    "help(os)\n"
+    "import random\n"
+    "help(random)\n"
+    "import time\n"
+    "help(time)\n"
     "\n"
     "print('finish')\n"
     ;
