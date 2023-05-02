@@ -352,15 +352,21 @@ STATIC int find_channel_with_note(synthio_synth_t *synth, mp_obj_t note) {
             return i;
         }
     }
+    int result = -1;
     if (note == SYNTHIO_SILENCE) {
-        // we need a victim note that is releasing. simple algorithm: lowest numbered slot
-        for (int i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
-            if (!SYNTHIO_NOTE_IS_PLAYING(synth, i)) {
-                return i;
+        // replace the releasing note with lowest volume level
+        int level = 32768;
+        for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
+            if (!SYNTHIO_NOTE_IS_PLAYING(synth, chan)) {
+                synthio_envelope_state_t *state = &synth->envelope_state[chan];
+                if (state->level < level) {
+                    result = chan;
+                    level = state->level;
+                }
             }
         }
     }
-    return -1;
+    return result;
 }
 
 bool synthio_span_change_note(synthio_synth_t *synth, mp_obj_t old_note, mp_obj_t new_note) {
