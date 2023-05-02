@@ -33,5 +33,21 @@ class Encoder:
             self.scan()
             await sleep_ms(1)
 
-    def on_move(self, listener):
+    def on_move(self, listener: callable):
         self._on_move = listener
+
+
+class Encoders:
+
+    def __init__(self, enc: [Encoder]):
+        self.enc = enc
+
+    def on_move(self, i: int, listener: callable):
+        if i < 0 or i >= len(self.enc):
+            return
+
+        self.enc[i].on_move(listener)
+
+    def scan(self):
+        for enc in self.enc:
+            enc.scan()
