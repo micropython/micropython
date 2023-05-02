@@ -187,6 +187,60 @@ void machine_pin_set_mode(const machine_pin_obj_t *self, uint8_t mode) {
     GPIO_PinInit(self->gpio, self->pin, &pin_config);
 }
 
+void machine_pin_config(const machine_pin_obj_t *self, uint8_t mode,
+    uint8_t pull, uint8_t drive, uint8_t speed, uint8_t alt) {
+    (void)speed;
+    gpio_pin_config_t pin_config = {0};
+
+    if (IS_GPIO_IT_MODE(mode)) {
+        if (mode == PIN_MODE_IT_FALLING) {
+            pin_config.interruptMode = kGPIO_IntFallingEdge;
+        } else if (mode == PIN_MODE_IT_RISING) {
+            pin_config.interruptMode = kGPIO_IntRisingEdge;
+        } else if (mode == PIN_MODE_IT_BOTH) {
+            pin_config.interruptMode = kGPIO_IntRisingOrFallingEdge;
+        }
+        // Set pad config mode to input.
+        mode = PIN_MODE_IN;
+    }
+
+    if (mode == PIN_MODE_IN) {
+        pin_config.direction = kGPIO_DigitalInput;
+    } else {
+        pin_config.direction = kGPIO_DigitalOutput;
+    }
+
+    if (mode != PIN_MODE_ALT) {
+        // GPIO is always ALT5
+        alt = PIN_AF_MODE_ALT5;
+    }
+
+    const machine_pin_af_obj_t *af = pin_find_af(self, alt);
+    if (af == NULL) {
+        return;
+    }
+
+    // Configure the pad.
+    uint32_t pad_config = pin_generate_config(pull, mode, drive, self->configRegister);
+    IOMUXC_SetPinMux(self->muxRegister, alt, af->input_register, af->input_daisy, self->configRegister, 0U);
+    IOMUXC_SetPinConfig(self->muxRegister, alt, af->input_register, af->input_daisy, self->configRegister, pad_config);
+
+    // Initialize the pin.
+    GPIO_PinInit(self->gpio, self->pin, &pin_config);
+
+    // Configure interrupt (if enabled).
+    if (pin_config.interruptMode != kGPIO_NoIntmode) {
+        uint32_t gpio_nr = GPIO_get_instance(self->gpio);
+        uint32_t irq_num = self->pin < 16 ? GPIO_combined_low_irqs[gpio_nr] : GPIO_combined_high_irqs[gpio_nr];
+
+        GPIO_PortEnableInterrupts(self->gpio, 1U << self->pin);
+        GPIO_PortClearInterruptFlags(self->gpio, ~0);
+
+        NVIC_SetPriority(irq_num, IRQ_PRI_EXTINT);
+        EnableIRQ(irq_num);
+    }
+}
+
 STATIC mp_obj_t machine_pin_obj_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     machine_pin_obj_t *self = self_in;
