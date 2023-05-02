@@ -28,12 +28,16 @@
 #include <string.h>
 
 #include "py/mphal.h"
+#include "py/runtime.h"
 #include "common-hal/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
+#include "shared-bindings/time/__init__.h"
 
+#include "pico/stdlib.h"
 #include "src/rp2_common/hardware_adc/include/hardware/adc.h"
 #include "src/rp2_common/hardware_clocks/include/hardware/clocks.h"
+#include "src/rp2_common/hardware_vreg/include/hardware/vreg.h"
 #include "src/rp2_common/hardware_watchdog/include/hardware/watchdog.h"
 
 #include "src/rp2040/hardware_regs/include/hardware/regs/vreg_and_chip_reset.h"
@@ -58,6 +62,27 @@ float common_hal_mcu_processor_get_voltage(void) {
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
     return clock_get_hz(clk_sys);
+}
+
+void common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self, uint32_t frequency) {
+    uint vco, postdiv1, postdiv2;
+    uint32_t freq_khz = frequency / 1000;
+    if (!check_sys_clock_khz(freq_khz, &vco, &postdiv1, &postdiv2)) {
+        mp_arg_error_invalid(MP_QSTR_frequency);
+    }
+    // These voltages are approximate based on the PicoDVI examples.
+    enum vreg_voltage voltage = VREG_VOLTAGE_1_10;
+    if (freq_khz >= 400000) {
+        voltage = VREG_VOLTAGE_1_30;
+    } else if (freq_khz >= 300000) {
+        voltage = VREG_VOLTAGE_1_20;
+    } else if (freq_khz > 133000) {
+        voltage = VREG_VOLTAGE_1_20;
+    }
+    vreg_set_voltage(voltage);
+    // Wait for a stable voltage
+    common_hal_time_delay_ms(10);
+    set_sys_clock_khz(freq_khz, false);
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
