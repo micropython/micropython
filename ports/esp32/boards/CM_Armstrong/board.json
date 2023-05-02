@@ -1,0 +1,18 @@
+{
+    "vendor": "CircuitMess",
+    "product": "BatController",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/products/armstrong",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32",
+    "features": [
+        "USB-C",
+        "BLE",
+        "WiFi"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}
