@@ -216,6 +216,7 @@ SRC_C += \
 	pendsv.c \
 	pin.c \
 	sdcard.c \
+	sdio.c \
 	systick.c \
 	ticks.c \
 	tusb_port.c \
