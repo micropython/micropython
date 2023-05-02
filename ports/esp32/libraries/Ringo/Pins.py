@@ -19,6 +19,8 @@ class Pins:
 	I2C_SDA: int = const(14)
 	I2C_SCL: int = const(27)
 
+	RGB: int = const(12)
+
 
 class Buttons:
 	Num_1: int = const(0)

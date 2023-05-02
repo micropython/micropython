@@ -5,7 +5,7 @@ from .Pins import *
 
 
 spi: SPI = SPI(1, baudrate=27000000, polarity=0, phase=0, sck=Pin(Pins.SPI_SCK), mosi=Pin(Pins.SPI_MOSI), miso=Pin(Pins.SPI_MISO))
-tft = TFT(spi, aDC=Pins.TFT_DC, aReset=Pins.TFT_RST, aCS=Pins.TFT_RST)
+tft = TFT(spi, aDC=Pins.TFT_DC, aReset=Pins.TFT_RST, aCS=Pins.TFT_CS)
 
 blPin = Pin(Pins.BL, mode=Pin.OUT, value=True)
 backlight = Signal(blPin, invert=True)
