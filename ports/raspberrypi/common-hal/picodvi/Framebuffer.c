@@ -138,21 +138,29 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     const mcu_pin_obj_t *green_dp, const mcu_pin_obj_t *green_dn,
     const mcu_pin_obj_t *blue_dp, const mcu_pin_obj_t *blue_dn,
     mp_uint_t color_depth) {
-
-    const struct dvi_timing *timing = NULL;
-    if (width == 640 && height == 480) {
-        timing = &dvi_timing_640x480p_60hz;
-    } else if (width == 800 && height == 480) {
-        timing = &dvi_timing_800x480p_60hz;
-    } else {
-        if (height == 480) {
-            mp_raise_ValueError_varg(translate("%q must be %d"), MP_QSTR_width, 480);
-        }
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_height);
-    }
-
     if (active_picodvi != NULL) {
         mp_raise_msg_varg(&mp_type_RuntimeError, translate("%q in use"), MP_QSTR_picodvi);
+    }
+
+    bool color_framebuffer = color_depth >= 8;
+    const struct dvi_timing *timing = NULL;
+    if ((width == 640 && height == 480) ||
+        (width == 320 && height == 240)) {
+        timing = &dvi_timing_640x480p_60hz;
+    } else if ((width == 800 && height == 480) ||
+               (width == 400 && height == 240)) {
+        timing = &dvi_timing_800x480p_60hz;
+    } else {
+        if (height != 480 && height != 240) {
+            mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_height);
+        }
+        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_width);
+    }
+
+    // If the width is > 400, then it must not be color frame buffer and vice
+    // versa.
+    if ((width > 400) == color_framebuffer) {
+        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_color_depth);
     }
 
     bool invert_diffpairs = clk_dn->number < clk_dp->number;
@@ -214,12 +222,12 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     self->height = height;
 
     size_t tmds_bufs_per_scanline;
-    if (color_depth >= 8) {
+    size_t scanline_width = width;
+    if (color_framebuffer) {
         dvi_vertical_repeat = 2;
         dvi_monochrome_tmds = false;
-        self->width /= 2;
-        self->height /= 2;
         tmds_bufs_per_scanline = 3;
+        scanline_width *= 2;
     } else {
         dvi_vertical_repeat = 1;
         dvi_monochrome_tmds = true;
@@ -233,8 +241,7 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     }
     self->pitch /= sizeof(uint32_t);
     size_t framebuffer_size = self->pitch * self->height;
-    // use width here because it hasn't been downsized for the frame buffer
-    self->tmdsbuf_size = tmds_bufs_per_scanline * width / DVI_SYMBOLS_PER_WORD + 1;
+    self->tmdsbuf_size = tmds_bufs_per_scanline * scanline_width / DVI_SYMBOLS_PER_WORD + 1;
     size_t total_allocation_size = sizeof(uint32_t) * (framebuffer_size + DVI_N_TMDS_BUFFERS * self->tmdsbuf_size);
     self->allocation = allocate_memory(total_allocation_size, false, true);
     if (self->allocation == NULL) {

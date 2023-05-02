@@ -36,8 +36,6 @@
 #include "shared-module/framebufferio/FramebufferDisplay.h"
 
 //| class Framebuffer:
-//|     """A PicoDVI managed frame buffer."""
-//|
 //|     def __init__(
 //|         self,
 //|         width: int,
@@ -53,36 +51,37 @@
 //|         blue_dn: microcontroller.Pin,
 //|         color_depth: int = 8,
 //|     ) -> None:
-//|         """Create a Framebuffer object with the given dimensions (640x480 or 800x480). Memory is
-//|            allocated outside of onto the heap and then moved outside on VM
-//|            end.
+//|         """Create a Framebuffer object with the given dimensions. Memory is
+//|         allocated outside of onto the heap and then moved outside on VM end.
 //|
-//|         This will change the system clock speed to match the DVI signal.
-//|         Make sure to initialize other objects after this one so they account
-//|         for the changed clock. This also allocates a very large framebuffer
-//|         and is most likely to succeed the earlier it is attempted.
+//|         .. warning:: This will change the system clock speed to match the DVI signal.
+//|            Make sure to initialize other objects after this one so they account
+//|            for the changed clock.
+//|
+//|         This allocates a very large framebuffer and is most likely to succeed
+//|         the earlier it is attempted.
 //|
 //|         Each dp and dn pair of pins must be neighboring, such as 19 and 20.
 //|         They must also be ordered the same way. In other words, dp must be
 //|         less than dn for all pairs or dp must be greater than dn for all pairs.
 //|
 //|         The framebuffer pixel format varies depending on color_depth:
+//|
 //|         * 1 - Each bit is a pixel. Either white (1) or black (0).
 //|         * 2 - Each 2 bits is a pixels. Grayscale between white (0x3) and black (0x0).
 //|         * 8 - Each byte is a pixels in RGB332 format.
 //|         * 16 - Each two bytes are a pixel in RGB565 format.
 //|
-//|         Monochrome framebuffers (color_depth=1 or 2) will be full resolution.
-//|         Color framebuffers will be half resolution and pixels will be
-//|         duplicated to create a signal with the target dimensions.
+//|         Two output resolutions are currently supported, 640x480 and 800x480.
+//|         Monochrome framebuffers (color_depth=1 or 2) must be full resolution.
+//|         Color framebuffers must be half resolution (320x240 or 400x240) and
+//|         pixels will be duplicated to create the signal.
 //|
 //|         A Framebuffer is often used in conjunction with a
 //|         `framebufferio.FramebufferDisplay`.
 //|
-//|         :param int width: the width of the target display signal. It will be halved when
-//|           color_depth >= 8 when creating the framebuffer. Only 640 or 800 is currently supported.
-//|         :param int height: the height of the target display signal. It will be halved when
-//|           color_depth >= 8 when creating the framebuffer. Only 480 is currently supported.
+//|         :param int width: the width of the target display signal. Only 320, 400, 640 or 800 is currently supported depending on color_depth.
+//|         :param int height: the height of the target display signal. Only 240 or 480 is currently supported depending on color_depth.
 //|         :param ~microcontroller.Pin clk_dp: the positive clock signal pin
 //|         :param ~microcontroller.Pin clk_dn: the negative clock signal pin
 //|         :param ~microcontroller.Pin red_dp: the positive red signal pin
@@ -160,8 +159,7 @@ static void check_for_deinit(picodvi_framebuffer_obj_t *self) {
 }
 
 //|     width: int
-//|     """The width of the framebuffer, in pixels. It may be doubled for output (and half of what
-//|        width was given to __init__.)"""
+//|     """The width of the framebuffer, in pixels. It may be doubled for output."""
 STATIC mp_obj_t picodvi_framebuffer_get_width(mp_obj_t self_in) {
     picodvi_framebuffer_obj_t *self = (picodvi_framebuffer_obj_t *)self_in;
     check_for_deinit(self);
@@ -172,8 +170,7 @@ MP_PROPERTY_GETTER(picodvi_framebuffer_width_obj,
     (mp_obj_t)&picodvi_framebuffer_get_width_obj);
 
 //|     height: int
-//|     """The width of the framebuffer, in pixels. It may be doubled for output (and half of what
-//|        width was given to __init__.)"""
+//|     """The width of the framebuffer, in pixels. It may be doubled for output."""
 //|
 STATIC mp_obj_t picodvi_framebuffer_get_height(mp_obj_t self_in) {
     picodvi_framebuffer_obj_t *self = (picodvi_framebuffer_obj_t *)self_in;
