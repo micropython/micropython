@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Adafruit Feather RP2040 EPD"
+#define MICROPY_HW_BOARD_NAME "Adafruit Feather RP2040 ThinkInk"
 #define MICROPY_HW_MCU_NAME "rp2040"
 
 #define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO20)
