@@ -34,6 +34,9 @@
 #include "shared/runtime/mpirq.h"
 #include "extmod/virtpin.h"
 #include "pin.h"
+#if MICROPY_PY_NETWORK_CYW43
+#include "pendsv.h"
+#endif
 
 // Local functions
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
@@ -98,6 +101,16 @@ void call_handler(GPIO_Type *gpio, int gpio_nr, int pin) {
         if (isr & mask) {
             gpio->ISR = mask; // clear the ISR flag
             int index = GET_PIN_IRQ_INDEX(gpio_nr, pin);
+            #if MICROPY_PY_NETWORK_CYW43
+            extern void (*cyw43_poll)(void);
+            const machine_pin_obj_t *pin = MICROPY_HW_WL_HOST_WAKE;
+            if (pin->gpio == gpio && pin->pin == (index % 32)) {
+                if (cyw43_poll) {
+                    pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+                }
+                return;
+            }
+            #endif
             machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[index]);
             if (irq != NULL) {
                 irq->flags = irq->trigger;
