@@ -62,6 +62,7 @@ typedef struct {
 
 typedef struct synthio_synth {
     uint32_t sample_rate;
+    uint32_t total_envelope;
     int16_t *buffers[2];
     const int16_t *waveform;
     uint16_t buffer_length;

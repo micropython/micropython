@@ -151,7 +151,12 @@ STATIC uint32_t synthio_synth_sum_envelope(synthio_synth_t *synth) {
     uint32_t result = 0;
     for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
         if (synth->span.note_obj[chan] != SYNTHIO_SILENCE) {
-            result += synth->envelope_state[chan].level;
+            synthio_envelope_state_t *state = &synth->envelope_state[chan];
+            if (state->state == SYNTHIO_ENVELOPE_STATE_RELEASE) {
+                result += synth->envelope_definition.sustain_level;
+            } else {
+                result += state->level;
+            }
         }
     }
     return result;
@@ -177,25 +182,38 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
 
     int32_t sample_rate = synth->sample_rate;
     uint32_t total_envelope = synthio_synth_sum_envelope(synth);
+    if (total_envelope < synth->total_envelope) {
+        // total envelope is decreasing. Slowly let remaining notes get louder
+        // the time constant is arbitrary, on the order of 1s at 48kHz
+        total_envelope = synth->total_envelope = (
+            total_envelope + synth->total_envelope * 255) / 256;
+    } else {
+        // total envelope is steady or increasing, so just store this as
+        // the high water mark
+        synth->total_envelope = total_envelope;
+    }
     if (total_envelope > 0) {
         uint16_t ovl_loudness = 0x7fffffff / MAX(0x8000, total_envelope);
+
         for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
-            if (synth->span.note_obj[chan] == SYNTHIO_SILENCE) {
+            mp_obj_t note_obj = synth->span.note_obj[chan];
+            if (note_obj == SYNTHIO_SILENCE) {
                 synth->accum[chan] = 0;
                 continue;
             }
-            // adjust loudness by envelope
-            uint16_t loudness = (ovl_loudness * synth->envelope_state[chan].level) >> 16;
 
             if (synth->envelope_state[chan].level == 0) {
-                // note is truly finished
+                // note is truly finished, but we only just noticed
                 synth->span.note_obj[chan] = SYNTHIO_SILENCE;
+                continue;
             }
+
+            // adjust loudness by envelope
+            uint16_t loudness = (ovl_loudness * synth->envelope_state[chan].level) >> 16;
 
             uint32_t dds_rate;
             const int16_t *waveform = synth->waveform;
             uint32_t waveform_length = synth->waveform_length;
-            mp_obj_t note_obj = synth->span.note_obj[chan];
             if (mp_obj_is_small_int(note_obj)) {
                 uint8_t note = mp_obj_get_int(note_obj);
                 uint8_t octave = note / 12;
