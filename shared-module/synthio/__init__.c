@@ -31,7 +31,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-STATIC const int16_t square_wave[] = {-32768, 0};
+STATIC const int16_t square_wave[] = {-32768, 32767};
 
 STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
                                  12544, 13290, 14080, 14917, 15804}; // 9th octave
