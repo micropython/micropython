@@ -161,8 +161,10 @@ ifeq ($(CIRCUITPY_USB),1)
 
   ifeq ($(CIRCUITPY_USB_HOST), 1)
     SRC_SUPERVISOR += \
+      lib/tinyusb/src/class/hid/hid_host.c \
       lib/tinyusb/src/host/hub.c \
       lib/tinyusb/src/host/usbh.c \
+      supervisor/shared/usb/host_keyboard.c \
 
   endif
 endif

@@ -123,6 +123,30 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_manufacturer_obj, usb_core_device_
 MP_PROPERTY_GETTER(usb_core_device_manufacturer_obj,
     (mp_obj_t)&usb_core_device_get_manufacturer_obj);
 
+//|     def set_configuration(self, configuration=None):
+//|         """Set the active configuration.
+//|
+//|         The configuration parameter is the bConfigurationValue field of the
+//|         configuration you want to set as active. If you call this method
+//|         without parameter, it will use the first configuration found.  As a
+//|         device hardly ever has more than one configuration, calling the method
+//|         without arguments is enough to get the device ready.
+//|         """
+//|         ...
+STATIC mp_obj_t usb_core_device_set_configuration(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_configuration };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_configuration, MP_ARG_INT, {.u_int = 0x100} },
+    };
+    usb_core_device_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    common_hal_usb_core_device_set_configuration(self, args[ARG_configuration].u_int);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_set_configuration_obj, 1, usb_core_device_set_configuration);
+
 //|     def write(self, endpoint: int, data: ReadableBuffer, timeout: Optional[int] = None) -> int:
 //|         """Write data to a specific endpoint on the device.
 //|
@@ -223,7 +247,10 @@ STATIC mp_obj_t usb_core_device_ctrl_transfer(size_t n_args, const mp_obj_t *pos
 
     mp_buffer_info_t bufinfo;
     // check request type
-    if ((args[ARG_bmRequestType].u_int & 0x80) != 0) {
+    if (args[ARG_data_or_wLength].u_obj == mp_const_none) {
+        bufinfo.len = 0;
+        bufinfo.buf = NULL;
+    } else if ((args[ARG_bmRequestType].u_int & 0x80) != 0) {
         mp_get_buffer_raise(args[ARG_data_or_wLength].u_obj, &bufinfo, MP_BUFFER_WRITE);
     } else {
         mp_get_buffer_raise(args[ARG_data_or_wLength].u_obj, &bufinfo, MP_BUFFER_READ);
@@ -292,6 +319,7 @@ STATIC const mp_rom_map_elem_t usb_core_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_product),          MP_ROM_PTR(&usb_core_device_product_obj) },
     { MP_ROM_QSTR(MP_QSTR_manufacturer),     MP_ROM_PTR(&usb_core_device_manufacturer_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_set_configuration),MP_ROM_PTR(&usb_core_device_set_configuration_obj) },
     { MP_ROM_QSTR(MP_QSTR_write),            MP_ROM_PTR(&usb_core_device_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_read),             MP_ROM_PTR(&usb_core_device_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_ctrl_transfer),    MP_ROM_PTR(&usb_core_device_ctrl_transfer_obj) },
