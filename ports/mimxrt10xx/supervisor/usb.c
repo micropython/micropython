@@ -79,8 +79,13 @@ STATIC void init_usb_instance(mp_int_t instance) {
 
 // Provide the prototypes for the interrupt handlers. The iMX RT SDK doesn't.
 // The SDK only links to them from assembly.
+    #ifdef MIMXRT1042_SERIES
+    void USB_OTG_IRQHandler(void);
+    void PLACE_IN_ITCM(USB_OTG_IRQHandler)(void) {
+    #else
     void USB_OTG1_IRQHandler(void);
     void PLACE_IN_ITCM(USB_OTG1_IRQHandler)(void) {
+        #endif
         usb_irq_handler(0);
     }
 

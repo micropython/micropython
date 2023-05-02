@@ -74,12 +74,19 @@ class CortexMFault(gdb.Command):
             print("No preempted exceptions")
         else:
             print("Another exception was preempted")
+        print("icsr", hex(icsr))
         vectactive = icsr & 0x1FF
         if vectactive != 0:
             if vectactive in EXCEPTIONS:
                 print(EXCEPTIONS[vectactive])
             else:
                 print(vectactive - 16)
+        vectpending = (icsr >> 12) & 0x1FF
+        if vectpending != 0:
+            if vectpending in EXCEPTIONS:
+                print(EXCEPTIONS[vectpending])
+            else:
+                print(vectpending - 16)
 
         vtor = self._read(VTOR)
         print("vtor", hex(vtor))

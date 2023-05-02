@@ -46,7 +46,7 @@ float common_hal_mcu_processor_get_temperature(void) {
 float common_hal_mcu_processor_get_voltage(void) {
     // xG24 does not have built-in direct reading of processor voltage
     // Have Only 1 of IADC, already used for analogio module
-    return 3.3f;
+    return NAN;
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {

@@ -89,11 +89,13 @@ extern uint32_t _ld_stack_top;
 
 extern uint32_t __isr_vector[];
 
+extern uint32_t _ld_ocram_start;
 extern uint32_t _ld_ocram_bss_start;
 extern uint32_t _ld_ocram_bss_size;
 extern uint32_t _ld_ocram_data_destination;
 extern uint32_t _ld_ocram_data_size;
 extern uint32_t _ld_ocram_data_flash_copy;
+extern uint32_t _ld_ocram_end;
 extern uint32_t _ld_dtcm_bss_start;
 extern uint32_t _ld_dtcm_bss_size;
 extern uint32_t _ld_dtcm_data_destination;
@@ -105,36 +107,6 @@ extern uint32_t _ld_itcm_flash_copy;
 extern uint32_t _ld_isr_destination;
 extern uint32_t _ld_isr_size;
 extern uint32_t _ld_isr_flash_copy;
-
-// Remove these once the SDK re-includes them.
-// https://github.com/nxp-mcuxpresso/mcux-sdk/issues/110
-/*! @name GPR14 - GPR14 General Purpose Register */
-/*! @{ */
-#define IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_MASK      (0xF0000U)
-#define IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_SHIFT     (16U)
-/*! CM7_CFGITCMSZ
- *  0b0000..0 KB (No ITCM)
- *  0b0011..4 KB
- *  0b0100..8 KB
- *  0b0101..16 KB
- *  0b0110..32 KB
- *  0b0111..64 KB
- *  0b1000..128 KB
- */
-#define IOMUXC_GPR_GPR14_CM7_CFGITCMSZ(x)        (((uint32_t)(((uint32_t)(x)) << IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_SHIFT)) & IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_MASK)
-#define IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_MASK      (0xF00000U)
-#define IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_SHIFT     (20U)
-/*! CM7_CFGDTCMSZ
- *  0b0000..0 KB (No DTCM)
- *  0b0011..4 KB
- *  0b0100..8 KB
- *  0b0101..16 KB
- *  0b0110..32 KB
- *  0b0111..64 KB
- *  0b1000..128 KB
- */
-#define IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ(x)        (((uint32_t)(((uint32_t)(x)) << IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_SHIFT)) & IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_MASK)
-/*! @} */
 
 extern void main(void);
 
@@ -159,18 +131,27 @@ __attribute__((used, naked, no_instrument_function, optimize("no-tree-loop-distr
     // then the return will jump to an invalid address.
     // Configure FlexRAM. The e is one block of ITCM (0b11) and DTCM (0b10). The rest is two OCRAM
     // (0b01). We shift in zeroes for all unimplemented banks.
-    IOMUXC_GPR->GPR17 = (0xe5555555) >> (32 - 2 * FSL_FEATURE_FLEXRAM_INTERNAL_RAM_TOTAL_BANK_NUMBERS);
+    uint32_t flexram_config = (0xe5555555) >> (32 - 2 * FSL_FEATURE_FLEXRAM_INTERNAL_RAM_TOTAL_BANK_NUMBERS);
+    // imxrt1176 splits the config across two registers.
+    #ifdef IOMUXC_GPR_GPR17_FLEXRAM_BANK_CFG_LOW_MASK
+    IOMUXC_GPR->GPR17 = flexram_config & IOMUXC_GPR_GPR17_FLEXRAM_BANK_CFG_LOW_MASK;
+    IOMUXC_GPR->GPR18 = (flexram_config >> 16) & IOMUXC_GPR_GPR18_FLEXRAM_BANK_CFG_HIGH_MASK;
+    #else
+    IOMUXC_GPR->GPR17 = flexram_config;
+    #endif
 
     // Switch from FlexRAM fuse config to the IOMUXC values.
     IOMUXC_GPR->GPR16 |= IOMUXC_GPR_GPR16_FLEXRAM_BANK_CFG_SEL(1);
 
     // Let the core know the TCM sizes changed.
+    #ifdef IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_MASK
     uint32_t current_gpr14 = IOMUXC_GPR->GPR14;
     current_gpr14 &= ~IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_MASK;
     current_gpr14 |= IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ(0x6);
     current_gpr14 &= ~IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_MASK;
     current_gpr14 |= IOMUXC_GPR_GPR14_CM7_CFGITCMSZ(0x6);
     IOMUXC_GPR->GPR14 = current_gpr14;
+    #endif
 
     // Enable FlexRAM interrupts on invalid access.
     FLEXRAM->INT_STAT_EN = FLEXRAM_INT_STAT_EN_ITCM_ERR_STAT_EN(1) |
@@ -182,6 +163,7 @@ __attribute__((used, naked, no_instrument_function, optimize("no-tree-loop-distr
     #endif /* ((__FPU_PRESENT == 1) && (__FPU_USED == 1)) */
 
     /* Disable Watchdog Power Down Counter */
+    #if defined(RTWDOG)
     WDOG1->WMCR &= ~WDOG_WMCR_PDE_MASK;
     WDOG2->WMCR &= ~WDOG_WMCR_PDE_MASK;
 
@@ -191,6 +173,32 @@ __attribute__((used, naked, no_instrument_function, optimize("no-tree-loop-distr
     RTWDOG->CNT = 0xD928C520U; /* 0xD928C520U is the update key */
     RTWDOG->TOVAL = 0xFFFF;
     RTWDOG->CS = (uint32_t)((RTWDOG->CS) & ~RTWDOG_CS_EN_MASK) | RTWDOG_CS_UPDATE_MASK;
+    #endif
+
+    #if defined(RTWDOG3)
+    if ((WDOG1->WCR & WDOG_WCR_WDE_MASK) != 0U) {
+        WDOG1->WCR &= ~(uint16_t)WDOG_WCR_WDE_MASK;
+    }
+    if ((WDOG2->WCR & WDOG_WCR_WDE_MASK) != 0U) {
+        WDOG2->WCR &= ~(uint16_t)WDOG_WCR_WDE_MASK;
+    }
+    if ((RTWDOG3->CS & RTWDOG_CS_CMD32EN_MASK) != 0U) {
+        RTWDOG3->CNT = 0xD928C520U; /* 0xD928C520U is the update key */
+    } else {
+        RTWDOG3->CNT = 0xC520U;
+        RTWDOG3->CNT = 0xD928U;
+    }
+    RTWDOG3->TOVAL = 0xFFFF;
+    RTWDOG3->CS = (uint32_t)((RTWDOG3->CS) & ~RTWDOG_CS_EN_MASK) | RTWDOG_CS_UPDATE_MASK;
+    if ((RTWDOG4->CS & RTWDOG_CS_CMD32EN_MASK) != 0U) {
+        RTWDOG4->CNT = 0xD928C520U; /* 0xD928C520U is the update key */
+    } else {
+        RTWDOG4->CNT = 0xC520U;
+        RTWDOG4->CNT = 0xD928U;
+    }
+    RTWDOG4->TOVAL = 0xFFFF;
+    RTWDOG4->CS = (uint32_t)((RTWDOG4->CS) & ~RTWDOG_CS_EN_MASK) | RTWDOG_CS_UPDATE_MASK;
+    #endif
 
     /* Disable Systick which might be enabled by bootrom */
     if (SysTick->CTRL & SysTick_CTRL_ENABLE_Msk) {
@@ -227,6 +235,9 @@ __attribute__((used, naked, no_instrument_function, optimize("no-tree-loop-distr
     // FlexSPI2 is 0x70000000
 
     // This the first portion (1MB, 2MB or 4MB) of flash is the bootloader and CircuitPython read-only data.
+    #if !defined(FlexSPI_AMBA_BASE)
+    #define FlexSPI_AMBA_BASE FlexSPI1_AMBA_BASE
+    #endif
     MPU->RBAR = ARM_MPU_RBAR(10, FlexSPI_AMBA_BASE);
     uint32_t region_size = ARM_MPU_REGION_SIZE_32B;
     uint32_t code_size = ((uint32_t)&_ld_filesystem_start) - FlexSPI_AMBA_BASE;
@@ -265,13 +276,18 @@ __attribute__((used, naked, no_instrument_function, optimize("no-tree-loop-distr
     // This is OCRAM. We mark it as shareable so that it isn't cached. This makes USB work at the
     // cost of 1/4 speed OCRAM accesses. It will leave more room for caching data from the flash
     // too which might be a net win.
-    MPU->RBAR = ARM_MPU_RBAR(14, 0x20200000U);
+    MPU->RBAR = ARM_MPU_RBAR(14, ((uint32_t)&_ld_ocram_start));
     MPU->RASR = ARM_MPU_RASR(NO_EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_512KB);
 
+    #if IMXRT10XX
     // We steal 64k from FlexRAM for ITCM and DTCM so disable those memory regions here.
     // We use 64k from FlexRAM for ITCM and DTCM so disable those memory regions here.
-    MPU->RBAR = ARM_MPU_RBAR(15, 0x20280000U);
+    MPU->RBAR = ARM_MPU_RBAR(15, ((uint32_t)&_ld_ocram_end));
     MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, 0x80, ARM_MPU_REGION_SIZE_512KB);
+    #else
+    // On the iMX RT 11xx OCRAM is not flexram (for now). So no need to mask it off.
+    #endif
+
 
     /* Enable MPU */
     ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
@@ -330,7 +346,9 @@ void __attribute__((no_instrument_function,section(".itcm.profile_exit"),long_ca
 }
 
 safe_mode_t port_init(void) {
+    #if IMXRT10XX
     CLOCK_SetMode(kCLOCK_ModeRun);
+    #endif
 
     clocks_init();
 
@@ -380,6 +398,9 @@ safe_mode_t port_init(void) {
     for (uint16_t i = 0; i < NUMBER_OF_INT_VECTORS; i++) {
         NVIC_SetPriority(i, (1UL << __NVIC_PRIO_BITS) - 1UL);
     }
+    #ifdef MIMXRT1042_SERIES
+    #define USB_OTG1_IRQn USB_OTG_IRQn
+    #endif
     NVIC_SetPriority(USB_OTG1_IRQn, 1);
     #ifdef USBPHY2
     NVIC_SetPriority(USB_OTG2_IRQn, 1);
@@ -398,7 +419,21 @@ safe_mode_t port_init(void) {
 
     // Always enable the SNVS interrupt. The GPC won't wake us up unless at least one interrupt is
     // enabled. It won't occur very often so it'll be low overhead.
+    #if IMXRT11XX
+    NVIC_EnableIRQ(SNVS_HP_NON_TZ_IRQn);
+    #else
     NVIC_EnableIRQ(SNVS_HP_WRAPPER_IRQn);
+    #endif
+
+    #if IMXRT11XX
+    /* Save SRSR to another register so we can read it later. */
+    SRC->GPR[11] = SRC->SRSR;
+    SRC->SRSR = 0xFFFFFFFFU;
+
+    if ((SRC->GPR[11] & SRC_SRSR_M7_LOCKUP_M7_MASK) != 0) {
+        return SAFE_MODE_HARD_FAULT;
+    }
+    #endif
 
     // Note that `reset_port` CANNOT GO HERE, unlike other ports, because `board_init` hasn't been
     // run yet, which uses `never_reset` to protect critical pins from being reset by  `reset_port`.
@@ -411,7 +446,9 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
+    #if CIRCUITPY_BUSIO
     spi_reset();
+    #endif
 
     #if CIRCUITPY_AUDIOIO
     audio_dma_reset();
@@ -497,9 +534,15 @@ uint64_t port_get_raw_ticks(uint8_t *subticks) {
     return ticks / 32;
 }
 
+#if IMXRT10XX
 void SNVS_HP_WRAPPER_IRQHandler(void);
 __attribute__((used))
 void PLACE_IN_ITCM(SNVS_HP_WRAPPER_IRQHandler)(void) {
+#else
+void SNVS_HP_NON_TZ_IRQHandler(void);
+__attribute__((used))
+void PLACE_IN_ITCM(SNVS_HP_NON_TZ_IRQHandler)(void) {
+    #endif
     if ((SNVS->HPSR & SNVS_HPSR_PI_MASK) != 0) {
         supervisor_tick();
         SNVS->HPSR = SNVS_HPSR_PI_MASK;
@@ -552,7 +595,11 @@ void port_idle_until_interrupt(void) {
 
     common_hal_mcu_disable_interrupts();
     if (!background_callback_pending()) {
+        #if IMXRT11XX
+        NVIC_ClearPendingIRQ(SNVS_HP_NON_TZ_IRQn);
+        #else
         NVIC_ClearPendingIRQ(SNVS_HP_WRAPPER_IRQn);
+        #endif
         __WFI();
     }
     common_hal_mcu_enable_interrupts();

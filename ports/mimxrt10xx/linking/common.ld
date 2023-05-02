@@ -19,13 +19,13 @@ MEMORY
     /* This is the first block and is read so that the bootrom knows the optimal way to interface with the flash chip. */
     FLASH_CONFIG (rx)     : ORIGIN = flash_config_location, LENGTH = 512
     /* This can't move because the bootrom looks at this address. */
-    FLASH_IVT (rx)        : ORIGIN = 0x60001000, LENGTH = 4K
+    FLASH_IVT (rx)        : ORIGIN = flash_base + 0x1000, LENGTH = 4K
     /* Place the ISRs 48k in to leave room for the bootloader when it is available. */
-    FLASH_FIRMWARE (rx)   : ORIGIN = 0x6000C000, LENGTH = code_size - 48K
-    FLASH_FATFS (r)       : ORIGIN = 0x60000000 + code_size, LENGTH = _ld_flash_size - code_size - _ld_reserved_flash_size
+    FLASH_FIRMWARE (rx)   : ORIGIN = flash_base + 0xC000, LENGTH = code_size - 48K
+    FLASH_FATFS (r)       : ORIGIN = flash_base + code_size, LENGTH = _ld_flash_size - code_size - _ld_reserved_flash_size
     /* Teensy uses the last bit of flash for recovery. */
-    RESERVED_FLASH        : ORIGIN = 0x60000000 + code_size + _ld_flash_size - _ld_reserved_flash_size, LENGTH = _ld_reserved_flash_size
-    OCRAM (rwx)           : ORIGIN = 0x20200000, LENGTH = ram_size - 64K
+    RESERVED_FLASH        : ORIGIN = flash_base + code_size + _ld_flash_size - _ld_reserved_flash_size, LENGTH = _ld_reserved_flash_size
+    OCRAM (rwx)           : ORIGIN = ocram_base, LENGTH = ram_size - 64K
     DTCM (x)              : ORIGIN = 0x20000000, LENGTH = 32K
     ITCM (x)              : ORIGIN = 0x00000000, LENGTH = 32K
 }
@@ -135,7 +135,9 @@ SECTIONS
     _ld_ocram_bss_start = ADDR(.bss);
     _ld_ocram_bss_size = SIZEOF(.bss);
     _ld_heap_start = _ld_ocram_bss_start + _ld_ocram_bss_size;
-    _ld_heap_end = ORIGIN(OCRAM) + LENGTH(OCRAM);
+    _ld_ocram_start = ORIGIN(OCRAM);
+    _ld_ocram_end = ORIGIN(OCRAM) + LENGTH(OCRAM);
+    _ld_heap_end = _ld_ocram_end;
 
 
     .itcm : ALIGN(4)

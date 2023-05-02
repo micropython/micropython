@@ -77,9 +77,9 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *data, bool left_justified) {
 
     int instance = -1;
-    const mcu_periph_obj_t *bclk_periph = find_pin_function(mcu_sai_tx_bclk_list, bit_clock, &instance, MP_QSTR_bit_clock);
-    const mcu_periph_obj_t *sync_periph = find_pin_function(mcu_sai_tx_sync_list, word_select, &instance, MP_QSTR_word_select);
-    const mcu_periph_obj_t *data_periph = find_pin_function(mcu_sai_tx_data0_list, data, &instance, MP_QSTR_data);
+    const mcu_periph_obj_t *bclk_periph = find_pin_function(mcu_i2s_tx_bclk_list, bit_clock, &instance, MP_QSTR_bit_clock);
+    const mcu_periph_obj_t *sync_periph = find_pin_function(mcu_i2s_tx_sync_list, word_select, &instance, MP_QSTR_word_select);
+    const mcu_periph_obj_t *data_periph = find_pin_function(mcu_i2s_tx_data0_list, data, &instance, MP_QSTR_data);
 
     sai_transceiver_t config;
     SAI_GetClassicI2SConfig(&config, 16, kSAI_Stereo, 1);

@@ -53,7 +53,7 @@ float common_hal_mcu_processor_get_temperature(void) {
 }
 
 float common_hal_mcu_processor_get_voltage(void) {
-    return 3.3f;
+    return NAN;
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
