@@ -8,7 +8,7 @@
 
 // This is example 1 script, which will be compiled and executed.
 static const char *example_1 =
-    "print('hello world!', list(x + 1 for x in range(10)), end='eol\\n')";
+    "print('hello world!', list(x + 1.5 for x in range(10)), end='eol\\n')";
 
 // This is example 2 script, which will be compiled and executed.
 static const char *example_2 =
@@ -35,6 +35,8 @@ static const char *example_2 =
     "help(random)\n"
     "import time\n"
     "help(time)\n"
+    "import math\n"
+    "help(math)\n"
     "import frozenhello\n"
     "help(frozenhello)\n"
     "print('frozenhello.hello():', frozenhello.hello())\n"
