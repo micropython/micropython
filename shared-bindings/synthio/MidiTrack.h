@@ -39,3 +39,4 @@ bool common_hal_synthio_miditrack_deinited(synthio_miditrack_obj_t *self);
 uint32_t common_hal_synthio_miditrack_get_sample_rate(synthio_miditrack_obj_t *self);
 uint8_t common_hal_synthio_miditrack_get_bits_per_sample(synthio_miditrack_obj_t *self);
 uint8_t common_hal_synthio_miditrack_get_channel_count(synthio_miditrack_obj_t *self);
+mp_int_t common_hal_synthio_miditrack_get_error_location(synthio_miditrack_obj_t *self);

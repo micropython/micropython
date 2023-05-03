@@ -29,7 +29,7 @@
 
 
 STATIC void print_midi_stream_error(synthio_miditrack_obj_t *self) {
-    mp_cprintf(&mp_plat_print, translate("Error in MIDI stream at position %d"), self->pos);
+    self->error_location = self->pos;
     self->pos = self->track.len;
 }
 
@@ -106,6 +106,7 @@ static void decode_until_pause(synthio_miditrack_obj_t *self) {
 
 STATIC void start_parse(synthio_miditrack_obj_t *self) {
     self->pos = 0;
+    self->error_location = -1;
     self->synth.span.dur = decode_duration(self);
     if (self->synth.span.dur == 0) {
         // the usual case: the file starts with some MIDI event, not a delay
@@ -133,6 +134,10 @@ void common_hal_synthio_miditrack_deinit(synthio_miditrack_obj_t *self) {
 
 bool common_hal_synthio_miditrack_deinited(synthio_miditrack_obj_t *self) {
     return synthio_synth_deinited(&self->synth);
+}
+
+mp_int_t common_hal_synthio_miditrack_get_error_location(synthio_miditrack_obj_t *self) {
+    return self->error_location;
 }
 
 uint32_t common_hal_synthio_miditrack_get_sample_rate(synthio_miditrack_obj_t *self) {

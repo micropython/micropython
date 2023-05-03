@@ -151,6 +151,23 @@ MP_DEFINE_CONST_FUN_OBJ_1(synthio_miditrack_get_sample_rate_obj, synthio_miditra
 MP_PROPERTY_GETTER(synthio_miditrack_sample_rate_obj,
     (mp_obj_t)&synthio_miditrack_get_sample_rate_obj);
 
+//|     error_location: Optional[int]
+//|     """Offset, in bytes within the midi data, of a decoding error"""
+//|
+STATIC mp_obj_t synthio_miditrack_obj_get_error_location(mp_obj_t self_in) {
+    synthio_miditrack_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    mp_int_t location = common_hal_synthio_miditrack_get_error_location(self);
+    if (location >= 0) {
+        return MP_OBJ_NEW_SMALL_INT(location);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_miditrack_get_error_location_obj, synthio_miditrack_obj_get_error_location);
+
+MP_PROPERTY_GETTER(synthio_miditrack_error_location_obj,
+    (mp_obj_t)&synthio_miditrack_get_error_location_obj);
+
 STATIC const mp_rom_map_elem_t synthio_miditrack_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&synthio_miditrack_deinit_obj) },
@@ -159,6 +176,7 @@ STATIC const mp_rom_map_elem_t synthio_miditrack_locals_dict_table[] = {
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&synthio_miditrack_sample_rate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_error_location), MP_ROM_PTR(&synthio_miditrack_error_location_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(synthio_miditrack_locals_dict, synthio_miditrack_locals_dict_table);
 
