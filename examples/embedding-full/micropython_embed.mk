@@ -8,5 +8,8 @@ MICROPYTHON_TOP = ../..
 # Include modules from extmod in the output.
 EMBED_EXTRA = extmod
 
+# Freeze Python modules.
+FROZEN_MANIFEST ?= manifest.py
+
 # Include the main makefile fragment to build the MicroPython component.
 include $(MICROPYTHON_TOP)/ports/embed/embed.mk
