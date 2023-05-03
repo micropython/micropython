@@ -132,7 +132,7 @@ const mp_obj_namedtuple_type_t synthio_envelope_type_obj = {
 //|     *,
 //|     sample_rate: int = 11025,
 //|     waveform: Optional[ReadableBuffer] = None,
-//|     envelope: Optional[ReadableBuffer] = None,
+//|     envelope: Optional[Envelope] = None,
 //| ) -> MidiTrack:
 //|     """Create an AudioSample from an already opened MIDI file.
 //|     Currently, only single-track MIDI (type 0) is supported.
