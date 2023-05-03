@@ -34,6 +34,9 @@ static const char *example_2 =
     "help(random)\n"
     "import time\n"
     "help(time)\n"
+    "import frozenhello\n"
+    "help(frozenhello)\n"
+    "print('frozenhello.hello():', frozenhello.hello())\n"
     "\n"
     "print('finish')\n"
     ;

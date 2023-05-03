@@ -36,3 +36,13 @@
 
 // We have our own implementation of mp_hal_stdout_tx_strn_cooked().
 #undef MP_PLAT_PRINT_STRN
+
+// Enable freezing of Python modules. These would be set automatically for the
+// port build based on the presence of FROZEN_MANIFEST by py/mkrules.mk, but
+// must be set explicitly for the application build.
+#define MICROPY_MODULE_FROZEN_MPY               1
+#define MICROPY_MODULE_FROZEN_STR               1
+#define MICROPY_QSTR_EXTRA_POOL                 mp_qstr_frozen_const_pool
+// must match MPY_TOOL_FLAGS or defaults for mpy-tool.py arguments
+#define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
+#define MPZ_DIG_SIZE                            (16)

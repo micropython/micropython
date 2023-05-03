@@ -34,6 +34,11 @@ GENHDR_OUTPUT = $(addprefix $(BUILD)/genhdr/, \
 	root_pointers.h \
 	)
 
+# Define the module freezing output.
+ifneq ($(FROZEN_MANIFEST),)
+FROZEN_OUTPUT = $(BUILD)/frozen_content.c
+endif
+
 # Define the top-level target, the generated output files.
 .PHONY: all
 all: micropython-embed-package
@@ -49,9 +54,12 @@ PACKAGE_DIR_LIST = $(addprefix $(PACKAGE_DIR)/,py extmod shared/runtime genhdr p
 ifeq ($(filter extmod,$(EMBED_EXTRA)),extmod)
 PACKAGE_DIR_LIST += $(addprefix $(PACKAGE_DIR)/,lib/uzlib lib/crypto-algorithms lib/re1.5)
 endif
+ifneq ($(FROZEN_MANIFEST),)
+PACKAGE_DIR_LIST += $(addprefix $(PACKAGE_DIR)/,frozen)
+endif
 
 .PHONY: micropython-embed-package
-micropython-embed-package: $(GENHDR_OUTPUT)
+micropython-embed-package: $(GENHDR_OUTPUT) $(FROZEN_OUTPUT)
 	$(ECHO) "Generate micropython_embed output:"
 	$(Q)$(RM) -rf $(PACKAGE_DIR_LIST)
 	$(Q)$(MKDIR) -p $(PACKAGE_DIR_LIST)
@@ -72,6 +80,10 @@ endif
 	$(Q)$(CP) $(TOP)/shared/runtime/gchelper_generic.c $(PACKAGE_DIR)/shared/runtime
 	$(ECHO) "- genhdr"
 	$(Q)$(CP) $(GENHDR_OUTPUT) $(PACKAGE_DIR)/genhdr
+ifneq ($(FROZEN_MANIFEST),)
+	$(ECHO) "- frozen"
+	$(Q)$(CP) $(FROZEN_OUTPUT) $(PACKAGE_DIR)/frozen
+endif
 	$(ECHO) "- port"
 	$(Q)$(CP) $(MICROPYTHON_EMBED_PORT)/port/*.[ch] $(PACKAGE_DIR)/port
 

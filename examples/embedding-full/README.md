@@ -15,6 +15,8 @@ Building the example
 
 First build the embed port using:
 
+    $ make -C mpy-cross
+    $ cd examples/embedding-full
     $ make -f micropython_embed.mk submodules
     $ make -f micropython_embed.mk
 
