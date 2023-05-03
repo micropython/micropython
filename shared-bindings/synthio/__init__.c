@@ -41,7 +41,6 @@
 //|
 //| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
 //|
-//| I'm a little teapot. I'm not on line 11, but I don't know what is.
 //| """
 //|
 //| class Envelope:
