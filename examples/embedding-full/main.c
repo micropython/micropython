@@ -30,6 +30,7 @@ static const char *example_2 =
     "help(sys)\n"
     "import os\n"
     "help(os)\n"
+    "print('os.uname():', os.uname())\n"
     "import random\n"
     "help(random)\n"
     "import time\n"

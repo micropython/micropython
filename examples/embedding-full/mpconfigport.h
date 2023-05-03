@@ -15,6 +15,9 @@
 #define MICROPY_PY_GC                           (1)
 
 #define MICROPY_PY_SYS_PLATFORM                 "embedded"
+#define MICROPY_PY_OS_UNAME                     (1)
+#define MICROPY_HW_BOARD_NAME                   "embedded"
+#define MICROPY_HW_MCU_NAME                     "C"
 
 // Requires shared/readline/readline.h, don't bother as we have no input.
 #define MICROPY_PY_BUILTINS_INPUT               (0)
