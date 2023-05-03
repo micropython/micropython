@@ -27,10 +27,10 @@ class Pins:
     RGB_DATA = [5, 2, 26, 13]
 
 class Buttons:
-    BTN_5 = const(6)
-    BTN_4 = const(3)
-    BTN_3 = const(2)
-    BTN_2 = const(1)
-    BTN_1 = const(0)
-    BTN_ENC_L = const(5)
-    BTN_ENC_R = const(4)
+    Slot_5 = const(6)
+    Slot_4 = const(3)
+    Slot_3 = const(2)
+    Slot_2 = const(1)
+    Slot_1 = const(0)
+    Enc_L = const(5)
+    Enc_R = const(4)
