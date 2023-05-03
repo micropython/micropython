@@ -12,7 +12,7 @@ class Slider:
         self.adc.atten(ADC.ATTN_11DB)
         self.adc.width(ADC.WIDTH_10BIT)
 
-        initial_value = self.read()
+        initial_value = self._read()
         self.val = initial_value
         self.last_called_val = initial_value
 
@@ -22,15 +22,11 @@ class Slider:
         self._on_move = on_move
         self.last_called_val = self.val
 
-    def read(self) -> float:
-        raw_value = self.adc.read()
-        mapped_value = self.map_value(raw_value)
-        if self.reverse:
-            mapped_value = 100 - mapped_value
-        return mapped_value
+    def get(self):
+        return round(self.val)
 
     def scan(self) -> None:
-        mapped_value = self.read()
+        mapped_value = self._read()
 
         if self.ema_a != 0:
             self.val = self.ema_a * mapped_value + (1 - self.ema_a) * self.val
@@ -41,6 +37,35 @@ class Slider:
             self._on_move(round(self.val))
             self.last_called_val = self.val
 
+    def _read(self) -> float:
+        raw_value = self.adc.read()
+        mapped_value = self.map_value(raw_value)
+        if self.reverse:
+            mapped_value = 100 - mapped_value
+        return mapped_value
+
     def map_value(self, x: int) -> float:
         x = max(self.min, min(self.max, x))
         return (x - self.min) * 100.0 / (self.max - self.min)
+
+
+class Sliders:
+
+    def __init__(self, sliders: [Slider]):
+        self.sliders = sliders
+
+    def on_move(self, i: int, listener: callable):
+        if i < 0 or i >= len(self.sliders):
+            return
+
+        self.sliders[i].on_move(listener)
+
+    def get(self, i: int):
+        if i < 0 or i >= len(self.sliders):
+            return 0
+
+        return self.sliders[i].get()
+
+    def scan(self):
+        for slider in self.sliders:
+            slider.scan()
