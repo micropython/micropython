@@ -37,6 +37,20 @@
 #include "shared-bindings/synthio/MidiTrack.h"
 #include "shared-bindings/synthio/Synthesizer.h"
 
+#define default_attack_time (MICROPY_FLOAT_CONST(0.1))
+#define default_decay_time (MICROPY_FLOAT_CONST(0.05))
+#define default_release_time (MICROPY_FLOAT_CONST(0.2))
+#define default_attack_level (MICROPY_FLOAT_CONST(1.))
+#define default_sustain_level (MICROPY_FLOAT_CONST(0.8))
+
+static const mp_arg_t envelope_properties[] = {
+    { MP_QSTR_attack_time, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
+    { MP_QSTR_decay_time, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
+    { MP_QSTR_release_time, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
+    { MP_QSTR_attack_level, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
+    { MP_QSTR_sustain_level, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
+};
+
 //| """Support for multi-channel audio synthesis
 //|
 //| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
@@ -46,11 +60,12 @@
 //| class Envelope:
 //|     def __init__(
 //|         self,
-//|         attack_time: float,
-//|         decay_time: float,
-//|         release_time: float,
-//|         attack_level: float,
-//|         sustain_level: float,
+//|         *,
+//|         attack_time: Optional[float] = 0.1,
+//|         decay_time: Optional[float] = 0.05,
+//|         release_time: Optional[float] = 0.2,
+//|         attack_level: Optional[float] = 1.0,
+//|         sustain_level: Optional[float] = 0.8,
 //|     ) -> None:
 //|         """Construct an Envelope object
 //|
@@ -82,20 +97,36 @@
 //|     """The relative level, in the range ``0.0`` to ``1.0`` of the volume of the sustain phase"""
 //|
 
-STATIC mp_obj_t synthio_envelope_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_t new_obj = namedtuple_make_new(type_in, n_args, n_kw, args);
-    mp_obj_t *fields;
-    size_t len;
-    mp_obj_tuple_get(new_obj, &len, &fields);
+STATIC mp_obj_t synthio_envelope_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    mp_arg_val_t args[MP_ARRAY_SIZE(envelope_properties)];
+    enum { ARG_attack_time, ARG_decay_time, ARG_release_time, ARG_attack_level, ARG_sustain_level };
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(envelope_properties), envelope_properties, args);
 
-    mp_arg_validate_obj_float_non_negative(fields[0], 0., MP_QSTR_attack_time);
-    mp_arg_validate_obj_float_non_negative(fields[1], 0., MP_QSTR_decay_time);
-    mp_arg_validate_obj_float_non_negative(fields[2], 0., MP_QSTR_release_time);
+    if (args[ARG_attack_time].u_obj == MP_OBJ_NULL) {
+        args[ARG_attack_time].u_obj = mp_obj_new_float(default_attack_time);
+    }
+    if (args[ARG_decay_time].u_obj == MP_OBJ_NULL) {
+        args[ARG_decay_time].u_obj = mp_obj_new_float(default_decay_time);
+    }
+    if (args[ARG_release_time].u_obj == MP_OBJ_NULL) {
+        args[ARG_release_time].u_obj = mp_obj_new_float(default_release_time);
+    }
+    if (args[ARG_attack_level].u_obj == MP_OBJ_NULL) {
+        args[ARG_attack_level].u_obj = mp_obj_new_float(default_attack_level);
+    }
+    if (args[ARG_sustain_level].u_obj == MP_OBJ_NULL) {
+        args[ARG_sustain_level].u_obj = mp_obj_new_float(default_sustain_level);
+    }
 
-    mp_arg_validate_obj_float_range(fields[3], 0, 1, MP_QSTR_attack_level);
-    mp_arg_validate_obj_float_range(fields[4], 0, 1, MP_QSTR_sustain_level);
+    mp_arg_validate_obj_float_non_negative(args[ARG_attack_time].u_obj, 0., MP_QSTR_attack_time);
+    mp_arg_validate_obj_float_non_negative(args[ARG_decay_time].u_obj, 0., MP_QSTR_decay_time);
+    mp_arg_validate_obj_float_non_negative(args[ARG_release_time].u_obj, 0., MP_QSTR_release_time);
 
-    return new_obj;
+    mp_arg_validate_obj_float_range(args[ARG_attack_level].u_obj, 0, 1, MP_QSTR_attack_level);
+    mp_arg_validate_obj_float_range(args[ARG_sustain_level].u_obj, 0, 1, MP_QSTR_sustain_level);
+
+    MP_STATIC_ASSERT(sizeof(mp_arg_val_t) == sizeof(mp_obj_t));
+    return namedtuple_make_new(type_in, MP_ARRAY_SIZE(args), 0, &args[0].u_obj);
 };
 
 const mp_obj_namedtuple_type_t synthio_envelope_type_obj = {
