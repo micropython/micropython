@@ -186,11 +186,26 @@ mp_int_t mp_arg_validate_int_range(mp_int_t i, mp_int_t min, mp_int_t max, qstr 
     return i;
 }
 
+mp_float_t mp_arg_validate_type_float(mp_obj_t obj, qstr arg_name) {
+    mp_float_t a_float;
+    if (!mp_obj_get_float_maybe(obj, &a_float)) {
+        mp_raise_TypeError_varg(translate("%q must be of type %q, not %q"), arg_name, MP_QSTR_float, mp_obj_get_type(obj)->name);
+    }
+    return a_float;
+}
+
+void mp_arg_validate_obj_float_range(mp_obj_t float_in, mp_int_t min, mp_int_t max, qstr arg_name) {
+    const mp_float_t f = mp_arg_validate_type_float(float_in, arg_name);
+    if (f < (mp_float_t)min || f > (mp_float_t)max) {
+        mp_raise_ValueError_varg(translate("%q must be %d-%d"), arg_name, min, max);
+    }
+}
+
 mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t default_for_null, qstr arg_name) {
     const mp_float_t f = (float_in == MP_OBJ_NULL)
         ? default_for_null
-        : mp_obj_get_float(float_in);
-    if (f <= (mp_float_t)0.0) {
+        : mp_arg_validate_type_float(float_in, arg_name);
+    if (f < (mp_float_t)0.0) {
         mp_raise_ValueError_varg(translate("%q must be >= %d"), arg_name, 0);
     }
     return f;

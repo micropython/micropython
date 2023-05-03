@@ -30,13 +30,10 @@
 
 
 void common_hal_synthio_synthesizer_construct(synthio_synthesizer_obj_t *self,
-    uint32_t sample_rate, const int16_t *waveform, uint16_t waveform_length) {
+    uint32_t sample_rate, const int16_t *waveform, uint16_t waveform_length,
+    mp_obj_t envelope) {
 
-    self->synth.sample_rate = sample_rate;
-    self->synth.waveform = waveform;
-    self->synth.waveform_length = waveform_length;
-    synthio_synth_init(&self->synth, SYNTHIO_MAX_DUR);
-    common_hal_synthio_synthesizer_release_all(self);
+    synthio_synth_init(&self->synth, sample_rate, waveform, waveform_length, envelope);
 }
 
 void common_hal_synthio_synthesizer_deinit(synthio_synthesizer_obj_t *self) {
@@ -74,14 +71,18 @@ void synthio_synthesizer_get_buffer_structure(synthio_synthesizer_obj_t *self, b
 }
 
 void common_hal_synthio_synthesizer_release_all(synthio_synthesizer_obj_t *self) {
-    synthio_span_init(&self->synth.span);
+    for (size_t i = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
+        if (self->synth.span.note[i] != SYNTHIO_SILENCE) {
+            synthio_span_change_note(&self->synth, self->synth.span.note[i], SYNTHIO_SILENCE);
+        }
+    }
 }
 void common_hal_synthio_synthesizer_release(synthio_synthesizer_obj_t *self, mp_obj_t to_release) {
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(to_release, &iter_buf);
     mp_obj_t item;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        synthio_span_change_note(&self->synth.span, mp_arg_validate_int_range(mp_obj_get_int(item), 0, 127, MP_QSTR_note), SYNTHIO_SILENCE);
+        synthio_span_change_note(&self->synth, mp_arg_validate_int_range(mp_obj_get_int(item), 0, 127, MP_QSTR_note), SYNTHIO_SILENCE);
     }
 }
 
@@ -90,15 +91,21 @@ void common_hal_synthio_synthesizer_press(synthio_synthesizer_obj_t *self, mp_ob
     mp_obj_t iterable = mp_getiter(to_press, &iter_buf);
     mp_obj_t item;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        synthio_span_change_note(&self->synth.span, SYNTHIO_SILENCE, mp_arg_validate_int_range(mp_obj_get_int(item), 0, 127, MP_QSTR_note));
+        synthio_span_change_note(&self->synth, SYNTHIO_SILENCE, mp_arg_validate_int_range(mp_obj_get_int(item), 0, 127, MP_QSTR_note));
     }
 }
 
 mp_obj_t common_hal_synthio_synthesizer_get_pressed_notes(synthio_synthesizer_obj_t *self) {
-    mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(synthio_span_count_active_channels(&self->synth.span), NULL));
-    for (size_t i = 0, j = 0; i < CIRCUITPY_SYNTHIO_MAX_CHANNELS; i++) {
-        if (self->synth.span.note[i] != SYNTHIO_SILENCE) {
-            result->items[j++] = MP_OBJ_NEW_SMALL_INT(self->synth.span.note[i]);
+    int count = 0;
+    for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
+        if (self->synth.span.note[chan] != SYNTHIO_SILENCE && self->synth.envelope_state[chan].state != SYNTHIO_ENVELOPE_STATE_RELEASE) {
+            count += 1;
+        }
+    }
+    mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(count, NULL));
+    for (size_t chan = 0, j = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
+        if (self->synth.span.note[chan] != SYNTHIO_SILENCE && self->synth.envelope_state[chan].state != SYNTHIO_ENVELOPE_STATE_RELEASE) {
+            result->items[j++] = MP_OBJ_NEW_SMALL_INT(self->synth.span.note[chan]);
         }
     }
     return MP_OBJ_FROM_PTR(result);

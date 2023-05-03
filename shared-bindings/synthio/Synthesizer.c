@@ -37,24 +37,29 @@
 #include "supervisor/shared/translate/translate.h"
 
 //| class Synthesizer:
-//|     def __init__(self, *, sample_rate: int = 11025, waveform: ReadableBuffer = None) -> None:
+//|     def __init__(
+//|         self,
+//|         *,
+//|         sample_rate: int = 11025,
+//|         waveform: Optional[ReadableBuffer] = None,
+//|         envelope: Optional[Envelope] = None,
+//|     ) -> None:
 //|         """Create a synthesizer object.
 //|
 //|         This API is experimental.
 //|
-//|         At least 2 simultaneous notes are supported.  mimxrt10xx and rp2040 platforms support up to
-//|         12 notes.
-//|
 //|         Notes use MIDI note numbering, with 60 being C4 or Middle C, approximately 262Hz.
 //|
 //|         :param int sample_rate: The desired playback sample rate; higher sample rate requires more memory
-//|         :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit). It is permitted to modify this buffer during synthesis. This can be used, for instance, to control the overall volume or timbre of the notes.
+//|         :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit)
+//|         :param Optional[Envelope] envelope: An object that defines the loudness of a note over time. The default envelope, `None` provides no ramping, voices turn instantly on and off.
 //|         """
 STATIC mp_obj_t synthio_synthesizer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_sample_rate, ARG_waveform };
+    enum { ARG_sample_rate, ARG_waveform, ARG_envelope };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 11025} },
         { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
+        { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -68,7 +73,9 @@ STATIC mp_obj_t synthio_synthesizer_make_new(const mp_obj_type_t *type, size_t n
     common_hal_synthio_synthesizer_construct(self,
         args[ARG_sample_rate].u_int,
         bufinfo_waveform.buf,
-        bufinfo_waveform.len / 2);
+        bufinfo_waveform.len / 2,
+        args[ARG_envelope].u_obj);
+
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -92,7 +99,20 @@ STATIC mp_obj_t synthio_synthesizer_press(mp_obj_t self_in, mp_obj_t press) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_press_obj, synthio_synthesizer_press);
-//
+//|     def release(self, /, release: Sequence[int] = ()) -> None:
+//|         """Turn some notes off. Notes use MIDI numbering, with 60 being middle C, approximately 262Hz.
+//|
+//|         Releasing a note that was already released has no effect.
+//|
+//|         :param Sequence[int] release: Any sequence of integer notes."""
+STATIC mp_obj_t synthio_synthesizer_release(mp_obj_t self_in, mp_obj_t release) {
+    synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_synthio_synthesizer_release(self, release);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_release_obj, synthio_synthesizer_release);
+
 //|     def release_then_press(
 //|         self, release: Sequence[int] = (), press: Sequence[int] = ()
 //|     ) -> None:
@@ -178,6 +198,28 @@ STATIC mp_obj_t synthio_synthesizer_obj___exit__(size_t n_args, const mp_obj_t *
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(synthio_synthesizer___exit___obj, 4, 4, synthio_synthesizer_obj___exit__);
+
+//|     envelope: Optional[Envelope]
+//|     """The envelope to apply to all notes. `None`, the default envelope, instantly turns notes on and off. The envelope may be changed dynamically, but it affects all notes (even currently playing notes)"""
+STATIC mp_obj_t synthio_synthesizer_obj_get_envelope(mp_obj_t self_in) {
+    synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return synthio_synth_envelope_get(&self->synth);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_get_envelope_obj, synthio_synthesizer_obj_get_envelope);
+
+STATIC mp_obj_t synthio_synthesizer_obj_set_envelope(mp_obj_t self_in, mp_obj_t envelope) {
+    synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    synthio_synth_envelope_set(&self->synth, envelope);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_set_envelope_obj, synthio_synthesizer_obj_set_envelope);
+
+MP_PROPERTY_GETSET(synthio_synthesizer_envelope_obj,
+    (mp_obj_t)&synthio_synthesizer_get_envelope_obj,
+    (mp_obj_t)&synthio_synthesizer_set_envelope_obj);
+
 //|     sample_rate: int
 //|     """32 bit value that tells how quickly samples are played in Hertz (cycles per second)."""
 STATIC mp_obj_t synthio_synthesizer_obj_get_sample_rate(mp_obj_t self_in) {
@@ -210,6 +252,7 @@ MP_PROPERTY_GETTER(synthio_synthesizer_pressed_obj,
 STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_press), MP_ROM_PTR(&synthio_synthesizer_press_obj) },
+    { MP_ROM_QSTR(MP_QSTR_release), MP_ROM_PTR(&synthio_synthesizer_release_obj) },
     { MP_ROM_QSTR(MP_QSTR_release_all), MP_ROM_PTR(&synthio_synthesizer_release_all_obj) },
     { MP_ROM_QSTR(MP_QSTR_release_then_press), MP_ROM_PTR(&synthio_synthesizer_release_then_press_obj) },
     { MP_ROM_QSTR(MP_QSTR_release_all_then_press), MP_ROM_PTR(&synthio_synthesizer_release_all_then_press_obj) },
@@ -218,6 +261,7 @@ STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&synthio_synthesizer___exit___obj) },
 
     // Properties
+    { MP_ROM_QSTR(MP_QSTR_envelope), MP_ROM_PTR(&synthio_synthesizer_envelope_obj) },
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&synthio_synthesizer_sample_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_max_polyphony), MP_ROM_INT(CIRCUITPY_SYNTHIO_MAX_CHANNELS) },
     { MP_ROM_QSTR(MP_QSTR_pressed), MP_ROM_PTR(&synthio_synthesizer_pressed_obj) },
