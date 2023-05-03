@@ -19,6 +19,9 @@
 #define MICROPY_HW_BOARD_NAME                   "embedded"
 #define MICROPY_HW_MCU_NAME                     "C"
 
+// Enable floating point numbers and the math module.
+#define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
+
 // Requires shared/readline/readline.h, don't bother as we have no input.
 #define MICROPY_PY_BUILTINS_INPUT               (0)
 
