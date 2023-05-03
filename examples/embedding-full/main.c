@@ -37,6 +37,9 @@ static const char *example_2 =
     "import frozenhello\n"
     "help(frozenhello)\n"
     "print('frozenhello.hello():', frozenhello.hello())\n"
+    "import c_hello\n"
+    "help(c_hello)\n"
+    "print('c_hello.hello():', c_hello.hello())\n"
     "\n"
     "print('finish')\n"
     ;

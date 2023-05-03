@@ -14,7 +14,7 @@ CFLAGS += -I$(EMBED_DIR)
 CFLAGS += -I$(EMBED_DIR)/port
 CFLAGS += -Wall -Og -fno-common
 
-SRC += main.c mphal.c
+SRC += main.c mphal.c modules/c_hello/modc_hello.c
 SRC += $(wildcard $(EMBED_DIR)/*/*.c)
 # Filter out lib because the files in there cannot be compiled separately, they
 # are #included by other .c files.

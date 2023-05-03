@@ -11,5 +11,8 @@ EMBED_EXTRA = extmod
 # Freeze Python modules.
 FROZEN_MANIFEST ?= manifest.py
 
+# Add C modules.
+USER_C_MODULES = modules
+
 # Include the main makefile fragment to build the MicroPython component.
 include $(MICROPYTHON_TOP)/ports/embed/embed.mk
