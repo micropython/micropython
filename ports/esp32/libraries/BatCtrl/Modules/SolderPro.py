@@ -12,8 +12,8 @@ class SolderPro:
         P1_0 = const(11)
 
     class LEDs:
-        P0_0 = const(0)
-        P0_1 = const(1)
+        P0_0 = 0
+        P0_1 = 1
         P0_6 = const(6)
         P0_7 = const(7)
         P1_4 = const(12)
