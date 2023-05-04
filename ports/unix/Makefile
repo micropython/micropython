@@ -1,3 +1,22 @@
+# Fail fast when pkg-config is not installed and required
+PKG_CONFIG_REQUIRED = 0
+
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+PKG_CONFIG_REQUIRED = 1
+endif
+endif
+
+ifneq ($(MICROPY_STANDALONE),1)
+PKG_CONFIG_REQUIRED = 1
+endif
+
+ifeq ($(PKG_CONFIG_REQUIRED),1)
+ifeq ($(shell which pkg-config || echo 0), 0)
+$(error "The 'pkg-config' command was not found")
+endif
+endif
+
 # Select the variant to build for:
 ifdef VARIANT_DIR
 # Custom variant path - remove trailing slash and get the final component of
@@ -147,7 +166,7 @@ endif
 # If the variant enables it, enable modbluetooth.
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
+HAVE_LIBUSB := $(shell pkg-config --exists libusb-1.0 && echo '1')
 
 # Figure out which BTstack transport to use.
 ifeq ($(HAVE_LIBUSB),1)
