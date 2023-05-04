@@ -77,7 +77,7 @@ void synthio_envelope_definition_set(synthio_envelope_definition_t *envelope, mp
     mp_obj_tuple_get(obj, &len, &fields);
 
     envelope->attack_level = (int)(32767 * mp_obj_get_float(fields[3]));
-    envelope->sustain_level = (int)(32767 * mp_obj_get_float(fields[4]));
+    envelope->sustain_level = (int)(32767 * mp_obj_get_float(fields[4]) * mp_obj_get_float(fields[3]));
 
     envelope->attack_step = convert_time_to_rate(
         sample_rate, fields[0], envelope->attack_level);
@@ -152,10 +152,10 @@ STATIC uint32_t synthio_synth_sum_envelope(synthio_synth_t *synth) {
     for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
         if (synth->span.note_obj[chan] != SYNTHIO_SILENCE) {
             synthio_envelope_state_t *state = &synth->envelope_state[chan];
-            if (state->state == SYNTHIO_ENVELOPE_STATE_RELEASE) {
-                result += synth->envelope_definition.sustain_level;
-            } else {
+            if (state->state == SYNTHIO_ENVELOPE_STATE_ATTACK) {
                 result += state->level;
+            } else {
+                result += synth->envelope_definition.attack_level;
             }
         }
     }

@@ -79,8 +79,8 @@ static const mp_arg_t envelope_properties[] = {
 //|         :param float attack_time: The time in seconds it takes to ramp from 0 volume to attack_volume
 //|         :param float decay_time: The time in seconds it takes to ramp from attack_volume to sustain_volume
 //|         :param float release_time: The time in seconds it takes to ramp from sustain_volume to release_volume. When a note is released before it has reached the sustain phase, the release is done with the same slope indicated by ``release_time`` and ``sustain_level``
-//|         :param float attack_level: The relative level, in the range ``0.0`` to ``1.0`` of the peak volume of the attack phase
-//|         :param float sustain_level: The relative level, in the range ``0.0`` to ``1.0`` of the volume of the sustain phase
+//|         :param float attack_level: The level, in the range ``0.0`` to ``1.0`` of the peak volume of the attack phase
+//|         :param float sustain_level: The level, in the range ``0.0`` to ``1.0`` of the volume of the sustain phase relative to the attack level
 //|         """
 //|     attack_time: float
 //|     """The time in seconds it takes to ramp from 0 volume to attack_volume"""
@@ -92,10 +92,10 @@ static const mp_arg_t envelope_properties[] = {
 //|     """The time in seconds it takes to ramp from sustain_volume to release_volume. When a note is released before it has reached the sustain phase, the release is done with the same slope indicated by ``release_time`` and ``sustain_level``"""
 //|
 //|     attack_level: float
-//|     """The relative level, in the range ``0.0`` to ``1.0`` of the peak volume of the attack phase"""
+//|     """The level, in the range ``0.0`` to ``1.0`` of the peak volume of the attack phase"""
 //|
 //|     sustain_level: float
-//|     """The relative level, in the range ``0.0`` to ``1.0`` of the volume of the sustain phase"""
+//|     """The level, in the range ``0.0`` to ``1.0`` of the volume of the sustain phase relative to the attack level"""
 //|
 
 STATIC mp_obj_t synthio_envelope_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
