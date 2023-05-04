@@ -37,11 +37,11 @@ STATIC const int16_t square_wave[] = {-32768, 32767};
 STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
                                  12544, 13290, 14080, 14917, 15804}; // 9th octave
 
-static int32_t round_float_to_int(mp_float_t f) {
+STATIC int32_t round_float_to_int(mp_float_t f) {
     return (int32_t)(f + MICROPY_FLOAT_CONST(0.5));
 }
 
-static int64_t round_float_to_int64(mp_float_t f) {
+STATIC int64_t round_float_to_int64(mp_float_t f) {
     return (int64_t)(f + MICROPY_FLOAT_CONST(0.5));
 }
 
@@ -55,7 +55,7 @@ STATIC int16_t convert_time_to_rate(uint32_t sample_rate, mp_obj_t time_in, int1
     mp_float_t time = mp_obj_get_float(time_in);
     int num_samples = (int)MICROPY_FLOAT_C_FUN(round)(time * sample_rate);
     if (num_samples == 0) {
-        return 0;
+        return 32767;
     }
     int16_t result = MIN(32767, MAX(1, abs(difference * SYNTHIO_MAX_DUR) / num_samples));
     return (difference < 0) ? -result : result;
@@ -102,34 +102,19 @@ STATIC void synthio_envelope_state_step(synthio_envelope_state_t *state, synthio
             case SYNTHIO_ENVELOPE_STATE_SUSTAIN:
                 break;
             case SYNTHIO_ENVELOPE_STATE_ATTACK:
-                if (def->attack_step != 0) {
-                    state->level = MIN(state->level + def->attack_step, def->attack_level);
-                    if (state->level == def->attack_level) {
-                        state->state = SYNTHIO_ENVELOPE_STATE_DECAY;
-                    }
-                    break;
-                }
-                state->state = SYNTHIO_ENVELOPE_STATE_DECAY;
-                MP_FALLTHROUGH;
-            case SYNTHIO_ENVELOPE_STATE_DECAY:
-                if (def->decay_step != 0) {
-                    state->level = MAX(state->level + def->decay_step, def->sustain_level);
-                    assert(state->level >= 0);
-                    if (state->level == def->sustain_level) {
-                        state->state = SYNTHIO_ENVELOPE_STATE_SUSTAIN;
-                    }
-                    break;
-                }
-                state->state = SYNTHIO_ENVELOPE_STATE_RELEASE;
-                MP_FALLTHROUGH;
-            case SYNTHIO_ENVELOPE_STATE_RELEASE:
-                if (def->release_step != 0) {
-                    int delta = def->release_step;
-                    state->level = MAX(state->level + delta, 0);
-                } else {
-                    state->level = 0;
+                state->level = MIN(state->level + def->attack_step, def->attack_level);
+                if (state->level == def->attack_level) {
+                    state->state = SYNTHIO_ENVELOPE_STATE_DECAY;
                 }
                 break;
+            case SYNTHIO_ENVELOPE_STATE_DECAY:
+                state->level = MAX(state->level + def->decay_step, def->sustain_level);
+                if (state->level == def->sustain_level) {
+                    state->state = SYNTHIO_ENVELOPE_STATE_SUSTAIN;
+                }
+                break;
+            case SYNTHIO_ENVELOPE_STATE_RELEASE:
+                state->level = MAX(state->level + def->release_step, 0);
         }
     }
 }
@@ -146,22 +131,33 @@ STATIC void synthio_envelope_state_release(synthio_envelope_state_t *state, synt
     state->state = SYNTHIO_ENVELOPE_STATE_RELEASE;
 }
 
+STATIC synthio_envelope_definition_t *synthio_synth_get_note_envelope(synthio_synth_t *synth, mp_obj_t note_obj) {
+    synthio_envelope_definition_t *def = &synth->global_envelope_definition;
+    if (!mp_obj_is_small_int(note_obj)) {
+        synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
+        if (note->envelope_obj != mp_const_none) {
+            def = &note->envelope_def;
+        }
+    }
+    return def;
+}
+
 
 STATIC uint32_t synthio_synth_sum_envelope(synthio_synth_t *synth) {
     uint32_t result = 0;
     for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
-        if (synth->span.note_obj[chan] != SYNTHIO_SILENCE) {
+        mp_obj_t note_obj = synth->span.note_obj[chan];
+        if (note_obj != SYNTHIO_SILENCE) {
             synthio_envelope_state_t *state = &synth->envelope_state[chan];
             if (state->state == SYNTHIO_ENVELOPE_STATE_ATTACK) {
                 result += state->level;
             } else {
-                result += synth->envelope_definition.attack_level;
+                result += synthio_synth_get_note_envelope(synth, note_obj)->attack_level;
             }
         }
     }
     return result;
 }
-
 
 void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t *buffer_length, uint8_t channel) {
 
@@ -265,14 +261,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
         if (note_obj == SYNTHIO_SILENCE) {
             continue;
         }
-        synthio_envelope_definition_t *def = &synth->envelope_definition;
-        if (!mp_obj_is_small_int(note_obj)) {
-            synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
-            if (note->envelope_obj != mp_const_none) {
-                def = &note->envelope_def;
-            }
-        }
-        synthio_envelope_state_step(&synth->envelope_state[chan], def, dur);
+        synthio_envelope_state_step(&synth->envelope_state[chan], synthio_synth_get_note_envelope(synth, note_obj), dur);
     }
 
     *buffer_length = synth->last_buffer_length = dur * SYNTHIO_BYTES_PER_SAMPLE;
@@ -298,7 +287,7 @@ void synthio_synth_deinit(synthio_synth_t *synth) {
 }
 
 void synthio_synth_envelope_set(synthio_synth_t *synth, mp_obj_t envelope_obj) {
-    synthio_envelope_definition_set(&synth->envelope_definition, envelope_obj, synth->sample_rate);
+    synthio_envelope_definition_set(&synth->global_envelope_definition, envelope_obj, synth->sample_rate);
     synth->envelope_obj = envelope_obj;
 }
 
@@ -329,7 +318,7 @@ void synthio_synth_get_buffer_structure(synthio_synth_t *synth, bool single_chan
     *spacing = 1;
 }
 
-static bool parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what) {
+STATIC bool parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what) {
     if (o != mp_const_none) {
         mp_get_buffer_raise(o, bufinfo, MP_BUFFER_READ);
         if (bufinfo->typecode != 'h') {
@@ -379,10 +368,10 @@ bool synthio_span_change_note(synthio_synth_t *synth, mp_obj_t old_note, mp_obj_
     channel = find_channel_with_note(synth, old_note);
     if (channel != -1) {
         if (new_note == SYNTHIO_SILENCE) {
-            synthio_envelope_state_release(&synth->envelope_state[channel], &synth->envelope_definition);
+            synthio_envelope_state_release(&synth->envelope_state[channel], synthio_synth_get_note_envelope(synth, old_note));
         } else {
             synth->span.note_obj[channel] = new_note;
-            synthio_envelope_state_init(&synth->envelope_state[channel], &synth->envelope_definition);
+            synthio_envelope_state_init(&synth->envelope_state[channel], synthio_synth_get_note_envelope(synth, new_note));
             synth->accum[channel] = 0;
         }
         return true;

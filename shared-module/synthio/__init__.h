@@ -69,7 +69,7 @@ typedef struct synthio_synth {
     uint16_t last_buffer_length;
     uint8_t other_channel, buffer_index, other_buffer_index;
     uint16_t waveform_length;
-    synthio_envelope_definition_t envelope_definition;
+    synthio_envelope_definition_t global_envelope_definition;
     mp_obj_t envelope_obj;
     synthio_midi_span_t span;
     uint32_t accum[CIRCUITPY_SYNTHIO_MAX_CHANNELS];

@@ -105,6 +105,9 @@ mp_obj_t common_hal_synthio_note_get_envelope_obj(synthio_note_obj_t *self) {
 void common_hal_synthio_note_set_envelope(synthio_note_obj_t *self, mp_obj_t envelope_in) {
     if (envelope_in != mp_const_none) {
         mp_arg_validate_type(envelope_in, (mp_obj_type_t *)&synthio_envelope_type_obj, MP_QSTR_envelope);
+        if (self->sample_rate != 0) {
+            synthio_envelope_definition_set(&self->envelope_def, envelope_in, self->sample_rate);
+        }
     }
     self->envelope_obj = envelope_in;
 }

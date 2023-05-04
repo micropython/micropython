@@ -110,12 +110,11 @@ void common_hal_synthio_synthesizer_press(synthio_synthesizer_obj_t *self, mp_ob
     mp_obj_t iterable = mp_getiter(to_press, &iter_buf);
     mp_obj_t note_obj;
     while ((note_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        if (synthio_span_change_note(&self->synth, SYNTHIO_SILENCE, validate_note(note_obj))) {
-            if (!mp_obj_is_small_int(note_obj)) {
-                synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
-                synthio_note_start(note, self->synth.sample_rate);
-            }
+        if (!mp_obj_is_small_int(note_obj)) {
+            synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
+            synthio_note_start(note, self->synth.sample_rate);
         }
+        synthio_span_change_note(&self->synth, SYNTHIO_SILENCE, validate_note(note_obj));
     }
 }
 
