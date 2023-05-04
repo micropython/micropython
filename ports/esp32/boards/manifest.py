@@ -15,6 +15,7 @@ require("ntptime")
 require("webrepl")
 
 # Require some micropython-lib modules.
+# require("aioespnow")
 require("dht")
 require("ds18x20")
 require("neopixel")

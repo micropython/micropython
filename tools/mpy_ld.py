@@ -471,7 +471,6 @@ def do_relocation_text(env, text_addr, r):
     # Extract relevant info about symbol that's being relocated
     s = r.sym
     s_bind = s.entry["st_info"]["bind"]
-    s_shndx = s.entry["st_shndx"]
     s_type = s.entry["st_info"]["type"]
     r_offset = r["r_offset"] + text_addr
     r_info_type = r["r_info_type"]

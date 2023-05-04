@@ -423,21 +423,6 @@ STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int la
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_not_test_2) {
             c_if_cond(comp, pns->nodes[0], !jump_if, label);
             return;
-        } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_atom_paren) {
-            // cond is something in parenthesis
-            if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
-                // empty tuple, acts as false for the condition
-                if (jump_if == false) {
-                    EMIT_ARG(jump, label);
-                }
-            } else {
-                assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp));
-                // non-empty tuple, acts as true for the condition
-                if (jump_if == true) {
-                    EMIT_ARG(jump, label);
-                }
-            }
-            return;
         }
     }
 

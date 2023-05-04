@@ -265,7 +265,6 @@ def main():
         reg_defs["GPIO"].append(["BSRRL", 0x18, 16, "legacy register"])
         reg_defs["GPIO"].append(["BSRRH", 0x1A, 16, "legacy register"])
 
-    modules = []
     needed_qstrs = set()
     needed_mpzs = set()
 

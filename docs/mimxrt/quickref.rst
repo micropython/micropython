@@ -145,11 +145,12 @@ handling signal groups. ::
 
     from machine import Pin, PWM
 
-    pwm2 = PWM(Pin(2))      # create PWM object from a pin
-    pwm2.freq()             # get current frequency
-    pwm2.freq(1000)         # set frequency
-    pwm2.duty_u16()         # get current duty cycle, range 0-65535
-    pwm2.duty_u16(200)      # set duty cycle, range 0-65535
+    # create PWM object from a pin and set the frequency and duty cycle
+    pwm2 = PWM(Pin(2), freq=2000, duty_u16=32768)
+    pwm2.freq()             # get the current frequency
+    pwm2.freq(1000)         # set/change the frequency
+    pwm2.duty_u16()         # get the current duty cycle, range 0-65535
+    pwm2.duty_u16(200)      # set the duty cycle, range 0-65535
     pwm2.deinit()           # turn off PWM on the pin
     # create a complementary signal pair on Pin 2 and 3
     pwm2 = PWM((2, 3), freq=2000, duty_ns=20000)
@@ -206,8 +207,9 @@ PWM Constructor
       - *align*\=value. Shortcuts for the pulse center setting, causing the pulse either at
         the center of the frame (value=0), the leading edge at the begin (value=1) or the
         trailing edge at the end of a pulse period (value=2).
-      - *invert*\=True|False channel_mask. Setting a bit in the mask inverts the respective channel.
-        Bit 0 inverts the first specified channel, bit 2 the second. The default is 0.
+      - *invert*\=value channel_mask. Setting a bit in the mask inverts the respective channel.
+        Bit 0 inverts the first specified channel, bit 1 the second. The default is 0. For a
+        PWM object with a single channel, True and False may be used as values.
       - *sync*\=True|False. If a channel of a module's submodule 0 is already active, other
         submodules of the same module can be forced to be synchronous to submodule 0. Their
         pulse period start then at at same clock cycle. The default is False.

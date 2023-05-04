@@ -226,7 +226,6 @@ class Pins(object):
             # Extract indexes from header row
             pad_col = header.index("Pad")
             adc_col = header.index("ADC")
-            acmp_col = header.index("ACMP")
             #
             for idx, row in enumerate(rows):
                 pad = row[pad_col]

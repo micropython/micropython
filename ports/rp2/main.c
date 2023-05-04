@@ -206,6 +206,7 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_deinit();
         #endif
+        machine_pwm_deinit_all();
         machine_pin_deinit();
         #if MICROPY_PY_THREAD
         mp_thread_deinit();

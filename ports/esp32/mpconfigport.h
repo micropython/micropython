@@ -70,6 +70,9 @@
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
 
 // extended modules
+#ifndef MICROPY_ESPNOW
+#define MICROPY_ESPNOW                      (1)
+#endif
 #ifndef MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH                (1)
 #define MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS (1)
@@ -95,9 +98,7 @@
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_PWM              (1)
-#define MICROPY_PY_MACHINE_PWM_INIT         (1)
 #define MICROPY_PY_MACHINE_PWM_DUTY         (1)
-#define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/esp32/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
 #define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (1)

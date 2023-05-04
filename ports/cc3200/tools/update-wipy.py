@@ -109,7 +109,7 @@ def reset_board(args):
     finally:
         try:
             tn.close()
-        except Exception as e:
+        except Exception:
             pass
         return success
 
@@ -167,7 +167,7 @@ def verify_update(args):
     finally:
         try:
             tn.close()
-        except Exception as e:
+        except Exception:
             pass
         return success
 
