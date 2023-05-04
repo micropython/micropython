@@ -37,7 +37,6 @@ typedef struct synthio_note_obj {
 
     int32_t sample_rate;
 
-    int32_t phase;
     int32_t frequency_scaled;
     int32_t amplitude_scaled;
     synthio_lfo_descr_t tremolo_descr, vibrato_descr;

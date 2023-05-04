@@ -142,7 +142,6 @@ void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate) {
 
 void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate) {
     synthio_note_recalculate(self, sample_rate);
-    self->phase = 0;
 }
 
 uint32_t synthio_note_envelope(synthio_note_obj_t *self) {
