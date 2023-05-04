@@ -35,17 +35,18 @@
 
 static const mp_arg_t note_properties[] = {
     { MP_QSTR_frequency, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = NULL } },
-    { MP_QSTR_amplitude, MP_ARG_OBJ, {.u_obj = MP_ROM_INT(1) } },
-    { MP_QSTR_tremolo_rate, MP_ARG_OBJ, {.u_obj = NULL } },
-    { MP_QSTR_tremolo_depth, MP_ARG_OBJ, {.u_obj = NULL } },
-    { MP_QSTR_vibrato_rate, MP_ARG_OBJ, {.u_obj = NULL } },
-    { MP_QSTR_vibrato_depth, MP_ARG_OBJ, {.u_obj = NULL } },
-    { MP_QSTR_waveform, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE } },
-    { MP_QSTR_envelope, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE } },
+    { MP_QSTR_amplitude, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
+    { MP_QSTR_tremolo_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
+    { MP_QSTR_tremolo_depth, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
+    { MP_QSTR_vibrato_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
+    { MP_QSTR_vibrato_depth, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
+    { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
+    { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
 };
 //| class Note:
 //|     def __init__(
 //|         self,
+//|         *,
 //|         frequency: float,
 //|         amplitude: float = 1.0,
 //|         waveform: Optional[ReadableBuffer] = None,
