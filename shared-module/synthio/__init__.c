@@ -372,9 +372,8 @@ STATIC int find_channel_with_note(synthio_synth_t *synth, mp_obj_t note) {
 bool synthio_span_change_note(synthio_synth_t *synth, mp_obj_t old_note, mp_obj_t new_note) {
     int channel;
     if (new_note != SYNTHIO_SILENCE && (channel = find_channel_with_note(synth, new_note)) != -1) {
-        // note already playing, re-strike
-        synthio_envelope_state_init(&synth->envelope_state[channel], &synth->envelope_definition);
-        synth->accum[channel] = 0;
+        // note already playing, re-enter attack phase
+        synth->envelope_state[channel].state = SYNTHIO_ENVELOPE_STATE_ATTACK;
         return true;
     }
     channel = find_channel_with_note(synth, old_note);
