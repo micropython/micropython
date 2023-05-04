@@ -10,7 +10,7 @@ from .Devices.IS31FL3731 import *
 from .Devices.ShiftOutput import *
 from .Devices.HP203B import *
 from .Devices.AHT20 import *
-from .Devices.LIS2DW import *
+from .Devices.LIS2DW12 import *
 from .Devices.AW9523 import *
 
 from ._Matrix import *
