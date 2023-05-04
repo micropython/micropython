@@ -28,7 +28,7 @@
 #include "shared-bindings/synthio/MidiTrack.h"
 
 
-STATIC void print_midi_stream_error(synthio_miditrack_obj_t *self) {
+STATIC void record_midi_stream_error(synthio_miditrack_obj_t *self) {
     self->error_location = self->pos;
     self->pos = self->track.len;
 }
@@ -37,11 +37,11 @@ STATIC mp_obj_t parse_note(synthio_miditrack_obj_t *self) {
     uint8_t *buffer = self->track.buf;
     size_t len = self->track.len;
     if (self->pos + 1 >= len) {
-        print_midi_stream_error(self);
+        record_midi_stream_error(self);
     }
     uint8_t note = buffer[(self->pos)++];
     if (note > 127 || buffer[(self->pos)++] > 127) {
-        print_midi_stream_error(self);
+        record_midi_stream_error(self);
     }
     return MP_OBJ_NEW_SMALL_INT(note);
 }
@@ -60,7 +60,7 @@ static int decode_duration(synthio_miditrack_obj_t *self) {
     // errors cannot be raised from the background task, so simply end the track.
     if (c & 0x80) {
         self->pos = self->track.len;
-        print_midi_stream_error(self);
+        record_midi_stream_error(self);
     }
     return delta * self->synth.sample_rate / self->tempo;
 }
@@ -89,14 +89,14 @@ static void decode_until_pause(synthio_miditrack_obj_t *self) {
             case 12:
             case 13: // one data byte to ignore
                 if (self->pos >= len || buffer[self->pos++] > 127) {
-                    print_midi_stream_error(self);
+                    record_midi_stream_error(self);
                 }
                 break;
             case 15: // the full syntax is too complicated, just assume it's "End of Track" event
                 self->pos = len;
                 break;
             default: // invalid event
-                print_midi_stream_error(self);
+                record_midi_stream_error(self);
         }
         if (self->pos < len) {
             self->synth.span.dur = decode_duration(self);
