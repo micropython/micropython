@@ -29,10 +29,6 @@
 
 extern mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj);
 
-
-STATIC machine_i2c_obj_t machine_i2c_obj;
-
-
 STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2C(%u, freq=%u, scl=%u, sda=%u)", self->i2c_id, self->freq, self->scl, self->sda);
@@ -61,9 +57,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C id '%d' not supported !"), i2c_id);
     }
 
-    // Get peripheral object
-    // TODO: an individual machine_i2c_obj_t::i2c_obj is required per I2C bus !
-    machine_i2c_obj_t *self = (machine_i2c_obj_t *)&machine_i2c_obj;
+    machine_i2c_obj_t *self = mp_obj_malloc(machine_i2c_obj_t, &machine_i2c_type);
     self->base.type = &machine_i2c_type;
     self->i2c_id = i2c_id;
 
