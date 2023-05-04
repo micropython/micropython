@@ -62,6 +62,10 @@ void synthio_synthesizer_reset_buffer(synthio_synthesizer_obj_t *self,
 
 audioio_get_buffer_result_t synthio_synthesizer_get_buffer(synthio_synthesizer_obj_t *self,
     bool single_channel_output, uint8_t channel, uint8_t **buffer, uint32_t *buffer_length) {
+    if (common_hal_synthio_synthesizer_deinited(self)) {
+        *buffer_length = 0;
+        return GET_BUFFER_ERROR;
+    }
     self->synth.span.dur = SYNTHIO_MAX_DUR;
     synthio_synth_synthesize(&self->synth, buffer, buffer_length, single_channel_output ? channel : 0);
     return GET_BUFFER_MORE_DATA;

@@ -158,6 +158,10 @@ void synthio_miditrack_reset_buffer(synthio_miditrack_obj_t *self,
 
 audioio_get_buffer_result_t synthio_miditrack_get_buffer(synthio_miditrack_obj_t *self,
     bool single_channel_output, uint8_t channel, uint8_t **buffer, uint32_t *buffer_length) {
+    if (common_hal_synthio_miditrack_deinited(self)) {
+        *buffer_length = 0;
+        return GET_BUFFER_ERROR;
+    }
 
     synthio_synth_synthesize(&self->synth, buffer, buffer_length, single_channel_output ? 0 : channel);
     if (self->synth.span.dur == 0) {
