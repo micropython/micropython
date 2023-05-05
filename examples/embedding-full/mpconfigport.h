@@ -34,8 +34,9 @@
 // Requires MICROPY_EVENT_POLL_HOOK, don't bother as we have no pollable objects.
 #define MICROPY_PY_SELECT                       (0)
 
-// Can be enabled once extmod/moductypes.c is included in the build.
-#define MICROPY_PY_UCTYPES                      (0)
+// On by default and works in this configuration, but disable it to avoid a
+// linker error if you don't include extmod/moductypes.c in the build.
+//#define MICROPY_PY_UCTYPES                      (0)
 
 // Can be enabled once either shared/runtime/sys_stdio_mphal.c or
 // extmod/vfs_posix_file.c is included in the build.

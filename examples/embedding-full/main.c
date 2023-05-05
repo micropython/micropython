@@ -38,6 +38,8 @@ static const char *example_2 =
     "print('time.gmtime(736622952) = 2023-05-05T17:29:12Z:', time.gmtime(736622952))\n"
     "import math\n"
     "help(math)\n"
+    "import uctypes\n"
+    "help(uctypes)\n"
     "import frozenhello\n"
     "help(frozenhello)\n"
     "print('frozenhello.hello():', frozenhello.hello())\n"
