@@ -16,6 +16,12 @@ ifeq ($(filter extmod,$(EMBED_EXTRA)),extmod)
 include $(TOP)/extmod/extmod.mk
 endif
 
+# The parts of EMBED_EXTRA that name literal files and don't need special handling.
+EMBED_EXTRA_FILES = $(filter-out extmod,$(EMBED_EXTRA))
+
+# Extra files need to be searched for QSTRs.
+SRC_QSTR += $(addprefix $(TOP)/,$(EMBED_EXTRA_FILES))
+
 # Set the location of the MicroPython embed port.
 MICROPYTHON_EMBED_PORT = $(MICROPYTHON_TOP)/ports/embed
 
@@ -57,6 +63,9 @@ endif
 ifneq ($(FROZEN_MANIFEST),)
 PACKAGE_DIR_LIST += $(addprefix $(PACKAGE_DIR)/,frozen)
 endif
+ifneq ($(EMBED_EXTRA_FILES),)
+PACKAGE_DIR_LIST += $(addprefix $(PACKAGE_DIR)/,$(filter-out ./,$(sort $(dir $(EMBED_EXTRA_FILES)))))
+endif
 
 .PHONY: micropython-embed-package
 micropython-embed-package: $(GENHDR_OUTPUT) $(FROZEN_OUTPUT)
@@ -86,6 +95,10 @@ ifneq ($(FROZEN_MANIFEST),)
 endif
 	$(ECHO) "- port"
 	$(Q)$(CP) $(MICROPYTHON_EMBED_PORT)/port/*.[ch] $(PACKAGE_DIR)/port
+ifneq ($(EMBED_EXTRA_FILES),)
+	$(ECHO) "- extra"
+	$(Q)$(foreach FILE,$(EMBED_EXTRA_FILES),$(CP) $(TOP)/$(FILE) $(dir $(PACKAGE_DIR)/$(FILE)) &&) true
+endif
 
 # Include remaining core make rules.
 include $(TOP)/py/mkrules.mk
