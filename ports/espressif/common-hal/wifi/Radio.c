@@ -29,6 +29,7 @@
 
 #include <string.h>
 
+#include "bindings/espidf/__init__.h"
 #include "common-hal/wifi/__init__.h"
 #include "shared/runtime/interrupt_char.h"
 #include "py/gc.h"
@@ -497,7 +498,7 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
     size_t timeout_ms = timeout * 1000;
 
     esp_ping_handle_t ping;
-    esp_ping_new_session(&ping_config, NULL, &ping);
+    CHECK_ESP_RESULT(esp_ping_new_session(&ping_config, NULL, &ping));
     esp_ping_start(ping);
 
     uint32_t received = 0;
