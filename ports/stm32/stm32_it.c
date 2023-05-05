@@ -670,6 +670,12 @@ void TIM2_IRQHandler(void) {
     IRQ_EXIT(TIM2_IRQn);
 }
 
+void TIM20_UP_IRQHandler(void) {
+    IRQ_ENTER(TIM20_UP_IRQn);
+    timer_irq_handler(20);
+    IRQ_EXIT(TIM20_UP_IRQn);
+}
+
 #if defined(STM32G0)
 void TIM3_TIM4_IRQHandler(void) {
     IRQ_ENTER(TIM3_TIM4_IRQn);
