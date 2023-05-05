@@ -1,6 +1,6 @@
 #!/bin/sh -e
 rm -rf test-stubs
-python3 -mvenv test-stubs
+python3 -m venv test-stubs
 . test-stubs/bin/activate
 pip install mypy isort black adafruit-circuitpython-typing wheel
 rm -rf circuitpython-stubs .mypy_cache
