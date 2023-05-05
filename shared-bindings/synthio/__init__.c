@@ -262,6 +262,10 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(synthio_from_file_obj, 1, synthio_from_file);
 
+//| def midi_to_hz(midi_note: int) -> float:
+//|     """Converts the given midi note (60 = middle C, 69 = concert A) to Hz"""
+//|
+/
 STATIC mp_obj_t midi_to_hz(mp_obj_t arg) {
     mp_int_t note = mp_arg_validate_int_range(mp_obj_get_int(arg), 1, 127, MP_QSTR_note);
     return mp_obj_new_float(common_hal_synthio_midi_to_hz_float(note));
