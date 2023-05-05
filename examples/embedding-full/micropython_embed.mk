@@ -8,6 +8,12 @@ MICROPYTHON_TOP = ../..
 # Include modules from extmod in the output.
 EMBED_EXTRA = extmod
 
+# Include helper sources for the time module in the output.
+EMBED_EXTRA += \
+	shared/timeutils/timeutils.c \
+	shared/timeutils/timeutils.h \
+	shared/timeutils/modtime_mphal.h
+
 # Freeze Python modules.
 FROZEN_MANIFEST ?= manifest.py
 

@@ -52,6 +52,15 @@ mp_uint_t mp_hal_ticks_cpu(void) {
 
 #endif
 
+#if MICROPY_PY_TIME_TIME_TIME_NS
+
+uint64_t mp_hal_time_ns(void) {
+	// Nanoseconds since the Epoch.
+	return 0;
+}
+
+#endif
+
 // Text-mode standard output
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     // This is a simplistic implementation for demonstration purposes. A real

@@ -22,6 +22,12 @@
 // Enable floating point numbers and the math module.
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
 
+// Enable more functions in the time module. Requires additions to EMBED_EXTRA,
+// see micropython_embed.mk.
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS            (1)
+#define MICROPY_PY_TIME_INCLUDEFILE             "shared/timeutils/modtime_mphal.h"
+
 // Requires shared/readline/readline.h, don't bother as we have no input.
 #define MICROPY_PY_BUILTINS_INPUT               (0)
 
