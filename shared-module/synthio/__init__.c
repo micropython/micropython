@@ -45,10 +45,12 @@ STATIC int64_t round_float_to_int64(mp_float_t f) {
     return (int64_t)(f + MICROPY_FLOAT_CONST(0.5));
 }
 
-mp_float_t common_hal_synthio_midi_to_hz_float(mp_int_t arg) {
-    uint8_t octave = arg / 12;
-    uint16_t base_freq = notes[arg % 12];
-    return MICROPY_FLOAT_C_FUN(ldexp)(base_freq, octave - 10);
+mp_float_t common_hal_synthio_midi_to_hz_float(mp_float_t arg) {
+    return common_hal_synthio_onevo_to_hz_float(arg / 12.);
+}
+
+mp_float_t common_hal_synthio_onevo_to_hz_float(mp_float_t octave) {
+    return notes[0] * MICROPY_FLOAT_C_FUN(pow)(2., octave - 10);
 }
 
 STATIC int16_t convert_time_to_rate(uint32_t sample_rate, mp_obj_t time_in, int16_t difference) {
