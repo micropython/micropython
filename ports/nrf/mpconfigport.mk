@@ -71,7 +71,6 @@ SOFTDEV_VERSION ?= 6.1.0
 BOOT_SETTING_ADDR = 0xFF000
 NRF_DEFINES += -DNRF52840_XXAA -DNRF52840
 
-
 # CircuitPython doesn't yet support NFC so force the NFC antenna pins to be GPIO.
 # See https://github.com/adafruit/circuitpython/issues/1300
 # Defined here because system_nrf52840.c doesn't #include any of our own include files.
