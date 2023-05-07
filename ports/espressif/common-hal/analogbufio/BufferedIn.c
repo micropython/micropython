@@ -46,8 +46,9 @@
 #define NUM_SAMPLES_PER_INTERRUPT   256
 #define NUM_ADC_CHANNELS            1
 #define DMA_BUFFER_SIZE             1024
-#define ATTENUATION                 ADC_ATTEN_DB_0
+#define ATTENUATION                 ADC_ATTEN_DB_11
 #define ADC_READ_TIMEOUT_MS         2000
+#define ADC_PIN_MAX_VALUE           0xfff
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
 #define ADC_RESULT_BYTE     2
@@ -239,6 +240,7 @@ uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t
     uint32_t captured_bytes = 0;
     esp_err_t ret;
     uint32_t ret_num = 0;
+    uint32_t adc_reading = 0;
     adc_digi_convert_mode_t convert_mode = ADC_CONV_SINGLE_UNIT_2;
     adc_digi_output_format_t output_format = ADC_DIGI_OUTPUT_FORMAT_TYPE1;
 
@@ -264,11 +266,13 @@ uint32_t common_hal_analogbufio_bufferedin_readinto(analogbufio_bufferedin_obj_t
                         uint16_t *pBuffer = (uint16_t *)(void *)&buffer[captured_bytes];
                         if (output_format == ADC_DIGI_OUTPUT_FORMAT_TYPE1) {
                             #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2)
-                            *pBuffer = pResult->type1.data;
+                            adc_reading = pResult->type1.data;
                             #endif
                         } else {
-                            *pBuffer = pResult->type2.data;
+                            adc_reading = pResult->type2.data;
                         }
+                        adc_reading = adc_reading * ((1 << 16) - 1) / ADC_PIN_MAX_VALUE;
+                        *pBuffer = (uint16_t)adc_reading;
                         captured_bytes += sizeof(uint16_t);
                         captured_samples++;
                     } else {

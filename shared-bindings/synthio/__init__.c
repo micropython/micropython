@@ -28,6 +28,7 @@
 
 #include "py/mperrno.h"
 #include "py/obj.h"
+#include "py/objnamedtuple.h"
 #include "py/runtime.h"
 #include "extmod/vfs_fat.h"
 #include "extmod/vfs_posix.h"
@@ -36,16 +37,141 @@
 #include "shared-bindings/synthio/MidiTrack.h"
 #include "shared-bindings/synthio/Synthesizer.h"
 
-//| """Support for MIDI synthesis"""
+#define default_attack_time (MICROPY_FLOAT_CONST(0.1))
+#define default_decay_time (MICROPY_FLOAT_CONST(0.05))
+#define default_release_time (MICROPY_FLOAT_CONST(0.2))
+#define default_attack_level (MICROPY_FLOAT_CONST(1.))
+#define default_sustain_level (MICROPY_FLOAT_CONST(0.8))
+
+static const mp_arg_t envelope_properties[] = {
+    { MP_QSTR_attack_time, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
+    { MP_QSTR_decay_time, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
+    { MP_QSTR_release_time, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
+    { MP_QSTR_attack_level, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
+    { MP_QSTR_sustain_level, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
+};
+
+//| """Support for multi-channel audio synthesis
 //|
-//| def from_file(file: typing.BinaryIO, *, sample_rate: int = 11025) -> MidiTrack:
+//| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
+//|
+//| """
+//|
+//| class Envelope:
+//|     def __init__(
+//|         self,
+//|         *,
+//|         attack_time: Optional[float] = 0.1,
+//|         decay_time: Optional[float] = 0.05,
+//|         release_time: Optional[float] = 0.2,
+//|         attack_level: Optional[float] = 1.0,
+//|         sustain_level: Optional[float] = 0.8,
+//|     ) -> None:
+//|         """Construct an Envelope object
+//|
+//|         The Envelope defines an ADSR (Attack, Decay, Sustain, Release) envelope with linear amplitude ramping. A note starts at 0 volume, then increases to ``attack_level`` over ``attack_time`` seconds; then it decays to ``sustain_level`` over ``decay_time`` seconds. Finally, when the note is released, it decreases to ``0`` volume over ``release_time``.
+//|
+//|         If the ``sustain_level`` of an envelope is 0, then the decay and sustain phases of the note are always omitted. The note is considered to be released as soon as the envelope reaches the end of the attack phase. The ``decay_time`` is ignored. This is similar to how a plucked or struck instrument behaves.
+//|
+//|         If a note is released before it reaches its sustain phase, it decays with the same slope indicated by ``sustain_level/release_time`` (or ``attack_level/release_time`` for plucked envelopes)
+//|
+//|         :param float attack_time: The time in seconds it takes to ramp from 0 volume to attack_volume
+//|         :param float decay_time: The time in seconds it takes to ramp from attack_volume to sustain_volume
+//|         :param float release_time: The time in seconds it takes to ramp from sustain_volume to release_volume. When a note is released before it has reached the sustain phase, the release is done with the same slope indicated by ``release_time`` and ``sustain_level``
+//|         :param float attack_level: The relative level, in the range ``0.0`` to ``1.0`` of the peak volume of the attack phase
+//|         :param float sustain_level: The relative level, in the range ``0.0`` to ``1.0`` of the volume of the sustain phase
+//|         """
+//|     attack_time: float
+//|     """The time in seconds it takes to ramp from 0 volume to attack_volume"""
+//|
+//|     decay_time: float
+//|     """The time in seconds it takes to ramp from attack_volume to sustain_volume"""
+//|
+//|     release_time: float
+//|     """The time in seconds it takes to ramp from sustain_volume to release_volume. When a note is released before it has reached the sustain phase, the release is done with the same slope indicated by ``release_time`` and ``sustain_level``"""
+//|
+//|     attack_level: float
+//|     """The relative level, in the range ``0.0`` to ``1.0`` of the peak volume of the attack phase"""
+//|
+//|     sustain_level: float
+//|     """The relative level, in the range ``0.0`` to ``1.0`` of the volume of the sustain phase"""
+//|
+
+STATIC mp_obj_t synthio_envelope_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    mp_arg_val_t args[MP_ARRAY_SIZE(envelope_properties)];
+    enum { ARG_attack_time, ARG_decay_time, ARG_release_time, ARG_attack_level, ARG_sustain_level };
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(envelope_properties), envelope_properties, args);
+
+    if (args[ARG_attack_time].u_obj == MP_OBJ_NULL) {
+        args[ARG_attack_time].u_obj = mp_obj_new_float(default_attack_time);
+    }
+    if (args[ARG_decay_time].u_obj == MP_OBJ_NULL) {
+        args[ARG_decay_time].u_obj = mp_obj_new_float(default_decay_time);
+    }
+    if (args[ARG_release_time].u_obj == MP_OBJ_NULL) {
+        args[ARG_release_time].u_obj = mp_obj_new_float(default_release_time);
+    }
+    if (args[ARG_attack_level].u_obj == MP_OBJ_NULL) {
+        args[ARG_attack_level].u_obj = mp_obj_new_float(default_attack_level);
+    }
+    if (args[ARG_sustain_level].u_obj == MP_OBJ_NULL) {
+        args[ARG_sustain_level].u_obj = mp_obj_new_float(default_sustain_level);
+    }
+
+    mp_arg_validate_obj_float_non_negative(args[ARG_attack_time].u_obj, 0., MP_QSTR_attack_time);
+    mp_arg_validate_obj_float_non_negative(args[ARG_decay_time].u_obj, 0., MP_QSTR_decay_time);
+    mp_arg_validate_obj_float_non_negative(args[ARG_release_time].u_obj, 0., MP_QSTR_release_time);
+
+    mp_arg_validate_obj_float_range(args[ARG_attack_level].u_obj, 0, 1, MP_QSTR_attack_level);
+    mp_arg_validate_obj_float_range(args[ARG_sustain_level].u_obj, 0, 1, MP_QSTR_sustain_level);
+
+    MP_STATIC_ASSERT(sizeof(mp_arg_val_t) == sizeof(mp_obj_t));
+    return namedtuple_make_new(type_in, MP_ARRAY_SIZE(args), 0, &args[0].u_obj);
+};
+
+const mp_obj_namedtuple_type_t synthio_envelope_type_obj = {
+    .base = {
+        .base = {
+            .type = &mp_type_type
+        },
+        .flags = MP_TYPE_FLAG_EXTENDED,
+        .name = MP_QSTR_Envelope,
+        .print = namedtuple_print,
+        .parent = &mp_type_tuple,
+        .make_new = synthio_envelope_make_new,
+        .attr = namedtuple_attr,
+        MP_TYPE_EXTENDED_FIELDS(
+            .unary_op = mp_obj_tuple_unary_op,
+            .binary_op = mp_obj_tuple_binary_op,
+            .subscr = mp_obj_tuple_subscr,
+            .getiter = mp_obj_tuple_getiter,
+            ),
+    },
+    .n_fields = 5,
+    .fields = {
+        MP_QSTR_attack_time,
+        MP_QSTR_decay_time,
+        MP_QSTR_release_time,
+        MP_QSTR_attack_level,
+        MP_QSTR_sustain_level,
+    },
+};
+
+
+//| def from_file(
+//|     file: typing.BinaryIO,
+//|     *,
+//|     sample_rate: int = 11025,
+//|     waveform: Optional[ReadableBuffer] = None,
+//|     envelope: Optional[Envelope] = None,
+//| ) -> MidiTrack:
 //|     """Create an AudioSample from an already opened MIDI file.
 //|     Currently, only single-track MIDI (type 0) is supported.
 //|
 //|     :param typing.BinaryIO file: Already opened MIDI file
 //|     :param int sample_rate: The desired playback sample rate; higher sample rate requires more memory
 //|     :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit)
-//|
+//|     :param Envelope envelope: An object that defines the loudness of a note over time. The default envelope provides no ramping, voices turn instantly on and off.
 //|
 //|     Playing a MIDI file from flash::
 //|
@@ -65,11 +191,12 @@
 //|     ...
 //|
 STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_file, ARG_sample_rate, ARG_waveform };
+    enum { ARG_file, ARG_sample_rate, ARG_waveform, ARG_envelope };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 11025} },
         { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
+        { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -121,7 +248,9 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
     result->base.type = &synthio_miditrack_type;
 
     common_hal_synthio_miditrack_construct(result, buffer, track_size,
-        tempo, args[ARG_sample_rate].u_int, bufinfo_waveform.buf, bufinfo_waveform.len / 2);
+        tempo, args[ARG_sample_rate].u_int, bufinfo_waveform.buf, bufinfo_waveform.len / 2,
+        args[ARG_envelope].u_obj
+        );
 
     #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
     m_free(buffer, track_size);
@@ -133,12 +262,12 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(synthio_from_file_obj, 1, synthio_from_file);
 
-
 STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_synthio) },
     { MP_ROM_QSTR(MP_QSTR_MidiTrack), MP_ROM_PTR(&synthio_miditrack_type) },
     { MP_ROM_QSTR(MP_QSTR_Synthesizer), MP_ROM_PTR(&synthio_synthesizer_type) },
     { MP_ROM_QSTR(MP_QSTR_from_file), MP_ROM_PTR(&synthio_from_file_obj) },
+    { MP_ROM_QSTR(MP_QSTR_Envelope), MP_ROM_PTR(&synthio_envelope_type_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(synthio_module_globals, synthio_module_globals_table);

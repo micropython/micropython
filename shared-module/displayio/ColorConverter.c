@@ -55,6 +55,13 @@ uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888) {
     return r5 << 11 | g6 << 5 | b5;
 }
 
+uint8_t displayio_colorconverter_compute_rgb332(uint32_t color_rgb888) {
+    uint32_t r3 = (color_rgb888 >> 21);
+    uint32_t g3 = (color_rgb888 >> 13) & 0x7;
+    uint32_t b2 = (color_rgb888 >> 6) & 0x3;
+    return r3 << 5 | g3 << 2 | b2;
+}
+
 uint8_t displayio_colorconverter_compute_rgbd(uint32_t color_rgb888) {
     uint32_t r1 = (color_rgb888 >> 23) & 0x1;
     uint32_t g1 = (color_rgb888 >> 15) & 0x1;
@@ -307,6 +314,11 @@ void displayio_convert_color(const _displayio_colorspace_t *colorspace, bool dit
         return;
     } else if (colorspace->depth == 32) {
         output_color->pixel = pixel;
+        output_color->opaque = true;
+        return;
+    } else if (colorspace->depth == 8 && !colorspace->grayscale) {
+        uint8_t packed = displayio_colorconverter_compute_rgb332(pixel);
+        output_color->pixel = packed;
         output_color->opaque = true;
         return;
     } else if (colorspace->depth == 4) {

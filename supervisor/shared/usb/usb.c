@@ -123,7 +123,7 @@ void usb_set_defaults(void) {
 };
 
 #if CIRCUITPY_USB_IDENTIFICATION
-supervisor_allocation *usb_identification_allocation;
+supervisor_allocation *usb_identification_allocation = NULL;
 #endif
 
 // Some dynamic USB data must be saved after boot.py. How much is needed?

@@ -40,6 +40,7 @@ SUPPORTED_PORTS = [
     "mimxrt10xx",
     "nrf",
     "raspberrypi",
+    "silabs",
     "stm",
 ]
 

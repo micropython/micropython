@@ -33,11 +33,14 @@
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
+#if CIRCUITPY_ANALOGIO
 #include "sdk/drivers/tempmon/fsl_tempmon.h"
+#endif
 #include "sdk/drivers/ocotp/fsl_ocotp.h"
 #include "clocks.h"
 
 float common_hal_mcu_processor_get_temperature(void) {
+    #if CIRCUITPY_ANALOGIO
     tempmon_config_t config;
     TEMPMON_GetDefaultConfig(&config);
 
@@ -50,9 +53,12 @@ float common_hal_mcu_processor_get_temperature(void) {
     OCOTP_Deinit(OCOTP);
 
     return temp;
+    #else
+    return NAN;
+    #endif
 }
 
-uint32_t common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self,
+void common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self,
     uint32_t frequency) {
     uint32_t freq = frequency / 1000000;
     if (freq != 24 && freq != 150 && freq != 396 && freq != 450 && freq != 528 && freq != 600 &&
@@ -60,7 +66,6 @@ uint32_t common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self,
         mp_raise_ValueError(translate("Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"));
     }
     SystemCoreClock = setarmclock(frequency);
-    return SystemCoreClock;
 }
 
 
@@ -73,7 +78,11 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
+    #if IMXRT11XX
+    OCOTP_Init(OCOTP, CLOCK_GetFreq(kCLOCK_Ocotp));
+    #else
     OCOTP_Init(OCOTP, CLOCK_GetFreq(kCLOCK_IpgClk));
+    #endif
 
     // Reads shadow registers 0x01 - 0x04 (Configuration and Manufacturing Info)
     // into 8 bit wide destination, avoiding punning.

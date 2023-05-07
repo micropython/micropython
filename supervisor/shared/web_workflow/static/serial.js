@@ -72,6 +72,17 @@ input.addEventListener("beforeinput", function(e) {
   }
 });
 
+window.addEventListener("unload", function() {
+    if (ws.readyState == WebSocket.OPEN) {
+        ws.close();
+    }
+});
+
+let ctrl_b = document.querySelector("#b");
+ctrl_b.onclick = function() {
+  ws.send("\x02");
+}
+
 let ctrl_c = document.querySelector("#c");
 ctrl_c.onclick = function() {
   ws.send("\x03");

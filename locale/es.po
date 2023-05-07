@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-04-07 00:49+0000\n"
+"PO-Revision-Date: 2023-04-22 15:51+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 #: main.c
 msgid ""
@@ -113,6 +113,9 @@ msgstr ""
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
+#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+#: shared-bindings/keypad/ShiftRegisterKeys.c
 msgid "%q"
 msgstr "%q"
 
@@ -138,6 +141,7 @@ msgstr "%q en %q debe ser del tipo %q, no %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -176,11 +180,11 @@ msgstr "%q longitud debe ser <= %d"
 msgid "%q length must be >= %d"
 msgstr "%q longitud debe ser >= %d"
 
-#: py/argcheck.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 msgid "%q must be %d"
 msgstr "%q debe ser %d"
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/displayio/Bitmap.c
 msgid "%q must be %d-%d"
 msgstr "%q debe ser %d-%d"
 
@@ -208,7 +212,7 @@ msgstr "%q debe ser un byte-matriz o matriz de tipo 'h', 'H', 'b', o 'B'"
 msgid "%q must be array of type 'H'"
 msgstr "%q debe ser un arreglo de tipo 'H'"
 
-#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be array of type 'h'"
 msgstr "%q debe ser una matriz de tipo 'h'"
 
@@ -480,6 +484,7 @@ msgstr "Todos los canales están en uso"
 msgid "All event channels in use"
 msgstr "Todos los canales de eventos están en uso"
 
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr "Todas las máquinas de estado están en uso"
@@ -490,6 +495,7 @@ msgstr ""
 "Todos los canales de eventos de sincronización (sync event channels) están "
 "en uso"
 
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "Todos los timers para este pin están en uso"
@@ -1154,10 +1160,6 @@ msgstr "Error en la inicialización I2C"
 msgid "I2C peripheral in use"
 msgstr "Dispositivo I2C en uso"
 
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr "I2SOut no disponible"
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
@@ -1269,7 +1271,9 @@ msgid "Interrupt error."
 msgstr "Error de interrupción."
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
-#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
+#: ports/raspberrypi/bindings/picodvi/Framebuffer.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
@@ -1327,6 +1331,10 @@ msgstr "Formato inválido"
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Formato de fragmento de formato no válido"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid hex password"
+msgstr "Contraseña hexadecimal no válida"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1763,10 +1771,6 @@ msgstr "Los elementos del búfer de salida deben ser de una longitud <= 4 bytes"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "El sobremuestreo debe ser un múltiplo de 8."
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "PDMIn not available"
-msgstr "PDMIn no esta disponible"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -4460,6 +4464,12 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "I2SOut not available"
+#~ msgstr "I2SOut no disponible"
+
+#~ msgid "PDMIn not available"
+#~ msgstr "PDMIn no esta disponible"
 
 #~ msgid "out of range of source"
 #~ msgstr "fuera de rango de fuente"

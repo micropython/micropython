@@ -36,14 +36,21 @@
 
 #include <stdio.h>
 
+#if IMXRT11XX
+#define LPSPI_MASTER_CLK_FREQ (24000000)
+#else
 #define LPSPI_MASTER_CLK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_GetDiv(kCLOCK_LpspiDiv) + 1))
+#endif
 
 #define MAX_SPI_BUSY_RETRIES 100
 
 // arrays use 0 based numbering: SPI1 is stored at index 0
-#define MAX_SPI 4
-STATIC bool reserved_spi[MAX_SPI];
-STATIC bool never_reset_spi[MAX_SPI];
+STATIC bool reserved_spi[MP_ARRAY_SIZE(mcu_spi_banks)];
+STATIC bool never_reset_spi[MP_ARRAY_SIZE(mcu_spi_banks)];
+
+#if IMXRT11XX
+STATIC const clock_ip_name_t s_lpspiClocks[] = LPSPI_CLOCKS;
+#endif
 
 STATIC void config_periph_pin(const mcu_periph_obj_t *periph) {
     IOMUXC_SetPinMux(
@@ -54,12 +61,14 @@ STATIC void config_periph_pin(const mcu_periph_obj_t *periph) {
 
     IOMUXC_SetPinConfig(0, 0, 0, 0,
         periph->pin->cfg_reg,
-        IOMUXC_SW_PAD_CTL_PAD_HYS(0)
-        | IOMUXC_SW_PAD_CTL_PAD_PUS(0)
-        | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
+        IOMUXC_SW_PAD_CTL_PAD_PUS(0)
+        #if IMXRT10XX
+        | IOMUXC_SW_PAD_CTL_PAD_HYS(0)
         | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-        | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
         | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
+        #endif
+        | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
+        | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
         | IOMUXC_SW_PAD_CTL_PAD_DSE(4)
         | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
@@ -68,6 +77,13 @@ void spi_reset(void) {
     for (uint i = 0; i < MP_ARRAY_SIZE(mcu_spi_banks); i++) {
         if (!never_reset_spi[i]) {
             reserved_spi[i] = false;
+            #if IMXRT11XX
+            // Skip resetting SPIs that aren't clocked. Doing so generates a bus fault.
+            if ((CCM->LPCG[s_lpspiClocks[i + 1]].STATUS0 & CCM_LPCG_STATUS0_ON_MASK) == ((uint32_t)kCLOCK_Off & CCM_LPCG_STATUS0_ON_MASK)) {
+                continue;
+            }
+            #endif
+
             LPSPI_Deinit(mcu_spi_banks[i]);
         }
     }
@@ -78,8 +94,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     const mcu_pin_obj_t *miso, bool half_duplex) {
 
     const uint32_t sck_count = MP_ARRAY_SIZE(mcu_spi_sck_list);
-    const uint32_t miso_count = MP_ARRAY_SIZE(mcu_spi_miso_list);
-    const uint32_t mosi_count = MP_ARRAY_SIZE(mcu_spi_mosi_list);
+    const uint32_t miso_count = MP_ARRAY_SIZE(mcu_spi_sdi_list);
+    const uint32_t mosi_count = MP_ARRAY_SIZE(mcu_spi_sdo_list);
     bool spi_taken = false;
 
     if (half_duplex) {
@@ -93,13 +109,13 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         // if both MOSI and MISO exist, loop search normally
         if ((mosi != NULL) && (miso != NULL)) {
             for (uint j = 0; j < mosi_count; j++) {
-                if ((mcu_spi_mosi_list[i].pin != mosi)
-                    || (mcu_spi_sck_list[i].bank_idx != mcu_spi_mosi_list[j].bank_idx)) {
+                if ((mcu_spi_sdo_list[i].pin != mosi)
+                    || (mcu_spi_sck_list[i].bank_idx != mcu_spi_sdo_list[j].bank_idx)) {
                     continue;
                 }
                 for (uint k = 0; k < miso_count; k++) {
-                    if ((mcu_spi_miso_list[k].pin != miso) // everything needs the same index
-                        || (mcu_spi_sck_list[i].bank_idx != mcu_spi_miso_list[k].bank_idx)) {
+                    if ((mcu_spi_sdi_list[k].pin != miso) // everything needs the same index
+                        || (mcu_spi_sck_list[i].bank_idx != mcu_spi_sdi_list[k].bank_idx)) {
                         continue;
                     }
                     // if SPI is taken, break (pins never have >1 periph)
@@ -109,8 +125,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                     }
                     // store pins if not
                     self->clock = &mcu_spi_sck_list[i];
-                    self->mosi = &mcu_spi_mosi_list[j];
-                    self->miso = &mcu_spi_miso_list[k];
+                    self->mosi = &mcu_spi_sdo_list[j];
+                    self->miso = &mcu_spi_sdi_list[k];
                     break;
                 }
                 if (self->clock != NULL || spi_taken) {
@@ -123,8 +139,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             // if just MISO, reduce search
         } else if (miso != NULL) {
             for (uint j = 0; j < miso_count; j++) {
-                if ((mcu_spi_miso_list[j].pin != miso) // only SCK and MISO need the same index
-                    || (mcu_spi_sck_list[i].bank_idx != mcu_spi_miso_list[j].bank_idx)) {
+                if ((mcu_spi_sdi_list[j].pin != miso) // only SCK and MISO need the same index
+                    || (mcu_spi_sck_list[i].bank_idx != mcu_spi_sdi_list[j].bank_idx)) {
                     continue;
                 }
                 if (reserved_spi[mcu_spi_sck_list[i].bank_idx - 1]) {
@@ -132,7 +148,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                     break;
                 }
                 self->clock = &mcu_spi_sck_list[i];
-                self->miso = &mcu_spi_miso_list[j];
+                self->miso = &mcu_spi_sdi_list[j];
                 break;
             }
             if (self->clock != NULL || spi_taken) {
@@ -141,8 +157,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             // if just MOSI, reduce search
         } else if (mosi != NULL) {
             for (uint j = 0; j < mosi_count; j++) {
-                if ((mcu_spi_mosi_list[j].pin != mosi) // only SCK and MOSI need the same index
-                    || (mcu_spi_sck_list[i].bank_idx != mcu_spi_mosi_list[j].bank_idx)) {
+                if ((mcu_spi_sdo_list[j].pin != mosi) // only SCK and MOSI need the same index
+                    || (mcu_spi_sck_list[i].bank_idx != mcu_spi_sdo_list[j].bank_idx)) {
                     continue;
                 }
                 if (reserved_spi[mcu_spi_sck_list[i].bank_idx - 1]) {
@@ -150,7 +166,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                     break;
                 }
                 self->clock = &mcu_spi_sck_list[i];
-                self->mosi = &mcu_spi_mosi_list[j];
+                self->mosi = &mcu_spi_sdo_list[j];
                 break;
             }
             if (self->clock != NULL || spi_taken) {

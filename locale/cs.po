@@ -102,6 +102,9 @@ msgstr "%d adresní pin, %d rgb pin a %d dlaždice indikuje výšku %d, ne %d"
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
+#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+#: shared-bindings/keypad/ShiftRegisterKeys.c
 msgid "%q"
 msgstr "%q"
 
@@ -127,6 +130,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
@@ -165,11 +169,11 @@ msgstr "Délka %q musí být <= %d"
 msgid "%q length must be >= %d"
 msgstr "Délka %q musí být >= %d"
 
-#: py/argcheck.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 msgid "%q must be %d"
 msgstr "%q musí být %d"
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/displayio/Bitmap.c
 msgid "%q must be %d-%d"
 msgstr "%q musí být %d-%d"
 
@@ -197,7 +201,7 @@ msgstr ""
 msgid "%q must be array of type 'H'"
 msgstr ""
 
-#: shared-bindings/synthio/MidiTrack.c shared-bindings/synthio/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be array of type 'h'"
 msgstr ""
 
@@ -469,6 +473,7 @@ msgstr "Všechny kanály jsou používány"
 msgid "All event channels in use"
 msgstr "Všechny kanály událostí jsou již používány"
 
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr ""
@@ -477,6 +482,7 @@ msgstr ""
 msgid "All sync event channels in use"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "Všechny časovače pro tento pin jsou používány"
@@ -1127,10 +1133,6 @@ msgstr "Chyba inicializace I2C"
 msgid "I2C peripheral in use"
 msgstr "Periférie I2C je používána"
 
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr ""
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
@@ -1235,7 +1237,9 @@ msgid "Interrupt error."
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
-#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c py/argcheck.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
+#: ports/raspberrypi/bindings/picodvi/Framebuffer.c
+#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
@@ -1293,6 +1297,10 @@ msgstr ""
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Neplatná velikost bloku"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid hex password"
+msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1719,10 +1727,6 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
-msgstr ""
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "PDMIn not available"
 msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c

@@ -14,14 +14,14 @@ __attribute__((section(".boot_hdr.conf")))
 const flexspi_nor_config_t qspiflash_config = {
     .pageSize = 256u,
     .sectorSize = 4u * 1024u,
-    .ipcmdSerialClkFreq = kFLEXSPISerialClk_30MHz,
+    .ipcmdSerialClkFreq = kFLEXSPISerialClk_133MHz,
     .blockSize = 0x00010000,
     .isUniformBlockSize = false,
     .memConfig =
     {
         .tag = FLEXSPI_CFG_BLK_TAG,
         .version = FLEXSPI_CFG_BLK_VERSION,
-        .readSampleClkSrc = kFLEXSPIReadSampleClk_LoopbackFromDqsPad,
+        .readSampleClkSrc = kFLEXSPIReadSampleClk_LoopbackFromSckPad,
         .csHoldTime = 3u,
         .csSetupTime = 3u,
 
@@ -43,7 +43,7 @@ const flexspi_nor_config_t qspiflash_config = {
         },
         .deviceType = kFLEXSPIDeviceType_SerialNOR,
         .sflashPadType = kSerialFlash_4Pads,
-        .serialClkFreq = kFLEXSPISerialClk_60MHz,
+        .serialClkFreq = kFLEXSPISerialClk_133MHz,
         .sflashA1Size = FLASH_SIZE,
         .lookupTable =
         {

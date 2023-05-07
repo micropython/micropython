@@ -32,8 +32,8 @@
 extern const mp_obj_type_t synthio_synthesizer_type;
 
 void common_hal_synthio_synthesizer_construct(synthio_synthesizer_obj_t *self,
-    uint32_t sample_rate, const int16_t *waveform, uint16_t waveform_len);
-
+    uint32_t sample_rate, const int16_t *waveform, uint16_t waveform_length,
+    mp_obj_t envelope);
 void common_hal_synthio_synthesizer_deinit(synthio_synthesizer_obj_t *self);
 bool common_hal_synthio_synthesizer_deinited(synthio_synthesizer_obj_t *self);
 uint32_t common_hal_synthio_synthesizer_get_sample_rate(synthio_synthesizer_obj_t *self);

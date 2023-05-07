@@ -345,3 +345,7 @@ fetch-submodules:
 remove-submodules:
 	git submodule deinit -f --all
 	rm -rf .git/modules/*
+
+.PHONY: fetch-tags
+fetch-tags:
+	git fetch --tags --recurse-submodules=no --shallow-since="2023-02-01" https://github.com/adafruit/circuitpython HEAD

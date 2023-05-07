@@ -80,7 +80,8 @@
 //|         grayscale: bool = False,
 //|         advanced_color_epaper: bool = False,
 //|         two_byte_sequence_length: bool = False,
-//|         start_up_time: float = 0
+//|         start_up_time: float = 0,
+//|         address_little_endian: bool = False
 //|     ) -> None:
 //|         """Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `paralleldisplay.ParallelBus`).
 //|
@@ -122,6 +123,7 @@
 //|         :param bool advanced_color_epaper: When true, the display is a 7-color advanced color epaper (ACeP)
 //|         :param bool two_byte_sequence_length: When true, use two bytes to define sequence length
 //|         :param float start_up_time: Time to wait after reset before sending commands
+//|         :param bool address_little_endian: Send the least significant byte (not bit) of multi-byte addresses first. Ignored when ram is addressed with one byte
 //|         """
 //|         ...
 STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -132,7 +134,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
            ARG_write_color_ram_command, ARG_color_bits_inverted, ARG_highlight_color,
            ARG_refresh_display_command,  ARG_refresh_time, ARG_busy_pin, ARG_busy_state,
            ARG_seconds_per_frame, ARG_always_toggle_chip_select, ARG_grayscale, ARG_advanced_color_epaper,
-           ARG_two_byte_sequence_length, ARG_start_up_time };
+           ARG_two_byte_sequence_length, ARG_start_up_time, ARG_address_little_endian };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_start_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -163,6 +165,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
         { MP_QSTR_advanced_color_epaper, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_two_byte_sequence_length, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_start_up_time, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(0)} },
+        { MP_QSTR_address_little_endian, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -228,7 +231,8 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
         args[ARG_write_black_ram_command].u_int, args[ARG_black_bits_inverted].u_bool, write_color_ram_command,
         args[ARG_color_bits_inverted].u_bool, highlight_color, refresh_buf, refresh_buf_len, refresh_time,
         busy_pin, args[ARG_busy_state].u_bool, seconds_per_frame,
-        args[ARG_always_toggle_chip_select].u_bool, args[ARG_grayscale].u_bool, args[ARG_advanced_color_epaper].u_bool, two_byte_sequence_length
+        args[ARG_always_toggle_chip_select].u_bool, args[ARG_grayscale].u_bool, args[ARG_advanced_color_epaper].u_bool,
+        two_byte_sequence_length, args[ARG_address_little_endian].u_bool
         );
 
     return self;
@@ -384,7 +388,8 @@ MP_PROPERTY_GETTER(displayio_epaperdisplay_bus_obj,
 
 //|     root_group: Group
 //|     """The root group on the epaper display.
-//|     If the root group is set to ``None``, the default CircuitPython terminal will be shown.
+//|     If the root group is set to `displayio.CIRCUITPYTHON_TERMINAL`, the default CircuitPython terminal will be shown.
+//|     If the root group is set to ``None``, no output will be shown.
 //|     """
 //|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_root_group(mp_obj_t self_in) {

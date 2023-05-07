@@ -30,3 +30,7 @@ cryptography
 # for web workflow minify
 minify_html
 jsmin
+
+# for Silicon Labs Configurator (SLC)
+websockets
+colorama

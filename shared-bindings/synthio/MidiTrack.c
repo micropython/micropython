@@ -44,7 +44,8 @@
 //|         tempo: int,
 //|         *,
 //|         sample_rate: int = 11025,
-//|         waveform: ReadableBuffer = None
+//|         waveform: Optional[ReadableBuffer] = None,
+//|         envelope: Optional[Envelope] = None,
 //|     ) -> None:
 //|         """Create a MidiTrack from the given stream of MIDI events. Only "Note On" and "Note Off" events
 //|         are supported; channel numbers and key velocities are ignored. Up to two notes may be on at the
@@ -54,6 +55,7 @@
 //|         :param int tempo: Tempo of the streamed events, in MIDI ticks per second
 //|         :param int sample_rate: The desired playback sample rate; higher sample rate requires more memory
 //|         :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit)
+//|         :param Envelope envelope: An object that defines the loudness of a note over time. The default envelope provides no ramping, voices turn instantly on and off.
 //|
 //|         Simple melody::
 //|
@@ -72,12 +74,13 @@
 //|           print("stopped")"""
 //|         ...
 STATIC mp_obj_t synthio_miditrack_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_buffer, ARG_tempo, ARG_sample_rate, ARG_waveform };
+    enum { ARG_buffer, ARG_tempo, ARG_sample_rate, ARG_waveform, ARG_envelope };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_tempo, MP_ARG_INT | MP_ARG_REQUIRED },
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 11025} },
         { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
+        { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -96,7 +99,9 @@ STATIC mp_obj_t synthio_miditrack_make_new(const mp_obj_type_t *type, size_t n_a
         args[ARG_tempo].u_int,
         args[ARG_sample_rate].u_int,
         bufinfo_waveform.buf,
-        bufinfo_waveform.len / 2);
+        bufinfo_waveform.len / 2,
+        args[ARG_envelope].u_obj
+        );
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -133,7 +138,7 @@ STATIC mp_obj_t synthio_miditrack_obj___exit__(size_t n_args, const mp_obj_t *ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(synthio_miditrack___exit___obj, 4, 4, synthio_miditrack_obj___exit__);
 
-//|     sample_rate: Optional[int]
+//|     sample_rate: int
 //|     """32 bit value that tells how quickly samples are played in Hertz (cycles per second)."""
 //|
 STATIC mp_obj_t synthio_miditrack_obj_get_sample_rate(mp_obj_t self_in) {
@@ -146,6 +151,23 @@ MP_DEFINE_CONST_FUN_OBJ_1(synthio_miditrack_get_sample_rate_obj, synthio_miditra
 MP_PROPERTY_GETTER(synthio_miditrack_sample_rate_obj,
     (mp_obj_t)&synthio_miditrack_get_sample_rate_obj);
 
+//|     error_location: Optional[int]
+//|     """Offset, in bytes within the midi data, of a decoding error"""
+//|
+STATIC mp_obj_t synthio_miditrack_obj_get_error_location(mp_obj_t self_in) {
+    synthio_miditrack_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    mp_int_t location = common_hal_synthio_miditrack_get_error_location(self);
+    if (location >= 0) {
+        return MP_OBJ_NEW_SMALL_INT(location);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_miditrack_get_error_location_obj, synthio_miditrack_obj_get_error_location);
+
+MP_PROPERTY_GETTER(synthio_miditrack_error_location_obj,
+    (mp_obj_t)&synthio_miditrack_get_error_location_obj);
+
 STATIC const mp_rom_map_elem_t synthio_miditrack_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&synthio_miditrack_deinit_obj) },
@@ -154,6 +176,7 @@ STATIC const mp_rom_map_elem_t synthio_miditrack_locals_dict_table[] = {
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&synthio_miditrack_sample_rate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_error_location), MP_ROM_PTR(&synthio_miditrack_error_location_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(synthio_miditrack_locals_dict, synthio_miditrack_locals_dict_table);
 

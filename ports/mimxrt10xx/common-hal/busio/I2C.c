@@ -37,13 +37,17 @@
 #include "sdk/drivers/lpi2c/fsl_lpi2c.h"
 #include "sdk/drivers/igpio/fsl_gpio.h"
 
+#if IMXRT11XX
+#define I2C_CLOCK_FREQ (24000000)
+#else
 #define I2C_CLOCK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllClk) / 8 / (1 + CLOCK_GetDiv(kCLOCK_Lpi2cDiv)))
+#endif
+
 #define IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_ALT5 5U
 
 // arrays use 0 based numbering: I2C1 is stored at index 0
-#define MAX_I2C 4
-STATIC bool reserved_i2c[MAX_I2C];
-STATIC bool never_reset_i2c[MAX_I2C];
+STATIC bool reserved_i2c[MP_ARRAY_SIZE(mcu_i2c_banks)];
+STATIC bool never_reset_i2c[MP_ARRAY_SIZE(mcu_i2c_banks)];
 
 void i2c_reset(void) {
     for (uint i = 0; i < MP_ARRAY_SIZE(mcu_i2c_banks); i++) {
@@ -63,24 +67,28 @@ static void config_periph_pin(const mcu_periph_obj_t *periph) {
 
     IOMUXC_SetPinConfig(0, 0, 0, 0,
         periph->pin->cfg_reg,
-        IOMUXC_SW_PAD_CTL_PAD_HYS(0)
-        | IOMUXC_SW_PAD_CTL_PAD_PUS(3)
-        | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
+        IOMUXC_SW_PAD_CTL_PAD_PUS(3)
+        #if IMXRT10XX
+        | IOMUXC_SW_PAD_CTL_PAD_HYS(0)
         | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-        | IOMUXC_SW_PAD_CTL_PAD_ODE(1)
         | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
+        #endif
+        | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
+        | IOMUXC_SW_PAD_CTL_PAD_ODE(1)
         | IOMUXC_SW_PAD_CTL_PAD_DSE(4)
         | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
 
 static void i2c_check_pin_config(const mcu_pin_obj_t *pin, uint32_t pull) {
     IOMUXC_SetPinConfig(0, 0, 0, 0, pin->cfg_reg,
-        IOMUXC_SW_PAD_CTL_PAD_HYS(1)
-        | IOMUXC_SW_PAD_CTL_PAD_PUS(0)     // Pulldown
-        | IOMUXC_SW_PAD_CTL_PAD_PUE(pull)     // 0=nopull (keeper), 1=pull
+        IOMUXC_SW_PAD_CTL_PAD_PUS(0)     // Pulldown
+        #if IMXRT10XX
+        | IOMUXC_SW_PAD_CTL_PAD_HYS(1)
         | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-        | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
         | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
+        #endif
+        | IOMUXC_SW_PAD_CTL_PAD_PUE(pull)     // 0=nopull (keeper), 1=pull
+        | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
         | IOMUXC_SW_PAD_CTL_PAD_DSE(1)
         | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }

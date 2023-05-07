@@ -34,10 +34,11 @@ INC += \
 	-I../../lib/tinyusb/src \
 	-I../../supervisor/shared/usb \
 	-I$(BUILD) \
-	-Iboards/ \
+	-Iboards \
 	-Iboards/$(BOARD) \
 	-Iperipherals/ \
 	-Iperipherals/mimxrt10xx/ \
+	-Isdk/CMSIS/Include/ \
 	-Isdk/devices/$(CHIP_FAMILY) \
 	-Isdk/devices/$(CHIP_FAMILY)/drivers \
 	-Isdk/drivers/common
@@ -48,7 +49,7 @@ CFLAGS += -ftree-vrp -DNDEBUG
 
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512
-ifeq ($(CHIP_FAMILY), MIMXRT1011)
+ifeq ($(CHIP_FAMILY),$(filter $(CHIP_FAMILY),MIMXRT1011 MIMXRT1015))
 CFLAGS += -DCFG_TUD_MIDI_RX_BUFSIZE=64 -DCFG_TUD_MIDI_TX_BUFSIZE=64 -DCFG_TUD_MSC_BUFSIZE=512
 else
 CFLAGS += -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=512 -DCFG_TUD_MSC_BUFSIZE=1024
@@ -75,7 +76,7 @@ CFLAGS += \
 	-mfloat-abi=hard \
 	-mfpu=fpv5-sp-d16 \
 	-DCPU_$(CHIP_VARIANT) \
-	-DIMXRT10XX \
+	-DIMXRT1XXX \
 	-g3 -Wno-unused-parameter \
 	-ffunction-sections -fdata-sections -fstack-usage
 
@@ -100,14 +101,27 @@ ifndef INTERNAL_LIBM
 LIBS += -lm
 endif
 
-LDFLAGS += -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -mthumb -mapcs
+ifndef CHIP_CORE
+CHIP_CORE = $(CHIP_FAMILY)
+endif
+
+# If not empty, then it is 10xx.
+ifneq ($(findstring MIMXRT10, $(CHIP_FAMILY)),)
+CFLAGS += -DIMXRT10XX=1 -DIMXRT11XX=0
+MIMXRT10xx = $(CHIP_FAMILY)
 BOOTLOADER_SIZE := 0x6000C000
+else
+CFLAGS += -DIMXRT11XX=1 -DIMXRT10XX=0
+MIMXRT11xx = $(CHIP_FAMILY)
+BOOTLOADER_SIZE := 0x3000C000
+endif
+
+LDFLAGS += -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -mthumb -mapcs
 
 SRC_SDK := \
 	devices/$(CHIP_FAMILY)/drivers/fsl_clock.c \
-	devices/$(CHIP_FAMILY)/system_$(CHIP_FAMILY).c \
+	devices/$(CHIP_FAMILY)/system_$(CHIP_CORE).c \
 	devices/$(CHIP_FAMILY)/xip/fsl_flexspi_nor_boot.c \
-	drivers/adc_12b1msps_sar/fsl_adc.c \
 	drivers/cache/armv7-m7/fsl_cache.c \
 	drivers/common/fsl_common_arm.c \
 	drivers/common/fsl_common.c \
@@ -121,10 +135,22 @@ SRC_SDK := \
 	drivers/sai/fsl_sai.c \
 	drivers/snvs_hp/fsl_snvs_hp.c \
 	drivers/snvs_lp/fsl_snvs_lp.c \
-	drivers/tempmon/fsl_tempmon.c \
 	drivers/trng/fsl_trng.c \
 
+ifeq ($(CIRCUITPY_ANALOGIO), 1)
+SRC_SDK +=	drivers/adc_12b1msps_sar/fsl_adc.c \
+	drivers/tempmon/fsl_tempmon.c
+endif
+
+ifeq ($(CHIP_FAMILY), MIMXRT1176)
+SRC_SDK += devices/$(CHIP_FAMILY)/drivers/fsl_anatop_ai.c \
+	devices/$(CHIP_FAMILY)/drivers/fsl_dcdc.c \
+	devices/$(CHIP_FAMILY)/drivers/fsl_pmu.c
+endif
+
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
+
+$(addprefix $(BUILD)/, $(SRC_SDK:.c=.o)): CFLAGS += -Wno-array-bounds
 
 SRC_C += \
 	background.c \
@@ -156,7 +182,7 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 SRC_S = \
-    sdk/devices/$(CHIP_FAMILY)/gcc/startup_$(CHIP_FAMILY).S \
+    sdk/devices/$(CHIP_FAMILY)/gcc/startup_$(CHIP_CORE).S \
     supervisor/cpu.S
 
 OBJ = $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
