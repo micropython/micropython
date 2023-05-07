@@ -151,10 +151,35 @@ uint32_t synthio_note_envelope(synthio_note_obj_t *self) {
     return self->amplitude_scaled;
 }
 
+// Perform a pitch bend operation
+//
+// bend_value is in the range [0, 65535]. "no change" is 32768. The bend unit is 32768/octave.
+//
+// compare to (frequency_scaled * pow(2, (bend_value-32768)/32768))
+// a 13-entry pitch table
+#define BEND_SCALE (32768)
+#define BEND_OFFSET (BEND_SCALE)
+
+STATIC uint16_t pitch_bend_table[] = { 0, 1948, 4013, 6200, 8517, 10972, 13573, 16329, 19248, 22341, 25618, 29090, 32768 };
+
+STATIC uint32_t pitch_bend(uint32_t frequency_scaled, uint16_t bend_value) {
+    bool down = (bend_value < 32768);
+    if (!down) {
+        bend_value -= 32768;
+    }
+    uint32_t bend_value_semitone = (uint32_t)bend_value * 24; // 65536/semitone
+    uint32_t semitone = bend_value_semitone >> 16;
+    uint32_t fractone = bend_value_semitone & 0xffff;
+    uint32_t f_lo = pitch_bend_table[semitone];
+    uint32_t f_hi = pitch_bend_table[semitone + 1]; // table has 13 entries, indexing with semitone=12 is OK
+    uint32_t f = ((f_lo * (65535 - fractone) + f_hi * fractone) >> 16) + BEND_OFFSET;
+    return (frequency_scaled * (uint64_t)f) >> (15 + down);
+}
+
 uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t *loudness) {
     int tremolo_value = synthio_lfo_step(&self->tremolo_state, dur);
     int vibrato_value = synthio_lfo_step(&self->vibrato_state, dur);
     *loudness = (*loudness * tremolo_value) >> 15;
-    uint32_t frequency_scaled = ((uint64_t)self->frequency_scaled * vibrato_value) >> 15;
+    uint32_t frequency_scaled = pitch_bend(self->frequency_scaled, vibrato_value);
     return frequency_scaled;
 }

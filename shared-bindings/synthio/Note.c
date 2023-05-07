@@ -118,7 +118,12 @@ MP_PROPERTY_GETSET(synthio_note_amplitude_obj,
 
 
 //|     tremolo_depth: float
-//|     """The tremolo depth of the note, from 0 to 1"""
+//|     """The tremolo depth of the note, from 0 to 1
+//|
+//|     A depth of 0 disables tremolo. A nonzero value enables tremolo,
+//|     with the maximum decrease in amplitude being equal to the tremolo
+//|     depth. A note with a tremolo depth of 1 will fade out to nothing, while
+//|     a tremolo depth of 0.1 will give a minimum amplitude of 0.9."""
 STATIC mp_obj_t synthio_note_get_tremolo_depth(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_synthio_note_get_tremolo_depth(self));
@@ -154,7 +159,12 @@ MP_PROPERTY_GETSET(synthio_note_tremolo_rate_obj,
     (mp_obj_t)&synthio_note_set_tremolo_rate_obj);
 
 //|     vibrato_depth: float
-//|     """The vibrato depth of the note, from 0 to 1"""
+//|     """The vibrato depth of the note, from 0 to 1
+//|
+//|     A depth of 0 disables vibrato. A depth of 1 corresponds to a vibrato of ±1
+//|     octave.  A depth of (1/12) = 0.833 corresponds to a vibrato of ±1 semitone,
+//|     and a depth of .00833 corresponds to one musical cent.
+//|     """
 STATIC mp_obj_t synthio_note_get_vibrato_depth(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_synthio_note_get_vibrato_depth(self));
