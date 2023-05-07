@@ -46,6 +46,8 @@ CIRCUITPY_BLE_FILE_SERVICE ?= 1
 CIRCUITPY_SERIAL_BLE ?= 1
 
 CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE ?= 1
+CIRCUITPY_MEMORYMAP ?= 1
+
 
 # nRF52840-specific
 
@@ -68,6 +70,7 @@ SOFTDEV_VERSION ?= 6.1.0
 
 BOOT_SETTING_ADDR = 0xFF000
 NRF_DEFINES += -DNRF52840_XXAA -DNRF52840
+
 
 # CircuitPython doesn't yet support NFC so force the NFC antenna pins to be GPIO.
 # See https://github.com/adafruit/circuitpython/issues/1300
