@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Artyom Skrobov
+ * Copyright (c) 2023 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,28 @@
 
 #pragma once
 
-#include "py/objnamedtuple.h"
+#include "shared-module/synthio/__init__.h"
 
-typedef struct synthio_synth synthio_synth_t;
-extern int16_t shared_bindings_synthio_square_wave[];
-extern const mp_obj_namedtuple_type_t synthio_envelope_type_obj;
-void synthio_synth_envelope_set(synthio_synth_t *synth, mp_obj_t envelope_obj);
-mp_obj_t synthio_synth_envelope_get(synthio_synth_t *synth);
-mp_float_t common_hal_synthio_midi_to_hz_float(mp_float_t note);
-mp_float_t common_hal_synthio_onevo_to_hz_float(mp_float_t note);
+typedef struct synthio_note_obj {
+    mp_obj_base_t base;
+
+    mp_float_t frequency;
+    mp_float_t amplitude;
+    mp_obj_t waveform_obj, envelope_obj;
+
+    int32_t sample_rate;
+
+    int32_t frequency_scaled;
+    int32_t amplitude_scaled;
+    synthio_lfo_descr_t tremolo_descr, vibrato_descr;
+    synthio_lfo_state_t tremolo_state, vibrato_state;
+
+    mp_buffer_info_t waveform_buf;
+    synthio_envelope_definition_t envelope_def;
+} synthio_note_obj_t;
+
+void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate);
+uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t *loudness);
+void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate);
+bool synthio_note_playing(synthio_note_obj_t *self);
+uint32_t synthio_note_envelope(synthio_note_obj_t *self);

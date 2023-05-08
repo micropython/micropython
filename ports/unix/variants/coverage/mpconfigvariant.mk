@@ -42,6 +42,7 @@ SRC_BITMAP := \
 	shared-bindings/struct/__init__.c \
 	shared-bindings/synthio/__init__.c \
 	shared-bindings/synthio/MidiTrack.c \
+	shared-bindings/synthio/Note.c \
 	shared-bindings/synthio/Synthesizer.c \
 	shared-bindings/traceback/__init__.c \
 	shared-bindings/util.c \
@@ -64,6 +65,7 @@ SRC_BITMAP := \
 	shared-module/struct/__init__.c \
 	shared-module/synthio/__init__.c \
 	shared-module/synthio/MidiTrack.c \
+	shared-module/synthio/Note.c \
 	shared-module/synthio/Synthesizer.c \
 	shared-module/traceback/__init__.c \
 	shared-module/zlib/__init__.c \

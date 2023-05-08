@@ -36,6 +36,9 @@
 #include "shared-bindings/synthio/__init__.h"
 #include "supervisor/shared/translate/translate.h"
 
+//| NoteSequence = Sequence[Union[int, Note]]
+//| """A sequence of notes, which can each be integer MIDI notes or `Note` objects"""
+//|
 //| class Synthesizer:
 //|     def __init__(
 //|         self,
@@ -48,7 +51,9 @@
 //|
 //|         This API is experimental.
 //|
-//|         Notes use MIDI note numbering, with 60 being C4 or Middle C, approximately 262Hz.
+//|         Integer notes use MIDI note numbering, with 60 being C4 or Middle C,
+//|         approximately 262Hz. Integer notes use the given waveform & envelope,
+//|         and do not support advanced features like tremolo or vibrato.
 //|
 //|         :param int sample_rate: The desired playback sample rate; higher sample rate requires more memory
 //|         :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit)
@@ -76,7 +81,6 @@ STATIC mp_obj_t synthio_synthesizer_make_new(const mp_obj_type_t *type, size_t n
         bufinfo_waveform.len / 2,
         args[ARG_envelope].u_obj);
 
-
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -86,12 +90,12 @@ STATIC void check_for_deinit(synthio_synthesizer_obj_t *self) {
     }
 }
 
-//|     def press(self, /, press: Sequence[int] = ()) -> None:
-//|         """Turn some notes on. Notes use MIDI numbering, with 60 being middle C, approximately 262Hz.
+//|     def press(self, /, press: NoteSequence = ()) -> None:
+//|         """Turn some notes on.
 //|
 //|         Pressing a note that was already pressed has no effect.
 //|
-//|         :param Sequence[int] press: Any sequence of integer notes."""
+//|         :param NoteSequence press: Any sequence of notes."""
 STATIC mp_obj_t synthio_synthesizer_press(mp_obj_t self_in, mp_obj_t press) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -99,12 +103,12 @@ STATIC mp_obj_t synthio_synthesizer_press(mp_obj_t self_in, mp_obj_t press) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_press_obj, synthio_synthesizer_press);
-//|     def release(self, /, release: Sequence[int] = ()) -> None:
-//|         """Turn some notes off. Notes use MIDI numbering, with 60 being middle C, approximately 262Hz.
+//|     def release(self, /, release: NoteSequence = ()) -> None:
+//|         """Turn some notes off.
 //|
 //|         Releasing a note that was already released has no effect.
 //|
-//|         :param Sequence[int] release: Any sequence of integer notes."""
+//|         :param NoteSequence release: Any sequence of notes."""
 STATIC mp_obj_t synthio_synthesizer_release(mp_obj_t self_in, mp_obj_t release) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -113,10 +117,8 @@ STATIC mp_obj_t synthio_synthesizer_release(mp_obj_t self_in, mp_obj_t release) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_release_obj, synthio_synthesizer_release);
 
-//|     def release_then_press(
-//|         self, release: Sequence[int] = (), press: Sequence[int] = ()
-//|     ) -> None:
-//|         """Turn some notes on and/or off. Notes use MIDI numbering, with 60 being middle C.
+//|     def release_then_press(self, release: NoteSequence = (), press: NoteSequence = ()) -> None:
+//|         """Turn some notes on and/or off.
 //|
 //|         It is OK to release note that was not actually turned on.
 //|
@@ -125,8 +127,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_release_obj, synthio_synthe
 //|         Releasing and pressing the note again has little effect, but does reset the phase
 //|         of the note, which may be perceptible as a small glitch.
 //|
-//|         :param Sequence[int] release: Any sequence of integer notes.
-//|         :param Sequence[int] press: Any sequence of integer notes."""
+//|         :param NoteSequence release: Any sequence of notes.
+//|         :param NoteSequence press: Any sequence of notes."""
 STATIC mp_obj_t synthio_synthesizer_release_then_press(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_release, ARG_press };
     static const mp_arg_t allowed_args[] = {
@@ -146,13 +148,13 @@ STATIC mp_obj_t synthio_synthesizer_release_then_press(mp_uint_t n_args, const m
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_release_then_press_obj, 1, synthio_synthesizer_release_then_press);
 
 //
-//|     def release_all_then_press(self, /, press: Sequence[int]) -> None:
+//|     def release_all_then_press(self, /, press: NoteSequence) -> None:
 //|         """Turn any currently-playing notes off, then turn on the given notes
 //|
 //|         Releasing and pressing the note again has little effect, but does reset the phase
 //|         of the note, which may be perceptible as a small glitch.
 //|
-//|         :param Sequence[int] press: Any sequence of integer notes."""
+//|         :param NoteSequence press: Any sequence of notes."""
 STATIC mp_obj_t synthio_synthesizer_release_all_then_press(mp_obj_t self_in, mp_obj_t press) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -183,7 +185,7 @@ STATIC mp_obj_t synthio_synthesizer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_deinit_obj, synthio_synthesizer_deinit);
 
-//|     def __enter__(self) -> MidiTrack:
+//|     def __enter__(self) -> Synthesizer:
 //|         """No-op used by Context Managers."""
 //|         ...
 //  Provided by context manager helper.
@@ -232,7 +234,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_get_sample_rate_obj, synthio_synth
 MP_PROPERTY_GETTER(synthio_synthesizer_sample_rate_obj,
     (mp_obj_t)&synthio_synthesizer_get_sample_rate_obj);
 
-//|     pressed: Tuple[int]
+//|     pressed: NoteSequence
 //|     """A sequence of the currently pressed notes (read-only property)"""
 //|
 STATIC mp_obj_t synthio_synthesizer_obj_get_pressed(mp_obj_t self_in) {
