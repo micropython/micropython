@@ -664,7 +664,7 @@ STATIC mp_obj_t wifi_radio_stop_dhcp_client(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_dhcp_client_obj, wifi_radio_stop_dhcp_client);
 
 //|     def start_dhcp_ap(self) -> None:
-//|         """Starts the access point DHCP client."""
+//|         """Starts the access point DHCP server."""
 //|         ...
 STATIC mp_obj_t wifi_radio_start_dhcp_server(mp_obj_t self) {
     common_hal_wifi_radio_start_dhcp_server(self);
@@ -673,7 +673,7 @@ STATIC mp_obj_t wifi_radio_start_dhcp_server(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_dhcp_server_obj, wifi_radio_start_dhcp_server);
 
 //|     def stop_dhcp_ap(self) -> None:
-//|         """Stops the access point DHCP client. Needed to assign a static IP address."""
+//|         """Stops the access point DHCP server. Needed to assign a static IP address."""
 //|         ...
 STATIC mp_obj_t wifi_radio_stop_dhcp_server(mp_obj_t self) {
     common_hal_wifi_radio_stop_dhcp_server(self);
