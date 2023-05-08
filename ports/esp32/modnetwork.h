@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_ESP32_MODNETWORK_H
 #define MICROPY_INCLUDED_ESP32_MODNETWORK_H
 
-#include "esp_event.h"
+#include "esp_netif.h"
 
 enum { PHY_LAN8710, PHY_LAN8720, PHY_IP101, PHY_RTL8201, PHY_DP83848, PHY_KSZ8041, PHY_KSZ8081, PHY_KSZ8851SNL = 100, PHY_DM9051, PHY_W5500 };
 #define IS_SPI_PHY(NUM) (NUM >= 100)
@@ -40,10 +40,11 @@ enum {
     STAT_GOT_IP     = 1010,
 };
 
-typedef struct _wlan_if_obj_t {
+typedef struct _base_if_obj_t {
     mp_obj_base_t base;
-    int if_id;
-} wlan_if_obj_t;
+    esp_interface_t if_id;
+    esp_netif_t *netif;
+} base_if_obj_t;
 
 extern const mp_obj_type_t esp_network_wlan_type;
 
@@ -64,7 +65,6 @@ static inline void esp_exceptions(esp_err_t e) {
 }
 
 void socket_events_deinit(void);
-void network_wlan_event_handler(system_event_t *event);
 void esp_initialise_wifi(void);
 
 #endif

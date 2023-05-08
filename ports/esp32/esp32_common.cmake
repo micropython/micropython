@@ -1,8 +1,9 @@
 # Set location of base MicroPython directory.
 if(NOT MICROPY_DIR)
-    get_filename_component(MICROPY_DIR ${CMAKE_CURRENT_LIST_DIR}/../../.. ABSOLUTE)
+    get_filename_component(MICROPY_DIR ${CMAKE_CURRENT_LIST_DIR}/../.. ABSOLUTE)
 endif()
 
+# Set location of the ESP32 port directory.
 if(NOT MICROPY_PORT_DIR)
     get_filename_component(MICROPY_PORT_DIR ${MICROPY_DIR}/ports/esp32 ABSOLUTE)
 endif()
@@ -19,11 +20,11 @@ if(NOT CMAKE_BUILD_EARLY_EXPANSION)
     include(${MICROPY_DIR}/extmod/extmod.cmake)
 endif()
 
-set(MICROPY_QSTRDEFS_PORT
+list(APPEND MICROPY_QSTRDEFS_PORT
     ${MICROPY_PORT_DIR}/qstrdefsport.h
 )
 
-set(MICROPY_SOURCE_SHARED
+list(APPEND MICROPY_SOURCE_SHARED
     ${MICROPY_DIR}/shared/readline/readline.c
     ${MICROPY_DIR}/shared/netutils/netutils.c
     ${MICROPY_DIR}/shared/timeutils/timeutils.c
@@ -33,25 +34,22 @@ set(MICROPY_SOURCE_SHARED
     ${MICROPY_DIR}/shared/runtime/pyexec.c
 )
 
-set(MICROPY_SOURCE_LIB
+list(APPEND MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs1.c
     ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
     ${MICROPY_DIR}/lib/littlefs/lfs2.c
     ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
-    ${MICROPY_DIR}/lib/mbedtls_errors/esp32_mbedtls_errors.c
+    #${MICROPY_DIR}/lib/mbedtls_errors/esp32_mbedtls_errors.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
 )
-if(IDF_TARGET STREQUAL "esp32c3")
-    list(APPEND MICROPY_SOURCE_LIB ${MICROPY_DIR}/shared/runtime/gchelper_generic.c)
-endif()
 
-set(MICROPY_SOURCE_DRIVERS
+list(APPEND MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/bus/softspi.c
     ${MICROPY_DIR}/drivers/dht/dht.c
 )
 
-set(MICROPY_SOURCE_PORT
+list(APPEND MICROPY_SOURCE_PORT
     main.c
     ppp_set_auth.c
     uart.c
@@ -93,7 +91,7 @@ set(MICROPY_SOURCE_PORT
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 
-set(MICROPY_SOURCE_QSTR
+list(APPEND MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
     ${MICROPY_SOURCE_USERMOD}
@@ -103,62 +101,41 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_BOARD}
 )
 
-set(IDF_COMPONENTS
+list(APPEND IDF_COMPONENTS
     app_update
     bootloader_support
     bt
     driver
-    esp_adc_cal
+    esp_adc
+    esp_app_format
     esp_common
     esp_eth
     esp_event
+    esp_hw_support
+    esp_netif
+    esp_partition
+    esp_pm
+    esp_psram
     esp_ringbuf
     esp_rom
+    esp_system
+    esp_timer
     esp_wifi
     freertos
+    hal
     heap
     log
     lwip
     mbedtls
-    mdns
     newlib
     nvs_flash
     sdmmc
     soc
     spi_flash
-    tcpip_adapter
     ulp
     vfs
     xtensa
 )
-
-if(IDF_VERSION_MINOR GREATER_EQUAL 1 OR IDF_VERSION_MAJOR GREATER_EQUAL 5)
-    list(APPEND IDF_COMPONENTS esp_netif)
-endif()
-
-if(IDF_VERSION_MINOR GREATER_EQUAL 2 OR IDF_VERSION_MAJOR GREATER_EQUAL 5)
-    list(APPEND IDF_COMPONENTS esp_system)
-    list(APPEND IDF_COMPONENTS esp_timer)
-endif()
-
-if(IDF_VERSION_MINOR GREATER_EQUAL 3 OR IDF_VERSION_MAJOR GREATER_EQUAL 5)
-    list(APPEND IDF_COMPONENTS esp_hw_support)
-    list(APPEND IDF_COMPONENTS esp_pm)
-    list(APPEND IDF_COMPONENTS hal)
-endif()
-
-if(IDF_TARGET STREQUAL "esp32")
-    list(APPEND IDF_COMPONENTS esp32)
-elseif(IDF_TARGET STREQUAL "esp32c3")
-    list(APPEND IDF_COMPONENTS esp32c3)
-    list(APPEND IDF_COMPONENTS riscv)
-elseif(IDF_TARGET STREQUAL "esp32s2")
-    list(APPEND IDF_COMPONENTS esp32s2)
-    list(APPEND IDF_COMPONENTS tinyusb)
-elseif(IDF_TARGET STREQUAL "esp32s3")
-    list(APPEND IDF_COMPONENTS esp32s3)
-    list(APPEND IDF_COMPONENTS tinyusb)
-endif()
 
 # Register the main IDF component.
 idf_component_register(
@@ -216,18 +193,8 @@ target_link_libraries(${MICROPY_TARGET} usermod)
 # Collect all of the include directories and compile definitions for the IDF components.
 foreach(comp ${IDF_COMPONENTS})
     micropy_gather_target_properties(__idf_${comp})
+    micropy_gather_target_properties(${comp})
 endforeach()
-
-if(IDF_VERSION_MINOR GREATER_EQUAL 2 OR IDF_VERSION_MAJOR GREATER_EQUAL 5)
-    # These paths cannot currently be found by the IDF_COMPONENTS search loop above,
-    # so add them explicitly.
-    list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/soc/${IDF_TARGET}/include)
-    list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/soc/include)
-    if(IDF_VERSION_MINOR GREATER_EQUAL 3)
-        list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/tinyusb/additions/include)
-        list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/tinyusb/tinyusb/src)
-    endif()
-endif()
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)

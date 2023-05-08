@@ -32,6 +32,7 @@
 #include "py/stream.h"
 #include "shared/netutils/netutils.h"
 #include "modmachine.h"
+#include "ppp_set_auth.h"
 
 #include "netif/ppp/ppp.h"
 #include "netif/ppp/pppos.h"

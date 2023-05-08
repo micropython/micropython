@@ -3,6 +3,8 @@
 
 #include "esp_adc_cal.h"
 
+#define ADC_ATTEN_MAX SOC_ADC_ATTEN_NUM
+
 typedef struct _madcblock_obj_t {
     mp_obj_base_t base;
     adc_unit_t unit_id;

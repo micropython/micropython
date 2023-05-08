@@ -32,7 +32,6 @@
 
 #include "esp_idf_version.h"
 
-// LAN only for ESP32 (not ESP32S2) and only for ESP-IDF v4.1 and higher
 #if MICROPY_PY_NETWORK_LAN
 
 #include "esp_eth.h"
@@ -47,8 +46,7 @@
 #include "modnetwork.h"
 
 typedef struct _lan_if_obj_t {
-    mp_obj_base_t base;
-    int if_id; // MUST BE FIRST to match wlan_if_obj_t
+    base_if_obj_t base;
     bool initialized;
     bool active;
     int8_t mdc_pin;
@@ -59,12 +57,11 @@ typedef struct _lan_if_obj_t {
     uint8_t phy_addr;
     uint8_t phy_type;
     esp_eth_phy_t *phy;
-    esp_netif_t *eth_netif;
     esp_eth_handle_t eth_handle;
 } lan_if_obj_t;
 
 const mp_obj_type_t lan_if_type;
-STATIC lan_if_obj_t lan_obj = {{&lan_if_type}, ESP_IF_ETH, false, false};
+STATIC lan_if_obj_t lan_obj = {{{&lan_if_type}, ESP_IF_ETH, NULL}, false, false};
 STATIC uint8_t eth_status = 0;
 
 static void eth_event_handler(void *arg, esp_event_base_t event_base,
@@ -114,11 +111,8 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         { MP_QSTR_spi,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_cs,           MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_int,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        #if ESP_IDF_VERSION_MINOR >= 4
-        // Dynamic ref_clk configuration available at v4.4
         { MP_QSTR_ref_clk_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_ref_clk,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        #endif
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -147,12 +141,8 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         args[ARG_phy_type].u_int != PHY_LAN8720 &&
         args[ARG_phy_type].u_int != PHY_IP101 &&
         args[ARG_phy_type].u_int != PHY_RTL8201 &&
-        #if ESP_IDF_VERSION_MINOR >= 3      // KSZ8041 is new in ESP-IDF v4.3
         args[ARG_phy_type].u_int != PHY_KSZ8041 &&
-        #endif
-        #if ESP_IDF_VERSION_MINOR >= 4      // KSZ8081 is new in ESP-IDF v4.4
         args[ARG_phy_type].u_int != PHY_KSZ8081 &&
-        #endif
         #if CONFIG_ETH_USE_SPI_ETHERNET
         #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
         args[ARG_phy_type].u_int != PHY_KSZ8851SNL &&
@@ -169,17 +159,21 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
 
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
+    #if CONFIG_IDF_TARGET_ESP32
+    eth_esp32_emac_config_t esp32_config = ETH_ESP32_EMAC_DEFAULT_CONFIG();
+    #endif
+
     esp_eth_mac_t *mac = NULL;
 
-    // Dynamic ref_clk configuration available at v4.4
-    #if ESP_IDF_VERSION_MINOR >= 4
+    #if CONFIG_IDF_TARGET_ESP32
+    // Dynamic ref_clk configuration.
     if (args[ARG_ref_clk_mode].u_int != -1) {
         // Map the GPIO_MODE constants to EMAC_CLK constants.
-        mac_config.clock_config.rmii.clock_mode =
+        esp32_config.clock_config.rmii.clock_mode =
             args[ARG_ref_clk_mode].u_int == GPIO_MODE_INPUT ? EMAC_CLK_EXT_IN : EMAC_CLK_OUT;
     }
     if (args[ARG_ref_clk].u_obj != mp_const_none) {
-        mac_config.clock_config.rmii.clock_gpio = machine_pin_get_id(args[ARG_ref_clk].u_obj);
+        esp32_config.clock_config.rmii.clock_gpio = machine_pin_get_id(args[ARG_ref_clk].u_obj);
     }
     #endif
 
@@ -224,7 +218,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #if CONFIG_IDF_TARGET_ESP32
         case PHY_LAN8710:
         case PHY_LAN8720:
-            self->phy = esp_eth_phy_new_lan8720(&phy_config);
+            self->phy = esp_eth_phy_new_lan87xx(&phy_config);
             break;
         case PHY_IP101:
             self->phy = esp_eth_phy_new_ip101(&phy_config);
@@ -235,16 +229,10 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         case PHY_DP83848:
             self->phy = esp_eth_phy_new_dp83848(&phy_config);
             break;
-        #if ESP_IDF_VERSION_MINOR >= 3 // KSZ8041 is new in ESP-IDF v4.3
         case PHY_KSZ8041:
-            self->phy = esp_eth_phy_new_ksz8041(&phy_config);
-            break;
-        #endif
-        #if ESP_IDF_VERSION_MINOR >= 4 // KSZ8081 is new in ESP-IDF v4.4
         case PHY_KSZ8081:
-            self->phy = esp_eth_phy_new_ksz8081(&phy_config);
+            self->phy = esp_eth_phy_new_ksz80xx(&phy_config);
             break;
-        #endif
         #endif
         #if CONFIG_ETH_USE_SPI_ETHERNET
         #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
@@ -282,9 +270,9 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         if (self->mdc_pin == -1 || self->mdio_pin == -1) {
             mp_raise_ValueError(MP_ERROR_TEXT("mdc and mdio must be specified"));
         }
-        mac_config.smi_mdc_gpio_num = self->mdc_pin;
-        mac_config.smi_mdio_gpio_num = self->mdio_pin;
-        mac = esp_eth_mac_new_esp32(&mac_config);
+        esp32_config.smi_mdc_gpio_num = self->mdc_pin;
+        esp32_config.smi_mdio_gpio_num = self->mdio_pin;
+        mac = esp_eth_mac_new_esp32(&esp32_config, &mac_config);
     }
     #endif
 
@@ -293,11 +281,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
 
     esp_netif_config_t cfg = ESP_NETIF_DEFAULT_ETH();
-    self->eth_netif = esp_netif_new(&cfg);
-
-    if (esp_eth_set_default_handlers(self->eth_netif) != ESP_OK) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_set_default_handlers failed (invalid parameter)"));
-    }
+    self->base.netif = esp_netif_new(&cfg);
 
     if (esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL) != ESP_OK) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_event_handler_register failed"));
@@ -323,7 +307,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         }
     }
 
-    if (esp_netif_attach(self->eth_netif, esp_eth_new_netif_glue(self->eth_handle)) != ESP_OK) {
+    if (esp_netif_attach(self->base.netif, esp_eth_new_netif_glue(self->eth_handle)) != ESP_OK) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_netif_attach failed"));
     }
 
@@ -384,7 +368,7 @@ STATIC mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         }
                         if (
                             (esp_eth_ioctl(self->eth_handle, ETH_CMD_S_MAC_ADDR, bufinfo.buf) != ESP_OK) ||
-                            (esp_netif_set_mac(self->eth_netif, bufinfo.buf) != ESP_OK)
+                            (esp_netif_set_mac(self->base.netif, bufinfo.buf) != ESP_OK)
                             ) {
                             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("failed setting MAC address"));
                         }

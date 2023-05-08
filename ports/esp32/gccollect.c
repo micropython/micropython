@@ -34,7 +34,6 @@
 #include "py/gc.h"
 #include "py/mpthread.h"
 #include "gccollect.h"
-#include "soc/cpu.h"
 
 #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 
@@ -50,7 +49,7 @@ static void gc_collect_inner(int level) {
 
     if (level == XCHAL_NUM_AREGS / 8) {
         // get the sp
-        volatile uint32_t sp = (uint32_t)get_sp();
+        volatile uint32_t sp = (uint32_t)esp_cpu_get_sp();
         gc_collect_root((void **)sp, ((mp_uint_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
         return;
     }

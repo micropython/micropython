@@ -36,16 +36,13 @@
 #include "mphalport.h"
 
 #include "driver/timer.h"
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 1)
 #include "hal/timer_ll.h"
-#define HAVE_TIMER_LL (1)
-#endif
 
 #define TIMER_INTR_SEL TIMER_INTR_LEVEL
 #define TIMER_DIVIDER  8
 
 // TIMER_BASE_CLK is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
-#define TIMER_SCALE    (TIMER_BASE_CLK / TIMER_DIVIDER)
+#define TIMER_SCALE    (APB_CLK_FREQ / TIMER_DIVIDER)
 
 #define TIMER_FLAGS    0
 
@@ -143,39 +140,14 @@ STATIC void machine_timer_isr(void *self_in) {
     machine_timer_obj_t *self = self_in;
     timg_dev_t *device = self->group ? &(TIMERG1) : &(TIMERG0);
 
-    #if HAVE_TIMER_LL
-
-    #if CONFIG_IDF_TARGET_ESP32 && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
-    device->hw_timer[self->index].update = 1;
-    #else
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
     #if CONFIG_IDF_TARGET_ESP32S3
     device->hw_timer[self->index].update.tn_update = 1;
     #else
     device->hw_timer[self->index].update.tx_update = 1;
     #endif
-    #else
-    device->hw_timer[self->index].update.update = 1;
-    #endif
-    #endif
+
     timer_ll_clear_intr_status(device, self->index);
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
-    timer_ll_set_alarm_enable(device, self->index, self->repeat);
-    #else
     timer_ll_set_alarm_value(device, self->index, self->repeat);
-    #endif
-
-    #else
-
-    device->hw_timer[self->index].update = 1;
-    if (self->index) {
-        device->int_clr_timers.t1 = 1;
-    } else {
-        device->int_clr_timers.t0 = 1;
-    }
-    device->hw_timer[self->index].config.alarm_en = self->repeat;
-
-    #endif
 
     mp_sched_schedule(self->callback, self);
     mp_hal_wake_main_task_from_isr();
