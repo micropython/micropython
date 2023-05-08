@@ -203,10 +203,17 @@ all: build
 
 rebuild: clean mpy_mtb_clean all
 
+
+ifndef SINGLE_TEST
+TESTS=-d psoc6
+else
+TESTS=$(SINGLE_TEST)
+endif
+
 test: 
 	$(info )
 	$(info Running PSoC6 tests)
-	$(Q) cd ../../tests ; ./run-tests.py --target psoc6 --device /dev/ttyACM0 -d psoc6
+	$(Q) cd ../../tests ; ./run-tests.py --target psoc6 --device /dev/ttyACM0 $(TESTS)
 
 program: mpy_program_unix
 
