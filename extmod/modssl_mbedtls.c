@@ -225,7 +225,11 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         size_t key_len;
         const byte *key = (const byte *)mp_obj_str_get_data(args->key.u_obj, &key_len);
         // len should include terminating null
+        #if MBEDTLS_VERSION_NUMBER >= 0x03000000
+        ret = mbedtls_pk_parse_key(&o->pkey, key, key_len + 1, NULL, 0, mbedtls_ctr_drbg_random, &o->ctr_drbg);
+        #else
         ret = mbedtls_pk_parse_key(&o->pkey, key, key_len + 1, NULL, 0);
+        #endif
         if (ret != 0) {
             ret = MBEDTLS_ERR_PK_BAD_INPUT_DATA; // use general error for all key errors
             goto cleanup;
