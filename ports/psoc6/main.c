@@ -49,7 +49,8 @@ extern void time_init(void);
 extern void os_init(void);
 extern void machine_init(void);
 extern void machine_deinit(void);
-extern void network_ifx_init(void);
+extern void network_init(void);
+extern void network_deinit(void);
 
 void mpy_task(void *arg);
 
@@ -102,9 +103,7 @@ void mpy_task(void *arg) {
     os_init();
     rtc_init();
     time_init();
-    #if MICROPY_PY_NETWORK
-    network_ifx_init();
-    #endif
+
 
 soft_reset:
 
@@ -122,6 +121,10 @@ soft_reset:
 
     readline_init0();
     machine_init();
+    #if MICROPY_PY_NETWORK
+    network_init();
+    mod_network_init();
+    #endif
 
     #if MICROPY_VFS
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
@@ -167,6 +170,10 @@ soft_reset:
 
     // Deinitialize modules
     machine_deinit();
+    #if MICROPY_PY_NETWORK
+    mod_network_deinit();
+    network_deinit();
+    #endif
 
     // gc_sweep_all();
     mp_deinit();
