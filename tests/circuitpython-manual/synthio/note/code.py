@@ -84,6 +84,25 @@ def synthesize4(synth):
     yield 36
 
 
+def synthesize5(synth):
+    notes = [
+        synthio.Note(
+            frequency=synthio.midi_to_hz(60 + i + o),
+            waveform=sine,
+            envelope=envelope,
+        )
+        for i in [0, 4, 7]
+        for o in [0, -12, 12]
+    ]
+
+    for n in notes:
+        print(n)
+        synth.press((n,))
+        yield 120
+    synth.release_all()
+    yield 36
+
+
 def chain(*args):
     for a in args:
         yield from a
@@ -94,7 +113,7 @@ with wave.open("tune-noenv.wav", "w") as f:
     f.setnchannels(1)
     f.setsampwidth(2)
     f.setframerate(48000)
-    for n in chain(synthesize2(synth), synthesize3(synth), synthesize4(synth)):
+    for n in chain(synthesize5(synth)):
         for i in range(n):
             result, data = audiocore.get_buffer(synth)
             f.writeframes(data)
