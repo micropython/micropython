@@ -153,4 +153,3 @@ class InputExpander(Input):
 
 		self.expander.pin_mode(pin, Pin.IN)
 		self.buttons.append(pin)
-
