@@ -317,7 +317,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|         *,
 //|         channel: int = 1,
 //|         authmode: Optional[AuthMode] = None,
-//|         max_connections: Optional[int] = 4
+//|         max_connections: Optional[int] = 4,
 //|     ) -> None:
 //|         """Starts running an access point with the specified ssid and password.
 //|
@@ -416,7 +416,7 @@ MP_PROPERTY_GETTER(wifi_radio_ap_active_obj,
 //|         *,
 //|         channel: int = 0,
 //|         bssid: Optional[Union[str | ReadableBuffer]] = None,
-//|         timeout: Optional[float] = None
+//|         timeout: Optional[float] = None,
 //|     ) -> None:
 //|         """Connects to the given ssid and waits for an ip address. Reconnections are handled
 //|         automatically once one connection succeeds.
@@ -551,7 +551,7 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_subnet_ap_obj,
 //|         ipv4: ipaddress.IPv4Address,
 //|         netmask: ipaddress.IPv4Address,
 //|         gateway: ipaddress.IPv4Address,
-//|         ipv4_dns: Optional[ipaddress.IPv4Address]
+//|         ipv4_dns: Optional[ipaddress.IPv4Address],
 //|     ) -> None:
 //|         """Sets the IP v4 address of the station. Must include the netmask and gateway. DNS address is optional.
 //|         Setting the address manually will stop the DHCP client."""
