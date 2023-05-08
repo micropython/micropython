@@ -123,9 +123,13 @@ enum scan_filter_mode
     SCAN_FILTER_INVALID
 };
 
+#define NETWORK_WLAN_DEFAULT_SSID "mpy-psoc6-wlan"
+#define NETWORK_WLAN_DEFAULT_PASSWORD "mpy_PSOC6_w3lc0me!"
+
 extern const mp_obj_type_t mp_network_ifx_wcm_type;
 
-void network_ifx_init(void);
+void network_init(void);
+void network_deinit(void);
 void error_handler(cy_rslt_t result, char *message);
 
 #endif // MICROPY_INCLUDED_EXTMOD_NETWORK_IFX_WCM_H
