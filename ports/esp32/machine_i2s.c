@@ -148,7 +148,7 @@ STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
 };
 
 void machine_i2s_init0() {
-    for (i2s_port_t p = 0; p < I2S_NUM_MAX; p++) {
+    for (i2s_port_t p = 0; p < I2S_NUM_AUTO; p++) {
         MP_STATE_PORT(machine_i2s_obj)[p] = NULL;
     }
 }
@@ -269,15 +269,6 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
             num_bytes_requested_from_dma,
             &num_bytes_received_from_dma,
             delay);
-
-        // the following is a workaround for a bug in ESP-IDF v4.4
-        // https://github.com/espressif/esp-idf/issues/8121
-        #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
-        if ((delay != portMAX_DELAY) && (ret == ESP_ERR_TIMEOUT)) {
-            ret = ESP_OK;
-        }
-        #endif
-
         check_esp_err(ret);
 
         // process the transform buffer one frame at a time.
@@ -334,15 +325,6 @@ STATIC size_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appb
     }
 
     esp_err_t ret = i2s_write(self->port, appbuf->buf, appbuf->len, &num_bytes_written, delay);
-
-    // the following is a workaround for a bug in ESP-IDF v4.4
-    // https://github.com/espressif/esp-idf/issues/8121
-    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
-    if ((delay != portMAX_DELAY) && (ret == ESP_ERR_TIMEOUT)) {
-        ret = ESP_OK;
-    }
-    #endif
-
     check_esp_err(ret);
 
     if ((self->io_mode == ASYNCIO) && (num_bytes_written < appbuf->len)) {
@@ -467,10 +449,8 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     i2s_config.use_apll = false;
     i2s_config.tx_desc_auto_clear = true;
     i2s_config.fixed_mclk = 0;
-    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
-    i2s_config.mclk_multiple = I2S_MCLK_MULTIPLE_DEFAULT;
+    i2s_config.mclk_multiple = I2S_MCLK_MULTIPLE_256;
     i2s_config.bits_per_chan = 0;
-    #endif
 
     // I2S queue size equals the number of DMA buffers
     check_esp_err(i2s_driver_install(self->port, &i2s_config, i2s_config.dma_buf_count, &self->i2s_event_queue));
@@ -487,9 +467,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     #endif
 
     i2s_pin_config_t pin_config;
-    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
     pin_config.mck_io_num = I2S_PIN_NO_CHANGE;
-    #endif
     pin_config.bck_io_num = self->sck;
     pin_config.ws_io_num = self->ws;
 
@@ -527,7 +505,7 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     i2s_port_t port = mp_obj_get_int(args[0]);
-    if (port < 0 || port >= I2S_NUM_MAX) {
+    if (port < 0 || port >= I2S_NUM_AUTO) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
     }
 
@@ -841,6 +819,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_i2s_locals_dict
     );
 
-MP_REGISTER_ROOT_POINTER(struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX]);
+MP_REGISTER_ROOT_POINTER(struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_AUTO]);
 
 #endif // MICROPY_PY_MACHINE_I2S

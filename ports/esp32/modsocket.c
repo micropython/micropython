@@ -46,7 +46,6 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "shared/netutils/netutils.h"
-#include "mdns.h"
 #include "modnetwork.h"
 
 #include "lwip/sockets.h"
@@ -164,11 +163,7 @@ static int _socket_getaddrinfo3(const char *nodename, const char *servname,
         memcpy(nodename_no_local, nodename, nodename_len - local_len);
         nodename_no_local[nodename_len - local_len] = '\0';
 
-        #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
-        struct ip4_addr addr = {0};
-        #else
         esp_ip4_addr_t addr = {0};
-        #endif
 
         esp_err_t err = mdns_query_a(nodename_no_local, MDNS_QUERY_TIMEOUT_MS, &addr);
         if (err != ESP_OK) {
@@ -836,7 +831,7 @@ STATIC mp_obj_t esp_socket_initialize() {
     static int initialized = 0;
     if (!initialized) {
         ESP_LOGI("modsocket", "Initializing");
-        tcpip_adapter_init();
+        esp_netif_init();
         initialized = 1;
     }
     return mp_const_none;

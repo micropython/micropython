@@ -28,14 +28,17 @@
 #include "py/mphal.h"
 #include "usb.h"
 
-#if CONFIG_USB_ENABLED
+#if CONFIG_USB_OTG_SUPPORTED
 
+#include "esp_timer.h"
+#ifndef NO_QSTR
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
+#endif
 
 #define CDC_ITF TINYUSB_CDC_ACM_0
 
-static uint8_t usb_rx_buf[CONFIG_USB_CDC_RX_BUFSIZE];
+static uint8_t usb_rx_buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE];
 
 static void usb_callback_rx(int itf, cdcacm_event_t *event) {
     // TODO: what happens if more chars come in during this function, are they lost?
@@ -79,7 +82,7 @@ void usb_init(void) {
 
 void usb_tx_strn(const char *str, size_t len) {
     // Write out the data to the CDC interface, but only while the USB host is connected.
-    uint64_t timeout = esp_timer_get_time() + (uint64_t)(MICROPY_HW_USB_CDC_TX_TIMEOUT * 1000);
+    uint64_t timeout = esp_timer_get_time() + (uint64_t)(MICROPY_HW_USB_CDC_TX_TIMEOUT_MS * 1000);
     while (tud_cdc_n_connected(CDC_ITF) && len && esp_timer_get_time() < timeout) {
         size_t l = tinyusb_cdcacm_write_queue(CDC_ITF, (uint8_t *)str, len);
         str += l;
@@ -88,4 +91,4 @@ void usb_tx_strn(const char *str, size_t len) {
     }
 }
 
-#endif // CONFIG_USB_ENABLED
+#endif // CONFIG_USB_OTG_SUPPORTED

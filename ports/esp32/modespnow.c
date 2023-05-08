@@ -179,7 +179,7 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
 // Forward declare the send and recv ESPNow callbacks
 STATIC void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);
 
-STATIC void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len);
+STATIC void recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *msg, int msg_len);
 
 // ESPNow.init(): Initialise the data buffers and ESP-NOW functions.
 // Initialise the Espressif ESPNOW software stack, register callbacks and
@@ -254,13 +254,9 @@ STATIC mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         self->recv_timeout_ms = args[ARG_timeout_ms].u_int;
     }
     if (args[ARG_rate].u_int >= 0) {
-        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
         esp_initialise_wifi();  // Call the wifi init code in network_wlan.c
         check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, args[ARG_rate].u_int));
         check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, args[ARG_rate].u_int));
-        #else
-        mp_raise_ValueError(MP_ERROR_TEXT("rate option not supported"));
-        #endif
     }
     if (args[ARG_get].u_obj == MP_OBJ_NULL) {
         return mp_const_none;
@@ -329,11 +325,7 @@ static inline int8_t _get_rssi_from_wifi_pkt(const uint8_t *msg) {
         (wifi_promiscuous_pkt_t *)(msg - sizeof_espnow_frame_format -
             sizeof(wifi_promiscuous_pkt_t));
 
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 2, 0)
-    return wifi_pkt->rx_ctrl.rssi - 100;  // Offset rssi for IDF 4.0.2
-    #else
     return wifi_pkt->rx_ctrl.rssi;
-    #endif
 }
 
 // Lookup a peer in the peers table and return a reference to the item in the
@@ -573,7 +565,7 @@ STATIC void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status) {
 // ESPNow packet.
 // If the buffer is full, drop the message and increment the dropped count.
 // Schedules the user callback if one has been registered (ESPNow.config()).
-STATIC void recv_cb(const uint8_t *mac_addr, const uint8_t *msg, int msg_len) {
+STATIC void recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *msg, int msg_len) {
     esp_espnow_obj_t *self = _get_singleton();
     ringbuf_t *buf = self->recv_buffer;
     // TODO: Test this works with ">".
@@ -590,7 +582,7 @@ STATIC void recv_cb(const uint8_t *mac_addr, const uint8_t *msg, int msg_len) {
     #endif // MICROPY_ESPNOW_RSSI
 
     ringbuf_put_bytes(buf, (uint8_t *)&header, sizeof(header));
-    ringbuf_put_bytes(buf, mac_addr, ESP_NOW_ETH_ALEN);
+    ringbuf_put_bytes(buf, recv_info->src_addr, ESP_NOW_ETH_ALEN);
     ringbuf_put_bytes(buf, msg, msg_len);
     self->rx_packets++;
     if (self->recv_cb != mp_const_none) {
