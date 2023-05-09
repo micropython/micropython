@@ -358,6 +358,14 @@ void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
     dhcp_stop(NETIF_STA);
 }
 
+void common_hal_wifi_radio_start_dhcp_server(wifi_radio_obj_t *self) {
+    mp_raise_NotImplementedError(NULL);
+}
+
+void common_hal_wifi_radio_stop_dhcp_server(wifi_radio_obj_t *self) {
+    mp_raise_NotImplementedError(NULL);
+}
+
 void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway, mp_obj_t ipv4_dns) {
     common_hal_wifi_radio_stop_dhcp_client(self);
 
@@ -369,6 +377,10 @@ void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv
     if (ipv4_dns != MP_OBJ_NULL) {
         common_hal_wifi_radio_set_ipv4_dns(self, ipv4_dns);
     }
+}
+
+void common_hal_wifi_radio_set_ipv4_address_ap(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway) {
+    mp_raise_NotImplementedError(NULL);
 }
 
 volatile bool ping_received;
