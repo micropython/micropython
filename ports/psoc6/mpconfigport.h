@@ -30,6 +30,22 @@
 
 #include "shared/runtime/interrupt_char.h"
 
+
+// Control over Python builtins
+#define MICROPY_PY_IO_BUFFEREDWRITER            (1)
+#define MICROPY_PY_USELECT                      (1)
+#ifndef MICROPY_PY_USSL
+#define MICROPY_PY_USSL                         (1)
+#endif
+#define MICROPY_PY_IO                           (1)
+#define MICROPY_PY_IO_IOBASE                    (1)
+#define MICROPY_PY_UBINASCII                    (1)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW          (1)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE (1)
+#define MICROPY_STACK_CHECK                     (1)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO         (1)
+#define MICROPY_PY_ARRAY                        (1)
+
 // Board and hardware specific configuration
 #define MICROPY_HW_MCU_NAME                     "PSoC62"
 #define MICROPY_HELPER_REPL                     (1)
