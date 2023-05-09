@@ -184,28 +184,23 @@ STATIC void do_execute_raw_code(const mp_module_context_t *context, const mp_raw
     mp_obj_dict_t *mod_globals = context->module.globals;
 
     // save context
-    mp_obj_dict_t *volatile old_globals = mp_globals_get();
-    mp_obj_dict_t *volatile old_locals = mp_locals_get();
+    nlr_jump_callback_node_globals_locals_t ctx;
+    ctx.globals = mp_globals_get();
+    ctx.locals = mp_locals_get();
 
     // set new context
     mp_globals_set(mod_globals);
     mp_locals_set(mod_globals);
 
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_obj_t module_fun = mp_make_function_from_raw_code(rc, context, NULL);
-        mp_call_function_0(module_fun);
+    // set exception handler to restore context if an exception is raised
+    nlr_push_jump_callback(&ctx.callback, mp_globals_locals_set_from_nlr_jump_callback);
 
-        // finish nlr block, restore context
-        nlr_pop();
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-    } else {
-        // exception; restore context and re-raise same exception
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        nlr_jump(nlr.ret_val);
-    }
+    // make and execute the function
+    mp_obj_t module_fun = mp_make_function_from_raw_code(rc, context, NULL);
+    mp_call_function_0(module_fun);
+
+    // deregister exception handler and restore context
+    nlr_pop_jump_callback(true);
 }
 #endif
 

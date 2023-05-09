@@ -188,6 +188,12 @@ void mp_deinit(void) {
     #endif
 }
 
+void mp_globals_locals_set_from_nlr_jump_callback(void *ctx_in) {
+    nlr_jump_callback_node_globals_locals_t *ctx = ctx_in;
+    mp_globals_set(ctx->globals);
+    mp_locals_set(ctx->locals);
+}
+
 mp_obj_t MICROPY_WRAP_MP_LOAD_NAME(mp_load_name)(qstr qst) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qst));
@@ -1582,39 +1588,35 @@ void mp_import_all(mp_obj_t module) {
 
 mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_input_kind, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
     // save context
-    mp_obj_dict_t *volatile old_globals = mp_globals_get();
-    mp_obj_dict_t *volatile old_locals = mp_locals_get();
+    nlr_jump_callback_node_globals_locals_t ctx;
+    ctx.globals = mp_globals_get();
+    ctx.locals = mp_locals_get();
 
     // set new context
     mp_globals_set(globals);
     mp_locals_set(locals);
 
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        qstr source_name = lex->source_name;
-        mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, parse_input_kind == MP_PARSE_SINGLE_INPUT);
+    // set exception handler to restore context if an exception is raised
+    nlr_push_jump_callback(&ctx.callback, mp_globals_locals_set_from_nlr_jump_callback);
 
-        mp_obj_t ret;
-        if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {
-            // for compile only, return value is the module function
-            ret = module_fun;
-        } else {
-            // execute module function and get return value
-            ret = mp_call_function_0(module_fun);
-        }
+    qstr source_name = lex->source_name;
+    mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
+    mp_obj_t module_fun = mp_compile(&parse_tree, source_name, parse_input_kind == MP_PARSE_SINGLE_INPUT);
 
-        // finish nlr block, restore context and return value
-        nlr_pop();
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        return ret;
+    mp_obj_t ret;
+    if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {
+        // for compile only, return value is the module function
+        ret = module_fun;
     } else {
-        // exception; restore context and re-raise same exception
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        nlr_jump(nlr.ret_val);
+        // execute module function and get return value
+        ret = mp_call_function_0(module_fun);
     }
+
+    // deregister exception handler and restore context
+    nlr_pop_jump_callback(true);
+
+    // return value
+    return ret;
 }
 
 #endif // MICROPY_ENABLE_COMPILER
