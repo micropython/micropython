@@ -100,8 +100,16 @@ mpy_program_unix: $(MPY_MAIN_BUILD_DIR)/firmware.hex
 	$(OPENOCD_HOME)/bin/openocd -s $(OPENOCD_HOME)/scripts -s bsps/TARGET_APP_CY8CPROTO-062-4343W/config/GeneratedSource -c "source [find interface/kitprog3.cfg]; ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program $(MPY_DIR_OF_MAIN_MAKEFILE)/build/firmware.hex verify reset exit;"
 	$(info Programming done.)
 
+get_attached_dev:
+	$(info )
+	$(List of attached devices)
+	$(eval attached_dev = $(shell ~/ModusToolbox/tools_3.0/fw-loader/bin/fw-loader --device-list | sed -n -e 's/: KitProg3 CMSIS-DAP BULK-//' -e 's/FW Version[^0-9]*\(\([0-9]\.\)\{0,4\}[0-9][^.]\).*//p'| sed -n 's/^[ \t]*//p'))
+	$(info attached devices : $(attached_dev))
+	$(foreach device, $(attached_dev), $(info this device is: $(device)))
+
+
 
 mpy_program: mpy_program_unix
 
 
-.PHONY: mpy_mtb_init mpy_mtb_deinit mpy_mtb_build mpy_define_mtb_vars mpy_program
+.PHONY: mpy_mtb_init mpy_mtb_deinit mpy_mtb_build mpy_define_mtb_vars mpy_program get_attached_dev
