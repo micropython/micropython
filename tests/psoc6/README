@@ -298,7 +298,7 @@ skip  extmod/urandom_seed_default.py
 
 
 # enabled, but skipped, unclear why
-skip  extmod/ussl_poll.py
+skip  extmod/ussl_poll.py ---> To be evaluated
 
 # not enabled
 skip  extmod/utimeq1.py
