@@ -261,18 +261,18 @@ extmod/ure_split_notimpl.py => hangup
 ### skipped tests
 ### tests skipped by run-tests.py and potentially to be enabled in "mpconfigport.h"
 # unclear why skipped
-skip  basics/builtin_next_arg2.py
-skip  basics/builtin_range_binop.py
+skip  basics/builtin_next_arg2.py ---> Deferred
+skip  basics/builtin_range_binop.py ---> Deferred
 
 # excluded in run-tests.py because known to differ from Python
 skip  basics/class_inplace_op2.py
 skip  basics/exception_chain.py
 
 # unclear why skipped
-skip  basics/io_buffered_writer.py
-skip  basics/memoryview_itemsize.py
-skip  basics/namedtuple_asdict.py
-skip  basics/nanbox_smallint.py
+skip  basics/io_buffered_writer.py ---> Enabled
+skip  basics/memoryview_itemsize.py ---> Enabled
+skip  basics/namedtuple_asdict.py ---> To be evaluated
+skip  basics/nanbox_smallint.py ---> Deferred
 
 # excluded in run-tests.py because known to differ from Python
 skip  basics/subclass_native_call.py
@@ -285,9 +285,9 @@ skip  basics/sys_path.py
 skip  basics/sys_tracebacklimit.py
 
 # not enabled
-skip  extmod/btree1.py
-skip  extmod/btree_error.py
-skip  extmod/btree_gc.py
+skip  extmod/btree1.py  ---> Won't Enable
+skip  extmod/btree_error.py ---> Won't Enable
+skip  extmod/btree_gc.py ---> Won't Enable
 skip  extmod/machine1.py
 skip  extmod/machine_i2s_rate.py
 skip  extmod/machine_pinbase.py
@@ -341,8 +341,8 @@ skip  float/float_parse_doubleprec.py
 skip  micropython/heap_locked.py
 
 # unclear why skipped
-skip  micropython/heapalloc_bytesio2.py
-skip  micropython/meminfo.py
+skip  micropython/heapalloc_bytesio2.py ---> Enabled
+skip  micropython/meminfo.py ---> To be evaluated
 
 # not enabled
 skip  micropython/memstats.py
