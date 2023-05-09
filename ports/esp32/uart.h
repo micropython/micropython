@@ -34,7 +34,7 @@
 #endif
 
 #ifndef MICROPY_HW_UART_REPL
-#define MICROPY_HW_UART_REPL (UART_NUM_0)
+#define MICROPY_HW_UART_REPL (0)
 #endif
 
 #ifndef MICROPY_HW_UART_REPL_BAUD
