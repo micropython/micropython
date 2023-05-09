@@ -8,12 +8,12 @@
 echo "executing $0 $* ..."
 
 usage() {
-  echo "Usage: $0 -a <run all meaningful test by directory without excluding any> -c <clean results directory and file before running tests> -d <device to be used> -f <run failing tests only> -i <run implemented tests only and exclude known failing tests> -n <run not yet implemented tests only>" 1>&2;
+  echo "Usage: $0 -a <run all meaningful test by directory without excluding any> -c <clean results directory and file before running tests> -d <device to be used> -f <run failing tests only> -i <run implemented tests only and exclude known failing tests> -n <run not yet implemented tests only> -w <run wifi tests => needs secrets.py key file>" 1>&2;
   exit 1;
 }
 
 
-while getopts "acd:fhin" o; do
+while getopts "acd:fhinw" o; do
   case "${o}" in
     a)
        all=1
@@ -35,6 +35,9 @@ while getopts "acd:fhin" o; do
        ;;
     n)
        notYetImplemented=1
+       ;;
+    w)
+       wifi=1
        ;;
     *)
        usage
@@ -70,6 +73,11 @@ fi
 
 if [ -z "${notYetImplemented}" ]; then
   notYetImplemented=0
+fi
+
+
+if [ -z "${wifi}" ]; then
+  wifi=0
 fi
 
 
@@ -111,6 +119,11 @@ if [ ${all} -eq 1 ]; then
   echo "  running all tests ..."
   echo
 
+  echo "  setting up a network connection ..."
+  echo
+  
+  ../tools/mpremote/mpremote.py run psoc6/test_scripts/network_on.py
+
   ./run-tests.py --target psoc6 --device ${device} \
         -d \
           basics \
@@ -140,7 +153,42 @@ if [ ${all} -eq 1 ]; then
 fi
 
 
+if [ ${wifi} -eq 1 ]; then
+
+  echo "  setting up a network connection ..."
+  echo
+  
+  ../tools/mpremote/mpremote.py run psoc6/test_scripts/network_on.py
+
+
+  echo "  running wifi tests ..."
+  echo
+
+  ./run-tests.py --target psoc6 --device ${device} \
+        -d \
+          net_hosted \
+          net_inet \
+        \
+        -e net_inet/ssl_cert.py \
+        -e net_inet/test_tls_nonblock.py \
+        -e net_inet/tls_text_errors.py \
+        \
+        -e net_hosted/accept_nonblock.py \
+        -e net_hosted/accept_timeout.py \
+        -e net_hosted/connect_nonblock_xfer.py \
+        -e net_hosted/ssl_getpeercert.py \
+        -e net_hosted/uasyncio_start_server.py \
+    | tee -a ${resultsFile}
+
+  echo
+  echo "  done."
+  echo
+
+fi
+
+
 if [ ${implemented} -eq 1 ]; then
+
 
   echo "  running implemented tests ..."
   echo
@@ -168,6 +216,14 @@ if [ ${implemented} -eq 1 ]; then
           stress \
           unicode \
         \
+        -e basics/builtin_pow3_intbig.py \
+        -e basics/fun_largestate.py \
+        -e basics/list_compare.py \
+        -e basics/tuple_compare.py \
+        -e basics/unpack1.py \
+        \
+        -e extmod/ure_split_notimpl.py \
+        -e extmod/ure_stack_overflow.py \
         -e extmod/vfs_lfs_mtime.py \
         \
         -e feature_check/async_check.py \
@@ -204,6 +260,9 @@ if [ ${implemented} -eq 1 ]; then
         -e import/module_dict.py \
         -e import/try_module.py \
         \
+        -e micropython/emg_exc.py \
+        -e micropython/extreme_exc.py \
+        -e micropython/heapalloc_exc_compressed_emg_exc.py \
         -e micropython/import_mpy_invalid.py \
         -e micropython/import_mpy_native.py \
         -e micropython/viper_error.py \
@@ -212,11 +271,13 @@ if [ ${implemented} -eq 1 ]; then
         -e perf_bench/core_import_mpy_single.py \
         -e 'perf_bench/viper_call.*.py' \
         \
+        -e 'stress/recursi.*.py' \
+        \
         -e unicode/file1.py \
         -e unicode/file2.py \
         -e unicode/file_invalid.py \
     | tee -a ${resultsFile}
-
+  
   echo
   echo "  done."
   echo
@@ -233,8 +294,6 @@ if [ ${notYetImplemented} -eq 1 ]; then
   ./run-tests.py --target psoc6 --device ${device} -d \
         multi_bluetooth \
         multi_net \
-        net_hosted \
-        net_inet \
         thread \
     | tee -a ${resultsFile}
 
@@ -293,3 +352,4 @@ echo "generating pass, skip and fail files done."
 
 echo
 echo "executing $0 $* done."
+
