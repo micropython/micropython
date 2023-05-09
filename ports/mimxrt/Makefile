@@ -264,6 +264,14 @@ else
     SRC_HAL_C += hal/$(FLEXSPI_FLASH_TYPE)_config.c
 endif
 
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SRC_C += mpbthciport.c
+endif # MICROPY_PY_BLUETOOTH
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+SRC_C += mpnimbleport.c
+endif
+
 # Math library source files
 ifeq ($(MICROPY_FLOAT_IMPL),double)
     LIBM_SRC_C += $(addprefix lib/libm_dbl/,\
@@ -449,6 +457,7 @@ OBJ += $(PY_O)
 OBJ += $(LIBM_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_TINYUSB_C:.c=.o))
