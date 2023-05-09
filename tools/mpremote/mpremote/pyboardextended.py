@@ -1,4 +1,4 @@
-import io, os, re, serial, struct, time
+import io, os, re, struct, time
 from errno import EPERM
 from .console import VT_ENABLED
 
@@ -449,7 +449,7 @@ class PyboardCommand:
             try:
                 stat = os.lstat(self.data_ilistdir[0] + "/" + entry)
                 mode = stat.st_mode & 0xC000
-            except OSError as er:
+            except OSError:
                 mode = 0
             self.wr_str(entry)
             self.wr_u32(mode)

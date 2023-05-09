@@ -34,13 +34,11 @@
 #include MICROPY_PY_MACHINE_PWM_INCLUDEFILE
 #endif
 
-#if MICROPY_PY_MACHINE_PWM_INIT
 STATIC mp_obj_t machine_pwm_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_machine_pwm_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pwm_init_obj, 1, machine_pwm_init);
-#endif
 
 // PWM.deinit()
 STATIC mp_obj_t machine_pwm_deinit(mp_obj_t self_in) {
@@ -82,8 +80,6 @@ STATIC mp_obj_t machine_pwm_duty(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pwm_duty_obj, 1, 2, machine_pwm_duty);
 #endif
 
-#if MICROPY_PY_MACHINE_PWM_DUTY_U16_NS
-
 // PWM.duty_u16([value])
 STATIC mp_obj_t machine_pwm_duty_u16(size_t n_args, const mp_obj_t *args) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -114,21 +110,15 @@ STATIC mp_obj_t machine_pwm_duty_ns(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pwm_duty_ns_obj, 1, 2, machine_pwm_duty_ns);
 
-#endif
-
 STATIC const mp_rom_map_elem_t machine_pwm_locals_dict_table[] = {
-    #if MICROPY_PY_MACHINE_PWM_INIT
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pwm_init_obj) },
-    #endif
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_pwm_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&machine_pwm_freq_obj) },
     #if MICROPY_PY_MACHINE_PWM_DUTY
     { MP_ROM_QSTR(MP_QSTR_duty), MP_ROM_PTR(&machine_pwm_duty_obj) },
     #endif
-    #if MICROPY_PY_MACHINE_PWM_DUTY_U16_NS
     { MP_ROM_QSTR(MP_QSTR_duty_u16), MP_ROM_PTR(&machine_pwm_duty_u16_obj) },
     { MP_ROM_QSTR(MP_QSTR_duty_ns), MP_ROM_PTR(&machine_pwm_duty_ns_obj) },
-    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pwm_locals_dict, machine_pwm_locals_dict_table);
 

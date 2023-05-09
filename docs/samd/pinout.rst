@@ -105,7 +105,7 @@ or other combinations.
 
 SAMD21 SPI assignments
 ``````````````````````
-The I2C devices and signals must be chosen according to the following rules:
+The SPI devices and signals must be chosen according to the following rules:
 
 - The following pad number pairs are suitable for MOSI/SCK: 0/1, 2/3, 3/1, and 0/3.
 - The MISO signal must be at a Pin with a different pad number than MOSI or SCK.

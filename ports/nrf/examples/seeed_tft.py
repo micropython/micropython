@@ -216,8 +216,6 @@ class ILI9341:
 
         self.write_cmd(0x2C)
 
-        num_of_pixels = self.height * self.width
-
         for row in range(0, self.pages):
             for pixel_pos in range(0, 8):
                 for col in range(0, self.width):

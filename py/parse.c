@@ -242,6 +242,8 @@ typedef struct _parser_t {
     #endif
 } parser_t;
 
+STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args);
+
 STATIC const uint16_t *get_rule_arg(uint8_t r_id) {
     size_t off = rule_arg_offset_table[r_id];
     if (r_id >= FIRST_RULE_WITH_OFFSET_ABOVE_255) {
@@ -630,6 +632,8 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
     push_result_node(parser, pn);
 }
 
+#if MICROPY_COMP_CONST_FOLDING
+
 #if MICROPY_COMP_MODULE_CONST
 STATIC const mp_rom_map_elem_t mp_constants_table[] = {
     #if MICROPY_PY_UERRNO
@@ -644,9 +648,6 @@ STATIC const mp_rom_map_elem_t mp_constants_table[] = {
 STATIC MP_DEFINE_CONST_MAP(mp_constants_map, mp_constants_table);
 #endif
 
-STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args);
-
-#if MICROPY_COMP_CONST_FOLDING
 #if MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND
 // Some versions of the xtensa-esp32-elf-gcc compiler generate wrong code if this
 // function is static, so provide a hook for them to work around this problem.
@@ -889,7 +890,8 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
 
     return true;
 }
-#endif
+
+#endif // MICROPY_COMP_CONST_FOLDING
 
 #if MICROPY_COMP_CONST_TUPLE
 STATIC bool build_tuple_from_stack(parser_t *parser, size_t src_line, size_t num_args) {
