@@ -47,6 +47,12 @@
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
 #endif
+
+#if MICROPY_PY_BLUETOOTH
+#include "mpbthciport.h"
+#include "extmod/modbluetooth.h"
+#endif
+
 #include "systick.h"
 #include "extmod/modnetwork.h"
 
@@ -70,6 +76,9 @@ int main(void) {
     #endif
 
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
+    #endif
+    #if MICROPY_PY_BLUETOOTH
+    mp_bluetooth_hci_init();
     #endif
 
     #if MICROPY_PY_NETWORK_CYW43
@@ -134,6 +143,9 @@ int main(void) {
         machine_pin_irq_deinit();
         #if MICROPY_PY_MACHINE_I2S
         machine_i2s_deinit_all();
+        #endif
+        #if MICROPY_PY_BLUETOOTH
+        mp_bluetooth_deinit();
         #endif
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
