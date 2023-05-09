@@ -39,7 +39,8 @@
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
 
 // Memory allocation policies
-#define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
+// #define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
+#define MICROPY_GC_STACK_ENTRY_TYPE             uint32_t
 #define MICROPY_ENABLE_GC                       (1)
 #define MICROPY_GC_HEAP_SIZE                    (256 * 1024)
 

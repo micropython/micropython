@@ -194,6 +194,8 @@ include $(BOARD_DIR)/makefile_mtb.mk
 # include py core make definitions
 include $(TOP)/py/mkrules.mk
 
+MPY_CROSS_FLAGS += -march=armv7m
+
 
 build: mpy_define_mtb_vars $(MPY_PATH_TO_MAIN_MAKEFILE) $(MPY_MAIN_BUILD_DIR)/firmware.hex
 
