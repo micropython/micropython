@@ -850,6 +850,20 @@ typedef double mp_float_t;
 #define MICROPY_MODULE_BUILTIN_INIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to allow built-in modules to have sub-packages (by making the
+// sub-package a member of their locals dict). Sub-packages should not be
+// registered with MP_REGISTER_MODULE, instead they should be added as
+// members of the parent's globals dict. To match CPython behavior,
+// their __name__ should be "foo.bar"(i.e. QSTR_foo_dot_bar) which will
+// require an entry in qstrdefs, although it does also work to just call
+// it "bar". Also, because subpackages can be accessed without being
+// imported (e.g. as foo.bar after `import foo`), they should not
+// have __init__ methods. Instead, the top-level package's __init__ should
+// initialise all sub-packages.
+#ifndef MICROPY_MODULE_BUILTIN_SUBPACKAGES
+#define MICROPY_MODULE_BUILTIN_SUBPACKAGES (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
 // Whether to support module-level __getattr__ (see PEP 562)
 #ifndef MICROPY_MODULE_GETATTR
 #define MICROPY_MODULE_GETATTR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)

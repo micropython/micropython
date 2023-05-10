@@ -428,6 +428,20 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     } else {
         DEBUG_printf("Searching for sub-module\n");
 
+        #if MICROPY_MODULE_BUILTIN_SUBPACKAGES
+        // If the outer module is a built-in (because its map is in ROM), then
+        // treat it like a package if it contains this submodule in its
+        // globals dict.
+        mp_obj_module_t *mod = MP_OBJ_TO_PTR(outer_module_obj);
+        if (mod->globals->map.is_fixed) {
+            elem = mp_map_lookup(&mod->globals->map, MP_OBJ_NEW_QSTR(level_mod_name), MP_MAP_LOOKUP);
+            // Also verify that the entry in the globals dict is in fact a module.
+            if (elem && mp_obj_is_type(elem->value, &mp_type_module)) {
+                return elem->value;
+            }
+        }
+        #endif
+
         // If the outer module is a package, it will have __path__ set.
         // We can use that as the path to search inside.
         mp_obj_t dest[2];
