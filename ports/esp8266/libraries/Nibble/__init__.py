@@ -1,11 +1,10 @@
 from .Pins import *
 from CircuitOS import PCA95XX, InputShift, InputExpander, Piezo, Display
 from machine import Pin, I2C, Signal, SPI
-from ST7735 import TFT
+import st7789
 
 spi = SPI(1, baudrate=27000000, polarity=0, phase=0)
-tft = TFT(spi, Pins.TFT_DC, -1, -1)
-display = Display(tft, 128, 128)
+
 piezo = Piezo(Pins.BUZZ_PIN)
 i2c = I2C(sda=Pin(Pins.I2C_SDA, mode=Pin.OUT, pull=Pin.PULL_UP), scl=Pin(Pins.I2C_SCL, mode=Pin.OUT, pull=Pin.PULL_UP),
 		  freq=100000)
@@ -42,19 +41,24 @@ else:
 	backlight.off()
 	buttons = InputShift(Pins.SHIFT_DATA, Pins.SHIFT_CLOCK, Pins.SHIFT_LOAD, Pins.SHIFT_COUNT)
 
+tft = st7789.ST7789(spi, 128, 128, dc=Pin(Pins.TFT_DC, Pin.OUT),
+					color_order=st7789.BGR, inversion=False)
+display = Display(tft, 128, 128)
+
 
 def begin(panel_type: bool):
-	tft.rgb(False)
-	tft._size = (128, 128)
+	global tft, display
+	tft = st7789.ST7789(spi, 128, 128, dc=Pin(Pins.TFT_DC, Pin.OUT),
+						color_order=st7789.BGR, inversion=False, rotation=2)
+	tft.init()
+
 	if panel_type:
-		tft.initg(bytearray([0, 32]))
-		tft.rotation(2)  # red screen with matte ribbon (GREENTAB128)
-		tft._size = (128, 128)
+		tft.offset(0, 32)  # red screen with matte ribbon (GREENTAB128)
 	else:
-		tft.initg(bytearray([2, 3]))  # orange PCB and (GREENTAB3)
-		# TODO - TFT with red with shiny ribbon and yellow headers NOT WORKING (also GREENTAB3 in C++ firmware)
-		tft.rotation(2)
-		tft._size = (128, 128)
+		pass  # orange PCB (GREENTAB3)
+	# TODO - TFT with red with shiny ribbon and yellow headers NOT WORKING (also GREENTAB3 in C++ firmware)
+	print("Panel type: " + str(panel_type))
+	display = Display(tft, 128, 128)
 
 	backlight.on()
 
