@@ -211,10 +211,13 @@ TESTS=$(SINGLE_TEST)
 endif
 
 test: 
+	@:
 	$(info )
 	$(info Running PSoC6 tests)
 	$(Q) cd ../../tests ; ./run-tests.py --target psoc6 --device /dev/ttyACM0 $(TESTS)
 
-program: mpy_program_unix
+program: mpy_program
 
-.PHONY: test build
+program_multi: mpy_program_multi
+
+.PHONY: test build program_multi
