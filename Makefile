@@ -266,7 +266,7 @@ stubs:
 	@cp setup.py-stubs circuitpython-stubs/setup.py
 	@cp README.rst-stubs circuitpython-stubs/README.rst
 	@cp MANIFEST.in-stubs circuitpython-stubs/MANIFEST.in
-	@(cd circuitpython-stubs && $(PYTHON) setup.py -q sdist)
+	@$(PYTHON) -m build circuitpython-stubs
 
 .PHONY: check-stubs
 check-stubs: stubs
