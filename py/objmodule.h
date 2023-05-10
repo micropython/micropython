@@ -33,10 +33,7 @@
 
 extern const mp_map_t mp_builtin_module_map;
 
-mp_obj_t mp_module_get_loaded_or_builtin(qstr module_name);
-#if MICROPY_MODULE_WEAK_LINKS
 mp_obj_t mp_module_get_builtin(qstr module_name);
-#endif
 
 void mp_module_generic_attr(qstr attr, mp_obj_t *dest, const uint16_t *keys, mp_obj_t *values);
 

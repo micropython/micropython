@@ -1531,7 +1531,8 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     #if MICROPY_ENABLE_EXTERNAL_IMPORT
 
     // See if it's a package, then can try FS import
-    if (!mp_obj_is_package(module)) {
+    mp_load_method_maybe(module, MP_QSTR___path__, dest);
+    if (dest[0] == MP_OBJ_NULL) {
         goto import_error;
     }
 

@@ -1201,8 +1201,6 @@ typedef struct _mp_obj_module_t {
 static inline mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t module) {
     return ((mp_obj_module_t *)MP_OBJ_TO_PTR(module))->globals;
 }
-// check if given module object is a package
-bool mp_obj_is_package(mp_obj_t module);
 
 // staticmethod and classmethod types; defined here so we can make const versions
 // this structure is used for instances of both staticmethod and classmethod
