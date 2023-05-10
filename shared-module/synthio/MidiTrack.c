@@ -123,7 +123,7 @@ void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
     self->track.buf = (void *)buffer;
     self->track.len = len;
 
-    synthio_synth_init(&self->synth, sample_rate, waveform, waveform_length, envelope);
+    synthio_synth_init(&self->synth, sample_rate, 1, waveform, waveform_length, envelope);
 
     start_parse(self);
 }

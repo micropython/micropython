@@ -36,7 +36,7 @@
 
 static const mp_arg_t note_properties[] = {
     { MP_QSTR_frequency, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = NULL } },
-    { MP_QSTR_amplitude, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
+    { MP_QSTR_panning, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(0) } },
     { MP_QSTR_tremolo_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
     { MP_QSTR_tremolo_depth, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
     { MP_QSTR_bend_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
@@ -50,15 +50,16 @@ static const mp_arg_t note_properties[] = {
 //|         self,
 //|         *,
 //|         frequency: float,
-//|         amplitude: float = 1.0,
+//|         panning: float = 0.0,
 //|         waveform: Optional[ReadableBuffer] = None,
 //|         envelope: Optional[Envelope] = None,
 //|         tremolo_depth: float = 0.0,
 //|         tremolo_rate: float = 0.0,
 //|         bend_depth: float = 0.0,
 //|         bend_rate: float = 0.0,
+//|         bend_mode: BendMode = BendMode.VIBRATO,
 //|     ) -> None:
-//|         """Construct a Note object, with a frequency in Hz, and optional amplitude (volume), waveform, envelope, tremolo (volume change) and bend (frequency change).
+//|         """Construct a Note object, with a frequency in Hz, and optional panning, waveform, envelope, tremolo (volume change) and bend (frequency change).
 //|
 //|         If waveform or envelope are `None` the synthesizer object's default waveform or envelope are used.
 //|
@@ -99,23 +100,28 @@ MP_PROPERTY_GETSET(synthio_note_frequency_obj,
     (mp_obj_t)&synthio_note_get_frequency_obj,
     (mp_obj_t)&synthio_note_set_frequency_obj);
 
-//|     amplitude: float
-//|     """The base amplitude of the note, from 0 to 1"""
-STATIC mp_obj_t synthio_note_get_amplitude(mp_obj_t self_in) {
+//|     panning: float
+//|     """Defines the channel(s) in which the note appears.
+//|
+//|     -1 is left channel only, 0 is both channels, and 1 is right channel.
+//|     For fractional values, the note plays at full amplitude in one channel
+//|     and partial amplitude in the other channel. For instance -.5 plays at full
+//|     amplitude in the left channel and 1/2 amplitude in the right channel."""
+STATIC mp_obj_t synthio_note_get_panning(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(common_hal_synthio_note_get_amplitude(self));
+    return mp_obj_new_float(common_hal_synthio_note_get_panning(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_amplitude_obj, synthio_note_get_amplitude);
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_panning_obj, synthio_note_get_panning);
 
-STATIC mp_obj_t synthio_note_set_amplitude(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t synthio_note_set_panning(mp_obj_t self_in, mp_obj_t arg) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_synthio_note_set_amplitude(self, mp_obj_get_float(arg));
+    common_hal_synthio_note_set_panning(self, mp_obj_get_float(arg));
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_amplitude_obj, synthio_note_set_amplitude);
-MP_PROPERTY_GETSET(synthio_note_amplitude_obj,
-    (mp_obj_t)&synthio_note_get_amplitude_obj,
-    (mp_obj_t)&synthio_note_set_amplitude_obj);
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_panning_obj, synthio_note_set_panning);
+MP_PROPERTY_GETSET(synthio_note_panning_obj,
+    (mp_obj_t)&synthio_note_get_panning_obj,
+    (mp_obj_t)&synthio_note_set_panning_obj);
 
 
 //|     tremolo_depth: float
@@ -266,7 +272,7 @@ static void note_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
 
 STATIC const mp_rom_map_elem_t synthio_note_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&synthio_note_frequency_obj) },
-    { MP_ROM_QSTR(MP_QSTR_amplitude), MP_ROM_PTR(&synthio_note_amplitude_obj) },
+    { MP_ROM_QSTR(MP_QSTR_panning), MP_ROM_PTR(&synthio_note_panning_obj) },
     { MP_ROM_QSTR(MP_QSTR_waveform), MP_ROM_PTR(&synthio_note_waveform_obj) },
     { MP_ROM_QSTR(MP_QSTR_envelope), MP_ROM_PTR(&synthio_note_envelope_obj) },
     { MP_ROM_QSTR(MP_QSTR_tremolo_depth), MP_ROM_PTR(&synthio_note_tremolo_depth_obj) },

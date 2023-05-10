@@ -65,6 +65,7 @@ typedef struct synthio_synth {
     uint32_t total_envelope;
     int16_t *buffers[2];
     const int16_t *waveform;
+    uint8_t channel_count;
     uint16_t buffer_length;
     uint16_t last_buffer_length;
     uint8_t other_channel, buffer_index, other_buffer_index;
@@ -89,7 +90,7 @@ typedef struct {
 void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **buffer, uint32_t *buffer_length, uint8_t channel);
 void synthio_synth_deinit(synthio_synth_t *synth);
 bool synthio_synth_deinited(synthio_synth_t *synth);
-void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, const int16_t *waveform, uint16_t waveform_length,
+void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, int channel_count, const int16_t *waveform, uint16_t waveform_length,
     mp_obj_t envelope);
 void synthio_synth_get_buffer_structure(synthio_synth_t *synth, bool single_channel_output,
     bool *single_buffer, bool *samples_signed, uint32_t *max_buffer_length, uint8_t *spacing);

@@ -9,8 +9,8 @@ typedef enum synthio_bend_mode_e synthio_bend_mode_t;
 mp_float_t common_hal_synthio_note_get_frequency(synthio_note_obj_t *self);
 void common_hal_synthio_note_set_frequency(synthio_note_obj_t *self, mp_float_t value);
 
-mp_float_t common_hal_synthio_note_get_amplitude(synthio_note_obj_t *self);
-void common_hal_synthio_note_set_amplitude(synthio_note_obj_t *self, mp_float_t value);
+mp_float_t common_hal_synthio_note_get_panning(synthio_note_obj_t *self);
+void common_hal_synthio_note_set_panning(synthio_note_obj_t *self, mp_float_t value);
 
 mp_float_t common_hal_synthio_note_get_tremolo_rate(synthio_note_obj_t *self);
 void common_hal_synthio_note_set_tremolo_rate(synthio_note_obj_t *self, mp_float_t value);

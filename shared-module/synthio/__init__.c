@@ -187,7 +187,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
     synth->span.dur -= dur;
 
     int32_t sample_rate = synth->sample_rate;
-    int32_t out_buffer32[dur];
+    int32_t out_buffer32[dur * synth->channel_count];
 
     memset(out_buffer32, 0, sizeof(out_buffer32));
     for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
@@ -204,7 +204,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
         }
 
         // adjust loudness by envelope
-        uint16_t loudness = synth->envelope_state[chan].level;
+        uint16_t loudness[2] = {synth->envelope_state[chan].level,synth->envelope_state[chan].level};
 
         uint32_t dds_rate;
         const int16_t *waveform = synth->waveform;
@@ -221,7 +221,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
             dds_rate = (sample_rate / 2 + ((uint64_t)(base_freq * waveform_length) << (SYNTHIO_FREQUENCY_SHIFT - 10 + octave))) / sample_rate;
         } else {
             synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
-            int32_t frequency_scaled = synthio_note_step(note, sample_rate, dur, &loudness);
+            int32_t frequency_scaled = synthio_note_step(note, sample_rate, dur, loudness);
             if (note->waveform_buf.buf) {
                 waveform = note->waveform_buf.buf;
                 waveform_length = note->waveform_buf.len / 2;
@@ -241,14 +241,19 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
             accum %= lim;
         }
 
-        for (uint16_t i = 0; i < dur; i++) {
+        int synth_chan = synth->channel_count;
+        for (uint16_t i = 0, j = 0; i < dur; i++) {
             accum += dds_rate;
             // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
             if (accum > lim) {
                 accum -= lim;
             }
             int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
-            out_buffer32[i] += (waveform[idx] * loudness) / 65536;
+            int16_t wi = waveform[idx];
+            for (int c = 0; c < synth_chan; c++) {
+                out_buffer32[j] += (wi * loudness[c]) / 65536;
+                j++;
+            }
         }
         synth->accum[chan] = accum;
     }
@@ -256,7 +261,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
     int16_t *out_buffer16 = (int16_t *)(void *)synth->buffers[synth->buffer_index];
 
     // mix down audio
-    for (size_t i = 0; i < dur; i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(out_buffer32); i++) {
         int32_t sample = out_buffer32[i];
         out_buffer16[i] = mix_down_sample(sample);
     }
@@ -270,7 +275,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
         synthio_envelope_state_step(&synth->envelope_state[chan], synthio_synth_get_note_envelope(synth, note_obj), dur);
     }
 
-    *buffer_length = synth->last_buffer_length = dur * SYNTHIO_BYTES_PER_SAMPLE;
+    *buffer_length = synth->last_buffer_length = dur * SYNTHIO_BYTES_PER_SAMPLE * synth->channel_count;
     *bufptr = (uint8_t *)out_buffer16;
 }
 
@@ -301,10 +306,12 @@ mp_obj_t synthio_synth_envelope_get(synthio_synth_t *synth) {
     return synth->envelope_obj;
 }
 
-void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, const int16_t *waveform, uint16_t waveform_length, mp_obj_t envelope_obj) {
-    synth->buffer_length = SYNTHIO_MAX_DUR * SYNTHIO_BYTES_PER_SAMPLE;
+void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, int channel_count, const int16_t *waveform, uint16_t waveform_length, mp_obj_t envelope_obj) {
+    mp_arg_validate_int_range(channel_count, 1, 2, MP_QSTR_channel_count);
+    synth->buffer_length = SYNTHIO_MAX_DUR * SYNTHIO_BYTES_PER_SAMPLE * channel_count;
     synth->buffers[0] = m_malloc(synth->buffer_length, false);
     synth->buffers[1] = m_malloc(synth->buffer_length, false);
+    synth->channel_count = channel_count;
     synth->other_channel = -1;
     synth->waveform = waveform;
     synth->waveform_length = waveform_length;
@@ -321,7 +328,11 @@ void synthio_synth_get_buffer_structure(synthio_synth_t *synth, bool single_chan
     *single_buffer = false;
     *samples_signed = true;
     *max_buffer_length = synth->buffer_length;
-    *spacing = 1;
+    if (single_channel_output) {
+        *spacing = synth->channel_count;
+    } else {
+        *spacing = 1;
+    }
 }
 
 STATIC bool parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what) {

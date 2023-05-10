@@ -44,14 +44,20 @@ void common_hal_synthio_note_set_frequency(synthio_note_obj_t *self, mp_float_t 
     self->frequency_scaled = synthio_frequency_convert_float_to_scaled(val);
 }
 
-mp_float_t common_hal_synthio_note_get_amplitude(synthio_note_obj_t *self) {
-    return self->amplitude;
+mp_float_t common_hal_synthio_note_get_panning(synthio_note_obj_t *self) {
+    return self->panning;
 }
 
-void common_hal_synthio_note_set_amplitude(synthio_note_obj_t *self, mp_float_t value_in) {
-    mp_float_t val = mp_arg_validate_float_range(value_in, 0, 1, MP_QSTR_amplitude);
-    self->amplitude = val;
-    self->amplitude_scaled = round_float_to_int(val * 32767);
+void common_hal_synthio_note_set_panning(synthio_note_obj_t *self, mp_float_t value_in) {
+    mp_float_t val = mp_arg_validate_float_range(value_in, -1, 1, MP_QSTR_panning);
+    self->panning = val;
+    if (val >= 0) {
+        self->left_panning_scaled = 32768;
+        self->right_panning_scaled = 32768 - round_float_to_int(val * 32768);
+    } else {
+        self->right_panning_scaled = 32768;
+        self->left_panning_scaled = 32768 + round_float_to_int(val * 32768);
+    }
 }
 
 mp_float_t common_hal_synthio_note_get_tremolo_depth(synthio_note_obj_t *self) {
@@ -200,7 +206,8 @@ STATIC int synthio_bend_value(synthio_note_obj_t *self, int16_t dur) {
 
 uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t *loudness) {
     int tremolo_value = synthio_lfo_step(&self->tremolo_state, dur);
-    *loudness = (*loudness * tremolo_value) >> 15;
+    loudness[0] = (((loudness[0] * tremolo_value) >> 15) * self->left_panning_scaled) >> 15;
+    loudness[1] = (((loudness[1] * tremolo_value) >> 15) * self->right_panning_scaled) >> 15;
     int bend_value = synthio_bend_value(self, dur);
     uint32_t frequency_scaled = pitch_bend(self->frequency_scaled, bend_value);
     return frequency_scaled;

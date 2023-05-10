@@ -44,6 +44,7 @@
 //|         self,
 //|         *,
 //|         sample_rate: int = 11025,
+//|         channel_count: int = 1,
 //|         waveform: Optional[ReadableBuffer] = None,
 //|         envelope: Optional[Envelope] = None,
 //|     ) -> None:
@@ -56,13 +57,15 @@
 //|         and do not support advanced features like tremolo or vibrato.
 //|
 //|         :param int sample_rate: The desired playback sample rate; higher sample rate requires more memory
+//|         :param int channel_count: The number of output channels (1=mono, 2=stereo)
 //|         :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit)
 //|         :param Optional[Envelope] envelope: An object that defines the loudness of a note over time. The default envelope, `None` provides no ramping, voices turn instantly on and off.
 //|         """
 STATIC mp_obj_t synthio_synthesizer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_sample_rate, ARG_waveform, ARG_envelope };
+    enum { ARG_sample_rate, ARG_channel_count, ARG_waveform, ARG_envelope };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 11025} },
+        { MP_QSTR_channel_count, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1} },
         { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
         { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
     };
@@ -77,6 +80,7 @@ STATIC mp_obj_t synthio_synthesizer_make_new(const mp_obj_type_t *type, size_t n
 
     common_hal_synthio_synthesizer_construct(self,
         args[ARG_sample_rate].u_int,
+        args[ARG_channel_count].u_int,
         bufinfo_waveform.buf,
         bufinfo_waveform.len / 2,
         args[ARG_envelope].u_obj);
