@@ -117,8 +117,9 @@ STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     return stat_file_py_or_mpy(path);
 }
 
-// Given a top-level module, try and find it in each of the sys.path entries
-// via stat_dir_or_file.
+// Given a top-level module name, try and find it in each of the sys.path
+// entries. Note: On success, the dest argument will be updated to the matching
+// path (i.e. "<entry>/mod_name(.py)").
 STATIC mp_import_stat_t stat_top_level_dir_or_file(qstr mod_name, vstr_t *dest) {
     DEBUG_printf("stat_top_level_dir_or_file: '%s'\n", qstr_str(mod_name));
     #if MICROPY_PY_SYS
@@ -126,32 +127,34 @@ STATIC mp_import_stat_t stat_top_level_dir_or_file(qstr mod_name, vstr_t *dest) 
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
 
-    if (path_num > 0) {
-        // go through each path looking for a directory or file
-        for (size_t i = 0; i < path_num; i++) {
-            vstr_reset(dest);
-            size_t p_len;
-            const char *p = mp_obj_str_get_data(path_items[i], &p_len);
-            if (p_len > 0) {
-                vstr_add_strn(dest, p, p_len);
-                vstr_add_char(dest, PATH_SEP_CHAR[0]);
-            }
-            vstr_add_str(dest, qstr_str(mod_name));
-            mp_import_stat_t stat = stat_dir_or_file(dest);
-            if (stat != MP_IMPORT_STAT_NO_EXIST) {
-                return stat;
-            }
+    // go through each sys.path entry, trying to import "<entry>/<mod_name>".
+    for (size_t i = 0; i < path_num; i++) {
+        vstr_reset(dest);
+        size_t p_len;
+        const char *p = mp_obj_str_get_data(path_items[i], &p_len);
+        if (p_len > 0) {
+            // Add the path separator (unless the entry is "", i.e. cwd).
+            vstr_add_strn(dest, p, p_len);
+            vstr_add_char(dest, PATH_SEP_CHAR[0]);
         }
-
-        // could not find a directory or file
-        return MP_IMPORT_STAT_NO_EXIST;
+        vstr_add_str(dest, qstr_str(mod_name));
+        mp_import_stat_t stat = stat_dir_or_file(dest);
+        if (stat != MP_IMPORT_STAT_NO_EXIST) {
+            return stat;
+        }
     }
-    #endif
 
-    // mp_sys_path is empty (or not enabled), so just stat the given path
-    // directly.
+    // sys.path was empty or no matches, do not search the filesystem or
+    // frozen code.
+    return MP_IMPORT_STAT_NO_EXIST;
+
+    #else
+
+    // mp_sys_path is not enabled, so just stat the given path directly.
     vstr_add_str(dest, qstr_str(mod_name));
     return stat_dir_or_file(dest);
+
+    #endif
 }
 
 #if MICROPY_MODULE_FROZEN_STR || MICROPY_ENABLE_COMPILER
