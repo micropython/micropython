@@ -26,6 +26,7 @@
 
 #include <string.h>
 
+#include "py/enum.h"
 #include "py/mperrno.h"
 #include "py/obj.h"
 #include "py/objnamedtuple.h"
@@ -52,6 +53,7 @@ static const mp_arg_t envelope_properties[] = {
     { MP_QSTR_sustain_level, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
 };
 
+//|
 //| """Support for multi-channel audio synthesis
 //|
 //| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
@@ -284,9 +286,39 @@ STATIC mp_obj_t onevo_to_hz(mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_onevo_to_hz_obj, onevo_to_hz);
 
+MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, STATIC, SYNTHIO_BEND_MODE_STATIC);
+MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, TREMOLO, SYNTHIO_BEND_MODE_TREMOLO);
+MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, SWEEP, SYNTHIO_BEND_MODE_SWEEP);
+
+//|
+//| class BendType:
+//|     """Controls the way the ``Note.pitch_bend_depth`` and ``Note.pitch_bend_rate`` properties are interpreted."""
+//|
+//|     STATIC: object
+//|     """The Note's pitch is modified by its ``pitch_bend_depth``. ``pitch_bend_rate`` is ignored."""
+//|
+//|     TREMOLO: object
+//|     """The Note's pitch varies by ``±pitch_bend_depth` at a rate of ``pitch_bend_rate``Hz."""
+//|
+//|     SWEEP: object
+//|     """The Note's pitch starts at ``Note.frequency`` then sweeps up or down by ``pitch_bend_depth`` over ``1/pitch_bend_rate`` seconds."""
+//|
+MAKE_ENUM_MAP(synthio_bend_mode) {
+    MAKE_ENUM_MAP_ENTRY(bend_mode, STATIC),
+    MAKE_ENUM_MAP_ENTRY(bend_mode, TREMOLO),
+    MAKE_ENUM_MAP_ENTRY(bend_mode, SWEEP),
+};
+
+STATIC MP_DEFINE_CONST_DICT(synthio_bend_mode_locals_dict, synthio_bend_mode_locals_table);
+
+MAKE_PRINTER(synthio, synthio_bend_mode);
+
+MAKE_ENUM_TYPE(synthio, BendType, synthio_bend_mode);
+
 
 STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_synthio) },
+    { MP_ROM_QSTR(MP_QSTR_BendType), MP_ROM_PTR(&synthio_bend_mode_type) },
     { MP_ROM_QSTR(MP_QSTR_MidiTrack), MP_ROM_PTR(&synthio_miditrack_type) },
     { MP_ROM_QSTR(MP_QSTR_Note), MP_ROM_PTR(&synthio_note_type) },
     { MP_ROM_QSTR(MP_QSTR_Synthesizer), MP_ROM_PTR(&synthio_synthesizer_type) },

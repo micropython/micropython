@@ -28,6 +28,11 @@
 
 #include "py/objnamedtuple.h"
 
+typedef enum {
+    SYNTHIO_BEND_MODE_STATIC, SYNTHIO_BEND_MODE_TREMOLO, SYNTHIO_BEND_MODE_SWEEP
+} synthio_bend_mode_t;
+
+extern const mp_obj_type_t synthio_bend_mode_type;
 typedef struct synthio_synth synthio_synth_t;
 extern int16_t shared_bindings_synthio_square_wave[];
 extern const mp_obj_namedtuple_type_t synthio_envelope_type_obj;
