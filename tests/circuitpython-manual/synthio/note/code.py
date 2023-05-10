@@ -1,8 +1,14 @@
+import sys
+
+sys.path.insert(
+    0, f"{__file__.rpartition('/')[0] or '.'}/../../../../frozen/Adafruit_CircuitPython_Wave"
+)
+
 import random
 import audiocore
 import synthio
 from ulab import numpy as np
-import wave
+import adafruit_wave as wave
 
 SAMPLE_SIZE = 1024
 VOLUME = 14700
