@@ -93,6 +93,13 @@
 #define CYW43_PIN_WL_REG_ON             pyb_pin_WL_REG_ON
 #define CYW43_PIN_WL_HOST_WAKE          pyb_pin_WL_HOST_WAKE
 #define CYW43_PIN_WL_SDIO_1             pyb_pin_WL_SDIO_1
+#define CYW43_PIN_WL_GPIO_1             pyb_pin_WL_GPIO_1
+#define CYW43_PIN_WL_GPIO_4             pyb_pin_WL_GPIO_4
+
+#define CYW43_PIN_BT_REG_ON             pyb_pin_BT_REG_ON
+#define CYW43_PIN_BT_HOST_WAKE          pyb_pin_BT_HOST_WAKE
+#define CYW43_PIN_BT_DEV_WAKE           pyb_pin_BT_DEV_WAKE
+#define CYW43_PIN_BT_CTS                pyb_pin_BT_CTS
 
 #if MICROPY_HW_ENABLE_RF_SWITCH
 #define CYW43_PIN_WL_RFSW_VDD           pyb_pin_WL_RFSW_VDD
