@@ -27,6 +27,7 @@
 #pragma once
 
 #include "shared-module/synthio/__init__.h"
+#include "shared-bindings/synthio/__init__.h"
 
 typedef struct synthio_note_obj {
     mp_obj_base_t base;
@@ -39,8 +40,9 @@ typedef struct synthio_note_obj {
 
     int32_t frequency_scaled;
     int32_t amplitude_scaled;
-    synthio_lfo_descr_t tremolo_descr, vibrato_descr;
-    synthio_lfo_state_t tremolo_state, vibrato_state;
+    synthio_bend_mode_t bend_mode;
+    synthio_lfo_descr_t tremolo_descr, bend_descr;
+    synthio_lfo_state_t tremolo_state, bend_state;
 
     mp_buffer_info_t waveform_buf;
     synthio_envelope_definition_t envelope_def;

@@ -287,7 +287,7 @@ STATIC mp_obj_t onevo_to_hz(mp_obj_t arg) {
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_onevo_to_hz_obj, onevo_to_hz);
 
 MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, STATIC, SYNTHIO_BEND_MODE_STATIC);
-MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, TREMOLO, SYNTHIO_BEND_MODE_TREMOLO);
+MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, VIBRATO, SYNTHIO_BEND_MODE_VIBRATO);
 MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, SWEEP, SYNTHIO_BEND_MODE_SWEEP);
 
 //|
@@ -297,7 +297,7 @@ MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, SWEEP, SYNTHIO_BEND_MODE_SWEE
 //|     STATIC: object
 //|     """The Note's pitch is modified by its ``pitch_bend_depth``. ``pitch_bend_rate`` is ignored."""
 //|
-//|     TREMOLO: object
+//|     VIBRATO: object
 //|     """The Note's pitch varies by ``±pitch_bend_depth` at a rate of ``pitch_bend_rate``Hz."""
 //|
 //|     SWEEP: object
@@ -305,7 +305,7 @@ MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, SWEEP, SYNTHIO_BEND_MODE_SWEE
 //|
 MAKE_ENUM_MAP(synthio_bend_mode) {
     MAKE_ENUM_MAP_ENTRY(bend_mode, STATIC),
-    MAKE_ENUM_MAP_ENTRY(bend_mode, TREMOLO),
+    MAKE_ENUM_MAP_ENTRY(bend_mode, VIBRATO),
     MAKE_ENUM_MAP_ENTRY(bend_mode, SWEEP),
 };
 

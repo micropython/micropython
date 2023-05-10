@@ -76,25 +76,34 @@ void common_hal_synthio_note_set_tremolo_rate(synthio_note_obj_t *self, mp_float
     }
 }
 
-mp_float_t common_hal_synthio_note_get_vibrato_depth(synthio_note_obj_t *self) {
-    return self->vibrato_descr.amplitude;
+mp_float_t common_hal_synthio_note_get_bend_depth(synthio_note_obj_t *self) {
+    return self->bend_descr.amplitude;
 }
 
-void common_hal_synthio_note_set_vibrato_depth(synthio_note_obj_t *self, mp_float_t value_in) {
-    mp_float_t val = mp_arg_validate_float_range(value_in, 0, 1, MP_QSTR_vibrato_depth);
-    self->vibrato_descr.amplitude = val;
-    self->vibrato_state.amplitude_scaled = round_float_to_int(val * 32767);
+void common_hal_synthio_note_set_bend_depth(synthio_note_obj_t *self, mp_float_t value_in) {
+    mp_float_t val = mp_arg_validate_float_range(value_in, -1, 1, MP_QSTR_bend_depth);
+    self->bend_descr.amplitude = val;
+    self->bend_state.amplitude_scaled = round_float_to_int(val * 32767);
 }
 
-mp_float_t common_hal_synthio_note_get_vibrato_rate(synthio_note_obj_t *self) {
-    return self->vibrato_descr.frequency;
+mp_float_t common_hal_synthio_note_get_bend_rate(synthio_note_obj_t *self) {
+    return self->bend_descr.frequency;
 }
 
-void common_hal_synthio_note_set_vibrato_rate(synthio_note_obj_t *self, mp_float_t value_in) {
-    mp_float_t val = mp_arg_validate_float_range(value_in, 0, 60, MP_QSTR_vibrato_rate);
-    self->vibrato_descr.frequency = val;
+synthio_bend_mode_t common_hal_synthio_note_get_bend_mode(synthio_note_obj_t *self) {
+    return self->bend_mode;
+}
+
+void common_hal_synthio_note_set_bend_mode(synthio_note_obj_t *self, synthio_bend_mode_t value) {
+    self->bend_mode = value;
+}
+
+
+void common_hal_synthio_note_set_bend_rate(synthio_note_obj_t *self, mp_float_t value_in) {
+    mp_float_t val = mp_arg_validate_float_range(value_in, 0, 60, MP_QSTR_bend_rate);
+    self->bend_descr.frequency = val;
     if (self->sample_rate != 0) {
-        self->vibrato_state.dds = synthio_frequency_convert_float_to_dds(val, self->sample_rate);
+        self->bend_state.dds = synthio_frequency_convert_float_to_dds(val, self->sample_rate);
     }
 }
 
@@ -139,8 +148,8 @@ void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate) {
 
     synthio_lfo_set(&self->tremolo_state, &self->tremolo_descr, sample_rate);
     self->tremolo_state.offset_scaled = 32768 - self->tremolo_state.amplitude_scaled;
-    synthio_lfo_set(&self->vibrato_state, &self->vibrato_descr, sample_rate);
-    self->vibrato_state.offset_scaled = 32768;
+    synthio_lfo_set(&self->bend_state, &self->bend_descr, sample_rate);
+    self->bend_state.offset_scaled = 32768;
 }
 
 void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate) {
@@ -176,10 +185,23 @@ STATIC uint32_t pitch_bend(uint32_t frequency_scaled, uint16_t bend_value) {
     return (frequency_scaled * (uint64_t)f) >> (15 + down);
 }
 
+STATIC int synthio_bend_value(synthio_note_obj_t *self, int16_t dur) {
+    switch (self->bend_mode) {
+        case SYNTHIO_BEND_MODE_STATIC:
+            return self->bend_state.amplitude_scaled + self->bend_state.offset_scaled;
+        case SYNTHIO_BEND_MODE_VIBRATO:
+            return synthio_lfo_step(&self->bend_state, dur);
+        case SYNTHIO_BEND_MODE_SWEEP:
+            return synthio_sweep_step(&self->bend_state, dur);
+        default:
+            return 32768;
+    }
+}
+
 uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t *loudness) {
     int tremolo_value = synthio_lfo_step(&self->tremolo_state, dur);
-    int vibrato_value = synthio_lfo_step(&self->vibrato_state, dur);
     *loudness = (*loudness * tremolo_value) >> 15;
-    uint32_t frequency_scaled = pitch_bend(self->frequency_scaled, vibrato_value);
+    int bend_value = synthio_bend_value(self, dur);
+    uint32_t frequency_scaled = pitch_bend(self->frequency_scaled, bend_value);
     return frequency_scaled;
 }

@@ -27,11 +27,13 @@
 #pragma once
 
 #include "py/objnamedtuple.h"
+#include "py/enum.h"
 
-typedef enum {
-    SYNTHIO_BEND_MODE_STATIC, SYNTHIO_BEND_MODE_TREMOLO, SYNTHIO_BEND_MODE_SWEEP
+typedef enum synthio_bend_mode_e {
+    SYNTHIO_BEND_MODE_STATIC, SYNTHIO_BEND_MODE_VIBRATO, SYNTHIO_BEND_MODE_SWEEP
 } synthio_bend_mode_t;
 
+extern const cp_enum_obj_t bend_mode_VIBRATO_obj;
 extern const mp_obj_type_t synthio_bend_mode_type;
 typedef struct synthio_synth synthio_synth_t;
 extern int16_t shared_bindings_synthio_square_wave[];

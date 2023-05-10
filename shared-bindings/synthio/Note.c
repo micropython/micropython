@@ -30,6 +30,7 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
+#include "shared-bindings/synthio/__init__.h"
 #include "shared-bindings/synthio/Note.h"
 #include "shared-module/synthio/Note.h"
 
@@ -38,8 +39,9 @@ static const mp_arg_t note_properties[] = {
     { MP_QSTR_amplitude, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
     { MP_QSTR_tremolo_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
     { MP_QSTR_tremolo_depth, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
-    { MP_QSTR_vibrato_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
-    { MP_QSTR_vibrato_depth, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
+    { MP_QSTR_bend_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
+    { MP_QSTR_bend_depth, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
+    { MP_QSTR_bend_mode, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = (mp_obj_t)MP_ROM_PTR(&bend_mode_VIBRATO_obj) } },
     { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
     { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
 };
@@ -53,17 +55,16 @@ static const mp_arg_t note_properties[] = {
 //|         envelope: Optional[Envelope] = None,
 //|         tremolo_depth: float = 0.0,
 //|         tremolo_rate: float = 0.0,
-//|         vibrato_depth: float = 0.0,
-//|         vibrato_rate: float = 0.0,
+//|         bend_depth: float = 0.0,
+//|         bend_rate: float = 0.0,
 //|     ) -> None:
-//|         """Construct a Note object, with a frequency in Hz, and optional amplitude (volume), waveform, envelope, tremolo (volume change) and vibrato (frequency change).
+//|         """Construct a Note object, with a frequency in Hz, and optional amplitude (volume), waveform, envelope, tremolo (volume change) and bend (frequency change).
 //|
 //|         If waveform or envelope are `None` the synthesizer object's default waveform or envelope are used.
 //|
 //|         If the same Note object is played on multiple Synthesizer objects, the result is undefined.
 //|         """
 STATIC mp_obj_t synthio_note_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_frequency, ARG_amplitude, ARG_waveform, ARG_envelope, ARG_tremolo_rate, ARG_tremolo_depth, ARG_vibrato_rate, ARG_vibrato_depth };
     mp_arg_val_t args[MP_ARRAY_SIZE(note_properties)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(note_properties), note_properties, args);
 
@@ -158,46 +159,67 @@ MP_PROPERTY_GETSET(synthio_note_tremolo_rate_obj,
     (mp_obj_t)&synthio_note_get_tremolo_rate_obj,
     (mp_obj_t)&synthio_note_set_tremolo_rate_obj);
 
-//|     vibrato_depth: float
-//|     """The vibrato depth of the note, from 0 to 1
 //|
-//|     A depth of 0 disables vibrato. A depth of 1 corresponds to a vibrato of ±1
-//|     octave.  A depth of (1/12) = 0.833 corresponds to a vibrato of ±1 semitone,
+//|     bend_mode: BendMode
+//|     """The type of bend operation"""
+STATIC mp_obj_t synthio_note_get_bend_mode(mp_obj_t self_in) {
+    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return cp_enum_find(&synthio_bend_mode_type, common_hal_synthio_note_get_bend_mode(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_bend_mode_obj, synthio_note_get_bend_mode);
+
+STATIC mp_obj_t synthio_note_set_bend_mode(mp_obj_t self_in, mp_obj_t arg) {
+    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_synthio_note_set_bend_mode(self, cp_enum_value(&synthio_bend_mode_type, arg, MP_QSTR_bend_mode));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_bend_mode_obj, synthio_note_set_bend_mode);
+MP_PROPERTY_GETSET(synthio_note_bend_mode_obj,
+    (mp_obj_t)&synthio_note_get_bend_mode_obj,
+    (mp_obj_t)&synthio_note_set_bend_mode_obj);
+
+//
+//|
+//|     bend_depth: float
+//|     """The bend depth of the note, from -1 to +1
+//|
+//|     A depth of 0 disables bend. A depth of 1 corresponds to a bend of 1
+//|     octave.  A depth of (1/12) = 0.833 corresponds to a bend of 1 semitone,
 //|     and a depth of .00833 corresponds to one musical cent.
 //|     """
-STATIC mp_obj_t synthio_note_get_vibrato_depth(mp_obj_t self_in) {
+STATIC mp_obj_t synthio_note_get_bend_depth(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(common_hal_synthio_note_get_vibrato_depth(self));
+    return mp_obj_new_float(common_hal_synthio_note_get_bend_depth(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_vibrato_depth_obj, synthio_note_get_vibrato_depth);
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_bend_depth_obj, synthio_note_get_bend_depth);
 
-STATIC mp_obj_t synthio_note_set_vibrato_depth(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t synthio_note_set_bend_depth(mp_obj_t self_in, mp_obj_t arg) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_synthio_note_set_vibrato_depth(self, mp_obj_get_float(arg));
+    common_hal_synthio_note_set_bend_depth(self, mp_obj_get_float(arg));
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_vibrato_depth_obj, synthio_note_set_vibrato_depth);
-MP_PROPERTY_GETSET(synthio_note_vibrato_depth_obj,
-    (mp_obj_t)&synthio_note_get_vibrato_depth_obj,
-    (mp_obj_t)&synthio_note_set_vibrato_depth_obj);
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_bend_depth_obj, synthio_note_set_bend_depth);
+MP_PROPERTY_GETSET(synthio_note_bend_depth_obj,
+    (mp_obj_t)&synthio_note_get_bend_depth_obj,
+    (mp_obj_t)&synthio_note_set_bend_depth_obj);
 
-//|     vibrato_rate: float
-//|     """The vibrato rate of the note, in Hz."""
-STATIC mp_obj_t synthio_note_get_vibrato_rate(mp_obj_t self_in) {
+//|     bend_rate: float
+//|     """The bend rate of the note, in Hz."""
+STATIC mp_obj_t synthio_note_get_bend_rate(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(common_hal_synthio_note_get_vibrato_rate(self));
+    return mp_obj_new_float(common_hal_synthio_note_get_bend_rate(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_vibrato_rate_obj, synthio_note_get_vibrato_rate);
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_bend_rate_obj, synthio_note_get_bend_rate);
 
-STATIC mp_obj_t synthio_note_set_vibrato_rate(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t synthio_note_set_bend_rate(mp_obj_t self_in, mp_obj_t arg) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_synthio_note_set_vibrato_rate(self, mp_obj_get_float(arg));
+    common_hal_synthio_note_set_bend_rate(self, mp_obj_get_float(arg));
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_vibrato_rate_obj, synthio_note_set_vibrato_rate);
-MP_PROPERTY_GETSET(synthio_note_vibrato_rate_obj,
-    (mp_obj_t)&synthio_note_get_vibrato_rate_obj,
-    (mp_obj_t)&synthio_note_set_vibrato_rate_obj);
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_bend_rate_obj, synthio_note_set_bend_rate);
+MP_PROPERTY_GETSET(synthio_note_bend_rate_obj,
+    (mp_obj_t)&synthio_note_get_bend_rate_obj,
+    (mp_obj_t)&synthio_note_set_bend_rate_obj);
 
 //|     waveform: Optional[ReadableBuffer]
 //|     """The waveform of this note. Setting the waveform to a buffer of a different size resets the note's phase."""
@@ -249,8 +271,9 @@ STATIC const mp_rom_map_elem_t synthio_note_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_envelope), MP_ROM_PTR(&synthio_note_envelope_obj) },
     { MP_ROM_QSTR(MP_QSTR_tremolo_depth), MP_ROM_PTR(&synthio_note_tremolo_depth_obj) },
     { MP_ROM_QSTR(MP_QSTR_tremolo_rate), MP_ROM_PTR(&synthio_note_tremolo_rate_obj) },
-    { MP_ROM_QSTR(MP_QSTR_vibrato_depth), MP_ROM_PTR(&synthio_note_vibrato_depth_obj) },
-    { MP_ROM_QSTR(MP_QSTR_vibrato_rate), MP_ROM_PTR(&synthio_note_vibrato_rate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bend_depth), MP_ROM_PTR(&synthio_note_bend_depth_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bend_rate), MP_ROM_PTR(&synthio_note_bend_rate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bend_mode), MP_ROM_PTR(&synthio_note_bend_mode_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(synthio_note_locals_dict, synthio_note_locals_dict_table);
 

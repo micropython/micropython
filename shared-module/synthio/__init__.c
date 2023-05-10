@@ -402,6 +402,18 @@ void synthio_lfo_set(synthio_lfo_state_t *state, const synthio_lfo_descr_t *desc
     state->dds = synthio_frequency_convert_float_to_dds(descr->frequency * 65536, sample_rate);
 }
 
+int synthio_sweep_step(synthio_lfo_state_t *state, uint16_t dur) {
+    uint32_t phase = state->phase;
+    uint16_t whole_phase = phase >> 16;
+
+    // advance the phase accumulator
+    state->phase = phase + state->dds * dur;
+    if (state->phase < phase) {
+        state->phase = 0xffffffff;
+    }
+    return (state->amplitude_scaled * whole_phase) / 65536 + state->offset_scaled;
+}
+
 int synthio_lfo_step(synthio_lfo_state_t *state, uint16_t dur) {
     uint32_t phase = state->phase;
     uint16_t whole_phase = phase >> 16;

@@ -1,10 +1,10 @@
 ()
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-(Note(frequency=830.6076004423605, amplitude=1.0, tremolo_rate=0.0, tremolo_depth=0.0, vibrato_rate=0.0, vibrato_depth=0.0, waveform=None, envelope=None),)
+(Note(frequency=830.6076004423605, amplitude=1.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendType.VIBRATO, waveform=None, envelope=None),)
 [-16383, -16383, -16383, -16383, 16383, 16383, 16383, 16383, 16383, -16383, -16383, -16383, -16383, -16383, 16383, 16383, 16383, 16383, 16383, -16383, -16383, -16383, -16383, -16383]
-(Note(frequency=830.6076004423605, amplitude=1.0, tremolo_rate=0.0, tremolo_depth=0.0, vibrato_rate=0.0, vibrato_depth=0.0, waveform=None, envelope=None), Note(frequency=830.6076004423605, amplitude=1.0, tremolo_rate=0.0, tremolo_depth=0.0, vibrato_rate=0.0, vibrato_depth=0.0, waveform=None, envelope=None))
+(Note(frequency=830.6076004423605, amplitude=1.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendType.VIBRATO, waveform=None, envelope=None), Note(frequency=830.6076004423605, amplitude=1.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendType.VIBRATO, waveform=None, envelope=None))
 [0, 0, 0, 0, 0, 0, 0, 0, 28045, 0, 0, 0, 0, -28046, 0, 0, 0, 0, 28045, 0, 0, 0, 0, -28046]
-(Note(frequency=830.6076004423605, amplitude=1.0, tremolo_rate=0.0, tremolo_depth=0.0, vibrato_rate=0.0, vibrato_depth=0.0, waveform=None, envelope=None),)
+(Note(frequency=830.6076004423605, amplitude=1.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendType.VIBRATO, waveform=None, envelope=None),)
 [0, 0, 0, 28045, 0, 0, 0, 0, 0, 0, 0, 0, 28045, 0, 0, 0, 0, -28046, 0, 0, 0, 0, 28045, 0]
 (-5242, 5242)
 (-10485, 10484)
