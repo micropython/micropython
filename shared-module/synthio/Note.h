@@ -32,13 +32,14 @@
 typedef struct synthio_note_obj {
     mp_obj_base_t base;
 
-    mp_float_t frequency;
+    mp_float_t frequency, ring_frequency;
     mp_float_t panning;
-    mp_obj_t waveform_obj, envelope_obj;
+    mp_obj_t waveform_obj, envelope_obj, ring_waveform_obj;
 
     int32_t sample_rate;
 
     int32_t frequency_scaled;
+    int32_t ring_frequency_scaled;
     int32_t amplitude_scaled;
     int32_t left_panning_scaled, right_panning_scaled;
     synthio_bend_mode_t bend_mode;
@@ -46,6 +47,7 @@ typedef struct synthio_note_obj {
     synthio_lfo_state_t tremolo_state, bend_state;
 
     mp_buffer_info_t waveform_buf;
+    mp_buffer_info_t ring_waveform_buf;
     synthio_envelope_definition_t envelope_def;
 } synthio_note_obj_t;
 

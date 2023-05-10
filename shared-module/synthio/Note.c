@@ -44,6 +44,16 @@ void common_hal_synthio_note_set_frequency(synthio_note_obj_t *self, mp_float_t 
     self->frequency_scaled = synthio_frequency_convert_float_to_scaled(val);
 }
 
+mp_float_t common_hal_synthio_note_get_ring_frequency(synthio_note_obj_t *self) {
+    return self->ring_frequency;
+}
+
+void common_hal_synthio_note_set_ring_frequency(synthio_note_obj_t *self, mp_float_t value_in) {
+    mp_float_t val = mp_arg_validate_float_range(value_in, 0, 32767, MP_QSTR_ring_frequency);
+    self->ring_frequency = val;
+    self->ring_frequency_scaled = synthio_frequency_convert_float_to_scaled(val);
+}
+
 mp_float_t common_hal_synthio_note_get_panning(synthio_note_obj_t *self) {
     return self->panning;
 }
@@ -140,6 +150,21 @@ void common_hal_synthio_note_set_waveform(synthio_note_obj_t *self, mp_obj_t wav
         self->waveform_buf = bufinfo_waveform;
     }
     self->waveform_obj = waveform_in;
+}
+
+mp_obj_t common_hal_synthio_note_get_ring_waveform_obj(synthio_note_obj_t *self) {
+    return self->ring_waveform_obj;
+}
+
+void common_hal_synthio_note_set_ring_waveform(synthio_note_obj_t *self, mp_obj_t ring_waveform_in) {
+    if (ring_waveform_in == mp_const_none) {
+        memset(&self->ring_waveform_buf, 0, sizeof(self->ring_waveform_buf));
+    } else {
+        mp_buffer_info_t bufinfo_ring_waveform;
+        synthio_synth_parse_waveform(&bufinfo_ring_waveform, ring_waveform_in);
+        self->ring_waveform_buf = bufinfo_ring_waveform;
+    }
+    self->ring_waveform_obj = ring_waveform_in;
 }
 
 void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate) {

@@ -209,6 +209,11 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
         uint32_t dds_rate;
         const int16_t *waveform = synth->waveform;
         uint32_t waveform_length = synth->waveform_length;
+
+        uint32_t ring_dds_rate = 0;
+        const int16_t *ring_waveform = NULL;
+        uint32_t ring_waveform_length = 0;
+
         if (mp_obj_is_small_int(note_obj)) {
             uint8_t note = mp_obj_get_int(note_obj);
             uint8_t octave = note / 12;
@@ -227,35 +232,97 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
                 waveform_length = note->waveform_buf.len / 2;
             }
             dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)frequency_scaled * waveform_length, sample_rate);
-        }
-
-        uint32_t accum = synth->accum[chan];
-        uint32_t lim = waveform_length << SYNTHIO_FREQUENCY_SHIFT;
-        if (dds_rate > lim / 2) {
-            // beyond nyquist, can't play note
-            continue;
-        }
-
-        // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
-        if (accum > lim) {
-            accum %= lim;
+            if (note->ring_frequency_scaled != 0 && note->ring_waveform_buf.buf) {
+                ring_waveform = note->ring_waveform_buf.buf;
+                ring_waveform_length = note->ring_waveform_buf.len / 2;
+                ring_dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)note->ring_frequency_scaled * ring_waveform_length, sample_rate);
+                uint32_t lim = ring_waveform_length << SYNTHIO_FREQUENCY_SHIFT;
+                if (ring_dds_rate > lim / 2) {
+                    ring_dds_rate = 0; // can't ring at that frequency
+                }
+            }
         }
 
         int synth_chan = synth->channel_count;
-        for (uint16_t i = 0, j = 0; i < dur; i++) {
-            accum += dds_rate;
-            // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
+        if (ring_dds_rate) {
+            uint32_t lim = waveform_length << SYNTHIO_FREQUENCY_SHIFT;
+            uint32_t accum = synth->accum[chan];
+
+            if (dds_rate > lim / 2) {
+                // beyond nyquist, can't play note
+                continue;
+            }
+
+            // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
             if (accum > lim) {
-                accum -= lim;
+                accum %= lim;
             }
-            int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
-            int16_t wi = waveform[idx];
-            for (int c = 0; c < synth_chan; c++) {
-                out_buffer32[j] += (wi * loudness[c]) / 65536;
-                j++;
+
+            int32_t ring_buffer[dur];
+            // first, fill with waveform
+            for (uint16_t i = 0; i < dur; i++) {
+                accum += dds_rate;
+                // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
+                if (accum > lim) {
+                    accum -= lim;
+                }
+                int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
+                ring_buffer[i] = waveform[idx];
             }
+            synth->accum[chan] = accum;
+
+            // now modulate by ring and accumulate
+            accum = synth->ring_accum[chan];
+            lim = ring_waveform_length << SYNTHIO_FREQUENCY_SHIFT;
+
+            // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
+            if (accum > lim) {
+                accum %= lim;
+            }
+
+            for (uint16_t i = 0, j = 0; i < dur; i++) {
+                accum += ring_dds_rate;
+                // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
+                if (accum > lim) {
+                    accum -= lim;
+                }
+                int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
+                int16_t wi = (ring_waveform[idx] * ring_buffer[i]) / 32768;
+                for (int c = 0; c < synth_chan; c++) {
+                    out_buffer32[j] += (wi * loudness[c]) / 32768;
+                    j++;
+                }
+            }
+            synth->ring_accum[chan] = accum;
+        } else {
+            uint32_t lim = waveform_length << SYNTHIO_FREQUENCY_SHIFT;
+            uint32_t accum = synth->accum[chan];
+
+            if (dds_rate > lim / 2) {
+                // beyond nyquist, can't play note
+                continue;
+            }
+
+            // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
+            if (accum > lim) {
+                accum %= lim;
+            }
+
+            for (uint16_t i = 0, j = 0; i < dur; i++) {
+                accum += dds_rate;
+                // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
+                if (accum > lim) {
+                    accum -= lim;
+                }
+                int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
+                int16_t wi = waveform[idx];
+                for (int c = 0; c < synth_chan; c++) {
+                    out_buffer32[j] += (wi * loudness[c]) / 65536;
+                    j++;
+                }
+            }
+            synth->accum[chan] = accum;
         }
-        synth->accum[chan] = accum;
     }
 
     int16_t *out_buffer16 = (int16_t *)(void *)synth->buffers[synth->buffer_index];

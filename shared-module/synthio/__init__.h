@@ -74,6 +74,7 @@ typedef struct synthio_synth {
     mp_obj_t envelope_obj;
     synthio_midi_span_t span;
     uint32_t accum[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
+    uint32_t ring_accum[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
     synthio_envelope_state_t envelope_state[CIRCUITPY_SYNTHIO_MAX_CHANNELS];
 } synthio_synth_t;
 

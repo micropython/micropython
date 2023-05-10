@@ -44,6 +44,8 @@ static const mp_arg_t note_properties[] = {
     { MP_QSTR_bend_mode, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = (mp_obj_t)MP_ROM_PTR(&bend_mode_VIBRATO_obj) } },
     { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
     { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
+    { MP_QSTR_ring_frequency, MP_ARG_OBJ, {.u_obj = NULL } },
+    { MP_QSTR_ring_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
 };
 //| class Note:
 //|     def __init__(
@@ -265,6 +267,49 @@ MP_PROPERTY_GETSET(synthio_note_envelope_obj,
     (mp_obj_t)&synthio_note_get_envelope_obj,
     (mp_obj_t)&synthio_note_set_envelope_obj);
 
+//|     ring_frequency: float
+//|     """The ring frequency of the note, in Hz. Zero disables.
+//|
+//|     For ring to take effect, both ring_frequency and ring_wavefor must be set."""
+STATIC mp_obj_t synthio_note_get_ring_frequency(mp_obj_t self_in) {
+    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_float(common_hal_synthio_note_get_ring_frequency(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_ring_frequency_obj, synthio_note_get_ring_frequency);
+
+STATIC mp_obj_t synthio_note_set_ring_frequency(mp_obj_t self_in, mp_obj_t arg) {
+    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_synthio_note_set_ring_frequency(self, mp_obj_get_float(arg));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_ring_frequency_obj, synthio_note_set_ring_frequency);
+MP_PROPERTY_GETSET(synthio_note_ring_frequency_obj,
+    (mp_obj_t)&synthio_note_get_ring_frequency_obj,
+    (mp_obj_t)&synthio_note_set_ring_frequency_obj);
+
+//|     ring_waveform: Optional[ReadableBuffer]
+//|     """The ring waveform of this note. Setting the ring_waveform to a buffer of a different size resets the note's phase.
+//|
+//|     For ring to take effect, both ring_frequency and ring_wavefor must be set."""
+//|
+STATIC mp_obj_t synthio_note_get_ring_waveform(mp_obj_t self_in) {
+    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return common_hal_synthio_note_get_ring_waveform_obj(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_ring_waveform_obj, synthio_note_get_ring_waveform);
+
+STATIC mp_obj_t synthio_note_set_ring_waveform(mp_obj_t self_in, mp_obj_t arg) {
+    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_synthio_note_set_ring_waveform(self, arg);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_ring_waveform_obj, synthio_note_set_ring_waveform);
+MP_PROPERTY_GETSET(synthio_note_ring_waveform_obj,
+    (mp_obj_t)&synthio_note_get_ring_waveform_obj,
+    (mp_obj_t)&synthio_note_set_ring_waveform_obj);
+
+
+
 static void note_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     properties_print_helper(print, self_in, note_properties, MP_ARRAY_SIZE(note_properties));
@@ -280,6 +325,8 @@ STATIC const mp_rom_map_elem_t synthio_note_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_bend_depth), MP_ROM_PTR(&synthio_note_bend_depth_obj) },
     { MP_ROM_QSTR(MP_QSTR_bend_rate), MP_ROM_PTR(&synthio_note_bend_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_bend_mode), MP_ROM_PTR(&synthio_note_bend_mode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ring_frequency), MP_ROM_PTR(&synthio_note_ring_frequency_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ring_waveform), MP_ROM_PTR(&synthio_note_ring_waveform_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(synthio_note_locals_dict, synthio_note_locals_dict_table);
 
