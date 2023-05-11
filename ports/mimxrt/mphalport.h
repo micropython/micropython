@@ -31,6 +31,7 @@
 #include "ticks.h"
 #include "py/ringbuf.h"
 #include "pin.h"
+#include "irq.h"
 #include "fsl_clock.h"
 
 #define MICROPY_HAL_VERSION             "2.8.0"
