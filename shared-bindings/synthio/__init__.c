@@ -295,16 +295,16 @@ MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, SWEEP_IN, SYNTHIO_BEND_MODE_S
 //| class BendMode:
 //|     """Controls the way the ``Note.pitch_bend_depth`` and ``Note.pitch_bend_rate`` properties are interpreted."""
 //|
-//|     STATIC: object
+//|     STATIC: "BendMode"
 //|     """The Note's pitch is modified by its ``pitch_bend_depth``. ``pitch_bend_rate`` is ignored."""
 //|
-//|     VIBRATO: object
+//|     VIBRATO: "BendMode"
 //|     """The Note's pitch varies by ``±pitch_bend_depth`` at a rate of ``pitch_bend_rate`` Hz."""
 //|
-//|     SWEEP: object
+//|     SWEEP: "BendMode"
 //|     """The Note's pitch starts at ``Note.frequency`` then sweeps up or down by ``pitch_bend_depth`` over ``1/pitch_bend_rate`` seconds."""
 //|
-//|     SWEEP_IN: object
+//|     SWEEP_IN: "BendMode"
 //|     """The Note's pitch sweep is the reverse of ``SWEEP`` mode, starting at the bent pitch and arriving at the tuned pitch."""
 //|
 MAKE_ENUM_MAP(synthio_bend_mode) {
