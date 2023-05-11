@@ -37,7 +37,7 @@ def synthesize(synth):
             frequency=synthio.midi_to_hz(1 + i),
             waveform=noise,
             envelope=envelope,
-            bend_mode=synthio.BendType.SWEEP,
+            bend_mode=synthio.BendMode.SWEEP,
             bend_depth=random.choice((-1, 1)),
             bend_rate=randf(4, 12),
         )

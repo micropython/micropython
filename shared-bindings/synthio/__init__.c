@@ -289,36 +289,41 @@ MP_DEFINE_CONST_FUN_OBJ_1(synthio_onevo_to_hz_obj, onevo_to_hz);
 MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, STATIC, SYNTHIO_BEND_MODE_STATIC);
 MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, VIBRATO, SYNTHIO_BEND_MODE_VIBRATO);
 MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, SWEEP, SYNTHIO_BEND_MODE_SWEEP);
+MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, SWEEP_IN, SYNTHIO_BEND_MODE_SWEEP_IN);
 
 //|
-//| class BendType:
+//| class BendMode:
 //|     """Controls the way the ``Note.pitch_bend_depth`` and ``Note.pitch_bend_rate`` properties are interpreted."""
 //|
 //|     STATIC: object
 //|     """The Note's pitch is modified by its ``pitch_bend_depth``. ``pitch_bend_rate`` is ignored."""
 //|
 //|     VIBRATO: object
-//|     """The Note's pitch varies by ``±pitch_bend_depth` at a rate of ``pitch_bend_rate``Hz."""
+//|     """The Note's pitch varies by ``±pitch_bend_depth`` at a rate of ``pitch_bend_rate`` Hz."""
 //|
 //|     SWEEP: object
 //|     """The Note's pitch starts at ``Note.frequency`` then sweeps up or down by ``pitch_bend_depth`` over ``1/pitch_bend_rate`` seconds."""
+//|
+//|     SWEEP_IN: object
+//|     """The Note's pitch sweep is the reverse of ``SWEEP`` mode, starting at the bent pitch and arriving at the tuned pitch."""
 //|
 MAKE_ENUM_MAP(synthio_bend_mode) {
     MAKE_ENUM_MAP_ENTRY(bend_mode, STATIC),
     MAKE_ENUM_MAP_ENTRY(bend_mode, VIBRATO),
     MAKE_ENUM_MAP_ENTRY(bend_mode, SWEEP),
+    MAKE_ENUM_MAP_ENTRY(bend_mode, SWEEP_IN),
 };
 
 STATIC MP_DEFINE_CONST_DICT(synthio_bend_mode_locals_dict, synthio_bend_mode_locals_table);
 
 MAKE_PRINTER(synthio, synthio_bend_mode);
 
-MAKE_ENUM_TYPE(synthio, BendType, synthio_bend_mode);
+MAKE_ENUM_TYPE(synthio, BendMode, synthio_bend_mode);
 
 
 STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_synthio) },
-    { MP_ROM_QSTR(MP_QSTR_BendType), MP_ROM_PTR(&synthio_bend_mode_type) },
+    { MP_ROM_QSTR(MP_QSTR_BendMode), MP_ROM_PTR(&synthio_bend_mode_type) },
     { MP_ROM_QSTR(MP_QSTR_MidiTrack), MP_ROM_PTR(&synthio_miditrack_type) },
     { MP_ROM_QSTR(MP_QSTR_Note), MP_ROM_PTR(&synthio_note_type) },
     { MP_ROM_QSTR(MP_QSTR_Synthesizer), MP_ROM_PTR(&synthio_synthesizer_type) },

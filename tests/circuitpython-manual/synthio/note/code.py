@@ -116,7 +116,7 @@ def synthesize6(synth):
         tremolo_rate=1.5,
         bend_depth=-5 / 12,
         bend_rate=1 / 2,
-        bend_mode=synthio.BendType.SWEEP,
+        bend_mode=synthio.BendMode.SWEEP,
         waveform=sine,
         envelope=envelope,
     )

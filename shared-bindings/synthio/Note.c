@@ -59,7 +59,7 @@ static const mp_arg_t note_properties[] = {
 //|         tremolo_rate: float = 0.0,
 //|         bend_depth: float = 0.0,
 //|         bend_rate: float = 0.0,
-//|         bend_mode: BendMode = BendMode.VIBRATO,
+//|         bend_mode: "BendMode" = BendMode.VIBRATO,
 //|     ) -> None:
 //|         """Construct a Note object, with a frequency in Hz, and optional panning, waveform, envelope, tremolo (volume change) and bend (frequency change).
 //|
@@ -270,7 +270,7 @@ MP_PROPERTY_GETSET(synthio_note_envelope_obj,
 //|     ring_frequency: float
 //|     """The ring frequency of the note, in Hz. Zero disables.
 //|
-//|     For ring to take effect, both ring_frequency and ring_wavefor must be set."""
+//|     For ring to take effect, both ``ring_frequency`` and ``ring_waveform`` must be set."""
 STATIC mp_obj_t synthio_note_get_ring_frequency(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_synthio_note_get_ring_frequency(self));
@@ -290,7 +290,7 @@ MP_PROPERTY_GETSET(synthio_note_ring_frequency_obj,
 //|     ring_waveform: Optional[ReadableBuffer]
 //|     """The ring waveform of this note. Setting the ring_waveform to a buffer of a different size resets the note's phase.
 //|
-//|     For ring to take effect, both ring_frequency and ring_wavefor must be set."""
+//|     For ring to take effect, both ``ring_frequency`` and ``ring_waveform`` must be set."""
 //|
 STATIC mp_obj_t synthio_note_get_ring_waveform(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
