@@ -207,10 +207,6 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
     pyb_file_obj_t *file = MP_OBJ_TO_PTR(args[ARG_file].u_obj);
 
-
-    mp_buffer_info_t bufinfo_waveform;
-    synthio_synth_parse_waveform(&bufinfo_waveform, args[ARG_waveform].u_obj);
-
     uint8_t chunk_header[14];
     f_rewind(&file->fp);
     UINT bytes_read;
@@ -250,7 +246,8 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
     result->base.type = &synthio_miditrack_type;
 
     common_hal_synthio_miditrack_construct(result, buffer, track_size,
-        tempo, args[ARG_sample_rate].u_int, bufinfo_waveform.buf, bufinfo_waveform.len / 2,
+        tempo, args[ARG_sample_rate].u_int, args[ARG_waveform].u_obj,
+        mp_const_none,
         args[ARG_envelope].u_obj
         );
 

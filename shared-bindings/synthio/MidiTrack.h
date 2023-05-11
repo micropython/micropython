@@ -27,12 +27,11 @@
 #pragma once
 
 #include "shared-module/synthio/MidiTrack.h"
+#include "py/obj.h"
 
 extern const mp_obj_type_t synthio_miditrack_type;
 
-void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
-    const uint8_t *buffer, uint32_t len, uint32_t tempo, uint32_t sample_rate, const int16_t *waveform, uint16_t waveform_len,
-    mp_obj_t envelope);
+void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self, const uint8_t *buffer, uint32_t len, uint32_t tempo, uint32_t sample_rate, mp_obj_t waveform_obj, mp_obj_t filter_obj, mp_obj_t envelope_obj);
 
 void common_hal_synthio_miditrack_deinit(synthio_miditrack_obj_t *self);
 bool common_hal_synthio_miditrack_deinited(synthio_miditrack_obj_t *self);

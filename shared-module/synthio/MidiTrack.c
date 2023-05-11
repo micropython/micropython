@@ -116,14 +116,13 @@ STATIC void start_parse(synthio_miditrack_obj_t *self) {
 
 void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
     const uint8_t *buffer, uint32_t len, uint32_t tempo, uint32_t sample_rate,
-    const int16_t *waveform, uint16_t waveform_length,
-    mp_obj_t envelope) {
+    mp_obj_t waveform_obj, mp_obj_t filter_obj, mp_obj_t envelope_obj) {
 
     self->tempo = tempo;
     self->track.buf = (void *)buffer;
     self->track.len = len;
 
-    synthio_synth_init(&self->synth, sample_rate, 1, waveform, waveform_length, envelope);
+    synthio_synth_init(&self->synth, sample_rate, 1, waveform_obj, mp_const_none, envelope_obj);
 
     start_parse(self);
 }
