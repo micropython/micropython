@@ -45,7 +45,8 @@ class VibroFire:
                 fill = 0
 
     def set_led(self, index: int, value: int):
-        fp = (float(value) / 255.0) * 0.2
+        value = min(100, max(0, value))
+        fp = (float(value) / 100.0) * 0.2
         fp = fp ** 2
         value = int(fp * 255.0)
         self.aw9523.dim(self.map_pin(index), value)
