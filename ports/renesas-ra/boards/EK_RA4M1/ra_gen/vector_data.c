@@ -4,7 +4,7 @@
 #if VECTOR_DATA_IRQ_COUNT > 0
 BSP_DONT_REMOVE const fsp_vector_t g_vector_table[BSP_ICU_VECTOR_MAX_ENTRIES] BSP_PLACE_IN_SECTION(BSP_SECTION_APPLICATION_VECTORS) =
 {
-    [0] = sci_uart_rxi_isr,         /* SCI0 RXI (Receive data full) */
+    [0] = sci_uart_rxi_isr,                     /* SCI0 RXI (Receive data full) */
     [1] = sci_uart_txi_isr,         /* SCI0 TXI (Transmit data empty) */
     [2] = sci_uart_tei_isr,         /* SCI0 TEI (Transmit end) */
     [3] = sci_uart_eri_isr,         /* SCI0 ERI (Receive error) */
@@ -14,17 +14,17 @@ BSP_DONT_REMOVE const fsp_vector_t g_vector_table[BSP_ICU_VECTOR_MAX_ENTRIES] BS
     [7] = sci_uart_eri_isr,         /* SCI1 ERI (Receive error) */
     [8] = sci_uart_rxi_isr,         /* SCI2 RXI (Received data full) */
     [9] = sci_uart_txi_isr,         /* SCI2 TXI (Transmit data empty) */
-    [10] = sci_uart_tei_isr,        /* SCI2 TEI (Transmit end) */
-    [11] = sci_uart_eri_isr,        /* SCI2 ERI (Receive error) */
-    [12] = rtc_alarm_periodic_isr,  /* RTC ALARM (Alarm interrupt) */
-    [13] = rtc_alarm_periodic_isr,  /* RTC PERIOD (Periodic interrupt) */
-    [14] = rtc_carry_isr,           /* RTC CARRY (Carry interrupt) */
-    [15] = agt_int_isr,             /* AGT0 INT (AGT interrupt) */
-    [16] = r_icu_isr,               /* ICU IRQ0 (External pin interrupt 0) */
-    [17] = spi_rxi_isr,             /* SPI0 RXI (Receive buffer full) */
-    [18] = spi_txi_isr,             /* SPI0 TXI (Transmit buffer empty) */
-    [19] = spi_tei_isr,             /* SPI0 TEI (Transmission complete event) */
-    [20] = spi_eri_isr,             /* SPI0 ERI (Error) */
+    [10] = sci_uart_tei_isr,         /* SCI2 TEI (Transmit end) */
+    [11] = sci_uart_eri_isr,         /* SCI2 ERI (Receive error) */
+    [12] = rtc_alarm_periodic_isr,         /* RTC ALARM (Alarm interrupt) */
+    [13] = rtc_alarm_periodic_isr,         /* RTC PERIOD (Periodic interrupt) */
+    [14] = rtc_carry_isr,         /* RTC CARRY (Carry interrupt) */
+    [15] = agt_int_isr,         /* AGT0 INT (AGT interrupt) */
+    [16] = r_icu_isr,         /* ICU IRQ0 (External pin interrupt 0) */
+    [17] = spi_rxi_isr,         /* SPI0 RXI (Receive buffer full) */
+    [18] = spi_txi_isr,         /* SPI0 TXI (Transmit buffer empty) */
+    [19] = spi_tei_isr,         /* SPI0 TEI (Transmission complete event) */
+    [20] = spi_eri_isr,         /* SPI0 ERI (Error) */
 };
 const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_MAX_ENTRIES] =
 {
@@ -38,16 +38,16 @@ const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_MAX_ENT
     [7] = BSP_PRV_IELS_ENUM(EVENT_SCI1_ERI),         /* SCI1 ERI (Receive error) */
     [8] = BSP_PRV_IELS_ENUM(EVENT_SCI2_RXI),         /* SCI2 RXI (Received data full) */
     [9] = BSP_PRV_IELS_ENUM(EVENT_SCI2_TXI),         /* SCI2 TXI (Transmit data empty) */
-    [10] = BSP_PRV_IELS_ENUM(EVENT_SCI2_TEI),        /* SCI2 TEI (Transmit end) */
-    [11] = BSP_PRV_IELS_ENUM(EVENT_SCI2_ERI),        /* SCI2 ERI (Receive error) */
-    [12] = BSP_PRV_IELS_ENUM(EVENT_RTC_ALARM),       /* RTC ALARM (Alarm interrupt) */
-    [13] = BSP_PRV_IELS_ENUM(EVENT_RTC_PERIOD),      /* RTC PERIOD (Periodic interrupt) */
-    [14] = BSP_PRV_IELS_ENUM(EVENT_RTC_CARRY),       /* RTC CARRY (Carry interrupt) */
-    [15] = BSP_PRV_IELS_ENUM(EVENT_AGT0_INT),        /* AGT0 INT (AGT interrupt) */
-    [16] = BSP_PRV_IELS_ENUM(EVENT_ICU_IRQ0),        /* ICU IRQ0 (External pin interrupt 0) */
-    [17] = BSP_PRV_IELS_ENUM(EVENT_SPI0_RXI),        /* SPI0 RXI (Receive buffer full) */
-    [18] = BSP_PRV_IELS_ENUM(EVENT_SPI0_TXI),        /* SPI0 TXI (Transmit buffer empty) */
-    [19] = BSP_PRV_IELS_ENUM(EVENT_SPI0_TEI),        /* SPI0 TEI (Transmission complete event) */
-    [20] = BSP_PRV_IELS_ENUM(EVENT_SPI0_ERI),        /* SPI0 ERI (Error) */
+    [10] = BSP_PRV_IELS_ENUM(EVENT_SCI2_TEI),         /* SCI2 TEI (Transmit end) */
+    [11] = BSP_PRV_IELS_ENUM(EVENT_SCI2_ERI),         /* SCI2 ERI (Receive error) */
+    [12] = BSP_PRV_IELS_ENUM(EVENT_RTC_ALARM),         /* RTC ALARM (Alarm interrupt) */
+    [13] = BSP_PRV_IELS_ENUM(EVENT_RTC_PERIOD),         /* RTC PERIOD (Periodic interrupt) */
+    [14] = BSP_PRV_IELS_ENUM(EVENT_RTC_CARRY),         /* RTC CARRY (Carry interrupt) */
+    [15] = BSP_PRV_IELS_ENUM(EVENT_AGT0_INT),         /* AGT0 INT (AGT interrupt) */
+    [16] = BSP_PRV_IELS_ENUM(EVENT_ICU_IRQ0),         /* ICU IRQ0 (External pin interrupt 0) */
+    [17] = BSP_PRV_IELS_ENUM(EVENT_SPI0_RXI),         /* SPI0 RXI (Receive buffer full) */
+    [18] = BSP_PRV_IELS_ENUM(EVENT_SPI0_TXI),         /* SPI0 TXI (Transmit buffer empty) */
+    [19] = BSP_PRV_IELS_ENUM(EVENT_SPI0_TEI),         /* SPI0 TEI (Transmission complete event) */
+    [20] = BSP_PRV_IELS_ENUM(EVENT_SPI0_ERI),         /* SPI0 ERI (Error) */
 };
 #endif

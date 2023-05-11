@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2023 Philipp Ebensberger
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_HAL_FLEXSPI_NOR_FLASH_H
-#define MICROPY_INCLUDED_MIMXRT_HAL_FLEXSPI_NOR_FLASH_H
 
-#include "fsl_flexspi.h"
-#include "mpconfigboard.h"
-#include BOARD_FLASH_CONFIG_HEADER_H
+#ifndef MICROPY_INCLUDED_MIMXRT_FLASH_H
+#define MICROPY_INCLUDED_MIMXRT_FLASH_H
 
-#if defined MICROPY_HW_FLASH_INTERNAL
-#define BOARD_FLEX_SPI FLEXSPI2
-#define BOARD_FLEX_SPI_ADDR_BASE FlexSPI2_AMBA_BASE
-#elif defined MIMXRT117x_SERIES
-#define BOARD_FLEX_SPI FLEXSPI1
-#define BOARD_FLEX_SPI_ADDR_BASE FlexSPI1_AMBA_BASE
-#else
-#define BOARD_FLEX_SPI FLEXSPI
-#define BOARD_FLEX_SPI_ADDR_BASE FlexSPI_AMBA_BASE
+#include BOARD_FLASH_OPS_HEADER_H
+
+#define SECTOR_SIZE_BYTES (qspiflash_config.sectorSize)
+#define PAGE_SIZE_BYTES (qspiflash_config.pageSize)
+#define BLOCK_SIZE_BYTES (qspiflash_config.blockSize)
+
+#define SECTOR_SIZE_BYTES (qspiflash_config.sectorSize)
+#define PAGE_SIZE_BYTES (qspiflash_config.pageSize)
+
+#ifndef MICROPY_HW_FLASH_STORAGE_BYTES
+#define MICROPY_HW_FLASH_STORAGE_BYTES (((uint32_t)&__vfs_end) - ((uint32_t)&__vfs_start))
 #endif
 
-// Defined in boards flash_config.c
-extern flexspi_nor_config_t qspiflash_config;
+#ifndef MICROPY_HW_FLASH_STORAGE_BASE
+#define MICROPY_HW_FLASH_STORAGE_BASE (((uint32_t)&__vfs_start) - ((uint32_t)&__flash_start))
+#endif
 
-status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId);
-status_t flexspi_nor_init(void);
-void flexspi_nor_update_lut(void);
-status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
-status_t flexspi_nor_flash_erase_block(FLEXSPI_Type *base, uint32_t address);
-status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t address, const uint32_t *src, uint32_t size);
+// Linker symbols
+extern uint8_t __vfs_start;
+extern uint8_t __vfs_end;
+extern uint8_t __flash_start;
 
-#endif // MICROPY_INCLUDED_MIMXRT_HAL_FLEXSPI_NOR_FLASH_H
+void flash_init(void);
+status_t flash_erase_sector(uint32_t erase_addr);
+status_t flash_erase_block(uint32_t erase_addr);
+void flash_read_block(uint32_t src_addr, uint8_t *dest, uint32_t length);
+status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length);
+
+#endif // MICROPY_INCLUDED_MIMXRT_FLASH_H

@@ -617,8 +617,9 @@
 #endif
 
 // Hook to run code during time consuming garbage collector operations
+// *i* is the loop index variable (e.g. can be used to run every x loops)
 #ifndef MICROPY_GC_HOOK_LOOP
-#define MICROPY_GC_HOOK_LOOP
+#define MICROPY_GC_HOOK_LOOP(i)
 #endif
 
 // Whether to provide m_tracked_calloc, m_tracked_free functions

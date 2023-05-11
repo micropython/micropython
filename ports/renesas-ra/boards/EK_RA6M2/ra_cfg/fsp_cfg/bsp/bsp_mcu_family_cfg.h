@@ -1,6 +1,10 @@
 /* generated configuration header file - do not edit */
 #ifndef BSP_MCU_FAMILY_CFG_H_
 #define BSP_MCU_FAMILY_CFG_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "bsp_mcu_device_pn_cfg.h"
 #include "bsp_mcu_device_cfg.h"
 #include "../../../ra/fsp/src/bsp/mcu/ra6m2/bsp_mcu_info.h"
@@ -23,7 +27,6 @@
 
 #define BSP_CORTEX_VECTOR_TABLE_ENTRIES    (16U)
 #define BSP_VECTOR_TABLE_MAX_ENTRIES       (112U)
-#define BSP_MCU_VBATT_SUPPORT       (1)
 
 #define OFS_SEQ1 0xA001A001 | (1 << 1) | (3 << 2)
 #define OFS_SEQ2 (15 << 4) | (3 << 8) | (3 << 10)
@@ -50,7 +53,9 @@
 #define BSP_CFG_ROM_REG_MPU_REGION3_ENABLE (1)
 #define BSP_CFG_ROM_REG_MPU_REGION3_START (0x400DFFFC)
 #define BSP_CFG_ROM_REG_MPU_REGION3_END (0x400DFFFF)
-
+#ifndef BSP_CLOCK_CFG_MAIN_OSC_WAIT
+#define BSP_CLOCK_CFG_MAIN_OSC_WAIT (9)
+#endif
 /* Used to create IELS values for the interrupt initialization table g_interrupt_event_link_select. */
 #define BSP_PRV_IELS_ENUM(vector)    (ELC_##vector)
 
@@ -70,5 +75,9 @@
 #define BSP_CFG_ID_CODE_LONG_2 (0xFFFFFFFF)
 #define BSP_CFG_ID_CODE_LONG_3 (0xFFFFFFFF)
 #define BSP_CFG_ID_CODE_LONG_4 (0xffFFFFFF)
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 #endif /* BSP_MCU_FAMILY_CFG_H_ */
