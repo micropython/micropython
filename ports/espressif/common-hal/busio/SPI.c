@@ -56,8 +56,10 @@ void spi_reset(void) {
 
 static void set_spi_config(busio_spi_obj_t *self,
     uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+    // 128 is a 50% duty cycle.
+    const int closest_clock = spi_get_actual_clock(APB_CLK_FREQ, baudrate, 128);
     const spi_device_interface_config_t device_config = {
-        .clock_speed_hz = baudrate,
+        .clock_speed_hz = closest_clock,
         .mode = phase | (polarity << 1),
         .spics_io_num = -1, // No CS pin
         .queue_size = MAX_SPI_TRANSACTIONS,
@@ -67,7 +69,7 @@ static void set_spi_config(busio_spi_obj_t *self,
     if (result != ESP_OK) {
         mp_raise_RuntimeError(translate("SPI configuration failed"));
     }
-    self->baudrate = baudrate;
+    self->baudrate = closest_clock;
     self->polarity = polarity;
     self->phase = phase;
     self->bits = bits;
