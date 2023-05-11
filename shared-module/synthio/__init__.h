@@ -64,12 +64,11 @@ typedef struct synthio_synth {
     uint32_t sample_rate;
     uint32_t total_envelope;
     int16_t *buffers[2];
-    const int16_t *waveform;
+    int32_t *filter_buffer;
     uint8_t channel_count;
-    uint16_t buffer_length;
+    uint16_t buffer_length, filter_buffer_length;
     uint16_t last_buffer_length;
     uint8_t other_channel, buffer_index, other_buffer_index;
-    uint16_t waveform_length;
     mp_buffer_info_t waveform_bufinfo, filter_bufinfo;
     synthio_envelope_definition_t global_envelope_definition;
     mp_obj_t waveform_obj, filter_obj, envelope_obj;
