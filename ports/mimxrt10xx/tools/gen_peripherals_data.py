@@ -190,6 +190,7 @@ for device in devices:
             split_pin = name.split("_")
             pin_name = "_".join(split_pin[4:])
             if pin_name not in all_pins:
+                print("skip", pin_name)
                 continue
             gpio_base = "_".join(split_pin[4:-1])
 
@@ -278,7 +279,10 @@ for device in devices:
     pins_c.append("")
 
     pins_h.append("")
-    pins_h.append(f"#define PIN_COUNT (IOMUXC_SW_PAD_CTL_PAD_COUNT + {len(usb_pins)})")
+
+    pins_h.append("// Pads can be reset. Other pins like USB cannot be.")
+    pins_h.append(f"#define PAD_COUNT ({pin_number})")
+    pins_h.append(f"#define PIN_COUNT (PAD_COUNT + {len(usb_pins)})")
     pins_h.append(f"extern const mcu_pin_obj_t mcu_pin_list[PIN_COUNT];")
     pins_h.append("")
 
