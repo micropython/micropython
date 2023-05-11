@@ -405,7 +405,7 @@ STATIC mp_obj_t network_ifx_wcm_active(size_t n_args, const mp_obj_t *args) {
                 wcm_assert_raise("network ap active error (with code: %d)", ret);
             } else {
                 ret = cy_wcm_stop_ap();
-                wcm_assert_raise("network ap deactive error (with code: %d)", ret);
+                wcm_assert_raise("network ap deactivate error (with code: %d)", ret);
             }
         }
     }
