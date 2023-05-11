@@ -229,7 +229,7 @@ STATIC int synthio_bend_value(synthio_note_obj_t *self, int16_t dur) {
     }
 }
 
-uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t *loudness) {
+uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t loudness[2]) {
     int tremolo_value = synthio_lfo_step(&self->tremolo_state, dur);
     loudness[0] = (((loudness[0] * tremolo_value) >> 15) * self->left_panning_scaled) >> 15;
     loudness[1] = (((loudness[1] * tremolo_value) >> 15) * self->right_panning_scaled) >> 15;
