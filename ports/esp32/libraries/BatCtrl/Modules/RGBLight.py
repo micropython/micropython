@@ -13,31 +13,28 @@ class RGBLight:
 
     def begin(self) -> bool:
         try:
-            self._i2c.writeto(self.ADDR, bytearray([self._red, self._green, self._blue]))
+            self._send()
             return True
         except OSError:
             return False
 
     def set_r(self, value: int):
-        self._red = value & 0xFF
-        self._i2c.writeto(self.ADDR, bytearray([self._red, self._green, self._blue]))
-        time.sleep_ms(1)
+        self._red = min(100, max(0, value))
+        self._send()
 
     def set_g(self, value: int):
-        self._green = value & 0xFF
-        self._i2c.writeto(self.ADDR, bytearray([self._red, self._green, self._blue]))
-        time.sleep_ms(1)
+        self._green = min(100, max(0, value))
+        self._send()
 
     def set_b(self, value: int):
-        self._blue = value & 0xFF
-        self._i2c.writeto(self.ADDR, bytearray([self._red, self._green, self._blue]))
-        time.sleep_ms(1)
+        self._blue = min(100, max(0, value))
+        self._send()
 
     def set(self, red: int, green: int, blue: int):
-        self._red = red & 0xFF
-        self._green = green & 0xFF
-        self._blue = blue & 0xFF
-        self._i2c.writeto(self.ADDR, bytearray([self._red, self._green, self._blue]))
+        self._red = min(100, max(0, red))
+        self._green = min(100, max(0, green))
+        self._blue = min(100, max(0, blue))
+        self._send()
 
     def get_r(self) -> int:
         return self._red
@@ -50,3 +47,17 @@ class RGBLight:
 
     def get(self) -> tuple:
         return self.get_r(), self.get_g(), self.get_b()
+
+    def _scale(self, val: int):
+        """Scales from [0-100] to [0-255]"""
+        val = min(100, max(0, val))
+        return int(round((val * 255) / 100))
+
+    def _send(self):
+        data = bytes([
+            self._scale(self._green),
+            self._scale(self._red),
+            self._scale(self._blue)
+        ])
+        self._i2c.writeto(self.ADDR, data)
+        time.sleep_ms(1)
