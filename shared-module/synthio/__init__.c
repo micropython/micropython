@@ -192,7 +192,7 @@ static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
 
     uint32_t dds_rate;
     const int16_t *waveform = synth->waveform_bufinfo.buf;
-    uint32_t waveform_length = synth->waveform_bufinfo.len / 2;
+    uint32_t waveform_length = synth->waveform_bufinfo.len / sizeof(int16_t);
 
     uint32_t ring_dds_rate = 0;
     const int16_t *ring_waveform = NULL;
@@ -213,15 +213,15 @@ static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
         int32_t frequency_scaled = synthio_note_step(note, sample_rate, dur, loudness);
         if (note->waveform_buf.buf) {
             waveform = note->waveform_buf.buf;
-            waveform_length = note->waveform_buf.len / 2;
+            waveform_length = note->waveform_buf.len / sizeof(int16_t);
         }
         dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)frequency_scaled * waveform_length, sample_rate);
         if (note->ring_frequency_scaled != 0 && note->ring_waveform_buf.buf) {
             ring_waveform = note->ring_waveform_buf.buf;
-            ring_waveform_length = note->ring_waveform_buf.len / 2;
+            ring_waveform_length = note->ring_waveform_buf.len / sizeof(int16_t);
             ring_dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)note->ring_frequency_scaled * ring_waveform_length, sample_rate);
             uint32_t lim = ring_waveform_length << SYNTHIO_FREQUENCY_SHIFT;
-            if (ring_dds_rate > lim / 2) {
+            if (ring_dds_rate > lim / sizeof(int16_t)) {
                 ring_dds_rate = 0; // can't ring at that frequency
             }
         }
@@ -309,6 +309,37 @@ static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
     }
 }
 
+STATIC void run_fir(synthio_synth_t *synth, int32_t *out_buffer32, uint16_t dur) {
+    int16_t *coeff = (int16_t *)synth->filter_bufinfo.buf;
+    size_t fir_len = synth->filter_bufinfo.len / sizeof(int16_t);
+    int32_t *in_buf = synth->filter_buffer;
+
+    // FIR and copy values to output buffer
+    for (int16_t i = 0; i < dur; i++) {
+        int32_t acc = 0;
+        for (size_t j = 0; j < fir_len; j++) {
+            // shift 5 here is good for up to 32 filtered voices, else might wrap
+            acc = acc + (in_buf[j] * (coeff[j] >> 5));
+        }
+        *out_buffer32++ = acc >> 10;
+        in_buf++;
+    }
+
+    // Move values down so that they get filtered next time
+    memmove(synth->filter_buffer, &synth->filter_buffer[dur], fir_len * sizeof(int32_t));
+}
+
+STATIC bool synthio_synth_get_note_filtered(mp_obj_t note_obj) {
+    if (note_obj == mp_const_none) {
+        return false;
+    }
+    if (!mp_obj_is_small_int(note_obj)) {
+        synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
+        return note->filter;
+    }
+    return true;
+}
+
 void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t *buffer_length, uint8_t channel) {
 
     if (channel == synth->other_channel) {
@@ -326,11 +357,30 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
 
     int32_t out_buffer32[dur * synth->channel_count];
 
-    memset(out_buffer32, 0, sizeof(out_buffer32));
-    for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
-        synth_note_into_buffer(synth, chan, out_buffer32, dur);
+    if (synth->filter_buffer) {
+        int32_t *filter_start = &synth->filter_buffer[synth->filter_bufinfo.len * synth->channel_count / sizeof(int16_t)];
+        memset(filter_start, 0, dur * sizeof(int32_t));
+
+        for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
+            mp_obj_t note_obj = synth->span.note_obj[chan];
+            if (!synthio_synth_get_note_filtered(note_obj)) {
+                continue;
+            }
+            synth_note_into_buffer(synth, chan, filter_start, dur);
+        }
+
+        run_fir(synth, out_buffer32, dur);
+    } else {
+        memset(out_buffer32, 0, sizeof(out_buffer32));
     }
 
+    for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
+        mp_obj_t note_obj = synth->span.note_obj[chan];
+        if (synth->filter_buffer && synthio_synth_get_note_filtered(note_obj)) {
+            continue;
+        }
+        synth_note_into_buffer(synth, chan, out_buffer32, dur);
+    }
 
     int16_t *out_buffer16 = (int16_t *)(void *)synth->buffers[synth->buffer_index];
 
@@ -387,7 +437,7 @@ void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, int channe
     synth->buffers[0] = m_malloc(synth->buffer_length, false);
     synth->buffers[1] = m_malloc(synth->buffer_length, false);
     if (synth->filter_bufinfo.len) {
-        synth->filter_buffer_length = (synth->filter_bufinfo.len + SYNTHIO_MAX_DUR) * channel_count * sizeof(int32_t);
+        synth->filter_buffer_length = (synth->filter_bufinfo.len / 2 + SYNTHIO_MAX_DUR) * channel_count * sizeof(int32_t);
         synth->filter_buffer = m_malloc(synth->filter_buffer_length, false);
     }
     synth->channel_count = channel_count;
@@ -419,7 +469,7 @@ STATIC void parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what, mp
         if (bufinfo->typecode != 'h') {
             mp_raise_ValueError_varg(translate("%q must be array of type 'h'"), what);
         }
-        mp_arg_validate_length_range(bufinfo->len / 2, 2, max_len, what);
+        mp_arg_validate_length_range(bufinfo->len / sizeof(int16_t), 2, max_len, what);
     }
 }
 
