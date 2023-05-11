@@ -1,10 +1,10 @@
 ()
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-(Note(frequency=830.6076004423605, panning=0.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendMode.VIBRATO, waveform=None, envelope=None, ring_frequency=0.0, ring_waveform=None),)
+(Note(frequency=830.6076004423605, panning=0.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendMode.VIBRATO, waveform=None, envelope=None, filter=True, ring_frequency=0.0, ring_waveform=None),)
 [-16383, -16383, -16383, -16383, 16383, 16383, 16383, 16383, 16383, -16383, -16383, -16383, -16383, -16383, 16383, 16383, 16383, 16383, 16383, -16383, -16383, -16383, -16383, -16383]
-(Note(frequency=830.6076004423605, panning=0.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendMode.VIBRATO, waveform=None, envelope=None, ring_frequency=0.0, ring_waveform=None), Note(frequency=830.6076004423605, panning=0.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendMode.VIBRATO, waveform=None, envelope=None, ring_frequency=0.0, ring_waveform=None))
+(Note(frequency=830.6076004423605, panning=0.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendMode.VIBRATO, waveform=None, envelope=None, filter=True, ring_frequency=0.0, ring_waveform=None), Note(frequency=830.6076004423605, panning=0.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendMode.VIBRATO, waveform=None, envelope=None, filter=True, ring_frequency=0.0, ring_waveform=None))
 [0, 0, 0, 0, 0, 0, 0, 0, 28045, 0, 0, 0, 0, -28046, 0, 0, 0, 0, 28045, 0, 0, 0, 0, -28046]
-(Note(frequency=830.6076004423605, panning=0.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendMode.VIBRATO, waveform=None, envelope=None, ring_frequency=0.0, ring_waveform=None),)
+(Note(frequency=830.6076004423605, panning=0.0, tremolo_rate=0.0, tremolo_depth=0.0, bend_rate=0.0, bend_depth=0.0, bend_mode=synthio.BendMode.VIBRATO, waveform=None, envelope=None, filter=True, ring_frequency=0.0, ring_waveform=None),)
 [0, 0, 0, 28045, 0, 0, 0, 0, 0, 0, 0, 0, 28045, 0, 0, 0, 0, -28046, 0, 0, 0, 0, 28045, 0]
 (-5242, 5242)
 (-10485, 10484)
