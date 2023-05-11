@@ -216,8 +216,14 @@ test:
 	$(info Running PSoC6 tests)
 	$(Q) cd ../../tests ; ./run-tests.py --target psoc6 --device /dev/ttyACM0 $(TESTS)
 
+test_multi: 
+	@:
+	$(info )
+	$(info Running PSoC6 multi tests)
+	$(Q) cd ../../tests ; ./run-multitests.py -i pyb:/dev/ttyACM0 -i pyb:/dev/ttyACM1 $(MULTI_TEST)
+
 program: mpy_program
 
 program_multi: mpy_program_multi
 
-.PHONY: test build program_multi
+.PHONY: build test test_multi program_multi 
