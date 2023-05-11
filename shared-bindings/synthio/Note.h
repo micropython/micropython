@@ -9,6 +9,9 @@ typedef enum synthio_bend_mode_e synthio_bend_mode_t;
 mp_float_t common_hal_synthio_note_get_frequency(synthio_note_obj_t *self);
 void common_hal_synthio_note_set_frequency(synthio_note_obj_t *self, mp_float_t value);
 
+bool common_hal_synthio_note_get_filter(synthio_note_obj_t *self);
+void common_hal_synthio_note_set_filter(synthio_note_obj_t *self, bool value);
+
 mp_float_t common_hal_synthio_note_get_ring_frequency(synthio_note_obj_t *self);
 void common_hal_synthio_note_set_ring_frequency(synthio_note_obj_t *self, mp_float_t value);
 

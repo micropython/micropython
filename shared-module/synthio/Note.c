@@ -44,6 +44,14 @@ void common_hal_synthio_note_set_frequency(synthio_note_obj_t *self, mp_float_t 
     self->frequency_scaled = synthio_frequency_convert_float_to_scaled(val);
 }
 
+bool common_hal_synthio_note_get_filter(synthio_note_obj_t *self) {
+    return self->filter;
+}
+
+void common_hal_synthio_note_set_filter(synthio_note_obj_t *self, bool value_in) {
+    self->filter = value_in;
+}
+
 mp_float_t common_hal_synthio_note_get_ring_frequency(synthio_note_obj_t *self) {
     return self->ring_frequency;
 }

@@ -44,6 +44,7 @@ static const mp_arg_t note_properties[] = {
     { MP_QSTR_bend_mode, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = (mp_obj_t)MP_ROM_PTR(&bend_mode_VIBRATO_obj) } },
     { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
     { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
+    { MP_QSTR_filter, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
     { MP_QSTR_ring_frequency, MP_ARG_OBJ, {.u_obj = NULL } },
     { MP_QSTR_ring_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
 };
@@ -101,6 +102,24 @@ MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_frequency_obj, synthio_note_set_frequ
 MP_PROPERTY_GETSET(synthio_note_frequency_obj,
     (mp_obj_t)&synthio_note_get_frequency_obj,
     (mp_obj_t)&synthio_note_set_frequency_obj);
+
+//|     filter: bool
+//|     """True if the note should be processed via the synthesizer's FIR filter."""
+STATIC mp_obj_t synthio_note_get_filter(mp_obj_t self_in) {
+    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(common_hal_synthio_note_get_filter(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_filter_obj, synthio_note_get_filter);
+
+STATIC mp_obj_t synthio_note_set_filter(mp_obj_t self_in, mp_obj_t arg) {
+    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_synthio_note_set_filter(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_filter_obj, synthio_note_set_filter);
+MP_PROPERTY_GETSET(synthio_note_filter_obj,
+    (mp_obj_t)&synthio_note_get_filter_obj,
+    (mp_obj_t)&synthio_note_set_filter_obj);
 
 //|     panning: float
 //|     """Defines the channel(s) in which the note appears.
@@ -317,6 +336,7 @@ static void note_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
 
 STATIC const mp_rom_map_elem_t synthio_note_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&synthio_note_frequency_obj) },
+    { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&synthio_note_filter_obj) },
     { MP_ROM_QSTR(MP_QSTR_panning), MP_ROM_PTR(&synthio_note_panning_obj) },
     { MP_ROM_QSTR(MP_QSTR_waveform), MP_ROM_PTR(&synthio_note_waveform_obj) },
     { MP_ROM_QSTR(MP_QSTR_envelope), MP_ROM_PTR(&synthio_note_envelope_obj) },

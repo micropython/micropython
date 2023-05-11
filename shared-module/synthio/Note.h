@@ -42,6 +42,7 @@ typedef struct synthio_note_obj {
     int32_t ring_frequency_scaled;
     int32_t amplitude_scaled;
     int32_t left_panning_scaled, right_panning_scaled;
+    bool filter;
     synthio_bend_mode_t bend_mode;
     synthio_lfo_descr_t tremolo_descr, bend_descr;
     synthio_lfo_state_t tremolo_state, bend_state;
