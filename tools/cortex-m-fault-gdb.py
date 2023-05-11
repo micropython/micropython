@@ -45,12 +45,8 @@ class CortexMFault(gdb.Command):
         print("vtor", hex(vtor))
 
         icsr = self._read(ICSR)
-        if (icsr & (1 << 23)) != 0:
-            print("No preempted exceptions")
-        else:
-            print("Another exception was preempted")
         vectactive = icsr & 0x1FF
-        print(hex(icsr), vectactive)
+        print("icsr", hex(icsr), vectactive)
         if vectactive != 0:
             if vectactive in EXCEPTIONS:
                 vectactive = EXCEPTIONS[vectactive]

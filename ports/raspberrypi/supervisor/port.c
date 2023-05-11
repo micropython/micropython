@@ -104,22 +104,23 @@ safe_mode_t port_init(void) {
     _binary_info();
     // Set brown out.
 
+    // Load from the XIP memory space that doesn't cache. That way we don't
+    // evict anything else. The code we're loading is linked to the RAM address
+    // anyway.
+    size_t nocache = 0x03000000;
+
     // Copy all of the "tightly coupled memory" code and data to run from RAM.
     // This lets us use the 16k cache for dynamically used data and code.
     // We must do this before we try and call any of its code or load the data.
+    uint32_t *itcm_flash_copy = (uint32_t *)(((size_t)&_ld_itcm_flash_copy) | nocache);
     for (uint32_t i = 0; i < ((size_t)&_ld_itcm_size) / 4; i++) {
-        (&_ld_itcm_destination)[i] = (&_ld_itcm_flash_copy)[i];
-        // Now zero it out to evict the line from the XIP cache. Without this,
-        // it'll stay in the XIP cache anyway.
-        (&_ld_itcm_flash_copy)[i] = 0x0;
+        (&_ld_itcm_destination)[i] = itcm_flash_copy[i];
     }
 
     // Copy all of the data to run from DTCM.
+    uint32_t *dtcm_flash_copy = (uint32_t *)(((size_t)&_ld_dtcm_data_flash_copy) | nocache);
     for (uint32_t i = 0; i < ((size_t)&_ld_dtcm_data_size) / 4; i++) {
-        (&_ld_dtcm_data_destination)[i] = (&_ld_dtcm_data_flash_copy)[i];
-        // Now zero it out to evict the line from the XIP cache. Without this,
-        // it'll stay in the XIP cache anyway.
-        (&_ld_dtcm_data_flash_copy)[i] = 0x0;
+        (&_ld_dtcm_data_destination)[i] = dtcm_flash_copy[i];
     }
 
     // Clear DTCM bss.
