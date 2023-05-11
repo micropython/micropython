@@ -45,8 +45,9 @@
 
 #if CIRCUITPY_WEB_WORKFLOW
 #include "supervisor/shared/web_workflow/web_workflow.h"
-#endif
 static background_callback_t workflow_background_cb = {NULL, NULL};
+#endif
+
 
 // Called during a VM reset. Doesn't actually reset things.
 void supervisor_workflow_reset(void) {
@@ -56,17 +57,23 @@ void supervisor_workflow_reset(void) {
 
     #if CIRCUITPY_WEB_WORKFLOW
     if (workflow_background_cb.fun) {
-        supervisor_start_web_workflow();
-        supervisor_workflow_request_background();
+        if (supervisor_start_web_workflow()) {
+            supervisor_workflow_request_background();
+        }
     }
     #endif
 }
 
 void supervisor_workflow_request_background(void) {
+    #if CIRCUITPY_WEB_WORKFLOW
     if (workflow_background_cb.fun) {
         workflow_background_cb.data = NULL;
         background_callback_add_core(&workflow_background_cb);
+    } else {
+        // Unblock polling thread if necessary
+        socketpool_socket_poll_resume();
     }
+    #endif
 }
 
 // Return true if host has completed connection to us (such as USB enumeration).
@@ -98,9 +105,11 @@ void supervisor_workflow_start(void) {
     #endif
 
     #if CIRCUITPY_WEB_WORKFLOW
-    supervisor_start_web_workflow();
-    memset(&workflow_background_cb, 0, sizeof(workflow_background_cb));
-    workflow_background_cb.fun = supervisor_web_workflow_background;
+    if (supervisor_start_web_workflow()) {
+        // Enable background callbacks if web_workflow startup successful
+        memset(&workflow_background_cb, 0, sizeof(workflow_background_cb));
+        workflow_background_cb.fun = supervisor_web_workflow_background;
+    }
     #endif
 
 }
