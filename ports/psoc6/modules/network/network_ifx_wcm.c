@@ -61,24 +61,16 @@ cy_wcm_ip_setting_t ap_ip;
 
 cy_wcm_scan_filter_t scan_filter;
 uint32_t num_scan_result;
-enum scan_filter_mode scan_filter_mode_select = SCAN_FILTER_SSID;
+enum scan_filter_mode scan_filter_mode_select = SCAN_FILTER_NONE;
 void *ntwk_scan_result;
 mp_obj_t scan_list;
 
-// static cy_wcm_ap_credentials_t ap_credentials = {
-//     SSID,
-//     password,
-//     security
-// }
 
-// static cy_wcm_ap_config_t ap_config = {
-//     ap_credentials,
-//     WLAN_AP_DEFAULT_CHANNEL,
-//     ap_ip_settings,
-//     ie_info
-// };
+#define NETWORK_WLAN_DEFAULT_SSID       "mpy-psoc6-wlan"
+#define NETWORK_WLAN_DEFAULT_PASSWORD   "mpy_PSOC6_w3lc0me!"
+#define NETWORK_WLAN_DEFAULT_SECURITY   CY_WCM_SECURITY_WPA2_AES_PSK
+#define NETWORK_WLAN_DEFAULT_CHANNEL    9
 
-#define NETWORK_WLAN_AP_CHANNEL_AP 4
 #define NETWORK_WLAN_AP_IP "192.168.0.1"
 #define NETWORK_WLAN_AP_GATEWAY_IP "192.168.0.1"
 #define NETWORK_WLAN_AP_NETMASK_IP  "255.255.255.0"
@@ -113,9 +105,9 @@ extern whd_interface_t whd_ifs[MAX_WHD_INTERFACE];
 STATIC network_ifx_wcm_obj_t network_ifx_wcm_wl_sta = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_STA };
 STATIC network_ifx_wcm_obj_t network_ifx_wcm_wl_ap = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_AP };
 
-#define wcm_assert_raise(ret)   if (ret != CY_RSLT_SUCCESS) { \
+#define wcm_assert_raise(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
-// mp_raise_OSError(-ret);
 
 // Error handling method
 void error_handler(cy_rslt_t result, char *message) {
@@ -282,7 +274,7 @@ static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user
             MP_OBJ_NEW_SMALL_INT(hidden_status)
         };
         mp_obj_list_append(scan_list, mp_obj_new_tuple(6, tuple));
-        print_scan_result(result_ptr);
+        // print_scan_result(result_ptr);
 
     }
 
@@ -293,43 +285,6 @@ static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user
     return;
 }
 
-void network_ap_init(void) {
-    /* Default AP credential configuration */
-    // memcpy(network_ifx_wcm_wl_ap.itf_obj.ap_obj.ap_config.ap_credentials.SSID, NETWORK_WLAN_DEFAULT_SSID, strlen(NETWORK_WLAN_DEFAULT_SSID) + 1);
-    // memcpy(network_ifx_wcm_wl_ap.itf_obj.ap_obj.ap_config.ap_credentials.password, NETWORK_WLAN_DEFAULT_PASSWORD, strlen(NETWORK_WLAN_DEFAULT_PASSWORD) + 1);
-    // network_ifx_wcm_wl_ap.itf_obj.ap_obj.ap_config.ap_credentials.security = CY_WCM_SECURITY_OPEN;
-
-    // /* AP channel configuration */
-    // network_ifx_wcm_wl_ap.itf_obj.ap_obj.ap_config.channel = NETWORK_WLAN_AP_CHANNEL_AP;
-
-    // // char *ip = "192.168.0.2";
-    // // char *netmask = "255.255.255.0";
-    // // char *gateway = "192.168.0.2";
-
-    // cy_rslt_t result = cy_wcm_set_ap_ip_setting(&(network_ifx_wcm_wl_ap.itf_obj.ap_obj.ap_config.ip_settings) , NETWORK_WLAN_AP_IP, NETWORK_WLAN_AP_NETMASK_IP, NETWORK_WLAN_AP_GATEWAY_IP, CY_WCM_IP_VER_V4);
-    // if (result != CY_RSLT_SUCCESS) {
-    //     // error_handler(result, "Failed to initialize Wi-Fi Connection Manager.\n");
-    //         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("ap_ip_setting failed with error %lx !"), result);
-    // }
-    // mplogger_print("ap_ip_setting worked !");
-}
-
-// Network Initialization function (called from main.c)
-void network_init(void) {
-    cy_rslt_t result = CY_RSLT_SUCCESS;
-    cy_wcm_config_t wcm_config = { .interface = CY_WCM_INTERFACE_TYPE_AP_STA };
-
-    // memset(&scan_filter, 0, sizeof(cy_wcm_scan_filter_t));
-    result = cy_wcm_init(&wcm_config);
-    if (result != CY_RSLT_SUCCESS) {
-        // error_handler(result, "Failed to initialize Wi-Fi Connection Manager.\n");
-        mp_raise_ValueError(MP_ERROR_TEXT("wifi connection manager init error"));
-    }
-    // printf("are we event entering here?");
-
-    // network_ap_init();
-}
-
 void network_deinit(void) {
     cy_rslt_t result = cy_wcm_deinit();
     if (result != CY_RSLT_SUCCESS) {
@@ -338,228 +293,33 @@ void network_deinit(void) {
     }
 }
 
-// static void ap_event_callback(cy_wcm_event_t event, cy_wcm_event_data_t *event_data)
-// {
-//     char ip4_str[16];
-//     cy_nw_ip_address_t nw_ipv4;
-
-//     printf("######### Received event changed from wcm, event = %d #######\n", event);
-//     switch(event)
-//     {
-//         case CY_WCM_EVENT_DISCONNECTED:
-//         {
-//             mp_raise_ValueError(MP_ERROR_TEXT("Network is down! \n"));
-//             break;
-//         }
-//         case CY_WCM_EVENT_RECONNECTED:
-//         {
-//             mp_raise_ValueError(MP_ERROR_TEXT("Network is up again! \n"));
-//             break;
-//         }
-//         case CY_WCM_EVENT_CONNECTING:
-//         {
-//             mp_raise_ValueError(MP_ERROR_TEXT("Connecting to AP ... \n"));
-//             break;
-//         }
-//         case CY_WCM_EVENT_CONNECTED:
-//         {
-//             mp_raise_ValueError(MP_ERROR_TEXT("Connected to AP and network is up !! \n"));
-//             break;
-//         }
-//         case CY_WCM_EVENT_CONNECT_FAILED:
-//         {
-//             mp_raise_ValueError(MP_ERROR_TEXT("Connection to AP Failed ! \n"));
-//             break;
-//         }
-//         case CY_WCM_EVENT_IP_CHANGED:
-//         {
-//             cy_wcm_ip_address_t ip_addr;
-//             cy_wcm_get_ip_addr(CY_WCM_INTERFACE_TYPE_STA, &ip_addr);
-
-//             if(event_data->ip_addr.version == CY_WCM_IP_VER_V4)
-//             {
-//                 nw_ipv4.ip.v4 = event_data->ip_addr.ip.v4;
-//                 cy_nw_ntoa(&nw_ipv4, ip4_str);
-//                 // mp_raise_ValueError(MP_ERROR_TEXT("IPV4 address: %s\n", ip4_str));
-//             }
-//             break;
-//         }
-//         case CY_WCM_EVENT_STA_JOINED_SOFTAP:
-//         {
-//             // mp_raise_ValueError(MP_ERROR_TEXT("mac address of the STA which joined = %02X : %02X : %02X : %02X : %02X : %02X \n",
-//             //         event_data->sta_mac[0], event_data->sta_mac[1], event_data->sta_mac[2],
-//             //         event_data->sta_mac[3], event_data->sta_mac[4], event_data->sta_mac[5]);
-//             break;
-//         }
-//         case CY_WCM_EVENT_STA_LEFT_SOFTAP:
-//         {
-//             // mp_raise_ValueError(MP_ERROR_TEXT("mac address of the STA which left = %02X : %02X : %02X : %02X : %02X : %02X \n",
-//             //         event_data->sta_mac[0], event_data->sta_mac[1], event_data->sta_mac[2],
-//             //         event_data->sta_mac[3], event_data->sta_mac[4], event_data->sta_mac[5]))
-//             break;
-//         }
-//         default:
-//         {
-//             // mp_raise_ValueError(MP_ERROR_TEXT("Invalid event \n"));
-//             break;
-//         }
-//     }
-// }
-
 #define MAX_WIFI_RETRY_COUNT                (3u)
 #define WIFI_CONN_RETRY_INTERVAL_MSEC       (100u)
 
-/* The size of the cy_wcm_ip_address_t array that is passed to
- * cy_wcm_get_ip_addr API. In the case of stand-alone AP or STA mode, the size of
- * the array is 1. In concurrent AP/STA mode, the size of the array is 2 where
- * the first index stores the IP address of the STA and the second index
- * stores the IP address of the AP.
- */
+// Network Access Point initialization with default network parameters
+void network_ap_init() {
+    cy_rslt_t ret = CY_RSLT_SUCCESS;
+    cy_wcm_ap_config_t *ap_conf = &(network_ifx_wcm_wl_ap.itf_obj.ap_obj.ap_config);
+    cy_wcm_ip_setting_t *ap_ip_settings = &(network_ifx_wcm_wl_ap.itf_obj.ap_obj.ap_config.ip_settings);
 
-static cy_wcm_ip_setting_t ap_sta_mode_ip_settings;
+    ap_conf->channel = NETWORK_WLAN_DEFAULT_CHANNEL;
+    memcpy(ap_conf->ap_credentials.SSID, NETWORK_WLAN_DEFAULT_SSID, strlen(NETWORK_WLAN_DEFAULT_SSID) + 1);
+    memcpy(ap_conf->ap_credentials.password, NETWORK_WLAN_DEFAULT_PASSWORD, strlen(NETWORK_WLAN_DEFAULT_PASSWORD) + 1);
+    ap_conf->ap_credentials.security = NETWORK_WLAN_DEFAULT_SECURITY;
 
-void snippet_wcm_concurrent_mode() {
-    cy_rslt_t result;
-    // char ip6_str[40];
-    // char ip4_str[16];
-    char *ip = "192.168.0.2";
-    char *netmask = "255.255.255.0";
-    char *gateway = "192.168.0.2";
-    // cy_nw_ip_address_t nw_ipv4;
-    // cy_nw_ip_address_t nw_ipv6;
+    cy_wcm_set_ap_ip_setting(ap_ip_settings, NETWORK_WLAN_AP_IP, NETWORK_WLAN_AP_NETMASK_IP, NETWORK_WLAN_AP_GATEWAY_IP, CY_WCM_IP_VER_V4);
+    wcm_assert_raise("network ap ip setting error (code: %d)", ret);
+}
 
-    /* Initialize the Wi-Fi device as a STA.*/
-    // cy_wcm_config_t config = {.interface = CY_WCM_INTERFACE_TYPE_AP_STA};
-    cy_wcm_ap_config_t ap_conf;
-    cy_wcm_connect_params_t connect_param;
-    cy_wcm_ip_address_t ip_address, ipv4_addr, ipv6_addr;
-    cy_wcm_security_t security;
+// Network Initialization function (called from main.c)
+void network_init(void) {
+    cy_rslt_t ret = CY_RSLT_SUCCESS;
+    cy_wcm_config_t wcm_config = { .interface = CY_WCM_INTERFACE_TYPE_AP_STA };
 
-    memset(&connect_param, 0, sizeof(cy_wcm_connect_params_t));
-    memset(&ip_address, 0, sizeof(cy_wcm_ip_address_t));
-    memset(&security, 0, sizeof(cy_wcm_security_t));
-    memcpy(connect_param.ap_credentials.SSID, NETWORK_WLAN_DEFAULT_SSID, sizeof(NETWORK_WLAN_DEFAULT_SSID));
-    memcpy(connect_param.ap_credentials.password, NETWORK_WLAN_DEFAULT_PASSWORD, sizeof(NETWORK_WLAN_DEFAULT_PASSWORD));
-    connect_param.ap_credentials.security = security;
+    ret = cy_wcm_init(&wcm_config);
+    wcm_assert_raise("network init error (code: %d)", ret);
 
-    /* Initialize the Wi-Fi device, Wi-Fi transport, and lwIP network stack.*/
-    // result = cy_wcm_init(&config);
-    // if(result != CY_RSLT_SUCCESS)
-    // {
-    //     printf("\ncy_wcm_init failed...!\n");
-    //     // return;
-    // }
-
-    /* AP settings */
-    cy_wcm_set_ap_ip_setting(&ap_sta_mode_ip_settings, ip, netmask, gateway, CY_WCM_IP_VER_V4);
-
-    // printf("\n*** Starting STA Mode ***\n");
-    // /* Attempt to connect to Wi-Fi until a connection is made or
-    //  * MAX_WIFI_RETRY_COUNT attempts have been made.
-    //  */
-    // for (uint32_t conn_retries = 0; conn_retries < MAX_WIFI_RETRY_COUNT; conn_retries++)
-    // {
-    //     result = cy_wcm_connect_ap(&connect_param, &ip_address);
-    //     if (result != CY_RSLT_SUCCESS)
-    //     {
-    //         printf("Successfully connected to Wi-Fi network '%s'.\n", connect_param.ap_credentials.SSID);
-
-    //         /* Register event callbacks for changes in the Wi-Fi link status. These
-    //          * events could be related to IP address changes, connection, and
-    //          * disconnection events.
-    //          */
-    //         // cy_wcm_register_event_callback(sta_event_callback);
-    //         break;
-    //     }
-
-    //     printf("Connection to Wi-Fi network failed with error code %d."
-    //             "Retrying in %d ms...\n", (int)result, WIFI_CONN_RETRY_INTERVAL_MSEC);
-
-    //     // cy_rtos_delay_milliseconds(WIFI_CONN_RETRY_INTERVAL_MSEC);
-    // }
-
-    // printf("\n*** Starting AP Mode ***\n");
-    memset(&ap_conf, 0, sizeof(cy_wcm_ap_config_t));
-    memset(&ipv4_addr, 0, sizeof(cy_wcm_ip_address_t));
-    memset(&ipv6_addr, 0, sizeof(cy_wcm_ip_address_t));
-
-    ap_conf.channel = 9;
-    memcpy(ap_conf.ap_credentials.SSID, NETWORK_WLAN_DEFAULT_SSID, strlen(NETWORK_WLAN_DEFAULT_SSID) + 1);
-    memcpy(ap_conf.ap_credentials.password, NETWORK_WLAN_DEFAULT_PASSWORD, strlen(NETWORK_WLAN_DEFAULT_PASSWORD) + 1);
-    ap_conf.ap_credentials.security = CY_WCM_SECURITY_WPA2_AES_PSK;
-
-    ap_conf.ip_settings.ip_address = ap_sta_mode_ip_settings.ip_address;
-    ap_conf.ip_settings.netmask = ap_sta_mode_ip_settings.netmask;
-    ap_conf.ip_settings.gateway = ap_sta_mode_ip_settings.gateway;
-
-    // printf("configured ip address of the AP = %u \n", (uint8_t)ap_conf.ip_settings.ip_address.ip.v4);
-    // nw_ipv4.ip.v4 = ap_conf.ip_settings.ip_address.ip.v4;
-    // cy_nw_ntoa(&nw_ipv4, ip4_str);
-    // printf("IPV4 address: %s\n", ip4_str);
-    // cy_wcm_register_event_callback(&ap_event_callback);
-    result = cy_wcm_start_ap(&ap_conf);
-    if (result != CY_RSLT_SUCCESS) {
-        printf("\ncy_wcm_start_ap failed...! \n");
-        return;
-    }
-    // printf("\nAP started successfully... \n");
-
-    // /* Get IPV4 address for AP */
-    // result = cy_wcm_get_ip_addr(CY_WCM_INTERFACE_TYPE_AP, &ipv4_addr);
-    // if (result != CY_RSLT_SUCCESS)
-    // {
-    //     printf("\ncy_wcm_get_ip_addr failed...! \n");
-    //     return;
-    // }
-    // printf("\nIPV4 address of AP : ");
-    // nw_ipv4.ip.v4 = ipv4_addr.ip.v4;
-    // cy_nw_ntoa(&nw_ipv4, ip4_str);
-    // printf("IPV4 address: %s\n", ip4_str);
-
-    // /* Get IPV6 address for AP */
-    // printf("Link Local IPV6 AP address \n");
-    // result = cy_wcm_get_ipv6_addr(CY_WCM_INTERFACE_TYPE_AP, CY_WCM_IPV6_LINK_LOCAL, &ipv6_addr);
-    // if (result != CY_RSLT_SUCCESS)
-    // {
-    //     printf("\ncy_wcm_get_ipv6_addr failed...! \n");
-    //     return;
-    // }
-    // printf("\nLink Local IPV6 AP address : ");
-    // nw_ipv6.ip.v6[0] = ipv6_addr.ip.v6[0];
-    // nw_ipv6.ip.v6[1] = ipv6_addr.ip.v6[1];
-    // nw_ipv6.ip.v6[2] = ipv6_addr.ip.v6[2];
-    // nw_ipv6.ip.v6[3] = ipv6_addr.ip.v6[3];
-    // cy_nw_ntoa_ipv6(&nw_ipv6, ip6_str);
-    // printf("IPV6 address: %s\n", ip6_str);
-
-    // /* Get Link Local IPV6 STA address */
-    // result = cy_wcm_get_ipv6_addr(CY_WCM_INTERFACE_TYPE_STA, CY_WCM_IPV6_LINK_LOCAL, &ipv6_addr);
-    // if (result != CY_RSLT_SUCCESS)
-    // {
-    //     printf("\ncy_wcm_get_ipv6_addr failed...! \n");
-    //     return;
-    // }
-    // printf("\nLink Local IPV6 STA address : ");
-    // nw_ipv6.ip.v6[0] = ipv6_addr.ip.v6[0];
-    // nw_ipv6.ip.v6[1] = ipv6_addr.ip.v6[1];
-    // nw_ipv6.ip.v6[2] = ipv6_addr.ip.v6[2];
-    // nw_ipv6.ip.v6[3] = ipv6_addr.ip.v6[3];
-    // cy_nw_ntoa_ipv6(&nw_ipv6, ip6_str);
-    // printf("IPV6 address: %s\n", ip6_str);
-
-    // /* Get MAC address of both STA and AP interface using CY_WCM_INTERFACE_TYPE_AP_STA */
-    // cy_wcm_mac_t *mac_addr_ptr;
-    // mac_addr_ptr = (cy_wcm_mac_t*)malloc(sizeof(cy_wcm_mac_t) *2);
-    // cy_wcm_get_mac_addr(CY_WCM_INTERFACE_TYPE_AP_STA, mac_addr_ptr);
-    // cy_wcm_mac_t sta_mac, ap_mac;
-    // memcpy(&sta_mac, mac_addr_ptr, sizeof(sta_mac));
-    // printf("mac address of STA = %02X : %02X : %02X : %02X : %02X : %02X \n",
-    //         sta_mac[0], sta_mac[1], sta_mac[2],sta_mac[3], sta_mac[4], sta_mac[5]);
-    // mac_addr_ptr++;
-    // memcpy(&ap_mac, mac_addr_ptr, sizeof(ap_mac));
-    // printf("mac address AP = %02X : %02X : %02X : %02X : %02X : %02X \n",
-    //         ap_mac[0], ap_mac[1], ap_mac[2],ap_mac[3], ap_mac[4], ap_mac[5]);
-    // free(mac_addr_ptr);
+    network_ap_init();
 }
 
 // Print after constructor invoked
@@ -611,7 +371,7 @@ STATIC mp_obj_t network_ifx_wcm_send_ethernet(mp_obj_t self_in, mp_obj_t buf_in)
     mp_get_buffer_raise(buf_in, &buf, MP_BUFFER_READ);
     whd_buffer_t *whd_buff = (whd_buffer_t *)&buf;
     int ret = whd_network_send_ethernet_data(whd_ifs[self->itf], *whd_buff);
-    wcm_assert_raise(ret);
+    wcm_assert_raise("network send ethernet error (code: %d)", ret);
 
     return mp_const_none;
 }
@@ -621,9 +381,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(network_ifx_wcm_send_ethernet_obj, network_ifx_
 // network API
 
 STATIC mp_obj_t network_ifx_wcm_deinit(mp_obj_t self_in) {
-    // network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t ret = cy_wcm_deinit();
-    wcm_assert_raise(ret);
+    wcm_assert_raise("network deinit error (code: %d)", ret);
 
     return mp_const_none;
 }
@@ -642,19 +401,11 @@ STATIC mp_obj_t network_ifx_wcm_active(size_t n_args, const mp_obj_t *args) {
             return mp_obj_new_bool(cy_wcm_is_ap_up());
         } else {
             if (mp_obj_is_true(args[1])) {
-
-                // ret = cy_wcm_start_ap(&(self->itf_obj.ap_obj.ap_config));
-                // if (ret != CY_RSLT_SUCCESS) {
-                //     // mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("start_ap failed with error %lx !"), ret);
-                //     mp_printf(&mp_plat_print, "\nstart_ap error: %lx\n", ret);
-                // }
-                // mp_printf(&mp_plat_print, "\nstart_ap error: %lx\n", ret);
-                // // wcm_assert_raise(ret);
-                snippet_wcm_concurrent_mode();
-
+                ret = cy_wcm_start_ap(&(self->itf_obj.ap_obj.ap_config));
+                wcm_assert_raise("network ap active error (with code: %d)", ret);
             } else {
                 ret = cy_wcm_stop_ap();
-                wcm_assert_raise(ret);
+                wcm_assert_raise("network ap deactive error (with code: %d)", ret);
             }
         }
     }
@@ -688,7 +439,7 @@ STATIC mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *pos_args, mp
     switch (scan_filter_mode_select)
     {
         case SCAN_FILTER_NONE:
-            APP_INFO(("Scanning without any filter\n"));
+            // APP_INFO(("Scanning without any filter\n"));
             break;
 
         case SCAN_FILTER_SSID:
@@ -733,7 +484,7 @@ STATIC mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *pos_args, mp
         default:
             break;
     }
-    PRINT_SCAN_TEMPLATE();
+    // PRINT_SCAN_TEMPLATE();
     mp_obj_t res = mp_obj_new_list(0, NULL);
     ntwk_scan_result = MP_OBJ_TO_PTR(res);
 
@@ -932,7 +683,7 @@ STATIC mp_obj_t network_ifx_wcm_connect(size_t n_args, const mp_obj_t *pos_args,
         result = cy_wcm_connect_ap(&connect_param, &ipaddress);
 
         if (result == CY_RSLT_SUCCESS) {
-            printf("\nSuccessfully connected to Wi-Fi network '%s'.\n", connect_param.ap_credentials.SSID);
+            // printf("\nSuccessfully connected to Wi-Fi network '%s'.\n", connect_param.ap_credentials.SSID);
             return mp_const_none;
         }
         printf("Connection to Wi-Fi network failed with error code 0x%0X. Retrying in %d ms. Retries left: %d\n",
@@ -949,7 +700,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_connect_obj, 1, network_ifx_wc
 STATIC mp_obj_t network_ifx_wcm_disconnect(mp_obj_t self_in) {
     // network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t ret = cy_wcm_disconnect_ap();
-    wcm_assert_raise(ret);
+    wcm_assert_raise("msg tbd", ret);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_disconnect_obj, network_ifx_wcm_disconnect);
@@ -1038,14 +789,14 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
             case MP_QSTR_antenna: {
                 uint8_t buf[4];
                 uint32_t ret = whd_wifi_get_ioctl_buffer(whd_ifs[self->itf], WLC_GET_ANTDIV, buf, 4);
-                wcm_assert_raise(ret);
+                wcm_assert_raise("msg tbd", ret);
 
                 return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf));
             }
             case MP_QSTR_channel: {
                 uint32_t channel;
                 uint32_t ret = whd_wifi_get_channel(whd_ifs[self->itf], &channel);
-                wcm_assert_raise(ret);
+                wcm_assert_raise("msg tbd",  ret);
 
                 return MP_OBJ_NEW_SMALL_INT(channel);
             }
@@ -1053,7 +804,7 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
             case MP_QSTR_essid: {
                 wl_bss_info_t bss_info;
                 uint32_t ret = whd_wifi_get_bss_info(whd_ifs[self->itf], &bss_info);
-                wcm_assert_raise(ret);
+                wcm_assert_raise("msg tbd", ret);
 
                 return mp_obj_new_str((const char *)bss_info.SSID, bss_info.SSID_len);
             }
@@ -1061,7 +812,7 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
             case MP_QSTR_security: {
                 whd_security_t security;
                 uint32_t ret = whd_wifi_get_ap_info(whd_ifs[self->itf], NULL, &security);
-                wcm_assert_raise(ret);
+                wcm_assert_raise("msg tbd", ret);
 
                 return MP_OBJ_NEW_SMALL_INT(security);
             }
@@ -1069,7 +820,7 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
             case MP_QSTR_mac: {
                 wl_bss_info_t bss_info;
                 uint32_t ret = whd_wifi_get_bss_info(whd_ifs[self->itf], &bss_info);
-                wcm_assert_raise(ret);
+                wcm_assert_raise("msg tbd", ret);
 
                 return mp_obj_new_bytes(bss_info.BSSID.octet, 6);
             }
@@ -1077,7 +828,7 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
                 uint8_t buf[13];
                 memcpy(buf, "qtxpower\x00\x00\x00\x00\x00", 13);
                 uint32_t ret = whd_wifi_get_ioctl_buffer(whd_ifs[self->itf], WLC_GET_VAR, buf, 13);
-                wcm_assert_raise(ret);
+                wcm_assert_raise("msg tbd", ret);
 
                 return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf) / 4);
             }
@@ -1104,12 +855,12 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
                         uint8_t buf[4];
                         nw_put_le32(buf, mp_obj_get_int(e->value));
                         uint32_t ret = whd_wifi_set_ioctl_buffer(whd_ifs[self->itf], WLC_SET_ANTDIV, buf, 4);
-                        wcm_assert_raise(ret);
+                        wcm_assert_raise("msg tbd", ret);
                         break;
                     }
                     case MP_QSTR_channel: {
                         uint32_t ret = whd_wifi_set_channel(whd_ifs[self->itf], mp_obj_get_int(e->value));
-                        wcm_assert_raise(ret);
+                        wcm_assert_raise("msg tbd", ret);
                         break;
                     }
                     case MP_QSTR_ssid:
@@ -1138,10 +889,10 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
                         memcpy(buf, "allmulti\x00", 9);
                         nw_put_le32(buf + 9, value);
                         uint32_t ret = whd_wifi_set_ioctl_buffer(whd_ifs[self->itf], WLC_SET_VAR, buf, 9 + 4);
-                        wcm_assert_raise(ret);
+                        wcm_assert_raise("msg tbd", ret);
                         nw_put_le32(buf, value);
                         ret = whd_wifi_set_ioctl_buffer(whd_ifs[self->itf], WLC_SET_MONITOR, buf, 4);
-                        wcm_assert_raise(ret);
+                        wcm_assert_raise("msg tbd", ret);
                         // In cyw43 they keep the trace flags in a variable.
                         // TODO. Understand how are these trace flags used, and if
                         // an equivalent tracing feature can/should be enabled
@@ -1176,7 +927,7 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
                         memcpy(buf, "qtxpower\x00", 9);
                         nw_put_le32(buf + 9, dbm * 4);
                         uint32_t ret = whd_wifi_set_ioctl_buffer(whd_ifs[self->itf], WLC_SET_VAR, buf, 9 + 4);
-                        wcm_assert_raise(ret);
+                        wcm_assert_raise("msg tbd", ret);
                         break;
                     }
                     case MP_QSTR_hostname: {
