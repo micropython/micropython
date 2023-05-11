@@ -111,3 +111,4 @@ uint32_t synthio_frequency_convert_scaled_to_dds(uint64_t frequency_scaled, int3
 void synthio_lfo_set(synthio_lfo_state_t *state, const synthio_lfo_descr_t *descr, uint32_t sample_rate);
 int synthio_lfo_step(synthio_lfo_state_t *state, uint16_t dur);
 int synthio_sweep_step(synthio_lfo_state_t *state, uint16_t dur);
+int synthio_sweep_in_step(synthio_lfo_state_t *state, uint16_t dur);

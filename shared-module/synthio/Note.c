@@ -224,6 +224,8 @@ STATIC int synthio_bend_value(synthio_note_obj_t *self, int16_t dur) {
             return synthio_lfo_step(&self->bend_state, dur);
         case SYNTHIO_BEND_MODE_SWEEP:
             return synthio_sweep_step(&self->bend_state, dur);
+        case SYNTHIO_BEND_MODE_SWEEP_IN:
+            return synthio_sweep_in_step(&self->bend_state, dur);
         default:
             return 32768;
     }
