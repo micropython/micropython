@@ -253,6 +253,11 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_remove_obj, displayio_group_obj_remove
 //|         self,
 //|         item: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid],
 //|     ) -> bool: ...
+//|     def __iter__(
+//|         self,
+//|     ) -> Iterator[
+//|         Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]
+//|     ]: ...
 //|     def __len__(self) -> int:
 //|         """Returns the number of layers in a Group"""
 //|         ...
