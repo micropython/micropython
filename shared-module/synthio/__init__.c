@@ -89,7 +89,7 @@ void synthio_envelope_definition_set(synthio_envelope_definition_t *envelope, mp
 
     envelope->release_step = -convert_time_to_rate(
         sample_rate, fields[2],
-        envelope->decay_step
+        envelope->sustain_level
             ? envelope->sustain_level
             : envelope->attack_level);
 }
