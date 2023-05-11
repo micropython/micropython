@@ -36,7 +36,7 @@
 void supervisor_web_workflow_background(void *data);
 bool supervisor_web_workflow_status_dirty(void);
 void supervisor_web_workflow_status(void);
-void supervisor_start_web_workflow(void);
+bool supervisor_start_web_workflow(void);
 void supervisor_stop_web_workflow(void);
 
 // Share the MDNS object with user code.
