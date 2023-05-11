@@ -3,7 +3,9 @@ from .console import Console, ConsolePosix
 from . import pyboardextended as pyboard
 
 
-def do_repl_main_loop(state, console_in, console_out_write, *, code_to_inject, file_to_inject):
+def do_repl_main_loop(
+    state, console_in, console_out_write, *, escape_non_printable, code_to_inject, file_to_inject
+):
     while True:
         console_in.waitchar(state.pyb.serial)
         c = console_in.readchar()
@@ -37,26 +39,34 @@ def do_repl_main_loop(state, console_in, console_out_write, *, code_to_inject, f
                 break
 
         if n > 0:
-            c = state.pyb.serial.read(1)
-            if c is not None:
-                # pass character through to the console
-                oc = ord(c)
-                if oc in (8, 9, 10, 13, 27) or 32 <= oc <= 126:
-                    console_out_write(c)
+            dev_data_in = state.pyb.serial.read(n)
+            if dev_data_in is not None:
+                if escape_non_printable:
+                    # Pass data through to the console, with escaping of non-printables.
+                    console_data_out = bytearray()
+                    for c in dev_data_in:
+                        if c in (8, 9, 10, 13, 27) or 32 <= c <= 126:
+                            console_data_out.append(c)
+                        else:
+                            console_data_out.extend(b"[%02x]" % c)
                 else:
-                    console_out_write(b"[%02x]" % ord(c))
+                    console_data_out = dev_data_in
+                console_out_write(console_data_out)
 
 
 def do_repl(state, args):
     state.ensure_friendly_repl()
     state.did_action()
 
+    escape_non_printable = args.escape_non_printable
     capture_file = args.capture
     code_to_inject = args.inject_code
     file_to_inject = args.inject_file
 
     print("Connected to MicroPython at %s" % state.pyb.device_name)
     print("Use Ctrl-] or Ctrl-x to exit this shell")
+    if escape_non_printable:
+        print("Escaping non-printable bytes/characters by printing their hex code")
     if capture_file is not None:
         print('Capturing session to file "%s"' % capture_file)
         capture_file = open(capture_file, "wb")
@@ -80,6 +90,7 @@ def do_repl(state, args):
             state,
             console,
             console_out_write,
+            escape_non_printable=escape_non_printable,
             code_to_inject=code_to_inject,
             file_to_inject=file_to_inject,
         )
