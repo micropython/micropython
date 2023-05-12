@@ -193,6 +193,9 @@ void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate) {
 
 void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate) {
     synthio_note_recalculate(self, sample_rate);
+    if (self->bend_mode != SYNTHIO_BEND_MODE_VIBRATO) {
+        self->bend_state.phase = 0;
+    }
 }
 
 uint32_t synthio_note_envelope(synthio_note_obj_t *self) {

@@ -554,8 +554,9 @@ STATIC int synthio_lfo_step_common(synthio_lfo_state_t *state, uint16_t dur) {
     return whole_phase;
 }
 STATIC int synthio_lfo_sweep_common(synthio_lfo_state_t *state, uint16_t dur) {
+    uint32_t old_phase = state->phase;
     uint16_t whole_phase = synthio_lfo_step_common(state, dur);
-    if (state->phase < state->dds) {
+    if (state->phase < old_phase) {
         state->phase = 0xffffffff;
     }
     return whole_phase;
