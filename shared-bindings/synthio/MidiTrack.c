@@ -88,9 +88,6 @@ STATIC mp_obj_t synthio_miditrack_make_new(const mp_obj_type_t *type, size_t n_a
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    mp_buffer_info_t bufinfo_waveform;
-    synthio_synth_parse_waveform(&bufinfo_waveform, args[ARG_waveform].u_obj);
-
     synthio_miditrack_obj_t *self = m_new_obj(synthio_miditrack_obj_t);
     self->base.type = &synthio_miditrack_type;
 
@@ -98,8 +95,8 @@ STATIC mp_obj_t synthio_miditrack_make_new(const mp_obj_type_t *type, size_t n_a
         (uint8_t *)bufinfo.buf, bufinfo.len,
         args[ARG_tempo].u_int,
         args[ARG_sample_rate].u_int,
-        bufinfo_waveform.buf,
-        bufinfo_waveform.len / 2,
+        args[ARG_waveform].u_obj,
+        mp_const_none,
         args[ARG_envelope].u_obj
         );
 

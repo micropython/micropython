@@ -89,7 +89,7 @@ void synthio_envelope_definition_set(synthio_envelope_definition_t *envelope, mp
 
     envelope->release_step = -convert_time_to_rate(
         sample_rate, fields[2],
-        envelope->decay_step
+        envelope->sustain_level
             ? envelope->sustain_level
             : envelope->attack_level);
 }
@@ -171,6 +171,175 @@ int16_t mix_down_sample(int32_t sample) {
     return sample;
 }
 
+static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *out_buffer32, int16_t dur) {
+    mp_obj_t note_obj = synth->span.note_obj[chan];
+
+    if (note_obj == SYNTHIO_SILENCE) {
+        synth->accum[chan] = 0;
+        return;
+    }
+
+    if (synth->envelope_state[chan].level == 0) {
+        // note is truly finished, but we only just noticed
+        synth->span.note_obj[chan] = SYNTHIO_SILENCE;
+        return;
+    }
+
+    int32_t sample_rate = synth->sample_rate;
+
+    // adjust loudness by envelope
+    uint16_t loudness[2] = {synth->envelope_state[chan].level,synth->envelope_state[chan].level};
+
+    uint32_t dds_rate;
+    const int16_t *waveform = synth->waveform_bufinfo.buf;
+    uint32_t waveform_length = synth->waveform_bufinfo.len / sizeof(int16_t);
+
+    uint32_t ring_dds_rate = 0;
+    const int16_t *ring_waveform = NULL;
+    uint32_t ring_waveform_length = 0;
+
+    if (mp_obj_is_small_int(note_obj)) {
+        uint8_t note = mp_obj_get_int(note_obj);
+        uint8_t octave = note / 12;
+        uint16_t base_freq = notes[note % 12];
+        // rate = base_freq * waveform_length
+        // den = sample_rate * 2 ^ (10 - octave)
+        // den = sample_rate * 2 ^ 10 / 2^octave
+        // dds_rate = 2^SHIFT * rate / den
+        // dds_rate = 2^(SHIFT-10+octave) * base_freq * waveform_length / sample_rate
+        dds_rate = (sample_rate / 2 + ((uint64_t)(base_freq * waveform_length) << (SYNTHIO_FREQUENCY_SHIFT - 10 + octave))) / sample_rate;
+    } else {
+        synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
+        int32_t frequency_scaled = synthio_note_step(note, sample_rate, dur, loudness);
+        if (note->waveform_buf.buf) {
+            waveform = note->waveform_buf.buf;
+            waveform_length = note->waveform_buf.len / sizeof(int16_t);
+        }
+        dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)frequency_scaled * waveform_length, sample_rate);
+        if (note->ring_frequency_scaled != 0 && note->ring_waveform_buf.buf) {
+            ring_waveform = note->ring_waveform_buf.buf;
+            ring_waveform_length = note->ring_waveform_buf.len / sizeof(int16_t);
+            ring_dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)note->ring_frequency_scaled * ring_waveform_length, sample_rate);
+            uint32_t lim = ring_waveform_length << SYNTHIO_FREQUENCY_SHIFT;
+            if (ring_dds_rate > lim / sizeof(int16_t)) {
+                ring_dds_rate = 0; // can't ring at that frequency
+            }
+        }
+    }
+
+    int synth_chan = synth->channel_count;
+    if (ring_dds_rate) {
+        uint32_t lim = waveform_length << SYNTHIO_FREQUENCY_SHIFT;
+        uint32_t accum = synth->accum[chan];
+
+        if (dds_rate > lim / 2) {
+            // beyond nyquist, can't play note
+            return;
+        }
+
+        // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
+        if (accum > lim) {
+            accum %= lim;
+        }
+
+        int32_t ring_buffer[dur];
+        // first, fill with waveform
+        for (uint16_t i = 0; i < dur; i++) {
+            accum += dds_rate;
+            // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
+            if (accum > lim) {
+                accum -= lim;
+            }
+            int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
+            ring_buffer[i] = waveform[idx];
+        }
+        synth->accum[chan] = accum;
+
+        // now modulate by ring and accumulate
+        accum = synth->ring_accum[chan];
+        lim = ring_waveform_length << SYNTHIO_FREQUENCY_SHIFT;
+
+        // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
+        if (accum > lim) {
+            accum %= lim;
+        }
+
+        for (uint16_t i = 0, j = 0; i < dur; i++) {
+            accum += ring_dds_rate;
+            // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
+            if (accum > lim) {
+                accum -= lim;
+            }
+            int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
+            int16_t wi = (ring_waveform[idx] * ring_buffer[i]) / 32768;
+            for (int c = 0; c < synth_chan; c++) {
+                out_buffer32[j] += (wi * loudness[c]) / 32768;
+                j++;
+            }
+        }
+        synth->ring_accum[chan] = accum;
+    } else {
+        uint32_t lim = waveform_length << SYNTHIO_FREQUENCY_SHIFT;
+        uint32_t accum = synth->accum[chan];
+
+        if (dds_rate > lim / 2) {
+            // beyond nyquist, can't play note
+            return;
+        }
+
+        // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
+        if (accum > lim) {
+            accum %= lim;
+        }
+
+        for (uint16_t i = 0, j = 0; i < dur; i++) {
+            accum += dds_rate;
+            // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
+            if (accum > lim) {
+                accum -= lim;
+            }
+            int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
+            int16_t wi = waveform[idx];
+            for (int c = 0; c < synth_chan; c++) {
+                out_buffer32[j] += (wi * loudness[c]) / 65536;
+                j++;
+            }
+        }
+        synth->accum[chan] = accum;
+    }
+}
+
+STATIC void run_fir(synthio_synth_t *synth, int32_t *out_buffer32, uint16_t dur) {
+    int16_t *coeff = (int16_t *)synth->filter_bufinfo.buf;
+    size_t fir_len = synth->filter_bufinfo.len / sizeof(int16_t);
+    int32_t *in_buf = synth->filter_buffer;
+
+    // FIR and copy values to output buffer
+    for (int16_t i = 0; i < dur; i++) {
+        int32_t acc = 0;
+        for (size_t j = 0; j < fir_len; j++) {
+            // shift 5 here is good for up to 32 filtered voices, else might wrap
+            acc = acc + (in_buf[j] * (coeff[j] >> 5));
+        }
+        *out_buffer32++ = acc >> 10;
+        in_buf++;
+    }
+
+    // Move values down so that they get filtered next time
+    memmove(synth->filter_buffer, &synth->filter_buffer[dur], fir_len * sizeof(int32_t));
+}
+
+STATIC bool synthio_synth_get_note_filtered(mp_obj_t note_obj) {
+    if (note_obj == mp_const_none) {
+        return false;
+    }
+    if (!mp_obj_is_small_int(note_obj)) {
+        synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
+        return note->filter;
+    }
+    return true;
+}
+
 void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t *buffer_length, uint8_t channel) {
 
     if (channel == synth->other_channel) {
@@ -186,77 +355,37 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
     uint16_t dur = MIN(SYNTHIO_MAX_DUR, synth->span.dur);
     synth->span.dur -= dur;
 
-    int32_t sample_rate = synth->sample_rate;
-    int32_t out_buffer32[dur];
+    int32_t out_buffer32[dur * synth->channel_count];
 
-    memset(out_buffer32, 0, sizeof(out_buffer32));
+    if (synth->filter_buffer) {
+        int32_t *filter_start = &synth->filter_buffer[synth->filter_bufinfo.len * synth->channel_count / sizeof(int16_t)];
+        memset(filter_start, 0, dur * sizeof(int32_t));
+
+        for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
+            mp_obj_t note_obj = synth->span.note_obj[chan];
+            if (!synthio_synth_get_note_filtered(note_obj)) {
+                continue;
+            }
+            synth_note_into_buffer(synth, chan, filter_start, dur);
+        }
+
+        run_fir(synth, out_buffer32, dur);
+    } else {
+        memset(out_buffer32, 0, sizeof(out_buffer32));
+    }
+
     for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
         mp_obj_t note_obj = synth->span.note_obj[chan];
-        if (note_obj == SYNTHIO_SILENCE) {
-            synth->accum[chan] = 0;
+        if (synth->filter_buffer && synthio_synth_get_note_filtered(note_obj)) {
             continue;
         }
-
-        if (synth->envelope_state[chan].level == 0) {
-            // note is truly finished, but we only just noticed
-            synth->span.note_obj[chan] = SYNTHIO_SILENCE;
-            continue;
-        }
-
-        // adjust loudness by envelope
-        uint16_t loudness = synth->envelope_state[chan].level;
-
-        uint32_t dds_rate;
-        const int16_t *waveform = synth->waveform;
-        uint32_t waveform_length = synth->waveform_length;
-        if (mp_obj_is_small_int(note_obj)) {
-            uint8_t note = mp_obj_get_int(note_obj);
-            uint8_t octave = note / 12;
-            uint16_t base_freq = notes[note % 12];
-            // rate = base_freq * waveform_length
-            // den = sample_rate * 2 ^ (10 - octave)
-            // den = sample_rate * 2 ^ 10 / 2^octave
-            // dds_rate = 2^SHIFT * rate / den
-            // dds_rate = 2^(SHIFT-10+octave) * base_freq * waveform_length / sample_rate
-            dds_rate = (sample_rate / 2 + ((uint64_t)(base_freq * waveform_length) << (SYNTHIO_FREQUENCY_SHIFT - 10 + octave))) / sample_rate;
-        } else {
-            synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
-            int32_t frequency_scaled = synthio_note_step(note, sample_rate, dur, &loudness);
-            if (note->waveform_buf.buf) {
-                waveform = note->waveform_buf.buf;
-                waveform_length = note->waveform_buf.len / 2;
-            }
-            dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)frequency_scaled * waveform_length, sample_rate);
-        }
-
-        uint32_t accum = synth->accum[chan];
-        uint32_t lim = waveform_length << SYNTHIO_FREQUENCY_SHIFT;
-        if (dds_rate > lim / 2) {
-            // beyond nyquist, can't play note
-            continue;
-        }
-
-        // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
-        if (accum > lim) {
-            accum %= lim;
-        }
-
-        for (uint16_t i = 0; i < dur; i++) {
-            accum += dds_rate;
-            // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
-            if (accum > lim) {
-                accum -= lim;
-            }
-            int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
-            out_buffer32[i] += (waveform[idx] * loudness) / 65536;
-        }
-        synth->accum[chan] = accum;
+        synth_note_into_buffer(synth, chan, out_buffer32, dur);
     }
 
     int16_t *out_buffer16 = (int16_t *)(void *)synth->buffers[synth->buffer_index];
 
     // mix down audio
-    for (size_t i = 0; i < dur; i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(out_buffer32); i++) {
         int32_t sample = out_buffer32[i];
         out_buffer16[i] = mix_down_sample(sample);
     }
@@ -270,7 +399,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
         synthio_envelope_state_step(&synth->envelope_state[chan], synthio_synth_get_note_envelope(synth, note_obj), dur);
     }
 
-    *buffer_length = synth->last_buffer_length = dur * SYNTHIO_BYTES_PER_SAMPLE;
+    *buffer_length = synth->last_buffer_length = dur * SYNTHIO_BYTES_PER_SAMPLE * synth->channel_count;
     *bufptr = (uint8_t *)out_buffer16;
 }
 
@@ -286,8 +415,7 @@ bool synthio_synth_deinited(synthio_synth_t *synth) {
 }
 
 void synthio_synth_deinit(synthio_synth_t *synth) {
-    m_del(uint8_t, synth->buffers[0], synth->buffer_length);
-    m_del(uint8_t, synth->buffers[1], synth->buffer_length);
+    synth->filter_buffer = NULL;
     synth->buffers[0] = NULL;
     synth->buffers[1] = NULL;
 }
@@ -301,13 +429,20 @@ mp_obj_t synthio_synth_envelope_get(synthio_synth_t *synth) {
     return synth->envelope_obj;
 }
 
-void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, const int16_t *waveform, uint16_t waveform_length, mp_obj_t envelope_obj) {
-    synth->buffer_length = SYNTHIO_MAX_DUR * SYNTHIO_BYTES_PER_SAMPLE;
+void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, int channel_count, mp_obj_t waveform_obj, mp_obj_t filter_obj, mp_obj_t envelope_obj) {
+    synthio_synth_parse_waveform(&synth->waveform_bufinfo, waveform_obj);
+    synthio_synth_parse_filter(&synth->filter_bufinfo, filter_obj);
+    mp_arg_validate_int_range(channel_count, 1, 2, MP_QSTR_channel_count);
+    synth->buffer_length = SYNTHIO_MAX_DUR * SYNTHIO_BYTES_PER_SAMPLE * channel_count;
     synth->buffers[0] = m_malloc(synth->buffer_length, false);
     synth->buffers[1] = m_malloc(synth->buffer_length, false);
+    if (synth->filter_bufinfo.len) {
+        synth->filter_buffer_length = (synth->filter_bufinfo.len / 2 + SYNTHIO_MAX_DUR) * channel_count * sizeof(int32_t);
+        synth->filter_buffer = m_malloc(synth->filter_buffer_length, false);
+    }
+    synth->channel_count = channel_count;
     synth->other_channel = -1;
-    synth->waveform = waveform;
-    synth->waveform_length = waveform_length;
+    synth->waveform_obj = waveform_obj;
     synth->sample_rate = sample_rate;
     synthio_synth_envelope_set(synth, envelope_obj);
 
@@ -321,24 +456,31 @@ void synthio_synth_get_buffer_structure(synthio_synth_t *synth, bool single_chan
     *single_buffer = false;
     *samples_signed = true;
     *max_buffer_length = synth->buffer_length;
-    *spacing = 1;
+    if (single_channel_output) {
+        *spacing = synth->channel_count;
+    } else {
+        *spacing = 1;
+    }
 }
 
-STATIC bool parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what) {
+STATIC void parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what, mp_int_t max_len) {
     if (o != mp_const_none) {
         mp_get_buffer_raise(o, bufinfo, MP_BUFFER_READ);
         if (bufinfo->typecode != 'h') {
             mp_raise_ValueError_varg(translate("%q must be array of type 'h'"), what);
         }
-        mp_arg_validate_length_range(bufinfo->len / 2, 2, 1024, what);
-        return true;
+        mp_arg_validate_length_range(bufinfo->len / sizeof(int16_t), 2, max_len, what);
     }
-    return false;
 }
 
 void synthio_synth_parse_waveform(mp_buffer_info_t *bufinfo_waveform, mp_obj_t waveform_obj) {
     *bufinfo_waveform = ((mp_buffer_info_t) { .buf = (void *)square_wave, .len = 4 });
-    parse_common(bufinfo_waveform, waveform_obj, MP_QSTR_waveform);
+    parse_common(bufinfo_waveform, waveform_obj, MP_QSTR_waveform, 16384);
+}
+
+void synthio_synth_parse_filter(mp_buffer_info_t *bufinfo_filter, mp_obj_t filter_obj) {
+    *bufinfo_filter = ((mp_buffer_info_t) { .buf = NULL, .len = 0 });
+    parse_common(bufinfo_filter, filter_obj, MP_QSTR_filter, 128);
 }
 
 STATIC int find_channel_with_note(synthio_synth_t *synth, mp_obj_t note) {
@@ -402,13 +544,36 @@ void synthio_lfo_set(synthio_lfo_state_t *state, const synthio_lfo_descr_t *desc
     state->dds = synthio_frequency_convert_float_to_dds(descr->frequency * 65536, sample_rate);
 }
 
-int synthio_lfo_step(synthio_lfo_state_t *state, uint16_t dur) {
+STATIC int synthio_lfo_step_common(synthio_lfo_state_t *state, uint16_t dur) {
     uint32_t phase = state->phase;
     uint16_t whole_phase = phase >> 16;
 
     // advance the phase accumulator
     state->phase = phase + state->dds * dur;
 
+    return whole_phase;
+}
+STATIC int synthio_lfo_sweep_common(synthio_lfo_state_t *state, uint16_t dur) {
+    uint32_t old_phase = state->phase;
+    uint16_t whole_phase = synthio_lfo_step_common(state, dur);
+    if (state->phase < old_phase) {
+        state->phase = 0xffffffff;
+    }
+    return whole_phase;
+}
+
+int synthio_sweep_step(synthio_lfo_state_t *state, uint16_t dur) {
+    uint16_t whole_phase = synthio_lfo_sweep_common(state, dur);
+    return (state->amplitude_scaled * whole_phase) / 65536 + state->offset_scaled;
+}
+
+int synthio_sweep_in_step(synthio_lfo_state_t *state, uint16_t dur) {
+    uint16_t whole_phase = 65535 - synthio_lfo_sweep_common(state, dur);
+    return (state->amplitude_scaled * whole_phase) / 65536 + state->offset_scaled;
+}
+
+int synthio_lfo_step(synthio_lfo_state_t *state, uint16_t dur) {
+    uint16_t whole_phase = synthio_lfo_step_common(state, dur);
     // create a triangle wave, it's quick and easy
     int v;
     if (whole_phase < 16384) { // ramp from 0 to amplitude
