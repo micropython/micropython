@@ -845,7 +845,9 @@ typedef double mp_float_t;
 #define MICROPY_MODULE_ATTR_DELEGATION (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Whether to call __init__ when importing builtin modules for the first time
+// Whether to call __init__ when importing builtin modules for the first time.
+// Modules using this need to handle the possibility that __init__ might be
+// called multiple times.
 #ifndef MICROPY_MODULE_BUILTIN_INIT
 #define MICROPY_MODULE_BUILTIN_INIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
