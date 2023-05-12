@@ -314,19 +314,21 @@ STATIC void run_fir(synthio_synth_t *synth, int32_t *out_buffer32, uint16_t dur)
     size_t fir_len = synth->filter_bufinfo.len / sizeof(int16_t);
     int32_t *in_buf = synth->filter_buffer;
 
+
+    int synth_chan = synth->channel_count;
     // FIR and copy values to output buffer
-    for (int16_t i = 0; i < dur; i++) {
+    for (int16_t i = 0; i < dur * synth_chan; i++) {
         int32_t acc = 0;
         for (size_t j = 0; j < fir_len; j++) {
             // shift 5 here is good for up to 32 filtered voices, else might wrap
-            acc = acc + (in_buf[j] * (coeff[j] >> 5));
+            acc = acc + (in_buf[j * synth_chan] * (coeff[j] >> 5));
         }
         *out_buffer32++ = acc >> 10;
         in_buf++;
     }
 
     // Move values down so that they get filtered next time
-    memmove(synth->filter_buffer, &synth->filter_buffer[dur], fir_len * sizeof(int32_t));
+    memmove(synth->filter_buffer, &synth->filter_buffer[dur * synth_chan], fir_len * sizeof(int32_t) * synth_chan);
 }
 
 STATIC bool synthio_synth_get_note_filtered(mp_obj_t note_obj) {
@@ -359,7 +361,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
 
     if (synth->filter_buffer) {
         int32_t *filter_start = &synth->filter_buffer[synth->filter_bufinfo.len * synth->channel_count / sizeof(int16_t)];
-        memset(filter_start, 0, dur * sizeof(int32_t));
+        memset(filter_start, 0, dur * synth->channel_count * sizeof(int32_t));
 
         for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
             mp_obj_t note_obj = synth->span.note_obj[chan];

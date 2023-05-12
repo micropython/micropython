@@ -85,7 +85,7 @@ mp_float_t common_hal_synthio_note_get_tremolo_depth(synthio_note_obj_t *self) {
 void common_hal_synthio_note_set_tremolo_depth(synthio_note_obj_t *self, mp_float_t value_in) {
     mp_float_t val = mp_arg_validate_float_range(value_in, 0, 1, MP_QSTR_tremolo_depth);
     self->tremolo_descr.amplitude = val;
-    self->tremolo_state.amplitude_scaled = round_float_to_int(val * 32767);
+    self->tremolo_state.amplitude_scaled = round_float_to_int(val * 32768);
 }
 
 mp_float_t common_hal_synthio_note_get_tremolo_rate(synthio_note_obj_t *self) {
@@ -96,7 +96,7 @@ void common_hal_synthio_note_set_tremolo_rate(synthio_note_obj_t *self, mp_float
     mp_float_t val = mp_arg_validate_float_range(value_in, 0, 60, MP_QSTR_tremolo_rate);
     self->tremolo_descr.frequency = val;
     if (self->sample_rate != 0) {
-        self->tremolo_state.dds = synthio_frequency_convert_float_to_dds(val, self->sample_rate);
+        self->tremolo_state.dds = synthio_frequency_convert_float_to_dds(val * 65536, self->sample_rate);
     }
 }
 
@@ -107,7 +107,7 @@ mp_float_t common_hal_synthio_note_get_bend_depth(synthio_note_obj_t *self) {
 void common_hal_synthio_note_set_bend_depth(synthio_note_obj_t *self, mp_float_t value_in) {
     mp_float_t val = mp_arg_validate_float_range(value_in, -1, 1, MP_QSTR_bend_depth);
     self->bend_descr.amplitude = val;
-    self->bend_state.amplitude_scaled = round_float_to_int(val * 32767);
+    self->bend_state.amplitude_scaled = round_float_to_int(val * 32768);
 }
 
 mp_float_t common_hal_synthio_note_get_bend_rate(synthio_note_obj_t *self) {
@@ -127,7 +127,7 @@ void common_hal_synthio_note_set_bend_rate(synthio_note_obj_t *self, mp_float_t 
     mp_float_t val = mp_arg_validate_float_range(value_in, 0, 60, MP_QSTR_bend_rate);
     self->bend_descr.frequency = val;
     if (self->sample_rate != 0) {
-        self->bend_state.dds = synthio_frequency_convert_float_to_dds(val, self->sample_rate);
+        self->bend_state.dds = synthio_frequency_convert_float_to_dds(val * 65536, self->sample_rate);
     }
 }
 
