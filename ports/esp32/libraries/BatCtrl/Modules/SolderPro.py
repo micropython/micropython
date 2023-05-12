@@ -78,7 +78,7 @@ class SolderPro(Input):
 
     def set_led(self, index: int, value: int):
         if index in self.led_pins:
-            self.aw9523.dim(index, value)
+            self.aw9523.dim(index, int((value*255)/100))
 
     def scan(self):
         state = []
