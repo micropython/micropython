@@ -1,12 +1,9 @@
-from ST7735 import TFT
 from machine import SPI, Pin, Signal, I2C
 from CircuitOS import InputExpander, Display, PanelST7735, PCA95XX
 from .Pins import *
 
-
 spi: SPI = SPI(1, baudrate=27000000, polarity=0, phase=0, sck=Pin(Pins.SPI_SCK), mosi=Pin(Pins.SPI_MOSI), miso=Pin(Pins.SPI_MISO))
-tft = TFT(spi, aDC=Pins.TFT_DC, aReset=Pins.TFT_RST, aCS=Pins.TFT_CS)
-
+panel = PanelST7735(spi, dc=Pin(Pins.TFT_DC, Pin.OUT), reset=Pin(Pins.TFT_RST, Pin.OUT), cs=Pin(Pins.TFT_CS, Pin.OUT), rotation=1)
 blPin = Pin(Pins.BL, mode=Pin.OUT, value=True)
 backlight = Signal(blPin, invert=True)
 
@@ -19,14 +16,11 @@ for btn in dir(Buttons):
 		continue
 	buttons.register_button(attr)
 
-display = Display(PanelST7735(tft), 160, 128)
+display = Display(panel)
 
 
 def begin():
-	tft.initr()
-	tft.rotation(1)
-	tft.rgb(False)
-
+	panel.init()
 	display.fill(display.Color.Black)
 	display.commit()
 

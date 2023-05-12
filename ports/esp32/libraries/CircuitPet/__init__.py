@@ -5,7 +5,6 @@ from .Pins import *
 from i2c_bm8563 import *
 
 spiTFT: SPI = SPI(1, baudrate=27000000, polarity=0, phase=0, sck=Pin(Pins.TFT_SCK), mosi=Pin(Pins.TFT_MOSI))
-tft = TFT(spiTFT, aDC=Pins.TFT_DC, aReset=Pins.TFT_RST, aCS=0)
 
 blPin = Pin(Pins.BL, mode=Pin.OUT, value=True)
 backlight = Signal(blPin, invert=True)
@@ -14,19 +13,20 @@ buttons = InputGPIO(Buttons.Pins, inverted=True)
 
 piezo = Piezo(Pins.BUZZ)
 rgb = RGB_LED((Pins.LED_R, Pins.LED_G, Pins.LED_B), True)
-display = Display(PanelST7735(tft), 160, 128)
+dc = Pin(Pins.TFT_DC, Pin.OUT)
+reset = Pin(Pins.TFT_RST, Pin.OUT)
+panel = PanelST7735(spiTFT, dc=dc, reset=reset, rotation=3)
+display = Display(panel)
 
 i2c = I2C(0, sda=Pin(Pins.I2C_SDA), scl=Pin(Pins.I2C_SCL))
 
 
 def begin():
-    tft.initr()
-    tft.rotation(3)
-    tft.rgb(False)
+	panel.init()
 
-    display.fill(Display.Color.Black)
-    display.commit()
+	display.fill(Display.Color.Black)
+	display.commit()
 
-    backlight.on()
+	backlight.on()
 
-    buttons.scan()
+	buttons.scan()
