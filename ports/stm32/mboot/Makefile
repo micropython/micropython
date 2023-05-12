@@ -6,7 +6,7 @@ BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
 # If not given on the command line, then default to PYBV10.
 BOARD ?= PYBV10
-BOARD_DIR ?= $(abspath ../boards/$(BOARD))
+BOARD_DIR ?= ../boards/$(BOARD)
 endif
 
 # If the build directory is not given, make it reflect the board name.
