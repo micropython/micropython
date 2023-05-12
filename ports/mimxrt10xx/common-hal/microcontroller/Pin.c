@@ -31,8 +31,8 @@
 
 #include "py/gc.h"
 
-STATIC bool claimed_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
-STATIC bool never_reset_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
+STATIC bool claimed_pins[PAD_COUNT];
+STATIC bool never_reset_pins[PAD_COUNT];
 
 // Default is that no pins are forbidden to reset.
 MP_WEAK const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[] = {
@@ -55,10 +55,10 @@ STATIC bool _reset_forbidden(const mcu_pin_obj_t *pin) {
 // and GPIO port and number, used to store claimed and reset tagging. The two number
 // systems are not related and one cannot determine the other without a pin object
 void reset_all_pins(void) {
-    for (uint8_t i = 0; i < IOMUXC_SW_PAD_CTL_PAD_COUNT; i++) {
+    for (uint8_t i = 0; i < PAD_COUNT; i++) {
         claimed_pins[i] = never_reset_pins[i];
     }
-    for (uint8_t i = 0; i < IOMUXC_SW_PAD_CTL_PAD_COUNT; i++) {
+    for (uint8_t i = 0; i < PAD_COUNT; i++) {
         mcu_pin_obj_t *pin = mcu_pin_globals.map.table[i].value;
         if (never_reset_pins[pin->mux_idx]) {
             continue;
@@ -90,6 +90,11 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
     disable_pin_change_interrupt(pin);
     never_reset_pins[pin->mux_idx] = false;
     claimed_pins[pin->mux_idx] = false;
+
+    // This should never be true, but protect against it anyway.
+    if (pin->mux_reg == 0) {
+        return;
+    }
     *(uint32_t *)pin->mux_reg = pin->mux_reset;
     *(uint32_t *)pin->cfg_reg = pin->pad_reset;
 }

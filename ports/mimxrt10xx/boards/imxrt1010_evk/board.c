@@ -41,9 +41,6 @@ const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[] = {
     &pin_GPIO_SD_08,
     &pin_GPIO_SD_07,
     &pin_GPIO_SD_06,
-    // USB Pins
-    &pin_USB_OTG1_DN,
-    &pin_USB_OTG1_DP,
     NULL,                       // Must end in NULL.
 };
 

@@ -40,5 +40,7 @@
 #include "pin_names.h"
 #undef FORMAT_PIN
 
-#define PIN_COUNT (IOMUXC_SW_PAD_CTL_PAD_COUNT + 2)
+// Pads can be reset. Other pins like USB cannot be.
+#define PAD_COUNT (56)
+#define PIN_COUNT (PAD_COUNT + 2)
 extern const mcu_pin_obj_t mcu_pin_list[PIN_COUNT];
