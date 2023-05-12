@@ -21,7 +21,7 @@ class SolderPro(Input):
         P1_6 = const(14)
         P1_7 = const(15)
 
-    class GPIOs:
+    class GPIO:
         P0_0 = const(0)
         P0_1 = const(1)
         P0_2 = const(2)
@@ -60,10 +60,15 @@ class SolderPro(Input):
 
         return True
 
-    def set_pin(self, pin: int, value: bool):
+    def write_pin(self, pin: int, value: bool):
         if pin not in self.control_pins:
             return
         self.aw9523.write(pin, value)
+
+    def read_pin(self, pin: int):
+        if pin not in self.control_pins and pin not in self.button_pins:
+            return
+        return self.aw9523.read(pin)
 
     def set_pin_mode(self, pin: int, mode: int):
         if pin not in self.control_pins:
