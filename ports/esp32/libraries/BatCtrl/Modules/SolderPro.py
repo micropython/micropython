@@ -45,7 +45,6 @@ class SolderPro(Input):
         self.led_pins = [0, 1, 6, 7, 12, 13, 14, 15]
         self.control_pins = [i for i in range(6)]
 
-        self.state = [False] * self.num_buttons
         self._on_press = [None] * self.num_buttons
         self._on_release = [None] * self.num_buttons
 
@@ -70,11 +69,6 @@ class SolderPro(Input):
         if pin not in self.control_pins:
             return
         self.aw9523.pin_mode(pin, mode)
-
-    def get_button(self, i: int) -> bool:
-        if i >= self.num_buttons:
-            return False
-        return self.state[i]
 
     def set_led(self, index: int, value: int):
         if index in self.led_pins:
