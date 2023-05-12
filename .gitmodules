@@ -56,6 +56,7 @@
 [submodule "lib/micropython-lib"]
 	path = lib/micropython-lib
 	url = https://github.com/micropython/micropython-lib.git
-[submodule "usermod/st7789_mpy"]
-	path = usermod/st7789_mpy
-	url = https://github.com/russhughes/st7789_mpy.git
+[submodule "ports/.\\usermod\\st7789_mpy"]
+	path = ports/.\\usermod\\st7789_mpy
+	url = https://github.com/CircuitMess/st7789_mpy
+	branch=master-CM
