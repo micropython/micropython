@@ -625,6 +625,15 @@ generic_binary_op:
         }
     }
 
+    // If this was an inplace method, fallback to the corresponding normal method.
+    // https://docs.python.org/3/reference/datamodel.html#object.__iadd__ :
+    // "If a specific method is not defined, the augmented assignment falls back
+    // to the normal methods."
+    if (op >= MP_BINARY_OP_INPLACE_OR && op <= MP_BINARY_OP_INPLACE_POWER) {
+        op += MP_BINARY_OP_OR - MP_BINARY_OP_INPLACE_OR;
+        goto generic_binary_op;
+    }
+
     #if MICROPY_PY_REVERSE_SPECIAL_METHODS
     if (op >= MP_BINARY_OP_OR && op <= MP_BINARY_OP_POWER) {
         mp_obj_t t = rhs;

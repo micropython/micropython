@@ -46,3 +46,8 @@ print("a" | B("b"))
 print("a" + B("b"))
 print("a" * B("b"))
 print("a" / B("b"))
+
+x = "a"; x |= B("b"); print(x)
+x = "a"; x += B("b"); print(x)
+x = "a"; x *= B("b"); print(x)
+x = "a"; x /= B("b"); print(x)
