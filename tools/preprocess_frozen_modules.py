@@ -21,10 +21,10 @@ def version_string(path=None, *, valid_semver=False):
         version = tag.strip().decode("utf-8", "strict")
     except subprocess.CalledProcessError:
         describe = subprocess.check_output("git describe --tags", shell=True, cwd=path)
-        tag, additional_commits, commitish = (
+        tag, additional_commits, commit_ish = (
             describe.strip().decode("utf-8", "strict").rsplit("-", maxsplit=2)
         )
-        commitish = commitish[1:]
+        commit_ish = commit_ish[1:]
         if valid_semver:
             version_info = semver.parse_version_info(tag)
             if not version_info.prerelease:
@@ -33,12 +33,12 @@ def version_string(path=None, *, valid_semver=False):
                     + "-alpha.0.plus."
                     + additional_commits
                     + "+"
-                    + commitish
+                    + commit_ish
                 )
             else:
-                version = tag + ".plus." + additional_commits + "+" + commitish
+                version = tag + ".plus." + additional_commits + "+" + commit_ish
         else:
-            version = commitish
+            version = commit_ish
     return version
 
 
@@ -46,7 +46,6 @@ def version_string(path=None, *, valid_semver=False):
 # with actual version info derived from git.
 def copy_and_process(in_dir, out_dir):
     for root, subdirs, files in os.walk(in_dir):
-
         # Skip library examples directory and subfolders.
         relative_path_parts = Path(root).relative_to(in_dir).parts
         if relative_path_parts and relative_path_parts[0] in [

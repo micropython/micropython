@@ -122,16 +122,17 @@
 
 #include "tusb.h"
 
-#if CIRCUITPY_GAMEPADSHIFT
-#include "shared-module/gamepadshift/__init__.h"
-#endif
 #if CIRCUITPY_PEW
 #include "common-hal/_pew/PewPew.h"
 #endif
 static volatile bool sleep_ok = true;
 
 #ifdef SAMD21
-uint8_t _tick_event_channel;
+static uint8_t _tick_event_channel = EVSYS_SYNCH_NUM;
+
+static bool tick_enabled(void) {
+    return _tick_event_channel != EVSYS_SYNCH_NUM;
+}
 
 // Sleeping requires a register write that can stall interrupt handling. Turning
 // off sleeps allows for more accurate interrupt timing. (Python still thinks
@@ -247,7 +248,6 @@ static void rtc_init(void) {
         RTC_MODE0_CTRLA_COUNTSYNC;
     #endif
 
-    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_OVF;
 
     // Set all peripheral interrupt priorities to the lowest priority by default.
     for (uint16_t i = 0; i < PERIPH_COUNT_IRQn; i++) {
@@ -307,7 +307,7 @@ safe_mode_t port_init(void) {
     // because it was hard enough to figure out, and maybe there's
     // a mistake that could make it work in the future.
     #if 0
-    // Designate QSPI memory mapped region as not cachable.
+    // Designate QSPI memory mapped region as not cacheable.
 
     // Turn off MPU in case it is on.
     MPU->CTRL = 0;
@@ -320,7 +320,7 @@ safe_mode_t port_init(void) {
         0b011 << MPU_RASR_AP_Pos |     // full read/write access for privileged and user mode
             0b000 << MPU_RASR_TEX_Pos | // caching not allowed, strongly ordered
             1 << MPU_RASR_S_Pos |      // sharable
-            0 << MPU_RASR_C_Pos |      // not cachable
+            0 << MPU_RASR_C_Pos |      // not cacheable
             0 << MPU_RASR_B_Pos |      // not bufferable
             0b10111 << MPU_RASR_SIZE_Pos | // 16MB region size
             1 << MPU_RASR_ENABLE_Pos   // enable this region
@@ -368,20 +368,20 @@ safe_mode_t port_init(void) {
 
     #ifdef SAMD21
     if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
-        return BROWNOUT;
+        return SAFE_MODE_BROWNOUT;
     }
     #endif
     #ifdef SAM_D5X_E5X
     if (RSTC->RCAUSE.bit.BODVDD == 1 || RSTC->RCAUSE.bit.BODCORE == 1) {
-        return BROWNOUT;
+        return SAFE_MODE_BROWNOUT;
     }
     #endif
 
     if (board_requests_safe_mode()) {
-        return USER_SAFE_MODE;
+        return SAFE_MODE_USER;
     }
 
-    return NO_SAFE_MODE;
+    return SAFE_MODE_NONE;
 }
 
 void reset_port(void) {
@@ -425,15 +425,19 @@ void reset_port(void) {
 
     reset_gclks();
 
-    #if CIRCUITPY_GAMEPADSHIFT
-    gamepadshift_reset();
-    #endif
     #if CIRCUITPY_PEW
     pew_reset();
     #endif
 
-    reset_event_system();
-    reset_ticks();
+    #ifdef SAMD21
+    if (!tick_enabled())
+    // SAMD21 ticks depend on the event system, so don't disturb the event system if we need ticks,
+    // such as for a display that lives across VM instantiations.
+    #endif
+    {
+        reset_event_system();
+        reset_ticks();
+    }
 
     reset_all_pins();
 
@@ -501,45 +505,34 @@ uint32_t port_get_saved_word(void) {
 // TODO: Move this to an RTC backup register so we can preserve it when only the BACKUP power domain
 // is enabled.
 static volatile uint64_t overflowed_ticks = 0;
+static uint32_t rtc_old_count;
 
 static uint32_t _get_count(uint64_t *overflow_count) {
-    while (1) {
-        // Disable interrupts so we can grab the count and the overflow atomically.
-        common_hal_mcu_disable_interrupts();
-
-        #ifdef SAM_D5X_E5X
-        while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {
-        }
-        #endif
-        // SAMD21 does continuous sync so we don't need to wait here.
-
-        uint32_t count = RTC->MODE0.COUNT.reg;
-        if (overflow_count != NULL) {
-            *overflow_count = overflowed_ticks;
-        }
-
-        bool overflow_pending = RTC->MODE0.INTFLAG.bit.OVF;
-
-        common_hal_mcu_enable_interrupts();
-
-        if (!overflow_pending) {
-            return count;
-        }
-
-        // Try again if overflow hasn't been processed yet.
+    #ifdef SAM_D5X_E5X
+    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {
     }
+    #endif
+    // SAMD21 does continuous sync so we don't need to wait here.
+
+    uint32_t count = RTC->MODE0.COUNT.reg;
+    if (count < rtc_old_count) {
+        // Our RTC is 32 bits and we're clocking it at 16.384khz which is 16 (2 ** 4) subticks per
+        // tick.
+        overflowed_ticks += (1L << (32 - 4));
+    }
+    rtc_old_count = count;
+
+    if (overflow_count != NULL) {
+        *overflow_count = overflowed_ticks;
+    }
+
+    return count;
 }
 
 volatile bool _woken_up;
 
 void RTC_Handler(void) {
     uint32_t intflag = RTC->MODE0.INTFLAG.reg;
-    if (intflag & RTC_MODE0_INTFLAG_OVF) {
-        RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_OVF;
-        // Our RTC is 32 bits and we're clocking it at 16.384khz which is 16 (2 ** 4) subticks per
-        // tick.
-        overflowed_ticks += (1L << (32 - 4));
-    }
     #ifdef SAM_D5X_E5X
     if (intflag & RTC_MODE0_INTFLAG_PER2) {
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_PER2;
@@ -625,8 +618,8 @@ void port_enable_tick(void) {
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_PER2;
     #endif
     #ifdef SAMD21
-    // SAMD21 ticks won't survive reset_port(). This *should* be ok since it'll
-    // be triggered by ticks and no Python will be running.
+    // reset_port() preserves the event system if ticks were still enabled after a VM finished,
+    // such as for an on-board display. Normally the event system would be reset between VM instantiations.
     if (_tick_event_channel >= EVSYS_SYNCH_NUM) {
         turn_on_event_system();
         _tick_event_channel = find_sync_event_channel();
@@ -651,6 +644,10 @@ void port_disable_tick(void) {
     RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_PER2;
     #endif
     #ifdef SAMD21
+    if (_tick_event_channel == EVSYS_SYNCH_NUM) {
+        return;
+    }
+
     if (_tick_event_channel >= 8) {
         uint8_t value = 1 << (_tick_event_channel - 8);
         EVSYS->INTENCLR.reg = EVSYS_INTENSET_EVDp8(value);
@@ -658,6 +655,7 @@ void port_disable_tick(void) {
         uint8_t value = 1 << _tick_event_channel;
         EVSYS->INTENCLR.reg = EVSYS_INTENSET_EVD(value);
     }
+    disable_event_channel(_tick_event_channel);
     _tick_event_channel = EVSYS_SYNCH_NUM;
     #endif
 }
@@ -722,7 +720,7 @@ __attribute__((used)) void HardFault_Handler(void) {
     REG_MTB_MASTER = 0x00000000 + 6;
     #endif
 
-    reset_into_safe_mode(HARD_CRASH);
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }

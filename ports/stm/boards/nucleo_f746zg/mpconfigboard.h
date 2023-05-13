@@ -46,5 +46,5 @@
 #define BOARD_HSE_SOURCE (RCC_HSE_BYPASS) // ST boards use the STLink clock signal
 #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 
-#define CIRCUITPY_DEBUG_UART_TX (&pin_PD08)
-#define CIRCUITPY_DEBUG_UART_RX (&pin_PD09)
+#define CIRCUITPY_CONSOLE_UART_TX (&pin_PD08)
+#define CIRCUITPY_CONSOLE_UART_RX (&pin_PD09)

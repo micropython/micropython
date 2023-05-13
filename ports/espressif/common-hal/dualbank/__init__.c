@@ -57,14 +57,13 @@ void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t o
 
     if (update_partition == NULL) {
         update_partition = esp_ota_get_next_update_partition(NULL);
+        assert(update_partition != NULL);
 
         ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
             running->type, running->subtype, running->address);
 
         ESP_LOGI(TAG, "Writing partition type %d subtype %d (offset 0x%08x)\n",
             update_partition->type, update_partition->subtype, update_partition->address);
-
-        assert(update_partition != NULL);
     }
 
     if (update_handle == 0) {
@@ -86,14 +85,14 @@ void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t o
             // check new version with running version
             if (memcmp(new_app_info.version, running_app_info.version, sizeof(new_app_info.version)) == 0) {
                 ESP_LOGW(TAG, "New version is the same as running version.");
-                task_fatal_error();
+                mp_raise_RuntimeError(translate("Firmware is duplicate"));
             }
 
             // check new version with last invalid partition
             if (last_invalid != NULL) {
                 if (memcmp(new_app_info.version, invalid_app_info.version, sizeof(new_app_info.version)) == 0) {
                     ESP_LOGW(TAG, "New version is the same as invalid version.");
-                    task_fatal_error();
+                    mp_raise_RuntimeError(translate("Firmware is invalid"));
                 }
             }
 
@@ -104,7 +103,7 @@ void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t o
             }
         } else {
             ESP_LOGE(TAG, "received package is not fit len");
-            task_fatal_error();
+            mp_raise_RuntimeError(translate("Firmware is too big"));
         }
     }
 
@@ -128,7 +127,7 @@ void common_hal_dualbank_switch(void) {
     if (err != ESP_OK) {
         if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
             ESP_LOGE(TAG, "Image validation failed, image is corrupted");
-            mp_raise_RuntimeError(translate("Firmware image is invalid"));
+            mp_raise_RuntimeError(translate("Firmware is invalid"));
         }
         ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
         task_fatal_error();

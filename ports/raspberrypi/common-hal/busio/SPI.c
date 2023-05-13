@@ -82,7 +82,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // TODO: Check to see if we're sharing the SPI with a native APA102.
 
     if (instance_index > 1) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     if (instance_index == 0) {
@@ -150,6 +150,15 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     }
 
     spi_set_format(self->peripheral, bits, polarity, phase, SPI_MSB_FIRST);
+
+    // Workaround to start with clock line high if polarity=1. The hw SPI peripheral does not do this
+    // automatically. See https://github.com/raspberrypi/pico-sdk/issues/868 and
+    // https://forums.raspberrypi.com/viewtopic.php?t=336142
+    // TODO: scheduled to be be fixed in pico-sdk 1.5.0.
+    if (polarity) {
+        hw_clear_bits(&spi_get_hw(self->peripheral)->cr1, SPI_SSPCR1_SSE_BITS); // disable the SPI
+        hw_set_bits(&spi_get_hw(self->peripheral)->cr1, SPI_SSPCR1_SSE_BITS); // re-enable the SPI
+    }
 
     self->polarity = polarity;
     self->phase = phase;

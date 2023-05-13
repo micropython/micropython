@@ -31,7 +31,6 @@
 #include "common-hal/alarm/SleepMemory.h"
 #include "shared-bindings/alarm/SleepMemory.h"
 
-#include "esp_log.h"
 #include "esp_sleep.h"
 
 // Data storage for singleton instance of SleepMemory.
@@ -39,7 +38,7 @@
 static RTC_DATA_ATTR uint8_t _sleep_mem[SLEEP_MEMORY_LENGTH];
 
 void alarm_sleep_memory_reset(void) {
-    // ESP-IDF build system takes care of doing esp_sleep_pd_config() or the equivalentwith
+    // ESP-IDF build system takes care of doing esp_sleep_pd_config() or the equivalent with
     // the correct settings, depending on which RTC mem we are using.
     // https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/api-reference/system/sleep_modes.html#power-down-of-rtc-peripherals-and-memories
 }

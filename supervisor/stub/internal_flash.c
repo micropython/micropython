@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "supervisor/internal_flash.h"
+#include "supervisor/flash.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -46,21 +46,29 @@ uint32_t supervisor_flash_get_block_count(void) {
     return 0;
 }
 
-void port_internal_flash_flush(void) {
-    return;
-}
-
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
     return 0; // success
-}
-
-bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
-    return true;
 }
 
 mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     return 0; // success
 }
 
+#if (0)
+// See definition in supervisor/flash.c
+void supervisor_flash_init_vfs(struct _fs_user_mount_t *vfs) {
+    return;
+}
+
+// See definition in supervisor/flash.c
+void supervisor_flash_flush(void) {
+    return;
+}
+#endif
+
 void supervisor_flash_release_cache(void) {
+}
+
+void port_internal_flash_flush(void) {
+    return;
 }

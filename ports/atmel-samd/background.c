@@ -42,20 +42,23 @@
 // PB03 is physical pin "SCL" on the Metro M4 express
 // so you can't use this code AND an i2c peripheral
 // at the same time unless you change this
-void port_start_background_task(void) {
+void port_start_background_tick(void) {
     REG_PORT_DIRSET1 = (1 << 3);
     REG_PORT_OUTSET1 = (1 << 3);
 }
 
-void port_finish_background_task(void) {
+void port_finish_background_tick(void) {
     REG_PORT_OUTCLR1 = (1 << 3);
 }
 #else
-void port_start_background_task(void) {
+void port_start_background_tick(void) {
 }
-void port_finish_background_task(void) {
+void port_finish_background_tick(void) {
 }
 #endif
+
+void port_background_tick(void) {
+}
 
 void port_background_task(void) {
 }

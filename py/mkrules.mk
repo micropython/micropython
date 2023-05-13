@@ -13,7 +13,7 @@ OBJ_EXTRA_ORDER_DEPS =
 # tree.
 #
 # So for example, py/map.c would have an object file name py/map.o
-# The object files will go into the build directory and mantain the same
+# The object files will go into the build directory and maintain the same
 # directory structure as the source tree. So the final dependency will look
 # like this:
 #
@@ -58,11 +58,11 @@ $(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $<
 endef
 
 vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES)
-$(BUILD)/%.o: %.c
+$(BUILD)/%.o: %.c | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/qstrdefs.enum.h
 	$(call compile_c)
 
 vpath %.cpp . $(TOP) $(USER_C_MODULES)
-$(BUILD)/%.o: %.cpp
+$(BUILD)/%.o: %.cpp | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/qstrdefs.enum.h
 	$(call compile_cxx)
 
 QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -x c
@@ -89,7 +89,7 @@ $(BUILD)/%.pp: %.c
 # the right .o's to get recompiled if the generated.h file changes. Adding
 # an order-only dependency to all of the .o's will cause the generated .h
 # to get built before we try to compile any of them.
-$(OBJ): | $(HEADER_BUILD)/qstrdefs.enum.h $(HEADER_BUILD)/mpversion.h
+$(OBJ): | $(HEADER_BUILD)/mpversion.h
 
 # The logic for qstr regeneration (applied by makeqstrdefs.py) is:
 # - if anything in QSTR_GLOBAL_DEPENDENCIES is newer, then process all source files ($^)
@@ -142,7 +142,7 @@ endif
 ifneq ($(PROG),)
 # Build a standalone executable (unix does this)
 
-# The executable should have an .exe extension for builds targetting 'pure'
+# The executable should have an .exe extension for builds targeting 'pure'
 # Windows, i.e. msvc or mingw builds, but not when using msys or cygwin's gcc.
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring mingw,$(COMPILER_TARGET)))

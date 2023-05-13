@@ -52,10 +52,14 @@ subprocess.check_output(["make", "stubs"])
 #modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
 modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
 modules_support_matrix_reverse = defaultdict(list)
-for board, modules in modules_support_matrix.items():
-    for module in modules:
+for board, matrix_info in modules_support_matrix.items():
+    for module in matrix_info["modules"]:
         modules_support_matrix_reverse[module].append(board)
-modules_support_matrix_reverse = dict((module, sorted(boards)) for module, boards in modules_support_matrix_reverse.items())
+
+modules_support_matrix_reverse = dict(
+    (module, sorted(boards))
+    for module, boards in modules_support_matrix_reverse.items()
+)
 
 html_context = {
     'support_matrix': modules_support_matrix,
@@ -73,6 +77,7 @@ needs_sphinx = '1.3'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    "sphinxcontrib.jquery",
     'sphinxcontrib.rsvgconverter',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
@@ -83,7 +88,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['templates']
+templates_path = ['templates', "docs/templates"]
 
 # The suffix of source filenames.
 source_suffix = {
@@ -167,6 +172,7 @@ exclude_patterns = ["**/build*",
                     ".env",
                     ".venv",
                     ".direnv",
+                    ".devcontainer/Readme.md",
                     "data",
                     "docs/autoapi",
                     "docs/README.md",
@@ -195,6 +201,7 @@ exclude_patterns = ["**/build*",
                     "ports/cxd56/spresense-exported-sdk",
                     "ports/espressif/certificates",
                     "ports/espressif/esp-idf",
+                    "ports/espressif/esp32-camera",
                     "ports/espressif/.idf_tools",
                     "ports/espressif/peripherals",
                     "ports/litex/hw",
@@ -208,6 +215,8 @@ exclude_patterns = ["**/build*",
                     "ports/nrf/peripherals",
                     "ports/nrf/usb",
                     "ports/raspberrypi/sdk",
+                    "ports/raspberrypi/lib",
+                    "ports/silabs",
                     "ports/stm/st_driver",
                     "ports/stm/packages",
                     "ports/stm/peripherals",

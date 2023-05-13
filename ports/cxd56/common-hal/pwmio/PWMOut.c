@@ -74,7 +74,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     self->variable_frequency = variable_frequency;
 
     if (ioctl(pwmout_dev[self->number].fd, PWMIOC_SETCHARACTERISTICS, (unsigned long)((uintptr_t)&self->info)) < 0) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     ioctl(pwmout_dev[self->number].fd, PWMIOC_START, 0);
 
@@ -89,6 +89,8 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
+
+    pwmout_dev[self->number].reset = true;
 
     ioctl(pwmout_dev[self->number].fd, PWMIOC_STOP, 0);
     close(pwmout_dev[self->number].fd);
@@ -116,7 +118,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t fr
     self->info.frequency = frequency;
 
     if (ioctl(pwmout_dev[self->number].fd, PWMIOC_SETCHARACTERISTICS, (unsigned long)((uintptr_t)&self->info)) < 0) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
 }
 
@@ -132,10 +134,6 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     never_reset_pin_number(self->pin->number);
 
     pwmout_dev[self->number].reset = false;
-}
-
-void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    pwmout_dev[self->number].reset = true;
 }
 
 void pwmout_reset(void) {

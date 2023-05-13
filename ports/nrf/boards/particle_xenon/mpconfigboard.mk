@@ -1,5 +1,6 @@
 USB_VID = 0x2b04
-USB_PID = 0xc00e # argon is 0xc00c
+# argon is 0xc00c
+USB_PID = 0xc00e
 USB_PRODUCT = "Xenon"
 USB_MANUFACTURER = "Particle"
 

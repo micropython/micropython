@@ -52,7 +52,7 @@ uint8_t display_init_sequence[] = {
     0xc5, 1, 0x0e, // _VMCTR1 VCOMH = 4V, VOML = -1.1V
     0x2a, 0, // _INVOFF
     0x36, 1, 0b10100000,  // _MADCTL for rotation 0
-    // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
+    // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 cycle osc equalie,
     // fix on VTL
     0x3a, 1, 0x05, // COLMOD - 16bit color
     0xe0, 16, 0x02, 0x1c, 0x07, 0x12, // _GMCTRP1 Gamma
@@ -70,11 +70,11 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
+    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
@@ -85,7 +85,7 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_display_obj_t *display = &displays[0].display;
+    displayio_display_obj_t *display = &allocate_display()->display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,
@@ -107,23 +107,18 @@ void board_init(void) {
         sizeof(display_init_sequence),
         &pin_PA01,  // backlight pin
         NO_BRIGHTNESS_COMMAND,
-        1.0f, // brightness (ignored)
-        true, // auto_brightness
+        1.0f, // brightness
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
         true, // backlight_on_high
-        false); // SH1107_addressing
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
+        false, // SH1107_addressing
+        50000); // backlight pwm frequency
 }
 
 void reset_board(void) {
     board_reset_user_neopixels(&pin_PA15, 5);
 }
 
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

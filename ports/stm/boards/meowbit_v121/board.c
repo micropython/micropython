@@ -54,7 +54,7 @@ uint8_t display_init_sequence[] = {
     0xc5, 1, 0x0e,     // _VMCTR1 VCOMH = 4V, VOML = -1.1V
     0x20, 0,     // _INVOFF //MISMATCh 0x2a vs 0x20
     0x36, 1, 0x60,     // _MADCTL bottom to top refresh
-    // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
+    // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 cycle osc equalie,
     // fix on VTL
     0x3a, 1, 0x05,     // COLMOD - 16bit color
     0xe0, 0x10, 0x02, 0x1c, 0x07, 0x12,
@@ -70,7 +70,7 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
+    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     busio_spi_obj_t *internal_spi = &supervisor_flash_spi_bus;
     common_hal_displayio_fourwire_construct(bus,
@@ -82,7 +82,7 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_display_obj_t *display = &displays[0].display;
+    displayio_display_obj_t *display = &allocate_display()->display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,
@@ -104,14 +104,14 @@ void board_init(void) {
         sizeof(display_init_sequence),
         &pin_PB03,
         NO_BRIGHTNESS_COMMAND,
-        1.0f, // brightness (ignored)
-        false, // auto_brightness
+        1.0f, // brightness
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
         true, // backlight_on_high
-        false); // SH1107_addressing
+        false, // SH1107_addressing
+        50000); // backlight pwm frequency
 
     board_buzz_obj.base.type = &audiopwmio_pwmaudioout_type;
     common_hal_audiopwmio_pwmaudioout_construct(&board_buzz_obj,
@@ -119,13 +119,4 @@ void board_init(void) {
     never_reset_pin_number(pin_PB08.port, pin_PB08.number);
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-
-}
-
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

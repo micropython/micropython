@@ -1,0 +1,89 @@
+name: Custom board build
+
+on:
+  workflow_dispatch:
+    inputs:
+      board:
+        description: 'Board: Found in ports/*/boards/[board_id]'
+        required: true
+        type: string
+      version:
+        description: 'Version: Can be a tag or a commit (>=8.1.0)'
+        required: false
+        default: latest
+        type: string
+      language:
+        description: 'Language: Found in locale/[language].po'
+        required: false
+        default: en_US
+        type: string
+      flags:
+        description: 'Flags: Build flags (e.g. CIRCUITPY_WIFI=1)'
+        required: false
+        type: string
+      debug:
+        description: 'Make a debug build'
+        required: false
+        default: false
+        type: boolean
+
+run-name: ${{ inputs.board }}-${{ inputs.language }}-${{ inputs.version }}${{ inputs.flags != '' && '-custom' || '' }}${{ inputs.debug && '-debug' || '' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Set up repository
+      run: |
+        git clone --filter=tree:0 https://github.com/adafruit/circuitpython.git $GITHUB_WORKSPACE
+        git checkout ${{ inputs.version == 'latest' && 'HEAD' || inputs.version }}
+    - name: Set up identifier
+      if: inputs.debug || inputs.flags != ''
+      run: |
+        > custom-build && git add custom-build
+    - name: Set up python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+    - name: Set up port
+      id: set-up-port
+      uses: ./.github/actions/deps/ports
+      with:
+        board: ${{ inputs.board }}
+    - name: Set up submodules
+      id: set-up-submodules
+      uses: ./.github/actions/deps/submodules
+      with:
+        action: cache
+        target: ${{ inputs.board }}
+    - name: Set up external
+      uses: ./.github/actions/deps/external
+      with:
+        action: cache
+        port: ${{ steps.set-up-port.outputs.port }}
+    - name: Set up mpy-cross
+      if: steps.set-up-submodules.outputs.frozen == 'True'
+      uses: ./.github/actions/mpy_cross
+      with:
+        download: false
+    - name: Versions
+      run: |
+        tools/describe
+        gcc --version
+        python3 --version
+        cmake --version || true
+        ninja --version || true
+        aarch64-none-elf-gcc --version || true
+        arm-none-eabi-gcc --version || true
+        xtensa-esp32-elf-gcc --version || true
+        riscv32-esp-elf-gcc --version || true
+        riscv64-unknown-elf-gcc --version || true
+        mkfs.fat --version || true
+    - name: Build board
+      run: make -j2 ${{ inputs.flags }} BOARD=${{ inputs.board }} DEBUG=${{ inputs.debug && '1' || '0' }} TRANSLATION=${{ inputs.language }}
+      working-directory: ports/${{ steps.set-up-port.outputs.port }}
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.board }}-${{ inputs.language }}-${{ inputs.version }}${{ inputs.flags != '' && '-custom' || '' }}${{ inputs.debug && '-debug' || '' }}
+        path: ports/${{ steps.set-up-port.outputs.port }}/build-${{ inputs.board }}/firmware.*

@@ -31,6 +31,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/sdioio/SDCard.h"
 #include "shared-bindings/util.h"
 
@@ -42,7 +43,7 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     struct geometry geo;
 
     if (clock->number != PIN_SDIO_CLK || command->number != PIN_SDIO_CMD) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     uint8_t data_pins_num = 0;
@@ -54,11 +55,11 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     }
 
     if (data_pins_num != DATA_PINS_NUM) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     if (open_blockdriver("/dev/mmcsd0", 0, &self->inode) < 0) {
-        mp_raise_ValueError(translate("Could not initialize SDCard"));
+        mp_raise_RuntimeError(translate("SDCard init"));
     }
 
     self->inode->u.i_bops->geometry(self->inode, &geo);

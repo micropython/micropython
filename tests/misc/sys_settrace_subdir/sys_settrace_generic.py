@@ -1,5 +1,6 @@
 print("Now comes the language constructions tests.")
 
+
 # function
 def test_func():
     def test_sub_func():

@@ -31,10 +31,9 @@
 #include "py/runtime0.h"
 #include "shared-bindings/memorymonitor/AllocationAlarm.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class AllocationAlarm:
-//|
 //|     def __init__(self, *, minimum_block_count: int = 1) -> None:
 //|         """Throw an exception when an allocation of ``minimum_block_count`` or more blocks
 //|            occurs while active.
@@ -55,7 +54,6 @@
 //|
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t memorymonitor_allocationalarm_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
     enum { ARG_minimum_block_count };
     static const mp_arg_t allowed_args[] = {
@@ -63,10 +61,10 @@ STATIC mp_obj_t memorymonitor_allocationalarm_make_new(const mp_obj_type_t *type
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    mp_int_t minimum_block_count = args[ARG_minimum_block_count].u_int;
-    if (minimum_block_count < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_minimum_block_count);
-    }
+
+    mp_int_t minimum_block_count =
+        mp_arg_validate_int_min(args[ARG_minimum_block_count].u_int, 1, MP_QSTR_minimum_block_count);
+
 
     memorymonitor_allocationalarm_obj_t *self = m_new_obj(memorymonitor_allocationalarm_obj_t);
     self->base.type = &memorymonitor_allocationalarm_type;
@@ -78,21 +76,19 @@ STATIC mp_obj_t memorymonitor_allocationalarm_make_new(const mp_obj_type_t *type
 
 //|     def ignore(self, count: int) -> AllocationAlarm:
 //|         """Sets the number of applicable allocations to ignore before raising the exception.
-//|            Automatically set back to zero at context exit.
+//|         Automatically set back to zero at context exit.
 //|
-//|            Use it within a ``with`` block::
+//|         Use it within a ``with`` block::
 //|
-//|              # Will not alarm because the bytearray allocation will be ignored.
-//|              with aa.ignore(2):
-//|                  x = bytearray(20)
-//|            """
+//|           # Will not alarm because the bytearray allocation will be ignored.
+//|           with aa.ignore(2):
+//|               x = bytearray(20)
+//|         """
 //|         ...
-//|
 STATIC mp_obj_t memorymonitor_allocationalarm_obj_ignore(mp_obj_t self_in, mp_obj_t count_obj) {
     mp_int_t count = mp_obj_get_int(count_obj);
-    if (count < 0) {
-        mp_raise_ValueError_varg(translate("%q must be >= 0"), MP_QSTR_count);
-    }
+    mp_arg_validate_int_min(count, 0, MP_QSTR_count);
+
     common_hal_memorymonitor_allocationalarm_set_ignore(self_in, count);
     return self_in;
 }
@@ -101,7 +97,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(memorymonitor_allocationalarm_ignore_obj, memorymonito
 //|     def __enter__(self) -> AllocationAlarm:
 //|         """Enables the alarm."""
 //|         ...
-//|
 STATIC mp_obj_t memorymonitor_allocationalarm_obj___enter__(mp_obj_t self_in) {
     common_hal_memorymonitor_allocationalarm_resume(self_in);
     return self_in;

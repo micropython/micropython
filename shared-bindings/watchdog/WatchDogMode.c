@@ -31,9 +31,10 @@
 //|
 //|     def __init__(self) -> None:
 //|         """Enum-like class to define the run mode of the watchdog timer."""
-//|
 //|     RAISE: WatchDogMode
 //|     """Raise an exception when the WatchDogTimer expires.
+//|
+//|     **Limitations:** ``RAISE`` mode is not supported on SAMD or RP2040.
 //|
 //|     :type WatchDogMode:"""
 //|

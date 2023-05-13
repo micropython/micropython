@@ -27,6 +27,10 @@
 #include "py/mpconfig.h"
 #include "supervisor/serial.h"
 
+#if CIRCUITPY_ESP_USB_SERIAL_JTAG && CIRCUITPY_CONSOLE_UART
+#error CIRCUITPY_ESP_USB_SERIAL_JTAG and CIRCUITPY_CONSOLE_UART cannot both be enabled.
+#endif
+
 #if CIRCUITPY_ESP_USB_SERIAL_JTAG
 #include "supervisor/usb_serial_jtag.h"
 #endif
@@ -37,14 +41,13 @@ void port_serial_init(void) {
     #endif
 }
 
+
 bool port_serial_connected(void) {
     #if CIRCUITPY_ESP_USB_SERIAL_JTAG
-    if (usb_serial_jtag_connected()) {
-        return true;
-    }
-    #endif
-
+    return usb_serial_jtag_connected();
+    #else
     return false;
+    #endif
 }
 
 char port_serial_read(void) {
@@ -58,12 +61,10 @@ char port_serial_read(void) {
 
 bool port_serial_bytes_available(void) {
     #if CIRCUITPY_ESP_USB_SERIAL_JTAG
-    if (usb_serial_jtag_bytes_available()) {
-        return true;
-    }
-    #endif
-
+    return usb_serial_jtag_bytes_available();
+    #else
     return false;
+    #endif
 }
 
 void port_serial_write_substring(const char *text, uint32_t length) {

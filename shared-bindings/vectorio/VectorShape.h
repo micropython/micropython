@@ -31,6 +31,9 @@ void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self
 mp_int_t common_hal_vectorio_vector_shape_get_y(vectorio_vector_shape_t *self);
 void common_hal_vectorio_vector_shape_set_y(vectorio_vector_shape_t *self, mp_int_t y);
 
+mp_int_t common_hal_vectorio_vector_shape_get_hidden(vectorio_vector_shape_t *self);
+void common_hal_vectorio_vector_shape_set_hidden(vectorio_vector_shape_t *self, bool hidden);
+
 mp_obj_t common_hal_vectorio_vector_shape_get_pixel_shader(vectorio_vector_shape_t *self);
 void common_hal_vectorio_vector_shape_set_pixel_shader(vectorio_vector_shape_t *self, mp_obj_t pixel_shader);
 
@@ -38,10 +41,11 @@ void vectorio_vector_shape_update_transform(vectorio_vector_shape_t *self, displ
 
 // Composable property definition for shapes that use VectorShape
 extern vectorio_draw_protocol_impl_t vectorio_vector_shape_draw_protocol_impl;
-extern const mp_obj_property_t vectorio_vector_shape_x_obj;
-extern const mp_obj_property_t vectorio_vector_shape_y_obj;
-extern const mp_obj_property_t vectorio_vector_shape_location_obj;
-extern const mp_obj_property_t vectorio_vector_shape_pixel_shader_obj;
+extern const mp_obj_property_getset_t vectorio_vector_shape_x_obj;
+extern const mp_obj_property_getset_t vectorio_vector_shape_y_obj;
+extern const mp_obj_property_getset_t vectorio_vector_shape_hidden_obj;
+extern const mp_obj_property_getset_t vectorio_vector_shape_location_obj;
+extern const mp_obj_property_getset_t vectorio_vector_shape_pixel_shader_obj;
 extern const mp_obj_fun_builtin_fixed_t vectorio_vector_shape_contains_obj;
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_SHAPE_H

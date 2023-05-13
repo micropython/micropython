@@ -38,6 +38,7 @@
 #include "shared-bindings/storage/__init__.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/flash.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/usb.h"
 
 #if CIRCUITPY_USB_MSC
@@ -126,6 +127,7 @@ static bool usb_drive_set_enabled(bool enabled) {
     if (tud_connected()) {
         return false;
     }
+    filesystem_set_internal_writable_by_usb(enabled);
     storage_usb_is_enabled = enabled;
     return true;
 }
@@ -266,11 +268,14 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
     filesystem_set_internal_concurrent_write_protection(!disable_concurrent_write_protection);
 }
 
-void common_hal_storage_erase_filesystem(void) {
+void common_hal_storage_erase_filesystem(bool extended) {
     #if CIRCUITPY_USB
     usb_disconnect();
     #endif
     mp_hal_delay_ms(1000);
+    #if CIRCUITPY_STORAGE_EXTEND
+    supervisor_flash_set_extended(extended);
+    #endif
     (void)filesystem_init(false, true);  // Force a re-format. Ignore failure.
     common_hal_mcu_reset();
     // We won't actually get here, since we're resetting.

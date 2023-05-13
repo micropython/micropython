@@ -27,7 +27,7 @@
 
 #include "py/builtin.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
@@ -41,8 +41,10 @@
 //| """mathematical functions
 //|
 //| The `math` module provides some basic mathematical functions for
-//| working with floating-point numbers."""
+//| working with floating-point numbers.
 //|
+//| |see_cpython_module| :mod:`cpython:math`.
+//| """
 
 STATIC NORETURN void math_error(void) {
     mp_raise_ValueError(translate("math domain error"));
@@ -155,6 +157,11 @@ STATIC NORETURN void math_error(void) {
 //|
 //| def ldexp(x: float, exp: float) -> float:
 //|     """Return ``x * (2**exp)``."""
+//|     ...
+//|
+//| def log(x: float, base: float = e) -> float:
+//|     """Return the logarithm of x to the given base. If base is not specified,
+//|     returns the natural logarithm (base e) of x"""
 //|     ...
 //|
 //| def modf(x: float) -> Tuple[float, float]:
@@ -365,7 +372,7 @@ STATIC mp_obj_t mp_math_log(size_t n_args, const mp_obj_t *args) {
             #pragma GCC diagnostic ignored "-Wfloat-equal"
         } else if (base == (mp_float_t)1.0) {
             #pragma GCC diagnostic pop
-            mp_raise_msg(&mp_type_ZeroDivisionError, translate("division by zero"));
+            math_error();
         }
         return mp_obj_new_float(l / MICROPY_FLOAT_C_FUN(log)(base));
     }

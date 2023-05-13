@@ -26,25 +26,36 @@
 
 #include "shared-bindings/dualbank/__init__.h"
 
-//| """DUALBANK Module
+#if CIRCUITPY_STORAGE_EXTEND
+#include "supervisor/flash.h"
+#endif
+
+//| """Dualbank Module
 //|
-//| The `dualbank` module adds ability to update and switch
-//| between the two app partitions.
+//| The `dualbank` module adds ability to update and switch between the
+//| two identical app partitions, which can contain different firmware versions.
 //|
-//| There are two identical partitions, these contain different
-//| firmware versions.
 //| Having two partitions enables rollback functionality.
 //|
-//| The two partitions are defined as boot partition and
-//| next-update partition. Calling `dualbank.flash()` writes
-//| the next-update partition.
+//| The two partitions are defined as the boot partition and the next-update partition.
+//| Calling `dualbank.flash()` writes the next-update partition.
 //|
-//| After the next-update partition is written a validation
-//| check is performed and on a successful validation this
-//| partition is set as the boot partition. On next reset,
-//| firmware will be loaded from this partition.
+//| After the next-update partition is written a validation check is performed
+//| and on a successful validation this partition is set as the boot partition.
+//| On next reset, firmware will be loaded from this partition.
 //|
-//| Here is the sequence of commands to follow:
+//| Use cases:
+//|     * Can be used for ``OTA`` Over-The-Air updates.
+//|     * Can be used for ``dual-boot`` of different firmware versions or platforms.
+//|
+//| .. note::
+//|
+//|     Boards with flash ``=2MB``:
+//|         This module is unavailable as the flash is only large enough for one app partition.
+//|
+//|     Boards with flash ``>2MB``:
+//|         This module is enabled/disabled at runtime based on whether the ``CIRCUITPY`` drive
+//|         is extended or not. See `storage.erase_filesystem()` for more information.
 //|
 //| .. code-block:: python
 //|
@@ -56,11 +67,21 @@
 //| ...
 //|
 
-//| def flash(*buffer: ReadableBuffer, offset: int=0) -> None:
-//|     """Writes one of two app partitions at the given offset.
+#if CIRCUITPY_STORAGE_EXTEND
+STATIC void raise_error_if_storage_extended(void) {
+    if (supervisor_flash_get_extended()) {
+        mp_raise_msg_varg(&mp_type_RuntimeError, translate("%q is %q"), MP_QSTR_storage, MP_QSTR_extended);
+    }
+}
+#endif
+
+//| def flash(buffer: ReadableBuffer, offset: int = 0) -> None:
+//|     """Writes one of the two app partitions at the given offset.
 //|
-//|     This can be called multiple times when flashing the firmware
-//|     in small chunks.
+//|     This can be called multiple times when flashing the firmware in smaller chunks.
+//|
+//|     :param ReadableBuffer buffer: The entire firmware or a partial chunk.
+//|     :param int offset: Start writing at this offset in the app partition.
 //|     """
 //|     ...
 //|
@@ -70,6 +91,10 @@ STATIC mp_obj_t dualbank_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_offset, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
     };
+
+    #if CIRCUITPY_STORAGE_EXTEND
+    raise_error_if_storage_extended();
+    #endif
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -87,14 +112,16 @@ STATIC mp_obj_t dualbank_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dualbank_flash_obj, 0, dualbank_flash);
 
 //| def switch() -> None:
-//|     """Switches the boot partition.
+//|     """Switches to the next-update partition.
 //|
-//|     On next reset, firmware will be loaded from the partition
-//|     just switched over to.
+//|     On next reset, firmware will be loaded from the partition just switched over to.
 //|     """
 //|     ...
 //|
 STATIC mp_obj_t dualbank_switch(void) {
+    #if CIRCUITPY_STORAGE_EXTEND
+    raise_error_if_storage_extended();
+    #endif
     common_hal_dualbank_switch();
     return mp_const_none;
 }

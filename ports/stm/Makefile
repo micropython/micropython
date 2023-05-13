@@ -23,37 +23,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Select the board to build for.
-ifeq ($(BOARD),)
-$(error You must provide a BOARD parameter)
-else
-ifeq ($(wildcard boards/$(BOARD)/.),)
-$(error Invalid BOARD specified)
-endif
-endif
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
-include ../../py/mkenv.mk
-# Board-specific
-include boards/$(BOARD)/mpconfigboard.mk
-# Port-specific
-include mpconfigport.mk
-
-# CircuitPython-specific
-include $(TOP)/py/circuitpy_mpconfig.mk
-
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-
-# include py core make definitions
-include $(TOP)/py/py.mk
-
-include $(TOP)/supervisor/supervisor.mk
-
-# Include make rules and variables common across CircuitPython builds.
-include $(TOP)/py/circuitpy_defns.mk
+include ../../py/circuitpy_mkenv.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -88,8 +58,6 @@ else
 	CFLAGS += -DNDEBUG
 	OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
 	CFLAGS += -ggdb3
-	# TODO: Test with -flto
-	# CFLAGS += -flto
 endif
 
 # to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
@@ -223,7 +191,6 @@ SRC_STM32 += boards/system_stm32$(MCU_SERIES_LOWER)xx.c
 
 SRC_C += \
 	background.c \
-	fatfs_port.c \
 	mphalport.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
@@ -236,8 +203,19 @@ SRC_C += \
 	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/periph.c \
 	packages/$(MCU_PACKAGE).c
 
+ifneq ($(CIRCUITPY_AUDIOBUSIO_PDMIN),0)
+	SRC_C += \
+		common-hal/audiobusio/MEMS_Audio.c \
+		common-hal/audiobusio/MEMS_Audio_ll_stm32l4.c \
+		common-hal/audiobusio/OpenPDMFilter.c
+
+	SRC_STM32 += \
+		$(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_hal_sai.c
+
+endif
+
 ifneq ($(CIRCUITPY_USB),0)
-SRC_C += lib/tinyusb/src/portable/st/synopsys/dcd_synopsys.c
+SRC_C += lib/tinyusb/src/portable/synopsys/dwc2/dcd_dwc2.c
 endif
 
 SRC_S = \
@@ -290,7 +268,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $^ > $(BUILD)/firmware.objs
 	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
-	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(LD_FILE)
+	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(LD_FILE) $(BUILD)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
@@ -302,11 +280,11 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"
-	$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -f 0x57755a57 -b $(BOOTLOADER_OFFSET) -c -o "$(BUILD)/firmware.uf2" $^
+	$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -f $(UF2_FAMILY_ID) -b $(BOOTLOADER_OFFSET) -c -o "$(BUILD)/firmware.uf2" $^
 
 flash: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"
-	dfu-util -a 0 --dfuse-address 0x08000000 -D $(BUILD)/firmware.bin
+	dfu-util -a 0 --dfuse-address $(BOOTLOADER_OFFSET) -D $(BUILD)/firmware.bin
 
 include $(TOP)/py/mkrules.mk
 

@@ -30,15 +30,21 @@
 void mp_stack_ctrl_init(void) {
     // Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
     __asm volatile ("");
+    #pragma GCC diagnostic push
+    #if __GNUC__ > 12
+    // Introduced in GCC 13
+    #pragma GCC diagnostic ignored "-Wdangling-pointer"
+    #endif
     volatile int stack_dummy;
     MP_STATE_THREAD(stack_top) = (char *)&stack_dummy;
+    #pragma GCC diagnostic pop
 }
 
 void mp_stack_set_top(void *top) {
     MP_STATE_THREAD(stack_top) = top;
 }
 
-mp_uint_t mp_stack_usage(void) {
+mp_uint_t PLACE_IN_ITCM(mp_stack_usage)(void) {
     // Assumes descending stack
     // Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
     __asm volatile ("");
@@ -52,7 +58,7 @@ void mp_stack_set_limit(mp_uint_t limit) {
     MP_STATE_THREAD(stack_limit) = limit;
 }
 
-void mp_stack_check(void) {
+void PLACE_IN_ITCM(mp_stack_check)(void) {
     if (mp_stack_usage() >= MP_STATE_THREAD(stack_limit)) {
         mp_raise_recursion_depth();
     }

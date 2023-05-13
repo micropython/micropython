@@ -35,6 +35,7 @@
 #include "py/runtime.h"
 
 #include "supervisor/linker.h"
+#include "supervisor/shared/translate/translate.h"
 
 // NOTE: we are using linear arrays to store and search for qstr's (unique strings, interned strings)
 // ultimately we will replace this with a static hash table of some kind
@@ -136,7 +137,7 @@ void qstr_init(void) {
     #endif
 }
 
-STATIC const char *find_qstr(qstr q, qstr_attr_t *attr) {
+STATIC const char *PLACE_IN_ITCM(find_qstr)(qstr q, qstr_attr_t *attr) {
     // search pool for this qstr
     // total_prev_len==0 in the final pool, so the loop will always terminate
     const qstr_pool_t *pool = MP_STATE_VM(last_pool);

@@ -33,7 +33,7 @@
 #include "py/objint.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
@@ -244,7 +244,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 if (mpz_is_zero(zrhs)) {
                 zero_division_error:
-                    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("divide by zero"));
+                    mp_raise_ZeroDivisionError();
                 }
                 mpz_t rem;
                 mpz_init_zero(&rem);

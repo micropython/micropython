@@ -29,7 +29,7 @@
 #include "py/objtype.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 typedef struct _mp_obj_object_t {
     mp_obj_base_t base;

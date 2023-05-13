@@ -32,6 +32,9 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/board.h"
+#include "badger-shared.h"
+
+digitalio_digitalinout_obj_t enable_pin_obj;
 
 #define DELAY 0x80
 
@@ -257,12 +260,26 @@ const uint8_t display_stop_sequence[] = {
     POF, 0x00  // Power off
 };
 
+const uint8_t refresh_sequence[] = {
+    DRF, 0x00
+};
+
 void board_init(void) {
-    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
+    // Drive the EN_3V3 pin high so the board stays awake on battery power
+    enable_pin_obj.base.type = &digitalio_digitalinout_type;
+    common_hal_digitalio_digitalinout_construct(&enable_pin_obj, &pin_GPIO10);
+    common_hal_digitalio_digitalinout_switch_to_output(&enable_pin_obj, true, DRIVE_MODE_PUSH_PULL);
+
+    // Never reset
+    common_hal_digitalio_digitalinout_never_reset(&enable_pin_obj);
+
+    // Set up the SPI object used to control the display
+    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO18, &pin_GPIO19, &pin_GPIO16, false);
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
+    // Set up the DisplayIO pin object
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
@@ -273,12 +290,14 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_epaperdisplay_obj_t *display = &displays[0].epaper_display;
+    // Set up the DisplayIO epaper object
+    displayio_epaperdisplay_obj_t *display = &allocate_display()->epaper_display;
     display->base.type = &displayio_epaperdisplay_type;
     common_hal_displayio_epaperdisplay_construct(
         display,
         bus,
         display_start_sequence, sizeof(display_start_sequence),
+        0, // start up time
         display_stop_sequence, sizeof(display_stop_sequence),
         296,  // width
         128,  // height
@@ -296,31 +315,26 @@ void board_init(void) {
         DTM1,  // write_color_ram_command
         false,  // color_bits_inverted
         0x000000,  // highlight_color
-        DRF,  // refresh_display_command
+        refresh_sequence, sizeof(refresh_sequence),  // refresh_display_command
         1.0,  // refresh_time
         &pin_GPIO26,  // busy_pin
         false,  // busy_state
         2.0, // seconds_per_frame
         false,  // always_toggle_chip_select
         false, // grayscale
-        false);  // two_byte_sequence_length
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
+        false, // acep
+        false,  // two_byte_sequence_length
+        false); // address_little_endian
 }
 
 void board_deinit(void) {
     displayio_epaperdisplay_obj_t *display = &displays[0].epaper_display;
     if (display->base.type == &displayio_epaperdisplay_type) {
-        size_t i = 0;
         while (common_hal_displayio_epaperdisplay_get_busy(display)) {
             RUN_BACKGROUND_TASKS;
-            i++;
         }
     }
     common_hal_displayio_release_displays();
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

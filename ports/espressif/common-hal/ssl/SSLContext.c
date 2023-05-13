@@ -48,6 +48,7 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     sock->base.type = &ssl_sslsocket_type;
     sock->ssl_context = self;
     sock->sock = socket;
+    socket->ssl_socket = sock;
 
     // Create a copy of the ESP-TLS config object and store the server hostname
     // Note that ESP-TLS will use common_name for both SNI and verification
@@ -86,4 +87,11 @@ bool common_hal_ssl_sslcontext_get_check_hostname(ssl_sslcontext_obj_t *self) {
 
 void common_hal_ssl_sslcontext_set_check_hostname(ssl_sslcontext_obj_t *self, bool value) {
     self->ssl_config.skip_common_name = !value;
+}
+
+void common_hal_ssl_sslcontext_load_cert_chain(ssl_sslcontext_obj_t *self, mp_buffer_info_t *cert_buf, mp_buffer_info_t *key_buf) {
+    self->ssl_config.clientcert_buf = cert_buf->buf;
+    self->ssl_config.clientcert_bytes = cert_buf->len + 1;
+    self->ssl_config.clientkey_buf = key_buf->buf;
+    self->ssl_config.clientkey_bytes = key_buf->len + 1;
 }

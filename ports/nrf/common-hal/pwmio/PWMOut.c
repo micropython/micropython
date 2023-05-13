@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "nrf_gpio.h"
 
@@ -67,23 +67,9 @@ STATIC int pwm_idx(NRF_PWM_Type *pwm) {
 }
 
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(pwms); i++) {
-        NRF_PWM_Type *pwm = pwms[i];
-        if (pwm == self->pwm) {
-            never_reset_pwm[i] += 1;
-        }
-    }
+    never_reset_pwm[pwm_idx(self->pwm)] |= 1 << self->channel;
 
     common_hal_never_reset_pin(self->pin);
-}
-
-void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(pwms); i++) {
-        NRF_PWM_Type *pwm = pwms[i];
-        if (pwm == self->pwm) {
-            never_reset_pwm[i] -= 1;
-        }
-    }
 }
 
 STATIC void reset_single_pwmout(uint8_t i) {
@@ -108,12 +94,19 @@ STATIC void reset_single_pwmout(uint8_t i) {
 
     for (int ch = 0; ch < CHANNELS_PER_PWM; ch++) {
         pwm_seq[i][ch] = (1 << 15); // polarity = 0
+        pwm->PSEL.OUT[ch] = 0xFFFFFFFF; // disconnect from I/O
     }
 }
 
 void pwmout_reset(void) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(pwms); i++) {
-        if (never_reset_pwm[i] > 0) {
+        for (size_t c = 0; c < CHANNELS_PER_PWM; c++) {
+            if ((never_reset_pwm[i] & (1 << c)) != 0) {
+                continue;
+            }
+            pwms[i]->PSEL.OUT[c] = 0xFFFFFFFF;
+        }
+        if (never_reset_pwm[i] != 0) {
             continue;
         }
         reset_single_pwmout(i);
@@ -269,6 +262,8 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
 
     nrf_gpio_cfg_default(self->pin->number);
 
+    never_reset_pwm[pwm_idx(self->pwm)] &= ~(1 << self->channel);
+
     NRF_PWM_Type *pwm = self->pwm;
     self->pwm = NULL;
 
@@ -296,7 +291,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t fr
     uint16_t countertop;
     nrf_pwm_clk_t base_clock;
     if (frequency == 0 || !convert_frequency(frequency, &countertop, &base_clock)) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     self->frequency = frequency;
 

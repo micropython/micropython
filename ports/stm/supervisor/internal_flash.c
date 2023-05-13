@@ -29,12 +29,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "extmod/vfs.h"
-#include "extmod/vfs_fat.h"
-#include "py/mphal.h"
 #include "py/obj.h"
-#include "py/runtime.h"
-#include "lib/oofatfs/ff.h"
 #include "supervisor/flash.h"
 #include "supervisor/shared/safe_mode.h"
 
@@ -95,12 +90,8 @@ STATIC const flash_layout_t flash_layout[] = {
 STATIC uint8_t _flash_cache[0x20000] __attribute__((aligned(4)));
 
 #elif defined(STM32L4)
-// todo - the L4 devices can have different flash sizes and different page sizes
-// depending upon the dual bank configuration
-// This is hardcoded for the Swan R5. When support for other devices is needed more conditionals will be required
-// to differentiate.
 STATIC const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x1000, 256 },
+    { 0x08100000, 0x1000, 256 },
 };
 STATIC uint8_t _flash_cache[0x1000] __attribute__((aligned(4)));
 
@@ -174,6 +165,9 @@ uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *si
 }
 
 void supervisor_flash_init(void) {
+    #ifdef STM32L4
+    // todo - check that the device is in dual bank mode
+    #endif
 }
 
 uint32_t supervisor_flash_get_block_size(void) {
@@ -202,7 +196,7 @@ void port_internal_flash_flush(void) {
     FLASH_EraseInitTypeDef EraseInitStruct = {};
     #if CPY_STM32L4
     EraseInitStruct.TypeErase = TYPEERASE_PAGES;
-    EraseInitStruct.Banks = FLASH_BANK_1;
+    EraseInitStruct.Banks = FLASH_BANK_2;       // filesystem stored in upper 1MB of flash in dual bank mode
     #else
     EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
     EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
@@ -221,7 +215,7 @@ void port_internal_flash_flush(void) {
     EraseInitStruct.NbSectors = 1;
     #endif
     if (sector_size > sizeof(_flash_cache) || sector_start_addr == 0xffffffff) {
-        reset_into_safe_mode(FLASH_WRITE_FAIL);
+        reset_into_safe_mode(SAFE_MODE_FLASH_WRITE_FAIL);
     }
 
     // Skip if data is the same
@@ -234,7 +228,7 @@ void port_internal_flash_flush(void) {
         if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
             // error occurred during sector erase
             HAL_FLASH_Lock(); // lock the flash
-            reset_into_safe_mode(FLASH_WRITE_FAIL);
+            reset_into_safe_mode(SAFE_MODE_FLASH_WRITE_FAIL);
         }
 
         uint32_t *cache_addr = (uint32_t *)_flash_cache;
@@ -246,7 +240,7 @@ void port_internal_flash_flush(void) {
                 (uint32_t)cache_addr) != HAL_OK) {
                 // error occurred during flash write
                 HAL_FLASH_Lock(); // lock the flash
-                reset_into_safe_mode(FLASH_WRITE_FAIL);
+                reset_into_safe_mode(SAFE_MODE_FLASH_WRITE_FAIL);
             }
             // RAM memory is by word (4 byte), but flash memory is by byte
             cache_addr += 8;
@@ -259,7 +253,7 @@ void port_internal_flash_flush(void) {
                 *(uint64_t *)cache_addr) != HAL_OK) {
                 // error occurred during flash write
                 HAL_FLASH_Lock(); // lock the flash
-                reset_into_safe_mode(FLASH_WRITE_FAIL);
+                reset_into_safe_mode(SAFE_MODE_FLASH_WRITE_FAIL);
             }
             // RAM memory is by word (4 byte), but flash memory is by byte
             cache_addr += 2;
@@ -273,7 +267,7 @@ void port_internal_flash_flush(void) {
                 (uint64_t)*cache_addr) != HAL_OK) {
                 // error occurred during flash write
                 HAL_FLASH_Lock(); // lock the flash
-                reset_into_safe_mode(FLASH_WRITE_FAIL);
+                reset_into_safe_mode(SAFE_MODE_FLASH_WRITE_FAIL);
             }
             // RAM memory is by word (4 byte), but flash memory is by byte
             cache_addr += 1;
@@ -341,7 +335,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
 
         // Fail for any sector outside what's supported by the cache
         if (sector_size > sizeof(_flash_cache)) {
-            reset_into_safe_mode(FLASH_WRITE_FAIL);
+            reset_into_safe_mode(SAFE_MODE_FLASH_WRITE_FAIL);
         }
 
         // Find how many blocks are left in the sector

@@ -35,21 +35,20 @@
 //|
 //|     def __init__(self, dp: microcontroller.Pin, dm: microcontroller.Pin) -> None:
 //|         """Create a USB host port on the given pins. Access attached devices
-//|            through the `usb` module. Keep this object referenced while
-//|            interacting with devices, otherwise they will be disconnected.
+//|         through the `usb` module. Keep this object referenced while
+//|         interacting with devices, otherwise they will be disconnected.
 //|
-//|            :param ~microcontroller.Pin dp: The data plus pin
-//|            :param ~microcontroller.Pin dm: The data minus pin
+//|         :param ~microcontroller.Pin dp: The data plus pin
+//|         :param ~microcontroller.Pin dm: The data minus pin
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t usb_host_port_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
 
-    const mcu_pin_obj_t *dp = validate_obj_is_free_pin(args[0]);
-    const mcu_pin_obj_t *dm = validate_obj_is_free_pin(args[1]);
+    const mcu_pin_obj_t *dp = validate_obj_is_free_pin(args[0], MP_QSTR_dp);
+    const mcu_pin_obj_t *dm = validate_obj_is_free_pin(args[1], MP_QSTR_dm);
 
     usb_host_port_obj_t *self = m_new_obj(usb_host_port_obj_t);
     self->base.type = &usb_host_port_type;
@@ -61,7 +60,6 @@ STATIC mp_obj_t usb_host_port_make_new(const mp_obj_type_t *type,
 //|     def deinit(self) -> None:
 //|         """Turn off the USB host port and release the pins for other use."""
 //|         ...
-//|
 STATIC mp_obj_t usb_host_port_obj_deinit(mp_obj_t self_in) {
     usb_host_port_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_usb_host_port_deinit(self);
@@ -72,7 +70,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_host_port_deinit_obj, usb_host_port_obj_deinit);
 //|     def __enter__(self) -> Port:
 //|         """No-op used by Context Managers."""
 //|         ...
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:

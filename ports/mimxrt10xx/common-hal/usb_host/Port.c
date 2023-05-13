@@ -24,9 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/usb_host/Port.h"
-
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/usb_host/Port.h"
 
 #include "py/runtime.h"
 
@@ -43,7 +42,7 @@ void common_hal_usb_host_port_construct(usb_host_port_obj_t *self, const mcu_pin
         supported_dm = &pin_USB_OTG2_DN;
     }
     if (dp != supported_dp || dm != supported_dm) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
     self->init = true;
     usb_host_init = true;

@@ -42,9 +42,8 @@
 //|     def __init__(self, address: Union[int, str, bytes]) -> None:
 //|         """Create a new IPv4Address object encapsulating the address value.
 //|
-//|            The value itself can either be bytes or a string formatted address."""
+//|         The value itself can either be bytes or a string formatted address."""
 //|         ...
-//|
 STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_address };
     static const mp_arg_t allowed_args[] = {
@@ -88,7 +87,6 @@ STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t
 
 //|     packed: bytes
 //|     """The bytes that make up the address (read-only)."""
-//|
 STATIC mp_obj_t ipaddress_ipv4address_get_packed(mp_obj_t self_in) {
     ipaddress_ipv4address_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -96,16 +94,11 @@ STATIC mp_obj_t ipaddress_ipv4address_get_packed(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ipaddress_ipv4address_get_packed_obj, ipaddress_ipv4address_get_packed);
 
-const mp_obj_property_t ipaddress_ipv4address_packed_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&ipaddress_ipv4address_get_packed_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(ipaddress_ipv4address_packed_obj,
+    (mp_obj_t)&ipaddress_ipv4address_get_packed_obj);
 
 //|     version: int
 //|     """4 for IPv4, 6 for IPv6"""
-//|
 STATIC mp_obj_t ipaddress_ipv4address_get_version(mp_obj_t self_in) {
     ipaddress_ipv4address_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t buf_info;
@@ -120,17 +113,12 @@ STATIC mp_obj_t ipaddress_ipv4address_get_version(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ipaddress_ipv4address_get_version_obj, ipaddress_ipv4address_get_version);
 
-const mp_obj_property_t ipaddress_ipv4address_version_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&ipaddress_ipv4address_get_version_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(ipaddress_ipv4address_version_obj,
+    (mp_obj_t)&ipaddress_ipv4address_get_version_obj);
 
 //|     def __eq__(self, other: object) -> bool:
 //|         """Two Address objects are equal if their addresses and address types are equal."""
 //|         ...
-//|
 STATIC mp_obj_t ipaddress_ipv4address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         // Two Addresses are equal if their address bytes and address_type are equal

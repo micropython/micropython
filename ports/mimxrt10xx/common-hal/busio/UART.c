@@ -38,14 +38,29 @@
 #include "py/stream.h"
 #include "periph.h"
 
-#include "fsl_lpuart.h"
+#include "sdk/drivers/lpuart/fsl_lpuart.h"
+#include "sdk/drivers/igpio/fsl_gpio.h"
+// ==========================================================
+// Debug code
+// ==========================================================
+#define ENABLE_DEBUG_PRINTING 0
+#if ENABLE_DEBUG_PRINTING
+#define DBGPrintf mp_printf
+#else
+#define DBGPrintf(p,...)
+#endif
+
 
 // arrays use 0 based numbering: UART1 is stored at index 0
-#define MAX_UART 8
-STATIC bool reserved_uart[MAX_UART];
-STATIC bool never_reset_uart[MAX_UART];
+STATIC bool reserved_uart[MP_ARRAY_SIZE(mcu_uart_banks)];
+STATIC bool never_reset_uart[MP_ARRAY_SIZE(mcu_uart_banks)];
 
+#if IMXRT11XX
+#define UART_CLOCK_FREQ (24000000)
+#else
 #define UART_CLOCK_FREQ (CLOCK_GetPllFreq(kCLOCK_PllUsb1) / 6U) / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U)
+#endif
+
 
 static void config_periph_pin(const mcu_periph_obj_t *periph) {
     IOMUXC_SetPinMux(
@@ -56,12 +71,14 @@ static void config_periph_pin(const mcu_periph_obj_t *periph) {
 
     IOMUXC_SetPinConfig(0, 0, 0, 0,
         periph->pin->cfg_reg,
-        IOMUXC_SW_PAD_CTL_PAD_HYS(0)
-        | IOMUXC_SW_PAD_CTL_PAD_PUS(1)
-        | IOMUXC_SW_PAD_CTL_PAD_PUE(1)
+        IOMUXC_SW_PAD_CTL_PAD_PUS(1)
+        #if IMXRT10XX
+        | IOMUXC_SW_PAD_CTL_PAD_HYS(0)
         | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-        | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
         | IOMUXC_SW_PAD_CTL_PAD_SPEED(1)
+        #endif
+        | IOMUXC_SW_PAD_CTL_PAD_PUE(1)
+        | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
         | IOMUXC_SW_PAD_CTL_PAD_DSE(6)
         | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
@@ -90,6 +107,7 @@ void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
     common_hal_never_reset_pin(self->rx);
     common_hal_never_reset_pin(self->rts);
     common_hal_never_reset_pin(self->cts);
+    common_hal_never_reset_pin(self->rs485_dir);
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
@@ -101,16 +119,16 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     bool sigint_enabled) {
 
     self->baudrate = baudrate;
-    self->character_bits = bits;
+    self->character_bits = (uint8_t)mp_arg_validate_int_range(bits, 7, 8, MP_QSTR_bits);
     self->timeout_ms = timeout * 1000;
 
-    if (self->character_bits != 7 && self->character_bits != 8) {
-        mp_raise_ValueError(translate("Invalid word/bit length"));
-    }
+
+    DBGPrintf(&mp_plat_print, "uart_construct: tx:%p rx:%p rts:%p cts:%p rs485:%p\n", tx, rx, rts, cts, rs485_dir);
 
     // We are transmitting one direction if one pin is NULL and the other isn't.
     bool is_onedirection = (rx == NULL) != (tx == NULL);
     bool uart_taken = false;
+    bool use_rts_for_rs485 = false;
 
     const uint32_t rx_count = MP_ARRAY_SIZE(mcu_uart_rx_list);
     const uint32_t tx_count = MP_ARRAY_SIZE(mcu_uart_tx_list);
@@ -167,14 +185,15 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             break;
         }
     } else {
-        mp_raise_ValueError(translate("Supply at least one UART pin"));
+        // TX and RX are both None. But this is already handled in shared-bindings, so
+        // we won't get here.
     }
 
     if (rx && !rx_config) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RX);
+        raise_ValueError_invalid_pin_name(MP_QSTR_rx);
     }
     if (tx && !tx_config) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_TX);
+        raise_ValueError_invalid_pin_name(MP_QSTR_tx);
     }
 
     if (uart_taken) {
@@ -187,11 +206,14 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     // Filter for sane settings for RS485
     if (rs485_dir != NULL) {
+        DBGPrintf(&mp_plat_print, "\t(485 pin): gpio:%p #:%x Mux: %x %x cfg:%x reset:%x %x\n",
+            rs485_dir->gpio, rs485_dir->number, rs485_dir->mux_idx, rs485_dir->mux_reg, rs485_dir->cfg_reg,
+            rs485_dir->mux_reset, rs485_dir->pad_reset);
         if ((rts != NULL) || (cts != NULL)) {
             mp_raise_ValueError(translate("Cannot specify RTS or CTS in RS485 mode"));
         }
-        // For IMXRT the RTS pin is used for RS485 direction
-        rts = rs485_dir;
+        // For IMXRT the RTS pin is used for RS485 direction ???? - Can be will try
+        // it if this is an rts pin.
     } else {
         if (rs485_invert) {
             mp_raise_ValueError(translate("RS485 inversion specified when not in RS485 mode"));
@@ -202,17 +224,23 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const uint32_t rts_count = MP_ARRAY_SIZE(mcu_uart_rts_list);
     const uint32_t cts_count = MP_ARRAY_SIZE(mcu_uart_cts_list);
 
-    if (rts != NULL) {
+    if ((rts != NULL) || (rs485_dir != NULL)) {
         for (uint32_t i = 0; i < rts_count; ++i) {
             if (mcu_uart_rts_list[i].bank_idx == rx_config->bank_idx) {
                 if (mcu_uart_rts_list[i].pin == rts) {
                     rts_config = &mcu_uart_rts_list[i];
                     break;
+                } else if (mcu_uart_rts_list[i].pin == rs485_dir) {
+                    rts_config = &mcu_uart_rts_list[i];
+                    use_rts_for_rs485 = true;
+                    rts = rs485_dir;
+                    rs485_dir = NULL;
+                    break;
                 }
             }
         }
-        if (rts_config == NULL) {
-            mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RTS);
+        if ((rts != NULL) && (rts_config == NULL)) {
+            raise_ValueError_invalid_pin_name(MP_QSTR_rts);
         }
     }
 
@@ -225,8 +253,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 }
             }
         }
-        if (cts == NULL) {
-            mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_CTS);
+        if (cts_config == NULL) {
+            raise_ValueError_invalid_pin_name(MP_QSTR_cts);
         }
     }
 
@@ -257,7 +285,34 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         config_periph_pin(cts_config);
         self->cts = cts;
     }
+    if (rs485_dir) {
+        DBGPrintf(&mp_plat_print, "\tInit rs485 pin\n");
+        // lets configure this pin as standard GPIO output pin.
+        claim_pin(rs485_dir);
 
+        #define IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_ALT5 5U
+        IOMUXC_SetPinMux(rs485_dir->mux_reg, IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_ALT5, 0, 0, 0, 0);
+        DBGPrintf(&mp_plat_print, "\tAfter IOMUXC_SetPinMux\n");
+        IOMUXC_SetPinConfig(0, 0, 0, 0, rs485_dir->cfg_reg,
+            IOMUXC_SW_PAD_CTL_PAD_PUS(0)
+            #if IMXRT10XX
+            | IOMUXC_SW_PAD_CTL_PAD_HYS(1)
+            | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
+            | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
+            #endif
+            | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
+            | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
+            | IOMUXC_SW_PAD_CTL_PAD_DSE(1)
+            | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
+        DBGPrintf(&mp_plat_print, "\tAfter IOMUXC_SetPinConfig\n");
+
+        const gpio_pin_config_t config = { kGPIO_DigitalOutput, rs485_invert, kGPIO_NoIntmode };
+        GPIO_PinInit(rs485_dir->gpio, rs485_dir->number, &config);
+        DBGPrintf(&mp_plat_print, "\tAfter GPIO_PinInit\n");
+        self->rs485_dir = rs485_dir;
+        self->rs485_invert = rs485_invert;
+
+    }
     lpuart_config_t config = { 0 };
     LPUART_GetDefaultConfig(&config);
 
@@ -279,7 +334,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // Before we init, setup RS485 direction pin
     // ..unfortunately this isn't done by the driver library
     uint32_t modir = (self->uart->MODIR) & ~(LPUART_MODIR_TXRTSPOL_MASK | LPUART_MODIR_TXRTSE_MASK);
-    if (rs485_dir != NULL) {
+    if (use_rts_for_rs485) {
         modir |= LPUART_MODIR_TXRTSE_MASK;
         if (rs485_invert) {
             modir |= LPUART_MODIR_TXRTSPOL_MASK;
@@ -301,7 +356,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
         if (!self->ringbuf) {
             LPUART_Deinit(self->uart);
-            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
+            m_malloc_fail(receiver_buffer_size);
         }
 
         LPUART_TransferCreateHandle(self->uart, &self->handle, LPUART_UserCallback, self);
@@ -311,6 +366,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
         claim_pin(self->rx);
     }
+    DBGPrintf(&mp_plat_print, "\t<< Init completed >>\n");
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -330,9 +386,16 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 
     common_hal_reset_pin(self->rx);
     common_hal_reset_pin(self->tx);
+    common_hal_reset_pin(self->cts);
+    common_hal_reset_pin(self->rts);
+    common_hal_reset_pin(self->rs485_dir);
 
     self->rx = NULL;
     self->tx = NULL;
+    self->cts = NULL;
+    self->rts = NULL;
+    self->rs485_dir = NULL;
+
 }
 
 // Read characters.
@@ -371,6 +434,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         uint32_t recvd = 0;
         LPUART_TransferGetReceiveCount(self->uart, &self->handle, &recvd);
         LPUART_TransferAbortReceive(self->uart, &self->handle);
+        if (recvd == 0) {
+            *errcode = EAGAIN;
+            return MP_STREAM_ERROR;
+        }
         return recvd;
     }
 
@@ -393,8 +460,21 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     if (self->tx == NULL) {
         mp_raise_ValueError(translate("No TX pin"));
     }
-
-    LPUART_WriteBlocking(self->uart, data, len);
+    if (self->rs485_dir && len) {
+        GPIO_PinWrite(self->rs485_dir->gpio, self->rs485_dir->number, !self->rs485_invert);
+        LPUART_WriteBlocking(self->uart, data, len);
+        // Probably need to verify we have completed output.
+        uint32_t dont_hang_count = 0xffff;
+        while (dont_hang_count--) {
+            if (LPUART_GetStatusFlags(self->uart) & kLPUART_TransmissionCompleteFlag) {
+                break; // hardware says it completed.
+            }
+        }
+        GPIO_PinWrite(self->rs485_dir->gpio, self->rs485_dir->number, self->rs485_invert);
+    } else {
+        // could combine with above but would go through two ifs
+        LPUART_WriteBlocking(self->uart, data, len);
+    }
 
     return len;
 }

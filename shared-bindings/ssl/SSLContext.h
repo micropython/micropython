@@ -46,5 +46,6 @@ void common_hal_ssl_sslcontext_set_default_verify_paths(ssl_sslcontext_obj_t *se
 
 bool common_hal_ssl_sslcontext_get_check_hostname(ssl_sslcontext_obj_t *self);
 void common_hal_ssl_sslcontext_set_check_hostname(ssl_sslcontext_obj_t *self, bool value);
+void common_hal_ssl_sslcontext_load_cert_chain(ssl_sslcontext_obj_t *self, mp_buffer_info_t *cert_buf, mp_buffer_info_t *key_buf);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H

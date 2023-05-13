@@ -1,0 +1,63 @@
+name: Fetch external deps
+
+inputs:
+  action:
+    required: false
+    default: restore
+    type: choice
+    options:
+    - cache
+    - restore
+
+  port:
+    required: false
+    default: none
+    type: string
+
+runs:
+  using: composite
+  steps:
+    # arm
+    - name: Get arm toolchain
+      if: >-
+        inputs.port != 'none' &&
+        inputs.port != 'litex' &&
+        inputs.port != 'espressif'
+      uses: carlosperate/arm-none-eabi-gcc-action@v1
+      with:
+        release: '10-2020-q4'
+
+    # espressif
+    - name: Get espressif toolchain
+      if: inputs.port == 'espressif'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build
+      shell: bash
+    - name: Install IDF tools
+      if: inputs.port == 'espressif'
+      run: |
+        echo "Installing ESP-IDF tools"
+        $IDF_PATH/tools/idf_tools.py --non-interactive install required
+        $IDF_PATH/tools/idf_tools.py --non-interactive install cmake
+        echo "Installing Python environment and packages"
+        $IDF_PATH/tools/idf_tools.py --non-interactive install-python-env
+        rm -rf $IDF_TOOLS_PATH/dist
+      shell: bash
+    - name: Set environment
+      if: inputs.port == 'espressif'
+      run: |
+        source $IDF_PATH/export.sh
+        echo >> $GITHUB_ENV "IDF_PYTHON_ENV_PATH=$IDF_PYTHON_ENV_PATH"
+        echo >> $GITHUB_PATH "$PATH"
+      shell: bash
+
+    # common
+    - name: Cache python dependencies
+      if: inputs.port != 'espressif'
+      uses: ./.github/actions/deps/python
+      with:
+        action: ${{ inputs.action }}
+    - name: Install python dependencies
+      run: pip install -r requirements-dev.txt
+      shell: bash

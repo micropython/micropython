@@ -2,7 +2,7 @@
 categories: Core
 description: f-strings don't support the !r, !s, and !a conversions
 cause: MicroPython is optimised for code space.
-workaround: Use repr(), str(), and ascii() explictly.
+workaround: Use repr(), str(), and ascii() explicitly.
 """
 
 

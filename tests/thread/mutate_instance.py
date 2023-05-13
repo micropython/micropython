@@ -6,6 +6,7 @@
 
 import _thread
 
+
 # the shared user class and instance
 class User:
     def __init__(self):
@@ -15,6 +16,7 @@ class User:
 
 
 user = User()
+
 
 # main thread function
 def th(n, lo, hi):

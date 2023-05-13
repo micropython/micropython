@@ -68,9 +68,6 @@ static supervisor_allocation *device_descriptor_allocation;
 static supervisor_allocation *configuration_descriptor_allocation;
 static supervisor_allocation *string_descriptors_allocation;
 
-static const char manufacturer_name[] = USB_MANUFACTURER;
-static const char product_name[] = USB_PRODUCT;
-
 // Serial number string is UID length * 2 (2 nibbles per byte) + 1 byte for null termination.
 static char serial_number_hex_string[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH * 2 + 1];
 
@@ -113,23 +110,23 @@ static const uint8_t configuration_descriptor_template[] = {
     0x32,        // 8 bMaxPower 100mA
 };
 
-static void usb_build_device_descriptor(uint16_t vid, uint16_t pid) {
+static void usb_build_device_descriptor(const usb_identification_t *identification) {
     device_descriptor_allocation =
         allocate_memory(align32_size(sizeof(device_descriptor_template)),
             /*high_address*/ false, /*movable*/ false);
     uint8_t *device_descriptor = (uint8_t *)device_descriptor_allocation->ptr;
     memcpy(device_descriptor, device_descriptor_template, sizeof(device_descriptor_template));
 
-    device_descriptor[DEVICE_VID_LO_INDEX] = vid & 0xFF;
-    device_descriptor[DEVICE_VID_HI_INDEX] = vid >> 8;
-    device_descriptor[DEVICE_PID_LO_INDEX] = pid & 0xFF;
-    device_descriptor[DEVICE_PID_HI_INDEX] = pid >> 8;
+    device_descriptor[DEVICE_VID_LO_INDEX] = identification->vid & 0xFF;
+    device_descriptor[DEVICE_VID_HI_INDEX] = identification->vid >> 8;
+    device_descriptor[DEVICE_PID_LO_INDEX] = identification->pid & 0xFF;
+    device_descriptor[DEVICE_PID_HI_INDEX] = identification->pid >> 8;
 
-    usb_add_interface_string(current_interface_string, manufacturer_name);
+    usb_add_interface_string(current_interface_string, identification->manufacturer_name);
     device_descriptor[DEVICE_MANUFACTURER_STRING_INDEX] = current_interface_string;
     current_interface_string++;
 
-    usb_add_interface_string(current_interface_string, product_name);
+    usb_add_interface_string(current_interface_string, identification->product_name);
     device_descriptor[DEVICE_PRODUCT_STRING_INDEX] = current_interface_string;
     current_interface_string++;
 
@@ -231,7 +228,7 @@ static void usb_build_configuration_descriptor(void) {
         if (usb_hid_boot_device() > 0 && descriptor_counts.current_interface > 0) {
             // Hosts using boot devices generally to expect them to be at interface zero,
             // and will not work properly otherwise.
-            reset_into_safe_mode(USB_BOOT_DEVICE_NOT_INTERFACE_ZERO);
+            reset_into_safe_mode(SAFE_MODE_USB_BOOT_DEVICE_NOT_INTERFACE_ZERO);
         }
         descriptor_buf_remaining += usb_hid_add_descriptor(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string,
@@ -261,14 +258,14 @@ static void usb_build_configuration_descriptor(void) {
     if (descriptor_counts.current_endpoint > USB_NUM_ENDPOINT_PAIRS ||
         descriptor_counts.num_in_endpoints > USB_NUM_IN_ENDPOINTS ||
         descriptor_counts.num_out_endpoints > USB_NUM_OUT_ENDPOINTS) {
-        reset_into_safe_mode(USB_TOO_MANY_ENDPOINTS);
+        reset_into_safe_mode(SAFE_MODE_USB_TOO_MANY_ENDPOINTS);
     }
 }
 
 // str must not be on the heap.
 void usb_add_interface_string(uint8_t interface_string_index, const char str[]) {
     if (interface_string_index > MAX_INTERFACE_STRINGS) {
-        reset_into_safe_mode(USB_TOO_MANY_INTERFACE_NAMES);
+        reset_into_safe_mode(SAFE_MODE_USB_TOO_MANY_INTERFACE_NAMES);
     }
 
     collected_interface_strings[interface_string_index].char_str = str;
@@ -319,7 +316,7 @@ static void usb_build_interface_string_table(void) {
 
 // After boot.py runs, the USB devices to be used have been chosen, and the descriptors can be set up.
 // This is called after the VM is finished, because it uses storage_allocations.
-void usb_build_descriptors(void) {
+void usb_build_descriptors(const usb_identification_t *identification) {
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
     common_hal_mcu_processor_get_uid(raw_id);
 
@@ -336,7 +333,7 @@ void usb_build_descriptors(void) {
     current_interface_string = 1;
     collected_interface_strings_length = 0;
 
-    usb_build_device_descriptor(USB_VID, USB_PID);
+    usb_build_device_descriptor(identification);
     usb_build_configuration_descriptor();
     usb_build_interface_string_table();
 }

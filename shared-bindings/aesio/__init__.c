@@ -34,7 +34,11 @@
 //| """AES encryption routines
 //|
 //| The `AES` module contains classes used to implement encryption
-//| and decryption. It aims to be low overhead in terms of memory."""
+//| and decryption. It aims to be low overhead in terms of memory.
+//|
+//| For more information on AES, refer to `the Wikipedia entry
+//| <https://en.wikipedia.org/wiki/Advanced_Encryption_Standard>`_.
+//| """
 
 
 STATIC const mp_obj_tuple_t mp_aes_key_size_obj = {

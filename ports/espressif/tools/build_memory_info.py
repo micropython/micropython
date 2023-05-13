@@ -6,15 +6,23 @@
 # SPDX-License-Identifier: MIT
 
 import csv
+import json
 import os
-import re
 import sys
 
 from elftools.elf.elffile import ELFFile
 
-print()
 
 internal_memory = {
+    "esp32": [
+        # Name, Start, Length
+        ("RTC Fast Memory", (0x3FF8_0000, 0x400C_0000), 8 * 1024),
+        ("RTC Slow Memory", (0x5000_0000,), 8 * 1024),
+        # First 64kB of Internal SRAM 0 can be configured as cached, and starts at 0x4007_0000
+        ("Internal SRAM 0", (0x4008_0000,), 128 * 1024),
+        ("Internal SRAM 1", (0x3FFE_0000, 0x400A_0000), 128 * 1024),
+        ("Internal SRAM 2", (0x3FFA_E000,), 200 * 1024),
+    ],
     "esp32s2": [
         # Name, Start, Length
         ("RTC Fast Memory", (0x3FF9_E000, 0x4007_0000), 8 * 1024),
@@ -73,9 +81,12 @@ with open(sys.argv[2], "r") as f:
                     elif subtype == "ota_0":
                         ota = partition[4].strip()
                 size = app if ota is None else ota
-                if size[-1] not in ("k", "K"):
-                    raise RuntimeError("Unhandled partition size suffix")
-                firmware_region = int(size[:-1]) * 1024
+                if size[-1] in ("k", "K"):
+                    firmware_region = int(size[:-1]) * 1024
+                elif size[-1] in ("m", "M"):
+                    firmware_region = int(size[:-1]) * 1024 * 1024
+                else:
+                    raise RuntimeError("Unhandled partition size suffix:", size[-1])
 
 regions = dict((name, 0) for name, _, _ in internal_memory[target])
 
@@ -105,8 +116,12 @@ with open(sys.argv[1], "rb") as stream:
 
 # This file is the bin
 used_flash = os.stat(sys.argv[3]).st_size
-
 free_flash = firmware_region - used_flash
+
+with open(f"{sys.argv[4]}/firmware.size.json", "w") as f:
+    json.dump({"used_flash": used_flash, "firmware_region": firmware_region}, f)
+
+print()
 print(
     "{:7} bytes used, {:7} bytes free in flash firmware space out of {} bytes ({}kB).".format(
         used_flash, free_flash, firmware_region, firmware_region / 1024

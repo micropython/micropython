@@ -43,7 +43,13 @@
 #include "extmod/vfs_posix.h"
 #endif
 
-//| """Collection of bitmap manipulation tools"""
+//| """Collection of bitmap manipulation tools
+//|
+//| .. note:: If you're looking for information about displaying bitmaps on
+//|     screens in CircuitPython, see `this Learn guide
+//|     <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_
+//|     for information about using the :py:mod:`displayio` module.
+//| """
 //|
 
 STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
@@ -120,39 +126,54 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 
 }
 
-//|
 //| def rotozoom(
-//|        dest_bitmap: displayio.Bitmap, source_bitmap: displayio.Bitmap,
-//|        *,
-//|        ox: int, oy: int, dest_clip0: Tuple[int, int], dest_clip1: Tuple[int, int],
-//|        px: int, py: int, source_clip0: Tuple[int, int], source_clip1: Tuple[int, int],
-//|        angle: float, scale: float, skip_index: int) -> None:
-//|      """Inserts the source bitmap region into the destination bitmap with rotation
-//|      (angle), scale and clipping (both on source and destination bitmaps).
+//|     dest_bitmap: displayio.Bitmap,
+//|     source_bitmap: displayio.Bitmap,
+//|     *,
+//|     ox: int,
+//|     oy: int,
+//|     dest_clip0: Tuple[int, int],
+//|     dest_clip1: Tuple[int, int],
+//|     px: int,
+//|     py: int,
+//|     source_clip0: Tuple[int, int],
+//|     source_clip1: Tuple[int, int],
+//|     angle: float,
+//|     scale: float,
+//|     skip_index: int
+//| ) -> None:
+//|     """Inserts the source bitmap region into the destination bitmap with rotation
+//|     (angle), scale and clipping (both on source and destination bitmaps).
 //|
-//|      :param bitmap dest_bitmap: Destination bitmap that will be copied into
-//|      :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
-//|      :param int ox: Horizontal pixel location in destination bitmap where source bitmap
-//|             point (px,py) is placed
-//|      :param int oy: Vertical pixel location in destination bitmap where source bitmap
-//|             point (px,py) is placed
-//|      :param Tuple[int,int] dest_clip0: First corner of rectangular destination clipping
-//|             region that constrains region of writing into destination bitmap
-//|      :param Tuple[int,int] dest_clip1: Second corner of rectangular destination clipping
-//|             region that constrains region of writing into destination bitmap
-//|      :param int px: Horizontal pixel location in source bitmap that is placed into the
-//|             destination bitmap at (ox,oy)
-//|      :param int py: Vertical pixel location in source bitmap that is placed into the
-//|             destination bitmap at (ox,oy)
-//|      :param Tuple[int,int] source_clip0: First corner of rectangular source clipping
-//|             region that constrains region of reading from the source bitmap
-//|      :param Tuple[int,int] source_clip1: Second corner of rectangular source clipping
-//|             region that constrains region of reading from the source bitmap
-//|      :param float angle: Angle of rotation, in radians (positive is clockwise direction)
-//|      :param float scale: Scaling factor
-//|      :param int skip_index: Bitmap palette index in the source that will not be copied,
-//|             set to None to copy all pixels"""
-//|      ...
+//|     :param bitmap dest_bitmap: Destination bitmap that will be copied into
+//|     :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
+//|     :param int ox: Horizontal pixel location in destination bitmap where source bitmap
+//|            point (px,py) is placed. Defaults to None which causes it to use the horizontal
+//|            midway point of the destination bitmap.
+//|     :param int oy: Vertical pixel location in destination bitmap where source bitmap
+//|            point (px,py) is placed. Defaults to None which causes it to use the vertical
+//|            midway point of the destination bitmap.
+//|     :param Tuple[int,int] dest_clip0: First corner of rectangular destination clipping
+//|            region that constrains region of writing into destination bitmap
+//|     :param Tuple[int,int] dest_clip1: Second corner of rectangular destination clipping
+//|            region that constrains region of writing into destination bitmap
+//|     :param int px: Horizontal pixel location in source bitmap that is placed into the
+//|            destination bitmap at (ox,oy). Defaults to None which causes it to use the
+//|            horizontal midway point in the source bitmap.
+//|     :param int py: Vertical pixel location in source bitmap that is placed into the
+//|            destination bitmap at (ox,oy). Defaults to None which causes it to use the
+//|            vertical midway point in the source bitmap.
+//|     :param Tuple[int,int] source_clip0: First corner of rectangular source clipping
+//|            region that constrains region of reading from the source bitmap
+//|     :param Tuple[int,int] source_clip1: Second corner of rectangular source clipping
+//|            region that constrains region of reading from the source bitmap
+//|     :param float angle: Angle of rotation, in radians (positive is clockwise direction).
+//|            Defaults to None which gets treated as 0.0 radians or no rotation.
+//|     :param float scale: Scaling factor. Defaults to None which gets treated as 1.0 or same
+//|            as original source size.
+//|     :param int skip_index: Bitmap palette index in the source that will not be copied,
+//|            set to None to copy all pixels"""
+//|     ...
 //|
 STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_source_bitmap,
@@ -254,8 +275,14 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom);
 // requires at least 2 arguments (destination bitmap and source bitmap)
 
-//|
-//| def alphablend(dest_bitmap: displayio.Bitmap , source_bitmap_1: displayio.Bitmap, source_bitmap_2: displayio.Bitmap, colorspace: displayio.Colorspace, factor1: float=.5, factor2: float=None) -> None:
+//| def alphablend(
+//|     dest_bitmap: displayio.Bitmap,
+//|     source_bitmap_1: displayio.Bitmap,
+//|     source_bitmap_2: displayio.Bitmap,
+//|     colorspace: displayio.Colorspace,
+//|     factor1: float = 0.5,
+//|     factor2: Optional[float] = None,
+//| ) -> None:
 //|     """Alpha blend the two source bitmaps into the destination.
 //|
 //|     It is permitted for the destination bitmap to be one of the two
@@ -293,7 +320,7 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
     mp_float_t factor1 = (args[ARG_factor_1].u_obj == mp_const_none) ? MICROPY_FLOAT_CONST(.5) : mp_obj_get_float(args[ARG_factor_1].u_obj);
     mp_float_t factor2 = (args[ARG_factor_2].u_obj == mp_const_none) ? 1 - factor1 : mp_obj_get_float(args[ARG_factor_2].u_obj);
 
-    displayio_colorspace_t colorspace = (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_colorspace].u_obj);
+    displayio_colorspace_t colorspace = (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_colorspace].u_obj, MP_QSTR_colorspace);
 
     if (destination->width != source1->width
         || destination->height != source1->height
@@ -331,23 +358,20 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_alphablend_obj, 0, bitmaptools_alphablend);
 
-//|
 //| def fill_region(
-//|        dest_bitmap: displayio.Bitmap,
-//|        x1: int, y1: int,
-//|        x2: int, y2: int,
-//|        value: int) -> None:
-//|      """Draws the color value into the destination bitmap within the
-//|      rectangular region bounded by (x1,y1) and (x2,y2), exclusive.
+//|     dest_bitmap: displayio.Bitmap, x1: int, y1: int, x2: int, y2: int, value: int
+//| ) -> None:
+//|     """Draws the color value into the destination bitmap within the
+//|     rectangular region bounded by (x1,y1) and (x2,y2), exclusive.
 //|
-//|      :param bitmap dest_bitmap: Destination bitmap that will be written into
-//|      :param int x1: x-pixel position of the first corner of the rectangular fill region
-//|      :param int y1: y-pixel position of the first corner of the rectangular fill region
-//|      :param int x2: x-pixel position of the second corner of the rectangular fill region (exclusive)
-//|      :param int y2: y-pixel position of the second corner of the rectangular fill region (exclusive)
-//|      :param int value: Bitmap palette index that will be written into the rectangular
-//|             fill region in the destination bitmap"""
-//|      ...
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param int x1: x-pixel position of the first corner of the rectangular fill region
+//|     :param int y1: y-pixel position of the first corner of the rectangular fill region
+//|     :param int x2: x-pixel position of the second corner of the rectangular fill region (exclusive)
+//|     :param int y2: y-pixel position of the second corner of the rectangular fill region (exclusive)
+//|     :param int value: Bitmap palette index that will be written into the rectangular
+//|            fill region in the destination bitmap"""
+//|     ...
 //|
 STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
@@ -383,23 +407,25 @@ STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_a
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_region);
-//|
 //| def boundary_fill(
-//|        dest_bitmap: displayio.Bitmap,
-//|        x: int, y: int,
-//|        fill_color_value: int, replaced_color_value: int) -> None:
-//|      """Draws the color value into the destination bitmap enclosed
-//|      area of pixels of the background_value color. Like "Paint Bucket"
-//|      fill tool.
+//|     dest_bitmap: displayio.Bitmap,
+//|     x: int,
+//|     y: int,
+//|     fill_color_value: int,
+//|     replaced_color_value: int,
+//| ) -> None:
+//|     """Draws the color value into the destination bitmap enclosed
+//|     area of pixels of the background_value color. Like "Paint Bucket"
+//|     fill tool.
 //|
-//|      :param bitmap dest_bitmap: Destination bitmap that will be written into
-//|      :param int x: x-pixel position of the first pixel to check and fill if needed
-//|      :param int y: y-pixel position of the first pixel to check and fill if needed
-//|      :param int fill_color_value: Bitmap palette index that will be written into the
-//|             enclosed area in the destination bitmap
-//|      :param int replaced_color_value: Bitmap palette index that will filled with the
-//|             value color in the enclosed area in the destination bitmap"""
-//|      ...
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param int x: x-pixel position of the first pixel to check and fill if needed
+//|     :param int y: y-pixel position of the first pixel to check and fill if needed
+//|     :param int fill_color_value: Bitmap palette index that will be written into the
+//|            enclosed area in the destination bitmap
+//|     :param int replaced_color_value: Bitmap palette index that will filled with the
+//|            value color in the enclosed area in the destination bitmap"""
+//|     ...
 //|
 STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_fill_color_value, ARG_replaced_color_value};
@@ -447,22 +473,19 @@ STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_boundary_fill_obj, 0, bitmaptools_obj_boundary_fill);
 // requires all 6 arguments
 
-//|
 //| def draw_line(
-//|        dest_bitmap: displayio.Bitmap,
-//|        x1: int, y1: int,
-//|        x2: int, y2: int,
-//|        value: int) -> None:
-//|      """Draws a line into a bitmap specified two endpoints (x1,y1) and (x2,y2).
+//|     dest_bitmap: displayio.Bitmap, x1: int, y1: int, x2: int, y2: int, value: int
+//| ) -> None:
+//|     """Draws a line into a bitmap specified two endpoints (x1,y1) and (x2,y2).
 //|
-//|      :param bitmap dest_bitmap: Destination bitmap that will be written into
-//|      :param int x1: x-pixel position of the line's first endpoint
-//|      :param int y1: y-pixel position of the line's first endpoint
-//|      :param int x2: x-pixel position of the line's second endpoint
-//|      :param int y2: y-pixel position of the line's second endpoint
-//|      :param int value: Bitmap palette index that will be written into the
-//|             line in the destination bitmap"""
-//|      ...
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param int x1: x-pixel position of the line's first endpoint
+//|     :param int y1: y-pixel position of the line's first endpoint
+//|     :param int x2: x-pixel position of the line's second endpoint
+//|     :param int y2: y-pixel position of the line's second endpoint
+//|     :param int value: Bitmap palette index that will be written into the
+//|            line in the destination bitmap"""
+//|     ...
 //|
 STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
@@ -492,13 +515,6 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
     int16_t x2 = args[ARG_x2].u_int;
     int16_t y2 = args[ARG_y2].u_int;
 
-    // verify points are within the bitmap boundary (inclusive)
-    if ((x1 < 0) || (x2 < 0) || (y1 < 0) || (y2 < 0) ||
-        (x1 >= destination->width) || (x2 >= destination->width) ||
-        (y1 >= destination->height) || (y2 >= destination->height)) {
-        mp_raise_ValueError(translate("out of range of target"));
-    }
-
     common_hal_bitmaptools_draw_line(destination, x1, y1, x2, y2, value);
 
     return mp_const_none;
@@ -507,11 +523,114 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_line);
 // requires all 6 arguments
 
-//| def arrayblit(bitmap: displayio.Bitmap, data: ReadableBuffer, x1: int=0, y1: int=0, x2: Optional[int]=None, y2: Optional[int]=None, skip_index:Optional[int]=None) -> None:
+//| def draw_polygon(
+//|     dest_bitmap: displayio.Bitmap,
+//|     xs: ReadableBuffer,
+//|     ys: ReadableBuffer,
+//|     value: int,
+//|     close: Optional[bool] = True,
+//| ) -> None:
+//|     """Draw a polygon connecting points on provided bitmap with provided value
+//|
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param ReadableBuffer xs: x-pixel position of the polygon's vertices
+//|     :param ReadableBuffer ys: y-pixel position of the polygon's vertices
+//|     :param int value: Bitmap palette index that will be written into the
+//|            line in the destination bitmap
+//|     :param bool close: (Optional) Whether to connect first and last point. (True)
+//|
+//|     .. code-block:: Python
+//|
+//|        import board
+//|        import displayio
+//|        import bitmaptools
+//|
+//|        display = board.DISPLAY
+//|        main_group = displayio.Group()
+//|        display.root_group = main_group
+//|
+//|        palette = displayio.Palette(3)
+//|        palette[0] = 0xffffff
+//|        palette[1] = 0x0000ff
+//|        palette[2] = 0xff0000
+//|
+//|        bmp = displayio.Bitmap(128,128, 3)
+//|        bmp.fill(0)
+//|
+//|        xs = bytes([4, 101, 101, 19])
+//|        ys = bytes([4, 19,  121, 101])
+//|        bitmaptools.draw_polygon(bmp, xs, ys, 1)
+//|
+//|        xs = bytes([14, 60, 110])
+//|        ys = bytes([14, 24,  90])
+//|        bitmaptools.draw_polygon(bmp, xs, ys, 2)
+//|
+//|        tilegrid = displayio.TileGrid(bitmap=bmp, pixel_shader=palette)
+//|        main_group.append(tilegrid)
+//|
+//|        while True:
+//|            pass
+//|     """
+//|     ...
+//|
+STATIC mp_obj_t bitmaptools_obj_draw_polygon(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_dest_bitmap, ARG_xs, ARG_ys, ARG_value, ARG_close};
+
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_xs, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_ys, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_close, MP_ARG_BOOL, {.u_bool = true}},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj);     // the destination bitmap
+
+    mp_buffer_info_t xs_buf, ys_buf;
+    mp_get_buffer_raise(args[ARG_xs].u_obj, &xs_buf, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[ARG_ys].u_obj, &ys_buf, MP_BUFFER_READ);
+    size_t xs_size = mp_binary_get_size('@', xs_buf.typecode, NULL);
+    size_t ys_size = mp_binary_get_size('@', ys_buf.typecode, NULL);
+    size_t xs_len = xs_buf.len / xs_size;
+    size_t ys_len = ys_buf.len / ys_size;
+    if (xs_size != ys_size) {
+        mp_raise_ValueError(translate("Coordinate arrays types have different sizes"));
+    }
+    if (xs_len != ys_len) {
+        mp_raise_ValueError(translate("Coordinate arrays have different lengths"));
+    }
+
+    uint32_t value, color_depth;
+    value = args[ARG_value].u_int;
+    color_depth = (1 << destination->bits_per_value);
+    if (color_depth <= value) {
+        mp_raise_ValueError(translate("out of range of target"));
+    }
+
+    bool close = args[ARG_close].u_bool;
+
+    common_hal_bitmaptools_draw_polygon(destination, xs_buf.buf, ys_buf.buf, xs_len, xs_size, value, close);
+
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_polygon_obj, 0, bitmaptools_obj_draw_polygon);
+
+//| def arrayblit(
+//|     bitmap: displayio.Bitmap,
+//|     data: ReadableBuffer,
+//|     x1: int = 0,
+//|     y1: int = 0,
+//|     x2: Optional[int] = None,
+//|     y2: Optional[int] = None,
+//|     skip_index: Optional[int] = None,
+//| ) -> None:
 //|     """Inserts pixels from ``data`` into the rectangle of width×height pixels with the upper left corner at ``(x,y)``
 //|
 //|     The values from ``data`` are taken modulo the number of color values
-//|     avalable in the destination bitmap.
+//|     available in the destination bitmap.
 //|
 //|     If x1 or y1 are not specified, they are taken as 0.  If x2 or y2
 //|     are not specified, or are given as -1, they are taken as the width
@@ -581,7 +700,15 @@ STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, m
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_arrayblit_obj, 0, bitmaptools_arrayblit);
 
 
-//| def readinto(bitmap: displayio.Bitmap, file: typing.BinaryIO, bits_per_pixel: int, element_size: int = 1, reverse_pixels_in_element: bool = False, swap_bytes_in_element: bool = False, reverse_rows: bool = False) -> None:
+//| def readinto(
+//|     bitmap: displayio.Bitmap,
+//|     file: typing.BinaryIO,
+//|     bits_per_pixel: int,
+//|     element_size: int = 1,
+//|     reverse_pixels_in_element: bool = False,
+//|     swap_bytes_in_element: bool = False,
+//|     reverse_rows: bool = False,
+//| ) -> None:
 //|     """Reads from a binary file into a bitmap.
 //|
 //|     The file must be positioned so that it consists of ``bitmap.height`` rows of pixel data, where each row is the smallest multiple of ``element_size`` bytes that can hold ``bitmap.width`` pixels.
@@ -595,7 +722,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_arrayblit_obj, 0, bitmaptools_arrayblit);
 //|     :param typing.BinaryIO file: A file opened in binary mode
 //|     :param int bits_per_pixel: Number of bits per pixel.  Values 1, 2, 4, 8, 16, 24, and 32 are supported;
 //|     :param int element_size: Number of bytes per element.  Values of 1, 2, and 4 are supported, except that 24 ``bits_per_pixel`` requires 1 byte per element.
-//|     :param bool reverse_pixels_in_element: If set, the first pixel in a word is taken from the Most Signficant Bits; otherwise, it is taken from the Least Significant Bits.
+//|     :param bool reverse_pixels_in_element: If set, the first pixel in a word is taken from the Most Significant Bits; otherwise, it is taken from the Least Significant Bits.
 //|     :param bool swap_bytes_in_element: If the ``element_size`` is not 1, then reverse the byte order of each element read.
 //|     :param bool reverse_rows: Reverse the direction of the row loading (required for some bitmap images).
 //|     """
@@ -655,7 +782,7 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_readinto_obj, 0, bitmaptools_readinto);
 
 //| class DitherAlgorithm:
-//|     """Identifies the algorith for dither to use"""
+//|     """Identifies the algorithm for dither to use"""
 //|
 //|     Atkinson: "DitherAlgorithm"
 //|     """The classic Atkinson dither, often associated with the Hypercard esthetic"""
@@ -676,7 +803,12 @@ MAKE_PRINTER(bitmaptools, bitmaptools_dither_algorithm);
 
 MAKE_ENUM_TYPE(bitmaptools, DitherAlgorithm, bitmaptools_dither_algorithm);
 
-//| def dither(dest_bitmap: displayio.Bitmap, source_bitmapp: displayio.Bitmap, source_colorspace: displayio.Colorspace, algorithm: DitherAlgorithm=DitherAlgorithm.Atkinson) -> None:
+//| def dither(
+//|     dest_bitmap: displayio.Bitmap,
+//|     source_bitmapp: displayio.Bitmap,
+//|     source_colorspace: displayio.Colorspace,
+//|     algorithm: DitherAlgorithm = DitherAlgorithm.Atkinson,
+//| ) -> None:
 //|     """Convert the input image into a 2-level output image using the given dither algorithm.
 //|
 //|     :param bitmap dest_bitmap: Destination bitmap.  It must have a value_count of 2 or 65536.  The stored values are 0 and the maximum pixel value.
@@ -698,8 +830,8 @@ STATIC mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_m
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     displayio_bitmap_t *source_bitmap = mp_arg_validate_type(args[ARG_source_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap);
     displayio_bitmap_t *dest_bitmap = mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap);
-    bitmaptools_dither_algorithm_t algorithm = cp_enum_value(&bitmaptools_dither_algorithm_type, args[ARG_algorithm].u_obj);
-    displayio_colorspace_t colorspace = cp_enum_value(&displayio_colorspace_type, args[ARG_source_colorspace].u_obj);
+    bitmaptools_dither_algorithm_t algorithm = cp_enum_value(&bitmaptools_dither_algorithm_type, args[ARG_algorithm].u_obj, MP_QSTR_algorithm);
+    displayio_colorspace_t colorspace = cp_enum_value(&displayio_colorspace_type, args[ARG_source_colorspace].u_obj, MP_QSTR_source_colorspace);
 
     if (source_bitmap->width != dest_bitmap->width || source_bitmap->height != dest_bitmap->height) {
         mp_raise_TypeError(translate("bitmap sizes must match"));
@@ -736,7 +868,86 @@ STATIC mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_dither_obj, 0, bitmaptools_dither);
+// requires all 5 arguments
 
+//| def draw_circle(
+//|     dest_bitmap: displayio.Bitmap, x: int, y: int, radius: int, value: int
+//| ) -> None:
+//|     """Draws a circle into a bitmap specified using a center (x0,y0) and radius r.
+//|
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param int x: x-pixel position of the circle's center
+//|     :param int y: y-pixel position of the circle's center
+//|     :param int radius: circle's radius
+//|     :param int value: Bitmap palette index that will be written into the
+//|            circle in the destination bitmap
+//|
+//|     .. code-block:: Python
+//|
+//|        import board
+//|        import displayio
+//|        import bitmaptools
+//|
+//|        display = board.DISPLAY
+//|        main_group = displayio.Group()
+//|        display.root_group = main_group
+//|
+//|        palette = displayio.Palette(2)
+//|        palette[0] = 0xffffff
+//|        palette[1] = 0x440044
+//|
+//|        bmp = displayio.Bitmap(128,128, 2)
+//|        bmp.fill(0)
+//|
+//|        bitmaptools.circle(64,64, 32, 1)
+//|
+//|        tilegrid = displayio.TileGrid(bitmap=bmp, pixel_shader=palette)
+//|        main_group.append(tilegrid)
+//|
+//|        while True:
+//|            pass
+//|
+//|     """
+//|
+//|     ...
+//|
+STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_radius, ARG_value};
+
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_radius, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj);     // the destination bitmap
+
+    uint32_t value, color_depth;
+    value = args[ARG_value].u_int;
+    color_depth = (1 << destination->bits_per_value);
+    if (color_depth <= value) {
+        mp_raise_ValueError(translate("out of range of target"));
+    }
+
+
+    int16_t x = args[ARG_x].u_int;
+    int16_t y = args[ARG_y].u_int;
+    int16_t radius = args[ARG_radius].u_int;
+
+    mp_arg_validate_int_range(x, 0, destination->width, MP_QSTR_x);
+    mp_arg_validate_int_range(y, 0, destination->height, MP_QSTR_y);
+    mp_arg_validate_int_min(radius, 0, MP_QSTR_radius);
+
+    common_hal_bitmaptools_draw_circle(destination, x, y, radius, value);
+
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_circle_obj, 0, bitmaptools_obj_draw_circle);
 
 STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmaptools) },
@@ -747,6 +958,8 @@ STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fill_region), MP_ROM_PTR(&bitmaptools_fill_region_obj) },
     { MP_ROM_QSTR(MP_QSTR_boundary_fill), MP_ROM_PTR(&bitmaptools_boundary_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
+    { MP_ROM_QSTR(MP_QSTR_draw_polygon), MP_ROM_PTR(&bitmaptools_draw_polygon_obj) },
+    { MP_ROM_QSTR(MP_QSTR_draw_circle), MP_ROM_PTR(&bitmaptools_draw_circle_obj) },
     { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&bitmaptools_dither_obj) },
     { MP_ROM_QSTR(MP_QSTR_DitherAlgorithm), MP_ROM_PTR(&bitmaptools_dither_algorithm_type) },
 };

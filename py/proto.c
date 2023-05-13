@@ -28,6 +28,8 @@
 #include "py/proto.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate/translate.h"
+
 #ifndef MICROPY_UNSAFE_PROTO
 const void *mp_proto_get(uint16_t name, mp_const_obj_t obj) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);

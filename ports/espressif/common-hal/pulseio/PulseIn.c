@@ -41,20 +41,29 @@ STATIC void update_internal_buffer(pulseio_pulsein_obj_t *self) {
         length /= 4;
         for (size_t i = 0; i < length; i++) {
             uint16_t pos = (self->start + self->len) % self->maxlen;
-            self->buffer[pos] = items[i].duration0 * 3;
-            // Check if second item exists before incrementing
-            if (items[i].duration1) {
-                self->buffer[pos + 1] = items[i].duration1 * 3;
-                if (self->len < (self->maxlen - 1)) {
-                    self->len += 2;
-                } else {
-                    self->start += 2;
-                }
+            uint32_t val = items[i].duration0 * 3;
+            // make sure the value returned does not exceed the max uint16 value.
+            if (val > 65535) {
+                val = 65535;
+            }
+            self->buffer[pos] = (uint16_t)val;
+            if (self->len < self->maxlen) {
+                self->len++;
             } else {
+                self->start = (self->start + 1) % self->maxlen;
+            }
+            // Check if second item exists
+            if (items[i].duration1) {
+                pos = (self->start + self->len) % self->maxlen;
+                val = items[i].duration1 * 3;
+                if (val > 65535) {
+                    val = 65535;
+                }
+                self->buffer[pos] = (uint16_t)val;
                 if (self->len < self->maxlen) {
                     self->len++;
                 } else {
-                    self->start++;
+                    self->start = (self->start + 1) % self->maxlen;
                 }
             }
         }
@@ -88,7 +97,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     uint16_t maxlen, bool idle_state) {
     self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
-        mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), maxlen * sizeof(uint16_t));
+        m_malloc_fail(maxlen * sizeof(uint16_t));
     }
     self->pin = pin;
     self->maxlen = maxlen;
@@ -114,7 +123,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     rmt_config_t config = RMT_DEFAULT_CONFIG_RX(pin->number, channel);
     config.rx_config.filter_en = true;
     config.rx_config.idle_threshold = 30000; // 30*3=90ms idle required to register a sequence
-    config.clk_div = 240; // All measurements are divided by 3 to accomodate 65ms pulses
+    config.clk_div = 240; // All measurements are divided by 3 to accommodate 65ms pulses
     rmt_config(&config);
     rmt_driver_install(channel, 1000, 0); // TODO: pick a more specific buffer size?
 

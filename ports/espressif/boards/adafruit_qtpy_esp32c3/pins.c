@@ -27,8 +27,6 @@
 
 #include "shared-bindings/board/__init__.h"
 
-#include "shared-bindings/board/__init__.h"
-
 CIRCUITPY_BOARD_BUS_SINGLETON(stemma_i2c, i2c, 1)
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {

@@ -34,7 +34,7 @@
 #include "py/obj.h"
 #include "periph.h"
 
-#include "fsl_lpuart.h"
+#include "sdk/drivers/lpuart/fsl_lpuart.h"
 
 typedef struct {
     mp_obj_base_t base;
@@ -50,6 +50,9 @@ typedef struct {
     const mcu_pin_obj_t *tx;
     const mcu_pin_obj_t *cts;
     const mcu_pin_obj_t *rts;
+    const mcu_pin_obj_t *rs485_dir;
+    bool rs485_invert;
+
 } busio_uart_obj_t;
 
 void uart_reset(void);

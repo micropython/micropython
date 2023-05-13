@@ -35,7 +35,6 @@
 //|
 //| The `usb` is a subset of PyUSB that allows you to communicate to USB devices.
 //| """
-//|
 
 STATIC mp_rom_map_elem_t usb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_usb) },

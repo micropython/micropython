@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTICBUFFER_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTICBUFFER_H
 
+#include <stdbool.h>
+
 #include "common-hal/_bleio/CharacteristicBuffer.h"
 
 extern const mp_obj_type_t bleio_characteristic_buffer_type;
@@ -35,7 +37,8 @@ void _common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buff
     bleio_characteristic_obj_t *characteristic,
     mp_float_t timeout,
     uint8_t *buffer, size_t buffer_size,
-    void *static_handler_entry);
+    void *static_handler_entry,
+    bool watch_for_interrupt_char);
 void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self,
     bleio_characteristic_obj_t *characteristic,
     mp_float_t timeout,

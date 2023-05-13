@@ -45,17 +45,27 @@
 #endif
 #include "shared-bindings/displayio/Shape.h"
 #include "shared-bindings/displayio/TileGrid.h"
+#include "shared-module/displayio/__init__.h"
 
 //| """Native helpers for driving displays
 //|
 //| The `displayio` module contains classes to manage display output
-//| including synchronizing with refresh rates and partial updating."""
+//| including synchronizing with refresh rates and partial updating.
+//|
+//| For more a more thorough explanation and guide for using `displayio`, please
+//| refer to `this Learn guide
+//| <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_.
+//| """
+
+//| CIRCUITPYTHON_TERMINAL: Group
+//| """The `displayio.Group` that is the displayed serial terminal (REPL)."""
 //|
 
 //| import paralleldisplay
+//|
 
 //| def release_displays() -> None:
-//|     """Releases any actively used displays so their busses and pins can be used again. This will also
+//|     """Releases any actively used displays so their buses and pins can be used again. This will also
 //|     release the builtin display on boards that have one. You will need to reinitialize it yourself
 //|     afterwards. This may take seconds to complete if an active EPaperDisplay is refreshing.
 //|
@@ -90,6 +100,7 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     #endif
 
     { MP_ROM_QSTR(MP_QSTR_release_displays), MP_ROM_PTR(&displayio_release_displays_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CIRCUITPYTHON_TERMINAL), MP_ROM_PTR(&circuitpython_splash) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_module_globals, displayio_module_globals_table);
 

@@ -141,8 +141,7 @@ void common_hal_is31fl3741_FrameBuffer_refresh(is31fl3741_FrameBuffer_obj_t *sel
     if (!self->paused) {
         common_hal_is31fl3741_begin_transaction(self->is31fl3741);
 
-        uint8_t dirty_row_flags = 0xFF; // only supports 8 rows gotta fix
-
+        uint8_t dirty_row_flags = 0xFF;
         if (self->scale) {
             // Based on the Arduino IS31FL3741 driver code
             // dirtyrows flag current not implemented for scaled displays
@@ -173,7 +172,7 @@ void common_hal_is31fl3741_FrameBuffer_refresh(is31fl3741_FrameBuffer_obj_t *sel
                     } else {
                         color = (rsum << 16) + (gsum << 8) + bsum;
                     }
-                    common_hal_is31fl3741_draw_pixel(self->is31fl3741, x, y, color, self->mapping);
+                    common_hal_is31fl3741_draw_pixel(self->is31fl3741, x, y, color, self->mapping, self->scale_height);
                 }
             }
         } else {
@@ -184,19 +183,21 @@ void common_hal_is31fl3741_FrameBuffer_refresh(is31fl3741_FrameBuffer_obj_t *sel
                 }
 
                 if ((dirty_row_flags >> (y % 8)) & 0x1) {
-                    uint32_t color = 0;
-                    if (self->auto_gamma) {
-                        color = IS31GammaTable[((*buffer) >> 16 & 0xFF)] +
-                            IS31GammaTable[((*buffer) >> 8 & 0xFF)] +
-                            IS31GammaTable[((*buffer) & 0xFF)];
-                    } else {
-                        color = *buffer;
-                    }
-
                     for (int x = 0; x < self->width; x++) {
-                        common_hal_is31fl3741_draw_pixel(self->is31fl3741, x, y, color, self->mapping);
+                        uint32_t color = 0;
+                        if (self->auto_gamma) {
+                            color = (IS31GammaTable[((*buffer) >> 16 & 0xFF)] << 16) +
+                                (IS31GammaTable[((*buffer) >> 8 & 0xFF)] << 8) +
+                                IS31GammaTable[((*buffer) & 0xFF)];
+                        } else {
+                            color = *buffer;
+                        }
+
+                        common_hal_is31fl3741_draw_pixel(self->is31fl3741, x, y, color, self->mapping, self->scale_height);
                         buffer++;
                     }
+                } else {
+                    buffer += self->width; // row did not have to be redrawn, skip it in the buffer
                 }
             }
         }

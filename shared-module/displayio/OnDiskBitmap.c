@@ -50,7 +50,7 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
     }
     if (bytes_read != 138 ||
         memcmp(bmp_header, "BM", 2) != 0) {
-        mp_raise_ValueError(translate("Invalid BMP file"));
+        mp_arg_error_invalid(MP_QSTR_file);
     }
 
     // We can't cast because we're not aligned.
@@ -90,7 +90,7 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
 
         displayio_palette_t *palette = m_new_obj(displayio_palette_t);
         palette->base.type = &displayio_palette_type;
-        common_hal_displayio_palette_construct(palette, number_of_colors);
+        common_hal_displayio_palette_construct(palette, number_of_colors, false);
 
         if (number_of_colors > 1) {
             uint16_t palette_size = number_of_colors * sizeof(uint32_t);

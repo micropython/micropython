@@ -33,6 +33,7 @@
 #include "py/mpstate.h"
 
 #include "supervisor/flash.h"
+#include "supervisor/linker.h"
 
 static mp_vfs_mount_t _mp_vfs;
 static fs_user_mount_t _internal_vfs;
@@ -92,6 +93,9 @@ bool filesystem_init(bool create_allowed, bool force_create) {
     vfs_fat->blockdev.flags = 0;
     supervisor_flash_init_vfs(vfs_fat);
 
+    mp_vfs_mount_t *vfs = &_mp_vfs;
+    vfs->len = 0;
+
     // try to mount the flash
     FRESULT res = f_mount(&vfs_fat->fatfs);
     if ((res == FR_NO_FILESYSTEM && create_allowed) || force_create) {
@@ -126,6 +130,9 @@ bool filesystem_init(bool create_allowed, bool force_create) {
         make_empty_file(&vfs_fat->fatfs, "/.metadata_never_index");
         make_empty_file(&vfs_fat->fatfs, "/.Trashes");
         make_empty_file(&vfs_fat->fatfs, "/.fseventsd/no_log");
+        #if CIRCUITPY_OS_GETENV
+        make_empty_file(&vfs_fat->fatfs, "/settings.toml");
+        #endif
         // make a sample code.py file
         make_sample_code_file(&vfs_fat->fatfs);
 
@@ -140,21 +147,26 @@ bool filesystem_init(bool create_allowed, bool force_create) {
     } else if (res != FR_OK) {
         return false;
     }
-    mp_vfs_mount_t *vfs = &_mp_vfs;
+
     vfs->str = "/";
     vfs->len = 1;
     vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
     vfs->next = NULL;
+
     MP_STATE_VM(vfs_mount_table) = vfs;
 
     // The current directory is used as the boot up directory.
     // It is set to the internal flash filesystem by default.
     MP_STATE_PORT(vfs_cur) = vfs;
 
+    #if CIRCUITPY_STORAGE_EXTEND
+    supervisor_flash_update_extended();
+    #endif
+
     return true;
 }
 
-void filesystem_flush(void) {
+void PLACE_IN_ITCM(filesystem_flush)(void) {
     // Reset interval before next flush.
     filesystem_flush_interval_ms = CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS;
     supervisor_flash_flush();
@@ -199,5 +211,12 @@ void filesystem_set_concurrent_write_protection(fs_user_mount_t *vfs, bool concu
 }
 
 bool filesystem_present(void) {
-    return true;
+    return _mp_vfs.len > 0;
+}
+
+FATFS *filesystem_circuitpy(void) {
+    if (!filesystem_present()) {
+        return NULL;
+    }
+    return &_internal_vfs.fatfs;
 }

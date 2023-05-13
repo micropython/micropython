@@ -35,16 +35,9 @@
 #include "shared-module/keypad/EventQueue.h"
 
 typedef struct {
-    mp_obj_base_t base;
-    // All scanners have a next field here, to keep a linked list of active scanners.
-    keypad_scanner_obj_t *next;
+    KEYPAD_SCANNER_COMMON_FIELDS;
     mp_obj_tuple_t *row_digitalinouts;
     mp_obj_tuple_t *column_digitalinouts;
-    mp_uint_t interval_ticks;
-    uint64_t last_scan_ticks;
-    bool *previously_pressed;
-    bool *currently_pressed;
-    keypad_eventqueue_obj_t *events;
     bool columns_to_anodes;
 } keypad_keymatrix_obj_t;
 

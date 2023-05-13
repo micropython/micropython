@@ -11,10 +11,15 @@
 #include "shared-bindings/util.h"
 
 //| class Counter:
-//|     """Count the number of rising- and/or falling-edge transitions on a given pin.
-//|     """
+//|     """Count the number of rising- and/or falling-edge transitions on a given pin."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin, *, edge: Edge = Edge.FALL, pull: Optional[digitalio.Pull] = None) -> None:
+//|     def __init__(
+//|         self,
+//|         pin: microcontroller.Pin,
+//|         *,
+//|         edge: Edge = Edge.FALL,
+//|         pull: Optional[digitalio.Pull] = None
+//|     ) -> None:
 //|         """Create a Counter object associated with the given pin that counts
 //|         rising- and/or falling-edge transitions. At least one of ``rise`` and ``fall`` must be True.
 //|         The default is to count only falling edges, and is for historical backward compatibility.
@@ -30,7 +35,7 @@
 //|             import countio
 //|
 //|             # Count rising edges only.
-//|             pin_counter = countio.Counter(board.D1, edge=Edge.RISE)
+//|             pin_counter = countio.Counter(board.D1, edge=countio.Edge.RISE)
 //|             # Reset the count after 100 counts.
 //|             while True:
 //|                 if pin_counter.count >= 100:
@@ -38,7 +43,6 @@
 //|                 print(pin_counter.count)
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin, ARG_edge, ARG_pull };
     static const mp_arg_t allowed_args[] = {
@@ -49,11 +53,11 @@ STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj, MP_QSTR_pin);
     const countio_edge_t edge = validate_edge(args[ARG_edge].u_obj, MP_QSTR_edge);
     const digitalio_pull_t pull = validate_pull(args[ARG_pull].u_obj, MP_QSTR_pull);
     // Make long-lived because some implementations use a pointer to the object as interrupt-handler data.
-    countio_counter_obj_t *self = m_new_ll_obj(countio_counter_obj_t);
+    countio_counter_obj_t *self = m_new_ll_obj_with_finaliser(countio_counter_obj_t);
     self->base.type = &countio_counter_type;
 
     common_hal_countio_counter_construct(self, pin, edge, pull);
@@ -63,7 +67,6 @@ STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_arg
 
 //|     def deinit(self) -> None:
 //|         """Deinitializes the Counter and releases any hardware resources for reuse."""
-//|
 STATIC mp_obj_t countio_counter_deinit(mp_obj_t self_in) {
     countio_counter_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_countio_counter_deinit(self);
@@ -79,13 +82,11 @@ STATIC void check_for_deinit(countio_counter_obj_t *self) {
 
 //|     def __enter__(self) -> Counter:
 //|         """No-op used by Context Managers."""
-//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
-//|            :ref:`lifetime-and-contextmanagers` for more info."""
-//|
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
 STATIC mp_obj_t countio_counter_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_countio_counter_deinit(args[0]);
@@ -96,7 +97,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(countio_counter___exit___obj, 4, 4, c
 
 //|     count: int
 //|     """The current count in terms of pulses."""
-//|
 STATIC mp_obj_t countio_counter_obj_get_count(mp_obj_t self_in) {
     countio_counter_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -114,12 +114,9 @@ STATIC mp_obj_t countio_counter_obj_set_count(mp_obj_t self_in, mp_obj_t new_cou
 }
 MP_DEFINE_CONST_FUN_OBJ_2(countio_counter_set_count_obj, countio_counter_obj_set_count);
 
-const mp_obj_property_t countio_counter_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&countio_counter_get_count_obj,
-              (mp_obj_t)&countio_counter_set_count_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(countio_counter_count_obj,
+    (mp_obj_t)&countio_counter_get_count_obj,
+    (mp_obj_t)&countio_counter_set_count_obj);
 
 //|     def reset(self) -> None:
 //|         """Resets the count back to 0."""
@@ -137,6 +134,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(countio_counter_reset_obj, countio_counter_reset);
 STATIC const mp_rom_map_elem_t countio_counter_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&countio_counter_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&countio_counter_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&countio_counter___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&countio_counter_count_obj) },

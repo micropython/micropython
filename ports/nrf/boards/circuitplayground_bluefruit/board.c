@@ -54,10 +54,8 @@ void board_deinit(void) {
     nrf_gpio_pin_write(POWER_SWITCH_PIN->number, true);
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
 void reset_board(void) {
     board_reset_user_neopixels(&pin_P0_13, 10);
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

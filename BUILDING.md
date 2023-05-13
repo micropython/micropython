@@ -35,6 +35,8 @@ Failing to install these will prevent from properly building.
 
     pip3 install -r requirements-dev.txt
 
+If you run into an error installing minify_html, you may need to install `rust`.
+
 ### mpy-cross
 
 As part of the build process, mpy-cross is needed to compile .py files into .mpy files.
@@ -70,7 +72,7 @@ The test suite in the top level `tests` directory.  It needs the unix port to ru
 Then you can run the test suite:
 
     cd ../../tests
-    ./run-tests
+    ./run-tests.py
 
 A successful run will say something like
 
@@ -107,7 +109,7 @@ Pre-commit also requires some additional programs to be installed through your p
 
  * Standard Unix tools such as make, find, etc
  * The gettext package, any modern version
- * uncrustify version 0.71 (0.72 is also tested)
+ * uncrustify version 0.71 (0.72 is also tested and OK; 0.75 is not OK)
 
 Each time you create a git commit, the pre-commit quality checks will be run.  You can also run them e.g., with `pre-commit run foo.c` or `pre-commit run --all` to run on all files whether modified or not.
 

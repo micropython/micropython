@@ -22,36 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Select the board to build for.
-ifeq ($(BOARD),)
-  $(error You must provide a BOARD parameter)
-else
-  ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD specified)
-  endif
-endif
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
-include ../../py/mkenv.mk
-# Board-specific
-include boards/$(BOARD)/mpconfigboard.mk
-# Port-specific
-include mpconfigport.mk
-# CircuitPython-specific
-include $(TOP)/py/circuitpy_mpconfig.mk
-
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-
-# include py core make definitions
-include $(TOP)/py/py.mk
-
-include $(TOP)/supervisor/supervisor.mk
-
-# Include make rules and variables common across CircuitPython builds.
-include $(TOP)/py/circuitpy_defns.mk
+include ../../py/circuitpy_mkenv.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -88,6 +59,7 @@ INC += -I. \
 ifeq ($(CHIP_FAMILY), samd21)
 PERIPHERALS_CHIP_FAMILY=samd21
 OPTIMIZATION_FLAGS ?= -Os
+
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD21 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=128 -DCFG_TUD_MSC_BUFSIZE=512
 endif
@@ -108,7 +80,7 @@ endif
 
 ifeq ($(CHIP_FAMILY), same54)
 PERIPHERALS_CHIP_FAMILY=sam_d5x_e5x
-OPTIMIZATION_FLAGS ?= -O2
+OPTIMIZATION_FLAGS ?= -Os
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAME5X -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
@@ -123,8 +95,6 @@ $(echo PERIPHERALS_CHIP_FAMILY=$(PERIPHERALS_CHIP_FAMILY))
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb3 -Og -Os
-  # You may want to disable -flto if it interferes with debugging.
-  CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
   # CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
@@ -132,26 +102,23 @@ ifeq ($(DEBUG), 1)
   endif
 else
   CFLAGS += -DNDEBUG
+
+  # Do a default shrink for small builds, including all SAMD21 builds.
   # -finline-limit can shrink the image size.
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
-
-  # Do a default shrink for small builds.
-  ifndef CFLAGS_INLINE_LIMIT
-    ifeq ($(CIRCUITPY_FULL_BUILD),0)
-      CFLAGS_INLINE_LIMIT = 50
+  ifeq ($(CIRCUITPY_FULL_BUILD),0)
+    CFLAGS += -finline-limit=45
+  else
+    ifeq ($(CHIP_FAMILY), samd21)
+      # max-inline-insns-auto increases the size of SAMD51 builds.
+      CFLAGS += -finline-limit=45 --param max-inline-insns-auto=110
     endif
   endif
 
-  ifdef CFLAGS_INLINE_LIMIT
-    CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
-  endif
-
-  CFLAGS += -flto -flto-partition=none
-
-  ifeq ($(CIRCUITPY_FULL_BUILD),0)
-    CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
-  endif
+  # We used to do this but it seems to not reduce space any more, at least in gcc 11.
+  # Leave it here, commented out, just for reference.
+  # --param inline-unit-growth=15
 
   ifdef CFLAGS_BOARD
     CFLAGS += $(CFLAGS_BOARD)
@@ -168,6 +135,9 @@ CFLAGS += \
 	-msoft-float \
 	-mfloat-abi=soft \
 	-DSAMD21
+LIBS := libs/libgcc-12.1.0-Os-v6-m-nofp.a -lc
+else
+LIBS := -lgcc -lc
 endif
 ifeq ($(CHIP_FAMILY), samd51)
 CFLAGS += \
@@ -204,8 +174,6 @@ endif
 CFLAGS += -Wno-stringop-overread -Wno-stringop-overflow
 
 LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
-LDFLAGS += -flto=$(shell $(NPROC))
-LIBS := -lgcc -lc
 
 # Use toolchain libm if we're not using our own.
 ifndef INTERNAL_LIBM
@@ -275,6 +243,9 @@ SRC_ASF += \
 	hpl/oscctrl/hpl_oscctrl.c \
 	hpl/trng/hpl_trng.c \
 
+# Ignore these errors
+$(BUILD)/asf4/same54/hpl/sercom/hpl_sercom.o: CFLAGS += -Wno-maybe-uninitialized
+
 else ifeq ($(CHIP_FAMILY), same51)
 SRC_ASF += \
 	hal/src/hal_rand_sync.c \
@@ -319,13 +290,9 @@ $(patsubst %.c,$(BUILD)/%.o,$(SRC_PERIPHERALS)): CFLAGS += -Wno-missing-prototyp
 SRC_C += \
 	audio_dma.c \
 	background.c \
-	bindings/samd/Clock.c \
-	bindings/samd/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	eic_handler.c \
-	fatfs_port.c \
-	freetouch/adafruit_ptc.c \
 	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	mphalport.c \
 	reset.c \
@@ -340,8 +307,16 @@ ifneq (,$(filter 1,$(CIRCUITPY_PWMIO) $(CIRCUITPY_AUDIOIO) $(CIRCUITPY_RGBMATRIX
 SRC_C += shared_timers.c
 endif
 
+ifeq ($(CIRCUITPY_SAMD),1)
+SRC_C += bindings/samd/Clock.c bindings/samd/__init__.c
+endif
+
 ifeq ($(CIRCUITPY_SDIOIO),1)
 SRC_C += ports/atmel-samd/sd_mmc/sd_mmc.c
+endif
+
+ifeq ($(CIRCUITPY_TOUCHIO),1)
+SRC_C += freetouch/adafruit_ptc.c
 endif
 
 # The smallest SAMD51 packages don't have I2S. Everything else does.
@@ -391,8 +366,8 @@ all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 $(BUILD)/firmware.elf: $(OBJ) $(GENERATED_LD_FILE)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
-	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
-	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE)
+	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--print-memory-usage -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE) $(BUILD)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"

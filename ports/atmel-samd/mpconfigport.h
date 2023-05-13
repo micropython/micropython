@@ -46,6 +46,7 @@
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
 #define MICROPY_PY_FUNCTION_ATTRS                   (0)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (0)
+#define MICROPY_PY_COLLECTIONS_DEQUE                (0)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
 #define MICROPY_PY_UERRNO_LIST \
     X(EPERM) \
@@ -59,7 +60,9 @@
     X(EISDIR) \
     X(EINVAL) \
 
-#define MICROPY_FATFS_EXFAT 0
+#define MICROPY_FATFS_EXFAT    (0)
+// FAT32 mkfs takes about 500 bytes.
+#define MICROPY_FF_MKFS_FAT32 (0)
 
 // Only support simpler HID descriptors on SAMD21.
 #define CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR (1)
@@ -186,7 +189,7 @@
 // - firmware
 // - internal CIRCUITPY flash filesystem (optional)
 // - internal config, used to store crystalless clock calibration info (optional)
-// - microntroller.nvm (optional)
+// - microcontroller.nvm (optional)
 
 // Define these regions starting up from the bottom of flash:
 

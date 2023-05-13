@@ -45,7 +45,10 @@
 //| call :py:meth:`!deinit` or use a context manager. See
 //| :ref:`lifetime-and-contextmanagers` for more info.
 //|
-//| For example::
+//| For more information about working with the `touchio` module in CircuitPython,
+//| see `this Learn guide page <https://learn.adafruit.com/circuitpython-essentials/circuitpython-cap-touch>`_.
+//|
+//| Example::
 //|
 //|   import touchio
 //|   from board import *
@@ -55,7 +58,6 @@
 //|
 //| This example will initialize the the device, and print the
 //| :py:data:`~touchio.TouchIn.value`."""
-//|
 
 STATIC const mp_rom_map_elem_t touchio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_touchio) },

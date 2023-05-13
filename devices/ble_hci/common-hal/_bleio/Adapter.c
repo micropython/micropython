@@ -49,6 +49,10 @@
 #include "shared-bindings/_bleio/ScanEntry.h"
 #include "shared-bindings/time/__init__.h"
 
+#if CIRCUITPY_OS_GETENV
+#include "shared-bindings/os/__init__.h"
+#endif
+
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
 #define SEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000000) / (RESOLUTION))
 #define UNITS_TO_SEC(TIME, RESOLUTION) (((TIME)*(RESOLUTION)) / 1000000)
@@ -278,17 +282,27 @@ char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0
 // Get various values and limits set by the adapter.
 // Set event mask.
 STATIC void bleio_adapter_hci_init(bleio_adapter_obj_t *self) {
+    mp_int_t name_len = 0;
 
-    const size_t len = sizeof(default_ble_name);
+    #if CIRCUITPY_OS_GETENV
+    mp_obj_t name = common_hal_os_getenv("CIRCUITPY_BLE_NAME", mp_const_none);
+    if (name != mp_const_none) {
+        mp_arg_validate_type_string(name, MP_QSTR_CIRCUITPY_BLE_NAME);
+        self->name = name;
+    }
+    #endif
 
-    bt_addr_t addr;
-    hci_check_error(hci_read_bd_addr(&addr));
+    if (!self->name) {
+        name_len = sizeof(default_ble_name);
+        bt_addr_t addr;
+        hci_check_error(hci_read_bd_addr(&addr));
 
-    default_ble_name[len - 4] = nibble_to_hex_lower[addr.val[1] >> 4 & 0xf];
-    default_ble_name[len - 3] = nibble_to_hex_lower[addr.val[1] & 0xf];
-    default_ble_name[len - 2] = nibble_to_hex_lower[addr.val[0] >> 4 & 0xf];
-    default_ble_name[len - 1] = nibble_to_hex_lower[addr.val[0] & 0xf];
-    self->name = mp_obj_new_str(default_ble_name, len);
+        default_ble_name[name_len - 4] = nibble_to_hex_lower[addr.val[1] >> 4 & 0xf];
+        default_ble_name[name_len - 3] = nibble_to_hex_lower[addr.val[1] & 0xf];
+        default_ble_name[name_len - 2] = nibble_to_hex_lower[addr.val[0] >> 4 & 0xf];
+        default_ble_name[name_len - 1] = nibble_to_hex_lower[addr.val[0] & 0xf];
+        self->name = mp_obj_new_str(default_ble_name, (uint8_t)name_len);
+    }
 
     // Get version information.
     if (hci_read_local_version(&self->hci_version, &self->hci_revision, &self->lmp_version,
@@ -469,7 +483,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
 
     if (self->scan_results != NULL) {
         if (!shared_module_bleio_scanresults_get_done(self->scan_results)) {
-            mp_raise_bleio_BluetoothError(translate("Scan already in progess. Stop with stop_scan."));
+            mp_raise_bleio_BluetoothError(translate("Scan already in progress. Stop with stop_scan."));
         }
         self->scan_results = NULL;
     }

@@ -40,6 +40,14 @@ void peripherals_rmt_reset(void) {
 rmt_channel_t peripherals_find_and_reserve_rmt(bool mode) {
     size_t start_channel = 0;
     size_t end_channel = RMT_CHANNEL_MAX;
+    // ESP32C3 can only send on channels 0-1 and receive on channels 2-3
+    #if defined(CONFIG_IDF_TARGET_ESP32C3)
+    if (mode == RECEIVE_MODE) {
+        start_channel = 2;
+    } else {
+        end_channel = 2;
+    }
+    #endif // ESP32C3
     #if SOC_RMT_CHANNELS_PER_GROUP > 4
     if (mode == RECEIVE_MODE) {
         start_channel = 4;

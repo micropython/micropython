@@ -61,6 +61,7 @@ TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
+	@echo "  fetch-submodules	to fetch dependencies from submodules, run this right after you clone the repo"
 	@echo "  html       to make standalone HTML files"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
@@ -89,7 +90,7 @@ clean:
 	rm -rf autoapi
 	rm -rf $(STUBDIR) $(DISTDIR) *.egg-info
 
-html: stubs
+html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -265,7 +266,7 @@ stubs:
 	@cp setup.py-stubs circuitpython-stubs/setup.py
 	@cp README.rst-stubs circuitpython-stubs/README.rst
 	@cp MANIFEST.in-stubs circuitpython-stubs/MANIFEST.in
-	@(cd circuitpython-stubs && $(PYTHON) setup.py -q sdist)
+	@$(PYTHON) -m build circuitpython-stubs
 
 .PHONY: check-stubs
 check-stubs: stubs
@@ -322,10 +323,29 @@ clean-nrf:
 clean-stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean
 
+
+# If available, do blobless partial clones of submodules to save time and space.
+# A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.)
+# so it does not have the idiosyncrasies of a shallow clone.
+#
+# If not available, do a fetch that will fail, and then fix it up with a second fetch.
+# (Only works for git servers that allow sha fetches.)
 .PHONY: fetch-submodules
 fetch-submodules:
-	# This update will fail because the commits we need aren't the latest on the
-	# branch. We can ignore that though because we fix it with the second command.
-	# (Only works for git servers that allow sha fetches.)
-	git submodule update --init -N --depth 1 || true
-	git submodule foreach 'git fetch --tags --depth 1 origin $$sha1 && git checkout -q $$sha1'
+	git submodule sync
+	#####################################################################################
+	# NOTE: Ideally, use git version 2.36.0 or later, to do partial clones of submodules.
+	# If an older git is used, submodules will be cloned with a shallow clone of depth 1.
+	# You will see a git usage message first if the git version is too old to do
+	# clones of submodules.
+	#####################################################################################
+	git submodule update --init --filter=blob:none || git submodule update --init -N --depth 1 || git submodule foreach 'git fetch --tags --depth 1 origin $$sha1 && git checkout -q $$sha1' || echo 'make fetch-submodules FAILED'
+
+.PHONY: remove-submodules
+remove-submodules:
+	git submodule deinit -f --all
+	rm -rf .git/modules/*
+
+.PHONY: fetch-tags
+fetch-tags:
+	git fetch --tags --recurse-submodules=no --shallow-since="2023-02-01" https://github.com/adafruit/circuitpython HEAD

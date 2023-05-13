@@ -37,16 +37,13 @@
 //|
 //| The `ps2io` module contains classes to provide PS/2 communication.
 //|
-
 //| .. warning:: This module is not available in some SAMD21 builds. See the
 //|   :ref:`module-support-matrix` for more info.
 //|
-
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See
 //| :ref:`lifetime-and-contextmanagers` for more info."""
-//|
 
 STATIC const mp_rom_map_elem_t ps2io_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ps2io) },

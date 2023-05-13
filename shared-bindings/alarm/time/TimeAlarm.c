@@ -33,7 +33,7 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
@@ -44,19 +44,21 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 //| class TimeAlarm:
 //|     """Trigger an alarm when the specified time is reached."""
 //|
-//|     def __init__(self, monotonic_time: Optional[float] = None, epoch_time: Optional[int] = None) -> None:
+//|     def __init__(
+//|         self, *, monotonic_time: Optional[float] = None, epoch_time: Optional[int] = None
+//|     ) -> None:
 //|         """Create an alarm that will be triggered when `time.monotonic()` would equal
 //|         ``monotonic_time``, or when `time.time()` would equal ``epoch_time``.
 //|         Only one of the two arguments can be given.
 //|         The alarm is not active until it is passed to an
-//|         `alarm`-enabling function, such as `alarm.light_sleep_until_alarms()` or
+//|         `alarm`-enabling sleep function, such as `alarm.light_sleep_until_alarms()` or
 //|         `alarm.exit_and_deep_sleep_until_alarms()`.
 //|
-//|         If the given time is in the past when sleep occurs, the alarm will be triggered
-//|         immediately.
+//|         If the given time is already in the past, then an exception is raised.
+//|         If the sleep happens after the given time, then it will wake immediately
+//|         due to this time alarm.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     alarm_time_timealarm_obj_t *self = m_new_obj(alarm_time_timealarm_obj_t);
@@ -123,12 +125,8 @@ STATIC mp_obj_t alarm_time_timealarm_obj_get_monotonic_time(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(alarm_time_timealarm_get_monotonic_time_obj, alarm_time_timealarm_obj_get_monotonic_time);
 
-const mp_obj_property_t alarm_time_timealarm_monotonic_time_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&alarm_time_timealarm_get_monotonic_time_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(alarm_time_timealarm_monotonic_time_obj,
+    (mp_obj_t)&alarm_time_timealarm_get_monotonic_time_obj);
 
 STATIC const mp_rom_map_elem_t alarm_time_timealarm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_monotonic_time), MP_ROM_PTR(&alarm_time_timealarm_monotonic_time_obj) },

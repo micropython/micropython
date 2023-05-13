@@ -57,6 +57,11 @@ bool vm_used_ble;
 //     }
 // }
 
+void bleio_user_reset() {
+    // HCI doesn't support the BLE workflow so just do a full reset.
+    bleio_reset();
+}
+
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
     // Create a UUID object for all CCCD's.

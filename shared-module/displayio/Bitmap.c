@@ -29,21 +29,33 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/gc.h"
+
+enum { ALIGN_BITS = 8 * sizeof(uint32_t) };
+
+static int stride(uint32_t width, uint32_t bits_per_value) {
+    uint32_t row_width = width * bits_per_value;
+    // align to uint32_t
+    return (row_width + ALIGN_BITS - 1) / ALIGN_BITS;
+}
 
 void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t width,
     uint32_t height, uint32_t bits_per_value) {
-    uint32_t row_width = width * bits_per_value;
-    // align to uint32_t
-    uint8_t align_bits = 8 * sizeof(uint32_t);
-    if (row_width % align_bits != 0) {
-        self->stride = (row_width / align_bits + 1);
-    } else {
-        self->stride = row_width / align_bits;
-    }
+    common_hal_displayio_bitmap_construct_from_buffer(self, width, height, bits_per_value, NULL, false);
+}
+
+void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self, uint32_t width,
+    uint32_t height, uint32_t bits_per_value, uint32_t *data, bool read_only) {
     self->width = width;
     self->height = height;
-    self->data = m_malloc(self->stride * height * sizeof(uint32_t), false);
-    self->read_only = false;
+    self->stride = stride(width, bits_per_value);
+    self->data_alloc = false;
+    if (!data) {
+        data = m_malloc(self->stride * height * sizeof(uint32_t), false);
+        self->data_alloc = true;
+    }
+    self->data = data;
+    self->read_only = read_only;
     self->bits_per_value = bits_per_value;
 
     if (bits_per_value > 8 && bits_per_value != 16 && bits_per_value != 32) {
@@ -57,17 +69,28 @@ void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t wi
     self->x_shift = 0; // Used to divide the index by the number of pixels per word. Its used in a
                        // shift which effectively divides by 2 ** x_shift.
     uint32_t power_of_two = 1;
-    while (power_of_two < align_bits / bits_per_value) {
+    while (power_of_two < ALIGN_BITS / bits_per_value) {
         self->x_shift++;
         power_of_two <<= 1;
     }
-    self->x_mask = (1 << self->x_shift) - 1; // Used as a modulus on the x value
-    self->bitmask = (1 << bits_per_value) - 1;
+    self->x_mask = (1u << self->x_shift) - 1u; // Used as a modulus on the x value
+    self->bitmask = (1u << bits_per_value) - 1u;
 
     self->dirty_area.x1 = 0;
     self->dirty_area.x2 = width;
     self->dirty_area.y1 = 0;
     self->dirty_area.y2 = height;
+}
+
+void common_hal_displayio_bitmap_deinit(displayio_bitmap_t *self) {
+    if (self->data_alloc) {
+        gc_free(self->data);
+    }
+    self->data = NULL;
+}
+
+bool common_hal_displayio_bitmap_deinited(displayio_bitmap_t *self) {
+    return self->data == NULL;
 }
 
 uint16_t common_hal_displayio_bitmap_get_height(displayio_bitmap_t *self) {
@@ -107,7 +130,7 @@ uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t
 
 void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_area_t *dirty_area) {
     if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
+        mp_raise_RuntimeError(translate("Read-only"));
     }
 
     displayio_area_t area = *dirty_area;
@@ -118,8 +141,16 @@ void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_a
 }
 
 void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only"));
+    }
     // Writes the color index value into a pixel position
     // Must update the dirty area separately
+
+    // Don't write if out of area
+    if (0 > x || x >= self->width || 0 > y || y >= self->height) {
+        return;
+    }
 
     // Update one pixel of data
     int32_t row_start = y * self->stride;
@@ -145,6 +176,9 @@ void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y
 
 void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16_t y, displayio_bitmap_t *source,
     int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t skip_index, bool skip_index_none) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only"));
+    }
     // Copy region of "source" bitmap into "self" bitmap at location x,y in the "self"
     // If skip_value is encountered in the source bitmap, it will not be copied.
     // If skip_value is `None`, then all pixels are copied.
@@ -198,6 +232,9 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
 }
 
 void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only"));
+    }
     // update the dirty region
     displayio_area_t a = {x, y, x + 1, y + 1, NULL};
     displayio_bitmap_set_dirty_area(self, &a);
@@ -208,7 +245,7 @@ void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, 
 }
 
 displayio_area_t *displayio_bitmap_get_refresh_areas(displayio_bitmap_t *self, displayio_area_t *tail) {
-    if (self->dirty_area.x1 == self->dirty_area.x2) {
+    if (self->dirty_area.x1 == self->dirty_area.x2 || self->read_only) {
         return tail;
     }
     self->dirty_area.next = tail;
@@ -216,11 +253,17 @@ displayio_area_t *displayio_bitmap_get_refresh_areas(displayio_bitmap_t *self, d
 }
 
 void displayio_bitmap_finish_refresh(displayio_bitmap_t *self) {
+    if (self->read_only) {
+        return;
+    }
     self->dirty_area.x1 = 0;
     self->dirty_area.x2 = 0;
 }
 
 void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only"));
+    }
     displayio_area_t a = {0, 0, self->width, self->height, NULL};
     displayio_bitmap_set_dirty_area(self, &a);
 

@@ -34,7 +34,7 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "shared-bindings/time/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 const rtc_rtc_obj_t rtc_rtc_obj = {{&rtc_rtc_type}};
 
@@ -44,7 +44,6 @@ const rtc_rtc_obj_t rtc_rtc_obj = {{&rtc_rtc_type}};
 //|     def __init__(self) -> None:
 //|         """This class represents the onboard Real Time Clock. It is a singleton and will always return the same instance."""
 //|         ...
-//|
 STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // No arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
@@ -71,7 +70,6 @@ STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_
 //|       current_time = r.datetime
 //|       print(current_time)
 //|       # struct_time(tm_year=2019, tm_month=5, ...)"""
-//|
 STATIC mp_obj_t rtc_rtc_obj_get_datetime(mp_obj_t self_in) {
     timeutils_struct_time_t tm;
     common_hal_rtc_get_time(&tm);
@@ -87,17 +85,17 @@ STATIC mp_obj_t rtc_rtc_obj_set_datetime(mp_obj_t self_in, mp_obj_t datetime) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(rtc_rtc_set_datetime_obj, rtc_rtc_obj_set_datetime);
 
-const mp_obj_property_t rtc_rtc_datetime_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rtc_rtc_get_datetime_obj,
-              (mp_obj_t)&rtc_rtc_set_datetime_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(rtc_rtc_datetime_obj,
+    (mp_obj_t)&rtc_rtc_get_datetime_obj,
+    (mp_obj_t)&rtc_rtc_set_datetime_obj);
 
 //|     calibration: int
 //|     """The RTC calibration value as an `int`.
 //|
 //|     A positive value speeds up the clock and a negative value slows it down.
+//|
+//|     **Limitations:** Calibration not supported on SAMD, nRF, RP240, Spresense, and STM.
+//|
 //|     Range and value is hardware specific, but one step is often approximately 1 ppm::
 //|
 //|       import rtc
@@ -118,12 +116,9 @@ STATIC mp_obj_t rtc_rtc_obj_set_calibration(mp_obj_t self_in, mp_obj_t calibrati
 }
 MP_DEFINE_CONST_FUN_OBJ_2(rtc_rtc_set_calibration_obj, rtc_rtc_obj_set_calibration);
 
-const mp_obj_property_t rtc_rtc_calibration_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rtc_rtc_get_calibration_obj,
-              (mp_obj_t)&rtc_rtc_set_calibration_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(rtc_rtc_calibration_obj,
+    (mp_obj_t)&rtc_rtc_get_calibration_obj,
+    (mp_obj_t)&rtc_rtc_set_calibration_obj);
 
 STATIC const mp_rom_map_elem_t rtc_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&rtc_rtc_datetime_obj) },

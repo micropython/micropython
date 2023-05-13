@@ -38,7 +38,7 @@
 #include "hal/utils/include/utils_repeat_macro.h"
 #include "samd/pins.h"
 #include "samd/timers.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #undef ENABLE
 
@@ -65,10 +65,6 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     timer_never_reset(self->timer->index, self->timer->is_tc);
 
     never_reset_pin_number(self->pin->number);
-}
-
-void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    timer_reset_ok(self->timer->index, self->timer->is_tc);
 }
 
 void pwmout_reset(void) {
@@ -267,6 +263,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
+    timer_reset_ok(self->timer->index, self->timer->is_tc);
     const pin_timer_t *t = self->timer;
     if (t->is_tc) {
         Tc *tc = tc_insts[t->index];
@@ -377,7 +374,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self,
     uint32_t frequency) {
     uint32_t system_clock = common_hal_mcu_processor_get_frequency();
     if (frequency == 0 || frequency > system_clock / 2) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     const pin_timer_t *t = self->timer;
     uint8_t resolution;

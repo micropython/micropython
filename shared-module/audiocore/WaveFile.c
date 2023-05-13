@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 
 #include "shared-module/audiocore/WaveFile.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 struct wave_format_chunk {
     uint16_t audio_format;
@@ -60,7 +60,7 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t *self,
     if (bytes_read != 16 ||
         memcmp(chunk_header, "RIFF", 4) != 0 ||
         memcmp(chunk_header + 8, "WAVEfmt ", 8) != 0) {
-        mp_raise_ValueError(translate("Invalid wave file"));
+        mp_arg_error_invalid(MP_QSTR_file);
     }
     uint32_t format_size;
     if (f_read(&self->file->fp, &format_size, 4, &bytes_read) != FR_OK) {
@@ -105,7 +105,7 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t *self,
         mp_raise_OSError(MP_EIO);
     }
     if (bytes_read != 4) {
-        mp_raise_ValueError(translate("Invalid file"));
+        mp_arg_error_invalid(MP_QSTR_file);
     }
     self->file_length = data_length;
     self->data_start = self->file->fp.fptr;
@@ -121,15 +121,13 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t *self,
         self->buffer = m_malloc(self->len, false);
         if (self->buffer == NULL) {
             common_hal_audioio_wavefile_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError,
-                translate("Couldn't allocate first buffer"));
+            m_malloc_fail(self->len);
         }
 
         self->second_buffer = m_malloc(self->len, false);
         if (self->second_buffer == NULL) {
             common_hal_audioio_wavefile_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError,
-                translate("Couldn't allocate second buffer"));
+            m_malloc_fail(self->len);
         }
     }
 }

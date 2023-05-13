@@ -27,16 +27,16 @@
 #include "py/runtime.h"
 #include "hpl/pm/hpl_pm_base.h"
 
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/time/__init__.h"
-#include "common-hal/alarm/__init__.h"
 #include "supervisor/port.h"
 
 STATIC volatile bool woke_up = false;
 STATIC mp_float_t wakeup_time;
 
 void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time) {
-    // TODO: when issueing light/seep sleep, throw a ValueError if the
+    // TODO: when issuing light/seep sleep, throw a ValueError if the
     //       time exceeds the maximum value.  For light sleep, max =
     //       2**32 / 16384 = 3 days.  For deep sleep, max = 2**32 / 32
     //       = 1550 days.
@@ -58,13 +58,14 @@ mp_obj_t alarm_time_timealarm_find_triggered_alarm(size_t n_alarms, const mp_obj
     return mp_const_none;
 }
 
-mp_obj_t alarm_time_timealarm_create_wakeup_alarm(void) {
-    alarm_time_timealarm_obj_t *timer = m_new_obj(alarm_time_timealarm_obj_t);
-    timer->base.type = &alarm_time_timealarm_type;
+mp_obj_t alarm_time_timealarm_record_wake_alarm(void) {
+    alarm_time_timealarm_obj_t *const alarm = &alarm_wake_alarm.time_alarm;
+
+    alarm->base.type = &alarm_time_timealarm_type;
     // TODO: Set monotonic_time based on the RTC state.
     //       Or don't, most of the other ports don't have this either.
-    timer->monotonic_time = 0.0f;
-    return timer;
+    alarm->monotonic_time = 0.0f;
+    return alarm;
 }
 
 void time_alarm_callback(void) {
@@ -100,7 +101,7 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
             continue;
         }
         if (timealarm_set) {
-            mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
+            mp_raise_ValueError(translate("Only one alarm.time alarm can be set"));
         }
         timealarm = MP_OBJ_TO_PTR(alarms[i]);
         timealarm_set = true;

@@ -33,7 +33,7 @@
 #include "py/bc0.h"
 #include "py/bc.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -111,7 +111,7 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 //    - code_state->fun_bc should contain a pointer to the function object
 //    - code_state->ip should contain the offset in bytes from the pointer
 //      code_state->fun_bc->bytecode to the entry n_state (0 for bytecode, non-zero for native)
-void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+void PLACE_IN_ITCM(mp_setup_code_state)(mp_code_state_t * code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
 

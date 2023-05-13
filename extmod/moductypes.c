@@ -11,7 +11,7 @@
 #include "py/objtuple.h"
 #include "py/binary.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_UCTYPES
 

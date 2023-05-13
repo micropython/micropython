@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
+name: Update CircuitPython.org
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  website:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Dump GitHub context
+      run: echo "$GITHUB_CONTEXT"
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+    - name: Set up repository
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        fetch-depth: 1
+    - name: Set up python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+    - name: Set up submodules
+      uses: ./.github/actions/deps/submodules
+      with:
+        version: true
+    - name: Set up external
+      uses: ./.github/actions/deps/external
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+    - name: Website
+      run: python3 build_board_info.py
+      working-directory: tools
+      env:
+        RELEASE_TAG: ${{ github.event.release.tag_name }}
+        ADABOT_GITHUB_ACCESS_TOKEN: ${{ secrets.ADABOT_GITHUB_ACCESS_TOKEN }}

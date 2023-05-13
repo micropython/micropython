@@ -48,8 +48,8 @@ extern "C" {
 // COMMON CONFIGURATION
 // --------------------------------------------------------------------+
 
-// When debugging TinyUSB, only output to the UART debug link.
-#if CIRCUITPY_DEBUG_TINYUSB > 0 && defined(CIRCUITPY_DEBUG_UART_TX)
+// When debugging TinyUSB, only output to the console UART link.
+#if CIRCUITPY_DEBUG_TINYUSB > 0 && defined(CIRCUITPY_CONSOLE_UART)
 #define CFG_TUSB_DEBUG              CIRCUITPY_DEBUG_TINYUSB
 #define CFG_TUSB_DEBUG_PRINTF       debug_uart_printf
 #endif

@@ -138,7 +138,6 @@ void gc_init(void *start, void *end) {
     MP_STATE_MEM(gc_alloc_table_start) = (byte *)start;
 
     #if MICROPY_ENABLE_FINALISER
-    size_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
     MP_STATE_MEM(gc_finaliser_table_start) = MP_STATE_MEM(gc_alloc_table_start) + MP_STATE_MEM(gc_alloc_table_byte_len) + 1;
     #endif
 
@@ -147,18 +146,16 @@ void gc_init(void *start, void *end) {
     MP_STATE_MEM(gc_pool_end) = end;
 
     #if MICROPY_ENABLE_FINALISER
+    size_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
+    (void)gc_finaliser_table_byte_len; // avoid unused variable diagnostic if asserts are disabled
     assert(MP_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
     #endif
 
-    // Clear ATBs plus one more byte. The extra byte might be read when we read the final ATB and
-    // then try to count its tail. Clearing the byte ensures it is 0 and ends the chain. Without an
-    // FTB, it'll just clear the pool byte early.
-    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_alloc_table_byte_len) + 1);
-
-    #if MICROPY_ENABLE_FINALISER
-    // clear FTBs
-    memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
-    #endif
+    // Clear ATBs & finalisers (if enabled). This also clears the extra byte
+    // which appears between ATBs and finalisers that ensures every chain in
+    // the ATB terminates, rather than erroneously using bits from the
+    // finalisers.
+    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_pool_start) - MP_STATE_MEM(gc_alloc_table_start));
 
     // Set first free ATB index to the start of the heap.
     for (size_t i = 0; i < MICROPY_ATB_INDICES; i++) {
@@ -234,7 +231,9 @@ bool gc_is_locked(void) {
 // children: mark the unmarked child blocks and put those newly marked
 // blocks on the stack. When all children have been checked, pop off the
 // topmost block on the stack and repeat with that one.
-STATIC void gc_mark_subtree(size_t block) {
+// We don't instrument these functions because they occur a lot during GC and
+// fill up the output buffer quickly.
+STATIC void MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_mark_subtree)(size_t block) {
     // Start with the block passed in the argument.
     size_t sp = 0;
     for (;;) {
@@ -353,7 +352,7 @@ STATIC void gc_sweep(void) {
 }
 
 // Mark can handle NULL pointers because it verifies the pointer is within the heap bounds.
-STATIC void gc_mark(void *ptr) {
+STATIC void MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_mark)(void *ptr) {
     if (VERIFY_PTR(ptr)) {
         size_t block = BLOCK_FROM_PTR(ptr);
         if (ATB_GET_KIND(block) == AT_HEAD) {
@@ -400,7 +399,7 @@ void gc_collect_ptr(void *ptr) {
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
 __attribute__((no_sanitize_address))
 #endif
-static void *gc_get_ptr(void **ptrs, int i) {
+static void *MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_get_ptr)(void **ptrs, int i) {
     #if MICROPY_DEBUG_VALGRIND
     if (!VALGRIND_CHECK_MEM_IS_ADDRESSABLE(&ptrs[i], sizeof(*ptrs))) {
         return NULL;
@@ -521,7 +520,7 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags, bool long_lived) {
     }
 
     if (MP_STATE_MEM(gc_pool_start) == 0) {
-        reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
+        reset_into_safe_mode(SAFE_MODE_GC_ALLOC_OUTSIDE_VM);
     }
 
     GC_ENTER();
@@ -715,7 +714,7 @@ void gc_free(void *ptr) {
         GC_EXIT();
     } else {
         if (MP_STATE_MEM(gc_pool_start) == 0) {
-            reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
+            reset_into_safe_mode(SAFE_MODE_GC_ALLOC_OUTSIDE_VM);
         }
         // get the GC block number corresponding to this pointer
         assert(VERIFY_PTR(ptr));

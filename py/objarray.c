@@ -31,10 +31,11 @@
 
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "py/objproperty.h"
 #include "py/objstr.h"
 #include "py/objarray.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_BUILTINS_MEMORYVIEW
 
@@ -270,15 +271,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(memoryview_cast_obj, memoryview_cast);
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
-STATIC void memoryview_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    if (dest[0] != MP_OBJ_NULL) {
-        return;
-    }
-    if (attr == MP_QSTR_itemsize) {
-        mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
-        dest[0] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
-    }
+STATIC mp_obj_t memoryview_itemsize_get(mp_obj_t self_in) {
+    mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
 }
+MP_DEFINE_CONST_FUN_OBJ_1(memoryview_itemsize_get_obj, memoryview_itemsize_get);
+
+MP_PROPERTY_GETTER(memoryview_itemsize_obj, (mp_obj_t)&memoryview_itemsize_get_obj);
 #endif
 
 #endif
@@ -458,26 +457,32 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
 
     // allow to extend by anything that has the buffer protocol (extension to CPython)
     mp_buffer_info_t arg_bufinfo;
-    mp_get_buffer_raise(arg_in, &arg_bufinfo, MP_BUFFER_READ);
+    if (mp_get_buffer(arg_in, &arg_bufinfo, MP_BUFFER_READ)) {
+        size_t sz = mp_binary_get_size('@', self->typecode, NULL);
 
-    size_t sz = mp_binary_get_size('@', self->typecode, NULL);
+        // convert byte count to element count
+        size_t len = arg_bufinfo.len / sz;
 
-    // convert byte count to element count
-    size_t len = arg_bufinfo.len / sz;
+        // make sure we have enough room to extend
+        // TODO: alloc policy; at the moment we go conservative
+        if (self->free < len) {
+            self->items = m_renew(byte, self->items, (self->len + self->free) * sz, (self->len + len) * sz);
+            self->free = 0;
+        } else {
+            self->free -= len;
+        }
 
-    // make sure we have enough room to extend
-    // TODO: alloc policy; at the moment we go conservative
-    if (self->free < len) {
-        self->items = m_renew(byte, self->items, (self->len + self->free) * sz, (self->len + len) * sz);
-        self->free = 0;
+        // extend
+        mp_seq_copy((byte *)self->items + self->len * sz, arg_bufinfo.buf, len * sz, byte);
+        self->len += len;
     } else {
-        self->free -= len;
+        // Otherwise argument must be an iterable of items to append
+        mp_obj_t iterable = mp_getiter(arg_in, NULL);
+        mp_obj_t item;
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+            array_append(self_in, item);
+        }
     }
-
-    // extend
-    mp_seq_copy((byte *)self->items + self->len * sz, arg_bufinfo.buf, len * sz, byte);
-    self->len += len;
-
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_extend_obj, array_extend);
@@ -779,9 +784,14 @@ const mp_obj_type_t mp_type_bytearray = {
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
 
-#if MICROPY_CPYTHON_COMPAT
+#if MICROPY_CPYTHON_COMPAT || MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
 STATIC const mp_rom_map_elem_t memoryview_locals_dict_table[] = {
+    #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_cast), MP_ROM_PTR(&memoryview_cast_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+    { MP_ROM_QSTR(MP_QSTR_itemsize), MP_ROM_PTR(&memoryview_itemsize_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(memoryview_locals_dict, memoryview_locals_dict_table);
@@ -792,11 +802,8 @@ const mp_obj_type_t mp_type_memoryview = {
     .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_memoryview,
     .make_new = memoryview_make_new,
-    #if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT || MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
     .locals_dict = (mp_obj_dict_t *)&memoryview_locals_dict,
-    #endif
-    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
-    .attr = memoryview_attr,
     #endif
     MP_TYPE_EXTENDED_FIELDS(
         .getiter = array_iterator_new,

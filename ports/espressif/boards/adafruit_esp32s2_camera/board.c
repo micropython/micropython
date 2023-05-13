@@ -52,21 +52,18 @@ uint8_t display_init_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
-    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
+    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
-        &pin_GPIO39, // TFT_DC Command or data
-        &pin_GPIO40, // TFT_CS Chip select
-        &pin_GPIO41, // TFT_RESET Reset
+        &pin_GPIO40, // TFT_DC Command or data
+        &pin_GPIO39, // TFT_CS Chip select
+        &pin_GPIO38, // TFT_RESET Reset
         40000000, // Baudrate
         0, // Polarity
         0); // Phase
 
-    // workaround as board_init() is called before reset_port() in main.c
-    pwmout_reset();
-
-    displayio_display_obj_t *display = &displays[0].display;
+    displayio_display_obj_t *display = &allocate_display()->display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(
         display,
@@ -87,25 +84,20 @@ void board_init(void) {
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
         display_init_sequence,
         sizeof(display_init_sequence),
-        &pin_GPIO38,  // backlight pin
+        &pin_GPIO41,  // backlight pin
         NO_BRIGHTNESS_COMMAND,
-        1.0f, // brightness (ignored)
-        true, // auto_brightness
+        1.0f, // brightness
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
         true, // backlight_on_high
-        false); // not SH1107
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
+        false, // not SH1107
+        50000); // backlight pwm frequency
 }
 
 void board_deinit(void) {
     common_hal_displayio_release_displays();
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

@@ -35,10 +35,6 @@ void board_init(void) {
     reset_board();
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
 void reset_board(void) {
     // Turn on I2C power by default.
 
@@ -53,5 +49,4 @@ void reset_board(void) {
     gpio_set_level(7, !restlevel);
 }
 
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

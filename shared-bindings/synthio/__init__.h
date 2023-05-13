@@ -24,11 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SYNTHIO___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SYNTHIO___INIT___H
+#pragma once
 
-#include "py/obj.h"
+#include "py/objnamedtuple.h"
+#include "py/enum.h"
 
-// Nothing now.
+typedef enum synthio_bend_mode_e {
+    SYNTHIO_BEND_MODE_STATIC, SYNTHIO_BEND_MODE_VIBRATO, SYNTHIO_BEND_MODE_SWEEP, SYNTHIO_BEND_MODE_SWEEP_IN
+} synthio_bend_mode_t;
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_SYNTHIO___INIT___H
+extern const cp_enum_obj_t bend_mode_VIBRATO_obj;
+extern const mp_obj_type_t synthio_bend_mode_type;
+typedef struct synthio_synth synthio_synth_t;
+extern int16_t shared_bindings_synthio_square_wave[];
+extern const mp_obj_namedtuple_type_t synthio_envelope_type_obj;
+void synthio_synth_envelope_set(synthio_synth_t *synth, mp_obj_t envelope_obj);
+mp_obj_t synthio_synth_envelope_get(synthio_synth_t *synth);
+mp_float_t common_hal_synthio_midi_to_hz_float(mp_float_t note);
+mp_float_t common_hal_synthio_onevo_to_hz_float(mp_float_t note);

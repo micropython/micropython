@@ -31,7 +31,7 @@
 #include "py/parsenum.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_COMPLEX
 
@@ -217,7 +217,7 @@ mp_obj_t mp_obj_complex_binary_op(mp_binary_op_t op, mp_float_t lhs_real, mp_flo
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
             if (rhs_imag == 0) {
                 if (rhs_real == 0) {
-                    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("complex division by zero"));
+                    mp_raise_ZeroDivisionError();
                 }
                 lhs_real /= rhs_real;
                 lhs_imag /= rhs_real;

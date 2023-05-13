@@ -71,7 +71,7 @@ as a natural "TODO" list. An example minimal build list is shown below:
     CIRCUITPY_SDCARDIO = 0
     CIRCUITPY_FRAMEBUFFERIO = 0
     CIRCUITPY_FREQUENCYIO = 0
-    CIRCUITPY_I2CPERIPHERAL = 0
+    CIRCUITPY_I2CTARGET = 0
     # Requires SPI, PulseIO (stub ok):
     CIRCUITPY_DISPLAYIO = 0
 
@@ -79,8 +79,6 @@ as a natural "TODO" list. An example minimal build list is shown below:
     # any port once their prerequisites in common-hal are complete.
     # Requires DigitalIO:
     CIRCUITPY_BITBANGIO = 0
-    # Requires DigitalIO
-    CIRCUITPY_GAMEPADSHIFT = 0
     # Requires neopixel_write or SPI (dotstar)
     CIRCUITPY_PIXELBUF = 0
     # Requires OS

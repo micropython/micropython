@@ -41,7 +41,6 @@
 //|         In CAN, messages can have a length from 0 to 8 bytes.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t canio_remote_transmission_request_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_length, ARG_extended, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
@@ -68,7 +67,6 @@ STATIC mp_obj_t canio_remote_transmission_request_make_new(const mp_obj_type_t *
 
 //|     id: int
 //|     """The numeric ID of the message"""
-//|
 STATIC mp_obj_t canio_remote_transmission_request_id_get(const mp_obj_t self_in) {
     canio_remote_transmission_request_obj_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT(common_hal_canio_remote_transmission_request_get_id(self));
@@ -82,16 +80,12 @@ STATIC mp_obj_t canio_remote_transmission_request_id_set(const mp_obj_t self_in,
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_remote_transmission_request_id_set_obj, canio_remote_transmission_request_id_set);
 
-STATIC const mp_obj_property_t canio_remote_transmission_request_id_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_remote_transmission_request_id_get_obj,
-              (mp_obj_t)&canio_remote_transmission_request_id_set_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(canio_remote_transmission_request_id_obj,
+    (mp_obj_t)&canio_remote_transmission_request_id_get_obj,
+    (mp_obj_t)&canio_remote_transmission_request_id_set_obj);
 
 //|     extended: bool
 //|     """True if the message's id is an extended id"""
-//|
 STATIC mp_obj_t canio_remote_transmission_request_extended_get(const mp_obj_t self_in) {
     canio_remote_transmission_request_obj_t *self = self_in;
     return mp_obj_new_bool(common_hal_canio_remote_transmission_request_get_extended(self));
@@ -106,12 +100,9 @@ STATIC mp_obj_t canio_remote_transmission_request_extended_set(const mp_obj_t se
 MP_DEFINE_CONST_FUN_OBJ_2(canio_remote_transmission_request_extended_set_obj, canio_remote_transmission_request_extended_set);
 
 
-STATIC const mp_obj_property_t canio_remote_transmission_request_extended_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_remote_transmission_request_extended_get_obj,
-              (mp_obj_t)&canio_remote_transmission_request_extended_set_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(canio_remote_transmission_request_extended_obj,
+    (mp_obj_t)&canio_remote_transmission_request_extended_get_obj,
+    (mp_obj_t)&canio_remote_transmission_request_extended_set_obj);
 
 //|     length: int
 //|     """The length of the requested message."""
@@ -134,12 +125,9 @@ STATIC mp_obj_t canio_remote_transmission_request_length_set(const mp_obj_t self
 MP_DEFINE_CONST_FUN_OBJ_2(canio_remote_transmission_request_length_set_obj, canio_remote_transmission_request_length_set);
 
 
-STATIC const mp_obj_property_t canio_remote_transmission_request_length_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_remote_transmission_request_length_get_obj,
-              (mp_obj_t)&canio_remote_transmission_request_length_set_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(canio_remote_transmission_request_length_obj,
+    (mp_obj_t)&canio_remote_transmission_request_length_get_obj,
+    (mp_obj_t)&canio_remote_transmission_request_length_set_obj);
 
 STATIC const mp_rom_map_elem_t canio_remote_transmission_request_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&canio_remote_transmission_request_id_obj) },

@@ -27,6 +27,8 @@
 
 #include "fsl_clock.h"
 #include "tusb.h"
+
+#include "supervisor/linker.h"
 #include "supervisor/usb.h"
 
 STATIC void init_usb_instance(mp_int_t instance) {
@@ -77,14 +79,19 @@ STATIC void init_usb_instance(mp_int_t instance) {
 
 // Provide the prototypes for the interrupt handlers. The iMX RT SDK doesn't.
 // The SDK only links to them from assembly.
+    #ifdef MIMXRT1042_SERIES
+    void USB_OTG_IRQHandler(void);
+    void PLACE_IN_ITCM(USB_OTG_IRQHandler)(void) {
+    #else
     void USB_OTG1_IRQHandler(void);
-    void USB_OTG1_IRQHandler(void) {
+    void PLACE_IN_ITCM(USB_OTG1_IRQHandler)(void) {
+        #endif
         usb_irq_handler(0);
     }
 
     #ifdef USBPHY2
     void USB_OTG2_IRQHandler(void);
-    void USB_OTG2_IRQHandler(void) {
+    void PLACE_IN_ITCM(USB_OTG2_IRQHandler)(void) {
         usb_irq_handler(1);
     }
     #endif

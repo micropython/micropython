@@ -30,10 +30,9 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "common-hal/alarm/__init__.h"
 
 #include "nrfx.h"
 #include "nrf_gpio.h"
@@ -49,10 +48,10 @@ extern uint32_t reset_reason_saved;
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
     if (edge) {
-        mp_raise_ValueError(translate("Cannot wake on pin edge. Only level."));
+        mp_raise_ValueError(translate("Cannot wake on pin edge, only level"));
     }
     if (pin->number >= NUMBER_OF_PINS) {
-        mp_raise_ValueError(translate("Invalid pin"));
+        raise_ValueError_invalid_pin();
     }
     self->pin = pin;
     self->value = value;
@@ -101,8 +100,9 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
     return mp_const_none;
 }
 
-mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void) {
-    alarm_pin_pinalarm_obj_t *alarm = m_new_obj(alarm_pin_pinalarm_obj_t);
+mp_obj_t alarm_pin_pinalarm_record_wake_alarm(void) {
+    alarm_pin_pinalarm_obj_t *const alarm = &alarm_wake_alarm.pin_alarm;
+
     alarm->base.type = &alarm_pin_pinalarm_type;
     alarm->pin = NULL;
     // Map the pin number back to a pin object.

@@ -32,7 +32,7 @@
 #include "py/objint.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
@@ -236,7 +236,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     }
 
 zero_division:
-    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("division by zero"));
+    mp_raise_ZeroDivisionError();
 }
 
 mp_obj_t mp_obj_new_int(mp_int_t value) {

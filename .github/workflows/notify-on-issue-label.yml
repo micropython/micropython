@@ -1,0 +1,18 @@
+name: Notify users based on issue labels
+
+on:
+  issues:
+      types: [labeled]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    permissions:
+        issues: write
+    steps:
+        - uses: tekktrik/issue-labeled-ping@v1
+          with:
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+                user: v923z
+                label: ulab
+                message: Heads up {user} - the "{label}" label was applied to this issue.

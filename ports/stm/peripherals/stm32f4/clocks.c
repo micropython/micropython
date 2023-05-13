@@ -47,11 +47,14 @@
 #ifdef STM32F407xx
 #include "stm32f4/stm32f407xx/clocks.h"
 #endif
+#ifdef STM32F446xx
+#include "stm32f4/stm32f446xx/clocks.h"
+#endif
 
 void stm32_peripherals_clocks_init(void) {
-    RCC_ClkInitTypeDef RCC_ClkInitStruct;
-    RCC_OscInitTypeDef RCC_OscInitStruct;
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
     // Set voltage scaling in accordance with system clock speed
     __HAL_RCC_PWR_CLK_ENABLE();

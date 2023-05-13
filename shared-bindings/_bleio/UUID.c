@@ -50,7 +50,6 @@
 //|         :param value: The uuid value to encapsulate
 //|         :type value: int, ~circuitpython_typing.ReadableBuffer or str"""
 //|         ...
-//|
 STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -124,7 +123,6 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, si
 //|     """The 16-bit part of the UUID. (read-only)
 //|
 //|     :type: int"""
-//|
 STATIC mp_obj_t bleio_uuid_get_uuid16(mp_obj_t self_in) {
     bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_uuid_get_uuid16(self));
@@ -132,19 +130,14 @@ STATIC mp_obj_t bleio_uuid_get_uuid16(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid16_obj, bleio_uuid_get_uuid16);
 
-const mp_obj_property_t bleio_uuid_uuid16_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_uuid_get_uuid16_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(bleio_uuid_uuid16_obj,
+    (mp_obj_t)&bleio_uuid_get_uuid16_obj);
 
 //|     uuid128: bytes
 //|     """The 128-bit value of the UUID
 //|     Raises AttributeError if this is a 16-bit UUID. (read-only)
 //|
 //|     :type: bytes"""
-//|
 STATIC mp_obj_t bleio_uuid_get_uuid128(mp_obj_t self_in) {
     bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -158,19 +151,14 @@ STATIC mp_obj_t bleio_uuid_get_uuid128(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid128_obj, bleio_uuid_get_uuid128);
 
-const mp_obj_property_t bleio_uuid_uuid128_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_uuid_get_uuid128_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(bleio_uuid_uuid128_obj,
+    (mp_obj_t)&bleio_uuid_get_uuid128_obj);
 
 //|     size: int
 //|     """128 if this UUID represents a 128-bit vendor-specific UUID. 16 if this UUID represents a
 //|     16-bit Bluetooth SIG assigned UUID. (read-only) 32-bit UUIDs are not currently supported.
 //|
 //|     :type: int"""
-//|
 STATIC mp_obj_t bleio_uuid_get_size(mp_obj_t self_in) {
     bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_uuid_get_size(self));
@@ -178,18 +166,13 @@ STATIC mp_obj_t bleio_uuid_get_size(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_size_obj, bleio_uuid_get_size);
 
-const mp_obj_property_t bleio_uuid_size_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_uuid_get_size_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(bleio_uuid_size_obj,
+    (mp_obj_t)&bleio_uuid_get_size_obj);
 
 
 //|     def pack_into(self, buffer: WriteableBuffer, offset: int = 0) -> None:
 //|         """Packs the UUID into the given buffer at the given offset."""
 //|         ...
-//|
 STATIC mp_obj_t bleio_uuid_pack_into(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 

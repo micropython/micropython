@@ -34,13 +34,12 @@
 #include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """time and timing related functions
 //|
-//| The `time` module is a strict subset of the CPython `cpython:time` module. So, code
-//| using `time` written in CircuitPython will work in CPython but not necessarily the other
-//| way around."""
+//| |see_cpython_module| :mod:`cpython:time`.
+//| """
 //|
 //| def monotonic() -> float:
 //|     """Returns an always increasing value of time with an unknown reference
@@ -98,9 +97,7 @@ STATIC mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, s
     size_t len;
     mp_obj_t *items;
     mp_obj_get_array(args[0], &len, &items);
-    if (len != 9) {
-        mp_raise_TypeError(translate("time.struct_time() takes a 9-sequence"));
-    }
+    mp_arg_validate_length(len, 9, MP_QSTR_value);
     return namedtuple_make_new(type, len, 0, items);
 }
 

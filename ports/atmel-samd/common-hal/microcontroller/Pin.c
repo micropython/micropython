@@ -27,6 +27,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
@@ -210,5 +211,5 @@ mcu_pin_function_t *mcu_find_pin_function(mcu_pin_function_t *table, const mcu_p
             return table;
         }
     }
-    mp_raise_ValueError_varg(translate("%q pin invalid"), name);
+    mp_raise_ValueError_varg(translate("Invalid %q pin"), name);
 }

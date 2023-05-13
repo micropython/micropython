@@ -28,7 +28,7 @@ Classes
 
         - The optional *flags* can be 1 to check for overflow when adding items.
 
-    As well as supporting `bool` and `len`, deque objects have the following
+    As well as supporting ``bool`` and ``len``, deque objects have the following
     methods:
 
     .. method:: deque.append(x)

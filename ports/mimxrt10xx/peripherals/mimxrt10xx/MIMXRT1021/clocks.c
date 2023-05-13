@@ -36,6 +36,8 @@
 #include "fsl_clock.h"
 #include "fsl_iomuxc.h"
 
+#include "board.h"
+
 #include "clocks.h"
 
 // These values are pulled from the SDK's devices/MIMXRT1021/project_template/clock_config.* files.

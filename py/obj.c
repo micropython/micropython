@@ -41,7 +41,7 @@
 
 #include "supervisor/linker.h"
 #include "supervisor/shared/stack.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_t o_in) {
     #if MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
@@ -142,9 +142,33 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_print_helper(MP_PYTHON_PRINTER, o_in, kind);
 }
 
+static void mp_obj_print_inner_exception(const mp_print_t *print, mp_obj_t self_in, mp_int_t limit) {
+    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+    mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
+    const compressed_string_t *msg = MP_ERROR_TEXT("During handling of the above exception, another exception occurred:");
+    mp_obj_exception_t *inner = NULL;
+    if (self->cause) {
+        msg = MP_ERROR_TEXT("The above exception was the direct cause of the following exception:");
+        inner = self->cause;
+    } else if (!self->suppress_context) {
+        inner = self->context;
+    }
+    if (inner && !inner->marked) {
+        inner->marked = true;
+        mp_obj_print_exception_with_limit(print, MP_OBJ_FROM_PTR(inner), limit);
+        inner->marked = false;
+        mp_printf(print, "\n");
+        mp_cprintf(print, msg);
+        mp_printf(print, "\n\n");
+    }
+    #endif
+}
+
 // helper function to print an exception with traceback
 void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp_int_t limit) {
     if (mp_obj_is_exception_instance(exc) && stack_ok()) {
+        mp_obj_print_inner_exception(print, exc, limit);
+
         size_t n, *values;
         mp_obj_exception_get_traceback(exc, &n, &values);
         if (n > 0) {
@@ -488,14 +512,7 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
 void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
     size_t seq_len;
     mp_obj_get_array(o, &seq_len, items);
-    if (seq_len != len) {
-        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_ValueError(MP_ERROR_TEXT("tuple/list has wrong length"));
-        #else
-        mp_raise_ValueError_varg(
-            MP_ERROR_TEXT("requested length %d but object has length %d"), (int)len, (int)seq_len);
-        #endif
-    }
+    mp_arg_validate_length(seq_len, len, mp_obj_get_type(o)->name);
 }
 
 // is_slice determines whether the index is a slice index
@@ -504,13 +521,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
     if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError(MP_ERROR_TEXT("indices must be integers"));
-        #else
-        mp_raise_TypeError_varg(
-            MP_ERROR_TEXT("%q indices must be integers, not %s"),
-            type->name, mp_obj_get_type_str(index));
-        #endif
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_index, MP_QSTR_int, mp_obj_get_type(index)->name);
     }
 
     if (i < 0) {
@@ -523,14 +534,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
             i = len;
         }
     } else {
-        if (i < 0 || (mp_uint_t)i >= len) {
-            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_IndexError(MP_ERROR_TEXT("index out of range"));
-            #else
-            mp_raise_msg_varg(&mp_type_IndexError,
-                MP_ERROR_TEXT("%q index out of range"), type->name);
-            #endif
-        }
+        mp_arg_validate_index_range(i, 0, len - 1, MP_QSTR_index);
     }
 
     // By this point 0 <= i <= len and so fits in a size_t

@@ -35,7 +35,7 @@
 #include "py/runtime.h"
 
 #include "supervisor/shared/stack.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -106,7 +106,9 @@ STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *pos_args
     // copy in args
     memcpy(args2, pos_args, n_args * sizeof(mp_obj_t));
     // copy in kwargs
-    memcpy(args2 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
+    if (n_kw) {
+        memcpy(args2 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
+    }
     self->subobj[0] = native_base->make_new(native_base, n_args, n_kw, args2);
     m_del(mp_obj_t, args2, n_args + 2 * n_kw);
 
@@ -647,7 +649,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     mp_obj_t member = dest[0];
     if (member != MP_OBJ_NULL) {
         if (!(self->base.type->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
-            // Class doesn't have any special accessors to check so return straightaway
+            // Class doesn't have any special accessors to check so return straight away
             return;
         }
 
@@ -660,7 +662,8 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
             // be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
-            const mp_obj_t *proxy = mp_obj_property_get(member);
+            size_t n_proxy;
+            const mp_obj_t *proxy = mp_obj_property_get(member, &n_proxy);
             if (proxy[0] == mp_const_none) {
                 mp_raise_AttributeError(MP_ERROR_TEXT("unreadable attribute"));
             } else {
@@ -740,11 +743,12 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
             // would be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
-            const mp_obj_t *proxy = mp_obj_property_get(member[0]);
+            size_t n_proxy;
+            const mp_obj_t *proxy = mp_obj_property_get(member[0], &n_proxy);
             mp_obj_t dest[2] = {self_in, value};
             if (value == MP_OBJ_NULL) {
                 // delete attribute
-                if (proxy[2] == mp_const_none) {
+                if (n_proxy < 3 || proxy[2] == mp_const_none) {
                     // TODO better error message?
                     return false;
                 } else {
@@ -753,7 +757,7 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
                 }
             } else {
                 // store attribute
-                if (proxy[1] == mp_const_none) {
+                if (n_proxy < 2 || proxy[1] == mp_const_none) {
                     // TODO better error message?
                     return false;
                 } else {
@@ -1179,9 +1183,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);
     for (size_t i = 0; i < bases_len; i++) {
-        if (!mp_obj_is_type(bases_items[i], &mp_type_type)) {
-            mp_raise_TypeError(MP_ERROR_TEXT("type is not an acceptable base type"));
-        }
+        mp_arg_validate_type(bases_items[i], &mp_type_type, MP_QSTR___class__);
         mp_obj_type_t *t = MP_OBJ_TO_PTR(bases_items[i]);
         // TODO: Verify with CPy, tested on function type
         if (t->make_new == NULL) {
@@ -1374,7 +1376,8 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             // here...
             #if MICROPY_PY_BUILTINS_PROPERTY
             if (mp_obj_is_type(member, &mp_type_property)) {
-                const mp_obj_t *proxy = mp_obj_property_get(member);
+                size_t n_proxy;
+                const mp_obj_t *proxy = mp_obj_property_get(member, &n_proxy);
                 if (proxy[0] == mp_const_none) {
                     mp_raise_AttributeError(MP_ERROR_TEXT("unreadable attribute"));
                 } else {

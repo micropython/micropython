@@ -40,8 +40,17 @@
 //| class IS31FL3741_FrameBuffer:
 //|     """Creates an in-memory framebuffer for a IS31FL3741 device."""
 //|
-//|     def __init__(self, is31: is31fl3741.IS31FL3741, width: int, height: int, mapping: Tuple[int, ...], *,
-//|         framebuffer: Optional[WriteableBuffer] = None, scale: bool = False, gamma: bool = False) -> None:
+//|     def __init__(
+//|         self,
+//|         is31: is31fl3741.IS31FL3741,
+//|         width: int,
+//|         height: int,
+//|         mapping: Tuple[int, ...],
+//|         *,
+//|         framebuffer: Optional[WriteableBuffer] = None,
+//|         scale: bool = False,
+//|         gamma: bool = False
+//|     ) -> None:
 //|         """Create a IS31FL3741_FrameBuffer object with the given attributes.
 //|
 //|         The framebuffer is in "RGB888" format using 4 bytes per pixel.
@@ -62,7 +71,6 @@
 //|         :param bool scale: if True display is scaled down by 3 when displayed
 //|         :param bool gamma: if True apply gamma correction to all LEDs"""
 //|         ...
-//|
 STATIC mp_obj_t is31fl3741_FrameBuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_is31, ARG_width, ARG_height, ARG_mapping, ARG_framebuffer, ARG_scale, ARG_gamma };
     static const mp_arg_t allowed_args[] = {
@@ -123,7 +131,6 @@ STATIC mp_obj_t is31fl3741_FrameBuffer_make_new(const mp_obj_type_t *type, size_
 //|         IS31FL3741 instance.  After deinitialization, no further operations
 //|         may be performed."""
 //|         ...
-//|
 STATIC mp_obj_t is31fl3741_FrameBuffer_deinit(mp_obj_t self_in) {
     is31fl3741_FrameBuffer_obj_t *self = (is31fl3741_FrameBuffer_obj_t *)self_in;
     common_hal_is31fl3741_FrameBuffer_deinit(self);
@@ -140,7 +147,6 @@ static void check_for_deinit(is31fl3741_FrameBuffer_obj_t *self) {
 //|     brightness: float
 //|     """In the current implementation, 0.0 turns the display off entirely
 //|     and any other value up to 1.0 turns the display on fully."""
-//|
 STATIC mp_obj_t is31fl3741_FrameBuffer_get_brightness(mp_obj_t self_in) {
     is31fl3741_FrameBuffer_obj_t *self = (is31fl3741_FrameBuffer_obj_t *)self_in;
     check_for_deinit(self);
@@ -156,7 +162,7 @@ STATIC mp_obj_t is31fl3741_FrameBuffer_set_brightness(mp_obj_t self_in, mp_obj_t
     check_for_deinit(self);
     mp_float_t brightness = mp_obj_get_float(value_in);
     if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
+        mp_raise_ValueError_varg(translate("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
     }
 
     uint8_t current = (uint8_t)(brightness * 0xFF);
@@ -166,18 +172,14 @@ STATIC mp_obj_t is31fl3741_FrameBuffer_set_brightness(mp_obj_t self_in, mp_obj_t
 }
 MP_DEFINE_CONST_FUN_OBJ_2(is31fl3741_FrameBuffer_set_brightness_obj, is31fl3741_FrameBuffer_set_brightness);
 
-const mp_obj_property_t is31fl3741_FrameBuffer_brightness_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&is31fl3741_FrameBuffer_get_brightness_obj,
-              (mp_obj_t)&is31fl3741_FrameBuffer_set_brightness_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(is31fl3741_FrameBuffer_brightness_obj,
+    (mp_obj_t)&is31fl3741_FrameBuffer_get_brightness_obj,
+    (mp_obj_t)&is31fl3741_FrameBuffer_set_brightness_obj);
 
 //|     def refresh(self) -> None:
 //|         """Transmits the color data in the buffer to the pixels so that
 //|         they are shown."""
 //|         ...
-//|
 STATIC mp_obj_t is31fl3741_FrameBuffer_refresh(mp_obj_t self_in) {
     is31fl3741_FrameBuffer_obj_t *self = (is31fl3741_FrameBuffer_obj_t *)self_in;
     check_for_deinit(self);
@@ -188,19 +190,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_FrameBuffer_refresh_obj, is31fl3741_FrameBu
 
 //|     width: int
 //|     """The width of the display, in pixels"""
-//|
 STATIC mp_obj_t is31fl3741_FrameBuffer_get_width(mp_obj_t self_in) {
     is31fl3741_FrameBuffer_obj_t *self = (is31fl3741_FrameBuffer_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_is31fl3741_FrameBuffer_get_width(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_FrameBuffer_get_width_obj, is31fl3741_FrameBuffer_get_width);
-const mp_obj_property_t is31fl3741_FrameBuffer_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&is31fl3741_FrameBuffer_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(is31fl3741_FrameBuffer_width_obj,
+    (mp_obj_t)&is31fl3741_FrameBuffer_get_width_obj);
 
 //|     height: int
 //|     """The height of the display, in pixels"""
@@ -211,12 +208,8 @@ STATIC mp_obj_t is31fl3741_FrameBuffer_get_height(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_is31fl3741_FrameBuffer_get_height(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_FrameBuffer_get_height_obj, is31fl3741_FrameBuffer_get_height);
-const mp_obj_property_t is31fl3741_FrameBuffer_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&is31fl3741_FrameBuffer_get_height_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(is31fl3741_FrameBuffer_height_obj,
+    (mp_obj_t)&is31fl3741_FrameBuffer_get_height_obj);
 
 STATIC const mp_rom_map_elem_t is31fl3741_FrameBuffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&is31fl3741_FrameBuffer_deinit_obj) },

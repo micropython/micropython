@@ -22,42 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Select the board to build for.
-ifeq ($(BOARD),)
-  $(info You must provide a BOARD parameter with 'BOARD=')
-  $(info Possible values are:)
-  $(info $(sort $(subst /.,,$(subst boards/,,$(wildcard boards/*/.)))))
-  $(error BOARD not defined)
-else
-  ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD specified)
-  endif
-endif
-
-CLI_SD := $(SD)
-SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
-
-# Build directory with SD if it's different from the default.
-BUILD ?= $(if $(CLI_SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
-
-include ../../py/mkenv.mk
-# Board-specific
-include boards/$(BOARD)/mpconfigboard.mk
-# Port-specific
-include mpconfigport.mk
-# CircuitPython-specific
-include $(TOP)/py/circuitpy_mpconfig.mk
-
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-
-# include py core make definitions
-include $(TOP)/py/py.mk
-
-include $(TOP)/supervisor/supervisor.mk
-
-# Include make rules and variables common across CircuitPython builds.
-include $(TOP)/py/circuitpy_defns.mk
+include ../../py/circuitpy_mkenv.mk
 
 ifneq ($(SD), )
 	include bluetooth/bluetooth_common.mk
@@ -91,7 +56,6 @@ ifeq ($(DEBUG), 1)
 else
   OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
   CFLAGS += -DNDEBUG -ggdb3
-  CFLAGS += -flto -flto-partition=none
 endif
 
 ifeq ($(NRF_DEBUG_PRINT), 1)
@@ -166,7 +130,6 @@ endif
 
 SRC_C += \
 	background.c \
-	fatfs_port.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
@@ -249,7 +212,7 @@ $(BUILD)/firmware.elf: $(OBJ) $(GENERATED_LD_FILE)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
 	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
-	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE)
+	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE) $(BUILD)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
@@ -278,7 +241,7 @@ FLASHER ?=
 
 ifeq ($(FLASHER),)
 
-# Also update to bootloader settting to validate application and skip checksum ( app valid = 0x0001, crc = 0x0000 )
+# Also update to bootloader setting to validate application and skip checksum ( app valid = 0x0001, crc = 0x0000 )
 flash: $(BUILD)/firmware.hex
 	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --erasepage $(BOOT_SETTING_ADDR) -f $(MCU_VARIANT)
@@ -312,7 +275,8 @@ endif
 #####################
 .phony: dfu-gen dfu-flash
 
-NRFUTIL = adafruit-nrfutil
+NRFUTIL = nrfutil
+ADAFRUIT_NRFUTIL = adafruit-nrfutil
 
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 	DFU_TOUCH = --touch 1200
@@ -330,14 +294,19 @@ __check_defined = \
 ## Flash with DFU serial
 dfu-flash: $(BUILD)/dfu-package.zip
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
-	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank $(DFU_TOUCH)
+	$(ADAFRUIT_NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank $(DFU_TOUCH)
 
 ## Create DFU package file
 dfu-gen: $(BUILD)/dfu-package.zip
 
 $(BUILD)/dfu-package.zip: $(BUILD)/firmware.hex
-	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
+	$(ADAFRUIT_NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
 
+# Espruino DFU
+$(BUILD)/firmware.espruino.zip: $(BUILD)/firmware.hex
+	$(Q)$(NRFUTIL) pkg generate $(BUILD)/firmware.espruino.zip --application $^ --application-version 0xff --hw-version 52 --sd-req 0xa9,0xae,0xb6 --key-file espruino_dfu_private_key.pem
+
+espruino-dfu-gen: $(BUILD)/firmware.espruino.zip
 
 include $(TOP)/py/mkrules.mk
 

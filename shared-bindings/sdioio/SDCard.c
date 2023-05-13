@@ -38,7 +38,7 @@
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class SDCard:
 //|     """SD Card Block Interface with SDIO
@@ -49,7 +49,13 @@
 //|     25MHz.  Usually an SDCard object is used with ``storage.VfsFat``
 //|     to allow file I/O to an SD card."""
 //|
-//|     def __init__(self, clock: microcontroller.Pin, command: microcontroller.Pin, data: Sequence[microcontroller.Pin], frequency: int) -> None:
+//|     def __init__(
+//|         self,
+//|         clock: microcontroller.Pin,
+//|         command: microcontroller.Pin,
+//|         data: Sequence[microcontroller.Pin],
+//|         frequency: int,
+//|     ) -> None:
 //|         """Construct an SDIO SD Card object with the given properties
 //|
 //|         :param ~microcontroller.Pin clock: the pin to use for the clock.
@@ -76,7 +82,6 @@
 //|             storage.mount(vfs, '/sd')
 //|             os.listdir('/sd')"""
 //|         ...
-//|
 
 STATIC mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     sdioio_sdcard_obj_t *self = m_new_obj(sdioio_sdcard_obj_t);
@@ -93,8 +98,8 @@ STATIC mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args,
 
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
-    const mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
+    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj, MP_QSTR_clock);
+    const mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj, MP_QSTR_command);
     const mcu_pin_obj_t *data_pins[4];
     uint8_t num_data;
     validate_list_is_free_pins(MP_QSTR_data, data_pins, MP_ARRAY_SIZE(data_pins), args[ARG_data].u_obj, &num_data);
@@ -116,7 +121,6 @@ STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
 //|         :param int width: the number of data lines to use.  Must be 1 or 4 and must also not exceed the number of data lines at construction
 //|
 //|         .. note:: Leaving a value unspecified or 0 means the current setting is kept"""
-//|
 STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_frequency, ARG_width, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
@@ -129,14 +133,10 @@ STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args,
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t frequency = args[ARG_frequency].u_int;
-    if (frequency < 0) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_baudrate);
-    }
-
+    mp_int_t frequency = mp_arg_validate_int_min(args[ARG_frequency].u_int, 1, MP_QSTR_frequency);
     uint8_t width = args[ARG_width].u_int;
     if (width != 0 && width != 1 && width != 4) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_width);
+        mp_arg_error_invalid(MP_QSTR_width);
     }
 
     if (!common_hal_sdioio_sdcard_configure(self, frequency, width)) {
@@ -152,7 +152,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(sdioio_sdcard_configure_obj, 1, sdioio_sdcard_configu
 //|         Due to technical limitations, this is a function and not a property.
 //|
 //|         :return: The number of 512-byte blocks, as a number"""
-//|
 STATIC mp_obj_t sdioio_sdcard_count(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -161,7 +160,6 @@ STATIC mp_obj_t sdioio_sdcard_count(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_count_obj, sdioio_sdcard_count);
 
 //|     def readblocks(self, start_block: int, buf: WriteableBuffer) -> None:
-//|
 //|         """Read one or more blocks from the card
 //|
 //|         :param int start_block: The block to start reading from
@@ -183,14 +181,12 @@ STATIC mp_obj_t sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_
 MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, sdioio_sdcard_readblocks);
 
 //|     def writeblocks(self, start_block: int, buf: ReadableBuffer) -> None:
-//|
 //|         """Write one or more blocks to the card
 //|
 //|         :param int start_block: The block to start writing from
 //|         :param ~circuitpython_typing.ReadableBuffer buf: The buffer to read from.  Length must be multiple of 512.
 //|
 //|         :return: None"""
-//|
 STATIC mp_obj_t sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
@@ -205,12 +201,9 @@ STATIC mp_obj_t sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block
 
 MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_writeblocks_obj, sdioio_sdcard_writeblocks);
 
-//|     @property
-//|     def frequency(self) -> int:
-//|         """The actual SDIO bus frequency. This may not match the frequency
-//|         requested due to internal limitations."""
-//|         ...
-//|
+//|     frequency: int
+//|     """The actual SDIO bus frequency. This may not match the frequency
+//|     requested due to internal limitations."""
 STATIC mp_obj_t sdioio_sdcard_obj_get_frequency(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -218,18 +211,11 @@ STATIC mp_obj_t sdioio_sdcard_obj_get_frequency(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_get_frequency_obj, sdioio_sdcard_obj_get_frequency);
 
-const mp_obj_property_t sdioio_sdcard_frequency_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&sdioio_sdcard_get_frequency_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(sdioio_sdcard_frequency_obj,
+    (mp_obj_t)&sdioio_sdcard_get_frequency_obj);
 
-//|     @property
-//|     def width(self) -> int:
-//|         """The actual SDIO bus width, in bits"""
-//|         ...
-//|
+//|     width: int
+//|     """The actual SDIO bus width, in bits"""
 STATIC mp_obj_t sdioio_sdcard_obj_get_width(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -237,12 +223,8 @@ STATIC mp_obj_t sdioio_sdcard_obj_get_width(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_get_width_obj, sdioio_sdcard_obj_get_width);
 
-const mp_obj_property_t sdioio_sdcard_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&sdioio_sdcard_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(sdioio_sdcard_width_obj,
+    (mp_obj_t)&sdioio_sdcard_get_width_obj);
 
 //|     def deinit(self) -> None:
 //|         """Disable permanently.
@@ -259,7 +241,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_deinit_obj, sdioio_sdcard_obj_deinit);
 //|         """No-op used by Context Managers.
 //|         Provided by context manager helper."""
 //|         ...
-//|
 
 //|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See

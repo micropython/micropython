@@ -24,57 +24,49 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from collections import defaultdict
 import argparse
 import pathlib
 import re
 import sys
 
-DEFAULT_IGNORELIST = [
-    "circuitplayground_express",
-    "circuitplayground_express_crickit",
-    "circuitplayground_express_displayio",
-    "pycubed",
-    "pycubed_mram",
-    "pycubed_v05",
-    "pycubed_mram_v05",
-    "pygamer",
-    "pygamer_advance",
-    "trinket_m0",
-    "trinket_m0_haxpress",
-    "sparkfun_qwiic_micro_with_flash",
-    "sparkfun_qwiic_micro_no_flash",
-    "feather_m0_express",
-    "feather_m0_supersized",
-    "cp32-m4",
-    "metro_m4_express",
-    "unexpectedmaker_feathers2",
-    "unexpectedmaker_feathers2_prerelease",
-    "espressif_kaluga_1",
-    "espressif_kaluga_1.3",
-    "espressif_esp32s2_devkitc_1_n4",
-    "espressif_esp32s2_devkitc_1_n4r2",
-    "espressif_esp32s3_devkitc_1_n8",
-    "espressif_esp32s3_devkitc_1_n8r2",
-    "espressif_esp32s3_devkitc_1_n8r8",
-    "espressif_saola_1_wrover",
-    "jpconstantineau_pykey18",
-    "jpconstantineau_pykey44",
-    "jpconstantineau_pykey60",
-    "jpconstantineau_pykey87",
-]
+DEFAULT_CLUSTERLIST = {
+    "0x04D8:0xEC44": ["pycubed", "pycubed_mram", "pycubed_mram_v05", "pycubed_v05"],
+    "0x1B4F:0x8D24": ["sparkfun_qwiic_micro_no_flash", "sparkfun_qwiic_micro_with_flash"],
+    "0x1D50:0x6153": [
+        "jpconstantineau_pykey18",
+        "jpconstantineau_pykey44",
+        "jpconstantineau_pykey60",
+        "jpconstantineau_pykey87",
+    ],
+    "0x239A:0x8019": [
+        "circuitplayground_express",
+        "circuitplayground_express_crickit",
+        "circuitplayground_express_displayio",
+    ],
+    "0x239A:0x801F": ["trinket_m0_haxpress", "trinket_m0"],
+    "0x239A:0x8021": ["metro_m4_express", "cp32-m4"],
+    "0x239A:0x8023": ["feather_m0_express", "feather_m0_supersized"],
+    "0x239A:0x80A6": ["espressif_esp32s2_devkitc_1_n4r2", "espressif_saola_1_wrover"],
+    "0x239A:0x80AC": ["unexpectedmaker_feathers2", "unexpectedmaker_feathers2_prerelease"],
+    "0x239A:0x80C8": ["espressif_kaluga_1", "espressif_kaluga_1.3"],
+    "0x303A:0x7003": [
+        "espressif_esp32s3_devkitc_1_n8",
+        "espressif_esp32s3_devkitc_1_n8r2",
+        "espressif_esp32s3_devkitc_1_n8r8",
+        "espressif_esp32s3_devkitc_1_n32r8",
+    ],
+    "0x303A:0x7009": [
+        "espressif_esp32s2_devkitc_1_n4",
+        "espressif_esp32s2_devkitc_1_n4r2",
+        "espressif_esp32s2_devkitc_1_n8r2",
+    ],
+    "0x239A:0x102E": ["weact_studio_pico", "weact_studio_pico_16mb"],
+    "0x303A:0x8166": ["yd_esp32_s3_n8r8", "yd_esp32_s3_n16r8"],
+}
 
-cli_parser = argparse.ArgumentParser(description="USB VID/PID Duplicate Checker")
-cli_parser.add_argument(
-    "--ignorelist",
-    dest="ignorelist",
-    nargs="?",
-    action="store",
-    default=DEFAULT_IGNORELIST,
-    help=(
-        "Board names to ignore duplicate VID/PID combinations. Pass an empty "
-        "string to disable all duplicate ignoring. Defaults are: "
-        f"{', '.join(DEFAULT_IGNORELIST)}"
-    ),
+cli_parser = argparse.ArgumentParser(
+    description="USB VID/PID and Creator/Creation ID Duplicate Checker"
 )
 
 
@@ -88,63 +80,74 @@ def configboard_files():
     return working_dir.glob("ports/**/boards/**/mpconfigboard.mk")
 
 
-def check_vid_pid(files, ignorelist):
+VID_PATTERN = re.compile(r"^USB_VID\s*=\s*(.*)", flags=re.M)
+PID_PATTERN = re.compile(r"^USB_PID\s*=\s*(.*)", flags=re.M)
+CREATOR_PATTERN = re.compile(r"^CIRCUITPY_CREATOR_ID\s*=\s*(.*)", flags=re.M)
+CREATION_PATTERN = re.compile(r"^CIRCUITPY_CREATION_ID\s*=\s*(.*)", flags=re.M)
+
+
+def check_vid_pid(files, clusterlist):
     """Compiles a list of USB VID & PID values for all boards, and checks
     for duplicates. Exits with ``sys.exit()`` (non-zero exit code)
     if duplicates are found, and lists the duplicates.
     """
 
-    duplicates_found = False
+    usb_pattern = re.compile(r"^CIRCUITPY_USB\s*=\s*0$|^IDF_TARGET = (esp32|esp32c3)$", flags=re.M)
 
-    usb_ids = {}
-
-    vid_pattern = re.compile(r"^USB_VID\s*\=\s*(.*)", flags=re.M)
-    pid_pattern = re.compile(r"^USB_PID\s*\=\s*(.*)", flags=re.M)
-
+    usb_ids = defaultdict(set)
     for board_config in files:
         src_text = board_config.read_text()
 
-        usb_vid = vid_pattern.search(src_text)
-        usb_pid = pid_pattern.search(src_text)
-
+        usb_vid = VID_PATTERN.search(src_text)
+        usb_pid = PID_PATTERN.search(src_text)
+        creator = CREATOR_PATTERN.search(src_text)
+        creation = CREATION_PATTERN.search(src_text)
+        non_usb = usb_pattern.search(src_text)
         board_name = board_config.parts[-2]
 
-        board_ignorelisted = False
-        if board_name in ignorelist:
-            board_ignorelisted = True
-            board_name += " (ignorelisted)"
-
         if usb_vid and usb_pid:
-            id_group = f"{usb_vid.group(1)}:{usb_pid.group(1)}"
-            if id_group not in usb_ids:
-                usb_ids[id_group] = {"boards": [board_name], "duplicate": False}
+            id_group = f"0x{int(usb_vid.group(1), 16):04X}:0x{int(usb_pid.group(1), 16):04X}"
+        elif non_usb:
+            if creator is None or creation is None:
+                print(f"{board_name=} {creator=} {creation=}", file=sys.stderr)
+                continue
+            id_group = f"0x{int(creator.group(1), 16):08X}:0x{int(creation.group(1), 16):08X}"
+        else:
+            raise SystemExit(f"Could not find expected settings in {board_config}")
+
+        usb_ids[id_group].add(board_name)
+
+    duplicates = []
+    for key, boards in usb_ids.items():
+        if len(boards) == 1:
+            continue
+
+        # It is a cluster
+        cluster = set(clusterlist.get(key, []))
+        if cluster != boards:
+            if key == "":
+                duplicates.append(f"- Non-USB:\n" f"  Boards: {', '.join(sorted(boards))}")
             else:
-                usb_ids[id_group]["boards"].append(board_name)
-                if not board_ignorelisted:
-                    usb_ids[id_group]["duplicate"] = True
-                    duplicates_found = True
+                duplicates.append(f"- VID/PID: {key}\n" f"  Boards: {', '.join(sorted(boards))}")
 
-    if duplicates_found:
-        duplicates = ""
-        for key, value in usb_ids.items():
-            if value["duplicate"]:
-                duplicates += f"- VID/PID: {key}\n" f"  Boards: {', '.join(value['boards'])}\n"
-
+    if duplicates:
+        duplicates = "\n".join(duplicates)
         duplicate_message = (
             f"Duplicate VID/PID usage found!\n{duplicates}\n"
             f"If you are open source maker, then you can request a PID from http://pid.codes\n"
+            f"For boards without native USB, you can request a Creator ID from https://github.com/creationid/creators/\n"
             f"Otherwise, companies should pay the USB-IF for a vendor ID: https://www.usb.org/getting-vendor-id"
         )
         sys.exit(duplicate_message)
+
     else:
-        print("No USB PID duplicates found.")
+        print("No unexpected ID duplicates found.")
 
 
 if __name__ == "__main__":
     arguments = cli_parser.parse_args()
 
-    print("Running USB VID/PID Duplicate Checker...")
-    print(f"Ignoring the following boards: {', '.join(arguments.ignorelist)}", end="\n\n")
+    print("Running USB VID/PID and Creator/Creation ID Duplicate Checker...")
 
     board_files = configboard_files()
-    check_vid_pid(board_files, arguments.ignorelist)
+    check_vid_pid(board_files, DEFAULT_CLUSTERLIST)

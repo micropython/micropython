@@ -83,6 +83,8 @@ typedef struct {
 } TINF_TREE;
 
 struct uzlib_uncomp {
+    /* Point to the CircuitPython object that owns this decompression stream */
+    void *self;
     /* Pointer to the next byte in the input buffer */
     const unsigned char *source;
     /* Pointer to the next byte past the input buffer (source_limit = source + len) */

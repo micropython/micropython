@@ -60,7 +60,6 @@
 //|     def __init__(self) -> None:
 //|         """Initialize camera."""
 //|         ...
-//|
 STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     camera_obj_t *self = m_new_obj(camera_obj_t);
     self->base.type = &camera_type;
@@ -74,7 +73,6 @@ STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 //|     def deinit(self) -> None:
 //|         """De-initialize camera."""
 //|         ...
-//|
 STATIC mp_obj_t camera_obj_deinit(mp_obj_t self_in) {
     camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_camera_deinit(self);

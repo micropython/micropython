@@ -37,13 +37,19 @@
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class I2CDisplay:
 //|     """Manage updating a display over I2C in the background while Python code runs.
 //|     It doesn't handle display initialization."""
 //|
-//|     def __init__(self, i2c_bus: busio.I2C, *, device_address: int, reset: Optional[microcontroller.Pin] = None) -> None:
+//|     def __init__(
+//|         self,
+//|         i2c_bus: busio.I2C,
+//|         *,
+//|         device_address: int,
+//|         reset: Optional[microcontroller.Pin] = None
+//|     ) -> None:
 //|         """Create a I2CDisplay object associated with the given I2C bus and reset pin.
 //|
 //|         The I2C bus and pins are then in use by the display until `displayio.release_displays()` is
@@ -53,9 +59,9 @@
 //|
 //|         :param busio.I2C i2c_bus: The I2C bus that make up the clock and data lines
 //|         :param int device_address: The I2C address of the device
-//|         :param microcontroller.Pin reset: Reset pin. When None only software reset can be used"""
+//|         :param microcontroller.Pin reset: Reset pin. When None only software reset can be used
+//|         """
 //|         ...
-//|
 STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_i2c_bus, ARG_device_address, ARG_reset };
     static const mp_arg_t allowed_args[] = {
@@ -66,7 +72,7 @@ STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj);
+    const mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj, MP_QSTR_reset);
 
     mp_obj_t i2c = mp_arg_validate_type(args[ARG_i2c_bus].u_obj, &busio_i2c_type, MP_QSTR_i2c_bus);
     displayio_i2cdisplay_obj_t *self = &allocate_display_bus_or_raise()->i2cdisplay_bus;
@@ -81,7 +87,6 @@ STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t 
 //|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
 //|         is available."""
 //|         ...
-//|
 STATIC mp_obj_t displayio_i2cdisplay_obj_reset(mp_obj_t self_in) {
     displayio_i2cdisplay_obj_t *self = self_in;
 
@@ -98,10 +103,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_i2cdisplay_reset_obj, displayio_i2cdisplay_o
 //|         ...
 //|
 STATIC mp_obj_t displayio_i2cdisplay_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
-    mp_int_t command_int = MP_OBJ_SMALL_INT_VALUE(command_obj);
-    if (!mp_obj_is_small_int(command_obj) || command_int > 255 || command_int < 0) {
-        mp_raise_ValueError(translate("Command must be an int between 0 and 255"));
-    }
+    mp_int_t command_int = mp_obj_get_int(command_obj);
+    mp_arg_validate_int_range(command_int, 0, 255, MP_QSTR_command);
+
     uint8_t command = command_int;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_obj, &bufinfo, MP_BUFFER_READ);

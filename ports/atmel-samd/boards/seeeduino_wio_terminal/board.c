@@ -65,11 +65,11 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
+    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_PB20, &pin_PB19, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
@@ -80,7 +80,7 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_display_obj_t *display = &displays[0].display;
+    displayio_display_obj_t *display = &allocate_display()->display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,
@@ -102,14 +102,14 @@ void board_init(void) {
         sizeof(display_init_sequence),
         &pin_PC05,  // backlight pin
         NO_BRIGHTNESS_COMMAND,
-        1.0f, // brightness (ignored)
-        true, // auto_brightness
+        1.0f, // brightness
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
         true, // backlight_on_high
-        false); // SH1107_addressing
+        false, // SH1107_addressing
+        50000); // backlight pwm frequency
 
     // Enabling the Power of the 40-pin at the back
     CTR_5V.base.type = &digitalio_digitalinout_type;
@@ -133,13 +133,6 @@ void board_init(void) {
     reset_pin_number(pin_PA18.number);
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
 void board_deinit(void) {
     common_hal_displayio_release_displays();
     common_hal_digitalio_digitalinout_deinit(&CTR_5V);
@@ -150,3 +143,5 @@ void board_deinit(void) {
     // Pin state is kept during BACKUP sleep.
     gpio_set_pin_direction(pin_PA18.number, GPIO_DIRECTION_OUT);
 }
+
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

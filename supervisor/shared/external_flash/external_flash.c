@@ -58,6 +58,9 @@ static supervisor_allocation *supervisor_cache = NULL;
 
 // Wait until both the write enable and write in progress bits have cleared.
 static bool wait_for_flash_ready(void) {
+    if (flash_device == NULL) {
+        return false;
+    }
     bool ok = true;
     // Both the write enable and write in progress bits should be low.
     if (flash_device->no_ready_bit) {
@@ -94,7 +97,7 @@ static bool write_flash(uint32_t address, const uint8_t *data, uint32_t data_len
     if (flash_device == NULL) {
         return false;
     }
-    // Don't bother writing if the data is all 1s. Thats equivalent to the flash
+    // Don't bother writing if the data is all 1s. That's equivalent to the flash
     // state after an erase.
     if (!flash_device->no_erase_cmd) {
         // Only do this if the device has an erase command
@@ -192,6 +195,9 @@ static bool copy_block(uint32_t src_address, uint32_t dest_address) {
     return true;
 }
 
+#define READ_JEDEC_ID_RETRY_COUNT (100)
+
+// If this fails, flash_device will remain NULL.
 void supervisor_flash_init(void) {
     if (flash_device != NULL) {
         return;
@@ -220,7 +226,11 @@ void supervisor_flash_init(void) {
     #else
     // The response will be 0xff if the flash needs more time to start up.
     uint8_t jedec_id_response[3] = {0xff, 0xff, 0xff};
-    while (jedec_id_response[0] == 0xff) {
+    // Response can also be 0x00 if reading before ready. When compiled with `-O2`, typically
+    // takes three tries to read on Grand Central M4.
+
+    size_t count = READ_JEDEC_ID_RETRY_COUNT;
+    while ((count-- > 0) && (jedec_id_response[0] == 0xff || jedec_id_response[2] == 0x00)) {
         spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
     }
     for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
@@ -234,6 +244,7 @@ void supervisor_flash_init(void) {
     }
     #endif
     if (flash_device == NULL) {
+        // Flash did not respond. Give up.
         return;
     }
 
@@ -293,6 +304,9 @@ uint32_t supervisor_flash_get_block_size(void) {
 
 // The total number of available blocks.
 uint32_t supervisor_flash_get_block_count(void) {
+    if (flash_device == NULL) {
+        return 0;
+    }
     // We subtract one erase sector size because we may use it as a staging area
     // for writes.
     return (flash_device->total_size - SPI_FLASH_ERASE_SIZE) / FILESYSTEM_BLOCK_SIZE;
@@ -587,4 +601,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
         }
     }
     return 0; // success
+}
+
+void MP_WEAK external_flash_setup(void) {
 }

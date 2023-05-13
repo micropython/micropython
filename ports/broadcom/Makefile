@@ -1,35 +1,28 @@
-# Select the board to build for.
-BOARD=raspberrypi_pi4
+# This file is part of the MicroPython project, http://micropython.org/
+#
+# The MIT License (MIT)
+#
+# SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
-ifeq ($(BOARD),)
-	$(error You must provide a BOARD parameter)
-else
-	ifeq ($(wildcard boards/$(BOARD)/.),)
-		$(error Invalid BOARD specified)
-	endif
-endif
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
-include ../../py/mkenv.mk
-# Board-specific
-include boards/$(BOARD)/mpconfigboard.mk
-# Port-specific
-include mpconfigport.mk
-# CircuitPython-specific
-include $(TOP)/py/circuitpy_mpconfig.mk
-
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-
-# include py core make definitions
-include $(TOP)/py/py.mk
-
-include $(TOP)/supervisor/supervisor.mk
-
-# Include make rules and variables common across CircuitPython builds.
-include $(TOP)/py/circuitpy_defns.mk
+include ../../py/circuitpy_mkenv.mk
 
 ifeq ($(CHIP_VARIANT), "bcm2711")
 CFLAGS += -mcpu=cortex-a72 -DBCM_VERSION=2711
@@ -65,7 +58,6 @@ SRC_C += bindings/videocore/__init__.c \
 	     boards/$(BOARD)/pins.c \
 	     background.c \
 	     common-hal/videocore/Framebuffer.c \
-	     fatfs_port.c \
 		 mphalport.c \
 		 lib/sdmmc/sdmmc_cmd.c \
 		 lib/sdmmc/sdmmc_common.c \
@@ -107,7 +99,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 # BCM CLFAGS
-CFLAGS += -ffreestanding -nostartfiles -DMICROPY_HW_MCU_NAME="\"$(CHIP_VARIANT)\""
+CFLAGS += -nostartfiles -DMICROPY_HW_MCU_NAME="\"$(CHIP_VARIANT)\""
 
 
 OPTIMIZATION_FLAGS ?= -O3

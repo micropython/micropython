@@ -72,7 +72,10 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         fb_getter_default(get_pixels_in_byte_share_row, false),
         fb_getter_default(get_bytes_per_cell, 2),
         fb_getter_default(get_reverse_pixels_in_byte, false),
-        fb_getter_default(get_reverse_pixels_in_word, false)
+        fb_getter_default(get_reverse_pixels_in_word, false),
+        // Region update related settings that aren't used by framebuffer display.
+        NO_COMMAND, NO_COMMAND, NO_COMMAND, NO_COMMAND,
+        false, false, false, false
         );
 
     self->first_pixel_offset = fb_getter_default(get_first_pixel_offset, 0);
@@ -83,9 +86,8 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 
     self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
     size_t framebuffer_size = self->first_pixel_offset + self->row_stride * self->core.height;
-    if (self->bufinfo.len < framebuffer_size) {
-        mp_raise_IndexError_varg(translate("Framebuffer requires %d bytes"), framebuffer_size);
-    }
+
+    mp_arg_validate_length_min(self->bufinfo.len, framebuffer_size, MP_QSTR_framebuffer);
 
     self->first_manual_refresh = !auto_refresh;
 
@@ -103,7 +105,10 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 }
 
 bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
-    return displayio_display_core_show(&self->core, root_group);
+    if (root_group == NULL) {
+        root_group = &circuitpython_splash;
+    }
+    return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
 uint16_t common_hal_framebufferio_framebufferdisplay_get_width(framebufferio_framebufferdisplay_obj_t *self) {
@@ -112,20 +117,6 @@ uint16_t common_hal_framebufferio_framebufferdisplay_get_width(framebufferio_fra
 
 uint16_t common_hal_framebufferio_framebufferdisplay_get_height(framebufferio_framebufferdisplay_obj_t *self) {
     return displayio_display_core_get_height(&self->core);
-}
-
-bool common_hal_framebufferio_framebufferdisplay_get_auto_brightness(framebufferio_framebufferdisplay_obj_t *self) {
-    if (self->framebuffer_protocol->get_auto_brightness) {
-        return self->framebuffer_protocol->get_auto_brightness(self->framebuffer);
-    }
-    return true;
-}
-
-bool common_hal_framebufferio_framebufferdisplay_set_auto_brightness(framebufferio_framebufferdisplay_obj_t *self, bool auto_brightness) {
-    if (self->framebuffer_protocol->set_auto_brightness) {
-        return self->framebuffer_protocol->set_auto_brightness(self->framebuffer, auto_brightness);
-    }
-    return false;
 }
 
 mp_float_t common_hal_framebufferio_framebufferdisplay_get_brightness(framebufferio_framebufferdisplay_obj_t *self) {
@@ -372,4 +363,19 @@ void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj
     } else {
         release_framebufferdisplay(self);
     }
+}
+
+mp_obj_t common_hal_framebufferio_framebufferdisplay_get_root_group(framebufferio_framebufferdisplay_obj_t *self) {
+    if (self->core.current_group == NULL) {
+        return mp_const_none;
+    }
+    return self->core.current_group;
+}
+
+mp_obj_t common_hal_framebufferio_framebufferdisplay_set_root_group(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
+    bool ok = displayio_display_core_set_root_group(&self->core, root_group);
+    if (!ok) {
+        mp_raise_ValueError(translate("Group already used"));
+    }
+    return mp_const_none;
 }

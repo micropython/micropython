@@ -28,7 +28,7 @@
 #include "py/runtime.h"
 #include <stdio.h>
 
-#include "common-hal/alarm/__init__.h"
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/time/__init__.h"
 
@@ -49,12 +49,13 @@ mp_obj_t alarm_time_timealarm_find_triggered_alarm(size_t n_alarms, const mp_obj
     return mp_const_none;
 }
 
-mp_obj_t alarm_time_timealarm_create_wakeup_alarm(void) {
-    alarm_time_timealarm_obj_t *timer = m_new_obj(alarm_time_timealarm_obj_t);
-    timer->base.type = &alarm_time_timealarm_type;
+mp_obj_t alarm_time_timealarm_record_wake_alarm(void) {
+    alarm_time_timealarm_obj_t *const alarm = &alarm_wake_alarm.time_alarm;
+
+    alarm->base.type = &alarm_time_timealarm_type;
     // TODO: Set monotonic_time based on the RTC state.
-    timer->monotonic_time = 0.0f;
-    return timer;
+    alarm->monotonic_time = 0.0f;
+    return alarm;
 }
 
 bool alarm_time_timealarm_woke_this_cycle(void) {
@@ -85,7 +86,7 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
             continue;
         }
         if (timealarm_set) {
-            mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
+            mp_raise_ValueError(translate("Only one alarm.time alarm can be set"));
         }
         timealarm = MP_OBJ_TO_PTR(alarms[i]);
         timealarm_set = true;

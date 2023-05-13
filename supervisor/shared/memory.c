@@ -56,6 +56,11 @@ enum {
         #if CIRCUITPY_USB_VENDOR
         + 1  // usb_vendor_add_descriptor
         #endif
+
+        + CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS
+        #if CIRCUITPY_AUDIOBUSIO_PDMIN
+        + 1
+        #endif
     ,
 
     CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT =
@@ -72,6 +77,8 @@ enum {
             // Maximum needs of one display: max(4 if RGBMATRIX, 1 if SHARPDISPLAY, 0)
             #if CIRCUITPY_RGBMATRIX
             4
+            #elif CIRCUITPY_PICODVI
+            2
             #elif CIRCUITPY_SHARPDISPLAY
             1
             #else

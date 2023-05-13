@@ -37,8 +37,8 @@ INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Werror
-CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
-CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
+CWARN += -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
+CFLAGS += $(INC) $(CWARN) -std=gnu11 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -233,7 +233,7 @@ SRC_C += \
 	supervisor/stub/filesystem.c \
 	supervisor/stub/safe_mode.c \
 	supervisor/stub/stack.c \
-	supervisor/shared/translate.c \
+	supervisor/shared/translate/translate.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
@@ -296,9 +296,10 @@ include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
 
+TEST_EXTRA ?=
 test: $(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py $(TEST_EXTRA)
 
 test_full: $(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
@@ -308,6 +309,10 @@ test_full: $(PROG) $(TOP)/tests/run-tests.py
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native -d basics float micropython
 	cat $(TOP)/tests/basics/0prelim.py | ./$(PROG) | grep -q 'abc'
+
+.PHONY: print-failures clean-failures
+print-failures clean-failures:
+	../../tests/run-tests.py --$@
 
 test_gcov: test_full
 	gcov -o $(BUILD)/py $(TOP)/py/*.c
@@ -363,4 +368,4 @@ install: $(PROG)
 uninstall:
 	-rm $(BINDIR)/$(PROG)
 
-$(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compression.generated.h

@@ -61,7 +61,7 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    paralleldisplay_parallelbus_obj_t *bus = &displays[0].parallel_bus;
+    paralleldisplay_parallelbus_obj_t *bus = &allocate_display_bus()->parallel_bus;
     bus->base.type = &paralleldisplay_parallelbus_type;
     common_hal_paralleldisplay_parallelbus_construct(bus,
         &pin_PA16, // Data0
@@ -72,7 +72,7 @@ void board_init(void) {
         &pin_PA00, // Reset
         0); // Frequency
 
-    displayio_display_obj_t *display = &displays[0].display;
+    displayio_display_obj_t *display = &allocate_display()->display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,
@@ -94,22 +94,14 @@ void board_init(void) {
         sizeof(display_init_sequence),
         &pin_PB31, // Backlight pin
         NO_BRIGHTNESS_COMMAND,
-        1.0f, // brightness (ignored)
-        true, // auto_brightness
+        1.0f, // brightness
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
         true, // backlight_on_high
-        false); // SH1107_addressing
+        false, // SH1107_addressing
+        50000); // backlight pwm frequency
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
-void board_deinit(void) {
-}
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

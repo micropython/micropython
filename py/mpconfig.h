@@ -773,6 +773,16 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_WARNINGS (0)
 #endif
 
+// Whether to support chained exceptions
+#ifndef MICROPY_CPYTHON_EXCEPTION_CHAIN
+#define MICROPY_CPYTHON_EXCEPTION_CHAIN (0)
+#endif
+
+// Whether the statically allocated GeneratorExit exception may be const
+#ifndef MICROPY_CONST_GENERATOREXIT_OBJ
+#define MICROPY_CONST_GENERATOREXIT_OBJ (!MICROPY_CPYTHON_EXCEPTION_CHAIN)
+#endif
+
 // Whether to support warning categories
 #ifndef MICROPY_WARNINGS_CATEGORY
 #define MICROPY_WARNINGS_CATEGORY (0)
@@ -1076,6 +1086,11 @@ typedef double mp_float_t;
 // Whether to support property object
 #ifndef MICROPY_PY_BUILTINS_PROPERTY
 #define MICROPY_PY_BUILTINS_PROPERTY (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#endif
+
+// Whether to optimize property flash storage size (requires linker script support)
+#ifndef MICROPY_PY_BUILTINS_PROPERTY
+#define MICROPY_PY_BUILTINS_PROPERTY (0)
 #endif
 
 // Whether to implement the start/stop/step attributes (readback) on
@@ -1812,6 +1827,17 @@ typedef double mp_float_t;
 #define MP_WEAK __attribute__((weak))
 #endif
 
+// Modifier for functions which should not be instrumented when tracing with
+// -finstrument-functions
+#ifndef MP_NO_INSTRUMENT
+#define MP_NO_INSTRUMENT __attribute__((no_instrument_function))
+#endif
+
+// Modifier for functions which should ideally inlined
+#ifndef MP_INLINE
+#define MP_INLINE inline MP_NO_INSTRUMENT
+#endif
+
 // Modifier for functions which should be never inlined
 #ifndef MP_NOINLINE
 #define MP_NOINLINE __attribute__((noinline))
@@ -1830,6 +1856,12 @@ typedef double mp_float_t;
 // Condition is likely to be false, to help branch prediction
 #ifndef MP_UNLIKELY
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
+#endif
+
+// Modifier for functions which aren't often used. Calls will also be considered
+// unlikely. Section names are `.text.unlikely` for use in linker scripts.
+#ifndef MP_COLD
+#define MP_COLD __attribute__((cold))
 #endif
 
 // To annotate that code is unreachable

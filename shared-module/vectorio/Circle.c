@@ -15,7 +15,7 @@ void common_hal_vectorio_circle_construct(vectorio_circle_t *self, uint16_t radi
 
 void common_hal_vectorio_circle_set_on_dirty(vectorio_circle_t *self, vectorio_event_t on_dirty) {
     if (self->on_dirty.obj != NULL) {
-        mp_raise_TypeError(translate("circle can only be registered in one parent"));
+        mp_raise_TypeError(translate("can only have one parent"));
     }
     self->on_dirty = on_dirty;
 }
@@ -23,7 +23,7 @@ void common_hal_vectorio_circle_set_on_dirty(vectorio_circle_t *self, vectorio_e
 
 uint32_t common_hal_vectorio_circle_get_pixel(void *obj, int16_t x, int16_t y) {
     vectorio_circle_t *self = obj;
-    int16_t radius = abs(self->radius);
+    int16_t radius = self->radius;
     x = abs(x);
     y = abs(y);
     if (x + y <= radius) {

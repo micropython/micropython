@@ -49,7 +49,6 @@ Q({:#x})
 Q({:#b})
 Q( )
 Q(\n)
-Q(maximum recursion depth exceeded)
 Q(<module>)
 Q(<lambda>)
 Q(<listcomp>)
@@ -62,8 +61,4 @@ Q(utf-8)
 
 #if MICROPY_MODULE_FROZEN
 Q(.frozen)
-#endif
-
-#if MICROPY_ENABLE_PYSTACK
-Q(pystack exhausted)
 #endif

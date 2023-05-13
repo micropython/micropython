@@ -51,9 +51,9 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word, uint8_t set_column_command,
     uint8_t set_row_command, uint8_t write_ram_command,
     uint8_t *init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t *backlight_pin,
-    uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
+    uint16_t brightness_command, mp_float_t brightness,
     bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second,
-    bool backlight_on_high, bool SH1107_addressing) {
+    bool backlight_on_high, bool SH1107_addressing, uint16_t backlight_pwm_frequency) {
 
     // Turn off auto-refresh as we init.
     self->auto_refresh = false;
@@ -64,17 +64,14 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
         ram_height = 0xff;
     }
     displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation,
-        color_depth, grayscale, pixels_in_byte_share_row, bytes_per_cell, reverse_pixels_in_byte, reverse_bytes_in_word);
+        color_depth, grayscale, pixels_in_byte_share_row, bytes_per_cell, reverse_pixels_in_byte, reverse_bytes_in_word,
+        set_column_command, set_row_command, NO_COMMAND, NO_COMMAND, data_as_commands, false /* always_toggle_chip_select */,
+        SH1107_addressing && color_depth == 1, false /*address_little_endian */);
 
-    self->set_column_command = set_column_command;
-    self->set_row_command = set_row_command;
     self->write_ram_command = write_ram_command;
     self->brightness_command = brightness_command;
-    self->auto_brightness = auto_brightness;
     self->first_manual_refresh = !auto_refresh;
-    self->data_as_commands = data_as_commands;
     self->backlight_on_high = backlight_on_high;
-    self->SH1107_addressing = SH1107_addressing;
 
     self->native_frames_per_second = native_frames_per_second;
     self->native_ms_per_frame = 1000 / native_frames_per_second;
@@ -89,7 +86,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
         while (!displayio_display_core_begin_transaction(&self->core)) {
             RUN_BACKGROUND_TASKS;
         }
-        if (self->data_as_commands) {
+        if (self->core.data_as_commands) {
             uint8_t full_command[data_size + 1];
             full_command[0] = cmd[0];
             memcpy(full_command + 1, data, data_size);
@@ -116,7 +113,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     if (backlight_pin != NULL && common_hal_mcu_pin_is_free(backlight_pin)) {
         // Avoid PWM types and functions when the module isn't enabled
         #if (CIRCUITPY_PWMIO)
-        pwmout_result_t result = common_hal_pwmio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, 50000, false);
+        pwmout_result_t result = common_hal_pwmio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, backlight_pwm_frequency, false);
         if (result != PWMOUT_OK) {
             self->backlight_inout.base.type = &digitalio_digitalinout_type;
             common_hal_digitalio_digitalinout_construct(&self->backlight_inout, backlight_pin);
@@ -132,21 +129,22 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
         common_hal_never_reset_pin(backlight_pin);
         #endif
     }
-    if (!self->auto_brightness && (self->backlight_inout.base.type != &mp_type_NoneType ||
-                                   brightness_command != NO_BRIGHTNESS_COMMAND)) {
-        common_hal_displayio_display_set_brightness(self, brightness);
-    } else {
-        self->current_brightness = -1.0;
-    }
+
+    common_hal_displayio_display_set_brightness(self, brightness);
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
-    common_hal_displayio_display_show(self, &circuitpython_splash);
+    if (!circuitpython_splash.in_group) {
+        common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
+    }
     common_hal_displayio_display_set_auto_refresh(self, auto_refresh);
 }
 
 bool common_hal_displayio_display_show(displayio_display_obj_t *self, displayio_group_t *root_group) {
-    return displayio_display_core_show(&self->core, root_group);
+    if (root_group == NULL) {
+        root_group = &circuitpython_splash;
+    }
+    return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
 uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t *self) {
@@ -157,20 +155,11 @@ uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t *self) 
     return displayio_display_core_get_height(&self->core);
 }
 
-bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t *self) {
-    return self->auto_brightness;
-}
-
-void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t *self, bool auto_brightness) {
-    self->auto_brightness = auto_brightness;
-}
-
 mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t *self) {
     return self->current_brightness;
 }
 
 bool common_hal_displayio_display_set_brightness(displayio_display_obj_t *self, mp_float_t brightness) {
-    self->updating_backlight = true;
     if (!self->backlight_on_high) {
         brightness = 1.0 - brightness;
     }
@@ -196,7 +185,7 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t *self, 
     } else if (self->brightness_command != NO_BRIGHTNESS_COMMAND) {
         ok = displayio_display_core_begin_transaction(&self->core);
         if (ok) {
-            if (self->data_as_commands) {
+            if (self->core.data_as_commands) {
                 uint8_t set_brightness[2] = {self->brightness_command, (uint8_t)(0xff * brightness)};
                 self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, set_brightness, 2);
             } else {
@@ -209,7 +198,6 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t *self, 
         }
 
     }
-    self->updating_backlight = false;
     if (ok) {
         self->current_brightness = brightness;
     }
@@ -221,6 +209,9 @@ mp_obj_t common_hal_displayio_display_get_bus(displayio_display_obj_t *self) {
 }
 
 mp_obj_t common_hal_displayio_display_get_root_group(displayio_display_obj_t *self) {
+    if (self->core.current_group == NULL) {
+        return mp_const_none;
+    }
     return self->core.current_group;
 }
 
@@ -235,7 +226,7 @@ STATIC const displayio_area_t *_get_refresh_areas(displayio_display_obj_t *self)
 }
 
 STATIC void _send_pixels(displayio_display_obj_t *self, uint8_t *pixels, uint32_t length) {
-    if (!self->data_as_commands) {
+    if (!self->core.data_as_commands) {
         self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, &self->write_ram_command, 1);
     }
     self->core.send(self->core.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, pixels, length);
@@ -256,7 +247,7 @@ STATIC bool _refresh_area(displayio_display_obj_t *self, const displayio_area_t 
     uint16_t subrectangles = 1;
     // for SH1107 and other boundary constrained controllers
     //      write one single row at a time
-    if (self->SH1107_addressing) {
+    if (self->core.SH1107_addressing) {
         subrectangles = rows_per_buffer / 8;  // page addressing mode writes 8 rows at a time
         rows_per_buffer = 8;
     } else if (displayio_area_size(&clipped) > buffer_size * pixels_per_word) {
@@ -301,9 +292,7 @@ STATIC bool _refresh_area(displayio_display_obj_t *self, const displayio_area_t 
         }
         remaining_rows -= rows_per_buffer;
 
-        displayio_display_core_set_region_to_update(&self->core, self->set_column_command,
-            self->set_row_command, NO_COMMAND, NO_COMMAND, self->data_as_commands, false,
-            &subrectangle, self->SH1107_addressing);
+        displayio_display_core_set_region_to_update(&self->core, &subrectangle);
 
         uint16_t subrectangle_size_bytes;
         if (self->core.colorspace.depth >= 8) {
@@ -413,23 +402,15 @@ void common_hal_displayio_display_set_auto_refresh(displayio_display_obj_t *self
     self->auto_refresh = auto_refresh;
 }
 
-STATIC void _update_backlight(displayio_display_obj_t *self) {
-    if (!self->auto_brightness || self->updating_backlight) {
-        return;
+mp_obj_t common_hal_displayio_display_set_root_group(displayio_display_obj_t *self, displayio_group_t *root_group) {
+    bool ok = displayio_display_core_set_root_group(&self->core, root_group);
+    if (!ok) {
+        mp_raise_ValueError(translate("Group already used"));
     }
-    if (supervisor_ticks_ms64() - self->last_backlight_refresh < 100) {
-        return;
-    }
-    // TODO(tannewt): Fade the backlight based on its existing value and a target value. The target
-    // should account for ambient light when possible.
-    common_hal_displayio_display_set_brightness(self, 1.0);
-
-    self->last_backlight_refresh = supervisor_ticks_ms64();
+    return mp_const_none;
 }
 
 void displayio_display_background(displayio_display_obj_t *self) {
-    _update_backlight(self);
-
     if (self->auto_refresh && (supervisor_ticks_ms64() - self->core.last_refresh) > self->native_ms_per_frame) {
         _refresh_display(self);
     }
@@ -440,7 +421,6 @@ void release_display(displayio_display_obj_t *self) {
     release_display_core(&self->core);
     #if (CIRCUITPY_PWMIO)
     if (self->backlight_pwm.base.type == &pwmio_pwmout_type) {
-        common_hal_pwmio_pwmout_reset_ok(&self->backlight_pwm);
         common_hal_pwmio_pwmout_deinit(&self->backlight_pwm);
     } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_deinit(&self->backlight_inout);
@@ -452,8 +432,12 @@ void release_display(displayio_display_obj_t *self) {
 
 void reset_display(displayio_display_obj_t *self) {
     common_hal_displayio_display_set_auto_refresh(self, true);
-    self->auto_brightness = true;
-    common_hal_displayio_display_show(self, NULL);
+    circuitpython_splash.x = 0; // reset position in case someone moved it.
+    circuitpython_splash.y = 0;
+    supervisor_start_terminal(self->core.width, self->core.height);
+    if (!circuitpython_splash.in_group) {
+        common_hal_displayio_display_set_root_group(self, &circuitpython_splash);
+    }
 }
 
 void displayio_display_collect_ptrs(displayio_display_obj_t *self) {

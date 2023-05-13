@@ -33,7 +33,6 @@
 #include "py/enum.h"
 
 //| class QRDecoder:
-//|
 //|     def __init__(self, width: int, height: int) -> None:
 //|         """Construct a QRDecoder object
 //|
@@ -58,9 +57,10 @@ STATIC mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args
     return self;
 }
 
-//|     def decode(self, buffer: ReadableBuffer, pixel_policy: PixelPolicy = PixelPolicy.EVERY_BYTE) -> List[QRInfo]:
+//|     def decode(
+//|         self, buffer: ReadableBuffer, pixel_policy: PixelPolicy = PixelPolicy.EVERY_BYTE
+//|     ) -> List[QRInfo]:
 //|         """Decode zero or more QR codes from the given image.  The size of the buffer must be at least ``length``×``width`` bytes for `EVERY_BYTE`, and 2×``length``×``width`` bytes for `EVEN_BYTES` or `ODD_BYTES`."""
-//|
 STATIC mp_obj_t qrio_qrdecoder_decode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -80,7 +80,7 @@ STATIC mp_obj_t qrio_qrdecoder_decode(size_t n_args, const mp_obj_t *pos_args, m
 
     // verify that the buffer is big enough
     int sz = width * height;
-    qrio_pixel_policy_t policy = cp_enum_value(&qrio_pixel_policy_type, args[ARG_pixel_policy].u_obj);
+    qrio_pixel_policy_t policy = cp_enum_value(&qrio_pixel_policy_type, args[ARG_pixel_policy].u_obj, MP_QSTR_pixel_policy);
     if (policy != QRIO_EVERY_BYTE) {
         sz *= 2;
     }
@@ -92,7 +92,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(qrio_qrdecoder_decode_obj, 1, qrio_qrdecoder_decode);
 
 //|     width: int
 //|     """The width of image the decoder expects"""
-//|
 STATIC mp_obj_t qrio_qrdecoder_get_width(mp_obj_t self_in) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(shared_module_qrio_qrdecoder_get_width(self));
@@ -107,12 +106,9 @@ STATIC mp_obj_t qrio_qrdecoder_set_width(mp_obj_t self_in, mp_obj_t width_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(qrio_qrdecoder_set_width_obj, qrio_qrdecoder_set_width);
 
-const mp_obj_property_t qrio_qrdecoder_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&qrio_qrdecoder_get_width_obj,
-              (mp_obj_t)&qrio_qrdecoder_set_width_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(qrio_qrdecoder_width_obj,
+    (mp_obj_t)&qrio_qrdecoder_get_width_obj,
+    (mp_obj_t)&qrio_qrdecoder_set_width_obj);
 
 //|     height: int
 //|     """The height of image the decoder expects"""
@@ -131,12 +127,9 @@ STATIC mp_obj_t qrio_qrdecoder_set_height(mp_obj_t self_in, mp_obj_t height_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(qrio_qrdecoder_set_height_obj, qrio_qrdecoder_set_height);
 
-const mp_obj_property_t qrio_qrdecoder_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&qrio_qrdecoder_get_height_obj,
-              (mp_obj_t)&qrio_qrdecoder_set_height_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(qrio_qrdecoder_height_obj,
+    (mp_obj_t)&qrio_qrdecoder_get_height_obj,
+    (mp_obj_t)&qrio_qrdecoder_set_height_obj);
 
 STATIC const mp_rom_map_elem_t qrio_qrdecoder_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_QRDecoder) },

@@ -12,7 +12,7 @@ import subprocess
 from makeqstrdefs import qstr_unescape, QSTRING_BLOCK_LIST
 
 re_line = re.compile(r"#[line]*\s(\d+)\s\"([^\"]+)\"", re.DOTALL)
-re_qstr = re.compile(r"MP_QSTR_[_a-zA-Z0-9]+", re.DOTALL)
+re_qstr = re.compile(r"\bMP_QSTR_[_a-zA-Z0-9]+", re.DOTALL)
 re_translate = re.compile(r"translate\(\"((?:(?=(\\?))\2.)*?)\"\)", re.DOTALL)
 
 
@@ -59,7 +59,6 @@ def maybe_preprocess(command, output_dir, fn):
 
 
 if __name__ == "__main__":
-
     idx1 = sys.argv.index("--")
     idx2 = sys.argv.index("--", idx1 + 1)
     output_dir = sys.argv[1]

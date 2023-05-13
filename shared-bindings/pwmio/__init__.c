@@ -37,7 +37,6 @@
 //|
 //| The `pwmio` module contains classes to provide access to basic pulse IO.
 //|
-
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See
@@ -57,8 +56,11 @@
 //| :py:data:`~pwmio.PWMOut.duty_cycle`, and then sleep 0.1 seconds.
 //| CircuitPython will automatically turn off the PWM when it resets all
 //| hardware after program completion. Use ``deinit()`` or a ``with`` statement
-//| to do it yourself."""
+//| to do it yourself.
 //|
+//| For the essentials of `pwmio`, see the `CircuitPython Essentials
+//| Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-pwm>`_.
+//| """
 
 STATIC const mp_rom_map_elem_t pwmio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pwmio) },

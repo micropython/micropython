@@ -40,7 +40,7 @@ void common_hal_bleio_attribute_security_mode_check_valid(bleio_attribute_securi
         case SECURITY_MODE_SIGNED_WITH_MITM:
             break;
         default:
-            mp_raise_ValueError(translate("Invalid security_mode"));
+            mp_arg_error_invalid(MP_QSTR_security_mode);
             break;
     }
 }

@@ -33,31 +33,39 @@
 #define MICROPY_USE_INTERNAL_PRINTF         (0)
 #define MICROPY_PY_SYS_PLATFORM             "Espressif"
 
+#define CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY (1)
+
 #include "py/circuitpy_mpconfig.h"
 
 #if CIRCUITPY_BLEIO
-#include "common-hal/_bleio/ble_events.h"
+#define BLEIO_ROOT_POINTERS struct ble_event_handler_entry *ble_event_handler_entries;
+#else
+#define BLEIO_ROOT_POINTERS
 #endif
 
-#if CIRCUITPY_BLEIO
-#define MICROPY_PORT_ROOT_POINTERS                              \
-    CIRCUITPY_COMMON_ROOT_POINTERS                              \
-    ble_event_handler_entry_t *ble_event_handler_entries;
+#if CIRCUITPY_ESPNOW
+#define ESPNOW_ROOT_POINTERS struct _espnow_obj_t *espnow_singleton;
 #else
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS
+#define ESPNOW_ROOT_POINTERS
 #endif
+
+#define MICROPY_PORT_ROOT_POINTERS  \
+    CIRCUITPY_COMMON_ROOT_POINTERS  \
+    BLEIO_ROOT_POINTERS             \
+    ESPNOW_ROOT_POINTERS
 
 #define MICROPY_NLR_SETJMP                  (1)
 #define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
 
 // Nearly all boards have this because it is used to enter the ROM bootloader.
 #ifndef CIRCUITPY_BOOT_BUTTON
-#ifdef CONFIG_IDF_TARGET_ESP32C3
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO9)
-#else
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-#endif
+  #ifdef CONFIG_IDF_TARGET_ESP32C3
+    #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO9)
+  #else
+    #ifndef CONFIG_IDF_TARGET_ESP32
+      #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
+    #endif
+  #endif
 #endif
 
 #define CIRCUITPY_INTERNAL_NVM_START_ADDR (0x9000)
@@ -86,6 +94,15 @@
 // Serial/JTAG to connect do USB.
 #ifndef CIRCUITPY_ESP_USB_SERIAL_JTAG
 #define CIRCUITPY_ESP_USB_SERIAL_JTAG (0)
+#endif
+
+#ifndef DEFAULT_RESERVED_PSRAM
+#define DEFAULT_RESERVED_PSRAM (0)
+#endif
+
+#if defined(CONFIG_SPIRAM)
+#undef CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS
+#define CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS (1)
 #endif
 
 #endif  // MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H

@@ -59,6 +59,10 @@
 #include "esp_bt.h"
 #include "esp_nimble_hci.h"
 
+#if CIRCUITPY_OS_GETENV
+#include "shared-module/os/__init__.h"
+#endif
+
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
 // static void bluetooth_adapter_background(void *data) {
@@ -96,7 +100,17 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         // ble_hs_cfg.reset_cb = blecent_on_reset;
         ble_hs_cfg.sync_cb = _on_sync;
         // ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
-        ble_svc_gap_device_name_set("CIRCUITPY");
+
+        #if CIRCUITPY_OS_GETENV
+        char ble_name[1 + MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH];
+        os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name));
+        if (result == GETENV_OK) {
+            ble_svc_gap_device_name_set(ble_name);
+        } else
+        #endif
+        {
+            ble_svc_gap_device_name_set("CIRCUITPY");
+        }
 
         // Clear all of the internal connection objects.
         for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
@@ -207,7 +221,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
     mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
     if (self->scan_results != NULL) {
         if (!shared_module_bleio_scanresults_get_done(self->scan_results)) {
-            mp_raise_bleio_BluetoothError(translate("Scan already in progess. Stop with stop_scan."));
+            mp_raise_bleio_BluetoothError(translate("Scan already in progress. Stop with stop_scan."));
         }
         self->scan_results = NULL;
     }
@@ -574,6 +588,9 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
 }
 
 void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
+    if (!common_hal_bleio_adapter_get_advertising(self)) {
+        return;
+    }
     int err_code = ble_gap_ext_adv_stop(0);
     self->user_advertising = false;
 

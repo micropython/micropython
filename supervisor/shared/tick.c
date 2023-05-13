@@ -44,10 +44,6 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
-#if CIRCUITPY_GAMEPADSHIFT
-#include "shared-module/gamepadshift/__init__.h"
-#endif
-
 #if CIRCUITPY_KEYPAD
 #include "shared-module/keypad/__init__.h"
 #endif
@@ -69,8 +65,8 @@ static volatile uint64_t last_finished_tick = 0;
 
 static volatile size_t tick_enable_count = 0;
 
-static void supervisor_background_tasks(void *unused) {
-    port_start_background_task();
+static void supervisor_background_tick(void *unused) {
+    port_start_background_tick();
 
     assert_heap_ok();
 
@@ -84,16 +80,16 @@ static void supervisor_background_tasks(void *unused) {
 
     filesystem_background();
 
-    port_background_task();
+    port_background_tick();
 
     assert_heap_ok();
 
     last_finished_tick = port_get_raw_ticks(NULL);
 
-    port_finish_background_task();
+    port_finish_background_tick();
 }
 
-bool supervisor_background_tasks_ok(void) {
+bool supervisor_background_ticks_ok(void) {
     return port_get_raw_ticks(NULL) - last_finished_tick < 1024;
 }
 
@@ -102,19 +98,12 @@ void supervisor_tick(void) {
     filesystem_tick();
     #endif
 
-    #ifdef CIRCUITPY_GAMEPAD_TICKS
-    if (!(port_get_raw_ticks(NULL) & CIRCUITPY_GAMEPAD_TICKS)) {
-        #if CIRCUITPY_GAMEPADSHIFT
-        gamepadshift_tick();
-        #endif
-    }
-    #endif
 
     #if CIRCUITPY_KEYPAD
     keypad_tick();
     #endif
 
-    background_callback_add(&tick_callback, supervisor_background_tasks, NULL);
+    background_callback_add(&tick_callback, supervisor_background_tick, NULL);
 }
 
 uint64_t supervisor_ticks_ms64() {
@@ -126,11 +115,6 @@ uint64_t supervisor_ticks_ms64() {
 
 uint32_t supervisor_ticks_ms32() {
     return supervisor_ticks_ms64();
-}
-
-
-void PLACE_IN_ITCM(supervisor_run_background_tasks_if_tick)() {
-    background_callback_run_all();
 }
 
 void mp_hal_delay_ms(mp_uint_t delay_ms) {

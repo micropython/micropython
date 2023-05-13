@@ -39,25 +39,24 @@ typedef struct {
     digitalio_digitalinout_obj_t busy;
     uint32_t milliseconds_per_frame;
     const uint8_t *start_sequence;
-    uint32_t start_sequence_len;
     const uint8_t *stop_sequence;
-    uint32_t stop_sequence_len;
+    const uint8_t *refresh_sequence;
+    uint16_t start_sequence_len;
+    uint16_t stop_sequence_len;
+    uint16_t refresh_sequence_len;
+    uint16_t start_up_time_ms;
     uint16_t refresh_time;
-    uint16_t set_column_window_command;
-    uint16_t set_row_window_command;
-    uint16_t set_current_column_command;
-    uint16_t set_current_row_command;
     uint16_t write_black_ram_command;
     uint16_t write_color_ram_command;
-    uint8_t refresh_display_command;
     uint8_t hue;
     bool busy_state;
     bool black_bits_inverted;
     bool color_bits_inverted;
     bool refreshing;
     bool grayscale;
-    display_chip_select_behavior_t chip_select;
+    bool acep;
     bool two_byte_sequence_length;
+    display_chip_select_behavior_t chip_select;
 } displayio_epaperdisplay_obj_t;
 
 void displayio_epaperdisplay_change_refresh_mode_parameters(displayio_epaperdisplay_obj_t *self,
