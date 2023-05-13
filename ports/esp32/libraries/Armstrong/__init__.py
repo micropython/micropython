@@ -1,6 +1,6 @@
 from CircuitOS import InputShift, Encoder, RGB_LED, Encoders, ShiftOutput
 from .Pins import *
-from .Servos import ServoControl
+from .Servos import *
 
 buttons = InputShift(Pins.SHIFTIN_DATA, Pins.SHIFTIN_CLOCK, Pins.SHIFTIN_LOAD)
 
