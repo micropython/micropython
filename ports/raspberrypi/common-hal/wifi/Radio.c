@@ -359,11 +359,11 @@ void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_start_dhcp_server(wifi_radio_obj_t *self) {
-    mp_raise_NotImplementedError(NULL);
+    dhcp_stop(NETIF_AP);
 }
 
 void common_hal_wifi_radio_stop_dhcp_server(wifi_radio_obj_t *self) {
-    mp_raise_NotImplementedError(NULL);
+    dhcp_stop(NETIF_AP);
 }
 
 void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway, mp_obj_t ipv4_dns) {
@@ -380,7 +380,15 @@ void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv
 }
 
 void common_hal_wifi_radio_set_ipv4_address_ap(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway) {
-    mp_raise_NotImplementedError(NULL);
+    common_hal_wifi_radio_stop_dhcp_server(self);
+
+    ip4_addr_t ipv4_addr, netmask_addr, gateway_addr;
+    ipaddress_ipaddress_to_lwip(ipv4, &ipv4_addr);
+    ipaddress_ipaddress_to_lwip(netmask, &netmask_addr);
+    ipaddress_ipaddress_to_lwip(gateway, &gateway_addr);
+    netif_set_addr(NETIF_AP, &ipv4_addr, &netmask_addr, &gateway_addr);
+
+    common_hal_wifi_radio_start_dhcp_server(self);
 }
 
 volatile bool ping_received;
