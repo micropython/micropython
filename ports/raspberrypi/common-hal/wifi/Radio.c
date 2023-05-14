@@ -359,11 +359,9 @@ void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_start_dhcp_server(wifi_radio_obj_t *self) {
-    dhcp_start(NETIF_AP);
 }
 
 void common_hal_wifi_radio_stop_dhcp_server(wifi_radio_obj_t *self) {
-    dhcp_stop(NETIF_AP);
 }
 
 void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway, mp_obj_t ipv4_dns) {
