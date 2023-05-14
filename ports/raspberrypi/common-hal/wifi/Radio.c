@@ -48,6 +48,8 @@
 #include "lwip/raw.h"
 #include "lwip_src/ping.h"
 
+#include "shared/netutils/dhcpserver.h"
+
 #define MAC_ADDRESS_LENGTH 6
 
 #define NETIF_STA (&cyw43_state.netif[CYW43_ITF_STA])
@@ -359,9 +361,14 @@ void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_start_dhcp_server(wifi_radio_obj_t *self) {
+    ip4_addr_t ipv4_addr, netmask_addr;
+    ipaddress_ipaddress_to_lwip(common_hal_wifi_radio_get_ipv4_address_ap(self), &ipv4_addr);
+    ipaddress_ipaddress_to_lwip(common_hal_wifi_radio_get_ipv4_subnet_ap(self), &netmask_addr);
+    dhcp_server_init(&cyw43_state.dhcp_server, &ipv4_addr, &netmask_addr);
 }
 
 void common_hal_wifi_radio_stop_dhcp_server(wifi_radio_obj_t *self) {
+    dhcp_server_deinit(&cyw43_state.dhcp_server);
 }
 
 void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway, mp_obj_t ipv4_dns) {
