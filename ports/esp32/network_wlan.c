@@ -457,21 +457,28 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         break;
                     }
                     case MP_QSTR_channel: {
-                        uint8_t primary;
-                        wifi_second_chan_t secondary;
-                        // Get the current value of secondary
-                        esp_exceptions(esp_wifi_get_channel(&primary, &secondary));
-                        primary = mp_obj_get_int(kwargs->table[i].value);
-                        esp_err_t err = esp_wifi_set_channel(primary, secondary);
-                        if (err == ESP_ERR_INVALID_ARG) {
-                            // May need to swap secondary channel above to below or below to above
-                            secondary = (
-                                (secondary == WIFI_SECOND_CHAN_ABOVE)
-                                ? WIFI_SECOND_CHAN_BELOW
-                                : (secondary == WIFI_SECOND_CHAN_BELOW)
-                                    ? WIFI_SECOND_CHAN_ABOVE
-                                    : WIFI_SECOND_CHAN_NONE);
-                            esp_exceptions(esp_wifi_set_channel(primary, secondary));
+                        mp_int_t channel = mp_obj_get_int(kwargs->table[i].value);
+                        if (!wifi_started) {
+                            uint8_t *channelp = (
+                                (self->if_id == WIFI_IF_STA) ? &cfg.sta.channel : &cfg.ap.channel);
+                            *channelp = channel;
+                        } else {
+                            uint8_t primary;
+                            wifi_second_chan_t secondary;
+                            // Get the current value of secondary
+                            esp_exceptions(esp_wifi_get_channel(&primary, &secondary));
+                            primary = channel;
+                            esp_err_t err = esp_wifi_set_channel(primary, secondary);
+                            if (err == ESP_ERR_INVALID_ARG) {
+                                // May need to swap secondary channel above to below or below to above
+                                secondary = (
+                                    (secondary == WIFI_SECOND_CHAN_ABOVE)
+                                    ? WIFI_SECOND_CHAN_BELOW
+                                    : (secondary == WIFI_SECOND_CHAN_BELOW)
+                                        ? WIFI_SECOND_CHAN_ABOVE
+                                        : WIFI_SECOND_CHAN_NONE);
+                                esp_exceptions(esp_wifi_set_channel(primary, secondary));
+                            }
                         }
                         break;
                     }
@@ -573,8 +580,12 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             break;
         case MP_QSTR_channel: {
             uint8_t channel;
-            wifi_second_chan_t second;
-            esp_exceptions(esp_wifi_get_channel(&channel, &second));
+            if (!wifi_started) {
+                channel = (self->if_id == WIFI_IF_STA) ? cfg.sta.channel : cfg.ap.channel;
+            } else {
+                wifi_second_chan_t second;
+                esp_exceptions(esp_wifi_get_channel(&channel, &second));
+            }
             val = MP_OBJ_NEW_SMALL_INT(channel);
             break;
         }
