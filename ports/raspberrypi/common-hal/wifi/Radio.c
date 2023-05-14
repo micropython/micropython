@@ -359,7 +359,7 @@ void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_start_dhcp_server(wifi_radio_obj_t *self) {
-    dhcp_stop(NETIF_AP);
+    dhcp_start(NETIF_AP);
 }
 
 void common_hal_wifi_radio_stop_dhcp_server(wifi_radio_obj_t *self) {
