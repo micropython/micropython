@@ -26,30 +26,37 @@
 
 #pragma once
 
+#include "py/obj.h"
+
 #include "shared-module/synthio/__init__.h"
-#include "shared-module/synthio/LFO.h"
 #include "shared-bindings/synthio/__init__.h"
 
-typedef struct synthio_note_obj {
+typedef struct synthio_lfo_slot {
+    mp_obj_t obj;
+    mp_float_t value;
+} synthio_lfo_slot_t;
+
+typedef struct synthio_lfo_obj {
     mp_obj_base_t base;
-
-    synthio_lfo_slot_t panning, bend, amplitude, ring_bend;
-
-    mp_float_t frequency, ring_frequency;
-    mp_obj_t waveform_obj, envelope_obj, ring_waveform_obj;
 
     int32_t sample_rate;
 
-    int32_t frequency_scaled;
-    int32_t ring_frequency_scaled, ring_frequency_bent;
-    bool filter;
+    uint8_t last_tick;
+    bool once;
 
-    mp_buffer_info_t waveform_buf;
-    mp_buffer_info_t ring_waveform_buf;
-    synthio_envelope_definition_t envelope_def;
-} synthio_note_obj_t;
+    synthio_lfo_slot_t rate, scale, offset;
+    mp_float_t accum, value;
 
-void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate);
-uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t loudness[2]);
-void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate);
-bool synthio_note_playing(synthio_note_obj_t *self);
+    mp_obj_t waveform_obj;
+    mp_buffer_info_t waveform_bufinfo;
+} synthio_lfo_obj_t;
+
+// Update the value inside the lfo slot if the value is an LFO, returning the new value
+mp_float_t synthio_lfo_obj_tick(synthio_lfo_slot_t *lfo_slot);
+// the same, but the output is constrained to be between lo and hi
+mp_float_t synthio_lfo_obj_tick_limited(synthio_lfo_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi);
+// the same, but the output is constrained to be between lo and hi and converted to an integer with `shift` fractional bits
+int32_t synthio_lfo_obj_tick_scaled(synthio_lfo_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi, int shift);
+
+// Assign an object (which may be a float or a synthio_lfo_obj_t) to an lfo slot
+void synthio_lfo_assign_input(mp_obj_t obj, synthio_lfo_slot_t *lfo_slot, qstr arg_name);

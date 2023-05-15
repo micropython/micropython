@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,30 +26,28 @@
 
 #pragma once
 
-#include "shared-module/synthio/__init__.h"
-#include "shared-module/synthio/LFO.h"
-#include "shared-bindings/synthio/__init__.h"
+#include "py/obj.h"
 
-typedef struct synthio_note_obj {
-    mp_obj_base_t base;
+typedef struct synthio_lfo_obj synthio_lfo_obj_t;
+extern const mp_obj_type_t synthio_lfo_type;
 
-    synthio_lfo_slot_t panning, bend, amplitude, ring_bend;
+mp_obj_t common_hal_synthio_lfo_get_waveform_obj(synthio_lfo_obj_t *self);
+void common_hal_synthio_lfo_set_waveform_obj(synthio_lfo_obj_t *self, mp_obj_t arg);
 
-    mp_float_t frequency, ring_frequency;
-    mp_obj_t waveform_obj, envelope_obj, ring_waveform_obj;
+mp_obj_t common_hal_synthio_lfo_get_rate_obj(synthio_lfo_obj_t *self);
+void common_hal_synthio_lfo_set_rate_obj(synthio_lfo_obj_t *self, mp_obj_t arg);
 
-    int32_t sample_rate;
+mp_obj_t common_hal_synthio_lfo_get_scale_obj(synthio_lfo_obj_t *self);
+void common_hal_synthio_lfo_set_scale_obj(synthio_lfo_obj_t *self, mp_obj_t arg);
 
-    int32_t frequency_scaled;
-    int32_t ring_frequency_scaled, ring_frequency_bent;
-    bool filter;
+mp_obj_t common_hal_synthio_lfo_get_offset_obj(synthio_lfo_obj_t *self);
+void common_hal_synthio_lfo_set_offset_obj(synthio_lfo_obj_t *self, mp_obj_t arg);
 
-    mp_buffer_info_t waveform_buf;
-    mp_buffer_info_t ring_waveform_buf;
-    synthio_envelope_definition_t envelope_def;
-} synthio_note_obj_t;
+bool common_hal_synthio_lfo_get_once(synthio_lfo_obj_t *self);
+void common_hal_synthio_lfo_set_once(synthio_lfo_obj_t *self, bool arg);
 
-void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate);
-uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t loudness[2]);
-void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate);
-bool synthio_note_playing(synthio_note_obj_t *self);
+mp_float_t common_hal_synthio_lfo_get_value(synthio_lfo_obj_t *self);
+
+mp_float_t common_hal_synthio_lfo_get_phase(synthio_lfo_obj_t *self);
+
+void common_hal_synthio_lfo_retrigger(synthio_lfo_obj_t *self);

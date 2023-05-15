@@ -32,6 +32,9 @@
 #include <math.h>
 #include <stdlib.h>
 
+mp_float_t synthio_global_rate_scale;
+uint8_t synthio_global_tick;
+
 STATIC const int16_t square_wave[] = {-32768, 32767};
 
 STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
@@ -219,7 +222,7 @@ static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
         if (note->ring_frequency_scaled != 0 && note->ring_waveform_buf.buf) {
             ring_waveform = note->ring_waveform_buf.buf;
             ring_waveform_length = note->ring_waveform_buf.len / sizeof(int16_t);
-            ring_dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)note->ring_frequency_scaled * ring_waveform_length, sample_rate);
+            ring_dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)note->ring_frequency_bent * ring_waveform_length, sample_rate);
             uint32_t lim = ring_waveform_length << SYNTHIO_FREQUENCY_SHIFT;
             if (ring_dds_rate > lim / sizeof(int16_t)) {
                 ring_dds_rate = 0; // can't ring at that frequency
@@ -349,6 +352,8 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
         *bufptr = (uint8_t *)(synth->buffers[synth->other_buffer_index] + channel);
         return;
     }
+
+    shared_bindings_synthio_lfo_tick(synth->sample_rate);
 
     synth->buffer_index = !synth->buffer_index;
     synth->other_channel = 1 - channel;
@@ -586,4 +591,9 @@ int synthio_lfo_step(synthio_lfo_state_t *state, uint16_t dur) {
         v = (state->amplitude_scaled * (whole_phase - 65536));
     }
     return v / 16384 + state->offset_scaled;
+}
+
+void shared_bindings_synthio_lfo_tick(uint32_t sample_rate) {
+    synthio_global_rate_scale = (mp_float_t)SYNTHIO_MAX_DUR / sample_rate;
+    synthio_global_tick++;
 }
