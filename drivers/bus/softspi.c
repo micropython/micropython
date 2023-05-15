@@ -44,11 +44,17 @@ int mp_soft_spi_ioctl(void *self_in, uint32_t cmd) {
     return 0;
 }
 
+static uint8_t swap_bits(uint8_t byte) {
+    const static uint8_t swap_table[16] = {
+        0x00, 0x08, 0x04, 0x0c, 0x02, 0x0a, 0x06, 0x0e,
+        0x01, 0x09, 0x05, 0x0d, 0x03, 0x0b, 0x07, 0x0f
+    };
+    return ((swap_table[byte & 0x0f] << 4) | swap_table[byte >> 4]);
+}
+
 void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     mp_soft_spi_obj_t *self = (mp_soft_spi_obj_t*)self_in;
     uint32_t delay_half = self->delay_half;
-
-    // only MSB transfer is implemented
 
     // If a port defines MICROPY_HW_SOFTSPI_MIN_DELAY, and the configured
     // delay_half is equal to this value, then the software SPI implementation
@@ -56,16 +62,18 @@ void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t
     #ifdef MICROPY_HW_SOFTSPI_MIN_DELAY
     if (delay_half == MICROPY_HW_SOFTSPI_MIN_DELAY) {
         for (size_t i = 0; i < len; ++i) {
-            uint8_t data_out = src[i];
+            uint8_t data_out = self->firstbit != MICROPY_PY_MACHINE_SPI_MSB ?
+                src[i] : swap_bits(src[i]);
             uint8_t data_in = 0;
-            for (int j = 0; j < 8; ++j, data_out <<= 1) {
-                mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
+            for (int j = 0; j < 8; ++j, data_out >>= 1) {
+                mp_hal_pin_write(self->mosi, data_out & 1);
                 mp_hal_pin_write(self->sck, 1 - self->polarity);
                 data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
                 mp_hal_pin_write(self->sck, self->polarity);
             }
             if (dest != NULL) {
-                dest[i] = data_in;
+                dest[i] = self->firstbit == MICROPY_PY_MACHINE_SPI_MSB ?
+                    data_in : swap_bits(data_in);
             }
         }
         return;
@@ -73,10 +81,11 @@ void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t
     #endif
 
     for (size_t i = 0; i < len; ++i) {
-        uint8_t data_out = src[i];
+        uint8_t data_out = self->firstbit != MICROPY_PY_MACHINE_SPI_MSB ?
+            src[i] : swap_bits(src[i]);
         uint8_t data_in = 0;
-        for (int j = 0; j < 8; ++j, data_out <<= 1) {
-            mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
+        for (int j = 0; j < 8; ++j, data_out >>= 1) {
+            mp_hal_pin_write(self->mosi, data_out & 1);
             if (self->phase == 0) {
                 mp_hal_delay_us_fast(delay_half);
                 mp_hal_pin_write(self->sck, 1 - self->polarity);
@@ -94,7 +103,8 @@ void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t
             }
         }
         if (dest != NULL) {
-            dest[i] = data_in;
+            dest[i] = self->firstbit == MICROPY_PY_MACHINE_SPI_MSB ?
+                data_in : swap_bits(data_in);
         }
     }
 }
