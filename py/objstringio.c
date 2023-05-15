@@ -141,6 +141,15 @@ STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
             s->offset = o->pos = new_pos;
             return 0;
         }
+        case MP_STREAM_TRUNCATE:
+            // In CPython, StringIO.truncate never expands the string.
+            if (o->vstr->len > arg) {
+                o->vstr->len = arg;
+                if (o->pos > arg) {
+                    o->pos = arg;
+                }
+            }
+            return 0;
         case MP_STREAM_FLUSH:
             return 0;
         case MP_STREAM_CLOSE:
@@ -228,6 +237,7 @@ STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
+    { MP_ROM_QSTR(MP_QSTR_truncate), MP_ROM_PTR(&mp_stream_truncate_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_getvalue), MP_ROM_PTR(&stringio_getvalue_obj) },

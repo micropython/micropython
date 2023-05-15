@@ -126,6 +126,20 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
         s->offset = f_tell(&self->fp);
         return 0;
 
+    } else if (request == MP_STREAM_TRUNCATE) {
+        // f_truncate does not take a size argument so we have to do extra work.
+        uint32_t pos = f_tell(&self->fp);
+        f_lseek(&self->fp, arg);
+        FRESULT res = f_truncate(&self->fp);
+        if (pos < arg) {
+            f_lseek(&self->fp, pos);
+        }
+        if (res != FR_OK) {
+            *errcode = fresult_to_errno_table[res];
+            return MP_STREAM_ERROR;
+        }
+        return 0;
+
     } else if (request == MP_STREAM_FLUSH) {
         FRESULT res = f_sync(&self->fp);
         if (res != FR_OK) {
@@ -144,7 +158,6 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
             }
         }
         return 0;
-
     } else {
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
@@ -163,6 +176,7 @@ STATIC const mp_rom_map_elem_t vfs_fat_rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
+    { MP_ROM_QSTR(MP_QSTR_truncate), MP_ROM_PTR(&mp_stream_truncate_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&file_obj___exit___obj) },

@@ -177,6 +177,13 @@ STATIC mp_uint_t MP_VFS_LFSx(file_ioctl)(mp_obj_t self_in, mp_uint_t request, ui
         }
         s->offset = res;
         return 0;
+    } else if (request == MP_STREAM_TRUNCATE) {
+        int res = LFSx_API(file_truncate)(&self->vfs->lfs, &self->file, arg);
+        if (res < 0) {
+            *errcode = -res;
+            return MP_STREAM_ERROR;
+        }
+        return 0;
     } else if (request == MP_STREAM_FLUSH) {
         int res = LFSx_API(file_sync)(&self->vfs->lfs, &self->file);
         if (res < 0) {
@@ -211,6 +218,7 @@ STATIC const mp_rom_map_elem_t MP_VFS_LFSx(file_locals_dict_table)[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
+    { MP_ROM_QSTR(MP_QSTR_truncate), MP_ROM_PTR(&mp_stream_truncate_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&MP_VFS_LFSx(file___exit___obj)) },

@@ -184,6 +184,16 @@ STATIC mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
             s->offset = off;
             return 0;
         }
+        case MP_STREAM_TRUNCATE: {
+            MP_THREAD_GIL_EXIT();
+            int res = ftruncate(o->fd, arg);
+            MP_THREAD_GIL_ENTER();
+            if (res < 0) {
+                *errcode = errno;
+                return MP_STREAM_ERROR;
+            }
+            return 0;
+        }
         case MP_STREAM_CLOSE:
             if (o->fd >= 0) {
                 MP_THREAD_GIL_EXIT();
@@ -235,6 +245,7 @@ STATIC const mp_rom_map_elem_t vfs_posix_rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
+    { MP_ROM_QSTR(MP_QSTR_truncate), MP_ROM_PTR(&mp_stream_truncate_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },

@@ -472,6 +472,27 @@ STATIC mp_obj_t stream_tell(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_tell_obj, stream_tell);
 
+STATIC mp_obj_t stream_truncate(size_t n_args, const mp_obj_t *args) {
+    const mp_stream_p_t *stream_p = mp_get_stream(args[0]);
+    mp_uint_t size;
+    if (n_args > 1) {
+        mp_int_t arg = mp_obj_get_int(args[1]);
+        if (arg < 0) {
+            mp_raise_OSError(MP_EINVAL);
+        }
+        size = arg;
+    } else {
+        size = mp_obj_get_int(stream_tell(args[0]));
+    }
+    int error;
+    mp_uint_t res = stream_p->ioctl(args[0], MP_STREAM_TRUNCATE, size, &error);
+    if (res == MP_STREAM_ERROR) {
+        mp_raise_OSError(error);
+    }
+    return mp_obj_new_int(size);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_truncate_obj, 1, 2, stream_truncate);
+
 STATIC mp_obj_t stream_flush(mp_obj_t self) {
     const mp_stream_p_t *stream_p = mp_get_stream(self);
     int error;
