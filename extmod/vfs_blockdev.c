@@ -55,6 +55,7 @@ int mp_vfs_blockdev_read(mp_vfs_blockdev_t *self, size_t block_num, size_t num_b
         self->readblocks[2] = MP_OBJ_NEW_SMALL_INT(block_num);
         self->readblocks[3] = MP_OBJ_FROM_PTR(&ar);
         mp_call_method_n_kw(2, 0, self->readblocks);
+        self->readblocks[3] = MP_OBJ_FROM_PTR(NULL);
         // TODO handle error return
         return 0;
     }
@@ -87,6 +88,7 @@ int mp_vfs_blockdev_write(mp_vfs_blockdev_t *self, size_t block_num, size_t num_
         self->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(block_num);
         self->writeblocks[3] = MP_OBJ_FROM_PTR(&ar);
         mp_call_method_n_kw(2, 0, self->writeblocks);
+        self->writeblocks[3] = MP_OBJ_FROM_PTR(NULL);
         // TODO handle error return
         return 0;
     }
@@ -103,6 +105,7 @@ int mp_vfs_blockdev_write_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t 
     self->writeblocks[3] = MP_OBJ_FROM_PTR(&ar);
     self->writeblocks[4] = MP_OBJ_NEW_SMALL_INT(block_off);
     mp_obj_t ret = mp_call_method_n_kw(3, 0, self->writeblocks);
+    self->writeblocks[3] = MP_OBJ_FROM_PTR(NULL);
     if (ret == mp_const_none) {
         return 0;
     } else {
