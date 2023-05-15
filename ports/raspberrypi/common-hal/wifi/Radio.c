@@ -161,7 +161,15 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
     // (by tcpip_link_status). However since ap disconnection isn't working
     // either, this is not an issue.
     cyw43_wifi_leave(&cyw43_state, CYW43_ITF_AP);
-
+    size_t timeout_ms = (size_t)MICROPY_FLOAT_C_FUN(ceil)(500);
+    uint64_t start = port_get_raw_ticks(NULL);
+    uint64_t deadline = start + timeout_ms;
+    while (port_get_raw_ticks(NULL) < deadline && (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_DOWN)) {
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            break;
+        }
+    }
     bindings_cyw43_wifi_enforce_pm();
 }
 
