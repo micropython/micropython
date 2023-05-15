@@ -33,12 +33,6 @@
 
 #include "extmod/modmachine.h"
 
-// if a port didn't define MSB/LSB constants then provide them
-#ifndef MICROPY_PY_MACHINE_SPI_MSB
-#define MICROPY_PY_MACHINE_SPI_MSB (0)
-#define MICROPY_PY_MACHINE_SPI_LSB (1)
-#endif
-
 /******************************************************************************/
 // MicroPython bindings for generic machine.SPI
 
@@ -185,9 +179,8 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
     if (args[ARG_bits].u_int != 8) {
         mp_raise_ValueError(MP_ERROR_TEXT("bits must be 8"));
     }
-    if (args[ARG_firstbit].u_int != MICROPY_PY_MACHINE_SPI_MSB) {
-        mp_raise_ValueError(MP_ERROR_TEXT("firstbit must be MSB"));
-    }
+    self->spi.firstbit = args[ARG_firstbit].u_int == MICROPY_PY_MACHINE_SPI_MSB ?
+        MICROPY_PY_MACHINE_SPI_MSB : MICROPY_PY_MACHINE_SPI_LSB;
     if (args[ARG_sck].u_obj == MP_OBJ_NULL
         || args[ARG_mosi].u_obj == MP_OBJ_NULL
         || args[ARG_miso].u_obj == MP_OBJ_NULL) {
@@ -206,11 +199,12 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
 STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t *)self_in;
 
-    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_sck, ARG_mosi, ARG_miso };
+    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_polarity, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phase, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_sck, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_mosi, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_miso, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -226,6 +220,10 @@ STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, cons
     }
     if (args[ARG_phase].u_int != -1) {
         self->spi.phase = args[ARG_phase].u_int;
+    }
+    if (args[ARG_firstbit].u_int != -1) {
+        self->spi.firstbit = args[ARG_firstbit].u_int == MICROPY_PY_MACHINE_SPI_MSB ?
+            MICROPY_PY_MACHINE_SPI_MSB : MICROPY_PY_MACHINE_SPI_LSB;
     }
     if (args[ARG_sck].u_obj != MP_OBJ_NULL) {
         self->spi.sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);

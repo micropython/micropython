@@ -58,15 +58,24 @@ void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t
         for (size_t i = 0; i < len; ++i) {
             uint8_t data_out = src[i];
             uint8_t data_in = 0;
-            for (int j = 0; j < 8; ++j, data_out <<= 1) {
-                mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
-                mp_hal_pin_write(self->sck, 1 - self->polarity);
-                data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
-                mp_hal_pin_write(self->sck, self->polarity);
-            }
-            if (dest != NULL) {
-                dest[i] = data_in;
-            }
+        if (self->firstbit == MICROPY_PY_MACHINE_SPI_MSB) {
+                for (int j = 0; j < 8; ++j, data_out <<= 1) {
+                    mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
+                    mp_hal_pin_write(self->sck, 1 - self->polarity);
+                    data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
+                    mp_hal_pin_write(self->sck, self->polarity);
+                }
+        } else {  // MICROPY_PY_MACHINE_SPI_LSB
+                for (int j = 0; j < 8; ++j, data_out >>= 1) {
+                    mp_hal_pin_write(self->mosi, data_out & 1);
+                    mp_hal_pin_write(self->sck, 1 - self->polarity);
+                    data_in = (data_in >> 1) | (mp_hal_pin_read(self->miso) << 7);
+                    mp_hal_pin_write(self->sck, self->polarity);
+                }
+        } 
+        if (dest != NULL) {
+            dest[i] = data_in;
+        }
         }
         return;
     }
@@ -75,22 +84,43 @@ void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t
     for (size_t i = 0; i < len; ++i) {
         uint8_t data_out = src[i];
         uint8_t data_in = 0;
-        for (int j = 0; j < 8; ++j, data_out <<= 1) {
-            mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
-            if (self->phase == 0) {
-                mp_hal_delay_us_fast(delay_half);
-                mp_hal_pin_write(self->sck, 1 - self->polarity);
-            } else {
-                mp_hal_pin_write(self->sck, 1 - self->polarity);
-                mp_hal_delay_us_fast(delay_half);
+        if (self->firstbit == MICROPY_PY_MACHINE_SPI_MSB) {
+            for (int j = 0; j < 8; ++j, data_out <<= 1) {
+                mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
+                if (self->phase == 0) {
+                    mp_hal_delay_us_fast(delay_half);
+                    mp_hal_pin_write(self->sck, 1 - self->polarity);
+                } else {
+                    mp_hal_pin_write(self->sck, 1 - self->polarity);
+                    mp_hal_delay_us_fast(delay_half);
+                }
+                data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
+                if (self->phase == 0) {
+                    mp_hal_delay_us_fast(delay_half);
+                    mp_hal_pin_write(self->sck, self->polarity);
+                } else {
+                    mp_hal_pin_write(self->sck, self->polarity);
+                    mp_hal_delay_us_fast(delay_half);
+                }
             }
-            data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
-            if (self->phase == 0) {
-                mp_hal_delay_us_fast(delay_half);
-                mp_hal_pin_write(self->sck, self->polarity);
-            } else {
-                mp_hal_pin_write(self->sck, self->polarity);
-                mp_hal_delay_us_fast(delay_half);
+        } else {  // MICROPY_PY_MACHINE_SPI_LSB
+            for (int j = 0; j < 8; ++j, data_out >>= 1) {
+                mp_hal_pin_write(self->mosi, data_out & 1);
+                if (self->phase == 0) {
+                    mp_hal_delay_us_fast(delay_half);
+                    mp_hal_pin_write(self->sck, 1 - self->polarity);
+                } else {
+                    mp_hal_pin_write(self->sck, 1 - self->polarity);
+                    mp_hal_delay_us_fast(delay_half);
+                }
+                data_in = (data_in >> 1) | (mp_hal_pin_read(self->miso) << 7);
+                if (self->phase == 0) {
+                    mp_hal_delay_us_fast(delay_half);
+                    mp_hal_pin_write(self->sck, self->polarity);
+                } else {
+                    mp_hal_pin_write(self->sck, self->polarity);
+                    mp_hal_delay_us_fast(delay_half);
+                }
             }
         }
         if (dest != NULL) {

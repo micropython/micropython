@@ -1718,6 +1718,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_SOFTSPI (0)
 #endif
 
+// if a port didn't define MSB/LSB constants then provide them
+#ifndef MICROPY_PY_MACHINE_SPI_MSB
+#define MICROPY_PY_MACHINE_SPI_MSB (0)
+#define MICROPY_PY_MACHINE_SPI_LSB (1)
+#endif
+
 // Whether to provide the "machine.Timer" class
 #ifndef MICROPY_PY_MACHINE_TIMER
 #define MICROPY_PY_MACHINE_TIMER (0)
