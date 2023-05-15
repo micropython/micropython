@@ -5,9 +5,10 @@ import st7789
 
 
 class Panel:
-	def __init__(self, width: int, height: int):
+	def __init__(self, width: int, height: int, scale: int = 1):
 		self._width = width
 		self._height = height
+		self._scale = scale
 
 	def width(self):
 		return self._width
@@ -17,6 +18,9 @@ class Panel:
 
 	def push(self, data: bytearray):
 		pass
+
+	def scale(self):
+		return self._scale
 
 	def init(self):
 		pass
@@ -106,8 +110,9 @@ class PanelILI9341(Panel):
 	]
 
 	def __init__(self, spi: SPI, dc: Pin, reset: Pin = None, cs: Pin = None, rotation: int = 0):
-		super().__init__(320, 240)
-		d = dict(spi=spi, height=self.width(), width=self.height(), dc=dc, custom_init=PanelILI9341.custom_init,
+		super().__init__(160, 120, 2)
+		d = dict(spi=spi, height=self.width() * self.scale(), width=self.height() * self.scale(), dc=dc,
+				 custom_init=PanelILI9341.custom_init,
 				 rotations=PanelILI9341.custom_rotations, rotation=rotation, color_order=st7789.RGB,
 				 inversion=False, options=0, buffer_size=0)
 
@@ -118,7 +123,7 @@ class PanelILI9341(Panel):
 		self.tft = ST7789(**d)
 
 	def push(self, data: bytearray):
-		self.tft.blit_buffer(data, 0, 0, self.width(), self.height())
+		self.tft.blit_buffer(data, 0, 0, self.width(), self.height(), self.scale())
 
 	def init(self):
 		self.tft.init()
@@ -126,8 +131,9 @@ class PanelILI9341(Panel):
 
 class PanelST7789(Panel):
 	def __init__(self, spi: SPI, dc: Pin, reset: Pin = None, cs: Pin = None, rotation: int = 0):
-		super().__init__(320, 240)
-		d = dict(spi=spi, height=self.width(), width=self.height(), dc=dc, rotation=rotation,
+		super().__init__(160, 120)
+		d = dict(spi=spi, height=self.width() * self.scale(), width=self.height() * self.scale(), dc=dc,
+				 rotation=rotation,
 				 color_order=st7789.RGB, inversion=False)
 
 		if cs is not None:
@@ -138,7 +144,7 @@ class PanelST7789(Panel):
 		self.tft = ST7789(**d)
 
 	def push(self, data: bytearray):
-		self.tft.blit_buffer(data, 0, 0, self.width(), self.height())
+		self.tft.blit_buffer(data, 0, 0, self.width(), self.height(), self.scale())
 
 	def init(self):
 		self.tft.init()
