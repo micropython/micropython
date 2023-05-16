@@ -64,10 +64,7 @@ class Display():
 		pass
 
 	def blit(self, sprite: bytearray, x: int, y: int, w: int, h: int, key: int = -1, palette=None):
-		for i in range(len(sprite) // 2):
-			color = sprite[i * 2] << 8 | sprite[i * 2 + 1]
-			if color != key:
-				self.panel.pixel(x + i % w, y + i // w, color)
+		self.panel.blit_img(sprite, x, y, w, h, key)
 
 	class Color:
 
