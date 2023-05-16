@@ -40,9 +40,6 @@ STATIC const int16_t square_wave[] = {-32768, 32767};
 STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
                                  12544, 13290, 14080, 14917, 15804}; // 9th octave
 
-STATIC int32_t round_float_to_int(mp_float_t f) {
-    return (int32_t)(f + MICROPY_FLOAT_CONST(0.5));
-}
 
 STATIC int64_t round_float_to_int64(mp_float_t f) {
     return (int64_t)(f + MICROPY_FLOAT_CONST(0.5));
@@ -544,53 +541,6 @@ uint32_t synthio_frequency_convert_float_to_dds(mp_float_t frequency_hz, int32_t
 
 uint32_t synthio_frequency_convert_scaled_to_dds(uint64_t frequency_scaled, int32_t sample_rate) {
     return (sample_rate / 2 + frequency_scaled) / sample_rate;
-}
-
-void synthio_lfo_set(synthio_lfo_state_t *state, const synthio_lfo_descr_t *descr, uint32_t sample_rate) {
-    state->amplitude_scaled = round_float_to_int(descr->amplitude * 32768);
-    state->dds = synthio_frequency_convert_float_to_dds(descr->frequency * 65536, sample_rate);
-}
-
-STATIC int synthio_lfo_step_common(synthio_lfo_state_t *state, uint16_t dur) {
-    uint32_t phase = state->phase;
-    uint16_t whole_phase = phase >> 16;
-
-    // advance the phase accumulator
-    state->phase = phase + state->dds * dur;
-
-    return whole_phase;
-}
-STATIC int synthio_lfo_sweep_common(synthio_lfo_state_t *state, uint16_t dur) {
-    uint32_t old_phase = state->phase;
-    uint16_t whole_phase = synthio_lfo_step_common(state, dur);
-    if (state->phase < old_phase) {
-        state->phase = 0xffffffff;
-    }
-    return whole_phase;
-}
-
-int synthio_sweep_step(synthio_lfo_state_t *state, uint16_t dur) {
-    uint16_t whole_phase = synthio_lfo_sweep_common(state, dur);
-    return (state->amplitude_scaled * whole_phase) / 65536 + state->offset_scaled;
-}
-
-int synthio_sweep_in_step(synthio_lfo_state_t *state, uint16_t dur) {
-    uint16_t whole_phase = 65535 - synthio_lfo_sweep_common(state, dur);
-    return (state->amplitude_scaled * whole_phase) / 65536 + state->offset_scaled;
-}
-
-int synthio_lfo_step(synthio_lfo_state_t *state, uint16_t dur) {
-    uint16_t whole_phase = synthio_lfo_step_common(state, dur);
-    // create a triangle wave, it's quick and easy
-    int v;
-    if (whole_phase < 16384) { // ramp from 0 to amplitude
-        v = (state->amplitude_scaled * whole_phase);
-    } else if (whole_phase < 49152) { // ramp from +amplitude to -amplitude
-        v = (state->amplitude_scaled * (32768 - whole_phase));
-    } else { // from -amplitude to 0
-        v = (state->amplitude_scaled * (whole_phase - 65536));
-    }
-    return v / 16384 + state->offset_scaled;
 }
 
 void shared_bindings_synthio_lfo_tick(uint32_t sample_rate) {
