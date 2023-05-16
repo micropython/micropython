@@ -1013,6 +1013,7 @@ bool gc_never_free(void *ptr) {
     // Pointers are stored in a linked list where each block is BYTES_PER_BLOCK long and the first
     // pointer is the next block of pointers.
     void **current_reference_block = MP_STATE_MEM(permanent_pointers);
+    void **last_reference_block = NULL;
     while (current_reference_block != NULL) {
         for (size_t i = 1; i < BYTES_PER_BLOCK / sizeof(void *); i++) {
             if (current_reference_block[i] == NULL) {
@@ -1020,6 +1021,7 @@ bool gc_never_free(void *ptr) {
                 return true;
             }
         }
+        last_reference_block = current_reference_block; // keep a record of last "proper" reference block
         current_reference_block = current_reference_block[0];
     }
     void **next_block = gc_alloc(BYTES_PER_BLOCK, false, true);
@@ -1029,7 +1031,7 @@ bool gc_never_free(void *ptr) {
     if (MP_STATE_MEM(permanent_pointers) == NULL) {
         MP_STATE_MEM(permanent_pointers) = next_block;
     } else {
-        current_reference_block[0] = next_block;
+        last_reference_block[0] = next_block;
     }
     next_block[1] = ptr;
     return true;
