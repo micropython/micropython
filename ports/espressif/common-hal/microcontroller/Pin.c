@@ -62,6 +62,11 @@ static const uint64_t pin_mask_reset_forbidden =
     GPIO_SEL_18 |         // USB D-
     GPIO_SEL_19 |         // USB D+
     #endif
+    #if defined(CONFIG_ESP_CONSOLE_UART_DEFAULT) && CONFIG_ESP_CONSOLE_UART_DEFAULT && CONFIG_ESP_CONSOLE_UART_NUM == 0
+    // Never reset debug UART/console pins.
+    GPIO_SEL_20 |
+    GPIO_SEL_21 |
+    #endif
     #endif // ESP32C3
 
     #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
