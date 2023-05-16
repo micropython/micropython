@@ -88,7 +88,7 @@ SRC_C += \
 	mphalport.c \
 	$(SILABS_BUILD)/pins.c\
 
-ifeq ('$(BOARD)','brd2601b')
+ifneq (,$(wildcard boards/$(BOARD)/sensor.c))
 SRC_C += boards/$(BOARD)/sensor.c
 endif
 

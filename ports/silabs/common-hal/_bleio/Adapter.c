@@ -280,9 +280,10 @@ uint32_t _common_hal_bleio_adapter_start_advertising(
     const bleio_address_obj_t *directed_to) {
 
     sl_status_t sc = SL_STATUS_FAIL;
+    int16_t power = tx_power * 10; // TX power in 0.1 dBm steps
     int16_t set_power;
-    uint32_t interval_min = 160;
-    uint32_t interval_max = 160;
+    uint32_t interval_min = (uint32_t)(interval * 1600);  // (milliseconds * 1.6)
+    uint32_t interval_max = (uint32_t)(interval * 1600);  // (milliseconds * 1.6)
     bd_addr address;
     uint8_t address_type;
     uint8_t system_id[8];
@@ -328,7 +329,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(
     }
 
     sc = sl_bt_advertiser_set_tx_power(self->advertising_handle,
-        tx_power,
+        power,
         &set_power);
     if (SL_STATUS_OK != sc) {
         return sc;

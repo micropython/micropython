@@ -24,4 +24,3 @@ requires:
 recommends:
   - id: sensor_rht
   - id: sensor_lux
-  - id: bt_rail_compatibility_fix

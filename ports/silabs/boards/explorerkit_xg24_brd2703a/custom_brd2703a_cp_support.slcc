@@ -16,5 +16,3 @@ provides:
   - name: custom_brd2703a_cp_support
 requires:
   - name: efr32mg24b210f1536im48
-recommends:
-  - id: bt_rail_compatibility_fix

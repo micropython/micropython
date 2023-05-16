@@ -91,10 +91,10 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
     // Resolution is not configurable directly but is based on the
     // selected oversampling ratio (osrHighSpeed), which defaults to
     // 2x and generates 12-bit results.
-    initAllConfigs.configs[0].reference = iadcCfgReferenceInt1V2;
-    initAllConfigs.configs[0].vRef = 1210;
+    initAllConfigs.configs[0].reference = iadcCfgReferenceVddx;
+    initAllConfigs.configs[0].vRef = 3300;
     initAllConfigs.configs[0].osrHighSpeed = iadcCfgOsrHighSpeed2x;
-    initAllConfigs.configs[0].analogGain = iadcCfgAnalogGain0P5x;
+    initAllConfigs.configs[0].analogGain = iadcCfgAnalogGain1x;
 
     // Divide CLK_SRC_ADC to set the CLK_ADC frequency
     initAllConfigs.configs[0].adcClkPrescale
@@ -212,5 +212,5 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
 // Get adc ref value
 float common_hal_analogio_analogin_get_reference_voltage
     (analogio_analogin_obj_t *self) {
-    return 2.42f;
+    return 3.3f;
 }
