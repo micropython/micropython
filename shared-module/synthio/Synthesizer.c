@@ -25,8 +25,9 @@
  */
 
 #include "py/runtime.h"
-#include "shared-bindings/synthio/Synthesizer.h"
+#include "shared-bindings/synthio/LFO.h"
 #include "shared-bindings/synthio/Note.h"
+#include "shared-bindings/synthio/Synthesizer.h"
 #include "shared-module/synthio/Note.h"
 
 
@@ -36,6 +37,7 @@ void common_hal_synthio_synthesizer_construct(synthio_synthesizer_obj_t *self,
     mp_obj_t envelope_obj) {
 
     synthio_synth_init(&self->synth, sample_rate, channel_count, waveform_obj, filter_obj, envelope_obj);
+    self->lfos = mp_obj_new_list(0, NULL);
 }
 
 void common_hal_synthio_synthesizer_deinit(synthio_synthesizer_obj_t *self) {
@@ -67,7 +69,20 @@ audioio_get_buffer_result_t synthio_synthesizer_get_buffer(synthio_synthesizer_o
         return GET_BUFFER_ERROR;
     }
     self->synth.span.dur = SYNTHIO_MAX_DUR;
+
+
     synthio_synth_synthesize(&self->synth, buffer, buffer_length, single_channel_output ? channel : 0);
+
+    // free-running LFOs
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(self->lfos, &iter_buf);
+    mp_obj_t item;
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        synthio_lfo_slot_t slot = { .obj = item };
+        // does not error for invalid type, so it's OK that we don't police
+        // list contents
+        (void)synthio_lfo_obj_tick(&slot);
+    }
     return GET_BUFFER_MORE_DATA;
 }
 
@@ -119,6 +134,16 @@ void common_hal_synthio_synthesizer_press(synthio_synthesizer_obj_t *self, mp_ob
     }
 }
 
+void common_hal_synthio_synthesizer_retrigger(synthio_synthesizer_obj_t *self, mp_obj_t to_retrigger) {
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(to_retrigger, &iter_buf);
+    mp_obj_t lfo_obj;
+    while ((lfo_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        synthio_lfo_obj_t *lfo = MP_OBJ_TO_PTR(mp_arg_validate_type(lfo_obj, &synthio_lfo_type, MP_QSTR_retrigger));
+        common_hal_synthio_lfo_retrigger(lfo);
+    }
+}
+
 mp_obj_t common_hal_synthio_synthesizer_get_pressed_notes(synthio_synthesizer_obj_t *self) {
     int count = 0;
     for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
@@ -133,4 +158,8 @@ mp_obj_t common_hal_synthio_synthesizer_get_pressed_notes(synthio_synthesizer_ob
         }
     }
     return MP_OBJ_FROM_PTR(result);
+}
+
+mp_obj_t common_hal_synthio_synthesizer_get_lfos(synthio_synthesizer_obj_t *self) {
+    return self->lfos;
 }

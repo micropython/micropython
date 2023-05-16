@@ -41,5 +41,7 @@ uint8_t common_hal_synthio_synthesizer_get_bits_per_sample(synthio_synthesizer_o
 uint8_t common_hal_synthio_synthesizer_get_channel_count(synthio_synthesizer_obj_t *self);
 void common_hal_synthio_synthesizer_release(synthio_synthesizer_obj_t *self, mp_obj_t to_release);
 void common_hal_synthio_synthesizer_press(synthio_synthesizer_obj_t *self, mp_obj_t to_press);
+void common_hal_synthio_synthesizer_retrigger(synthio_synthesizer_obj_t *self, mp_obj_t to_retrigger);
 void common_hal_synthio_synthesizer_release_all(synthio_synthesizer_obj_t *self);
 mp_obj_t common_hal_synthio_synthesizer_get_pressed_notes(synthio_synthesizer_obj_t *self);
+mp_obj_t common_hal_synthio_synthesizer_get_lfos(synthio_synthesizer_obj_t *self);
