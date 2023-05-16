@@ -161,7 +161,7 @@ MP_PROPERTY_GETSET(synthio_note_amplitude_obj,
 
 //|
 //|     bend: BlockInput
-//|     """The pitch bend depth of the note, from -1 to +1
+//|     """The pitch bend depth of the note, from -12 to +12
 //|
 //|     A depth of 0 plays the programmed frequency. A depth of 1 corresponds to a bend of 1
 //|     octave.  A depth of (1/12) = 0.833 corresponds to a bend of 1 semitone,
@@ -244,7 +244,7 @@ MP_PROPERTY_GETSET(synthio_note_ring_frequency_obj,
     (mp_obj_t)&synthio_note_set_ring_frequency_obj);
 
 //|     ring_bend: float
-//|     """The pitch bend depth of the note's ring waveform, from -1 to +1
+//|     """The pitch bend depth of the note's ring waveform, from -12 to +12
 //|
 //|     A depth of 0 plays the programmed frequency. A depth of 1 corresponds to a bend of 1
 //|     octave.  A depth of (1/12) = 0.833 corresponds to a bend of 1 semitone,

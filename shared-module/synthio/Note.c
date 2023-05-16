@@ -160,18 +160,16 @@ void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate) {
 
 STATIC uint16_t pitch_bend_table[] = { 0, 1948, 4013, 6200, 8517, 10972, 13573, 16329, 19248, 22341, 25618, 29090, 32768 };
 
-STATIC uint32_t pitch_bend(uint32_t frequency_scaled, int16_t bend_value) {
-    bool down = (bend_value < 0);
-    if (down) {
-        bend_value += 32768;
-    }
+STATIC uint32_t pitch_bend(uint32_t frequency_scaled, int32_t bend_value) {
+    int octave = bend_value >> 15;
+    bend_value &= 0x7fff;
     uint32_t bend_value_semitone = (uint32_t)bend_value * 24; // 65536/semitone
     uint32_t semitone = bend_value_semitone >> 16;
     uint32_t fractone = bend_value_semitone & 0xffff;
     uint32_t f_lo = pitch_bend_table[semitone];
     uint32_t f_hi = pitch_bend_table[semitone + 1]; // table has 13 entries, indexing with semitone=12 is OK
     uint32_t f = ((f_lo * (65535 - fractone) + f_hi * fractone) >> 16) + BEND_OFFSET;
-    return (frequency_scaled * (uint64_t)f) >> (15 + down);
+    return (frequency_scaled * (uint64_t)f) >> (15 - octave);
 }
 
 #define ZERO MICROPY_FLOAT_CONST(0.)
@@ -196,11 +194,11 @@ uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_
     loudness[1] = (loudness[1] * right_panning_scaled) >> 15;
 
     if (self->ring_frequency_scaled != 0) {
-        int ring_bend_value = synthio_lfo_obj_tick_scaled(&self->ring_bend, -ONE, ALMOST_ONE, 15);
+        int ring_bend_value = synthio_lfo_obj_tick_scaled(&self->ring_bend, -12, 12, 15);
         self->ring_frequency_bent = pitch_bend(self->ring_frequency_scaled, ring_bend_value);
     }
 
-    int bend_value = synthio_lfo_obj_tick_scaled(&self->bend, -ONE, ALMOST_ONE, 15);
+    int bend_value = synthio_lfo_obj_tick_scaled(&self->bend, -12, 12, 15);
     uint32_t frequency_scaled = pitch_bend(self->frequency_scaled, bend_value);
     return frequency_scaled;
 
