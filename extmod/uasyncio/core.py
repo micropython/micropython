@@ -139,9 +139,14 @@ def _promote_to_task(aw):
     return aw if isinstance(aw, Task) else create_task(aw)
 
 
+# Return True if obj is a coroutine object
+def iscoroutine(obj):
+    return hasattr(obj, "send")
+
+
 # Create and schedule a new task from a coroutine
 def create_task(coro):
-    if not hasattr(coro, "send"):
+    if not iscoroutine(coro):
         raise TypeError("coroutine expected")
     t = Task(coro, globals())
     _task_queue.push(t)

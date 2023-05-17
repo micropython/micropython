@@ -62,6 +62,10 @@ Core functions
 
     This is a coroutine, and a MicroPython extension.
 
+.. function:: iscoroutine(obj)
+
+    Return True if obj is a coroutine object.
+
 Additional functions
 --------------------
 
