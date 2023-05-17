@@ -2,13 +2,13 @@
 
 #include "supervisor/board.h"
 #include "shared-module/displayio/__init__.h"
+#include "inky-shared.h"
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_GPIO0) },
     { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_GPIO1) },
-    { MP_ROM_QSTR(MP_QSTR_HOLD_SYS_EN), MP_ROM_PTR(&pin_GPIO2) },
     { MP_ROM_QSTR(MP_QSTR_I2C_INT), MP_ROM_PTR(&pin_GPIO3) },
 
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_GPIO4) },
@@ -48,5 +48,6 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_DISPLAY), MP_ROM_PTR(&displays[0].epaper_display)},
+    { MP_ROM_QSTR(MP_QSTR_ENABLE_DIO), MP_ROM_PTR(&enable_pin_obj)},   // GP2
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);

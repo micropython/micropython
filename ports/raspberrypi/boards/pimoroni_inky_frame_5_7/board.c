@@ -33,14 +33,17 @@
 #include "shared-module/displayio/__init__.h"
 #include "shared-bindings/board/__init__.h"
 #include "supervisor/shared/board.h"
+#include "inky-shared.h"
 
 #define DELAY 0x80
+
+digitalio_digitalinout_obj_t enable_pin_obj;
 
 // This is an SPD1656 control chip. The display is a 5.7" ACeP EInk.
 
 const uint8_t display_start_sequence[] = {
     0x01, 4, 0x37, 0x00, 0x23, 0x23, // power setting
-    0x00, 2, 0xef, 0x08, // panel setting (PSR)
+    0x00, 2, 0xe3, 0x08, // panel setting (PSR, 0xe3: no rotation)
     0x03, 1, 0x00, // PFS
     0x06, 3, 0xc7, 0xc7, 0x1d, // booster
     0x30, 1, 0x3c, // PLL setting
@@ -62,6 +65,14 @@ const uint8_t refresh_sequence[] = {
 };
 
 void board_init(void) {
+    // Drive the EN_3V3 pin high so the board stays awake on battery power
+    enable_pin_obj.base.type = &digitalio_digitalinout_type;
+    common_hal_digitalio_digitalinout_construct(&enable_pin_obj, &pin_GPIO2);
+    common_hal_digitalio_digitalinout_switch_to_output(&enable_pin_obj, true, DRIVE_MODE_PUSH_PULL);
+
+    // Never reset
+    common_hal_digitalio_digitalinout_never_reset(&enable_pin_obj);
+
     displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
 
@@ -89,7 +100,7 @@ void board_init(void) {
         480,  // ram_height
         0,  // colstart
         0,  // rowstart
-        180,  // rotation
+        0,  // rotation
         NO_COMMAND,  // set_column_window_command
         NO_COMMAND,  // set_row_window_command
         NO_COMMAND,  // set_current_column_command
