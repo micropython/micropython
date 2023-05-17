@@ -273,7 +273,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(synthio_from_file_obj, 1, synthio_from_file);
 //|
 
 STATIC mp_obj_t midi_to_hz(mp_obj_t arg) {
-    mp_float_t note = mp_arg_validate_obj_float_range(arg, 1, 127, MP_QSTR_note);
+    mp_float_t note = mp_arg_validate_obj_float_range(arg, 0, 127, MP_QSTR_note);
     return mp_obj_new_float(common_hal_synthio_midi_to_hz_float(note));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_midi_to_hz_obj, midi_to_hz);
