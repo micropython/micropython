@@ -78,10 +78,9 @@ audioio_get_buffer_result_t synthio_synthesizer_get_buffer(synthio_synthesizer_o
     mp_obj_t iterable = mp_getiter(self->lfos, &iter_buf);
     mp_obj_t item;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        synthio_lfo_slot_t slot = { .obj = item };
-        // does not error for invalid type, so it's OK that we don't police
-        // list contents
-        (void)synthio_lfo_obj_tick(&slot);
+        synthio_block_slot_t slot;
+        synthio_block_assign_slot(item, &slot, MP_QSTR_arg);
+        (void)synthio_block_slot_get(&slot);
     }
     return GET_BUFFER_MORE_DATA;
 }

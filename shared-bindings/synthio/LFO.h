@@ -51,3 +51,4 @@ mp_float_t common_hal_synthio_lfo_get_value(synthio_lfo_obj_t *self);
 mp_float_t common_hal_synthio_lfo_get_phase(synthio_lfo_obj_t *self);
 
 void common_hal_synthio_lfo_retrigger(synthio_lfo_obj_t *self);
+mp_float_t common_hal_synthio_lfo_tick(mp_obj_t self_in);

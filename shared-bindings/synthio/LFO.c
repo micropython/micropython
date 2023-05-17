@@ -27,6 +27,7 @@
 
 #include "py/obj.h"
 #include "py/objproperty.h"
+#include "py/proto.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
 #include "shared-bindings/synthio/LFO.h"
@@ -40,9 +41,9 @@
 //|
 //|     `rate`, `offset`, `scale`, and `once` can be changed at run-time. `waveform` may be mutated.
 //|
-//|     `waveform` must be a ``ReadableBuffer`` with elements of type `h` (16-bit signed integer).
-//|     Internally, the elements of `waveform` are scaled so that the input
-//|     range ``[-32768,32767]`` maps to ``[-1.0, 0.99996]``.
+//|     `waveform` must be a ``ReadableBuffer`` with elements of type ``'h'``
+//|     (16-bit signed integer).  Internally, the elements of `waveform` are scaled
+//|     so that the input range ``[-32768,32767]`` maps to ``[-1.0, 0.99996]``.
 //|
 //|     An LFO only updates if it is actually associated with a playing `Synthesizer`,
 //|     including indirectly via a `Note` or another intermediate LFO.
@@ -80,11 +81,11 @@ STATIC mp_obj_t synthio_lfo_make_new(const mp_obj_type_t *type_in, size_t n_args
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(lfo_properties), lfo_properties, args);
 
     synthio_lfo_obj_t *self = m_new_obj(synthio_lfo_obj_t);
-    self->base.type = &synthio_lfo_type;
+    self->base.base.type = &synthio_lfo_type;
 
     synthio_synth_parse_waveform(&self->waveform_bufinfo, args[ARG_waveform].u_obj);
     self->waveform_obj = args[ARG_waveform].u_obj;
-    self->last_tick = synthio_global_tick;
+    self->base.last_tick = synthio_global_tick;
 
     mp_obj_t result = MP_OBJ_FROM_PTR(self);
     properties_construct_helper(result, lfo_properties + 1, args + 1, MP_ARRAY_SIZE(lfo_properties) - 1);
@@ -232,10 +233,30 @@ STATIC const mp_rom_map_elem_t synthio_lfo_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(synthio_lfo_locals_dict, synthio_lfo_locals_dict_table);
 
+
+STATIC const synthio_block_proto_t lfo_proto = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_synthio_block)
+    .tick = common_hal_synthio_lfo_tick,
+};
+
 const mp_obj_type_t synthio_lfo_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_LFO,
     .make_new = synthio_lfo_make_new,
     .locals_dict = (mp_obj_dict_t *)&synthio_lfo_locals_dict,
     .print = lfo_print,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &lfo_proto,
+        ),
 };
+
+#if 0
+const mp_obj_type_t synthio_math_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Math,
+    .make_new = synthio_math_make_new,
+    .locals_dict = (mp_obj_dict_t *)&synthio_math_locals_dict,
+    .print = math_print,
+};
+#endif

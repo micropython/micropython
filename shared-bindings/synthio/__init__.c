@@ -294,9 +294,9 @@ STATIC mp_obj_t synthio_lfo_tick(size_t n, const mp_obj_t *args) {
     shared_bindings_synthio_lfo_tick(48000);
     mp_obj_t result[n];
     for (size_t i = 0; i < n; i++) {
-        synthio_lfo_slot_t slot;
-        synthio_lfo_assign_input(args[i], &slot, MP_QSTR_arg);
-        mp_float_t value = synthio_lfo_obj_tick(&slot);
+        synthio_block_slot_t slot;
+        synthio_block_assign_slot(args[i], &slot, MP_QSTR_arg);
+        mp_float_t value = synthio_block_slot_get(&slot);
         result[i] = mp_obj_new_float(value);
     }
     return mp_obj_new_tuple(n, result);

@@ -27,36 +27,43 @@
 #pragma once
 
 #include "py/obj.h"
+#include "py/proto.h"
 
 #include "shared-module/synthio/__init__.h"
 #include "shared-bindings/synthio/__init__.h"
 
-typedef struct synthio_lfo_slot {
-    mp_obj_t obj;
+typedef struct synthio_block_base {
+    mp_obj_base_t base;
+    uint8_t last_tick;
     mp_float_t value;
-} synthio_lfo_slot_t;
+} synthio_block_base_t;
+
+typedef struct synthio_block_slot {
+    mp_obj_t obj;
+} synthio_block_slot_t;
+
+typedef struct {
+    MP_PROTOCOL_HEAD;
+    mp_float_t (*tick)(mp_obj_t obj);
+} synthio_block_proto_t;
 
 typedef struct synthio_lfo_obj {
-    mp_obj_base_t base;
-
-    int32_t sample_rate;
-
-    uint8_t last_tick;
+    synthio_block_base_t base;
     bool once;
 
-    synthio_lfo_slot_t rate, scale, offset;
-    mp_float_t accum, value;
+    synthio_block_slot_t rate, scale, offset;
+    mp_float_t accum;
 
     mp_obj_t waveform_obj;
     mp_buffer_info_t waveform_bufinfo;
 } synthio_lfo_obj_t;
 
 // Update the value inside the lfo slot if the value is an LFO, returning the new value
-mp_float_t synthio_lfo_obj_tick(synthio_lfo_slot_t *lfo_slot);
+mp_float_t synthio_block_slot_get(synthio_block_slot_t *block_slot);
 // the same, but the output is constrained to be between lo and hi
-mp_float_t synthio_lfo_obj_tick_limited(synthio_lfo_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi);
+mp_float_t synthio_block_slot_get_limited(synthio_block_slot_t *block_slot, mp_float_t lo, mp_float_t hi);
 // the same, but the output is constrained to be between lo and hi and converted to an integer with 15 fractional bits
-int32_t synthio_lfo_obj_tick_scaled(synthio_lfo_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi);
+int32_t synthio_block_slot_get_scaled(synthio_block_slot_t *block_slot, mp_float_t lo, mp_float_t hi);
 
-// Assign an object (which may be a float or a synthio_lfo_obj_t) to an lfo slot
-void synthio_lfo_assign_input(mp_obj_t obj, synthio_lfo_slot_t *lfo_slot, qstr arg_name);
+// Assign an object (which may be a float or a synthio_block_obj_t) to an block slot
+void synthio_block_assign_slot(mp_obj_t obj, synthio_block_slot_t *block_slot, qstr arg_name);

@@ -63,7 +63,7 @@ mp_obj_t common_hal_synthio_note_get_panning(synthio_note_obj_t *self) {
 }
 
 void common_hal_synthio_note_set_panning(synthio_note_obj_t *self, mp_obj_t value_in) {
-    synthio_lfo_assign_input(value_in, &self->panning, MP_QSTR_panning);
+    synthio_block_assign_slot(value_in, &self->panning, MP_QSTR_panning);
 }
 
 mp_obj_t common_hal_synthio_note_get_amplitude(synthio_note_obj_t *self) {
@@ -71,7 +71,7 @@ mp_obj_t common_hal_synthio_note_get_amplitude(synthio_note_obj_t *self) {
 }
 
 void common_hal_synthio_note_set_amplitude(synthio_note_obj_t *self, mp_obj_t value_in) {
-    synthio_lfo_assign_input(value_in, &self->amplitude, MP_QSTR_amplitude);
+    synthio_block_assign_slot(value_in, &self->amplitude, MP_QSTR_amplitude);
 }
 
 mp_obj_t common_hal_synthio_note_get_bend(synthio_note_obj_t *self) {
@@ -79,7 +79,7 @@ mp_obj_t common_hal_synthio_note_get_bend(synthio_note_obj_t *self) {
 }
 
 void common_hal_synthio_note_set_bend(synthio_note_obj_t *self, mp_obj_t value_in) {
-    synthio_lfo_assign_input(value_in, &self->bend, MP_QSTR_bend);
+    synthio_block_assign_slot(value_in, &self->bend, MP_QSTR_bend);
 }
 
 mp_obj_t common_hal_synthio_note_get_ring_bend(synthio_note_obj_t *self) {
@@ -87,7 +87,7 @@ mp_obj_t common_hal_synthio_note_get_ring_bend(synthio_note_obj_t *self) {
 }
 
 void common_hal_synthio_note_set_ring_bend(synthio_note_obj_t *self, mp_obj_t value_in) {
-    synthio_lfo_assign_input(value_in, &self->ring_bend, MP_QSTR_ring_bend);
+    synthio_block_assign_slot(value_in, &self->ring_bend, MP_QSTR_ring_bend);
 }
 
 mp_obj_t common_hal_synthio_note_get_envelope_obj(synthio_note_obj_t *self) {
@@ -177,7 +177,7 @@ STATIC uint32_t pitch_bend(uint32_t frequency_scaled, int32_t bend_value) {
 #define ALMOST_ONE (MICROPY_FLOAT_CONST(32767.) / 32768)
 
 uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t loudness[2]) {
-    int panning = synthio_lfo_obj_tick_scaled(&self->panning, -ALMOST_ONE, ALMOST_ONE);
+    int panning = synthio_block_slot_get_scaled(&self->panning, -ALMOST_ONE, ALMOST_ONE);
     int left_panning_scaled, right_panning_scaled;
     if (panning >= 0) {
         left_panning_scaled = 32768;
@@ -187,18 +187,18 @@ uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_
         left_panning_scaled = 32767 + panning;
     }
 
-    int amplitude = synthio_lfo_obj_tick_scaled(&self->amplitude, ZERO, ALMOST_ONE);
+    int amplitude = synthio_block_slot_get_scaled(&self->amplitude, ZERO, ALMOST_ONE);
     left_panning_scaled = (left_panning_scaled * amplitude) >> 15;
     right_panning_scaled = (right_panning_scaled * amplitude) >> 15;
     loudness[0] = (loudness[0] * left_panning_scaled) >> 15;
     loudness[1] = (loudness[1] * right_panning_scaled) >> 15;
 
     if (self->ring_frequency_scaled != 0) {
-        int ring_bend_value = synthio_lfo_obj_tick_scaled(&self->ring_bend, -12, 12);
+        int ring_bend_value = synthio_block_slot_get_scaled(&self->ring_bend, -12, 12);
         self->ring_frequency_bent = pitch_bend(self->ring_frequency_scaled, ring_bend_value);
     }
 
-    int bend_value = synthio_lfo_obj_tick_scaled(&self->bend, -12, 12);
+    int bend_value = synthio_block_slot_get_scaled(&self->bend, -12, 12);
     uint32_t frequency_scaled = pitch_bend(self->frequency_scaled, bend_value);
     return frequency_scaled;
 
