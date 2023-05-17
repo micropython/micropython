@@ -34,7 +34,7 @@
 #include "shared-module/synthio/LFO.h"
 
 //| class LFO:
-//|     """A low-frequency oscillator
+//|     """A low-frequency oscillator block
 //|
 //|     Every `rate` seconds, the output of the LFO cycles through its `waveform`.
 //|     The output at any particular moment is ``waveform[idx] * scale + offset``.

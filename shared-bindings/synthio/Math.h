@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,25 +26,35 @@
 
 #pragma once
 
-#include "shared-module/synthio/block.h"
+#include "py/obj.h"
 
-typedef struct synthio_lfo_obj {
-    synthio_block_base_t base;
-    bool once;
+typedef enum {
+    OP_SUM,
+    OP_ADD_SUB,
+    OP_PRODUCT,
+    OP_MUL_DIV,
+    OP_SCALE_OFFSET,
+    OP_OFFSET_SCALE,
+    OP_LERP,
+    OP_CONSTRAINED_LERP,
+    OP_DIV_ADD,
+    OP_ADD_DIV,
+    OP_MID,
+    OP_MIN,
+    OP_MAX,
+    OP_ABS
+} synthio_math_operation_t;
 
-    synthio_block_slot_t rate, scale, offset;
-    mp_float_t accum;
+typedef struct synthio_math_obj synthio_math_obj_t;
+extern const mp_obj_type_t synthio_math_type;
+extern const mp_obj_type_t synthio_math_operation_type;
 
-    mp_obj_t waveform_obj;
-    mp_buffer_info_t waveform_bufinfo;
-} synthio_lfo_obj_t;
+mp_obj_t common_hal_synthio_math_get_input_obj(synthio_math_obj_t *self, size_t i);
+void common_hal_synthio_math_set_input_obj(synthio_math_obj_t *self, size_t i, mp_obj_t arg, qstr argname);
 
-// Update the value inside the lfo slot if the value is an LFO, returning the new value
-mp_float_t synthio_block_slot_get(synthio_block_slot_t *block_slot);
-// the same, but the output is constrained to be between lo and hi
-mp_float_t synthio_block_slot_get_limited(synthio_block_slot_t *block_slot, mp_float_t lo, mp_float_t hi);
-// the same, but the output is constrained to be between lo and hi and converted to an integer with 15 fractional bits
-int32_t synthio_block_slot_get_scaled(synthio_block_slot_t *block_slot, mp_float_t lo, mp_float_t hi);
+synthio_math_operation_t common_hal_synthio_math_get_operation(synthio_math_obj_t *self);
+void common_hal_synthio_math_set_operation(synthio_math_obj_t *self, synthio_math_operation_t arg);
 
-// Assign an object (which may be a float or a synthio_block_obj_t) to an block slot
-void synthio_block_assign_slot(mp_obj_t obj, synthio_block_slot_t *block_slot, qstr arg_name);
+mp_float_t common_hal_synthio_math_get_value(synthio_math_obj_t *self);
+
+mp_float_t common_hal_synthio_math_tick(mp_obj_t self_in);

@@ -26,18 +26,26 @@
 
 #pragma once
 
-#include "shared-module/synthio/block.h"
+#include "py/obj.h"
+#include "py/proto.h"
 
-typedef struct synthio_lfo_obj {
-    synthio_block_base_t base;
-    bool once;
+#include "shared-module/synthio/__init__.h"
+#include "shared-bindings/synthio/__init__.h"
 
-    synthio_block_slot_t rate, scale, offset;
-    mp_float_t accum;
+typedef struct synthio_block_base {
+    mp_obj_base_t base;
+    uint8_t last_tick;
+    mp_float_t value;
+} synthio_block_base_t;
 
-    mp_obj_t waveform_obj;
-    mp_buffer_info_t waveform_bufinfo;
-} synthio_lfo_obj_t;
+typedef struct synthio_block_slot {
+    mp_obj_t obj;
+} synthio_block_slot_t;
+
+typedef struct {
+    MP_PROTOCOL_HEAD;
+    mp_float_t (*tick)(mp_obj_t obj);
+} synthio_block_proto_t;
 
 // Update the value inside the lfo slot if the value is an LFO, returning the new value
 mp_float_t synthio_block_slot_get(synthio_block_slot_t *block_slot);

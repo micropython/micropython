@@ -37,6 +37,7 @@
 
 #include "shared-bindings/synthio/__init__.h"
 #include "shared-bindings/synthio/LFO.h"
+#include "shared-bindings/synthio/Math.h"
 #include "shared-bindings/synthio/MidiTrack.h"
 #include "shared-bindings/synthio/Note.h"
 #include "shared-bindings/synthio/Synthesizer.h"
@@ -63,8 +64,8 @@ static const mp_arg_t envelope_properties[] = {
 //| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
 //| """
 //|
-//| BlockInput = Union["LFO", float]
-//| """LFOs and Notes can take any of these types as inputs on certain attributes"""
+//| BlockInput = Union["Math", "LFO", float, None]
+//| """Blocks and Notes can take any of these types as inputs on certain attributes"""
 //|
 //| class Envelope:
 //|     def __init__(
@@ -306,6 +307,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR(synthio_lfo_tick_obj, 1, synthio_lfo_tick);
 
 STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_synthio) },
+    { MP_ROM_QSTR(MP_QSTR_Math), MP_ROM_PTR(&synthio_math_type) },
+    { MP_ROM_QSTR(MP_QSTR_MathOperation), MP_ROM_PTR(&synthio_math_operation_type) },
     { MP_ROM_QSTR(MP_QSTR_MidiTrack), MP_ROM_PTR(&synthio_miditrack_type) },
     { MP_ROM_QSTR(MP_QSTR_Note), MP_ROM_PTR(&synthio_note_type) },
     { MP_ROM_QSTR(MP_QSTR_LFO), MP_ROM_PTR(&synthio_lfo_type) },

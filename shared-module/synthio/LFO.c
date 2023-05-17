@@ -64,58 +64,6 @@ mp_float_t common_hal_synthio_lfo_tick(mp_obj_t self_in) {
     return value;
 }
 
-mp_float_t synthio_block_slot_get(synthio_block_slot_t *slot) {
-    if (slot->obj == mp_const_none) {
-        return MICROPY_FLOAT_CONST(0.);
-    }
-
-    mp_float_t value;
-    if (mp_obj_get_float_maybe(slot->obj, &value)) {
-        return value;
-    }
-
-    synthio_block_base_t *block = MP_OBJ_TO_PTR(slot->obj);
-    if (block->last_tick == synthio_global_tick) {
-        return block->value;
-    }
-
-    block->last_tick = synthio_global_tick;
-    // previously verified by call to mp_proto_get
-    const synthio_block_proto_t *p = mp_type_get_protocol_slot(mp_obj_get_type(slot->obj));
-    block->value = value = p->tick(slot);
-    return value;
-}
-
-mp_float_t synthio_block_slot_get_limited(synthio_block_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi) {
-    mp_float_t value = synthio_block_slot_get(lfo_slot);
-    if (value < lo) {
-        return lo;
-    }
-    if (value > hi) {
-        return hi;
-    }
-    return value;
-}
-
-int32_t synthio_block_slot_get_scaled(synthio_block_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi) {
-    mp_float_t value = synthio_block_slot_get_limited(lfo_slot, lo, hi);
-    return (int32_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(ldexp)(value, 15));
-}
-
-void synthio_block_assign_slot(mp_obj_t obj, synthio_block_slot_t *slot, qstr arg_name) {
-    if (mp_proto_get(MP_QSTR_synthio_block, obj)) {
-        slot->obj = obj;
-        return;
-    }
-
-    mp_float_t value;
-    if (obj != mp_const_none && !mp_obj_get_float_maybe(obj, &value)) {
-        mp_raise_TypeError_varg(translate("%q must be of type %q or %q, not %q"), arg_name, MP_QSTR_Lfo, MP_QSTR_float,  mp_obj_get_type_qstr(obj));
-    }
-
-    slot->obj = obj;
-}
-
 mp_obj_t common_hal_synthio_lfo_get_waveform_obj(synthio_lfo_obj_t *self) {
     return self->waveform_obj;
 }
