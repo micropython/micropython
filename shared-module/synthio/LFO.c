@@ -90,9 +90,9 @@ mp_float_t synthio_lfo_obj_tick_limited(synthio_lfo_slot_t *lfo_slot, mp_float_t
     return value;
 }
 
-int32_t synthio_lfo_obj_tick_scaled(synthio_lfo_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi, int shift) {
+int32_t synthio_lfo_obj_tick_scaled(synthio_lfo_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi) {
     mp_float_t value = synthio_lfo_obj_tick_limited(lfo_slot, lo, hi);
-    return (int32_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(ldexp)(value, shift));
+    return (int32_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(ldexp)(value, 15));
 }
 
 void synthio_lfo_assign_input(mp_obj_t obj, synthio_lfo_slot_t *slot, qstr arg_name) {

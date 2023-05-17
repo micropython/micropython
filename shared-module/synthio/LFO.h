@@ -55,8 +55,8 @@ typedef struct synthio_lfo_obj {
 mp_float_t synthio_lfo_obj_tick(synthio_lfo_slot_t *lfo_slot);
 // the same, but the output is constrained to be between lo and hi
 mp_float_t synthio_lfo_obj_tick_limited(synthio_lfo_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi);
-// the same, but the output is constrained to be between lo and hi and converted to an integer with `shift` fractional bits
-int32_t synthio_lfo_obj_tick_scaled(synthio_lfo_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi, int shift);
+// the same, but the output is constrained to be between lo and hi and converted to an integer with 15 fractional bits
+int32_t synthio_lfo_obj_tick_scaled(synthio_lfo_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi);
 
 // Assign an object (which may be a float or a synthio_lfo_obj_t) to an lfo slot
 void synthio_lfo_assign_input(mp_obj_t obj, synthio_lfo_slot_t *lfo_slot, qstr arg_name);

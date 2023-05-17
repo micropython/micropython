@@ -37,16 +37,23 @@
 //|
 //|     Every `rate` seconds, the output of the LFO cycles through its `waveform`.
 //|     The output at any particular moment is ``waveform[idx] * scale + offset``.
-//|     Internally, the calculation takes place in fixed point for speed.
 //|
-//|     `rate`, `offset`, `scale`, and `once` can be changed at run-time.
+//|     `rate`, `offset`, `scale`, and `once` can be changed at run-time. `waveform` may be mutated.
 //|
-//|     An LFO only updates if it is actually associated with a playing Note,
-//|     including if it is indirectly associated with the Note via an intermediate
-//|     LFO.
+//|     `waveform` must be a ``ReadableBuffer`` with elements of type `h` (16-bit signed integer).
+//|     Internally, the elements of `waveform` are scaled so that the input
+//|     range ``[-32768,32767]`` maps to ``[-1.0, 0.99996]``.
+//|
+//|     An LFO only updates if it is actually associated with a playing `Synthesizer`,
+//|     including indirectly via a `Note` or another intermediate LFO.
 //|
 //|     Using the same LFO as an input to multiple other LFOs or Notes is OK, but
-//|     the result if an LFO is tied to multiple Synthtesizer objects is undefined."""
+//|     the result if an LFO is tied to multiple Synthtesizer objects is undefined.
+//|
+//|     In the current implementation, LFOs are updated every 256 samples. This
+//|     should be considered an implementation detail, though it affects how LFOs
+//|     behave for instance when used to implement an integrator (``l.offset = l``).
+//|     """
 //|
 //|     def __init__(
 //|         self,

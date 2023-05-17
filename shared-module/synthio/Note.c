@@ -177,7 +177,7 @@ STATIC uint32_t pitch_bend(uint32_t frequency_scaled, int32_t bend_value) {
 #define ALMOST_ONE (MICROPY_FLOAT_CONST(32767.) / 32768)
 
 uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t loudness[2]) {
-    int panning = synthio_lfo_obj_tick_scaled(&self->panning, -ALMOST_ONE, ALMOST_ONE, 15);
+    int panning = synthio_lfo_obj_tick_scaled(&self->panning, -ALMOST_ONE, ALMOST_ONE);
     int left_panning_scaled, right_panning_scaled;
     if (panning >= 0) {
         left_panning_scaled = 32768;
@@ -187,18 +187,18 @@ uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_
         left_panning_scaled = 32767 + panning;
     }
 
-    int amplitude = synthio_lfo_obj_tick_scaled(&self->amplitude, ZERO, ALMOST_ONE, 15);
+    int amplitude = synthio_lfo_obj_tick_scaled(&self->amplitude, ZERO, ALMOST_ONE);
     left_panning_scaled = (left_panning_scaled * amplitude) >> 15;
     right_panning_scaled = (right_panning_scaled * amplitude) >> 15;
     loudness[0] = (loudness[0] * left_panning_scaled) >> 15;
     loudness[1] = (loudness[1] * right_panning_scaled) >> 15;
 
     if (self->ring_frequency_scaled != 0) {
-        int ring_bend_value = synthio_lfo_obj_tick_scaled(&self->ring_bend, -12, 12, 15);
+        int ring_bend_value = synthio_lfo_obj_tick_scaled(&self->ring_bend, -12, 12);
         self->ring_frequency_bent = pitch_bend(self->ring_frequency_scaled, ring_bend_value);
     }
 
-    int bend_value = synthio_lfo_obj_tick_scaled(&self->bend, -12, 12, 15);
+    int bend_value = synthio_lfo_obj_tick_scaled(&self->bend, -12, 12);
     uint32_t frequency_scaled = pitch_bend(self->frequency_scaled, bend_value);
     return frequency_scaled;
 
