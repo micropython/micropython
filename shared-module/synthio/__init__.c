@@ -553,9 +553,9 @@ mp_float_t synthio_block_slot_get(synthio_block_slot_t *slot) {
         return MICROPY_FLOAT_CONST(0.);
     }
 
-    mp_float_t value;
-    if (mp_obj_get_float_maybe(slot->obj, &value)) {
-        return value;
+    // all numbers previously converted to float in synthio_block_assign_slot
+    if (mp_obj_is_float(slot->obj)) {
+        return mp_obj_get_float(slot->obj);
     }
 
     synthio_block_base_t *block = MP_OBJ_TO_PTR(slot->obj);
@@ -564,9 +564,10 @@ mp_float_t synthio_block_slot_get(synthio_block_slot_t *slot) {
     }
 
     block->last_tick = synthio_global_tick;
-    // previously verified by call to mp_proto_get
+    // previously verified by call to mp_proto_get in synthio_block_assign_slot
     const synthio_block_proto_t *p = mp_type_get_protocol_slot(mp_obj_get_type(slot->obj));
-    block->value = value = p->tick(slot->obj);
+    mp_float_t value = p->tick(slot->obj);
+    block->value = value;
     return value;
 }
 
@@ -597,5 +598,8 @@ void synthio_block_assign_slot(mp_obj_t obj, synthio_block_slot_t *slot, qstr ar
         mp_raise_TypeError_varg(translate("%q must be of type %q, not %q"), arg_name, MP_QSTR_BlockInput, mp_obj_get_type_qstr(obj));
     }
 
-    slot->obj = obj;
+    slot->obj = mp_obj_new_float(value);
+}
+bool synthio_obj_is_block(mp_obj_t obj) {
+    return mp_proto_get(MP_QSTR_synthio_block, obj);
 }
