@@ -33,12 +33,16 @@
 
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     if (pin_number == 33) {
-        // Turn on BAT_HOLD by default, so that the board does not power off.
+        /*
+         * Turn on BAT_HOLD by default,
+         * so that the board does not power off
+         * when usb is disconnected or
+         * the power button is released.
+         */
         gpio_set_direction(pin_number, GPIO_MODE_DEF_OUTPUT);
         gpio_set_level(pin_number, true);
         return true;
     }
-
     return false;
 }
 
