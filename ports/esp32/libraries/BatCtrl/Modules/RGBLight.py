@@ -60,4 +60,4 @@ class RGBLight:
             self._scale(self._blue)
         ])
         self._i2c.writeto(self.ADDR, data)
-        time.sleep_ms(1)
+        time.sleep_ms(15)
