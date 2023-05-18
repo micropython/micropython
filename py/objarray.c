@@ -254,12 +254,14 @@ STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
 STATIC mp_obj_t memoryview_cast(const mp_obj_t self_in, const mp_obj_t typecode_in) {
     mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
     const char *typecode = mp_obj_str_get_str(typecode_in);
-    size_t element_size = mp_binary_get_size('@', typecode[0], NULL);
-    size_t bytelen = self->len * mp_binary_get_size('@', self->typecode & ~MP_OBJ_ARRAY_TYPECODE_FLAG_RW, NULL);
-    if (bytelen % element_size != 0) {
+    size_t new_element_size = mp_binary_get_size('@', typecode[0], NULL);
+    size_t old_element_size = mp_binary_get_size('@', self->typecode & ~MP_OBJ_ARRAY_TYPECODE_FLAG_RW, NULL);
+    size_t bytelen = self->len * old_element_size;
+    if (bytelen % new_element_size != 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("memoryview: length is not a multiple of itemsize"));
     }
-    mp_obj_array_t *result = MP_OBJ_TO_PTR(mp_obj_new_memoryview(*typecode, bytelen / element_size, self->items));
+    mp_obj_array_t *result = MP_OBJ_TO_PTR(mp_obj_new_memoryview(*typecode, bytelen / new_element_size, self->items));
+    result->memview_offset = (self->memview_offset * old_element_size) / new_element_size;
 
     // test if the object can be written to
     if (self->typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW) {
