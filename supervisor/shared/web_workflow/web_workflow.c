@@ -258,7 +258,7 @@ void supervisor_web_workflow_status(void) {
 }
 #endif
 
-void supervisor_start_web_workflow(void) {
+bool supervisor_start_web_workflow(void) {
     #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI && CIRCUITPY_OS_GETENV
 
     // Skip starting the workflow if we're not starting from power on or reset.
@@ -268,7 +268,7 @@ void supervisor_start_web_workflow(void) {
         reset_reason != RESET_REASON_DEEP_SLEEP_ALARM &&
         reset_reason != RESET_REASON_UNKNOWN &&
         reset_reason != RESET_REASON_SOFTWARE) {
-        return;
+        return false;
     }
 
     char ssid[33];
@@ -276,7 +276,7 @@ void supervisor_start_web_workflow(void) {
 
     os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_WIFI_SSID", ssid, sizeof(ssid));
     if (result != GETENV_OK) {
-        return;
+        return false;
     }
 
     result = common_hal_os_getenv_str("CIRCUITPY_WIFI_PASSWORD", password, sizeof(password));
@@ -284,7 +284,7 @@ void supervisor_start_web_workflow(void) {
         // if password is unspecified, assume an open network
         password[0] = '\0';
     } else if (result != GETENV_OK) {
-        return;
+        return false;
     }
 
     result = common_hal_os_getenv_str("CIRCUITPY_WEB_INSTANCE_NAME", web_instance_name, sizeof(web_instance_name));
@@ -309,7 +309,7 @@ void supervisor_start_web_workflow(void) {
 
     if (_wifi_status != WIFI_RADIO_ERROR_NONE) {
         common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, false);
-        return;
+        return false;
     }
 
     // (leaves new_port unchanged on any failure)
@@ -363,6 +363,7 @@ void supervisor_start_web_workflow(void) {
     // Wake polling thread (maybe)
     socketpool_socket_poll_resume();
     #endif
+    return true;
 }
 
 void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {

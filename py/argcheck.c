@@ -194,11 +194,16 @@ mp_float_t mp_arg_validate_type_float(mp_obj_t obj, qstr arg_name) {
     return a_float;
 }
 
-void mp_arg_validate_obj_float_range(mp_obj_t float_in, mp_int_t min, mp_int_t max, qstr arg_name) {
+mp_float_t mp_arg_validate_obj_float_range(mp_obj_t float_in, mp_int_t min, mp_int_t max, qstr arg_name) {
     const mp_float_t f = mp_arg_validate_type_float(float_in, arg_name);
+    return mp_arg_validate_float_range(f, min, max, arg_name);
+}
+
+mp_float_t mp_arg_validate_float_range(mp_float_t f, mp_int_t min, mp_int_t max, qstr arg_name) {
     if (f < (mp_float_t)min || f > (mp_float_t)max) {
         mp_raise_ValueError_varg(translate("%q must be %d-%d"), arg_name, min, max);
     }
+    return f;
 }
 
 mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t default_for_null, qstr arg_name) {

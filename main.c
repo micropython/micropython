@@ -666,8 +666,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         #endif
         {
             // Refresh the ePaper display if we have one. That way it'll show an error message.
+            // Skip if we're about to autoreload. Otherwise we may delay when user code can update
+            // the display.
             #if CIRCUITPY_DISPLAYIO
-            if (time_to_epaper_refresh > 0) {
+            if (time_to_epaper_refresh > 0 && !autoreload_pending()) {
                 time_to_epaper_refresh = maybe_refresh_epaperdisplay();
             }
 

@@ -38,6 +38,8 @@ uint64_t common_hal_time_monotonic_ns(void) {
     uint64_t ticks = port_get_raw_ticks(&subticks);
     // A tick is 976562.5 nanoseconds so multiply it by the base and add half instead of doing float
     // math.
+    // A subtick is 1/32 of a tick.
+    // 30518 is 1e9 / 32768
     return 976562 * ticks + ticks / 2 + 30518 * subticks;
 }
 

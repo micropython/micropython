@@ -188,6 +188,10 @@ void reset_port(void) {
     #if CIRCUITPY_BLEIO
     bleio_reset();
     #endif
+
+    #if CIRCUITPY_RTC
+    rtc_reset();
+    #endif
 }
 
 void reset_to_bootloader(void) {

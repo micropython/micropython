@@ -317,7 +317,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|         *,
 //|         channel: int = 1,
 //|         authmode: Optional[AuthMode] = None,
-//|         max_connections: Optional[int] = 4
+//|         max_connections: Optional[int] = 4,
 //|     ) -> None:
 //|         """Starts running an access point with the specified ssid and password.
 //|
@@ -416,7 +416,7 @@ MP_PROPERTY_GETTER(wifi_radio_ap_active_obj,
 //|         *,
 //|         channel: int = 0,
 //|         bssid: Optional[Union[str | ReadableBuffer]] = None,
-//|         timeout: Optional[float] = None
+//|         timeout: Optional[float] = None,
 //|     ) -> None:
 //|         """Connects to the given ssid and waits for an ip address. Reconnections are handled
 //|         automatically once one connection succeeds.
@@ -551,7 +551,7 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_subnet_ap_obj,
 //|         ipv4: ipaddress.IPv4Address,
 //|         netmask: ipaddress.IPv4Address,
 //|         gateway: ipaddress.IPv4Address,
-//|         ipv4_dns: Optional[ipaddress.IPv4Address]
+//|         ipv4_dns: Optional[ipaddress.IPv4Address],
 //|     ) -> None:
 //|         """Sets the IP v4 address of the station. Must include the netmask and gateway. DNS address is optional.
 //|         Setting the address manually will stop the DHCP client."""
@@ -573,6 +573,32 @@ STATIC mp_obj_t wifi_radio_set_ipv4_address(size_t n_args, const mp_obj_t *pos_a
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_set_ipv4_address_obj, 1, wifi_radio_set_ipv4_address);
+
+//|     def set_ipv4_address_ap(
+//|         self,
+//|         *,
+//|         ipv4: ipaddress.IPv4Address,
+//|         netmask: ipaddress.IPv4Address,
+//|         gateway: ipaddress.IPv4Address,
+//|     ) -> None:
+//|         """Sets the IP v4 address of the access point. Must include the netmask and gateway."""
+//|         ...
+STATIC mp_obj_t wifi_radio_set_ipv4_address_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_ipv4, ARG_netmask, ARG_gateway };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_ipv4, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
+        { MP_QSTR_netmask, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
+        { MP_QSTR_gateway, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, },
+    };
+
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    common_hal_wifi_radio_set_ipv4_address_ap(self, args[ARG_ipv4].u_obj, args[ARG_netmask].u_obj, args[ARG_gateway].u_obj);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_set_ipv4_address_ap_obj, 1, wifi_radio_set_ipv4_address_ap);
 
 //|     ipv4_address: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the station when connected to an access point. None otherwise. (read-only)"""
@@ -620,7 +646,7 @@ STATIC mp_obj_t wifi_radio_get_ap_info(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ap_info_obj, wifi_radio_get_ap_info);
 
 //|     def start_dhcp(self) -> None:
-//|         """Starts the DHCP client."""
+//|         """Starts the station DHCP client."""
 //|         ...
 STATIC mp_obj_t wifi_radio_start_dhcp_client(mp_obj_t self) {
     common_hal_wifi_radio_start_dhcp_client(self);
@@ -629,13 +655,31 @@ STATIC mp_obj_t wifi_radio_start_dhcp_client(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_dhcp_client_obj, wifi_radio_start_dhcp_client);
 
 //|     def stop_dhcp(self) -> None:
-//|         """Stops the DHCP client. Needed to assign a static IP address."""
+//|         """Stops the station DHCP client. Needed to assign a static IP address."""
 //|         ...
 STATIC mp_obj_t wifi_radio_stop_dhcp_client(mp_obj_t self) {
     common_hal_wifi_radio_stop_dhcp_client(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_dhcp_client_obj, wifi_radio_stop_dhcp_client);
+
+//|     def start_dhcp_ap(self) -> None:
+//|         """Starts the access point DHCP server."""
+//|         ...
+STATIC mp_obj_t wifi_radio_start_dhcp_server(mp_obj_t self) {
+    common_hal_wifi_radio_start_dhcp_server(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_dhcp_server_obj, wifi_radio_start_dhcp_server);
+
+//|     def stop_dhcp_ap(self) -> None:
+//|         """Stops the access point DHCP server. Needed to assign a static IP address."""
+//|         ...
+STATIC mp_obj_t wifi_radio_stop_dhcp_server(mp_obj_t self) {
+    common_hal_wifi_radio_stop_dhcp_server(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_dhcp_server_obj, wifi_radio_stop_dhcp_server);
 
 MP_PROPERTY_GETTER(wifi_radio_ap_info_obj,
     (mp_obj_t)&wifi_radio_get_ap_info_obj);
@@ -693,6 +737,8 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_start_dhcp),    MP_ROM_PTR(&wifi_radio_start_dhcp_client_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_dhcp),    MP_ROM_PTR(&wifi_radio_stop_dhcp_client_obj) },
+    { MP_ROM_QSTR(MP_QSTR_start_dhcp_ap),    MP_ROM_PTR(&wifi_radio_start_dhcp_server_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop_dhcp_ap),    MP_ROM_PTR(&wifi_radio_stop_dhcp_server_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_connect),    MP_ROM_PTR(&wifi_radio_connect_obj) },
     // { MP_ROM_QSTR(MP_QSTR_connect_to_enterprise),    MP_ROM_PTR(&wifi_radio_connect_to_enterprise_obj) },
@@ -708,6 +754,7 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ipv4_address_ap),    MP_ROM_PTR(&wifi_radio_ipv4_address_ap_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_set_ipv4_address),    MP_ROM_PTR(&wifi_radio_set_ipv4_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_ipv4_address_ap),    MP_ROM_PTR(&wifi_radio_set_ipv4_address_ap_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_ping), MP_ROM_PTR(&wifi_radio_ping_obj) },
 };

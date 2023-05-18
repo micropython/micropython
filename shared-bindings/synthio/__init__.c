@@ -26,6 +26,7 @@
 
 #include <string.h>
 
+#include "py/enum.h"
 #include "py/mperrno.h"
 #include "py/obj.h"
 #include "py/objnamedtuple.h"
@@ -35,6 +36,7 @@
 
 #include "shared-bindings/synthio/__init__.h"
 #include "shared-bindings/synthio/MidiTrack.h"
+#include "shared-bindings/synthio/Note.h"
 #include "shared-bindings/synthio/Synthesizer.h"
 
 #define default_attack_time (MICROPY_FLOAT_CONST(0.1))
@@ -51,6 +53,7 @@ static const mp_arg_t envelope_properties[] = {
     { MP_QSTR_sustain_level, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
 };
 
+//|
 //| """Support for multi-channel audio synthesis
 //|
 //| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
@@ -77,9 +80,9 @@ static const mp_arg_t envelope_properties[] = {
 //|
 //|         :param float attack_time: The time in seconds it takes to ramp from 0 volume to attack_volume
 //|         :param float decay_time: The time in seconds it takes to ramp from attack_volume to sustain_volume
-//|         :param float release_time: The time in seconds it takes to ramp from sustain_volume to release_volume. When a note is released before it has reached the sustain phase, the release is done with the same slope indicated by ``release_time`` and ``sustain_level``
-//|         :param float attack_level: The relative level, in the range ``0.0`` to ``1.0`` of the peak volume of the attack phase
-//|         :param float sustain_level: The relative level, in the range ``0.0`` to ``1.0`` of the volume of the sustain phase
+//|         :param float release_time: The time in seconds it takes to ramp from sustain_volume to release_volume. When a note is released before it has reached the sustain phase, the release is done with the same slope indicated by ``release_time`` and ``sustain_level``. If the ``sustain_level`` is ``0.0`` then the release slope calculations use the ``attack_level`` instead.
+//|         :param float attack_level: The level, in the range ``0.0`` to ``1.0`` of the peak volume of the attack phase
+//|         :param float sustain_level: The level, in the range ``0.0`` to ``1.0`` of the volume of the sustain phase relative to the attack level
 //|         """
 //|     attack_time: float
 //|     """The time in seconds it takes to ramp from 0 volume to attack_volume"""
@@ -91,10 +94,10 @@ static const mp_arg_t envelope_properties[] = {
 //|     """The time in seconds it takes to ramp from sustain_volume to release_volume. When a note is released before it has reached the sustain phase, the release is done with the same slope indicated by ``release_time`` and ``sustain_level``"""
 //|
 //|     attack_level: float
-//|     """The relative level, in the range ``0.0`` to ``1.0`` of the peak volume of the attack phase"""
+//|     """The level, in the range ``0.0`` to ``1.0`` of the peak volume of the attack phase"""
 //|
 //|     sustain_level: float
-//|     """The relative level, in the range ``0.0`` to ``1.0`` of the volume of the sustain phase"""
+//|     """The level, in the range ``0.0`` to ``1.0`` of the volume of the sustain phase relative to the attack level"""
 //|
 
 STATIC mp_obj_t synthio_envelope_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -157,7 +160,6 @@ const mp_obj_namedtuple_type_t synthio_envelope_type_obj = {
     },
 };
 
-
 //| def from_file(
 //|     file: typing.BinaryIO,
 //|     *,
@@ -205,10 +207,6 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
     pyb_file_obj_t *file = MP_OBJ_TO_PTR(args[ARG_file].u_obj);
 
-
-    mp_buffer_info_t bufinfo_waveform;
-    synthio_synth_parse_waveform(&bufinfo_waveform, args[ARG_waveform].u_obj);
-
     uint8_t chunk_header[14];
     f_rewind(&file->fp);
     UINT bytes_read;
@@ -248,7 +246,8 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
     result->base.type = &synthio_miditrack_type;
 
     common_hal_synthio_miditrack_construct(result, buffer, track_size,
-        tempo, args[ARG_sample_rate].u_int, bufinfo_waveform.buf, bufinfo_waveform.len / 2,
+        tempo, args[ARG_sample_rate].u_int, args[ARG_waveform].u_obj,
+        mp_const_none,
         args[ARG_envelope].u_obj
         );
 
@@ -262,12 +261,73 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(synthio_from_file_obj, 1, synthio_from_file);
 
+//| def midi_to_hz(midi_note: float) -> float:
+//|     """Converts the given midi note (60 = middle C, 69 = concert A) to Hz"""
+//|
+
+STATIC mp_obj_t midi_to_hz(mp_obj_t arg) {
+    mp_float_t note = mp_arg_validate_obj_float_range(arg, 1, 127, MP_QSTR_note);
+    return mp_obj_new_float(common_hal_synthio_midi_to_hz_float(note));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_midi_to_hz_obj, midi_to_hz);
+
+//| def onevo_to_hz(ctrl: float) -> float:
+//|     """Converts a 1v/octave signal to Hz.
+//|
+//|     60/12 (5.0) corresponds to middle C, 69/12 is concert A."""
+//|
+
+STATIC mp_obj_t onevo_to_hz(mp_obj_t arg) {
+    mp_float_t note = mp_arg_validate_obj_float_range(arg, 0, 11, MP_QSTR_ctrl);
+    return mp_obj_new_float(common_hal_synthio_onevo_to_hz_float(note));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_onevo_to_hz_obj, onevo_to_hz);
+
+MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, STATIC, SYNTHIO_BEND_MODE_STATIC);
+MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, VIBRATO, SYNTHIO_BEND_MODE_VIBRATO);
+MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, SWEEP, SYNTHIO_BEND_MODE_SWEEP);
+MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, SWEEP_IN, SYNTHIO_BEND_MODE_SWEEP_IN);
+
+//|
+//| class BendMode:
+//|     """Controls the way the ``Note.pitch_bend_depth`` and ``Note.pitch_bend_rate`` properties are interpreted."""
+//|
+//|     STATIC: "BendMode"
+//|     """The Note's pitch is modified by its ``pitch_bend_depth``. ``pitch_bend_rate`` is ignored."""
+//|
+//|     VIBRATO: "BendMode"
+//|     """The Note's pitch varies by ``±pitch_bend_depth`` at a rate of ``pitch_bend_rate`` Hz."""
+//|
+//|     SWEEP: "BendMode"
+//|     """The Note's pitch starts at ``Note.frequency`` then sweeps up or down by ``pitch_bend_depth`` over ``1/pitch_bend_rate`` seconds."""
+//|
+//|     SWEEP_IN: "BendMode"
+//|     """The Note's pitch sweep is the reverse of ``SWEEP`` mode, starting at the bent pitch and arriving at the tuned pitch."""
+//|
+MAKE_ENUM_MAP(synthio_bend_mode) {
+    MAKE_ENUM_MAP_ENTRY(bend_mode, STATIC),
+    MAKE_ENUM_MAP_ENTRY(bend_mode, VIBRATO),
+    MAKE_ENUM_MAP_ENTRY(bend_mode, SWEEP),
+    MAKE_ENUM_MAP_ENTRY(bend_mode, SWEEP_IN),
+};
+
+STATIC MP_DEFINE_CONST_DICT(synthio_bend_mode_locals_dict, synthio_bend_mode_locals_table);
+
+MAKE_PRINTER(synthio, synthio_bend_mode);
+
+MAKE_ENUM_TYPE(synthio, BendMode, synthio_bend_mode);
+
+
 STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_synthio) },
+    { MP_ROM_QSTR(MP_QSTR_BendMode), MP_ROM_PTR(&synthio_bend_mode_type) },
     { MP_ROM_QSTR(MP_QSTR_MidiTrack), MP_ROM_PTR(&synthio_miditrack_type) },
+    { MP_ROM_QSTR(MP_QSTR_Note), MP_ROM_PTR(&synthio_note_type) },
     { MP_ROM_QSTR(MP_QSTR_Synthesizer), MP_ROM_PTR(&synthio_synthesizer_type) },
     { MP_ROM_QSTR(MP_QSTR_from_file), MP_ROM_PTR(&synthio_from_file_obj) },
     { MP_ROM_QSTR(MP_QSTR_Envelope), MP_ROM_PTR(&synthio_envelope_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_midi_to_hz), MP_ROM_PTR(&synthio_midi_to_hz_obj) },
+    { MP_ROM_QSTR(MP_QSTR_onevo_to_hz), MP_ROM_PTR(&synthio_midi_to_hz_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(synthio_module_globals, synthio_module_globals_table);

@@ -95,14 +95,16 @@ void port_internal_flash_flush(void) {
     if (_cache_lba == NO_CACHE) {
         return;
     }
+    // Make sure we don't have an interrupt while we do flash operations.
     common_hal_mcu_disable_interrupts();
     flash_range_erase(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + _cache_lba, SECTOR_SIZE);
     flash_range_program(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + _cache_lba, _cache, SECTOR_SIZE);
-    common_hal_mcu_enable_interrupts();
     _cache_lba = NO_CACHE;
+    common_hal_mcu_enable_interrupts();
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
+    port_internal_flash_flush(); // we never read out of the cache, so we have to write it if dirty
     memcpy(dest,
         (void *)(XIP_BASE + CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + block * FILESYSTEM_BLOCK_SIZE),
         num_blocks * FILESYSTEM_BLOCK_SIZE);
@@ -118,6 +120,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         uint8_t block_offset = block_address % blocks_per_sector;
 
         if (_cache_lba != block_address) {
+            port_internal_flash_flush();
             memcpy(_cache,
                 (void *)(XIP_BASE + CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + sector_offset),
                 SECTOR_SIZE);
@@ -133,11 +136,6 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
                 FILESYSTEM_BLOCK_SIZE);
             block++;
         }
-        // Make sure we don't have an interrupt while we do flash operations.
-        common_hal_mcu_disable_interrupts();
-        flash_range_erase(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + sector_offset, SECTOR_SIZE);
-        flash_range_program(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + sector_offset, _cache, SECTOR_SIZE);
-        common_hal_mcu_enable_interrupts();
     }
 
     return 0; // success

@@ -385,7 +385,7 @@ __attribute__((used)) void HardFault_Handler(void) {
 }
 
 uint64_t port_get_raw_ticks(uint8_t *subticks) {
-    return stm32_peripherals_rtc_raw_ticks(subticks);
+    return stm32_peripherals_rtc_monotonic_ticks(subticks);
 }
 
 // Enable 1/1024 second tick.

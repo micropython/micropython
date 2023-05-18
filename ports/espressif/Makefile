@@ -120,19 +120,25 @@ CFLAGS += -DSTACK_CANARY_VALUE=0xa5a5a5a5
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-  CFLAGS += -DDEBUG -ggdb
-  OPTIMIZATION_FLAGS ?= -Og
-  # You may want to enable these flags to make setting breakpoints easier.
-  # CFLAGS += -fno-inline -fno-ipa-sra
+	CFLAGS += -ggdb
+	ifeq ($(IDF_TARGET_ARCH),riscv)
+		OPTIMIZATION_FLAGS ?= -Os
+		CFLAGS += -DNDEBUG
+	else
+		OPTIMIZATION_FLAGS ?= -Og
+		CFLAGS += -DDEBUG
+	endif
+	# You may want to enable these flags to make setting breakpoints easier.
+	# CFLAGS += -fno-inline -fno-ipa-sra
 else
-  CFLAGS += -DNDEBUG -ggdb3
-  # RISC-V is larger than xtensa
-  # Use -Os for RISC-V when it overflows
-  ifeq ($(IDF_TARGET_ARCH),riscv)
-  OPTIMIZATION_FLAGS ?= -Os
-  else
-  OPTIMIZATION_FLAGS ?= -O2
-  endif
+	CFLAGS += -DNDEBUG -ggdb3
+	# RISC-V is larger than xtensa
+	# Use -Os for RISC-V when it overflows
+	ifeq ($(IDF_TARGET_ARCH),riscv)
+		OPTIMIZATION_FLAGS ?= -Os
+	else
+		OPTIMIZATION_FLAGS ?= -O2
+	endif
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
