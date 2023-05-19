@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-10-05 12:23+0000\n"
+"PO-Revision-Date: 2023-05-21 00:49+0000\n"
 "Last-Translator: Bill Sideris <bill88t@feline.gr>\n"
 "Language-Team: none\n"
 "Language: el\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 #: main.c
 msgid ""
@@ -41,18 +41,25 @@ msgid ""
 "Please file an issue with your program at https://github.com/adafruit/"
 "circuitpython/issues."
 msgstr ""
+"\n"
+"Παρακαλώ δημιουργήστε ένα πρόβλημα στο https://github.com/adafruit/"
+"circuitpython/issues με το πρόγραμμά σας."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "Press reset to exit safe mode.\n"
 msgstr ""
+"\n"
+"Πατήστε reset για να βγείτε από την ασφαλή λειτουργία.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "You are in safe mode because:\n"
 msgstr ""
+"\n"
+"Είσαστε τε ασφαλή λειτουργία διότι:\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -77,12 +84,12 @@ msgstr " έξοδος:\n"
 #: py/objstr.c
 #, c-format
 msgid "%%c requires int or char"
-msgstr "%%c απαιτεί int ή char"
+msgstr "%%c απαιτεί ακέραιο ή χαρακτήρα"
 
 #: main.c
 #, c-format
 msgid "%02X"
-msgstr ""
+msgstr "%02X"
 
 #: shared-module/os/getenv.c
 #, c-format
@@ -130,7 +137,7 @@ msgstr "%q αποτυχία: %d"
 
 #: py/argcheck.c
 msgid "%q in %q must be of type %q, not %q"
-msgstr ""
+msgstr "%q στο %q πρέπει να είναι τύπου %q, όχι %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
@@ -151,11 +158,11 @@ msgstr "%q εκκίνηση απέτυχε"
 
 #: ports/espressif/bindings/espnow/Peer.c shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
-msgstr ""
+msgstr "%q είναι %q"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "%q is read-only for this board"
-msgstr ""
+msgstr "%q είναι μόνο για ανάγνωση για αυτήν την πλακέτα"
 
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
@@ -199,7 +206,7 @@ msgstr "%q πρέπει να είναι >= %d"
 
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
-msgstr ""
+msgstr "%q πρέπει να είναι bytearray ή array τύπου 'H' ή 'B'"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
@@ -207,17 +214,17 @@ msgstr "%q πρέπει να είναι bytearray ή array τύπου 'h', 'H', 
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
-msgstr ""
+msgstr "%q πρέπει να είναι πίνακας τύπου 'H'"
 
 #: shared-module/synthio/__init__.c
 msgid "%q must be array of type 'h'"
-msgstr ""
+msgstr "%q πρέπει να είναι λίστα τύπου 'h'"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 #: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
-msgstr ""
+msgstr "%q πρέπει να είναι τύπου %q ή %q, όχι %q"
 
 #: py/argcheck.c py/obj.c py/objstrunicode.c
 msgid "%q must be of type %q, not %q"
