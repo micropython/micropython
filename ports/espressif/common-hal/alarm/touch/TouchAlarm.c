@@ -44,6 +44,7 @@ void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *s
     self->pin = pin;
 }
 
+// Used for light sleep.
 mp_obj_t alarm_touch_touchalarm_find_triggered_alarm(const size_t n_alarms, const mp_obj_t *alarms) {
     for (size_t i = 0; i < n_alarms; i++) {
         if (mp_obj_is_type(alarms[i], &alarm_touch_touchalarm_type)) {
@@ -76,6 +77,8 @@ mp_obj_t alarm_touch_touchalarm_record_wake_alarm(void) {
         const mcu_pin_obj_t *pin_obj = MP_OBJ_TO_PTR(mcu_pin_globals.map.table[i].value);
         if (pin_obj->touch_channel == wake_channel) {
             alarm->pin = mcu_pin_globals.map.table[i].value;
+            // Undo the never reset in case it was a fake deep sleep.
+            reset_pin_number(alarm->pin->number);
             break;
         }
     }
@@ -101,6 +104,8 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
             }
             touch_alarm = MP_OBJ_TO_PTR(alarms[i]);
             touch_channel_mask |= 1 << touch_alarm->pin->number;
+            // Resetting the pin will set a pull-up, which we don't want.
+            never_reset_pin_number(touch_alarm->pin->number);
             touch_alarm_set = true;
         }
     }

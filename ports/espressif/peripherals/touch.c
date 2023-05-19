@@ -43,7 +43,7 @@ void peripherals_touch_never_reset(const bool enable) {
 void peripherals_touch_init(const touch_pad_t touchpad) {
     if (!touch_inited) {
         touch_pad_init();
-        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_SW);
+        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
     }
     // touch_pad_config() must be done before touch_pad_fsm_start() the first time.
     // Otherwise the calibration is wrong and we get maximum raw values if there is
