@@ -1,5 +1,7 @@
+== start ==
 init
 aiter
+init
 anext
 a
 anext
@@ -7,4 +9,43 @@ b
 anext
 c
 anext
-finished
+== finish ==
+== start ==
+init
+aiter
+init
+anext
+d
+anext
+e
+anext
+f
+anext
+AsyncIteratorWrapper-def
+== finish ==
+init
+== start ==
+aiter
+init
+anext
+g
+anext
+h
+anext
+i
+anext
+AsyncIteratorWrapper-ghi
+== finish ==
+init
+== start ==
+aiter
+init
+anext
+j
+anext
+k
+anext
+l
+anext
+AsyncIteratorWrapper-jkl
+== finish ==

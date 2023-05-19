@@ -1768,18 +1768,21 @@ STATIC void compile_await_object_method(compiler_t *comp, qstr method) {
 }
 
 STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    // comp->break_label |= MP_EMIT_BREAK_FROM_FOR;
-
-    qstr context = MP_PARSE_NODE_LEAF_ARG(pns->nodes[1]);
+    // Allocate labels.
     uint while_else_label = comp_next_label(comp);
     uint try_exception_label = comp_next_label(comp);
     uint try_else_label = comp_next_label(comp);
     uint try_finally_label = comp_next_label(comp);
 
+    // Stack: (...)
+
+    // Compile the iterator expression and load and call its __aiter__ method.
     compile_node(comp, pns->nodes[1]); // iterator
+    // Stack: (..., iterator)
     EMIT_ARG(load_method, MP_QSTR___aiter__, false);
+    // Stack: (..., iterator, __aiter__)
     EMIT_ARG(call_method, 0, 0, 0);
-    compile_store_id(comp, context);
+    // Stack: (..., iterable)
 
     START_BREAK_CONTINUE_BLOCK
 
@@ -1787,9 +1790,15 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
 
     compile_increase_except_level(comp, try_exception_label, MP_EMIT_SETUP_BLOCK_EXCEPT);
 
-    compile_load_id(comp, context);
+    EMIT(dup_top);
+    // Stack: (..., iterable, iterable)
+
+    // Compile: yield from iterable.__anext__()
     compile_await_object_method(comp, MP_QSTR___anext__);
+    // Stack: (..., iterable, yielded_value)
+
     c_assign(comp, pns->nodes[0], ASSIGN_STORE); // variable
+    // Stack: (..., iterable)
     EMIT_ARG(pop_except_jump, try_else_label, false);
 
     EMIT_ARG(label_assign, try_exception_label);
@@ -1806,6 +1815,8 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
     compile_decrease_except_level(comp);
     EMIT(end_except_handler);
 
+    // Stack: (..., iterable)
+
     EMIT_ARG(label_assign, try_else_label);
     compile_node(comp, pns->nodes[2]); // body
 
@@ -1817,6 +1828,10 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
     compile_node(comp, pns->nodes[3]); // else
 
     EMIT_ARG(label_assign, break_label);
+    // Stack: (..., iterable)
+
+    EMIT(pop_top);
+    // Stack: (...)
 }
 
 STATIC void compile_async_with_stmt_helper(compiler_t *comp, size_t n, mp_parse_node_t *nodes, mp_parse_node_t body) {
