@@ -67,7 +67,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
     if (hpcd->Instance == USB_OTG_FS) {
         // Configure USB GPIO's.
 
-        #if defined(STM32G0)
+        #if defined(STM32G0) || defined(STM32G4)
 
         // These MCUs don't have an alternate function for USB but rather require
         // the pins to be disconnected from all peripherals, ie put in analog mode.
@@ -146,7 +146,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #elif defined(STM32L432xx)
         NVIC_SetPriority(USB_FS_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_FS_IRQn);
-        #elif defined(STM32WB)
+        #elif defined(STM32G4) || defined(STM32WB)
         NVIC_SetPriority(USB_LP_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_LP_IRQn);
         #else
