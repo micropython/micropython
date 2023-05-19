@@ -716,7 +716,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 }
 
 #if !MICROPY_VFS
-uint mp_import_stat(const char *path) {
+mp_import_stat_t mp_import_stat(const char *path) {
     struct stat st;
     if (stat(path, &st) == 0) {
         if (S_ISDIR(st.st_mode)) {
