@@ -77,8 +77,6 @@ mp_obj_t alarm_touch_touchalarm_record_wake_alarm(void) {
         const mcu_pin_obj_t *pin_obj = MP_OBJ_TO_PTR(mcu_pin_globals.map.table[i].value);
         if (pin_obj->touch_channel == wake_channel) {
             alarm->pin = mcu_pin_globals.map.table[i].value;
-            // Undo the never reset in case it was a fake deep sleep.
-            reset_pin_number(alarm->pin->number);
             break;
         }
     }
@@ -105,7 +103,7 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
             touch_alarm = MP_OBJ_TO_PTR(alarms[i]);
             touch_channel_mask |= 1 << touch_alarm->pin->number;
             // Resetting the pin will set a pull-up, which we don't want.
-            never_reset_pin_number(touch_alarm->pin->number);
+            skip_reset_once_pin_number(touch_alarm->pin->number);
             touch_alarm_set = true;
         }
     }
@@ -133,8 +131,11 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
             // configure trigger threshold
             #if defined(CONFIG_IDF_TARGET_ESP32)
             uint16_t touch_value;
+            // ESP32 touch_pad_read() returns a lower value when a pin is touched, not a higher value
+            // Typical values on a Feather ESP32 V2 are 600 with a short jumper untouched,
+            // 70 touched.
             touch_pad_read(touch_channel, &touch_value);
-            touch_pad_set_thresh(touch_channel, touch_value / 10); // 10%
+            touch_pad_set_thresh(touch_channel, touch_value / 2);
             #else
             uint32_t touch_value;
             touch_pad_read_benchmark(touch_channel, &touch_value);
@@ -186,8 +187,11 @@ void alarm_touch_touchalarm_prepare_for_deep_sleep(void) {
     // configure trigger threshold
     #if defined(CONFIG_IDF_TARGET_ESP32)
     uint16_t touch_value;
-    touch_pad_read_filtered(touch_channel, &touch_value);
-    touch_pad_set_thresh(touch_channel, touch_value);
+    touch_pad_read(touch_channel, &touch_value);
+    // ESP32 touch_pad_read() returns a lower value when a pin is touched, not a higher value
+    // Typical values on a Feather ESP32 V2 are 600 with a short jumper untouched,
+    // 70 touched.
+    touch_pad_set_thresh(touch_channel, touch_value / 2);
     #else
     uint32_t touch_value;
     touch_pad_sleep_channel_read_smooth(touch_channel, &touch_value);
