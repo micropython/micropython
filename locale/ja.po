@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-04-29 17:47+0000\n"
-"Last-Translator: Yutaro Urata <yutarourata04@gmail.com>\n"
+"PO-Revision-Date: 2023-05-21 00:49+0000\n"
+"Last-Translator: Scott Shawcroft <scott@tannewt.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -1445,7 +1445,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "No %q pin"
-msgstr ""
+msgstr "%qピンがありません"
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
