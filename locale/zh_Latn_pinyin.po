@@ -180,11 +180,15 @@ msgstr "%q chángdù bìxū <= %d"
 msgid "%q length must be >= %d"
 msgstr "%q chángdù bìxū >= %d"
 
-#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
+#: py/argcheck.c
 msgid "%q must be %d"
 msgstr "%q bìxū %d"
 
 #: py/argcheck.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "%q must be %d-%d"
 msgstr "%q bì xū wéi %d-%d"
 
@@ -219,6 +223,7 @@ msgstr "%q bìxū shì lèixíng wéi 'h' de shùzǔ"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+#: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q de lèi xíng bì xū shì %q huò %q, ér bù shì %q"
 
@@ -441,6 +446,7 @@ msgid "Address must be %d bytes long"
 msgstr "dìzhǐ chángdù bìxū shì %d zìjié"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
+#: ports/nrf/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "bù yǔn xǔ de dì zhǐ fàn wéi"
 
@@ -625,13 +631,6 @@ msgstr "RX hé TX dōu xū yào liúliàng kòngzhì"
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
 msgstr "liǎnggè yǐnjiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
-
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/FrameBuffer.c
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "Brightness must be 0-1.0"
-msgstr "Liàngdù bìxū wèi 0-1.0"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -949,11 +948,6 @@ msgstr "ESP-IDF nèicún fēnpèi shībài"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT píndào yǐjīng shǐyòng"
-
-#: shared-module/synthio/MidiTrack.c
-#, c-format
-msgid "Error in MIDI stream at position %d"
-msgstr "wèi yú %d wèi zhì de MIDI liú zhōng de cuò wù"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -1377,11 +1371,6 @@ msgstr "MAC dì zhǐ wú xiào"
 msgid "Mapping must be a tuple"
 msgstr "yìng shè bì xū shì yuán zǔ"
 
-#: shared-module/displayio/Shape.c
-#, c-format
-msgid "Maximum x value when mirrored is %d"
-msgstr "Jìngxiàng shí de zuìdà X zhí wèi%d"
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi"
@@ -1476,6 +1465,10 @@ msgstr "xīn wèi tú de dàxiǎo bìxū yǔ jiù wèi tú xiāngtóng"
 msgid "Nimble out of memory"
 msgstr "líng huó de bǎi tuō jì yì"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "No %q pin"
+msgstr ""
+
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -1524,14 +1517,12 @@ msgstr "Méiyǒu MOSI yǐn jiǎo"
 msgid "No MOSI pin"
 msgstr "wú MOSI pin"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Wèi zhǎodào RX yǐn jiǎo"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
@@ -2170,8 +2161,8 @@ msgstr "Xūyào Tuple huò struct_time cānshù"
 msgid "UART de-init"
 msgstr "UART qù chūshǐhuà"
 
-#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/cxd56/common-hal/busio/UART.c ports/espressif/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "UART init"
 msgstr "UART chūshǐhuà"
 
@@ -4409,17 +4400,9 @@ msgstr "wúfǎ jiě bāo de zhí shù"
 msgid "wrong output type"
 msgstr "cuòwù de shūchū lèixíng"
 
-#: shared-module/displayio/Shape.c
-msgid "x value out of bounds"
-msgstr "x zhí chāochū biānjiè"
-
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
 msgstr "xTaskCreate shī bài"
-
-#: shared-module/displayio/Shape.c
-msgid "y value out of bounds"
-msgstr "y zhí chāochū biānjiè"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
@@ -4432,6 +4415,23 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "Liàngdù bìxū wèi 0-1.0"
+
+#, c-format
+#~ msgid "Error in MIDI stream at position %d"
+#~ msgstr "wèi yú %d wèi zhì de MIDI liú zhōng de cuò wù"
+
+#, c-format
+#~ msgid "Maximum x value when mirrored is %d"
+#~ msgstr "Jìngxiàng shí de zuìdà X zhí wèi%d"
+
+#~ msgid "x value out of bounds"
+#~ msgstr "x zhí chāochū biānjiè"
+
+#~ msgid "y value out of bounds"
+#~ msgstr "y zhí chāochū biānjiè"
 
 #~ msgid "I2SOut not available"
 #~ msgstr "I2SOut bù kě yòng"

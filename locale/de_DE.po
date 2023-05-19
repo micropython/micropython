@@ -177,11 +177,15 @@ msgstr "%q länge muss kleiner oder gleich %d sein"
 msgid "%q length must be >= %d"
 msgstr "%q länge muss größer oder gleich %d sein"
 
-#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
+#: py/argcheck.c
 msgid "%q must be %d"
 msgstr "%q muss %d entsprechen"
 
 #: py/argcheck.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "%q must be %d-%d"
 msgstr "%q muss %d-%d sein"
 
@@ -216,6 +220,7 @@ msgstr ""
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+#: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q muss von Typ %q oder %q sein, nicht %q"
 
@@ -439,6 +444,7 @@ msgid "Address must be %d bytes long"
 msgstr "Die Adresse muss %d Bytes lang sein"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
+#: ports/nrf/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "Adressbereich nicht erlaubt"
 
@@ -623,13 +629,6 @@ msgstr "Sowohl RX als auch TX sind zu Flusssteuerung erforderlich"
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
 msgstr "Beide Pins müssen Hardware-Interrupts unterstützen"
-
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/FrameBuffer.c
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "Brightness must be 0-1.0"
-msgstr "Die Helligkeit muss zwischen 0 und 1.0 liegen"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -950,11 +949,6 @@ msgstr "ESP-IDF Speicherallozierung fehlgeschlagen"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT Kanal ist schon in Benutzung"
-
-#: shared-module/synthio/MidiTrack.c
-#, c-format
-msgid "Error in MIDI stream at position %d"
-msgstr "Fehler in MIDI Datenstrom um Position %d"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -1379,11 +1373,6 @@ msgstr "MAC Adresse war ungültig"
 msgid "Mapping must be a tuple"
 msgstr "Zuordnung muss ein Tupel sein"
 
-#: shared-module/displayio/Shape.c
-#, c-format
-msgid "Maximum x value when mirrored is %d"
-msgstr "Maximaler x-Wert beim Spiegeln ist %d"
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
@@ -1478,6 +1467,10 @@ msgstr "Neue Bitmap muss die gleiche Größe wie alte Bitmap haben"
 msgid "Nimble out of memory"
 msgstr "Kein Speicher mehr für Nible vorhanden"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "No %q pin"
+msgstr ""
+
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -1526,14 +1519,12 @@ msgstr "Kein MOSI-Pin"
 msgid "No MOSI pin"
 msgstr "MOSI Pin fehlt"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Kein RX-Pin"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
@@ -2181,8 +2172,8 @@ msgstr "Tuple- oder struct_time-Argument erforderlich"
 msgid "UART de-init"
 msgstr "UART wird de-initialisiert"
 
-#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/cxd56/common-hal/busio/UART.c ports/espressif/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "UART init"
 msgstr "UART-Initialisierung"
 
@@ -4444,17 +4435,9 @@ msgstr "falsche Anzahl zu entpackender Werte"
 msgid "wrong output type"
 msgstr "Falscher Ausgabetyp"
 
-#: shared-module/displayio/Shape.c
-msgid "x value out of bounds"
-msgstr "x Wert außerhalb der Grenzen"
-
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
 msgstr "xTaskCreate fehlgeschlagen"
-
-#: shared-module/displayio/Shape.c
-msgid "y value out of bounds"
-msgstr "y Wert außerhalb der Grenzen"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
@@ -4467,6 +4450,23 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "Die Helligkeit muss zwischen 0 und 1.0 liegen"
+
+#, c-format
+#~ msgid "Error in MIDI stream at position %d"
+#~ msgstr "Fehler in MIDI Datenstrom um Position %d"
+
+#, c-format
+#~ msgid "Maximum x value when mirrored is %d"
+#~ msgstr "Maximaler x-Wert beim Spiegeln ist %d"
+
+#~ msgid "x value out of bounds"
+#~ msgstr "x Wert außerhalb der Grenzen"
+
+#~ msgid "y value out of bounds"
+#~ msgstr "y Wert außerhalb der Grenzen"
 
 #~ msgid "I2SOut not available"
 #~ msgstr "I2SOut nicht verfügbar"
