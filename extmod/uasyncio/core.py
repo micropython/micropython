@@ -222,6 +222,8 @@ def run_until_complete(main_task=None):
                 _exc_context["exception"] = exc
                 _exc_context["future"] = t
                 Loop.call_exception_handler(_exc_context)
+        finally:
+            del cur_task
 
 
 # Create a new task from a coroutine and run it until it finishes
@@ -286,7 +288,10 @@ def get_event_loop(runq_len=0, waitq_len=0):
 
 
 def current_task():
-    return cur_task
+    try:
+        return cur_task
+    except NameError:
+        raise RuntimeError("no running event loop")
 
 
 def new_event_loop():

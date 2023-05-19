@@ -10,6 +10,12 @@ except ImportError:
         raise SystemExit
 
 
+try:
+    print(asyncio.current_task())
+except RuntimeError:
+    print("RuntimeError")
+
+
 async def task(result):
     result[0] = asyncio.current_task()
 
@@ -23,3 +29,9 @@ async def main():
 
 
 asyncio.run(main())
+
+
+try:
+    print(asyncio.current_task())
+except RuntimeError:
+    print("RuntimeError")
