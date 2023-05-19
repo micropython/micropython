@@ -48,6 +48,8 @@
 #include "lwip/raw.h"
 #include "lwip_src/ping.h"
 
+#include "shared/netutils/dhcpserver.h"
+
 #define MAC_ADDRESS_LENGTH 6
 
 #define NETIF_STA (&cyw43_state.netif[CYW43_ITF_STA])
@@ -161,7 +163,15 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
     // (by tcpip_link_status). However since ap disconnection isn't working
     // either, this is not an issue.
     cyw43_wifi_leave(&cyw43_state, CYW43_ITF_AP);
-
+    const size_t timeout_ms = 500;
+    uint64_t start = port_get_raw_ticks(NULL);
+    uint64_t deadline = start + timeout_ms;
+    while (port_get_raw_ticks(NULL) < deadline && (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_DOWN)) {
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            break;
+        }
+    }
     bindings_cyw43_wifi_enforce_pm();
 }
 
@@ -359,11 +369,14 @@ void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_start_dhcp_server(wifi_radio_obj_t *self) {
-    mp_raise_NotImplementedError(NULL);
+    ip4_addr_t ipv4_addr, netmask_addr;
+    ipaddress_ipaddress_to_lwip(common_hal_wifi_radio_get_ipv4_address_ap(self), &ipv4_addr);
+    ipaddress_ipaddress_to_lwip(common_hal_wifi_radio_get_ipv4_subnet_ap(self), &netmask_addr);
+    dhcp_server_init(&cyw43_state.dhcp_server, &ipv4_addr, &netmask_addr);
 }
 
 void common_hal_wifi_radio_stop_dhcp_server(wifi_radio_obj_t *self) {
-    mp_raise_NotImplementedError(NULL);
+    dhcp_server_deinit(&cyw43_state.dhcp_server);
 }
 
 void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway, mp_obj_t ipv4_dns) {
@@ -380,7 +393,15 @@ void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv
 }
 
 void common_hal_wifi_radio_set_ipv4_address_ap(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway) {
-    mp_raise_NotImplementedError(NULL);
+    common_hal_wifi_radio_stop_dhcp_server(self);
+
+    ip4_addr_t ipv4_addr, netmask_addr, gateway_addr;
+    ipaddress_ipaddress_to_lwip(ipv4, &ipv4_addr);
+    ipaddress_ipaddress_to_lwip(netmask, &netmask_addr);
+    ipaddress_ipaddress_to_lwip(gateway, &gateway_addr);
+    netif_set_addr(NETIF_AP, &ipv4_addr, &netmask_addr, &gateway_addr);
+
+    common_hal_wifi_radio_start_dhcp_server(self);
 }
 
 volatile bool ping_received;
