@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-04-22 06:48+0000\n"
+"PO-Revision-Date: 2023-05-19 16:13+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1474,7 +1474,7 @@ msgstr "Ágil fora da memória"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "No %q pin"
-msgstr ""
+msgstr "Sem pin %q"
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
