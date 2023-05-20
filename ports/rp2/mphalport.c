@@ -204,10 +204,12 @@ MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
     // The mac should come from cyw43 otp when CYW43_USE_OTP_MAC is defined
     // This is loaded into the state after the driver is initialised
     // cyw43_hal_generate_laa_mac is only called by the driver to generate a mac if otp is not set
-    memcpy(buf, cyw43_state.mac, 6);
-    #else
-    mp_hal_generate_laa_mac(idx, buf);
+    if (idx == MP_HAL_MAC_WLAN0) {
+        memcpy(buf, cyw43_state.mac, 6);
+        return;
+    }
     #endif
+    mp_hal_generate_laa_mac(idx, buf);
 }
 
 void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {

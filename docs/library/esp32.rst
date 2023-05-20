@@ -279,6 +279,14 @@ For more details see Espressif's `ESP-IDF RMT documentation.
 Ultra-Low-Power co-processor
 ----------------------------
 
+This class gives access to the Ultra Low Power (ULP) co-processor on the ESP32,
+ESP32-S2 and ESP32-S3 chips.
+
+.. warning::
+
+    This class does not provide access to the RISCV ULP co-processor available
+    on the ESP32-S2 and ESP32-S3 chips.
+
 .. class:: ULP()
 
     This class provides access to the Ultra-Low-Power co-processor.

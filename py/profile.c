@@ -177,7 +177,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_code,
     MP_TYPE_FLAG_NONE,
     print, code_print,
-    unary_op, mp_generic_unary_op,
     attr, code_attr
     );
 
@@ -247,7 +246,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_frame,
     MP_TYPE_FLAG_NONE,
     print, frame_print,
-    unary_op, mp_generic_unary_op,
     attr, frame_attr
     );
 

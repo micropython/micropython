@@ -314,6 +314,9 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
             if (result != MP_OBJ_NULL) {
                 return result;
             }
+        } else if (op == MP_UNARY_OP_HASH) {
+            // Type doesn't have unary_op so use hash of object instance.
+            return MP_OBJ_NEW_SMALL_INT((mp_uint_t)arg);
         }
         if (op == MP_UNARY_OP_BOOL) {
             // Type doesn't have unary_op (or didn't handle MP_UNARY_OP_BOOL),
@@ -620,6 +623,15 @@ generic_binary_op:
         if (result != MP_OBJ_NULL) {
             return result;
         }
+    }
+
+    // If this was an inplace method, fallback to the corresponding normal method.
+    // https://docs.python.org/3/reference/datamodel.html#object.__iadd__ :
+    // "If a specific method is not defined, the augmented assignment falls back
+    // to the normal methods."
+    if (op >= MP_BINARY_OP_INPLACE_OR && op <= MP_BINARY_OP_INPLACE_POWER) {
+        op += MP_BINARY_OP_OR - MP_BINARY_OP_INPLACE_OR;
+        goto generic_binary_op;
     }
 
     #if MICROPY_PY_REVERSE_SPECIAL_METHODS
