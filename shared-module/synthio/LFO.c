@@ -37,7 +37,6 @@ mp_float_t common_hal_synthio_lfo_tick(mp_obj_t self_in) {
     mp_float_t rate = synthio_block_slot_get(&lfo->rate) * synthio_global_rate_scale;
 
     mp_float_t accum = lfo->accum + rate;
-    int len = lfo->waveform_bufinfo.len / 2;
     mp_float_t frac = accum - MICROPY_FLOAT_C_FUN(floor)(accum);
     size_t idx = (int)(frac * len);
 
@@ -53,6 +52,7 @@ mp_float_t common_hal_synthio_lfo_tick(mp_obj_t self_in) {
         }
     }
 
+    int len = lfo->waveform_bufinfo.len;
     lfo->accum = frac;
 
     int16_t *waveform = lfo->waveform_bufinfo.buf;
