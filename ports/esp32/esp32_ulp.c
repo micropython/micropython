@@ -27,8 +27,17 @@
 #include "py/runtime.h"
 
 #if CONFIG_IDF_TARGET_ESP32
-
 #include "esp32/ulp.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/ulp.h"
+#include "esp32s2/ulp_riscv.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/ulp.h"
+#include "esp32s3/ulp_riscv.h"
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+
 #include "esp_err.h"
 
 typedef struct _esp32_ulp_obj_t {
@@ -73,6 +82,32 @@ STATIC mp_obj_t esp32_ulp_load_binary(mp_obj_t self_in, mp_obj_t load_addr_in, m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_ulp_load_binary_obj, esp32_ulp_load_binary);
 
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+
+extern const uint8_t bin_start[] asm("_binary_ulp_main_bin_start");
+extern const uint8_t bin_end[]   asm("_binary_ulp_main_bin_end");
+
+STATIC mp_obj_t esp32_ulp_riscv_load_binary(mp_obj_t self_in) {
+
+    int _errno = ulp_riscv_load_binary(bin_start, (bin_end - bin_start));
+    if (_errno != ESP_OK) {
+        mp_raise_OSError(_errno);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_ulp_riscv_load_binary_obj, esp32_ulp_riscv_load_binary);
+
+STATIC mp_obj_t esp32_ulp_riscv_run(mp_obj_t self_in) {
+
+    int _errno = ulp_riscv_run();
+    if (_errno != ESP_OK) {
+        mp_raise_OSError(_errno);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_ulp_riscv_run_obj, esp32_ulp_riscv_run);
+#endif
+
 STATIC mp_obj_t esp32_ulp_run(mp_obj_t self_in, mp_obj_t entry_point_in) {
     mp_uint_t entry_point = mp_obj_get_int(entry_point_in);
     int _errno = ulp_run(entry_point / sizeof(uint32_t));
@@ -87,7 +122,17 @@ STATIC const mp_rom_map_elem_t esp32_ulp_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_wakeup_period), MP_ROM_PTR(&esp32_ulp_set_wakeup_period_obj) },
     { MP_ROM_QSTR(MP_QSTR_load_binary), MP_ROM_PTR(&esp32_ulp_load_binary_obj) },
     { MP_ROM_QSTR(MP_QSTR_run), MP_ROM_PTR(&esp32_ulp_run_obj) },
+    #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ESP32_ULP_COPROC_RESERVE_MEM) },
+    #elif CONFIG_IDF_TARGET_ESP32S2
+    { MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ESP32S2_ULP_COPROC_RESERVE_MEM) },
+    #elif CONFIG_IDF_TARGET_ESP32S3
+    { MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ESP32S3_ULP_COPROC_RESERVE_MEM) },
+    #endif
+    #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+    { MP_ROM_QSTR(MP_QSTR_riscv_load_binary), MP_ROM_PTR(&esp32_ulp_riscv_load_binary_obj) },
+    { MP_ROM_QSTR(MP_QSTR_riscv_run), MP_ROM_PTR(&esp32_ulp_riscv_run_obj) },
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(esp32_ulp_locals_dict, esp32_ulp_locals_dict_table);
 

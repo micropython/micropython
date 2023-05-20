@@ -204,8 +204,8 @@ target_include_directories(${MICROPY_TARGET} PUBLIC
 )
 
 # Add additional extmod and usermod components.
-target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
-target_link_libraries(${MICROPY_TARGET} usermod)
+target_link_libraries(${MICROPY_TARGET} PRIVATE micropy_extmod_btree)
+target_link_libraries(${MICROPY_TARGET} PRIVATE usermod)
 
 # Collect all of the include directories and compile definitions for the IDF components.
 foreach(comp ${IDF_COMPONENTS})
@@ -225,3 +225,12 @@ endif()
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
+
+# Include riscv ulp code if exists in ulp_riscv sub directory
+if(EXISTS ${PROJECT_DIR}/ulp_riscv/main.c)
+    set(ulp_app_name ulp_${COMPONENT_NAME})
+    set(ulp_sources "${PROJECT_DIR}/ulp_riscv/main.c")
+    set(ulp_exp_dep_srcs "../main.c")
+
+    ulp_embed_binary(${ulp_app_name} "${ulp_sources}" "${ulp_exp_dep_srcs}")
+endif()
