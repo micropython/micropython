@@ -550,11 +550,7 @@ void shared_bindings_synthio_lfo_tick(uint32_t sample_rate) {
 }
 
 mp_float_t synthio_block_slot_get(synthio_block_slot_t *slot) {
-    if (slot->obj == mp_const_none) {
-        return MICROPY_FLOAT_CONST(0.);
-    }
-
-    // all numbers previously converted to float in synthio_block_assign_slot
+    // all numbers (and None!) previously converted to float in synthio_block_assign_slot
     if (mp_obj_is_float(slot->obj)) {
         return mp_obj_get_float(slot->obj);
     }
@@ -594,7 +590,7 @@ void synthio_block_assign_slot(mp_obj_t obj, synthio_block_slot_t *slot, qstr ar
         return;
     }
 
-    mp_float_t value;
+    mp_float_t value = MICROPY_FLOAT_CONST(0.);
     if (obj != mp_const_none && !mp_obj_get_float_maybe(obj, &value)) {
         mp_raise_TypeError_varg(translate("%q must be of type %q, not %q"), arg_name, MP_QSTR_BlockInput, mp_obj_get_type_qstr(obj));
     }
