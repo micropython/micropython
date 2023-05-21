@@ -65,7 +65,10 @@ static const mp_arg_t envelope_properties[] = {
 //| """
 //|
 //| BlockInput = Union["Math", "LFO", float, None]
-//| """Blocks and Notes can take any of these types as inputs on certain attributes"""
+//| """Blocks and Notes can take any of these types as inputs on certain attributes
+//|
+//| A BlockInput can be any of the following types: `Math`, `LFO`, `float`, `None` (treated same as 0).
+//| """
 //|
 //| class Envelope:
 //|     def __init__(

@@ -275,7 +275,7 @@ MP_PROPERTY_GETTER(synthio_synthesizer_pressed_obj,
 //|
 //|     This can be used to implement 'free-running' LFOs. LFOs associated with playing notes are advanced whether or not they are in this list.
 //|
-//|     This property is read-only but its contents may be modified by e.g., calling ``synth.lfos.append()` or ``synth.lfos.remove(). It is initially an empty list."""
+//|     This property is read-only but its contents may be modified by e.g., calling ``synth.lfos.append()`` or ``synth.lfos.remove()``. It is initially an empty list."""
 //|
 STATIC mp_obj_t synthio_synthesizer_obj_get_lfos(mp_obj_t self_in) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);

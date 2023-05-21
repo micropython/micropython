@@ -54,6 +54,8 @@ MAKE_ENUM_VALUE(synthio_math_operation_type, math_op, ABS, OP_ABS);
 //| class MathOperation:
 //|     """Operation for a Math block"""
 //|
+//|     def __call__(self, a: BlockInput, b: BlockInput = 0.0, c: BlockInput = 1.0) -> Math:
+//|         """A MathOperation enumeration value can be called to construct a Math block that performs that operation"""
 //|     SUM: "MathOperation"
 //|     """Computes ``a+b+c``. For 2-input sum, set one argument to ``0.0``. To hold a control value for multiple subscribers, set two arguments to ``0.0``."""
 //|
