@@ -64,7 +64,8 @@
 //|         scale: BlockInput = 1.0,
 //|         offset: BlockInput = 0,
 //|         phase_offset: BlockInput = 0,
-//|         once=False
+//|         once=False,
+//|         interpolate=True
 //|     ):
 //|         pass
 static const mp_arg_t lfo_properties[] = {
@@ -74,6 +75,7 @@ static const mp_arg_t lfo_properties[] = {
     { MP_QSTR_offset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(0) } },
     { MP_QSTR_phase_offset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(0) } },
     { MP_QSTR_once, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(0) } },
+    { MP_QSTR_interpolate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
 };
 
 STATIC mp_obj_t synthio_lfo_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -202,6 +204,26 @@ MP_PROPERTY_GETSET(synthio_lfo_once_obj,
 
 
 //|
+//|     interpolate: bool
+//|     """True if the waveform should perform linear interpolation between values"""
+STATIC mp_obj_t synthio_lfo_get_interpolate(mp_obj_t self_in) {
+    synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(common_hal_synthio_lfo_get_interpolate(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_lfo_get_interpolate_obj, synthio_lfo_get_interpolate);
+
+STATIC mp_obj_t synthio_lfo_set_interpolate(mp_obj_t self_in, mp_obj_t arg) {
+    synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_synthio_lfo_set_interpolate(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_lfo_set_interpolate_obj, synthio_lfo_set_interpolate);
+MP_PROPERTY_GETSET(synthio_lfo_interpolate_obj,
+    (mp_obj_t)&synthio_lfo_get_interpolate_obj,
+    (mp_obj_t)&synthio_lfo_set_interpolate_obj);
+
+
+//|
 //|     phase: float
 //|     """The phase of the oscillator, in the range 0 to 1 (read-only)"""
 STATIC mp_obj_t synthio_lfo_get_phase(mp_obj_t self_in) {
@@ -250,6 +272,7 @@ STATIC const mp_rom_map_elem_t synthio_lfo_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_offset), MP_ROM_PTR(&synthio_lfo_offset_obj) },
     { MP_ROM_QSTR(MP_QSTR_phase_offset), MP_ROM_PTR(&synthio_lfo_phase_offset_obj) },
     { MP_ROM_QSTR(MP_QSTR_once), MP_ROM_PTR(&synthio_lfo_once_obj) },
+    { MP_ROM_QSTR(MP_QSTR_interpolate), MP_ROM_PTR(&synthio_lfo_interpolate_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&synthio_lfo_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_phase), MP_ROM_PTR(&synthio_lfo_phase_obj) },
     { MP_ROM_QSTR(MP_QSTR_retrigger), MP_ROM_PTR(&synthio_lfo_retrigger_obj) },

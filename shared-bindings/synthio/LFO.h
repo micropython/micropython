@@ -49,6 +49,9 @@ void common_hal_synthio_lfo_set_offset_obj(synthio_lfo_obj_t *self, mp_obj_t arg
 bool common_hal_synthio_lfo_get_once(synthio_lfo_obj_t *self);
 void common_hal_synthio_lfo_set_once(synthio_lfo_obj_t *self, bool arg);
 
+bool common_hal_synthio_lfo_get_interpolate(synthio_lfo_obj_t *self);
+void common_hal_synthio_lfo_set_interpolate(synthio_lfo_obj_t *self, bool arg);
+
 mp_float_t common_hal_synthio_lfo_get_value(synthio_lfo_obj_t *self);
 
 mp_float_t common_hal_synthio_lfo_get_phase(synthio_lfo_obj_t *self);

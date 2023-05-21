@@ -31,6 +31,8 @@
 #define ONE (MICROPY_FLOAT_CONST(1.))
 #define ZERO (MICROPY_FLOAT_CONST(0.))
 
+#define ALMOST_ONE (MICROPY_FLOAT_CONST(32767.) / 32768)
+
 mp_float_t common_hal_synthio_lfo_tick(mp_obj_t self_in) {
     synthio_lfo_obj_t *lfo = MP_OBJ_TO_PTR(self_in);
 
@@ -41,8 +43,8 @@ mp_float_t common_hal_synthio_lfo_tick(mp_obj_t self_in) {
 
     if (lfo->once) {
         if (rate > 0) {
-            if (accum >= ONE) {
-                accum = ONE;
+            if (accum > ALMOST_ONE) {
+                accum = ALMOST_ONE;
             }
         } else if (rate < 0 && accum < ZERO) {
             accum = ZERO;
@@ -50,17 +52,32 @@ mp_float_t common_hal_synthio_lfo_tick(mp_obj_t self_in) {
     } else {
         accum = accum - MICROPY_FLOAT_C_FUN(floor)(accum);
     }
+    lfo->accum = accum - phase_offset;
 
     int len = lfo->waveform_bufinfo.len;
-    size_t idx = (int)(accum * len); // rounds down towards zero
+
+    mp_float_t scaled_accum = accum * (len - lfo->once);
+    size_t idx = (size_t)MICROPY_FLOAT_C_FUN(floor)(scaled_accum);
     assert(idx < lfo->waveform_bufinfo.len);
+
+    int16_t *waveform = lfo->waveform_bufinfo.buf;
+    mp_float_t value = waveform[idx];
+
+    if (lfo->interpolate) {
+
+        mp_float_t frac = scaled_accum - idx;
+
+        size_t idxp1 = idx + 1;
+        if (idxp1 == lfo->waveform_bufinfo.len) {
+            idxp1 = lfo->once ? idx : 0;
+        }
+        value = value * (1 - frac) + waveform[idxp1] * frac;
+    }
 
     mp_float_t scale = synthio_block_slot_get(&lfo->scale);
     mp_float_t offset = synthio_block_slot_get(&lfo->offset);
-    int16_t *waveform = lfo->waveform_bufinfo.buf;
-    mp_float_t value = MICROPY_FLOAT_C_FUN(ldexp)(waveform[idx], -15) * scale + offset;
+    value = MICROPY_FLOAT_C_FUN(ldexp)(value, -15) * scale + offset;
 
-    lfo->accum = accum - phase_offset;
     return value;
 }
 
@@ -102,6 +119,13 @@ bool common_hal_synthio_lfo_get_once(synthio_lfo_obj_t *self) {
 }
 void common_hal_synthio_lfo_set_once(synthio_lfo_obj_t *self, bool arg) {
     self->once = arg;
+}
+
+bool common_hal_synthio_lfo_get_interpolate(synthio_lfo_obj_t *self) {
+    return self->interpolate;
+}
+void common_hal_synthio_lfo_set_interpolate(synthio_lfo_obj_t *self, bool arg) {
+    self->interpolate = arg;
 }
 
 mp_float_t common_hal_synthio_lfo_get_value(synthio_lfo_obj_t *self) {
