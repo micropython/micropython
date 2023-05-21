@@ -33,6 +33,9 @@
 #include "shared-bindings/synthio/Math.h"
 #include "shared-module/synthio/Math.h"
 
+static const mp_arg_t math_properties[4];
+STATIC mp_obj_t synthio_math_make_new_common(mp_arg_val_t args[MP_ARRAY_SIZE(math_properties)]);
+
 MAKE_ENUM_VALUE(synthio_math_operation_type, math_op, SUM, OP_SUM);
 MAKE_ENUM_VALUE(synthio_math_operation_type, math_op, ADD_SUB, OP_ADD_SUB);
 MAKE_ENUM_VALUE(synthio_math_operation_type, math_op, PRODUCT, OP_PRODUCT);
@@ -110,9 +113,21 @@ MAKE_ENUM_MAP(synthio_math_operation) {
     MAKE_ENUM_MAP_ENTRY(math_op, ABS),
 };
 
+
+STATIC mp_obj_t mathop_call(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    mp_arg_val_t args[4];
+    args[0].u_obj = fun;
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(math_properties) - 1, math_properties + 1, &args[1]);
+    return synthio_math_make_new_common(args);
+}
+
 STATIC MP_DEFINE_CONST_DICT(synthio_math_operation_locals_dict, synthio_math_operation_locals_table);
 MAKE_PRINTER(synthio, synthio_math_operation);
-MAKE_ENUM_TYPE(synthio, MathOperation, synthio_math_operation);
+MAKE_ENUM_TYPE(synthio, MathOperation, synthio_math_operation,
+    .flags = MP_TYPE_FLAG_EXTENDED,
+    MP_TYPE_EXTENDED_FIELDS(
+        .call = mathop_call,
+        ));
 
 //| class Math:
 //|     """An arithmetic block
@@ -151,6 +166,10 @@ STATIC mp_obj_t synthio_math_make_new(const mp_obj_type_t *type_in, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(math_properties)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(math_properties), math_properties, args);
 
+    return synthio_math_make_new_common(args);
+}
+
+STATIC mp_obj_t synthio_math_make_new_common(mp_arg_val_t args[MP_ARRAY_SIZE(math_properties)]) {
     synthio_math_obj_t *self = m_new_obj(synthio_math_obj_t);
     self->base.base.type = &synthio_math_type;
 
