@@ -40,6 +40,9 @@ void common_hal_synthio_lfo_set_rate_obj(synthio_lfo_obj_t *self, mp_obj_t arg);
 mp_obj_t common_hal_synthio_lfo_get_scale_obj(synthio_lfo_obj_t *self);
 void common_hal_synthio_lfo_set_scale_obj(synthio_lfo_obj_t *self, mp_obj_t arg);
 
+mp_obj_t common_hal_synthio_lfo_get_phase_offset_obj(synthio_lfo_obj_t *self);
+void common_hal_synthio_lfo_set_phase_offset_obj(synthio_lfo_obj_t *self, mp_obj_t arg);
+
 mp_obj_t common_hal_synthio_lfo_get_offset_obj(synthio_lfo_obj_t *self);
 void common_hal_synthio_lfo_set_offset_obj(synthio_lfo_obj_t *self, mp_obj_t arg);
 

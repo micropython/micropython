@@ -35,32 +35,32 @@ mp_float_t common_hal_synthio_lfo_tick(mp_obj_t self_in) {
     synthio_lfo_obj_t *lfo = MP_OBJ_TO_PTR(self_in);
 
     mp_float_t rate = synthio_block_slot_get(&lfo->rate) * synthio_global_rate_scale;
+    mp_float_t phase_offset = synthio_block_slot_get(&lfo->phase_offset);
 
-    mp_float_t accum = lfo->accum + rate;
-    mp_float_t frac = accum - MICROPY_FLOAT_C_FUN(floor)(accum);
-    size_t idx = (int)(frac * len);
+    mp_float_t accum = lfo->accum + rate + phase_offset;
 
     if (lfo->once) {
         if (rate > 0) {
             if (accum >= ONE) {
-                frac = ONE;
-                idx = len - 1;
+                accum = ONE;
             }
         } else if (rate < 0 && accum < ZERO) {
-            frac = ZERO;
-            idx = 0;
+            accum = ZERO;
         }
+    } else {
+        accum = accum - MICROPY_FLOAT_C_FUN(floor)(accum);
     }
 
     int len = lfo->waveform_bufinfo.len;
-    lfo->accum = frac;
+    size_t idx = (int)(accum * len); // rounds down towards zero
+    assert(idx < lfo->waveform_bufinfo.len);
 
-    int16_t *waveform = lfo->waveform_bufinfo.buf;
-    assert(idx < lfo->waveform_bufinfo.len / 2);
     mp_float_t scale = synthio_block_slot_get(&lfo->scale);
     mp_float_t offset = synthio_block_slot_get(&lfo->offset);
+    int16_t *waveform = lfo->waveform_bufinfo.buf;
     mp_float_t value = MICROPY_FLOAT_C_FUN(ldexp)(waveform[idx], -15) * scale + offset;
 
+    lfo->accum = accum - phase_offset;
     return value;
 }
 
@@ -81,6 +81,13 @@ mp_obj_t common_hal_synthio_lfo_get_scale_obj(synthio_lfo_obj_t *self) {
 }
 void common_hal_synthio_lfo_set_scale_obj(synthio_lfo_obj_t *self, mp_obj_t arg) {
     synthio_block_assign_slot(arg, &self->scale, MP_QSTR_scale);
+}
+
+mp_obj_t common_hal_synthio_lfo_get_phase_offset_obj(synthio_lfo_obj_t *self) {
+    return self->phase_offset.obj;
+}
+void common_hal_synthio_lfo_set_phase_offset_obj(synthio_lfo_obj_t *self, mp_obj_t arg) {
+    synthio_block_assign_slot(arg, &self->phase_offset, MP_QSTR_phase_offset);
 }
 
 mp_obj_t common_hal_synthio_lfo_get_offset_obj(synthio_lfo_obj_t *self) {

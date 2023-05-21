@@ -63,6 +63,7 @@
 //|         rate: BlockInput = 1.0,
 //|         scale: BlockInput = 1.0,
 //|         offset: BlockInput = 0,
+//|         phase_offset: BlockInput = 0,
 //|         once=False
 //|     ):
 //|         pass
@@ -71,6 +72,7 @@ static const mp_arg_t lfo_properties[] = {
     { MP_QSTR_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
     { MP_QSTR_scale, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
     { MP_QSTR_offset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(0) } },
+    { MP_QSTR_phase_offset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(0) } },
     { MP_QSTR_once, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(0) } },
 };
 
@@ -141,6 +143,24 @@ MP_PROPERTY_GETSET(synthio_lfo_offset_obj,
     (mp_obj_t)&synthio_lfo_get_offset_obj,
     (mp_obj_t)&synthio_lfo_set_offset_obj);
 
+//|     phase_offset: BlockInput
+//|     """An additive value applied to the LFO's phase"""
+STATIC mp_obj_t synthio_lfo_get_phase_offset(mp_obj_t self_in) {
+    synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return common_hal_synthio_lfo_get_phase_offset_obj(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_lfo_get_phase_offset_obj, synthio_lfo_get_phase_offset);
+
+STATIC mp_obj_t synthio_lfo_set_phase_offset(mp_obj_t self_in, mp_obj_t arg) {
+    synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_synthio_lfo_set_phase_offset_obj(self, arg);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_lfo_set_phase_offset_obj, synthio_lfo_set_phase_offset);
+MP_PROPERTY_GETSET(synthio_lfo_phase_offset_obj,
+    (mp_obj_t)&synthio_lfo_get_phase_offset_obj,
+    (mp_obj_t)&synthio_lfo_set_phase_offset_obj);
+
 //|     scale: BlockInput
 //|     """An additive value applied to the LFO's output"""
 STATIC mp_obj_t synthio_lfo_get_scale(mp_obj_t self_in) {
@@ -161,7 +181,9 @@ MP_PROPERTY_GETSET(synthio_lfo_scale_obj,
 
 //|
 //|     once: bool
-//|     """True if the waveform should stop when it reaches its last output value, false if it should re-start at the beginning of its waveform"""
+//|     """True if the waveform should stop when it reaches its last output value, false if it should re-start at the beginning of its waveform
+//|
+//|     This applies to the ``phase`` *before* the addition of any ``phase_offset`` """
 STATIC mp_obj_t synthio_lfo_get_once(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_synthio_lfo_get_once(self));
@@ -226,6 +248,7 @@ STATIC const mp_rom_map_elem_t synthio_lfo_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rate), MP_ROM_PTR(&synthio_lfo_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_scale), MP_ROM_PTR(&synthio_lfo_scale_obj) },
     { MP_ROM_QSTR(MP_QSTR_offset), MP_ROM_PTR(&synthio_lfo_offset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_phase_offset), MP_ROM_PTR(&synthio_lfo_phase_offset_obj) },
     { MP_ROM_QSTR(MP_QSTR_once), MP_ROM_PTR(&synthio_lfo_once_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&synthio_lfo_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_phase), MP_ROM_PTR(&synthio_lfo_phase_obj) },

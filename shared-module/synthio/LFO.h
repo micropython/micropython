@@ -32,7 +32,7 @@ typedef struct synthio_lfo_obj {
     synthio_block_base_t base;
     bool once;
 
-    synthio_block_slot_t rate, scale, offset;
+    synthio_block_slot_t rate, scale, offset, phase_offset;
     mp_float_t accum;
 
     mp_obj_t waveform_obj;
