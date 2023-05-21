@@ -164,7 +164,7 @@ MP_PROPERTY_GETSET(synthio_lfo_phase_offset_obj,
     (mp_obj_t)&synthio_lfo_set_phase_offset_obj);
 
 //|     scale: BlockInput
-//|     """An additive value applied to the LFO's output"""
+//|     """An multiplier value applied to the LFO's output"""
 STATIC mp_obj_t synthio_lfo_get_scale(mp_obj_t self_in) {
     synthio_lfo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return common_hal_synthio_lfo_get_scale_obj(self);
