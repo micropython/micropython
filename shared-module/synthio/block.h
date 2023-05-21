@@ -56,4 +56,5 @@ int32_t synthio_block_slot_get_scaled(synthio_block_slot_t *block_slot, mp_float
 
 // Assign an object (which may be a float or a synthio_block_obj_t) to an block slot
 void synthio_block_assign_slot(mp_obj_t obj, synthio_block_slot_t *block_slot, qstr arg_name);
+bool synthio_block_assign_slot_maybe(mp_obj_t obj, synthio_block_slot_t *block_slot);
 bool synthio_obj_is_block(mp_obj_t obj);

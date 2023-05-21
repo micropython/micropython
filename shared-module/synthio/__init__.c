@@ -584,19 +584,27 @@ int32_t synthio_block_slot_get_scaled(synthio_block_slot_t *lfo_slot, mp_float_t
     return (int32_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(ldexp)(value, 15));
 }
 
-void synthio_block_assign_slot(mp_obj_t obj, synthio_block_slot_t *slot, qstr arg_name) {
-    if (mp_proto_get(MP_QSTR_synthio_block, obj)) {
+bool synthio_block_assign_slot_maybe(mp_obj_t obj, synthio_block_slot_t *slot) {
+    if (synthio_obj_is_block(obj)) {
         slot->obj = obj;
-        return;
+        return true;
     }
 
     mp_float_t value = MICROPY_FLOAT_CONST(0.);
     if (obj != mp_const_none && !mp_obj_get_float_maybe(obj, &value)) {
-        mp_raise_TypeError_varg(translate("%q must be of type %q, not %q"), arg_name, MP_QSTR_BlockInput, mp_obj_get_type_qstr(obj));
+        return false;
     }
 
     slot->obj = mp_obj_new_float(value);
+    return true;
 }
+
+void synthio_block_assign_slot(mp_obj_t obj, synthio_block_slot_t *slot, qstr arg_name) {
+    if (!synthio_block_assign_slot_maybe(obj, slot)) {
+        mp_raise_TypeError_varg(translate("%q must be of type %q, not %q"), arg_name, MP_QSTR_BlockInput, mp_obj_get_type_qstr(obj));
+    }
+}
+
 bool synthio_obj_is_block(mp_obj_t obj) {
     return mp_proto_get(MP_QSTR_synthio_block, obj);
 }
