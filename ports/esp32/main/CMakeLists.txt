@@ -230,7 +230,19 @@ include(${MICROPY_DIR}/py/mkrules.cmake)
 if(EXISTS ${PROJECT_DIR}/ulp_riscv/main.c)
     set(ulp_app_name ulp_${COMPONENT_NAME})
     set(ulp_sources "${PROJECT_DIR}/ulp_riscv/main.c")
-    set(ulp_exp_dep_srcs "../main.c")
+    set(ulp_exp_dep_srcs "${PROJECT_DIR}/main.c")
 
     ulp_embed_binary(${ulp_app_name} "${ulp_sources}" "${ulp_exp_dep_srcs}")
+endif()
+
+if(EXISTS ${PROJECT_DIR}/ulp_riscv/main.c)
+    add_custom_command(
+      OUTPUT ${PROJECT_DIR}/build/esp32_ulpconst_qstr.h
+      COMMAND python ../../../make-esp32ulpconst.py ../../esp-idf/main/ulp_main/ulp_main.ld
+      DEPENDS ${PROJECT_DIR}/build/esp-idf/main/ulp_main/ulp_main.ld
+      COMMENT "Parsing ULP headers"
+      VERBATIM
+      )
+
+    add_library(ULP_CONST INTERFACE ${PROJECT_DIR}/build/esp32_ulpconst_qstr.h)
 endif()
