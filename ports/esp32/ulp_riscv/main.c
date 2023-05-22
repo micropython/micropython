@@ -26,16 +26,16 @@ int main (void)
    ulp_riscv_gpio_output_enable(14);
 
    while(1) {
-   // Turn on GPIO
-       ulp_riscv_gpio_output_level(14, 1);
-       gpio_level = true;
-   // Delay
-       ulp_riscv_delay_cycles(1000 * 1000);
-   // Turn off GPIO
-       ulp_riscv_gpio_output_level(14, 0);
-       gpio_level = false;
-   // Delay
-       ulp_riscv_delay_cycles(1000 * 1000);
+        // Turn on GPIO
+        ulp_riscv_gpio_output_level(14, 1);
+        gpio_level = true;
+        // Delay
+        ulp_riscv_delay_cycles(1000 * 1000);
+        // Turn off GPIO
+        ulp_riscv_gpio_output_level(14, 0);
+        gpio_level = false;
+        // Delay
+        ulp_riscv_delay_cycles(1000 * 1000);
    }
 
     /* ulp_riscv_halt() is called automatically when main exits */
