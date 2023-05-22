@@ -23,7 +23,9 @@ def mathop_test(kind):
 
 
 def lfo_test(sweep_input_name, **inputs):
-    sweep = LFO(sweep, rate=1, scale=2)
+    inputs.setdefault("rate", 5)
+    t = LFO(bend_out, rate=1, once=True)
+    v = LFO(bend_out, rate=1.5, scale=2, once=True)
     test = LFO(sine, **inputs)
-    setattr(test, sweep_input_name, sweep)
-    print_result(sweep, test)
+    setattr(test, sweep_input_name, v)
+    print_result(t, v, test)
