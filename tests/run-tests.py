@@ -887,6 +887,7 @@ the last matching regex is used:
         os.environ["MICROPYPATH"] = os.pathsep.join(
             [
                 "",
+                "testlib",
                 ".frozen",
                 base_path("../frozen/Adafruit_CircuitPython_asyncio"),
                 base_path("../frozen/Adafruit_CircuitPython_Ticks"),
