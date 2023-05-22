@@ -10,7 +10,8 @@
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (0)
 
-#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
+// Disable to use external spiflash.
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 
 // The board has a 24MHz HSE, the following gives 280MHz CPU speed
 #define MICROPY_HW_CLK_PLLM         (12)
@@ -40,7 +41,8 @@
 #define MICROPY_HW_PWR_SMPS_CONFIG  (PWR_DIRECT_SMPS_SUPPLY)
 
 #if 0
-// 512MBit external OSPI flash, used for either the filesystem or XIP memory mapped
+// 512MBit external OSPI flash, used for either the filesystem or XIP memory mapped.
+// Currently disabled (need octal-spi flash support).
 #define MICROPY_HW_OSPIFLASH_SIZE_BITS_LOG2 (29)
 #define MICROPY_HW_OSPIFLASH_CS     (pin_G6)
 #define MICROPY_HW_OSPIFLASH_CLK    (pin_B2)
