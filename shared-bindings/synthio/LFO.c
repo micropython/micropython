@@ -33,13 +33,17 @@
 #include "shared-bindings/synthio/LFO.h"
 #include "shared-module/synthio/LFO.h"
 
+STATIC const uint16_t triangle[] = {0, 32767, 0, -32767};
+
 //| class LFO:
 //|     """A low-frequency oscillator block
 //|
 //|     Every `rate` seconds, the output of the LFO cycles through its `waveform`.
 //|     The output at any particular moment is ``waveform[idx] * scale + offset``.
 //|
-//|     `rate`, `offset`, `scale`, and `once` can be changed at run-time. `waveform` may be mutated.
+//|     If `waveform` is None, a triangle waveform is used.
+//|
+//|     `rate`, `phase_offset`, `offset`, `scale`, and `once` can be changed at run-time. `waveform` may be mutated.
 //|
 //|     `waveform` must be a ``ReadableBuffer`` with elements of type ``'h'``
 //|     (16-bit signed integer).  Internally, the elements of `waveform` are scaled
@@ -58,18 +62,18 @@
 //|
 //|     def __init__(
 //|         self,
-//|         waveform: ReadableBuffer,
+//|         waveform: ReadableBuffer = None,
 //|         *,
 //|         rate: BlockInput = 1.0,
 //|         scale: BlockInput = 1.0,
-//|         offset: BlockInput = 0,
-//|         phase_offset: BlockInput = 0,
+//|         offset: BlockInput = 0.0,
+//|         phase_offset: BlockInput = 0.0,
 //|         once=False,
 //|         interpolate=True
 //|     ):
 //|         pass
 static const mp_arg_t lfo_properties[] = {
-    { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = NULL } },
+    { MP_QSTR_waveform, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE } },
     { MP_QSTR_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
     { MP_QSTR_scale, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
     { MP_QSTR_offset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(0) } },
@@ -87,7 +91,10 @@ STATIC mp_obj_t synthio_lfo_make_new(const mp_obj_type_t *type_in, size_t n_args
     synthio_lfo_obj_t *self = m_new_obj(synthio_lfo_obj_t);
     self->base.base.type = &synthio_lfo_type;
 
-    synthio_synth_parse_waveform(&self->waveform_bufinfo, args[ARG_waveform].u_obj);
+    self->waveform_bufinfo = ((mp_buffer_info_t) {.buf = triangle, .len = MP_ARRAY_SIZE(triangle)});
+    if (args[ARG_waveform].u_obj != mp_const_none) {
+        synthio_synth_parse_waveform(&self->waveform_bufinfo, args[ARG_waveform].u_obj);
+    }
     self->waveform_obj = args[ARG_waveform].u_obj;
     self->base.last_tick = synthio_global_tick;
 
