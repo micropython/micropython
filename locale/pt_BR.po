@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-05-19 16:13+0000\n"
+"PO-Revision-Date: 2023-05-23 22:55+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2549,7 +2549,7 @@ msgstr "a anotação deve ser um identificador"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "arange: cannot compute length"
-msgstr ""
+msgstr "arange: não é possível calcular o comprimento"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2725,7 +2725,7 @@ msgstr "só pode haver até 4 parâmetros para a montagem Xtensa"
 
 #: extmod/ulab/code/ndarray.c
 msgid "can only specify one unknown dimension"
-msgstr ""
+msgstr "só é possível definir uma dimensão desconhecida"
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
@@ -2884,7 +2884,7 @@ msgstr "não pode importar nome %q"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot reshape array"
-msgstr ""
+msgstr "não é possível remodelar a matriz"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -4067,7 +4067,7 @@ msgstr "conjunto não suportado"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be integer or tuple of integers"
-msgstr ""
+msgstr "a forma deve ser inteira ou tupla de inteiros"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
