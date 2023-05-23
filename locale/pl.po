@@ -213,7 +213,7 @@ msgstr ""
 msgid "%q must be of type %q or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr ""
 
@@ -2478,6 +2478,10 @@ msgstr "adres jest pusty"
 msgid "annotation must be an identifier"
 msgstr ""
 
+#: extmod/ulab/code/numpy/create.c
+msgid "arange: cannot compute length"
+msgstr ""
+
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "arg jest puste"
@@ -2650,6 +2654,10 @@ msgstr "asembler Thumb może przyjąć do 4 parameterów"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "asembler Xtensa może przyjąć do 4 parameterów"
 
+#: extmod/ulab/code/ndarray.c
+msgid "can only specify one unknown dimension"
+msgstr ""
+
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "nie można dodać specjalnej metody do podklasy"
@@ -2800,6 +2808,10 @@ msgstr "nie można stworzyć instancji"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "nie można zaimportować nazwy %q"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot reshape array"
+msgstr ""
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3250,10 +3262,6 @@ msgstr "długość initial_value jest nieprawidłowa"
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "wtrącony asembler musi być funkcją"
-
-#: extmod/ulab/code/ndarray.c
-msgid "input and output shapes are not compatible"
-msgstr ""
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -3969,7 +3977,7 @@ msgid "set unsupported"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
-msgid "shape must be a tuple"
+msgid "shape must be integer or tuple of integers"
 msgstr ""
 
 #: shared-module/msgpack/__init__.c

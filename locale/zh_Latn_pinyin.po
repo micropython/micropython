@@ -227,7 +227,7 @@ msgstr "%q bìxū shì lèixíng wéi 'h' de shùzǔ"
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q de lèi xíng bì xū shì %q huò %q, ér bù shì %q"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q de lèi xíng bì xū shì %q, ér bù shì %q"
 
@@ -2525,6 +2525,10 @@ msgstr "dìzhǐ wèi kōng"
 msgid "annotation must be an identifier"
 msgstr "zhù shì bì xū shì biāo zhì fú"
 
+#: extmod/ulab/code/numpy/create.c
+msgid "arange: cannot compute length"
+msgstr ""
+
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "cānshù shì yīgè kōng de xùliè"
@@ -2697,6 +2701,10 @@ msgstr "zhǐyǒu Thumb zǔjiàn zuìduō 4 cānshù"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "zhǐyǒu Xtensa zǔjiàn zuìduō 4 cānshù"
 
+#: extmod/ulab/code/ndarray.c
+msgid "can only specify one unknown dimension"
+msgstr ""
+
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "wúfǎ tiānjiā tèshū fāngfǎ dào zi fēnlèi lèi"
@@ -2848,6 +2856,10 @@ msgstr "wúfǎ chuàngjiàn shílì"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "wúfǎ dǎorù míngchēng %q"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot reshape array"
+msgstr ""
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3304,10 +3316,6 @@ msgstr "Initial_value chángdù cuòwù"
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "nèi lián jíhé bìxū shì yīgè hánshù"
-
-#: extmod/ulab/code/ndarray.c
-msgid "input and output shapes are not compatible"
-msgstr "shū rù hé shū chū xíng zhuàng bù jiān róng"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -4023,8 +4031,8 @@ msgid "set unsupported"
 msgstr "shè zhì bù shòu zhī chí"
 
 #: extmod/ulab/code/ndarray.c
-msgid "shape must be a tuple"
-msgstr "xíng zhuàng bì xū shì yí gè yuán zǔ"
+msgid "shape must be integer or tuple of integers"
+msgstr ""
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
@@ -4415,6 +4423,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "input and output shapes are not compatible"
+#~ msgstr "shū rù hé shū chū xíng zhuàng bù jiān róng"
+
+#~ msgid "shape must be a tuple"
+#~ msgstr "xíng zhuàng bì xū shì yí gè yuán zǔ"
 
 #~ msgid "Brightness must be 0-1.0"
 #~ msgstr "Liàngdù bìxū wèi 0-1.0"

@@ -211,7 +211,7 @@ msgstr ""
 msgid "%q must be of type %q or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr ""
 
@@ -2497,6 +2497,10 @@ msgstr "adressen zijn leeg"
 msgid "annotation must be an identifier"
 msgstr ""
 
+#: extmod/ulab/code/numpy/create.c
+msgid "arange: cannot compute length"
+msgstr ""
+
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "arg is een lege sequentie"
@@ -2669,6 +2673,10 @@ msgstr "kan slechts 4 parameters aan Thumb assembly geven"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "kan slechts 4 parameters aan Xtensa assembly geven"
 
+#: extmod/ulab/code/ndarray.c
+msgid "can only specify one unknown dimension"
+msgstr ""
+
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
@@ -2820,6 +2828,10 @@ msgstr "kan geen instantie creëren"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "kan naam %q niet importeren"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot reshape array"
+msgstr ""
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3272,10 +3284,6 @@ msgstr "lengte van initial_value is onjuist"
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler moet een functie zijn"
-
-#: extmod/ulab/code/ndarray.c
-msgid "input and output shapes are not compatible"
-msgstr "in- en uitvoervormen zijn niet compatibel"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -3993,8 +4001,8 @@ msgid "set unsupported"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
-msgid "shape must be a tuple"
-msgstr "vorm moet een tupel zijn"
+msgid "shape must be integer or tuple of integers"
+msgstr ""
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
@@ -4382,6 +4390,12 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "input and output shapes are not compatible"
+#~ msgstr "in- en uitvoervormen zijn niet compatibel"
+
+#~ msgid "shape must be a tuple"
+#~ msgstr "vorm moet een tupel zijn"
 
 #~ msgid "Brightness must be 0-1.0"
 #~ msgstr "Helderheid moet tussen de 0 en 1.0 liggen"

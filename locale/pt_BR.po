@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-05-19 16:13+0000\n"
+"PO-Revision-Date: 2023-05-23 22:55+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -224,7 +224,7 @@ msgstr "%q deve ser uma matriz do tipo 'h'"
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q deve ser do tipo %q ou %q e não %q"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q deve ser do tipo %q e não %q"
 
@@ -2547,6 +2547,10 @@ msgstr "os endereços estão vazios"
 msgid "annotation must be an identifier"
 msgstr "a anotação deve ser um identificador"
 
+#: extmod/ulab/code/numpy/create.c
+msgid "arange: cannot compute length"
+msgstr "arange: não é possível calcular o comprimento"
+
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "o arg é uma sequência vazia"
@@ -2719,6 +2723,10 @@ msgstr "só pode haver até 4 parâmetros para a montagem Thumb"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "só pode haver até 4 parâmetros para a montagem Xtensa"
 
+#: extmod/ulab/code/ndarray.c
+msgid "can only specify one unknown dimension"
+msgstr "só é possível definir uma dimensão desconhecida"
+
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "não é possível adicionar o método especial à classe já subclassificada"
@@ -2873,6 +2881,10 @@ msgstr "não é possível criar instância"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "não pode importar nome %q"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot reshape array"
+msgstr "não é possível remodelar a matriz"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3329,10 +3341,6 @@ msgstr "O comprimento do initial_value está errado"
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "o assembler em linha deve ser uma função"
-
-#: extmod/ulab/code/ndarray.c
-msgid "input and output shapes are not compatible"
-msgstr "as formas de entrada e saída não são compatíveis"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -4058,8 +4066,8 @@ msgid "set unsupported"
 msgstr "conjunto não suportado"
 
 #: extmod/ulab/code/ndarray.c
-msgid "shape must be a tuple"
-msgstr "a forma deve ser uma tupla"
+msgid "shape must be integer or tuple of integers"
+msgstr "a forma deve ser inteira ou tupla de inteiros"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
@@ -4447,6 +4455,12 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "input and output shapes are not compatible"
+#~ msgstr "as formas de entrada e saída não são compatíveis"
+
+#~ msgid "shape must be a tuple"
+#~ msgstr "a forma deve ser uma tupla"
 
 #~ msgid "Brightness must be 0-1.0"
 #~ msgstr "O brilho deve ser 0-1,0"
