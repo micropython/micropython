@@ -226,7 +226,7 @@ msgstr ""
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q doit être de type %q ou %q, pas %q"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q doit être de type %q, pas %q"
 
@@ -2563,6 +2563,10 @@ msgstr "adresses vides"
 msgid "annotation must be an identifier"
 msgstr "l'annotation doit être un identificateur"
 
+#: extmod/ulab/code/numpy/create.c
+msgid "arange: cannot compute length"
+msgstr ""
+
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "l'argument est une séquence vide"
@@ -2735,6 +2739,10 @@ msgstr "il ne peut pas y avoir plus de 4 paramètres pour l'assemblage Thumb"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "il ne peut pas y avoir plus de 4 paramètres pour l'assemblage Xtensa"
 
+#: extmod/ulab/code/ndarray.c
+msgid "can only specify one unknown dimension"
+msgstr ""
+
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
@@ -2892,6 +2900,10 @@ msgstr "ne peut pas créer une instance"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "ne peut pas importer le nom %q"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot reshape array"
+msgstr ""
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3350,10 +3362,6 @@ msgstr "la longueur de initial_value est incorrecte"
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "l'assembleur doit être une fonction"
-
-#: extmod/ulab/code/ndarray.c
-msgid "input and output shapes are not compatible"
-msgstr "les formes d'entrée et de sortie ne sont pas compatibles"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -4079,8 +4087,8 @@ msgid "set unsupported"
 msgstr "set non-supporté"
 
 #: extmod/ulab/code/ndarray.c
-msgid "shape must be a tuple"
-msgstr "forme doit être un tuple"
+msgid "shape must be integer or tuple of integers"
+msgstr ""
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
@@ -4469,6 +4477,12 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "input and output shapes are not compatible"
+#~ msgstr "les formes d'entrée et de sortie ne sont pas compatibles"
+
+#~ msgid "shape must be a tuple"
+#~ msgstr "forme doit être un tuple"
 
 #~ msgid "Brightness must be 0-1.0"
 #~ msgstr "La luminosité doit être de 0 à 1.0"

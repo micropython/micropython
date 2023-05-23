@@ -225,7 +225,7 @@ msgstr "%q måste vara en matris av typen 'h'"
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q måste vara av typen %q eller %q, inte %q"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q måste vara av typen %q, inte %q"
 
@@ -2520,6 +2520,10 @@ msgstr "adresserna är tomma"
 msgid "annotation must be an identifier"
 msgstr "Annoteringen måste vara en identifierare"
 
+#: extmod/ulab/code/numpy/create.c
+msgid "arange: cannot compute length"
+msgstr ""
+
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "arg är en tom sekvens"
@@ -2692,6 +2696,10 @@ msgstr "kan bara ha upp till 4 parametrar för Thumbs assembly"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "kan bara ha upp till 4 parametrar att Xtensa assembly"
 
+#: extmod/ulab/code/ndarray.c
+msgid "can only specify one unknown dimension"
+msgstr ""
+
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "kan inte lägga till särskild metod för redan subklassad klass"
@@ -2844,6 +2852,10 @@ msgstr "kan inte skapa instans"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "kan inte importera namn %q"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot reshape array"
+msgstr ""
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3298,10 +3310,6 @@ msgstr "initial_value-längd är fel"
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler måste vara en funktion"
-
-#: extmod/ulab/code/ndarray.c
-msgid "input and output shapes are not compatible"
-msgstr "indata- och utdataformer är inte kompatibla"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -4020,8 +4028,8 @@ msgid "set unsupported"
 msgstr "set stöds inte"
 
 #: extmod/ulab/code/ndarray.c
-msgid "shape must be a tuple"
-msgstr "shape måste vara en tuple"
+msgid "shape must be integer or tuple of integers"
+msgstr ""
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
@@ -4409,6 +4417,12 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "input and output shapes are not compatible"
+#~ msgstr "indata- och utdataformer är inte kompatibla"
+
+#~ msgid "shape must be a tuple"
+#~ msgstr "shape måste vara en tuple"
 
 #~ msgid "Brightness must be 0-1.0"
 #~ msgstr "Ljusstyrkan måste vara mellan 0 och 1,0"
