@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-05-21 00:49+0000\n"
-"Last-Translator: Scott Shawcroft <scott@tannewt.org>\n"
+"PO-Revision-Date: 2023-05-23 22:55+0000\n"
+"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -2553,7 +2553,7 @@ msgstr "la anotación debe ser un identificador"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "arange: cannot compute length"
-msgstr ""
+msgstr "arange: no se puede calcular la longitud"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2729,7 +2729,7 @@ msgstr "solo puede tener hasta 4 parámetros para ensamblador Xtensa"
 
 #: extmod/ulab/code/ndarray.c
 msgid "can only specify one unknown dimension"
-msgstr ""
+msgstr "sólo puede especificar una dimensión desconocida"
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
@@ -2889,7 +2889,7 @@ msgstr "no se puede importar name '%q'"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot reshape array"
-msgstr ""
+msgstr "no puede remodelar la matriz"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -4065,7 +4065,7 @@ msgstr "sin capacidades para el conjunto"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be integer or tuple of integers"
-msgstr ""
+msgstr "la forma debe ser un número entero o una tupla de números enteros"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
