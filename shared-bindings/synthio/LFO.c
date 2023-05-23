@@ -91,7 +91,7 @@ STATIC mp_obj_t synthio_lfo_make_new(const mp_obj_type_t *type_in, size_t n_args
     synthio_lfo_obj_t *self = m_new_obj(synthio_lfo_obj_t);
     self->base.base.type = &synthio_lfo_type;
 
-    self->waveform_bufinfo = ((mp_buffer_info_t) {.buf = triangle, .len = MP_ARRAY_SIZE(triangle)});
+    self->waveform_bufinfo = ((mp_buffer_info_t) {.buf = (void *)triangle, .len = MP_ARRAY_SIZE(triangle)});
     if (args[ARG_waveform].u_obj != mp_const_none) {
         synthio_synth_parse_waveform(&self->waveform_bufinfo, args[ARG_waveform].u_obj);
     }
