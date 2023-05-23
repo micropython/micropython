@@ -165,7 +165,7 @@ MP_PROPERTY_GETSET(synthio_note_amplitude_obj,
 //|
 //|     A depth of 0 plays the programmed frequency. A depth of 1 corresponds to a bend of 1
 //|     octave.  A depth of (1/12) = 0.833 corresponds to a bend of 1 semitone,
-//|     and a depth of .00833 corresponds to one musical cent. Values of ±1 octave are supported.
+//|     and a depth of .00833 corresponds to one musical cent.
 //|
 //|     To achieve a vibrato or sweep effect, attach an LFO here.
 //|     """
@@ -248,7 +248,7 @@ MP_PROPERTY_GETSET(synthio_note_ring_frequency_obj,
 //|
 //|     A depth of 0 plays the programmed frequency. A depth of 1 corresponds to a bend of 1
 //|     octave.  A depth of (1/12) = 0.833 corresponds to a bend of 1 semitone,
-//|     and a depth of .00833 corresponds to one musical cent. Values of ±1 octave are supported.
+//|     and a depth of .00833 corresponds to one musical cent.
 //|
 //|     To achieve a vibrato or sweep effect on the ring waveform, attach an LFO here.
 //|     """
