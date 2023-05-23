@@ -281,17 +281,17 @@ STATIC mp_obj_t midi_to_hz(mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_midi_to_hz_obj, midi_to_hz);
 
-//| def onevo_to_hz(ctrl: float) -> float:
+//| def voct_to_hz(ctrl: float) -> float:
 //|     """Converts a 1v/octave signal to Hz.
 //|
-//|     60/12 (5.0) corresponds to middle C, 69/12 is concert A."""
+//|     24/12 (2.0) corresponds to middle C, 33/12 (2.75) is concert A."""
 //|
 
-STATIC mp_obj_t onevo_to_hz(mp_obj_t arg) {
-    mp_float_t note = mp_arg_validate_obj_float_range(arg, 0, 11, MP_QSTR_ctrl);
-    return mp_obj_new_float(common_hal_synthio_onevo_to_hz_float(note));
+STATIC mp_obj_t voct_to_hz(mp_obj_t arg) {
+    mp_float_t note = mp_arg_validate_obj_float_range(arg, -11, 11, MP_QSTR_ctrl);
+    return mp_obj_new_float(common_hal_synthio_voct_to_hz_float(note));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(synthio_onevo_to_hz_obj, onevo_to_hz);
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_voct_to_hz_obj, voct_to_hz);
 
 #if CIRCUITPY_AUDIOCORE_DEBUG
 STATIC mp_obj_t synthio_lfo_tick(size_t n, const mp_obj_t *args) {
@@ -319,7 +319,7 @@ STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_from_file), MP_ROM_PTR(&synthio_from_file_obj) },
     { MP_ROM_QSTR(MP_QSTR_Envelope), MP_ROM_PTR(&synthio_envelope_type_obj) },
     { MP_ROM_QSTR(MP_QSTR_midi_to_hz), MP_ROM_PTR(&synthio_midi_to_hz_obj) },
-    { MP_ROM_QSTR(MP_QSTR_onevo_to_hz), MP_ROM_PTR(&synthio_midi_to_hz_obj) },
+    { MP_ROM_QSTR(MP_QSTR_voct_to_hz), MP_ROM_PTR(&synthio_voct_to_hz_obj) },
     #if CIRCUITPY_AUDIOCORE_DEBUG
     { MP_ROM_QSTR(MP_QSTR_lfo_tick), MP_ROM_PTR(&synthio_lfo_tick_obj) },
     #endif

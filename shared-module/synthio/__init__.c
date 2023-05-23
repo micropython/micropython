@@ -46,11 +46,11 @@ STATIC int64_t round_float_to_int64(mp_float_t f) {
 }
 
 mp_float_t common_hal_synthio_midi_to_hz_float(mp_float_t arg) {
-    return common_hal_synthio_onevo_to_hz_float(arg / 12.);
+    return common_hal_synthio_voct_to_hz_float(arg / 12. - 3);
 }
 
-mp_float_t common_hal_synthio_onevo_to_hz_float(mp_float_t octave) {
-    return notes[0] * MICROPY_FLOAT_C_FUN(pow)(2., octave - 10);
+mp_float_t common_hal_synthio_voct_to_hz_float(mp_float_t octave) {
+    return notes[0] * MICROPY_FLOAT_C_FUN(pow)(2., octave - 7);
 }
 
 STATIC int16_t convert_time_to_rate(uint32_t sample_rate, mp_obj_t time_in, int16_t difference) {

@@ -41,4 +41,4 @@ extern const mp_obj_namedtuple_type_t synthio_envelope_type_obj;
 void synthio_synth_envelope_set(synthio_synth_t *synth, mp_obj_t envelope_obj);
 mp_obj_t synthio_synth_envelope_get(synthio_synth_t *synth);
 mp_float_t common_hal_synthio_midi_to_hz_float(mp_float_t note);
-mp_float_t common_hal_synthio_onevo_to_hz_float(mp_float_t note);
+mp_float_t common_hal_synthio_voct_to_hz_float(mp_float_t note);
