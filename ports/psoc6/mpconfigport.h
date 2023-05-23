@@ -113,8 +113,8 @@
 
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
-#define MICROPY_PY_MACHINE_PWM                  (0)
-#define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS      (0)
+#define MICROPY_PY_MACHINE_PWM                  (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/psoc6/modules/machine/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
 
@@ -130,7 +130,6 @@
 // set to 1 to enable filesystem to be loaded on external qspi flash
 // if set to 0, filesystem is located in an allotted area of internal flash of PSoC6
 #define MICROPY_ENABLE_EXT_QSPI_FLASH               (1)
-
 
 #define MICROPY_PY_UCRYPTOLIB                   (1)
 #define MICROPY_PY_UCRYPTOLIB_CTR               (1)
