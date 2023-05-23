@@ -297,6 +297,7 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 SRC_C += \
 	boardctrl.c \
 	main.c \
+	ra_hal.c \
 	ra_it.c \
 	mphalport.c \
 	mpthreadport.c \
@@ -325,13 +326,11 @@ SRC_C += \
 	flashbdev.c \
 	storage.c \
 	fatfs_port.c \
-	$(BOARD_DIR)/src/hal_entry.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_C += $(addprefix $(BOARD_DIR)/ra_gen/,\
 	common_data.c \
 	hal_data.c \
-	main.c \
 	pin_data.c \
 	vector_data.c \
 	)

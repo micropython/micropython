@@ -210,7 +210,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 }
 #endif
 
-void ra_main(uint32_t reset_mode) {
+int main(void) {
     // Hook for a board to run code at start up, for example check if a
     // bootloader should be entered instead of the main application.
     MICROPY_BOARD_STARTUP();
@@ -256,7 +256,7 @@ void ra_main(uint32_t reset_mode) {
     #endif
 
     boardctrl_state_t state;
-    state.reset_mode = reset_mode;
+    state.reset_mode = 1;
     state.log_soft_reset = false;
 
     MICROPY_BOARD_BEFORE_SOFT_RESET_LOOP(&state);
