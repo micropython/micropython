@@ -79,7 +79,7 @@ STATIC mp_obj_t synthio_note_make_new(const mp_obj_type_t *type_in, size_t n_arg
     return result;
 };
 
-//|     frequency: BlockInput
+//|     frequency: float
 //|     """The base frequency of the note, in Hz."""
 STATIC mp_obj_t synthio_note_get_frequency(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
