@@ -37,7 +37,7 @@
 #define MICROPY_HW_NEOPIXEL         (&pin_GPIO7)
 
 #define CIRCUITPY_BOARD_I2C         (1)
-#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO6, .sda = &pin_GPIO5}}
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO10, .sda = &pin_GPIO8}}
 
 #define CIRCUITPY_BOARD_SPI         (1)
 #define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO10, .mosi = &pin_GPIO7, .miso = &pin_GPIO8}}
