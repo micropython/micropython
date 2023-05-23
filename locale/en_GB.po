@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-05-21 00:49+0000\n"
-"Last-Translator: Scott Shawcroft <scott@tannewt.org>\n"
+"PO-Revision-Date: 2023-05-23 22:55+0000\n"
+"Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
 "MIME-Version: 1.0\n"
@@ -2510,7 +2510,7 @@ msgstr "annotation must be an identifier"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "arange: cannot compute length"
-msgstr ""
+msgstr "arange: cannot compute length"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2686,7 +2686,7 @@ msgstr "Can only have up to 4 parameters to xtensa assembly"
 
 #: extmod/ulab/code/ndarray.c
 msgid "can only specify one unknown dimension"
-msgstr ""
+msgstr "can only specify one unknown dimension"
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
@@ -2843,7 +2843,7 @@ msgstr "can't import name %q"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot reshape array"
-msgstr ""
+msgstr "cannot reshape array"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -4011,7 +4011,7 @@ msgstr "set unsupported"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be integer or tuple of integers"
-msgstr ""
+msgstr "shape must be integer or tuple of integers"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
