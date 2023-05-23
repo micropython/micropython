@@ -33,11 +33,16 @@
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
 #include "shared-bindings/synthio/Synthesizer.h"
+#include "shared-bindings/synthio/LFO.h"
 #include "shared-bindings/synthio/__init__.h"
 #include "supervisor/shared/translate/translate.h"
 
 //| NoteSequence = Sequence[Union[int, Note]]
-//| """A sequence of notes, which can each be integer MIDI notes or `Note` objects"""
+//| """A sequence of notes, which can each be integer MIDI note numbers or `Note` objects"""
+//| NoteOrNoteSequence = Union[int, Note, NoteSequence]
+//| """A note or sequence of notes"""
+//| LFOOrLFOSequence = Union["LFO", Sequence["LFO"]]
+//| """An LFO or a sequence of LFOs"""
 //|
 //| class Synthesizer:
 //|     def __init__(
@@ -93,12 +98,12 @@ STATIC void check_for_deinit(synthio_synthesizer_obj_t *self) {
     }
 }
 
-//|     def press(self, /, press: NoteSequence = ()) -> None:
+//|     def press(self, /, press: NoteOrNoteSequence = ()) -> None:
 //|         """Turn some notes on.
 //|
 //|         Pressing a note that was already pressed has no effect.
 //|
-//|         :param NoteSequence press: Any sequence of notes."""
+//|         :param NoteOrNoteSequence press: Any sequence of notes."""
 STATIC mp_obj_t synthio_synthesizer_press(mp_obj_t self_in, mp_obj_t press) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -106,12 +111,12 @@ STATIC mp_obj_t synthio_synthesizer_press(mp_obj_t self_in, mp_obj_t press) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_press_obj, synthio_synthesizer_press);
-//|     def release(self, /, release: NoteSequence = ()) -> None:
+//|     def release(self, /, release: NoteOrNoteSequence = ()) -> None:
 //|         """Turn some notes off.
 //|
 //|         Releasing a note that was already released has no effect.
 //|
-//|         :param NoteSequence release: Any sequence of notes."""
+//|         :param NoteOrNoteSequence release: Any sequence of notes."""
 STATIC mp_obj_t synthio_synthesizer_release(mp_obj_t self_in, mp_obj_t release) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -120,23 +125,37 @@ STATIC mp_obj_t synthio_synthesizer_release(mp_obj_t self_in, mp_obj_t release) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_release_obj, synthio_synthesizer_release);
 
-//|     def release_then_press(self, release: NoteSequence = (), press: NoteSequence = ()) -> None:
-//|         """Turn some notes on and/or off.
+//|     def change(
+//|         self,
+//|         release: NoteOrNoteSequence = (),
+//|         press: NoteOrNoteSequence = (),
+//|         retrigger=LFOOrLFOSequence,
+//|     ) -> None:
+//|         """Start notes, stop them, and/or re-trigger some LFOs.
+//|
+//|         The changes all happen atomically with respect to output generation.
 //|
 //|         It is OK to release note that was not actually turned on.
 //|
-//|         Pressing a note that was already pressed has no effect.
+//|         Pressing a note that was already pressed returns it to the attack phase
+//|         but without resetting its amplitude. Releasing a note and immediately
+//|         pressing it again returns it to the attack phase with an initial
+//|         amplitude of 0.
 //|
-//|         Releasing and pressing the note again has little effect, but does reset the phase
-//|         of the note, which may be perceptible as a small glitch.
+//|         At the same time, the passed LFOs (if any) are retriggered.
 //|
-//|         :param NoteSequence release: Any sequence of notes.
-//|         :param NoteSequence press: Any sequence of notes."""
-STATIC mp_obj_t synthio_synthesizer_release_then_press(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_release, ARG_press };
+//|         :param NoteOrNoteSequence release: Any sequence of notes.
+//|         :param NoteOrNoteSequence press: Any sequence of notes.
+//|         :param LFOOrLFOSequence retrigger: Any sequence of LFOs.
+//|
+//|         Note: for compatibility, ``release_then_press`` may be used as an alias
+//|         for this function. This compatibility name will be removed in 9.0."""
+STATIC mp_obj_t synthio_synthesizer_change(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_release, ARG_press, ARG_retrigger };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_release, MP_ARG_OBJ, {.u_obj = mp_const_empty_tuple } },
         { MP_QSTR_press, MP_ARG_OBJ, {.u_obj = mp_const_empty_tuple } },
+        { MP_QSTR_retrigger, MP_ARG_OBJ, {.u_obj = mp_const_empty_tuple } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -146,18 +165,19 @@ STATIC mp_obj_t synthio_synthesizer_release_then_press(mp_uint_t n_args, const m
     check_for_deinit(self);
     common_hal_synthio_synthesizer_release(self, args[ARG_release].u_obj);
     common_hal_synthio_synthesizer_press(self, args[ARG_press].u_obj);
+    common_hal_synthio_synthesizer_retrigger(self, args[ARG_retrigger].u_obj);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_release_then_press_obj, 1, synthio_synthesizer_release_then_press);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_change_obj, 1, synthio_synthesizer_change);
 
 //
-//|     def release_all_then_press(self, /, press: NoteSequence) -> None:
+//|     def release_all_then_press(self, /, press: NoteOrNoteSequence) -> None:
 //|         """Turn any currently-playing notes off, then turn on the given notes
 //|
-//|         Releasing and pressing the note again has little effect, but does reset the phase
-//|         of the note, which may be perceptible as a small glitch.
+//|         Releasing a note and immediately pressing it again returns it to the
+//|         attack phase with an initial amplitude of 0.
 //|
-//|         :param NoteSequence press: Any sequence of notes."""
+//|         :param NoteOrNoteSequence press: Any sequence of notes."""
 STATIC mp_obj_t synthio_synthesizer_release_all_then_press(mp_obj_t self_in, mp_obj_t press) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -250,6 +270,23 @@ MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_get_pressed_obj, synthio_synthesiz
 MP_PROPERTY_GETTER(synthio_synthesizer_pressed_obj,
     (mp_obj_t)&synthio_synthesizer_get_pressed_obj);
 
+//|     lfos: List[LFO]
+//|     """A list of LFOs to advance whether or not they are associated with a playing note.
+//|
+//|     This can be used to implement 'free-running' LFOs. LFOs associated with playing notes are advanced whether or not they are in this list.
+//|
+//|     This property is read-only but its contents may be modified by e.g., calling ``synth.lfos.append()`` or ``synth.lfos.remove()``. It is initially an empty list."""
+//|
+STATIC mp_obj_t synthio_synthesizer_obj_get_lfos(mp_obj_t self_in) {
+    synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return common_hal_synthio_synthesizer_get_lfos(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_get_lfos_obj, synthio_synthesizer_obj_get_lfos);
+
+MP_PROPERTY_GETTER(synthio_synthesizer_lfos_obj,
+    (mp_obj_t)&synthio_synthesizer_get_lfos_obj);
+
 //|     max_polyphony: int
 //|     """Maximum polyphony of the synthesizer (read-only class property)"""
 //|
@@ -259,7 +296,8 @@ STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_press), MP_ROM_PTR(&synthio_synthesizer_press_obj) },
     { MP_ROM_QSTR(MP_QSTR_release), MP_ROM_PTR(&synthio_synthesizer_release_obj) },
     { MP_ROM_QSTR(MP_QSTR_release_all), MP_ROM_PTR(&synthio_synthesizer_release_all_obj) },
-    { MP_ROM_QSTR(MP_QSTR_release_then_press), MP_ROM_PTR(&synthio_synthesizer_release_then_press_obj) },
+    { MP_ROM_QSTR(MP_QSTR_change), MP_ROM_PTR(&synthio_synthesizer_change_obj) },
+    { MP_ROM_QSTR(MP_QSTR_release_then_press), MP_ROM_PTR(&synthio_synthesizer_change_obj) },
     { MP_ROM_QSTR(MP_QSTR_release_all_then_press), MP_ROM_PTR(&synthio_synthesizer_release_all_then_press_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&synthio_synthesizer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
@@ -270,6 +308,7 @@ STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&synthio_synthesizer_sample_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_max_polyphony), MP_ROM_INT(CIRCUITPY_SYNTHIO_MAX_CHANNELS) },
     { MP_ROM_QSTR(MP_QSTR_pressed), MP_ROM_PTR(&synthio_synthesizer_pressed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lfos), MP_ROM_PTR(&synthio_synthesizer_lfos_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(synthio_synthesizer_locals_dict, synthio_synthesizer_locals_dict_table);
 

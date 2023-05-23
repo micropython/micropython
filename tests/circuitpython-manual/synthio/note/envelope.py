@@ -25,6 +25,9 @@ fast_decay_envelope = synthio.Envelope(
 synth = synthio.Synthesizer(sample_rate=48000)
 
 
+# for a note without sustain phase,
+# switching to an envelope with decay_time 0.25 is about the same as
+# releasing with a release time of 0.25
 def synthesize(synth):
     notes = (synthio.Note(frequency=440, waveform=sine, envelope=envelope),)
     synth.press(notes)

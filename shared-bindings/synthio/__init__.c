@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <math.h>
 #include <string.h>
 
 #include "py/enum.h"
@@ -35,9 +36,13 @@
 #include "extmod/vfs_posix.h"
 
 #include "shared-bindings/synthio/__init__.h"
+#include "shared-bindings/synthio/LFO.h"
+#include "shared-bindings/synthio/Math.h"
 #include "shared-bindings/synthio/MidiTrack.h"
 #include "shared-bindings/synthio/Note.h"
 #include "shared-bindings/synthio/Synthesizer.h"
+
+#include "shared-module/synthio/LFO.h"
 
 #define default_attack_time (MICROPY_FLOAT_CONST(0.1))
 #define default_decay_time (MICROPY_FLOAT_CONST(0.05))
@@ -57,7 +62,12 @@ static const mp_arg_t envelope_properties[] = {
 //| """Support for multi-channel audio synthesis
 //|
 //| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
+//| """
 //|
+//| BlockInput = Union["Math", "LFO", float, None]
+//| """Blocks and Notes can take any of these types as inputs on certain attributes
+//|
+//| A BlockInput can be any of the following types: `Math`, `LFO`, `builtins.float`, `None` (treated same as 0).
 //| """
 //|
 //| class Envelope:
@@ -266,7 +276,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(synthio_from_file_obj, 1, synthio_from_file);
 //|
 
 STATIC mp_obj_t midi_to_hz(mp_obj_t arg) {
-    mp_float_t note = mp_arg_validate_obj_float_range(arg, 1, 127, MP_QSTR_note);
+    mp_float_t note = mp_arg_validate_type_float(arg, MP_QSTR_note);
     return mp_obj_new_float(common_hal_synthio_midi_to_hz_float(note));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_midi_to_hz_obj, midi_to_hz);
@@ -283,51 +293,36 @@ STATIC mp_obj_t onevo_to_hz(mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_onevo_to_hz_obj, onevo_to_hz);
 
-MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, STATIC, SYNTHIO_BEND_MODE_STATIC);
-MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, VIBRATO, SYNTHIO_BEND_MODE_VIBRATO);
-MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, SWEEP, SYNTHIO_BEND_MODE_SWEEP);
-MAKE_ENUM_VALUE(synthio_bend_mode_type, bend_mode, SWEEP_IN, SYNTHIO_BEND_MODE_SWEEP_IN);
-
-//|
-//| class BendMode:
-//|     """Controls the way the ``Note.pitch_bend_depth`` and ``Note.pitch_bend_rate`` properties are interpreted."""
-//|
-//|     STATIC: "BendMode"
-//|     """The Note's pitch is modified by its ``pitch_bend_depth``. ``pitch_bend_rate`` is ignored."""
-//|
-//|     VIBRATO: "BendMode"
-//|     """The Note's pitch varies by ``±pitch_bend_depth`` at a rate of ``pitch_bend_rate`` Hz."""
-//|
-//|     SWEEP: "BendMode"
-//|     """The Note's pitch starts at ``Note.frequency`` then sweeps up or down by ``pitch_bend_depth`` over ``1/pitch_bend_rate`` seconds."""
-//|
-//|     SWEEP_IN: "BendMode"
-//|     """The Note's pitch sweep is the reverse of ``SWEEP`` mode, starting at the bent pitch and arriving at the tuned pitch."""
-//|
-MAKE_ENUM_MAP(synthio_bend_mode) {
-    MAKE_ENUM_MAP_ENTRY(bend_mode, STATIC),
-    MAKE_ENUM_MAP_ENTRY(bend_mode, VIBRATO),
-    MAKE_ENUM_MAP_ENTRY(bend_mode, SWEEP),
-    MAKE_ENUM_MAP_ENTRY(bend_mode, SWEEP_IN),
-};
-
-STATIC MP_DEFINE_CONST_DICT(synthio_bend_mode_locals_dict, synthio_bend_mode_locals_table);
-
-MAKE_PRINTER(synthio, synthio_bend_mode);
-
-MAKE_ENUM_TYPE(synthio, BendMode, synthio_bend_mode);
-
+#if CIRCUITPY_AUDIOCORE_DEBUG
+STATIC mp_obj_t synthio_lfo_tick(size_t n, const mp_obj_t *args) {
+    shared_bindings_synthio_lfo_tick(48000);
+    mp_obj_t result[n];
+    for (size_t i = 0; i < n; i++) {
+        synthio_block_slot_t slot;
+        synthio_block_assign_slot(args[i], &slot, MP_QSTR_arg);
+        mp_float_t value = synthio_block_slot_get(&slot);
+        result[i] = mp_obj_new_float(value);
+    }
+    return mp_obj_new_tuple(n, result);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR(synthio_lfo_tick_obj, 1, synthio_lfo_tick);
+#endif
 
 STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_synthio) },
-    { MP_ROM_QSTR(MP_QSTR_BendMode), MP_ROM_PTR(&synthio_bend_mode_type) },
+    { MP_ROM_QSTR(MP_QSTR_Math), MP_ROM_PTR(&synthio_math_type) },
+    { MP_ROM_QSTR(MP_QSTR_MathOperation), MP_ROM_PTR(&synthio_math_operation_type) },
     { MP_ROM_QSTR(MP_QSTR_MidiTrack), MP_ROM_PTR(&synthio_miditrack_type) },
     { MP_ROM_QSTR(MP_QSTR_Note), MP_ROM_PTR(&synthio_note_type) },
+    { MP_ROM_QSTR(MP_QSTR_LFO), MP_ROM_PTR(&synthio_lfo_type) },
     { MP_ROM_QSTR(MP_QSTR_Synthesizer), MP_ROM_PTR(&synthio_synthesizer_type) },
     { MP_ROM_QSTR(MP_QSTR_from_file), MP_ROM_PTR(&synthio_from_file_obj) },
     { MP_ROM_QSTR(MP_QSTR_Envelope), MP_ROM_PTR(&synthio_envelope_type_obj) },
     { MP_ROM_QSTR(MP_QSTR_midi_to_hz), MP_ROM_PTR(&synthio_midi_to_hz_obj) },
     { MP_ROM_QSTR(MP_QSTR_onevo_to_hz), MP_ROM_PTR(&synthio_midi_to_hz_obj) },
+    #if CIRCUITPY_AUDIOCORE_DEBUG
+    { MP_ROM_QSTR(MP_QSTR_lfo_tick), MP_ROM_PTR(&synthio_lfo_tick_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(synthio_module_globals, synthio_module_globals_table);

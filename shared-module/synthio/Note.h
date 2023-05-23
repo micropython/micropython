@@ -27,25 +27,22 @@
 #pragma once
 
 #include "shared-module/synthio/__init__.h"
+#include "shared-module/synthio/LFO.h"
 #include "shared-bindings/synthio/__init__.h"
 
 typedef struct synthio_note_obj {
     mp_obj_base_t base;
 
+    synthio_block_slot_t panning, bend, amplitude, ring_bend;
+
     mp_float_t frequency, ring_frequency;
-    mp_float_t panning;
     mp_obj_t waveform_obj, envelope_obj, ring_waveform_obj;
 
     int32_t sample_rate;
 
     int32_t frequency_scaled;
-    int32_t ring_frequency_scaled;
-    int32_t amplitude_scaled;
-    int32_t left_panning_scaled, right_panning_scaled;
+    int32_t ring_frequency_scaled, ring_frequency_bent;
     bool filter;
-    synthio_bend_mode_t bend_mode;
-    synthio_lfo_descr_t tremolo_descr, bend_descr;
-    synthio_lfo_state_t tremolo_state, bend_state;
 
     mp_buffer_info_t waveform_buf;
     mp_buffer_info_t ring_waveform_buf;
@@ -56,4 +53,3 @@ void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate);
 uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t loudness[2]);
 void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate);
 bool synthio_note_playing(synthio_note_obj_t *self);
-uint32_t synthio_note_envelope(synthio_note_obj_t *self);

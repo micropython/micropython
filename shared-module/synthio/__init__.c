@@ -32,14 +32,14 @@
 #include <math.h>
 #include <stdlib.h>
 
+mp_float_t synthio_global_rate_scale;
+uint8_t synthio_global_tick;
+
 STATIC const int16_t square_wave[] = {-32768, 32767};
 
 STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
                                  12544, 13290, 14080, 14917, 15804}; // 9th octave
 
-STATIC int32_t round_float_to_int(mp_float_t f) {
-    return (int32_t)(f + MICROPY_FLOAT_CONST(0.5));
-}
 
 STATIC int64_t round_float_to_int64(mp_float_t f) {
     return (int64_t)(f + MICROPY_FLOAT_CONST(0.5));
@@ -192,7 +192,7 @@ static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
 
     uint32_t dds_rate;
     const int16_t *waveform = synth->waveform_bufinfo.buf;
-    uint32_t waveform_length = synth->waveform_bufinfo.len / sizeof(int16_t);
+    uint32_t waveform_length = synth->waveform_bufinfo.len;
 
     uint32_t ring_dds_rate = 0;
     const int16_t *ring_waveform = NULL;
@@ -213,13 +213,13 @@ static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
         int32_t frequency_scaled = synthio_note_step(note, sample_rate, dur, loudness);
         if (note->waveform_buf.buf) {
             waveform = note->waveform_buf.buf;
-            waveform_length = note->waveform_buf.len / sizeof(int16_t);
+            waveform_length = note->waveform_buf.len;
         }
         dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)frequency_scaled * waveform_length, sample_rate);
         if (note->ring_frequency_scaled != 0 && note->ring_waveform_buf.buf) {
             ring_waveform = note->ring_waveform_buf.buf;
-            ring_waveform_length = note->ring_waveform_buf.len / sizeof(int16_t);
-            ring_dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)note->ring_frequency_scaled * ring_waveform_length, sample_rate);
+            ring_waveform_length = note->ring_waveform_buf.len;
+            ring_dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)note->ring_frequency_bent * ring_waveform_length, sample_rate);
             uint32_t lim = ring_waveform_length << SYNTHIO_FREQUENCY_SHIFT;
             if (ring_dds_rate > lim / sizeof(int16_t)) {
                 ring_dds_rate = 0; // can't ring at that frequency
@@ -311,7 +311,7 @@ static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
 
 STATIC void run_fir(synthio_synth_t *synth, int32_t *out_buffer32, uint16_t dur) {
     int16_t *coeff = (int16_t *)synth->filter_bufinfo.buf;
-    size_t fir_len = synth->filter_bufinfo.len / sizeof(int16_t);
+    size_t fir_len = synth->filter_bufinfo.len;
     int32_t *in_buf = synth->filter_buffer;
 
 
@@ -350,6 +350,8 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
         return;
     }
 
+    shared_bindings_synthio_lfo_tick(synth->sample_rate);
+
     synth->buffer_index = !synth->buffer_index;
     synth->other_channel = 1 - channel;
     synth->other_buffer_index = synth->buffer_index;
@@ -360,7 +362,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
     int32_t out_buffer32[dur * synth->channel_count];
 
     if (synth->filter_buffer) {
-        int32_t *filter_start = &synth->filter_buffer[synth->filter_bufinfo.len * synth->channel_count / sizeof(int16_t)];
+        int32_t *filter_start = &synth->filter_buffer[synth->filter_bufinfo.len * synth->channel_count];
         memset(filter_start, 0, dur * synth->channel_count * sizeof(int32_t));
 
         for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
@@ -439,7 +441,7 @@ void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, int channe
     synth->buffers[0] = m_malloc(synth->buffer_length, false);
     synth->buffers[1] = m_malloc(synth->buffer_length, false);
     if (synth->filter_bufinfo.len) {
-        synth->filter_buffer_length = (synth->filter_bufinfo.len / 2 + SYNTHIO_MAX_DUR) * channel_count * sizeof(int32_t);
+        synth->filter_buffer_length = (synth->filter_bufinfo.len + SYNTHIO_MAX_DUR) * channel_count * sizeof(int32_t);
         synth->filter_buffer = m_malloc(synth->filter_buffer_length, false);
     }
     synth->channel_count = channel_count;
@@ -471,12 +473,13 @@ STATIC void parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what, mp
         if (bufinfo->typecode != 'h') {
             mp_raise_ValueError_varg(translate("%q must be array of type 'h'"), what);
         }
-        mp_arg_validate_length_range(bufinfo->len / sizeof(int16_t), 2, max_len, what);
+        bufinfo->len /= 2;
+        mp_arg_validate_length_range(bufinfo->len, 2, max_len, what);
     }
 }
 
 void synthio_synth_parse_waveform(mp_buffer_info_t *bufinfo_waveform, mp_obj_t waveform_obj) {
-    *bufinfo_waveform = ((mp_buffer_info_t) { .buf = (void *)square_wave, .len = 4 });
+    *bufinfo_waveform = ((mp_buffer_info_t) { .buf = (void *)square_wave, .len = 2 });
     parse_common(bufinfo_waveform, waveform_obj, MP_QSTR_waveform, 16384);
 }
 
@@ -541,49 +544,67 @@ uint32_t synthio_frequency_convert_scaled_to_dds(uint64_t frequency_scaled, int3
     return (sample_rate / 2 + frequency_scaled) / sample_rate;
 }
 
-void synthio_lfo_set(synthio_lfo_state_t *state, const synthio_lfo_descr_t *descr, uint32_t sample_rate) {
-    state->amplitude_scaled = round_float_to_int(descr->amplitude * 32768);
-    state->dds = synthio_frequency_convert_float_to_dds(descr->frequency * 65536, sample_rate);
+void shared_bindings_synthio_lfo_tick(uint32_t sample_rate) {
+    synthio_global_rate_scale = (mp_float_t)SYNTHIO_MAX_DUR / sample_rate;
+    synthio_global_tick++;
 }
 
-STATIC int synthio_lfo_step_common(synthio_lfo_state_t *state, uint16_t dur) {
-    uint32_t phase = state->phase;
-    uint16_t whole_phase = phase >> 16;
-
-    // advance the phase accumulator
-    state->phase = phase + state->dds * dur;
-
-    return whole_phase;
-}
-STATIC int synthio_lfo_sweep_common(synthio_lfo_state_t *state, uint16_t dur) {
-    uint32_t old_phase = state->phase;
-    uint16_t whole_phase = synthio_lfo_step_common(state, dur);
-    if (state->phase < old_phase) {
-        state->phase = 0xffffffff;
+mp_float_t synthio_block_slot_get(synthio_block_slot_t *slot) {
+    // all numbers (and None!) previously converted to float in synthio_block_assign_slot
+    if (mp_obj_is_float(slot->obj)) {
+        return mp_obj_get_float(slot->obj);
     }
-    return whole_phase;
-}
 
-int synthio_sweep_step(synthio_lfo_state_t *state, uint16_t dur) {
-    uint16_t whole_phase = synthio_lfo_sweep_common(state, dur);
-    return (state->amplitude_scaled * whole_phase) / 65536 + state->offset_scaled;
-}
-
-int synthio_sweep_in_step(synthio_lfo_state_t *state, uint16_t dur) {
-    uint16_t whole_phase = 65535 - synthio_lfo_sweep_common(state, dur);
-    return (state->amplitude_scaled * whole_phase) / 65536 + state->offset_scaled;
-}
-
-int synthio_lfo_step(synthio_lfo_state_t *state, uint16_t dur) {
-    uint16_t whole_phase = synthio_lfo_step_common(state, dur);
-    // create a triangle wave, it's quick and easy
-    int v;
-    if (whole_phase < 16384) { // ramp from 0 to amplitude
-        v = (state->amplitude_scaled * whole_phase);
-    } else if (whole_phase < 49152) { // ramp from +amplitude to -amplitude
-        v = (state->amplitude_scaled * (32768 - whole_phase));
-    } else { // from -amplitude to 0
-        v = (state->amplitude_scaled * (whole_phase - 65536));
+    synthio_block_base_t *block = MP_OBJ_TO_PTR(slot->obj);
+    if (block->last_tick == synthio_global_tick) {
+        return block->value;
     }
-    return v / 16384 + state->offset_scaled;
+
+    block->last_tick = synthio_global_tick;
+    // previously verified by call to mp_proto_get in synthio_block_assign_slot
+    const synthio_block_proto_t *p = mp_type_get_protocol_slot(mp_obj_get_type(slot->obj));
+    mp_float_t value = p->tick(slot->obj);
+    block->value = value;
+    return value;
+}
+
+mp_float_t synthio_block_slot_get_limited(synthio_block_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi) {
+    mp_float_t value = synthio_block_slot_get(lfo_slot);
+    if (value < lo) {
+        return lo;
+    }
+    if (value > hi) {
+        return hi;
+    }
+    return value;
+}
+
+int32_t synthio_block_slot_get_scaled(synthio_block_slot_t *lfo_slot, mp_float_t lo, mp_float_t hi) {
+    mp_float_t value = synthio_block_slot_get_limited(lfo_slot, lo, hi);
+    return (int32_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(ldexp)(value, 15));
+}
+
+bool synthio_block_assign_slot_maybe(mp_obj_t obj, synthio_block_slot_t *slot) {
+    if (synthio_obj_is_block(obj)) {
+        slot->obj = obj;
+        return true;
+    }
+
+    mp_float_t value = MICROPY_FLOAT_CONST(0.);
+    if (obj != mp_const_none && !mp_obj_get_float_maybe(obj, &value)) {
+        return false;
+    }
+
+    slot->obj = mp_obj_new_float(value);
+    return true;
+}
+
+void synthio_block_assign_slot(mp_obj_t obj, synthio_block_slot_t *slot, qstr arg_name) {
+    if (!synthio_block_assign_slot_maybe(obj, slot)) {
+        mp_raise_TypeError_varg(translate("%q must be of type %q, not %q"), arg_name, MP_QSTR_BlockInput, mp_obj_get_type_qstr(obj));
+    }
+}
+
+bool synthio_obj_is_block(mp_obj_t obj) {
+    return mp_proto_get(MP_QSTR_synthio_block, obj);
 }

@@ -24,9 +24,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_UTIL_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_UTIL_H
-
 #include "py/runtime.h"
 
 #include "shared-bindings/util.h"
@@ -50,4 +47,10 @@ void properties_print_helper(const mp_print_t *print, mp_obj_t self_in, const mp
     mp_print_str(print, ")");
 }
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_UTIL_H
+void properties_construct_helper(mp_obj_t self_in, const mp_arg_t *args, const mp_arg_val_t *vals, size_t n_properties) {
+    for (size_t i = 0; i < n_properties; i++) {
+        if (vals[i].u_obj != NULL) {
+            mp_store_attr(self_in, args[i].qst, vals[i].u_obj);
+        }
+    }
+}

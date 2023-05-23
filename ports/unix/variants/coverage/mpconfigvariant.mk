@@ -41,7 +41,9 @@ SRC_BITMAP := \
 	shared-bindings/rainbowio/__init__.c \
 	shared-bindings/struct/__init__.c \
 	shared-bindings/synthio/__init__.c \
+	shared-bindings/synthio/Math.c \
 	shared-bindings/synthio/MidiTrack.c \
+	shared-bindings/synthio/LFO.c \
 	shared-bindings/synthio/Note.c \
 	shared-bindings/synthio/Synthesizer.c \
 	shared-bindings/traceback/__init__.c \
@@ -64,7 +66,9 @@ SRC_BITMAP := \
 	shared-module/rainbowio/__init__.c \
 	shared-module/struct/__init__.c \
 	shared-module/synthio/__init__.c \
+	shared-module/synthio/Math.c \
 	shared-module/synthio/MidiTrack.c \
+	shared-module/synthio/LFO.c \
 	shared-module/synthio/Note.c \
 	shared-module/synthio/Synthesizer.c \
 	shared-module/traceback/__init__.c \

@@ -650,6 +650,8 @@ SRC_SHARED_MODULE_ALL = \
 	struct/__init__.c \
 	supervisor/__init__.c \
 	supervisor/StatusBar.c \
+	synthio/LFO.c \
+	synthio/Math.c \
 	synthio/MidiTrack.c \
 	synthio/Note.c \
 	synthio/Synthesizer.c \
