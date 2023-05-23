@@ -37,7 +37,7 @@ void common_hal_synthio_synthesizer_construct(synthio_synthesizer_obj_t *self,
     mp_obj_t envelope_obj) {
 
     synthio_synth_init(&self->synth, sample_rate, channel_count, waveform_obj, filter_obj, envelope_obj);
-    self->lfos = mp_obj_new_list(0, NULL);
+    self->blocks = mp_obj_new_list(0, NULL);
 }
 
 void common_hal_synthio_synthesizer_deinit(synthio_synthesizer_obj_t *self) {
@@ -75,7 +75,7 @@ audioio_get_buffer_result_t synthio_synthesizer_get_buffer(synthio_synthesizer_o
 
     // free-running LFOs
     mp_obj_iter_buf_t iter_buf;
-    mp_obj_t iterable = mp_getiter(self->lfos, &iter_buf);
+    mp_obj_t iterable = mp_getiter(self->blocks, &iter_buf);
     mp_obj_t item;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (!synthio_obj_is_block(item)) {
@@ -185,6 +185,6 @@ mp_obj_t common_hal_synthio_synthesizer_get_pressed_notes(synthio_synthesizer_ob
     return MP_OBJ_FROM_PTR(result);
 }
 
-mp_obj_t common_hal_synthio_synthesizer_get_lfos(synthio_synthesizer_obj_t *self) {
-    return self->lfos;
+mp_obj_t common_hal_synthio_synthesizer_get_blocks(synthio_synthesizer_obj_t *self) {
+    return self->blocks;
 }

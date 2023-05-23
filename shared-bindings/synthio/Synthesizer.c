@@ -270,22 +270,22 @@ MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_get_pressed_obj, synthio_synthesiz
 MP_PROPERTY_GETTER(synthio_synthesizer_pressed_obj,
     (mp_obj_t)&synthio_synthesizer_get_pressed_obj);
 
-//|     lfos: List[LFO]
-//|     """A list of LFOs to advance whether or not they are associated with a playing note.
+//|     blocks: List[BlockInput]
+//|     """A list of blocks to advance whether or not they are associated with a playing note.
 //|
 //|     This can be used to implement 'free-running' LFOs. LFOs associated with playing notes are advanced whether or not they are in this list.
 //|
-//|     This property is read-only but its contents may be modified by e.g., calling ``synth.lfos.append()`` or ``synth.lfos.remove()``. It is initially an empty list."""
+//|     This property is read-only but its contents may be modified by e.g., calling ``synth.blocks.append()`` or ``synth.blocks.remove()``. It is initially an empty list."""
 //|
-STATIC mp_obj_t synthio_synthesizer_obj_get_lfos(mp_obj_t self_in) {
+STATIC mp_obj_t synthio_synthesizer_obj_get_blocks(mp_obj_t self_in) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    return common_hal_synthio_synthesizer_get_lfos(self);
+    return common_hal_synthio_synthesizer_get_blocks(self);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_get_lfos_obj, synthio_synthesizer_obj_get_lfos);
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_get_blocks_obj, synthio_synthesizer_obj_get_blocks);
 
-MP_PROPERTY_GETTER(synthio_synthesizer_lfos_obj,
-    (mp_obj_t)&synthio_synthesizer_get_lfos_obj);
+MP_PROPERTY_GETTER(synthio_synthesizer_blocks_obj,
+    (mp_obj_t)&synthio_synthesizer_get_blocks_obj);
 
 //|     max_polyphony: int
 //|     """Maximum polyphony of the synthesizer (read-only class property)"""
@@ -308,7 +308,7 @@ STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&synthio_synthesizer_sample_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_max_polyphony), MP_ROM_INT(CIRCUITPY_SYNTHIO_MAX_CHANNELS) },
     { MP_ROM_QSTR(MP_QSTR_pressed), MP_ROM_PTR(&synthio_synthesizer_pressed_obj) },
-    { MP_ROM_QSTR(MP_QSTR_lfos), MP_ROM_PTR(&synthio_synthesizer_lfos_obj) },
+    { MP_ROM_QSTR(MP_QSTR_blocks), MP_ROM_PTR(&synthio_synthesizer_blocks_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(synthio_synthesizer_locals_dict, synthio_synthesizer_locals_dict_table);
 
