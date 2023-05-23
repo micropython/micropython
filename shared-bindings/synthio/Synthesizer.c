@@ -52,6 +52,7 @@
 //|         channel_count: int = 1,
 //|         waveform: Optional[ReadableBuffer] = None,
 //|         envelope: Optional[Envelope] = None,
+//|         filter: Optional[ReadableBuffer] = None,
 //|     ) -> None:
 //|         """Create a synthesizer object.
 //|
