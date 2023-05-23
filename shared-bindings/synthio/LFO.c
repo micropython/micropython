@@ -303,13 +303,3 @@ const mp_obj_type_t synthio_lfo_type = {
         .protocol = &lfo_proto,
         ),
 };
-
-#if 0
-const mp_obj_type_t synthio_math_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Math,
-    .make_new = synthio_math_make_new,
-    .locals_dict = (mp_obj_dict_t *)&synthio_math_locals_dict,
-    .print = math_print,
-};
-#endif
