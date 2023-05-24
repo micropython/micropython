@@ -314,9 +314,9 @@ binary from flash into the RTC memory and the the program can be started with th
 
 The following steps are required to use the RISCV ULP.
 
-The RISCV ULP code should be contained in a file main.c and placed in a sub-folder ulp::
+The RISCV ULP code should be contained in a file main.c and placed in a sub-folder ulp_riscv::
 
-    micropython/ports/esp32/ulp/main.c
+    micropython/ports/esp32/ulp_riscv/main.c
 
 The RISCV ULP should be enabled by adding the following configuration to your board sdkconfig::
 
