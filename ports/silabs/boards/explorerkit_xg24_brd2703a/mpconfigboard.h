@@ -37,8 +37,8 @@
 #define BOARD_HSE_SOURCE (RCC_HSE_BYPASS)
 #define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
 
-#define DEFAULT_I2C_BUS_SDA   (&pin_PB5)
-#define DEFAULT_I2C_BUS_SCL   (&pin_PB4)
+#define DEFAULT_I2C_BUS_SDA   (&pin_PC5)
+#define DEFAULT_I2C_BUS_SCL   (&pin_PC4)
 #define DEFAULT_I2C_PERIPHERAL I2C0
 
 #define DEFAULT_SPI_BUS_SCK   (&pin_PC1)
