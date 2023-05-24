@@ -122,7 +122,7 @@ STATIC mp_obj_t esp32_ulp_run(mp_obj_t self_in, mp_obj_t entry_point_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_ulp_run_obj, esp32_ulp_run);
 
 #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-    #include "esp32_ulpconst_qstr.h"
+    #include "genhdr/esp32_ulpconst_qstr.h"
 #endif
 
 STATIC const mp_rom_map_elem_t esp32_ulp_locals_dict_table[] = {
@@ -140,7 +140,7 @@ STATIC const mp_rom_map_elem_t esp32_ulp_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_riscv_load_binary), MP_ROM_PTR(&esp32_ulp_riscv_load_binary_obj) },
     { MP_ROM_QSTR(MP_QSTR_riscv_run), MP_ROM_PTR(&esp32_ulp_riscv_run_obj) },
 
-    #include "esp32_ulpconst_mpz.h"
+    #include "genhdr/esp32_ulpconst_mpz.h"
 
     #endif
 
