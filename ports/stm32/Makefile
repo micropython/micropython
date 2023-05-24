@@ -320,6 +320,7 @@ SRC_C += \
 	spi.c \
 	pyb_spi.c \
 	qspi.c \
+	octospi.c \
 	uart.c \
 	ulpi.c \
 	can.c \
