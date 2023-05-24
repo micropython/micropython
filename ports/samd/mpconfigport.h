@@ -136,6 +136,11 @@
 #define MICROPY_BOARD_PENDSV_ENTRIES
 #endif
 
+// Use internal flash for the file system if no flash file system is selected.
+#if !defined(MICROPY_HW_MCUFLASH) && !defined(MICROPY_HW_QSPIFLASH) && !(defined(MICROPY_HW_SPIFLASH) && defined(MICROPY_HW_SPIFLASH_ID))
+#define MICROPY_HW_MCUFLASH                 (1)
+#endif  // !defined(MICROPY_HW_MCUFLASH) ....
+
 // Miscellaneous settings
 __attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
     __set_PRIMASK(state);

@@ -113,7 +113,9 @@ SRC_C += \
 	pin_af.c \
 	samd_flash.c \
 	samd_isr.c \
+	samd_qspiflash.c \
 	samd_soc.c \
+	samd_spiflash.c \
 	tusb_port.c \
 
 SHARED_SRC_C += \
