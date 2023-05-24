@@ -14,7 +14,7 @@ extern mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj);
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "frequency=%u duty_cycle=%f invert=%u>", self->fz, self->duty_us, self->invert);
+    mp_printf(print, "frequency=%u duty_cycle_us=%f invert=%u", self->fz, self->duty_us, self->invert);
 }
 
 STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
