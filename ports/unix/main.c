@@ -664,8 +664,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return handle_uncaught_exception(nlr.ret_val) & 0xff;
                 }
 
+                // If this module is a package, see if it has a `__main__.py`.
                 mp_obj_t dest[2];
-                mp_load_method_maybe(mod, MP_QSTR___path__, dest);
+                mp_load_method_protected(mod, MP_QSTR___path__, dest, true);
                 if (dest[0] != MP_OBJ_NULL && !subpkg_tried) {
                     subpkg_tried = true;
                     vstr_t vstr;
