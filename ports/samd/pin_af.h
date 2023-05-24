@@ -65,6 +65,9 @@ typedef struct _machine_pin_obj_t {
 #define ALT_FCT_TC        4
 #define ALT_FCT_TCC1      5
 #define ALT_FCT_TCC2      6
+#define ALT_FCT_QSPI      7
+#define ALT_FCT_CAN1      7
+#define ALT_FCT_USB       7
 
 #endif
 
