@@ -44,4 +44,4 @@ void common_hal_synthio_synthesizer_press(synthio_synthesizer_obj_t *self, mp_ob
 void common_hal_synthio_synthesizer_retrigger(synthio_synthesizer_obj_t *self, mp_obj_t to_retrigger);
 void common_hal_synthio_synthesizer_release_all(synthio_synthesizer_obj_t *self);
 mp_obj_t common_hal_synthio_synthesizer_get_pressed_notes(synthio_synthesizer_obj_t *self);
-mp_obj_t common_hal_synthio_synthesizer_get_lfos(synthio_synthesizer_obj_t *self);
+mp_obj_t common_hal_synthio_synthesizer_get_blocks(synthio_synthesizer_obj_t *self);
