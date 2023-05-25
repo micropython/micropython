@@ -182,6 +182,7 @@ SECTIONS
 
         /* for -mforce-l32 */
         */*.o(.rodata*)
+        *st7789/*.o(.literal* .text*)
 
         _irom0_text_end = ABSOLUTE(.);
     } >irom0_0_seg :irom0_0_phdr

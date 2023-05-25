@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "WiFi"
+    ],
+    "id": "Nibble",
+    "images": [],
+    "mcu": "esp8266",
+    "product": "Nibble",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/products/nibble-diy-game-console",
+    "variants": {
+        "ota": "OTA compatible"
+    },
+    "vendor": "CircuitMess"
+}
