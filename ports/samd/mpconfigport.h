@@ -94,20 +94,39 @@
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_UZLIB                    (1)
 #define MICROPY_PY_UASYNCIO                 (1)
-#define MICROPY_PY_MACHINE_I2C              (1)
 #define MICROPY_PY_MACHINE_RTC              (1)
-#define MICROPY_PY_MACHINE_SOFTI2C          (1)
+#ifndef MICROPY_PY_MACHINE_ADC
+#define MICROPY_PY_MACHINE_ADC              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_DAC
+#define MICROPY_PY_MACHINE_DAC              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_I2C
+#define MICROPY_PY_MACHINE_I2C              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_SPI
 #define MICROPY_PY_MACHINE_SPI              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_SOFTI2C
+#define MICROPY_PY_MACHINE_SOFTI2C          (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_SOFTSPI
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
-#define MICROPY_HW_SOFTSPI_MIN_DELAY        (1)
-#define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (1000000)
+#endif
+#ifndef MICROPY_PY_MACHINE_UART
+#define MICROPY_PY_MACHINE_UART             (1)
+#endif
 #define MICROPY_PY_MACHINE_TIMER            (1)
 #define MICROPY_SOFT_TIMER_TICKS_MS         systick_ms
 #define MICROPY_PY_OS_DUPTERM               (3)
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
+#ifndef MICROPY_PY_MACHINE_PULSE
 #define MICROPY_PY_MACHINE_PULSE            (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_PWM
 #define MICROPY_PY_MACHINE_PWM              (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/samd/machine_pwm.c"
+#endif
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 
 #define MP_STATE_PORT MP_STATE_VM

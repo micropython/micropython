@@ -85,7 +85,7 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   coverage_32bit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04 # use 20.04 to get libffi-dev:i386
     steps:
     - uses: actions/checkout@v3
     - name: Install packages
@@ -103,7 +103,7 @@ jobs:
       run: tests/run-tests.py --print-failures
 
   nanbox:
-    runs-on: ubuntu-20.04 # use 20.04 to get python2
+    runs-on: ubuntu-20.04 # use 20.04 to get python2, and libffi-dev:i386
     steps:
     - uses: actions/checkout@v3
     - name: Install packages

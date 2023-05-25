@@ -121,6 +121,7 @@ const char *pin_name(int id) {
     return "-";
 }
 
+#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
 // Test, whether the given pin is defined and has signals for sercom.
 // If that applies return the alt_fct and pad_nr.
 // If not, an error will be raised.
@@ -135,7 +136,9 @@ sercom_pad_config_t get_sercom_config(int pin_id, uint8_t sercom_nr) {
         mp_raise_ValueError(MP_ERROR_TEXT("wrong serial device"));
     }
 }
+#endif
 
+#if MICROPY_PY_MACHINE_ADC
 // Test, whether the given pin is defined as ADC.
 // If that applies return the adc instance and channel.
 // If not, an error will be raised.
@@ -152,6 +155,9 @@ adc_config_t get_adc_config(int pin_id, int32_t flag) {
         mp_raise_ValueError(MP_ERROR_TEXT("ADC pin used"));
     }
 }
+#endif
+
+#if MICROPY_PY_MACHINE_PWM
 
 // Test, whether the given pin is defined and has signals for pwm.
 // If that applies return the alt_fct, tcc number and channel number.
@@ -188,3 +194,5 @@ pwm_config_t get_pwm_config(int pin_id, int wanted_dev, uint8_t device_status[])
     }
     mp_raise_ValueError(MP_ERROR_TEXT("not a PWM Pin"));
 }
+
+#endif

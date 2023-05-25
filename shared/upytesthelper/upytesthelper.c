@@ -61,7 +61,7 @@ bool upytest_is_failed(void) {
 
 // MP_PLAT_PRINT_STRN() should be redirected to this function.
 // It will pass-through any content to mp_hal_stdout_tx_strn_cooked()
-// (the dfault value of MP_PLAT_PRINT_STRN), but will also match
+// (the default value of MP_PLAT_PRINT_STRN), but will also match
 // it to the expected output as set by upytest_set_expected_output().
 // If mismatch happens, upytest_is_failed() returns true.
 void upytest_output(const char *str, mp_uint_t len) {

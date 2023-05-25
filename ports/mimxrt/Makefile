@@ -183,6 +183,7 @@ SRC_C += \
 	drivers/dht/dht.c \
 	eth.c \
 	fatfs_port.c \
+	flash.c \
 	hal/pwm_backport.c \
 	led.c \
 	machine_adc.c \

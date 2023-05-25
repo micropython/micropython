@@ -11,6 +11,16 @@ a = [1, 2, 3]
 c = a * 3
 print(a, c)
 
+# check inplace multiplication
+a = [4, 5, 6]
+a *= 3
+print(a)
+
+# check reverse inplace multiplication
+a = 3
+a *= [7, 8, 9]
+print(a)
+
 # unsupported type on RHS
 try:
     [] * None

@@ -68,6 +68,7 @@ Or:
 """
 
 import ast
+import errno
 import os
 import struct
 import sys

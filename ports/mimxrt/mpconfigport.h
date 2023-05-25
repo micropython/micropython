@@ -77,6 +77,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_OS_DUPTERM               (3)
 #define MICROPY_PY_UOS_DUPTERM_NOTIFY       (1)
 #define MICROPY_PY_UOS_UNAME                (1)
+#define MICROPY_PY_UOS_URANDOM              (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (trng_random_u32())
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
@@ -180,8 +181,6 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_ETH  \
     MICROPY_BOARD_NETWORK_INTERFACES \
-
-#define MICROPY_HW_PIT_NUM_CHANNELS 3
 
 #ifndef MICROPY_BOARD_ROOT_POINTERS
 #define MICROPY_BOARD_ROOT_POINTERS

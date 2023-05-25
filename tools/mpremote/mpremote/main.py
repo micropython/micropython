@@ -119,6 +119,7 @@ def argparse_mount():
 
 def argparse_repl():
     cmd_parser = argparse.ArgumentParser(description="connect to given device")
+    _bool_flag(cmd_parser, "escape-non-printable", "e", False, "escape non-printable characters")
     cmd_parser.add_argument(
         "--capture",
         type=str,

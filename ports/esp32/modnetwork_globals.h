@@ -1,7 +1,7 @@
 { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_network_initialize_obj) },
 
 #if MICROPY_PY_NETWORK_WLAN
-{ MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&esp_network_get_wlan_obj) },
+{ MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&esp_network_wlan_type) },
 #endif
 
 #if MICROPY_PY_NETWORK_LAN

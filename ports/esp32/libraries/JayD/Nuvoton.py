@@ -22,6 +22,8 @@ class Nuvoton:
 		self._on_press = [None] * self.NUM_BTN
 		self._on_release = [None] * self.NUM_BTN
 		self._on_encoder = [None] * self.NUM_ENC
+		self._on_encoder_left = [None] * self.NUM_ENC
+		self._on_encoder_right = [None] * self.NUM_ENC
 		self._on_slider = [None] * self.NUM_POT
 
 	def begin(self):
@@ -113,9 +115,23 @@ class Nuvoton:
 				else:
 					if self._on_release[evt.id] is not None:
 						self._on_release[evt.id]()
+
 			elif evt.device == self.Device.Encoder and evt.id < self.NUM_ENC:
 				if self._on_encoder[evt.id] is not None:
 					self._on_encoder[evt.id](evt.val)
+
+				if evt.val < 0:
+					for _ in range(abs(evt.val)):
+						if self._on_encoder_left[evt.id] is None:
+							break
+						self._on_encoder_left[evt.id]()
+
+				if evt.val > 0:
+					for _ in range(abs(evt.val)):
+						if self._on_encoder_right[evt.id] is None:
+							break
+						self._on_encoder_right[evt.id]()
+
 			elif evt.device == self.Device.Slider and evt.id < self.NUM_POT:
 				if self._on_slider[evt.id] is not None:
 					self._on_slider[evt.id](evt.val)
@@ -134,6 +150,16 @@ class Nuvoton:
 		if i >= self.NUM_ENC:
 			return
 		self._on_encoder[i] = callback
+
+	def on_enc_move_left(self, i: int, callback: callable):
+		if i >= self.NUM_ENC:
+			return
+		self._on_encoder_left[i] = callback
+
+	def on_enc_move_right(self, i: int, callback: callable):
+		if i >= self.NUM_ENC:
+			return
+		self._on_encoder_right[i] = callback
 
 	def on_slider_move(self, i: int, callback: callable):
 		if i >= self.NUM_POT:
