@@ -44,6 +44,11 @@ def setup():
 #esp.osdebug(None)
 #import webrepl
 #webrepl.start()
+from machine import Pin
+from micropython import const
+pins = [const(21), const(22), const(23), const(25), const(18), const(19), const(33), const(32)]
+for i in pins:
+    Pin(i, mode=Pin.IN)
 """
         )
     return vfs
