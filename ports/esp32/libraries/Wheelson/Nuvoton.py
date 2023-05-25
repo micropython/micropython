@@ -18,11 +18,11 @@ class Nuvoton:
 		sleep_ms(500)
 
 		try:
-			self.read(self.BYTE_ID)
+			var: bool = self.identify()
 		except OSError:
 			return False
 
-		return self.identify()
+		return var
 
 	def identify(self):
 		data = self.write_read(self.BYTE_ID, 1)
