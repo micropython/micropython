@@ -313,21 +313,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_stats_obj, espnow_stats);
 // - to return unique bytestrings for each peer which supports more efficient
 //   application memory usage and peer handling.
 
-// Get the RSSI value from the wifi packet header
-static inline int8_t _get_rssi_from_wifi_pkt(const uint8_t *msg) {
-    // Warning: Secret magic to get the rssi from the wifi packet header
-    // See espnow.c:espnow_recv_cb() at https://github.com/espressif/esp-now/
-    // In the wifi packet the msg comes after a wifi_promiscuous_pkt_t
-    // and a espnow_frame_format_t.
-    // Backtrack to get a pointer to the wifi_promiscuous_pkt_t.
-    static const size_t sizeof_espnow_frame_format = 39;
-    wifi_promiscuous_pkt_t *wifi_pkt =
-        (wifi_promiscuous_pkt_t *)(msg - sizeof_espnow_frame_format -
-            sizeof(wifi_promiscuous_pkt_t));
-
-    return wifi_pkt->rx_ctrl.rssi;
-}
-
 // Lookup a peer in the peers table and return a reference to the item in the
 // peers_table. Add peer to the table if it is not found (may alloc memory).
 // Will not return NULL.
@@ -577,7 +562,7 @@ STATIC void recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *msg, in
     header.magic = ESPNOW_MAGIC;
     header.msg_len = msg_len;
     #if MICROPY_ESPNOW_RSSI
-    header.rssi = _get_rssi_from_wifi_pkt(msg);
+    header.rssi = recv_info->rx_ctrl->rssi;
     header.time_ms = mp_hal_ticks_ms();
     #endif // MICROPY_ESPNOW_RSSI
 
