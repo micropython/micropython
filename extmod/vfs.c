@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "extmod/vfs.h"
 
 #if MICROPY_VFS
@@ -526,6 +527,23 @@ mp_obj_t mp_vfs_statvfs(mp_obj_t path_in) {
     return mp_vfs_proxy_call(vfs, MP_QSTR_statvfs, 1, &path_out);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_statvfs_obj, mp_vfs_statvfs);
+
+mp_obj_t mp_vfs_utime(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t path_in = args[0];
+    mp_obj_t times_in = (n_args > 1) ? args[1] : mp_const_none;
+    // The qemu-arm port does not define mp_hal_time_ns().
+    #if !defined(__ARM_ARCH_ISA_ARM) && !defined(__ARM_ARCH_ISA_THUMB)
+    if (times_in == mp_const_none) {
+        // If times is not supplied or set to None, use current time
+        mp_obj_t t = mp_obj_new_int_from_ull(mp_hal_time_ns() / 1000000000ULL);
+        times_in = mp_obj_new_tuple(2, (mp_obj_t[2]) {t, t});
+    }
+    #endif
+    mp_obj_t args_out[2] = {MP_OBJ_NULL, times_in};
+    mp_vfs_mount_t *vfs = lookup_path(path_in, &args_out[0]);
+    return mp_vfs_proxy_call(vfs, MP_QSTR_utime, 2, args_out);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_utime_obj, 1, 2, mp_vfs_utime);
 
 // This is a C-level helper function for ports to use if needed.
 int mp_vfs_mount_and_chdir_protected(mp_obj_t bdev, mp_obj_t mount_point) {

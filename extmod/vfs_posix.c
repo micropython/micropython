@@ -42,6 +42,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <utime.h>
+#include <sys/time.h>
 #include <dirent.h>
 #ifdef _MSC_VER
 #include <direct.h> // For mkdir etc.
@@ -332,6 +334,25 @@ STATIC mp_obj_t vfs_posix_stat(mp_obj_t self_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_stat_obj, vfs_posix_stat);
 
+STATIC mp_obj_t vfs_posix_utime(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t times_in) {
+    mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
+    const char *path = vfs_posix_get_path_str(self, path_in);
+    // times_in = (atime, mtime).
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(times_in);
+    if (!mp_obj_is_type(times_in, &mp_type_tuple) || tuple->len != 2) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+    // utime() is obsoleted for utimes() in posix.1-2008, but not supported on windows port.
+    struct utimbuf times = {
+        mp_obj_get_int(tuple->items[0]),
+        mp_obj_get_int(tuple->items[1])
+    };
+    int ret;
+    MP_HAL_RETRY_SYSCALL(ret, utime(path, &times), mp_raise_OSError(err));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(vfs_posix_utime_obj, vfs_posix_utime);
+
 #if MICROPY_PY_UOS_STATVFS
 
 #ifdef __ANDROID__
@@ -390,6 +411,7 @@ STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&vfs_posix_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&vfs_posix_rmdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&vfs_posix_stat_obj) },
+    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&vfs_posix_utime_obj) },
     #if MICROPY_PY_UOS_STATVFS
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&vfs_posix_statvfs_obj) },
     #endif

@@ -55,6 +55,11 @@ mp_uint_t mp_hal_ticks_cpu(void) {
     return 0;
 }
 
+uint64_t mp_hal_time_ns(void) {
+    // Not currently implemented.
+    return 0;
+}
+
 extern int mp_interrupt_char;
 
 int mp_hal_get_interrupt_char(void) {

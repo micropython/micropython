@@ -1,0 +1,10 @@
+test <class 'VfsLfs2'>
+mtime=True
+True True True
+OSError
+TypeError
+TypeError
+mtime=False
+True
+OSError
+True

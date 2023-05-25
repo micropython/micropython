@@ -374,6 +374,40 @@ STATIC mp_obj_t fat_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_statvfs_obj, fat_vfs_statvfs);
 
+// Get the status of a file or directory.
+STATIC mp_obj_t fat_vfs_utime(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t times_in) {
+    mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
+    const char *path = mp_obj_str_get_str(path_in);
+
+    if (path[0] == 0 || (path[0] == '/' && path[1] == 0)) {
+        mp_raise_OSError(MP_EPERM);
+    }
+    // times_in = (atime, mtime). Ignore atime and just set mtime
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(times_in);
+    if (!mp_obj_is_type(times_in, &mp_type_tuple) || tuple->len != 2) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+    mp_uint_t mtime = mp_obj_get_int(tuple->items[1]);
+    timeutils_struct_time_t tm;
+    timeutils_seconds_since_epoch_to_struct_time(mtime, &tm);
+
+    FILINFO fno;
+    fno.fdate = (
+        ((uint16_t)(MAX(tm.tm_year, 1980) - 1980) & 0x7f) << 9 |
+                ((uint16_t)tm.tm_mon & 0x0f) << 5 |
+                ((uint16_t)tm.tm_mday & 0x1f));
+    fno.ftime = (
+        ((uint16_t)tm.tm_hour & 0x1f) << 11 |
+                ((uint16_t)tm.tm_min & 0x3f) << 5 |
+                ((uint16_t)(tm.tm_sec / 2) & 0x1f));
+    FRESULT res = f_utime(&self->fatfs, path, &fno);
+    if (res != FR_OK) {
+        mp_raise_OSError(fresult_to_errno_table[res]);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_utime_obj, fat_vfs_utime);
+
 STATIC mp_obj_t vfs_fat_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs) {
     fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -422,6 +456,7 @@ STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&fat_vfs_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&fat_vfs_stat_obj) },
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&fat_vfs_statvfs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&fat_vfs_utime_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&vfs_fat_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&fat_vfs_umount_obj) },
 };

@@ -101,6 +101,7 @@ mp_obj_t mp_vfs_rename(mp_obj_t old_path_in, mp_obj_t new_path_in);
 mp_obj_t mp_vfs_rmdir(mp_obj_t path_in);
 mp_obj_t mp_vfs_stat(mp_obj_t path_in);
 mp_obj_t mp_vfs_statvfs(mp_obj_t path_in);
+mp_obj_t mp_vfs_utime(size_t n_args, const mp_obj_t *args);
 
 int mp_vfs_mount_and_chdir_protected(mp_obj_t bdev, mp_obj_t mount_point);
 
@@ -117,5 +118,6 @@ MP_DECLARE_CONST_FUN_OBJ_2(mp_vfs_rename_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_rmdir_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_stat_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_statvfs_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_utime_obj);
 
 #endif // MICROPY_INCLUDED_EXTMOD_VFS_H
