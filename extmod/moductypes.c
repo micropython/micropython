@@ -582,7 +582,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
 STATIC mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_INT:
+        case MP_UNARY_OP_INT_MAYBE:
             if (mp_obj_is_type(self->desc, &mp_type_tuple)) {
                 mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
                 mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);

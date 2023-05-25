@@ -75,7 +75,7 @@ typedef enum {
     MP_UNARY_OP_LEN, // __len__
     MP_UNARY_OP_HASH, // __hash__; must return a small int
     MP_UNARY_OP_ABS, // __abs__
-    MP_UNARY_OP_INT, // __int__
+    MP_UNARY_OP_INT_MAYBE, // __int__; must return MP_OBJ_NULL, or an object satisfying mp_obj_is_int()
     MP_UNARY_OP_FLOAT_MAYBE, // __float__
     MP_UNARY_OP_COMPLEX_MAYBE, // __complex__
     MP_UNARY_OP_SIZEOF, // for sys.getsizeof()
