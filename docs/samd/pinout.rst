@@ -83,7 +83,9 @@ Examples for Adafruit ItsyBitsy M0 Express:
 - uart 4 at pins D2/D5
 - uart 5 at pins SCL/SDA
 
-or other combinations.
+or other combinations. For hardware flow control, tx must be at pad 0, rx at pad 1,
+rts at pad 2 and cts at pad 3. This applies for instance to
+UART 3 or UART 1 at the pins D13/D11/D10/D12 for rx/tx/rts/cts.
 
 SAMD21 I2C assignments
 ``````````````````````
@@ -214,7 +216,9 @@ Examples for Adafruit ItsyBitsy 4 Express:
 - uart 4 at pins SDA/SCL
 - uart 5 at pins D12/D13
 
-or other combinations.
+or other combinations. For hardware flow control, tx must be at pad 0, rx at pad 1,
+rts at pad 2 and cts at pad 3. This applies for instance to
+UART 5 at the pins D12/D13/D10/D11 for rx/tx/rts/cts.
 
 SAMD51 I2C assignments
 ``````````````````````

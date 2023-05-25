@@ -25,8 +25,11 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_PWM
+
+#include <string.h>
 #include "py/mphal.h"
 #include "modmachine.h"
 #include "clock_config.h"
@@ -393,3 +396,5 @@ STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns
     duty_type_flags[self->device] &= ~(1 << self->channel);
     mp_machine_pwm_start(self);
 }
+
+#endif

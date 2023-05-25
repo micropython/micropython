@@ -92,6 +92,7 @@ The full list of supported commands are:
 
   Options are:
 
+  - ``--escape-non-printable``, to print non-printable bytes/characters as their hex code
   - ``--capture <file>``, to capture output of the REPL session to the given
     file
   - ``--inject-code <string>``, to specify characters to inject at the REPL when

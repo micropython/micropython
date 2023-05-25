@@ -77,7 +77,7 @@ __DFU_INTERFACE = 0
 
 # Python 3 deprecated getargspec in favour of getfullargspec, but
 # Python 2 doesn't have the latter, so detect which one to use
-getargspec = getattr(inspect, "getfullargspec", inspect.getargspec)
+getargspec = getattr(inspect, "getfullargspec", getattr(inspect, "getargspec", None))
 
 if "length" in getargspec(usb.util.get_string).args:
     # PyUSB 1.0.0.b1 has the length argument

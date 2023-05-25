@@ -171,7 +171,9 @@ void esp_initialise_wifi() {
     }
 }
 
-STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t network_wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+
     esp_initialise_wifi();
 
     int idx = (n_args > 0) ? mp_obj_get_int(args[0]) : WIFI_IF_STA;
@@ -183,7 +185,6 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid WLAN interface identifier"));
     }
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_get_wlan_obj, 0, 1, get_wlan);
 
 STATIC mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -646,13 +647,14 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    wlan_if_type,
+    esp_network_wlan_type,
     MP_QSTR_WLAN,
     MP_TYPE_FLAG_NONE,
+    make_new, network_wlan_make_new,
     locals_dict, &wlan_if_locals_dict
     );
 
-STATIC const wlan_if_obj_t wlan_sta_obj = {{&wlan_if_type}, WIFI_IF_STA};
-STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
+STATIC const wlan_if_obj_t wlan_sta_obj = {{&esp_network_wlan_type}, WIFI_IF_STA};
+STATIC const wlan_if_obj_t wlan_ap_obj = {{&esp_network_wlan_type}, WIFI_IF_AP};
 
 #endif // MICROPY_PY_NETWORK_WLAN

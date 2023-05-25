@@ -36,7 +36,14 @@ typedef struct _machine_wdt_obj_t {
     mp_obj_base_t base;
 } machine_wdt_obj_t;
 
-extern mp_int_t log2i(mp_int_t num);
+// Calculate the floor value of log2(n)
+mp_int_t log2i(mp_int_t num) {
+    mp_int_t res = 0;
+    for (; num > 1; num >>= 1) {
+        res += 1;
+    }
+    return res;
+}
 
 STATIC const machine_wdt_obj_t machine_wdt = {{&machine_wdt_type}};
 

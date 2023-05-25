@@ -143,7 +143,7 @@ class ManifestPackageMetadata:
 
         self.description = description
         self.version = version
-        self.license = version
+        self.license = license
         self.author = author
         self.pypi = pypi
         self.pypi_publish = pypi_publish

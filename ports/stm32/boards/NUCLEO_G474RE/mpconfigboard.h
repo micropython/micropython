@@ -5,7 +5,7 @@
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_ADC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1) // A4, A5
-#define MICROPY_HW_ENABLE_USB       (0) // A12 (dp), A11 (dm)
+#define MICROPY_HW_ENABLE_USB       (0) // can be enabled if USB cable connected to PA11/PA12 (D-/D+)
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (0) // QSPI extflash not mounted
 
@@ -84,7 +84,7 @@
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // USB config pin A12 (dp), A11 (dm) not mounted on Nucleo
-// #define MICROPY_HW_USB_FS              (1)
+#define MICROPY_HW_USB_FS              (1)
 // #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
 // #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
 

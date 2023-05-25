@@ -294,7 +294,7 @@ SRC_THIRDPARTY_C += $(addprefix $(BTREE_DIR)/,\
 CFLAGS_EXTMOD += -DMICROPY_PY_BTREE=1
 # we need to suppress certain warnings to get berkeley-db to compile cleanly
 # and we have separate BTREE_DEFS so the definitions don't interfere with other source code
-$(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter $(BTREE_DEFS)
+$(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter -Wno-deprecated-non-prototype -Wno-unknown-warning-option $(BTREE_DEFS)
 $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 

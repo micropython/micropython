@@ -27,7 +27,5 @@ extern const flash_cfg_t g_flash0_cfg;
 void NULL(flash_callback_args_t *p_args);
 #endif
 
-void hal_entry(void);
-
 FSP_FOOTER
 #endif /* HAL_DATA_H_ */

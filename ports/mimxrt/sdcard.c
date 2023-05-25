@@ -234,7 +234,7 @@ static bool sdcard_cmd_set_rel_add(mimxrt_sdcard_obj_t *card);
 static bool sdcard_cmd_send_csd(mimxrt_sdcard_obj_t *card, csd_t *csd);
 static bool sdcard_cmd_select_card(mimxrt_sdcard_obj_t *sdcard);
 static bool sdcard_cmd_set_blocklen(mimxrt_sdcard_obj_t *sdcard);
-static bool sdcard_cmd_set_bus_width(mimxrt_sdcard_obj_t *sdcard, uint8_t bus_width);
+static bool sdcard_cmd_set_bus_width(mimxrt_sdcard_obj_t *sdcard, usdhc_data_bus_width_t bus_width);
 
 void sdcard_card_inserted_callback(USDHC_Type *base, void *userData) {
     #if defined MICROPY_USDHC1 && USDHC1_AVAIL

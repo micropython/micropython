@@ -319,6 +319,10 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .rx_flow_ctrl_thresh = 0
     };
+    #if SOC_UART_SUPPORT_XTAL_CLK
+    // works independently of APB frequency
+    uartcfg.source_clk = UART_SCLK_XTAL; // ESP32C3, ESP32S3
+    #endif
 
     // create instance
     machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);

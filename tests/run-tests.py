@@ -261,29 +261,31 @@ def run_micropython(pyb, args, test_file, is_special=False):
             # a standard test run on PC
 
             # create system command
-            cmdlist = [MICROPYTHON, "-X", "emit=" + args.emit]
+            cmdlist = [os.path.abspath(MICROPYTHON), "-X", "emit=" + args.emit]
             if args.heapsize is not None:
                 cmdlist.extend(["-X", "heapsize=" + args.heapsize])
             if sys.platform == "darwin":
                 cmdlist.extend(["-X", "realtime"])
 
+            cwd = os.path.dirname(test_file)
+
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
-                mpy_modname = tempfile.mktemp(dir="")
-                mpy_filename = mpy_modname + ".mpy"
+                mpy_filename = tempfile.mktemp(dir=cwd, suffix=".mpy")
                 subprocess.check_output(
                     [MPYCROSS]
                     + args.mpy_cross_flags.split()
                     + ["-o", mpy_filename, "-X", "emit=" + args.emit, test_file]
                 )
+                mpy_modname = os.path.splitext(os.path.basename(mpy_filename))[0]
                 cmdlist.extend(["-m", mpy_modname])
             else:
-                cmdlist.append(test_file)
+                cmdlist.append(os.path.abspath(test_file))
 
             # run the actual test
             try:
                 output_mupy = subprocess.check_output(
-                    cmdlist, stderr=subprocess.STDOUT, timeout=TEST_TIMEOUT
+                    cmdlist, stderr=subprocess.STDOUT, timeout=TEST_TIMEOUT, cwd=cwd
                 )
             except subprocess.CalledProcessError as er:
                 had_crash = True
@@ -707,7 +709,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         else:
             # run CPython to work out expected output
             try:
-                output_expected = subprocess.check_output(CPYTHON3_CMD + [test_file])
+                output_expected = subprocess.check_output(
+                    CPYTHON3_CMD + [os.path.abspath(test_file)], cwd=os.path.dirname(test_file)
+                )
                 if args.write_exp:
                     with open(test_file_expected, "wb") as f:
                         f.write(output_expected)

@@ -24,7 +24,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_SPI
+
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
 #include "modmachine.h"
@@ -57,7 +61,6 @@ typedef struct _machine_spi_obj_t {
 } machine_spi_obj_t;
 
 extern Sercom *sercom_instance[];
-MP_REGISTER_ROOT_POINTER(void *sercom_table[SERCOM_INST_NUM]);
 
 void common_spi_irq_handler(int spi_id) {
     // handle Sercom IRQ RXC
@@ -270,16 +273,6 @@ STATIC void machine_sercom_deinit(mp_obj_base_t *self_in) {
     MP_STATE_PORT(sercom_table[self->id]) = NULL;
 }
 
-void sercom_deinit_all(void) {
-    for (int i = 0; i < SERCOM_INST_NUM; i++) {
-        Sercom *spi = sercom_instance[i];
-        spi->SPI.INTENCLR.reg = 0xff;
-        sercom_register_irq(i, NULL);
-        sercom_enable(spi, 0);
-        MP_STATE_PORT(sercom_table[i]) = NULL;
-    }
-}
-
 STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
 
@@ -341,3 +334,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &machine_spi_p,
     locals_dict, &mp_machine_spi_locals_dict
     );
+
+#endif

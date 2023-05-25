@@ -46,6 +46,10 @@ void uart_stdout_init(void) {
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .rx_flow_ctrl_thresh = 0
     };
+    #if SOC_UART_SUPPORT_XTAL_CLK
+    // works independently of APB frequency
+    uartcfg.source_clk = UART_SCLK_XTAL; // ESP32C3, ESP32S3
+    #endif
     uart_param_config(MICROPY_HW_UART_REPL, &uartcfg);
 
     const uint32_t rxbuf = 129; // IDF requires > 128 min

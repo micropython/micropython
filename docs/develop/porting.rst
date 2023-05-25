@@ -38,6 +38,7 @@ The basic MicroPython firmware is implemented in the main port file, e.g ``main.
 
 .. code-block:: c
 
+   #include "py/builtin.h"
    #include "py/compile.h"
    #include "py/gc.h"
    #include "py/mperrno.h"
@@ -109,6 +110,9 @@ We also need a Makefile at this point for the port:
        shared/runtime/gchelper_generic.c \
        shared/runtime/pyexec.c \
        shared/runtime/stdout_helpers.c \
+
+   # Define source files containung qstrs.
+   SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c
 
    # Define the required object files.
    OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))

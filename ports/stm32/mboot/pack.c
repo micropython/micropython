@@ -59,7 +59,7 @@ static uint8_t uncompressed_buf[MBOOT_PACK_GZIP_BUFFER_SIZE] __attribute__((alig
 // Buffer to hold the start of the firmware, which is only written once the
 // entire firmware is validated.  This is 8 bytes due to STM32WB MCUs requiring
 // that a double-word write to flash can only be done once (due to ECC).
-static uint8_t firmware_head[8];
+static uint8_t firmware_head[8] __attribute__((aligned(8)));
 
 // Flag to indicate that firmware_head contains valid data.
 static bool firmware_head_valid;

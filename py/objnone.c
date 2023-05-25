@@ -47,8 +47,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_NoneType,
     MP_QSTR_NoneType,
     MP_TYPE_FLAG_NONE,
-    print, none_print,
-    unary_op, mp_generic_unary_op
+    print, none_print
     );
 
 #if !MICROPY_OBJ_IMMEDIATE_OBJS
