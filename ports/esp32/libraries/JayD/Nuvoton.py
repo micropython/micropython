@@ -25,6 +25,7 @@ class Nuvoton:
 		self._on_encoder_left = [None] * self.NUM_ENC
 		self._on_encoder_right = [None] * self.NUM_ENC
 		self._on_slider = [None] * self.NUM_POT
+		self._sliderVals = [0] * self.NUM_POT
 
 	def begin(self):
 		self.reset()
@@ -133,6 +134,7 @@ class Nuvoton:
 						self._on_encoder_right[evt.id]()
 
 			elif evt.device == self.Device.Slider and evt.id < self.NUM_POT:
+				self._sliderVals[evt.id] = evt.val
 				if self._on_slider[evt.id] is not None:
 					self._on_slider[evt.id](evt.val)
 
@@ -165,3 +167,6 @@ class Nuvoton:
 		if i >= self.NUM_POT:
 			return
 		self._on_slider[i] = callback
+
+	def get_slider_value(self, i: int) -> int:
+		return self._sliderVals[i]
