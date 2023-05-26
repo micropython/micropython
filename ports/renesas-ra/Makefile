@@ -342,6 +342,14 @@ SRC_C += $(addprefix $(BOARD_DIR)/ra_gen/,\
 	vector_data.c \
 	)
 
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SRC_C += mpbthciport.c
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+SRC_C += mpnimbleport.c
+endif
+
 SRC_O += \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE)
