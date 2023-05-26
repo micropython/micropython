@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy_c3.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "USB-C",
+        "BLE",
+        "WiFi"
+    ],
+    "images": [
+        "luatos_c3_core.jpg"
+    ],
+    "mcu": "esp32c3",
+    "product": "C3 CORE",
+    "thumbnail": "",
+    "url": "https://wiki.luatos.com/chips/esp32c3/board.html",
+    "vendor": "LuatOS"
+}
