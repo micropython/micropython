@@ -6,10 +6,10 @@ from micropython import const
 
 class SolderPro(Input):
     class Buttons:
-        P1_3 = const(11)
-        P1_2 = const(10)
-        P1_1 = const(9)
-        P1_0 = const(8)
+        P1_3 = const(8)
+        P1_2 = const(9)
+        P1_1 = const(10)
+        P1_0 = const(11)
 
     class LEDs:
         P0_0 = 0
