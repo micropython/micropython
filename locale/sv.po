@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-05-19 16:13+0000\n"
+"PO-Revision-Date: 2023-05-26 12:50+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -2522,7 +2522,7 @@ msgstr "Annoteringen måste vara en identifierare"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "arange: cannot compute length"
-msgstr ""
+msgstr "arange: kan inte beräkna längd"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2698,7 +2698,7 @@ msgstr "kan bara ha upp till 4 parametrar att Xtensa assembly"
 
 #: extmod/ulab/code/ndarray.c
 msgid "can only specify one unknown dimension"
-msgstr ""
+msgstr "kan enbart ange en okänd dimension"
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
@@ -2855,7 +2855,7 @@ msgstr "kan inte importera namn %q"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot reshape array"
-msgstr ""
+msgstr "kan inte omforma matris"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -4029,7 +4029,7 @@ msgstr "set stöds inte"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be integer or tuple of integers"
-msgstr ""
+msgstr "shape måste vara ett heltal eller en tupel av heltal"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
