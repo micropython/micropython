@@ -63,6 +63,10 @@
 #include "rtc.h"
 #include "storage.h"
 #include "tusb.h"
+#if MICROPY_PY_BLUETOOTH
+#include "mpbthciport.h"
+#include "extmod/modbluetooth.h"
+#endif
 
 #define RA_EARLY_PRINT  1       /* for enabling mp_print in boardctrl. */
 
@@ -264,6 +268,10 @@ int main(void) {
     tusb_init();
     #endif
 
+    #if MICROPY_PY_BLUETOOTH
+    mp_bluetooth_hci_init();
+    #endif
+
     MICROPY_BOARD_BEFORE_SOFT_RESET_LOOP(&state);
 
 soft_reset:
@@ -382,6 +390,9 @@ soft_reset_exit:
         mp_printf(&mp_plat_print, "MPY: soft reboot\n");
     }
 
+    #if MICROPY_PY_BLUETOOTH
+    mp_bluetooth_deinit();
+    #endif
     soft_timer_deinit();
     timer_deinit();
     uart_deinit_all();

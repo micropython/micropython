@@ -100,6 +100,7 @@
 #endif
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)
+#define MICROPY_SCHEDULER_STATIC_NODES (1)
 #define MICROPY_VFS                 (1)
 
 // control over Python builtins
@@ -266,6 +267,14 @@ static inline mp_uint_t disable_irq(void) {
     } while (0);
 
 #define MICROPY_THREAD_YIELD()
+#endif
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#endif
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
 #endif
 
 // We need an implementation of the log2 function which is not a macro
