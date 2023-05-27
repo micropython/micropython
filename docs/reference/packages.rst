@@ -53,7 +53,7 @@ can be downloaded by specifying the path to their ``package.json``.
 If no json file is specified, then "package.json" is implicitly added::
 
     >>> mip.install("http://example.com/x/")
-    >>> mip.install("github:org/repo")
+    >>> mip.install("github:org/repo")  # Uses default branch of that repo
     >>> mip.install("github:org/repo", version="branch-or-tag")
 
 
@@ -108,9 +108,9 @@ https://github.com/micropython/micropython-lib for more information.
 
 To write a "self-hosted" package that can be downloaded by ``mip`` or
 ``mpremote``, you need a static webserver (or GitHub) to host either a
-single .py file, or a package.json file alongside your .py files.
+single .py file, or a ``package.json`` file alongside your .py files.
 
-A typical package.json for an example ``mlx90640`` library looks like::
+A typical ``package.json`` for an example ``mlx90640`` library looks like::
 
     {
       "urls": [
@@ -119,7 +119,8 @@ A typical package.json for an example ``mlx90640`` library looks like::
       ],
       "deps": [
         ["collections-defaultdict", "latest"],
-        ["os-path", "latest"]
+        ["os-path", "latest"],
+        ["github:org/micropython-additions", "main"]
       ],
       "version": "0.2"
     }
@@ -127,7 +128,9 @@ A typical package.json for an example ``mlx90640`` library looks like::
 This includes two files, hosted at a GitHub repo named
 ``org/micropython-mlx90640``, which install into the ``mlx90640`` directory on
 the device. It depends on ``collections-defaultdict`` and ``os-path`` which will
-be installed automatically.
+be installed automatically from the :term:`micropython-lib`. The third
+dependency installs the content as defined by the ``package.json`` file of the
+``main`` branch of the GitHub repo ``org/micropython-additions``.
 
 Freezing packages
 -----------------
