@@ -27,6 +27,7 @@
 
 #include "shared-module/synthio/__init__.h"
 #include "shared-bindings/synthio/__init__.h"
+#include "shared-module/synthio/Biquad.h"
 #include "shared-module/synthio/Note.h"
 #include "py/runtime.h"
 #include <math.h>
@@ -309,37 +310,15 @@ static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
     }
 }
 
-STATIC void run_fir(synthio_synth_t *synth, int32_t *out_buffer32, uint16_t dur) {
-    int16_t *coeff = (int16_t *)synth->filter_bufinfo.buf;
-    size_t fir_len = synth->filter_bufinfo.len;
-    int32_t *in_buf = synth->filter_buffer;
-
-
-    int synth_chan = synth->channel_count;
-    // FIR and copy values to output buffer
-    for (int16_t i = 0; i < dur * synth_chan; i++) {
-        int32_t acc = 0;
-        for (size_t j = 0; j < fir_len; j++) {
-            // shift 5 here is good for up to 32 filtered voices, else might wrap
-            acc = acc + (in_buf[j * synth_chan] * (coeff[j] >> 5));
-        }
-        *out_buffer32++ = acc >> 10;
-        in_buf++;
-    }
-
-    // Move values down so that they get filtered next time
-    memmove(synth->filter_buffer, &synth->filter_buffer[dur * synth_chan], fir_len * sizeof(int32_t) * synth_chan);
-}
-
-STATIC bool synthio_synth_get_note_filtered(mp_obj_t note_obj) {
+STATIC mp_obj_t synthio_synth_get_note_filter(mp_obj_t note_obj) {
     if (note_obj == mp_const_none) {
-        return false;
+        return mp_const_none;
     }
     if (!mp_obj_is_small_int(note_obj)) {
         synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
-        return note->filter;
+        return note->filter_obj;
     }
-    return true;
+    return mp_const_none;
 }
 
 void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t *buffer_length, uint8_t channel) {
@@ -360,30 +339,24 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
     synth->span.dur -= dur;
 
     int32_t out_buffer32[dur * synth->channel_count];
-
-    if (synth->filter_buffer) {
-        int32_t *filter_start = &synth->filter_buffer[synth->filter_bufinfo.len * synth->channel_count];
-        memset(filter_start, 0, dur * synth->channel_count * sizeof(int32_t));
-
-        for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
-            mp_obj_t note_obj = synth->span.note_obj[chan];
-            if (!synthio_synth_get_note_filtered(note_obj)) {
-                continue;
-            }
-            synth_note_into_buffer(synth, chan, filter_start, dur);
-        }
-
-        run_fir(synth, out_buffer32, dur);
-    } else {
-        memset(out_buffer32, 0, sizeof(out_buffer32));
-    }
+    memset(out_buffer32, 0, sizeof(out_buffer32));
 
     for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
         mp_obj_t note_obj = synth->span.note_obj[chan];
-        if (synth->filter_buffer && synthio_synth_get_note_filtered(note_obj)) {
-            continue;
+        mp_obj_t filter_obj = synthio_synth_get_note_filter(note_obj);
+        if (filter_obj == mp_const_none) {
+            synth_note_into_buffer(synth, chan, out_buffer32, dur);
+        } else {
+            synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
+            int32_t filter_buffer32[dur * synth->channel_count];
+            memset(filter_buffer32, 0, sizeof(filter_buffer32));
+
+            synth_note_into_buffer(synth, chan, filter_buffer32, dur);
+            int synth_chan = synth->channel_count;
+            for (int i = 0; i < synth_chan; i++) {
+                synthio_biquad_filter_samples(&note->filter_state, &out_buffer32[i], &filter_buffer32[i], dur, i);
+            }
         }
-        synth_note_into_buffer(synth, chan, out_buffer32, dur);
     }
 
     int16_t *out_buffer16 = (int16_t *)(void *)synth->buffers[synth->buffer_index];
