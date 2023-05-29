@@ -293,13 +293,13 @@ MP_PROPERTY_GETTER(synthio_synthesizer_blocks_obj,
 //|     """Maximum polyphony of the synthesizer (read-only class property)"""
 //|
 
-//|     def low_pass_filter(cls, cutoff_frequency, q_factor: float = 1 / math.sqrt(2)) -> Biquad:
+//|     def low_pass_filter(cls, frequency: float, q_factor: float = 0.7071067811865475) -> Biquad:
 //|         """Construct a low-pass filter with the given parameters.
 //|
-//|         `frequency`, called f0 in the cookbook, is the corner frequency in Hz
+//|         ``frequency``, called f0 in the cookbook, is the corner frequency in Hz
 //|         of the filter.
 //|
-//|         `q_factor`, called `Q` in the cookbook.  Controls how peaked the response will be at the cutoff frequency. A large value makes the response more peaked.
+//|         ``q_factor``, called ``Q`` in the cookbook.  Controls how peaked the response will be at the cutoff frequency. A large value makes the response more peaked.
 //|         """
 
 enum passfilter_arg_e { ARG_f0, ARG_Q };
@@ -334,13 +334,15 @@ STATIC mp_obj_t synthio_synthesizer_lpf(size_t n_pos, const mp_obj_t *pos_args, 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_lpf_fun_obj, 1, synthio_synthesizer_lpf);
 
-//|     def high_pass_filter(cls, cutoff_frequency, q_factor: float = 1 / math.sqrt(2)) -> Biquad:
+//|     def high_pass_filter(
+//|         cls, frequency: float, q_factor: float = 0.7071067811865475
+//|     ) -> Biquad:
 //|         """Construct a high-pass filter with the given parameters.
 //|
-//|         `frequency`, called f0 in the cookbook, is the corner frequency in Hz
+//|         ``frequency``, called f0 in the cookbook, is the corner frequency in Hz
 //|         of the filter.
 //|
-//|         `q_factor`, called `Q` in the cookbook.  Controls how peaked the response will be at the cutoff frequency. A large value makes the response more peaked.
+//|         ``q_factor``, called ``Q`` in the cookbook.  Controls how peaked the response will be at the cutoff frequency. A large value makes the response more peaked.
 //|         """
 
 STATIC mp_obj_t synthio_synthesizer_hpf(size_t n_pos, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -362,13 +364,15 @@ STATIC mp_obj_t synthio_synthesizer_hpf(size_t n_pos, const mp_obj_t *pos_args, 
 
 }
 
-//|     def band_pass_filter(cls, frequency, q_factor: float = 1 / math.sqrt(2)) -> Biquad:
+//|     def band_pass_filter(
+//|         cls, frequency: float, q_factor: float = 0.7071067811865475
+//|     ) -> Biquad:
 //|         """Construct a band-pass filter with the given parameters.
 //|
-//|         `frequency`, called f0 in the cookbook, is the center frequency in Hz
+//|         ``frequency``, called f0 in the cookbook, is the center frequency in Hz
 //|         of the filter.
 //|
-//|         `q_factor`, called `Q` in the cookbook.  Controls how peaked the response will be at the cutoff frequency. A large value makes the response more peaked.
+//|         ``q_factor``, called ``Q`` in the cookbook.  Controls how peaked the response will be at the cutoff frequency. A large value makes the response more peaked.
 //|
 //|         The coefficients are scaled such that the filter has a 0dB peak gain.
 //|         """
