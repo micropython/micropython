@@ -352,10 +352,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
             memset(filter_buffer32, 0, sizeof(filter_buffer32));
 
             synth_note_into_buffer(synth, chan, filter_buffer32, dur);
-            int synth_chan = synth->channel_count;
-            for (int i = 0; i < synth_chan; i++) {
-                synthio_biquad_filter_samples(&note->filter_state, &out_buffer32[i], &filter_buffer32[i], dur, i);
-            }
+            synthio_biquad_filter_samples(&note->filter_state, out_buffer32, filter_buffer32, dur, synth->channel_count);
         }
     }
 
