@@ -51,6 +51,21 @@ def synthesize(synth):
             synth.release_all()
             yield 36
 
+    for waveform in (sine, None, noise):
+        n = synthio.Note(
+            frequency=555,
+            envelope=envelope,
+            waveform=waveform,
+        )
+        synth.press(n)
+        i = 220
+        while i < 1760:
+            n.filter = synth.band_pass_filter(i)
+            i *= 1.00579
+            yield 1
+        synth.release_all()
+        yield 6
+
 
 with wave.open("biquad.wav", "w") as f:
     f.setnchannels(1)
