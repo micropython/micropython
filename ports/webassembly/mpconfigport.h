@@ -25,17 +25,18 @@
  * THE SOFTWARE.
  */
 
+// Options to control how MicroPython is built for this port, overriding
+// defaults in py/mpconfig.h.
+
 #include <stdint.h>
 #include <stdlib.h> // for malloc, for MICROPY_GC_SPLIT_HEAP_AUTO
 
-// options to control how MicroPython is built
+// Variant-specific definitions.
+#include "mpconfigvariant.h"
 
+#ifndef MICROPY_CONFIG_ROM_LEVEL
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
-
-// You can disable the built-in MicroPython compiler by setting the following
-// config option to 0.  If you do this then you won't get a REPL prompt, but you
-// will still be able to execute pre-compiled scripts, compiled with mpy-cross.
-#define MICROPY_ENABLE_COMPILER     (1)
+#endif
 
 #define MICROPY_ALLOC_PATH_MAX      (256)
 #define MICROPY_READER_VFS          (MICROPY_VFS)
@@ -69,6 +70,13 @@
         mp_handle_pending(true); \
     } while (0);
 
+// Whether the VM will periodically call mp_js_hook(), which checks for
+// interrupt characters on stdin (or equivalent input).
+#ifndef MICROPY_VARIANT_ENABLE_JS_HOOK
+#define MICROPY_VARIANT_ENABLE_JS_HOOK (0)
+#endif
+
+#if MICROPY_VARIANT_ENABLE_JS_HOOK
 #define MICROPY_VM_HOOK_COUNT (10)
 #define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
 #define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \
@@ -78,6 +86,7 @@
 }
 #define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
 #define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
+#endif
 
 // type definitions for the specific machine
 
