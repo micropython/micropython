@@ -3,12 +3,14 @@
 */
 
 /* Specify the memory areas */
+
+
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 2048K   /* 8K sector size */
-    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 32K     /* bootloader */
-    FLASH_FS (r)    : ORIGIN = 0x08008000, LENGTH = 96K     /* minimal file system */
-    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 1920K   /* code */
+    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 96K     /* bootloader */
+    FLASH_FS (r)    : ORIGIN = 0x08018000, LENGTH = 96K     /* minimal file system */
+    FLASH_TEXT (rx) : ORIGIN = 0x08030000, LENGTH = 1856K   /* code */
     DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K    /* Used for storage cache */
     RAM (xrw)       : ORIGIN = 0x24000000, LENGTH = 1024K   /* AXI SRAM */
     RAM_D2 (xrw)    : ORIGIN = 0x30000000, LENGTH = 288K	
@@ -28,9 +30,6 @@ _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
-
-/* not truncated */
-
 
 /* Location of filesystem RAM cache */
 _micropy_hw_internal_flash_storage_ram_cache_start = ORIGIN(DTCM);
