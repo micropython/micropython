@@ -306,7 +306,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "command": "connect list",
         "help": "list available serial ports",
     },
-    # Filesystem shortcuts.
+    # Filesystem shortcuts (use `cp` instead of `fs cp`).
     "cat": "fs cat",
     "ls": "fs ls",
     "cp": "fs cp",
@@ -314,6 +314,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
     "touch": "fs touch",
     "mkdir": "fs mkdir",
     "rmdir": "fs rmdir",
+    # Disk used/free.
     "df": [
         "exec",
         "import uos\nprint('mount \\tsize \\tused \\tavail \\tuse%')\nfor _m in [''] + uos.listdir('/'):\n _s = uos.stat('/' + _m)\n if not _s[0] & 1 << 14: continue\n _s = uos.statvfs(_m)\n if _s[0]:\n  _size = _s[0] * _s[2]; _free = _s[0] * _s[3]; print(_m, _size, _size - _free, _free, int(100 * (_size - _free) / _size), sep='\\t')",
