@@ -18,7 +18,7 @@ MicroPython device over a serial connection.  Commands supported are:
 """
 
 import argparse
-import os, sys
+import os, sys, time
 from collections.abc import Mapping
 from textwrap import dedent
 
@@ -40,6 +40,10 @@ from .mip import do_mip
 from .repl import do_repl
 
 _PROG = "mpremote"
+
+
+def do_sleep(state, args):
+    time.sleep(args.ms[0])
 
 
 def do_help(state, _args=None):
@@ -95,6 +99,12 @@ def argparse_connect():
     cmd_parser.add_argument(
         "device", nargs=1, help="Either list, auto, id:x, port:x, or any valid device name/path"
     )
+    return cmd_parser
+
+
+def argparse_sleep():
+    cmd_parser = argparse.ArgumentParser(description="sleep before executing next command")
+    cmd_parser.add_argument("ms", nargs=1, type=float, help="milliseconds to sleep for")
     return cmd_parser
 
 
@@ -212,6 +222,10 @@ _COMMANDS = {
         do_connect,
         argparse_connect,
     ),
+    "sleep": (
+        do_sleep,
+        argparse_sleep,
+    ),
     "disconnect": (
         do_disconnect,
         argparse_none("disconnect current device"),
@@ -294,19 +308,19 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "import uos\nprint('mount \\tsize \\tused \\tavail \\tuse%')\nfor _m in [''] + uos.listdir('/'):\n _s = uos.stat('/' + _m)\n if not _s[0] & 1 << 14: continue\n _s = uos.statvfs(_m)\n if _s[0]:\n  _size = _s[0] * _s[2]; _free = _s[0] * _s[3]; print(_m, _size, _size - _free, _free, int(100 * (_size - _free) / _size), sep='\\t')",
     ],
     # Other shortcuts.
-    "reset t_ms=100": {
+    "reset": {
         "command": [
             "exec",
             "--no-follow",
-            "import utime, machine; utime.sleep_ms(t_ms); machine.reset()",
+            "import time, machine; time.sleep_ms(100); machine.reset()",
         ],
-        "help": "reset the device after delay",
+        "help": "hard reset the device",
     },
-    "bootloader t_ms=100": {
+    "bootloader": {
         "command": [
             "exec",
             "--no-follow",
-            "import utime, machine; utime.sleep_ms(t_ms); machine.bootloader()",
+            "import time, machine; time.sleep_ms(100); machine.bootloader()",
         ],
         "help": "make the device enter its bootloader",
     },
