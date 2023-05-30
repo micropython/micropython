@@ -94,7 +94,7 @@ mp_obj_t common_hal_synthio_new_bpf(mp_float_t w0, mp_float_t Q) {
     return namedtuple_make_new((const mp_obj_type_t *)&synthio_biquad_type_obj, MP_ARRAY_SIZE(out_args), 0, out_args);
 }
 
-#define BIQUAD_SHIFT (19)
+#define BIQUAD_SHIFT (15)
 STATIC int32_t biquad_scale_arg_obj(mp_obj_t arg) {
     return (int32_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(ldexp)(mp_obj_get_float(arg), BIQUAD_SHIFT));
 }
