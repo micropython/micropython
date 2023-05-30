@@ -148,6 +148,7 @@ void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate) {
 
 void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate) {
     synthio_note_recalculate(self, sample_rate);
+    synthio_biquad_filter_reset(&self->filter_state);
 }
 
 // Perform a pitch bend operation

@@ -389,7 +389,6 @@ bool synthio_synth_deinited(synthio_synth_t *synth) {
 }
 
 void synthio_synth_deinit(synthio_synth_t *synth) {
-    synth->filter_buffer = NULL;
     synth->buffers[0] = NULL;
     synth->buffers[1] = NULL;
 }
@@ -403,17 +402,12 @@ mp_obj_t synthio_synth_envelope_get(synthio_synth_t *synth) {
     return synth->envelope_obj;
 }
 
-void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, int channel_count, mp_obj_t waveform_obj, mp_obj_t filter_obj, mp_obj_t envelope_obj) {
+void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, int channel_count, mp_obj_t waveform_obj, mp_obj_t envelope_obj) {
     synthio_synth_parse_waveform(&synth->waveform_bufinfo, waveform_obj);
-    synthio_synth_parse_filter(&synth->filter_bufinfo, filter_obj);
     mp_arg_validate_int_range(channel_count, 1, 2, MP_QSTR_channel_count);
     synth->buffer_length = SYNTHIO_MAX_DUR * SYNTHIO_BYTES_PER_SAMPLE * channel_count;
     synth->buffers[0] = m_malloc(synth->buffer_length, false);
     synth->buffers[1] = m_malloc(synth->buffer_length, false);
-    if (synth->filter_bufinfo.len) {
-        synth->filter_buffer_length = (synth->filter_bufinfo.len + SYNTHIO_MAX_DUR) * channel_count * sizeof(int32_t);
-        synth->filter_buffer = m_malloc(synth->filter_buffer_length, false);
-    }
     synth->channel_count = channel_count;
     synth->other_channel = -1;
     synth->waveform_obj = waveform_obj;
@@ -451,11 +445,6 @@ STATIC void parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what, mp
 void synthio_synth_parse_waveform(mp_buffer_info_t *bufinfo_waveform, mp_obj_t waveform_obj) {
     *bufinfo_waveform = ((mp_buffer_info_t) { .buf = (void *)square_wave, .len = 2 });
     parse_common(bufinfo_waveform, waveform_obj, MP_QSTR_waveform, 16384);
-}
-
-void synthio_synth_parse_filter(mp_buffer_info_t *bufinfo_filter, mp_obj_t filter_obj) {
-    *bufinfo_filter = ((mp_buffer_info_t) { .buf = NULL, .len = 0 });
-    parse_common(bufinfo_filter, filter_obj, MP_QSTR_filter, 128);
 }
 
 STATIC int find_channel_with_note(synthio_synth_t *synth, mp_obj_t note) {

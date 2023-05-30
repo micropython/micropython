@@ -94,7 +94,7 @@ mp_obj_t common_hal_synthio_new_bpf(mp_float_t w0, mp_float_t Q) {
     return namedtuple_make_new((const mp_obj_type_t *)&synthio_biquad_type_obj, MP_ARRAY_SIZE(out_args), 0, out_args);
 }
 
-#define BIQUAD_SHIFT (16)
+#define BIQUAD_SHIFT (19)
 STATIC int32_t biquad_scale_arg_obj(mp_obj_t arg) {
     return (int32_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(ldexp)(mp_obj_get_float(arg), BIQUAD_SHIFT));
 }
@@ -108,6 +108,10 @@ void synthio_biquad_filter_assign(biquad_filter_state *st, mp_obj_t biquad_obj) 
         st->b1 = biquad_scale_arg_obj(biquad->items[3]);
         st->b2 = biquad_scale_arg_obj(biquad->items[4]);
     }
+}
+
+void synthio_biquad_filter_reset(biquad_filter_state *st) {
+    memset(&st->x, 0, 8 * sizeof(int16_t));
 }
 
 void synthio_biquad_filter_samples(biquad_filter_state *st, int32_t *out0, const int32_t *in0, size_t n0, size_t n_channels) {
@@ -134,7 +138,7 @@ void synthio_biquad_filter_samples(biquad_filter_state *st, int32_t *out0, const
             x0 = input;
             y1 = y0;
             y0 = output;
-            *out = output;
+            *out += output;
         }
         st->x[i][0] = x0;
         st->x[i][1] = x1;

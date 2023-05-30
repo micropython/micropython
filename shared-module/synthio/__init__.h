@@ -64,12 +64,11 @@ typedef struct synthio_synth {
     uint32_t sample_rate;
     uint32_t total_envelope;
     int16_t *buffers[2];
-    int32_t *filter_buffer;
     uint8_t channel_count;
-    uint16_t buffer_length, filter_buffer_length;
+    uint16_t buffer_length;
     uint16_t last_buffer_length;
     uint8_t other_channel, buffer_index, other_buffer_index;
-    mp_buffer_info_t waveform_bufinfo, filter_bufinfo;
+    mp_buffer_info_t waveform_bufinfo;
     synthio_envelope_definition_t global_envelope_definition;
     mp_obj_t waveform_obj, filter_obj, envelope_obj;
     synthio_midi_span_t span;
@@ -91,7 +90,7 @@ typedef struct {
 void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **buffer, uint32_t *buffer_length, uint8_t channel);
 void synthio_synth_deinit(synthio_synth_t *synth);
 bool synthio_synth_deinited(synthio_synth_t *synth);
-void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, int channel_count, mp_obj_t waveform_obj, mp_obj_t filter_obj, mp_obj_t envelope);
+void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, int channel_count, mp_obj_t waveform_obj, mp_obj_t envelope);
 void synthio_synth_get_buffer_structure(synthio_synth_t *synth, bool single_channel_output,
     bool *single_buffer, bool *samples_signed, uint32_t *max_buffer_length, uint8_t *spacing);
 void synthio_synth_reset_buffer(synthio_synth_t *synth, bool single_channel_output, uint8_t channel);

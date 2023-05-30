@@ -34,4 +34,5 @@ typedef struct {
 } biquad_filter_state;
 
 void synthio_biquad_filter_assign(biquad_filter_state *st, mp_obj_t biquad_obj);
+void synthio_biquad_filter_reset(biquad_filter_state *st);
 void synthio_biquad_filter_samples(biquad_filter_state *st, int32_t *out, const int32_t *in, size_t n_samples, size_t n_channels);
