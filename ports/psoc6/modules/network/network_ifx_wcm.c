@@ -75,6 +75,8 @@ mp_obj_t scan_list;
 #define NETWORK_WLAN_AP_GATEWAY_IP "192.168.0.1"
 #define NETWORK_WLAN_AP_NETMASK_IP  "255.255.255.0"
 
+#define NETWORK_WLAN_MAX_AP_STATIONS    8
+
 
 typedef struct
 {
@@ -706,9 +708,25 @@ STATIC mp_obj_t network_ifx_wcm_disconnect(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_disconnect_obj, network_ifx_wcm_disconnect);
 
 STATIC mp_obj_t network_ifx_wcm_isconnected(mp_obj_t self_in) {
-    // network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_bool(cy_wcm_is_connected_to_ap());
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
+    if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+        return mp_obj_new_bool(cy_wcm_is_connected_to_ap());
+    } else if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
+        /* True if at least one client is connected */
+        bool is_a_sta_connected = false;
+        cy_wcm_mac_t sta[1] = {0};
+        cy_wcm_mac_t not_conn_sta = {0, 0, 0, 0, 0, 0};
+        uint32_t ret = cy_wcm_get_associated_client_list(sta, 2);
+        wcm_assert_raise("network ap isconnected error (with code: %d)", ret);
+        if (memcmp(&sta[0], &not_conn_sta, CY_WCM_MAC_ADDR_LEN) != 0) {
+            is_a_sta_connected = true;
+        }
+
+        return mp_obj_new_bool(is_a_sta_connected);
+    }
+
+    return mp_const_none;
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_isconnected_obj, network_ifx_wcm_isconnected);
@@ -745,7 +763,7 @@ STATIC mp_obj_t network_ifx_wcm_ifconfig(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_ifconfig_obj, 1, 2, network_ifx_wcm_ifconfig);
 
 STATIC mp_obj_t network_ifx_wcm_status(size_t n_args, const mp_obj_t *args) {
-    // network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (n_args == 1) {
         // no arguments: return link status
@@ -755,8 +773,22 @@ STATIC mp_obj_t network_ifx_wcm_status(size_t n_args, const mp_obj_t *args) {
     // one argument: return status based on query parameter
     switch (mp_obj_str_get_qstr(args[1])) {
         case MP_QSTR_stations: {
-            // TODO: return list of connected stations to the AP
-            // check cyw43 implementation as reference
+            if (self->itf != CY_WCM_INTERFACE_TYPE_AP) {
+                mp_raise_ValueError(MP_ERROR_TEXT("AP required"));
+            }
+            // uint8_t max_sta = NETWORK_WLAN_MAX_AP_STATIONS;
+            cy_wcm_mac_t sta_list[NETWORK_WLAN_MAX_AP_STATIONS];
+            uint32_t ret = cy_wcm_get_associated_client_list(&sta_list[0], NETWORK_WLAN_MAX_AP_STATIONS);
+            wcm_assert_raise("network status error (with code: %d)", ret);
+
+            mp_obj_t list = mp_obj_new_list(NETWORK_WLAN_MAX_AP_STATIONS, NULL);
+            for (int i = 0; i < NETWORK_WLAN_MAX_AP_STATIONS; ++i) {
+                mp_obj_t tuple[1] = {
+                    mp_obj_new_bytes(sta_list[i], 6),
+                };
+                ((mp_obj_list_t *)MP_OBJ_TO_PTR(list))->items[i] = mp_obj_new_tuple(1, tuple);
+            }
+            return list;
         }
     }
 
@@ -818,11 +850,11 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
             }
 
             case MP_QSTR_mac: {
-                wl_bss_info_t bss_info;
-                uint32_t ret = whd_wifi_get_bss_info(whd_ifs[self->itf], &bss_info);
-                wcm_assert_raise("msg tbd", ret);
+                cy_wcm_mac_t mac;
+                uint32_t ret = cy_wcm_get_mac_addr(self->itf, &mac);
+                wcm_assert_raise("network config mac (code: %d)", ret);
 
-                return mp_obj_new_bytes(bss_info.BSSID.octet, 6);
+                return mp_obj_new_bytes(mac, 6);
             }
             case MP_QSTR_txpower: {
                 uint8_t buf[13];
