@@ -721,7 +721,7 @@ STATIC mp_obj_t network_ifx_wcm_isconnected(mp_obj_t self_in) {
         bool is_a_sta_connected = false;
         cy_wcm_mac_t sta[1] = {0};
         cy_wcm_mac_t not_conn_sta = {0, 0, 0, 0, 0, 0};
-        uint32_t ret = cy_wcm_get_associated_client_list(sta, 2);
+        uint32_t ret = cy_wcm_get_associated_client_list(sta, 1);
         wcm_assert_raise("network ap isconnected error (with code: %d)", ret);
         if (memcmp(&sta[0], &not_conn_sta, CY_WCM_MAC_ADDR_LEN) != 0) {
             is_a_sta_connected = true;
