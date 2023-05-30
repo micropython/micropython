@@ -406,6 +406,8 @@ def do_command_expansion(args):
         cmd = args.pop(0)
         exp_args, exp_sub, _ = _command_expansions[cmd]
         for exp_arg in exp_args:
+            if args and args[0] == "+":
+                break
             exp_arg_name = exp_arg[0]
             if args and "=" not in args[0]:
                 # Argument given without a name.
