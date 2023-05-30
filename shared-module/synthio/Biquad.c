@@ -132,7 +132,7 @@ void synthio_biquad_filter_samples(biquad_filter_state *st, int32_t *out0, const
 
         for (size_t n = n0; n; --n, in += n_channels, out += n_channels) {
             int32_t input = *in;
-            int32_t output = (b0 * input + b1 * x0 + b2 * x1 - a1 * y0 - a2 * y1) >> BIQUAD_SHIFT;
+            int32_t output = (b0 * input + b1 * x0 + b2 * x1 - a1 * y0 - a2 * y1 + (1 << (BIQUAD_SHIFT - 1))) >> BIQUAD_SHIFT;
 
             x1 = x0;
             x0 = input;
