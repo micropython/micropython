@@ -35,9 +35,10 @@ mergeInto(LibraryManager.library, {
         }
     },
 
-    mp_js_ticks_ms: function() {
-        return Date.now() - MP_JS_EPOCH;
-    },
+    // This string will be emitted directly into the output file by Emscripten.
+    mp_js_ticks_ms__postset: "var MP_JS_EPOCH = Date.now()",
+
+    mp_js_ticks_ms: () => Date.now() - MP_JS_EPOCH,
 
     mp_js_hook: function() {
         if (ENVIRONMENT_IS_NODE) {

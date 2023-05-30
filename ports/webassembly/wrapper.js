@@ -33,8 +33,6 @@ var mainProgram = function()
   mp_js_init_repl = Module.cwrap('mp_js_init_repl', 'null', ['null']);
   mp_js_process_char = Module.cwrap('mp_js_process_char', 'number', ['number'], {async: true});
 
-  MP_JS_EPOCH = Date.now();
-
   if (typeof window === 'undefined' && require.main === module) {
       var fs = require('fs');
       var heap_size = 128 * 1024;
