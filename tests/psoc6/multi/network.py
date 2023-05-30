@@ -1,4 +1,4 @@
-import network
+import network, time
 
 print("### Testing Network ###")
 
@@ -20,9 +20,19 @@ def instance0():
     while ap_if.active() == False:
         pass
 
+    # isConnected()
+    print(ap_if.isconnected() == False)
+
+    # print(ap_if.status('stations'))
+
     multitest.next()
 
-    # isConnected()
+    while ap_if.isconnected() == False:
+        pass
+
+    print(ap_if.isconnected() == True)
+
+    # print(ap_if.status('stations'))
 
     # status()
 
@@ -33,8 +43,6 @@ def instance0():
 
 # Station
 def instance1():
-    multitest.next()
-
     sta_if = network.WLAN(network.STA_IF)
 
     # active()
@@ -47,6 +55,9 @@ def instance1():
 
     print(test_ap_net is not None)
 
+    # isconnect()
+    print(sta_if.isconnected() == False)
+
     # connect()
     sta_if.connect("mpy-psoc6-wlan", "mpy_PSOC6_w3lc0me!")
 
@@ -54,6 +65,9 @@ def instance1():
     print(sta_if.active() == True)
 
     # isConnected()
+    print(sta_if.isconnected() == True)
+
+    multitest.next()
 
     # disconnect()
 
