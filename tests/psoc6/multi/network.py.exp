@@ -6,8 +6,10 @@ True
 True
 True
 True
+network STA required
 --- instance1 ---
 ### Testing Network ###
+True
 True
 True
 True

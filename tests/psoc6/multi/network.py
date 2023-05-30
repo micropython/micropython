@@ -23,14 +23,20 @@ def instance0():
     # isConnected()
     print(ap_if.isconnected() == False)
 
-    # print(ap_if.status('stations'))
-
     multitest.next()
 
     while ap_if.isconnected() == False:
         pass
 
     print(ap_if.isconnected() == True)
+
+    # try disconnect()
+    try:
+        ap_if.disconnect()  # not for AP
+    except ValueError as err:
+        print(err)
+
+    # multitest.next()
 
     # print(ap_if.status('stations'))
 
@@ -50,9 +56,7 @@ def instance1():
 
     # scan()
     wlan_nets = sta_if.scan()
-
     test_ap_net = [net for net in wlan_nets if net[0] == b"mpy-psoc6-wlan"]
-
     print(test_ap_net is not None)
 
     # isconnect()
@@ -70,6 +74,8 @@ def instance1():
     multitest.next()
 
     # disconnect()
+    sta_if.disconnect()
+    print(sta_if.active() == False)
 
     # status()
 
