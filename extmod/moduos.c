@@ -34,6 +34,10 @@
 
 #if MICROPY_VFS_FAT
 #include "extmod/vfs_fat.h"
+#if MICROPY_PY_UOS_SYNC
+#include "lib/oofatfs/ff.h"
+#include "lib/oofatfs/diskio.h"
+#endif
 #endif
 
 #if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
@@ -56,6 +60,21 @@
 #define MICROPY_BUILD_TYPE_PAREN " (" MICROPY_BUILD_TYPE ")"
 #else
 #define MICROPY_BUILD_TYPE_PAREN
+#endif
+
+#if MICROPY_PY_UOS_SYNC
+// sync()
+// Sync all filesystems.
+STATIC mp_obj_t mp_uos_sync(void) {
+    #if MICROPY_VFS_FAT
+    for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+        // this assumes that vfs->obj is fs_user_mount_t with block device functions
+        disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
+    }
+    #endif
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mp_uos_sync_obj, mp_uos_sync);
 #endif
 
 #if MICROPY_PY_UOS_UNAME
