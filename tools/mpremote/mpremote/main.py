@@ -34,6 +34,7 @@ from .commands import (
     do_eval,
     do_run,
     do_resume,
+    do_rtc,
     do_soft_reset,
 )
 from .mip import do_mip
@@ -172,6 +173,12 @@ def argparse_run():
     return cmd_parser
 
 
+def argparse_rtc():
+    cmd_parser = argparse.ArgumentParser(description="get (default) or set the device RTC")
+    _bool_flag(cmd_parser, "set", "s", False, "set the RTC to the current local time")
+    return cmd_parser
+
+
 def argparse_filesystem():
     cmd_parser = argparse.ArgumentParser(description="execute filesystem commands on the device")
     _bool_flag(cmd_parser, "recursive", "r", False, "recursive copy (for cp command only)")
@@ -266,6 +273,10 @@ _COMMANDS = {
         do_run,
         argparse_run,
     ),
+    "rtc": (
+        do_rtc,
+        argparse_rtc,
+    ),
     "fs": (
         do_filesystem,
         argparse_filesystem,
@@ -324,10 +335,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         ],
         "help": "make the device enter its bootloader",
     },
-    "setrtc": [
-        "exec",
-        "import machine; machine.RTC().datetime((2020, 1, 1, 0, 10, 0, 0, 0))",
-    ],
+    # Simple aliases.
     "--help": "help",
     "--version": "version",
 }

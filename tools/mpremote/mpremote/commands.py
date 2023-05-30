@@ -236,3 +236,23 @@ def do_resume(state, _args=None):
 
 def do_soft_reset(state, _args=None):
     state.ensure_raw_repl(soft_reset=True)
+
+
+def do_rtc(state, args):
+    if args.set:
+        import datetime
+
+        now = datetime.datetime.now()
+        timetuple = "({}, {}, {}, {}, {}, {}, {}, {})".format(
+            now.year,
+            now.month,
+            now.day,
+            now.weekday(),
+            now.hour,
+            now.minute,
+            now.second,
+            now.microsecond,
+        )
+        _do_execbuffer(state, "import machine; machine.RTC().datetime({})".format(timetuple), True)
+    else:
+        _do_execbuffer(state, "import machine; print(machine.RTC().datetime())", True)
