@@ -23,6 +23,5 @@ extern const flash_instance_t g_flash0;
 extern flash_hp_instance_ctrl_t g_flash0_ctrl;
 extern const flash_cfg_t g_flash0_cfg;
 
-void hal_entry(void);
 FSP_FOOTER
 #endif /* HAL_DATA_H_ */

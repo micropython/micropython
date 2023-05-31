@@ -1,0 +1,27 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Micro USB",
+        "ADC",
+        "DAC",
+        "RGB LED",
+        "QSPI Flash",
+        "WiFi",
+        "BLE",
+        "JLink"
+    ],
+    "images": [
+        "metro_m4_express_airlift.jpg"
+    ],
+    "mcu": "samd51",
+    "variants": {
+        "wlan": "WLAN without SSL support"
+    },
+    "product": "Metro M4 Express Airlift",
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/4000",
+    "vendor": "Adafruit"
+}

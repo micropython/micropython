@@ -25,9 +25,12 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_DAC
+
 #include <stdint.h>
 #include "py/obj.h"
-#include "py/runtime.h"
 #include "py/mphal.h"
 
 #include "sam.h"
@@ -183,3 +186,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, dac_print,
     locals_dict, &dac_locals_dict
     );
+
+#endif

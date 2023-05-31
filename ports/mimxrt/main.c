@@ -55,7 +55,6 @@ int main(void) {
     board_init();
     ticks_init();
     tusb_init();
-    led_init();
     pendsv_init();
 
     #if MICROPY_PY_LWIP
@@ -71,6 +70,10 @@ int main(void) {
     #endif
 
     for (;;) {
+        #if defined(MICROPY_HW_LED1)
+        led_init();
+        #endif
+
         mp_stack_set_top(&_estack);
         mp_stack_set_limit(&_estack - &_sstack - 1024);
 
