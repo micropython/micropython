@@ -172,24 +172,11 @@ int16_t mix_down_sample(int32_t sample) {
     return sample;
 }
 
-static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *out_buffer32, int16_t dur) {
+static bool synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *out_buffer32, int16_t dur, uint16_t loudness[2]) {
     mp_obj_t note_obj = synth->span.note_obj[chan];
-
-    if (note_obj == SYNTHIO_SILENCE) {
-        synth->accum[chan] = 0;
-        return;
-    }
-
-    if (synth->envelope_state[chan].level == 0) {
-        // note is truly finished, but we only just noticed
-        synth->span.note_obj[chan] = SYNTHIO_SILENCE;
-        return;
-    }
 
     int32_t sample_rate = synth->sample_rate;
 
-    // adjust loudness by envelope
-    uint16_t loudness[2] = {synth->envelope_state[chan].level,synth->envelope_state[chan].level};
 
     uint32_t dds_rate;
     const int16_t *waveform = synth->waveform_bufinfo.buf;
@@ -228,33 +215,37 @@ static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
         }
     }
 
-    int synth_chan = synth->channel_count;
-    if (ring_dds_rate) {
-        uint32_t lim = waveform_length << SYNTHIO_FREQUENCY_SHIFT;
-        uint32_t accum = synth->accum[chan];
+    uint32_t lim = waveform_length << SYNTHIO_FREQUENCY_SHIFT;
+    uint32_t accum = synth->accum[chan];
 
-        if (dds_rate > lim / 2) {
-            // beyond nyquist, can't play note
-            return;
-        }
+    if (dds_rate > lim / 2) {
+        // beyond nyquist, can't play note
+        return false;
+    }
 
-        // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
+    // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
+    if (accum > lim) {
+        accum %= lim;
+    }
+
+    // first, fill with waveform
+    for (uint16_t i = 0; i < dur; i++) {
+        accum += dds_rate;
+        // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
         if (accum > lim) {
-            accum %= lim;
+            accum -= lim;
         }
+        int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
+        out_buffer32[i] = waveform[idx];
+    }
+    synth->accum[chan] = accum;
 
-        int32_t ring_buffer[dur];
-        // first, fill with waveform
-        for (uint16_t i = 0; i < dur; i++) {
-            accum += dds_rate;
-            // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
-            if (accum > lim) {
-                accum -= lim;
-            }
-            int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
-            ring_buffer[i] = waveform[idx];
+    if (ring_dds_rate) {
+        if (ring_dds_rate > lim / 2) {
+            // beyond nyquist, can't play ring (but did synth main sound so
+            // return true)
+            return true;
         }
-        synth->accum[chan] = accum;
 
         // now modulate by ring and accumulate
         accum = synth->ring_accum[chan];
@@ -265,49 +256,19 @@ static void synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
             accum %= lim;
         }
 
-        for (uint16_t i = 0, j = 0; i < dur; i++) {
+        for (uint16_t i = 0; i < dur; i++) {
             accum += ring_dds_rate;
             // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
             if (accum > lim) {
                 accum -= lim;
             }
             int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
-            int16_t wi = (ring_waveform[idx] * ring_buffer[i]) / 32768;
-            for (int c = 0; c < synth_chan; c++) {
-                out_buffer32[j] += (wi * loudness[c]) / 32768;
-                j++;
-            }
+            int16_t wi = (ring_waveform[idx] * out_buffer32[i]) / 32768;
+            out_buffer32[i] = wi;
         }
         synth->ring_accum[chan] = accum;
-    } else {
-        uint32_t lim = waveform_length << SYNTHIO_FREQUENCY_SHIFT;
-        uint32_t accum = synth->accum[chan];
-
-        if (dds_rate > lim / 2) {
-            // beyond nyquist, can't play note
-            return;
-        }
-
-        // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
-        if (accum > lim) {
-            accum %= lim;
-        }
-
-        for (uint16_t i = 0, j = 0; i < dur; i++) {
-            accum += dds_rate;
-            // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
-            if (accum > lim) {
-                accum -= lim;
-            }
-            int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
-            int16_t wi = waveform[idx];
-            for (int c = 0; c < synth_chan; c++) {
-                out_buffer32[j] += (wi * loudness[c]) / 65536;
-                j++;
-            }
-        }
-        synth->accum[chan] = accum;
     }
+    return true;
 }
 
 STATIC mp_obj_t synthio_synth_get_note_filter(mp_obj_t note_obj) {
@@ -319,6 +280,19 @@ STATIC mp_obj_t synthio_synth_get_note_filter(mp_obj_t note_obj) {
         return note->filter_obj;
     }
     return mp_const_none;
+}
+
+STATIC void sum_with_loudness(int32_t *out_buffer32, int32_t *tmp_buffer32, uint16_t loudness[2], size_t dur, int synth_chan) {
+    if (synth_chan == 1) {
+        for (size_t i = 0; i < dur; i++) {
+            *out_buffer32++ += (*tmp_buffer32++ *loudness[0]) >> 16;
+        }
+    } else {
+        for (size_t i = 0; i < dur; i++) {
+            *out_buffer32++ += (*tmp_buffer32 * loudness[0]) >> 16;
+            *out_buffer32++ += (*tmp_buffer32++ *loudness[1]) >> 16;
+        }
+    }
 }
 
 void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t *buffer_length, uint8_t channel) {
@@ -338,28 +312,44 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
     uint16_t dur = MIN(SYNTHIO_MAX_DUR, synth->span.dur);
     synth->span.dur -= dur;
 
-    int32_t out_buffer32[dur * synth->channel_count];
-    memset(out_buffer32, 0, sizeof(out_buffer32));
+    int32_t out_buffer32[SYNTHIO_MAX_DUR * synth->channel_count];
+    int32_t tmp_buffer32[SYNTHIO_MAX_DUR];
+    memset(out_buffer32, 0, synth->channel_count * dur * sizeof(int32_t));
 
     for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
         mp_obj_t note_obj = synth->span.note_obj[chan];
-        mp_obj_t filter_obj = synthio_synth_get_note_filter(note_obj);
-        if (filter_obj == mp_const_none) {
-            synth_note_into_buffer(synth, chan, out_buffer32, dur);
-        } else {
-            synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
-            int32_t filter_buffer32[dur * synth->channel_count];
-            memset(filter_buffer32, 0, sizeof(filter_buffer32));
-
-            synth_note_into_buffer(synth, chan, filter_buffer32, dur);
-            synthio_biquad_filter_samples(&note->filter_state, out_buffer32, filter_buffer32, dur, synth->channel_count);
+        if (note_obj == SYNTHIO_SILENCE) {
+            continue;
         }
+
+        if (synth->envelope_state[chan].level == 0) {
+            // note is truly finished, but we only just noticed
+            synth->span.note_obj[chan] = SYNTHIO_SILENCE;
+            continue;
+        }
+
+        uint16_t loudness[2] = {synth->envelope_state[chan].level,synth->envelope_state[chan].level};
+
+        if (!synth_note_into_buffer(synth, chan, tmp_buffer32, dur, loudness)) {
+            // for some other reason, such as being above nyquist, note
+            // couldn't be synthed, so don't filter or sum it in
+            continue;
+        }
+
+        mp_obj_t filter_obj = synthio_synth_get_note_filter(note_obj);
+        if (filter_obj != mp_const_none) {
+            synthio_note_obj_t *note = MP_OBJ_TO_PTR(note_obj);
+            synthio_biquad_filter_samples(&note->filter_state, tmp_buffer32, dur);
+        }
+
+        // adjust loudness by envelope
+        sum_with_loudness(out_buffer32, tmp_buffer32, loudness, dur, synth->channel_count);
     }
 
     int16_t *out_buffer16 = (int16_t *)(void *)synth->buffers[synth->buffer_index];
 
     // mix down audio
-    for (size_t i = 0; i < MP_ARRAY_SIZE(out_buffer32); i++) {
+    for (size_t i = 0; i < dur * synth->channel_count; i++) {
         int32_t sample = out_buffer32[i];
         out_buffer16[i] = mix_down_sample(sample);
     }

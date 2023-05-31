@@ -111,38 +111,33 @@ void synthio_biquad_filter_assign(biquad_filter_state *st, mp_obj_t biquad_obj) 
 }
 
 void synthio_biquad_filter_reset(biquad_filter_state *st) {
-    memset(&st->x, 0, 8 * sizeof(int16_t));
+    memset(&st->x, 0, 4 * sizeof(int16_t));
 }
 
-void synthio_biquad_filter_samples(biquad_filter_state *st, int32_t *out0, const int32_t *in0, size_t n0, size_t n_channels) {
+void synthio_biquad_filter_samples(biquad_filter_state *st, int32_t *buffer, size_t n_samples) {
     int32_t a1 = st->a1;
     int32_t a2 = st->a2;
     int32_t b0 = st->b0;
     int32_t b1 = st->b1;
     int32_t b2 = st->b2;
 
-    for (size_t i = 0; i < n_channels; i++) {
-        const int32_t *in = in0 + i;
-        int32_t *out = out0 + i;
+    int32_t x0 = st->x[0];
+    int32_t x1 = st->x[1];
+    int32_t y0 = st->y[0];
+    int32_t y1 = st->y[1];
 
-        int32_t x0 = st->x[i][0];
-        int32_t x1 = st->x[i][1];
-        int32_t y0 = st->y[i][0];
-        int32_t y1 = st->y[i][1];
+    for (size_t n = n_samples; n; --n, ++buffer) {
+        int32_t input = *buffer;
+        int32_t output = (b0 * input + b1 * x0 + b2 * x1 - a1 * y0 - a2 * y1 + (1 << (BIQUAD_SHIFT - 1))) >> BIQUAD_SHIFT;
 
-        for (size_t n = n0; n; --n, in += n_channels, out += n_channels) {
-            int32_t input = *in;
-            int32_t output = (b0 * input + b1 * x0 + b2 * x1 - a1 * y0 - a2 * y1 + (1 << (BIQUAD_SHIFT - 1))) >> BIQUAD_SHIFT;
-
-            x1 = x0;
-            x0 = input;
-            y1 = y0;
-            y0 = output;
-            *out += output;
-        }
-        st->x[i][0] = x0;
-        st->x[i][1] = x1;
-        st->y[i][0] = y0;
-        st->y[i][1] = y1;
+        x1 = x0;
+        x0 = input;
+        y1 = y0;
+        y0 = output;
+        *buffer = output;
     }
+    st->x[0] = x0;
+    st->x[1] = x1;
+    st->y[0] = y0;
+    st->y[1] = y1;
 }
