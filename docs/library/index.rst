@@ -8,15 +8,17 @@ MicroPython libraries
    Important summary of this section
 
    * MicroPython provides built-in modules that mirror the functionality of the
-     Python standard library (e.g. :mod:`os`, :mod:`time`), as well as
-     MicroPython-specific modules (e.g. :mod:`bluetooth`, :mod:`machine`).
-   * Most standard library modules implement a subset of the functionality of
-     the equivalent Python module, and in a few cases provide some
-     MicroPython-specific extensions (e.g. :mod:`array`, :mod:`os`)
+     :ref:`Python standard library <micropython_lib_python>` (e.g. :mod:`os`,
+     :mod:`time`), as well as :ref:`MicroPython-specific modules <micropython_lib_micropython>`
+     (e.g. :mod:`bluetooth`, :mod:`machine`).
+   * Most Python standard library modules implement a subset of the
+     functionality of the equivalent Python module, and in a few cases provide
+     some MicroPython-specific extensions (e.g. :mod:`array`, :mod:`os`)
    * Due to resource constraints or other limitations, some ports or firmware
      versions may not include all the functionality documented here.
-   * To allow for extensibility, the built-in modules can be extended from
-     Python code loaded onto the device.
+   * To allow for extensibility, some built-in modules can be
+     :ref:`extended from Python code <micropython_lib_extending>` loaded onto
+     the device filesystem.
 
 This chapter describes modules (function and class libraries) which are built
 into MicroPython. This documentation in general aspires to describe all modules
@@ -40,6 +42,8 @@ can be imported by entering the following at the :term:`REPL`::
 Beyond the built-in libraries described in this documentation, many more
 modules from the Python standard library, as well as further MicroPython
 extensions to it, can be found in :term:`micropython-lib`.
+
+.. _micropython_lib_python:
 
 Python standard libraries and micro-libraries
 ---------------------------------------------
@@ -77,6 +81,7 @@ library.
    zlib.rst
    _thread.rst
 
+.. _micropython_lib_micropython:
 
 MicroPython-specific libraries
 ------------------------------
@@ -181,23 +186,48 @@ The following libraries are specific to the Zephyr port.
 
   zephyr.rst
 
+.. _micropython_lib_extending:
+
 Extending built-in libraries from Python
 ----------------------------------------
 
-In most cases, the above modules are actually named ``umodule`` rather than
-``module``, but MicroPython will alias any module prefixed with a ``u`` to the
-non-``u`` version. However a file (or :term:`frozen module`) named
-``module.py`` will take precedence over this alias.
+Many built-in modules are actually named ``umodule`` rather than ``module``, but
+MicroPython will alias any module prefixed with a ``u`` to the non-``u``
+version. This means that, for example, ``import time`` will first attempt to
+resolve from the filesystem, and then failing that will fall back to the
+built-in ``utime``. On the other hand, ``import utime`` will always go directly
+to the built-in.
 
 This allows the user to provide an extended implementation of a built-in library
-(perhaps to provide additional CPython compatibility). The user-provided module
-(in ``module.py``) can still use the built-in functionality by importing
-``umodule`` directly. This is used extensively in :term:`micropython-lib`. See
-:ref:`packages` for more information.
+(perhaps to provide additional CPython compatibility or missing functionality).
+The user-provided module (in ``module.py``) can still use the built-in
+functionality by importing ``umodule`` directly (e.g. typically an extension
+module ``time.py`` will do ``from utime import *``). This is used extensively
+in :term:`micropython-lib`. See :ref:`packages` for more information.
 
-This applies to both the Python standard libraries (e.g. ``os``, ``time``, etc),
-but also the MicroPython libraries too (e.g. ``machine``, ``bluetooth``, etc).
-The main exception is the port-specific libraries (``pyb``, ``esp``, etc).
+This extensibility applies to the following Python standard library modules
+which are built-in to the firmware: ``array``, ``binascii``, ``collections``,
+``errno``, ``hashlib``, ``heapq``, ``io``, ``json``, ``os``, ``platform``,
+``random``, ``re``, ``select``, ``socket``, ``ssl``, ``struct``, ``sys``,
+``time``, ``zlib``, as well as the MicroPython-specific libraries: ``bluepy``,
+``bluetooth``, ``machine``, ``timeq``, ``websocket``. All other built-in
+modules cannot be extended from the filesystem.
 
 *Other than when you specifically want to force the use of the built-in module,
 we recommend always using* ``import module`` *rather than* ``import umodule``.
+
+**Note:** In MicroPython v1.21.0 and higher, it is now possible to force an
+import of the built-in module by clearing ``sys.path`` during the import. For
+example, in ``time.py``, you can write::
+
+  _path = sys.path
+  sys.path = ()
+  try:
+    from time import *
+  finally:
+    sys.path = _path
+    del _path
+
+This is now the preferred way (instead of ``from utime import *``), as the
+``u``-prefix will be removed from the names of built-in modules in a future
+version of MicroPython.
