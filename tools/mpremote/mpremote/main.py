@@ -449,7 +449,7 @@ def do_command_expansion(args):
 
 class State:
     def __init__(self):
-        self.pyb = None
+        self.transport = None
         self._did_action = False
         self._auto_soft_reset = True
 
@@ -460,20 +460,20 @@ class State:
         return not self._did_action
 
     def ensure_connected(self):
-        if self.pyb is None:
+        if self.transport is None:
             do_connect(self)
 
     def ensure_raw_repl(self, soft_reset=None):
         self.ensure_connected()
         soft_reset = self._auto_soft_reset if soft_reset is None else soft_reset
-        if soft_reset or not self.pyb.in_raw_repl:
-            self.pyb.enter_raw_repl(soft_reset=soft_reset)
+        if soft_reset or not self.transport.in_raw_repl:
+            self.transport.enter_raw_repl(soft_reset=soft_reset)
             self._auto_soft_reset = False
 
     def ensure_friendly_repl(self):
         self.ensure_connected()
-        if self.pyb.in_raw_repl:
-            self.pyb.exit_raw_repl()
+        if self.transport.in_raw_repl:
+            self.transport.exit_raw_repl()
 
 
 def main():
