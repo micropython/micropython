@@ -75,7 +75,7 @@ static const char fresh_readme_txt[] =
     " - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
     " - Linux: use the command: screen /dev/ttyACM0\r\n"
     "\r\n"
-    "Please visit http://micropython.org/help/ for further help.\r\n"
+    "For online docs please visit http://docs.micropython.org/\r\n"
 ;
 #endif
 

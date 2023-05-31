@@ -191,6 +191,7 @@ SRC_C += \
 	fatfs_port.c \
 	flash.c \
 	hal/pwm_backport.c \
+	help.c \
 	led.c \
 	machine_adc.c \
 	machine_bitstream.c \
