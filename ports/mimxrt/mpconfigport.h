@@ -76,6 +76,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_UOS_INCLUDEFILE          "ports/mimxrt/moduos.c"
 #define MICROPY_PY_OS_DUPTERM               (3)
 #define MICROPY_PY_UOS_DUPTERM_NOTIFY       (1)
+#define MICROPY_PY_UOS_SYNC                 (1)
 #define MICROPY_PY_UOS_UNAME                (1)
 #define MICROPY_PY_UOS_URANDOM              (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (trng_random_u32())

@@ -99,6 +99,7 @@
 #ifndef MICROPY_PY_OS_DUPTERM
 #define MICROPY_PY_OS_DUPTERM                   (1)
 #endif
+#define MICROPY_PY_UOS_SYNC                     (1)
 #define MICROPY_PY_UOS_UNAME                    (1)
 #define MICROPY_PY_UOS_URANDOM                  (1)
 #define MICROPY_PY_URE_MATCH_GROUPS             (1)
