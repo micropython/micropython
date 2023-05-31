@@ -25,16 +25,6 @@
  */
 
 mergeInto(LibraryManager.library, {
-    mp_js_write: function(ptr, len) {
-        const buffer = HEAPU8.subarray(ptr, ptr + len)
-        if (ENVIRONMENT_IS_NODE) {
-            process.stdout.write(buffer);
-        } else {
-            const printEvent = new CustomEvent('micropython-print', { detail: buffer });
-            document.dispatchEvent(printEvent);
-        }
-    },
-
     // This string will be emitted directly into the output file by Emscripten.
     mp_js_ticks_ms__postset: "var MP_JS_EPOCH = Date.now()",
 
