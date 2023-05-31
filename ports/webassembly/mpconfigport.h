@@ -64,6 +64,14 @@
 #define MICROPY_VFS_POSIX           (MICROPY_VFS)
 #define MICROPY_PY_SYS_PLATFORM     "webassembly"
 
+#ifndef MICROPY_PY_JS
+#define MICROPY_PY_JS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+#ifndef MICROPY_PY_JSFFI
+#define MICROPY_PY_JSFFI (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
