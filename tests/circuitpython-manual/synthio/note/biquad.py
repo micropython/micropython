@@ -13,7 +13,7 @@ import adafruit_wave as wave
 random.seed(9)
 
 envelope = synthio.Envelope(
-    attack_time=0, decay_time=0, release_time=0, attack_level=0.8, sustain_level=1.0
+    attack_time=0.15, decay_time=0, release_time=0.08, attack_level=1.0, sustain_level=1.0
 )
 
 SAMPLE_SIZE = 1024
@@ -30,41 +30,24 @@ def synthesize(synth):
     for waveform in (sine, None, noise):
         for biquad in (
             None,
-            synth.low_pass_filter(330),
-            synth.low_pass_filter(660),
-            synth.high_pass_filter(330),
-            synth.high_pass_filter(660),
-            synth.band_pass_filter(330),
-            synth.band_pass_filter(660),
+            synth.low_pass_filter(120),
         ):
-            n = synthio.Note(
-                frequency=80,
-                envelope=envelope,
-                filter=biquad,
-                waveform=waveform,
-                bend=synthio.LFO(bend_out, once=True, rate=1 / 2, scale=5),
-            )
+            for midi_note in range(24, 90, 3):
+                n = synthio.Note(
+                    frequency=synthio.midi_to_hz(midi_note),
+                    envelope=envelope,
+                    filter=biquad,
+                    waveform=waveform,
+                    bend=synthio.LFO(bend_out, once=True, rate=1 / 2, scale=5),
+                )
 
-            synth.press(n)
-            print(synth, n)
-            yield 2 * 48000 // 256
-            synth.release_all()
-            yield 36
-
-    for waveform in (sine, None, noise):
-        n = synthio.Note(
-            frequency=555,
-            envelope=envelope,
-            waveform=waveform,
-        )
-        synth.press(n)
-        i = 220
-        while i < 1760:
-            n.filter = synth.band_pass_filter(i)
-            i *= 1.00579
-            yield 1
-        synth.release_all()
-        yield 6
+                synth.press(n)
+                print(n.frequency)
+                yield 24
+                synth.release_all()
+                yield 16
+            yield 24
+        yield 48
 
 
 with wave.open("biquad.wav", "w") as f:
