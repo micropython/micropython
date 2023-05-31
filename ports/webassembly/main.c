@@ -40,7 +40,9 @@
 #include "shared/runtime/pyexec.h"
 
 #include "emscripten.h"
+#include "lexer_dedent.h"
 #include "library.h"
+#include "proxy_c.h"
 
 #if MICROPY_ENABLE_COMPILER
 int do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -111,6 +113,60 @@ void mp_js_init(int heap_size) {
 
 void mp_js_init_repl() {
     pyexec_event_repl_init();
+}
+
+void mp_js_register_js_module(const char *name, uint32_t *value) {
+    mp_obj_t module_name = MP_OBJ_NEW_QSTR(qstr_from_str(name));
+    mp_obj_t module = proxy_convert_js_to_mp_obj_cside(value);
+    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
+    mp_map_lookup(mp_loaded_modules_map, module_name, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
+}
+
+void mp_js_do_import(const char *name, uint32_t *out) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t ret = mp_import_name(qstr_from_str(name), mp_const_none, MP_OBJ_NEW_SMALL_INT(0));
+        // Return the leaf of the import, eg for "a.b.c" return "c".
+        const char *m = name;
+        const char *n = name;
+        for (;; ++n) {
+            if (*n == '\0' || *n == '.') {
+                if (m != name) {
+                    ret = mp_load_attr(ret, qstr_from_strn(m, n - m));
+                }
+                m = n + 1;
+                if (*n == '\0') {
+                    break;
+                }
+            }
+        }
+        nlr_pop();
+        proxy_convert_mp_to_js_obj_cside(ret, out);
+    } else {
+        // uncaught exception
+        proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
+    }
+}
+
+void mp_js_do_exec(const char *src, uint32_t *out) {
+    // Collect at the top-level, where there are no root pointers from stack/registers.
+    gc_collect_start();
+    gc_collect_end();
+
+    mp_parse_input_kind_t input_kind = MP_PARSE_FILE_INPUT;
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_lexer_t *lex = mp_lexer_new_from_str_len_dedent(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
+        qstr source_name = lex->source_name;
+        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
+        mp_obj_t ret = mp_call_function_0(module_fun);
+        nlr_pop();
+        proxy_convert_mp_to_js_obj_cside(ret, out);
+    } else {
+        // uncaught exception
+        proxy_convert_mp_to_js_exc_cside(nlr.ret_val, out);
+    }
 }
 
 #if MICROPY_GC_SPLIT_HEAP_AUTO
