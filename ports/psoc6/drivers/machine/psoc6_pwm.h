@@ -22,7 +22,7 @@ cy_rslt_t pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, float duty_cycle)
 cy_rslt_t pwm_start(cyhal_pwm_t *pwm_obj);
 cy_rslt_t pwm_init(machine_pwm_obj_t *machine_pwm_obj);
 cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint32_t pulse_width);
-void pwm_deinit(cyhal_pwm_t *pwm_obj);
 cy_rslt_t pwm_advanced_init(machine_pwm_obj_t *machine_pwm_obj);
+void pwm_deinit(cyhal_pwm_t *pwm_obj);
 
 #endif // MICROPY_INCLUDED_PSOC6_PWM_H
