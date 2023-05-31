@@ -102,7 +102,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     // Initialize PWM
     cy_rslt_t result = pwm_init(self);
 
-    // To check whether PWM init is successfull
+    // To check whether PWM init is successful
     if (result != CY_RSLT_SUCCESS) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM initialisation failed with return code %lx !"), result);
     }
