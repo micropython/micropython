@@ -240,6 +240,9 @@ void machine_pins_deinit(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(machine_pin_obj); ++i) {
         if (machine_pin_obj[i].id != (gpio_num_t)-1) {
             gpio_isr_handler_remove(machine_pin_obj[i].id);
+			if(GPIO_IS_VALID_OUTPUT_GPIO(machine_pin_obj[i].id)){
+				gpio_set_level(machine_pin_obj[i].id, 0);
+			}
         }
     }
 }
