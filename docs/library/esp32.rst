@@ -44,6 +44,16 @@ Functions
 
     Read the raw value of the internal temperature sensor, returning an integer.
 
+.. Note::
+   Only available on ESP32.
+
+.. function:: temperature()
+
+    Read the value of the internal temperature sensor in celsius, returning a float.
+
+.. Note::
+   Available on ESP32-S2, ESP32-S3 and ESP32-C3.
+
 .. function:: hall_sensor()
 
     Read the raw value of the internal Hall sensor, returning an integer.

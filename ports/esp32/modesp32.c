@@ -178,6 +178,26 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_hall_sensor_obj, esp32_hall_sensor);
 
 #endif
 
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3
+
+#include "driver/temp_sensor.h"
+
+STATIC mp_obj_t esp32_temperature(void) {
+
+    temp_sensor_config_t temp_sensor = TSENS_CONFIG_DEFAULT();
+    temp_sensor_get_config(&temp_sensor);
+    temp_sensor.dac_offset = TSENS_DAC_DEFAULT; // DEFAULT: range:-10℃ ~  80℃, error < 1℃.
+    temp_sensor_set_config(temp_sensor);
+    temp_sensor_start();
+    float tsens_out;
+    temp_sensor_read_celsius(&tsens_out);
+    temp_sensor_stop();
+
+    return mp_obj_new_float(tsens_out);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_temperature_obj, esp32_temperature);
+#endif
+
 STATIC mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
     mp_int_t cap = mp_obj_get_int(cap_in);
     multi_heap_info_t info;
@@ -211,6 +231,9 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
     { MP_ROM_QSTR(MP_QSTR_hall_sensor), MP_ROM_PTR(&esp32_hall_sensor_obj) },
+    #endif
+    #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3
+    { MP_ROM_QSTR(MP_QSTR_temperature), MP_ROM_PTR(&esp32_temperature_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_idf_heap_info), MP_ROM_PTR(&esp32_idf_heap_info_obj) },
 
