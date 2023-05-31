@@ -46,6 +46,7 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_DOC_STRING   (1)
 #define MICROPY_WARNINGS            (1)
+#define MICROPY_ERROR_PRINTER       (&mp_stderr_print)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_USE_INTERNAL_PRINTF (0)
@@ -60,7 +61,6 @@
 #endif
 #define MICROPY_VFS_POSIX           (MICROPY_VFS)
 #define MICROPY_PY_SYS_PLATFORM     "webassembly"
-#define MICROPY_PY_SYS_STDFILES     (0)
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
@@ -101,5 +101,7 @@ typedef long mp_off_t;
 // _GNU_SOURCE must be defined to get definitions of DT_xxx symbols from dirent.h.
 #define _GNU_SOURCE
 #endif
+
+extern const struct _mp_print_t mp_stderr_print;
 
 uint32_t mp_js_random_u32(void);
