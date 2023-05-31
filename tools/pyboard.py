@@ -686,6 +686,10 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
     args = args[1:]
     try:
         if cmd == "cp":
+            if len(args) == 1:
+                raise PyboardError(
+                    "cp: missing destination file operand after '{}'".format(args[0])
+                )
             srcs = args[:-1]
             dest = args[-1]
             if dest.startswith(":"):
