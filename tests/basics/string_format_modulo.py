@@ -13,6 +13,12 @@ print("=%s=" % [1, 2])
 print("=%s=" % "str")
 print("=%r=" % "str")
 
+# test calling __int__
+class A:
+    def __int__(self):
+        return 123
+print("%d" % A())
+
 try:
     print("=%s=%s=" % 1)
 except TypeError:
