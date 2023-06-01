@@ -151,10 +151,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
 STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_float_t duty_u16) {
     pwm_is_active(self);
     // Check the value is more than the max value
-    if (duty_u16 > 65535) {
-        duty_u16 = 65535;
-    }
-    self->duty = duty_u16;
+    self->duty = duty_u16 > 65535 ? 65535 : duty_u16;
     self->duty_type = DUTY_U16;
     pwm_freq_duty_set(&self->pwm_obj, self->fz, (self->duty) / 65535); // conversion of duty_u16 into dutyu16/65535
 }
