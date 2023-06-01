@@ -111,6 +111,10 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | machine.SoftI2C | Option ``MICROPY_PY_MACHINE_SOFTI2C`` enabled.                                                                       |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
+| machine.PWM     | option ``MICROPY_PY_MACHINE_PWM`` &  ``MICROPY_PY_MACHINE_PWM_INCLUDEFILE`` enabled                                  |
+|                 |                                                                                                                      |
+|                 | option ``MICROPY_PY_MACHINE_PWM_DUTY`` is not enabled.                                                               |                                                                                       
++-----------------+----------------------------------------------------------------------------------------------------------------------+
 | psoc6           | Option to enable the external instead of the internal flash: ``MICROPY_ENABLE_EXT_QSPI_FLASH``.                      |
 |                 |                                                                                                                      |
 |                 | Option to enable the port specific debug logger: ``MICROPY_LOGGER_DEBUG``.                                           |

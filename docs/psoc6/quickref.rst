@@ -310,3 +310,40 @@ Here is a function you can run (or put in your boot.py file) to automatically co
         else:
             print(wlan.ifconfig())
 
+PWM (pulse width modulation)
+----------------------------
+
+PWM can be enabled on all output capable pins.The frequency can range from 1Hz to 100MHz. As the frequency
+increases the PWM resolution decreases. Refer `PSoC 6 MCU: CY8C62x8, CY8C62xA Datasheet <https://www.infineon.com/dgdl/Infineon-PSOC_6_MCU_CY8C62X8_CY8C62XA-DataSheet-v18_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ee7d03a70b1>`_
+for additional details regarding board specific PWM.
+
+Use the :ref:`machine.PWM <machine.PWM>` class: 
+
+The constructor can be called by passing the required arguments. All initialization and the configurations are handled by the constructor. Create PWM object using 
+
+::  
+
+    pwm = PWM('P9_0', freq=50, duty_u16=8192, invert=0) # PWM is initialised for the given pin with respective frequency & duty cycle.
+    pwm1 = PWM('P9_1', freq=50, duty_ns=1000, invert=1)  # PWM is initialised for the given pin with respective frequency & pulse width & inverts the output.
+
+    All four arguments has to be passed manadatorily to create PWM object. duty_u16 or duty_ns should be specified at a time.  
+
+::
+
+    from machine import PWM
+
+    pwm = PWM('P9_0', freq=50, duty_u16=8192, invert=0) 
+    print(pwm)                                # view PWM settings
+
+    pwm.freq()                                # get current frequency
+    pwm.freq(100)                             # set PWM frequency to 100 Hz
+
+    pwm.duty_u16()                            # get current duty cycle, range 0-65535
+    pwm.duty_u16(8192)                        # set duty cycle from 0 to 65535 as a ratio of duty_u16/65535, now 25%
+    
+    pwm.duty_ns()                             # get current pulse width in ns
+    pwm.duty_ns(1000)                         # set the current pulse width in ns from 0 to 1000000000/freq
+
+    pwm.init(freq=90,duty_us=100,invert=1)    # Modify the settings of PWM object
+    pwm.deinit()                              # Deinitialisation of PWM pin
+
