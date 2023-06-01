@@ -380,7 +380,7 @@ mp_obj_t mp_obj_int_mpz_bit_length(mp_obj_t size) {
     mpz_t n_temp;
     mpz_t *n = mp_mpz_for_int(size, &n_temp);
     mp_uint_t res = mpz_bit_length_inpl(n);
-    if (n == &n_temp) { 
+    if (n == &n_temp) {
         mpz_deinit(n);
     }
     return mp_obj_new_int_from_ull(res);

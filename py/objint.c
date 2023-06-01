@@ -454,15 +454,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 3, 4, int_to_bytes)
 STATIC mp_obj_t int_bit_length(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
-        return mp_obj_int_mpz_bit_length(args[0]);
+    return mp_obj_int_mpz_bit_length(args[0]);
     #else
-        mp_uint_t dest = MP_OBJ_SMALL_INT_VALUE(args[0]);
-        mp_uint_t num_bits = 0;
-        while (dest > 0) {
-            dest >>= 1;
-            num_bits++;
-        }
-        return mp_obj_new_int_from_uint(num_bits);
+    mp_uint_t dest = MP_OBJ_SMALL_INT_VALUE(args[0]);
+    mp_uint_t num_bits = 0;
+    while (dest > 0) {
+        dest >>= 1;
+        num_bits++;
+    }
+    return mp_obj_new_int_from_uint(num_bits);
     #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_bit_length_obj, 0, 1, int_bit_length);

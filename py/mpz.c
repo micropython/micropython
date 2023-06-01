@@ -1392,7 +1392,7 @@ void mpz_pow3_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t 
 
 #if MICROPY_INT_BIT_LENGTH
 mp_uint_t mpz_bit_length_inpl(mpz_t *n) {
-    if(n->len == 0) {
+    if (n->len == 0) {
         return 0;
     }
 
