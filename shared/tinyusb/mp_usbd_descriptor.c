@@ -39,7 +39,7 @@
 const tusb_desc_device_t mp_usbd_desc_device_static = {
     .bLength = sizeof(tusb_desc_device_t),
     .bDescriptorType = TUSB_DESC_DEVICE,
-    .bcdUSB = 0x0200,
+    .bcdUSB = 0x0210, // at least 2.1 or 3.x for BOS & webUSB
     .bDeviceClass = TUSB_CLASS_MISC,
     .bDeviceSubClass = MISC_SUBCLASS_COMMON,
     .bDeviceProtocol = MISC_PROTOCOL_IAD,
@@ -60,6 +60,9 @@ const uint8_t mp_usbd_desc_cfg_static[USBD_STATIC_DESC_LEN] = {
     #if CFG_TUD_CDC
     TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
         USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
+    #endif
+    #if CFG_TUD_VENDOR
+    TUD_VENDOR_DESCRIPTOR(USBD_ITF_VENDOR, USBD_STR_VENDOR, EPNUM_VENDOR_OUT, EPNUM_VENDOR_IN, 64),
     #endif
     #if CFG_TUD_MSC
     TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, 5, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64),
@@ -86,16 +89,24 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
             desc_str = MICROPY_HW_USB_MANUFACTURER_STRING;
             break;
         case USBD_STR_PRODUCT:
+            #if CFG_TUD_VENDOR
+            desc_str = MICROPY_HW_USB_PRODUCT_VENDOR_STRING;
+            #else
             desc_str = MICROPY_HW_USB_PRODUCT_FS_STRING;
+            #endif
             break;
         #if CFG_TUD_CDC
         case USBD_STR_CDC:
             desc_str = MICROPY_HW_USB_CDC_INTERFACE_STRING;
             break;
         #endif
-        #if CFG_TUD_MSC
-        case USBD_STR_MSC:
+        #if CFG_TUD_VENDOR || CFG_TUD_MSC
+        case USBD_STR_VENDOR:
+            #if CFG_TUD_VENDOR
+            desc_str = MICROPY_HW_USB_VENDOR_INTERFACE_STRING;
+            #else
             desc_str = MICROPY_HW_USB_MSC_INTERFACE_STRING;
+            #endif
             break;
         #endif
         default:

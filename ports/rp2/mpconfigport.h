@@ -52,6 +52,10 @@
 #ifndef MICROPY_HW_USB_MSC
 #define MICROPY_HW_USB_MSC (0)
 #endif
+// Enable WebUSB-Vendor serial port
+#ifndef MICROPY_HW_USB_VENDOR
+#define MICROPY_HW_USB_VENDOR (1)
+#endif
 #endif
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL

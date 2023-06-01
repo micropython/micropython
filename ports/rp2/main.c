@@ -59,6 +59,15 @@
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
 
+#if MICROPY_HW_USB_VENDOR
+#include "bsp/board.h"
+#include "tusb_port.h"
+
+#include "hardware/watchdog.h"
+
+#include "main.h"
+#endif
+
 extern uint8_t __StackTop, __StackBottom;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
 
@@ -70,6 +79,25 @@ bi_decl(bi_program_version_string(MICROPY_GIT_TAG));
 bi_decl(bi_program_feature_group_with_flags(BINARY_INFO_TAG_MICROPYTHON,
     BINARY_INFO_ID_MP_FROZEN, "frozen modules",
     BI_NAMED_GROUP_SEPARATE_COMMAS | BI_NAMED_GROUP_SORT_ALPHA));
+
+#if MICROPY_HW_USB_VENDOR
+// WebUSB URL Descriptor
+#define URL "creepier-dragonfly-8429.dataplicity.io"
+
+const tusb_desc_webusb_url_t desc_url = {
+	.bLength         = 3 + sizeof(URL) - 1,
+	.bDescriptorType = 3,
+	.bScheme         = 1,
+	.url             = URL
+};
+
+// WebUSB Connection Status 
+static bool web_serial_connected = false;
+
+bool check_web_serial_connected(void) {
+	return web_serial_connected;
+}
+#endif
 
 int main(int argc, char **argv) {
     #if MICROPY_HW_ENABLE_UART_REPL
@@ -87,6 +115,11 @@ int main(int argc, char **argv) {
     bi_decl(bi_program_feature("USB REPL"))
     #endif
     tusb_init();
+    #if MICROPY_HW_USB_VENDOR
+    // Setup board for WebUSB
+    board_init();
+    tud_init(BOARD_TUD_RHPORT);
+    #endif
     #endif
 
     #if MICROPY_PY_THREAD
@@ -297,3 +330,93 @@ const char rp2_help_text[] =
     "For further help on a specific object, type help(obj)\n"
     "For a list of available modules, type help('modules')\n"
 ;
+
+
+#if MICROPY_HW_USB_VENDOR
+// Invoked when device is mounted
+void tud_mount_cb(void) { }
+
+// Invoked when device is unmounted
+void tud_umount_cb(void) { }
+
+// Invoked when usb bus is suspended
+// remote_wakeup_en : if host allow us  to perform remote wakeup
+// Within 7ms, device must draw an average of current less than 2.5 mA from bus
+void tud_suspend_cb(bool remote_wakeup_en) {
+    (void) remote_wakeup_en;
+}
+
+// Invoked when usb bus is resumed
+void tud_resume_cb(void) { }
+
+// Invoked when a control transfer occurred on an interface of this class
+// Driver response accordingly to the request and the transfer stage (setup/data/ack)
+// return false to stall control endpoint (e.g unsupported request)
+bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request) {
+    // Nothing to with DATA & ACK stage
+    if (stage != CONTROL_STAGE_SETUP) return true;
+
+    switch (request->bmRequestType_bit.type)
+    {
+        case TUSB_REQ_TYPE_VENDOR:
+            switch (request->bRequest)
+            {
+                case VENDOR_REQUEST_WEBUSB:
+					// Match vendor request in BOS descriptor
+					// Get landing page url
+					return tud_control_xfer(rhport, request, (void*)(uintptr_t) &desc_url, desc_url.bLength);
+
+                case VENDOR_REQUEST_MICROSOFT:
+					if (request->wIndex == 7) 
+					{
+						// Get Microsoft OS 2.0 compatible descriptor
+						uint16_t total_len;
+						memcpy(&total_len, desc_ms_os_20 + 8, 2);
+
+						return tud_control_xfer(rhport, request, (void*)(uintptr_t) desc_ms_os_20, total_len);
+					} else {
+
+						return false;
+					}
+
+                default: break;
+            }
+        break;
+
+        case TUSB_REQ_TYPE_CLASS:
+			if (request->bRequest == VENDOR_REQUEST_WEBUSB_CONNECTION) {
+
+				int status = true;
+
+				if (request->wValue == 0x01) {
+
+					web_serial_connected = true;
+					// Response with status OK
+					status = tud_control_status(rhport, request);
+
+					if (mp_interrupt_char == CHAR_CTRL_C) {
+						mp_sched_keyboard_interrupt(); // Interrupt file running in REPL
+					}
+					ringbuf_put(&stdin_ringbuf, CHAR_CTRL_D); // Interrupt friendly REPL
+				} else {
+
+					web_serial_connected = false;
+					// Response with status OK
+					// Done before resetting RP2040 to speed up response
+					status = tud_control_status(rhport, request);
+
+					// Reset the RP2040 using the watchdog after 10 ms
+					watchdog_enable(10, 1);
+				}
+
+				return status;
+			}
+        break;
+
+        default: break;
+    }
+
+    // Stall unknown request
+    return false;
+}
+#endif
