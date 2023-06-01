@@ -28,6 +28,7 @@
 #include "ra_int.h"
 #include "ra_utils.h"
 #include "ra_sci.h"
+#include "r_sci_uart.h"
 
 #if !defined(RA_PRI_UART)
 #define RA_PRI_UART (1)
@@ -1100,20 +1101,24 @@ static void ra_sci_fifo_init(uint32_t ch) {
 void ra_sci_set_baud(uint32_t ch, uint32_t baud) {
     uint32_t idx = ch_to_idx[ch];
     R_SCI0_Type *sci_reg = sci_regs[idx];
-    // Only works for 115200 bps
-    // ToDo: support other bps
-    if (baud == 0) {
-        /* ABCS=1 */
-        sci_reg->SMR_b.CKS = 0; /* PCLKA */
-        sci_reg->BRR = (uint8_t)((int)PCLK / SCI_DEF_BAUD / 16 - 1);
-    } else if (baud > 19200) {
-        /* ABCS=1 */
-        sci_reg->SMR_b.CKS = 0; /* PCLKA */
-        sci_reg->BRR = (uint8_t)((int)PCLK / baud / 16 - 1);
-    } else {
-        /* ABCS=1 */
-        sci_reg->SMR_b.CKS = 2; /* PCLKA/16 */
-        sci_reg->BRR = (uint8_t)((int)PCLK / baud / 256 - 1);
+    baud_setting_t baud_setting;
+
+    // baudrate_modulation=1(enabled), baudrate_max_err=5%(general value for FSP example).
+    if (R_SCI_UART_BaudCalculate(baud, 1, 5000, &baud_setting) == FSP_SUCCESS) {
+        // Disable transmitter and receiver.
+        uint8_t scr = sci_reg->SCR;
+        sci_reg->SCR = scr & ~(0xF0);
+
+        // Change baudrate
+        sci_reg->BRR = baud_setting.brr;
+        // Update CKS(b1:b0)
+        sci_reg->SMR_b.CKS = (uint8_t)(0x03U & baud_setting.cks);
+        sci_reg->MDDR = baud_setting.mddr;
+        // Update BGDM(b6)/ABCS(b4)/ABCSE(b3)/BRME(b2) bits
+        sci_reg->SEMR = (uint8_t)((sci_reg->SEMR & ~(0x5cU)) | (baud_setting.semr_baudrate_bits & 0x5cU));
+
+        // Restore SCR
+        sci_reg->SCR = scr;
     }
 }
 
@@ -1131,8 +1136,8 @@ void ra_sci_init_with_flow(uint32_t ch, uint32_t tx_pin, uint32_t rx_pin, uint32
         sci_cb[idx] = 0;
         ra_sci_init_flag[idx]++;
     } else {
-        ra_sci_init_flag[idx]++;
-        return;
+        ra_sci_irq_disable(ch);
+        ra_sci_module_stop(ch);
     }
     ra_sci_module_start(ch);
     ra_sci_tx_set_pin(tx_pin);

@@ -359,7 +359,11 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/fsp/src/bsp/mcu/all/,\
 
 HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/fsp/src/,\
 	r_ioport/r_ioport.c \
+	r_sci_uart/r_sci_uart.c \
 	)
+
+CFLAGS_FSP = -Wno-unused-variable -Wno-unused-function
+$(BUILD)/lib/fsp/ra/fsp/src/r_sci_uart/r_sci_uart.o: CFLAGS += $(CFLAGS_FSP)
 
 ifeq ($(USE_FSP_LPM), 1)
 CFLAGS += -DUSE_FSP_LPM
