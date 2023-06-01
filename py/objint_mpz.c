@@ -334,7 +334,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     }
 }
 
-#if MICROPY_PY_BUILTINS_POW3
+#if (MICROPY_PY_BUILTINS_POW3 || MICROPY_INT_BIT_LENGTH)
 STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
     if (mp_obj_is_small_int(arg)) {
         mpz_init_from_int(temp, MP_OBJ_SMALL_INT_VALUE(arg));
@@ -344,7 +344,9 @@ STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
         return &(arp_p->mpz);
     }
 }
+#endif
 
+#if MICROPY_PY_BUILTINS_POW3
 mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
     if (!mp_obj_is_int(base) || !mp_obj_is_int(exponent) || !mp_obj_is_int(modulus)) {
         mp_raise_TypeError(MP_ERROR_TEXT("pow() with 3 arguments requires integers"));
@@ -370,6 +372,18 @@ mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
         }
         return result;
     }
+}
+#endif
+
+#if MICROPY_INT_BIT_LENGTH
+mp_obj_t mp_obj_int_mpz_bit_length(mp_obj_t size) {
+    mpz_t n_temp;
+    mpz_t *n = mp_mpz_for_int(size, &n_temp);
+    mp_uint_t res = mpz_bit_length_inpl(n);
+    if (n == &n_temp) { 
+        mpz_deinit(n);
+    }
+    return mp_obj_new_int_from_ull(res);
 }
 #endif
 

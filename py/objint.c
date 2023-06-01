@@ -450,9 +450,30 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 3, 4, int_to_bytes);
 
+#if MICROPY_INT_BIT_LENGTH
+STATIC mp_obj_t int_bit_length(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
+        return mp_obj_int_mpz_bit_length(args[0]);
+    #else
+        mp_uint_t dest = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        mp_uint_t num_bits = 0;
+        while (dest > 0) {
+            dest >>= 1;
+            num_bits++;
+        }
+        return mp_obj_new_int_from_uint(num_bits);
+    #endif
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_bit_length_obj, 0, 1, int_bit_length);
+#endif
+
 STATIC const mp_rom_map_elem_t int_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_from_bytes), MP_ROM_PTR(&int_from_bytes_obj) },
     { MP_ROM_QSTR(MP_QSTR_to_bytes), MP_ROM_PTR(&int_to_bytes_obj) },
+    #if MICROPY_INT_BIT_LENGTH
+    { MP_ROM_QSTR(MP_QSTR_bit_length), MP_ROM_PTR(&int_bit_length_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(int_locals_dict, int_locals_dict_table);
