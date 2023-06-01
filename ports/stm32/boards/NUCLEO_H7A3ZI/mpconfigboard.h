@@ -12,7 +12,7 @@
 
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 
-// The board has a 24MHz HSE, the following gives 280MHz CPU speed
+// The board has a 8MHz HSE, the following gives 280MHz CPU speed
 #define MICROPY_HW_CLK_PLLM         (1)
 #define MICROPY_HW_CLK_PLLN         (70)
 #define MICROPY_HW_CLK_PLLP         (2)
