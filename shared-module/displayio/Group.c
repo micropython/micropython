@@ -438,7 +438,6 @@ void displayio_group_finish_refresh(displayio_group_t *self) {
 }
 
 displayio_area_t *displayio_group_get_refresh_areas(displayio_group_t *self, displayio_area_t *tail) {
-    //if (! self->hidden){
         if (self->item_removed) {
             self->dirty_area.next = tail;
             tail = &self->dirty_area;
@@ -458,9 +457,7 @@ displayio_area_t *displayio_group_get_refresh_areas(displayio_group_t *self, dis
                     self->members->items[i], &displayio_tilegrid_type);
             if (layer != MP_OBJ_NULL) {
                 if (!displayio_tilegrid_get_rendered_hidden(layer)) {
-                    //if (!common_hal_displayio_tilegrid_get_hidden(layer)){
                     tail = displayio_tilegrid_get_refresh_areas(layer, tail);
-                    //}
                 }
                 continue;
             }
@@ -470,7 +467,6 @@ displayio_area_t *displayio_group_get_refresh_areas(displayio_group_t *self, dis
                 tail = displayio_group_get_refresh_areas(layer, tail);
                 continue;
             }
-       // }
     }
 
     return tail;
