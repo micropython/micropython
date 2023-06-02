@@ -36,7 +36,6 @@ used during the build process and is not part of the compiled source code.
 / (MIT)
     /drivers
         /cc3100 (BSD-3-clause)
-        /wiznet5k (BSD-3-clause)
     /lib
         /asf4 (Apache-2.0)
         /axtls (BSD-3-clause)
@@ -61,6 +60,7 @@ used during the build process and is not part of the compiled source code.
         /tinytest (BSD-3-clause)
         /tinyusb (MIT)
         /uzlib (Zlib)
+        /wiznet5k (MIT)
     /logo (uses OFL-1.1)
     /ports
         /cc3200
