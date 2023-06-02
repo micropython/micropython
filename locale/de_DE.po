@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-05-28 17:49+0000\n"
+"PO-Revision-Date: 2023-06-02 20:48+0000\n"
 "Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
@@ -2544,7 +2544,7 @@ msgstr "Die Annotation muss ein Bezeichner sein"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "arange: cannot compute length"
-msgstr ""
+msgstr "arange: kann Länge nicht berechnen"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
