@@ -42,14 +42,12 @@ else:
 	buttons = InputShift(Pins.SHIFT_DATA, Pins.SHIFT_CLOCK, Pins.SHIFT_LOAD, Pins.SHIFT_COUNT)
 
 tft = st7789.ST7789(spi, 128, 128, dc=Pin(Pins.TFT_DC, Pin.OUT),
-					color_order=st7789.BGR, inversion=False)
+					color_order=st7789.BGR, inversion=False, rotation=2)
 display = Display(tft, 128, 128)
 
 
 def begin(panel_type: bool):
 	global tft, display
-	tft = st7789.ST7789(spi, 128, 128, dc=Pin(Pins.TFT_DC, Pin.OUT),
-						color_order=st7789.BGR, inversion=False, rotation=2)
 	tft.init()
 
 	if panel_type:
@@ -58,7 +56,6 @@ def begin(panel_type: bool):
 		pass  # orange PCB (GREENTAB3)
 	# TODO - TFT with red with shiny ribbon and yellow headers NOT WORKING (also GREENTAB3 in C++ firmware)
 	print("Panel type: " + str(panel_type))
-	display = Display(tft, 128, 128)
 
 	backlight.on()
 
