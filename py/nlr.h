@@ -171,11 +171,9 @@ NORETURN void nlr_jump_fail(void *val);
 #ifndef MICROPY_DEBUG_NLR
 #define nlr_raise(val) nlr_jump(MP_OBJ_TO_PTR(val))
 #else
-#include "mpstate.h"
+
 #define nlr_raise(val) \
     do { \
-        /*printf("nlr_raise: nlr_top=%p\n", MP_STATE_THREAD(nlr_top)); \
-        fflush(stdout);*/ \
         void *_val = MP_OBJ_TO_PTR(val); \
         assert(_val != NULL); \
         assert(mp_obj_is_exception_instance(val)); \
@@ -185,11 +183,6 @@ NORETURN void nlr_jump_fail(void *val);
 #if !MICROPY_NLR_SETJMP
 #define nlr_push(val) \
     assert(MP_STATE_THREAD(nlr_top) != val), nlr_push(val)
-
-/*
-#define nlr_push(val) \
-    printf("nlr_push: before: nlr_top=%p, val=%p\n", MP_STATE_THREAD(nlr_top), val),assert(MP_STATE_THREAD(nlr_top) != val),nlr_push(val)
-*/
 #endif
 
 #endif
