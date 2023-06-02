@@ -381,6 +381,6 @@ const mp_obj_module_t mp_module_json = {
     .globals = (mp_obj_dict_t *)&mp_module_json_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_json, mp_module_json);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_json, mp_module_json);
 
 #endif // MICROPY_PY_JSON

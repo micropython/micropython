@@ -311,6 +311,10 @@ const mp_obj_module_t mp_module_websocket = {
     .globals = (mp_obj_dict_t *)&websocket_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_websocket, mp_module_websocket);
+// This module should not be extensible (as it is not a CPython standard
+// library nor is it necessary to override from the filesystem), however it
+// has previously been known as `uwebsocket`, so by making it extensible the
+// `uwebsocket` alias will continue to work.
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_websocket, mp_module_websocket);
 
 #endif // MICROPY_PY_WEBSOCKET

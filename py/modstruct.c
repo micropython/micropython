@@ -266,6 +266,6 @@ const mp_obj_module_t mp_module_struct = {
     .globals = (mp_obj_dict_t *)&mp_module_struct_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_struct, mp_module_struct);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_struct, mp_module_struct);
 
 #endif

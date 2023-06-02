@@ -75,6 +75,6 @@ const mp_obj_module_t mp_module_platform = {
     .globals = (mp_obj_dict_t *)&modplatform_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_platform, mp_module_platform);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_platform, mp_module_platform);
 
 #endif // MICROPY_PY_PLATFORM

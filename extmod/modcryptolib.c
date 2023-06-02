@@ -375,6 +375,10 @@ const mp_obj_module_t mp_module_cryptolib = {
     .globals = (mp_obj_dict_t *)&mp_module_cryptolib_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_cryptolib, mp_module_cryptolib);
+// This module should not be extensible (as it is not a CPython standard
+// library nor is it necessary to override from the filesystem), however it
+// has previously been known as `ucryptolib`, so by making it extensible the
+// `ucryptolib` alias will continue to work.
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_cryptolib, mp_module_cryptolib);
 
 #endif // MICROPY_PY_CRYPTOLIB

@@ -255,7 +255,7 @@ const mp_obj_module_t mp_module_random = {
     .globals = (mp_obj_dict_t *)&mp_module_random_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_random, mp_module_random);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_random, mp_module_random);
 #endif
 
 #endif // MICROPY_PY_RANDOM

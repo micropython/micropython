@@ -374,6 +374,6 @@ const mp_obj_module_t mp_module_hashlib = {
     .globals = (mp_obj_dict_t *)&mp_module_hashlib_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_hashlib, mp_module_hashlib);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_hashlib, mp_module_hashlib);
 
 #endif // MICROPY_PY_HASHLIB

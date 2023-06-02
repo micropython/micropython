@@ -380,20 +380,23 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     mp_obj_t module_obj;
 
     if (outer_module_obj == MP_OBJ_NULL) {
+        // First module in the dotted-name path.
         DEBUG_printf("Searching for top-level module\n");
 
         // An import of a non-extensible built-in will always bypass the
-        // filesystem. e.g. `import micropython` or `import pyb`.
+        // filesystem. e.g. `import micropython` or `import pyb`. So try and
+        // match a non-extensible built-ins first.
         module_obj = mp_module_get_builtin(level_mod_name, false);
         if (module_obj != MP_OBJ_NULL) {
             return module_obj;
         }
 
-        // First module in the dotted-name; search for a directory or file
-        // relative to all the locations in sys.path.
+        // Next try the filesystem. Search for a directory or file relative to
+        // all the locations in sys.path.
         stat = stat_top_level(level_mod_name, &path);
 
-        // TODO: If stat failed, now try extensible built-in modules.
+        // If filesystem failed, now try and see if it matches an extensible
+        // built-in module.
         if (stat == MP_IMPORT_STAT_NO_EXIST) {
             module_obj = mp_module_get_builtin(level_mod_name, true);
             if (module_obj != MP_OBJ_NULL) {

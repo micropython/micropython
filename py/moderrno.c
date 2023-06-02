@@ -99,7 +99,7 @@ const mp_obj_module_t mp_module_errno = {
     .globals = (mp_obj_dict_t *)&mp_module_errno_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_errno, mp_module_errno);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_errno, mp_module_errno);
 
 qstr mp_errno_to_str(mp_obj_t errno_val) {
     #if MICROPY_PY_ERRNO_ERRORCODE

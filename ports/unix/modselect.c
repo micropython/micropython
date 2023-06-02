@@ -351,6 +351,6 @@ const mp_obj_module_t mp_module_select = {
     .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_select, mp_module_select);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_select, mp_module_select);
 
 #endif // MICROPY_PY_SELECT_POSIX

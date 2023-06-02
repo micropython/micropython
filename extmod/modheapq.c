@@ -118,7 +118,7 @@ const mp_obj_module_t mp_module_heapq = {
     .globals = (mp_obj_dict_t *)&mp_module_heapq_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_heapq, mp_module_heapq);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_heapq, mp_module_heapq);
 #endif
 
 #endif // MICROPY_PY_HEAPQ
