@@ -30,7 +30,7 @@ Example usage::
 Constructors
 ------------
 
-.. class:: pyb.Servo(id)
+.. class:: Servo(id)
 
    Create a servo object.  ``id`` is 1-4, and corresponds to pins X1 through X4.
 

@@ -160,11 +160,17 @@ value_error:
         mp_printf(&print, "invalid syntax for integer with base %d: ", base);
         mp_str_print_quoted(&print, str_val_start, top - str_val_start, true);
         mp_obj_t exc = mp_obj_new_exception_arg1(&mp_type_ValueError,
-            mp_obj_new_str_from_vstr(&mp_type_str, &vstr));
+            mp_obj_new_str_from_utf8_vstr(&vstr));
         raise_exc(exc, lex);
         #endif
     }
 }
+
+enum {
+    REAL_IMAG_STATE_START = 0,
+    REAL_IMAG_STATE_HAVE_REAL = 1,
+    REAL_IMAG_STATE_HAVE_IMAG = 2,
+};
 
 typedef enum {
     PARSE_DEC_IN_INTG,
@@ -172,31 +178,61 @@ typedef enum {
     PARSE_DEC_IN_EXP,
 } parse_dec_in_t;
 
-mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex) {
-    #if MICROPY_PY_BUILTINS_FLOAT
-
+#if MICROPY_PY_BUILTINS_FLOAT
 // DEC_VAL_MAX only needs to be rough and is used to retain precision while not overflowing
 // SMALL_NORMAL_VAL is the smallest power of 10 that is still a normal float
 // EXACT_POWER_OF_10 is the largest value of x so that 10^x can be stored exactly in a float
 //   Note: EXACT_POWER_OF_10 is at least floor(log_5(2^mantissa_length)). Indeed, 10^n = 2^n * 5^n
 //   so we only have to store the 5^n part in the mantissa (the 2^n part will go into the float's
 //   exponent).
-    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define DEC_VAL_MAX 1e20F
 #define SMALL_NORMAL_VAL (1e-37F)
 #define SMALL_NORMAL_EXP (-37)
 #define EXACT_POWER_OF_10 (9)
-    #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define DEC_VAL_MAX 1e200
 #define SMALL_NORMAL_VAL (1e-307)
 #define SMALL_NORMAL_EXP (-307)
 #define EXACT_POWER_OF_10 (22)
-    #endif
+#endif
+
+// Break out inner digit accumulation routine to ease trailing zero deferral.
+static void accept_digit(mp_float_t *p_dec_val, int dig, int *p_exp_extra, int in) {
+    // Core routine to ingest an additional digit.
+    if (*p_dec_val < DEC_VAL_MAX) {
+        // dec_val won't overflow so keep accumulating
+        *p_dec_val = 10 * *p_dec_val + dig;
+        if (in == PARSE_DEC_IN_FRAC) {
+            --(*p_exp_extra);
+        }
+    } else {
+        // dec_val might overflow and we anyway can't represent more digits
+        // of precision, so ignore the digit and just adjust the exponent
+        if (in == PARSE_DEC_IN_INTG) {
+            ++(*p_exp_extra);
+        }
+    }
+}
+#endif // MICROPY_BUILTINS_FLOAT
+
+#if MICROPY_PY_BUILTINS_COMPLEX
+mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex)
+#else
+mp_obj_t mp_parse_num_float(const char *str, size_t len, bool allow_imag, mp_lexer_t *lex)
+#endif
+{
+    #if MICROPY_PY_BUILTINS_FLOAT
 
     const char *top = str + len;
     mp_float_t dec_val = 0;
     bool dec_neg = false;
-    bool imag = false;
+
+    #if MICROPY_PY_BUILTINS_COMPLEX
+    unsigned int real_imag_state = REAL_IMAG_STATE_START;
+    mp_float_t dec_real = 0;
+parse_start:
+    #endif
 
     // skip leading space
     for (; str < top && unichar_isspace(*str); str++) {
@@ -239,6 +275,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
         bool exp_neg = false;
         int exp_val = 0;
         int exp_extra = 0;
+        int trailing_zeros_intg = 0, trailing_zeros_frac = 0;
         while (str < top) {
             unsigned int dig = *str++;
             if ('0' <= dig && dig <= '9') {
@@ -251,18 +288,25 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
                         exp_val = 10 * exp_val + dig;
                     }
                 } else {
-                    if (dec_val < DEC_VAL_MAX) {
-                        // dec_val won't overflow so keep accumulating
-                        dec_val = 10 * dec_val + dig;
-                        if (in == PARSE_DEC_IN_FRAC) {
-                            --exp_extra;
+                    if (dig == 0 || dec_val >= DEC_VAL_MAX) {
+                        // Defer treatment of zeros in fractional part.  If nothing comes afterwards, ignore them.
+                        // Also, once we reach DEC_VAL_MAX, treat every additional digit as a trailing zero.
+                        if (in == PARSE_DEC_IN_INTG) {
+                            ++trailing_zeros_intg;
+                        } else {
+                            ++trailing_zeros_frac;
                         }
                     } else {
-                        // dec_val might overflow and we anyway can't represent more digits
-                        // of precision, so ignore the digit and just adjust the exponent
-                        if (in == PARSE_DEC_IN_INTG) {
-                            ++exp_extra;
+                        // Time to un-defer any trailing zeros.  Intg zeros first.
+                        while (trailing_zeros_intg) {
+                            accept_digit(&dec_val, 0, &exp_extra, PARSE_DEC_IN_INTG);
+                            --trailing_zeros_intg;
                         }
+                        while (trailing_zeros_frac) {
+                            accept_digit(&dec_val, 0, &exp_extra, PARSE_DEC_IN_FRAC);
+                            --trailing_zeros_frac;
+                        }
+                        accept_digit(&dec_val, dig, &exp_extra, in);
                     }
                 }
             } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
@@ -280,9 +324,6 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
                 if (str == top) {
                     goto value_error;
                 }
-            } else if (allow_imag && (dig | 0x20) == 'j') {
-                imag = true;
-                break;
             } else if (dig == '_') {
                 continue;
             } else {
@@ -298,7 +339,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
         }
 
         // apply the exponent, making sure it's not a subnormal value
-        exp_val += exp_extra;
+        exp_val += exp_extra + trailing_zeros_intg;
         if (exp_val < SMALL_NORMAL_EXP) {
             exp_val -= SMALL_NORMAL_EXP;
             dec_val *= SMALL_NORMAL_VAL;
@@ -314,6 +355,19 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
         } else {
             dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
         }
+    }
+
+    if (allow_imag && str < top && (*str | 0x20) == 'j') {
+        #if MICROPY_PY_BUILTINS_COMPLEX
+        if (str == str_val_start) {
+            // Convert "j" to "1j".
+            dec_val = 1;
+        }
+        ++str;
+        real_imag_state |= REAL_IMAG_STATE_HAVE_IMAG;
+        #else
+        raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("complex values not supported")), lex);
+        #endif
     }
 
     // negate value if needed
@@ -332,24 +386,36 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
 
     // check we reached the end of the string
     if (str != top) {
+        #if MICROPY_PY_BUILTINS_COMPLEX
+        if (force_complex && real_imag_state == REAL_IMAG_STATE_START) {
+            // If we've only seen a real so far, keep parsing for the imaginary part.
+            dec_real = dec_val;
+            dec_val = 0;
+            real_imag_state |= REAL_IMAG_STATE_HAVE_REAL;
+            goto parse_start;
+        }
+        #endif
         goto value_error;
     }
 
-    // return the object
     #if MICROPY_PY_BUILTINS_COMPLEX
-    if (imag) {
-        return mp_obj_new_complex(0, dec_val);
+    if (real_imag_state == REAL_IMAG_STATE_HAVE_REAL) {
+        // We're on the second part, but didn't get the expected imaginary number.
+        goto value_error;
+    }
+    #endif
+
+    // return the object
+
+    #if MICROPY_PY_BUILTINS_COMPLEX
+    if (real_imag_state != REAL_IMAG_STATE_START) {
+        return mp_obj_new_complex(dec_real, dec_val);
     } else if (force_complex) {
         return mp_obj_new_complex(dec_val, 0);
     }
-    #else
-    if (imag || force_complex) {
-        raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("complex values not supported")), lex);
-    }
     #endif
-    else {
-        return mp_obj_new_float(dec_val);
-    }
+
+    return mp_obj_new_float(dec_val);
 
 value_error:
     raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("invalid syntax for number")), lex);

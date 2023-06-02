@@ -29,10 +29,10 @@
 #if MICROPY_PY_ZEPHYR
 
 #include <stdio.h>
-#include <zephyr.h>
-#include <debug/thread_analyzer.h>
-#include <shell/shell.h>
-#include <shell/shell_uart.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/debug/thread_analyzer.h>
+#include <zephyr/shell/shell.h>
+#include <zephyr/shell/shell_uart.h>
 
 #include "modzephyr.h"
 #include "py/runtime.h"

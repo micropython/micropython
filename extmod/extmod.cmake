@@ -14,8 +14,8 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/machine_signal.c
     ${MICROPY_EXTMOD_DIR}/machine_spi.c
     ${MICROPY_EXTMOD_DIR}/modbluetooth.c
-    ${MICROPY_EXTMOD_DIR}/modbtree.c
     ${MICROPY_EXTMOD_DIR}/modframebuf.c
+    ${MICROPY_EXTMOD_DIR}/modlwip.c
     ${MICROPY_EXTMOD_DIR}/modnetwork.c
     ${MICROPY_EXTMOD_DIR}/modonewire.c
     ${MICROPY_EXTMOD_DIR}/moduasyncio.c
@@ -37,6 +37,10 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/moduwebsocket.c
     ${MICROPY_EXTMOD_DIR}/moduzlib.c
     ${MICROPY_EXTMOD_DIR}/modwebrepl.c
+    ${MICROPY_EXTMOD_DIR}/network_cyw43.c
+    ${MICROPY_EXTMOD_DIR}/network_lwip.c
+    ${MICROPY_EXTMOD_DIR}/network_ninaw10.c
+    ${MICROPY_EXTMOD_DIR}/network_wiznet5k.c
     ${MICROPY_EXTMOD_DIR}/uos_dupterm.c
     ${MICROPY_EXTMOD_DIR}/utime_mphal.c
     ${MICROPY_EXTMOD_DIR}/vfs.c
@@ -93,8 +97,13 @@ if(MICROPY_PY_BTREE)
     )
 
     list(APPEND MICROPY_DEF_CORE
+        MICROPY_PY_BTREE=1
         __DBINTERFACE_PRIVATE=1
         "virt_fd_t=void*"
+    )
+
+    list(APPEND MICROPY_SOURCE_EXTMOD
+        ${MICROPY_EXTMOD_DIR}/modbtree.c
     )
 endif()
 
@@ -110,6 +119,7 @@ if(MICROPY_SSL_MBEDTLS)
     )
 
     target_sources(micropy_lib_mbedtls INTERFACE
+        ${MICROPY_DIR}/lib/mbedtls_errors/mp_mbedtls_errors.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/aes.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/aesni.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/arc4.c
@@ -137,7 +147,6 @@ if(MICROPY_SSL_MBEDTLS)
         ${MICROPY_LIB_MBEDTLS_DIR}/library/ecp_curves.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/entropy.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/entropy_poll.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/error.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/gcm.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/havege.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/hmac_drbg.c
@@ -183,8 +192,12 @@ if(MICROPY_SSL_MBEDTLS)
         ${MICROPY_LIB_MBEDTLS_DIR}/library/xtea.c
     )
 
+    if(NOT MBEDTLS_CONFIG_FILE)
+        set(MBEDTLS_CONFIG_FILE "${MICROPY_PORT_DIR}/mbedtls/mbedtls_config.h")
+    endif()
+
     target_compile_definitions(micropy_lib_mbedtls INTERFACE
-        MBEDTLS_CONFIG_FILE="${MICROPY_PORT_DIR}/mbedtls/mbedtls_config.h"
+        MBEDTLS_CONFIG_FILE="${MBEDTLS_CONFIG_FILE}"
     )
 
     list(APPEND MICROPY_INC_CORE
@@ -246,4 +259,6 @@ if(MICROPY_PY_LWIP)
     list(APPEND MICROPY_INC_CORE
         ${MICROPY_LIB_LWIP_DIR}/include
     )
+
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/lwip)
 endif()

@@ -53,6 +53,11 @@ async def main():
 
     print("====")
 
+    # Gather with no awaitables
+    print(await asyncio.gather())
+
+    print("====")
+
     # Test return_exceptions, where one task is cancelled and the other finishes normally
     tasks = [asyncio.create_task(task(1)), asyncio.create_task(task(2))]
     tasks[0].cancel()

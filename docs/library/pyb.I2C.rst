@@ -56,7 +56,7 @@ Master also has other methods::
 Constructors
 ------------
 
-.. class:: pyb.I2C(bus, ...)
+.. class:: I2C(bus, ...)
 
    Construct an I2C object on the given bus.  ``bus`` can be 1 or 2, 'X' or
    'Y'. With no additional parameters, the I2C object is created but not
@@ -95,6 +95,10 @@ Methods
      - ``dma`` is whether to allow the use of DMA for the I2C transfers (note
        that DMA transfers have more precise timing but currently do not handle bus
        errors properly)
+
+   The actual clock frequency may be lower than the requested frequency.
+   This is dependant on the platform hardware. The actual rate may be determined
+   by printing the I2C object.
 
 .. method:: I2C.is_ready(addr)
 

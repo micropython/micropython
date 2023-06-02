@@ -164,6 +164,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
         && !isBufferEmpty(mp_rx_ring_buffer)) {
         ret |= MP_STREAM_POLL_RD;
     }
+    if ((poll_flags & MP_STREAM_POLL_WR) && ble_uart_enabled()) {
+        ret |= MP_STREAM_POLL_WR;
+    }
     return ret;
 }
 #endif
@@ -193,9 +196,9 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
             for (uint16_t i = 0; i < length; i++) {
                 #if MICROPY_KBD_EXCEPTION
                 if (data[i] == mp_interrupt_char) {
-                    mp_sched_keyboard_interrupt();
                     m_rx_ring_buffer.start = 0;
                     m_rx_ring_buffer.end = 0;
+                    mp_sched_keyboard_interrupt();
                 } else
                 #endif
                 {

@@ -27,10 +27,10 @@ MICROPY_PY_FFI = 1
 MICROPY_PY_USSL = 1
 # axTLS has minimal size but implements only a subset of modern TLS
 # functionality, so may have problems with some servers.
-MICROPY_SSL_AXTLS = 1
+MICROPY_SSL_AXTLS = 0
 # mbedTLS is more up to date and complete implementation, but also
 # more bloated.
-MICROPY_SSL_MBEDTLS = 0
+MICROPY_SSL_MBEDTLS = 1
 
 # jni module requires JVM/JNI
 MICROPY_PY_JNI = 0
@@ -38,3 +38,9 @@ MICROPY_PY_JNI = 0
 # Avoid using system libraries, use copies bundled with MicroPython
 # as submodules (currently affects only libffi).
 MICROPY_STANDALONE = 0
+
+MICROPY_ROM_TEXT_COMPRESSION = 1
+
+MICROPY_VFS_FAT = 1
+MICROPY_VFS_LFS1 = 1
+MICROPY_VFS_LFS2 = 1

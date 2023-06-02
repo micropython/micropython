@@ -67,7 +67,7 @@ STATIC mp_obj_t mod_ujson_dump_helper(size_t n_args, const mp_obj_t *pos_args, m
         vstr_t vstr;
         vstr_init_print(&vstr, 8, &print_ext.base);
         mp_obj_print_helper(&print_ext.base, pos_args[0], PRINT_JSON);
-        return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+        return mp_obj_new_str_from_utf8_vstr(&vstr);
     } else {
         // dump(obj, stream)
         print_ext.base.data = MP_OBJ_TO_PTR(pos_args[1]);
@@ -103,7 +103,7 @@ STATIC mp_obj_t mod_ujson_dumps(mp_obj_t obj) {
     mp_print_t print;
     vstr_init_print(&vstr, 8, &print);
     mp_obj_print_helper(&print, obj, PRINT_JSON);
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return mp_obj_new_str_from_utf8_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_dumps_obj, mod_ujson_dumps);
 
@@ -270,7 +270,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
                     S_NEXT(s);
                 }
                 if (flt) {
-                    next = mp_parse_num_decimal(vstr.buf, vstr.len, false, false, NULL);
+                    next = mp_parse_num_float(vstr.buf, vstr.len, false, NULL);
                 } else {
                     next = mp_parse_num_integer(vstr.buf, vstr.len, 10, NULL);
                 }

@@ -162,7 +162,7 @@ void PORTENTA_board_low_power(int mode) {
             break;
     }
 
-    #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+    #if !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
     // Enable QSPI deepsleep for modes 1 and 2
     mp_spiflash_deepsleep(&spi_bdev.spiflash, (mode != 0));
     #endif

@@ -27,23 +27,16 @@
 #include <stdlib.h>
 
 #include "py/runtime.h"
-#include "shared/runtime/interrupt_char.h"
 #include "pendsv.h"
-#include "lib/nxp_driver/sdk/CMSIS/Include/core_cm7.h"
 
 #define NVIC_PRIORITYGROUP_4    ((uint32_t)0x00000003)
 #define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 15, 0)
 
 #if defined(PENDSV_DISPATCH_NUM_SLOTS)
-uint32_t pendsv_dispatch_active;
 pendsv_dispatch_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];
 #endif
 
 void pendsv_init(void) {
-    #if defined(PENDSV_DISPATCH_NUM_SLOTS)
-    pendsv_dispatch_active = false;
-    #endif
-
     // set PendSV interrupt at lowest priority
     NVIC_SetPriority(PendSV_IRQn, IRQ_PRI_PENDSV);
 }
@@ -51,23 +44,16 @@ void pendsv_init(void) {
 #if defined(PENDSV_DISPATCH_NUM_SLOTS)
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
     pendsv_dispatch_table[slot] = f;
-    pendsv_dispatch_active = true;
     SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
 }
 
-void pendsv_dispatch_handler(void) {
+void PendSV_Handler(void) {
     for (size_t i = 0; i < PENDSV_DISPATCH_NUM_SLOTS; ++i) {
         if (pendsv_dispatch_table[i] != NULL) {
             pendsv_dispatch_t f = pendsv_dispatch_table[i];
             pendsv_dispatch_table[i] = NULL;
             f();
         }
-    }
-}
-
-void PendSV_Handler(void) {
-    if (pendsv_dispatch_active) {
-        pendsv_dispatch_handler();
     }
 }
 #endif

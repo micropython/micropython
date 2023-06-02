@@ -156,6 +156,24 @@ STATIC uint8_t *USBD_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16
             }
             break;
 
+        #ifdef MICROPY_HW_USB_INTERFACE_CDC0_STRING
+        case USBD_IDX_INTERFACE_CDC0_STR:
+            str = MICROPY_HW_USB_INTERFACE_CDC0_STRING;
+            break;
+        #endif
+
+        #ifdef MICROPY_HW_USB_INTERFACE_CDC1_STRING
+        case USBD_IDX_INTERFACE_CDC1_STR:
+            str = MICROPY_HW_USB_INTERFACE_CDC1_STRING;
+            break;
+        #endif
+
+        #ifdef MICROPY_HW_USB_INTERFACE_CDC2_STRING
+        case USBD_IDX_INTERFACE_CDC2_STR:
+            str = MICROPY_HW_USB_INTERFACE_CDC2_STRING;
+            break;
+        #endif
+
         default:
             // invalid string index
             return NULL;

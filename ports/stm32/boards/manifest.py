@@ -1,5 +1,5 @@
-include("$(MPY_DIR)/extmod/uasyncio/manifest.py")
-freeze("$(MPY_DIR)/drivers/dht", "dht.py")
+include("$(MPY_DIR)/extmod/uasyncio")
+require("dht")
+require("onewire")
 freeze("$(MPY_DIR)/drivers/display", ("lcd160cr.py", "lcd160cr_test.py"))
-freeze("$(MPY_DIR)/drivers/onewire", "onewire.py")
 freeze("$(MPY_DIR)/lib/lv_bindings/lib", "lv_utils.py")

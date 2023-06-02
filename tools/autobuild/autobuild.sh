@@ -74,6 +74,8 @@ cd ../esp32
 (source ${IDF_PATH_V44}/export.sh && build_esp32_boards ${FW_TAG} ${LOCAL_FIRMWARE})
 cd ../mimxrt
 build_mimxrt_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../nrf
+build_nrf_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../renesas-ra
 build_renesas_ra_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../rp2

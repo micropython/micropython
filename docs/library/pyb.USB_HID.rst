@@ -13,7 +13,7 @@ Before you can use this class, you need to use :meth:`pyb.usb_mode()` to set the
 Constructors
 ------------
 
-.. class:: pyb.USB_HID()
+.. class:: USB_HID()
 
    Create a new USB_HID object.
 

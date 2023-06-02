@@ -53,6 +53,7 @@ According to AN12077:
 """
 ocram_min_size = 0x00010000  # 64 KB
 
+
 # Value parser
 def mimxrt_default_parser(defines_file, features_file, ld_script):
     with open(ld_script, "r") as input_file:
@@ -169,6 +170,43 @@ def mimxrt_106x_gen_code(extract_dict):
     )
 
 
+def mimxrt_1176_gen_code(extract_dict):
+    flexram_bank_cfg = "0b"
+    avail_flexram = extract_dict["fsl_ram_bank_size"] * extract_dict["fsl_bank_nbr"]
+    flexram_configurable_ocram = (
+        extract_dict["ocram_size"] % 524288
+    )  # 512kB OCRAM are not part of FlexRAM configurable memory
+
+    if (
+        flexram_configurable_ocram + extract_dict["dtcm_size"] + extract_dict["itcm_size"]
+    ) > avail_flexram:
+        raise ValueError("Configuration exceeds available FlexRAM!")
+
+    for size, pattern in (
+        (flexram_configurable_ocram, "01"),
+        (extract_dict["dtcm_size"], "10"),
+        (extract_dict["itcm_size"], "11"),
+    ):
+        for _ in range(0, size, extract_dict["fsl_ram_bank_size"]):
+            flexram_bank_cfg += pattern
+
+    # Generate GPR Register config
+    print(".equ __iomux_gpr14_adr, 0x{:08X}".format(extract_dict["gpr_base_addr"] + 0x38))
+    print(".equ __iomux_gpr16_adr, 0x{:08X}".format(extract_dict["gpr_base_addr"] + 0x40))
+    print(".equ __iomux_gpr17_adr, 0x{:08X}".format(extract_dict["gpr_base_addr"] + 0x44))
+    print(".equ __iomux_gpr18_adr, 0x{:08X}".format(extract_dict["gpr_base_addr"] + 0x48))
+    print(
+        ".equ __iomux_gpr17_value, 0x{:08X} /* {}k OCRAM (512k OCRAM, {}k from FlexRAM), {}k DTCM, {}k ITCM */".format(
+            int(flexram_bank_cfg, 2) & 0xFFFF,
+            extract_dict["ocram_size"] // 1024,
+            flexram_configurable_ocram // 1024,
+            extract_dict["dtcm_size"] // 1024,
+            extract_dict["itcm_size"] // 1024,
+        )
+    )
+    print(".equ __iomux_gpr18_value, 0x{:08X}".format((int(flexram_bank_cfg, 2) >> 16) & 0xFFFF))
+
+
 def main(defines_file, features_file, ld_script, controller):
     dispatcher = {
         "MIMXRT1011": (mimxrt_default_parser, mimxrt_default_gen_code),
@@ -177,6 +215,7 @@ def main(defines_file, features_file, ld_script, controller):
         "MIMXRT1052": (mimxrt_default_parser, mimxrt_default_gen_code),
         "MIMXRT1062": (mimxrt_default_parser, mimxrt_106x_gen_code),
         "MIMXRT1064": (mimxrt_default_parser, mimxrt_106x_gen_code),
+        "MIMXRT1176": (mimxrt_default_parser, mimxrt_1176_gen_code),
     }
 
     extractor, code_generator = dispatcher[controller]

@@ -29,14 +29,13 @@
 #include "powerctrl.h"
 #include "rtc.h"
 #include "genhdr/pllfreqtable.h"
+#include "extmod/modbluetooth.h"
 
 #if defined(STM32H7)
 #define RCC_SR          RSR
-#if defined(STM32H743xx) || defined(STM32H750xx)
-#define RCC_SR_SFTRSTF  RCC_RSR_SFTRSTF
-#elif defined(STM32H747xx)
+#if defined(STM32H747xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFT2RSTF
-#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+#else
 #define RCC_SR_SFTRSTF  RCC_RSR_SFTRSTF
 #endif
 #define RCC_SR_RMVF     RCC_RSR_RMVF
@@ -47,6 +46,8 @@
     defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
 // TODO
 #define POWERCTRL_GET_VOLTAGE_SCALING() PWR_REGULATOR_VOLTAGE_SCALE0
+#elif defined(STM32H723xx)
+#define POWERCTRL_GET_VOLTAGE_SCALING() LL_PWR_GetRegulVoltageScaling()
 #else
 #define POWERCTRL_GET_VOLTAGE_SCALING()     \
     (((PWR->CSR1 & PWR_CSR1_ACTVOS) && (SYSCFG->PWRCR & SYSCFG_PWRCR_ODEN)) ? \
@@ -78,7 +79,7 @@
 // Location in RAM of bootloader state (just after the top of the stack).
 // STM32H7 has ECC and writes to RAM must be 64-bit so they are fully committed
 // to actual SRAM before a system reset occurs.
-#define BL_STATE_PTR                ((uint64_t *)&_estack)
+#define BL_STATE_PTR                ((uint64_t *)&_bl_state)
 #define BL_STATE_KEY                (0x5a5)
 #define BL_STATE_KEY_MASK           (0xfff)
 #define BL_STATE_KEY_SHIFT          (32)
@@ -87,7 +88,7 @@
 #define BL_STATE_GET_REG(s)         ((s) & 0xffffffff)
 #define BL_STATE_GET_KEY(s)         (((s) >> BL_STATE_KEY_SHIFT) & BL_STATE_KEY_MASK)
 #define BL_STATE_GET_ADDR(s)        (((s) >> BL_STATE_KEY_SHIFT) & ~BL_STATE_KEY_MASK)
-extern uint64_t _estack[];
+extern uint64_t _bl_state[];
 #endif
 
 static inline void powerctrl_disable_hsi_if_unused(void) {
@@ -143,7 +144,7 @@ void powerctrl_check_enter_bootloader(void) {
     if (BL_STATE_GET_KEY(bl_state) == BL_STATE_KEY && (RCC->RCC_SR & RCC_SR_SFTRSTF)) {
         // Reset by NVIC_SystemReset with bootloader data set -> branch to bootloader
         RCC->RCC_SR = RCC_SR_RMVF;
-        #if defined(STM32F0) || defined(STM32F4) || defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+        #if defined(STM32F0) || defined(STM32F4) || defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32WB)
         __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
         #endif
         branch_to_bootloader(BL_STATE_GET_REG(bl_state), BL_STATE_GET_ADDR(bl_state));
@@ -286,7 +287,7 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
 #endif
 
-#if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L4)
+#if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4)
 
 STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
     #if defined(STM32H7)
@@ -676,9 +677,65 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
     return 0;
 }
 
-#endif
+#if defined(STM32WB)
 
-#endif // !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
+static void powerctrl_switch_on_HSI(void) {
+    LL_RCC_HSI_Enable();
+    while (!LL_RCC_HSI_IsReady()) {
+    }
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
+    LL_RCC_SetSMPSClockSource(LL_RCC_SMPS_CLKSOURCE_HSI);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI) {
+    }
+    return;
+}
+
+static void powerctrl_low_power_prep_wb55() {
+    // See WB55 specific documentation in AN5289 Rev 6, and in particular, Figure 6.
+    while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
+    }
+    if (!LL_HSEM_1StepLock(HSEM, CFG_HW_ENTRY_STOP_MODE_SEMID)) {
+        if (LL_PWR_IsActiveFlag_C2DS() || LL_PWR_IsActiveFlag_C2SB()) {
+            // Release ENTRY_STOP_MODE semaphore
+            LL_HSEM_ReleaseLock(HSEM, CFG_HW_ENTRY_STOP_MODE_SEMID, 0);
+
+            powerctrl_switch_on_HSI();
+        }
+    } else {
+        powerctrl_switch_on_HSI();
+    }
+    // Release RCC semaphore
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
+}
+
+static void powerctrl_low_power_exit_wb55() {
+    // Ensure the HSE/HSI clock configuration is correct so core2 can wake properly again.
+    // See WB55 specific documentation in AN5289 Rev 6, and in particular, Figure 7.
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_ENTRY_STOP_MODE_SEMID, 0);
+    // Acquire RCC semaphore before adjusting clocks.
+    while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
+    }
+
+    if (LL_RCC_GetSysClkSource() == LL_RCC_SYS_CLKSOURCE_STATUS_HSI) {
+        // Restore the clock configuration of the application
+        LL_RCC_HSE_Enable();
+        __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_1);
+        while (!LL_RCC_HSE_IsReady()) {
+        }
+        LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
+        while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE) {
+        }
+    }
+
+    // Release RCC semaphore
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
+}
+
+#endif // defined(STM32WB)
+
+#endif // defined(STM32WB) || defined(STM32WL)
+
+#endif // !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4)
 
 void powerctrl_enter_stop_mode(void) {
     // Disable IRQs so that the IRQ that wakes the device from stop mode is not
@@ -708,7 +765,7 @@ void powerctrl_enter_stop_mode(void) {
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
     #endif
 
-    #if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32G4) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB) && !defined(STM32WL)
+    #if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32G4) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4) && !defined(STM32WB) && !defined(STM32WL)
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
     #endif
@@ -727,6 +784,10 @@ void powerctrl_enter_stop_mode(void) {
         while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
         }
     }
+    #endif
+
+    #if defined(STM32WB)
+    powerctrl_low_power_prep_wb55();
     #endif
 
     #if defined(STM32F7)
@@ -760,6 +821,10 @@ void powerctrl_enter_stop_mode(void) {
         while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
         }
     }
+    #endif
+
+    #if defined(STM32WB)
+    powerctrl_low_power_exit_wb55();
     #endif
 
     #if !defined(STM32L4)
@@ -875,6 +940,22 @@ void powerctrl_enter_standby_mode(void) {
     MICROPY_BOARD_ENTER_STANDBY
     #endif
 
+    #if defined(STM32H7)
+    // Note: According to ST reference manual, RM0399, Rev 3, Section 7.7.10,
+    // before entering Standby mode, voltage scale VOS0 must not be active.
+    uint32_t vscaling = POWERCTRL_GET_VOLTAGE_SCALING();
+    if (vscaling == PWR_REGULATOR_VOLTAGE_SCALE0) {
+        __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+        // Wait for PWR_FLAG_VOSRDY
+        while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
+        }
+    }
+    #endif
+
+    #if defined(STM32WB) && MICROPY_PY_BLUETOOTH
+    mp_bluetooth_deinit();
+    #endif
+
     // We need to clear the PWR wake-up-flag before entering standby, since
     // the flag may have been set by a previous wake-up event.  Furthermore,
     // we need to disable the wake-up sources while clearing this flag, so
@@ -926,8 +1007,16 @@ void powerctrl_enter_standby_mode(void) {
     // Restore EWUP state
     PWR->CSR2 |= csr2_ewup;
     #elif defined(STM32H7)
-    EXTI_D1->PR1 = 0x3fffff;
-    PWR->WKUPCR |= PWR_WAKEUP_FLAG1 | PWR_WAKEUP_FLAG2 | PWR_WAKEUP_FLAG3 | PWR_WAKEUP_FLAG4 | PWR_WAKEUP_FLAG5 | PWR_WAKEUP_FLAG6;
+    // Clear and mask D1 EXTIs.
+    EXTI_D1->PR1 = 0x3fffffu;
+    EXTI_D1->IMR1 &= ~(0xFFFFu); // 16 lines
+    #if defined(EXTI_D2)
+    // Clear and mask D2 EXTIs.
+    EXTI_D2->PR1 = 0x3fffffu;
+    EXTI_D2->IMR1 &= ~(0xFFFFu); // 16 lines
+    #endif
+    // Clear all wake-up flags.
+    PWR->WKUPCR |= PWR_WAKEUP_FLAG_ALL;
     #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
     // clear all wake-up flags
     PWR->SCR |= PWR_SCR_CWUF5 | PWR_SCR_CWUF4 | PWR_SCR_CWUF3 | PWR_SCR_CWUF2 | PWR_SCR_CWUF1;
@@ -950,6 +1039,15 @@ void powerctrl_enter_standby_mode(void) {
     // Enable the internal (eg RTC) wakeup sources
     // See Errata 2.2.2 "Wakeup from Standby mode when the back-up SRAM regulator is enabled"
     PWR->CSR1 |= PWR_CSR1_EIWUP;
+    #endif
+
+    #if defined(NDEBUG) && defined(DBGMCU)
+    // Disable Debug MCU.
+    DBGMCU->CR = 0;
+    #endif
+
+    #if defined(STM32WB)
+    powerctrl_low_power_prep_wb55();
     #endif
 
     // enter standby mode

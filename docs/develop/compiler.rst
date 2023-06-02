@@ -147,10 +147,17 @@ The most relevant method you should know about is this:
 .. code-block:: c
 
    mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl) {
+       // Create a context for this module, and set its globals dict.
+       mp_module_context_t *context = m_new_obj(mp_module_context_t);
+       context->module.globals = mp_globals_get();
+
        // Compile the input parse_tree to a raw-code structure.
-       mp_raw_code_t *rc = mp_compile_to_raw_code(parse_tree, source_file, is_repl);
+       mp_compiled_module_t cm;
+       cm.context = context;
+       mp_compile_to_raw_code(parse_tree, source_file, is_repl, &cm);
+
        // Create and return a function object that executes the outer module.
-       return mp_make_function_from_raw_code(rc, MP_OBJ_NULL, MP_OBJ_NULL);
+       return mp_make_function_from_raw_code(cm.rc, cm.context, NULL);
    }
 
 The compiler compiles the code in four passes: scope, stack size, code size and emit.

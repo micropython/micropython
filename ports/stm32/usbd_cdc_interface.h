@@ -62,6 +62,7 @@ typedef struct _usbd_cdc_itf_t {
     volatile uint8_t connect_state; // indicates if we are connected
     uint8_t attached_to_repl; // indicates if interface is connected to REPL
     uint8_t flow; // USBD_CDC_FLOWCONTROL_* setting flags
+    uint32_t bitrate;
 } usbd_cdc_itf_t;
 
 // This is implemented in usb.c

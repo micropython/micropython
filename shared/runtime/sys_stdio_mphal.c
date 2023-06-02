@@ -52,7 +52,7 @@ typedef struct _sys_stdio_obj_t {
 STATIC const sys_stdio_obj_t stdio_buffer_obj;
 #endif
 
-void stdio_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void stdio_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<io.FileIO %d>", self->fd);
 }
@@ -100,8 +100,6 @@ STATIC mp_obj_t stdio_obj___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stdio_obj___exit___obj, 4, 4, stdio_obj___exit__);
 
-// TODO gc hook to close the file if not already closed
-
 STATIC const mp_rom_map_elem_t stdio_locals_dict_table[] = {
     #if MICROPY_PY_SYS_STDIO_BUFFER
     { MP_ROM_QSTR(MP_QSTR_buffer), MP_ROM_PTR(&stdio_buffer_obj) },
@@ -112,7 +110,6 @@ STATIC const mp_rom_map_elem_t stdio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj)},
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&stdio_obj___exit___obj) },
 };
@@ -126,16 +123,14 @@ STATIC const mp_stream_p_t stdio_obj_stream_p = {
     .is_text = true,
 };
 
-STATIC const mp_obj_type_t stdio_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_FileIO,
-    // TODO .make_new?
-    .print = stdio_obj_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &stdio_obj_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    stdio_obj_type,
+    MP_QSTR_FileIO,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, stdio_obj_print,
+    protocol, &stdio_obj_stream_p,
+    locals_dict, &stdio_locals_dict
+    );
 
 const sys_stdio_obj_t mp_sys_stdin_obj = {{&stdio_obj_type}, .fd = STDIO_FD_IN};
 const sys_stdio_obj_t mp_sys_stdout_obj = {{&stdio_obj_type}, .fd = STDIO_FD_OUT};
@@ -161,15 +156,14 @@ STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
     .is_text = false,
 };
 
-STATIC const mp_obj_type_t stdio_buffer_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_FileIO,
-    .print = stdio_obj_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &stdio_buffer_obj_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    stdio_buffer_obj_type,
+    MP_QSTR_FileIO,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, stdio_obj_print,
+    protocol, &stdio_buffer_obj_stream_p,
+    locals_dict, &stdio_locals_dict
+    );
 
 STATIC const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0}; // fd unused
 #endif

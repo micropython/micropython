@@ -37,6 +37,10 @@
 #define MICROPY_BOARD_STARTUP powerctrl_check_enter_bootloader
 #endif
 
+#ifndef MICROPY_BOARD_ENTER_BOOTLOADER
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
+#endif
+
 #ifndef MICROPY_BOARD_EARLY_INIT
 #define MICROPY_BOARD_EARLY_INIT()
 #endif

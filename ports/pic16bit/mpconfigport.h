@@ -91,10 +91,6 @@ typedef int mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#define MICROPY_PORT_ROOT_POINTERS \
-    char *readline_hist[8]; \
-    mp_obj_t keyboard_interrupt_obj; \
-
 #define MICROPY_MPHALPORT_H "pic16bit_mphal.h"
 #define MICROPY_HW_BOARD_NAME "dsPICSK"
 #define MICROPY_HW_MCU_NAME "dsPIC33"

@@ -1,0 +1,3 @@
+# MicroPython on ESP32-S2 and ESP32-PAD1_subscript_3, ESP IDF configuration with SPIRAM support in Octal mode
+CONFIG_SPIRAM_MODE_QUAD=
+CONFIG_SPIRAM_MODE_OCT=y

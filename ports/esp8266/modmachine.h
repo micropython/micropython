@@ -21,6 +21,16 @@ typedef struct _pyb_pin_obj_t {
 
 const pyb_pin_obj_t pyb_pin_obj[16 + 1];
 
+#define GPIO_MODE_INPUT (0)
+#define GPIO_MODE_OUTPUT (1)
+#define GPIO_MODE_OPEN_DRAIN (2) // synthesised
+#define GPIO_PULL_NONE (0)
+#define GPIO_PULL_UP (1)
+// Removed in SDK 1.1.0
+// #define GPIO_PULL_DOWN (2)
+
+extern uint8_t pin_mode[16 + 1];
+
 void pin_init0(void);
 
 uint mp_obj_get_pin(mp_obj_t pin_in);

@@ -70,7 +70,11 @@
 // extended modules
 #ifndef MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH                (1)
+#define MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS (1)
+#define MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS_WITH_INTERLOCK (1)
+#define MICROPY_PY_BLUETOOTH_SYNC_EVENT_STACK_SIZE (CONFIG_BT_NIMBLE_TASK_STACK_SIZE)
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#define MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING (1)
 #define MICROPY_BLUETOOTH_NIMBLE            (1)
 #define MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY (1)
 #endif
@@ -106,6 +110,20 @@
 #ifndef MICROPY_PY_MACHINE_I2S
 #define MICROPY_PY_MACHINE_I2S              (1)
 #endif
+#define MICROPY_PY_NETWORK (1)
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#if CONFIG_IDF_TARGET_ESP32
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32s2"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32s3"
+#elif CONFIG_IDF_TARGET_ESP32C3
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c3"
+#endif
+#endif
+#define MICROPY_PY_NETWORK_INCLUDEFILE      "ports/esp32/modnetwork.h"
+#define MICROPY_PY_NETWORK_MODULE_GLOBALS_INCLUDEFILE "ports/esp32/modnetwork_globals.h"
 #ifndef MICROPY_PY_NETWORK_WLAN
 #define MICROPY_PY_NETWORK_WLAN             (1)
 #endif
@@ -119,7 +137,6 @@
 #define MICROPY_PY_USSL_FINALISER           (1)
 #define MICROPY_PY_UWEBSOCKET               (1)
 #define MICROPY_PY_WEBREPL                  (1)
-#define MICROPY_PY_BTREE                    (1)
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_UPLATFORM                (1)
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
@@ -135,41 +152,8 @@
 #define MICROPY_FATFS_RPATH                 (2)
 #define MICROPY_FATFS_MAX_SS                (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define mp_type_fileio                      mp_type_vfs_fat_fileio
-#define mp_type_textio                      mp_type_vfs_fat_textio
 
 #define MP_STATE_PORT MP_STATE_VM
-
-struct _machine_timer_obj_t;
-
-#if MICROPY_PY_LVGL
-#ifndef MICROPY_INCLUDED_PY_MPSTATE_H
-#define MICROPY_INCLUDED_PY_MPSTATE_H
-#include "lib/lv_bindings/lvgl/src/misc/lv_gc.h"
-#undef MICROPY_INCLUDED_PY_MPSTATE_H
-#else
-#include "lib/lv_bindings/lvgl/src/misc/lv_gc.h"
-#endif
-#else
-#define LV_ROOTS
-#endif
-
-#if MICROPY_BLUETOOTH_NIMBLE
-struct mp_bluetooth_nimble_root_pointers_t;
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
-#else
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
-#endif
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    LV_ROOTS \
-    void *mp_lv_user_data; \
-    const char *readline_hist[8]; \
-    mp_obj_t machine_pin_irq_handler[40]; \
-    struct _machine_timer_obj_t *machine_timer_obj_head; \
-    struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX]; \
-    mp_obj_t native_code_pointers; \
-    MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
 
 // type definitions for the specific machine
 
@@ -251,3 +235,21 @@ typedef long mp_off_t;
 #endif
 
 void boardctrl_startup(void);
+
+#ifndef MICROPY_PY_NETWORK_LAN
+#if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 1) && (CONFIG_IDF_TARGET_ESP32 || (CONFIG_ETH_USE_SPI_ETHERNET && (CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL || CONFIG_ETH_SPI_ETHERNET_DM9051 || CONFIG_ETH_SPI_ETHERNET_W5500)))
+#define MICROPY_PY_NETWORK_LAN              (1)
+#else
+#define MICROPY_PY_NETWORK_LAN              (0)
+#endif
+#endif
+
+#if MICROPY_PY_NETWORK_LAN && CONFIG_ETH_USE_SPI_ETHERNET
+#ifndef MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C2
+#define MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ       (12)
+#else
+#define MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ       (36)
+#endif
+#endif
+#endif

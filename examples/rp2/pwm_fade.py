@@ -1,4 +1,5 @@
 # Example using PWM to fade an LED.
+# Note: this does not work on Pico W because it uses Pin(25) for LED output.
 
 import time
 from machine import Pin, PWM

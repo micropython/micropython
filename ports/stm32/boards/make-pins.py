@@ -506,7 +506,6 @@ class Pins(object):
 
     def print_af_defs(self, af_defs_filename, cmp_strings):
         with open(af_defs_filename, "wt") as af_defs_file:
-
             STATIC_AF_TOKENS = {}
             for named_pin in self.cpu_pins:
                 for af in named_pin.pin().alt_fn:

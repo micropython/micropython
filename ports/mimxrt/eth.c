@@ -31,7 +31,7 @@
 #include "py/mperrno.h"
 #include "ticks.h"
 
-#if defined(MICROPY_HW_ETH_MDC)
+#if defined(IOMUX_TABLE_ENET)
 
 #include "pin.h"
 #include "shared/netutils/netutils.h"
@@ -43,7 +43,9 @@
 #include "hal/phy/mdio/enet/fsl_enet_mdio.h"
 #include "hal/phy/device/phyksz8081/fsl_phyksz8081.h"
 #include "hal/phy/device/phydp83825/fsl_phydp83825.h"
+#include "hal/phy/device/phydp83848/fsl_phydp83848.h"
 #include "hal/phy/device/phylan8720/fsl_phylan8720.h"
+#include "hal/phy/device/phyrtl8211f/fsl_phyrtl8211f.h"
 
 #include "eth.h"
 #include "lwip/etharp.h"
@@ -53,49 +55,8 @@
 
 #include "ticks.h"
 
-// Configuration values
-enet_config_t enet_config;
-phy_config_t phyConfig = {0};
-
-// Prepare the buffer configuration.
-
 #define ENET_RXBD_NUM          (5)
 #define ENET_TXBD_NUM          (5)
-
-AT_NONCACHEABLE_SECTION_ALIGN(enet_rx_bd_struct_t g_rxBuffDescrip[ENET_RXBD_NUM], ENET_BUFF_ALIGNMENT);
-AT_NONCACHEABLE_SECTION_ALIGN(enet_tx_bd_struct_t g_txBuffDescrip[ENET_TXBD_NUM], ENET_BUFF_ALIGNMENT);
-SDK_ALIGN(uint8_t g_rxDataBuff[ENET_RXBD_NUM][SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT)],
-    ENET_BUFF_ALIGNMENT);
-SDK_ALIGN(uint8_t g_txDataBuff[ENET_TXBD_NUM][SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT)],
-    ENET_BUFF_ALIGNMENT);
-
-// ENET Handles & Buffers
-enet_handle_t g_handle;
-
-static mdio_handle_t mdioHandle = {.ops = &enet_ops};
-static phy_handle_t phyHandle = {.phyAddr = ENET_PHY_ADDRESS, .mdioHandle = &mdioHandle, .ops = &ENET_PHY_OPS};
-
-enet_buffer_config_t buffConfig[] = {{
-                                         ENET_RXBD_NUM,
-                                         ENET_TXBD_NUM,
-                                         SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT),
-                                         SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT),
-                                         &g_rxBuffDescrip[0],
-                                         &g_txBuffDescrip[0],
-                                         &g_rxDataBuff[0][0],
-                                         &g_txDataBuff[0][0],
-                                         #if FSL_ENET_DRIVER_VERSION >= 0x020300
-                                         0,
-                                         0,
-                                         NULL
-                                         #endif
-                                     }};
-
-static uint8_t hw_addr[6]; // The MAC address field
-eth_t eth_instance;
-
-#define PHY_INIT_TIMEOUT_MS (10000)
-#define PHY_AUTONEGO_TIMEOUT_US (5000000)
 
 typedef struct _eth_t {
     uint32_t trace_flags;
@@ -113,16 +74,108 @@ typedef struct _iomux_table_t {
     uint32_t configValue;
 } iomux_table_t;
 
+// ETH0 buffers and handles
+static AT_NONCACHEABLE_SECTION_ALIGN(enet_rx_bd_struct_t g_rxBuffDescrip[ENET_RXBD_NUM], ENET_BUFF_ALIGNMENT);
+static AT_NONCACHEABLE_SECTION_ALIGN(enet_tx_bd_struct_t g_txBuffDescrip[ENET_TXBD_NUM], ENET_BUFF_ALIGNMENT);
+static SDK_ALIGN(uint8_t g_rxDataBuff[ENET_RXBD_NUM][SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT)],
+    ENET_BUFF_ALIGNMENT);
+static SDK_ALIGN(uint8_t g_txDataBuff[ENET_TXBD_NUM][SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT)],
+    ENET_BUFF_ALIGNMENT);
+
+// ENET Handles & Buffers
+static enet_handle_t g_handle;
+static mdio_handle_t mdioHandle = {.ops = &enet_ops};
+static phy_handle_t phyHandle;
+eth_t eth_instance0;
+
+static enet_buffer_config_t buffConfig[] = {{
+                                                ENET_RXBD_NUM,
+                                                ENET_TXBD_NUM,
+                                                SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT),
+                                                SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT),
+                                                &g_rxBuffDescrip[0],
+                                                &g_txBuffDescrip[0],
+                                                &g_rxDataBuff[0][0],
+                                                &g_txDataBuff[0][0],
+                                                #if FSL_ENET_DRIVER_VERSION >= 0x020300
+                                                true,
+                                                true,
+                                                NULL,
+                                                #endif
+                                            }};
+
 static const iomux_table_t iomux_table_enet[] = {
     IOMUX_TABLE_ENET
 };
 
-#define IOTE (iomux_table_enet[i])
+static uint8_t hw_addr[6]; // The MAC address field
 
-#define TRACE_ASYNC_EV (0x0001)
-#define TRACE_ETH_TX (0x0002)
-#define TRACE_ETH_RX (0x0004)
-#define TRACE_ETH_FULL (0x0008)
+#if defined(ENET_DUAL_PORT)
+
+// ETH1 buffers and handles
+static AT_NONCACHEABLE_SECTION_ALIGN(enet_rx_bd_struct_t g_rxBuffDescrip_1[ENET_RXBD_NUM], ENET_BUFF_ALIGNMENT);
+static AT_NONCACHEABLE_SECTION_ALIGN(enet_tx_bd_struct_t g_txBuffDescrip_1[ENET_TXBD_NUM], ENET_BUFF_ALIGNMENT);
+static SDK_ALIGN(uint8_t g_rxDataBuff_1[ENET_RXBD_NUM][SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT)],
+    ENET_BUFF_ALIGNMENT);
+static SDK_ALIGN(uint8_t g_txDataBuff_1[ENET_TXBD_NUM][SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT)],
+    ENET_BUFF_ALIGNMENT);
+
+static enet_handle_t g_handle_1;
+static mdio_handle_t mdioHandle_1 = {.ops = &enet_ops};
+static phy_handle_t phyHandle_1;
+eth_t eth_instance1;
+
+static enet_buffer_config_t buffConfig_1[] = {{
+                                                  ENET_RXBD_NUM,
+                                                  ENET_TXBD_NUM,
+                                                  SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT),
+                                                  SDK_SIZEALIGN(ENET_FRAME_MAX_FRAMELEN, ENET_BUFF_ALIGNMENT),
+                                                  &g_rxBuffDescrip_1[0],
+                                                  &g_txBuffDescrip_1[0],
+                                                  &g_rxDataBuff_1[0][0],
+                                                  &g_txDataBuff_1[0][0],
+                                                  #if FSL_ENET_DRIVER_VERSION >= 0x020300
+                                                  true,
+                                                  true,
+                                                  NULL,
+                                                  #endif
+                                              }};
+
+static const iomux_table_t iomux_table_enet_1[] = {
+    IOMUX_TABLE_ENET_1
+};
+
+static uint8_t hw_addr_1[6]; // The MAC address field
+
+#endif
+
+#if defined(ENET_DUAL_PORT)
+#if defined MIMXRT117x_SERIES
+#define ENET_1 ENET_1G
+#else
+#define ENET_1 ENET2
+#endif
+#else
+#define ENET_1 ENET
+#endif
+
+#define PHY_AUTONEGO_TIMEOUT_US (5000000)
+#define PHY_SETTLE_TIME_US      (1000)
+// Settle time must be 500000 for the 1G interface
+#define PHY_SETTLE_TIME_US_1    (500000)
+#define ENET_RESET_LOW_TIME_US  (10000)
+#define ENET_RESET_WAIT_TIME_US (30000)
+
+#define IOTE (iomux_table[i])
+
+#ifndef ENET_TX_CLK_OUTPUT
+#define ENET_TX_CLK_OUTPUT true
+#endif
+
+#define TRACE_ASYNC_EV  (0x0001)
+#define TRACE_ETH_TX    (0x0002)
+#define TRACE_ETH_RX    (0x0004)
+#define TRACE_ETH_FULL  (0x0008)
 
 STATIC void eth_trace(eth_t *self, size_t len, const void *data, unsigned int flags) {
     if (((flags & NETUTILS_TRACE_IS_TX) && (self->trace_flags & TRACE_ETH_TX))
@@ -186,106 +239,146 @@ void eth_irq_handler(ENET_Type *base, enet_handle_t *handle,
     }
 }
 
-// eth_init: Set up GPIO and the transceiver
-void eth_init(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy_addr, bool phy_clock) {
-
-    self->netif.num = mac_idx; // Set the interface number
+// Configure the ethernet clock
+STATIC uint32_t eth_clock_init(int eth_id, bool phy_clock) {
 
     CLOCK_EnableClock(kCLOCK_Iomuxc);
 
-    gpio_pin_config_t gpio_config = {kGPIO_DigitalOutput, 0, kGPIO_NoIntmode};
-    (void)gpio_config;
+    #if defined MIMXRT117x_SERIES
 
-    #ifdef ENET_RESET_PIN
-    // Configure the Reset Pin
-    const machine_pin_obj_t *reset_pin = &ENET_RESET_PIN;
-    const machine_pin_af_obj_t *af_obj = pin_find_af(reset_pin, PIN_AF_MODE_ALT5);
+    clock_root_config_t rootCfg = {0};
 
-    IOMUXC_SetPinMux(reset_pin->muxRegister, af_obj->af_mode, 0, 0, reset_pin->configRegister, 0U);
-    IOMUXC_SetPinConfig(reset_pin->muxRegister, af_obj->af_mode, 0, 0, reset_pin->configRegister,
-        pin_generate_config(PIN_PULL_DISABLED, PIN_MODE_OUT, PIN_DRIVE_5, reset_pin->configRegister));
-    GPIO_PinInit(reset_pin->gpio, reset_pin->pin, &gpio_config);
-    #endif
-
-    #ifdef ENET_INT_PIN
-    // Configure the Int Pin
-    const machine_pin_obj_t *int_pin = &ENET_INT_PIN;
-    af_obj = pin_find_af(int_pin, PIN_AF_MODE_ALT5);
-
-    IOMUXC_SetPinMux(int_pin->muxRegister, af_obj->af_mode, 0, 0, int_pin->configRegister, 0U);
-    IOMUXC_SetPinConfig(int_pin->muxRegister, af_obj->af_mode, 0, 0, int_pin->configRegister,
-        pin_generate_config(PIN_PULL_UP_47K, PIN_MODE_IN, PIN_DRIVE_5, int_pin->configRegister));
-    GPIO_PinInit(int_pin->gpio, int_pin->pin, &gpio_config);
-    #endif
-
-    // Configure the Transceiver Pins, Settings except for CLK:
-    // Slew Rate Field: Fast Slew Rate, Drive Strength, R0/5, Speed max(200MHz)
-    // Open Drain Disabled, Pull Enabled, Pull 100K Ohm Pull Up
-    // Hysteresis Disabled
-
-    for (int i = 0; i < ARRAY_SIZE(iomux_table_enet); i++) {
-        IOMUXC_SetPinMux(IOTE.muxRegister, IOTE.muxMode, IOTE.inputRegister, IOTE.inputDaisy, IOTE.configRegister, IOTE.inputOnfield);
-        IOMUXC_SetPinConfig(IOTE.muxRegister, IOTE.muxMode, IOTE.inputRegister, IOTE.inputDaisy, IOTE.configRegister, IOTE.configValue);
+    if (eth_id == MP_HAL_MAC_ETH0) {
+        // Generate 50M root clock.
+        rootCfg.mux = kCLOCK_ENET1_ClockRoot_MuxSysPll1Div2; // 500 MHz
+        rootCfg.div = 10;
+        CLOCK_SetRootClock(kCLOCK_Root_Enet1, &rootCfg);
+        // 50M ENET_REF_CLOCK output to PHY and ENET module.
+        // if required, handle phy_clock direction here
+        IOMUXC_GPR->GPR4 |= 0x3;
+    } else {
+        // Generate 125M root clock.
+        rootCfg.mux = kCLOCK_ENET1_ClockRoot_MuxSysPll1Div2; // 500 MHz
+        rootCfg.div = 4;
+        CLOCK_SetRootClock(kCLOCK_Root_Enet2, &rootCfg);
+        IOMUXC_GPR->GPR5 |= IOMUXC_GPR_GPR5_ENET1G_RGMII_EN_MASK; /* bit1:iomuxc_gpr_enet_clk_dir
+                                                                     bit0:GPR_ENET_TX_CLK_SEL(internal or OSC) */
     }
+    return CLOCK_GetRootClockFreq(kCLOCK_Root_Bus);
+
+    #else
 
     const clock_enet_pll_config_t config = {
         .enableClkOutput = phy_clock, .enableClkOutput25M = false, .loopDivider = 1
     };
     CLOCK_InitEnetPll(&config);
 
-    IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1RefClkMode, false); // Do not use the 25 MHz MII clock
-    IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1TxClkOutputDir, phy_clock);  // Set the clock pad direction
+    IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1RefClkMode, false); // Drive ENET_REF_CLK from PAD
+    IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1TxClkOutputDir, phy_clock);  // Enable output driver
 
-    // Reset transceiver
-    // pull up the ENET_INT before RESET.
-    #ifdef ENET_INT_PIN
-    GPIO_WritePinOutput(int_pin->gpio, int_pin->pin, 1);
+    return CLOCK_GetFreq(kCLOCK_IpgClk);
+
     #endif
+}
 
-    #ifdef ENET_RESET_PIN
-    GPIO_WritePinOutput(reset_pin->gpio, reset_pin->pin, 0);
-    mp_hal_delay_us(1000);
-    GPIO_WritePinOutput(reset_pin->gpio, reset_pin->pin, 1);
-    mp_hal_delay_us(1000);
-    #endif
+// eth_gpio_init: Configure the GPIO pins
+STATIC void eth_gpio_init(const iomux_table_t iomux_table[], size_t iomux_table_size,
+    const machine_pin_obj_t *reset_pin, const machine_pin_obj_t *int_pin) {
 
-    mp_hal_get_mac(0, hw_addr);
+    gpio_pin_config_t gpio_config = {kGPIO_DigitalOutput, 1, kGPIO_NoIntmode};
+    (void)gpio_config;
+    const machine_pin_af_obj_t *af_obj;
 
-    phyHandle.ops = phy_ops;
-    phyConfig.phyAddr = phy_addr;
-    phyConfig.autoNeg = true;
-    mdioHandle.resource.base = ENET;
-    mdioHandle.resource.csrClock_Hz = CLOCK_GetFreq(kCLOCK_IpgClk);
+    if (reset_pin != NULL) {
+        // Configure the Reset Pin
+        af_obj = pin_find_af(reset_pin, PIN_AF_MODE_ALT5);
 
-    // Init the PHY interface & negotiate the speed
+        IOMUXC_SetPinMux(reset_pin->muxRegister, af_obj->af_mode, 0, 0, reset_pin->configRegister, 0U);
+        IOMUXC_SetPinConfig(reset_pin->muxRegister, af_obj->af_mode, 0, 0, reset_pin->configRegister,
+            pin_generate_config(PIN_PULL_DISABLED, PIN_MODE_OUT, PIN_DRIVE_5, reset_pin->configRegister));
+        GPIO_PinInit(reset_pin->gpio, reset_pin->pin, &gpio_config);
+    }
+
+    if (int_pin != NULL) {
+        // Configure the Int Pin
+        af_obj = pin_find_af(int_pin, PIN_AF_MODE_ALT5);
+
+        IOMUXC_SetPinMux(int_pin->muxRegister, af_obj->af_mode, 0, 0, int_pin->configRegister, 0U);
+        IOMUXC_SetPinConfig(int_pin->muxRegister, af_obj->af_mode, 0, 0, int_pin->configRegister,
+            pin_generate_config(PIN_PULL_UP_47K, PIN_MODE_IN, PIN_DRIVE_5, int_pin->configRegister));
+        GPIO_PinInit(int_pin->gpio, int_pin->pin, &gpio_config);
+    }
+
+    // Configure the Transceiver Pins, Settings except for CLK:
+    // Slew Rate Field: Fast Slew Rate, Drive Strength, R0/5, Speed max(200MHz)
+    // Open Drain Disabled, Pull Enabled, Pull 100K Ohm Pull Up
+    // Hysteresis Disabled
+    for (int i = 0; i < iomux_table_size; i++) {
+        IOMUXC_SetPinMux(IOTE.muxRegister, IOTE.muxMode, IOTE.inputRegister, IOTE.inputDaisy, IOTE.configRegister, IOTE.inputOnfield);
+        IOMUXC_SetPinConfig(IOTE.muxRegister, IOTE.muxMode, IOTE.inputRegister, IOTE.inputDaisy, IOTE.configRegister, IOTE.configValue);
+    }
+
+    // Reset the transceiver
+    if (reset_pin != NULL) {
+        GPIO_PinWrite(reset_pin->gpio, reset_pin->pin, 0);
+        mp_hal_delay_us(ENET_RESET_LOW_TIME_US);
+        GPIO_PinWrite(reset_pin->gpio, reset_pin->pin, 1);
+        mp_hal_delay_us(ENET_RESET_WAIT_TIME_US);
+    }
+}
+
+// eth_phy_init: Initilaize the PHY interface
+STATIC void eth_phy_init(phy_handle_t *phyHandle, phy_config_t *phy_config,
+    phy_speed_t *speed, phy_duplex_t *duplex, uint32_t phy_settle_time) {
+
     bool link = false;
     bool autonego = false;
-    phy_speed_t speed = kENET_MiiSpeed100M;
-    phy_duplex_t duplex = kENET_MiiFullDuplex;
+    phy_config->autoNeg = true;
 
-
-    status_t status = PHY_Init(&phyHandle, &phyConfig);
+    status_t status = PHY_Init(phyHandle, phy_config);
     if (status == kStatus_Success) {
-        if (phyConfig.autoNeg) {
-            uint64_t t = ticks_us64() + PHY_AUTONEGO_TIMEOUT_US;
-            // Wait for auto-negotiation success and link up
-            do {
-                PHY_GetAutoNegotiationStatus(&phyHandle, &autonego);
-                PHY_GetLinkStatus(&phyHandle, &link);
-                if (autonego && link) {
-                    break;
-                }
-            } while (ticks_us64() < t);
-            if (!autonego) {
-                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("PHY Auto-negotiation failed."));
+        uint64_t t = ticks_us64() + PHY_AUTONEGO_TIMEOUT_US;
+        // Wait for auto-negotiation success and link up
+        do {
+            PHY_GetAutoNegotiationStatus(phyHandle, &autonego);
+            PHY_GetLinkStatus(phyHandle, &link);
+            if (autonego && link) {
+                break;
             }
-            PHY_GetLinkSpeedDuplex(&phyHandle, &speed, &duplex);
-        } else {
-            PHY_SetLinkSpeedDuplex(&phyHandle, speed, duplex);
+        } while (ticks_us64() < t);
+        if (!autonego) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("PHY Auto-negotiation failed."));
         }
+        PHY_GetLinkSpeedDuplex(phyHandle, speed, duplex);
     } else {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("PHY Init failed."));
     }
+    mp_hal_delay_us(phy_settle_time);
+}
+
+// eth_init: Set up GPIO and the transceiver
+void eth_init_0(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int phy_addr, bool phy_clock) {
+    // Configuration values
+    enet_config_t enet_config;
+
+    phy_config_t phy_config = {0};
+
+    uint32_t source_clock = eth_clock_init(eth_id, phy_clock);
+
+    eth_gpio_init(iomux_table_enet, ARRAY_SIZE(iomux_table_enet), ENET_RESET_PIN, ENET_INT_PIN);
+
+    mp_hal_get_mac(0, hw_addr);
+
+    // Init the PHY interface & negotiate the speed
+    phyHandle.ops = phy_ops;
+    phy_config.phyAddr = phy_addr;
+    phyHandle.mdioHandle = &mdioHandle;
+    mdioHandle.resource.base = ENET;
+    mdioHandle.resource.csrClock_Hz = source_clock;
+
+    phy_speed_t speed = kENET_MiiSpeed100M;
+    phy_duplex_t duplex = kENET_MiiFullDuplex;
+    eth_phy_init(&phyHandle, &phy_config, &speed, &duplex, PHY_SETTLE_TIME_US);
 
     ENET_Reset(ENET);
     ENET_GetDefaultConfig(&enet_config);
@@ -297,14 +390,70 @@ void eth_init(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy
     // Set interrupt
     enet_config.interrupt |= ENET_TX_INTERRUPT | ENET_RX_INTERRUPT;
 
-    ENET_Init(ENET, &g_handle, &enet_config, &buffConfig[0], hw_addr, CLOCK_GetFreq(kCLOCK_IpgClk));
+    ENET_Init(ENET, &g_handle, &enet_config, &buffConfig[0], hw_addr, source_clock);
     ENET_SetCallback(&g_handle, eth_irq_handler, (void *)self);
     NVIC_SetPriority(ENET_IRQn, IRQ_PRI_PENDSV);
     ENET_EnableInterrupts(ENET, ENET_RX_INTERRUPT);
     ENET_ClearInterruptStatus(ENET, ENET_TX_INTERRUPT | ENET_RX_INTERRUPT | ENET_ERR_INTERRUPT);
+    NVIC_SetPriority(ENET_IRQn, IRQ_PRI_PENDSV);
+    ENET_EnableInterrupts(ENET, ENET_RX_INTERRUPT);
     ENET_ActiveRead(ENET);
 }
 
+#if defined(ENET_DUAL_PORT)
+
+// eth_init: Set up GPIO and the transceiver
+void eth_init_1(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int phy_addr, bool phy_clock) {
+    // Configuration values
+    enet_config_t enet_config;
+
+    phy_config_t phy_config = {0};
+
+    uint32_t source_clock = eth_clock_init(eth_id, phy_clock);
+
+    eth_gpio_init(iomux_table_enet_1, ARRAY_SIZE(iomux_table_enet_1), ENET_1_RESET_PIN, ENET_1_INT_PIN);
+
+    #if defined MIMXRT117x_SERIES
+    NVIC_SetPriority(ENET_1G_MAC0_Tx_Rx_1_IRQn, IRQ_PRI_PENDSV);
+    NVIC_SetPriority(ENET_1G_MAC0_Tx_Rx_2_IRQn, IRQ_PRI_PENDSV);
+    NVIC_SetPriority(ENET_1G_IRQn, IRQ_PRI_PENDSV);
+    EnableIRQ(ENET_1G_MAC0_Tx_Rx_1_IRQn);
+    EnableIRQ(ENET_1G_MAC0_Tx_Rx_2_IRQn);
+    phy_speed_t speed = kENET_MiiSpeed1000M;
+    #else
+    NVIC_SetPriority(ENET2_IRQn, IRQ_PRI_PENDSV);
+    phy_speed_t speed = kENET_MiiSpeed100M;
+    #endif
+
+    mp_hal_get_mac(1, hw_addr_1);
+
+    // Init the PHY interface & negotiate the speed
+    phyHandle_1.ops = phy_ops;
+    phy_config.phyAddr = phy_addr;
+    phyHandle_1.mdioHandle = &mdioHandle_1;
+    mdioHandle_1.resource.base = ENET_1;
+    mdioHandle_1.resource.csrClock_Hz = source_clock;
+
+    phy_duplex_t duplex = kENET_MiiFullDuplex;
+    eth_phy_init(&phyHandle_1, &phy_config, &speed, &duplex, PHY_SETTLE_TIME_US_1);
+
+    ENET_Reset(ENET_1);
+    ENET_GetDefaultConfig(&enet_config);
+    enet_config.miiSpeed = (enet_mii_speed_t)speed;
+    enet_config.miiDuplex = (enet_mii_duplex_t)duplex;
+    // Enable checksum generation by the ENET controller
+    enet_config.txAccelerConfig = kENET_TxAccelIpCheckEnabled | kENET_TxAccelProtoCheckEnabled;
+    // Set interrupt
+    enet_config.interrupt = ENET_TX_INTERRUPT | ENET_RX_INTERRUPT;
+
+    ENET_Init(ENET_1, &g_handle_1, &enet_config, &buffConfig_1[0], hw_addr_1, source_clock);
+    ENET_SetCallback(&g_handle_1, eth_irq_handler, (void *)self);
+    ENET_ClearInterruptStatus(ENET_1, ENET_TX_INTERRUPT | ENET_RX_INTERRUPT | ENET_ERR_INTERRUPT);
+    ENET_EnableInterrupts(ENET_1, ENET_RX_INTERRUPT);
+    ENET_ActiveRead(ENET_1);
+}
+
+#endif
 // Initialize the phy interface
 STATIC int eth_mac_init(eth_t *self) {
     return 0;
@@ -312,6 +461,8 @@ STATIC int eth_mac_init(eth_t *self) {
 
 // Deinit the interface
 STATIC void eth_mac_deinit(eth_t *self) {
+    // Just as a reminder: Calling ENET_Deinit() twice causes the board to stall
+    // with a bus error. Reason unclear. So don't do that for now (or ever).
 }
 
 void eth_set_trace(eth_t *self, uint32_t value) {
@@ -332,7 +483,7 @@ STATIC err_t eth_send_frame_blocking(ENET_Type *base, enet_handle_t *handle, uin
         if (status != kStatus_ENET_TxFrameBusy) {
             break;
         }
-        ticks_delay_us64(100);
+        ticks_delay_us64(base == ENET ? 100 : 20);
     }
     return status;
 }
@@ -340,12 +491,20 @@ STATIC err_t eth_send_frame_blocking(ENET_Type *base, enet_handle_t *handle, uin
 STATIC err_t eth_netif_output(struct netif *netif, struct pbuf *p) {
     // This function should always be called from a context where PendSV-level IRQs are disabled
     status_t status;
+    ENET_Type *enet = ENET;
+    enet_handle_t *handle = &g_handle;
 
-    LINK_STATS_INC(link.xmit);
+    #if defined ENET_DUAL_PORT
+    if (netif->state == &eth_instance1) {
+        enet = ENET_1;
+        handle = &g_handle_1;
+    }
+    #endif
+
     eth_trace(netif->state, (size_t)-1, p, NETUTILS_TRACE_IS_TX | NETUTILS_TRACE_NEWLINE);
 
     if (p->next == NULL) {
-        status = eth_send_frame_blocking(ENET, &g_handle, p->payload, p->len);
+        status = eth_send_frame_blocking(enet, handle, p->payload, p->len);
     } else {
         // frame consists of several parts. Copy them together and send them
         size_t length = 0;
@@ -356,7 +515,7 @@ STATIC err_t eth_netif_output(struct netif *netif, struct pbuf *p) {
             length += p->len;
             p = p->next;
         }
-        status = eth_send_frame_blocking(ENET, &g_handle, tx_frame, length);
+        status = eth_send_frame_blocking(enet, handle, tx_frame, length);
     }
     return status == kStatus_Success ? ERR_OK : ERR_BUF;
 }
@@ -378,22 +537,29 @@ STATIC err_t eth_netif_init(struct netif *netif) {
 }
 
 STATIC void eth_lwip_init(eth_t *self) {
+    struct netif *n = &self->netif;
     ip_addr_t ipconfig[4];
-    IP4_ADDR(&ipconfig[0], 192, 168, 0, 2);
+
+    self->netif.hwaddr_len = 6;
+    if (self == &eth_instance0) {
+        memcpy(self->netif.hwaddr, hw_addr, 6);
+        IP4_ADDR(&ipconfig[0], 192, 168, 0, 2);
+    #if defined ENET_DUAL_PORT
+    } else {
+        memcpy(self->netif.hwaddr, hw_addr_1, 6);
+        IP4_ADDR(&ipconfig[0], 192, 168, 0, 3);
+    #endif
+    }
     IP4_ADDR(&ipconfig[1], 255, 255, 255, 0);
     IP4_ADDR(&ipconfig[2], 192, 168, 0, 1);
     IP4_ADDR(&ipconfig[3], 8, 8, 8, 8);
 
-    self->netif.hwaddr_len = 6;
-    memcpy(self->netif.hwaddr, hw_addr, 6);
-
     MICROPY_PY_LWIP_ENTER
 
-    struct netif *n = &self->netif;
     n->name[0] = 'e';
-    n->name[1] = '0';
+    n->name[1] = (self == &eth_instance0 ? '0' : '1');
     netif_add(n, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, eth_netif_init, ethernet_input);
-    netif_set_hostname(n, "MPY");
+    netif_set_hostname(n, mod_network_hostname);
     netif_set_default(n);
     netif_set_up(n);
 
@@ -433,7 +599,11 @@ int eth_link_status(eth_t *self) {
         }
     } else {
         bool link;
+        #if defined ENET_DUAL_PORT
+        PHY_GetLinkStatus(self == &eth_instance0 ? &phyHandle : &phyHandle_1, &link);
+        #else
         PHY_GetLinkStatus(&phyHandle, &link);
+        #endif
         if (link) {
             return 1; // link up
         } else {
@@ -463,6 +633,10 @@ int eth_stop(eth_t *self) {
 }
 
 void eth_low_power_mode(eth_t *self, bool enable) {
+    #if defined ENET_DUAL_PORT
+    ENET_EnableSleepMode(self == &eth_instance0 ? ENET : ENET_1, enable);
+    #else
     ENET_EnableSleepMode(ENET, enable);
+    #endif
 }
-#endif // defined(MICROPY_HW_ETH_MDC)
+#endif // defined(IOMUX_TABLE_ENET)

@@ -46,6 +46,17 @@
 #define NINA_FW_VER_MINOR_OFFS  (2)
 #define NINA_FW_VER_PATCH_OFFS  (4)
 
+#define NINA_ESP_REASON_AUTH_EXPIRE             (2)
+#define NINA_ESP_REASON_ASSOC_EXPIRE            (4)
+#define NINA_ESP_REASON_NOT_AUTHED              (6)
+#define NINA_ESP_REASON_4WAY_HANDSHAKE_TIMEOUT  (15)
+#define NINA_ESP_REASON_BEACON_TIMEOUT          (200)
+#define NINA_ESP_REASON_NO_AP_FOUND             (201)
+#define NINA_ESP_REASON_AUTH_FAIL               (202)
+#define NINA_ESP_REASON_ASSOC_FAIL              (203)
+#define NINA_ESP_REASON_HANDSHAKE_TIMEOUT       (204)
+#define NINA_ESP_REASON_CONNECTION_FAIL         (205)
+
 typedef enum {
     NINA_SEC_INVALID = 0,
     NINA_SEC_OPEN,
@@ -58,6 +69,19 @@ typedef enum {
     NINA_SOCKET_TYPE_UDP = 2,
     NINA_SOCKET_TYPE_RAW = 3,
 } nina_socket_type_t;
+
+typedef enum {
+    NINA_STATUS_IDLE = 0,
+    NINA_STATUS_NO_SSID_AVAIL = 1,
+    NINA_STATUS_SCAN_COMPLETED = 2,
+    NINA_STATUS_CONNECTED = 3,
+    NINA_STATUS_CONNECT_FAILED = 4,
+    NINA_STATUS_CONNECTION_LOST = 5,
+    NINA_STATUS_DISCONNECTED = 6,
+    NINA_STATUS_AP_LISTENING = 7,
+    NINA_STATUS_AP_CONNECTED = 8,
+    NINA_STATUS_AP_FAILED = 9
+} nina_status_t;
 
 typedef struct {
     uint8_t ip_addr[NINA_IPV4_ADDR_LEN];
@@ -85,6 +109,8 @@ typedef int (*nina_scan_callback_t)(nina_scan_result_t *, void *);
 
 int nina_init(void);
 int nina_deinit(void);
+int nina_connection_status(void);
+int nina_connection_reason(void);
 int nina_connect(const char *ssid, uint8_t security, const char *key, uint16_t channel);
 int nina_start_ap(const char *ssid, uint8_t security, const char *key, uint16_t channel);
 int nina_disconnect(void);

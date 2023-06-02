@@ -87,7 +87,7 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
 
     // This logic assumes that all the GPIOx_EN bits are adjacent and ordered in one register
 
-    #if defined(STM32F0)
+    #if defined(STM32F0) || defined(STM32L1)
     #define AHBxENR AHBENR
     #define AHBxENR_GPIOAEN_Pos RCC_AHBENR_GPIOAEN_Pos
     #elif defined(STM32F4) || defined(STM32F7)
@@ -177,3 +177,5 @@ void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
         *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
     }
 }
+
+MP_REGISTER_ROOT_POINTER(struct _pyb_uart_obj_t *pyb_stdio_uart);

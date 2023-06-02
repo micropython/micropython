@@ -57,6 +57,7 @@ STATIC bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_SOURCE_IS_VSTR        (1 << 4)
 #define EXEC_FLAG_SOURCE_IS_FILENAME    (1 << 5)
 #define EXEC_FLAG_SOURCE_IS_READER      (1 << 6)
+#define EXEC_FLAG_NO_INTERRUPT          (1 << 7)
 
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
@@ -113,7 +114,9 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         }
 
         // execute code
-        mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
+        if (!(exec_flags & EXEC_FLAG_NO_INTERRUPT)) {
+            mp_hal_set_interrupt_char(CHAR_CTRL_C);
+        }
         #if MICROPY_REPL_INFO
         start = mp_hal_ticks_ms();
         #endif
@@ -154,12 +157,12 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     // display debugging info if wanted
     if ((exec_flags & EXEC_FLAG_ALLOW_DEBUGGING) && repl_display_debugging_info) {
         mp_uint_t ticks = mp_hal_ticks_ms() - start; // TODO implement a function that does this properly
-        printf("took " UINT_FMT " ms\n", ticks);
+        mp_printf(&mp_plat_print, "took " UINT_FMT " ms\n", ticks);
         // qstr info
         {
             size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
             qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-            printf("qstr:\n  n_pool=%u\n  n_qstr=%u\n  "
+            mp_printf(&mp_plat_print, "qstr:\n  n_pool=%u\n  n_qstr=%u\n  "
                 "n_str_data_bytes=%u\n  n_total_bytes=%u\n",
                 (unsigned)n_pool, (unsigned)n_qstr, (unsigned)n_str_data_bytes, (unsigned)n_total_bytes);
         }
@@ -167,7 +170,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #if MICROPY_ENABLE_GC
         // run collection and print GC info
         gc_collect();
-        gc_dump_info();
+        gc_dump_info(&mp_plat_print);
         #endif
     }
     #endif
@@ -488,6 +491,8 @@ int pyexec_event_repl_process_char(int c) {
     return res;
 }
 
+MP_REGISTER_ROOT_POINTER(vstr_t * repl_line);
+
 #else // MICROPY_REPL_EVENT_DRIVEN
 
 int pyexec_raw_repl(void) {
@@ -684,7 +689,7 @@ int pyexec_file(const char *filename) {
 int pyexec_file_if_exists(const char *filename) {
     #if MICROPY_MODULE_FROZEN
     if (mp_find_frozen_module(filename, NULL, NULL) == MP_IMPORT_STAT_FILE) {
-        return pyexec_frozen_module(filename);
+        return pyexec_frozen_module(filename, true);
     }
     #endif
     if (mp_import_stat(filename) != MP_IMPORT_STAT_FILE) {
@@ -694,24 +699,26 @@ int pyexec_file_if_exists(const char *filename) {
 }
 
 #if MICROPY_MODULE_FROZEN
-int pyexec_frozen_module(const char *name) {
+int pyexec_frozen_module(const char *name, bool allow_keyboard_interrupt) {
     void *frozen_data;
     int frozen_type;
     mp_find_frozen_module(name, &frozen_type, &frozen_data);
+    mp_uint_t exec_flags = allow_keyboard_interrupt ? 0 : EXEC_FLAG_NO_INTERRUPT;
 
     switch (frozen_type) {
         #if MICROPY_MODULE_FROZEN_STR
         case MP_FROZEN_STR:
-            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, 0);
+            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, exec_flags);
         #endif
 
         #if MICROPY_MODULE_FROZEN_MPY
         case MP_FROZEN_MPY:
-            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_RAW_CODE);
+            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, exec_flags |
+                EXEC_FLAG_SOURCE_IS_RAW_CODE);
         #endif
 
         default:
-            printf("could not find module '%s'\n", name);
+            mp_printf(MICROPY_ERROR_PRINTER, "could not find module '%s'\n", name);
             return false;
     }
 }

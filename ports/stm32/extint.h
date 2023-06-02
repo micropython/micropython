@@ -43,7 +43,7 @@
 #endif
 #define EXTI_ETH_WAKEUP         (19)
 #define EXTI_USB_OTG_HS_WAKEUP  (20)
-#if defined(STM32F0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WL)
+#if defined(STM32F0) || defined(STM32G4) || defined(STM32L1) || defined(STM32L4) || defined(STM32WL)
 #define EXTI_RTC_TIMESTAMP      (19)
 #define EXTI_RTC_WAKEUP         (20)
 #elif defined(STM32H7) || defined(STM32WB)
@@ -66,6 +66,7 @@ void extint_init0(void);
 
 uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj);
 void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_obj_t callback_obj);
+void extint_set(const pin_obj_t *pin, uint32_t mode);
 
 void extint_enable(uint line);
 void extint_disable(uint line);

@@ -28,7 +28,8 @@
 
 #include "esp_event.h"
 
-enum { PHY_LAN8720, PHY_IP101, PHY_RTL8201, PHY_DP83848, PHY_KSZ8041 };
+enum { PHY_LAN8710, PHY_LAN8720, PHY_IP101, PHY_RTL8201, PHY_DP83848, PHY_KSZ8041, PHY_KSZ8081, PHY_KSZ8851SNL = 100, PHY_DM9051, PHY_W5500 };
+#define IS_SPI_PHY(NUM) (NUM >= 100)
 enum { ETH_INITIALIZED, ETH_STARTED, ETH_STOPPED, ETH_CONNECTED, ETH_DISCONNECTED, ETH_GOT_IP };
 
 // Cases similar to ESP8266 user_interface.h
@@ -44,11 +45,13 @@ typedef struct _wlan_if_obj_t {
     int if_id;
 } wlan_if_obj_t;
 
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(get_wlan_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(get_lan_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(ppp_make_new_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(esp_config_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(esp_network_initialize_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_get_wlan_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_get_lan_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(esp_network_ppp_make_new_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_ifconfig_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_config_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj);
 
 NORETURN void esp_exceptions_helper(esp_err_t e);
 

@@ -169,6 +169,7 @@ typedef uint32_t mboot_addr_t;
 
 extern volatile uint32_t systick_ms;
 extern uint8_t _estack[ELEM_DATA_SIZE];
+extern int32_t first_writable_flash_sector;
 
 void systick_init(void);
 void led_init(void);
@@ -209,11 +210,7 @@ int mboot_get_reset_mode_default(void);
 void mboot_state_change_default(mboot_state_t state, uint32_t arg);
 
 static inline void mboot_state_change(mboot_state_t state, uint32_t arg) {
-    #if defined(MBOOT_BOARD_STATE_CHANGE)
     return MBOOT_BOARD_STATE_CHANGE(state, arg);
-    #else
-    return mboot_state_change_default(state, arg);
-    #endif
 }
 
 #endif // MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H

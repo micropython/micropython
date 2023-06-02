@@ -37,6 +37,13 @@ Reset_Handler:
     str r1,[r0]                  /* store FLEXRAM configuration value to IOMUXC_GPR17 */
     dsb
     isb
+#if defined MIMXRT117x_SERIES
+    ldr r0, =__iomux_gpr18_adr   /* load IOMUXC_GPR18 register address to R0 */
+    ldr r1, =__iomux_gpr18_value /* move FlexRAM configuration value to R1 */
+    str r1,[r0]                  /* store FLEXRAM configuration value to IOMUXC_GPR18 */
+    dsb
+    isb
+#endif
     ldr r0, =__iomux_gpr16_adr  /* load IOMUXC_GPR16 register address to R0 */
     ldr r1,[r0]                 /* load IOMUXC_GPR16 register value to R1 */
     orr r1, r1, #4              /* set corresponding FLEXRAM_BANK_CFG_SEL bit */

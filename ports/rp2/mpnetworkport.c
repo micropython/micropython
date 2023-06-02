@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "pendsv.h"
 
 #if MICROPY_PY_LWIP
 
@@ -36,14 +37,50 @@
 #define LWIP_TICK_RATE_MS 64
 
 static alarm_id_t lwip_alarm_id = -1;
-static bool lwip_can_poll = true;
-static bool lwip_poll_pending = false;
+
+#if MICROPY_PY_NETWORK_CYW43
+#include "lib/cyw43-driver/src/cyw43.h"
+#include "lib/cyw43-driver/src/cyw43_stats.h"
+#include "hardware/irq.h"
+
+#define CYW43_IRQ_LEVEL GPIO_IRQ_LEVEL_HIGH
+#define CYW43_SHARED_IRQ_HANDLER_PRIORITY PICO_SHARED_IRQ_HANDLER_HIGHEST_ORDER_PRIORITY
+
+volatile int cyw43_has_pending = 0;
+
+static void gpio_irq_handler(void) {
+    uint32_t events = gpio_get_irq_event_mask(CYW43_PIN_WL_HOST_WAKE);
+    if (events & CYW43_IRQ_LEVEL) {
+        // As we use a high level interrupt, it will go off forever until it's serviced.
+        // So disable the interrupt until this is done.  It's re-enabled again by
+        // CYW43_POST_POLL_HOOK which is called at the end of cyw43_poll_func.
+        gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, false);
+        cyw43_has_pending = 1;
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+        CYW43_STAT_INC(IRQ_COUNT);
+    }
+}
+
+void cyw43_irq_init(void) {
+    gpio_add_raw_irq_handler_with_order_priority(IO_IRQ_BANK0, gpio_irq_handler, CYW43_SHARED_IRQ_HANDLER_PRIORITY);
+    irq_set_enabled(IO_IRQ_BANK0, true);
+    NVIC_SetPriority(PendSV_IRQn, PICO_LOWEST_IRQ_PRIORITY);
+}
+
+void cyw43_post_poll_hook(void) {
+    cyw43_has_pending = 0;
+    gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, true);
+}
+
+#endif
 
 #if MICROPY_PY_NETWORK_WIZNET5K
-static bool wiznet_poll_pending = false;
-
 void wiznet5k_poll(void);
 void wiznet5k_deinit(void);
+
+void wiznet5k_try_poll(void) {
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_WIZNET, wiznet5k_poll);
+}
 #endif
 
 u32_t sys_now(void) {
@@ -51,62 +88,27 @@ u32_t sys_now(void) {
     return mp_hal_ticks_ms();
 }
 
-STATIC uint32_t lwip_poll(void) {
+STATIC void lwip_poll(void) {
     // Run the lwIP internal updates
     sys_check_timeouts();
-
-    return MAX(5, MIN(sys_timeouts_sleeptime(), LWIP_TICK_RATE_MS));
 }
 
 void lwip_lock_acquire(void) {
-    lwip_can_poll = false;
+    // Prevent PendSV from running.
+    pendsv_suspend();
 }
 
 void lwip_lock_release(void) {
-    lwip_can_poll = false;
-    #if MICROPY_PY_NETWORK_WIZNET5K
-    if (wiznet_poll_pending) {
-        wiznet5k_poll();
-        wiznet_poll_pending = false;
-    }
-    #endif
-
-    if (lwip_poll_pending) {
-        lwip_poll();
-        lwip_poll_pending = false;
-    }
-    lwip_can_poll = true;
+    // Allow PendSV to run again.
+    pendsv_resume();
 }
-
-uint32_t lwip_try_poll(void) {
-    uint32_t ret = LWIP_TICK_RATE_MS;
-    if (lwip_can_poll) {
-        lwip_can_poll = false;
-        ret = lwip_poll();
-        lwip_can_poll = true;
-    } else {
-        lwip_poll_pending = true;
-    }
-    return ret;
-}
-
-#if MICROPY_PY_NETWORK_WIZNET5K
-void wiznet5k_try_poll(void) {
-    if (lwip_can_poll) {
-        lwip_can_poll = false;
-        wiznet5k_poll();
-        lwip_can_poll = true;
-    } else {
-        wiznet_poll_pending = true;
-    }
-}
-#endif
 
 STATIC int64_t alarm_callback(alarm_id_t id, void *user_data) {
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_LWIP, lwip_poll);
     #if MICROPY_PY_NETWORK_WIZNET5K
-    wiznet5k_try_poll();
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_WIZNET, wiznet5k_poll);
     #endif
-    return (int64_t)lwip_try_poll() * 1000;
+    return LWIP_TICK_RATE_MS * 1000;
 }
 
 void mod_network_lwip_init(void) {

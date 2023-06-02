@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
 #include "extint.h"
@@ -84,6 +82,15 @@ STATIC bool rtc_need_init_finalise = false;
 
 #if defined(STM32L0)
 #define BDCR CSR
+#define RCC_BDCR_RTCEN RCC_CSR_RTCEN
+#define RCC_BDCR_RTCSEL RCC_CSR_RTCSEL
+#define RCC_BDCR_RTCSEL_0 RCC_CSR_RTCSEL_0
+#define RCC_BDCR_RTCSEL_1 RCC_CSR_RTCSEL_1
+#define RCC_BDCR_LSEON RCC_CSR_LSEON
+#define RCC_BDCR_LSERDY RCC_CSR_LSERDY
+#define RCC_BDCR_LSEBYP RCC_CSR_LSEBYP
+#elif defined(STM32L1)
+#define BDCR CR
 #define RCC_BDCR_RTCEN RCC_CSR_RTCEN
 #define RCC_BDCR_RTCSEL RCC_CSR_RTCSEL
 #define RCC_BDCR_RTCSEL_0 RCC_CSR_RTCSEL_0
@@ -664,7 +671,15 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
                 wucksel -= 1;
             }
             if (div <= 16) {
+                #if defined(STM32L1)
+                if (rtc_use_lse) {
+                    wut = LSE_VALUE / div * ms / 1000;
+                } else {
+                    wut = LSI_VALUE / div * ms / 1000;
+                }
+                #else
                 wut = 32768 / div * ms / 1000;
+                #endif
             } else {
                 // use 1Hz clock
                 wucksel = 4;
@@ -754,8 +769,6 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
 
         NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP);
         HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
-
-        // printf("wut=%d wucksel=%d\n", wut, wucksel);
     } else {
         // clear WUTIE to disable interrupts
         RTC->CR &= ~RTC_CR_WUTIE;
@@ -816,7 +829,6 @@ mp_obj_t pyb_rtc_calibration(size_t n_args, const mp_obj_t *args) {
         HAL_RTCEx_SetSmoothCalib(&RTCHandle, RTC_SMOOTHCALIB_PERIOD_32SEC, cal_p, cal_m);
         return mp_const_none;
     } else {
-        // printf("CALR = 0x%x\n", (mp_uint_t) RTCHandle.Instance->CALR); // DEBUG
         // Test if CALP bit is set in CALR:
         if (RTCHandle.Instance->CALR & 0x8000) {
             cal = 512 - (RTCHandle.Instance->CALR & 0x1ff);
@@ -837,9 +849,10 @@ STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
-const mp_obj_type_t pyb_rtc_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RTC,
-    .make_new = pyb_rtc_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_rtc_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_rtc_type,
+    MP_QSTR_RTC,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_rtc_make_new,
+    locals_dict, &pyb_rtc_locals_dict
+    );

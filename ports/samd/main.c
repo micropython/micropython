@@ -29,10 +29,16 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
+#include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/softtimer.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
+extern void adc_deinit_all(void);
+extern void pin_irq_deinit_all(void);
+extern void pwm_deinit_all(void);
+extern void sercom_deinit_all(void);
 
 void samd_main(void) {
     mp_stack_set_top(&_estack);
@@ -42,12 +48,24 @@ void samd_main(void) {
         gc_init(&_sheap, &_eheap);
         mp_init();
 
+        // Initialise sub-systems.
+        readline_init0();
+
         // Execute _boot.py to set up the filesystem.
-        pyexec_frozen_module("_boot.py");
+        pyexec_frozen_module("_boot.py", false);
 
         // Execute user scripts.
-        pyexec_file_if_exists("boot.py");
-        pyexec_file_if_exists("main.py");
+        int ret = pyexec_file_if_exists("boot.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset_exit;
+        }
+        // Do not execute main.py if boot.py failed
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
+            ret = pyexec_file_if_exists("main.py");
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset_exit;
+            }
+        }
 
         for (;;) {
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -61,7 +79,13 @@ void samd_main(void) {
             }
         }
 
+    soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        adc_deinit_all();
+        pin_irq_deinit_all();
+        pwm_deinit_all();
+        sercom_deinit_all();
+        soft_timer_deinit();
         gc_sweep_all();
         mp_deinit();
     }

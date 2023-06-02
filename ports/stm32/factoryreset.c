@@ -42,11 +42,15 @@ static const char fresh_boot_py[] =
     "\r\n"
     "import machine\r\n"
     "import pyb\r\n"
-    "pyb.country('US') # ISO 3166-1 Alpha-2 code, eg US, GB, DE, AU\r\n"
     "#pyb.main('main.py') # main script to run after this one\r\n"
 #if MICROPY_HW_ENABLE_USB
     "#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
     "#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
+#endif
+#if MICROPY_PY_NETWORK
+    "#import network\r\n"
+    "#network.country('US') # ISO 3166-1 Alpha-2 code, eg US, GB, DE, AU or XX for worldwide\r\n"
+    "#network.hostname('...') # DHCP/mDNS hostname\r\n"
 #endif
 ;
 

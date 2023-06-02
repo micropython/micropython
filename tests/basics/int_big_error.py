@@ -8,6 +8,16 @@ except ValueError:
     print("ValueError")
 
 try:
+    i @ 0
+except TypeError:
+    print("TypeError")
+
+try:
+    i @= 0
+except TypeError:
+    print("TypeError")
+
+try:
     len(i)
 except TypeError:
     print("TypeError")

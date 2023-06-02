@@ -3,13 +3,14 @@
   <!-- Variant support. For compatibility with how it works for the other ports, this gets imported
        early so variants cannot override build options like the ones specified in the rest of this file.
        Use CustomPropsFile (see the .vcxproj file) for that. -->
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(PyBuildingMpyCross)' != 'True'">
     <PyVariant Condition="'$(PyVariant)' == ''">standard</PyVariant>
     <PyBuild Condition="'$(PyBuild)' == ''">build-$(PyVariant)</PyBuild>
+    <PyProg Condition="'$(PyProg)' == ''">micropython</PyProg>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="paths.props" Condition="'$(PyPathsIncluded)' != 'True'"/>
-    <Import Project="$(PyVariantDir)mpconfigvariant.props"/>
+    <Import Condition="'$(PyBuildingMpyCross)' != 'True'" Project="$(PyVariantDir)mpconfigvariant.props"/>
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>

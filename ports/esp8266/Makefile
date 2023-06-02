@@ -1,14 +1,20 @@
-# Select the board to build for: if not given on the command line,
-# then default to GENERIC.
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to GENERIC.
 BOARD ?= GENERIC
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
 BOARD_DIR ?= boards/$(BOARD)
+endif
+
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
+
+# If the build directory is not given, make it reflect the board name.
+BUILD ?= build-$(BOARD)
 
 include ../../py/mkenv.mk
 
@@ -30,8 +36,9 @@ FROZEN_MANIFEST ?= boards/manifest.py
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES = lib/axtls lib/berkeley-db-1.xx
+GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx
 
 FWBIN = $(BUILD)/firmware-combined.bin
 PORT ?= /dev/ttyACM0
@@ -56,19 +63,19 @@ CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-Wl,-EL -mlongcalls -mtext-section-literals -mforce-l32 \
 	-DLWIP_OPEN_SRC
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
-	$(CFLAGS_XTENSA) $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA) -I$(BOARD_DIR)
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
+	$(CFLAGS_XTENSA) $(COPT) $(CFLAGS_EXTRA) -I$(BOARD_DIR)
 
 LD_FILES ?= boards/esp8266_2m.ld
-LDFLAGS = -nostdlib -T $(LD_FILES) -Map=$(@:.elf=.map) --cref
-LIBS = -L$(ESP_SDK)/lib -lmain -ljson -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211 $(LDFLAGS_MOD)
+LDFLAGS += -nostdlib -T $(LD_FILES) -Map=$(@:.elf=.map) --cref
+LIBS += -L$(ESP_SDK)/lib -lmain -ljson -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
 
 # Debugging/Optimization
+CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG), 1)
-CFLAGS += -g
 COPT = -O0
 else
 CFLAGS += -fdata-sections -ffunction-sections
@@ -99,19 +106,13 @@ SRC_C = \
 	machine_wdt.c \
 	machine_hspi.c \
 	modesp.c \
-	modnetwork.c \
 	modutime.c \
+	network_wlan.c \
 	ets_alt_task.c \
 	fatfs_port.c \
 	posix_helpers.c \
 	hspi.c \
 	$(wildcard $(BOARD_DIR)/*.c) \
-	$(SRC_MOD)
-
-EXTMOD_SRC_C = $(addprefix extmod/,\
-	modlwip.c \
-	modonewire.c \
-        )
 
 LIB_SRC_C = $(addprefix lib/,\
 	libm/math.c \
@@ -163,17 +164,15 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 SRC_S = \
 	gchelper.s \
 
-OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
-OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(SHARED_SRC_C) $(DRIVERS_SRC_C)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 

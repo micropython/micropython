@@ -1,0 +1,35 @@
+# Pin rows contain Pin number and pin name.
+# Pin rows start with PIN_
+# If the pin name is omitted, the pin number is added as name.
+# Empty lines and lines not starting with PIN_ are ignored
+
+PIN_PA02,A0_D9
+PIN_PB08,A1_D10
+PIN_PB09,A2_D11
+PIN_PA04,A3_D12
+PIN_PA05,A4_D13
+PIN_PA06,A5
+PIN_PA16,D0
+PIN_PA17,D1
+PIN_PA07,A6_D2
+PIN_PA19,D3
+PIN_PA20,D4
+PIN_PA21,D5
+PIN_PA00,BUTTON
+PIN_PA03,AREF
+PIN_PA12,SDA
+PIN_PA13,SCL
+PIN_PB22,MOSI
+PIN_PB23,MISO
+PIN_PA01,SCK
+PIN_PB03,DOTSTAR_DATA
+PIN_PB02,DOTSTAR_CLK
+
+PIN_PA15,LED
+
+PIN_PA24,USB_DM
+PIN_PA25,USB_DP
+PIN_PA26,USB_SOF
+
+PIN_PA30,SWCLK
+PIN_PA31,SWDIO

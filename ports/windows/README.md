@@ -128,7 +128,7 @@ functions and thus should be ran using the `wineconsole` tool. Depending
 on the Wine build configuration, you may also want to select the curses
 backend which has the look&feel of a standard Unix console:
 
-    wineconsole --backend=curses ./micropython.exe
+    wineconsole --backend=curses ./build-standard/micropython.exe
 
 For more info, see https://www.winehq.org/docs/wineusr-guide/cui-programs .
 

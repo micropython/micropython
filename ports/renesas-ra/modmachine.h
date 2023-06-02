@@ -37,7 +37,7 @@ extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_adcblock_type;
 extern const mp_obj_type_t machine_dac_type;
 extern const mp_obj_type_t machine_i2c_type;
-extern const mp_obj_type_t machine_hard_spi_type;
+extern const mp_obj_type_t machine_spi_type;
 extern const mp_obj_type_t machine_i2s_type;
 extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_rtc_type;
@@ -49,6 +49,7 @@ void machine_deinit(void);
 void machine_pin_init(void);
 void machine_pin_deinit(void);
 void machine_i2s_init0(void);
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args);
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(machine_unique_id_obj);

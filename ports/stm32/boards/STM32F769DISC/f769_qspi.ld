@@ -40,6 +40,8 @@ _heap_end = _sstack;
 
 ENTRY(Reset_Handler)
 
+REGION_ALIAS("FLASH_COMMON", FLASH_APP);
+
 SECTIONS
 {
     /* Define the code that goes in QSPI flash */
@@ -50,24 +52,8 @@ SECTIONS
         . = ALIGN(4);
     } >FLASH_QSPI
 
-    /* The startup code goes first into main flash */
-    .isr_vector :
-    {
-        . = ALIGN(4);
-        KEEP(*(.isr_vector))
-        . = ALIGN(4);
-    } >FLASH_APP
-
-    /* The program code and other data goes into flash */
-    .text :
-    {
-        . = ALIGN(4);
-        *(.text*)
-        *(.rodata*)
-        . = ALIGN(4);
-        _etext = .;
-    } >FLASH_APP
-
-    INCLUDE common_extratext_data_in_flash_app.ld
+    INCLUDE common_isr.ld
+    INCLUDE common_text.ld
+    INCLUDE common_extratext_data_in_flash.ld
     INCLUDE common_bss_heap_stack.ld
 }

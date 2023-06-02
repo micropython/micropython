@@ -95,10 +95,11 @@ We also need a Makefile at this point for the port:
 
    # Include py core make definitions.
    include $(TOP)/py/py.mk
+   include $(TOP)/extmod/extmod.mk
 
    # Set CFLAGS and libraries.
-   CFLAGS = -I. -I$(BUILD) -I$(TOP)
-   LIBS = -lm
+   CFLAGS += -I. -I$(BUILD) -I$(TOP)
+   LIBS += -lm
 
    # Define the required source files.
    SRC_C = \
@@ -172,9 +173,6 @@ The following is an example of an ``mpconfigport.h`` file:
    #define MICROPY_HW_MCU_NAME   "unknown-cpu"
 
    #define MP_STATE_PORT MP_STATE_VM
-
-   #define MICROPY_PORT_ROOT_POINTERS \
-       const char *readline_hist[8];
 
 This configuration file contains machine-specific configurations including aspects like if different
 MicroPython features should be enabled e.g. ``#define MICROPY_ENABLE_GC (1)``. Making this Setting

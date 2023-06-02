@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard friendly",
+        "Castellated Pads",
+        "Micro USB",
+        "WiFi"
+    ],
+    "id": "rp2-pico-w",
+    "images": [
+        "rp2-pico-w.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Pico W",
+    "thumbnail": "",
+    "url": "https://www.raspberrypi.com/products/raspberry-pi-pico/",
+    "vendor": "Raspberry Pi"
+}

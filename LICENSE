@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2013-2022 Damien P. George
+Copyright (c) 2013-2023 Damien P. George
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,6 @@ used during the build process and is not part of the compiled source code.
 
 / (MIT)
     /drivers
-        /cc3000 (BSD-3-clause)
         /cc3100 (BSD-3-clause)
         /wiznet5k (BSD-3-clause)
     /lib

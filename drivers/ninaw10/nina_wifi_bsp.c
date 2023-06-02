@@ -73,7 +73,7 @@ int nina_bsp_init(void) {
         MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIFI_SPI_BAUDRATE),
     };
 
-    MP_STATE_PORT(mp_wifi_spi) = machine_spi_type.make_new((mp_obj_t)&machine_spi_type, 2, 0, args);
+    MP_STATE_PORT(mp_wifi_spi) = MP_OBJ_TYPE_GET_SLOT(&machine_spi_type, make_new)((mp_obj_t)&machine_spi_type, 2, 0, args);
     return 0;
 }
 
@@ -137,7 +137,7 @@ int nina_bsp_spi_slave_deselect(void) {
 
 int nina_bsp_spi_transfer(const uint8_t *tx_buf, uint8_t *rx_buf, uint32_t size) {
     mp_obj_t mp_wifi_spi = MP_STATE_PORT(mp_wifi_spi);
-    ((mp_machine_spi_p_t *)machine_spi_type.protocol)->transfer(mp_wifi_spi, size, tx_buf, rx_buf);
+    ((mp_machine_spi_p_t *)MP_OBJ_TYPE_GET_SLOT(&machine_spi_type, protocol))->transfer(mp_wifi_spi, size, tx_buf, rx_buf);
     #if NINA_DEBUG
     for (int i = 0; i < size; i++) {
         if (tx_buf) {

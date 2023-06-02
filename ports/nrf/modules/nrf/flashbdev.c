@@ -183,13 +183,14 @@ STATIC mp_obj_t nrf_flashbdev_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-const mp_obj_type_t nrf_flashbdev_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Flash,
-    .print = nrf_flashbdev_print,
-    .make_new = nrf_flashbdev_make_new,
-    .locals_dict = (mp_obj_dict_t *)&nrf_flashbdev_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    nrf_flashbdev_type,
+    MP_QSTR_Flash,
+    MP_TYPE_FLAG_NONE,
+    make_new, nrf_flashbdev_make_new,
+    print, nrf_flashbdev_print,
+    locals_dict, &nrf_flashbdev_locals_dict
+    );
 
 void flashbdev_init(void) {
     // Set start to first aligned page from _fs_start.

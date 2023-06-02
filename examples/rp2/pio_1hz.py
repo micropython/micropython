@@ -1,4 +1,5 @@
 # Example using PIO to blink an LED and raise an IRQ at 1Hz.
+# Note: this does not work on Pico W because it uses Pin(25) for LED output.
 
 import time
 from machine import Pin
@@ -16,9 +17,10 @@ def blink_1hz():
     nop()                       [29]
     jmp(x_dec, "delay_high")
 
-    # Cycles: 1 + 7 + 32 * (30 + 1) = 1000
+    # Cycles: 1 + 1 + 6 + 32 * (30 + 1) = 1000
+    nop()
     set(pins, 0)
-    set(x, 31)                  [6]
+    set(x, 31)                  [5]
     label("delay_low")
     nop()                       [29]
     jmp(x_dec, "delay_low")

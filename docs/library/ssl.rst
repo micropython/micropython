@@ -13,7 +13,7 @@ facilities for network sockets, both client-side and server-side.
 Functions
 ---------
 
-.. function:: ssl.wrap_socket(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=CERT_NONE, ca_certs=None, do_handshake=True)
+.. function:: ssl.wrap_socket(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=CERT_NONE, cadata=None, server_hostname=None, do_handshake=True)
 
    Takes a `stream` *sock* (usually socket.socket instance of ``SOCK_STREAM`` type),
    and returns an instance of ssl.SSLSocket, which wraps the underlying stream in
@@ -30,6 +30,17 @@ Functions
      the handshake should generally be deferred because otherwise ``wrap_socket`` blocks
      until it completes. Note that in AXTLS the handshake can be deferred until the first
      read or write but it then blocks until completion.
+
+   - *cert_reqs* determines whether the peer (server or client) must present a valid certificate.
+     Note that for mbedtls based ports, ``ssl.CERT_NONE`` and ``ssl.CERT_OPTIONAL`` will not
+     validate any certificate, only ``ssl.CERT_REQUIRED`` will.
+
+   - *cadata* is a bytes object containing the CA certificate chain (in DER format) that will
+     validate the peer's certificate.  Currently only a single DER-encoded certificate is supported.
+
+   - *server_hostname* is for use as a client, and sets the hostname to check against the received
+     server certificate.  It also sets the name for Server Name Indication (SNI), allowing the server
+     to present the proper certificate.
 
    Depending on the underlying module implementation in a particular
    :term:`MicroPython port`, some or all keyword arguments above may be not supported.

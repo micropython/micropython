@@ -11,12 +11,4 @@
 #define MICROPY_HW_UART1_CTS (10)
 #define MICROPY_HW_UART1_RTS (11)
 
-// Qwiic on I2C0
-#define MICROPY_HW_I2C0_SCL  (17)
-#define MICROPY_HW_I2C0_SDA  (16)
-
-#define MICROPY_HW_SPI0_SCK  (22)
-#define MICROPY_HW_SPI0_MOSI (23)
-#define MICROPY_HW_SPI0_MISO (20)
-
 // NeoPixel data GPIO25, power not toggleable

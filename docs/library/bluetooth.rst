@@ -13,6 +13,9 @@ concurrently. Pairing (and bonding) is supported on some ports.
 This API is intended to match the low-level Bluetooth protocol and provide
 building-blocks for higher-level abstractions such as specific device types.
 
+.. note:: For most applications, we recommend using the higher-level
+          `aioble library <https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble>`_.
+
 .. note:: This module is still under development and its classes, functions,
           methods and constants are subject to change.
 
@@ -163,7 +166,7 @@ Event Handling
                 conn_handle, status = data
             elif event == _IRQ_GATTC_CHARACTERISTIC_RESULT:
                 # Called for each characteristic found by gattc_discover_services().
-                conn_handle, def_handle, value_handle, properties, uuid = data
+                conn_handle, end_handle, value_handle, properties, uuid = data
             elif event == _IRQ_GATTC_CHARACTERISTIC_DONE:
                 # Called once service discovery is complete.
                 # Note: Status will be zero on success, implementation-specific value otherwise.
@@ -180,12 +183,10 @@ Event Handling
                 conn_handle, value_handle, char_data = data
             elif event == _IRQ_GATTC_READ_DONE:
                 # A gattc_read() has completed.
-                # Note: The value_handle will be zero on btstack (but present on NimBLE).
                 # Note: Status will be zero on success, implementation-specific value otherwise.
                 conn_handle, value_handle, status = data
             elif event == _IRQ_GATTC_WRITE_DONE:
                 # A gattc_write() has completed.
-                # Note: The value_handle will be zero on btstack (but present on NimBLE).
                 # Note: Status will be zero on success, implementation-specific value otherwise.
                 conn_handle, value_handle, status = data
             elif event == _IRQ_GATTC_NOTIFY:
@@ -511,19 +512,24 @@ writes from a client to a given characteristic, use
 
     Sends a notification request to a connected client.
 
-    If *data* is not ``None``, then that value is sent to the client as part of
-    the notification. The local value will not be modified.
+    If *data* is ``None`` (the default), then the current local value (as set
+    with :meth:`gatts_write <BLE.gatts_write>`) will be sent.
 
-    Otherwise, if *data* is ``None``, then the current local value (as
-    set with :meth:`gatts_write <BLE.gatts_write>`) will be sent.
+    Otherwise, if *data* is not ``None``, then that value is sent to the client
+    as part of the notification. The local value will not be modified.
 
     **Note:** The notification will be sent regardless of the subscription
     status of the client to this characteristic.
 
-.. method:: BLE.gatts_indicate(conn_handle, value_handle, /)
+.. method:: BLE.gatts_indicate(conn_handle, value_handle, data=None, /)
 
-    Sends an indication request containing the characteristic's current value to
-    a connected client.
+    Sends a indication request to a connected client.
+
+    If *data* is ``None`` (the default), then the current local value (as set
+    with :meth:`gatts_write <BLE.gatts_write>`) will be sent.
+
+    Otherwise, if *data* is not ``None``, then that value is sent to the client
+    as part of the indication. The local value will not be modified.
 
     On acknowledgment (or failure, e.g. timeout), the
     ``_IRQ_GATTS_INDICATE_DONE`` event will be raised.

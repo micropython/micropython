@@ -30,6 +30,7 @@ _exc_context = {"message": "Task exception wasn't retrieved", "exception": None,
 ################################################################################
 # Sleep functions
 
+
 # "Yield" once, then raise StopIteration
 class SingletonGenerator:
     def __init__(self):
@@ -131,6 +132,7 @@ class IOQueue:
 
 ################################################################################
 # Main run loop
+
 
 # Ensure the awaitable is a task
 def _promote_to_task(aw):

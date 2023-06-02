@@ -76,11 +76,10 @@
   */
 
 #include "py/mphal.h"
+#include "boardctrl.h"
 #include "powerctrl.h"
 
 #if defined(STM32F4) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4)
-
-void __fatal_error(const char *msg);
 
 /**
   * @brief  System Clock Configuration
@@ -390,7 +389,7 @@ MP_WEAK void SystemClock_Config(void) {
     #endif
 
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-        __fatal_error("HAL_RCC_OscConfig");
+        MICROPY_BOARD_FATAL_ERROR("HAL_RCC_OscConfig");
     }
 
     #if defined(MICROPY_HW_CLK_PLL2M)
@@ -478,20 +477,20 @@ MP_WEAK void SystemClock_Config(void) {
     #endif
 
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
-        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
+        MICROPY_BOARD_FATAL_ERROR("HAL_RCCEx_PeriphCLKConfig");
     }
     #endif  // defined(STM32H7)
 
     #if defined(STM32F7)
     /* Activate the OverDrive to reach the 200 MHz Frequency */
     if (HAL_PWREx_EnableOverDrive() != HAL_OK) {
-        __fatal_error("HAL_PWREx_EnableOverDrive");
+        MICROPY_BOARD_FATAL_ERROR("HAL_PWREx_EnableOverDrive");
     }
     #endif
 
     #if defined(STM32G4)
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_8) != HAL_OK) {
-        __fatal_error("HAL_RCC_ClockConfig");
+        MICROPY_BOARD_FATAL_ERROR("HAL_RCC_ClockConfig");
     }
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_LPUART1
         | RCC_PERIPHCLK_RNG | RCC_PERIPHCLK_ADC12
@@ -503,14 +502,14 @@ MP_WEAK void SystemClock_Config(void) {
     PeriphClkInitStruct.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
     PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
-        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
+        MICROPY_BOARD_FATAL_ERROR("HAL_RCCEx_PeriphCLKConfig");
     }
     #else
     uint32_t vco_out = RCC_OscInitStruct.PLL.PLLN * (MICROPY_HW_CLK_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM;
     uint32_t sysclk_mhz = vco_out / RCC_OscInitStruct.PLL.PLLP;
     bool need_pll48 = vco_out % 48 != 0;
     if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pll48) != 0) {
-        __fatal_error("HAL_RCC_ClockConfig");
+        MICROPY_BOARD_FATAL_ERROR("HAL_RCC_ClockConfig");
     }
     #endif
 
@@ -572,7 +571,7 @@ MP_WEAK void SystemClock_Config(void) {
         | RCC_PLLSAI1_ADC1CLK;
 
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
-        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
+        MICROPY_BOARD_FATAL_ERROR("HAL_RCCEx_PeriphCLKConfig");
     }
 
     __PWR_CLK_ENABLE();

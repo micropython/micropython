@@ -5,6 +5,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+
 # region tuple is: (size, free, largest free, min free)
 # we check that each region's size is > 0 and that the free amounts are smaller than the size
 def chk_heap(kind, regions):

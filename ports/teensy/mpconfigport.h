@@ -41,12 +41,6 @@ extern const struct _mp_obj_module_t pyb_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
-    mp_obj_t pin_class_mapper; \
-    mp_obj_t pin_class_map_dict; \
-    struct _pyb_uart_obj_t *pyb_stdio_uart; \
-
 // type definitions for the specific machine
 
 #define UINT_FMT "%u"
