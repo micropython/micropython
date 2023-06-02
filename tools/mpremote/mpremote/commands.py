@@ -112,6 +112,7 @@ def do_filesystem(state, args):
 
     def _list_recursive(files, path):
         if os.path.isdir(path):
+            files.append((path, ""))
             for entry in os.listdir(path):
                 _list_recursive(files, "/".join((path, entry)))
         else:
@@ -147,11 +148,12 @@ def do_filesystem(state, args):
                         "try:\n uos.mkdir('%s')\nexcept OSError as e:\n print(e)" % d
                     )
                     known_dirs.add(d)
-            state.transport.filesystem_command(
-                ["cp", "/".join((dir, file)), ":" + dir + "/"],
-                progress_callback=show_progress_bar,
-                verbose=verbose,
-            )
+            if file:
+                state.transport.filesystem_command(
+                    ["cp", "/".join((dir, file)), ":" + dir + "/"],
+                    progress_callback=show_progress_bar,
+                    verbose=verbose,
+                )
     else:
         if args.recursive:
             raise CommandError("'-r' only supported for 'cp'")
