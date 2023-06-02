@@ -384,28 +384,22 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
 
         // An import of a non-extensible built-in will always bypass the
         // filesystem. e.g. `import micropython` or `import pyb`.
-        module_obj = mp_module_get_builtin(level_mod_name);
+        module_obj = mp_module_get_builtin(level_mod_name, false);
         if (module_obj != MP_OBJ_NULL) {
             return module_obj;
         }
-
-        #if MICROPY_PY_SYS
-        // Never allow sys to be overridden from the filesystem. If weak links
-        // are disabled, then this also provides a default weak link so that
-        // `import sys` is treated like `import usys` (and therefore bypasses
-        // the filesystem).
-        if (level_mod_name == MP_QSTR_sys) {
-            return MP_OBJ_FROM_PTR(&mp_module_sys);
-        }
-        #endif
 
         // First module in the dotted-name; search for a directory or file
         // relative to all the locations in sys.path.
         stat = stat_top_level(level_mod_name, &path);
 
         // TODO: If stat failed, now try extensible built-in modules.
-
-        // TODO: If importing `ufoo`, try `foo`.
+        if (stat == MP_IMPORT_STAT_NO_EXIST) {
+            module_obj = mp_module_get_builtin(level_mod_name, true);
+            if (module_obj != MP_OBJ_NULL) {
+                return module_obj;
+            }
+        }
     } else {
         DEBUG_printf("Searching for sub-module\n");
 
@@ -637,7 +631,7 @@ mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
 
     // Try the name directly as a built-in.
     qstr module_name_qstr = mp_obj_str_get_qstr(args[0]);
-    mp_obj_t module_obj = mp_module_get_builtin(module_name_qstr);
+    mp_obj_t module_obj = mp_module_get_builtin(module_name_qstr, false);
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;
     }

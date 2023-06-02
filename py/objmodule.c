@@ -166,17 +166,54 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 // Global module table and related functions
 
 STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
-    // builtin modules declared with MP_REGISTER_MODULE()
+    // built-in modules declared with MP_REGISTER_MODULE()
     MICROPY_REGISTERED_MODULES
 };
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
-// Attempts to find (and initialise) a builtin, otherwise returns
+STATIC const mp_rom_map_elem_t mp_builtin_extensible_module_table[] = {
+    // built-in modules declared with MP_REGISTER_EXTENSIBLE_MODULE()
+    MICROPY_REGISTERED_EXTENSIBLE_MODULES
+};
+MP_DEFINE_CONST_MAP(mp_builtin_extensible_module_map, mp_builtin_extensible_module_table);
+
+// Attempts to find (and initialise) a built-in, otherwise returns
 // MP_OBJ_NULL.
-mp_obj_t mp_module_get_builtin(qstr module_name) {
-    mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
+    mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)(extensible ? &mp_builtin_extensible_module_map : &mp_builtin_module_map), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
     if (!elem) {
-        return MP_OBJ_NULL;
+        #if MICROPY_PY_SYS
+        // Special case for sys, which isn't extensible but can always be
+        // imported with the alias `usys`.
+        if (module_name == MP_QSTR_usys) {
+            return MP_OBJ_FROM_PTR(&mp_module_sys);
+        }
+        #endif
+
+        if (extensible) {
+            // At this point we've already tried non-extensible built-ins, the
+            // filesystem, and now extensible built-ins. No match, so fail
+            // the import.
+            return MP_OBJ_NULL;
+        }
+
+        // We're trying to match a non-extensible built-in (i.e. before trying
+        // the filesystem), but if the user is importing `ufoo`, _and_ `foo`
+        // is an extensible module, then allow it as a way of forcing the
+        // built-in. Essentially, this makes it as if all the extensible
+        // built-ins also had non-extensible aliases named `ufoo`. Newer code
+        // should be using sys.path to force the built-in, but this retains
+        // the old behaviour of the u-prefix being used to force a built-in
+        // import.
+        size_t module_name_len;
+        const char *module_name_str = (const char *)qstr_data(module_name, &module_name_len);
+        if (module_name_str[0] != 'u') {
+            return MP_OBJ_NULL;
+        }
+        elem = mp_map_lookup((mp_map_t *)&mp_builtin_extensible_module_map, MP_OBJ_NEW_QSTR(qstr_from_strn(module_name_str + 1, module_name_len - 1)), MP_MAP_LOOKUP);
+        if (!elem) {
+            return MP_OBJ_NULL;
+        }
     }
 
     #if MICROPY_MODULE_BUILTIN_INIT
