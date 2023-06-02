@@ -47,7 +47,7 @@ class FS:
         pass
 
     def stat(self, path):
-        if path == "__injected.mpy":
+        if path == "/__injected.mpy":
             return tuple(0 for _ in range(10))
         else:
             raise OSError(-2)  # ENOENT
@@ -58,7 +58,7 @@ class FS:
 
 def mount():
     os.mount(FS(), "/__remote")
-    os.chdir("/__remote")
+    sys.path.insert(0, "/__remote")
 
 
 def test(r):
