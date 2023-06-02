@@ -52,7 +52,7 @@ Functions
     Read the value of the internal temperature sensor in celsius, returning a float.
 
 .. Note::
-   Available on ESP32-S2, ESP32-S3 and ESP32-C3.
+   Available on ESP32-S2 and ESP32-C3.
 
 .. function:: hall_sensor()
 
