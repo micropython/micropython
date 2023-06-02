@@ -32,9 +32,11 @@ const char stm32_help_text[] =
     "For online docs please visit http://docs.micropython.org/\n"
     "\n"
     "Quick overview of commands for the board:\n"
+    #if MICROPY_PY_PYB_LEGACY
     "  pyb.info()    -- print some general information\n"
     "  pyb.delay(n)  -- wait for n milliseconds\n"
     "  pyb.millis()  -- get number of milliseconds since hard reset\n"
+    #endif
     #if MICROPY_HW_HAS_SWITCH
     "  pyb.Switch()  -- create a switch object\n"
     "                   Switch methods: (), callback(f)\n"
@@ -69,8 +71,8 @@ const char stm32_help_text[] =
     #endif
     "\n"
     "Pins are numbered X1-X12, X17-X22, Y1-Y12, or by their MCU name\n"
-    "Pin IO modes are: pyb.Pin.IN, pyb.Pin.OUT_PP, pyb.Pin.OUT_OD\n"
-    "Pin pull modes are: pyb.Pin.PULL_NONE, pyb.Pin.PULL_UP, pyb.Pin.PULL_DOWN\n"
+    "Pin IO modes are: pyb.Pin.IN, pyb.Pin.OUT, pyb.Pin.OPEN_DRAIN\n"
+    "Pin pull modes are: None, pyb.Pin.PULL_UP, pyb.Pin.PULL_DOWN\n"
     "Additional serial bus objects: pyb.I2C(n), pyb.SPI(n), pyb.UART(n)\n"
     "\n"
     "Control commands:\n"
