@@ -5,7 +5,7 @@ import tempfile
 import serial.tools.list_ports
 
 from .transport import TransportError
-from .transport_serial import SerialTransport
+from .transport_serial import SerialTransport, stdout_write_bytes
 
 
 class CommandError(Exception):
@@ -79,7 +79,7 @@ def do_disconnect(state, _args=None):
             state.transport.exit_raw_repl()
     except OSError:
         # Ignore any OSError exceptions when shutting down, eg:
-        # - pyboard.filesystem_command will close the connection if it had an error
+        # - filesystem_command will close the connection if it had an error
         # - umounting will fail if serial port disappeared
         pass
     state.transport.close()
@@ -190,11 +190,9 @@ def _do_execbuffer(state, buf, follow):
     try:
         state.transport.exec_raw_no_follow(buf)
         if follow:
-            ret, ret_err = state.transport.follow(
-                timeout=None, data_consumer=pyboard.stdout_write_bytes
-            )
+            ret, ret_err = state.transport.follow(timeout=None, data_consumer=stdout_write_bytes)
             if ret_err:
-                pyboard.stdout_write_bytes(ret_err)
+                stdout_write_bytes(ret_err)
                 sys.exit(1)
     except TransportError as er:
         print(er)
