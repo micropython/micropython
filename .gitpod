@@ -15,7 +15,7 @@ tasks:
       # source tools/ci.sh && ci_esp32_build
     command: |
       xrandr --fb 500x500 # Fix resolution for LVGL screens which are smaller
-      ports/unix/micropython-dev -i lib/lv_bindings/examples/advanced_demo.py
+      ports/unix/build-standard/micropython -i lib/lv_bindings/examples/advanced_demo.py
 vscode:
   extensions:
     - ms-vscode.cpptools

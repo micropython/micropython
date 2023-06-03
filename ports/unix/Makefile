@@ -193,41 +193,6 @@ ifeq ($(MICROPY_PY_JNI),1)
 CFLAGS += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
 endif
 
-# Additional optional libraries
-
-ifneq ($(UNAME_S),Darwin)
-CFLAGS_MOD += -DMICROPY_FB=1
-endif
-
-SDL_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags sdl2)
-SDL_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   sdl2)
-ifneq ($(SDL_LDFLAGS_MOD),)
-CFLAGS_MOD += $(SDL_CFLAGS_MOD) -DMICROPY_SDL=1
-LDFLAGS_MOD += $(SDL_LDFLAGS_MOD)
-endif
-
-RLOTTIE_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags rlottie)
-RLOTTIE_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   rlottie)
-ifneq ($(RLOTTIE_LDFLAGS_MOD),)
-CFLAGS_MOD += $(RLOTTIE_CFLAGS_MOD) -DMICROPY_RLOTTIE=1
-LDFLAGS_MOD += $(RLOTTIE_LDFLAGS_MOD)
-endif
-
-FREETYPE_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags freetype2)
-FREETYPE_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   freetype2)
-ifneq ($(FREETYPE_LDFLAGS_MOD),)
-CFLAGS_MOD += $(FREETYPE_CFLAGS_MOD) -DMICROPY_FREETYPE=1
-LDFLAGS_MOD += $(FREETYPE_LDFLAGS_MOD)
-endif
-
-FFMPEG_LIBS := libavformat libavcodec libswscale libavutil
-FFMPEG_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags $(FFMPEG_LIBS))
-FFMPEG_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   $(FFMPEG_LIBS))
-ifneq ($(FFMPEG_LDFLAGS_MOD),)
-CFLAGS_MOD += $(FFMPEG_CFLAGS_MOD) -DMICROPY_FFMPEG=1
-LDFLAGS_MOD += $(FFMPEG_LDFLAGS_MOD)
-endif
-
 # source files
 SRC_C += \
 	main.c \
