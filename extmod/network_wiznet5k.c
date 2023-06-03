@@ -211,7 +211,11 @@ STATIC void wiznet5k_init(void) {
     // Configure wiznet for raw ethernet frame usage.
 
     // Configure 16k buffers for fast MACRAW
+    #if _WIZCHIP_ < W5200
+    uint8_t sn_size[8] = {8, 0, 0, 0, 8, 0, 0, 0}; // 8k buffers on W5100 and W5100S
+    #else
     uint8_t sn_size[16] = {16, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0};
+    #endif
     ctlwizchip(CW_INIT_WIZCHIP, sn_size);
 
     if (wiznet5k_obj.use_interrupt) {
