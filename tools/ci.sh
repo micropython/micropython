@@ -141,7 +141,7 @@ function ci_esp32_idf402_setup {
 }
 
 function ci_esp32_idf44_setup {
-    ci_esp32_setup_helper v4.4
+    ci_esp32_setup_helper v4.4.2
 }
 
 function ci_esp32_build {
