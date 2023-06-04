@@ -26,10 +26,15 @@
 
 #include "py/runtime.h"
 
-
 #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 
+#if CONFIG_IDF_TARGET_ESP32
 #include "esp32/ulp.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/ulp.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/ulp.h"
+#endif
 #include "esp_err.h"
 
 typedef struct _esp32_ulp_obj_t {
@@ -106,4 +111,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &esp32_ulp_locals_dict
     );
 
-#endif // CONFIG_IDF_TARGET_ESP32
+#endif // CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
