@@ -40,6 +40,8 @@
 // memory system, runtime and virtual machine.  The state is a global
 // variable, but in the future it is hoped that the state can become local.
 
+#if MICROPY_PY_SYS_ATTR_DELEGATION
+// Must be kept in sync with sys_mutable_keys in modsys.c.
 enum {
     #if MICROPY_PY_SYS_PS1_PS2
     MP_SYS_MUTABLE_PS1,
@@ -50,6 +52,7 @@ enum {
     #endif
     MP_SYS_MUTABLE_NUM,
 };
+#endif // MICROPY_PY_SYS_ATTR_DELEGATION
 
 // This structure contains dynamic configuration for the compiler.
 #if MICROPY_DYNAMIC_COMPILER

@@ -842,7 +842,7 @@ typedef double mp_float_t;
 // Whether modules can use MP_REGISTER_MODULE_DELEGATION() to delegate failed
 // attribute lookups to a custom handler function.
 #ifndef MICROPY_MODULE_ATTR_DELEGATION
-#define MICROPY_MODULE_ATTR_DELEGATION (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#define MICROPY_MODULE_ATTR_DELEGATION (MICROPY_PY_SYS_ATTR_DELEGATION || MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
 // Whether to call __init__ when importing builtin modules for the first time.
