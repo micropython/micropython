@@ -834,7 +834,7 @@ $(BUILD)/lib/libm/kf_rem_pio2.o: CFLAGS += -Wno-maybe-uninitialized
 .PHONY: fetch-port-submodules
 fetch-port-submodules:
 	echo $(basename $(CURDIR))
-	$(TOP)/tools/fetch-submodules.sh data extmod frozen lib ports/$(shell basename $(CURDIR))
+	$(TOP)/tools/fetch-submodules.sh data extmod frozen lib tools ports/$(shell basename $(CURDIR))
 
 .PHONY: invalid-board
 invalid-board:
