@@ -19,11 +19,11 @@ jobs:
     - name: Initialize lv_bindings submodule
       run: git submodule update --init --recursive lib/lv_bindings
     - name: Update submodules
-      run: make -C ports/unix VARIANT=dev DEBUG=1 submodules
+      run: make -C ports/unix DEBUG=1 submodules
     - name: Build mpy-cross
       run: make -j $(nproc) -C mpy-cross
     - name: Build the unix port
-      run: make -j $(nproc) -C ports/unix VARIANT=dev DEBUG=1
+      run: make -j $(nproc) -C ports/unix DEBUG=1
     - name: Run tests
       run: |
         export XDG_RUNTIME_DIR=/tmp
