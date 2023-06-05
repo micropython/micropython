@@ -28,9 +28,6 @@
 
 #include "py/obj.h"
 
-// Place at the very end of a module's globals_table.
-#define MP_MODULE_ATTR_DELEGATION_ENTRY(ptr) { MP_ROM_QSTR(MP_QSTRnull), MP_ROM_PTR(ptr) }
-
 extern const mp_map_t mp_builtin_module_map;
 extern const mp_map_t mp_builtin_extensible_module_map;
 

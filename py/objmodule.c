@@ -63,20 +63,7 @@ STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     mp_printf(print, "<module '%s'>", module_name);
 }
 
-STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    #if MICROPY_MODULE_ATTR_DELEGATION
-    // Delegate lookup to a module's custom attr method (found in last lot of globals dict).
-    mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_map_t *map = &self->globals->map;
-    if (map->table[map->alloc - 1].key == MP_OBJ_NEW_QSTR(MP_QSTRnull)) {
-        ((mp_attr_fun_t)MP_OBJ_TO_PTR(map->table[map->alloc - 1].value))(self_in, attr, dest);
-    }
-    #else
-    (void)self_in;
-    (void)attr;
-    (void)dest;
-    #endif
-}
+STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 
 STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
@@ -177,6 +164,18 @@ STATIC const mp_rom_map_elem_t mp_builtin_extensible_module_table[] = {
 };
 MP_DEFINE_CONST_MAP(mp_builtin_extensible_module_map, mp_builtin_extensible_module_table);
 
+#if MICROPY_MODULE_ATTR_DELEGATION && defined(MICROPY_MODULE_DELEGATIONS)
+typedef struct _mp_module_delegation_entry_t {
+    mp_rom_obj_t mod;
+    mp_attr_fun_t fun;
+} mp_module_delegation_entry_t;
+
+STATIC const mp_module_delegation_entry_t mp_builtin_module_delegation_table[] = {
+    // delegation entries declared with MP_REGISTER_MODULE_DELEGATION()
+    MICROPY_MODULE_DELEGATIONS
+};
+#endif
+
 // Attempts to find (and initialise) a built-in, otherwise returns
 // MP_OBJ_NULL.
 mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
@@ -228,6 +227,23 @@ mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
     #endif
 
     return elem->value;
+}
+
+STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    #if MICROPY_MODULE_ATTR_DELEGATION
+    // Delegate lookup to a module's custom attr method.
+    size_t n = MP_ARRAY_SIZE(mp_builtin_module_delegation_table);
+    for (size_t i = 0; i < n; ++i) {
+        if (*(mp_obj_t *)(&mp_builtin_module_delegation_table[i].mod) == self_in) {
+            mp_builtin_module_delegation_table[i].fun(self_in, attr, dest);
+            break;
+        }
+    }
+    #else
+    (void)self_in;
+    (void)attr;
+    (void)dest;
+    #endif
 }
 
 void mp_module_generic_attr(qstr attr, mp_obj_t *dest, const uint16_t *keys, mp_obj_t *values) {

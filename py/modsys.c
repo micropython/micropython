@@ -207,7 +207,7 @@ STATIC const uint16_t sys_mutable_keys[] = {
     MP_QSTRnull,
 };
 
-STATIC void mp_module_sys_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+void mp_module_sys_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(sys_mutable_keys) == MP_SYS_MUTABLE_NUM + 1);
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(MP_STATE_VM(sys_mutable)) == MP_SYS_MUTABLE_NUM);
     mp_module_generic_attr(attr, dest, sys_mutable_keys, MP_STATE_VM(sys_mutable));
@@ -280,11 +280,6 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     #if MICROPY_PY_SYS_ATEXIT
     { MP_ROM_QSTR(MP_QSTR_atexit), MP_ROM_PTR(&mp_sys_atexit_obj) },
     #endif
-
-    #if MICROPY_PY_SYS_ATTR_DELEGATION
-    // Delegation of attr lookup.
-    MP_MODULE_ATTR_DELEGATION_ENTRY(&mp_module_sys_attr),
-    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_sys_globals, mp_module_sys_globals_table);
@@ -317,6 +312,7 @@ MP_REGISTER_ROOT_POINTER(mp_obj_t sys_exitfunc);
 #if MICROPY_PY_SYS_ATTR_DELEGATION
 // Contains mutable sys attributes.
 MP_REGISTER_ROOT_POINTER(mp_obj_t sys_mutable[MP_SYS_MUTABLE_NUM]);
+MP_REGISTER_MODULE_DELEGATION(mp_module_sys, &mp_module_sys_attr);
 #endif
 
 #endif // MICROPY_PY_SYS

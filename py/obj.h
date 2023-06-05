@@ -437,6 +437,10 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 // As above, but allow this module to be extended from the filesystem.
 #define MP_REGISTER_EXTENSIBLE_MODULE(module_name, obj_module)
 
+// Add a custom handler for a builtin module that will be called to delegate
+// failed attribute lookups.
+#define MP_REGISTER_MODULE_DELEGATION(obj_module, fun_name)
+
 // Declare a root pointer (to avoid garbage collection of a global static variable).
 // param variable_declaration: a valid C variable declaration
 #define MP_REGISTER_ROOT_POINTER(variable_declaration)

@@ -839,8 +839,8 @@ typedef double mp_float_t;
 #define MICROPY_STREAMS_POSIX_API (0)
 #endif
 
-// Whether modules can use MP_MODULE_ATTR_DELEGATION_ENTRY() to delegate failed
-// attribute lookups.
+// Whether modules can use MP_REGISTER_MODULE_DELEGATION() to delegate failed
+// attribute lookups to a custom handler function.
 #ifndef MICROPY_MODULE_ATTR_DELEGATION
 #define MICROPY_MODULE_ATTR_DELEGATION (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif

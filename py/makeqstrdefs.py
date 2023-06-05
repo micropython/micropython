@@ -93,7 +93,9 @@ def process_file(f):
     elif args.mode == _MODE_COMPRESS:
         re_match = re.compile(r'MP_COMPRESSED_ROM_TEXT\("([^"]*)"\)')
     elif args.mode == _MODE_MODULE:
-        re_match = re.compile(r"MP_REGISTER_(?:EXTENSIBLE_)?MODULE\(.*?,\s*.*?\);")
+        re_match = re.compile(
+            r"(?:MP_REGISTER_MODULE|MP_REGISTER_EXTENSIBLE_MODULE|MP_REGISTER_MODULE_DELEGATION)\(.*?,\s*.*?\);"
+        )
     elif args.mode == _MODE_ROOT_POINTER:
         re_match = re.compile(r"MP_REGISTER_ROOT_POINTER\(.*?\);")
     output = []
