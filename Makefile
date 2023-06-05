@@ -61,7 +61,6 @@ TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  fetch-submodules	to fetch dependencies from submodules, run this right after you clone the repo"
 	@echo "  html       to make standalone HTML files"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
@@ -84,6 +83,8 @@ help:
 	@echo "  pseudoxml  to make pseudoxml-XML files for display purposes"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+	@echo "  fetch-all-submodules	to fetch submodules for all ports"
+	@echo "  remove-all-submodules	remove all submodules, including files and .git/ data"
 
 clean:
 	rm -rf $(BUILDDIR)/*
@@ -324,25 +325,12 @@ clean-stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean
 
 
-# If available, do blobless partial clones of submodules to save time and space.
-# A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.)
-# so it does not have the idiosyncrasies of a shallow clone.
-#
-# If not available, do a fetch that will fail, and then fix it up with a second fetch.
-# (Only works for git servers that allow sha fetches.)
-.PHONY: fetch-submodules
-fetch-submodules:
-	git submodule sync
-	#####################################################################################
-	# NOTE: Ideally, use git version 2.36.0 or later, to do partial clones of submodules.
-	# If an older git is used, submodules will be cloned with a shallow clone of depth 1.
-	# You will see a git usage message first if the git version is too old to do
-	# clones of submodules.
-	#####################################################################################
-	git submodule update --init --filter=blob:none || git submodule update --init -N --depth 1 || git submodule foreach 'git fetch --tags --depth 1 origin $$sha1 && git checkout -q $$sha1' || echo 'make fetch-submodules FAILED'
+.PHONY: fetch-all-submodules
+fetch-all-submodules:
+	tools/fetch-submodules.sh
 
-.PHONY: remove-submodules
-remove-submodules:
+.PHONY: remove-all-submodules
+remove-all-submodules:
 	git submodule deinit -f --all
 	rm -rf .git/modules/*
 

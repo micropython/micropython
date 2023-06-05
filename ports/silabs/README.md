@@ -47,8 +47,8 @@ Ensure your clone of Circuitpython is ready to build by following the [guide on 
 Clone the source code of CircuitPython from Github:
 
     $  git clone https://github.com/SiliconLabs/circuitpython.git
-    $  cd circuitpython
-    $  make fetch-submodules
+    $  cd circuitpython/ports/silabs
+    $  make fetch-port-submodules
 
 Checkout the branch or tag you want to build. For example:
 
