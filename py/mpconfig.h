@@ -1421,6 +1421,23 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_ATEXIT (0)
 #endif
 
+// Whether to provide the "sys.path" attribute (which forces module delegation
+// and mutable sys attributes to be enabled).
+// If MICROPY_PY_SYS_PATH_ARGV_DEFAULTS is enabled, this is initialised in
+// mp_init to an empty list. Otherwise the port must initialise it using
+// `mp_sys_path = mp_obj_new_list(...)`.
+#ifndef MICROPY_PY_SYS_PATH
+#define MICROPY_PY_SYS_PATH (1)
+#endif
+
+// Whether to provide the "sys.argv" attribute.
+// If MICROPY_PY_SYS_PATH_ARGV_DEFAULTS is enabled, this is initialised in
+// mp_init to an empty list. Otherwise the port must initialise it using
+// `mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), ...);`
+#ifndef MICROPY_PY_SYS_ARGV
+#define MICROPY_PY_SYS_ARGV (1)
+#endif
+
 // Whether to provide sys.{ps1,ps2} mutable attributes, to control REPL prompts
 #ifndef MICROPY_PY_SYS_PS1_PS2
 #define MICROPY_PY_SYS_PS1_PS2 (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
@@ -1455,7 +1472,7 @@ typedef double mp_float_t;
 // Whether the sys module supports attribute delegation
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PY_SYS_ATTR_DELEGATION
-#define MICROPY_PY_SYS_ATTR_DELEGATION (MICROPY_PY_SYS_PS1_PS2 || MICROPY_PY_SYS_TRACEBACKLIMIT)
+#define MICROPY_PY_SYS_ATTR_DELEGATION (MICROPY_PY_SYS_PATH || MICROPY_PY_SYS_PS1_PS2 || MICROPY_PY_SYS_TRACEBACKLIMIT)
 #endif
 
 // Whether to provide "errno" module

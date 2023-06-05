@@ -195,6 +195,9 @@ STATIC mp_obj_t mp_sys_settrace(mp_obj_t obj) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_settrace_obj, mp_sys_settrace);
 #endif // MICROPY_PY_SYS_SETTRACE
 
+#if MICROPY_PY_SYS_PATH && !MICROPY_PY_SYS_ATTR_DELEGATION
+#error "MICROPY_PY_SYS_PATH requires MICROPY_PY_SYS_ATTR_DELEGATION"
+#endif
 
 #if MICROPY_PY_SYS_PS1_PS2 && !MICROPY_PY_SYS_ATTR_DELEGATION
 #error "MICROPY_PY_SYS_PS1_PS2 requires MICROPY_PY_SYS_ATTR_DELEGATION"
@@ -211,6 +214,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_settrace_obj, mp_sys_settrace);
 #if MICROPY_PY_SYS_ATTR_DELEGATION
 // Must be kept in sync with the enum at the top of mpstate.h.
 STATIC const uint16_t sys_mutable_keys[] = {
+    #if MICROPY_PY_SYS_PATH
+    // Code should access this (as an mp_obj_t) for use with e.g.
+    // mp_obj_list_append by using the `mp_sys_path` macro defined in runtime.h.
+    MP_QSTR_path,
+    #endif
     #if MICROPY_PY_SYS_PS1_PS2
     MP_QSTR_ps1,
     MP_QSTR_ps2,
@@ -231,8 +239,9 @@ void mp_module_sys_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },
 
-    { MP_ROM_QSTR(MP_QSTR_path), MP_ROM_PTR(&MP_STATE_VM(mp_sys_path_obj)) },
+    #if MICROPY_PY_SYS_ARGV
     { MP_ROM_QSTR(MP_QSTR_argv), MP_ROM_PTR(&MP_STATE_VM(mp_sys_argv_obj)) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_version), MP_ROM_PTR(&mp_sys_version_obj) },
     { MP_ROM_QSTR(MP_QSTR_version_info), MP_ROM_PTR(&mp_sys_version_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_implementation), MP_ROM_PTR(&mp_sys_implementation_obj) },
@@ -308,10 +317,11 @@ const mp_obj_module_t mp_module_sys = {
 // available.
 MP_REGISTER_MODULE(MP_QSTR_sys, mp_module_sys);
 
-// If MICROPY_PY_SYS_PATH_ARGV_DEFAULTS is not enabled then these two lists
-// must be initialised after the call to mp_init.
-MP_REGISTER_ROOT_POINTER(mp_obj_list_t mp_sys_path_obj);
+#if MICROPY_PY_SYS_ARGV
+// Code should access this (as an mp_obj_t) for use with e.g.
+// mp_obj_list_append by using the `mp_sys_argv` macro defined in runtime.h.
 MP_REGISTER_ROOT_POINTER(mp_obj_list_t mp_sys_argv_obj);
+#endif
 
 #if MICROPY_PY_SYS_EXC_INFO
 // current exception being handled, for sys.exc_info()

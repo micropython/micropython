@@ -136,13 +136,17 @@ void mp_init(void) {
     #endif
 
     #if MICROPY_PY_SYS_PATH_ARGV_DEFAULTS
-    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
+    #if MICROPY_PY_SYS_PATH
+    mp_sys_path = mp_obj_new_list(0, NULL);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     #if MICROPY_MODULE_FROZEN
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen));
     #endif
+    #endif
+    #if MICROPY_PY_SYS_ARGV
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
     #endif
+    #endif // MICROPY_PY_SYS_PATH_ARGV_DEFAULTS
 
     #if MICROPY_PY_SYS_ATEXIT
     MP_STATE_VM(sys_exitfunc) = mp_const_none;

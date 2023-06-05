@@ -118,7 +118,7 @@ STATIC mp_import_stat_t stat_top_level(qstr mod_name, vstr_t *dest) {
     #if MICROPY_PY_SYS
     size_t path_num;
     mp_obj_t *path_items;
-    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
+    mp_obj_get_array(mp_sys_path, &path_num, &path_items);
 
     // go through each sys.path entry, trying to import "<entry>/<mod_name>".
     for (size_t i = 0; i < path_num; i++) {
@@ -365,7 +365,7 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     // which may have come from the filesystem.
     size_t path_num;
     mp_obj_t *path_items;
-    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
+    mp_obj_get_array(mp_sys_path, &path_num, &path_items);
     if (path_num)
     #endif
     {

@@ -154,7 +154,7 @@ typedef long mp_off_t;
 // Ensure builtinimport.c works with -m.
 #define MICROPY_MODULE_OVERRIDE_MAIN_IMPORT (1)
 
-// Don't default sys.argv because we do that in main.
+// Don't default sys.argv and sys.path because we do that in main.
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (0)
 
 // Enable sys.executable.

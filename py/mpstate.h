@@ -43,6 +43,9 @@
 #if MICROPY_PY_SYS_ATTR_DELEGATION
 // Must be kept in sync with sys_mutable_keys in modsys.c.
 enum {
+    #if MICROPY_PY_SYS_PATH
+    MP_SYS_MUTABLE_PATH,
+    #endif
     #if MICROPY_PY_SYS_PS1_PS2
     MP_SYS_MUTABLE_PS1,
     MP_SYS_MUTABLE_PS2,
