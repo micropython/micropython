@@ -346,6 +346,17 @@ STATIC void evaluate_relative_import(mp_int_t level, const char **module_name, s
     *module_name_len = new_module_name_len;
 }
 
+typedef struct _nlr_jump_callback_node_unregister_module_t {
+    nlr_jump_callback_node_t callback;
+    qstr name;
+} nlr_jump_callback_node_unregister_module_t;
+
+STATIC void unregister_module_from_nlr_jump_callback(void *ctx_in) {
+    nlr_jump_callback_node_unregister_module_t *ctx = ctx_in;
+    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
+    mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(ctx->name), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+}
+
 // Load a module at the specified absolute path, possibly as a submodule of the given outer module.
 // full_mod_name:    The full absolute path up to this level (e.g. "foo.bar.baz").
 // level_mod_name:   The final component of the path (e.g. "baz").
@@ -467,8 +478,13 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     // Module was found on the filesystem/frozen, try and load it.
     DEBUG_printf("Found path to load: %.*s\n", (int)vstr_len(&path), vstr_str(&path));
 
-    // Prepare for loading from the filesystem. Create a new shell module.
+    // Prepare for loading from the filesystem. Create a new shell module
+    // and register it in sys.modules.  Also make sure we remove it if
+    // there is any problem below.
     module_obj = mp_obj_new_module(full_mod_name);
+    nlr_jump_callback_node_unregister_module_t ctx;
+    ctx.name = full_mod_name;
+    nlr_push_jump_callback(&ctx.callback, unregister_module_from_nlr_jump_callback);
 
     #if MICROPY_MODULE_OVERRIDE_MAIN_IMPORT
     // If this module is being loaded via -m on unix, then
@@ -525,6 +541,8 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         // If it's a sub-module then make it available on the parent module.
         mp_store_attr(outer_module_obj, level_mod_name, module_obj);
     }
+
+    nlr_pop_jump_callback(false);
 
     return module_obj;
 }
