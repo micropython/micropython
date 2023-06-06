@@ -174,15 +174,17 @@ void machine_pin_irq_deinit(void) {
 // Simplified mode setting used by the extmod modules
 void machine_pin_set_mode(const machine_pin_obj_t *self, uint8_t mode) {
     gpio_pin_config_t pin_config = {kGPIO_DigitalInput, 1, kGPIO_NoIntmode};
+    uint32_t pad_config;
 
     pin_config.direction = (mode == PIN_MODE_IN ? kGPIO_DigitalInput : kGPIO_DigitalOutput);
-    GPIO_PinInit(self->gpio, self->pin, &pin_config);
     if (mode == PIN_MODE_OPEN_DRAIN) {
-        uint32_t pad_config = *(uint32_t *)self->configRegister;
-        pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b1) | IOMUXC_SW_PAD_CTL_PAD_DSE(0b110);
-        IOMUXC_SetPinMux(self->muxRegister, PIN_AF_MODE_ALT5, 0, 0, self->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
-        IOMUXC_SetPinConfig(self->muxRegister, PIN_AF_MODE_ALT5, 0, 0, self->configRegister, pad_config);
+        pad_config = pin_generate_config(PIN_PULL_UP_22K, mode, PIN_DRIVE_3, self->configRegister);
+    } else {
+        pad_config = pin_generate_config(PIN_PULL_DISABLED, mode, PIN_DRIVE_3, self->configRegister);
     }
+    IOMUXC_SetPinConfig(self->muxRegister, PIN_AF_MODE_ALT5, 0, 0, self->configRegister, pad_config);
+    IOMUXC_SetPinMux(self->muxRegister, PIN_AF_MODE_ALT5, 0, 0, self->configRegister, 1U);
+    GPIO_PinInit(self->gpio, self->pin, &pin_config);
 }
 
 STATIC mp_obj_t machine_pin_obj_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {

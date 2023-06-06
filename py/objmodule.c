@@ -40,10 +40,6 @@
 #include "genhdr/moduledefs.h"
 #endif
 
-#if MICROPY_MODULE_BUILTIN_INIT
-STATIC void mp_module_call_init(mp_obj_t module_name, mp_obj_t module_obj);
-#endif
-
 STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
@@ -176,69 +172,27 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
-// Tries to find a loaded module, otherwise attempts to load a builtin, otherwise MP_OBJ_NULL.
-mp_obj_t mp_module_get_loaded_or_builtin(qstr module_name) {
-    // First try loaded modules.
-    mp_map_elem_t *elem = mp_map_lookup(&MP_STATE_VM(mp_loaded_modules_dict).map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
-
-    if (!elem) {
-        #if MICROPY_MODULE_WEAK_LINKS
-        return mp_module_get_builtin(module_name);
-        #else
-        // Otherwise try builtin.
-        elem = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
-        if (!elem) {
-            return MP_OBJ_NULL;
-        }
-
-        #if MICROPY_MODULE_BUILTIN_INIT
-        // If found, it's a newly loaded built-in, so init it.
-        mp_module_call_init(MP_OBJ_NEW_QSTR(module_name), elem->value);
-        #endif
-        #endif
-    }
-
-    return elem->value;
-}
-
-#if MICROPY_MODULE_WEAK_LINKS
-// Tries to find a loaded module, otherwise attempts to load a builtin, otherwise MP_OBJ_NULL.
+// Attempts to find (and initialise) a builtin, otherwise returns
+// MP_OBJ_NULL.
 mp_obj_t mp_module_get_builtin(qstr module_name) {
-    // Try builtin.
     mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
     if (!elem) {
         return MP_OBJ_NULL;
     }
 
     #if MICROPY_MODULE_BUILTIN_INIT
-    // If found, it's a newly loaded built-in, so init it.
-    mp_module_call_init(MP_OBJ_NEW_QSTR(module_name), elem->value);
+    // If found, it's a newly loaded built-in, so init it. This can run
+    // multiple times, so the module must ensure that it handles being
+    // initialised multiple times.
+    mp_obj_t dest[2];
+    mp_load_method_maybe(elem->value, MP_QSTR___init__, dest);
+    if (dest[0] != MP_OBJ_NULL) {
+        mp_call_method_n_kw(0, 0, dest);
+    }
     #endif
 
     return elem->value;
 }
-#endif
-
-#if MICROPY_MODULE_BUILTIN_INIT
-STATIC void mp_module_register(mp_obj_t module_name, mp_obj_t module) {
-    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
-    mp_map_lookup(mp_loaded_modules_map, module_name, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
-}
-
-STATIC void mp_module_call_init(mp_obj_t module_name, mp_obj_t module_obj) {
-    // Look for __init__ and call it if it exists
-    mp_obj_t dest[2];
-    mp_load_method_maybe(module_obj, MP_QSTR___init__, dest);
-    if (dest[0] != MP_OBJ_NULL) {
-        mp_call_method_n_kw(0, 0, dest);
-        // Register module so __init__ is not called again.
-        // If a module can be referenced by more than one name (eg due to weak links)
-        // then __init__ will still be called for each distinct import, and it's then
-        // up to the particular module to make sure it's __init__ code only runs once.
-        mp_module_register(module_name, module_obj);
-    }
-}
-#endif
 
 void mp_module_generic_attr(qstr attr, mp_obj_t *dest, const uint16_t *keys, mp_obj_t *values) {
     for (size_t i = 0; keys[i] != MP_QSTRnull; ++i) {

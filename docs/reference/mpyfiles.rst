@@ -86,7 +86,8 @@ and .mpy version.
 =================== ============
 MicroPython release .mpy version
 =================== ============
-v1.19 and up        6
+v1.20 and up        6.1
+v1.19.x             6
 v1.12 - v1.18       5
 v1.11               4
 v1.9.3 - v1.10      3
@@ -100,6 +101,7 @@ MicroPython repository at which the .mpy version was changed.
 =================== ========================================
 .mpy version change Git commit
 =================== ========================================
+6 to 6.1            d94141e1473aebae0d3c63aeaa8397651ad6fa01
 5 to 6              f2040bfc7ee033e48acef9f289790f3b4e6b74e5
 4 to 5              5716c5cf65e9b2cb46c2906f40302401bdd27517
 3 to 4              9a5f92ea72754c01cc03e5efcdfe94021120531e
@@ -146,8 +148,8 @@ The .mpy header is:
 size    field
 ======  ================================
 byte    value 0x4d (ASCII 'M')
-byte    .mpy version number
-byte    feature flags
+byte    .mpy major version number
+byte    native arch and minor version number (was feature flags in older versions)
 byte    number of bits in a small int
 ======  ================================
 

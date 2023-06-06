@@ -1,0 +1,26 @@
+{
+    "deploy": [
+        "deploy_metro_m7.md"
+    ],
+    "docs": "",
+    "features": [
+        "USB-C",
+        "SPI",
+        "I2C",
+        "UART",
+        "RGB LED",
+        "QSPI Flash",
+        "QWIIC",
+        "JLink",
+        "WiFi",
+        "BLE"
+    ],
+    "images": [
+        "Metro_M7.jpg"
+    ],
+    "mcu": "mimxrt",
+    "product": "Adafruit Metro M7",
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/4950",
+    "vendor": "Adafruit"
+}

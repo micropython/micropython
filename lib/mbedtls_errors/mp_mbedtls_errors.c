@@ -53,6 +53,10 @@
 #include "mbedtls/aria.h"
 #endif
 
+#if defined(MBEDTLS_ASN1_PARSE_C)
+#include "mbedtls/asn1.h"
+#endif
+
 #if defined(MBEDTLS_BASE64_C)
 #include "mbedtls/base64.h"
 #endif
@@ -107,6 +111,10 @@
 
 #if defined(MBEDTLS_ENTROPY_C)
 #include "mbedtls/entropy.h"
+#endif
+
+#if defined(MBEDTLS_ERROR_C)
+#include "mbedtls/error.h"
 #endif
 
 #if defined(MBEDTLS_GCM_C)
@@ -377,7 +385,10 @@ static const struct ssl_errs mbedtls_high_level_error_tab[] = {
         { -(MBEDTLS_ERR_SSL_CONTINUE_PROCESSING), "SSL_CONTINUE_PROCESSING" },
         { -(MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS), "SSL_ASYNC_IN_PROGRESS" },
         { -(MBEDTLS_ERR_SSL_EARLY_MESSAGE), "SSL_EARLY_MESSAGE" },
+        { -(MBEDTLS_ERR_SSL_UNEXPECTED_CID), "SSL_UNEXPECTED_CID" },
+        { -(MBEDTLS_ERR_SSL_VERSION_MISMATCH), "SSL_VERSION_MISMATCH" },
         { -(MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS), "SSL_CRYPTO_IN_PROGRESS" },
+        { -(MBEDTLS_ERR_SSL_BAD_CONFIG), "SSL_BAD_CONFIG" },
 #endif /* MBEDTLS_SSL_TLS_C */
 
 #if defined(MBEDTLS_X509_USE_C) || defined(MBEDTLS_X509_CREATE_C)
@@ -506,6 +517,11 @@ static const struct ssl_errs mbedtls_low_level_error_tab[] = {
     { -(MBEDTLS_ERR_ENTROPY_NO_STRONG_SOURCE), "ENTROPY_NO_STRONG_SOURCE" },
     { -(MBEDTLS_ERR_ENTROPY_FILE_IO_ERROR), "ENTROPY_FILE_IO_ERROR" },
 #endif /* MBEDTLS_ENTROPY_C */
+
+#if defined(MBEDTLS_ERROR_C)
+    { -(MBEDTLS_ERR_ERROR_GENERIC_ERROR), "ERROR_GENERIC_ERROR" },
+    { -(MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED), "ERROR_CORRUPTION_DETECTED" },
+#endif /* MBEDTLS_ERROR_C */
 
 #if defined(MBEDTLS_GCM_C)
     { -(MBEDTLS_ERR_GCM_AUTH_FAILED), "GCM_AUTH_FAILED" },
@@ -650,7 +666,7 @@ void mbedtls_strerror(int ret, char *buf, size_t buflen) {
     if (got_hl) {
         use_ret = ret & 0xFF80;
 
-        // special case
+        // special case, don't try to translate low level code
 #if defined(MBEDTLS_SSL_TLS_C)
         if (use_ret == -(MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE)) {
             strncpy(buf, "MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE", buflen);

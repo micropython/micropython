@@ -66,6 +66,13 @@ typedef struct _mp_sched_node_t {
     struct _mp_sched_node_t *next;
 } mp_sched_node_t;
 
+// For use with mp_globals_locals_set_from_nlr_jump_callback.
+typedef struct _nlr_jump_callback_node_globals_locals_t {
+    nlr_jump_callback_node_t callback;
+    mp_obj_dict_t *globals;
+    mp_obj_dict_t *locals;
+} nlr_jump_callback_node_globals_locals_t;
+
 // Tables mapping operator enums to qstrs, defined in objtype.c
 extern const byte mp_unary_op_method_name[];
 extern const byte mp_binary_op_method_name[];
@@ -112,6 +119,8 @@ static inline mp_obj_dict_t *mp_globals_get(void) {
 static inline void mp_globals_set(mp_obj_dict_t *d) {
     MP_STATE_THREAD(dict_globals) = d;
 }
+
+void mp_globals_locals_set_from_nlr_jump_callback(void *ctx_in);
 
 mp_obj_t mp_load_name(qstr qst);
 mp_obj_t mp_load_global(qstr qst);
@@ -198,6 +207,7 @@ NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
 
 NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg);
 NORETURN void mp_raise_StopIteration(mp_obj_t arg);
+NORETURN void mp_raise_TypeError_int_conversion(mp_const_obj_t arg);
 NORETURN void mp_raise_OSError(int errno_);
 NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename);
 NORETURN void mp_raise_recursion_depth(void);

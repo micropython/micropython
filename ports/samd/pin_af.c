@@ -121,6 +121,7 @@ const char *pin_name(int id) {
     return "-";
 }
 
+#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
 // Test, whether the given pin is defined and has signals for sercom.
 // If that applies return the alt_fct and pad_nr.
 // If not, an error will be raised.
@@ -135,18 +136,15 @@ sercom_pad_config_t get_sercom_config(int pin_id, uint8_t sercom_nr) {
         mp_raise_ValueError(MP_ERROR_TEXT("wrong serial device"));
     }
 }
+#endif
 
+#if MICROPY_PY_MACHINE_ADC
 // Test, whether the given pin is defined as ADC.
 // If that applies return the adc instance and channel.
 // If not, an error will be raised.
 
 adc_config_t get_adc_config(int pin_id, int32_t flag) {
     const machine_pin_obj_t *pct_ptr = get_pin_obj_ptr(pin_id);
-    #if defined(MCU_SAMD51)
-    if (pct_ptr->adc1 != 0xff && (flag & (1 << (pct_ptr->adc1 + 16))) == 0) {
-        return (adc_config_t) {1, pct_ptr->adc1};
-    } else
-    #endif
     if (pct_ptr->adc0 != 0xff && (flag & (1 << pct_ptr->adc0)) == 0) {
         return (adc_config_t) {0, pct_ptr->adc0};
     #if defined(MUC_SAMD51)
@@ -157,6 +155,9 @@ adc_config_t get_adc_config(int pin_id, int32_t flag) {
         mp_raise_ValueError(MP_ERROR_TEXT("ADC pin used"));
     }
 }
+#endif
+
+#if MICROPY_PY_MACHINE_PWM
 
 // Test, whether the given pin is defined and has signals for pwm.
 // If that applies return the alt_fct, tcc number and channel number.
@@ -174,26 +175,24 @@ pwm_config_t get_pwm_config(int pin_id, int wanted_dev, uint8_t device_status[])
             return (pwm_config_t) {ALT_FCT_TCC1, tcc1};
         } else if ((tcc2 >> 4) == wanted_dev) {
             return (pwm_config_t) {ALT_FCT_TCC2, tcc2};
-        } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("wrong device or channel"));
         }
     } else {
-        pwm_config_t ret = {};
+        // Try to get a unused PWM device at the pin
+        if (((tcc1 >> 4) < TCC_INST_NUM) && (device_status[tcc1 >> 4] == 0)) {
+            return (pwm_config_t) {ALT_FCT_TCC1, tcc1};
+        }
+        if (((tcc2 >> 4) < TCC_INST_NUM) && (device_status[tcc2 >> 4] == 0)) {
+            return (pwm_config_t) {ALT_FCT_TCC2, tcc2};
+        }
+        // If all devices are used, return one from the pin if available
         if ((tcc1 >> 4) < TCC_INST_NUM) {
-            ret = (pwm_config_t) {ALT_FCT_TCC1, tcc1};
-            if (tcc2 == 0xff) {
-                return ret;
-            }
+            return (pwm_config_t) {ALT_FCT_TCC1, tcc1};
         }
         if ((tcc2 >> 4) < TCC_INST_NUM) {
-            // if a device in slot 1 is not available or already in use, use the one in slot 2
-            if (tcc1 == 0xff || device_status[(ret.device_channel >> 4)] != 0) {
-                return (pwm_config_t) {ALT_FCT_TCC2, tcc2};
-            } else {
-                return ret;
-            }
-        } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("not a PWM pin"));
+            return (pwm_config_t) {ALT_FCT_TCC2, tcc2};
         }
     }
+    mp_raise_ValueError(MP_ERROR_TEXT("not a PWM Pin"));
 }
+
+#endif

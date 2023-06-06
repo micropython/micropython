@@ -28,24 +28,6 @@
 #include "py/runtime.h"
 #include "uart.h"
 
-#if MICROPY_VFS_FAT
-#include "lib/oofatfs/ff.h"
-#include "lib/oofatfs/diskio.h"
-#endif
-
-// sync()
-// Sync all filesystems.
-STATIC mp_obj_t mp_uos_sync(void) {
-    #if MICROPY_VFS_FAT
-    for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
-        // this assumes that vfs->obj is fs_user_mount_t with block device functions
-        disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
-    }
-    #endif
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(mp_uos_sync_obj, mp_uos_sync);
-
 bool mp_uos_dupterm_is_builtin_stream(mp_const_obj_t stream) {
     const mp_obj_type_t *type = mp_obj_get_type(stream);
     return type == &machine_uart_type;

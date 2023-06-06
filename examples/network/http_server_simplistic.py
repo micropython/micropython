@@ -28,7 +28,6 @@ def main():
     while True:
         res = s.accept()
         client_s = res[0]
-        client_addr = res[1]
         req = client_s.recv(4096)
         print("Request:")
         print(req)

@@ -146,19 +146,30 @@ See :ref:`machine.UART <machine.UART>`. ::
 PWM (pulse width modulation)
 ----------------------------
 
-There are 8 independent channels each of which have 2 outputs making it 16
-PWM channels in total which can be clocked from 7Hz to 125Mhz.
+There are 8 independent PWM generators called slices, which each have two
+channels making it 16 PWM channels in total which can be clocked from
+8Hz to 62.5Mhz at a machine.freq() of 125Mhz. The two channels of a
+slice run at the same frequency, but can have a different duty rate.
+The two channels are usually assigned to adjacent GPIO pin pairs with
+even/odd numbers. So GPIO0 and GPIO1 are at slice 0, GPIO2 and GPIO3
+are at slice 1, and so on. A certain channel can be assigned to
+different GPIO pins (see Pinout). For instance slice 0, channel A can be assigned
+to both GPIO0 and GPIO16.
 
 Use the ``machine.PWM`` class::
 
     from machine import Pin, PWM
 
-    pwm0 = PWM(Pin(0))      # create PWM object from a pin
-    pwm0.freq()             # get current frequency
-    pwm0.freq(1000)         # set frequency
-    pwm0.duty_u16()         # get current duty cycle, range 0-65535
-    pwm0.duty_u16(200)      # set duty cycle, range 0-65535
-    pwm0.deinit()           # turn off PWM on the pin
+    # create PWM object from a pin and set the frequency of slice 0
+    # and duty cycle for channel A
+    pwm0 = PWM(Pin(0), freq=2000, duty_u16=32768)
+    pwm0.freq()             # get the current frequency of slice 0
+    pwm0.freq(1000)         # set/change the frequency of slice 0
+    pwm0.duty_u16()         # get the current duty cycle of channel A, range 0-65535
+    pwm0.duty_u16(200)      # set the duty cycle of channel A, range 0-65535
+    pwm0.duty_u16(0)        # stop the output at channel A
+    print(pwm0)             # show the properties of the PWM object.
+    pwm0.deinit()           # turn off PWM of slice 0, stopping channels A and B
 
 ADC (analog to digital conversion)
 ----------------------------------

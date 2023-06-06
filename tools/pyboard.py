@@ -68,6 +68,7 @@ Or:
 """
 
 import ast
+import errno
 import os
 import struct
 import sys
@@ -277,6 +278,7 @@ class Pyboard:
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
         else:
             import serial
+            import serial.tools.list_ports
 
             # Set options, and exclusive if pyserial supports it
             serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1}
@@ -684,6 +686,10 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
     args = args[1:]
     try:
         if cmd == "cp":
+            if len(args) == 1:
+                raise PyboardError(
+                    "cp: missing destination file operand after '{}'".format(args[0])
+                )
             srcs = args[:-1]
             dest = args[-1]
             if dest.startswith(":"):

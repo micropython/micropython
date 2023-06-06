@@ -57,6 +57,20 @@ if not (1,):
 else:
     print('b')
 
+# test evaluation of the if-condition with tuples as arguments
+# non-constant tuples should be evaluated even though they will evaluate to true
+
+def f(x):
+    print("f", x)
+
+if (f(1),):
+    print(18)
+
+if (f(2), f(3)):
+    print(19)
+
+# test if-conditions within a function
+
 f2 = 0
 
 def f(t1, t2, f1):

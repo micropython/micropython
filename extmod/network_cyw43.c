@@ -39,6 +39,18 @@
 #include "lib/cyw43-driver/src/cyw43.h"
 #include "lib/cyw43-driver/src/cyw43_country.h"
 
+// This is the same as cyw43_pm_value but as a macro, to make it a true constant.
+#define CYW43_PM_VALUE(pm_mode, pm2_sleep_ret_ms, li_beacon_period, li_dtim_period, li_assoc) \
+    ((li_assoc) << 20 \
+        | (li_dtim_period) << 16 \
+        | (li_beacon_period) << 12 \
+        | ((pm2_sleep_ret_ms) / 10) << 4 \
+        | (pm_mode))
+
+#define PM_NONE         (CYW43_PM_VALUE(CYW43_NO_POWERSAVE_MODE, 10, 0, 0, 0))
+#define PM_PERFORMANCE  (CYW43_PM_VALUE(CYW43_PM2_POWERSAVE_MODE, 200, 1, 1, 10))
+#define PM_POWERSAVE    (CYW43_PM_VALUE(CYW43_PM1_POWERSAVE_MODE, 10, 0, 0, 0))
+
 typedef struct _network_cyw43_obj_t {
     mp_obj_base_t base;
     cyw43_t *cyw;
@@ -397,6 +409,11 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                 cyw43_wifi_get_mac(self->cyw, self->itf, buf);
                 return mp_obj_new_bytes(buf, 6);
             }
+            case MP_QSTR_pm: {
+                uint32_t pm;
+                cyw43_wifi_get_pm(self->cyw, &pm);
+                return MP_OBJ_NEW_SMALL_INT(pm);
+            }
             case MP_QSTR_txpower: {
                 uint8_t buf[13];
                 memcpy(buf, "qtxpower\x00\x00\x00\x00\x00", 13);
@@ -516,6 +533,11 @@ STATIC const mp_rom_map_elem_t network_cyw43_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&network_cyw43_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&network_cyw43_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&network_cyw43_config_obj) },
+
+    // Class constants.
+    { MP_ROM_QSTR(MP_QSTR_PM_NONE), MP_ROM_INT(PM_NONE) },
+    { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(PM_PERFORMANCE) },
+    { MP_ROM_QSTR(MP_QSTR_PM_POWERSAVE), MP_ROM_INT(PM_POWERSAVE) },
 };
 STATIC MP_DEFINE_CONST_DICT(network_cyw43_locals_dict, network_cyw43_locals_dict_table);
 

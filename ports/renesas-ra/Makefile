@@ -89,6 +89,7 @@ SYSTEM_FILE ?= lib/fsp/ra/fsp/src/bsp/cmsis/Device/RENESAS/Source/system.o
 # Select the cross compile prefix
 CROSS_COMPILE ?= arm-none-eabi-
 
+INC += -imacros boards/compiler_barrier.h
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
@@ -296,6 +297,7 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 SRC_C += \
 	boardctrl.c \
 	main.c \
+	ra_hal.c \
 	ra_it.c \
 	mphalport.c \
 	mpthreadport.c \
@@ -324,13 +326,11 @@ SRC_C += \
 	flashbdev.c \
 	storage.c \
 	fatfs_port.c \
-	$(BOARD_DIR)/src/hal_entry.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_C += $(addprefix $(BOARD_DIR)/ra_gen/,\
 	common_data.c \
 	hal_data.c \
-	main.c \
 	pin_data.c \
 	vector_data.c \
 	)
@@ -341,11 +341,6 @@ SRC_O += \
 
 SRC_O += \
 	shared/runtime/gchelper_thumb2.o
-
-HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/board/$(BOARD_LOW)/,\
-	board_init.c \
-	board_leds.c \
-	)
 
 HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/fsp/src/bsp/mcu/all/,\
 	bsp_clocks.c \

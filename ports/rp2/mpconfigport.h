@@ -99,6 +99,7 @@
 #ifndef MICROPY_PY_OS_DUPTERM
 #define MICROPY_PY_OS_DUPTERM                   (1)
 #endif
+#define MICROPY_PY_UOS_SYNC                     (1)
 #define MICROPY_PY_UOS_UNAME                    (1)
 #define MICROPY_PY_UOS_URANDOM                  (1)
 #define MICROPY_PY_URE_MATCH_GROUPS             (1)
@@ -114,7 +115,6 @@
 #define MICROPY_PY_MACHINE_BITSTREAM            (1)
 #define MICROPY_PY_MACHINE_PULSE                (1)
 #define MICROPY_PY_MACHINE_PWM                  (1)
-#define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS      (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/rp2/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)

@@ -207,7 +207,7 @@ class Pins(object):
             for row in rows:
                 try:
                     pin_num = parse_pin(row[pinname_col])
-                except Exception as e:
+                except Exception:
                     # import traceback; traceback.print_exc()
                     continue
                 pin = Pin(pin_num)
@@ -228,7 +228,7 @@ class Pins(object):
 
                 cpu_pin_name = row[1]
                 try:
-                    pin_num = parse_pin(cpu_pin_name)
+                    parse_pin(cpu_pin_name)
                 except:
                     # import traceback; traceback.print_exc()
                     continue

@@ -96,3 +96,20 @@ print(returns_NULL())
 import frozentest
 
 print(frozentest.__file__)
+
+# test for builtin sub-packages
+from example_package.foo import bar
+
+print(bar)
+bar.f()
+import example_package
+
+print(example_package, example_package.foo, example_package.foo.bar)
+example_package.f()
+example_package.foo.f()
+example_package.foo.bar.f()
+print(bar == example_package.foo.bar)
+from example_package.foo import f as foo_f
+
+foo_f()
+print(foo_f == example_package.foo.f)

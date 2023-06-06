@@ -305,8 +305,8 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
 
     from machine import Pin, PWM
 
-    pwm0 = PWM(Pin(0))         # create PWM object from a pin
-    freq = pwm0.freq()         # get current frequency (default 5kHz)
+    pwm0 = PWM(Pin(0), freq=5000, duty_u16=32768) # create PWM object from a pin
+    freq = pwm0.freq()         # get current frequency
     pwm0.freq(1000)            # set PWM frequency from 1Hz to 40MHz
 
     duty = pwm0.duty()         # get current duty cycle, range 0-1023 (default 512, 50%)

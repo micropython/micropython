@@ -34,7 +34,7 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
     ${MICROPY_DIR}/lib/littlefs/lfs2.c
     ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
-    ${MICROPY_DIR}/lib/mbedtls_errors/mp_mbedtls_errors.c
+    ${MICROPY_DIR}/lib/mbedtls_errors/esp32_mbedtls_errors.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
 )
@@ -84,6 +84,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/mpthreadport.c
     ${PROJECT_DIR}/machine_rtc.c
     ${PROJECT_DIR}/machine_sdcard.c
+    ${PROJECT_DIR}/modespnow.c
 )
 
 set(MICROPY_SOURCE_QSTR

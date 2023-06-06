@@ -26,7 +26,8 @@
 
 #include "py/runtime.h"
 
-#if CONFIG_IDF_TARGET_ESP32
+
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 
 #include "esp32/ulp.h"
 #include "esp_err.h"
@@ -87,7 +88,13 @@ STATIC const mp_rom_map_elem_t esp32_ulp_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_wakeup_period), MP_ROM_PTR(&esp32_ulp_set_wakeup_period_obj) },
     { MP_ROM_QSTR(MP_QSTR_load_binary), MP_ROM_PTR(&esp32_ulp_load_binary_obj) },
     { MP_ROM_QSTR(MP_QSTR_run), MP_ROM_PTR(&esp32_ulp_run_obj) },
+    #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ESP32_ULP_COPROC_RESERVE_MEM) },
+    #elif CONFIG_IDF_TARGET_ESP32S2
+    { MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ESP32S2_ULP_COPROC_RESERVE_MEM) },
+    #elif CONFIG_IDF_TARGET_ESP32S3
+    { MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ESP32S3_ULP_COPROC_RESERVE_MEM) },
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(esp32_ulp_locals_dict, esp32_ulp_locals_dict_table);
 

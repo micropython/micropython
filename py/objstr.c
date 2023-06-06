@@ -403,7 +403,16 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     } else {
         // LHS is str and RHS has an incompatible type
         // (except if operation is EQUAL, but that's handled by mp_obj_equal)
-        bad_implicit_conversion(rhs_in);
+
+        // CONTAINS must fail with a bad-implicit-conversion exception, because
+        // otherwise mp_binary_op() will fallback to `list(lhs).__contains__(rhs)`.
+        if (op == MP_BINARY_OP_CONTAINS) {
+            bad_implicit_conversion(rhs_in);
+        }
+
+        // All other operations are not supported, and may be handled by another
+        // type, eg for reverse operations.
+        return MP_OBJ_NULL;
     }
 
     switch (op) {

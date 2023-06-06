@@ -16,7 +16,7 @@ def parse_usb_ids(filename):
     rv = dict()
     for line in open(filename).readlines():
         line = line.rstrip("\r\n")
-        match = re.match("^#define\s+(\w+)\s+\(0x([0-9A-Fa-f]+)\)$", line)
+        match = re.match(r"^#define\s+(\w+)\s+\(0x([0-9A-Fa-f]+)\)$", line)
         if match and match.group(1).startswith(config_prefix):
             key = match.group(1).replace(config_prefix, "USB_")
             val = match.group(2)

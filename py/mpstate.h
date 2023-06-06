@@ -271,6 +271,7 @@ typedef struct _mp_state_thread_t {
     mp_obj_dict_t *dict_globals;
 
     nlr_buf_t *nlr_top;
+    nlr_jump_callback_node_t *nlr_jump_callback_top;
 
     // pending exception object (MP_OBJ_NULL if not pending)
     volatile mp_obj_t mp_pending_exception;
