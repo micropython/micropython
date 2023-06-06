@@ -103,16 +103,6 @@ STATIC network_ifx_wcm_obj_t network_ifx_wcm_wl_ap = { { &mp_network_ifx_wcm_typ
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
 
-// Error handling method
-// void error_handler(cy_rslt_t result, char *message) {
-//     if (NULL != message) {
-//         ERR_INFO(("%lu", result));
-//         ERR_INFO(("%s", message));
-//     }
-//     __disable_irq();
-//     CY_ASSERT(0);
-// }
-
 // Based on the scan result, get micropython defined equivalent security type (possible value 0-4, extended till 7 to include all cases) and security string (mapped to IFX stack)
 static char *get_security_string_and_type(cy_wcm_scan_result_t *result, uint8_t *security_type) {
     /* Convert the security type of the scan result to the corresponding
@@ -370,15 +360,12 @@ static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user
     uint32_t num_scan_result = 0;
 
     mp_obj_t *scan_list = (mp_obj_t *)user_data;
-    char bssid_buf[24];
+    // char bssid_buf[24];
     uint8_t hidden_status = 1; // HIDDEN
     uint8_t security_type = 0; // OPEN
 
     if (status == CY_WCM_SCAN_INCOMPLETE) {
         num_scan_result++;
-
-        // Populate BSSID buffer
-        snprintf(bssid_buf, sizeof(bssid_buf), "%u.%u.%u.%u.%u.%u", result_ptr->BSSID[0], result_ptr->BSSID[1], result_ptr->BSSID[2], result_ptr->BSSID[3], result_ptr->BSSID[4], result_ptr->BSSID[5]);
 
         // Get the network status : hidden(1) or open(0)
         if (strlen((const char *)result_ptr->SSID) != 0) {
@@ -390,7 +377,7 @@ static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user
 
         mp_obj_t tuple[6] = {
             mp_obj_new_bytes(result_ptr->SSID, strlen((const char *)result_ptr->SSID)),
-            mp_obj_new_bytes((const byte *)bssid_buf, strlen((const char *)bssid_buf)),
+            mp_obj_new_bytes(result_ptr->BSSID, CY_WCM_MAC_ADDR_LEN),
             MP_OBJ_NEW_SMALL_INT(result_ptr->channel),
             MP_OBJ_NEW_SMALL_INT(result_ptr->signal_strength),
             MP_OBJ_NEW_SMALL_INT(security_type),
@@ -452,6 +439,12 @@ STATIC mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map
 
             case MP_QSTR_bssid: {
                 scan_filter.mode = CY_WCM_SCAN_FILTER_TYPE_MAC;
+                mp_buffer_info_t bssid;
+                mp_get_buffer(e->value, &bssid, MP_BUFFER_READ);
+                if (bssid.len != CY_WCM_MAC_ADDR_LEN) {
+                    mp_raise_ValueError(MP_ERROR_TEXT("bssid address invalid length"));
+                }
+                memcpy(scan_filter.param.BSSID, bssid.buf, bssid.len);
                 break;
             }
 
