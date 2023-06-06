@@ -100,9 +100,6 @@
 #define MICROPY_PY_TIME_CUSTOM_SLEEP   (1)
 #define MICROPY_PY_TIME_INCLUDEFILE    "ports/unix/modtime.c"
 
-// Enable the utimeq module used by the previous (v2) version of uasyncio.
-#define MICROPY_PY_TIMEQ               (1)
-
 #if MICROPY_PY_SSL
 #define MICROPY_PY_HASHLIB_MD5         (1)
 #define MICROPY_PY_HASHLIB_SHA1        (1)

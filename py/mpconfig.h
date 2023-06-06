@@ -1600,11 +1600,6 @@ typedef double mp_float_t;
 #define MICROPY_PY_HEAPQ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Optimized heap queue for relative timestamps (only used by uasyncio v2)
-#ifndef MICROPY_PY_TIMEQ
-#define MICROPY_PY_TIMEQ (0)
-#endif
-
 #ifndef MICROPY_PY_HASHLIB
 #define MICROPY_PY_HASHLIB (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif

@@ -364,7 +364,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_repl_autocomplete("import ", 7,  &mp_plat_print, &str); // expect the list of builtins
         len = mp_repl_autocomplete("import ti", 9,  &mp_plat_print, &str); // expect "me"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
-        mp_repl_autocomplete("import time", 11,  &mp_plat_print, &str); // expect "time timeq"
+        mp_repl_autocomplete("import m", 8,  &mp_plat_print, &str); // expect "micropython machine math"
 
         mp_store_global(MP_QSTR_sys, mp_import_name(MP_QSTR_sys, mp_const_none, MP_OBJ_NEW_SMALL_INT(0)));
         mp_repl_autocomplete("sys.", 4, &mp_plat_print, &str); // expect dir(sys)

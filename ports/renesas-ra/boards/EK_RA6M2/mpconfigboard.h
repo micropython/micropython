@@ -11,7 +11,6 @@
 #define MICROPY_PY_GENERATOR_PEND_THROW (1)
 #define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_HEAPQ            (1)
-#define MICROPY_PY_TIMEQ            (1)
 #define MICROPY_PY_THREAD           (0) // disable ARM_THUMB_FP using vldr due to RA has single float only
 
 // peripheral config

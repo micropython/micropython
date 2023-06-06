@@ -65,7 +65,6 @@ exclude_tests = (
     "basics/bytes_compare3.py",
     "extmod/ticks_diff.py",
     "extmod/time_ms_us.py",
-    "extmod/heapq_timeq.py",
     # unicode char issue
     "extmod/json_loads.py",
     # doesn't output to python stdout

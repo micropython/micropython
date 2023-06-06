@@ -58,11 +58,11 @@ framebuf        gc              hashlib         heapq
 io              json            machine         math
 os              random          re              select
 socket          ssl             struct          sys
-termios         time            timeq           uctypes
-websocket       zlib
+termios         time            uctypes         websocket
+zlib
 me
 
-time            timeq
+micropython     machine         math
 
 argv            atexit          byteorder       exc_info
 executable      exit            getsizeof       implementation

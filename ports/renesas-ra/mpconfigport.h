@@ -102,9 +102,6 @@
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/renesas-ra/modtime.c"
-#ifndef MICROPY_PY_TIMEQ
-#define MICROPY_PY_TIMEQ            (1)
-#endif
 #ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE          (1)
 #ifndef MICROPY_PY_MACHINE_BITSTREAM

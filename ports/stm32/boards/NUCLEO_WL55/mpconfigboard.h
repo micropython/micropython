@@ -17,7 +17,6 @@
 #define MICROPY_PY_STM                          (0)
 #define MICROPY_PY_PYB_LEGACY                   (0)
 #define MICROPY_PY_HEAPQ                        (0)
-#define MICROPY_PY_TIMEQ                        (0)
 
 #define MICROPY_HW_HAS_FLASH                    (1)
 #define MICROPY_HW_ENABLE_RTC                   (1)

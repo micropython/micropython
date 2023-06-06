@@ -18,7 +18,6 @@
 #define MICROPY_PY_STM              (0)
 #define MICROPY_PY_PYB_LEGACY       (0)
 #define MICROPY_PY_HEAPQ            (0)
-#define MICROPY_PY_TIMEQ            (0)
 
 #define MICROPY_PY_MACHINE_BITSTREAM (0)
 
