@@ -12,6 +12,8 @@ ap cannot disconnect:  network STA required
 sta instance created
 sta is not active:  True
 sta scan finds ap wlan:  True
+sta scan finds ap wlan (ssid filter):  True
+sta scan finds ap wlan (mac filter):  True
 sta is not (yet) connected:  True
 sta attempt connection to ap
 sta is (now) active:  True

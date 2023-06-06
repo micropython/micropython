@@ -1,4 +1,4 @@
-import network, time
+import binascii, network, time
 
 
 # Access Point
@@ -21,6 +21,8 @@ def instance0():
 
     # isConnected()
     print("ap has no client: ", ap_if.isconnected() == False)
+
+    multitest.globals(ap_mac=ap_if.config("mac"))
 
     print(" > yield station")
     multitest.next()
@@ -48,6 +50,8 @@ def instance0():
 
 # Station
 def instance1():
+    global ap_mac
+
     sta_if = network.WLAN(network.STA_IF)
     print("sta instance created")
 
@@ -57,7 +61,17 @@ def instance1():
     # scan()
     wlan_nets = sta_if.scan()
     test_ap_net = [net for net in wlan_nets if net[0] == b"mpy-psoc6-wlan"]
-    print("sta scan finds ap wlan: ", test_ap_net is not None)
+    print("sta scan finds ap wlan: ", test_ap_net != [])
+
+    wlan_ssid_filter = sta_if.scan(ssid="mpy-psoc6-wlan")
+    test_ap_net = [net for net in wlan_ssid_filter if net[0] == b"mpy-psoc6-wlan"]
+    print("sta scan finds ap wlan (ssid filter): ", test_ap_net != [])
+
+    # print('ap_mac: ', binascii.hexlify(ap_mac, ':'))
+
+    wlan_bssid_filter = sta_if.scan(bssid=ap_mac)
+    test_ap_net = [net for net in wlan_bssid_filter if net[1] == ap_mac]
+    print("sta scan finds ap wlan (mac filter): ", test_ap_net != [])
 
     # isconnect()
     print("sta is not (yet) connected: ", sta_if.isconnected() == False)
