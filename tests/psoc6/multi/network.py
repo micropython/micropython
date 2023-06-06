@@ -48,6 +48,8 @@ def instance0():
 
 # Station
 def instance1():
+    global ap_mac
+
     sta_if = network.WLAN(network.STA_IF)
     print("sta instance created")
 
