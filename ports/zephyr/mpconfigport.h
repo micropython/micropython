@@ -127,8 +127,6 @@ void mp_hal_signal_event(void);
 #define MICROPY_HW_MCU_NAME "unknown-cpu"
 #endif
 
-#define MICROPY_MODULE_FROZEN_STR   (0)
-
 typedef int mp_int_t; // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;

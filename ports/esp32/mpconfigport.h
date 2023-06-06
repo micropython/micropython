@@ -49,9 +49,6 @@
 #define MICROPY_WARNINGS                    (1)
 #define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_STREAMS_POSIX_API           (1)
-#define MICROPY_MODULE_FROZEN_STR           (0)
-#define MICROPY_MODULE_FROZEN_MPY           (1)
-#define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
 #define MICROPY_USE_INTERNAL_ERRNO          (0) // errno.h from xtensa-esp32-elf/sys-include/sys
 #define MICROPY_USE_INTERNAL_PRINTF         (0) // ESP32 SDK requires its own printf
 #define MICROPY_SCHEDULER_DEPTH             (8)

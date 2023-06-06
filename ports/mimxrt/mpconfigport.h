@@ -60,8 +60,6 @@ uint32_t trng_random_u32(void);
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_VFS                         (1)
-#define MICROPY_MODULE_FROZEN_MPY           (1)
-#define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
 
 // Control over Python builtins
 #define MICROPY_PY_BUILTINS_HELP_TEXT       mimxrt_help_text

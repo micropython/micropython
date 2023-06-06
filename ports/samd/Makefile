@@ -170,12 +170,6 @@ OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-endif
-
 all: $(BUILD)/firmware.uf2
 
 $(BUILD)/firmware.elf: $(OBJ)

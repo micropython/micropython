@@ -200,12 +200,6 @@ $(BUILD)/uart.o: $(CONFVARS_FILE)
 
 FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
 
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
-
 .PHONY: deploy
 
 deploy: $(BUILD)/firmware-combined.bin

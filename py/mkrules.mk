@@ -183,6 +183,11 @@ ifeq ($(MPY_LIB_DIR),$(MPY_LIB_SUBMODULE_DIR))
 GIT_SUBMODULES += lib/micropython-lib
 endif
 
+# Set compile options needed to enable frozen code.
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
+
 # to build frozen_content.c from a manifest
 $(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h $(BUILD)/genhdr/root_pointers.h | $(MICROPY_MPYCROSS_DEPENDENCY)
 	$(Q)test -e "$(MPY_LIB_DIR)/README.md" || (echo -e $(HELP_MPY_LIB_SUBMODULE); false)

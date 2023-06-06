@@ -430,19 +430,6 @@ $(TOP)/lib/fsp/README.md:
 	$(ECHO) "fsp submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/fsp)
 
-ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
-# To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
-# and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
-
-ifneq ($(FROZEN_MANIFEST)$(FROZEN_MPY_DIR),)
-# To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
-# then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-endif
-
 define GENERATE_ELF
 	$(ECHO) "LINK $(1)"
 	$(Q)$(LD) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
