@@ -74,7 +74,9 @@ NORETURN void nlr_jump(void *val) {
         "ret                     \n"
         :
         : "r" (top)
-        :
+        : "x9", "x19", "x20", "x21", "x22", "x23", "x24", "x25", "x26", "x27", "x28"
+        // x29 (fp) and x30 (lr) cannot be declared as clobbered without a compiler error
+        // This is fine, since the compiler will not allocate `top` to either of these anyway.
         );
 
     MP_UNREACHABLE
