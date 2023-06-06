@@ -208,11 +208,15 @@ UF2_FAMILY_ID_nrf52833 = 0x621E937A
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2 $(BUILD)/firmware.combined.hex
 
+ifeq ($(VALID_BOARD),)
+$(BUILD)/firmware.elf: invalid-board
+else
 $(BUILD)/firmware.elf: $(OBJ) $(GENERATED_LD_FILE)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
 	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
 	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE) $(BUILD)
+endif
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"

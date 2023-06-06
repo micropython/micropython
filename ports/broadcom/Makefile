@@ -142,10 +142,14 @@ all: $(BUILD)/firmware.kernel$(SUFFIX).img $(BUILD)/firmware.disk.img.zip
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+ifeq ($(VALID_BOARD),)
+$(BUILD)/kernel$(SUFFIX).elf: invalid-board
+else
 $(BUILD)/kernel$(SUFFIX).elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
 	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
+endif
 
 $(BUILD)/kernel$(SUFFIX).img: $(BUILD)/kernel$(SUFFIX).elf
 	$(STEPECHO) "Create $@"
