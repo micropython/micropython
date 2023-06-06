@@ -230,7 +230,7 @@ mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
 }
 
 STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    #if MICROPY_MODULE_ATTR_DELEGATION
+    #if MICROPY_MODULE_ATTR_DELEGATION && defined(MICROPY_MODULE_DELEGATIONS)
     // Delegate lookup to a module's custom attr method.
     size_t n = MP_ARRAY_SIZE(mp_builtin_module_delegation_table);
     for (size_t i = 0; i < n; ++i) {

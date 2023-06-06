@@ -103,6 +103,9 @@ def generate_module_table_header(modules):
 
 
 def generate_module_delegations(delegations):
+    if not delegations:
+        return
+
     print("\n#define MICROPY_MODULE_DELEGATIONS \\")
     for obj_module, fun_name in delegations:
         print(
