@@ -1390,6 +1390,24 @@ void mpz_pow3_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t 
     mpz_free(n);
 }
 
+#if MICROPY_INT_BIT_LENGTH
+mp_uint_t mpz_bit_length_inpl(mpz_t *n) {
+    if (n->len == 0) {
+        return 0;
+    }
+
+    mpz_t *dest = mpz_clone(n);
+    mp_uint_t num_bits = 0;
+    while (dest->len > 0) {
+        dest->len = mpn_shr(dest->dig, dest->dig, dest->len, 1);
+        num_bits++;
+    }
+
+    mpz_free(dest);
+    return num_bits;
+}
+#endif
+
 #if 0
 these functions are unused
 

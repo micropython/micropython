@@ -42,3 +42,8 @@
 #define MICROPY_TRACKED_ALLOC          (1)
 #define MICROPY_WARNINGS_CATEGORY      (1)
 #define MICROPY_PY_UCRYPTOLIB_CTR      (1)
+
+// Enable int.bit_length(n)
+#ifndef MICROPY_INT_BIT_LENGTH
+#define MICROPY_INT_BIT_LENGTH (1)
+#endif
