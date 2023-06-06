@@ -121,11 +121,3 @@ With the boards which support USB mass storage, we can drag the files to the boa
 Refer to the guide below for installing the **Ampy** tool:
 
 <https://learn.adafruit.com/micropython-basics-load-files-and-run-code/install-ampy>
-
-## Built-in modules available ##
-
-| Board                       | Modules Available|
-| --------------------------- | ---------------- |
-| xG24 Dev Kit                |  _asyncio, _bleio, _pixelmap, adafruit_ble, adafruit_bus_device, adafruit_pixelbuf, adafruit_register, aesio, analogio, array, atexit, binascii, bitmaptools, board, builtins, busio, collections, digitalio, displayio, errno, fontio, framebufferio, gc, getpass, gifio, json, math, microcontroller, micropython, msgpack, nvm, onewireio, os, pwmio, rainbowio, random, re, rtc, select, sharpdisplay, storage, struct, supervisor, sys, terminalio, time, traceback, ulab, uselect, vectorio, watchdog, zlib |
-| xG24 Explorer Kit           |  _asyncio, _bleio, _pixelmap, adafruit_ble, adafruit_bus_device, adafruit_pixelbuf, adafruit_register, aesio, analogio, array, atexit, binascii, bitmaptools, board, builtins, busio, collections, digitalio, displayio, errno, fontio, framebufferio, gc, getpass, gifio, json, math, microcontroller, micropython, msgpack, nvm, onewireio, os, pwmio, rainbowio, random, re, rtc, sdcardio, select, sharpdisplay, storage, struct, supervisor, sys, terminalio, time, traceback, ulab, uselect, vectorio, watchdog, zlib |
-| SparkFun Thing Plus MGM240P | _asyncio, _bleio, _pixelmap, adafruit_ble, adafruit_bus_device, adafruit_pixelbuf, adafruit_register, aesio, analogio, array, atexit, binascii, bitmaptools, board, builtins, busio, collections, digitalio, displayio, errno, fontio, framebufferio, gc, getpass, gifio, json, math, microcontroller, micropython, msgpack, nvm, onewireio, os, pwmio, rainbowio, random, re, rtc, sdcardio, select, sharpdisplay, storage, struct, supervisor, sys, terminalio, time, traceback, ulab, uselect, vectorio, watchdog, zlib |
