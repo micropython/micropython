@@ -86,7 +86,6 @@ void mp_hal_wake_main_task_from_isr(void);
 #define mp_hal_pin_obj_t gpio_num_t
 mp_hal_pin_obj_t machine_pin_get_id(mp_obj_t pin_in);
 #define mp_hal_get_pin_obj(o) machine_pin_get_id(o)
-#define mp_obj_get_pin(o) machine_pin_get_id(o) // legacy name; only to support esp8266/modonewire
 #define mp_hal_pin_name(p) (p)
 static inline void mp_hal_pin_input(mp_hal_pin_obj_t pin) {
     esp_rom_gpio_pad_select_gpio(pin);

@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "modmachine.h"
 #include "uart.h"
 
@@ -58,10 +59,10 @@ typedef struct _machine_uart_obj_t {
     uint8_t bits;
     uint8_t parity;
     uint8_t stop;
-    int8_t tx;
-    int8_t rx;
-    int8_t rts;
-    int8_t cts;
+    gpio_num_t tx;
+    gpio_num_t rx;
+    gpio_num_t rts;
+    gpio_num_t cts;
     uint16_t txbuf;
     uint16_t rxbuf;
     uint16_t timeout;       // timeout waiting for first char (in ms)
@@ -133,10 +134,10 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -185,22 +186,22 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     }
     uart_get_baudrate(self->uart_num, &baudrate);
 
-    uart_set_pin(self->uart_num, args[ARG_tx].u_int, args[ARG_rx].u_int, args[ARG_rts].u_int, args[ARG_cts].u_int);
-    if (args[ARG_tx].u_int != UART_PIN_NO_CHANGE) {
-        self->tx = args[ARG_tx].u_int;
+    if (args[ARG_tx].u_obj != MP_OBJ_NULL) {
+        self->tx = machine_pin_get_id(args[ARG_tx].u_obj);
     }
 
-    if (args[ARG_rx].u_int != UART_PIN_NO_CHANGE) {
-        self->rx = args[ARG_rx].u_int;
+    if (args[ARG_rx].u_obj != MP_OBJ_NULL) {
+        self->rx = machine_pin_get_id(args[ARG_rx].u_obj);
     }
 
-    if (args[ARG_rts].u_int != UART_PIN_NO_CHANGE) {
-        self->rts = args[ARG_rts].u_int;
+    if (args[ARG_rts].u_obj != MP_OBJ_NULL) {
+        self->rts = machine_pin_get_id(args[ARG_rts].u_obj);
     }
 
-    if (args[ARG_cts].u_int != UART_PIN_NO_CHANGE) {
-        self->cts = args[ARG_cts].u_int;
+    if (args[ARG_cts].u_obj != MP_OBJ_NULL) {
+        self->cts = machine_pin_get_id(args[ARG_cts].u_obj);
     }
+    uart_set_pin(self->uart_num, self->tx, self->rx, self->rts, self->cts);
 
     // set data bits
     switch (args[ARG_bits].u_int) {

@@ -185,10 +185,10 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // Set SCL/SDA pins if given
     if (args[ARG_scl].u_obj != MP_OBJ_NULL) {
-        self->scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj);
+        self->scl = machine_pin_get_id(args[ARG_scl].u_obj);
     }
     if (args[ARG_sda].u_obj != MP_OBJ_NULL) {
-        self->sda = mp_hal_get_pin_obj(args[ARG_sda].u_obj);
+        self->sda = machine_pin_get_id(args[ARG_sda].u_obj);
     }
 
     // Initialise the I2C peripheral

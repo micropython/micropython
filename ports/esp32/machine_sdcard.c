@@ -131,18 +131,9 @@ static const sdspi_device_config_t spi_dev_defaults[2] = {
     SDSPI_DEVICE_CONFIG_DEFAULT(), // HSPI (ESP32) / SPI2 (ESP32S3)
 };
 
-STATIC gpio_num_t pin_or_int(const mp_obj_t arg) {
-    if (mp_obj_is_small_int(arg)) {
-        return MP_OBJ_SMALL_INT_VALUE(arg);
-    } else {
-        // This raises a value error if the argument is not a Pin.
-        return machine_pin_get_id(arg);
-    }
-}
-
 #define SET_CONFIG_PIN(config, pin_var, arg_id) \
     if (arg_vals[arg_id].u_obj != mp_const_none) \
-    config.pin_var = pin_or_int(arg_vals[arg_id].u_obj)
+    config.pin_var = machine_pin_get_id(arg_vals[arg_id].u_obj)
 
 STATIC esp_err_t sdcard_ensure_card_init(sdcard_card_obj_t *self, bool force) {
     if (force || !(self->flags & SDCARD_CARD_FLAGS_CARD_INIT_DONE)) {
