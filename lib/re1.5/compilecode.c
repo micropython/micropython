@@ -10,7 +10,7 @@
 #define INSERT_CODE(at, num, pc) \
     ((code ? memmove(code + at + num, code + at, pc - at) : 0), pc += num)
 #define REL(at, to) (to - at - 2)
-#define EMIT(at, byte) (code ? (code[at] = byte) : (at))
+#define EMIT(at, byte) {int _at = at; code ? (code[_at] = byte) : (0);}
 #define EMIT_CHECKED(at, byte) (_emit_checked(at, code, byte, &err))
 #define PC (prog->bytelen)
 
@@ -29,8 +29,9 @@ static const char *_compilecode(const char *re, size_t len, ByteProg *prog, int 
     int term = PC;
     int alt_label = 0;
     const char *re_top = re + len;
-    
-    while (re < re_top && *re != ')') {
+    int remain;
+
+    while ((remain = re_top - re) && *re != ')') {
         switch (*re) {
         case '\\':
             re++;
@@ -80,8 +81,7 @@ static const char *_compilecode(const char *re, size_t len, ByteProg *prog, int 
                         goto emit_char_pair;
                     }
                 }
-                if (!c) return NULL;
-                if (re_top - re > 2 && re[1] == '-' && re[2] != ']') {
+                if (remain > 2 && re[1] == '-' && re[2] != ']') {
                     re += 2;
                 }
             emit_char_pair:
@@ -94,7 +94,7 @@ static const char *_compilecode(const char *re, size_t len, ByteProg *prog, int 
         case '(': {
             term = PC;
             int sub = 0;
-            int capture = re_top - re > 2 && (re[1] != '?' || re[2] != ':');
+            int capture = remain > 2 && (re[1] != '?' || re[2] != ':');
 
             if (capture) {
                 sub = ++prog->sub;
@@ -107,8 +107,8 @@ static const char *_compilecode(const char *re, size_t len, ByteProg *prog, int 
 
             re++;
             if (re >= re_top) return NULL; // Trailing bracket
-            re = _compilecode(re, re_top - re, prog, sizecode);
-            if (re == NULL || re >= re_top || *re != ')') return NULL; // error, or no matching paren
+            re = _compilecode(re, remain, prog, sizecode);
+            if (re == NULL || *re != ')') return NULL; // error, or no matching paren
 
             if (capture) {
                 EMIT(PC++, Save);
@@ -121,7 +121,7 @@ static const char *_compilecode(const char *re, size_t len, ByteProg *prog, int 
         case '?':
             if (PC == term) return NULL; // nothing to repeat
             INSERT_CODE(term, 2, PC);
-            if (re_top - re > 1 && re[1] == '?') {
+            if (remain > 1 && re[1] == '?') {
                 EMIT(term, RSplit);
                 re++;
             } else {
@@ -137,7 +137,7 @@ static const char *_compilecode(const char *re, size_t len, ByteProg *prog, int 
             EMIT(PC, Jmp);
             EMIT_CHECKED(PC + 1, REL(PC, term));
             PC += 2;
-            if (re_top - re > 1 && re[1] == '?') {
+            if (remain > 1 && re[1] == '?') {
                 EMIT(term, RSplit);
                 re++;
             } else {
@@ -149,7 +149,7 @@ static const char *_compilecode(const char *re, size_t len, ByteProg *prog, int 
             break;
         case '+':
             if (PC == term) return NULL; // nothing to repeat
-            if (re_top - re > 1 && re[1] == '?') {
+            if (remain > 1 && re[1] == '?') {
                 EMIT(PC, Split);
                 re++;
             } else {
