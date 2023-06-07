@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2023 Damien P. George
+ * Copyright (c) 2023 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,71 +25,27 @@
  * THE SOFTWARE.
  */
 
-// options to control how MicroPython is built
+#include "mpconfigport_common.h"
+
+// Require mp_raw_code_save_file.
+#define MICROPY_PERSISTENT_CODE_SAVE_FILE (1)
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
-#define MICROPY_PERSISTENT_CODE_LOAD (0)
-#define MICROPY_PERSISTENT_CODE_SAVE (1)
 
-#ifndef MICROPY_PERSISTENT_CODE_SAVE_FILE
-#if defined(__i386__) || defined(__x86_64__) || defined(_WIN32) || defined(__unix__) || defined(__APPLE__)
-#define MICROPY_PERSISTENT_CODE_SAVE_FILE (1)
-#else
-#define MICROPY_PERSISTENT_CODE_SAVE_FILE (0)
-#endif
-#endif
-
-#define MICROPY_EMIT_X64            (1)
-#define MICROPY_EMIT_X86            (1)
-#define MICROPY_EMIT_THUMB          (1)
-#define MICROPY_EMIT_INLINE_THUMB   (1)
-#define MICROPY_EMIT_ARM            (1)
-#define MICROPY_EMIT_XTENSA         (1)
-#define MICROPY_EMIT_INLINE_XTENSA  (1)
-#define MICROPY_EMIT_XTENSAWIN      (1)
-
-#define MICROPY_DYNAMIC_COMPILER    (1)
-#define MICROPY_COMP_CONST_FOLDING  (1)
-#define MICROPY_COMP_MODULE_CONST   (1)
-#define MICROPY_COMP_CONST          (1)
-#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
-#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
-#define MICROPY_COMP_RETURN_IF_EXPR (1)
-
-#define MICROPY_READER_POSIX        (1)
-#define MICROPY_ENABLE_RUNTIME      (0)
-#define MICROPY_ENABLE_GC           (1)
-#ifndef __EMSCRIPTEN__
 #define MICROPY_STACK_CHECK         (1)
-#endif
-#define MICROPY_HELPER_LEXER_UNIX   (1)
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_ENABLE_SOURCE_LINE  (1)
-#define MICROPY_ENABLE_DOC_STRING   (0)
-#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
+
+#define MICROPY_ENABLE_GC           (1)
+
 #define MICROPY_WARNINGS            (1)
 
-#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
-#define MICROPY_CPYTHON_COMPAT      (1)
-#define MICROPY_USE_INTERNAL_PRINTF (0)
-
-#define MICROPY_PY_FSTRINGS         (1)
-#define MICROPY_PY_BUILTINS_STR_UNICODE (1)
+// For mp_lexer_new_from_fd.
+#define MICROPY_READER_POSIX        (1)
+#define MICROPY_HELPER_LEXER_UNIX   (1)
 
 #if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
 // Fall back to setjmp() implementation for discovery of GC pointers in registers.
 #define MICROPY_GCREGS_SETJMP (1)
 #endif
-
-#define MICROPY_PY___FILE__         (0)
-#define MICROPY_PY_ARRAY            (0)
-#define MICROPY_PY_ATTRTUPLE        (0)
-#define MICROPY_PY_COLLECTIONS      (0)
-#define MICROPY_PY_MATH             (0)
-#define MICROPY_PY_CMATH            (0)
-#define MICROPY_PY_GC               (0)
-#define MICROPY_PY_IO               (0)
-#define MICROPY_PY_SYS              (0)
 
 // type definitions for the specific machine
 
@@ -116,8 +73,6 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-#define MP_PLAT_PRINT_STRN(str, len) (void)0
-
 // We need to provide a declaration/definition of alloca()
 #if defined(__FreeBSD__) || defined(__NetBSD__)
 #include <stdlib.h>
@@ -126,8 +81,6 @@ typedef long mp_off_t;
 #else
 #include <alloca.h>
 #endif
-
-#include <stdint.h>
 
 // MSVC specifics - see windows/mpconfigport.h for explanation
 #ifdef _MSC_VER

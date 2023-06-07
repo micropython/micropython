@@ -1,3 +1,5 @@
+# This makefile builds the native executable target of the mpy-cross cross-compiler.
+
 include ../py/mkenv.mk
 
 # define main target

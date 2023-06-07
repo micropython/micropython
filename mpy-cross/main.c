@@ -24,15 +24,19 @@
  * THE SOFTWARE.
  */
 
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "py/builtin.h"
 #include "py/compile.h"
 #include "py/persistentcode.h"
 #include "py/runtime.h"
+#include "py/mpstate.h"
 #include "py/gc.h"
 #include "py/stackctrl.h"
 #include "genhdr/mpversion.h"
@@ -352,11 +356,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
 int main(int argc, char **argv) {
     mp_stack_ctrl_init();
     return main_(argc, argv);
-}
-
-mp_import_stat_t mp_import_stat(const char *path) {
-    (void)path;
-    return MP_IMPORT_STAT_NO_EXIST;
 }
 
 void nlr_jump_fail(void *val) {
