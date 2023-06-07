@@ -248,12 +248,27 @@ STATIC void machine_pin_isr_handler(void *arg) {
     mp_hal_wake_main_task_from_isr();
 }
 
-gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
-    if (mp_obj_get_type(pin_in) != &machine_pin_type) {
-        mp_raise_ValueError(MP_ERROR_TEXT("expecting a pin"));
+STATIC const machine_pin_obj_t *machine_pin_find(mp_obj_t pin_in) {
+    if (mp_obj_is_type(pin_in, &machine_pin_type)) {
+        return pin_in;
     }
-    machine_pin_obj_t *self = pin_in;
-    return self->id;
+    // get the wanted pin object
+    if (mp_obj_is_small_int(pin_in)) {
+        int wanted_pin = mp_obj_get_int(pin_in);
+        if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj)) {
+            machine_pin_obj_t *self = (machine_pin_obj_t *)&machine_pin_obj[wanted_pin];
+            if (self->base.type != NULL) {
+                return self;
+            }
+        }
+    }
+    // At this place a check for named pins may be added
+    //
+    mp_raise_ValueError(MP_ERROR_TEXT("expecting a pin"));
+}
+
+gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
+    return machine_pin_find(pin_in)->id;
 }
 
 STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -354,14 +369,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get the wanted pin object
-    int wanted_pin = mp_obj_get_int(args[0]);
-    const machine_pin_obj_t *self = NULL;
-    if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj)) {
-        self = (machine_pin_obj_t *)&machine_pin_obj[wanted_pin];
-    }
-    if (self == NULL || self->base.type == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
-    }
+    const machine_pin_obj_t *self = machine_pin_find(args[0]);
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
