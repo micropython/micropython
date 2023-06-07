@@ -40,12 +40,13 @@ void common_hal_synthio_note_set_frequency(synthio_note_obj_t *self, mp_float_t 
     self->frequency_scaled = synthio_frequency_convert_float_to_scaled(val);
 }
 
-bool common_hal_synthio_note_get_filter(synthio_note_obj_t *self) {
-    return self->filter;
+mp_obj_t common_hal_synthio_note_get_filter_obj(synthio_note_obj_t *self) {
+    return self->filter_obj;
 }
 
-void common_hal_synthio_note_set_filter(synthio_note_obj_t *self, bool value_in) {
-    self->filter = value_in;
+void common_hal_synthio_note_set_filter(synthio_note_obj_t *self, mp_obj_t filter_in) {
+    synthio_biquad_filter_assign(&self->filter_state, filter_in);
+    self->filter_obj = filter_in;
 }
 
 mp_float_t common_hal_synthio_note_get_ring_frequency(synthio_note_obj_t *self) {
@@ -147,6 +148,7 @@ void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate) {
 
 void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate) {
     synthio_note_recalculate(self, sample_rate);
+    synthio_biquad_filter_reset(&self->filter_state);
 }
 
 // Perform a pitch bend operation
