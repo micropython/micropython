@@ -1,0 +1,56 @@
+/delete-node/ &slot0_partition;
+/delete-node/ &slot1_partition;
+/delete-node/ &slot2_partition;
+/delete-node/ &slot3_partition;
+/delete-node/ &storage_partition;
+
+// / {
+// 	fstab {
+// 		compatible = "zephyr,fstab";
+
+// 		// https://docs.zephyrproject.org/latest/build/dts/api/bindings/fs/zephyr,fstab,littlefs.html
+// 		lfs1: lfs1 {
+// 			compatible = "zephyr,fstab,littlefs";
+// 			read-size = <16>;
+// 			prog-size = <16>;
+// 			cache-size = <64>;
+// 			lookahead-size = <32>;
+// 			block-cycles = <512>;
+// 			mount-point = "/lfs1";
+// 			partition = <&storage_partition>;
+// 			// automount;
+// 			// read-only;
+// 			// no-format;
+// 			// disk-access;
+//     };
+// 	};
+// };
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		// 320 KB 
+		slot0_partition: partition@8000 {
+			label = "image-0";
+			reg = <0x00008000 0x00050000>;
+		};
+
+		// 64 KB
+		slot1_partition: partition@50000 {
+			label = "image-1";
+			reg = <0x00050000 0x00010000>;
+		};
+
+		storage_partition: partition@60000 {
+			label = "storage";
+			// 246 KB
+			reg = <0x00050000 0x0003D800>;
+			
+			// 64 KB
+			// reg = <0x00050000 0x00010000>;
+		};
+	};
+};
