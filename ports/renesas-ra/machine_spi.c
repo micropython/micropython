@@ -205,7 +205,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     if (args[ARG_sck].u_obj == MP_OBJ_NULL) {
         sck = self->sck->pin;
     } else {
-        const machine_pin_obj_t *arg_sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
+        const machine_pin_obj_t *arg_sck = machine_pin_find(args[ARG_sck].u_obj);
         sck = arg_sck->pin;
         if (!IS_VALID_SCK(self->sck->pin, sck)) {
             mp_raise_ValueError(MP_ERROR_TEXT("bad SCK pin"));
@@ -214,7 +214,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     if (args[ARG_mosi].u_obj == MP_OBJ_NULL) {
         mosi = self->mosi->pin;
     } else {
-        const machine_pin_obj_t *arg_mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
+        const machine_pin_obj_t *arg_mosi = machine_pin_find(args[ARG_mosi].u_obj);
         mosi = arg_mosi->pin;
         if (!IS_VALID_MOSI(self->mosi->pin, mosi)) {
             mp_raise_ValueError(MP_ERROR_TEXT("bad MOSI pin"));
@@ -223,7 +223,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     if (args[ARG_miso].u_obj == MP_OBJ_NULL) {
         miso = self->miso->pin;
     } else {
-        const machine_pin_obj_t *arg_miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
+        const machine_pin_obj_t *arg_miso = machine_pin_find(args[ARG_miso].u_obj);
         miso = arg_miso->pin;
         if (!IS_VALID_MISO(self->miso->pin, miso)) {
             mp_raise_ValueError(MP_ERROR_TEXT("bad MISO pin"));
@@ -287,21 +287,21 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
         }
     }
     if (args[ARG_sck].u_obj != MP_OBJ_NULL) {
-        const machine_pin_obj_t *arg_sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
+        const machine_pin_obj_t *arg_sck = machine_pin_find(args[ARG_sck].u_obj);
         sck = arg_sck->pin;
         if (!IS_VALID_SCK(self->sck->pin, sck)) {
             mp_raise_ValueError(MP_ERROR_TEXT("bad SCK pin"));
         }
     }
     if (args[ARG_mosi].u_obj != MP_OBJ_NULL) {
-        const machine_pin_obj_t *arg_mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
+        const machine_pin_obj_t *arg_mosi = machine_pin_find(args[ARG_mosi].u_obj);
         mosi = arg_mosi->pin;
         if (!IS_VALID_MOSI(self->mosi->pin, mosi)) {
             mp_raise_ValueError(MP_ERROR_TEXT("bad MOSI pin"));
         }
     }
     if (args[ARG_miso].u_obj != MP_OBJ_NULL) {
-        const machine_pin_obj_t *arg_miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
+        const machine_pin_obj_t *arg_miso = machine_pin_find(args[ARG_miso].u_obj);
         miso = arg_miso->pin;
         if (!IS_VALID_MISO(self->miso->pin, miso)) {
             mp_raise_ValueError(MP_ERROR_TEXT("bad MISO pin"));
