@@ -59,8 +59,8 @@ extern void common_hal_mcu_enable_interrupts(void);
 //
 // default is 128; consider raising to reduce fragmentation.
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT   (16)
-// default is 512.
-#define MICROPY_ALLOC_PATH_MAX           (256)
+// default is 512. Longest path in .py bundle as of June 6th, 2023 is 73 characters.
+#define MICROPY_ALLOC_PATH_MAX           (96)
 #define MICROPY_CAN_OVERRIDE_BUILTINS    (1)
 #define MICROPY_COMP_CONST               (1)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
