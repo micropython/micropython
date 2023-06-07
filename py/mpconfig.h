@@ -1814,6 +1814,13 @@ typedef double mp_float_t;
 #define MICROPY_OBJ_BASE_ALIGNMENT
 #endif
 
+// A port may enable this to use a minimal implementation of NLR that will
+// terminate when an exception is raised. The port must provide
+// nlr_terminate, and handle termination in some port-specific way.
+#ifndef MICROPY_NLR_TERMINATE
+#define MICROPY_NLR_TERMINATE (0)
+#endif
+
 // String used for the banner, and sys.version additional information
 #ifndef MICROPY_BANNER_NAME_AND_VERSION
 #define MICROPY_BANNER_NAME_AND_VERSION "MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
