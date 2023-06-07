@@ -27,42 +27,6 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_NETWORK_IFX_WCM_H
 #define MICROPY_INCLUDED_EXTMOD_NETWORK_IFX_WCM_H
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "cy_wcm.h"
-#include <stdio.h>
-
-
-#define SECURITY_OPEN                           "OPEN"
-#define SECURITY_WEP_PSK                        "WEP-PSK"
-#define SECURITY_WEP_SHARED                     "WEP-SHARED"
-#define SECURITY_WEP_TKIP_PSK                   "WEP-TKIP-PSK"
-#define SECURITY_WPA_TKIP_PSK                   "WPA-TKIP-PSK"
-#define SECURITY_WPA_AES_PSK                    "WPA-AES-PSK"
-#define SECURITY_WPA_MIXED_PSK                  "WPA-MIXED-PSK"
-#define SECURITY_WPA2_AES_PSK                   "WPA2-AES-PSK"
-#define SECURITY_WPA2_TKIP_PSK                  "WPA2-TKIP-PSK"
-#define SECURITY_WPA2_MIXED_PSK                 "WPA2-MIXED-PSK"
-#define SECURITY_WPA2_FBT_PSK                   "WPA2-FBT-PSK"
-#define SECURITY_WPA3_SAE                       "WPA3-SAE"
-#define SECURITY_WPA2_WPA_AES_PSK               "WPA2-WPA-AES-PSK"
-#define SECURITY_WPA2_WPA_MIXED_PSK             "WPA2-WPA-MIXED-PSK"
-#define SECURITY_WPA3_WPA2_PSK                  "WPA3-WPA2-PSK"
-#define SECURITY_WPA_TKIP_ENT                   "WPA-TKIP-ENT"
-#define SECURITY_WPA_AES_ENT                    "WPA-AES-ENT"
-#define SECURITY_WPA_MIXED_ENT                  "WPA-MIXED-ENT"
-#define SECURITY_WPA2_TKIP_ENT                  "WPA2-TKIP-ENT"
-#define SECURITY_WPA2_AES_ENT                   "WPA2-AES-ENT"
-#define SECURITY_WPA2_MIXED_ENT                 "WPA2-MIXED-ENT"
-#define SECURITY_WPA2_FBT_ENT                   "WPA2-FBT-ENT"
-#define SECURITY_IBSS_OPEN                      "IBSS-OPEN"
-#define SECURITY_WPS_SECURE                     "WPS-SECURE"
-#define SECURITY_UNKNOWN                        "UNKNOWN"
-
-#define PRINT_SCAN_TEMPLATE()                   printf("\n----------------------------------------------------------------------------------------------------\n" \
-    "  #                  SSID                  RSSI   Channel       MAC Address              Security\n" \
-    "----------------------------------------------------------------------------------------------------\n");
-
 extern const mp_obj_type_t mp_network_ifx_wcm_type;
 
 void network_init(void);
