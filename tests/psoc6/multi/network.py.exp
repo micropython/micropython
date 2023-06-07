@@ -8,6 +8,7 @@ ap has no client:  True
  > yield station
 ap has clients:  True
 ap cannot disconnect:  network STA required
+ap status has stations:  True
 --- instance1 ---
 sta instance created
 sta is not active:  True
@@ -18,5 +19,6 @@ sta is not (yet) connected:  True
 sta attempt connection to ap
 sta is (now) active:  True
 sta is (now) connected:  True
+sta status rssi in range:  True
  > yield access point
 sta is disconnected:  True

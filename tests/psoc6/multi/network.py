@@ -37,11 +37,9 @@ def instance0():
     except ValueError as err:
         print("ap cannot disconnect: ", err)
 
-    # multitest.next()
-
-    # print(ap_if.status('stations'))
-
     # status()
+    stations = ap_if.status("stations")
+    print("ap status has stations: ", stations != [])
 
     # ifconfig()
 
@@ -50,8 +48,6 @@ def instance0():
 
 # Station
 def instance1():
-    global ap_mac
-
     sta_if = network.WLAN(network.STA_IF)
     print("sta instance created")
 
@@ -86,14 +82,15 @@ def instance1():
     # isConnected()
     print("sta is (now) connected: ", sta_if.isconnected() == True)
 
+    # status()
+    print("sta status rssi in range: ", -70 < sta_if.status("rssi") < 0)
+
     print(" > yield access point")
     multitest.next()
 
     # disconnect()
     sta_if.disconnect()
     print("sta is disconnected: ", sta_if.active() == False)
-
-    # status()
 
     # ifconfig()
 
