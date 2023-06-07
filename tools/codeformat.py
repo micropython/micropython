@@ -51,6 +51,7 @@ PATHS = [
     "drivers/**/*.py",
     "examples/**/*.py",
     "extmod/**/*.py",
+    "mpy-cross/mpy_cross/*.py",
     "ports/**/*.py",
     "py/**/*.py",
     "tools/**/*.py",

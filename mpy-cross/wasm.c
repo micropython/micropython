@@ -102,13 +102,15 @@ void mpycross_free(void *ptr) {
 }
 
 EMSCRIPTEN_KEEPALIVE
-const uint8_t *mpycross_compile(const char *input_name, const uint8_t *input_data, size_t input_len, uint8_t default_emit_opt, uint8_t native_arch, uint8_t small_int_bits, size_t *output_len, int *result) {
+const uint8_t *mpycross_compile(const char *input_name, const uint8_t *input_data, size_t input_len, uint8_t opt_level, uint8_t default_emit_opt, uint8_t native_arch, uint8_t small_int_bits, size_t *output_len, int *result) {
     mp_init();
 
     #if MICROPY_EMIT_NATIVE
     // Set default emitter options
     MP_STATE_VM(default_emit_opt) = default_emit_opt;
     #endif
+
+    MP_STATE_VM(mp_optimise_value) = opt_level;
 
     // set default compiler configuration
     mp_dynamic_compiler.small_int_bits = small_int_bits == 0 ? 31 : small_int_bits;
