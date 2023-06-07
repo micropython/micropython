@@ -16,9 +16,8 @@ done
 echo ${abs_submodules}
 
 # Fetch submodules as partial clones if possible. If that fails due to an older version of git,
-# do a shallow init with no fetch and then check out the proper commit.
+# do a shallow init and fetch tags.
 git submodule update --init --filter=blob:none ${abs_submodules} || \
-    git submodule update --init --no-fetch --depth 1 ${abs_submodules} || \
-    git submodule foreach $* \
-        'git fetch --tags --depth 1 origin $$sha1 && git checkout -q $$sha1' || \
+    git submodule update --init --depth 1 ${abs_submodules} && \
+    git submodule foreach 'git fetch --tags --depth 1' || \
     echo "ERROR: fetch-submodules.sh FAILED"
