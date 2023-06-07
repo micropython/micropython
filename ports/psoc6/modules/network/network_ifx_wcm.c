@@ -595,35 +595,43 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_ifconfig_obj, 1, 2, network_
 STATIC mp_obj_t network_ifx_wcm_status(size_t n_args, const mp_obj_t *args) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    if (n_args == 1) {
-        // no arguments: return link status
-        return MP_OBJ_NEW_SMALL_INT(cy_wcm_is_connected_to_ap());
-    }
-
     // one argument: return status based on query parameter
     switch (mp_obj_str_get_qstr(args[1])) {
+
+        case MP_QSTR_rssi: {
+            if (self->itf != CY_WCM_INTERFACE_TYPE_STA) {
+                mp_raise_ValueError(MP_ERROR_TEXT("network station required"));
+            }
+            int32_t rssi;
+            uint32_t ret = whd_wifi_get_rssi(whd_ifs[self->itf], &rssi);
+            wcm_assert_raise("network status error (with code: %d)", ret);
+            return mp_obj_new_int(rssi);
+        }
+
         case MP_QSTR_stations: {
             if (self->itf != CY_WCM_INTERFACE_TYPE_AP) {
                 mp_raise_ValueError(MP_ERROR_TEXT("AP required"));
             }
-            // uint8_t max_sta = NETWORK_WLAN_MAX_AP_STATIONS;
+
             cy_wcm_mac_t sta_list[NETWORK_WLAN_MAX_AP_STATIONS];
+
+            cy_wcm_mac_t not_conn_sta = {0, 0, 0, 0, 0, 0};
+
+
             uint32_t ret = cy_wcm_get_associated_client_list(&sta_list[0], NETWORK_WLAN_MAX_AP_STATIONS);
             wcm_assert_raise("network status error (with code: %d)", ret);
 
-            mp_obj_t list = mp_obj_new_list(NETWORK_WLAN_MAX_AP_STATIONS, NULL);
+            mp_obj_t list = mp_obj_new_list(0, NULL);
             for (int i = 0; i < NETWORK_WLAN_MAX_AP_STATIONS; ++i) {
-                mp_obj_t tuple[1] = {
-                    mp_obj_new_bytes(sta_list[i], 6),
-                };
-                ((mp_obj_list_t *)MP_OBJ_TO_PTR(list))->items[i] = mp_obj_new_tuple(1, tuple);
+                if (memcmp(&sta_list[i], &not_conn_sta, CY_WCM_MAC_ADDR_LEN) != 0) {
+                    mp_obj_list_append(list, mp_obj_new_bytes(sta_list[i], CY_WCM_MAC_ADDR_LEN));
+                }
             }
             return list;
         }
     }
 
-    mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
-    return mp_const_none;
+    mp_raise_ValueError(MP_ERROR_TEXT("network status unknown param"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_status_obj, 1, 2, network_ifx_wcm_status);
 
