@@ -1,0 +1,53 @@
+# This makefile builds the WASM target of the mpy-cross cross-compiler..
+# It can be invoked as: make -f Makefile.wasm
+
+# This requires emscripten. Once installed you can run
+#  $ . /etc/profile.d/emscripten.sh
+# to add it to your environment before running this makefile.
+
+PROG ?= mpy-cross.wasm
+BUILD ?= build-wasm
+
+include ../py/mkenv.mk
+
+CC = emcc
+LD = emcc
+STRIP = ls
+SIZE = ls
+
+# qstr definitions (must come before including py.mk)
+QSTR_DEFS = qstrdefsport.h
+
+# Use mpconfigport_wasm.h as the "port" configuration (must come before
+# including py.mk).
+MPCONFIGPORT_H = mpconfigport_wasm.h
+
+# include py core make definitions
+include $(TOP)/py/py.mk
+
+INC += -I.
+INC += -I$(BUILD)
+INC += -I$(TOP)
+
+# compiler settings
+CWARN = -Wall -Werror
+CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith
+CFLAGS += $(INC) $(CWARN) -std=c99 $(COPT) $(CFLAGS_EXTRA)
+CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
+
+# Debugging/Optimization
+COPT = -Os
+
+LDFLAGS += -lm --no-entry
+LDFLAGS += --js-library library.js -s SUPPORT_LONGJMP=0
+
+# source files
+SRC_C = \
+    wasm.c \
+    gccollect.c \
+    shared/runtime/gchelper_generic.c \
+
+OBJ = $(PY_CORE_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+
+include $(TOP)/py/mkrules.mk
