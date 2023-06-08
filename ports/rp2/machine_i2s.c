@@ -57,9 +57,9 @@
 // - non-blocking mode is enabled when a callback is set with the irq() method
 // - the DMA IRQ handler is used to implement the asynchronous background operations
 //
-// Mode3: Uasyncio
+// Mode3: Asyncio
 // - implements the stream protocol
-// - uasyncio mode is enabled when the ioctl() function is called
+// - asyncio mode is enabled when the ioctl() function is called
 // - the state of the internal ring buffer is used to detect that I2S samples can be read or written
 //
 // The samples contained in the app buffer supplied for the readinto() and write() methods have the following convention:
@@ -112,7 +112,7 @@ typedef enum {
 typedef enum {
     BLOCKING,
     NON_BLOCKING,
-    UASYNCIO
+    ASYNCIO
 } io_mode_t;
 
 typedef enum {
@@ -307,7 +307,7 @@ STATIC uint32_t fill_appbuf_from_ringbuf(machine_i2s_obj_t *self, mp_buffer_info
 
     // copy audio samples from the ring buffer to the app buffer
     // loop, copying samples until the app buffer is filled
-    // For uasyncio mode, the loop will make an early exit if the ring buffer becomes empty
+    // For asyncio mode, the loop will make an early exit if the ring buffer becomes empty
     // Example:
     //   a MicroPython I2S object is configured for 16-bit mono (2 bytes per audio sample).
     //   For every frame coming from the ring buffer (8 bytes), 2 bytes are "cherry picked" and
@@ -333,7 +333,7 @@ STATIC uint32_t fill_appbuf_from_ringbuf(machine_i2s_obj_t *self, mp_buffer_info
                         ;
                     }
                     num_bytes_copied_to_appbuf++;
-                } else if (self->io_mode == UASYNCIO) {
+                } else if (self->io_mode == ASYNCIO) {
                     if (ringbuf_pop(&self->ring_buffer, app_p + r_to_a_mapping) == false) {
                         // ring buffer is empty, exit
                         goto exit;
@@ -350,7 +350,7 @@ STATIC uint32_t fill_appbuf_from_ringbuf(machine_i2s_obj_t *self, mp_buffer_info
                     while (ringbuf_pop(&self->ring_buffer, &discard_byte) == false) {
                         ;
                     }
-                } else if (self->io_mode == UASYNCIO) {
+                } else if (self->io_mode == ASYNCIO) {
                     if (ringbuf_pop(&self->ring_buffer, &discard_byte) == false) {
                         // ring buffer is empty, exit
                         goto exit;
@@ -413,7 +413,7 @@ STATIC uint32_t copy_appbuf_to_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t
 
     // copy audio samples from the app buffer to the ring buffer
     // loop, reading samples until the app buffer is emptied
-    // for uasyncio mode, the loop will make an early exit if the ring buffer becomes full
+    // for asyncio mode, the loop will make an early exit if the ring buffer becomes full
 
     uint32_t a_index = 0;
 
@@ -424,7 +424,7 @@ STATIC uint32_t copy_appbuf_to_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t
                 ;
             }
             a_index++;
-        } else if (self->io_mode == UASYNCIO) {
+        } else if (self->io_mode == ASYNCIO) {
             if (ringbuf_push(&self->ring_buffer, ((uint8_t *)appbuf->buf)[a_index]) == false) {
                 // ring buffer is full, exit
                 break;
@@ -1056,7 +1056,7 @@ STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint
         self->non_blocking_descriptor.index = 0;
         self->non_blocking_descriptor.copy_in_progress = true;
         return size;
-    } else { // blocking or uasyncio mode
+    } else { // blocking or asyncio mode
         mp_buffer_info_t appbuf;
         appbuf.buf = (void *)buf_in;
         appbuf.len = size;
@@ -1083,7 +1083,7 @@ STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, 
         self->non_blocking_descriptor.index = 0;
         self->non_blocking_descriptor.copy_in_progress = true;
         return size;
-    } else { // blocking or uasyncio mode
+    } else { // blocking or asyncio mode
         mp_buffer_info_t appbuf;
         appbuf.buf = (void *)buf_in;
         appbuf.len = size;
@@ -1096,7 +1096,7 @@ STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
     uintptr_t flags = arg;
-    self->io_mode = UASYNCIO; // a call to ioctl() is an indication that uasyncio is being used
+    self->io_mode = ASYNCIO; // a call to ioctl() is an indication that asyncio is being used
 
     if (request == MP_STREAM_POLL) {
         ret = 0;
