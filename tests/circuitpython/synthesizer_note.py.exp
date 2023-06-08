@@ -1,13 +1,13 @@
 ()
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-(Note(frequency=830.6076004423605, panning=0.0, amplitude=1.0, bend=0.0, waveform=None, envelope=None, filter=True, ring_frequency=0.0, ring_bend=0.0, ring_waveform=None),)
+(Note(frequency=830.6076004423605, panning=0.0, amplitude=1.0, bend=0.0, waveform=None, envelope=None, filter=None, ring_frequency=0.0, ring_bend=0.0, ring_waveform=None),)
 [-16383, -16383, -16383, -16383, 16382, 16382, 16382, 16382, 16382, -16383, -16383, -16383, -16383, -16383, 16382, 16382, 16382, 16382, 16382, -16383, -16383, -16383, -16383, -16383]
-(Note(frequency=830.6076004423605, panning=0.0, amplitude=1.0, bend=0.0, waveform=None, envelope=None, filter=True, ring_frequency=0.0, ring_bend=0.0, ring_waveform=None), Note(frequency=830.6076004423605, panning=0.0, amplitude=1.0, bend=0.0, waveform=None, envelope=None, filter=True, ring_frequency=0.0, ring_bend=0.0, ring_waveform=None))
+(Note(frequency=830.6076004423605, panning=0.0, amplitude=1.0, bend=0.0, waveform=None, envelope=None, filter=None, ring_frequency=0.0, ring_bend=0.0, ring_waveform=None), Note(frequency=830.6076004423605, panning=0.0, amplitude=1.0, bend=0.0, waveform=None, envelope=None, filter=None, ring_frequency=0.0, ring_bend=0.0, ring_waveform=None))
 [-1, -1, -1, -1, -1, -1, -1, -1, 28045, -1, -1, -1, -1, -28046, -1, -1, -1, -1, 28045, -1, -1, -1, -1, -28046]
-(Note(frequency=830.6076004423605, panning=0.0, amplitude=1.0, bend=0.0, waveform=None, envelope=None, filter=True, ring_frequency=0.0, ring_bend=0.0, ring_waveform=None),)
+(Note(frequency=830.6076004423605, panning=0.0, amplitude=1.0, bend=0.0, waveform=None, envelope=None, filter=None, ring_frequency=0.0, ring_bend=0.0, ring_waveform=None),)
 [-1, -1, -1, 28045, -1, -1, -1, -1, -1, -1, -1, -1, 28045, -1, -1, -1, -1, -28046, -1, -1, -1, -1, 28045, -1]
 (-5242, 5241)
-(-10484, 10484)
+(-10485, 10484)
 (-15727, 15726)
 (-16383, 16382)
 (-14286, 14285)

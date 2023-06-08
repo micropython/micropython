@@ -201,7 +201,7 @@ mp_obj_t MICROPY_WRAP_MP_LOAD_GLOBAL(mp_load_global)(qstr qst) {
     return elem->value;
 }
 
-mp_obj_t mp_load_build_class(void) {
+mp_obj_t __attribute__((noinline)) mp_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
     #if MICROPY_CAN_OVERRIDE_BUILTINS
     if (MP_STATE_VM(mp_module_builtins_override_dict) != NULL) {
@@ -858,7 +858,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_ob
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
-void mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
+void __attribute__((noinline,)) mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
     size_t seq_len;
     if (mp_obj_is_type(seq_in, &mp_type_tuple) || mp_obj_is_type(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
@@ -905,7 +905,7 @@ too_long:
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
-void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
+void __attribute__((noinline)) mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
     size_t num_left = num_in & 0xff;
     size_t num_right = (num_in >> 8) & 0xff;
     DEBUG_OP_printf("unpack ex " UINT_FMT " " UINT_FMT "\n", num_left, num_right);
@@ -1482,7 +1482,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     return mp_builtin___import__(5, args);
 }
 
-mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
+mp_obj_t __attribute__((noinline,)) mp_import_from(mp_obj_t module, qstr name) {
     DEBUG_printf("import from %p %s\n", module, qstr_str(name));
 
     mp_obj_t dest[2];
@@ -1528,7 +1528,7 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     #endif
 }
 
-void mp_import_all(mp_obj_t module) {
+void __attribute__((noinline)) mp_import_all(mp_obj_t module) {
     DEBUG_printf("import all %p\n", module);
 
     // TODO: Support __all__

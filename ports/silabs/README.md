@@ -48,9 +48,9 @@ Ensure your clone of CircuitPython is ready to build by following the [guide on 
 
 Clone the source code of CircuitPython from GitHub:
 
-    git clone https://github.com/adafruit/circuitpython.git
-    cd circuitpython
-    make fetch-submodules
+    $  git clone https://github.com/SiliconLabs/circuitpython.git
+    $  cd circuitpython/ports/silabs
+    $  make fetch-port-submodules
 
 Checkout the branch or tag you want to build. For example:
 

@@ -27,7 +27,11 @@ This project has a bunch of git submodules.  You will need to update them regula
 
 In the root folder of the CircuitPython repository, execute the following:
 
-    make fetch-submodules
+    make fetch-all-submodules
+
+Or, in the ports directory for the particular port you are building, do:
+
+    make fetch-port-submodules
 
 ### Required Python Packages
 

@@ -33,10 +33,10 @@
 
 
 void common_hal_synthio_synthesizer_construct(synthio_synthesizer_obj_t *self,
-    uint32_t sample_rate, int channel_count, mp_obj_t waveform_obj, mp_obj_t filter_obj,
+    uint32_t sample_rate, int channel_count, mp_obj_t waveform_obj,
     mp_obj_t envelope_obj) {
 
-    synthio_synth_init(&self->synth, sample_rate, channel_count, waveform_obj, filter_obj, envelope_obj);
+    synthio_synth_init(&self->synth, sample_rate, channel_count, waveform_obj, envelope_obj);
     self->blocks = mp_obj_new_list(0, NULL);
 }
 
