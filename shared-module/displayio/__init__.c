@@ -293,8 +293,9 @@ void reset_displays(void) {
         if (display_type == &displayio_display_type) {
             reset_display(&displays[i].display);
         } else if (display_type == &displayio_epaperdisplay_type) {
-            displayio_epaperdisplay_obj_t *display = &displays[i].epaper_display;
-            common_hal_displayio_epaperdisplay_show(display, NULL);
+            //displayio_epaperdisplay_obj_t *display = &displays[i].epaper_display;
+            //common_hal_displayio_epaperdisplay_show(display, NULL);
+            mp_printf(&mp_plat_print, "Skipping EPaperDisplay show terminal\n");
         #if CIRCUITPY_FRAMEBUFFERIO
         } else if (display_type == &framebufferio_framebufferdisplay_type) {
             framebufferio_framebufferdisplay_reset(&displays[i].framebuffer_display);
