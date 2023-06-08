@@ -1,7 +1,7 @@
-:mod:`uasyncio` --- asynchronous I/O scheduler
-==============================================
+:mod:`asyncio` --- asynchronous I/O scheduler
+=============================================
 
-.. module:: uasyncio
+.. module:: asyncio
    :synopsis: asynchronous I/O scheduler for writing concurrent code
 
 |see_cpython_module|
@@ -9,27 +9,27 @@
 
 Example::
 
-    import uasyncio
+    import asyncio
 
     async def blink(led, period_ms):
         while True:
             led.on()
-            await uasyncio.sleep_ms(5)
+            await asyncio.sleep_ms(5)
             led.off()
-            await uasyncio.sleep_ms(period_ms)
+            await asyncio.sleep_ms(period_ms)
 
     async def main(led1, led2):
-        uasyncio.create_task(blink(led1, 700))
-        uasyncio.create_task(blink(led2, 400))
-        await uasyncio.sleep_ms(10_000)
+        asyncio.create_task(blink(led1, 700))
+        asyncio.create_task(blink(led2, 400))
+        await asyncio.sleep_ms(10_000)
 
     # Running on a pyboard
     from pyb import LED
-    uasyncio.run(main(LED(1), LED(2)))
+    asyncio.run(main(LED(1), LED(2)))
 
     # Running on a generic board
     from machine import Pin
-    uasyncio.run(main(Pin(1), Pin(2)))
+    asyncio.run(main(Pin(1), Pin(2)))
 
 Core functions
 --------------
@@ -71,9 +71,9 @@ Additional functions
     than *timeout* seconds.  If *awaitable* is not a task then a task will be
     created from it.
 
-    If a timeout occurs, it cancels the task and raises ``uasyncio.TimeoutError``:
+    If a timeout occurs, it cancels the task and raises ``asyncio.TimeoutError``:
     this should be trapped by the caller.  The task receives
-    ``uasyncio.CancelledError`` which may be ignored or trapped using ``try...except``
+    ``asyncio.CancelledError`` which may be ignored or trapped using ``try...except``
     or ``try...finally`` to run cleanup code.
 
     Returns the return value of *awaitable*.
@@ -108,7 +108,7 @@ class Task
 
 .. method:: Task.cancel()
 
-    Cancel the task by injecting ``uasyncio.CancelledError`` into it.  The task may
+    Cancel the task by injecting ``asyncio.CancelledError`` into it.  The task may
     ignore this exception.  Cleanup code may be run by trapping it, or via
     ``try ... finally``.
 
@@ -148,7 +148,7 @@ class ThreadSafeFlag
 .. class:: ThreadSafeFlag()
 
     Create a new flag which can be used to synchronise a task with code running
-    outside the uasyncio loop, such as other threads, IRQs, or scheduler
+    outside the asyncio loop, such as other threads, IRQs, or scheduler
     callbacks.  Flags start in the cleared state.  The class does not currently
     work under the Unix build of MicroPython.
 

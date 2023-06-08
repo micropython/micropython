@@ -57,6 +57,7 @@ library.
    :maxdepth: 1
 
    array.rst
+   asyncio.rst
    binascii.rst
    builtins.rst
    cmath.rst
@@ -77,7 +78,6 @@ library.
    struct.rst
    sys.rst
    time.rst
-   uasyncio.rst
    zlib.rst
    _thread.rst
 
