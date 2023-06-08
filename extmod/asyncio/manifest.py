@@ -13,3 +13,6 @@ package(
     base_path="..",
     opt=3,
 )
+
+# Backwards-compatible uasyncio module.
+module("uasyncio.py", opt=3)
