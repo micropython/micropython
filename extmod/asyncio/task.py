@@ -1,4 +1,4 @@
-# MicroPython uasyncio module
+# MicroPython asyncio module
 # MIT license; Copyright (c) 2019-2020 Damien P. George
 
 # This file contains the core TaskQueue based on a pairing heap, and the core Task class.

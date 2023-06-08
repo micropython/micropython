@@ -11,6 +11,7 @@ SRC_EXTMOD_C += \
 	extmod/machine_signal.c \
 	extmod/machine_spi.c \
 	extmod/machine_timer.c \
+	extmod/modasyncio.c \
 	extmod/modbinascii.c \
 	extmod/modbluetooth.c \
 	extmod/modbtree.c \
@@ -31,7 +32,6 @@ SRC_EXTMOD_C += \
 	extmod/modssl_axtls.c \
 	extmod/modssl_mbedtls.c \
 	extmod/modtime.c \
-	extmod/moduasyncio.c \
 	extmod/moductypes.c \
 	extmod/modwebrepl.c \
 	extmod/modwebsocket.c \
