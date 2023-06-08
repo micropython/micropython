@@ -1,14 +1,6 @@
 import socket
 import ssl
-
-try:
-    import ubinascii as binascii
-except:
-    import binascii
-try:
-    import usocket as socket
-except:
-    import socket
+import binascii
 
 # This certificate was obtained from micropython.org using openssl:
 # $ openssl s_client -showcerts -connect micropython.org:443 </dev/null 2>/dev/null
