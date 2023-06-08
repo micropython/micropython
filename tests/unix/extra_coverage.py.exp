@@ -50,7 +50,7 @@ RuntimeError:
 ame__
 port 
 
-builtins        micropython     _thread         _uasyncio
+builtins        micropython     _asyncio        _thread
 array           binascii        btree           cexample
 cmath           collections     cppexample      cryptolib
 errno           example_package                 ffi

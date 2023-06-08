@@ -624,10 +624,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/sys_tracebacklimit.py")  # requires traceback info
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
         skip_tests.add("basics/unboundlocal.py")  # requires checking for unbound local
-        skip_tests.add("extmod/uasyncio_event.py")  # unknown issue
-        skip_tests.add("extmod/uasyncio_lock.py")  # requires async with
-        skip_tests.add("extmod/uasyncio_micropython.py")  # unknown issue
-        skip_tests.add("extmod/uasyncio_wait_for.py")  # unknown issue
+        skip_tests.add("extmod/asyncio_event.py")  # unknown issue
+        skip_tests.add("extmod/asyncio_lock.py")  # requires async with
+        skip_tests.add("extmod/asyncio_micropython.py")  # unknown issue
+        skip_tests.add("extmod/asyncio_wait_for.py")  # unknown issue
         skip_tests.add("misc/features.py")  # requires raise_varargs
         skip_tests.add(
             "misc/print_exception.py"
@@ -672,7 +672,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
         is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
-        is_async = test_name.startswith(("async_", "uasyncio_"))
+        is_async = test_name.startswith(("async_", "asyncio_"))
         is_const = test_name.startswith("const")
         is_io_module = test_name.startswith("io_")
         is_fstring = test_name.startswith("string_fstring")
