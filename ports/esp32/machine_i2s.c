@@ -61,9 +61,9 @@
 // - a FreeRTOS task is created to implement the asynchronous background operations
 // - a FreeRTOS queue is used to transfer the supplied buffer to the background task
 //
-// Mode3: Uasyncio
+// Mode3: Asyncio
 // - implements the stream protocol
-// - uasyncio mode is enabled when the ioctl() function is called
+// - asyncio mode is enabled when the ioctl() function is called
 // - the I2S event queue is used to detect that I2S samples can be read or written from/to DMA memory
 //
 // The samples contained in the app buffer supplied for the readinto() and write() methods have the following convention:
@@ -102,7 +102,7 @@ typedef enum {
 typedef enum {
     BLOCKING,
     NON_BLOCKING,
-    UASYNCIO
+    ASYNCIO
 } io_mode_t;
 
 typedef enum {
@@ -240,7 +240,7 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
     // copy audio samples from DMA memory to the app buffer
     // audio samples are read from DMA memory in chunks
     // loop, reading and copying chunks until the app buffer is filled
-    // For uasyncio mode, the loop will make an early exit if DMA memory becomes empty
+    // For asyncio mode, the loop will make an early exit if DMA memory becomes empty
     // Example:
     //   a MicroPython I2S object is configured for 16-bit mono (2 bytes per audio sample).
     //   For every frame coming from DMA (8 bytes), 2 bytes are "cherry picked" and
@@ -257,7 +257,7 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
         size_t num_bytes_received_from_dma = 0;
 
         TickType_t delay;
-        if (self->io_mode == UASYNCIO) {
+        if (self->io_mode == ASYNCIO) {
             delay = 0; // stop i2s_read() operation if DMA memory becomes empty
         } else {
             delay = portMAX_DELAY;  // block until supplied buffer is filled
@@ -307,7 +307,7 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
 
         num_bytes_needed_from_dma -= num_bytes_received_from_dma;
 
-        if ((self->io_mode == UASYNCIO) && (num_bytes_received_from_dma < num_bytes_requested_from_dma)) {
+        if ((self->io_mode == ASYNCIO) && (num_bytes_received_from_dma < num_bytes_requested_from_dma)) {
             // Unable to fill the entire app buffer from DMA memory.  This indicates all DMA RX buffers are empty.
             // Clear the I2S event queue so ioctl() indicates that the I2S object cannot currently
             // supply more audio samples
@@ -327,7 +327,7 @@ STATIC size_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appb
     size_t num_bytes_written = 0;
 
     TickType_t delay;
-    if (self->io_mode == UASYNCIO) {
+    if (self->io_mode == ASYNCIO) {
         delay = 0;  // stop i2s_write() operation if DMA memory becomes full
     } else {
         delay = portMAX_DELAY;  // block until supplied buffer is emptied
@@ -345,14 +345,14 @@ STATIC size_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appb
 
     check_esp_err(ret);
 
-    if ((self->io_mode == UASYNCIO) && (num_bytes_written < appbuf->len)) {
+    if ((self->io_mode == ASYNCIO) && (num_bytes_written < appbuf->len)) {
         // Unable to empty the entire app buffer into DMA memory.  This indicates all DMA TX buffers are full.
         // Clear the I2S event queue so ioctl() indicates that the I2S object cannot currently
         // accept more audio samples
         xQueueReset(self->i2s_event_queue);
 
         // Undo the swap transformation as the buffer has not been completely emptied.
-        // The uasyncio stream writer will use the same buffer in a future write call.
+        // The asyncio stream writer will use the same buffer in a future write call.
         if ((self->bits == I2S_BITS_PER_SAMPLE_32BIT) && (self->format == STEREO)) {
             swap_32_bit_stereo_channels(appbuf);
         }
@@ -729,7 +729,7 @@ STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint
         // send the descriptor to the task that handles non-blocking mode
         xQueueSend(self->non_blocking_mode_queue, &descriptor, 0);
         return size;
-    } else { // blocking or uasyncio mode
+    } else { // blocking or asyncio mode
         mp_buffer_info_t appbuf;
         appbuf.buf = (void *)buf_in;
         appbuf.len = size;
@@ -759,7 +759,7 @@ STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, 
         // send the descriptor to the task that handles non-blocking mode
         xQueueSend(self->non_blocking_mode_queue, &descriptor, 0);
         return size;
-    } else { // blocking or uasyncio mode
+    } else { // blocking or asyncio mode
         mp_buffer_info_t appbuf;
         appbuf.buf = (void *)buf_in;
         appbuf.len = size;
@@ -772,7 +772,7 @@ STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
     mp_uint_t flags = arg;
-    self->io_mode = UASYNCIO; // a call to ioctl() is an indication that uasyncio is being used
+    self->io_mode = ASYNCIO; // a call to ioctl() is an indication that asyncio is being used
 
     if (request == MP_STREAM_POLL) {
         ret = 0;
