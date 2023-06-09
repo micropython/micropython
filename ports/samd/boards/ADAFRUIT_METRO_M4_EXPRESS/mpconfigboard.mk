@@ -4,8 +4,6 @@ LD_FILES = boards/samd51x19a.ld sections.ld
 TEXT0 = 0x4000
 
 # MicroPython settings
-MICROPY_VFS_LFS1 ?= 1
-
 MICROPY_PY_NETWORK ?= 1
 MICROPY_PY_NETWORK_NINAW10 ?= 1
 
