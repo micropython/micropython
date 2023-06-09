@@ -556,7 +556,20 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self,
 
 void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
 
-    mp_printf(&mp_plat_print, "(cx1: %d, cy1: %d )\n", self->current_area.x1, self->current_area.y1);
+    //mp_printf(&mp_plat_print, "(cy1: %d)\n", self->current_area.y1);
+
+    //mp_printf(&mp_plat_print, "(px1: %d, py1: %d)\n", self->previous_area.x1, self->previous_area.y1);
+    mp_printf(&mp_plat_print, "(px2: %d, py2: %d)\n", self->previous_area.x2, self->previous_area.y2);
+
+    //mp_printf(&mp_plat_print, "(cx1: %d, cy1: %d)\n", self->current_area.x1, self->current_area.y1);
+    //mp_printf(&mp_plat_print, "(cx2: %d, cy2: %d)\n", self->current_area.x2, self->current_area.y2);
+
+
+    //mp_printf(&mp_plat_print, "(cx2: %d)\n", self->current_area.x2);
+    //mp_printf(&mp_plat_print, "(cy2: %d)\n", self->current_area.y2);
+
+    //mp_printf(&mp_plat_print, "(cx1: %d, cy1: %d), (cx2: %d, cy2: %d)\n", self->current_area.x1, self->current_area.y1, self->current_area.x2, self->current_area.y2);
+
     //mp_printf(&mp_plat_print, "x1: %d \n", self->previous_area.x1);
     //mp_printf(&mp_plat_print, "(x1: %d, y1: %d),(x2: %d, y2: %d)\n", self->previous_area.x1, self->previous_area.y1, self->previous_area.x2, self->previous_area.y2);
     //mp_printf(&mp_plat_print, "Hello ", 1);
