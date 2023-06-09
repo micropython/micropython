@@ -190,7 +190,9 @@ def argparse_filesystem():
         "enable verbose output (defaults to True for all commands except cat)",
     )
     cmd_parser.add_argument(
-        "command", nargs=1, help="filesystem command (e.g. cat, cp, ls, rm, rmdir, touch)"
+        "command",
+        nargs=1,
+        help="filesystem command (e.g. cat, cp, sha256sum, ls, rm, rmdir, touch)",
     )
     cmd_parser.add_argument("path", nargs="+", help="local and remote paths")
     return cmd_parser
@@ -308,12 +310,13 @@ _BUILTIN_COMMAND_EXPANSIONS = {
     },
     # Filesystem shortcuts (use `cp` instead of `fs cp`).
     "cat": "fs cat",
-    "ls": "fs ls",
     "cp": "fs cp",
-    "rm": "fs rm",
-    "touch": "fs touch",
+    "ls": "fs ls",
     "mkdir": "fs mkdir",
+    "rm": "fs rm",
     "rmdir": "fs rmdir",
+    "sha256sum": "fs sha256sum",
+    "touch": "fs touch",
     # Disk used/free.
     "df": [
         "exec",

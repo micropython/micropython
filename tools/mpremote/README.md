@@ -20,7 +20,7 @@ The full list of supported commands are:
     mpremote exec <string>            -- execute the string
     mpremote run <file>               -- run the given local script
     mpremote fs <command> <args...>   -- execute filesystem commands on the device
-                                         command may be: cat, ls, cp, rm, mkdir, rmdir
+                                         command may be: cat, ls, cp, rm, mkdir, rmdir, sha256sum
                                          use ":" as a prefix to specify a file on the device
     mpremote repl                     -- enter REPL
                                          options:
@@ -78,6 +78,7 @@ Examples:
     mpremote cp :main.py .
     mpremote cp main.py :
     mpremote cp -r dir/ :
+    mpremote sha256sum :main.py
     mpremote mip install aioble
     mpremote mip install github:org/repo@branch
     mpremote mip install gitlab:org/repo@branch

@@ -1,3 +1,4 @@
+import hashlib
 import os
 import sys
 import tempfile
@@ -127,7 +128,7 @@ def _remote_path_basename(a):
     return a.rsplit("/", 1)[-1]
 
 
-def do_filesystem_cp(state, src, dest, multiple):
+def do_filesystem_cp(state, src, dest, multiple, check_hash=False):
     if dest.startswith(":"):
         dest_exists = state.transport.fs_exists(dest[1:])
         dest_isdir = dest_exists and state.transport.fs_isdir(dest[1:])
@@ -158,6 +159,19 @@ def do_filesystem_cp(state, src, dest, multiple):
         # If the destination path is just the directory, then add the source filename.
         if dest_isdir:
             dest = ":" + _remote_path_join(dest[1:], filename)
+
+        # Skip copy if the destination file is identical.
+        if check_hash:
+            try:
+                remote_hash = state.transport.fs_hashfile(dest[1:], "sha256")
+                source_hash = hashlib.sha256(data).digest()
+                # remote_hash will be None if the device doesn't support
+                # hashlib.sha256 (and therefore won't match).
+                if remote_hash == source_hash:
+                    print("Up to date:", dest[1:])
+                    return
+            except OSError:
+                pass
 
         # Write to remote.
         state.transport.fs_writefile(dest[1:], data, progress_callback=show_progress_bar)
@@ -274,7 +288,7 @@ def do_filesystem_recursive_cp(state, src, dest, multiple):
         else:
             dest_path_joined = os.path.join(dest, *dest_path_split)
 
-        do_filesystem_cp(state, src_path_joined, dest_path_joined, multiple=False)
+        do_filesystem_cp(state, src_path_joined, dest_path_joined, multiple=False, check_hash=True)
 
 
 def do_filesystem(state, args):
@@ -333,6 +347,9 @@ def do_filesystem(state, args):
             state.transport.fs_rmdir(path)
         elif command == "touch":
             state.transport.fs_touchfile(path)
+        elif command.endswith("sum") and command[-4].isdigit():
+            digest = state.transport.fs_hashfile(path, command[:-3])
+            print(digest.hex())
         elif command == "cp":
             if args.recursive:
                 do_filesystem_recursive_cp(state, path, cp_dest, len(paths) > 1)
