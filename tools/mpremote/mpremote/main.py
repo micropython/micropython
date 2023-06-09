@@ -190,7 +190,7 @@ def argparse_filesystem():
         "enable verbose output (defaults to True for all commands except cat)",
     )
     cmd_parser.add_argument(
-        "command", nargs=1, help="filesystem command (e.g. cat, cp, ls, rm, touch)"
+        "command", nargs=1, help="filesystem command (e.g. cat, cp, ls, rm, rmdir, touch)"
     )
     cmd_parser.add_argument("path", nargs="+", help="local and remote paths")
     return cmd_parser

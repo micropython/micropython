@@ -12,13 +12,10 @@ from .commands import CommandError, show_progress_bar
 
 
 _PACKAGE_INDEX = "https://micropython.org/pi/v2"
-_CHUNK_SIZE = 128
 
 
 # This implements os.makedirs(os.dirname(path))
 def _ensure_path_exists(transport, path):
-    import os
-
     split = path.split("/")
 
     # Handle paths starting with "/".
@@ -32,22 +29,6 @@ def _ensure_path_exists(transport, path):
         if not transport.fs_exists(prefix):
             transport.fs_mkdir(prefix)
         prefix += "/"
-
-
-# Copy from src (stream) to dest (function-taking-bytes)
-def _chunk(src, dest, length=None, op="downloading"):
-    buf = memoryview(bytearray(_CHUNK_SIZE))
-    total = 0
-    if length:
-        show_progress_bar(0, length, op)
-    while True:
-        n = src.readinto(buf)
-        if n == 0:
-            break
-        dest(buf if n == _CHUNK_SIZE else buf[:n])
-        total += n
-        if length:
-            show_progress_bar(total, length, op)
 
 
 def _rewrite_url(url, branch=None):
@@ -83,15 +64,10 @@ def _rewrite_url(url, branch=None):
 def _download_file(transport, url, dest):
     try:
         with urllib.request.urlopen(url) as src:
-            fd, path = tempfile.mkstemp()
-            try:
-                print("Installing:", dest)
-                with os.fdopen(fd, "wb") as f:
-                    _chunk(src, f.write, src.length)
-                _ensure_path_exists(transport, dest)
-                transport.fs_put(path, dest, progress_callback=show_progress_bar)
-            finally:
-                os.unlink(path)
+            data = src.read()
+            print("Installing:", dest)
+            _ensure_path_exists(transport, dest)
+            transport.fs_writefile(dest, data, progress_callback=show_progress_bar)
     except urllib.error.HTTPError as e:
         if e.status == 404:
             raise CommandError(f"File not found: {url}")
