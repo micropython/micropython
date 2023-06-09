@@ -121,6 +121,22 @@ uint8_t mp_hal_pin_name(mp_hal_pin_obj_t pin) {
     return pin;
 }
 
+void mp_hal_pin_write(mp_hal_pin_obj_t pin, uint8_t polarity) {
+    if (polarity == 1) {
+        gpio_set_value(pin);
+    } else {
+        gpio_get_value(pin);
+    }
+}
+
+void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
+    cyhal_gpio_configure(pin, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_NONE);
+}
+
+void mp_hal_pin_input(mp_hal_pin_obj_t pin) {
+    cyhal_gpio_configure(pin, CYHAL_GPIO_DIR_INPUT,  CYHAL_GPIO_DRIVE_NONE);
+}
+
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
     return pin_addr_by_name(obj);

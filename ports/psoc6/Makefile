@@ -121,6 +121,10 @@ ifeq ($(MICROPY_PSOC6_LWIP),1)
 endif
 
 DRIVERS_SRC_C += $(addprefix drivers/,\
+	bus/softspi.c \
+	)
+
+DRIVERS_SRC_C += $(addprefix drivers/,\
 	machine/psoc6_gpio.c \
 	machine/psoc6_i2c.c \
 	machine/psoc6_pwm.c \
@@ -134,6 +138,7 @@ MOD_SRC_C += $(addprefix modules/,\
 	machine/machine_i2c.c \
 	machine/machine_pin.c \
 	machine/machine_rtc.c \
+	machine/machine_spi.c \
 	machine/pins.c \
 	\
 	psoc6/modpsoc6.c \

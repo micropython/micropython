@@ -44,6 +44,9 @@ int mp_hal_pin_read(mp_hal_pin_obj_t pin);
 uint8_t mp_hal_pin_name(mp_hal_pin_obj_t pin);
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj);
 
+void mp_hal_pin_write(mp_hal_pin_obj_t pin, uint8_t polarity);
+void mp_hal_pin_output(mp_hal_pin_obj_t pin);
+void mp_hal_pin_input(mp_hal_pin_obj_t pin);
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags);
 
