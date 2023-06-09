@@ -50,35 +50,35 @@ void os_deinit(void) {
 }
 
 
-#if MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV
+#if MICROPY_PY_OS_GETENV_PUTENV_UNSETENV
 
-STATIC mp_obj_t mp_uos_getenv(mp_obj_t var_in) {
+STATIC mp_obj_t mp_os_getenv(mp_obj_t var_in) {
     const char *s = getenv(mp_obj_str_get_str(var_in));
     if (s == NULL) {
         return mp_const_none;
     }
     return mp_obj_new_str(s, strlen(s));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_getenv_obj, mp_uos_getenv);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_getenv_obj, mp_os_getenv);
 
 
-STATIC mp_obj_t mp_uos_putenv(mp_obj_t var, mp_obj_t value) {
+STATIC mp_obj_t mp_os_putenv(mp_obj_t var, mp_obj_t value) {
     setenv(mp_obj_str_get_str(var), mp_obj_str_get_str(value), 1);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_uos_putenv_obj, mp_uos_putenv);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_os_putenv_obj, mp_os_putenv);
 
 
-STATIC mp_obj_t mp_uos_unsetenv(mp_obj_t var) {
+STATIC mp_obj_t mp_os_unsetenv(mp_obj_t var) {
     unsetenv(mp_obj_str_get_str(var));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_unsetenv_obj, mp_uos_unsetenv);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_unsetenv_obj, mp_os_unsetenv);
 
 #endif
 
 
-STATIC mp_obj_t mp_uos_system(mp_obj_t cmd_in) {
+STATIC mp_obj_t mp_os_system(mp_obj_t cmd_in) {
     const char *cmd = mp_obj_str_get_str(cmd_in);
 
     MP_THREAD_GIL_EXIT();
@@ -89,10 +89,10 @@ STATIC mp_obj_t mp_uos_system(mp_obj_t cmd_in) {
 
     return MP_OBJ_NEW_SMALL_INT(r);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_system_obj, mp_uos_system);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_system_obj, mp_os_system);
 
 
-STATIC mp_obj_t mp_uos_errno(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_os_errno(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return MP_OBJ_NEW_SMALL_INT(errno);
     }
@@ -100,4 +100,4 @@ STATIC mp_obj_t mp_uos_errno(size_t n_args, const mp_obj_t *args) {
     errno = mp_obj_get_int(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_uos_errno_obj, 0, 1, mp_uos_errno);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_os_errno_obj, 0, 1, mp_os_errno);

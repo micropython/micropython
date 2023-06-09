@@ -33,13 +33,13 @@
 
 // Control over Python builtins
 #define MICROPY_PY_IO_BUFFEREDWRITER            (1)
-#define MICROPY_PY_USELECT                      (1)
-#ifndef MICROPY_PY_USSL
-#define MICROPY_PY_USSL                         (1)
+#define MICROPY_PY_SELECT                       (1)
+#ifndef MICROPY_PY_SSL
+#define MICROPY_PY_SSL                          (1)
 #endif
 #define MICROPY_PY_IO                           (1)
 #define MICROPY_PY_IO_IOBASE                    (1)
-#define MICROPY_PY_UBINASCII                    (1)
+#define MICROPY_PY_BINASCII                     (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW          (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE (1)
 #define MICROPY_STACK_CHECK                     (1)
@@ -96,20 +96,20 @@
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
 
-#define MICROPY_PY_UOS_INCLUDEFILE              "ports/psoc6/modules/os/moduos.c"
-#define MICROPY_PY_UOS_UNAME                    (1)
-#define MICROPY_PY_UOS_URANDOM                  (0)
-#define MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV   (1)
-#define MICROPY_PY_UOS_SYSTEM                   (1)
-#define MICROPY_PY_UOS_ERRNO                    (1)
+#define MICROPY_PY_OS_INCLUDEFILE               "ports/psoc6/modules/os/modos.c"
+#define MICROPY_PY_OS_UNAME                     (1)
+#define MICROPY_PY_OS_URANDOM                   (0)
+#define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV    (1)
+#define MICROPY_PY_OS_SYSTEM                    (1)
+#define MICROPY_PY_OS_ERRNO                     (1)
 
-#define MICROPY_PY_URE_MATCH_GROUPS             (1)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
-#define MICROPY_PY_URE_DEBUG                    (1)
+#define MICROPY_PY_RE_MATCH_GROUPS              (1)
+#define MICROPY_PY_RE_MATCH_SPAN_START_END      (1)
+#define MICROPY_PY_RE_DEBUG                     (1)
 
-#define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME (1)
-#define MICROPY_PY_UTIME_TIME_TIME_NS            (1)
-#define MICROPY_PY_UTIME_INCLUDEFILE             "ports/psoc6/modules/time/modutime.c"
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS            (1)
+#define MICROPY_PY_TIME_INCLUDEFILE             "ports/psoc6/modules/time/modtime.c"
 
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
@@ -129,24 +129,24 @@
 
 // set to 1 to enable filesystem to be loaded on external qspi flash
 // if set to 0, filesystem is located in an allotted area of internal flash of PSoC6
-#define MICROPY_ENABLE_EXT_QSPI_FLASH               (1)
+#define MICROPY_ENABLE_EXT_QSPI_FLASH           (1)
 
-#define MICROPY_PY_UCRYPTOLIB                   (1)
-#define MICROPY_PY_UCRYPTOLIB_CTR               (1)
-#define MICROPY_PY_UCRYPTOLIB_CONSTS            (1)
+#define MICROPY_PY_CRYPTOLIB                    (1)
+#define MICROPY_PY_CRYPTOLIB_CTR                (1)
+#define MICROPY_PY_CRYPTOLIB_CONSTS             (1)
 
-#define MICROPY_PY_UHASHLIB                     (1)
-#define MICROPY_PY_UHASHLIB_MD5                 (1)
-#define MICROPY_PY_UHASHLIB_SHA1                (1)
-#define MICROPY_PY_UHASHLIB_SHA256              (1)
+#define MICROPY_PY_HASHLIB                      (1)
+#define MICROPY_PY_HASHLIB_MD5                  (1)
+#define MICROPY_PY_HASHLIB_SHA1                 (1)
+#define MICROPY_PY_HASHLIB_SHA256               (1)
 
 #define MP_STATE_PORT MP_STATE_VM
 
 // By default networking should include sockets, ssl, websockets, webrepl
 
 #define MICROPY_PY_NETWORK                      (1)
-#define MICROPY_PY_USOCKET                      (1)
-#define MICROPY_PY_UWEBSOCKET                   (1)
+#define MICROPY_PY_SOCKET                       (1)
+#define MICROPY_PY_WEBSOCKET                    (1)
 #define MICROPY_PY_WEBREPL                      (1)
 #define MICROPY_PY_OS_DUPTERM                   (1)
 

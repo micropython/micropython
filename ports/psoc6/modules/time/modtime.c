@@ -29,7 +29,7 @@
 #include "stdio.h"
 
 // micropython includes
-#include "extmod/modutime.h"
+#include "extmod/modtime.h"
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
 
@@ -69,7 +69,7 @@ void time_deinit(void) {
 
 // Convert a time expressed in seconds since the Epoch into an 8-tuple which
 // contains: (year, month, mday, hour, minute, second, weekday, yearday)
-STATIC mp_obj_t mp_utime_localtime_get(void) {
+STATIC mp_obj_t mp_time_localtime_get(void) {
     struct tm current_date_time = {0};
     cy_rslt_t result = cyhal_rtc_read(&psoc6_rtc, &current_date_time);
 
@@ -93,7 +93,7 @@ STATIC mp_obj_t mp_utime_localtime_get(void) {
 
 // time()
 // Return the number of seconds since the Epoch.
-STATIC mp_obj_t mp_utime_time_get(void) {
+STATIC mp_obj_t mp_time_time_get(void) {
     struct tm current_date_time = {0};
     cy_rslt_t result = cyhal_rtc_read(&psoc6_rtc, &current_date_time);
 

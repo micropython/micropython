@@ -270,6 +270,6 @@ const mp_obj_module_t mp_module_machine = {
 };
 
 // Register machine module in MPY
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+MP_REGISTER_MODULE(MP_QSTR_machine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE
