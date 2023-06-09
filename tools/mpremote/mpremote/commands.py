@@ -242,6 +242,11 @@ def do_soft_reset(state, _args=None):
 
 
 def do_rtc(state, args):
+    state.ensure_raw_repl()
+    state.did_action()
+
+    state.transport.exec("import machine")
+
     if args.set:
         import datetime
 
@@ -256,6 +261,6 @@ def do_rtc(state, args):
             now.second,
             now.microsecond,
         )
-        _do_execbuffer(state, "import machine; machine.RTC().datetime({})".format(timetuple), True)
+        state.transport.exec("machine.RTC().datetime({})".format(timetuple))
     else:
-        _do_execbuffer(state, "import machine; print(machine.RTC().datetime())", True)
+        print(state.transport.eval("machine.RTC().datetime()"))

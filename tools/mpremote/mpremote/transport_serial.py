@@ -271,7 +271,7 @@ class SerialTransport(Transport):
         self.exec_raw_no_follow(command)
         return self.follow(timeout, data_consumer)
 
-    def eval(self, expression, parse=False):
+    def eval(self, expression, parse=True):
         if parse:
             ret = self.exec("print(repr({}))".format(expression))
             ret = ret.strip()
@@ -331,7 +331,7 @@ class SerialTransport(Transport):
     def fs_stat(self, src):
         try:
             self.exec("import os")
-            return os.stat_result(self.eval("os.stat(%s)" % ("'%s'" % src), parse=True))
+            return os.stat_result(self.eval("os.stat(%s)" % ("'%s'" % src)))
         except TransportError as e:
             reraise_filesystem_error(e, src)
 
@@ -503,7 +503,7 @@ class SerialTransport(Transport):
 
     def mount_local(self, path, unsafe_links=False):
         fout = self.serial
-        if self.eval('"RemoteFS" in globals()') == b"False":
+        if not self.eval('"RemoteFS" in globals()'):
             self.exec(fs_hook_code)
         self.exec("__mount()")
         self.mounted = True

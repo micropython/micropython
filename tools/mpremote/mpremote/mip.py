@@ -150,10 +150,7 @@ def _install_package(transport, package, index, target, version, mpy):
         mpy_version = "py"
         if mpy:
             transport.exec("import sys")
-            mpy_version = (
-                int(transport.eval("getattr(sys.implementation, '_mpy', 0) & 0xFF").decode())
-                or "py"
-            )
+            mpy_version = transport.eval("getattr(sys.implementation, '_mpy', 0) & 0xFF") or "py"
 
         package = f"{index}/package/{mpy_version}/{package}/{version}.json"
 
@@ -178,11 +175,7 @@ def do_mip(state, args):
 
             if args.target is None:
                 state.transport.exec("import sys")
-                lib_paths = (
-                    state.transport.eval("'|'.join(p for p in sys.path if p.endswith('/lib'))")
-                    .decode()
-                    .split("|")
-                )
+                lib_paths = [p for p in state.transport.eval("sys.path") if p.endswith("/lib")]
                 if lib_paths and lib_paths[0]:
                     args.target = lib_paths[0]
                 else:
