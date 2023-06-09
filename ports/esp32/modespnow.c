@@ -236,10 +236,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_active_obj, 1, 2, espnow_activ
 //    timeout: Default read timeout (default=300,000 milliseconds)
 STATIC mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     esp_espnow_obj_t *self = _get_singleton();
-    enum { ARG_get, ARG_buffer, ARG_timeout_ms, ARG_rate };
+    enum { ARG_get, ARG_rxbuf, ARG_timeout_ms, ARG_rate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_buffer, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout_ms, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MIN} },
         { MP_QSTR_rate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
@@ -247,8 +247,8 @@ STATIC mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_buffer].u_int >= 0) {
-        self->recv_buffer_size = args[ARG_buffer].u_int;
+    if (args[ARG_rxbuf].u_int >= 0) {
+        self->recv_buffer_size = args[ARG_rxbuf].u_int;
     }
     if (args[ARG_timeout_ms].u_int != INT_MIN) {
         self->recv_timeout_ms = args[ARG_timeout_ms].u_int;
@@ -268,7 +268,7 @@ STATIC mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
     // Return the value of the requested parameter
     uintptr_t name = (uintptr_t)args[ARG_get].u_obj;
-    if (name == QS(MP_QSTR_buffer)) {
+    if (name == QS(MP_QSTR_rxbuf)) {
         return mp_obj_new_int(self->recv_buffer_size);
     } else if (name == QS(MP_QSTR_timeout_ms)) {
         return mp_obj_new_int(self->recv_timeout_ms);
