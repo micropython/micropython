@@ -125,9 +125,15 @@ static const flash_layout_t flash_layout[] = {
 
 #elif defined(STM32H7)
 
+#if defined(STM32H7B0xx) || defined(STM32H7B3xx)
+static const flash_layout_t flash_layout[] = {
+    { 0x08000000, 0x2000, 256 },
+};
+#else
 static const flash_layout_t flash_layout[] = {
     { 0x08000000, 0x20000, 16 },
 };
+#endif
 
 #else
 #error Unsupported processor
@@ -141,6 +147,11 @@ static uint32_t get_bank(uint32_t addr) {
 }
 
 #elif (defined(STM32L4) && defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32H7)
+
+// In the HAL, FLASH_BANK_SIZE reads memory address 0x08FFF80C to get the total flash size,
+// which resets the MCU.  So provide a hard-coded constant for the flash bank size.
+#undef FLASH_BANK_SIZE
+#define FLASH_BANK_SIZE (2 * 1024 * 1024 / 2)
 
 // get the bank of a given flash address
 static uint32_t get_bank(uint32_t addr) {
@@ -317,6 +328,9 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     #endif
     EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
     EraseInitStruct.NbSectors = flash_get_sector_info(flash_dest + 4 * num_word32 - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
+    #if defined(STM32H7B0xx) || defined(STM32H7B3xx)
+    EraseInitStruct.Sector &= 0x7f; // second bank should start counting at 0
+    #endif
 
     #endif
 
@@ -437,6 +451,18 @@ int flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
         while (__HAL_FLASH_GET_FLAG(FLASH_FLAG_CFGBSY)) {
         }
         #endif
+    }
+
+    #elif defined(STM32H7B0xx) || defined(STM32H7B3xx)
+
+    // program the flash 128 bits (4 words) at a time
+    for (int i = 0; i < num_word32 / 4; i++) {
+        status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_QUADWORD, flash_dest, (uint64_t)(uint32_t)src);
+        if (status != HAL_OK) {
+            break;
+        }
+        flash_dest += 16;
+        src += 4;
     }
 
     #elif defined(STM32H7)
