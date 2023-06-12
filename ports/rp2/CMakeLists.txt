@@ -20,7 +20,7 @@ set(PICO_TINYUSB_PATH ${MICROPY_DIR}/lib/tinyusb)
 set(PICO_LWIP_PATH ${MICROPY_DIR}/lib/lwip)
 
 # Set the location of this port's directory.
-set(MICROPY_PORT_DIR ${CMAKE_SOURCE_DIR})
+set(MICROPY_PORT_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 # Set the board if it's not already set.
 if(NOT MICROPY_BOARD)
@@ -80,7 +80,7 @@ include(${MICROPY_DIR}/py/usermod.cmake)
 add_executable(${MICROPY_TARGET})
 
 set(MICROPY_QSTRDEFS_PORT
-    ${PROJECT_SOURCE_DIR}/qstrdefsport.h
+    ${MICROPY_PORT_DIR}/qstrdefsport.h
 )
 
 set(MICROPY_SOURCE_LIB
@@ -146,20 +146,20 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_DIR}/shared/readline/readline.c
     ${MICROPY_DIR}/shared/runtime/mpirq.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
-    ${PROJECT_SOURCE_DIR}/machine_adc.c
-    ${PROJECT_SOURCE_DIR}/machine_i2c.c
-    ${PROJECT_SOURCE_DIR}/machine_i2s.c
-    ${PROJECT_SOURCE_DIR}/machine_pin.c
-    ${PROJECT_SOURCE_DIR}/machine_rtc.c
-    ${PROJECT_SOURCE_DIR}/machine_spi.c
-    ${PROJECT_SOURCE_DIR}/machine_timer.c
-    ${PROJECT_SOURCE_DIR}/machine_uart.c
-    ${PROJECT_SOURCE_DIR}/machine_wdt.c
-    ${PROJECT_SOURCE_DIR}/modmachine.c
-    ${PROJECT_SOURCE_DIR}/modrp2.c
-    ${PROJECT_SOURCE_DIR}/modos.c
-    ${PROJECT_SOURCE_DIR}/rp2_flash.c
-    ${PROJECT_SOURCE_DIR}/rp2_pio.c
+    ${MICROPY_PORT_DIR}/machine_adc.c
+    ${MICROPY_PORT_DIR}/machine_i2c.c
+    ${MICROPY_PORT_DIR}/machine_i2s.c
+    ${MICROPY_PORT_DIR}/machine_pin.c
+    ${MICROPY_PORT_DIR}/machine_rtc.c
+    ${MICROPY_PORT_DIR}/machine_spi.c
+    ${MICROPY_PORT_DIR}/machine_timer.c
+    ${MICROPY_PORT_DIR}/machine_uart.c
+    ${MICROPY_PORT_DIR}/machine_wdt.c
+    ${MICROPY_PORT_DIR}/modmachine.c
+    ${MICROPY_PORT_DIR}/modrp2.c
+    ${MICROPY_PORT_DIR}/modos.c
+    ${MICROPY_PORT_DIR}/rp2_flash.c
+    ${MICROPY_PORT_DIR}/rp2_pio.c
     ${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c
 )
 
@@ -343,7 +343,7 @@ set(MICROPY_CROSS_FLAGS -march=armv6m)
 if (MICROPY_USER_FROZEN_MANIFEST)
     set(MICROPY_FROZEN_MANIFEST ${MICROPY_USER_FROZEN_MANIFEST})
 elseif (NOT MICROPY_FROZEN_MANIFEST)
-    set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
+    set(MICROPY_FROZEN_MANIFEST ${MICROPY_PORT_DIR}/boards/manifest.py)
 endif()
 
 target_sources(${MICROPY_TARGET} PRIVATE
@@ -362,7 +362,7 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
     ${MICROPY_INC_CORE}
     ${MICROPY_INC_USERMOD}
     ${MICROPY_BOARD_DIR}
-    "${PROJECT_SOURCE_DIR}"
+    "${MICROPY_PORT_DIR}"
     "${CMAKE_BINARY_DIR}"
 )
 
