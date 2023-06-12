@@ -2,9 +2,6 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-# Set the location of this port's directory.
-set(MICROPY_PORT_DIR ${CMAKE_SOURCE_DIR})
-
 # Set the board if it's not already set.
 if(NOT MICROPY_BOARD)
     set(MICROPY_BOARD GENERIC)
@@ -12,7 +9,7 @@ endif()
 
 # Set the board directory and check that it exists.
 if(NOT MICROPY_BOARD_DIR)
-    set(MICROPY_BOARD_DIR ${MICROPY_PORT_DIR}/boards/${MICROPY_BOARD})
+    set(MICROPY_BOARD_DIR ${CMAKE_CURRENT_LIST_DIR}/boards/${MICROPY_BOARD})
 endif()
 if(NOT EXISTS ${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
     message(FATAL_ERROR "Invalid MICROPY_BOARD specified: ${MICROPY_BOARD}")
@@ -35,7 +32,7 @@ include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 if (MICROPY_USER_FROZEN_MANIFEST)
     set(MICROPY_FROZEN_MANIFEST ${MICROPY_USER_FROZEN_MANIFEST})
 elseif (NOT MICROPY_FROZEN_MANIFEST)
-    set(MICROPY_FROZEN_MANIFEST ${MICROPY_PORT_DIR}/boards/manifest.py)
+    set(MICROPY_FROZEN_MANIFEST ${CMAKE_CURRENT_LIST_DIR}/boards/manifest.py)
 endif()
 
 # Add sdkconfig fragments that depend on the IDF version.
