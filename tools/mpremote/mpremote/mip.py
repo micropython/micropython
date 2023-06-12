@@ -107,7 +107,11 @@ def _install_json(transport, package_json_url, index, target, version, mpy):
     for target_path, url in package_json.get("urls", ()):
         fs_target_path = target + "/" + target_path
         _download_file(transport, _rewrite_url(url, version), fs_target_path)
-    for dep, dep_version in package_json.get("deps", ()):
+    for sublist in package_json.get("deps", ()):
+        if len(sublist) == 2:
+            dep, dep_version = sublist[0], sublist[1]
+        else:
+            target, dep, dep_version = sublist[0], sublist[1], sublist[2]
         _install_package(transport, dep, index, target, dep_version, mpy)
 
 
