@@ -318,11 +318,9 @@ The RISCV ULP code should be contained in a file main.c and placed in a sub-fold
 
     micropython/ports/esp32/ulp_riscv/main.c
 
-The RISCV ULP should be enabled by adding the following configuration to your board sdkconfig::
+The RISCV ULP can be enabled by including the config file in your board mpconfigboard.cmake ::
 
-    CONFIG_ESP32S3_ULP_COPROC_ENABLED=y
-    CONFIG_ESP32S3_ULP_COPROC_RISCV=y
-    CONFIG_ESP32S3_ULP_COPROC_RESERVE_MEM=4096
+    boards/sdkconfig.ulp_riscv
 
 Compile and flash firmware as per usual.
 
@@ -332,7 +330,7 @@ The following limitations should be noted.
     - As detailed in the S2/S3 technical reference manuals, only RTC_GPIO0-3 can be utilised for
     I2C communications using the ULP.
     - ESP IDF V4.4 supports general GPIO operations and the ADC.
-    - I2C support is currently only avaiable in ESP IDF V5.1.
+    - I2C support is currently only available in ESP IDF V5.1.
 
 Example RISCV ULP code::
 
