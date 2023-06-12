@@ -109,7 +109,7 @@ def generate_module_delegations(delegations):
     print("\n#define MICROPY_MODULE_DELEGATIONS \\")
     for obj_module, fun_name in delegations:
         print(
-            "    {{ MP_ROM_PTR(&{obj_module}), {fun_name} }},".format(
+            "    {{ MP_ROM_PTR(&{obj_module}), {fun_name} }}, \\".format(
                 obj_module=obj_module, fun_name=fun_name
             )
         )
