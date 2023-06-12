@@ -28,6 +28,12 @@
 
 #include "py/obj.h"
 
+#ifndef NO_QSTR
+// Only include module definitions when not doing qstr extraction, because the
+// qstr extraction stage also generates this module definition header file.
+#include "genhdr/moduledefs.h"
+#endif
+
 extern const mp_map_t mp_builtin_module_map;
 extern const mp_map_t mp_builtin_extensible_module_map;
 

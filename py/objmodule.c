@@ -34,12 +34,6 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 
-#ifndef NO_QSTR
-// Only include module definitions when not doing qstr extraction, because the
-// qstr extraction stage also generates this module definition header file.
-#include "genhdr/moduledefs.h"
-#endif
-
 STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
