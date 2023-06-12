@@ -1,6 +1,10 @@
 # Set location of base MicroPython directory.
 if(NOT MICROPY_DIR)
-    get_filename_component(MICROPY_DIR ${PROJECT_DIR}/../.. ABSOLUTE)
+    get_filename_component(MICROPY_DIR ${CMAKE_CURRENT_LIST_DIR}/../../.. ABSOLUTE)
+endif()
+
+if(NOT MICROPY_PORT_DIR)
+    get_filename_component(MICROPY_PORT_DIR ${MICROPY_DIR}/ports/esp32 ABSOLUTE)
 endif()
 
 # Include core source components.
@@ -16,7 +20,7 @@ if(NOT CMAKE_BUILD_EARLY_EXPANSION)
 endif()
 
 set(MICROPY_QSTRDEFS_PORT
-    ${PROJECT_DIR}/qstrdefsport.h
+    ${MICROPY_PORT_DIR}/qstrdefsport.h
 )
 
 set(MICROPY_SOURCE_SHARED
@@ -48,44 +52,45 @@ set(MICROPY_SOURCE_DRIVERS
 )
 
 set(MICROPY_SOURCE_PORT
-    ${PROJECT_DIR}/main.c
-    ${PROJECT_DIR}/uart.c
-    ${PROJECT_DIR}/usb.c
-    ${PROJECT_DIR}/usb_serial_jtag.c
-    ${PROJECT_DIR}/gccollect.c
-    ${PROJECT_DIR}/mphalport.c
-    ${PROJECT_DIR}/fatfs_port.c
-    ${PROJECT_DIR}/help.c
-    ${PROJECT_DIR}/machine_bitstream.c
-    ${PROJECT_DIR}/machine_timer.c
-    ${PROJECT_DIR}/machine_pin.c
-    ${PROJECT_DIR}/machine_touchpad.c
-    ${PROJECT_DIR}/machine_adc.c
-    ${PROJECT_DIR}/machine_adcblock.c
-    ${PROJECT_DIR}/machine_dac.c
-    ${PROJECT_DIR}/machine_i2c.c
-    ${PROJECT_DIR}/machine_i2s.c
-    ${PROJECT_DIR}/machine_uart.c
-    ${PROJECT_DIR}/modmachine.c
-    ${PROJECT_DIR}/network_common.c
-    ${PROJECT_DIR}/network_lan.c
-    ${PROJECT_DIR}/network_ppp.c
-    ${PROJECT_DIR}/network_wlan.c
-    ${PROJECT_DIR}/mpnimbleport.c
-    ${PROJECT_DIR}/modsocket.c
-    ${PROJECT_DIR}/modesp.c
-    ${PROJECT_DIR}/esp32_nvs.c
-    ${PROJECT_DIR}/esp32_partition.c
-    ${PROJECT_DIR}/esp32_rmt.c
-    ${PROJECT_DIR}/esp32_ulp.c
-    ${PROJECT_DIR}/modesp32.c
-    ${PROJECT_DIR}/machine_hw_spi.c
-    ${PROJECT_DIR}/machine_wdt.c
-    ${PROJECT_DIR}/mpthreadport.c
-    ${PROJECT_DIR}/machine_rtc.c
-    ${PROJECT_DIR}/machine_sdcard.c
-    ${PROJECT_DIR}/modespnow.c
+    main.c
+    uart.c
+    usb.c
+    usb_serial_jtag.c
+    gccollect.c
+    mphalport.c
+    fatfs_port.c
+    help.c
+    machine_bitstream.c
+    machine_timer.c
+    machine_pin.c
+    machine_touchpad.c
+    machine_adc.c
+    machine_adcblock.c
+    machine_dac.c
+    machine_i2c.c
+    machine_i2s.c
+    machine_uart.c
+    modmachine.c
+    network_common.c
+    network_lan.c
+    network_ppp.c
+    network_wlan.c
+    mpnimbleport.c
+    modsocket.c
+    modesp.c
+    esp32_nvs.c
+    esp32_partition.c
+    esp32_rmt.c
+    esp32_ulp.c
+    modesp32.c
+    machine_hw_spi.c
+    machine_wdt.c
+    mpthreadport.c
+    machine_rtc.c
+    machine_sdcard.c
+    modespnow.c
 )
+list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
