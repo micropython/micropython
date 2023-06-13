@@ -1,10 +1,8 @@
 # test machine module
 
 try:
-    try:
-        import umachine as machine
-    except ImportError:
-        import machine
+    import machine
+
     machine.mem8
 except:
     print("SKIP")

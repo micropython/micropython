@@ -138,7 +138,7 @@ CFLAGS += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS += $(LIBPTHREAD)
 endif
 
-ifeq ($(MICROPY_PY_USSL),1)
+ifeq ($(MICROPY_PY_SSL),1)
 ifeq ($(MICROPY_SSL_AXTLS),1)
 
 endif
@@ -201,7 +201,7 @@ SRC_C += \
 	mpthreadport.c \
 	input.c \
 	modmachine.c \
-	moduselect.c \
+	modselect.c \
 	alloc.c \
 	fatfs_port.c \
 	mpbthciport.c \
@@ -210,7 +210,7 @@ SRC_C += \
 	mpbtstackport_usb.c \
 	mpnimbleport.c \
 	modtermios.c \
-	modusocket.c \
+	modsocket.c \
 	modffi.c \
 	modjni.c \
 	$(wildcard $(VARIANT_DIR)/*.c)
@@ -235,12 +235,7 @@ SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
 SRC_QSTR_AUTO_DEPS +=
 
 ifneq ($(FROZEN_MANIFEST),)
-# To use frozen code create a manifest.py file with a description of files to
-# freeze, then invoke make with FROZEN_MANIFEST=manifest.py (be sure to build from scratch).
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
 CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))

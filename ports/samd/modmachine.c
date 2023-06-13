@@ -116,7 +116,7 @@ STATIC mp_obj_t machine_unique_id(void) {
     // 0x0080a040: 50534b54 332e3120 ff091645
     //
     // MicroPython (this code and same order as shown in Arduino IDE)
-    // >>> ubinascii.hexlify(machine.unique_id())
+    // >>> binascii.hexlify(machine.unique_id())
     // b'6e27f15f50534b54332e3120ff091645'
 
     #if defined(MCU_SAMD21)
@@ -224,7 +224,7 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_machine) },
     { MP_ROM_QSTR(MP_QSTR_soft_reset),          MP_ROM_PTR(&machine_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_bootloader),          MP_ROM_PTR(&machine_bootloader_obj) },
@@ -297,6 +297,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE

@@ -224,8 +224,8 @@ soft_reset_exit:
     // TODO: machine_rmt_deinit_all();
     machine_pins_deinit();
     machine_deinit();
-    #if MICROPY_PY_USOCKET_EVENTS
-    usocket_events_deinit();
+    #if MICROPY_PY_SOCKET_EVENTS
+    socket_events_deinit();
     #endif
 
     mp_deinit();

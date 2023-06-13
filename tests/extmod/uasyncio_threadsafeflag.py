@@ -18,7 +18,7 @@ except AttributeError:
 
 try:
     # Unix port can't select/poll on user-defined types.
-    import uselect as select
+    import select
 
     poller = select.poll()
     poller.register(asyncio.ThreadSafeFlag())

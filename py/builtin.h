@@ -132,8 +132,10 @@ extern const mp_obj_module_t mp_module___main__;
 extern const mp_obj_module_t mp_module_builtins;
 extern const mp_obj_module_t mp_module_sys;
 
+void mp_module_sys_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
+
 // Modules needed by the parser when MICROPY_COMP_MODULE_CONST is enabled.
-extern const mp_obj_module_t mp_module_uerrno;
+extern const mp_obj_module_t mp_module_errno;
 extern const mp_obj_module_t mp_module_uctypes;
 extern const mp_obj_module_t mp_module_machine;
 

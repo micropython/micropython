@@ -38,7 +38,7 @@
 #include "shared/timeutils/timeutils.h"
 #include "shared/netutils/netutils.h"
 #include "modnetwork.h"
-#include "modusocket.h"
+#include "modsocket.h"
 #include "modwlan.h"
 #include "pybrtc.h"
 #include "debug.h"

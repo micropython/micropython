@@ -61,8 +61,8 @@ function ci_code_size_setup {
 
 function ci_code_size_build {
     # check the following ports for the change in their code size
-    PORTS_TO_CHECK=bmusp
-    SUBMODULES="lib/berkeley-db-1.xx lib/mbedtls lib/micropython-lib lib/pico-sdk lib/stm32lib lib/tinyusb"
+    PORTS_TO_CHECK=bmusxpd
+    SUBMODULES="lib/asf4 lib/berkeley-db-1.xx lib/mbedtls lib/micropython-lib lib/nxp_driver lib/pico-sdk lib/stm32lib lib/tinyusb"
 
     # starts off at either the ref/pull/N/merge FETCH_HEAD, or the current branch HEAD
     git checkout -b pull_request # save the current location
@@ -395,14 +395,14 @@ function ci_teensy_build {
 CI_UNIX_OPTS_SYS_SETTRACE=(
     MICROPY_PY_BTREE=0
     MICROPY_PY_FFI=0
-    MICROPY_PY_USSL=0
+    MICROPY_PY_SSL=0
     CFLAGS_EXTRA="-DMICROPY_PY_SYS_SETTRACE=1"
 )
 
 CI_UNIX_OPTS_SYS_SETTRACE_STACKLESS=(
     MICROPY_PY_BTREE=0
     MICROPY_PY_FFI=0
-    MICROPY_PY_USSL=0
+    MICROPY_PY_SSL=0
     CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1 -DMICROPY_PY_SYS_SETTRACE=1"
 )
 
@@ -454,10 +454,10 @@ function ci_native_mpy_modules_build {
     make -C examples/natmod/features3 ARCH=$arch
     make -C examples/natmod/btree ARCH=$arch
     make -C examples/natmod/framebuf ARCH=$arch
-    make -C examples/natmod/uheapq ARCH=$arch
-    make -C examples/natmod/urandom ARCH=$arch
-    make -C examples/natmod/ure ARCH=$arch
-    make -C examples/natmod/uzlib ARCH=$arch
+    make -C examples/natmod/heapq ARCH=$arch
+    make -C examples/natmod/random ARCH=$arch
+    make -C examples/natmod/re ARCH=$arch
+    make -C examples/natmod/zlib ARCH=$arch
 }
 
 function ci_native_mpy_modules_32bit_build {
@@ -523,7 +523,7 @@ function ci_unix_coverage_run_mpy_merge_tests {
 
 function ci_unix_coverage_run_native_mpy_tests {
     MICROPYPATH=examples/natmod/features2 ./ports/unix/build-coverage/micropython -m features2
-    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,uheapq*,urandom*,ure*,uzlib*}.py)
+    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,heapq*,random*,re*,zlib*}.py)
 }
 
 function ci_unix_32bit_setup {
@@ -630,8 +630,8 @@ function ci_unix_macos_build {
 function ci_unix_macos_run_tests {
     # Issues with macOS tests:
     # - import_pkg7 has a problem with relative imports
-    # - urandom_basic has a problem with getrandbits(0)
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude 'import_pkg7.py' --exclude 'urandom_basic.py')
+    # - random_basic has a problem with getrandbits(0)
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude 'import_pkg7.py' --exclude 'random_basic.py')
 }
 
 function ci_unix_qemu_mips_setup {

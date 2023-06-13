@@ -6,8 +6,8 @@ Currently supported features are:
 - REPL over USB VCP, and optionally over UART (on GP0/GP1).
 - Filesystem on the internal flash, using littlefs2.
 - Support for native code generation and inline assembler.
-- `utime` module with sleep, time and ticks functions.
-- `uos` module with VFS support.
+- `time` module with sleep, time and ticks functions.
+- `os` module with VFS support.
 - `machine` module with the following classes: `Pin`, `ADC`, `PWM`, `I2C`, `SPI`,
   `SoftI2C`, `SoftSPI`, `Timer`, `UART`, `WDT`.
 - `rp2` module with programmable IO (PIO) support.

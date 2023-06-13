@@ -8,7 +8,7 @@
 #define MICROPY_PY_NETWORK              (1)
 
 // Enable MD5 hash.
-#define MICROPY_PY_UHASHLIB_MD5         (1)
+#define MICROPY_PY_HASHLIB_MD5          (1)
 
 // Disable internal error numbers.
 #define MICROPY_USE_INTERNAL_ERRNO      (0)

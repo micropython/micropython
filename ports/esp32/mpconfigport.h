@@ -49,9 +49,6 @@
 #define MICROPY_WARNINGS                    (1)
 #define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_STREAMS_POSIX_API           (1)
-#define MICROPY_MODULE_FROZEN_STR           (0)
-#define MICROPY_MODULE_FROZEN_MPY           (1)
-#define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
 #define MICROPY_USE_INTERNAL_ERRNO          (0) // errno.h from xtensa-esp32-elf/sys-include/sys
 #define MICROPY_USE_INTERNAL_PRINTF         (0) // ESP32 SDK requires its own printf
 #define MICROPY_SCHEDULER_DEPTH             (8)
@@ -62,9 +59,9 @@
 #define MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT       esp32_help_text
 #define MICROPY_PY_IO_BUFFEREDWRITER        (1)
-#define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME (1)
-#define MICROPY_PY_UTIME_TIME_TIME_NS       (1)
-#define MICROPY_PY_UTIME_INCLUDEFILE        "ports/esp32/modutime.c"
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS        (1)
+#define MICROPY_PY_TIME_INCLUDEFILE         "ports/esp32/modtime.c"
 #define MICROPY_PY_THREAD                   (1)
 #define MICROPY_PY_THREAD_GIL               (1)
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
@@ -83,16 +80,16 @@
 #define MICROPY_BLUETOOTH_NIMBLE            (1)
 #define MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY (1)
 #endif
-#define MICROPY_PY_UTIMEQ                   (1)
-#define MICROPY_PY_UHASHLIB_SHA1            (1)
-#define MICROPY_PY_UHASHLIB_SHA256          (1)
-#define MICROPY_PY_UCRYPTOLIB               (1)
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (esp_random())
-#define MICROPY_PY_UOS_INCLUDEFILE          "ports/esp32/moduos.c"
+#define MICROPY_PY_HASHLIB_SHA1             (1)
+#define MICROPY_PY_HASHLIB_SHA256           (1)
+#define MICROPY_PY_CRYPTOLIB                (1)
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (esp_random())
+#define MICROPY_PY_OS_INCLUDEFILE           "ports/esp32/modos.c"
 #define MICROPY_PY_OS_DUPTERM               (1)
-#define MICROPY_PY_UOS_DUPTERM_NOTIFY       (1)
-#define MICROPY_PY_UOS_UNAME                (1)
-#define MICROPY_PY_UOS_URANDOM              (1)
+#define MICROPY_PY_OS_DUPTERM_NOTIFY        (1)
+#define MICROPY_PY_OS_SYNC                  (1)
+#define MICROPY_PY_OS_UNAME                 (1)
+#define MICROPY_PY_OS_URANDOM               (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
@@ -135,14 +132,14 @@
 #endif
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (ets_get_cpu_frequency() * 1000000 / 200) // roughly
-#define MICROPY_PY_USSL                     (1)
+#define MICROPY_PY_SSL                      (1)
 #define MICROPY_SSL_MBEDTLS                 (1)
-#define MICROPY_PY_USSL_FINALISER           (1)
-#define MICROPY_PY_UWEBSOCKET               (1)
+#define MICROPY_PY_SSL_FINALISER            (1)
+#define MICROPY_PY_WEBSOCKET                (1)
 #define MICROPY_PY_WEBREPL                  (1)
 #define MICROPY_PY_ONEWIRE                  (1)
-#define MICROPY_PY_UPLATFORM                (1)
-#define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
+#define MICROPY_PY_PLATFORM                 (1)
+#define MICROPY_PY_SOCKET_EVENTS            (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME ("ESP32")
 
@@ -168,10 +165,10 @@ void *esp_native_code_commit(void *, size_t, void *);
 #define MICROPY_BEGIN_ATOMIC_SECTION() portENTER_CRITICAL_NESTED()
 #define MICROPY_END_ATOMIC_SECTION(state) portEXIT_CRITICAL_NESTED(state)
 
-#if MICROPY_PY_USOCKET_EVENTS
-#define MICROPY_PY_USOCKET_EVENTS_HANDLER extern void usocket_events_handler(void); usocket_events_handler();
+#if MICROPY_PY_SOCKET_EVENTS
+#define MICROPY_PY_SOCKET_EVENTS_HANDLER extern void socket_events_handler(void); socket_events_handler();
 #else
-#define MICROPY_PY_USOCKET_EVENTS_HANDLER
+#define MICROPY_PY_SOCKET_EVENTS_HANDLER
 #endif
 
 #if MICROPY_PY_THREAD
@@ -179,7 +176,7 @@ void *esp_native_code_commit(void *, size_t, void *);
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
-        MICROPY_PY_USOCKET_EVENTS_HANDLER \
+        MICROPY_PY_SOCKET_EVENTS_HANDLER \
         MP_THREAD_GIL_EXIT(); \
         ulTaskNotifyTake(pdFALSE, 1); \
         MP_THREAD_GIL_ENTER(); \
@@ -189,7 +186,7 @@ void *esp_native_code_commit(void *, size_t, void *);
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
-        MICROPY_PY_USOCKET_EVENTS_HANDLER \
+        MICROPY_PY_SOCKET_EVENTS_HANDLER \
         asm ("waiti 0"); \
     } while (0);
 #endif

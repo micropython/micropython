@@ -113,7 +113,9 @@ SRC_C += \
 	pin_af.c \
 	samd_flash.c \
 	samd_isr.c \
+	samd_qspiflash.c \
 	samd_soc.c \
+	samd_spiflash.c \
 	tusb_port.c \
 
 SHARED_SRC_C += \
@@ -167,12 +169,6 @@ OBJ += $(addprefix $(BUILD)/, $(ASF4_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
-
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-endif
 
 all: $(BUILD)/firmware.uf2
 

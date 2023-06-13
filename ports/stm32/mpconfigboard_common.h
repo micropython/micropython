@@ -499,6 +499,21 @@
 #define MICROPY_HW_BDEV_WRITEBLOCK flash_bdev_writeblock
 #endif
 
+#if defined(MICROPY_HW_BDEV_SPIFLASH)
+// Provide block device macros using spi_bdev.
+// The board must provide settings for:
+//  - MICROPY_HW_BDEV_SPIFLASH - pointer to a spi_bdev_t
+//  - MICROPY_HW_BDEV_SPIFLASH_CONFIG - pointer to an mp_spiflash_config_t
+//  - MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES - size in bytes of the SPI flash
+#define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
+    (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES / FLASH_BLOCK_SIZE) : \
+    (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(MICROPY_HW_BDEV_SPIFLASH, (op), (uint32_t)MICROPY_HW_BDEV_SPIFLASH_CONFIG) : \
+    spi_bdev_ioctl(MICROPY_HW_BDEV_SPIFLASH, (op), (arg)) \
+    )
+#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(MICROPY_HW_BDEV_SPIFLASH, (dest), (bl), (n))
+#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(MICROPY_HW_BDEV_SPIFLASH, (src), (bl), (n))
+#endif
+
 // Whether to enable caching for external SPI flash, to allow block writes that are
 // smaller than the native page-erase size of the SPI flash, eg when FAT FS is used.
 // Enabling this enables spi_bdev_readblocks() and spi_bdev_writeblocks() functions,

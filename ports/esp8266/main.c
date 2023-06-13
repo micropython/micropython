@@ -74,7 +74,7 @@ STATIC void mp_reset(void) {
         args[1] = MP_OBJ_NEW_SMALL_INT(115200);
         args[0] = MP_OBJ_TYPE_GET_SLOT(&pyb_uart_type, make_new)(&pyb_uart_type, 2, 0, args);
         args[1] = MP_OBJ_NEW_SMALL_INT(1);
-        mp_uos_dupterm_obj.fun.var(2, args);
+        mp_os_dupterm_obj.fun.var(2, args);
     }
 
     #if MICROPY_ESPNOW

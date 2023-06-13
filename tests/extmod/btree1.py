@@ -1,13 +1,13 @@
 try:
     import btree
-    import uio
-    import uerrno
+    import io
+    import errno
 except ImportError:
     print("SKIP")
     raise SystemExit
 
 # f = open("_test.db", "w+b")
-f = uio.BytesIO()
+f = io.BytesIO()
 db = btree.open(f, pagesize=512)
 
 mv = memoryview(b"bar1foo1")
@@ -68,7 +68,7 @@ print(db.seq(1, b"qux"))
 try:
     db.seq(b"foo1")
 except OSError as e:
-    print(e.errno == uerrno.EINVAL)
+    print(e.errno == errno.EINVAL)
 
 print(list(db.keys()))
 print(list(db.values()))

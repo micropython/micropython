@@ -4,8 +4,8 @@ This is a port of MicroPython to the Renesas RA family of microcontrollers.
 Currently supported features are:
 
 - Filesystem on the internal flash using FatFs.
-- `utime` module with sleep, time, and ticks functions.
-- `uos` module with VFS support.
+- `time` module with sleep, time, and ticks functions.
+- `os` module with VFS support.
 - `machine` module with the following classes: `Pin`, `ADC`, `I2C`, `SPI`,
    `SoftI2C`, `SoftSPI`, `UART`, `RTC`
 - sdcard driver if frozen driver is installed.

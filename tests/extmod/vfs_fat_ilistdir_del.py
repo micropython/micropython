@@ -2,9 +2,9 @@
 import gc
 
 try:
-    import uos
+    import os
 
-    uos.VfsFat
+    os.VfsFat
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -77,4 +77,4 @@ except MemoryError:
     print("SKIP")
     raise SystemExit
 
-test(bdev, uos.VfsFat)
+test(bdev, os.VfsFat)

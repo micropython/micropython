@@ -1,8 +1,5 @@
 try:
-    try:
-        from ucollections import deque
-    except ImportError:
-        from collections import deque
+    from collections import deque
 except ImportError:
     print("SKIP")
     raise SystemExit

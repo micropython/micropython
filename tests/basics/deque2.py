@@ -1,10 +1,7 @@
 # Tests for deques with "check overflow" flag and other extensions
 # wrt to CPython.
 try:
-    try:
-        from ucollections import deque
-    except ImportError:
-        from collections import deque
+    from collections import deque
 except ImportError:
     print("SKIP")
     raise SystemExit

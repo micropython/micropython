@@ -530,12 +530,6 @@ $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
 
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
-
 define RUN_DFU
 	$(ECHO) "Writing $(1) to the board"
 	$(if $(filter $(USE_PYDFU),1),\

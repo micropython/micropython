@@ -29,34 +29,50 @@
 const char stm32_help_text[] =
     "Welcome to MicroPython!\n"
     "\n"
-    "For online help please visit http://micropython.org/help/.\n"
+    "For online docs please visit http://docs.micropython.org/\n"
     "\n"
     "Quick overview of commands for the board:\n"
+    #if MICROPY_PY_PYB_LEGACY
     "  pyb.info()    -- print some general information\n"
     "  pyb.delay(n)  -- wait for n milliseconds\n"
     "  pyb.millis()  -- get number of milliseconds since hard reset\n"
+    #endif
+    #if MICROPY_HW_HAS_SWITCH
     "  pyb.Switch()  -- create a switch object\n"
     "                   Switch methods: (), callback(f)\n"
+    #endif
     "  pyb.LED(n)    -- create an LED object for LED n (n=1,2,3,4)\n"
     "                   LED methods: on(), off(), toggle(), intensity(<n>)\n"
     "  pyb.Pin(pin)  -- get a pin, eg pyb.Pin('X1')\n"
     "  pyb.Pin(pin, m, [p]) -- get a pin and configure it for IO mode m, pull mode p\n"
     "                   Pin methods: init(..), value([v]), high(), low()\n"
     "  pyb.ExtInt(pin, m, p, callback) -- create an external interrupt object\n"
+    #if MICROPY_HW_ENABLE_ADC
     "  pyb.ADC(pin)  -- make an analog object from a pin\n"
     "                   ADC methods: read(), read_timed(buf, freq)\n"
+    #endif
+    #if MICROPY_HW_ENABLE_DAC
     "  pyb.DAC(port) -- make a DAC object\n"
     "                   DAC methods: triangle(freq), write(n), write_timed(buf, freq)\n"
+    #endif
+    #if MICROPY_HW_ENABLE_RTC
     "  pyb.RTC()     -- make an RTC object; methods: datetime([val])\n"
+    #endif
+    #if MICROPY_HW_ENABLE_RNG
     "  pyb.rng()     -- get a 30-bit hardware random number\n"
+    #endif
+    #if MICROPY_HW_ENABLE_SERVO
     "  pyb.Servo(n)  -- create Servo object for servo n (n=1,2,3,4)\n"
     "                   Servo methods: calibration(..), angle([x, [t]]), speed([x, [t]])\n"
+    #endif
+    #if MICROPY_HW_HAS_MMA7660
     "  pyb.Accel()   -- create an Accelerometer object\n"
     "                   Accelerometer methods: x(), y(), z(), tilt(), filtered_xyz()\n"
+    #endif
     "\n"
     "Pins are numbered X1-X12, X17-X22, Y1-Y12, or by their MCU name\n"
-    "Pin IO modes are: pyb.Pin.IN, pyb.Pin.OUT_PP, pyb.Pin.OUT_OD\n"
-    "Pin pull modes are: pyb.Pin.PULL_NONE, pyb.Pin.PULL_UP, pyb.Pin.PULL_DOWN\n"
+    "Pin IO modes are: pyb.Pin.IN, pyb.Pin.OUT, pyb.Pin.OPEN_DRAIN\n"
+    "Pin pull modes are: None, pyb.Pin.PULL_UP, pyb.Pin.PULL_DOWN\n"
     "Additional serial bus objects: pyb.I2C(n), pyb.SPI(n), pyb.UART(n)\n"
     "\n"
     "Control commands:\n"

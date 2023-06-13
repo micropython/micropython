@@ -33,7 +33,7 @@
 #include "simplelink.h"
 #include "modnetwork.h"
 #include "modwlan.h"
-#include "modusocket.h"
+#include "modsocket.h"
 #include "debug.h"
 #include "serverstask.h"
 #include "genhdr/mpversion.h"

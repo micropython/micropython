@@ -114,6 +114,7 @@ set(MICROPY_SOURCE_DRIVERS
 
 set(MICROPY_SOURCE_PORT
     fatfs_port.c
+    help.c
     machine_adc.c
     machine_bitstream.c
     machine_i2c.c
@@ -156,7 +157,7 @@ set(MICROPY_SOURCE_QSTR
     ${PROJECT_SOURCE_DIR}/machine_wdt.c
     ${PROJECT_SOURCE_DIR}/modmachine.c
     ${PROJECT_SOURCE_DIR}/modrp2.c
-    ${PROJECT_SOURCE_DIR}/moduos.c
+    ${PROJECT_SOURCE_DIR}/modos.c
     ${PROJECT_SOURCE_DIR}/rp2_flash.c
     ${PROJECT_SOURCE_DIR}/rp2_pio.c
     ${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c

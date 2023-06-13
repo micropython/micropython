@@ -80,8 +80,8 @@
 #define MICROPY_PY_SYS_STDFILES            (CORE_FEAT)
 #endif
 
-#ifndef MICROPY_PY_UBINASCII
-#define MICROPY_PY_UBINASCII               (CORE_FEAT)
+#ifndef MICROPY_PY_BINASCII
+#define MICROPY_PY_BINASCII                (CORE_FEAT)
 #endif
 
 #ifndef MICROPY_PY_NRF
@@ -133,11 +133,10 @@
     #define MICROPY_FATFS_MAX_SS       (4096)
 #endif
 
-// Use port specific uos module rather than extmod variant.
-#define MICROPY_PY_UOS              (0)
+// Use port specific os module rather than extmod variant.
+#define MICROPY_PY_OS               (0)
 
 #define MICROPY_STREAMS_NON_BLOCK   (1)
-#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #if MICROPY_HW_USB_CDC_1200BPS_TOUCH
@@ -156,9 +155,9 @@
 #define MICROPY_MODULE_BUILTIN_INIT (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
-#define MICROPY_PY_URANDOM          (1)
-#define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
-#define MICROPY_PY_UTIME            (1)
+#define MICROPY_PY_RANDOM           (1)
+#define MICROPY_PY_RANDOM_EXTRA_FUNCS (1)
+#define MICROPY_PY_TIME             (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (0)
 #define MICROPY_PY_MACHINE_SOFTI2C  (MICROPY_PY_MACHINE_I2C)
@@ -287,7 +286,7 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #if MICROPY_HW_ENABLE_RNG
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (rng_generate_random_word())
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC (rng_generate_random_word())
 long unsigned int rng_generate_random_word(void);
 #endif
 

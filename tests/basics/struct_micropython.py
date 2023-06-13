@@ -1,13 +1,10 @@
 # test MicroPython-specific features of struct
 
 try:
-    import ustruct as struct
-except:
-    try:
-        import struct
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    import struct
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 class A():
     pass

@@ -54,7 +54,7 @@ MP_WEAK uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
         const mp_stream_p_t *stream_p = mp_get_stream(pyb_stdio_uart);
         ret = stream_p->ioctl(pyb_stdio_uart, MP_STREAM_POLL, poll_flags, &errcode);
     }
-    return ret | mp_uos_dupterm_poll(poll_flags);
+    return ret | mp_os_dupterm_poll(poll_flags);
 }
 
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
@@ -69,7 +69,7 @@ MP_WEAK int mp_hal_stdin_rx_chr(void) {
         if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
         }
-        int dupterm_c = mp_uos_dupterm_rx_chr();
+        int dupterm_c = mp_os_dupterm_rx_chr();
         if (dupterm_c >= 0) {
             return dupterm_c;
         }
@@ -81,7 +81,7 @@ MP_WEAK void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
     }
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
 }
 
 void mp_hal_ticks_cpu_enable(void) {

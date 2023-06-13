@@ -40,13 +40,13 @@ application of this idea would look like:
 `app.py`:
 
     from hwconfig import *
-    import utime
+    import time
 
     while True:
         LED.value(1)
-        utime.sleep_ms(500)
+        time.sleep_ms(500)
         LED.value(0)
-        utime.sleep_ms(500)
+        time.sleep_ms(500)
 
 
 To deploy this application to a particular board, a user will need:

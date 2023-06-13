@@ -69,8 +69,8 @@ EXCLUSIONS = [
     "ports/nrf/modules/machine/*.[ch]",
     "ports/nrf/modules/music/*.[ch]",
     "ports/nrf/modules/ubluepy/*.[ch]",
-    "ports/nrf/modules/uos/*.[ch]",
-    "ports/nrf/modules/utime/*.[ch]",
+    "ports/nrf/modules/os/*.[ch]",
+    "ports/nrf/modules/time/*.[ch]",
     # STM32 USB dev/host code is mostly 3rd party.
     "ports/stm32/usbdev/**/*.[ch]",
     "ports/stm32/usbhost/**/*.[ch]",

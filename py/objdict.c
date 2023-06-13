@@ -75,10 +75,10 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     bool first = true;
     const char *item_separator = ", ";
     const char *key_separator = ": ";
-    if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
+    if (!(MICROPY_PY_JSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     } else {
-        #if MICROPY_PY_UJSON_SEPARATORS
+        #if MICROPY_PY_JSON_SEPARATORS
         item_separator = MP_PRINT_GET_EXT(print)->item_separator;
         key_separator = MP_PRINT_GET_EXT(print)->key_separator;
         #endif
@@ -94,7 +94,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
             mp_print_str(print, item_separator);
         }
         first = false;
-        bool add_quote = MICROPY_PY_UJSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
+        bool add_quote = MICROPY_PY_JSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
         if (add_quote) {
             mp_print_str(print, "\"");
         }

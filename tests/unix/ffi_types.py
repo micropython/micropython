@@ -1,7 +1,7 @@
 # test 8/16/32/64 bit signed/unsigned integer arguments and return types for ffi functions
 # requires ffi_lib.c to be compiled as: $(CC) -shared -o ffi_lib.so ffi_lib.c
 
-import uos, usys
+import os, sys
 
 try:
     import ffi
@@ -9,9 +9,9 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-ffi_lib_filename = "./" + usys.argv[0].rsplit("/", 1)[0] + "/ffi_lib.so"
+ffi_lib_filename = "./" + sys.argv[0].rsplit("/", 1)[0] + "/ffi_lib.so"
 try:
-    uos.stat(ffi_lib_filename)
+    os.stat(ffi_lib_filename)
 except OSError:
     print("SKIP")
     raise SystemExit

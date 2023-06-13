@@ -37,7 +37,7 @@
 #include "telnet.h"
 #include "ftp.h"
 #include "pybwdt.h"
-#include "modusocket.h"
+#include "modsocket.h"
 #include "modnetwork.h"
 #include "modwlan.h"
 

@@ -14,9 +14,9 @@ The pin assignment of UARTs to pins is fixed.
 The UARTs are numbered 0..8.  The rx/tx pins are assigned according to the
 tables below:
 
-================  ===========  ===========  ===========  ===========
+=================  ===========  ===========  ===========  ===========
 Board / Pin           UART0        UART1        UART2        UART3
-================  ===========  ===========  ===========  ===========
+=================  ===========  ===========  ===========  ===========
 Teensy 4.0             -            0/1          7/8         14/15
 Teensy 4.1             -            0/1          7/8         14/15
 MIMXRT1010-EVK     Debug USB      D0/D1        D7/D6           -
@@ -27,9 +27,10 @@ MIMXRT1050-EVKB    Debug USB      D0/D1        D7/D6        D8/D9
 MIMXRT1060-EVK     Debug USB      D0/D1        D7/D6        D8/D9
 MIMXRT1064-EVK     Debug USB      D0/D1        D7/D6        D8/D9
 MIMXRT1170-EVK     Debug USB      D0/D1       D12/D11      D10/D13
+Adafruit Metro M7     -           D0/D1        D7/D3        A1/A0
 Olimex RT1010Py       -          RxD/TxD       D5/D6           -
-Seeed ARCH MIX        -        J3_19/J3_20  J4_16/J4_17  J4_06/J4_07
-================  ===========  ===========  ===========  ===========
+Seeed ARCH MIX        -         J3_19/J3_20  J4_16/J4_17  J4_06/J4_07
+=================  ===========  ===========  ===========  ===========
 
 |
 
@@ -61,38 +62,38 @@ PWM pin assignment
 Pins are specified in the same way as for the Pin class.  The following tables show
 the assignment of the board Pins to PWM modules:
 
-===========   ==========   ==========   ======    ==============   ======
-Pin/ MIMXRT   1010         1015         1020      1050/1060/1064   1170
-===========   ==========   ==========   ======    ==============   ======
-D0            -            Q1/1         F1/1/B    -                -
-D1            -            Q1/0         F1/1/A    -                -
-D2            F1/3/B       F1/3/A       -         F1/3/B           -
-D3            F1/3/A       F1/0/A       F2/3/B    F4/0/A           F1/2/A
-D4            F1/3/A (*)   Q1/2         Q2/1      F2/3/A           Q4/2
-D5            F1/0/B (*)   F1/0/B       F2/3/A    F1/3/A           F1/2/B
-D6            -            F1/2/B       F2/0/A    Q3/2             F1/0/A
-D7            -            -            F1/0/A    Q3/3             -
-D8            F1/0/A       F1/1/B       F1/0/B    F1/1/X           Q4/3
-D9            F1/1/B (*)   F1/2/A       F2/0/B    F1/0/X           F1/0/B
-D10           F1/3/B       -            F2/2/B    F1/0/B (*)       F2/2/B
-D11           F1/2/A       -            F2/1/A    F1/1/A (*)       -
-D12           F1/2/B       -            F2/1/B    F1/1/B (*)       -
-D13           F1/3/A       -            F2/2/A    F1/0/A (*)       F2/2/A
-D14           F1/0/B       -            -         F2/3/B           -
-D15           F1/0/A       -            -         F2/3/A           -
-A0            -            -            F1/2/A    -                -
-A1            F1/3/X       F1/3/B       F1/2/B    -                -
-A2            F1/2/X       F1/3/A       F1/3/A    -                -
-A3            -            F1/2/A       F1/3/B    -                -
-A4            -            -            -         Q3/1             -
-A5            -            -            -         Q3/0             -
-D31           -            -            -         -                F1/2/B
-D32           -            -            -         -                F1/2/A
-D33           -            -            -         -                F1/1/B
-D34           -            -            -         -                F1/1/A
-D35           -            -            -         -                F1/0/B
-D36           -            -            -         -                F1/0/A
-===========   ==========   ==========   ======    ==============   ======
+===========  ==========  ==========  ======  ==========  ======  ========
+Pin/ MIMXRT  1010        1015        1020    1050/60/64  1170    Metro M7
+===========  ==========  ==========  ======  ==========  ======  ========
+D0           -           Q1/1        F1/1/B  -           -       -
+D1           -           Q1/0        F1/1/A  -           -       -
+D2           F1/3/B      F1/3/A      -       F1/3/B      -       -
+D3           F1/3/A      F1/0/A      F2/3/B  F4/0/A      F1/2/A  -
+D4           F1/3/A (*)  Q1/2        Q2/1    F2/3/A      Q4/2    F1/0/B
+D5           F1/0/B (*)  F1/0/B      F2/3/A  F1/3/A      F1/2/B  F1/0/A
+D6           -           F1/2/B      F2/0/A  Q3/2        F1/0/A  -
+D7           -           -           F1/0/A  Q3/3        -       -
+D8           F1/0/A      F1/1/B      F1/0/B  F1/1/X      Q4/3    F1/3/A
+D9           F1/1/B (*)  F1/2/A      F2/0/B  F1/0/X      F1/0/B  F1/3/B
+D10          F1/3/B      -           F2/2/B  F1/0/B (*)  F2/2/B  F1/2/A
+D11          F1/2/A      -           F2/1/A  F1/1/A (*)  -       F1/2/B
+D12          F1/2/B      -           F2/1/B  F1/1/B (*)  -       F1/1/A
+D13          F1/3/A      -           F2/2/A  F1/0/A (*)  F2/2/A  F1/1/B
+D14          F1/0/B      -           -       F2/3/B      -       F1/0/B
+D15          F1/0/A      -           -       F2/3/A      -       F1/0/A
+A0           -           -           F1/2/A  -           -       -
+A1           F1/3/X      F1/3/B      F1/2/B  -           -       -
+A2           F1/2/X      F1/3/A      F1/3/A  -           -       -
+A3           -           F1/2/A      F1/3/B  -           -       F1/3/B
+A4           -           -           -       Q3/1        -       F1/2/X
+A5           -           -           -       Q3/0        -       -
+D31          -           -           -       -           F1/2/B  -
+D32          -           -           -       -           F1/2/A  -
+D33          -           -           -       -           F1/1/B  -
+D34          -           -           -       -           F1/1/A  -
+D35          -           -           -       -           F1/0/B  -
+D36          -           -           -       -           F1/0/A  -
+===========  ==========  ==========  ======  ==========  ======  ========
 
 Pins denoted with (*) are by default not wired at the board.
 
@@ -318,6 +319,7 @@ MIXMXRT1050-EVKB   D10/-/D11/D12/D13 (*)            -                        -
 MIXMXRT1060-EVK    D10/-/D11/D12/D13 (*)            -                        -
 MIXMXRT1064-EVK    D10/-/D11/D12/D13 (*)            -                        -
 MIXMXRT1170-EVK    D10/-/D11/D12/D13          D28/-/D25/D24/D26        -/-/D14/D15/D24
+Adafruit Metro M7  -/-/MOSI/MISO/SCK                -                        -         
 Olimex RT1010Py             -                 CS0/-/SDO/SDI/SCK        SDCARD with CS1
 Seeed ARCH MIX     J4_12/-/J4_14/J4_13/J4_15  J3_09/J3_05/J3_08_J3_11
 =================  =========================  =======================  ===============
@@ -350,6 +352,7 @@ MIXMXRT1050-EVKB   A4/A5        D1/D0         -            -        -
 MIXMXRT1060-EVK    A4/A5        D1/D0         -            -        -
 MIXMXRT1064-EVK    A4/A5        D1/D0         -            -        -
 MIXMXRT1170-EVK    D14/D15      D1/D0        A4/A5        D26/D25  D19/D18
+Adafruit Metro M7  D14/D15      D0/D1
 Olimex RT1010Py      -          SDA1/SCL1    SDA2/SCL2     -        -
 Seeed ARCH MIX     J3_17/J3_16  J4_06/J4_07  J5_05/J5_04   -        -
 =================  ===========  ===========  ===========  =======  =======
@@ -364,18 +367,19 @@ Hardware I2S pin assignment
 
 Pin assignments for a few MIMXRT boards:
 
-===============  ==  =====  ======== ======= ======= ======== ======= =======
-Board            ID  MCK    SCK_TX   WS_TX   SD_TX   SCK_RX   WS_RX   SD_RX
-===============  ==  =====  ======== ======= ======= ======== ======= =======
-Teensy 4.0       1   23     26       27      7       21       20      8
-Teensy 4.0       2   33     4        3       2       -        -       5
-Teensy 4.1       1   23     26       27      7       21       20      8
-Teensy 4.1       2   33     4        3       2       -        -       5
-Seeed Arch MIX   1   J4_09  J4_14    J4_15   J14_13  J4_11    J4_10   J4_10
-Olimex RT1010Py  1   D8     D6       D7      D4      D1       D2      D3
-Olimex RT1010Py  3   -      D10      D9      D11     -        -       -
-MIMXRT_DEV       1   "MCK"  "SCK_TX" "WS_TX" "SD_TX" "SCK_RX" "WS_RX" "SD_RX"
-===============  ==  =====  ======== ======= ======= ======== ======= =======
+=================  ==  =====  ======== ======= ======= ======== ======= =======
+Board              ID  MCK    SCK_TX   WS_TX   SD_TX   SCK_RX   WS_RX   SD_RX
+=================  ==  =====  ======== ======= ======= ======== ======= =======
+Teensy 4.0         1   23     26       27      7       21       20      8
+Teensy 4.0         2   33     4        3       2       -        -       5
+Teensy 4.1         1   23     26       27      7       21       20      8
+Teensy 4.1         2   33     4        3       2       -        -       5
+Seeed Arch MIX     1   J4_09  J4_14    J4_15   J14_13  J4_11    J4_10   J4_10
+Adafruit Metro M7  1   D8     D10      D9      D12     D14      D15     D13     
+Olimex RT1010Py    1   D8     D6       D7      D4      D1       D2      D3
+Olimex RT1010Py    3   -      D10      D9      D11     -        -       -
+MIMXRT_DEV         1   "MCK"  "SCK_TX" "WS_TX" "SD_TX" "SCK_RX" "WS_RX" "SD_RX"
+=================  ==  =====  ======== ======= ======= ======== ======= =======
 
 Symbolic pin names are provided for the MIMXRT_10xx_DEV boards.
 These are provided for the other boards as well.

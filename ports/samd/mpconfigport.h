@@ -59,7 +59,6 @@
 #define MICROPY_PY_BUILTINS_HELP_MODULES    (1)
 #define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_STATIC_NODES      (1)
-#define MICROPY_MODULE_WEAK_LINKS           (1)
 #define MICROPY_HW_ENABLE_USBDEV            (1)
 #define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
 
@@ -78,21 +77,21 @@
 #define MICROPY_PY_IO_IOBASE                (1)
 
 // Extended modules
-#define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME (1)
-#define MICROPY_PY_UTIME_TIME_TIME_NS       (1)
-#define MICROPY_PY_UTIME_INCLUDEFILE        "ports/samd/modutime.c"
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS        (1)
+#define MICROPY_PY_TIME_INCLUDEFILE         "ports/samd/modtime.c"
 #define MICROPY_PY_MACHINE                  (1)
-#define MICROPY_PY_UOS                      (1)
-#define MICROPY_PY_UOS_INCLUDEFILE          "ports/samd/moduos.c"
+#define MICROPY_PY_OS                       (1)
+#define MICROPY_PY_OS_INCLUDEFILE           "ports/samd/modos.c"
 #define MICROPY_READER_VFS                  (1)
 #define MICROPY_VFS                         (1)
-#define MICROPY_PY_UJSON                    (1)
-#define MICROPY_PY_URE                      (1)
-#define MICROPY_PY_UBINASCII                (1)
+#define MICROPY_PY_JSON                     (1)
+#define MICROPY_PY_RE                       (1)
+#define MICROPY_PY_BINASCII                 (1)
 #define MICROPY_PY_UCTYPES                  (1)
-#define MICROPY_PY_UHEAPQ                   (1)
-#define MICROPY_PY_URANDOM                  (1)
-#define MICROPY_PY_UZLIB                    (1)
+#define MICROPY_PY_HEAPQ                    (1)
+#define MICROPY_PY_RANDOM                   (1)
+#define MICROPY_PY_ZLIB                     (1)
 #define MICROPY_PY_UASYNCIO                 (1)
 #define MICROPY_PY_MACHINE_RTC              (1)
 #ifndef MICROPY_PY_MACHINE_ADC
@@ -135,6 +134,11 @@
 #ifndef MICROPY_BOARD_PENDSV_ENTRIES
 #define MICROPY_BOARD_PENDSV_ENTRIES
 #endif
+
+// Use internal flash for the file system if no flash file system is selected.
+#if !defined(MICROPY_HW_MCUFLASH) && !defined(MICROPY_HW_QSPIFLASH) && !(defined(MICROPY_HW_SPIFLASH) && defined(MICROPY_HW_SPIFLASH_ID))
+#define MICROPY_HW_MCUFLASH                 (1)
+#endif  // !defined(MICROPY_HW_MCUFLASH) ....
 
 // Miscellaneous settings
 __attribute__((always_inline)) static inline void enable_irq(uint32_t state) {

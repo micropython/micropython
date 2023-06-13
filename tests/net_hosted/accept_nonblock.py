@@ -1,9 +1,6 @@
 # test that socket.accept() on a non-blocking socket raises EAGAIN
 
-try:
-    import usocket as socket
-except:
-    import socket
+import socket
 
 s = socket.socket()
 s.bind(socket.getaddrinfo("127.0.0.1", 8123)[0][-1])

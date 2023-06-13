@@ -20,7 +20,7 @@ import os
 
 try:
     import machine
-except:
+except ImportError:
     print("machine module is not found")
     raise SystemExit
 

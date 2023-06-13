@@ -154,13 +154,13 @@ typedef long mp_off_t;
 // Ensure builtinimport.c works with -m.
 #define MICROPY_MODULE_OVERRIDE_MAIN_IMPORT (1)
 
-// Don't default sys.argv because we do that in main.
+// Don't default sys.argv and sys.path because we do that in main.
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (0)
 
 // Enable sys.executable.
 #define MICROPY_PY_SYS_EXECUTABLE (1)
 
-#define MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT (SOMAXCONN < 128 ? SOMAXCONN : 128)
+#define MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT (SOMAXCONN < 128 ? SOMAXCONN : 128)
 
 // Bare-metal ports don't have stderr. Printing debug to stderr may give tests
 // which check stdout a chance to pass, etc.
@@ -181,10 +181,10 @@ void mp_unix_mark_exec(void);
 #endif
 
 // If enabled, configure how to seed random on init.
-#ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+#ifdef MICROPY_PY_RANDOM_SEED_INIT_FUNC
 #include <stddef.h>
 void mp_hal_get_random(size_t n, void *buf);
-static inline unsigned long mp_urandom_seed_init(void) {
+static inline unsigned long mp_random_seed_init(void) {
     unsigned long r;
     mp_hal_get_random(sizeof(r), &r);
     return r;

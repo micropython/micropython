@@ -91,20 +91,17 @@
 #endif
 
 // extended modules
-#define MICROPY_PY_UOS_INCLUDEFILE  "ports/renesas-ra/moduos.c"
+#define MICROPY_PY_OS_INCLUDEFILE   "ports/renesas-ra/modos.c"
 #define MICROPY_PY_OS_DUPTERM       (3)
-#define MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM (1)
-#define MICROPY_PY_UOS_DUPTERM_STREAM_DETACHED_ATTACHED (1)
-#define MICROPY_PY_UOS_SEP          (1)
-#define MICROPY_PY_UOS_SYNC         (1)
-#define MICROPY_PY_UOS_UNAME        (1)
-#define MICROPY_PY_UOS_URANDOM      (MICROPY_HW_ENABLE_RNG)
-#define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME (1)
-#define MICROPY_PY_UTIME_TIME_TIME_NS (1)
-#define MICROPY_PY_UTIME_INCLUDEFILE "ports/renesas-ra/modutime.c"
-#ifndef MICROPY_PY_UTIMEQ
-#define MICROPY_PY_UTIMEQ           (1)
-#endif
+#define MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM (1)
+#define MICROPY_PY_OS_DUPTERM_STREAM_DETACHED_ATTACHED (1)
+#define MICROPY_PY_OS_SEP           (1)
+#define MICROPY_PY_OS_SYNC          (1)
+#define MICROPY_PY_OS_UNAME         (1)
+#define MICROPY_PY_OS_URANDOM       (MICROPY_HW_ENABLE_RNG)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS (1)
+#define MICROPY_PY_TIME_INCLUDEFILE "ports/renesas-ra/modtime.c"
 #ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE          (1)
 #ifndef MICROPY_PY_MACHINE_BITSTREAM
@@ -126,8 +123,8 @@
 #ifndef MICROPY_PY_ONEWIRE
 #define MICROPY_PY_ONEWIRE          (1)
 #endif
-#ifndef MICROPY_PY_UPLATFORM
-#define MICROPY_PY_UPLATFORM        (1)
+#ifndef MICROPY_PY_PLATFORM
+#define MICROPY_PY_PLATFORM         (1)
 #endif
 
 // fatfs configuration used in ffconf.h
@@ -139,7 +136,7 @@
 
 #if MICROPY_PY_MACHINE
 #define MACHINE_BUILTIN_MODULE_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
+    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) },
 #else
 #define MACHINE_BUILTIN_MODULE_CONSTANTS

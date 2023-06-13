@@ -33,7 +33,7 @@ Q(/flash/lib)
 Q(/sd)
 Q(/sd/lib)
 
-// For uos.sep
+// For os.sep
 Q(/)
 
 #if MICROPY_HW_ENABLE_USB

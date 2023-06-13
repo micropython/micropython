@@ -5,8 +5,8 @@
 # This script is intended to be run by the same interpreter executable
 # which is to be tested, so should use minimal language functionality.
 #
-import usys as sys
-import uos as os
+import sys
+import os
 
 
 tests = ["basics", "micropython", "float", "import", "io", " misc", "unicode", "extmod", "unix"]
