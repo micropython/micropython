@@ -34,8 +34,9 @@
 
 #define MICROPY_HW_LED_STATUS (&pin_GPIO13)
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+#define CIRCUITPY_BOARD_I2C         (2)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO9, .sda = &pin_GPIO8}, \
+                                     {.scl = &pin_GPIO15, .sda = &pin_GPIO16}}
 
 #define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
 #define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
