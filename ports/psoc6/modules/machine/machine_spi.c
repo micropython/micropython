@@ -20,9 +20,9 @@
 #include "mplogger.h"
 #include "pins.h"
 
-#define MICROPY_HW_SPI_SCK  P11_2  // Check the default pin
-#define MICROPY_HW_SPI_MOSI P11_1
-#define MICROPY_HW_SPI_MISO P11_0
+#define MICROPY_HW_SPI_SCK  P6_2  // Check the default pin
+#define MICROPY_HW_SPI_MOSI P6_0
+#define MICROPY_HW_SPI_MISO P6_1
 
 
 #define DEFAULT_SPI_BAUDRATE    (1000000)
@@ -214,6 +214,7 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     // Reconfigure the baudrate if requested.
     if (args[ARG_baudrate].u_int != -1) {
         self->baudrate = args[ARG_baudrate].u_int;
+        cyhal_spi_set_frequency(&self->spi_obj, self->baudrate);
     }
 
     if (args[ARG_polarity].u_int != -1) {

@@ -1,0 +1,2 @@
+SoftSPI(baudrate=100000, polarity=1, phase=0, sck=74, mosi=72, miso=73)
+SoftSPI(baudrate=166666, polarity=1, phase=0, sck=74, mosi=72, miso=73)
