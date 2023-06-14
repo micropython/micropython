@@ -68,7 +68,8 @@ CFLAGS += $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU) -fsingle
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 CFLAGS += $(CFLAGS_EXTRA)
 
-CFLAGS += -DMICROPY_HW_CODESIZE=$(MICROPY_HW_CODESIZE)
+# Strip the letter 'K' from MICROPY_HW_CODESIZE for use by C code.
+CFLAGS += -DMICROPY_HW_CODESIZE=$(strip $(subst K,' ', $(MICROPY_HW_CODESIZE)))
 
 LDFLAGS += -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
 LDFLAGS += --defsym=_codesize=$(MICROPY_HW_CODESIZE)

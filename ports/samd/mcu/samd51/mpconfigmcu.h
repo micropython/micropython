@@ -27,6 +27,7 @@
 
 #define MICROPY_PY_OS_SYNC              (1)
 #define MICROPY_PY_OS_URANDOM           (1)
+#define MICROPY_PY_ONEWIRE              (1)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC (trng_random_u32())
 unsigned long trng_random_u32(void);
 
