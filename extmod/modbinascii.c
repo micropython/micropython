@@ -71,7 +71,7 @@ STATIC mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
     byte *in = bufinfo.buf;
 
     vstr_t vstr;
-    vstr_init(&vstr, (bufinfo.len / 4) * 3 + 1); // Potentially over-allocate
+    vstr_init(&vstr, (bufinfo.len * 3) / 4 + 1); // Potentially over-allocate
     byte *out = (byte *)vstr.buf;
 
     uint shift = 0;
