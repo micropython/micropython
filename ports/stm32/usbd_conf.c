@@ -44,13 +44,11 @@ PCD_HandleTypeDef pcd_fs_handle;
 PCD_HandleTypeDef pcd_hs_handle;
 #endif
 
-#if !MICROPY_HW_USB_IS_MULTI_OTG
-// The MCU has a single USB device-only instance
-#define USB_OTG_FS USB
-#endif
-
 #if defined(STM32G0)
 #define USB_OTG_FS USB_DRD_FS
+#elif !MICROPY_HW_USB_IS_MULTI_OTG
+// The MCU has a single USB device-only instance
+#define USB_OTG_FS USB
 #endif
 
 /*******************************************************************************
@@ -119,7 +117,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #endif
 
         // Enable USB FS Clocks
-        #if !MICROPY_HW_USB_IS_MULTI_OTG || defined(STM32G0)
+        #if !MICROPY_HW_USB_IS_MULTI_OTG
         __HAL_RCC_USB_CLK_ENABLE();
         #else
         __USB_OTG_FS_CLK_ENABLE();
@@ -262,11 +260,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd) {
     #if MICROPY_HW_USB_FS
     if (hpcd->Instance == USB_OTG_FS) {
         /* Disable USB FS Clocks */
-        #if defined(STM32G0)
-        __HAL_RCC_USB_CLK_DISABLE();
-        #else
         __USB_OTG_FS_CLK_DISABLE();
-        #endif
         return;
     }
     #endif
@@ -443,7 +437,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
         pcd_fs_handle.Init.speed = PCD_SPEED_FULL;
         pcd_fs_handle.Init.lpm_enable = DISABLE;
         pcd_fs_handle.Init.battery_charging_enable = DISABLE;
-        #if MICROPY_HW_USB_IS_MULTI_OTG
+        #if MICROPY_HW_USB_IS_MULTI_OTG || defined(STM32G0)
         #if !defined(STM32G0)
         pcd_fs_handle.Init.use_dedicated_ep1 = 0;
         #endif
@@ -463,7 +457,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
         HAL_PCD_Init(&pcd_fs_handle);
 
         // Set FIFO buffer sizes
-        #if !MICROPY_HW_USB_IS_MULTI_OTG || defined(STM32G0)
+        #if !MICROPY_HW_USB_IS_MULTI_OTG
         uint32_t fifo_offset = USBD_PMA_RESERVE; // need to reserve some data at start of FIFO
         for (size_t i = 0; i < USBD_PMA_NUM_FIFO; ++i) {
             uint16_t ep_addr = ((i & 1) * 0x80) | (i >> 1);
