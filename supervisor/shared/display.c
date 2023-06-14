@@ -191,7 +191,7 @@ void supervisor_display_move_memory(void) {
         #if CIRCUITPY_RGBMATRIX
         if (display_buses[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
             rgbmatrix_rgbmatrix_obj_t *pm = &display_buses[i].rgbmatrix;
-            common_hal_rgbmatrix_rgbmatrix_reconstruct(pm, NULL);
+            common_hal_rgbmatrix_rgbmatrix_reconstruct(pm);
         }
         #endif
         #if CIRCUITPY_SHARPDISPLAY

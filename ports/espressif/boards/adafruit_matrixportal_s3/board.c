@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,11 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "components/driver/include/driver/gpio.h"
+#include "components/hal/include/hal/gpio_hal.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include <stdbool.h>
-#include "py/gc.h"
-#include "py/misc.h"
-#include "supervisor/memory.h"
-
-#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S2)
-// Use DMA-capable RAM (not PSRAM) for framebuffer:
-#include "components/heap/include/esp_heap_caps.h"
-#define _PM_allocate(x) heap_caps_malloc(x, MALLOC_CAP_DMA | MALLOC_CAP_8BIT)
-#define _PM_free(x) heap_caps_free(x)
-#else
-#define _PM_allocate common_hal_rgbmatrix_allocator_impl
-#define _PM_free(x) (common_hal_rgbmatrix_free_impl((x)), (x) = NULL, (void)0)
-#endif
-
-extern void *common_hal_rgbmatrix_allocator_impl(size_t sz);
-extern void common_hal_rgbmatrix_free_impl(void *);
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
