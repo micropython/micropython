@@ -109,7 +109,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         // if both MOSI and MISO exist, loop search normally
         if ((mosi != NULL) && (miso != NULL)) {
             for (uint j = 0; j < mosi_count; j++) {
-                if ((mcu_spi_sdo_list[i].pin != mosi)
+                if ((mcu_spi_sdo_list[j].pin != mosi)
                     || (mcu_spi_sck_list[i].bank_idx != mcu_spi_sdo_list[j].bank_idx)) {
                     continue;
                 }
