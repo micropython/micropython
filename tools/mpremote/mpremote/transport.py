@@ -42,19 +42,27 @@ class TransportError(Exception):
     pass
 
 
+class TransportExecError(TransportError):
+    def __init__(self, status_code, error_output):
+        self.status_code = status_code
+        self.error_output = error_output
+        super().__init__(error_output)
+
+
 listdir_result = namedtuple("dir_result", ["name", "st_mode", "st_ino", "st_size"])
 
 
 # Takes a Transport error (containing the text of an OSError traceback) and
 # raises it as the corresponding OSError-derived exception.
 def _convert_filesystem_error(e, info):
-    if len(e.args) >= 3:
-        if b"OSError" in e.args[2] and b"ENOENT" in e.args[2]:
-            return FileNotFoundError(info)
-        if b"OSError" in e.args[2] and b"EISDIR" in e.args[2]:
-            return IsADirectoryError(info)
-        if b"OSError" in e.args[2] and b"EEXIST" in e.args[2]:
-            return FileExistsError(info)
+    if "OSError" in e.error_output and "ENOENT" in e.error_output:
+        return FileNotFoundError(info)
+    if "OSError" in e.error_output and "EISDIR" in e.error_output:
+        return IsADirectoryError(info)
+    if "OSError" in e.error_output and "EEXIST" in e.error_output:
+        return FileExistsError(info)
+    if "OSError" in e.error_output and "ENODEV" in e.error_output:
+        return FileNotFoundError(info)
     return e
 
 
@@ -72,7 +80,7 @@ class Transport:
             buf.extend(b"[")
             self.exec(cmd, data_consumer=repr_consumer)
             buf.extend(b"]")
-        except TransportError as e:
+        except TransportExecError as e:
             raise _convert_filesystem_error(e, src) from None
 
         return [
@@ -84,7 +92,7 @@ class Transport:
         try:
             self.exec("import os")
             return os.stat_result(self.eval("os.stat(%s)" % ("'%s'" % src)))
-        except TransportError as e:
+        except TransportExecError as e:
             raise _convert_filesystem_error(e, src) from None
 
     def fs_exists(self, src):
@@ -109,7 +117,7 @@ class Transport:
         )
         try:
             self.exec(cmd, data_consumer=stdout_write_bytes)
-        except TransportError as e:
+        except TransportExecError as e:
             raise _convert_filesystem_error(e, src) from None
 
     def fs_readfile(self, src, chunk_size=256, progress_callback=None):
@@ -128,7 +136,7 @@ class Transport:
                 if progress_callback:
                     progress_callback(len(contents), src_size)
             self.exec("f.close()")
-        except TransportError as e:
+        except TransportExecError as e:
             raise _convert_filesystem_error(e, src) from None
 
         return contents
@@ -148,37 +156,37 @@ class Transport:
                 if progress_callback:
                     progress_callback(written, src_size)
             self.exec("f.close()")
-        except TransportError as e:
+        except TransportExecError as e:
             raise _convert_filesystem_error(e, dest) from None
 
     def fs_mkdir(self, path):
         try:
             self.exec("import os\nos.mkdir('%s')" % path)
-        except TransportError as e:
+        except TransportExecError as e:
             raise _convert_filesystem_error(e, path) from None
 
     def fs_rmdir(self, path):
         try:
             self.exec("import os\nos.rmdir('%s')" % path)
-        except TransportError as e:
+        except TransportExecError as e:
             raise _convert_filesystem_error(e, path) from None
 
     def fs_rmfile(self, path):
         try:
             self.exec("import os\nos.remove('%s')" % path)
-        except TransportError as e:
+        except TransportExecError as e:
             raise _convert_filesystem_error(e, path) from None
 
     def fs_touchfile(self, path):
         try:
             self.exec("f=open('%s','a')\nf.close()" % path)
-        except TransportError as e:
+        except TransportExecError as e:
             raise _convert_filesystem_error(e, path) from None
 
     def fs_hashfile(self, path, algo, chunk_size=256):
         try:
             self.exec("import hashlib\nh = hashlib.{algo}()".format(algo=algo))
-        except TransportError:
+        except TransportExecError:
             # hashlib (or hashlib.{algo}) not available on device. Do the hash locally.
             data = self.fs_readfile(path, chunk_size=chunk_size)
             return getattr(hashlib, algo)(data).digest()

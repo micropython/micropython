@@ -63,8 +63,7 @@ def do_connect(state, args=None):
         msg = er.args[0]
         if msg.startswith("failed to access"):
             msg += " (it may be in use by another program)"
-        print(msg)
-        sys.exit(1)
+        raise CommandError(msg)
 
 
 def do_disconnect(state, _args=None):
@@ -322,39 +321,48 @@ def do_filesystem(state, args):
     if command == "ls" and not paths:
         paths = [""]
 
-    # Handle each path sequentially.
-    for path in paths:
-        if verbose:
-            if command == "cp":
-                print("{} {} {}".format(command, path, cp_dest))
-            else:
-                print("{} :{}".format(command, path))
+    try:
+        # Handle each path sequentially.
+        for path in paths:
+            if verbose:
+                if command == "cp":
+                    print("{} {} {}".format(command, path, cp_dest))
+                else:
+                    print("{} :{}".format(command, path))
 
-        if command == "cat":
-            state.transport.fs_printfile(path)
-        elif command == "ls":
-            for result in state.transport.fs_listdir(path):
-                print(
-                    "{:12} {}{}".format(
-                        result.st_size, result.name, "/" if result.st_mode & 0x4000 else ""
+            if command == "cat":
+                state.transport.fs_printfile(path)
+            elif command == "ls":
+                for result in state.transport.fs_listdir(path):
+                    print(
+                        "{:12} {}{}".format(
+                            result.st_size, result.name, "/" if result.st_mode & 0x4000 else ""
+                        )
                     )
-                )
-        elif command == "mkdir":
-            state.transport.fs_mkdir(path)
-        elif command == "rm":
-            state.transport.fs_rmfile(path)
-        elif command == "rmdir":
-            state.transport.fs_rmdir(path)
-        elif command == "touch":
-            state.transport.fs_touchfile(path)
-        elif command.endswith("sum") and command[-4].isdigit():
-            digest = state.transport.fs_hashfile(path, command[:-3])
-            print(digest.hex())
-        elif command == "cp":
-            if args.recursive:
-                do_filesystem_recursive_cp(state, path, cp_dest, len(paths) > 1)
-            else:
-                do_filesystem_cp(state, path, cp_dest, len(paths) > 1)
+            elif command == "mkdir":
+                state.transport.fs_mkdir(path)
+            elif command == "rm":
+                state.transport.fs_rmfile(path)
+            elif command == "rmdir":
+                state.transport.fs_rmdir(path)
+            elif command == "touch":
+                state.transport.fs_touchfile(path)
+            elif command.endswith("sum") and command[-4].isdigit():
+                digest = state.transport.fs_hashfile(path, command[:-3])
+                print(digest.hex())
+            elif command == "cp":
+                if args.recursive:
+                    do_filesystem_recursive_cp(state, path, cp_dest, len(paths) > 1)
+                else:
+                    do_filesystem_cp(state, path, cp_dest, len(paths) > 1)
+    except FileNotFoundError as er:
+        raise CommandError("{}: {}: No such file or directory.".format(command, er.args[0]))
+    except IsADirectoryError as er:
+        raise CommandError("{}: {}: Is a directory.".format(command, er.args[0]))
+    except FileExistsError as er:
+        raise CommandError("{}: {}: File exists.".format(command, er.args[0]))
+    except TransportError as er:
+        raise CommandError("Error with transport:\n{}".format(er.args[0]))
 
 
 def do_edit(state, args):
@@ -362,7 +370,7 @@ def do_edit(state, args):
     state.did_action()
 
     if not os.getenv("EDITOR"):
-        raise TransportError("edit: $EDITOR not set")
+        raise CommandError("edit: $EDITOR not set")
     for src in args.files:
         src = src.lstrip(":")
         dest_fd, dest = tempfile.mkstemp(suffix=os.path.basename(src))
@@ -393,8 +401,7 @@ def _do_execbuffer(state, buf, follow):
                 stdout_write_bytes(ret_err)
                 sys.exit(1)
     except TransportError as er:
-        print(er)
-        sys.exit(1)
+        raise CommandError(er.args[0])
     except KeyboardInterrupt:
         sys.exit(1)
 

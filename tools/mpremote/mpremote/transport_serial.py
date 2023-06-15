@@ -38,7 +38,7 @@
 import ast, io, os, re, struct, sys, time
 from errno import EPERM
 from .console import VT_ENABLED
-from .transport import TransportError, Transport
+from .transport import TransportError, TransportExecError, Transport
 
 
 class SerialTransport(Transport):
@@ -267,7 +267,7 @@ class SerialTransport(Transport):
     def exec(self, command, data_consumer=None):
         ret, ret_err = self.exec_raw(command, data_consumer=data_consumer)
         if ret_err:
-            raise TransportError("exception", ret, ret_err)
+            raise TransportExecError(ret, ret_err.decode())
         return ret
 
     def execfile(self, filename):
