@@ -374,12 +374,10 @@ uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sa
 
     // Scale raw reading to 16 bit value using a Taylor expansion (for bits <= 16).
     uint32_t bits = adc_get_bits(adc);
-    #if defined(STM32H7)
     if (bits < 8) {
         // For 6 and 7 bits
         return raw << (16 - bits) | raw << (16 - 2 * bits) | raw >> (3 * bits - 16);
     }
-    #endif
     return raw << (16 - bits) | raw >> (2 * bits - 16);
 }
 
