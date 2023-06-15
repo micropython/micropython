@@ -234,7 +234,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // respective APB clock.  See DM00031020 Rev 4, page 115.
 uint32_t timer_get_source_freq(uint32_t tim_id) {
     uint32_t source, clk_div;
-    if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
+    if (tim_id == 1 || (8 <= tim_id && tim_id <= 11) || tim_id == 20) {
         // TIM{1,8,9,10,11} are on APB2
         #if defined(STM32F0) || defined(STM32G0)
         source = HAL_RCC_GetPCLK1Freq();
