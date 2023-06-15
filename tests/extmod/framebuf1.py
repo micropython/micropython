@@ -6,7 +6,7 @@ except ImportError:
 
 w = 5
 h = 16
-size = w * h // 8
+size = ((w + 7) & ~7) * ((h + 7) & ~7) // 8
 buf = bytearray(size)
 maps = {
     framebuf.MONO_VLSB: "MONO_VLSB",
