@@ -99,6 +99,8 @@ void displayio_tilegrid_set_hidden_by_parent(displayio_tilegrid_t *self, bool hi
     self->hidden_by_parent = hidden;
     if (!hidden) {
         self->full_change = true;
+    }else {
+        self->rendered_hidden = false;
     }
 }
 
@@ -555,7 +557,6 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self,
 }
 
 void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
-
     bool first_draw = self->previous_area.x1 == self->previous_area.x2;
     bool hidden = self->hidden || self->hidden_by_parent;
     if (!first_draw && hidden) {
@@ -596,7 +597,6 @@ displayio_area_t *displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
         } else {
             return tail;
         }
-
     } else if (self->moved && !first_draw) {
         displayio_area_union(&self->previous_area, &self->current_area, &self->dirty_area);
         if (displayio_area_size(&self->dirty_area) <= 2U * self->pixel_width * self->pixel_height) {

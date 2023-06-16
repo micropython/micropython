@@ -454,7 +454,7 @@ displayio_area_t *displayio_group_get_refresh_areas(displayio_group_t *self, dis
         }
         #endif
         layer = mp_obj_cast_to_native_base(
-                self->members->items[i], &displayio_tilegrid_type);
+            self->members->items[i], &displayio_tilegrid_type);
         if (layer != MP_OBJ_NULL) {
             if (!displayio_tilegrid_get_rendered_hidden(layer)) {
                 tail = displayio_tilegrid_get_refresh_areas(layer, tail);
@@ -462,7 +462,7 @@ displayio_area_t *displayio_group_get_refresh_areas(displayio_group_t *self, dis
             continue;
         }
         layer = mp_obj_cast_to_native_base(
-                self->members->items[i], &displayio_group_type);
+            self->members->items[i], &displayio_group_type);
         if (layer != MP_OBJ_NULL) {
             tail = displayio_group_get_refresh_areas(layer, tail);
             continue;
