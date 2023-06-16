@@ -347,3 +347,83 @@ The constructor can be called by passing the required arguments. All initializat
     pwm.init(freq=90,duty_us=100,invert=1)    # Modify the settings of PWM object
     pwm.deinit()                              # Deinitialisation of PWM pin
 
+Software SPI bus
+----------------
+
+Software SPI (using bit-banging) works on all pins, and is accessed via the
+:ref:`machine.SoftSPI <machine.SoftSPI>` class::
+
+    from machine import Pin, SoftSPI
+
+    # construct a SoftSPI bus on the given pins
+    # polarity is the idle state of SCK
+    # phase=0 means sample on the first edge of SCK, phase=1 means the second edge
+    spi = SoftSPI(baudrate=100_000, polarity=1, phase=0, sck='P0_2', mosi='P0_0', miso='P0_1')
+
+    spi.init(baudrate=200000) # set the baudrate
+
+    spi.read(10)            # read 10 bytes on MISO
+    spi.read(10, 0xff)      # read 10 bytes while outputting 0xff on MOSI
+
+    buf = bytearray(50)     # create a buffer
+    spi.readinto(buf)       # read into the given buffer (reads 50 bytes in this case)
+    spi.readinto(buf, 0xff) # read into the given buffer and output 0xff on MOSI
+
+    spi.write(b'12345')     # write 5 bytes on MOSI
+
+    buf = bytearray(4)      # create a buffer
+    spi.write_readinto(b'1234', buf) # write to MOSI and read from MISO into the buffer
+    spi.write_readinto(buf, buf) # write buf to MOSI and read MISO back into buf
+
+.. Warning::
+   Currently *all* of ``sck``, ``mosi`` and ``miso`` *must* be specified when
+   initialising Software SPI.
+
+Hardware SPI bus
+----------------
+Hardware SPI works on the following listed pair of SPI pins. 
+
+=====  ===========  ============  ============
+\      Default  
+=====  ===========  ============  ============
+MOSI    P9_0           P6_0         P10_0
+MISO    P9_1           P6_1         P10_1
+SCK     P9_2           P6_2         P10_2
+=====  ===========  ============  ============
+
+Refer `PSoC 6 MCU: CY8C62x8, CY8C62xA Datasheet <https://www.infineon.com/dgdl/Infineon-PSOC_6_MCU_CY8C62X8_CY8C62XA-DataSheet-v18_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ee7d03a70b1>`_
+for additional details regarding all the SPI capable pins. 
+
+The driver is accessed via :ref:`machine.SPI <machine.SPI>`
+
+The constructor
+^^^^^^^^^^^^^^^
+An instance of the :mod:`machine.SPI` class can be created by invoking the constructor with all the 
+necessary parameters to fully configure and initialise the ``SPI``. By invoking the constructor with no additional parameters 
+SPI object is created with default settings or settings of previous initialisation if any. 
+
+::
+    
+    from machine import SPI
+    spi = SPI(0) # Default assignment: id=0, sck=P9_2  ,MOSI=P9_0, MISO=P9_1, baudrate=1000000, Polarity=0, Phase=0, bits=8, firstbit=SPI.MSB
+    spi.init()
+
+Management of a CS signal should happen in user code (via machine.Pin class).
+
+::
+    from machine import Pin
+    cs = Pin('P9_3', mode=Pin.OUT, value=1)      # Create chip-select on pin P9_3
+    cs(0)                                        # select the peripheral
+
+Here, ``id=0`` should be passed mandatorily which selects the ``master`` mode operation.
+If the constructor is called with any additional parameters then SPI object is created & initialised.
+
+::    
+    spi = SPI(0, baudrate=2000000) #object is created & initialised with baudrate=2000000 & default parameters
+    spi = SPI(0, baudrate=1500000, polarity=1, phase=1, bits=8, firstbit=SPI.LSB, sck='P11_2', mosi='P11_0', miso='P11_1')
+
+Methods
+^^^^^^^
+All the methods(functions) given in :ref:`machine.SPI <machine.SPI>` class have been implemented in this port
+
+

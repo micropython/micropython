@@ -1,7 +1,7 @@
 ### PWM
 from machine import PWM
 
-pwm = PWM("P9_0", freq=50, duty_u16=8192, invert=0)
+pwm = PWM("P12_0", freq=50, duty_u16=8192, invert=0)
 print(pwm)
 print(pwm.freq())
 print(pwm.duty_u16())

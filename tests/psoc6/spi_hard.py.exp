@@ -1,1 +1,1 @@
-SPI(id=0, baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=0, sck=50, mosi=48, miso=49)
+SPI(id=0, baudrate=1000000, polarity=0, phase=0, bits=8, firstbit=0, sck=74, mosi=72, miso=73)

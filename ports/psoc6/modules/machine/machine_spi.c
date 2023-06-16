@@ -20,9 +20,9 @@
 #include "mplogger.h"
 #include "pins.h"
 
-#define MICROPY_HW_SPI_SCK  P6_2  // Check the default pin
-#define MICROPY_HW_SPI_MOSI P6_0
-#define MICROPY_HW_SPI_MISO P6_1
+#define MICROPY_HW_SPI_SCK  P9_2
+#define MICROPY_HW_SPI_MOSI P9_0
+#define MICROPY_HW_SPI_MISO P9_1
 
 
 #define DEFAULT_SPI_BAUDRATE    (1000000)
@@ -46,6 +46,7 @@ typedef struct _machine_spi_obj_t {
     uint32_t baudrate;
 } machine_spi_obj_t;
 
+// Function to select the mode
 STATIC cyhal_spi_mode_t mode_select(uint8_t firstbit, uint8_t polarity, uint8_t phase) {
 
     cyhal_spi_mode_t mode;
@@ -182,15 +183,15 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     }
 
-    cyhal_spi_mode_t mode = mode_select(self->firstbit, self->polarity, self->phase);
-
     if (n_args > 1 || n_kw > 0) {
+        cyhal_spi_mode_t mode = mode_select(self->firstbit, self->polarity, self->phase);
+        // set the baudrate
+        cyhal_spi_set_frequency(&self->spi_obj, self->baudrate);
         // Initialise the SPI peripheral if any arguments given, or it was not initialised previously.
         cy_rslt_t result = cyhal_spi_init(&self->spi_obj, self->mosi, self->miso, self->sck, NC, NULL, self->bits, mode, false);
         if (result != CY_RSLT_SUCCESS) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI initialisation failed with return code %lx !"), result);
         }
-        cyhal_spi_set_frequency(&self->spi_obj, self->baudrate);
     }
     return MP_OBJ_FROM_PTR(self);
 
@@ -221,7 +222,6 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
         self->polarity = args[ARG_polarity].u_int;
     }
 
-
     if (args[ARG_phase].u_int != -1) {
         self->phase = args[ARG_phase].u_int;
     }
@@ -236,7 +236,9 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
 
     cyhal_spi_mode_t mode = mode_select(self->firstbit, self->polarity, self->phase);
 
-    // Here should check with the sck,mosi & miso pins. But if there are previous values that is ok?
+    // since it's reinitialising, first it should be deinitialised & initilased with new parameters
+    cyhal_spi_free(&self->spi_obj);
+
     cy_rslt_t result = cyhal_spi_init(&self->spi_obj, self->mosi, self->miso, self->sck, NC, NULL, self->bits, mode, false);
     if (result != CY_RSLT_SUCCESS) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI initialisation failed with return code %lx !"), result);
@@ -250,17 +252,23 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     if (dest == NULL) {
         for (int i = 0; i < len; i++)
         {
-            cyhal_spi_send(&self->spi_obj, src[i]);
+            result = cyhal_spi_send(&self->spi_obj, src[i]);
+            if (result != CY_RSLT_SUCCESS) {
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("cyhal_spi_send failed with return code %lx !"), result);
+            }
         }
     } else if (src == NULL) {
         for (int i = 0; i < len; i++)
         {
-            cyhal_spi_recv(&self->spi_obj, (uint32_t *)(dest + i));
+            result = cyhal_spi_recv(&self->spi_obj, (uint32_t *)(dest + i));
+            if (result != CY_RSLT_SUCCESS) {
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("cyhal_spi_recv failed with return code %lx !"), result);
+            }
         }
     } else {
         result = cyhal_spi_transfer(&self->spi_obj, src, len, dest, len, 0xFF);
         if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("cyhal_spi_recv failed with return code %lx !"), result);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("cyhal_spi_transf failed with return code %lx !"), result);
         }
     }
 

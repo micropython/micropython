@@ -113,7 +113,11 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | machine.PWM     | option ``MICROPY_PY_MACHINE_PWM`` &  ``MICROPY_PY_MACHINE_PWM_INCLUDEFILE`` enabled                                  |
 |                 |                                                                                                                      |
-|                 | option ``MICROPY_PY_MACHINE_PWM_DUTY`` is not enabled.                                                               |                                                                                       
+|                 | option ``MICROPY_PY_MACHINE_PWM_DUTY`` is not enabled.                                                               |
++-----------------+----------------------------------------------------------------------------------------------------------------------+                                                                                                                                             
+| machine.SoftSPI | Option ``MICROPY_PY_MACHINE_SOFTSPI`` enabled.                                                                       |
++-----------------+----------------------------------------------------------------------------------------------------------------------+                                                                                                                                             
+| machine.SPI     | Option ``MICROPY_PY_MACHINE_SPI``, ``MICROPY_PY_MACHINE_SPI_MSB`` , ``MICROPY_PY_MACHINE_SPI_MSB`` enabled.          |    
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | psoc6           | Option to enable the external instead of the internal flash: ``MICROPY_ENABLE_EXT_QSPI_FLASH``.                      |
 |                 |                                                                                                                      |

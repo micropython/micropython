@@ -119,8 +119,8 @@
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
 
 #define MICROPY_PY_MACHINE_SPI                  (1)
-#define MICROPY_PY_MACHINE_SPI_MSB              (1)
-#define MICROPY_PY_MACHINE_SPI_LSB              (1)// CYHAL_SPI_MODE_FLAG_LSB
+#define MICROPY_PY_MACHINE_SPI_MSB              (0)
+#define MICROPY_PY_MACHINE_SPI_LSB              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
 
 // VFS
