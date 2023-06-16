@@ -88,19 +88,17 @@ bool displayio_tilegrid_get_rendered_hidden(displayio_tilegrid_t *self) {
 
 void common_hal_displayio_tilegrid_set_hidden(displayio_tilegrid_t *self, bool hidden) {
     self->hidden = hidden;
+    self->rendered_hidden = false;
     if (!hidden) {
         self->full_change = true;
-    } else {
-        self->rendered_hidden = false;
     }
 }
 
 void displayio_tilegrid_set_hidden_by_parent(displayio_tilegrid_t *self, bool hidden) {
     self->hidden_by_parent = hidden;
+    self->rendered_hidden = false;
     if (!hidden) {
         self->full_change = true;
-    }else {
-        self->rendered_hidden = false;
     }
 }
 
