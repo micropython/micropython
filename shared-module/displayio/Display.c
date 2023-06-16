@@ -330,10 +330,7 @@ STATIC void _refresh_display(displayio_display_obj_t *self) {
         return;
     }
     const displayio_area_t *current_area = _get_refresh_areas(self);
-    int i = 0;
     while (current_area != NULL) {
-        mp_printf(&mp_plat_print, "calling refresh area: %d \n", i);
-        i = i + 1;
         _refresh_area(self, current_area);
         current_area = current_area->next;
     }

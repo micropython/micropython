@@ -556,23 +556,6 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self,
 
 void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
 
-    //mp_printf(&mp_plat_print, "(cy1: %d)\n", self->current_area.y1);
-
-    //mp_printf(&mp_plat_print, "(px1: %d, py1: %d)\n", self->previous_area.x1, self->previous_area.y1);
-    //mp_printf(&mp_plat_print, "(px2: %d, py2: %d)\n", self->previous_area.x2, self->previous_area.y2);
-
-    //mp_printf(&mp_plat_print, "(cx1: %d, cy1: %d)\n", self->current_area.x1, self->current_area.y1);
-    //mp_printf(&mp_plat_print, "(cx2: %d, cy2: %d)\n", self->current_area.x2, self->current_area.y2);
-
-
-    //mp_printf(&mp_plat_print, "(cx2: %d)\n", self->current_area.x2);
-    //mp_printf(&mp_plat_print, "(cy2: %d)\n", self->current_area.y2);
-
-    //mp_printf(&mp_plat_print, "(cx1: %d, cy1: %d), (cx2: %d, cy2: %d)\n", self->current_area.x1, self->current_area.y1, self->current_area.x2, self->current_area.y2);
-
-    //mp_printf(&mp_plat_print, "x1: %d \n", self->previous_area.x1);
-    //mp_printf(&mp_plat_print, "(x1: %d, y1: %d),(x2: %d, y2: %d)\n", self->previous_area.x1, self->previous_area.y1, self->previous_area.x2, self->previous_area.y2);
-    //mp_printf(&mp_plat_print, "Hello ", 1);
     bool first_draw = self->previous_area.x1 == self->previous_area.x2;
     bool hidden = self->hidden || self->hidden_by_parent;
     if (!first_draw && hidden) {
@@ -602,14 +585,10 @@ void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
 }
 
 displayio_area_t *displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *self, displayio_area_t *tail) {
-    // mp_printf(&mp_plat_print, "x1 : %d  x2: %d \n", self->previous_area.x1, self->previous_area.x2);
     bool first_draw = self->previous_area.x1 == self->previous_area.x2;
     bool hidden = self->hidden || self->hidden_by_parent;
-    // mp_printf(&mp_plat_print, "first draw: %d\n", first_draw);
     // Check hidden first because it trumps all other changes.
     if (hidden) {
-        // mp_printf(&mp_plat_print, "rendered_hidden: %d\n", self->rendered_hidden);
-        // if (!self->rendered_hidden){
         self->rendered_hidden = true;
         if (!first_draw) {
             self->previous_area.next = tail;
@@ -617,7 +596,6 @@ displayio_area_t *displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
         } else {
             return tail;
         }
-        // }
 
     } else if (self->moved && !first_draw) {
         displayio_area_union(&self->previous_area, &self->current_area, &self->dirty_area);
