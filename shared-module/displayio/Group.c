@@ -438,35 +438,35 @@ void displayio_group_finish_refresh(displayio_group_t *self) {
 }
 
 displayio_area_t *displayio_group_get_refresh_areas(displayio_group_t *self, displayio_area_t *tail) {
-        if (self->item_removed) {
-            self->dirty_area.next = tail;
-            tail = &self->dirty_area;
-        }
+    if (self->item_removed) {
+        self->dirty_area.next = tail;
+        tail = &self->dirty_area;
+    }
 
-        for (int32_t i = self->members->len - 1; i >= 0; i--) {
-            mp_obj_t layer;
-            #if CIRCUITPY_VECTORIO
-            const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
-            if (draw_protocol != NULL) {
-                layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
-                tail = draw_protocol->draw_protocol_impl->draw_get_refresh_areas(layer, tail);
-                continue;
+    for (int32_t i = self->members->len - 1; i >= 0; i--) {
+        mp_obj_t layer;
+        #if CIRCUITPY_VECTORIO
+        const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
+        if (draw_protocol != NULL) {
+            layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
+            tail = draw_protocol->draw_protocol_impl->draw_get_refresh_areas(layer, tail);
+            continue;
+        }
+        #endif
+        layer = mp_obj_cast_to_native_base(
+                self->members->items[i], &displayio_tilegrid_type);
+        if (layer != MP_OBJ_NULL) {
+            if (!displayio_tilegrid_get_rendered_hidden(layer)) {
+                tail = displayio_tilegrid_get_refresh_areas(layer, tail);
             }
-            #endif
-            layer = mp_obj_cast_to_native_base(
-                    self->members->items[i], &displayio_tilegrid_type);
-            if (layer != MP_OBJ_NULL) {
-                if (!displayio_tilegrid_get_rendered_hidden(layer)) {
-                    tail = displayio_tilegrid_get_refresh_areas(layer, tail);
-                }
-                continue;
-            }
-            layer = mp_obj_cast_to_native_base(
-                    self->members->items[i], &displayio_group_type);
-            if (layer != MP_OBJ_NULL) {
-                tail = displayio_group_get_refresh_areas(layer, tail);
-                continue;
-            }
+            continue;
+        }
+        layer = mp_obj_cast_to_native_base(
+                self->members->items[i], &displayio_group_type);
+        if (layer != MP_OBJ_NULL) {
+            tail = displayio_group_get_refresh_areas(layer, tail);
+            continue;
+        }
     }
 
     return tail;
