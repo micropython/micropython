@@ -266,7 +266,7 @@ bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
-    volatile uint32_t *power_cycle = (void*)(self->uarte->p_reg) + 0xFFC;
+    volatile uint32_t *power_cycle = (void *)(self->uarte->p_reg) + 0xFFC;
     if (!common_hal_busio_uart_deinited(self)) {
         nrfx_uarte_rx_abort(self->uarte);
         nrfx_uarte_tx_abort(self->uarte);
