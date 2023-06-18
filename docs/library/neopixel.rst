@@ -8,7 +8,7 @@ This module provides a driver for WS2818 / NeoPixel LEDs.
 
 .. note:: This module is only included by default on the ESP8266, ESP32 and RP2
    ports. On STM32 / Pyboard and others, you can either install the
-   ``neopixel`` package using :term:`mip`, or you can download the module
+   ``neopixel`` package using :term:`mip`, or you can `download the module
    directly from
    <https://raw.githubusercontent.com/micropython/micropython-lib/master/micropython/drivers/led/neopixel/neopixel.py>`_
    and copy it to the filesystem.
@@ -40,7 +40,7 @@ Constructors
 
 .. class:: NeoPixel(pin, n, *, bpp=3, timing=1)
 
-    Construct an NeoPixel object.  The parameters are:
+    Construct a NeoPixel object.  The parameters are:
 
         - *pin* is a machine.Pin instance.
         - *n* is the number of LEDs in the strip.
