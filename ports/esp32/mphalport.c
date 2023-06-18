@@ -125,24 +125,34 @@ int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     // Only release the GIL if many characters are being sent
+    mp_uint_t ret = len;
+    bool did_write = false;
     bool release_gil = len > 20;
     if (release_gil) {
         MP_THREAD_GIL_EXIT();
     }
     #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
     usb_serial_jtag_tx_strn(str, len);
+    did_write = true;
     #elif CONFIG_USB_OTG_SUPPORTED
     usb_tx_strn(str, len);
+    did_write = true;
     #endif
     #if MICROPY_HW_ENABLE_UART_REPL
     uart_stdout_tx_strn(str, len);
+    did_write = true;
     #endif
     if (release_gil) {
         MP_THREAD_GIL_ENTER();
     }
-    mp_os_dupterm_tx_strn(str, len);
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res >= 0) {
+        did_write = true;
+        ret = MIN((mp_uint_t)dupterm_res, ret);
+    }
+    return did_write ? ret : 0;
 }
 
 uint32_t mp_hal_ticks_ms(void) {

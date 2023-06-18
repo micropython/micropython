@@ -221,10 +221,11 @@ int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     MP_THREAD_GIL_EXIT();
-    write(STDOUT_FILENO, str, len);
+    int ret = write(STDOUT_FILENO, str, len);
     MP_THREAD_GIL_ENTER();
+    return ret < 0 ? 0 : ret; // return the number of bytes written, so in case of an error in the syscall, return 0
 }
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {

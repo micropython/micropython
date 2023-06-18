@@ -56,7 +56,7 @@ void mp_hal_stdout_tx_str(const char *str);
 #endif
 
 #ifndef mp_hal_stdout_tx_strn
-void mp_hal_stdout_tx_strn(const char *str, size_t len);
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len);
 #endif
 
 #ifndef mp_hal_stdout_tx_strn_cooked
