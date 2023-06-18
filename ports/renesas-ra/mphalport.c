@@ -154,16 +154,20 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 // Send string of given length
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+    mp_uint_t ret = len;
+    bool did_write = false;
     #if MICROPY_HW_ENABLE_UART_REPL
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
+        did_write = true;
     }
     #endif
 
     #if MICROPY_HW_USB_CDC
     if (tud_cdc_connected()) {
-        for (size_t i = 0; i < len;) {
+        size_t i = 0;
+        while (i < len) {
             uint32_t n = len - i;
             if (n > CFG_TUD_CDC_EP_BUFSIZE) {
                 n = CFG_TUD_CDC_EP_BUFSIZE;
@@ -180,12 +184,20 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             tud_cdc_write_flush();
             i += n2;
         }
+        ret = MIN(i, ret);
+        did_write = true;
     }
     #endif
 
     #if MICROPY_PY_OS_DUPTERM
-    mp_os_dupterm_tx_strn(str, len);
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res >= 0) {
+        did_write = true;
+        ret = MIN((mp_uint_t)dupterm_res, ret);
+    }
     #endif
+
+    return did_write ? ret : 0;
 }
 
 void mp_hal_ticks_cpu_enable(void) {
