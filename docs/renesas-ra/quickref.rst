@@ -110,6 +110,24 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 
 Pin id is available corresponding to the RA MCU's pin name which are Pin.cpu.P106 and 'P106'. The RA MCU has many feature's pins. However, there are some cases that pin feature is fixed or not connected by the board. Please confirm the board manual for the pin mapping.
 
+The following *drive* keyword argument are available if the port drive capability of the Pin is supported by the MCU::
+
+    Pin.DRIVE_0: Low drive
+    Pin.DRIVE_1: Middle drive
+    Pin.DRIVE_2: Middle drive for I2C Fast-mode
+    Pin.DRIVE_3: High drive
+
+The *alt* keyword argument is not supported.
+
+The following functions are not supported::
+
+    Pin.irq(priority=)  # priority keyword argument is not supported
+    Pin.irq(wake=)      # wake keyword argument is not supported
+    Pin.irq(hard=)      # hard keyword argument is ignored because hardware interrupt is used
+    Pin.mode()
+    Pin.pull()
+    Pin.drive()
+
 UART (serial bus)
 -----------------
 

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include <zephyr.h>
-#include <drivers/uart.h>
-#include <drivers/console/uart_console.h>
-#include <sys/printk.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/drivers/console/uart_console.h>
+#include <zephyr/sys/printk.h>
 #include "zephyr_getchar.h"
 
 extern int mp_interrupt_char;

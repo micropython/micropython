@@ -42,6 +42,7 @@
 #include "stm32wbxx_hal_uart.h"
 #include "stm32wbxx_hal_usart.h"
 #include "stm32wbxx_ll_adc.h"
+#include "stm32wbxx_ll_hsem.h"
 #include "stm32wbxx_ll_lpuart.h"
 #include "stm32wbxx_ll_rtc.h"
 #include "stm32wbxx_ll_usart.h"
@@ -78,5 +79,42 @@
 
 // HAL parameter assertions are disabled
 #define assert_param(expr) ((void)0)
+
+// Hardware Semaphores - ref: AN5289
+
+// Used to prevent conflicts after standby / sleep.
+// Each CPUs takes this semaphore at standby wakeup until conflicting elements are restored.
+// Note: this is used in WB55 reference examples, but not listed in AN5289 Rev 6
+#define CFG_HW_PWR_STANDBY_SEMID                10
+
+// Ensures that CPU2 does not update the BLE persistent data in SRAM2 when CPU1 is reading them
+#define CFG_HW_THREAD_NVM_SRAM_SEMID            9
+
+// Ensures that CPU2 does not update the Thread persistent data in SRAM2 when CPU1 is reading them
+#define CFG_HW_BLE_NVM_SRAM_SEMID               8
+
+// Used by CPU2 to prevent CPU1 from writing/erasing data in Flash memory
+#define CFG_HW_BLOCK_FLASH_REQ_BY_CPU2_SEMID    7
+
+// Used by CPU1 to prevent CPU2 from writing/erasing data in Flash memory
+#define CFG_HW_BLOCK_FLASH_REQ_BY_CPU1_SEMID    6
+
+// Used to manage the CLK48 clock configuration (RCC_CRRCR, RCC_CCIPR)
+#define CFG_HW_CLK48_CONFIG_SEMID               5
+
+// Used to manage the entry Stop Mode procedure
+#define CFG_HW_ENTRY_STOP_MODE_SEMID            4
+
+// Used to access the RCC (RCC_CR, RCC_EXTCFGR, RCC_CFGR, RCC_SMPSCR)
+#define CFG_HW_RCC_SEMID                        3
+
+// Used to access the FLASH (all registers)
+#define CFG_HW_FLASH_SEMID                      2
+
+// Used to access the PKA (all registers)
+#define CFG_HW_PKA_SEMID                        1
+
+// Used to access the RNG (all registers)
+#define CFG_HW_RNG_SEMID                        0
 
 #endif // MICROPY_INCLUDED_STM32WBXX_HAL_CONF_BASE_H

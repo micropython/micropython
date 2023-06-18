@@ -108,6 +108,7 @@ typedef enum {
     // Disonnect/status commands.
     NINA_CMD_DISCONNECT             = 0x30,
     NINA_CMD_CONN_STATUS            = 0x20,
+    NINA_CMD_CONN_REASON            = 0x1F,
 
     // Interface config commands.
     NINA_CMD_SET_IF_CONFIG          = 0x14,
@@ -172,19 +173,6 @@ typedef enum {
     NINA_CMD_CMD_RENAME_FILE        = 0x66,
     NINA_CMD_CMD_DOWNLOAD_OTA       = 0x67,
 } nina_cmd_t;
-
-typedef enum {
-    NINA_STATUS_IDLE      = 0,
-    NINA_STATUS_NO_SSID_AVAIL,
-    NINA_STATUS_SCAN_COMPLETED,
-    NINA_STATUS_CONNECTED,
-    NINA_STATUS_CONNECT_FAILED,
-    NINA_STATUS_CONNECTION_LOST,
-    NINA_STATUS_DISCONNECTED,
-    NINA_STATUS_AP_LISTENING,
-    NINA_STATUS_AP_CONNECTED,
-    NINA_STATUS_AP_FAILED
-} nina_status_t;
 
 typedef enum  {
     SOCKET_STATE_CLOSED = 0,
@@ -364,13 +352,15 @@ int nina_deinit(void) {
     return nina_bsp_deinit();
 }
 
-static int nina_connection_status() {
+int nina_connection_status(void) {
     return nina_send_command_read_ack(NINA_CMD_CONN_STATUS, 0, ARG_8BITS, NULL);
 }
 
-int nina_connect(const char *ssid, uint8_t security, const char *key, uint16_t channel) {
-    uint8_t status = NINA_STATUS_CONNECT_FAILED;
+int nina_connection_reason(void) {
+    return nina_send_command_read_ack(NINA_CMD_CONN_REASON, 0, ARG_8BITS, NULL);
+}
 
+int nina_connect(const char *ssid, uint8_t security, const char *key, uint16_t channel) {
     if (key == NULL && security != NINA_SEC_OPEN) {
         return -1;
     }
@@ -398,18 +388,7 @@ int nina_connect(const char *ssid, uint8_t security, const char *key, uint16_t c
             return -1;
     }
 
-    for (mp_uint_t start = mp_hal_ticks_ms(); ; mp_hal_delay_ms(10)) {
-        status = nina_connection_status();
-        if ((status != NINA_STATUS_IDLE) && (status != NINA_STATUS_NO_SSID_AVAIL) && (status != NINA_STATUS_SCAN_COMPLETED)) {
-            break;
-        }
-
-        if ((mp_hal_ticks_ms() - start) >= NINA_CONNECT_TIMEOUT) {
-            break;
-        }
-    }
-
-    return (status == NINA_STATUS_CONNECTED) ? 0 : -1;
+    return 0;
 }
 
 int nina_start_ap(const char *ssid, uint8_t security, const char *key, uint16_t channel) {
@@ -439,7 +418,7 @@ int nina_start_ap(const char *ssid, uint8_t security, const char *key, uint16_t 
 
     for (mp_uint_t start = mp_hal_ticks_ms(); ; mp_hal_delay_ms(10)) {
         status = nina_connection_status();
-        if ((status != NINA_STATUS_IDLE) && (status != NINA_STATUS_NO_SSID_AVAIL) && (status != NINA_STATUS_SCAN_COMPLETED)) {
+        if ((status != NINA_STATUS_IDLE) && (status != NINA_STATUS_NO_SSID_AVAIL)) {
             break;
         }
 

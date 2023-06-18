@@ -34,64 +34,29 @@
 #include "led.h"
 #include "flash.h"
 #include "storage.h"
-#if defined(RA4M1) | defined(RA4M3) | defined(RA4W1) | defined(RA6M1) | defined(RA6M2) | defined(RA6M3)
 #include "ra_flash.h"
-#endif
 
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
-// #define DEBUG_FLASH_BDEV
+// The linker script specifies flash storage locations.
+extern uint8_t _micropy_hw_internal_flash_storage_start;
+extern uint8_t _micropy_hw_internal_flash_storage_end;
 
-// Here we try to automatically configure the location and size of the flash
-// pages to use for the internal storage.  We also configure the location of the
-// cache used for writing.
+#define FLASH_MEM_SEG1_START_ADDR \
+    ((long)&_micropy_hw_internal_flash_storage_start)
+#define FLASH_MEM_SEG1_NUM_BLOCKS \
+    ((&_micropy_hw_internal_flash_storage_end - &_micropy_hw_internal_flash_storage_start) / 512)
 
-#if defined(RA4M1)
-
-STATIC byte flash_cache_mem[0x800] __attribute__((aligned(16))); // 2K
-#define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
+#if defined(RA4M1) | defined(RA4M3) | defined(RA4W1)
 #define FLASH_SECTOR_SIZE_MAX (0x800)           // 2k max
-#define FLASH_MEM_SEG1_START_ADDR (0x37000)     // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (72)          // sectors 1,2,...,72
-
-#elif defined(RA4M3)
-STATIC byte flash_cache_mem[0x800] __attribute__((aligned(16))); // 2K
-#define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
-#define FLASH_SECTOR_SIZE_MAX (0x800)           // 2k max
-#define FLASH_MEM_SEG1_START_ADDR (0x37000)     // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (72)          // sectors 1,2,...,72
-
-#elif defined(RA4W1)
-STATIC byte flash_cache_mem[0x800] __attribute__((aligned(16))); // 2K
-#define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
-#define FLASH_SECTOR_SIZE_MAX (0x800)           // 2k max
-#define FLASH_MEM_SEG1_START_ADDR (0x70000)     // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (128)         // sectors 1,2,...,128
-
-#elif defined(RA6M1)
-STATIC byte flash_cache_mem[0x8000] __attribute__((aligned(16))); // 32K
-#define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
+#elif defined(RA6M1) | defined(RA6M2) | defined(RA6M3)
 #define FLASH_SECTOR_SIZE_MAX (0x8000)          // 32k max
-#define FLASH_MEM_SEG1_START_ADDR (0x60000)     // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (256)         // sectors 1,2,...,256
-
-#elif defined(RA6M2)
-STATIC byte flash_cache_mem[0x8000] __attribute__((aligned(16))); // 32K
-#define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
-#define FLASH_SECTOR_SIZE_MAX (0x8000)          // 32k max
-#define FLASH_MEM_SEG1_START_ADDR (0xe0000)     // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (512)         // sectors 1,2,...,512
-
-#elif defined(RA6M3)
-STATIC byte flash_cache_mem[0x8000] __attribute__((aligned(16))); // 32K
-#define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
-#define FLASH_SECTOR_SIZE_MAX (0x8000)          // 32k max
-#define FLASH_MEM_SEG1_START_ADDR (0x60000)     // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (256)         // sectors 1,2,...,256
-
 #else
 #error "no internal flash storage support for this MCU"
 #endif
+
+STATIC byte flash_cache_mem[FLASH_SECTOR_SIZE_MAX] __attribute__((aligned(16)));
+#define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
 
 #if !defined(FLASH_MEM_SEG2_START_ADDR)
 #define FLASH_MEM_SEG2_START_ADDR (0) // no second segment

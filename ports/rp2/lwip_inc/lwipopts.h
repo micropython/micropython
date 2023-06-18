@@ -24,6 +24,7 @@
 #define LWIP_STATS                      0
 #define LWIP_NETIF_HOSTNAME             1
 #define LWIP_NETIF_EXT_STATUS_CALLBACK  1
+#define LWIP_NETIF_STATUS_CALLBACK      1
 
 #define LWIP_IPV6                       0
 #define LWIP_DHCP                       1

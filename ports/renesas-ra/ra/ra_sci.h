@@ -52,6 +52,8 @@ bool ra_sci_is_rxirq_enable(uint32_t ch);
 void ra_sci_isr_te(uint32_t ch);
 int ra_sci_rx_ch(uint32_t ch);
 int ra_sci_rx_any(uint32_t ch);
+int ra_sci_tx_busy(uint32_t ch);
+int ra_sci_tx_bufsize(uint32_t ch);
 void ra_sci_tx_ch(uint32_t ch, int c);
 int ra_sci_tx_wait(uint32_t ch);
 void ra_sci_tx_break(uint32_t ch);

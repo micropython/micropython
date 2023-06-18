@@ -20,6 +20,17 @@ Software I2C is implemented by bit-banging and can be used on any pin but is not
 as efficient.  These classes have the same methods available and differ primarily
 in the way they are constructed.
 
+.. Note::
+
+   The I2C bus requires pull-up circuitry on both SDA and SCL for it's operation.
+   Usually these are resistors in the range of 1 - 10 kOhm, connected from each SDA/SCL
+   to Vcc. Without these, the behaviour is undefined and may range from blocking,
+   unexpected watchdog reset to just wrong values. Often, this pull-up circuitry
+   is built-in already to the MCU board or sensor breakout boards, but there is
+   no rule for that. So please check in case of trouble. See also this excellent
+   `learning guide <https://learn.adafruit.com/working-with-i2c-devices/pull-up-resistors>`_
+   by Adafruit about I2C wiring.
+
 Example usage::
 
     from machine import I2C
@@ -41,7 +52,7 @@ Example usage::
 Constructors
 ------------
 
-.. class:: I2C(id, *, scl, sda, freq=400000)
+.. class:: I2C(id, *, scl, sda, freq=400000, timeout=50000)
 
    Construct and return a new I2C object using the following parameters:
 
@@ -51,6 +62,8 @@ Constructors
       - *sda* should be a pin object specifying the pin to use for SDA.
       - *freq* should be an integer which sets the maximum frequency
         for SCL.
+      - *timeout* is the maximum time in microseconds to allow for I2C
+        transactions.  This parameter is not allowed on some ports.
 
    Note that some ports/boards will have default values of *scl* and *sda*
    that can be changed in this constructor.  Others will have fixed values
@@ -79,6 +92,10 @@ General Methods
      - *scl* is a pin object for the SCL line
      - *sda* is a pin object for the SDA line
      - *freq* is the SCL clock rate
+
+   In the case of hardware I2C the actual clock frequency may be lower than the
+   requested frequency. This is dependant on the platform hardware. The actual
+   rate may be determined by printing the I2C object.
 
 .. method:: I2C.deinit()
 

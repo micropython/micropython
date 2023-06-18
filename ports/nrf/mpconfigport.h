@@ -133,23 +133,6 @@
     #define MICROPY_FATFS_MAX_SS       (4096)
 #endif
 
-#if MICROPY_VFS
-// TODO these should be generic, not bound to a particular FS implementation
-#if MICROPY_VFS_FAT
-#define mp_type_fileio mp_type_vfs_fat_fileio
-#define mp_type_textio mp_type_vfs_fat_textio
-#elif MICROPY_VFS_LFS1
-#define mp_type_fileio mp_type_vfs_lfs1_fileio
-#define mp_type_textio mp_type_vfs_lfs1_textio
-#elif MICROPY_VFS_LFS2
-#define mp_type_fileio mp_type_vfs_lfs2_fileio
-#define mp_type_textio mp_type_vfs_lfs2_textio
-#endif
-#else // !MICROPY_VFS_FAT
-#define mp_type_fileio fatfs_type_fileio
-#define mp_type_textio fatfs_type_textio
-#endif
-
 // Use port specific uos module rather than extmod variant.
 #define MICROPY_PY_UOS              (0)
 
@@ -157,6 +140,11 @@
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
+#if MICROPY_HW_USB_CDC_1200BPS_TOUCH
+#define MICROPY_HW_ENABLE_USBDEV    (1)
+#define MICROPY_ENABLE_SCHEDULER    (1)
+#define MICROPY_SCHEDULER_STATIC_NODES (1)
+#endif
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
@@ -168,7 +156,6 @@
 #define MICROPY_MODULE_BUILTIN_INIT (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
-#define MICROPY_PY_IO_FILEIO        (MICROPY_VFS_FAT || MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 #define MICROPY_PY_URANDOM          (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
@@ -210,8 +197,18 @@
 #define MICROPY_PY_MACHINE_SOFT_PWM (0)
 #endif
 
-#ifndef MICROPY_PY_MACHINE_TIMER
-#define MICROPY_PY_MACHINE_TIMER    (0)
+#define MICROPY_PY_MACHINE_PWM_INIT (1)
+#define MICROPY_PY_MACHINE_PWM_DUTY (1)
+#define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS (1)
+
+#if MICROPY_PY_MACHINE_HW_PWM
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/nrf/modules/machine/pwm.c"
+#elif MICROPY_PY_MACHINE_SOFT_PWM
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/nrf/modules/machine/soft_pwm.c"
+#endif
+
+#ifndef MICROPY_PY_MACHINE_TIMER_NRF
+#define MICROPY_PY_MACHINE_TIMER_NRF (1)
 #endif
 
 #ifndef MICROPY_PY_MACHINE_RTCOUNTER
@@ -291,13 +288,10 @@ typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
-// extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t board_module;
-extern const struct _mp_obj_module_t nrf_module;
-extern const struct _mp_obj_module_t mp_module_utime;
-extern const struct _mp_obj_module_t mp_module_uos;
-extern const struct _mp_obj_module_t mp_module_ubluepy;
-extern const struct _mp_obj_module_t music_module;
+#if MICROPY_HW_ENABLE_RNG
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (rng_generate_random_word())
+long unsigned int rng_generate_random_word(void);
+#endif
 
 #if BOARD_SPECIFIC_MODULES
 #include "boardmodules.h"
@@ -310,49 +304,20 @@ extern const struct _mp_obj_module_t music_module;
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#if MICROPY_PY_MUSIC
-#define ROOT_POINTERS_MUSIC \
-    struct _music_data_t *music_data;
+#if MICROPY_HW_USB_CDC
+#include "device/usbd.h"
+#define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();
 #else
-#define ROOT_POINTERS_MUSIC
+#define MICROPY_HW_USBDEV_TASK_HOOK ;
 #endif
-
-#if MICROPY_PY_MACHINE_SOFT_PWM
-#define ROOT_POINTERS_SOFTPWM \
-    const struct _pwm_events *pwm_active_events; \
-    const struct _pwm_events *pwm_pending_events;
-#else
-#define ROOT_POINTERS_SOFTPWM
-#endif
-
-#if defined(NRF52840_XXAA)
-#define NUM_OF_PINS 48
-#else
-#define NUM_OF_PINS 32
-#endif
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
-    mp_obj_t pin_class_mapper; \
-    mp_obj_t pin_class_map_dict; \
-    mp_obj_t pin_irq_handlers[NUM_OF_PINS]; \
-    \
-    /* stdio is repeated on this UART object if it's not null */ \
-    struct _machine_hard_uart_obj_t *board_stdio_uart; \
-    \
-    ROOT_POINTERS_MUSIC \
-    ROOT_POINTERS_SOFTPWM \
-    \
-    /* micro:bit root pointers */ \
-    void *async_data[2]; \
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
+        MICROPY_HW_USBDEV_TASK_HOOK \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
         __WFI(); \
@@ -365,4 +330,16 @@ extern const struct _mp_obj_module_t music_module;
 
 #ifndef MP_NEED_LOG2
 #define MP_NEED_LOG2                (1)
+#endif
+
+#ifndef MICROPY_BOARD_STARTUP
+#define MICROPY_BOARD_STARTUP()
+#endif
+
+#ifndef MICROPY_BOARD_ENTER_BOOTLOADER
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
+#endif
+
+#ifndef MICROPY_BOARD_EARLY_INIT
+#define MICROPY_BOARD_EARLY_INIT()
 #endif

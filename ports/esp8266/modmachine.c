@@ -31,6 +31,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared/runtime/pyexec.h"
+#include "drivers/dht/dht.h"
 
 // This needs to be set before we include the RTOS headers
 #define USE_US_TIMER 1
@@ -337,13 +338,14 @@ STATIC const mp_rom_map_elem_t esp_timer_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(esp_timer_locals_dict, esp_timer_locals_dict_table);
 
-const mp_obj_type_t esp_timer_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Timer,
-    .print = esp_timer_print,
-    .make_new = esp_timer_make_new,
-    .locals_dict = (mp_obj_dict_t *)&esp_timer_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    esp_timer_type,
+    MP_QSTR_Timer,
+    MP_TYPE_FLAG_NONE,
+    make_new, esp_timer_make_new,
+    print, esp_timer_print,
+    locals_dict, &esp_timer_locals_dict
+    );
 
 // this bit is unused in the Xtensa PS register
 #define ETS_LOOP_ITER_BIT (12)
@@ -417,6 +419,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #endif
 
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us), MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&esp_timer_type) },

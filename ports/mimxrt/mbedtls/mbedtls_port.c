@@ -26,14 +26,14 @@
 
 #ifdef MICROPY_SSL_MBEDTLS
 
-#include "fsl_trng.h"
 #include "mbedtls_config.h"
+void trng_random_data(unsigned char *output, size_t len);
 
 int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
 
     // assumes that TRNG_Init was called during startup
     *olen = len;
-    TRNG_GetRandomData(TRNG, output, len);
+    trng_random_data(output, len);
 
     return 0;
 }

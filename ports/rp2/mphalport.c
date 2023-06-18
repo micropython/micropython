@@ -35,7 +35,11 @@
 #include "hardware/rtc.h"
 #include "pico/unique_id.h"
 
-#if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_ENABLE_USBDEV
+#if MICROPY_PY_NETWORK_CYW43
+#include "lib/cyw43-driver/src/cyw43.h"
+#endif
+
+#if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
 
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
 #define MICROPY_HW_STDIN_BUFFER_LEN 512
@@ -46,7 +50,7 @@ ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array) };
 
 #endif
 
-#if MICROPY_HW_ENABLE_USBDEV
+#if MICROPY_HW_USB_CDC
 
 uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
 
@@ -87,12 +91,21 @@ void tud_cdc_rx_cb(uint8_t itf) {
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
-    #if MICROPY_HW_ENABLE_USBDEV
+    #if MICROPY_HW_USB_CDC
     poll_cdc_interfaces();
     #endif
-    #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_ENABLE_USBDEV
+    #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
     if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
         ret |= MP_STREAM_POLL_RD;
+    }
+    if (poll_flags & MP_STREAM_POLL_WR) {
+        #if MICROPY_HW_ENABLE_UART_REPL
+        ret |= MP_STREAM_POLL_WR;
+        #else
+        if (tud_cdc_connected() && tud_cdc_write_available() > 0) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+        #endif
     }
     #endif
     #if MICROPY_PY_OS_DUPTERM
@@ -104,7 +117,7 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        #if MICROPY_HW_ENABLE_USBDEV
+        #if MICROPY_HW_USB_CDC
         poll_cdc_interfaces();
         #endif
 
@@ -128,15 +141,20 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     mp_uart_write_strn(str, len);
     #endif
 
-    #if MICROPY_HW_ENABLE_USBDEV
+    #if MICROPY_HW_USB_CDC
     if (tud_cdc_connected()) {
         for (size_t i = 0; i < len;) {
             uint32_t n = len - i;
             if (n > CFG_TUD_CDC_EP_BUFSIZE) {
                 n = CFG_TUD_CDC_EP_BUFSIZE;
             }
-            while (n > tud_cdc_write_available()) {
+            int timeout = 0;
+            // Wait with a max of USC_CDC_TIMEOUT ms
+            while (n > tud_cdc_write_available() && timeout++ < MICROPY_HW_USB_CDC_TX_TIMEOUT) {
                 MICROPY_EVENT_POLL_HOOK
+            }
+            if (timeout >= MICROPY_HW_USB_CDC_TX_TIMEOUT) {
+                break;
             }
             uint32_t n2 = tud_cdc_write(str + i, n);
             tud_cdc_write_flush();
@@ -153,9 +171,8 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 void mp_hal_delay_ms(mp_uint_t ms) {
     absolute_time_t t = make_timeout_time_ms(ms);
     while (!time_reached(t)) {
-        mp_handle_pending(true);
+        MICROPY_EVENT_POLL_HOOK_FAST;
         best_effort_wfe_or_timeout(t);
-        MICROPY_HW_USBDEV_TASK_HOOK
     }
 }
 
@@ -168,6 +185,9 @@ uint64_t mp_hal_time_ns(void) {
 
 // Generate a random locally administered MAC address (LAA)
 void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]) {
+    #ifndef NDEBUG
+    printf("Warning: No MAC in OTP, generating MAC from board id\n");
+    #endif
     pico_unique_board_id_t pid;
     pico_get_unique_board_id(&pid);
     buf[0] = 0x02; // LAA range
@@ -180,5 +200,26 @@ void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]) {
 
 // A board can override this if needed
 MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    #if MICROPY_PY_NETWORK_CYW43
+    // The mac should come from cyw43 otp when CYW43_USE_OTP_MAC is defined
+    // This is loaded into the state after the driver is initialised
+    // cyw43_hal_generate_laa_mac is only called by the driver to generate a mac if otp is not set
+    memcpy(buf, cyw43_state.mac, 6);
+    #else
     mp_hal_generate_laa_mac(idx, buf);
+    #endif
+}
+
+void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
+    static const char hexchr[16] = "0123456789ABCDEF";
+    uint8_t mac[6];
+    mp_hal_get_mac(idx, mac);
+    for (; chr_len; ++chr_off, --chr_len) {
+        *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
+    }
+}
+
+// Shouldn't be used, needed by cyw43-driver in debug build.
+uint32_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+    panic_unsupported();
 }

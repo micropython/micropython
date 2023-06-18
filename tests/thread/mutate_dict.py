@@ -7,6 +7,7 @@ import _thread
 # the shared dict
 di = {"a": "A", "b": "B", "c": "C", "d": "D"}
 
+
 # main thread function
 def th(n, lo, hi):
     for repeat in range(n):

@@ -94,7 +94,7 @@ def compute_pll2(hse, sys, relax_pll48):
     fallback = None
     for P in mcu.range_p:
         # VCO_OUT must be between 192MHz and 432MHz
-        if not sys * P in mcu.range_vco_out:
+        if sys * P not in mcu.range_vco_out:
             continue
         NbyM = float(sys * P) / hse  # float for Python 2
         # scan M

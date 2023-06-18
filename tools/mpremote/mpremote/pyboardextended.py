@@ -143,6 +143,15 @@ class RemoteFile(uio.IOBase):
     def __exit__(self, a, b, c):
         self.close()
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        l = self.readline()
+        if not l:
+            raise StopIteration
+        return l
+
     def ioctl(self, request, arg):
         if request == 1:  # FLUSH
             self.flush()
@@ -428,12 +437,11 @@ class PyboardCommand:
         path = self.root + self.rd_str()
         try:
             self.path_check(path)
+            self.data_ilistdir[0] = path
+            self.data_ilistdir[1] = os.listdir(path)
             self.wr_s8(0)
         except OSError as er:
             self.wr_s8(-abs(er.errno))
-        else:
-            self.data_ilistdir[0] = path
-            self.data_ilistdir[1] = os.listdir(path)
 
     def do_ilistdir_next(self):
         if self.data_ilistdir[1]:

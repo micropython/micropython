@@ -37,9 +37,6 @@
 
 #if MICROPY_PY_IO
 
-extern const mp_obj_type_t mp_type_fileio;
-extern const mp_obj_type_t mp_type_textio;
-
 #if MICROPY_PY_IO_IOBASE
 
 STATIC const mp_obj_type_t mp_type_iobase;
@@ -100,12 +97,13 @@ STATIC const mp_stream_p_t iobase_p = {
     .ioctl = iobase_ioctl,
 };
 
-STATIC const mp_obj_type_t mp_type_iobase = {
-    { &mp_type_type },
-    .name = MP_QSTR_IOBase,
-    .make_new = iobase_make_new,
-    .protocol = &iobase_p,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_iobase,
+    MP_QSTR_IOBase,
+    MP_TYPE_FLAG_NONE,
+    make_new, iobase_make_new,
+    protocol, &iobase_p
+    );
 
 #endif // MICROPY_PY_IO_IOBASE
 
@@ -194,13 +192,14 @@ STATIC const mp_stream_p_t bufwriter_stream_p = {
     .write = bufwriter_write,
 };
 
-STATIC const mp_obj_type_t mp_type_bufwriter = {
-    { &mp_type_type },
-    .name = MP_QSTR_BufferedWriter,
-    .make_new = bufwriter_make_new,
-    .protocol = &bufwriter_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&bufwriter_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bufwriter,
+    MP_QSTR_BufferedWriter,
+    MP_TYPE_FLAG_NONE,
+    make_new, bufwriter_make_new,
+    protocol, &bufwriter_stream_p,
+    locals_dict, &bufwriter_locals_dict
+    );
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 
 STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
@@ -210,12 +209,6 @@ STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
     #if MICROPY_PY_IO_IOBASE
     { MP_ROM_QSTR(MP_QSTR_IOBase), MP_ROM_PTR(&mp_type_iobase) },
-    #endif
-    #if MICROPY_PY_IO_FILEIO
-    { MP_ROM_QSTR(MP_QSTR_FileIO), MP_ROM_PTR(&mp_type_fileio) },
-    #if MICROPY_CPYTHON_COMPAT
-    { MP_ROM_QSTR(MP_QSTR_TextIOWrapper), MP_ROM_PTR(&mp_type_textio) },
-    #endif
     #endif
     { MP_ROM_QSTR(MP_QSTR_StringIO), MP_ROM_PTR(&mp_type_stringio) },
     #if MICROPY_PY_IO_BYTESIO

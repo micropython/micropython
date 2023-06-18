@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Bluetooth 5.0",
+        "IMU LSM6DS3TR",
+        "Microphone MSM261D3526H1CPM",
+        "USB-C",
+        "Breadboard Friendly",
+        "Battery Management",
+        "RGB LED",
+        "QSPI Flash"
+    ],
+    "images": [
+        "XIAO_nrf52840_front.jpg"
+    ],
+    "mcu": "nrf52",
+    "product": "SEEED XIAO nRF52840 Sense",
+    "thumbnail": "",
+    "url": "https://www.seeedstudio.com",
+    "vendor": "Seeed Studio"
+}

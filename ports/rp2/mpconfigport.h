@@ -27,20 +27,34 @@
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
 
 #include <stdint.h>
+#include "hardware/flash.h"
 #include "hardware/spi.h"
 #include "hardware/sync.h"
 #include "pico/binary_info.h"
+#include "pico/multicore.h"
 #include "mpconfigboard.h"
-#if MICROPY_HW_USB_MSC
-#include "hardware/flash.h"
-#endif
 
 #define MICROPY_PY_LVGL                         (1)
 
 // Board and hardware specific configuration
 #define MICROPY_HW_MCU_NAME                     "RP2040"
+#ifndef MICROPY_HW_ENABLE_UART_REPL
 #define MICROPY_HW_ENABLE_UART_REPL             (0) // useful if there is no USB
+#endif
+#ifndef MICROPY_HW_ENABLE_USBDEV
 #define MICROPY_HW_ENABLE_USBDEV                (1)
+#endif
+
+#if MICROPY_HW_ENABLE_USBDEV
+// Enable USB-CDC serial port
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC (1)
+#endif
+// Enable USB Mass Storage with FatFS filesystem.
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC (0)
+#endif
+#endif
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
@@ -62,7 +76,7 @@
 #define MICROPY_OPT_COMPUTED_GOTO               (1)
 
 // Python internal features
-#define MICROPY_TRACKED_ALLOC                   (MICROPY_SSL_MBEDTLS)
+#define MICROPY_TRACKED_ALLOC                   (MICROPY_SSL_MBEDTLS || MICROPY_BLUETOOTH_BTSTACK)
 #define MICROPY_READER_VFS                      (1)
 #define MICROPY_ENABLE_GC                       (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
@@ -84,10 +98,14 @@
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
 #define MICROPY_PY_UOS_INCLUDEFILE              "ports/rp2/moduos.c"
+#ifndef MICROPY_PY_OS_DUPTERM
+#define MICROPY_PY_OS_DUPTERM                   (1)
+#endif
 #define MICROPY_PY_UOS_UNAME                    (1)
 #define MICROPY_PY_UOS_URANDOM                  (1)
 #define MICROPY_PY_URE_MATCH_GROUPS             (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
+#define MICROPY_PY_UHASHLIB_SHA1                (1)
 #define MICROPY_PY_UCRYPTOLIB                   (1)
 #define MICROPY_PY_UTIME_MP_HAL                 (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC       (rosc_random_u32())
@@ -123,33 +141,42 @@
 #define MICROPY_FATFS_MAX_SS                    (FLASH_SECTOR_SIZE)
 #endif
 
-#if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
-#define mp_type_fileio mp_type_vfs_fat_fileio
-#define mp_type_textio mp_type_vfs_fat_textio
-#elif MICROPY_VFS_LFS2
-// Use VfsLfs2's types for fileio/textio
-#define mp_type_fileio mp_type_vfs_lfs2_fileio
-#define mp_type_textio mp_type_vfs_lfs2_textio
+#ifndef MICROPY_BOARD_ENTER_BOOTLOADER
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
 #endif
 
+// By default networking should include sockets, ssl, websockets, webrepl, dupterm.
 #if MICROPY_PY_NETWORK
-#define NETWORK_ROOT_POINTERS               mp_obj_list_t mod_network_nic_list;
-#else
-#define NETWORK_ROOT_POINTERS
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-rp2"
 #endif
 
-#if MICROPY_PY_BLUETOOTH
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH struct _machine_uart_obj_t *mp_bthci_uart;
-#else
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH
+#ifndef MICROPY_PY_USOCKET
+#define MICROPY_PY_USOCKET              (1)
+#endif
+#ifndef MICROPY_PY_USSL
+#define MICROPY_PY_USSL                 (1)
+#endif
+#ifndef MICROPY_PY_UWEBSOCKET
+#define MICROPY_PY_UWEBSOCKET           (1)
+#endif
+#ifndef MICROPY_PY_WEBREPL
+#define MICROPY_PY_WEBREPL              (1)
+#endif
 #endif
 
-#if MICROPY_BLUETOOTH_NIMBLE
-struct _mp_bluetooth_nimble_root_pointers_t;
-struct _mp_bluetooth_nimble_malloc_t;
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_malloc_t *bluetooth_nimble_memory; struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
+#if MICROPY_PY_NETWORK_CYW43
+extern const struct _mp_obj_type_t mp_network_cyw43_type;
+#define MICROPY_HW_NIC_CYW43 \
+    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(CYW43_LINK_DOWN) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(CYW43_LINK_JOIN) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(CYW43_LINK_BADAUTH) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(CYW43_LINK_NONET) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(CYW43_LINK_FAIL) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(CYW43_LINK_UP) },
 #else
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
+#define MICROPY_HW_NIC_CYW43
 #endif
 
 #if MICROPY_PY_NETWORK_NINAW10
@@ -157,21 +184,14 @@ struct _mp_bluetooth_nimble_malloc_t;
 #ifndef MICROPY_PY_USOCKET_EXTENDED_STATE
 #define MICROPY_PY_USOCKET_EXTENDED_STATE   (1)
 #endif
-// It also requires an additional root pointer for the SPI object.
-#define MICROPY_PORT_ROOT_POINTER_NINAW10   struct _machine_spi_obj_t *mp_wifi_spi; struct _machine_timer_obj_t *mp_wifi_timer; struct _mp_obj_list_t *mp_wifi_sockpoll_list;
-extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
+extern const struct _mp_obj_type_t mod_network_nic_type_nina;
 #define MICROPY_HW_NIC_NINAW10              { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
 #else
 #define MICROPY_HW_NIC_NINAW10
-#define MICROPY_PORT_ROOT_POINTER_NINAW10
 #endif
 
 #if MICROPY_PY_NETWORK_WIZNET5K
-#if MICROPY_PY_LWIP
 extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
-#else
-extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
-#endif
 #define MICROPY_HW_NIC_WIZNET5K             { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
 #else
 #define MICROPY_HW_NIC_WIZNET5K
@@ -194,37 +214,36 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_CYW43 \
     MICROPY_HW_NIC_NINAW10  \
     MICROPY_HW_NIC_WIZNET5K \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
-#ifndef MICROPY_BOARD_ROOT_POINTERS
-#define MICROPY_BOARD_ROOT_POINTERS
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
 #endif
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    LV_ROOTS \
-    void *mp_lv_user_data; \
-    const char *readline_hist[8]; \
-    void *machine_pin_irq_obj[30]; \
-    void *rp2_pio_irq_obj[2]; \
-    void *rp2_state_machine_irq_obj[8]; \
-    void *rp2_uart_rx_buffer[2]; \
-    void *rp2_uart_tx_buffer[2]; \
-    void *machine_i2s_obj[2]; \
-    NETWORK_ROOT_POINTERS \
-    MICROPY_BOARD_ROOT_POINTERS \
-    MICROPY_PORT_ROOT_POINTER_NINAW10 \
-    MICROPY_PORT_ROOT_POINTER_BLUETOOTH \
-        MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
 
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
 
-// TODO need to look and see if these could/should be spinlock/mutex
-#define MICROPY_BEGIN_ATOMIC_SECTION()     save_and_disable_interrupts()
-#define MICROPY_END_ATOMIC_SECTION(state)  restore_interrupts(state)
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID (0x2E8A) // Raspberry Pi
+#endif
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID (0x0005) // RP2 MicroPython
+#endif
+
+#ifndef MICROPY_HW_BOOTSEL_DELAY_US
+#define MICROPY_HW_BOOTSEL_DELAY_US 8
+#endif
+
+// Entering a critical section.
+extern uint32_t mp_thread_begin_atomic_section(void);
+extern void mp_thread_end_atomic_section(uint32_t);
+#define MICROPY_BEGIN_ATOMIC_SECTION()     mp_thread_begin_atomic_section()
+#define MICROPY_END_ATOMIC_SECTION(state)  mp_thread_end_atomic_section(state)
 
 // Prevent the "lwIP task" from running when unsafe to do so.
 #define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
@@ -232,10 +251,10 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
 
 #if MICROPY_HW_ENABLE_USBDEV
-#define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();
+#define MICROPY_HW_USBDEV_TASK_HOOK extern void usbd_task(void); usbd_task();
 #define MICROPY_VM_HOOK_COUNT (10)
 #define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
-#define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \
+#define MICROPY_VM_HOOK_POLL if (get_core_num() == 0 && --vm_hook_divisor == 0) { \
         vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
         MICROPY_HW_USBDEV_TASK_HOOK \
 }
@@ -245,12 +264,17 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_HW_USBDEV_TASK_HOOK
 #endif
 
-#define MICROPY_EVENT_POLL_HOOK \
+#define MICROPY_EVENT_POLL_HOOK_FAST \
     do { \
+        if (get_core_num() == 0) { MICROPY_HW_USBDEV_TASK_HOOK } \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
+    } while (0)
+
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        MICROPY_EVENT_POLL_HOOK_FAST; \
         best_effort_wfe_or_timeout(make_timeout_time_ms(1)); \
-        MICROPY_HW_USBDEV_TASK_HOOK \
     } while (0);
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))

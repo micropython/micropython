@@ -39,6 +39,9 @@
 #endif
 
 #define HCI_TRACE (0)
+#define COL_OFF "\033[0m"
+#define COL_GREEN "\033[0;32m"
+#define COL_BLUE "\033[0;34m"
 
 static hal_uart_tx_cb_t hal_uart_tx_cb;
 static void *hal_uart_tx_arg;
@@ -71,11 +74,11 @@ void hal_uart_start_tx(uint32_t port) {
     }
 
     #if HCI_TRACE
-    printf("< [% 8d] %02x", (int)mp_hal_ticks_ms(), mp_bluetooth_hci_cmd_buf[0]);
+    printf(COL_GREEN "< [% 8d] %02x", (int)mp_hal_ticks_ms(), mp_bluetooth_hci_cmd_buf[0]);
     for (size_t i = 1; i < len; ++i) {
         printf(":%02x", mp_bluetooth_hci_cmd_buf[i]);
     }
-    printf("\n");
+    printf(COL_OFF "\n");
     #endif
 
     mp_bluetooth_hci_uart_write(mp_bluetooth_hci_cmd_buf, len);
@@ -92,7 +95,7 @@ int hal_uart_close(uint32_t port) {
 
 STATIC void mp_bluetooth_hci_uart_char_cb(uint8_t chr) {
     #if HCI_TRACE
-    printf("> %02x\n", chr);
+    printf(COL_BLUE "> [% 8d] %02x" COL_OFF "\n", (int)mp_hal_ticks_ms(), chr);
     #endif
     hal_uart_rx_cb(hal_uart_rx_arg, chr);
 }

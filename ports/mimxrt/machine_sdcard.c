@@ -30,7 +30,12 @@
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 #include "ticks.h"
+
+#if defined(MIMXRT1170x_SERIES)
+#include "cm7/fsl_cache.h"
+#else
 #include "fsl_cache.h"
+#endif
 
 #include "sdcard.h"
 
@@ -62,7 +67,7 @@ STATIC mp_obj_t sdcard_obj_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_int_t sdcard_id = args[SDCARD_INIT_ARG_ID].u_int;
 
     if (!(1 <= sdcard_id && sdcard_id <= MP_ARRAY_SIZE(mimxrt_sdcard_objs))) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "SDCard(%d) doesn't exist", sdcard_id));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SDCard(%d) doesn't exist"), sdcard_id));
     }
 
     mimxrt_sdcard_obj_t *self = &mimxrt_sdcard_objs[(sdcard_id - 1)];
@@ -208,12 +213,13 @@ STATIC const mp_rom_map_elem_t sdcard_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(sdcard_locals_dict, sdcard_locals_dict_table);
 
-const mp_obj_type_t machine_sdcard_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SDCard,
-    .make_new = sdcard_obj_make_new,
-    .locals_dict = (mp_obj_dict_t *)&sdcard_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_sdcard_type,
+    MP_QSTR_SDCard,
+    MP_TYPE_FLAG_NONE,
+    make_new, sdcard_obj_make_new,
+    locals_dict, &sdcard_locals_dict
+    );
 
 void machine_sdcard_init0(void) {
     return;

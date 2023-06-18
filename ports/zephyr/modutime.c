@@ -28,7 +28,7 @@
 #include "py/mpconfig.h"
 #if MICROPY_PY_UTIME
 
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 
 #include "py/runtime.h"
 #include "py/smallint.h"

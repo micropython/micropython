@@ -39,14 +39,7 @@ _ADV_NONCONN_IND = const(0x03)
 _ENV_SENSE_UUID = bluetooth.UUID(0x181A)
 # org.bluetooth.characteristic.temperature
 _TEMP_UUID = bluetooth.UUID(0x2A6E)
-_TEMP_CHAR = (
-    _TEMP_UUID,
-    bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,
-)
-_ENV_SENSE_SERVICE = (
-    _ENV_SENSE_UUID,
-    (_TEMP_CHAR,),
-)
+
 
 # org.bluetooth.characteristic.gap.appearance.xml
 _ADV_APPEARANCE_GENERIC_THERMOMETER = const(768)
@@ -196,7 +189,7 @@ class BLETemperatureCentral:
 
     # Disconnect from current device.
     def disconnect(self):
-        if not self._conn_handle:
+        if self._conn_handle is None:
             return
         self._ble.gap_disconnect(self._conn_handle)
         self._reset()

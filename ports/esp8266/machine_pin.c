@@ -46,13 +46,15 @@
     (GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)) & ~GPIO_PIN_INT_TYPE_MASK) \
     | GPIO_PIN_INT_TYPE_SET(trig))) \
 
-#define GPIO_MODE_INPUT (0)
-#define GPIO_MODE_OUTPUT (1)
-#define GPIO_MODE_OPEN_DRAIN (2) // synthesised
-#define GPIO_PULL_NONE (0)
-#define GPIO_PULL_UP (1)
-// Removed in SDK 1.1.0
-// #define GPIO_PULL_DOWN (2)
+#define ENABLE_OPEN_DRAIN(phys_port) \
+    (GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(phys_port)), \
+    GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(phys_port))) \
+    | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)))
+
+#define DISABLE_OPEN_DRAIN(phys_port) \
+    (GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(phys_port)), \
+    GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(phys_port))) \
+    & ~GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE))) \
 
 typedef struct _pin_irq_obj_t {
     mp_obj_base_t base;
@@ -84,7 +86,7 @@ const pyb_pin_obj_t pyb_pin_obj[16 + 1] = {
     {{&pyb_pin_type}, 16, -1, -1},
 };
 
-STATIC uint8_t pin_mode[16 + 1];
+uint8_t pin_mode[16 + 1];
 
 // forward declaration
 STATIC const pin_irq_obj_t pin_irq_obj[16];
@@ -173,9 +175,7 @@ void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin_id) {
 
     ETS_GPIO_INTR_DISABLE();
     PIN_FUNC_SELECT(pin->periph, pin->func);
-    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)),
-        GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)))
-        | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); // open drain
+    ENABLE_OPEN_DRAIN(pin->phys_port);
     GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS,
         GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pin->phys_port));
     ETS_GPIO_INTR_ENABLE();
@@ -279,6 +279,7 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, size_t n_args, cons
             mp_raise_ValueError(MP_ERROR_TEXT("Pin(16) doesn't support pull"));
         }
     } else {
+        DISABLE_OPEN_DRAIN(self->phys_port);
         PIN_FUNC_SELECT(self->periph, self->func);
         #if 0
         // Removed in SDK 1.1.0
@@ -450,15 +451,16 @@ STATIC const mp_pin_p_t pin_pin_p = {
     .ioctl = pin_ioctl,
 };
 
-const mp_obj_type_t pyb_pin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Pin,
-    .print = pyb_pin_print,
-    .make_new = mp_pin_make_new,
-    .call = pyb_pin_call,
-    .protocol = &pin_pin_p,
-    .locals_dict = (mp_obj_dict_t *)&pyb_pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_pin_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_pin_make_new,
+    print, pyb_pin_print,
+    call, pyb_pin_call,
+    protocol, &pin_pin_p,
+    locals_dict, &pyb_pin_locals_dict
+    );
 
 /******************************************************************************/
 // Pin IRQ object
@@ -509,9 +511,12 @@ STATIC const mp_rom_map_elem_t pin_irq_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pin_irq_locals_dict, pin_irq_locals_dict_table);
 
-STATIC const mp_obj_type_t pin_irq_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_IRQ,
-    .call = pin_irq_call,
-    .locals_dict = (mp_obj_dict_t *)&pin_irq_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    pin_irq_type,
+    MP_QSTR_IRQ,
+    MP_TYPE_FLAG_NONE,
+    call, pin_irq_call,
+    locals_dict, &pin_irq_locals_dict
+    );
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t pin_irq_handler[16]);

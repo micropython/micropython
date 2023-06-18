@@ -11,7 +11,8 @@ except (ImportError, AttributeError):
     raise SystemExit
 
 mpy_arch = usys.implementation._mpy >> 8
-if mpy_arch == 0:
+if mpy_arch >> 2 == 0:
+    # This system does not support .mpy files containing native code
     print("SKIP")
     raise SystemExit
 
@@ -54,8 +55,8 @@ class UserFS:
 valid_header = bytes([77, 6, mpy_arch, 31])
 # fmt: off
 user_files = {
-    # bad architecture
-    '/mod0.mpy': b'M\x06\xfc\x1f',
+    # bad architecture (mpy_arch needed for sub-version)
+    '/mod0.mpy': bytes([77, 6, 0xfc | mpy_arch, 31]),
 
     # test loading of viper and asm
     '/mod1.mpy': valid_header + (

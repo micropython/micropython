@@ -1,4 +1,7 @@
-#all: Reformat remaining C code that doesn't have a space after a comma.
+# top: Update Python formatting to black "2023 stable style".
+8b2748269244304854b3462cb8902952b4dcb892
+
+# all: Reformat remaining C code that doesn't have a space after a comma.
 5b700b0af90591d6b1a2c087bb8de6b7f1bfdd2d
 
 # ports: Reformat more C and Python source code.

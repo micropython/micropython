@@ -40,6 +40,7 @@
 #define MICROPY_NLR_NUM_REGS_ARM_THUMB      (10)
 #define MICROPY_NLR_NUM_REGS_ARM_THUMB_FP   (10 + 6)
 #define MICROPY_NLR_NUM_REGS_AARCH64        (13)
+#define MICROPY_NLR_NUM_REGS_MIPS           (13)
 #define MICROPY_NLR_NUM_REGS_XTENSA         (10)
 #define MICROPY_NLR_NUM_REGS_XTENSAWIN      (17)
 
@@ -83,6 +84,9 @@
     #define MICROPY_NLR_POWERPC (1)
     // this could be less but using 128 for safety
     #define MICROPY_NLR_NUM_REGS (128)
+#elif defined(__mips__)
+    #define MICROPY_NLR_MIPS (1)
+    #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_MIPS)
 #else
     #define MICROPY_NLR_SETJMP (1)
     //#warning "No native NLR support for this arch, using setjmp implementation"
@@ -97,9 +101,16 @@
 
 typedef struct _nlr_buf_t nlr_buf_t;
 struct _nlr_buf_t {
-    // the entries here must all be machine word size
+    // The entries in this struct must all be machine word size.
+
+    // Pointer to the previous nlr_buf_t in the chain.
+    // Or NULL if it's the top-level one.
     nlr_buf_t *prev;
-    void *ret_val; // always a concrete object (an exception instance)
+
+    // The exception that is being raised:
+    // - NULL means the jump is because of a VM abort (only if MICROPY_ENABLE_VM_ABORT enabled)
+    // - otherwise it's always a concrete object (an exception instance)
+    void *ret_val;
 
     #if MICROPY_NLR_SETJMP
     jmp_buf jmpbuf;
@@ -144,6 +155,12 @@ unsigned int nlr_push(nlr_buf_t *);
 unsigned int nlr_push_tail(nlr_buf_t *top);
 void nlr_pop(void);
 NORETURN void nlr_jump(void *val);
+
+#if MICROPY_ENABLE_VM_ABORT
+#define nlr_set_abort(buf) MP_STATE_VM(nlr_abort) = buf
+#define nlr_get_abort() MP_STATE_VM(nlr_abort)
+NORETURN void nlr_jump_abort(void);
+#endif
 
 // This must be implemented by a port.  It's called by nlr_jump
 // if no nlr buf has been pushed.  It must not return, but rather

@@ -1,0 +1,2 @@
+pyserial >= 3.3
+importlib_metadata >= 1.4

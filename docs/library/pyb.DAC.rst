@@ -49,7 +49,7 @@ To output a continuous sine-wave at 12-bit resolution::
 Constructors
 ------------
 
-.. class:: pyb.DAC(port, bits=8, *, buffering=None)
+.. class:: DAC(port, bits=8, *, buffering=None)
 
    Construct a new DAC object.
 

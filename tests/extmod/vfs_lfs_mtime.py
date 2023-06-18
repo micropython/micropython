@@ -101,5 +101,10 @@ def test(bdev, vfs_class):
     vfs.umount()
 
 
-bdev = RAMBlockDevice(30)
+try:
+    bdev = RAMBlockDevice(30)
+except MemoryError:
+    print("SKIP")
+    raise SystemExit
+
 test(bdev, uos.VfsLfs2)

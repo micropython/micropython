@@ -35,6 +35,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "driver/spi_master.h"
+
 #define MICROPY_PLATFORM_VERSION "IDF" IDF_VER
 
 // The core that the MicroPython task(s) are pinned to.
@@ -42,7 +44,9 @@
 // and avoid the Wifi/BLE timing problems on the same core.
 // Best effort here to remain backwards compatible in rare version edge cases...
 // See https://github.com/micropython/micropython/issues/5489 for history
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 2, 0)
+#if CONFIG_FREERTOS_UNICORE
+#define MP_TASK_COREID (0)
+#elif ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 2, 0)
 #define MP_TASK_COREID (1)
 #else
 #define MP_TASK_COREID (0)
@@ -110,5 +114,7 @@ static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
 static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
     gpio_set_level(pin, v);
 }
+
+spi_host_device_t machine_hw_spi_get_host(mp_obj_t in);
 
 #endif // INCLUDED_MPHALPORT_H

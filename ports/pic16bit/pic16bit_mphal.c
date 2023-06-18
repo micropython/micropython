@@ -57,6 +57,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     if ((poll_flags & MP_STREAM_POLL_RD) && uart_rx_any()) {
         ret |= MP_STREAM_POLL_RD;
     }
+    if (poll_flags & MP_STREAM_POLL_WR) {
+        ret |= MP_STREAM_POLL_WR;
+    }
     return ret;
 }
 
@@ -86,3 +89,5 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
         uart_tx_char(*str++);
     }
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t keyboard_interrupt_obj);

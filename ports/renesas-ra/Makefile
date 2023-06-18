@@ -1,14 +1,20 @@
-# Select the board to build for: if not given on the command line,
-# then default to RA6M2_EK.
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to RA6M2_EK.
 BOARD ?= RA6M2_EK
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
 BOARD_DIR ?= boards/$(BOARD)
+endif
+
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
+
+# If the build directory is not given, make it reflect the board name.
+BUILD ?= build-$(BOARD)
 
 ifeq ($(BOARD),RA4M1_CLICKER)
 BOARD_LOW = ra4m1_ek
@@ -67,6 +73,7 @@ FROZEN_MANIFEST ?= boards/manifest.py
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES += lib/fsp
 
@@ -120,7 +127,7 @@ CFLAGS_MCU_RA4W1 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_RA6M1 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_RA6M2 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 
-CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_EXTRA)
 #CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(CMSIS_MCU))
 CFLAGS += $(COPT)
@@ -138,7 +145,7 @@ CFLAGS += -fsingle-precision-constant
 endif
 endif
 
-LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
+LDFLAGS += -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
 LDFLAGS += --defsym=_estack_reserve=8
 LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
 
@@ -147,8 +154,9 @@ CFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS += --gc-sections
 
 # Debugging/Optimization
+CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -DPENDSV_DEBUG
+CFLAGS += -DPENDSV_DEBUG
 #COPT = -Og
 COPT = -Os
 # Disable text compression in debug builds
@@ -159,8 +167,9 @@ endif
 
 # Flags for optional C++ source code
 CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS))
-CXXFLAGS += $(CXXFLAGS_MOD)
-ifneq ($(SRC_CXX)$(SRC_MOD_CXX),)
+
+# TODO make this common -- shouldn't be using these "private" vars from py.mk
+ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
 LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
 LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
@@ -178,6 +187,7 @@ SHARED_SRC_C += $(addprefix shared/,\
 	runtime/interrupt_char.c \
 	runtime/mpirq.c \
 	runtime/pyexec.c \
+	runtime/softtimer.c \
 	runtime/stdout_helpers.c \
 	runtime/sys_stdio_mphal.c \
 	timeutils/timeutils.c \
@@ -276,10 +286,6 @@ ifeq ($(MICROPY_FLOAT_IMPL),double)
 $(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
-EXTMOD_SRC_C += $(addprefix extmod/,\
-	modonewire.c \
-	)
-
 DRIVERS_SRC_C += $(addprefix drivers/,\
 	bus/softspi.c \
 	bus/softqspi.c \
@@ -296,7 +302,6 @@ SRC_C += \
 	irq.c \
 	pendsv.c \
 	systick.c  \
-	softtimer.c  \
 	powerctrl.c \
 	powerctrlboot.c \
 	pybthread.c \
@@ -309,7 +314,6 @@ SRC_C += \
 	machine_adc.c \
 	machine_i2c.c \
 	machine_spi.c \
-	machine_timer.c \
 	machine_uart.c \
 	machine_pin.c \
 	machine_rtc.c \
@@ -332,15 +336,12 @@ SRC_C += $(addprefix $(BOARD_DIR)/ra_gen/,\
 	vector_data.c \
 	)
 
-SRC_CXX += \
-	$(SRC_MOD_CXX)
-
 SRC_O += \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE)
 
 SRC_O += \
-	shared/runtime/gchelper_m3.o
+	shared/runtime/gchelper_thumb2.o
 
 HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/board/$(BOARD_LOW)/,\
 	board_init.c \
@@ -406,13 +407,11 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(LIBM_O)
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
-OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
 # This file contains performance critical functions so turn up the optimisation
@@ -512,7 +511,7 @@ GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 FILE2H = $(TOP)/tools/file2h.py
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SRC_MOD) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
 
 # Making OBJ use an order-only depenedency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile

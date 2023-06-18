@@ -106,6 +106,8 @@ void uart_attach_to_repl(machine_uart_obj_t *self, bool attached);
 uint32_t uart_get_baudrate(machine_uart_obj_t *self);
 mp_uint_t uart_rx_any(machine_uart_obj_t *uart_obj);
 mp_uint_t uart_tx_avail(machine_uart_obj_t *uart_obj);
+mp_uint_t uart_tx_busy(machine_uart_obj_t *uart_obj);
+mp_uint_t uart_tx_txbuf(machine_uart_obj_t *self);
 bool uart_rx_wait(machine_uart_obj_t *self, uint32_t timeout);
 int uart_rx_char(machine_uart_obj_t *uart_obj);
 bool uart_tx_wait(machine_uart_obj_t *self, uint32_t timeout);

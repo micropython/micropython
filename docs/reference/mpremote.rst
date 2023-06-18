@@ -1,3 +1,5 @@
+.. _mpremote:
+
 MicroPython remote control: mpremote
 ====================================
 
@@ -17,10 +19,10 @@ The simplest way to use this tool is just by invoking it without any arguments:
 
     mpremote
 
-This command automatically detects and connects to the first available serial
-device and provides an interactive REPL.  Serial ports are opened in exclusive
-mode, so running a second (or third, etc) instance of ``mpremote`` will connect
-to subsequent serial devices, if any are available.
+This command automatically detects and connects to the first available USB
+serial device and provides an interactive REPL.  Serial ports are opened in
+exclusive mode, so running a second (or third, etc) instance of ``mpremote``
+will connect to subsequent serial devices, if any are available.
 
 
 Commands
@@ -29,6 +31,9 @@ Commands
 For REPL access, running ``mpremote`` without any arguments is usually all that
 is needed.  ``mpremote`` also supports a set of commands given at the command
 line which will perform various actions on remote MicroPython devices.
+
+For commands that support multiple arguments (e.g. a list of files), the
+argument list can be terminated with ``+``.
 
 The full list of supported commands are:
 
@@ -47,7 +52,7 @@ The full list of supported commands are:
   ``<device>`` may be one of:
 
   - ``list``: list available devices
-  - ``auto``: connect to the first available device
+  - ``auto``: connect to the first available USB serial port
   - ``id:<serial>``: connect to the device with USB serial number
     ``<serial>`` (the second entry in the output from the ``connect list``
     command)
@@ -128,6 +133,26 @@ The full list of supported commands are:
   - ``rm <src...>`` to remove files on the device
   - ``mkdir <dirs...>`` to create directories on the device
   - ``rmdir <dirs...>`` to remove directories on the device
+  - ``touch <file..>`` to create the files (if they don't already exist)
+
+- edit a file on the device:
+
+  .. code-block:: bash
+
+      $ mpremote edit <files...>
+
+  The ``edit`` command will copy each file from the device to a local temporary
+  directory and then launch your editor for each file (defined by the environment
+  variable ``$EDITOR``). If the editor exits successfully, the updated file will
+  be copied back to the device.
+
+- install packages from :term:`micropython-lib` (or GitHub) using the ``mip`` tool:
+
+  .. code-block:: bash
+
+      $ mpremote mip install <packages...>
+
+  See :ref:`packages` for more information.
 
 - mount the local directory on the remote device:
 
@@ -161,8 +186,8 @@ Auto connection and soft-reset
 
 Connection and disconnection will be done automatically at the start and end of
 the execution of the tool, if such commands are not explicitly given.  Automatic
-connection will search for the first available serial device. If no action is
-specified then the REPL will be entered.
+connection will search for the first available USB serial device. If no action
+is specified then the REPL will be entered.
 
 Once connected to a device, ``mpremote`` will automatically soft-reset the
 device if needed.  This clears the Python heap and restarts the interpreter,
@@ -189,8 +214,8 @@ Shortcuts can be defined using the macro system.  Built-in shortcuts are::
 
 - ``c0``, ``c1``, ``c2``, ``c3``: connect to COM?
 
-- ``cat``, ``ls``, ``cp``, ``rm``, ``mkdir``, ``rmdir``, ``df``: filesystem
-  commands
+- ``cat``, ``ls``, ``cp``, ``rm``, ``mkdir``, ``rmdir``, ``touch``, ``df``:
+  filesystem commands
 
 - ``reset``: reset the device
 
@@ -247,4 +272,14 @@ Examples
 
   mpremote cp main.py :
 
+  mpremote cp :a.py :b.py
+
   mpremote cp -r dir/ :
+
+  mpremote cp a.py b.py : + repl
+
+  mpremote mip install aioble
+
+  mpremote mip install github:org/repo@branch
+
+  mpremote mip install --target /flash/third-party functools

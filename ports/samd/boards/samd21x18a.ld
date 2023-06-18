@@ -13,5 +13,8 @@ MEMORY
 _estack = ORIGIN(RAM) + LENGTH(RAM) - 8;
 _sstack = _estack - 8K;
 
+_oflash_fs = ORIGIN(FLASH) + 192K - 8K;
+_sflash_fs = LENGTH(FLASH) - 192K + 8K - 1;
+
 _sheap = _ebss;
 _eheap = _sstack;

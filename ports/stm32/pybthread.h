@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_STM32_PYBTHREAD_H
 #define MICROPY_INCLUDED_STM32_PYBTHREAD_H
 
+#include "py/mpprint.h"
+
 typedef struct _pyb_thread_t {
     void *sp;
     uint32_t local_state;
@@ -48,7 +50,7 @@ extern pyb_thread_t *volatile pyb_thread_cur;
 void pyb_thread_init(pyb_thread_t *th);
 void pyb_thread_deinit();
 uint32_t pyb_thread_new(pyb_thread_t *th, void *stack, size_t stack_len, void *entry, void *arg);
-void pyb_thread_dump(void);
+void pyb_thread_dump(const mp_print_t *print);
 
 static inline uint32_t pyb_thread_get_id(void) {
     return (uint32_t)pyb_thread_cur;

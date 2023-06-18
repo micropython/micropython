@@ -17,7 +17,7 @@ Example usage::
 Constructors
 ------------
 
-.. class:: pyb.RTC()
+.. class:: RTC()
 
    Create an RTC object.
 

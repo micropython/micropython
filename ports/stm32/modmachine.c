@@ -24,15 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <string.h>
 
 #include "modmachine.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-#include "py/objstr.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "drivers/dht/dht.h"
 #include "extmod/machine_bitstream.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_signal.h"
@@ -46,6 +45,7 @@
 #include "gccollect.h"
 #include "irq.h"
 #include "powerctrl.h"
+#include "boardctrl.h"
 #include "pybthread.h"
 #include "rng.h"
 #include "storage.h"
@@ -138,7 +138,7 @@ void machine_init(void) {
         if (state & RCC_SR_IWDGRSTF || state & RCC_SR_WWDGRSTF) {
             reset_cause = PYB_RESET_WDT;
         } else if (state & RCC_SR_PORRSTF
-                   #if !defined(STM32F0) && !defined(STM32F412Zx)
+                   #if !defined(STM32F0) && !defined(STM32F412Zx) && !defined(STM32L1)
                    || state & RCC_SR_BORRSTF
                    #endif
                    ) {
@@ -162,24 +162,26 @@ void machine_deinit(void) {
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
 STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
+    const mp_print_t *print = &mp_plat_print;
+
     // get and print unique id; 96 bits
     {
         byte *id = (byte *)MP_HAL_UNIQUE_ID_ADDRESS;
-        printf("ID=%02x%02x%02x%02x:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7], id[8], id[9], id[10], id[11]);
+        mp_printf(print, "ID=%02x%02x%02x%02x:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7], id[8], id[9], id[10], id[11]);
     }
 
-    printf("DEVID=0x%04x\nREVID=0x%04x\n", (unsigned int)HAL_GetDEVID(), (unsigned int)HAL_GetREVID());
+    mp_printf(print, "DEVID=0x%04x\nREVID=0x%04x\n", (unsigned int)HAL_GetDEVID(), (unsigned int)HAL_GetREVID());
 
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
         #if defined(STM32F0) || defined(STM32G0)
-        printf("S=%u\nH=%u\nP1=%u\n",
+        mp_printf(print, "S=%u\nH=%u\nP1=%u\n",
             (unsigned int)HAL_RCC_GetSysClockFreq(),
             (unsigned int)HAL_RCC_GetHCLKFreq(),
             (unsigned int)HAL_RCC_GetPCLK1Freq());
         #else
-        printf("S=%u\nH=%u\nP1=%u\nP2=%u\n",
+        mp_printf(print, "S=%u\nH=%u\nP1=%u\nP2=%u\n",
             (unsigned int)HAL_RCC_GetSysClockFreq(),
             (unsigned int)HAL_RCC_GetHCLKFreq(),
             (unsigned int)HAL_RCC_GetPCLK1Freq(),
@@ -189,35 +191,35 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 
     // to print info about memory
     {
-        printf("_etext=%p\n", &_etext);
-        printf("_sidata=%p\n", &_sidata);
-        printf("_sdata=%p\n", &_sdata);
-        printf("_edata=%p\n", &_edata);
-        printf("_sbss=%p\n", &_sbss);
-        printf("_ebss=%p\n", &_ebss);
-        printf("_sstack=%p\n", &_sstack);
-        printf("_estack=%p\n", &_estack);
-        printf("_ram_start=%p\n", &_ram_start);
-        printf("_heap_start=%p\n", &_heap_start);
-        printf("_heap_end=%p\n", &_heap_end);
-        printf("_ram_end=%p\n", &_ram_end);
+        mp_printf(print, "_etext=%p\n", &_etext);
+        mp_printf(print, "_sidata=%p\n", &_sidata);
+        mp_printf(print, "_sdata=%p\n", &_sdata);
+        mp_printf(print, "_edata=%p\n", &_edata);
+        mp_printf(print, "_sbss=%p\n", &_sbss);
+        mp_printf(print, "_ebss=%p\n", &_ebss);
+        mp_printf(print, "_sstack=%p\n", &_sstack);
+        mp_printf(print, "_estack=%p\n", &_estack);
+        mp_printf(print, "_ram_start=%p\n", &_ram_start);
+        mp_printf(print, "_heap_start=%p\n", &_heap_start);
+        mp_printf(print, "_heap_end=%p\n", &_heap_end);
+        mp_printf(print, "_ram_end=%p\n", &_ram_end);
     }
 
     // qstr info
     {
         size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
         qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-        printf("qstr:\n  n_pool=%u\n  n_qstr=%u\n  n_str_data_bytes=%u\n  n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
+        mp_printf(print, "qstr:\n  n_pool=%u\n  n_qstr=%u\n  n_str_data_bytes=%u\n  n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
     }
 
     // GC info
     {
         gc_info_t info;
         gc_info(&info);
-        printf("GC:\n");
-        printf("  %u total\n", info.total);
-        printf("  %u : %u\n", info.used, info.free);
-        printf("  1=%u 2=%u m=%u\n", info.num_1block, info.num_2block, info.max_block);
+        mp_printf(print, "GC:\n");
+        mp_printf(print, "  %u total\n", info.total);
+        mp_printf(print, "  %u : %u\n", info.used, info.free);
+        mp_printf(print, "  1=%u 2=%u m=%u\n", info.num_1block, info.num_2block, info.max_block);
     }
 
     // free space on flash
@@ -229,7 +231,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
                 fs_user_mount_t *vfs_fat = MP_OBJ_TO_PTR(vfs->obj);
                 DWORD nclst;
                 f_getfree(&vfs_fat->fatfs, &nclst);
-                printf("LFS free: %u bytes\n", (uint)(nclst * vfs_fat->fatfs.csize * 512));
+                mp_printf(print, "LFS free: %u bytes\n", (uint)(nclst * vfs_fat->fatfs.csize * 512));
                 break;
             }
         }
@@ -237,12 +239,12 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     }
 
     #if MICROPY_PY_THREAD
-    pyb_thread_dump();
+    pyb_thread_dump(print);
     #endif
 
     if (n_args == 1) {
         // arg given means dump gc allocation table
-        gc_dump_alloc_table();
+        gc_dump_alloc_table(print);
     }
 
     return mp_const_none;
@@ -270,7 +272,7 @@ STATIC mp_obj_t machine_soft_reset(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 // Activate the bootloader without BOOT* pins.
-STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
     #endif
@@ -280,21 +282,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
 
     __disable_irq();
 
-    #if MICROPY_HW_USES_BOOTLOADER
-    if (n_args == 0 || !mp_obj_is_true(args[0])) {
-        // By default, with no args given, we enter the custom bootloader (mboot)
-        powerctrl_enter_bootloader(0x70ad0000, MBOOT_VTOR);
-    }
-
-    if (n_args == 1 && mp_obj_is_str_or_bytes(args[0])) {
-        // With a string/bytes given, pass its data to the custom bootloader
-        size_t len;
-        const char *data = mp_obj_str_get_data(args[0], &len);
-        void *mboot_region = (void *)*((volatile uint32_t *)MBOOT_VTOR);
-        memmove(mboot_region, data, len);
-        powerctrl_enter_bootloader(0x70ad0080, MBOOT_VTOR);
-    }
-    #endif
+    MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
 
     #if defined(STM32F7) || defined(STM32H7)
     powerctrl_enter_bootloader(0, 0x1ff00000);
@@ -323,7 +311,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4) || defined(STM32G0)
+        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32G0)
         mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
@@ -353,8 +341,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         if (ret == -MP_EINVAL) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid freq"));
         } else if (ret < 0) {
-            void NORETURN __fatal_error(const char *msg);
-            __fatal_error("can't change freq");
+            MICROPY_BOARD_FATAL_ERROR("can't change freq");
         }
         return mp_const_none;
         #endif
@@ -427,6 +414,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #if MICROPY_PY_MACHINE_PULSE
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_dht_readinto),        MP_ROM_PTR(&dht_readinto_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_mem8),                MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16),               MP_ROM_PTR(&machine_mem16_obj) },
@@ -439,14 +427,14 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) },
     #if MICROPY_PY_MACHINE_I2C
     #if MICROPY_HW_ENABLE_HW_I2C
-    { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_hard_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
     #else
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&mp_machine_soft_i2c_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
     #endif
     #if MICROPY_PY_MACHINE_SPI
-    { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_hard_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
     #endif
     #if MICROPY_HW_ENABLE_I2S

@@ -788,7 +788,7 @@ static void ra_sci_tx_set_pin(uint32_t pin) {
     uint32_t af;
     find = ra_af_find_ch_af((ra_af_pin_t *)&ra_sci_tx_pins, SCI_TX_PINS_SIZE, pin, &ch, &af);
     if (find) {
-        ra_gpio_config(pin, GPIO_MODE_AF_PP, 0, 0, af);
+        ra_gpio_config(pin, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_LOW_POWER, af);
     }
 }
 
@@ -798,7 +798,7 @@ static void ra_sci_rx_set_pin(uint32_t pin) {
     uint32_t af;
     find = ra_af_find_ch_af((ra_af_pin_t *)&ra_sci_rx_pins, SCI_RX_PINS_SIZE, pin, &ch, &af);
     if (find) {
-        ra_gpio_config(pin, GPIO_MODE_INPUT, 1, 0, af);
+        ra_gpio_config(pin, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_LOW_POWER, af);
     }
 }
 
@@ -808,7 +808,7 @@ static void ra_sci_cts_set_pin(uint32_t pin) {
     uint32_t af;
     find = ra_af_find_ch_af((ra_af_pin_t *)&ra_sci_cts_pins, SCI_CTS_PINS_SIZE, pin, &ch, &af);
     if (find) {
-        ra_gpio_config(pin, GPIO_MODE_INPUT, 1, 0, af);
+        ra_gpio_config(pin, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_LOW_POWER, af);
     }
 }
 
@@ -1026,6 +1026,16 @@ int ra_sci_tx_wait(uint32_t ch) {
     return (int)(tx_fifo[idx].len != (tx_fifo[idx].size - 1));
 }
 
+int ra_sci_tx_busy(uint32_t ch) {
+    uint32_t idx = ch_to_idx[ch];
+    return (int)(tx_fifo[idx].busy);
+}
+
+int ra_sci_tx_bufsize(uint32_t ch) {
+    uint32_t idx = ch_to_idx[ch];
+    return (int)(tx_fifo[idx].size - 1);
+}
+
 void ra_sci_tx_break(uint32_t ch) {
     uint32_t idx = ch_to_idx[ch];
     R_SCI0_Type *sci_reg = sci_regs[idx];
@@ -1134,7 +1144,7 @@ void ra_sci_init_with_flow(uint32_t ch, uint32_t tx_pin, uint32_t rx_pin, uint32
         }
         if (rts_pin != (uint32_t)PIN_END) {
             m_rts_pin[idx] = rts_pin;
-            ra_gpio_config(rts_pin, GPIO_MODE_OUTPUT_PP, false, 0, 0);
+            ra_gpio_config(rts_pin, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_LOW_POWER, 0);
             ra_gpio_write(rts_pin, 0);
         }
     }

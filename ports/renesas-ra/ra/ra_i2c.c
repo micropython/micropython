@@ -362,8 +362,8 @@ void ra_i2c_set_baudrate(R_IIC0_Type *i2c_inst, uint32_t baudrate) {
 
 void ra_i2c_init(R_IIC0_Type *i2c_inst, uint32_t scl, uint32_t sda, uint32_t baudrate) {
     ra_i2c_module_start(i2c_inst);
-    ra_gpio_config(scl, GPIO_MODE_AF_OD, 0, GPIO_NOTOUCH_POWER, AF_I2C);
-    ra_gpio_config(sda, GPIO_MODE_AF_OD, 0, GPIO_NOTOUCH_POWER, AF_I2C);
+    ra_gpio_config(scl, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_LOW_POWER, AF_I2C);
+    ra_gpio_config(sda, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_LOW_POWER, AF_I2C);
     ra_i2c_priority(i2c_inst, RA_PRI_I2C);
     i2c_inst->ICCR1_b.ICE = 0;     // I2C disable
     i2c_inst->ICCR1_b.IICRST = 1;  // I2C internal reset

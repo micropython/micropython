@@ -91,7 +91,7 @@ STATIC mp_obj_t ppp_make_new(mp_obj_t stream) {
 
     return MP_OBJ_FROM_PTR(self);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(ppp_make_new_obj, ppp_make_new);
+MP_DEFINE_CONST_FUN_OBJ_1(esp_network_ppp_make_new_obj, ppp_make_new);
 
 static u32_t ppp_output_callback(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx) {
     ppp_if_obj_t *self = ctx;
@@ -278,8 +278,9 @@ STATIC const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(ppp_if_locals_dict, ppp_if_locals_dict_table);
 
-const mp_obj_type_t ppp_if_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PPP,
-    .locals_dict = (mp_obj_dict_t *)&ppp_if_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ppp_if_type,
+    MP_QSTR_PPP,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &ppp_if_locals_dict
+    );

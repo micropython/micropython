@@ -46,9 +46,9 @@
 
 // Peripherals Config
 #define MICROPY_PY_MACHINE_UART     (1)
+#define MICROPY_PY_MACHINE_PWM      (1)
 #define MICROPY_PY_MACHINE_HW_PWM   (1)
 #define MICROPY_PY_MACHINE_HW_SPI   (1)
-#define MICROPY_PY_MACHINE_TIMER    (1)
 #define MICROPY_PY_MACHINE_RTCOUNTER (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_ADC      (1)

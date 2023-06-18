@@ -7,27 +7,32 @@ The simplest way to use this tool is:
 
     mpremote
 
-This will automatically connect to the device and provide an interactive REPL.
+This will automatically connect to a USB serial port and provide an interactive REPL.
 
 The full list of supported commands are:
 
-    mpremote connect <device>        -- connect to given device
-                                        device may be: list, auto, id:x, port:x
-                                        or any valid device name/path
-    mpremote disconnect              -- disconnect current device
-    mpremote mount <local-dir>       -- mount local directory on device
-    mpremote eval <string>           -- evaluate and print the string
-    mpremote exec <string>           -- execute the string
-    mpremote run <file>              -- run the given local script
-    mpremote fs <command> <args...>  -- execute filesystem commands on the device
-                                        command may be: cat, ls, cp, rm, mkdir, rmdir
-                                        use ":" as a prefix to specify a file on the device
-    mpremote repl                    -- enter REPL
-                                        options:
-                                            --capture <file>
-                                            --inject-code <string>
-                                            --inject-file <file>
-    mpremote help                    -- print list of commands and exit
+    mpremote connect <device>         -- connect to given device
+                                         device may be: list, auto, id:x, port:x
+                                         or any valid device name/path
+    mpremote disconnect               -- disconnect current device
+    mpremote mount <local-dir>        -- mount local directory on device
+    mpremote eval <string>            -- evaluate and print the string
+    mpremote exec <string>            -- execute the string
+    mpremote run <file>               -- run the given local script
+    mpremote fs <command> <args...>   -- execute filesystem commands on the device
+                                         command may be: cat, ls, cp, rm, mkdir, rmdir
+                                         use ":" as a prefix to specify a file on the device
+    mpremote repl                     -- enter REPL
+                                         options:
+                                             --capture <file>
+                                             --inject-code <string>
+                                             --inject-file <file>
+    mpremote mip install <package...> -- Install packages (from micropython-lib or third-party sources)
+                                         options:
+                                             --target <path>
+                                             --index <url>
+                                             --no-mpy
+    mpremote help                     -- print list of commands and exit
 
 Multiple commands can be specified and they will be run sequentially.  Connection
 and disconnection will be done automatically at the start and end of the execution
@@ -73,3 +78,5 @@ Examples:
     mpremote cp :main.py .
     mpremote cp main.py :
     mpremote cp -r dir/ :
+    mpremote mip install aioble
+    mpremote mip install github:org/repo@branch

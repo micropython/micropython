@@ -23,7 +23,7 @@ convertor to make the UART available to your PC.
 The minimum requirement for flash size is 1Mbyte. There is also a special
 build for boards with 512KB, but it is highly limited comparing to the
 normal build: there is no support for filesystem, and thus features which
-depend on it won't work (WebREPL, upip, etc.). As such, 512KB build will
+depend on it won't work (WebREPL, mip, etc.). As such, 512KB build will
 be more interesting for users who build from source and fine-tune parameters
 for their particular application.
 

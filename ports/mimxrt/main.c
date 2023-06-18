@@ -33,6 +33,7 @@
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/softtimer.h"
 #include "ticks.h"
 #include "tusb.h"
 #include "led.h"
@@ -57,9 +58,6 @@ int main(void) {
     led_init();
     pendsv_init();
 
-    mp_stack_set_top(&_estack);
-    mp_stack_set_limit(&_estack - &_sstack - 1024);
-
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
     // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
@@ -68,10 +66,14 @@ int main(void) {
     #if LWIP_MDNS_RESPONDER
     mdns_resp_init();
     #endif
+
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
     #endif
 
     for (;;) {
+        mp_stack_set_top(&_estack);
+        mp_stack_set_limit(&_estack - &_sstack - 1024);
+
         gc_init(&_gc_heap_start, &_gc_heap_end);
         mp_init();
 
@@ -83,7 +85,7 @@ int main(void) {
         readline_init0();
 
         // Execute _boot.py to set up the filesystem.
-        pyexec_frozen_module("_boot.py");
+        pyexec_frozen_module("_boot.py", false);
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");
@@ -120,6 +122,7 @@ int main(void) {
         mod_network_deinit();
         #endif
         machine_pwm_deinit_all();
+        soft_timer_deinit();
         gc_sweep_all();
         mp_deinit();
     }

@@ -26,3 +26,7 @@
     . = . + _minimum_stack_size;
     . = ALIGN(4);
 } >RAM
+
+/* _bl_state symbol is used by MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET, this is
+   the end of stack address but is accessed as a different type. */
+_bl_state = _estack;

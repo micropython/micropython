@@ -36,7 +36,6 @@
 #define CDC_ITF TINYUSB_CDC_ACM_0
 
 static uint8_t usb_rx_buf[CONFIG_USB_CDC_RX_BUFSIZE];
-static uint8_t usb_cdc_connected;
 
 static void usb_callback_rx(int itf, cdcacm_event_t *event) {
     // TODO: what happens if more chars come in during this function, are they lost?
@@ -59,13 +58,6 @@ static void usb_callback_rx(int itf, cdcacm_event_t *event) {
     }
 }
 
-void usb_callback_line_state_changed(int itf, cdcacm_event_t *event) {
-    int dtr = event->line_state_changed_data.dtr;
-    int rts = event->line_state_changed_data.rts;
-    // If dtr && rts are both true, the CDC is connected to a HOST.
-    usb_cdc_connected = dtr && rts;
-}
-
 void usb_init(void) {
     // Initialise the USB with defaults.
     tinyusb_config_t tusb_cfg = {0};
@@ -78,17 +70,17 @@ void usb_init(void) {
         .rx_unread_buf_sz = 256,
         .callback_rx = &usb_callback_rx,
         .callback_rx_wanted_char = NULL,
-        .callback_line_state_changed = &usb_callback_line_state_changed,
+        .callback_line_state_changed = NULL,
         .callback_line_coding_changed = NULL
     };
-    usb_cdc_connected = 0;
     ESP_ERROR_CHECK(tusb_cdc_acm_init(&amc_cfg));
 
 }
 
 void usb_tx_strn(const char *str, size_t len) {
     // Write out the data to the CDC interface, but only while the USB host is connected.
-    while (usb_cdc_connected && len) {
+    uint64_t timeout = esp_timer_get_time() + (uint64_t)(MICROPY_HW_USB_CDC_TX_TIMEOUT * 1000);
+    while (tud_cdc_n_connected(CDC_ITF) && len && esp_timer_get_time() < timeout) {
         size_t l = tinyusb_cdcacm_write_queue(CDC_ITF, (uint8_t *)str, len);
         str += l;
         len -= l;

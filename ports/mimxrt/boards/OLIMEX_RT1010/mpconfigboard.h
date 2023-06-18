@@ -1,6 +1,6 @@
 #define MICROPY_HW_BOARD_NAME "RT1010-Py-DevKIT"
 #define MICROPY_HW_MCU_NAME   "MIMXRT1011DAE5A"
-#define MICROPY_HW_USB_STR_MANUF "Olimex Ltd."
+#define MICROPY_HW_USB_MANUFACTURER_STRING "Olimex Ltd."
 #define MICROPY_HW_USB_VID 0x15ba
 #define MICROPY_HW_USB_PID 0x0046
 #define MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM (0)
@@ -57,6 +57,7 @@
 #define I2S_IOMUXC_GPR_MODE { 0, kIOMUXC_GPR_SAI1MClkOutputDir, 0, kIOMUXC_GPR_SAI3MClkOutputDir }
 #define I2S_DMA_REQ_SRC_RX { 0, kDmaRequestMuxSai1Rx, 0, kDmaRequestMuxSai3Rx }
 #define I2S_DMA_REQ_SRC_TX { 0, kDmaRequestMuxSai1Tx, 0, kDmaRequestMuxSai3Tx }
+#define I2S_AUDIO_PLL_CLOCK (2U)
 
 #define I2S_GPIO(_hwid, _fn, _mode, _pin, _iomux) \
     { \
@@ -80,7 +81,3 @@
         I2S_GPIO(3, WS, TX, GPIO_SD_00, IOMUXC_GPIO_SD_00_SAI3_TX_SYNC), /* pin D9 */ \
         I2S_GPIO(3, SD, TX, GPIO_SD_02, IOMUXC_GPIO_SD_02_SAI3_TX_DATA) /* pin D11 */ \
     }
-
-
-#define MICROPY_BOARD_ROOT_POINTERS \
-    struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_I2S_NUM];

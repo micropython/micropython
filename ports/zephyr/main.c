@@ -29,16 +29,16 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 #ifdef CONFIG_NETWORKING
-#include <net/net_context.h>
+#include <zephyr/net/net_context.h>
 #endif
 
 #ifdef CONFIG_USB_DEVICE_STACK
-#include <usb/usb_device.h>
+#include <zephyr/usb/usb_device.h>
 #endif
 
-#include <storage/flash_map.h>
+#include <zephyr/storage/flash_map.h>
 
 #include "py/mperrno.h"
 #include "py/builtin.h"
@@ -104,11 +104,11 @@ STATIC void vfs_init(void) {
 
     #ifdef CONFIG_DISK_DRIVER_SDMMC
     mp_obj_t args[] = { mp_obj_new_str(CONFIG_SDMMC_VOLUME_NAME, strlen(CONFIG_SDMMC_VOLUME_NAME)) };
-    bdev = zephyr_disk_access_type.make_new(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
+    bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_disk_access_type, make_new)(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/sd";
     #elif defined(CONFIG_FLASH_MAP) && FLASH_AREA_LABEL_EXISTS(storage)
     mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(FLASH_AREA_ID(storage)), MP_OBJ_NEW_SMALL_INT(4096) };
-    bdev = zephyr_flash_area_type.make_new(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
+    bdev = MP_OBJ_TYPE_GET_SLOT(&zephyr_flash_area_type, make_new)(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/flash";
     #endif
 
@@ -186,7 +186,6 @@ void gc_collect(void) {
     gc_collect_start();
     gc_collect_root(&dummy, ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
     gc_collect_end();
-    // gc_dump_info();
 }
 
 #if !MICROPY_READER_VFS

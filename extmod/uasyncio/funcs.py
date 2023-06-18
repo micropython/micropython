@@ -4,7 +4,7 @@
 from . import core
 
 
-def _run(waiter, aw):
+async def _run(waiter, aw):
     try:
         result = await aw
         status = True
@@ -61,7 +61,11 @@ class _Remove:
         pass
 
 
-async def gather(*aws, return_exceptions=False):
+# async
+def gather(*aws, return_exceptions=False):
+    if not aws:
+        return []
+
     def done(t, er):
         # Sub-task "t" has finished, with exception "er".
         nonlocal state

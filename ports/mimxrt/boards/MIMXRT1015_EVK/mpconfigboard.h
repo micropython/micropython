@@ -59,6 +59,7 @@
 #define I2S_IOMUXC_GPR_MODE { 0, kIOMUXC_GPR_SAI1MClkOutputDir, kIOMUXC_GPR_SAI2MClkOutputDir }
 #define I2S_DMA_REQ_SRC_RX { 0, kDmaRequestMuxSai1Rx, kDmaRequestMuxSai2Rx }
 #define I2S_DMA_REQ_SRC_TX { 0, kDmaRequestMuxSai1Tx, kDmaRequestMuxSai2Tx }
+#define I2S_AUDIO_PLL_CLOCK (2U)
 
 #define I2S_GPIO(_hwid, _fn, _mode, _pin, _iomux) \
     { \
@@ -79,6 +80,3 @@
         I2S_GPIO(1, WS, TX, GPIO_EMC_27, IOMUXC_GPIO_EMC_27_SAI1_TX_SYNC),  \
         I2S_GPIO(1, SD, TX, GPIO_EMC_25, IOMUXC_GPIO_EMC_25_SAI1_TX_DATA00), \
     }
-
-#define MICROPY_BOARD_ROOT_POINTERS \
-    struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_I2S_NUM];

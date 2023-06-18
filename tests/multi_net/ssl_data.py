@@ -39,6 +39,7 @@ cert = binascii.unhexlify(
     b"979b57f0b3"
 )
 
+
 # Server
 def instance0():
     multitest.globals(IP=multitest.get_network_ip())
