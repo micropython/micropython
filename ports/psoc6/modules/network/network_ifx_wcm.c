@@ -293,7 +293,7 @@ static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user
     scan_user_data_t *scan_user_data = (scan_user_data_t *)user_data;
     mp_obj_t *scan_list = scan_user_data->scan_list;
     uint8_t hidden_status = 1; // HIDDEN
-    uint8_t security_type = 0; // OPEN
+    uint8_t security_type = NET_IFX_WCM_SEC_OPEN;
 
     if (status == CY_WCM_SCAN_INCOMPLETE) {
         // Get the network status : hidden(1) or open(0)
@@ -302,7 +302,7 @@ static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user
         }
 
         // Get security type as mapped in micropython function description
-        // get_security_type(result_ptr, &security_type);
+        get_security_type(result_ptr, &security_type);
 
         mp_obj_t tuple[6] = {
             mp_obj_new_bytes(result_ptr->SSID, strlen((const char *)result_ptr->SSID)),
@@ -368,9 +368,10 @@ STATIC mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map
         }
     }
 
-    mp_obj_t res = mp_obj_new_list(0, NULL);
+    // mp_obj_t res = mp_obj_new_list(0, NULL);
+    // void *ntwk_scan_result = MP_OBJ_TO_PTR(res);
     scan_user_data_t scan_user_params;
-    scan_user_params.scan_list = MP_OBJ_FROM_PTR(res);
+    scan_user_params.scan_list = mp_obj_new_list(0, NULL);
 
     cy_wcm_scan_filter_t *scan_filter_ptr = NULL;
     if (is_filter_used) {
@@ -383,7 +384,7 @@ STATIC mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map
     while (scan_user_params.status == CY_WCM_SCAN_INCOMPLETE /*|| TODO: timeout_expired */) {
     }
 
-    return res;
+    return scan_user_params.scan_list;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_scan_obj, 1, network_ifx_wcm_scan);
 
@@ -427,14 +428,8 @@ STATIC mp_obj_t network_ifx_wcm_connect(size_t n_args, const mp_obj_t *pos_args,
         memcpy(connect_param.BSSID, bssid.buf, bssid.len);
     }
 
-    // Extract the security type, if given.
-    cy_wcm_security_t auth_type;
-    if (args[ARG_key].u_obj == mp_const_none) {
-        auth_type = CY_WCM_SECURITY_OPEN;
-    } else {
-        auth_type = CY_WCM_SECURITY_UNKNOWN;
-    }
-    connect_param.ap_credentials.security = auth_type;
+    // Let the wcm driver discover the network security
+    connect_param.ap_credentials.security = CY_WCM_SECURITY_UNKNOWN;
 
     cy_rslt_t ret = cy_wcm_connect_ap(&connect_param, &ipaddress);
     wcm_assert_raise("network sta connect error (with code: %d)", ret);
