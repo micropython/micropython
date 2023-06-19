@@ -27,8 +27,6 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_NETWORK_IFX_WCM_H
 #define MICROPY_INCLUDED_EXTMOD_NETWORK_IFX_WCM_H
 
-extern const mp_obj_type_t mp_network_ifx_wcm_type;
-
 void network_init(void);
 void network_deinit(void);
 
