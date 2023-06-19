@@ -121,7 +121,7 @@ Initialize MicroPython repl. Must be called before entering characters into
 the repl.
 
 ```
-mp_js_process_char(char)
+await mp_js_process_char(char)
 ```
 
 Input character into MicroPython repl. `char` must be of type `number`. This
