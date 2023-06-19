@@ -226,11 +226,20 @@ STATIC mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_wlan_active_obj, 1, 2, network_wlan_active);
 
 STATIC mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_key, ARG_bssid };
+    enum
+    {
+        ARG_ssid,
+        ARG_key,
+        ARG_bssid,
+        ARG_channel,
+        ARG_scan_method
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_scan_method, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
     };
 
     // parse args
@@ -259,6 +268,13 @@ STATIC mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
             wifi_sta_config.sta.bssid_set = 1;
             memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
         }
+        if (args[ARG_channel].u_int != -1) {
+            wifi_sta_config.sta.channel = args[ARG_channel].u_int;
+        }
+        if (args[ARG_scan_method].u_int != -1) {
+            wifi_sta_config.sta.scan_method = args[ARG_scan_method].u_int;
+        }
+
         esp_exceptions(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
     }
 
@@ -562,6 +578,10 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                 default:
                     req_if = WIFI_IF_AP;
             }
+            break;
+        case MP_QSTR_bssid:
+            req_if = WIFI_IF_STA;
+            val = mp_obj_new_bytes(cfg.sta.bssid, sizeof(cfg.sta.bssid));
             break;
         case MP_QSTR_hidden:
             req_if = WIFI_IF_AP;
