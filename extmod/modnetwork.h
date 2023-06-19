@@ -43,6 +43,7 @@
 
 // Common option flags per-socket.
 #define MOD_NETWORK_SO_REUSEADDR    (0x0004)
+#define MOD_NETWORK_SO_BROADCAST    (0x0020)
 #define MOD_NETWORK_SO_KEEPALIVE    (0x0008)
 #define MOD_NETWORK_SO_SNDTIMEO     (0x1005)
 #define MOD_NETWORK_SO_RCVTIMEO     (0x1006)
