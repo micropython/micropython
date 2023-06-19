@@ -57,7 +57,6 @@ def instance1():
     # scan()
     wlan_nets = sta_if.scan()
     test_ap_net = [net for net in wlan_nets if net[0] == b"mpy-psoc6-wlan"]
-    print(test_ap_net)
     print("sta scan finds ap wlan: ", test_ap_net != [])
 
     wlan_ssid_filter = sta_if.scan(ssid="mpy-psoc6-wlan")
@@ -93,10 +92,10 @@ def instance1():
     sta_if.disconnect()
     print("sta is disconnected: ", sta_if.active() == False)
 
-    # print("sta attempt connection to ap (with bssid)")
-    # sta_if.connect("mpy-psoc6-wlan", "mpy_PSOC6_w3lc0me!", bssid=ap_mac)
+    print("sta attempt connection to ap (with bssid)")
+    sta_if.connect("mpy-psoc6-wlan", "mpy_PSOC6_w3lc0me!", bssid=ap_mac)
 
-    # print("sta is active: ", sta_if.active() == True)
+    print("sta is active: ", sta_if.active() == True)
 
     # ifconfig()
 

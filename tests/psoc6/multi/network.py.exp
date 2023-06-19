@@ -22,3 +22,5 @@ sta is (now) connected:  True
 sta status rssi in range:  True
  > yield access point
 sta is disconnected:  True
+sta attempt connection to ap (with bssid)
+sta is active:  True
