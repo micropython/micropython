@@ -79,20 +79,54 @@ void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
     }
 }
 
+#define TWI_TWIM_PIN_CONFIGURE(_pin) nrf_gpio_cfg((_pin),                     \
+                                                  NRF_GPIO_PIN_DIR_OUTPUT,    \
+                                                  NRF_GPIO_PIN_INPUT_CONNECT, \
+                                                  NRF_GPIO_PIN_PULLUP,        \
+                                                  NRF_GPIO_PIN_S0D1,          \
+                                                  NRF_GPIO_PIN_NOSENSE)
+
+static nrfx_err_t _safe_twim_enable(busio_i2c_obj_t *self) {
+    // check to see if bus is in sensible state before enabling twim
+    nrfx_err_t recover_result;
+    nrf_gpio_cfg_input(self->scl_pin_number, NRF_GPIO_PIN_PULLDOWN);
+    nrf_gpio_cfg_input(self->sda_pin_number, NRF_GPIO_PIN_PULLDOWN);
+
+    common_hal_mcu_delay_us(10);
+
+    nrf_gpio_cfg_input(self->scl_pin_number, NRF_GPIO_PIN_NOPULL);
+    nrf_gpio_cfg_input(self->sda_pin_number, NRF_GPIO_PIN_NOPULL);
+
+    // We must pull up within 3us to achieve 400khz.
+    common_hal_mcu_delay_us(3);
+
+    if (!nrf_gpio_pin_read(self->sda_pin_number) || !nrf_gpio_pin_read(self->scl_pin_number)) {
+        // bus not in a sane state - try to recover
+        recover_result = nrfx_twim_bus_recover(self->scl_pin_number, self->sda_pin_number);
+        if (NRFX_SUCCESS != recover_result) {
+            // return error message if unable to recover the bus
+            return recover_result;
+        }
+    }
+
+    nrfx_twim_enable(&self->twim_peripheral->twim);
+    return NRFX_SUCCESS;
+}
+
 static uint8_t twi_error_to_mp(const nrfx_err_t err) {
     switch (err) {
         case NRFX_ERROR_DRV_TWI_ERR_ANACK:
             return MP_ENODEV;
         case NRFX_ERROR_BUSY:
             return MP_EBUSY;
+        case NRFX_SUCCESS:
+            return 0;
         case NRFX_ERROR_DRV_TWI_ERR_DNACK:
         case NRFX_ERROR_INVALID_ADDR:
-            return MP_EIO;
+        case NRFX_ERROR_INTERNAL:
         default:
-            break;
+            return MP_EIO;
     }
-
-    return 0;
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
@@ -188,7 +222,9 @@ bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
     NRF_TWIM_Type *reg = self->twim_peripheral->twim.p_twim;
     bool found = true;
 
-    nrfx_twim_enable(&self->twim_peripheral->twim);
+    if (NRFX_SUCCESS != _safe_twim_enable(self)) {
+        return false;
+    }
 
     nrf_twim_address_set(reg, addr);
     nrf_twim_tx_buffer_set(reg, NULL, 0);
@@ -246,7 +282,10 @@ STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
 
     nrfx_err_t err = NRFX_SUCCESS;
 
-    nrfx_twim_enable(&self->twim_peripheral->twim);
+    err = _safe_twim_enable(self);
+    if (NRFX_SUCCESS != err) {
+        return twi_error_to_mp(err);
+    }
 
     // break into MAX_XFER_LEN transaction
     while (len) {
@@ -278,7 +317,10 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr, uint8_t 
 
     nrfx_err_t err = NRFX_SUCCESS;
 
-    nrfx_twim_enable(&self->twim_peripheral->twim);
+    err = _safe_twim_enable(self);
+    if (NRFX_SUCCESS != err) {
+        return twi_error_to_mp(err);
+    }
 
     // break into MAX_XFER_LEN transaction
     while (len) {
