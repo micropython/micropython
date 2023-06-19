@@ -69,8 +69,8 @@
  * Writing to files relies on the persistent API which is high-level wrapper on top of the Nordic SDK.
  */
 
-#define CHUNK_SIZE (1<<MBFS_LOG_CHUNK_SIZE)
-#define DATA_PER_CHUNK (CHUNK_SIZE-2)
+#define CHUNK_SIZE (1 << MBFS_LOG_CHUNK_SIZE)
+#define DATA_PER_CHUNK (CHUNK_SIZE - 2)
 
 #define UNUSED_CHUNK 255
 #define FREED_CHUNK  0
@@ -157,16 +157,16 @@ static inline void *last_page(void) {
 static void init_limits(void) {
     // First determine where to end
     byte *end = _fs_end;
-    end = rounddown(end, FLASH_PAGESIZE)-FLASH_PAGESIZE;
-    last_page_index = (_fs_end - end)/FLASH_PAGESIZE;
+    end = rounddown(end, FLASH_PAGESIZE) - FLASH_PAGESIZE;
+    last_page_index = (_fs_end - end) / FLASH_PAGESIZE;
 
     // Now find the start
-    byte *start = roundup(end - CHUNK_SIZE*MAX_CHUNKS_IN_FILE_SYSTEM, FLASH_PAGESIZE);
+    byte *start = roundup(end - CHUNK_SIZE * MAX_CHUNKS_IN_FILE_SYSTEM, FLASH_PAGESIZE);
     while (start < _fs_start) {
         start += FLASH_PAGESIZE;
     }
-    first_page_index = (_fs_end - start)/FLASH_PAGESIZE;
-    chunks_in_file_system = (end-start)>>MBFS_LOG_CHUNK_SIZE;
+    first_page_index = (_fs_end - start) / FLASH_PAGESIZE;
+    chunks_in_file_system = (end - start) >> MBFS_LOG_CHUNK_SIZE;
 }
 
 static void randomise_start_index(void) {
@@ -178,7 +178,7 @@ void microbit_filesystem_init(void) {
     randomise_start_index();
     file_chunk *base = first_page();
     if (base->marker == PERSISTENT_DATA_MARKER) {
-        file_system_chunks = &base[(FLASH_PAGESIZE>>MBFS_LOG_CHUNK_SIZE)-1];
+        file_system_chunks = &base[(FLASH_PAGESIZE >> MBFS_LOG_CHUNK_SIZE) - 1];
     } else if (((file_chunk *)last_page())->marker == PERSISTENT_DATA_MARKER) {
         file_system_chunks = &base[-1];
     } else {
@@ -192,10 +192,10 @@ static void copy_page(void *dest, void *src) {
     flash_page_erase((uint32_t)dest);
     file_chunk *src_chunk = src;
     file_chunk *dest_chunk = dest;
-    uint32_t chunks = FLASH_PAGESIZE>>MBFS_LOG_CHUNK_SIZE;
+    uint32_t chunks = FLASH_PAGESIZE >> MBFS_LOG_CHUNK_SIZE;
     for (uint32_t i = 0; i < chunks; i++) {
         if (src_chunk[i].marker != FREED_CHUNK) {
-            flash_write_bytes((uint32_t)&dest_chunk[i], (uint8_t*)&src_chunk[i], CHUNK_SIZE);
+            flash_write_bytes((uint32_t)&dest_chunk[i], (uint8_t *)&src_chunk[i], CHUNK_SIZE);
         }
     }
 }
@@ -229,13 +229,13 @@ static void filesystem_sweep(void) {
         step = -page_size;
     }
     while (page != end_page) {
-        uint8_t *next_page = page+step;
+        uint8_t *next_page = page + step;
         flash_page_erase((uint32_t)page);
         copy_page(page, next_page);
         page = next_page;
     }
     flash_page_erase((uint32_t)end_page);
-    flash_write_bytes((uint32_t)end_page, (uint8_t*)&config, sizeof(config));
+    flash_write_bytes((uint32_t)end_page, (uint8_t *)&config, sizeof(config));
     microbit_filesystem_init();
 }
 
@@ -247,10 +247,12 @@ static inline byte *seek_address(file_descriptor_obj *self) {
 static uint8_t microbit_find_file(const char *name, int name_len) {
     for (uint8_t index = 1; index <= chunks_in_file_system; index++) {
         const file_chunk *p = &file_system_chunks[index];
-        if (p->marker != FILE_START)
+        if (p->marker != FILE_START) {
             continue;
-        if (p->header.name_len != name_len)
+        }
+        if (p->header.name_len != name_len) {
             continue;
+        }
         if (memcmp(name, &p->header.filename[0], name_len) == 0) {
             DEBUG(("FILE DEBUG: File found. index %d\r\n", index));
             return index;
@@ -279,13 +281,15 @@ static uint8_t find_chunk_and_erase(void) {
             return index;
         }
         index++;
-        if (index == chunks_in_file_system+1) index = 1;
+        if (index == chunks_in_file_system + 1) {
+            index = 1;
+        }
     } while (index != start_index);
 
     // Search for FREED page, and total up FREED chunks
     uint32_t freed_chunks = 0;
     index = start_index;
-    uint32_t chunks_per_page = FLASH_PAGESIZE>>MBFS_LOG_CHUNK_SIZE;
+    uint32_t chunks_per_page = FLASH_PAGESIZE >> MBFS_LOG_CHUNK_SIZE;
     do {
         const file_chunk *p = &file_system_chunks[index];
         if (p->marker == FREED_CHUNK) {
@@ -294,8 +298,9 @@ static uint8_t find_chunk_and_erase(void) {
         if (FLASH_IS_PAGE_ALIGNED(p)) {
             uint32_t i;
             for (i = 0; i < chunks_per_page; i++) {
-                if (p[i].marker != FREED_CHUNK)
+                if (p[i].marker != FREED_CHUNK) {
                     break;
+                }
             }
             if (i == chunks_per_page) {
                 DEBUG(("FILE DEBUG: Found freed page of chunks: %d\r\n", index));
@@ -304,7 +309,9 @@ static uint8_t find_chunk_and_erase(void) {
             }
         }
         index++;
-        if (index == chunks_in_file_system+1) index = 1;
+        if (index == chunks_in_file_system + 1) {
+            index = 1;
+        }
     } while (index != start_index);
     DEBUG(("FILE DEBUG: %lu free chunks\r\n", freed_chunks));
     if (freed_chunks == 0) {
@@ -346,7 +353,7 @@ static file_descriptor_obj *microbit_file_open(const char *name, size_t name_len
         }
         flash_write_byte((uint32_t)&(file_system_chunks[index].marker), FILE_START);
         flash_write_byte((uint32_t)&(file_system_chunks[index].header.name_len), name_len);
-        flash_write_bytes((uint32_t)&(file_system_chunks[index].header.filename[0]), (uint8_t*)name, name_len);
+        flash_write_bytes((uint32_t)&(file_system_chunks[index].header.filename[0]), (uint8_t *)name, name_len);
     } else {
         if (index == FILE_NOT_FOUND) {
             return NULL;
@@ -359,7 +366,7 @@ static file_descriptor_obj *microbit_file_descriptor_new(uint8_t start_chunk, bo
     file_descriptor_obj *res = mp_obj_malloc(file_descriptor_obj, binary ? &os_mbfs_fileio_type : &os_mbfs_textio_type);
     res->start_chunk = start_chunk;
     res->seek_chunk = start_chunk;
-    res->seek_offset = file_system_chunks[start_chunk].header.name_len+2;
+    res->seek_offset = file_system_chunks[start_chunk].header.name_len + 2;
     res->writable = write;
     res->open = true;
     res->binary = binary;
@@ -421,14 +428,14 @@ static mp_uint_t microbit_file_read(mp_obj_t obj, void *buf, mp_uint_t size, int
             if (end_offset == UNUSED_CHUNK) {
                 to_read = 0;
             } else {
-                to_read = MIN(to_read, (mp_uint_t)end_offset-self->seek_offset);
+                to_read = MIN(to_read, (mp_uint_t)end_offset - self->seek_offset);
             }
         }
-        to_read = MIN(to_read, size-bytes_read);
+        to_read = MIN(to_read, size - bytes_read);
         if (to_read == 0) {
             break;
         }
-        memcpy(data+bytes_read, seek_address(self), to_read);
+        memcpy(data + bytes_read, seek_address(self), to_read);
         advance(self, to_read, false);
         bytes_read += to_read;
     }
@@ -485,7 +492,7 @@ static mp_obj_t microbit_file_size(mp_obj_t filename) {
     }
     mp_uint_t len = 0;
     uint8_t end_offset = file_system_chunks[chunk].header.end_offset;
-    uint8_t offset = file_system_chunks[chunk].header.name_len+2;
+    uint8_t offset = file_system_chunks[chunk].header.name_len + 2;
     while (file_system_chunks[chunk].next_chunk != UNUSED_CHUNK) {
         len += DATA_PER_CHUNK - offset;
         chunk = file_system_chunks[chunk].next_chunk;
@@ -516,8 +523,8 @@ mp_lexer_t *os_mbfs_new_reader(const char *filename) {
     }
     mp_reader_t reader;
     reader.data = fd;
-    reader.readbyte = (mp_uint_t(*)(void*))file_read_byte;
-    reader.close = (void(*)(void*))microbit_file_close; // no-op
+    reader.readbyte = (mp_uint_t (*)(void *))file_read_byte;
+    reader.close = (void (*)(void *))microbit_file_close; // no-op
     return mp_lexer_new(qstr_from_str(filename), reader);
 }
 
