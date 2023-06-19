@@ -125,7 +125,7 @@ void mp_hal_pin_write(mp_hal_pin_obj_t pin, uint8_t polarity) {
     if (polarity == 1) {
         gpio_set_value(pin);
     } else {
-        gpio_get_value(pin);
+        gpio_clear_value(pin);
     }
 }
 
