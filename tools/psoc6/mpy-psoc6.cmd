@@ -74,6 +74,20 @@ exit /b 0
 
 exit /b 0
 
+:hw_firmware_download:
+
+    set board=%~1
+    curl.exe -s -L https://github.com/infineon/micropython/releases/v0.3.0/hello-world_${board}.hex > hello-world_${board}.hex
+
+exit /b 0
+
+:hw_firmware_clean
+
+    set board=%~1
+    del hello-world_%board%.hex
+
+exit /b 0
+
 :mpy_firmware_download:
 
     set board=%~1
@@ -148,6 +162,7 @@ exit /b 0
 
     Rem Download flashing tool and firmware
     call :openocd_download_install
+    call :hw_firmware_download %board%
     call :mpy_firmware_download %board% %mpy_firmware_version%
 
     if not [%~3]==[\q] (
@@ -158,10 +173,12 @@ exit /b 0
     )
 
     Rem Deploy on board
+    call :mpy_firmware_deploy %board% hello-world_%board%.hex
     call :mpy_firmware_deploy %board% mpy-psoc6_%board%.hex
     echo Device firmware deployment completed.   
 
     call :openocd_uninstall_clean
+    call :hw_firmware_clean %board%
     call :mpy_firmware_clean %board%
 
     if not [%~3]==[\q] (

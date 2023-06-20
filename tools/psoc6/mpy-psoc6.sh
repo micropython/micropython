@@ -49,6 +49,18 @@ function mpy_firmware_deploy {
 
 }
 
+function hw_firmware_download {
+    board=$1
+
+    curl -s -L https://github.com/infineon/micropython/releases/v0.3.0/hello-world_${board}.hex > hello-world_${board}.hex
+}
+
+function hw_firmware_clean {
+    board=$1
+
+    rm hello-world_${board}.hex
+}
+
 function mpy_firmware_download {
 
     board=$1
@@ -61,7 +73,6 @@ function mpy_firmware_download {
         sub_url="download/${version}"
     fi
     curl -s -L https://github.com/infineon/micropython/releases/${sub_url}/mpy-psoc6_${board}.hex > mpy-psoc6_${board}.hex
-   
 }
 
 function mpy_firmware_clean {
@@ -70,7 +81,6 @@ function mpy_firmware_clean {
 
     echo Cleaning up micropython hex files...
     rm mpy-psoc6_${board}.hex
-
 }
 
 function openocd_download_install {
@@ -81,7 +91,6 @@ function openocd_download_install {
     tar -xf openocd.tar.gz
     export PATH=${PWD}/openocd/bin:$PATH
     ./openocd/udev_rules/install_rules.sh
-
 }
 
 function openocd_uninstall_clean {
@@ -132,7 +141,9 @@ function mpy_device_setup {
 
     # Download flashing tool and firmware
     openocd_download_install
+    hw_firmware_download ${board}
     mpy_firmware_download ${board} ${mpy_firmware_version}
+
 
     if [ "$3" != "\q" ]; then
         echo ''
@@ -142,10 +153,12 @@ function mpy_device_setup {
     fi
 
     # Deploy on board
+    mpy_firmware_deploy ${board} hello-world_${board}.hex
     mpy_firmware_deploy ${board} mpy-psoc6_${board}.hex
     echo Device firmware deployment completed.   
 
     openocd_uninstall_clean
+    hw_firmware_clean ${board}
     mpy_firmware_clean ${board}
 
     if [ "$3" != "\q" ]; then
