@@ -142,6 +142,7 @@ INC += \
         -Isdk_config \
         -I../../lib/tinyusb/src \
         -I../../supervisor/shared/usb \
+        -I../bindings/cyw43/__init__.h \
         -I$(BUILD)
 
 # Pico specific configuration
@@ -171,7 +172,7 @@ else
 endif
 
 # Remove -Wno-stringop-overflow after we can test with CI's GCC 10. Mac's looks weird.
-DISABLE_WARNINGS = -Wno-stringop-overflow -Wno-cast-align
+DISABLE_WARNINGS = -Wno-stringop-overflow -Wno-cast-align -Wno-undef
 
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $(DISABLE_WARNINGS) -Werror=missing-prototypes
 
