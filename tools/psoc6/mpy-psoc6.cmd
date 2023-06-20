@@ -77,7 +77,7 @@ exit /b 0
 :hw_firmware_download:
 
     set board=%~1
-    curl.exe -s -L https://github.com/infineon/micropython/releases/v0.3.0/hello-world_${board}.hex > hello-world_${board}.hex
+    curl.exe -s -L https://github.com/infineon/micropython/releases/download/v0.3.0/hello-world_%board%.hex > hello-world_%board%.hex
 
 exit /b 0
 

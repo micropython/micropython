@@ -52,7 +52,7 @@ function mpy_firmware_deploy {
 function hw_firmware_download {
     board=$1
 
-    curl -s -L https://github.com/infineon/micropython/releases/v0.3.0/hello-world_${board}.hex > hello-world_${board}.hex
+    curl -s -L https://github.com/infineon/micropython/releases/download/v0.3.0/hello-world_${board}.hex > hello-world_${board}.hex
 }
 
 function hw_firmware_clean {
