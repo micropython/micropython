@@ -266,8 +266,15 @@ bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
+    volatile uint32_t *power_cycle = (void *)(self->uarte->p_reg) + 0xFFC;
     if (!common_hal_busio_uart_deinited(self)) {
+        nrfx_uarte_rx_abort(self->uarte);
+        nrfx_uarte_tx_abort(self->uarte);
         nrfx_uarte_uninit(self->uarte);
+        // power cycle the peripheral as per https://devzone.nordicsemi.com/f/nordic-q-a/26030/how-to-reach-nrf52840-uarte-current-supply-specification/102605#102605
+        *power_cycle = 0;
+        *power_cycle;
+        *power_cycle = 1;
         reset_pin_number(self->tx_pin_number);
         reset_pin_number(self->rx_pin_number);
         reset_pin_number(self->rts_pin_number);
