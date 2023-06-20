@@ -79,13 +79,6 @@ void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
     }
 }
 
-#define TWI_TWIM_PIN_CONFIGURE(_pin) nrf_gpio_cfg((_pin),                     \
-                                                  NRF_GPIO_PIN_DIR_OUTPUT,    \
-                                                  NRF_GPIO_PIN_INPUT_CONNECT, \
-                                                  NRF_GPIO_PIN_PULLUP,        \
-                                                  NRF_GPIO_PIN_S0D1,          \
-                                                  NRF_GPIO_PIN_NOSENSE)
-
 static nrfx_err_t _safe_twim_enable(busio_i2c_obj_t *self) {
     // check to see if bus is in sensible state before enabling twim
     nrfx_err_t recover_result;
