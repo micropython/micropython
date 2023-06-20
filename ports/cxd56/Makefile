@@ -102,8 +102,6 @@ LIBGCC = "${shell "$(CC)" $(CFLAGS) -print-libgcc-file-name}"
 
 LDFLAGS = \
 	--entry=__start \
-	-nostartfiles \
-	-nodefaultlibs \
 	-T$(SPRESENSE_SDK)/nuttx/scripts/ramconfig.ld \
 	--gc-sections \
 	-Map=$(BUILD)/output.map \
