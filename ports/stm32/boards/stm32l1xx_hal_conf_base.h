@@ -26,6 +26,9 @@
 #ifndef MICROPY_INCLUDED_STM32L1XX_HAL_CONF_BASE_H
 #define MICROPY_INCLUDED_STM32L1XX_HAL_CONF_BASE_H
 
+// Needs to be defined before ll_usb.h is included
+#define HAL_PCD_MODULE_ENABLED
+
 // Include various HAL modules for convenience
 #include "stm32l1xx_hal_rcc.h"
 #include "stm32l1xx_hal_gpio.h"
@@ -38,6 +41,7 @@
 #include "stm32l1xx_hal_flash.h"
 #include "stm32l1xx_hal_i2c.h"
 #include "stm32l1xx_hal_iwdg.h"
+#include "stm32l1xx_hal_pcd.h"
 #include "stm32l1xx_hal_pwr.h"
 #include "stm32l1xx_hal_rtc.h"
 #include "stm32l1xx_hal_spi.h"
@@ -50,6 +54,7 @@
 #include "stm32l1xx_ll_pwr.h"
 #include "stm32l1xx_ll_rtc.h"
 #include "stm32l1xx_ll_usart.h"
+#include "stm32l1xx_ll_usb.h"
 
 // Enable various HAL modules
 #define HAL_MODULE_ENABLED

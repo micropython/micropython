@@ -75,6 +75,16 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
         mp_hal_pin_config_speed(pin_A12, GPIO_SPEED_FREQ_VERY_HIGH);
 
+        #elif defined(STM32L1)
+
+        // STM32L1 doesn't have an alternate function for USB.
+        // To be disconnected from all peripherals, put in input mode.
+
+        mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
+        mp_hal_pin_config_speed(pin_A11, GPIO_SPEED_FREQ_VERY_HIGH);
+        mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
+        mp_hal_pin_config_speed(pin_A12, GPIO_SPEED_FREQ_VERY_HIGH);
+
         #else
 
         // Other MCUs have an alternate function for GPIO's to be in USB mode.
@@ -149,7 +159,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #elif defined(STM32L432xx)
         NVIC_SetPriority(USB_FS_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_FS_IRQn);
-        #elif defined(STM32G4) || defined(STM32WB)
+        #elif defined(STM32G4) || defined(STM32L1) || defined(STM32WB)
         NVIC_SetPriority(USB_LP_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_LP_IRQn);
         #else
@@ -707,6 +717,24 @@ uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t ep_addr) {
 void USBD_LL_Delay(uint32_t Delay) {
     HAL_Delay(Delay);
 }
+
+#if defined(STM32L1)
+/**
+  * @brief Software Device Connection
+  * @param hpcd: PCD handle
+  * @param state: Connection state (0: disconnected / 1: connected)
+  * @retval None
+  */
+void HAL_PCDEx_SetConnectionState(PCD_HandleTypeDef *hpcd, uint8_t state) {
+    if (state == 1) {
+        /*  DP Pull-Down is Internal */
+        __HAL_SYSCFG_USBPULLUP_ENABLE();
+    } else {
+        /*  DP Pull-Down is Internal */
+        __HAL_SYSCFG_USBPULLUP_DISABLE();
+    }
+}
+#endif
 
 #endif // MICROPY_HW_USB_FS || MICROPY_HW_USB_HS
 
