@@ -79,21 +79,33 @@ void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
     }
 }
 
-static nrfx_err_t _safe_twim_enable(busio_i2c_obj_t *self) {
-    // check to see if bus is in sensible state before enabling twim
-    nrfx_err_t recover_result;
-    nrf_gpio_cfg_input(self->scl_pin_number, NRF_GPIO_PIN_PULLDOWN);
-    nrf_gpio_cfg_input(self->sda_pin_number, NRF_GPIO_PIN_PULLDOWN);
+static bool _bus_is_sane(uint32_t scl_pin, uint32_t sda_pin) {
+    #if CIRCUITPY_REQUIRE_I2C_PULLUPS
+    nrf_gpio_cfg_input(scl_pin, NRF_GPIO_PIN_PULLDOWN);
+    nrf_gpio_cfg_input(sda_pin, NRF_GPIO_PIN_PULLDOWN);
 
     common_hal_mcu_delay_us(10);
 
-    nrf_gpio_cfg_input(self->scl_pin_number, NRF_GPIO_PIN_NOPULL);
-    nrf_gpio_cfg_input(self->sda_pin_number, NRF_GPIO_PIN_NOPULL);
+    nrf_gpio_cfg_input(scl_pin, NRF_GPIO_PIN_NOPULL);
+    nrf_gpio_cfg_input(sda_pin, NRF_GPIO_PIN_NOPULL);
 
     // We must pull up within 3us to achieve 400khz.
     common_hal_mcu_delay_us(3);
+    if (!nrf_gpio_pin_read(sda_pin) || !nrf_gpio_pin_read(scl_pin)) {
+        return false;
+    } else {
+        return true;
+    }
+    #else
+    return true;
+    #endif
+}
 
-    if (!nrf_gpio_pin_read(self->sda_pin_number) || !nrf_gpio_pin_read(self->scl_pin_number)) {
+static nrfx_err_t _safe_twim_enable(busio_i2c_obj_t *self) {
+    // check to see if bus is in sensible state before enabling twim
+    nrfx_err_t recover_result;
+
+    if (!_bus_is_sane(self->scl_pin_number, self->sda_pin_number)) {
         // bus not in a sane state - try to recover
         recover_result = nrfx_twim_bus_recover(self->scl_pin_number, self->sda_pin_number);
         if (NRFX_SUCCESS != recover_result) {
@@ -141,25 +153,12 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
         mp_raise_ValueError(translate("All I2C peripherals are in use"));
     }
 
-    #if CIRCUITPY_REQUIRE_I2C_PULLUPS
-    // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
-    nrf_gpio_cfg_input(scl->number, NRF_GPIO_PIN_PULLDOWN);
-    nrf_gpio_cfg_input(sda->number, NRF_GPIO_PIN_PULLDOWN);
-
-    common_hal_mcu_delay_us(10);
-
-    nrf_gpio_cfg_input(scl->number, NRF_GPIO_PIN_NOPULL);
-    nrf_gpio_cfg_input(sda->number, NRF_GPIO_PIN_NOPULL);
-
-    // We must pull up within 3us to achieve 400khz.
-    common_hal_mcu_delay_us(3);
-
-    if (!nrf_gpio_pin_read(sda->number) || !nrf_gpio_pin_read(scl->number)) {
+    // check bus is in a sane state
+    if (!_bus_is_sane(scl->number,sda->number)) {
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
         mp_raise_RuntimeError(translate("No pull up found on SDA or SCL; check your wiring"));
     }
-    #endif
 
     nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG(scl->number, sda->number);
 
