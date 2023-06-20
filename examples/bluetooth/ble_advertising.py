@@ -19,6 +19,8 @@ _ADV_TYPE_UUID32_MORE = const(0x4)
 _ADV_TYPE_UUID128_MORE = const(0x6)
 _ADV_TYPE_APPEARANCE = const(0x19)
 
+_ADV_MAX_PAYLOAD = const(31)
+
 
 # Generate a payload to be passed to gap_advertise(adv_data=...).
 def advertising_payload(limited_disc=False, br_edr=False, name=None, services=None, appearance=0):
@@ -49,6 +51,9 @@ def advertising_payload(limited_disc=False, br_edr=False, name=None, services=No
     # See org.bluetooth.characteristic.gap.appearance.xml
     if appearance:
         _append(_ADV_TYPE_APPEARANCE, struct.pack("<h", appearance))
+
+    if len(payload) > _ADV_MAX_PAYLOAD:
+        raise ValueError("advertising payload too large")
 
     return payload
 
