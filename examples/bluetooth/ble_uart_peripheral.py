@@ -42,7 +42,8 @@ class BLEUART:
         self._rx_buffer = bytearray()
         self._handler = None
         # Optionally add services=[_UART_UUID], but this is likely to make the payload too large.
-        self._payload = advertising_payload(name=name, appearance=_ADV_APPEARANCE_GENERIC_COMPUTER)
+        self._adv_data = advertising_payload(appearance=_ADV_APPEARANCE_GENERIC_COMPUTER)
+        self._resp_data = advertising_payload(name=name)
         self._advertise()
 
     def irq(self, handler):
@@ -86,7 +87,7 @@ class BLEUART:
         self._connections.clear()
 
     def _advertise(self, interval_us=500000):
-        self._ble.gap_advertise(interval_us, adv_data=self._payload)
+        self._ble.gap_advertise(interval_us, adv_data=self._adv_data, resp_data=self._resp_data)
 
 
 def demo():

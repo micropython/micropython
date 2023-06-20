@@ -5,12 +5,13 @@
 #
 # Work-in-progress demo of implementing bonding and passkey auth.
 
-import bluetooth
+import binascii
+import json
 import random
 import struct
 import time
-import json
-import binascii
+
+import bluetooth
 from ble_advertising import advertising_payload
 
 from micropython import const
@@ -70,8 +71,12 @@ class BLETemperature:
         self._ble.config(addr_mode=2)
         ((self._handle,),) = self._ble.gatts_register_services((_ENV_SENSE_SERVICE,))
         self._connections = set()
-        self._payload = advertising_payload(
-            name=name, services=[_ENV_SENSE_UUID], appearance=_ADV_APPEARANCE_GENERIC_THERMOMETER
+        self._adv_data = advertising_payload(
+            services=[_ENV_SENSE_UUID],
+            appearance=_ADV_APPEARANCE_GENERIC_THERMOMETER,
+        )
+        self._resp_data = advertising_payload(
+            name=name,
         )
         self._advertise()
 
@@ -150,7 +155,7 @@ class BLETemperature:
 
     def _advertise(self, interval_us=500000):
         self._ble.config(addr_mode=2)
-        self._ble.gap_advertise(interval_us, adv_data=self._payload)
+        self._ble.gap_advertise(interval_us, adv_data=self._adv_data, resp_data=self._resp_data)
 
     def _load_secrets(self):
         self._secrets = {}

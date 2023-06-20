@@ -1,9 +1,8 @@
 # This example demonstrates a UART periperhal.
 
-import bluetooth
-import random
-import struct
 import time
+
+import bluetooth
 from ble_advertising import advertising_payload
 
 from micropython import const
@@ -40,7 +39,8 @@ class BLESimplePeripheral:
         ((self._handle_tx, self._handle_rx),) = self._ble.gatts_register_services((_UART_SERVICE,))
         self._connections = set()
         self._write_callback = None
-        self._payload = advertising_payload(name=name, services=[_UART_UUID])
+        self._adv_data = advertising_payload(services=[_UART_UUID])
+        self._resp_data = advertising_payload(name=name)
         self._advertise()
 
     def _irq(self, event, data):
@@ -70,7 +70,7 @@ class BLESimplePeripheral:
 
     def _advertise(self, interval_us=500000):
         print("Starting advertising")
-        self._ble.gap_advertise(interval_us, adv_data=self._payload)
+        self._ble.gap_advertise(interval_us, adv_data=self._adv_data, resp_data=self._resp_data)
 
     def on_write(self, callback):
         self._write_callback = callback
