@@ -13,7 +13,7 @@ You can easily download from your OS terminal with the following command:
 
         .. code-block:: bash
 
-            curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
+            curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.sh > mpy-psoc6.sh 
 
         Add execution rights to the script:       
         
@@ -27,7 +27,7 @@ You can easily download from your OS terminal with the following command:
 
             .. code-block:: bash
 
-                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
+                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
 
 
 Find all the available commands and options by running the script with the command help:
