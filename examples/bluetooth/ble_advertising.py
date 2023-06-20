@@ -1,8 +1,11 @@
 # Helpers for generating BLE advertising payloads.
 
-from micropython import const
+
 import struct
+
 import bluetooth
+
+from micropython import const
 
 # Advertising payloads are repeated packets of the following form:
 #   1 byte data length (N + 1)
@@ -18,6 +21,8 @@ _ADV_TYPE_UUID16_MORE = const(0x2)
 _ADV_TYPE_UUID32_MORE = const(0x4)
 _ADV_TYPE_UUID128_MORE = const(0x6)
 _ADV_TYPE_APPEARANCE = const(0x19)
+
+_ADV_MAX_PAYLOAD = const(31)
 
 
 # Generate a payload to be passed to gap_advertise(adv_data=...).
@@ -50,6 +55,8 @@ def advertising_payload(limited_disc=False, br_edr=False, name=None, services=No
     if appearance:
         _append(_ADV_TYPE_APPEARANCE, struct.pack("<h", appearance))
 
+    if len(payload) > _ADV_MAX_PAYLOAD:
+        raise ValueError(f"ADV payload too large. Max {_ADV_MAX_PAYLOAD} got {len(payload)}")
     return payload
 
 
