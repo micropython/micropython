@@ -44,10 +44,6 @@ Functions
 
     Read the raw value of the internal temperature sensor, returning an integer.
 
-.. function:: hall_sensor()
-
-    Read the raw value of the internal Hall sensor, returning an integer.
-
 .. function:: idf_heap_info(capabilities)
 
     Returns information about the ESP-IDF heap memory regions. One of them contains
