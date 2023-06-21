@@ -63,10 +63,15 @@
 #include "rtc.h"
 #include "storage.h"
 #include "tusb.h"
+#if MICROPY_PY_LWIP
+#include "lwip/init.h"
+#include "lwip/apps/mdns.h"
+#endif
 #if MICROPY_PY_BLUETOOTH
 #include "mpbthciport.h"
 #include "extmod/modbluetooth.h"
 #endif
+#include "extmod/modnetwork.h"
 
 #define RA_EARLY_PRINT  1       /* for enabling mp_print in boardctrl. */
 
@@ -274,6 +279,16 @@ int main(void) {
 
     MICROPY_BOARD_BEFORE_SOFT_RESET_LOOP(&state);
 
+    #if MICROPY_PY_LWIP
+    // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
+    // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
+    // So for now we only init the lwIP stack once on power-up.
+    lwip_init();
+    #if LWIP_MDNS_RESPONDER
+    mdns_resp_init();
+    #endif
+    #endif
+
 soft_reset:
 
     MICROPY_BOARD_TOP_SOFT_RESET_LOOP(&state);
@@ -318,6 +333,14 @@ soft_reset:
 
     #if MICROPY_HW_ENABLE_I2S
     machine_i2s_init0();
+    #endif
+
+    #if MICROPY_PY_NETWORK
+    mod_network_init();
+    #endif
+
+    #if MICROPY_PY_LWIP
+    mod_network_lwip_init();
     #endif
 
     // Initialise the local flash filesystem.
@@ -392,6 +415,9 @@ soft_reset_exit:
 
     #if MICROPY_PY_BLUETOOTH
     mp_bluetooth_deinit();
+    #endif
+    #if MICROPY_PY_NETWORK
+    mod_network_deinit();
     #endif
     soft_timer_deinit();
     timer_deinit();

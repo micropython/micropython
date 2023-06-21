@@ -126,6 +126,7 @@
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS (1)
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/renesas-ra/modtime.c"
+#define MICROPY_PY_LWIP_SOCK_RAW    (MICROPY_PY_LWIP)
 #ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE          (1)
 #ifndef MICROPY_PY_MACHINE_BITSTREAM
@@ -168,6 +169,25 @@
 #define MICROPY_FATFS_MAX_SS           (FLASH_SECTOR_SIZE)
 #endif
 
+// By default networking should include sockets, ssl, websockets, webrepl, dupterm.
+#if MICROPY_PY_NETWORK
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-ra"
+#endif
+#ifndef MICROPY_PY_USOCKET
+#define MICROPY_PY_USOCKET              (1)
+#endif
+#ifndef MICROPY_PY_USSL
+#define MICROPY_PY_USSL                 (1)
+#endif
+#ifndef MICROPY_PY_UWEBSOCKET
+#define MICROPY_PY_UWEBSOCKET           (1)
+#endif
+#ifndef MICROPY_PY_WEBREPL
+#define MICROPY_PY_WEBREPL              (1)
+#endif
+#endif
+
 #if MICROPY_PY_MACHINE
 #define MACHINE_BUILTIN_MODULE_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) },
@@ -180,6 +200,21 @@
     MACHINE_BUILTIN_MODULE_CONSTANTS \
 
 #define MP_STATE_PORT MP_STATE_VM
+
+#if MICROPY_PY_NETWORK_ESP_HOSTED
+extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
+#define MICROPY_HW_NIC_ESP_HOSTED   { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
+#else
+#define MICROPY_HW_NIC_ESP_HOSTED
+#endif
+
+#ifndef MICROPY_BOARD_NETWORK_INTERFACES
+#define MICROPY_BOARD_NETWORK_INTERFACES
+#endif
+
+#define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_ESP_HOSTED \
+    MICROPY_BOARD_NETWORK_INTERFACES \
 
 // Miscellaneous settings
 
@@ -268,6 +303,10 @@ static inline mp_uint_t disable_irq(void) {
 
 #define MICROPY_THREAD_YIELD()
 #endif
+
+#define MICROPY_PY_LWIP_ENTER
+#define MICROPY_PY_LWIP_REENTER
+#define MICROPY_PY_LWIP_EXIT
 
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)

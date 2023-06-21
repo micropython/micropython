@@ -72,7 +72,7 @@ INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/src/bsp/cmsis/Device/RENESAS/Include
 INC += -I$(TOP)/lib/tinyusb/hw
 INC += -I$(TOP)/lib/tinyusb/src
 INC += -I$(TOP)/shared/tinyusb
-#INC += -Ilwip_inc
+INC += -Ilwip_inc
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2 RA6M5))
 INC += -Ira
 endif
@@ -305,6 +305,7 @@ SRC_C += \
 	ra_it.c \
 	rng.c \
 	mphalport.c \
+	mpnetworkport.c \
 	mpthreadport.c \
 	irq.c \
 	pendsv.c \
