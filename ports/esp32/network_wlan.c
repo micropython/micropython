@@ -72,7 +72,7 @@ static bool mdns_initialised = false;
 #endif
 
 static uint8_t conf_wifi_sta_reconnects = 0;
-static uint8_t wifi_sta_reconnects;
+static volatile uint8_t wifi_sta_reconnects;
 
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
@@ -233,16 +233,16 @@ STATIC mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
         } else {
             esp_exceptions(esp_wifi_set_mode(mode));
             if (!wifi_started) {
+                // WIFI_EVENT_STA_START must be received before esp_wifi_connect() can be called.
+                // Use the `wifi_sta_reconnects` variable to detect that event.
+                wifi_sta_reconnects = 1;
                 esp_exceptions(esp_wifi_start());
                 wifi_started = true;
+                while (wifi_sta_reconnects != 0) {
+                    MICROPY_EVENT_POLL_HOOK;
+                }
             }
         }
-        // This delay is a band-aid patch for issues #8289, #8792 and #9236,
-        // allowing the esp data structures to settle. It looks like some
-        // kind of race condition, which is not yet found. But at least
-        // this small delay seems not hurt much, since wlan.active() is
-        // usually not called in a time critical part of the code.
-        mp_hal_delay_ms(1);
     }
 
     return (mode & bit) ? mp_const_true : mp_const_false;
