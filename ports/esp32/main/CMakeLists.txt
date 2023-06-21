@@ -53,6 +53,7 @@ set(MICROPY_SOURCE_DRIVERS
 
 set(MICROPY_SOURCE_PORT
     main.c
+    ppp_set_auth.c
     uart.c
     usb.c
     usb_serial_jtag.c
