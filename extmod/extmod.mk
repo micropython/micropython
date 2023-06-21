@@ -337,7 +337,50 @@ SRC_THIRDPARTY_C += $(addprefix $(WIZNET5K_DIR)/,\
 	Internet/DHCP/dhcp.c \
 	)
 endif
+endif # MICROPY_PY_NETWORK_WIZNET5K
+
+ifeq ($(MICROPY_PY_NETWORK_ESP_HOSTED),1)
+ESP_HOSTED_DIR = drivers/esp-hosted
+PROTOBUF_C_DIR = lib/protobuf-c
+PROTOC ?= protoc-c
+GIT_SUBMODULES += $(PROTOBUF_C_DIR)
+
+CFLAGS += -DMICROPY_PY_NETWORK_ESP_HOSTED=1
+CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_ESP_HOSTED=1
+INC += -I$(TOP)/$(ESP_HOSTED_DIR)
+
+ESP_HOSTED_SRC_C = $(addprefix $(ESP_HOSTED_DIR)/,\
+	esp_hosted_wifi.c \
+	esp_hosted_netif.c \
+	esp_hosted_hal.c \
+	)
+
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+ESP_HOSTED_SRC_C += $(ESP_HOSTED_DIR)/esp_hosted_bthci.c
 endif
+
+# Include the protobuf-c support functions
+ESP_HOSTED_SRC_C += $(addprefix $(PROTOBUF_C_DIR)/,\
+	protobuf-c/protobuf-c.c \
+	)
+
+$(BUILD)/$(PROTOBUF_C_DIR)/%.o: CFLAGS += -Wno-unused-but-set-variable
+
+# Generate esp_hosted-pb-c.c|h from esp_hosted.proto
+PROTO_GEN_SRC = $(BUILD)/extmod/esp_hosted.pb-c.c
+ESP_HOSTED_SRC_C += $(PROTO_GEN_SRC)
+
+$(PROTO_GEN_SRC): $(TOP)/$(ESP_HOSTED_DIR)/esp_hosted.proto
+	$(PROTOC) --proto_path=$(dir $<) --c_out=$(dir $@) $<
+
+# Scope the protobuf include paths to the esp_hosted source files, only
+ESP_HOSTED_OBJS = $(addprefix $(BUILD)/, $(ESP_HOSTED_SRC_C:.c=.o))
+$(ESP_HOSTED_OBJS): $(PROTO_GEN_SRC)
+$(ESP_HOSTED_OBJS): CFLAGS += -I$(dir $(PROTO_GEN_SRC)) -I$(TOP)/$(PROTOBUF_C_DIR)
+
+DRIVERS_SRC_C += $(ESP_HOSTED_SRC_C)
+
+endif # MICROPY_PY_NETWORK_ESP_HOSTED
 
 ################################################################################
 # bluetooth
