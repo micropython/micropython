@@ -114,6 +114,12 @@
 //|         `displayio` expects little-endian, so the example above uses `Colorspace.RGB565_SWAPPED`.
 //|
 //|         :param file file: The name of the GIF file.
+//|
+//|         If the image is too large it will be cropped at the bottom and right when displayed.
+//|
+//|         **Limitations**: The image width is limited to 320 pixels at present. `ValueError`
+//|         will be raised if the image is too wide. The height
+//|         is not limited but images that are too large will cause a memory exception.
 //|         """
 //|         ...
 STATIC mp_obj_t gifio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
