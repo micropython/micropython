@@ -41,6 +41,10 @@
 //|                 if pin_counter.count >= 100:
 //|                     pin_counter.reset()
 //|                 print(pin_counter.count)
+//|
+//|         **Limitations:** On RP2040, `Counter` uses the PWM peripheral, and
+//|         is limited to using PWM channel B pins due to hardware restrictions.
+//|         See the pin assignments for your board to see which pins can be used.
 //|         """
 //|         ...
 STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
