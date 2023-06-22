@@ -344,6 +344,10 @@ SRC_C += $(addprefix $(BOARD_DIR)/ra_gen/,\
 	vector_data.c \
 	)
 
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+LIB_SRC_C += mbedtls/mbedtls_port.c
+endif
+
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 SRC_C += mpbthciport.c
 endif
