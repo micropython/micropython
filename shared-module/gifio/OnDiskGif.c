@@ -169,7 +169,14 @@ void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, pyb_file_obj_
 
     int result = GIF_init(&self->gif);
     if (result != 1) {
-        mp_arg_error_invalid(MP_QSTR_file);
+        switch (self->gif.iError) {
+            case GIF_TOO_WIDE:
+                mp_raise_ValueError_varg(translate("%q must be <= %d"), MP_QSTR_width, MAX_WIDTH);
+                break;
+            default:
+                mp_arg_error_invalid(MP_QSTR_file);
+                break;
+        }
     }
 
     int bpp = 16;
