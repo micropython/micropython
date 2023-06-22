@@ -26,6 +26,7 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h> // for malloc, for MICROPY_GC_SPLIT_HEAP_AUTO
 
 // options to control how MicroPython is built
 
