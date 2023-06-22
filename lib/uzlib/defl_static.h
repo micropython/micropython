@@ -32,10 +32,9 @@
 
 struct Outbuf {
     void *dest_write_data;
-    void (*dest_write_cb)(struct Outbuf *outbuf, uint8_t byte);
+    void (*dest_write_cb)(void *data, uint8_t byte);
     unsigned long outbits;
     int noutbits;
-    int comp_disabled;
 };
 
 void zlib_start_block(struct Outbuf *ctx);
