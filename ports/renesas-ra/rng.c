@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2022 Renesas Electronics Corporation
+ * Copyright (c) 2023 Arduino SA
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,34 +24,29 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #include "py/runtime.h"
-#include "uart.h"
+#include "py/mphal.h"
+
+#if MICROPY_HW_ENABLE_RNG
+
 #include "rng.h"
+#include "r_sce.h"
 
-bool mp_os_dupterm_is_builtin_stream(mp_const_obj_t stream) {
-    const mp_obj_type_t *type = mp_obj_get_type(stream);
-    return type == &machine_uart_type;
-}
+uint32_t rng_read(void) {
+    uint32_t random_data[4];
+    static bool initialized = false;
 
-void mp_os_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t stream_attached) {
-    if (mp_obj_get_type(stream_detached) == &machine_uart_type) {
-        uart_attach_to_repl(MP_OBJ_TO_PTR(stream_detached), false);
+    if (initialized == false) {
+        initialized = true;
+        R_SCE_Open(&sce_ctrl, &sce_cfg);
     }
 
-    if (mp_obj_get_type(stream_attached) == &machine_uart_type) {
-        uart_attach_to_repl(MP_OBJ_TO_PTR(stream_attached), true);
-    }
+    R_SCE_RandomNumberGenerate(random_data);
+
+    return random_data[0];
 }
 
-#if MICROPY_PY_OS_URANDOM
-STATIC mp_obj_t mp_os_urandom(mp_obj_t num) {
-    mp_int_t n = mp_obj_get_int(num);
-    vstr_t vstr;
-    vstr_init_len(&vstr, n);
-    for (int i = 0; i < n; i++) {
-        vstr.buf[i] = rng_read();
-    }
-    return mp_obj_new_bytes_from_vstr(&vstr);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_urandom_obj, mp_os_urandom);
 #endif
