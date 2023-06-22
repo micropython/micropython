@@ -113,6 +113,19 @@ void mp_js_init_repl() {
     pyexec_event_repl_init();
 }
 
+#if MICROPY_GC_SPLIT_HEAP_AUTO
+
+// The largest new region that is available to become Python heap.
+size_t gc_get_max_new_split(void) {
+    return 128 * 1024 * 1024;
+}
+
+// Don't collect anything.  Instead require the heap to grow.
+void gc_collect(void) {
+}
+
+#else
+
 static void gc_scan_func(void *begin, void *end) {
     gc_collect_root((void **)begin, (void **)end - (void **)begin + 1);
 }
@@ -123,6 +136,8 @@ void gc_collect(void) {
     emscripten_scan_registers(gc_scan_func);
     gc_collect_end();
 }
+
+#endif
 
 #if !MICROPY_VFS
 mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
