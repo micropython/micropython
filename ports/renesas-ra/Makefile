@@ -91,6 +91,7 @@ CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -imacros boards/compiler_barrier.h
 INC += -I.
+INC += -Ifsp_cfg
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(TOP)/$(CMSIS_DIR)
