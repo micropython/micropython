@@ -303,6 +303,7 @@ SRC_C += \
 	main.c \
 	ra_hal.c \
 	ra_it.c \
+	rng.c \
 	mphalport.c \
 	mpthreadport.c \
 	irq.c \
@@ -427,6 +428,43 @@ HAL_SRC_C += $(addprefix ra/,\
 	ra_utils.c \
 	)
 
+endif
+
+ifeq ($(MICROPY_HW_ENABLE_RNG),1)
+CRYPTO_DIR = ra/fsp/src/r_sce_protected/crypto_procedures_protected/src/sce9/
+
+INC += -I$(TOP)/$(HAL_DIR)/$(CRYPTO_DIR)/inc
+INC += -I$(TOP)/$(HAL_DIR)/$(CRYPTO_DIR)/inc/api
+INC += -I$(TOP)/$(HAL_DIR)/$(CRYPTO_DIR)/private/inc
+INC += -I$(TOP)/$(HAL_DIR)/$(CRYPTO_DIR)/inc/instances
+
+# The following FSP files are required for the random number generator.
+HAL_SRC_C += $(addprefix $(HAL_DIR)/$(CRYPTO_DIR)/,\
+	public/r_sce.c \
+	public/r_sce_ecc.c \
+	public/r_sce_sha.c \
+	public/r_sce_aes.c \
+	private/r_sce_private.c \
+	primitive/r_sce_p00.c \
+	primitive/r_sce_p20.c \
+	primitive/r_sce_p26.c \
+	primitive/r_sce_p81.c \
+	primitive/r_sce_p82.c \
+	primitive/r_sce_p92.c \
+	primitive/r_sce_p40.c \
+	primitive/r_sce_func050.c \
+	primitive/r_sce_func051.c \
+	primitive/r_sce_func052.c \
+	primitive/r_sce_func053.c \
+	primitive/r_sce_func054.c \
+	primitive/r_sce_func100.c \
+	primitive/r_sce_func101.c \
+	primitive/r_sce_func040.c \
+	primitive/r_sce_func048.c \
+	primitive/r_sce_func102.c \
+	primitive/r_sce_func103.c \
+	primitive/r_sce_subprc01.c\
+	)
 endif
 
 OBJ += $(PY_O)
