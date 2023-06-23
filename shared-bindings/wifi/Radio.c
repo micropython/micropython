@@ -316,7 +316,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|         password: Union[str | ReadableBuffer] = b"",
 //|         *,
 //|         channel: int = 1,
-//|         authmode: Optional[AuthMode] = None,
+//|         authmode: Iterable[AuthMode] = (),
 //|         max_connections: Optional[int] = 4,
 //|     ) -> None:
 //|         """Starts running an access point with the specified ssid and password.
@@ -324,11 +324,16 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|         If ``channel`` is given, the access point will use that channel unless
 //|         a station is already operating on a different channel.
 //|
-//|         If ``authmode`` is not None, the access point will use that Authentication
-//|         mode. If a non-empty password is given, ``authmode`` must not be ``OPEN``.
-//|         If ``authmode`` is not given or is None,
-//|         ``OPEN`` will be used when the password is the empty string,
-//|         otherwise ``authmode`` will be ``WPA_WPA2_PSK``.
+//|         If ``authmode`` is not None, the access point will use the given authentication modes.
+//|         If a non-empty password is given, ``authmode`` must not include ``OPEN``.
+//|         If ``authmode`` is not given or is an empty iterable,
+//|         ``(wifi.AuthMode.OPEN,)`` will be used when the password is the empty string,
+//|         otherwise ``authmode`` will be ``(wifi.AuthMode.WPA, wifi.AuthMode.WPA2, wifi.AuthMode.PSK)``.
+//|
+//|         **Limitations:** On Espressif, ``authmode`` with a non-empty password must include
+//|         `wifi.AuthMode.PSK`, and one or both of `wifi.AuthMode.WPA` and `wifi.AuthMode.WPA2`.
+//|         On Pi Pico W, ``authmode`` is ignored; it is always ``(wifi.AuthMode.WPA2, wifi.AuthMode.PSK)`
+//|         with a non-empty password, or ``(wifi.AuthMode.OPEN,)`` when no password is given.
 //|
 //|         The length of ``password`` must be 8-63 characters if it is ASCII,
 //|         or exactly 64 hexadecimal characters if it is the hex form of the 256-bit key.
@@ -342,7 +347,7 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = mp_const_empty_bytes} },
         { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none } },
+        { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_empty_tuple } },
         { MP_QSTR_max_connections, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 4} },
     };
 
@@ -350,14 +355,12 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // 0 indicates mode wasn't given.
-    uint32_t authmodes = 0;
-    if (args[ARG_authmode].u_obj != mp_const_none) {
-        mp_obj_iter_buf_t iter_buf;
-        mp_obj_t item, iterable = mp_getiter(args[ARG_authmode].u_obj, &iter_buf);
-        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            authmodes |= cp_enum_value(&wifi_authmode_type, item, MP_QSTR_authmode);
-        }
+    // 0 indicates no modes were given. Otherwise authmode is the OR of bits signifying the modes.
+    uint32_t authmode = 0;
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t item, iterable = mp_getiter(args[ARG_authmode].u_obj, &iter_buf);
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        authmode |= cp_enum_value(&wifi_authmode_type, item, MP_QSTR_authmode);
     }
 
     mp_buffer_info_t ssid;
@@ -366,28 +369,28 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
 
     mp_buffer_info_t password;
     mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
-    if (authmodes == 0) {
+    if (authmode == 0) {
         if (password.len == 0) {
-            authmodes = AUTHMODE_OPEN;
+            authmode = AUTHMODE_OPEN;
         } else {
-            authmodes = AUTHMODE_WPA | AUTHMODE_WPA2 | AUTHMODE_PSK;
+            authmode = AUTHMODE_WPA | AUTHMODE_WPA2 | AUTHMODE_PSK;
         }
     }
 
     mp_int_t channel = mp_arg_validate_int_range(args[ARG_channel].u_int, 1, 13, MP_QSTR_channel);
 
-    if (authmodes == AUTHMODE_OPEN && password.len > 0) {
+    if (authmode == AUTHMODE_OPEN && password.len > 0) {
         mp_raise_ValueError(translate("AuthMode.OPEN is not used with password"));
     }
 
-    if (authmodes != AUTHMODE_OPEN) {
+    if (authmode != AUTHMODE_OPEN) {
         mp_arg_validate_length_range(password.len, 8, 64, MP_QSTR_password);
         if (password.len == 64) {
             validate_hex_password(password.buf, password.len);
         }
     }
 
-    common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, channel, authmodes, args[ARG_max_connections].u_int);
+    common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, channel, authmode, args[ARG_max_connections].u_int);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_ap_obj, 1, wifi_radio_start_ap);
