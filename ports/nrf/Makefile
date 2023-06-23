@@ -114,7 +114,6 @@ SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_spim.c \
 	drivers/src/nrfx_timer.c \
 	drivers/src/nrfx_twim.c \
-	drivers/src/nrfx_twi_twim.c \
 	drivers/src/nrfx_uarte.c \
 	drivers/src/nrfx_gpiote.c \
 	drivers/src/nrfx_rtc.c \
