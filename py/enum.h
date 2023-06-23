@@ -50,12 +50,13 @@ typedef struct {
         cp_enum_obj_print_helper(MP_QSTR_##module, print, self_in, kind); \
     }
 
-#define MAKE_ENUM_TYPE(module, type, typename) \
+#define MAKE_ENUM_TYPE(module, type, typename, ...) \
     const mp_obj_type_t typename##_type = { \
         { &mp_type_type }, \
         .name = MP_QSTR_##type, \
         .print = typename##_print, \
         .locals_dict = (mp_obj_dict_t *)&typename##_locals_dict, \
+        ##__VA_ARGS__ \
     }
 
 

@@ -235,6 +235,7 @@ litex             alpha
 mimxrt10xx        alpha
 nrf               stable
 raspberrypi       stable
+efr32             alpha
 stm               ``F4`` stable | ``others`` beta
 unix              alpha
 ================  ============================================================

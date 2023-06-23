@@ -31,7 +31,15 @@
 #include "py/misc.h"
 #include "supervisor/memory.h"
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S2)
+// Use DMA-capable RAM (not PSRAM) for framebuffer:
+#include "components/heap/include/esp_heap_caps.h"
+#define _PM_allocate(x) heap_caps_malloc(x, MALLOC_CAP_DMA | MALLOC_CAP_8BIT)
+#define _PM_free(x) heap_caps_free(x)
+#else
 #define _PM_allocate common_hal_rgbmatrix_allocator_impl
 #define _PM_free(x) (common_hal_rgbmatrix_free_impl((x)), (x) = NULL, (void)0)
+#endif
+
 extern void *common_hal_rgbmatrix_allocator_impl(size_t sz);
 extern void common_hal_rgbmatrix_free_impl(void *);

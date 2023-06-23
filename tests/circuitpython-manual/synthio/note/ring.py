@@ -23,20 +23,26 @@ envelope = synthio.Envelope(
 )
 
 synth = synthio.Synthesizer(sample_rate=48000)
+bend_out = np.linspace(0, 32767, num=SAMPLE_SIZE, endpoint=True, dtype=np.int16)
 
 
 def synthesize(synth):
     n = synthio.Note(
-        frequency=120,
+        frequency=440,
         waveform=sine,
         ring_waveform=sine,
         ring_frequency=769,
         envelope=envelope,
-        bend_mode=synthio.BendType.VIBRATO,
-        bend_depth=50 / 1200,
-        bend_rate=7,
+        bend=synthio.LFO(bend_out, scale=50 / 1200, rate=7),
     )
 
+    print(synth, n)
+    synth.press((n,))
+    yield 720
+    synth.release_all()
+    yield 36
+
+    n.ring_frequency = 0
     print(synth, n)
     synth.press((n,))
     yield 720

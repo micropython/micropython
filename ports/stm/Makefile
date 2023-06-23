@@ -52,7 +52,7 @@ INC += -I../../supervisor/shared/usb
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
 	CFLAGS += -ggdb3
-	# You may want to enable these flags to make setting breakpoints easier.
+# You may want to enable these flags to make setting breakpoints easier.
 	CFLAGS += -fno-inline -fno-ipa-sra
 else
 	CFLAGS += -DNDEBUG
@@ -264,11 +264,15 @@ endif
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
+ifeq ($(VALID_BOARD),)
+$(BUILD)/firmware.elf: invalid-board
+else
 $(BUILD)/firmware.elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $^ > $(BUILD)/firmware.objs
 	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
 	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(LD_FILE) $(BUILD)
+endif
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"

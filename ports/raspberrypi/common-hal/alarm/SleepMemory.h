@@ -28,6 +28,8 @@
 
 #include "py/obj.h"
 
+#define SLEEP_MEMORY_LENGTH (256)
+
 typedef struct {
     mp_obj_base_t base;
 } alarm_sleep_memory_obj_t;

@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-04-18 13:22+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"PO-Revision-Date: 2023-05-21 00:49+0000\n"
+"Last-Translator: Scott Shawcroft <scott@tannewt.org>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.17\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 #: main.c
 msgid ""
@@ -180,11 +180,15 @@ msgstr "La longeur de %q doit être <= %d"
 msgid "%q length must be >= %d"
 msgstr "La longeur de %q doit être >= %d"
 
-#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
+#: py/argcheck.c
 msgid "%q must be %d"
 msgstr "%q doit être %d"
 
 #: py/argcheck.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "%q must be %d-%d"
 msgstr "%q doit être %d-%d"
 
@@ -218,10 +222,11 @@ msgstr ""
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+#: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q doit être de type %q ou %q, pas %q"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q doit être de type %q, pas %q"
 
@@ -440,6 +445,7 @@ msgid "Address must be %d bytes long"
 msgstr "L'adresse doit être longue de %d octets"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
+#: ports/nrf/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "Plage d'adresses non autorisée"
 
@@ -626,13 +632,6 @@ msgstr "RX et TX requis pour le contrôle de flux"
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
 msgstr "Les deux broches doivent supporter les interruptions matérielles"
-
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/FrameBuffer.c
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "Brightness must be 0-1.0"
-msgstr "La luminosité doit être de 0 à 1.0"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -961,11 +960,6 @@ msgstr "ESP-IDF échec d'allocation de la mémoire"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "Canal EXTINT déjà utilisé"
-
-#: shared-module/synthio/MidiTrack.c
-#, c-format
-msgid "Error in MIDI stream at position %d"
-msgstr "Erreur dans le flot MIDI à la position %d"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -1399,11 +1393,6 @@ msgstr "Adresse physique (MAC) invalide"
 msgid "Mapping must be a tuple"
 msgstr "Le mapping doit être un tuple"
 
-#: shared-module/displayio/Shape.c
-#, c-format
-msgid "Maximum x value when mirrored is %d"
-msgstr "La valeur maximale de x est %d lors d'une opération miroir"
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
@@ -1500,6 +1489,10 @@ msgstr "La taille du nouveau bitmap doit être la même que l'ancien"
 msgid "Nimble out of memory"
 msgstr "Nimble n'a plus de mémoire"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "No %q pin"
+msgstr "Pas de broche %q"
+
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -1548,14 +1541,12 @@ msgstr "Pas de broche MOSI"
 msgid "No MOSI pin"
 msgstr "Aucune broche MOSI"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Pas de broche RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
@@ -2200,8 +2191,8 @@ msgstr "Paramètre de type tuple ou struct_time requis"
 msgid "UART de-init"
 msgstr "Dé-initialisation du UART"
 
-#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/cxd56/common-hal/busio/UART.c ports/espressif/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "UART init"
 msgstr "Initialisation UART"
 
@@ -2572,6 +2563,10 @@ msgstr "adresses vides"
 msgid "annotation must be an identifier"
 msgstr "l'annotation doit être un identificateur"
 
+#: extmod/ulab/code/numpy/create.c
+msgid "arange: cannot compute length"
+msgstr ""
+
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "l'argument est une séquence vide"
@@ -2744,6 +2739,10 @@ msgstr "il ne peut pas y avoir plus de 4 paramètres pour l'assemblage Thumb"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "il ne peut pas y avoir plus de 4 paramètres pour l'assemblage Xtensa"
 
+#: extmod/ulab/code/ndarray.c
+msgid "can only specify one unknown dimension"
+msgstr ""
+
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
@@ -2901,6 +2900,10 @@ msgstr "ne peut pas créer une instance"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "ne peut pas importer le nom %q"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot reshape array"
+msgstr ""
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3359,10 +3362,6 @@ msgstr "la longueur de initial_value est incorrecte"
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "l'assembleur doit être une fonction"
-
-#: extmod/ulab/code/ndarray.c
-msgid "input and output shapes are not compatible"
-msgstr "les formes d'entrée et de sortie ne sont pas compatibles"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -4088,8 +4087,8 @@ msgid "set unsupported"
 msgstr "set non-supporté"
 
 #: extmod/ulab/code/ndarray.c
-msgid "shape must be a tuple"
-msgstr "forme doit être un tuple"
+msgid "shape must be integer or tuple of integers"
+msgstr ""
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
@@ -4463,17 +4462,9 @@ msgstr "mauvais nombre de valeurs à dégrouper"
 msgid "wrong output type"
 msgstr "type de sortie incorrect"
 
-#: shared-module/displayio/Shape.c
-msgid "x value out of bounds"
-msgstr "valeur x hors limites"
-
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
 msgstr "Échec de xTaskCreate"
-
-#: shared-module/displayio/Shape.c
-msgid "y value out of bounds"
-msgstr "valeur y hors limites"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
@@ -4486,6 +4477,29 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "input and output shapes are not compatible"
+#~ msgstr "les formes d'entrée et de sortie ne sont pas compatibles"
+
+#~ msgid "shape must be a tuple"
+#~ msgstr "forme doit être un tuple"
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "La luminosité doit être de 0 à 1.0"
+
+#, c-format
+#~ msgid "Error in MIDI stream at position %d"
+#~ msgstr "Erreur dans le flot MIDI à la position %d"
+
+#, c-format
+#~ msgid "Maximum x value when mirrored is %d"
+#~ msgstr "La valeur maximale de x est %d lors d'une opération miroir"
+
+#~ msgid "x value out of bounds"
+#~ msgstr "valeur x hors limites"
+
+#~ msgid "y value out of bounds"
+#~ msgstr "valeur y hors limites"
 
 #~ msgid "I2SOut not available"
 #~ msgstr "I2SOut n'est pas disponible"

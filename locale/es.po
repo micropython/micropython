@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-04-22 15:51+0000\n"
+"PO-Revision-Date: 2023-05-23 22:55+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -180,11 +180,15 @@ msgstr "%q longitud debe ser <= %d"
 msgid "%q length must be >= %d"
 msgstr "%q longitud debe ser >= %d"
 
-#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
+#: py/argcheck.c
 msgid "%q must be %d"
 msgstr "%q debe ser %d"
 
 #: py/argcheck.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "%q must be %d-%d"
 msgstr "%q debe ser %d-%d"
 
@@ -206,7 +210,7 @@ msgstr "%q debe ser un bytearray o array de tipo 'H' o 'B'"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
-msgstr "%q debe ser un byte-matriz o matriz de tipo 'h', 'H', 'b', o 'B'"
+msgstr "%q debe ser un bytearray o array de tipo 'h', 'H', 'b', o 'B'"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
@@ -218,10 +222,11 @@ msgstr "%q debe ser una matriz de tipo 'h'"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+#: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q debe ser del tipo %q o %q, y no %q"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q debe ser del tipo %q, y no %q"
 
@@ -440,6 +445,7 @@ msgid "Address must be %d bytes long"
 msgstr "La dirección debe tener %d bytes de longitud"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
+#: ports/nrf/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "Rango de dirección no permitido"
 
@@ -601,8 +607,7 @@ msgstr "Por debajo de la tasa mínima de refrescamiento"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
-msgstr ""
-"Los pines de reloj de bit y de selector de palabra deben ser secuenciales"
+msgstr "Los pines \"clock\" y \"word-select\" deben ser consecutivos"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -627,13 +632,6 @@ msgstr "Ambos RX y TX requeridos para control de flujo"
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
 msgstr "Ambos pines deben soportar interrupciones por hardware"
-
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/FrameBuffer.c
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "Brightness must be 0-1.0"
-msgstr "El brillo debe ser 0-1.0"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -956,11 +954,6 @@ msgstr "Fallo ESP-IDF al tomar la memoria"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "El canal EXTINT ya está siendo utilizado"
-
-#: shared-module/synthio/MidiTrack.c
-#, c-format
-msgid "Error in MIDI stream at position %d"
-msgstr "Error en el flujo MIDI en la posición %d"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -1389,11 +1382,6 @@ msgstr "La dirección MAC es incorrecta"
 msgid "Mapping must be a tuple"
 msgstr "El mapping debe ser una dupla"
 
-#: shared-module/displayio/Shape.c
-#, c-format
-msgid "Maximum x value when mirrored is %d"
-msgstr "Valor máximo de x cuando se refleja es %d"
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Micrófono demora de inicio debe estar en el rango 0.0 a 1.0"
@@ -1491,6 +1479,10 @@ msgstr "El nuevo bitmap debe ser del mismo tamaño que el bitmap anterior"
 msgid "Nimble out of memory"
 msgstr "Nimble sin memoria"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "No %q pin"
+msgstr "Sin pin %q"
+
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -1539,14 +1531,12 @@ msgstr "Sin pin MOSI"
 msgid "No MOSI pin"
 msgstr "No pin MOSI"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Sin pin RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
@@ -2194,8 +2184,8 @@ msgstr "Argumento tuple o struct_time requerido"
 msgid "UART de-init"
 msgstr "Desinicialización de UART"
 
-#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/cxd56/common-hal/busio/UART.c ports/espressif/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "UART init"
 msgstr "Inicialización de UART"
 
@@ -2561,6 +2551,10 @@ msgstr "addresses esta vacío"
 msgid "annotation must be an identifier"
 msgstr "la anotación debe ser un identificador"
 
+#: extmod/ulab/code/numpy/create.c
+msgid "arange: cannot compute length"
+msgstr "arange: no se puede calcular la longitud"
+
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "argumento es una secuencia vacía"
@@ -2733,6 +2727,10 @@ msgstr "solo puede tener hasta 4 parámetros para ensamblar Thumb"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "solo puede tener hasta 4 parámetros para ensamblador Xtensa"
 
+#: extmod/ulab/code/ndarray.c
+msgid "can only specify one unknown dimension"
+msgstr "sólo puede especificar una dimensión desconocida"
+
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "no se puede agregar un método a una clase ya subclasificada"
@@ -2888,6 +2886,10 @@ msgstr "no se puede crear instancia"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "no se puede importar name '%q'"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot reshape array"
+msgstr "no puede remodelar la matriz"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3341,10 +3343,6 @@ msgstr "el tamaño de initial_value es incorrecto"
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "ensamblador en línea debe ser una función"
-
-#: extmod/ulab/code/ndarray.c
-msgid "input and output shapes are not compatible"
-msgstr "Formas de entrada y salida no son compatibles"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -4066,8 +4064,8 @@ msgid "set unsupported"
 msgstr "sin capacidades para el conjunto"
 
 #: extmod/ulab/code/ndarray.c
-msgid "shape must be a tuple"
-msgstr "forma tiene que ser una tupla"
+msgid "shape must be integer or tuple of integers"
+msgstr "la forma debe ser un número entero o una tupla de números enteros"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
@@ -4441,17 +4439,9 @@ msgstr "numero erroneo de valores a descomprimir"
 msgid "wrong output type"
 msgstr "tipo de salida incorrecta"
 
-#: shared-module/displayio/Shape.c
-msgid "x value out of bounds"
-msgstr "valor x fuera de límites"
-
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
 msgstr "fallo en xTaskCreate"
-
-#: shared-module/displayio/Shape.c
-msgid "y value out of bounds"
-msgstr "valor y fuera de límites"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
@@ -4464,6 +4454,29 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "input and output shapes are not compatible"
+#~ msgstr "Formas de entrada y salida no son compatibles"
+
+#~ msgid "shape must be a tuple"
+#~ msgstr "forma tiene que ser una tupla"
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "El brillo debe ser 0-1.0"
+
+#, c-format
+#~ msgid "Error in MIDI stream at position %d"
+#~ msgstr "Error en el flujo MIDI en la posición %d"
+
+#, c-format
+#~ msgid "Maximum x value when mirrored is %d"
+#~ msgstr "Valor máximo de x cuando se refleja es %d"
+
+#~ msgid "x value out of bounds"
+#~ msgstr "valor x fuera de límites"
+
+#~ msgid "y value out of bounds"
+#~ msgstr "valor y fuera de límites"
 
 #~ msgid "I2SOut not available"
 #~ msgstr "I2SOut no disponible"

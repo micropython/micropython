@@ -37,15 +37,13 @@
 static const mp_arg_t note_properties[] = {
     { MP_QSTR_frequency, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = NULL } },
     { MP_QSTR_panning, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(0) } },
-    { MP_QSTR_tremolo_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
-    { MP_QSTR_tremolo_depth, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
-    { MP_QSTR_bend_rate, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
-    { MP_QSTR_bend_depth, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = NULL } },
-    { MP_QSTR_bend_mode, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = (mp_obj_t)MP_ROM_PTR(&bend_mode_VIBRATO_obj) } },
+    { MP_QSTR_amplitude, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
+    { MP_QSTR_bend, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(0) } },
     { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
     { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
-    { MP_QSTR_filter, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(1) } },
-    { MP_QSTR_ring_frequency, MP_ARG_OBJ, {.u_obj = NULL } },
+    { MP_QSTR_filter, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
+    { MP_QSTR_ring_frequency, MP_ARG_OBJ, {.u_obj = MP_ROM_INT(0) } },
+    { MP_QSTR_ring_bend, MP_ARG_OBJ, {.u_obj = MP_ROM_INT(0) } },
     { MP_QSTR_ring_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_ROM_NONE } },
 };
 //| class Note:
@@ -53,14 +51,15 @@ static const mp_arg_t note_properties[] = {
 //|         self,
 //|         *,
 //|         frequency: float,
-//|         panning: float = 0.0,
+//|         panning: BlockInput = 0.0,
 //|         waveform: Optional[ReadableBuffer] = None,
 //|         envelope: Optional[Envelope] = None,
-//|         tremolo_depth: float = 0.0,
-//|         tremolo_rate: float = 0.0,
-//|         bend_depth: float = 0.0,
-//|         bend_rate: float = 0.0,
-//|         bend_mode: "BendMode" = BendMode.VIBRATO,
+//|         amplitude: BlockInput = 0.0,
+//|         bend: BlockInput = 0.0,
+//|         filter: Optional[Biquad] = None,
+//|         ring_frequency: float = 0.0,
+//|         ring_bend: float = 0.0,
+//|         ring_waveform: Optional[ReadableBuffer] = 0.0,
 //|     ) -> None:
 //|         """Construct a Note object, with a frequency in Hz, and optional panning, waveform, envelope, tremolo (volume change) and bend (frequency change).
 //|
@@ -76,11 +75,7 @@ STATIC mp_obj_t synthio_note_make_new(const mp_obj_type_t *type_in, size_t n_arg
     self->base.type = &synthio_note_type;
 
     mp_obj_t result = MP_OBJ_FROM_PTR(self);
-    for (size_t i = 0; i < MP_ARRAY_SIZE(note_properties); i++) {
-        if (args[i].u_obj != NULL) {
-            mp_store_attr(result, note_properties[i].qst, args[i].u_obj);
-        }
-    }
+    properties_construct_helper(result, note_properties, args, MP_ARRAY_SIZE(note_properties));
 
     return result;
 };
@@ -103,17 +98,21 @@ MP_PROPERTY_GETSET(synthio_note_frequency_obj,
     (mp_obj_t)&synthio_note_get_frequency_obj,
     (mp_obj_t)&synthio_note_set_frequency_obj);
 
-//|     filter: bool
-//|     """True if the note should be processed via the synthesizer's FIR filter."""
+//|     filter: Optional[Biquad]
+//|     """If not None, the output of this Note is filtered according to the provided coefficients.
+//|
+//|     Construct an appropriate filter by calling a filter-making method on the
+//|     `Synthesizer` object where you plan to play the note, as filter coefficients depend
+//|     on the sample rate"""
 STATIC mp_obj_t synthio_note_get_filter(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_bool(common_hal_synthio_note_get_filter(self));
+    return common_hal_synthio_note_get_filter_obj(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_filter_obj, synthio_note_get_filter);
 
 STATIC mp_obj_t synthio_note_set_filter(mp_obj_t self_in, mp_obj_t arg) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_synthio_note_set_filter(self, mp_obj_is_true(arg));
+    common_hal_synthio_note_set_filter(self, arg);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_filter_obj, synthio_note_set_filter);
@@ -121,7 +120,7 @@ MP_PROPERTY_GETSET(synthio_note_filter_obj,
     (mp_obj_t)&synthio_note_get_filter_obj,
     (mp_obj_t)&synthio_note_set_filter_obj);
 
-//|     panning: float
+//|     panning: BlockInput
 //|     """Defines the channel(s) in which the note appears.
 //|
 //|     -1 is left channel only, 0 is both channels, and 1 is right channel.
@@ -130,13 +129,13 @@ MP_PROPERTY_GETSET(synthio_note_filter_obj,
 //|     amplitude in the left channel and 1/2 amplitude in the right channel."""
 STATIC mp_obj_t synthio_note_get_panning(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(common_hal_synthio_note_get_panning(self));
+    return common_hal_synthio_note_get_panning(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_panning_obj, synthio_note_get_panning);
 
 STATIC mp_obj_t synthio_note_set_panning(mp_obj_t self_in, mp_obj_t arg) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_synthio_note_set_panning(self, mp_obj_get_float(arg));
+    common_hal_synthio_note_set_panning(self, arg);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_panning_obj, synthio_note_set_panning);
@@ -145,108 +144,54 @@ MP_PROPERTY_GETSET(synthio_note_panning_obj,
     (mp_obj_t)&synthio_note_set_panning_obj);
 
 
-//|     tremolo_depth: float
-//|     """The tremolo depth of the note, from 0 to 1
+//|     amplitude: BlockInput
+//|     """The relative amplitude of the note, from 0 to 1
 //|
-//|     A depth of 0 disables tremolo. A nonzero value enables tremolo,
-//|     with the maximum decrease in amplitude being equal to the tremolo
-//|     depth. A note with a tremolo depth of 1 will fade out to nothing, while
-//|     a tremolo depth of 0.1 will give a minimum amplitude of 0.9."""
-STATIC mp_obj_t synthio_note_get_tremolo_depth(mp_obj_t self_in) {
+//|     An amplitude of 0 makes the note inaudible. It is combined multiplicatively with
+//|     the value from the note's envelope.
+//|
+//|     To achieve a tremolo effect, attach an LFO here."""
+STATIC mp_obj_t synthio_note_get_amplitude(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(common_hal_synthio_note_get_tremolo_depth(self));
+    return common_hal_synthio_note_get_amplitude(self);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_tremolo_depth_obj, synthio_note_get_tremolo_depth);
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_amplitude_obj, synthio_note_get_amplitude);
 
-STATIC mp_obj_t synthio_note_set_tremolo_depth(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t synthio_note_set_amplitude(mp_obj_t self_in, mp_obj_t arg) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_synthio_note_set_tremolo_depth(self, mp_obj_get_float(arg));
+    common_hal_synthio_note_set_amplitude(self, arg);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_tremolo_depth_obj, synthio_note_set_tremolo_depth);
-MP_PROPERTY_GETSET(synthio_note_tremolo_depth_obj,
-    (mp_obj_t)&synthio_note_get_tremolo_depth_obj,
-    (mp_obj_t)&synthio_note_set_tremolo_depth_obj);
-
-//|     tremolo_rate: float
-//|     """The tremolo rate of the note, in Hz."""
-STATIC mp_obj_t synthio_note_get_tremolo_rate(mp_obj_t self_in) {
-    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(common_hal_synthio_note_get_tremolo_rate(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_tremolo_rate_obj, synthio_note_get_tremolo_rate);
-
-STATIC mp_obj_t synthio_note_set_tremolo_rate(mp_obj_t self_in, mp_obj_t arg) {
-    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_synthio_note_set_tremolo_rate(self, mp_obj_get_float(arg));
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_tremolo_rate_obj, synthio_note_set_tremolo_rate);
-MP_PROPERTY_GETSET(synthio_note_tremolo_rate_obj,
-    (mp_obj_t)&synthio_note_get_tremolo_rate_obj,
-    (mp_obj_t)&synthio_note_set_tremolo_rate_obj);
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_amplitude_obj, synthio_note_set_amplitude);
+MP_PROPERTY_GETSET(synthio_note_amplitude_obj,
+    (mp_obj_t)&synthio_note_get_amplitude_obj,
+    (mp_obj_t)&synthio_note_set_amplitude_obj);
 
 //|
-//|     bend_mode: BendMode
-//|     """The type of bend operation"""
-STATIC mp_obj_t synthio_note_get_bend_mode(mp_obj_t self_in) {
-    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return cp_enum_find(&synthio_bend_mode_type, common_hal_synthio_note_get_bend_mode(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_bend_mode_obj, synthio_note_get_bend_mode);
-
-STATIC mp_obj_t synthio_note_set_bend_mode(mp_obj_t self_in, mp_obj_t arg) {
-    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_synthio_note_set_bend_mode(self, cp_enum_value(&synthio_bend_mode_type, arg, MP_QSTR_bend_mode));
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_bend_mode_obj, synthio_note_set_bend_mode);
-MP_PROPERTY_GETSET(synthio_note_bend_mode_obj,
-    (mp_obj_t)&synthio_note_get_bend_mode_obj,
-    (mp_obj_t)&synthio_note_set_bend_mode_obj);
-
-//
+//|     bend: BlockInput
+//|     """The pitch bend depth of the note, from -12 to +12
 //|
-//|     bend_depth: float
-//|     """The bend depth of the note, from -1 to +1
-//|
-//|     A depth of 0 disables bend. A depth of 1 corresponds to a bend of 1
-//|     octave.  A depth of (1/12) = 0.833 corresponds to a bend of 1 semitone,
+//|     A depth of 0 plays the programmed frequency. A depth of 1 corresponds to a bend of 1
+//|     octave.  A depth of (1/12) = 0.0833 corresponds to a bend of 1 semitone,
 //|     and a depth of .00833 corresponds to one musical cent.
+//|
+//|     To achieve a vibrato or sweep effect, attach an LFO here.
 //|     """
-STATIC mp_obj_t synthio_note_get_bend_depth(mp_obj_t self_in) {
+STATIC mp_obj_t synthio_note_get_bend(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(common_hal_synthio_note_get_bend_depth(self));
+    return common_hal_synthio_note_get_bend(self);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_bend_depth_obj, synthio_note_get_bend_depth);
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_bend_obj, synthio_note_get_bend);
 
-STATIC mp_obj_t synthio_note_set_bend_depth(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t synthio_note_set_bend(mp_obj_t self_in, mp_obj_t arg) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_synthio_note_set_bend_depth(self, mp_obj_get_float(arg));
+    common_hal_synthio_note_set_bend(self, arg);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_bend_depth_obj, synthio_note_set_bend_depth);
-MP_PROPERTY_GETSET(synthio_note_bend_depth_obj,
-    (mp_obj_t)&synthio_note_get_bend_depth_obj,
-    (mp_obj_t)&synthio_note_set_bend_depth_obj);
-
-//|     bend_rate: float
-//|     """The bend rate of the note, in Hz."""
-STATIC mp_obj_t synthio_note_get_bend_rate(mp_obj_t self_in) {
-    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(common_hal_synthio_note_get_bend_rate(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_bend_rate_obj, synthio_note_get_bend_rate);
-
-STATIC mp_obj_t synthio_note_set_bend_rate(mp_obj_t self_in, mp_obj_t arg) {
-    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_synthio_note_set_bend_rate(self, mp_obj_get_float(arg));
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_bend_rate_obj, synthio_note_set_bend_rate);
-MP_PROPERTY_GETSET(synthio_note_bend_rate_obj,
-    (mp_obj_t)&synthio_note_get_bend_rate_obj,
-    (mp_obj_t)&synthio_note_set_bend_rate_obj);
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_bend_obj, synthio_note_set_bend);
+MP_PROPERTY_GETSET(synthio_note_bend_obj,
+    (mp_obj_t)&synthio_note_get_bend_obj,
+    (mp_obj_t)&synthio_note_set_bend_obj);
 
 //|     waveform: Optional[ReadableBuffer]
 //|     """The waveform of this note. Setting the waveform to a buffer of a different size resets the note's phase."""
@@ -306,6 +251,31 @@ MP_PROPERTY_GETSET(synthio_note_ring_frequency_obj,
     (mp_obj_t)&synthio_note_get_ring_frequency_obj,
     (mp_obj_t)&synthio_note_set_ring_frequency_obj);
 
+//|     ring_bend: float
+//|     """The pitch bend depth of the note's ring waveform, from -12 to +12
+//|
+//|     A depth of 0 plays the programmed frequency. A depth of 1 corresponds to a bend of 1
+//|     octave.  A depth of (1/12) = 0.0833 corresponds to a bend of 1 semitone,
+//|     and a depth of .00833 corresponds to one musical cent.
+//|
+//|     To achieve a vibrato or sweep effect on the ring waveform, attach an LFO here.
+//|     """
+STATIC mp_obj_t synthio_note_get_ring_bend(mp_obj_t self_in) {
+    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return common_hal_synthio_note_get_ring_bend(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(synthio_note_get_ring_bend_obj, synthio_note_get_ring_bend);
+
+STATIC mp_obj_t synthio_note_set_ring_bend(mp_obj_t self_in, mp_obj_t arg) {
+    synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_synthio_note_set_ring_bend(self, arg);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_note_set_ring_bend_obj, synthio_note_set_ring_bend);
+MP_PROPERTY_GETSET(synthio_note_ring_bend_obj,
+    (mp_obj_t)&synthio_note_get_ring_bend_obj,
+    (mp_obj_t)&synthio_note_set_ring_bend_obj);
+
 //|     ring_waveform: Optional[ReadableBuffer]
 //|     """The ring waveform of this note. Setting the ring_waveform to a buffer of a different size resets the note's phase.
 //|
@@ -340,12 +310,10 @@ STATIC const mp_rom_map_elem_t synthio_note_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_panning), MP_ROM_PTR(&synthio_note_panning_obj) },
     { MP_ROM_QSTR(MP_QSTR_waveform), MP_ROM_PTR(&synthio_note_waveform_obj) },
     { MP_ROM_QSTR(MP_QSTR_envelope), MP_ROM_PTR(&synthio_note_envelope_obj) },
-    { MP_ROM_QSTR(MP_QSTR_tremolo_depth), MP_ROM_PTR(&synthio_note_tremolo_depth_obj) },
-    { MP_ROM_QSTR(MP_QSTR_tremolo_rate), MP_ROM_PTR(&synthio_note_tremolo_rate_obj) },
-    { MP_ROM_QSTR(MP_QSTR_bend_depth), MP_ROM_PTR(&synthio_note_bend_depth_obj) },
-    { MP_ROM_QSTR(MP_QSTR_bend_rate), MP_ROM_PTR(&synthio_note_bend_rate_obj) },
-    { MP_ROM_QSTR(MP_QSTR_bend_mode), MP_ROM_PTR(&synthio_note_bend_mode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_amplitude), MP_ROM_PTR(&synthio_note_amplitude_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bend), MP_ROM_PTR(&synthio_note_bend_obj) },
     { MP_ROM_QSTR(MP_QSTR_ring_frequency), MP_ROM_PTR(&synthio_note_ring_frequency_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ring_bend), MP_ROM_PTR(&synthio_note_ring_bend_obj) },
     { MP_ROM_QSTR(MP_QSTR_ring_waveform), MP_ROM_PTR(&synthio_note_ring_waveform_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(synthio_note_locals_dict, synthio_note_locals_dict_table);

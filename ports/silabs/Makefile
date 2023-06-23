@@ -88,7 +88,7 @@ SRC_C += \
 	mphalport.c \
 	$(SILABS_BUILD)/pins.c\
 
-ifeq ('$(BOARD)','brd2601b')
+ifneq (,$(wildcard boards/$(BOARD)/sensor.c))
 SRC_C += boards/$(BOARD)/sensor.c
 endif
 
@@ -137,9 +137,13 @@ MCU_SECTIONS = $^ $@
 # Default goal
 all: $(OUTPUT_DIR)/firmware.bin
 
+ifeq ($(VALID_BOARD),)
+$(BUILD)/firmware.bin: invalid-board
+else
 $(OUTPUT_DIR)/firmware.bin: $(SILABS_BUILD)/$(PROJECTNAME).Makefile $(OUTPUT_DIR)/firmware.hex
 	+@$(MAKE) --no-print-directory $(OUTPUT_DIR)/firmware.out
 	@echo 'Done.'
+endif
 
 $(SILABS_BUILD)/$(PROJECTNAME).Makefile:
 	+@$(MAKE) --no-print-directory slc-generate

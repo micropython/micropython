@@ -65,6 +65,8 @@ noise = np.array(
     dtype=np.int16,
 )
 
+bend_in = np.linspace(32767, 0, num=SAMPLE_SIZE, endpoint=True, dtype=np.int16)
+
 envelope = synthio.Envelope(
     attack_time=0.1, decay_time=0.05, release_time=0.2, attack_level=1, sustain_level=0.8
 )
@@ -157,8 +159,8 @@ def synthesize4(synth):
     synth.press(chord)
     for i in range(16):
         for c in chord:
-            c.tremolo_depth = i / 50
-            c.tremolo_rate = (i + 1) / 4
+            d = i / 50
+            c.amplitude = synthio.LFO(scale=d / 2, offset=1 - d, rate=(i + 1) / 4, waveform=sine)
         yield 48
     yield 36
 
@@ -171,17 +173,14 @@ def synthesize5(synth):
     synth.press(chord)
     for i in range(16):
         for c in chord:
-            c.bend_depth = 1 / 24
-            c.bend_rate = (i + 1) / 2
+            c.bend = synthio.LFO(scale=1 / 24, rate=(i + 1) / 2, waveform=sine)
         yield 24
     synth.release_all()
     yield 100
 
     for c in chord:
         synth.release_all()
-        c.bend_mode = synthio.BendMode.SWEEP_IN
-        c.bend_depth = randf(-1, 1)
-        c.bend_rate = 1 / 2
+        c.bend = synthio.LFO(scale=randf(-1, 1), rate=1 / 2, waveform=bend_in)
     synth.press(chord)
     yield 320
 

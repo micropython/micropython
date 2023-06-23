@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-04-22 06:48+0000\n"
+"PO-Revision-Date: 2023-05-26 12:50+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -177,11 +177,15 @@ msgstr "längden på %q måste vara <= %d"
 msgid "%q length must be >= %d"
 msgstr "längden på %q måste vara >= %d"
 
-#: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
+#: py/argcheck.c
 msgid "%q must be %d"
 msgstr "%q måste vara %d"
 
 #: py/argcheck.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "%q must be %d-%d"
 msgstr "%q måste vara %d-%d"
 
@@ -217,10 +221,11 @@ msgstr "%q måste vara en matris av typen 'h'"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+#: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q måste vara av typen %q eller %q, inte %q"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c
+#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q måste vara av typen %q, inte %q"
 
@@ -439,6 +444,7 @@ msgid "Address must be %d bytes long"
 msgstr "Adressen måste vara %d byte lång"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
+#: ports/nrf/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "Adressintervallet är inte tillåtet"
 
@@ -623,13 +629,6 @@ msgstr "Både RX och TX krävs för handskakning"
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
 msgstr "Båda pinnarna måste stödja maskinvaruavbrott"
-
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/FrameBuffer.c
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "Brightness must be 0-1.0"
-msgstr "Ljusstyrkan måste vara mellan 0 och 1,0"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -947,11 +946,6 @@ msgstr "ESP-IDF-minnetilldelning misslyckades"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT-kanalen används redan"
-
-#: shared-module/synthio/MidiTrack.c
-#, c-format
-msgid "Error in MIDI stream at position %d"
-msgstr "Fel i MIDI-ström vid position %d"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -1370,11 +1364,6 @@ msgstr "MAC-adressen var ogiltig"
 msgid "Mapping must be a tuple"
 msgstr "Mappning måste vara en tuple"
 
-#: shared-module/displayio/Shape.c
-#, c-format
-msgid "Maximum x value when mirrored is %d"
-msgstr "Maximum x-värde vid spegling är %d"
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
@@ -1469,6 +1458,10 @@ msgstr "Ny bitmapp måste ha samma storlek som tidigare bitmapp"
 msgid "Nimble out of memory"
 msgstr "Nimble har inget minne kvar"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "No %q pin"
+msgstr "Ingen %q-pinne"
+
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -1517,14 +1510,12 @@ msgstr "Ingen MOSI-pinne"
 msgid "No MOSI pin"
 msgstr "Ingen MOSI-pinne"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Ingen RX-pinne"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
@@ -2165,8 +2156,8 @@ msgstr "Tuple- eller struct_time-argument krävs"
 msgid "UART de-init"
 msgstr "UART omstart"
 
-#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/cxd56/common-hal/busio/UART.c ports/espressif/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "UART init"
 msgstr "UART start"
 
@@ -2529,6 +2520,10 @@ msgstr "adresserna är tomma"
 msgid "annotation must be an identifier"
 msgstr "Annoteringen måste vara en identifierare"
 
+#: extmod/ulab/code/numpy/create.c
+msgid "arange: cannot compute length"
+msgstr "arange: kan inte beräkna längd"
+
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "arg är en tom sekvens"
@@ -2701,6 +2696,10 @@ msgstr "kan bara ha upp till 4 parametrar för Thumbs assembly"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "kan bara ha upp till 4 parametrar att Xtensa assembly"
 
+#: extmod/ulab/code/ndarray.c
+msgid "can only specify one unknown dimension"
+msgstr "kan enbart ange en okänd dimension"
+
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "kan inte lägga till särskild metod för redan subklassad klass"
@@ -2853,6 +2852,10 @@ msgstr "kan inte skapa instans"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "kan inte importera namn %q"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot reshape array"
+msgstr "kan inte omforma matris"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3307,10 +3310,6 @@ msgstr "initial_value-längd är fel"
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler måste vara en funktion"
-
-#: extmod/ulab/code/ndarray.c
-msgid "input and output shapes are not compatible"
-msgstr "indata- och utdataformer är inte kompatibla"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -4029,8 +4028,8 @@ msgid "set unsupported"
 msgstr "set stöds inte"
 
 #: extmod/ulab/code/ndarray.c
-msgid "shape must be a tuple"
-msgstr "shape måste vara en tuple"
+msgid "shape must be integer or tuple of integers"
+msgstr "shape måste vara ett heltal eller en tupel av heltal"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
@@ -4403,17 +4402,9 @@ msgstr "fel antal värden för att packa upp"
 msgid "wrong output type"
 msgstr "fel utdatatyp"
 
-#: shared-module/displayio/Shape.c
-msgid "x value out of bounds"
-msgstr "x-värde utanför intervall"
-
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
 msgstr "xTaskCreate misslyckades"
-
-#: shared-module/displayio/Shape.c
-msgid "y value out of bounds"
-msgstr "y-värde utanför intervall"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
@@ -4426,6 +4417,29 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "input and output shapes are not compatible"
+#~ msgstr "indata- och utdataformer är inte kompatibla"
+
+#~ msgid "shape must be a tuple"
+#~ msgstr "shape måste vara en tuple"
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "Ljusstyrkan måste vara mellan 0 och 1,0"
+
+#, c-format
+#~ msgid "Error in MIDI stream at position %d"
+#~ msgstr "Fel i MIDI-ström vid position %d"
+
+#, c-format
+#~ msgid "Maximum x value when mirrored is %d"
+#~ msgstr "Maximum x-värde vid spegling är %d"
+
+#~ msgid "x value out of bounds"
+#~ msgstr "x-värde utanför intervall"
+
+#~ msgid "y value out of bounds"
+#~ msgstr "y-värde utanför intervall"
 
 #~ msgid "I2SOut not available"
 #~ msgstr "I2SOut är inte tillgängligt"

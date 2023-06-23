@@ -25,17 +25,19 @@
  */
 
 #include "py/runtime.h"
-#include "shared-bindings/synthio/Synthesizer.h"
+#include "shared-bindings/synthio/LFO.h"
 #include "shared-bindings/synthio/Note.h"
+#include "shared-bindings/synthio/Synthesizer.h"
 #include "shared-module/synthio/Note.h"
 
 
 
 void common_hal_synthio_synthesizer_construct(synthio_synthesizer_obj_t *self,
-    uint32_t sample_rate, int channel_count, mp_obj_t waveform_obj, mp_obj_t filter_obj,
+    uint32_t sample_rate, int channel_count, mp_obj_t waveform_obj,
     mp_obj_t envelope_obj) {
 
-    synthio_synth_init(&self->synth, sample_rate, channel_count, waveform_obj, filter_obj, envelope_obj);
+    synthio_synth_init(&self->synth, sample_rate, channel_count, waveform_obj, envelope_obj);
+    self->blocks = mp_obj_new_list(0, NULL);
 }
 
 void common_hal_synthio_synthesizer_deinit(synthio_synthesizer_obj_t *self) {
@@ -67,7 +69,21 @@ audioio_get_buffer_result_t synthio_synthesizer_get_buffer(synthio_synthesizer_o
         return GET_BUFFER_ERROR;
     }
     self->synth.span.dur = SYNTHIO_MAX_DUR;
+
+
     synthio_synth_synthesize(&self->synth, buffer, buffer_length, single_channel_output ? channel : 0);
+
+    // free-running LFOs
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(self->blocks, &iter_buf);
+    mp_obj_t item;
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if (!synthio_obj_is_block(item)) {
+            continue;
+        }
+        synthio_block_slot_t slot = { item };
+        (void)synthio_block_slot_get(&slot);
+    }
     return GET_BUFFER_MORE_DATA;
 }
 
@@ -84,6 +100,10 @@ void common_hal_synthio_synthesizer_release_all(synthio_synthesizer_obj_t *self)
     }
 }
 
+STATIC bool is_note(mp_obj_t note_in) {
+    return mp_obj_is_small_int(note_in) || mp_obj_is_type(note_in, &synthio_note_type);
+}
+
 STATIC mp_obj_t validate_note(mp_obj_t note_in) {
     if (mp_obj_is_small_int(note_in)) {
         mp_arg_validate_int_range(mp_obj_get_int(note_in), 0, 127, MP_QSTR_note);
@@ -97,6 +117,11 @@ STATIC mp_obj_t validate_note(mp_obj_t note_in) {
 }
 
 void common_hal_synthio_synthesizer_release(synthio_synthesizer_obj_t *self, mp_obj_t to_release) {
+    if (is_note(to_release)) {
+        synthio_span_change_note(&self->synth, validate_note(to_release), SYNTHIO_SILENCE);
+        return;
+    }
+
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(to_release, &iter_buf);
     mp_obj_t item;
@@ -106,6 +131,15 @@ void common_hal_synthio_synthesizer_release(synthio_synthesizer_obj_t *self, mp_
 }
 
 void common_hal_synthio_synthesizer_press(synthio_synthesizer_obj_t *self, mp_obj_t to_press) {
+    if (is_note(to_press)) {
+        if (!mp_obj_is_small_int(to_press)) {
+            synthio_note_obj_t *note = MP_OBJ_TO_PTR(to_press);
+            synthio_note_start(note, self->synth.sample_rate);
+        }
+        synthio_span_change_note(&self->synth, SYNTHIO_SILENCE, validate_note(to_press));
+        return;
+    }
+
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(to_press, &iter_buf);
     mp_obj_t note_obj;
@@ -116,6 +150,22 @@ void common_hal_synthio_synthesizer_press(synthio_synthesizer_obj_t *self, mp_ob
             synthio_note_start(note, self->synth.sample_rate);
         }
         synthio_span_change_note(&self->synth, SYNTHIO_SILENCE, note_obj);
+    }
+}
+
+void common_hal_synthio_synthesizer_retrigger(synthio_synthesizer_obj_t *self, mp_obj_t to_retrigger) {
+    if (mp_obj_is_type(to_retrigger, &synthio_lfo_type)) {
+        synthio_lfo_obj_t *lfo = MP_OBJ_TO_PTR(mp_arg_validate_type(to_retrigger, &synthio_lfo_type, MP_QSTR_retrigger));
+        common_hal_synthio_lfo_retrigger(lfo);
+        return;
+    }
+
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(to_retrigger, &iter_buf);
+    mp_obj_t lfo_obj;
+    while ((lfo_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        synthio_lfo_obj_t *lfo = MP_OBJ_TO_PTR(mp_arg_validate_type(lfo_obj, &synthio_lfo_type, MP_QSTR_retrigger));
+        common_hal_synthio_lfo_retrigger(lfo);
     }
 }
 
@@ -133,4 +183,8 @@ mp_obj_t common_hal_synthio_synthesizer_get_pressed_notes(synthio_synthesizer_ob
         }
     }
     return MP_OBJ_FROM_PTR(result);
+}
+
+mp_obj_t common_hal_synthio_synthesizer_get_blocks(synthio_synthesizer_obj_t *self) {
+    return self->blocks;
 }

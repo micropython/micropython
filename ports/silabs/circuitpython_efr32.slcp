@@ -42,7 +42,6 @@ component:
 - {id: sleeptimer}
 - {id: emlib_wdog}
 - {id: bluetooth_feature_connection}
-- {id: rail_lib_multiprotocol}
 - {id: bluetooth_feature_dynamic_gattdb}
 - {id: bluetooth_feature_system}
 - {id: bluetooth_feature_scanner}

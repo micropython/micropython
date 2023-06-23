@@ -34,6 +34,7 @@
 typedef struct {
     mp_obj_base_t base;
     synthio_synth_t synth;
+    mp_obj_t blocks;
 } synthio_synthesizer_obj_t;
 
 
