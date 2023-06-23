@@ -48,6 +48,7 @@
 //
 #if MBEDTLS_VERSION_NUMBER >= 0x03000000
 #include "mbedtls/build_info.h"
+#include "mbedtls/platform_time.h"
 #else
 #include "mbedtls/version.h"
 #endif

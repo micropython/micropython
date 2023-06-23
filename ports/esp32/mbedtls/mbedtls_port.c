@@ -6,7 +6,10 @@
 #include <sys/time.h>
 #include "shared/timeutils/timeutils.h"
 
+
 #ifdef MICROPY_MBEDTLS_PLATFORM_TIME_ALT
+
+#include "mbedtls/platform_time.h"
 
 time_t platform_mbedtls_time(time_t *timer) {
     // mbedtls_time requires time in seconds from EPOCH 1970
