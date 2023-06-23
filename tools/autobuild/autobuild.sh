@@ -4,8 +4,7 @@
 #
 # Requirements:
 # - All toolchains must be in path (arm-none-eabi-gcc, xtensa-lx106-elf)
-# - IDF_PATH_V42 must be set
-# - IDF_PATH_V44 must be set
+# - IDF_PATH_V50 must be set
 # - MICROPY_AUTOBUILD_MICROPYTHON_REPO must be set to location of micropython repository
 # - MICROPY_AUTOBUILD_MAKE must be set to the make command to use, eg "make -j2"
 #
@@ -13,13 +12,8 @@
 # - MICROPY_AUTOBUILD_REMOTE_MACHINE can be set to a remote ssh machine to copy files to
 # - MICROPY_AUTOBUILD_REMOTE_DIR can be set to destination directory on remote machine
 
-if [ ! -d "$IDF_PATH_V42" ]; then
-    echo "must set IDF_PATH_V42"
-    exit 1
-fi
-
-if [ ! -d "$IDF_PATH_V44" ]; then
-    echo "must set IDF_PATH_V44"
+if [ ! -d "$IDF_PATH_V50" ]; then
+    echo "must set IDF_PATH_V50"
     exit 1
 fi
 
@@ -70,8 +64,7 @@ ${AUTODIR}/build-cc3200-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp8266
 ${AUTODIR}/build-esp8266-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp32
-(source ${IDF_PATH_V42}/export.sh && build_esp32_boards ${FW_TAG} ${LOCAL_FIRMWARE})
-(source ${IDF_PATH_V44}/export.sh && build_esp32_boards ${FW_TAG} ${LOCAL_FIRMWARE})
+(source ${IDF_PATH_V50}/export.sh && build_esp32_boards ${FW_TAG} ${LOCAL_FIRMWARE})
 cd ../mimxrt
 build_mimxrt_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../nrf
