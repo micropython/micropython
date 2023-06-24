@@ -3,7 +3,7 @@ import ssl
 
 # CPython only supports server_hostname with SSLContext
 if hasattr(ssl, "SSLContext"):
-    ssl = ssl.SSLContext()
+    ssl = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
 
 def test_one(site, opts):
