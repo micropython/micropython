@@ -47,6 +47,7 @@ CFLAGS += $(INC)
 
 EXPORTED_FUNCTIONS_EXTRA += ,\
 	_mp_js_do_exec,\
+	_mp_js_do_exec_async,\
 	_mp_js_do_import,\
 	_mp_js_register_js_module,\
 	_proxy_c_init,\
@@ -58,6 +59,7 @@ EXPORTED_FUNCTIONS_EXTRA += ,\
 	_proxy_c_to_js_get_type,\
 	_proxy_c_to_js_has_attr,\
 	_proxy_c_to_js_lookup_attr,\
+	_proxy_c_to_js_resume,\
 	_proxy_c_to_js_store_attr,\
 	_proxy_convert_mp_to_js_obj_cside
 

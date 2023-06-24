@@ -34,8 +34,9 @@ const PROXY_KIND_MP_INT = 3;
 const PROXY_KIND_MP_FLOAT = 4;
 const PROXY_KIND_MP_STR = 5;
 const PROXY_KIND_MP_CALLABLE = 6;
-const PROXY_KIND_MP_OBJECT = 7;
-const PROXY_KIND_MP_JSPROXY = 8;
+const PROXY_KIND_MP_GENERATOR = 7;
+const PROXY_KIND_MP_OBJECT = 8;
+const PROXY_KIND_MP_JSPROXY = 9;
 
 const PROXY_KIND_JS_NULL = 1;
 const PROXY_KIND_JS_BOOLEAN = 2;
@@ -122,6 +123,9 @@ function proxy_convert_js_to_mp_obj_jsside(js_obj, out) {
     } else if (js_obj instanceof PyProxy) {
         kind = PROXY_KIND_JS_PYPROXY;
         Module.setValue(out + 4, js_obj._ref, "i32");
+    } else if (js_obj instanceof PyProxyThenable) {
+        kind = PROXY_KIND_JS_PYPROXY;
+        Module.setValue(out + 4, js_obj._ref, "i32");
     } else {
         kind = PROXY_KIND_JS_OBJECT;
         const id = proxy_js_ref.length;
@@ -193,6 +197,8 @@ function proxy_convert_mp_to_js_obj_jsside(value) {
             obj = (...args) => {
                 return proxy_call_python(id, args);
             };
+        } else if (kind === PROXY_KIND_MP_GENERATOR) {
+            obj = new PyProxyThenable(id);
         } else {
             // PROXY_KIND_MP_OBJECT
             const target = new PyProxy(id);

@@ -32,6 +32,16 @@
 #include "py/runtime.h"
 #include "proxy_c.h"
 
+EM_JS(bool, has_attr, (int jsref, const char *str), {
+    const base = proxy_js_ref[jsref];
+    const attr = UTF8ToString(str);
+    if (attr in base) {
+        return true;
+    } else {
+        return false;
+    }
+});
+
 // *FORMAT-OFF*
 EM_JS(bool, lookup_attr, (int jsref, const char *str, uint32_t * out), {
     const base = proxy_js_ref[jsref];
@@ -299,18 +309,165 @@ static mp_obj_t jsproxy_it_iternext(mp_obj_t self_in) {
     }
 }
 
-static mp_obj_t jsproxy_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
+static mp_obj_t jsproxy_new_it(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(jsproxy_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_jsproxy_t *self = MP_OBJ_TO_PTR(self_in);
     jsproxy_it_t *o = (jsproxy_it_t *)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = jsproxy_it_iternext;
-    o->ref = mp_obj_jsproxy_get_ref(o_in);
+    o->ref = self->ref;
     o->cur = 0;
-    o->len = js_get_len(o->ref);
+    o->len = js_get_len(self->ref);
     return MP_OBJ_FROM_PTR(o);
 }
 
 /******************************************************************************/
+// jsproxy generator
+
+enum {
+    JSOBJ_GEN_STATE_WAITING,
+    JSOBJ_GEN_STATE_COMPLETED,
+    JSOBJ_GEN_STATE_EXHAUSTED,
+};
+
+typedef struct _jsproxy_gen_t {
+    mp_obj_base_t base;
+    mp_obj_t thenable;
+    int state;
+} jsproxy_gen_t;
+
+mp_vm_return_kind_t jsproxy_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
+    jsproxy_gen_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (self->state) {
+        case JSOBJ_GEN_STATE_WAITING:
+            self->state = JSOBJ_GEN_STATE_COMPLETED;
+            *ret_val = self->thenable;
+            return MP_VM_RETURN_YIELD;
+
+        case JSOBJ_GEN_STATE_COMPLETED:
+            self->state = JSOBJ_GEN_STATE_EXHAUSTED;
+            *ret_val = send_value;
+            return MP_VM_RETURN_NORMAL;
+
+        case JSOBJ_GEN_STATE_EXHAUSTED:
+        default:
+            // Trying to resume an already stopped generator.
+            // This is an optimised "raise StopIteration(None)".
+            *ret_val = mp_const_none;
+            return MP_VM_RETURN_NORMAL;
+    }
+}
+
+static mp_obj_t jsproxy_gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, bool raise_stop_iteration) {
+    mp_obj_t ret;
+    switch (jsproxy_gen_resume(self_in, send_value, throw_value, &ret)) {
+        case MP_VM_RETURN_NORMAL:
+        default:
+            // A normal return is a StopIteration, either raise it or return
+            // MP_OBJ_STOP_ITERATION as an optimisation.
+            if (ret == mp_const_none) {
+                ret = MP_OBJ_NULL;
+            }
+            if (raise_stop_iteration) {
+                mp_raise_StopIteration(ret);
+            } else {
+                return mp_make_stop_iteration(ret);
+            }
+
+        case MP_VM_RETURN_YIELD:
+            return ret;
+
+        case MP_VM_RETURN_EXCEPTION:
+            nlr_raise(ret);
+    }
+}
+
+static mp_obj_t jsproxy_gen_instance_iternext(mp_obj_t self_in) {
+    return jsproxy_gen_resume_and_raise(self_in, mp_const_none, MP_OBJ_NULL, false);
+}
+
+static mp_obj_t jsproxy_gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
+    return jsproxy_gen_resume_and_raise(self_in, send_value, MP_OBJ_NULL, true);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(jsproxy_gen_instance_send_obj, jsproxy_gen_instance_send);
+
+static mp_obj_t jsproxy_gen_instance_throw(size_t n_args, const mp_obj_t *args) {
+    // The signature of this function is: throw(type[, value[, traceback]])
+    // CPython will pass all given arguments through the call chain and process them
+    // at the point they are used (native generators will handle them differently to
+    // user-defined generators with a throw() method).  To save passing multiple
+    // values, MicroPython instead does partial processing here to reduce it down to
+    // one argument and passes that through:
+    // - if only args[1] is given, or args[2] is given but is None, args[1] is
+    //   passed through (in the standard case it is an exception class or instance)
+    // - if args[2] is given and not None it is passed through (in the standard
+    //   case it would be an exception instance and args[1] its corresponding class)
+    // - args[3] is always ignored
+
+    mp_obj_t exc = args[1];
+    if (n_args > 2 && args[2] != mp_const_none) {
+        exc = args[2];
+    }
+
+    return jsproxy_gen_resume_and_raise(args[0], mp_const_none, exc, true);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(jsproxy_gen_instance_throw_obj, 2, 4, jsproxy_gen_instance_throw);
+
+static mp_obj_t jsproxy_gen_instance_close(mp_obj_t self_in) {
+    mp_obj_t ret;
+    switch (jsproxy_gen_resume(self_in, mp_const_none, MP_OBJ_FROM_PTR(&mp_const_GeneratorExit_obj), &ret)) {
+        case MP_VM_RETURN_YIELD:
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("generator ignored GeneratorExit"));
+
+        // Swallow GeneratorExit (== successful close), and re-raise any other
+        case MP_VM_RETURN_EXCEPTION:
+            // ret should always be an instance of an exception class
+            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
+                return mp_const_none;
+            }
+            nlr_raise(ret);
+
+        default:
+            // The only choice left is MP_VM_RETURN_NORMAL which is successful close
+            return mp_const_none;
+    }
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(jsproxy_gen_instance_close_obj, jsproxy_gen_instance_close);
+
+static const mp_rom_map_elem_t jsproxy_gen_instance_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&jsproxy_gen_instance_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&jsproxy_gen_instance_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_throw), MP_ROM_PTR(&jsproxy_gen_instance_throw_obj) },
+};
+static MP_DEFINE_CONST_DICT(jsproxy_gen_instance_locals_dict, jsproxy_gen_instance_locals_dict_table);
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_jsproxy_gen,
+    MP_QSTR_generator,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, jsproxy_gen_instance_iternext,
+    locals_dict, &jsproxy_gen_instance_locals_dict
+    );
+
+static mp_obj_t jsproxy_new_gen(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(jsproxy_gen_t) <= sizeof(mp_obj_iter_buf_t));
+    jsproxy_gen_t *o = (jsproxy_gen_t *)iter_buf;
+    o->base.type = &mp_type_jsproxy_gen;
+    o->thenable = self_in;
+    o->state = JSOBJ_GEN_STATE_WAITING;
+    return MP_OBJ_FROM_PTR(o);
+}
+
+/******************************************************************************/
+
+static mp_obj_t jsproxy_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+    mp_obj_jsproxy_t *self = MP_OBJ_TO_PTR(self_in);
+    if (has_attr(self->ref, "then")) {
+        return jsproxy_new_gen(self_in, iter_buf);
+    } else {
+        return jsproxy_new_it(self_in, iter_buf);
+    }
+}
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_jsproxy,

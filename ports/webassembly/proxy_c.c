@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "emscripten.h"
 #include "py/builtin.h"
 #include "py/runtime.h"
 #include "proxy_c.h"
@@ -42,8 +43,9 @@ enum {
     PROXY_KIND_MP_FLOAT = 4,
     PROXY_KIND_MP_STR = 5,
     PROXY_KIND_MP_CALLABLE = 6,
-    PROXY_KIND_MP_OBJECT = 7,
-    PROXY_KIND_MP_JSPROXY = 8,
+    PROXY_KIND_MP_GENERATOR = 7,
+    PROXY_KIND_MP_OBJECT = 8,
+    PROXY_KIND_MP_JSPROXY = 9,
 };
 
 enum {
@@ -115,6 +117,8 @@ void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out) {
     } else {
         if (mp_obj_is_callable(obj)) {
             kind = PROXY_KIND_MP_CALLABLE;
+        } else if (mp_obj_is_type(obj, &mp_type_gen_instance)) {
+            kind = PROXY_KIND_MP_GENERATOR;
         } else {
             kind = PROXY_KIND_MP_OBJECT;
         }
@@ -278,4 +282,79 @@ void proxy_c_to_js_get_dict(uint32_t c_ref, uint32_t *out) {
     mp_map_t *map = mp_obj_dict_get_map(obj);
     out[0] = map->alloc;
     out[1] = (uintptr_t)map->table;
+}
+
+/******************************************************************************/
+// Bridge Python generator to JavaScript thenable.
+
+static const mp_obj_fun_builtin_var_t resume_obj;
+
+EM_JS(void, js_then_resolve, (uint32_t * resolve, uint32_t * reject), {
+    const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
+    const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
+    resolve_js(null);
+});
+
+EM_JS(void, js_then_reject, (uint32_t * resolve, uint32_t * reject), {
+    const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
+    const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
+    reject_js(null);
+});
+
+// *FORMAT-OFF*
+EM_JS(void, js_then_continue, (int jsref, uint32_t * py_resume, uint32_t * resolve, uint32_t * reject, uint32_t * out), {
+    const py_resume_js = proxy_convert_mp_to_js_obj_jsside(py_resume);
+    const resolve_js = proxy_convert_mp_to_js_obj_jsside(resolve);
+    const reject_js = proxy_convert_mp_to_js_obj_jsside(reject);
+    const ret = proxy_js_ref[jsref].then((x) => {py_resume_js(x, resolve_js, reject_js);}, reject_js);
+    proxy_convert_js_to_mp_obj_jsside(ret, out);
+});
+// *FORMAT-ON*
+
+static mp_obj_t proxy_resume_execute(mp_obj_t self_in, mp_obj_t value, mp_obj_t resolve, mp_obj_t reject) {
+    mp_obj_t ret_value;
+    mp_vm_return_kind_t ret_kind = mp_resume(self_in, value, MP_OBJ_NULL, &ret_value);
+
+    uint32_t out_resolve[PVN];
+    uint32_t out_reject[PVN];
+    proxy_convert_mp_to_js_obj_cside(resolve, out_resolve);
+    proxy_convert_mp_to_js_obj_cside(reject, out_reject);
+
+    if (ret_kind == MP_VM_RETURN_NORMAL) {
+        js_then_resolve(out_resolve, out_reject);
+        return mp_const_none;
+    } else if (ret_kind == MP_VM_RETURN_YIELD) {
+        // ret_value should be a JS thenable
+        mp_obj_t py_resume = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&resume_obj), self_in);
+        int ref = mp_obj_jsproxy_get_ref(ret_value);
+        uint32_t out_py_resume[PVN];
+        proxy_convert_mp_to_js_obj_cside(py_resume, out_py_resume);
+        uint32_t out[PVN];
+        js_then_continue(ref, out_py_resume, out_resolve, out_reject, out);
+        return proxy_convert_js_to_mp_obj_cside(out);
+    } else {
+        // MP_VM_RETURN_EXCEPTION;
+        js_then_reject(out_resolve, out_reject);
+        nlr_raise(ret_value);
+    }
+}
+
+static mp_obj_t resume_fun(size_t n_args, const mp_obj_t *args) {
+    return proxy_resume_execute(args[0], args[1], args[2], args[3]);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(resume_obj, 4, 4, resume_fun);
+
+void proxy_c_to_js_resume(uint32_t c_ref, uint32_t *args) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t obj = proxy_c_get_obj(c_ref);
+        mp_obj_t resolve = proxy_convert_js_to_mp_obj_cside(args + 1 * 3);
+        mp_obj_t reject = proxy_convert_js_to_mp_obj_cside(args + 2 * 3);
+        mp_obj_t ret = proxy_resume_execute(obj, mp_const_none, resolve, reject);
+        nlr_pop();
+        return proxy_convert_mp_to_js_obj_cside(ret, args);
+    } else {
+        // uncaught exception
+        return proxy_convert_mp_to_js_exc_cside(nlr.ret_val, args);
+    }
 }
