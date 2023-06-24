@@ -159,6 +159,9 @@ const py_proxy_handler = {
         if (prop === "_ref") {
             return target._ref;
         }
+        if (prop === "then") {
+            return null;
+        }
         const value = Module._malloc(3 * 4);
         Module.ccall(
             "proxy_c_to_js_lookup_attr",
@@ -189,3 +192,23 @@ const py_proxy_handler = {
         );
     },
 };
+
+// PyProxy of a Python generator, that implements the thenable interface.
+class PyProxyThenable {
+    constructor(ref) {
+        this._ref = ref;
+    }
+
+    then(resolve, reject) {
+        const values = Module._malloc(3 * 3 * 4);
+        proxy_convert_js_to_mp_obj_jsside(resolve, values + 3 * 4);
+        proxy_convert_js_to_mp_obj_jsside(reject, values + 2 * 3 * 4);
+        Module.ccall(
+            "proxy_c_to_js_resume",
+            "null",
+            ["number", "pointer"],
+            [this._ref, values],
+        );
+        return proxy_convert_mp_to_js_obj_jsside_with_free(values);
+    }
+}

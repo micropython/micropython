@@ -169,6 +169,12 @@ void mp_js_do_exec(const char *src, uint32_t *out) {
     }
 }
 
+void mp_js_do_exec_async(const char *src, uint32_t *out) {
+    mp_compile_allow_top_level_await = true;
+    mp_js_do_exec(src, out);
+    mp_compile_allow_top_level_await = false;
+}
+
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 
 // The largest new region that is available to become Python heap.
