@@ -42,6 +42,10 @@
 #include "esp_wifi.h"
 #include "esp_log.h"
 
+#ifndef NO_QSTR
+#include "mdns.h"
+#endif
+
 #if MICROPY_PY_NETWORK_WLAN
 
 #if (WIFI_MODE_STA & WIFI_MODE_AP != WIFI_MODE_NULL || WIFI_MODE_STA | WIFI_MODE_AP != WIFI_MODE_APSTA)

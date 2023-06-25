@@ -58,6 +58,10 @@
 #define MDNS_QUERY_TIMEOUT_MS (5000)
 #define MDNS_LOCAL_SUFFIX ".local"
 
+#ifndef NO_QSTR
+#include "mdns.h"
+#endif
+
 enum {
     SOCKET_STATE_NEW,
     SOCKET_STATE_CONNECTED,
