@@ -4,6 +4,7 @@ setlocal
 if "%1"=="quick-start" goto cmd_quick_start
 if "%1"=="device-setup" goto cmd_device_setup
 if "%1"=="firmware-deploy" goto cmd_firmware_deploy
+if "%1"=="device-erase" goto cmd_device_erase
 if "%1"=="help" goto help
 
 goto help
@@ -20,6 +21,10 @@ exit /b 0
 
 :cmd_firmware_deploy
     call :mpy_firmware_deploy %2 %3
+exit /b 0
+
+:cmd_device_erase
+    call :mpy_device_erase %2 %3
 exit /b 0
 
 
@@ -60,6 +65,15 @@ rem ~~~~~~~~~~~~~~~~
     echo                        board       PSoC6 prototyping kit name
     echo                        hex_file    MicroPython PSoC6 firmware .hex file
     echo:
+    echo   device-erase         Erase the external memory of the device.
+    echo                        Use this command to erase the external memory if available
+    echo                        for the selected board.
+    echo                        Requires openocd available on the system path.
+    echo                        usage: mpy-psoc6.cmd device-erase [board [[\q]]
+    echo:
+    echo                        board       PSoC6 prototyping kit name
+    echo                        \q          Quiet. Do not prompt any user confirmation request
+    echo:
 
 exit /b 0
 
@@ -85,6 +99,20 @@ exit /b 0
 
     set board=%~1
     del hello-world_%board%.hex
+
+exit /b 0
+
+:flash_erase_firmware_download:
+
+    set board=%~1
+    curl.exe -s -L https://github.com/infineon/micropython/releases/download/v0.3.0/device-erase_%board%.hex > device-erase_%board%.hex
+
+exit /b 0
+
+:flash_erase_firmware_clean
+
+    set board=%~1
+    del device-erase_%board%.hex
 
 exit /b 0
 
@@ -189,6 +217,58 @@ exit /b 0
     )
 
 exit /b 0
+
+:mpy_device_erase
+
+    setlocal enabledelayedexpansion
+
+    Rem Board selection
+    set board=%~1
+    set board_list[0]=CY8CPROTO-062-4343W
+    if [%board%]==[] (
+        echo:
+        echo       Supported MicroPython PSoC6 boards
+        echo +---------+-----------------------------------+
+        echo ^|   ID    ^|              Board                ^|
+        echo +---------+-----------------------------------+
+        echo ^|   0     ^|  CY8CPROTO-062-4343W (default^)    ^|
+        echo +---------+-----------------------------------+
+        echo:
+        echo No user selection required. Only one choice.
+        set /a board_index=0
+        echo:
+        Rem set  /p/( "board_index=Please type the desired board ID. " --> Uncomment and remove preselection above when more options are available
+        call set board=%%board_list[!board_index!]%%
+    )
+    echo MicroPython PSoC6 Board  :: %board%
+
+    Rem Download flashing tool and firmware
+    call :openocd_download_install
+    call :flash_erase_firmware_download %board%
+
+    if not [%~2]==[\q] (
+        echo:
+        echo Please CONNECT THE BOARD and PRESS ANY KEY to start the firmware deployment...
+        pause >nul
+        echo:
+    )
+
+    Rem Deploy on board
+    call :mpy_firmware_deploy %board% device-erase_%board%.hex
+    echo Device firmware deployment completed.   
+
+    call :openocd_uninstall_clean
+    call :flash_erase_firmware_clean %board%
+
+    if not [%~2]==[\q] (
+        echo:
+        echo Press any key to continue...
+        pause >nul
+        echo:
+    )
+    
+exit /b 0
+
 
 :arduino_lab_download_and_launch
 
