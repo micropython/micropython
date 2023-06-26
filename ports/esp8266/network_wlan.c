@@ -565,8 +565,8 @@ static mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         break;
                     }
                     case MP_QSTR_channel: {
-                        req_if = SOFTAP_IF;
                         cfg.ap.channel = mp_obj_get_int(kwargs->table[i].value);
+                        error_check(wifi_set_channel(cfg.ap.channel), "can't set channel");
                         break;
                     }
                     case MP_QSTR_hostname:
