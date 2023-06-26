@@ -25,8 +25,6 @@
 #define MICROPY_PY_CMATH                (0)
 #endif
 
-#define MICROPY_PY_MACHINE_DHT_READINTO (1)
-#define MICROPY_PY_ONEWIRE              (1)
 #define MICROPY_PY_OS_SYNC              (1)
 #define MICROPY_PY_OS_URANDOM           (1)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC (trng_random_u32())
