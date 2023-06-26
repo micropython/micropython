@@ -59,7 +59,7 @@ typedef struct {
 typedef struct {
     size_t input_len;
     uint32_t input_checksum;
-    struct uzlib_lz77_state lz77;
+    uzlib_lz77_state_t lz77;
 } mp_obj_gzipfile_write_t;
 #endif
 
@@ -260,8 +260,8 @@ STATIC mp_obj_t gzipfile_make_new(const mp_obj_type_t *type, size_t n_args, size
         parse_wbits_hist(self, &wbits, args[ARG_hist].u_obj, &hist, &hist_len);
 
         uzlib_lz77_init(&self->state[0].write.lz77, hist, hist_len);
-        self->state[0].write.lz77.outbuf.dest_write_data = self;
-        self->state[0].write.lz77.outbuf.dest_write_cb = gzipfile_out_byte;
+        self->state[0].write.lz77.dest_write_data = self;
+        self->state[0].write.lz77.dest_write_cb = gzipfile_out_byte;
 
         // Write header if needed.
         mp_uint_t ret = 0;
@@ -284,7 +284,7 @@ STATIC mp_obj_t gzipfile_make_new(const mp_obj_type_t *type, size_t n_args, size
         }
 
         // Write starting block.
-        zlib_start_block(&self->state[0].write.lz77.outbuf);
+        uzlib_start_block(&self->state[0].write.lz77);
     #endif // MICROPY_PY_GZIP_COMPRESS
     }
 
@@ -353,7 +353,7 @@ STATIC mp_uint_t gzipfile_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t a
         #if MICROPY_PY_GZIP_COMPRESS
         mp_obj_gzipfile_t *self = MP_OBJ_TO_PTR(self_in);
         if (self->mode != GZIPFILE_MODE_READ && self->stream != MP_OBJ_NULL) {
-            zlib_finish_block(&self->state[0].write.lz77.outbuf);
+            uzlib_finish_block(&self->state[0].write.lz77);
 
             const mp_stream_p_t *stream = mp_get_stream(self->stream);
 
@@ -444,7 +444,6 @@ MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_gzip, mp_module_gzip);
 #include "lib/uzlib/crc32.c"
 
 #if MICROPY_PY_GZIP_COMPRESS
-#include "lib/uzlib/defl_static.c"
 #include "lib/uzlib/lz77.c"
 #endif
 

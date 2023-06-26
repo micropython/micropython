@@ -42,8 +42,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "defl_static.h"
-
 #include "uzlib_conf.h"
 #if UZLIB_CONF_DEBUG_LOG
 #include <stdio.h>
@@ -135,16 +133,22 @@ int uzlib_parse_zlib_gzip_header(uzlib_uncomp_t *d, int *wbits);
 
 /* Compression API */
 
-struct uzlib_lz77_state {
-    struct Outbuf outbuf;
+typedef struct {
+    void *dest_write_data;
+    void (*dest_write_cb)(void *data, uint8_t byte);
+    unsigned long outbits;
+    int noutbits;
     uint8_t *hist_buf;
     size_t hist_max;
     size_t hist_start;
     size_t hist_len;
-};
+} uzlib_lz77_state_t;
 
-void uzlib_lz77_init(struct uzlib_lz77_state *state, uint8_t *hist, size_t hist_max);
-void uzlib_lz77_compress(struct uzlib_lz77_state *state, const uint8_t *src, unsigned len);
+void uzlib_lz77_init(uzlib_lz77_state_t *state, uint8_t *hist, size_t hist_max);
+void uzlib_lz77_compress(uzlib_lz77_state_t *state, const uint8_t *src, unsigned len);
+
+void uzlib_start_block(uzlib_lz77_state_t *state);
+void uzlib_finish_block(uzlib_lz77_state_t *state);
 
 /* Checksum API */
 

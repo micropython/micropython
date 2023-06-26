@@ -52,15 +52,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * having to transmit the trees.
  */
 
-static void outbits(struct Outbuf *out, unsigned long bits, int nbits)
+static void outbits(uzlib_lz77_state_t *state, unsigned long bits, int nbits)
 {
-    assert(out->noutbits + nbits <= 32);
-    out->outbits |= bits << out->noutbits;
-    out->noutbits += nbits;
-    while (out->noutbits >= 8) {
-        out->dest_write_cb(out->dest_write_data, out->outbits & 0xFF);
-        out->outbits >>= 8;
-        out->noutbits -= 8;
+    assert(state->noutbits + nbits <= 32);
+    state->outbits |= bits << state->noutbits;
+    state->noutbits += nbits;
+    while (state->noutbits >= 8) {
+        state->dest_write_cb(state->dest_write_data, state->outbits & 0xFF);
+        state->outbits >>= 8;
+        state->noutbits -= 8;
     }
 }
 
@@ -81,18 +81,18 @@ static int int_log2(int x) {
     return r;
 }
 
-void zlib_literal(struct Outbuf *out, unsigned char c)
+static void uzlib_literal(uzlib_lz77_state_t *state, unsigned char c)
 {
     if (c <= 143) {
         /* 0 through 143 are 8 bits long starting at 00110000. */
-        outbits(out, mirrorbyte(0x30 + c), 8);
+        outbits(state, mirrorbyte(0x30 + c), 8);
     } else {
         /* 144 through 255 are 9 bits long starting at 110010000. */
-        outbits(out, 1 + 2 * mirrorbyte(0x90 - 144 + c), 9);
+        outbits(state, 1 + 2 * mirrorbyte(0x90 - 144 + c), 9);
     }
 }
 
-void zlib_match(struct Outbuf *out, int distance, int len)
+static void uzlib_match(uzlib_lz77_state_t *state, int distance, int len)
 {
     assert(distance >= 1 && distance <= 32768);
     distance -= 1;
@@ -133,9 +133,9 @@ void zlib_match(struct Outbuf *out, int distance, int len)
          * 11000000.
          */
         if (lcode <= 22) {
-            outbits(out, mirrorbyte((lcode + 1) * 2), 7);
+            outbits(state, mirrorbyte((lcode + 1) * 2), 7);
         } else {
-            outbits(out, mirrorbyte(lcode + 169), 8);
+            outbits(state, mirrorbyte(lcode + 169), 8);
         }
 
         /*
@@ -144,7 +144,7 @@ void zlib_match(struct Outbuf *out, int distance, int len)
         if (thislen < 255 && x > 1) {
             int extrabits = x - 1;
             int lmin = (thislen >> extrabits) << extrabits;
-            outbits(out, thislen - lmin, extrabits);
+            outbits(state, thislen - lmin, extrabits);
         }
 
         x = int_log2(distance);
@@ -153,7 +153,7 @@ void zlib_match(struct Outbuf *out, int distance, int len)
         /*
          * Transmit the distance code. Five bits starting at 00000.
          */
-        outbits(out, mirrorbyte((x * 2 + y) * 8), 5);
+        outbits(state, mirrorbyte((x * 2 + y) * 8), 5);
 
         /*
          * Transmit the extra bits.
@@ -161,20 +161,21 @@ void zlib_match(struct Outbuf *out, int distance, int len)
         if (x > 1) {
             int dextrabits = x - 1;
             int dmin = (distance >> dextrabits) << dextrabits;
-            outbits(out, distance - dmin, dextrabits);
+            outbits(state, distance - dmin, dextrabits);
         }
     }
 }
 
-void zlib_start_block(struct Outbuf *out)
+void uzlib_start_block(uzlib_lz77_state_t *state)
 {
-//    outbits(out, 0x9C78, 16);
-    outbits(out, 1, 1); /* Final block */
-    outbits(out, 1, 2); /* Static huffman block */
+    // Final block (0b1)
+    // Static huffman block (0b01)
+    outbits(state, 3, 3);
 }
 
-void zlib_finish_block(struct Outbuf *out)
+void uzlib_finish_block(uzlib_lz77_state_t *state)
 {
-    outbits(out, 0, 7); /* close block */
-    outbits(out, 0, 7); /* Make sure all bits are flushed */
+    // Close block (0b0000000)
+    // Make sure all bits are flushed (0b0000000)
+    outbits(state, 0, 14);
 }
