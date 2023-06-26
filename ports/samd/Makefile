@@ -78,7 +78,7 @@ ifeq ($(DEBUG),1)
 CFLAGS += -O0
 else
 CFLAGS += -Os -DNDEBUG
-LDFLAGS += --gc-sections
+LDFLAGS += --gc-sections --print-memory-usage
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 
@@ -198,7 +198,6 @@ all: $(BUILD)/firmware.uf2
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
-	$(Q)$(SIZE) $@
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
