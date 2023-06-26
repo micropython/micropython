@@ -73,7 +73,7 @@ void check_esp_err_(esp_err_t code, const char *func, const int line, const char
 uint32_t mp_hal_ticks_us(void);
 __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
     uint32_t ccount;
-    #if CONFIG_IDF_TARGET_ESP32C3
+    #if CONFIG_IDF_TARGET_ARCH_RISCV
     __asm__ __volatile__ ("csrr %0, 0x7E2" : "=r" (ccount)); // Machine Performance Counter Value
     #else
     __asm__ __volatile__ ("rsr %0,ccount" : "=a" (ccount));

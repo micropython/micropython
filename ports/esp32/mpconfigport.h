@@ -18,7 +18,7 @@
 
 // object representation and NLR handling
 #define MICROPY_OBJ_REPR                    (MICROPY_OBJ_REPR_A)
-#if !CONFIG_IDF_TARGET_ESP32C3
+#if CONFIG_IDF_TARGET_ARCH_XTENSA
 #define MICROPY_NLR_SETJMP                  (1)
 #endif
 
@@ -41,10 +41,10 @@
 
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
-#if !CONFIG_IDF_TARGET_ESP32C3
-#define MICROPY_EMIT_XTENSAWIN              (1)
-#else
+#if CONFIG_IDF_TARGET_ARCH_RISCV
 #define MICROPY_EMIT_RV32                   (1)
+#else
+#define MICROPY_EMIT_XTENSAWIN              (1)
 #endif
 
 // optimisations
@@ -161,6 +161,8 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32s3"
 #elif CONFIG_IDF_TARGET_ESP32C3
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c3"
+#elif CONFIG_IDF_TARGET_ESP32C6
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-esp32c6"
 #endif
 #endif
 #define MICROPY_PY_NETWORK_INCLUDEFILE      "ports/esp32/modnetwork.h"
@@ -364,11 +366,7 @@ void boardctrl_startup(void);
 
 #if MICROPY_PY_NETWORK_LAN && CONFIG_ETH_USE_SPI_ETHERNET
 #ifndef MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ
-#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C2
-#define MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ       (12)
-#else
-#define MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ       (36)
-#endif
+#define MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ       (20)
 #endif
 #endif
 

@@ -198,7 +198,7 @@ idf_component_register(
 set(MICROPY_TARGET ${COMPONENT_TARGET})
 
 # Define mpy-cross flags, for use with frozen code.
-if(NOT IDF_TARGET STREQUAL "esp32c3")
+if(CONFIG_IDF_TARGET_ARCH STREQUAL "xtensa")
 set(MICROPY_CROSS_FLAGS -march=xtensawin)
 endif()
 
