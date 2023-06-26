@@ -567,7 +567,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                     for t in "bytearray le native_le ptr_le ptr_native_le sizeof sizeof_native array_assign_le array_assign_native_le".split()
                 }
             )  # requires uctypes
-            skip_tests.add("extmod/zlibd_decompress.py")  # requires zlib
             skip_tests.add("extmod/heapq1.py")  # heapq not supported by WiPy
             skip_tests.add("extmod/random_basic.py")  # requires random
             skip_tests.add("extmod/random_extra.py")  # requires random

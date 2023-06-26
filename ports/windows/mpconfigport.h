@@ -144,7 +144,6 @@
 #define MICROPY_PY_TIME_INCLUDEFILE "ports/unix/modtime.c"
 #define MICROPY_PY_ERRNO            (1)
 #define MICROPY_PY_UCTYPES          (1)
-#define MICROPY_PY_ZLIB             (1)
 #define MICROPY_PY_JSON             (1)
 #define MICROPY_PY_RE               (1)
 #define MICROPY_PY_HEAPQ            (1)
