@@ -430,7 +430,6 @@ function ci_native_mpy_modules_build {
     make -C examples/natmod/heapq ARCH=$arch
     make -C examples/natmod/random ARCH=$arch
     make -C examples/natmod/re ARCH=$arch
-    make -C examples/natmod/zlib ARCH=$arch
 }
 
 function ci_native_mpy_modules_32bit_build {
@@ -496,7 +495,7 @@ function ci_unix_coverage_run_mpy_merge_tests {
 
 function ci_unix_coverage_run_native_mpy_tests {
     MICROPYPATH=examples/natmod/features2 ./ports/unix/build-coverage/micropython -m features2
-    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,heapq*,random*,re*,zlib*}.py)
+    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,heapq*,random*,re*}.py)
 }
 
 function ci_unix_32bit_setup {

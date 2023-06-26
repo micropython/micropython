@@ -59,7 +59,6 @@ io              json            machine         math
 os              random          re              select
 socket          ssl             struct          sys
 termios         time            uctypes         websocket
-zlib
 me
 
 micropython     machine         math
