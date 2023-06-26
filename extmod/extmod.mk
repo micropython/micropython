@@ -16,6 +16,7 @@ SRC_EXTMOD_C += \
 	extmod/modbluetooth.c \
 	extmod/modbtree.c \
 	extmod/modcryptolib.c \
+	extmod/moddeflate.c \
 	extmod/modframebuf.c \
 	extmod/modhashlib.c \
 	extmod/modheapq.c \
