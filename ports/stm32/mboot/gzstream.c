@@ -78,8 +78,9 @@ int gz_stream_init_from_stream(void *stream_data, stream_read_t stream_read) {
     memset(&gz_stream.decomp, 0, sizeof(gz_stream.decomp));
     gz_stream.decomp.source_read_cb = gz_stream_read_src;
 
-    int st = uzlib_gzip_parse_header(&gz_stream.decomp);
-    if (st != UZLIB_OK) {
+    int header_wbits;
+    int st = uzlib_parse_zlib_gzip_header(&gz_stream.decomp, &header_wbits);
+    if (st != UZLIB_HEADER_GZIP) {
         return -MBOOT_ERRNO_GUNZIP_FAILED;
     }
 

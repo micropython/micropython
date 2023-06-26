@@ -130,8 +130,9 @@ void uzlib_uncompress_init(uzlib_uncomp_t *d, void *dict, unsigned int dictLen);
 int  uzlib_uncompress(uzlib_uncomp_t *d);
 int  uzlib_uncompress_chksum(uzlib_uncomp_t *d);
 
-int uzlib_zlib_parse_header(uzlib_uncomp_t *d);
-int uzlib_gzip_parse_header(uzlib_uncomp_t *d);
+#define UZLIB_HEADER_ZLIB             0
+#define UZLIB_HEADER_GZIP             1
+int uzlib_parse_zlib_gzip_header(uzlib_uncomp_t *d, int *wbits);
 
 /* Compression API */
 
