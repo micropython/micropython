@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include "py/mphal.h"
-#include "lib/uzlib/tinf.h"
+#include "lib/uzlib/uzlib.h"
 #include "mboot.h"
 #include "pack.h"
 #include "vfs.h"
