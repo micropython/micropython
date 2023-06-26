@@ -5,7 +5,6 @@
 ###################
 
 function help {
-
     echo 'Micropython PSoC6 utility script' 
     echo 'usage: sh mpy-psoc6.sh <command>' 
     echo 'The available commands are:'
@@ -22,11 +21,11 @@ function help {
     echo '                       Use this command to install the deployment tools'
     echo '                       and MicroPython firmware binary, and deploy the'
     echo '                       firmware on the PSoC6 device.'
-    echo '                       usage: sh mpy-psoc6.sh device-setup [board [[version [\q]]]'
+    echo '                       usage: sh mpy-psoc6.sh device-setup [board [[version [-q]]]'
     echo ''
     echo '                       board       PSoC6 prototyping kit name'
     echo '                       version     MicroPython PSoC6 firmware version'
-    echo '                       \q          Quiet. Do not prompt any user confirmation request'
+    echo '                       -q          Quiet. Do not prompt any user confirmation request'
     echo ''
     echo '  firmware-deploy      Firmware deployment on MicroPython board.'
     echo '                       Use this command to deploy an existing .hex file'
@@ -36,20 +35,28 @@ function help {
     echo ''
     echo '                       board       PSoC6 prototyping kit name'
     echo '                       hex_file    MicroPython PSoC6 firmware .hex file'
-
+    echo ''
+    echo '  device-erase         Erase the external memory of the device.'
+    echo '                       Use this command to erase the external memory if available'
+    echo '                       for the selected board.'
+    echo '                       Requires openocd available on the system path.'
+    echo '                       usage: sh mpy-psoc6.sh device-erase [board [[-q]]'
+    echo ''
+    echo '                       board       PSoC6 prototyping kit name'
+    echo '                       -q          Quiet. Do not prompt any user confirmation request'
 }
 
 function mpy_firmware_deploy {
-    
     board=$1
     hex_file=$2
 
     echo Deploying Micropython...
     openocd -s openocd\scripts -c "source [find interface/kitprog3.cfg]; ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program ${hex_file} verify reset exit;"
-
 }
 
 function hw_firmware_download {
+    # hello-world flashing workaround to overcome factory board flashing error.
+    # This flashing step will be removed when the root cause fix is available.
     board=$1
 
     curl -s -L https://github.com/infineon/micropython/releases/download/v0.3.0/hello-world_${board}.hex > hello-world_${board}.hex
@@ -61,8 +68,19 @@ function hw_firmware_clean {
     rm hello-world_${board}.hex
 }
 
-function mpy_firmware_download {
+function flash_erase_firmware_download {
+    board=$1
 
+    curl -s -L https://github.com/infineon/micropython/releases/download/v0.3.0/device-erase_${board}.hex > device-erase_${board}.hex
+}
+
+function flash_erase_firmware_clean {
+    board=$1
+
+    rm device-erase_${board}.hex
+}
+
+function mpy_firmware_download {
     board=$1
     version=$2
 
@@ -76,7 +94,6 @@ function mpy_firmware_download {
 }
 
 function mpy_firmware_clean {
-
     board=$1
 
     echo Cleaning up micropython hex files...
@@ -84,7 +101,6 @@ function mpy_firmware_clean {
 }
 
 function openocd_download_install {
-
     echo Downloading openocd...
     curl -s -L https://github.com/Infineon/openocd/releases/download/release-v4.4.0/openocd-4.4.0.2134-linux.tar.gz > openocd.tar.gz
     echo Extracting openocd...
@@ -94,15 +110,32 @@ function openocd_download_install {
 }
 
 function openocd_uninstall_clean {
-
     echo Cleaning up openOCD installation package...
     rm openocd.tar.gz
     rm -rf openocd
-
 }
 
-function mpy_device_setup {
+function wait_and_request_board_connect {
+    if [ "$1" != "-q" ]; then
+        echo ''
+        echo Please CONNECT THE BOARD and PRESS ANY KEY to start the firmware deployment...
+        read user_input
+        echo ''
+    fi
+}
 
+function wait_user_termination {
+    if [ "$1" != "-q" ]; then
+        echo ''
+        echo Press any key to continue...
+        read user_input
+        echo ''
+    fi
+}
+
+board=""
+
+function select_board {
     board=$1
     board_list=(CY8CPROTO-062-4343W)
 
@@ -126,8 +159,12 @@ function mpy_device_setup {
 
         board=${board_list[${board_index}]}
     fi  
-    
+
     echo MicroPython PSoC6 Board  :: ${board}
+}
+
+function mpy_device_setup {
+    select_board $1
 
     # Version selection
     mpy_firmware_version=$2
@@ -144,13 +181,7 @@ function mpy_device_setup {
     hw_firmware_download ${board}
     mpy_firmware_download ${board} ${mpy_firmware_version}
 
-
-    if [ "$3" != "\q" ]; then
-        echo ''
-        echo Please CONNECT THE BOARD and PRESS ANY KEY to start the firmware deployment...
-        read user_input
-        echo ''
-    fi
+    wait_and_request_board_connect $3
 
     # Deploy on board
     mpy_firmware_deploy ${board} hello-world_${board}.hex
@@ -161,16 +192,28 @@ function mpy_device_setup {
     hw_firmware_clean ${board}
     mpy_firmware_clean ${board}
 
-    if [ "$3" != "\q" ]; then
-        echo ''
-        echo Press any key to continue...
-        read user_input
-        echo ''
-    fi
+    wait_user_termination $3
+}
+
+function mpy_device_erase {
+    select_board $1
+
+    # Download flashing tool and firmware
+    openocd_download_install
+    flash_erase_firmware_download ${board}
+
+    wait_and_request_board_connect $2
+    
+    # Deploy on board
+    mpy_firmware_deploy ${board} device-erase_${board}.hex
+
+    openocd_uninstall_clean
+    flash_erase_firmware_clean ${board}
+
+    wait_user_termination $2
 }
 
 function arduino_lab_download_and_launch {
-
     echo Downloading Arduino Lab for Micropython...
     curl -s -L https://github.com/arduino/lab-micropython-editor/releases/download/0.5.0-alpha/Arduino.Lab.for.Micropython-linux_x64.zip > arduino-for-micropython.zip
     echo Extracting Arduino Lab for Micropython...
@@ -180,18 +223,14 @@ function arduino_lab_download_and_launch {
     echo Launching Arduino Lab for Micropython...
     ./arduino-lab-micropython-ide
     cd ..
-
 }
 
 function arduino_lab_install_package_clean {
-
     echo Cleaning up Arduino Lab for Micropython installation package...
     rm arduino-for-micropython.zip
-
 }
 
 function mpy_quick_start {
-
     echo '################################################'
     echo '                Welcome to the                  '
     echo ' __  __ _            ___      _   _             '
@@ -219,7 +258,6 @@ function mpy_quick_start {
     echo Press any key to exit...
     read user_input
     echo ''
-
 }
 
 # Main script commands
@@ -233,6 +271,9 @@ case $1 in
         ;;
    "firmware-deploy")
         mpy_firmware_deploy $2 $3
+        ;;
+    "device-erase")
+        mpy_device_erase $2 $3
         ;;
    "help")
         help
