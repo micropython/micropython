@@ -12,4 +12,3 @@ SRC_S += shared/runtime/gchelper_thumb2.s
 
 SRC_C += \
 	fatfs_port.c \
-	drivers/dht/dht.c \

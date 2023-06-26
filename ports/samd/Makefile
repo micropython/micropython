@@ -119,6 +119,7 @@ SRC_C += \
 	tusb_port.c \
 
 SHARED_SRC_C += \
+	drivers/dht/dht.c \
 	shared/runtime/mpirq.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
