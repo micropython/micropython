@@ -36,7 +36,7 @@
  * Copyright (C) 1995-1998 Jean-loup Gailly and Mark Adler
  */
 
-#include "tinf.h"
+#include "uzlib.h"
 
 static const unsigned int tinf_crc32tab[16] = {
    0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac, 0x76dc4190,

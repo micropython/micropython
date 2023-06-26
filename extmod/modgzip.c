@@ -51,7 +51,7 @@ typedef enum {
 } gzipfile_mode_t;
 
 typedef struct {
-    TINF_DATA decomp;
+    uzlib_uncomp_t decomp;
     bool eof;
 } mp_obj_gzipfile_read_t;
 
@@ -91,7 +91,7 @@ STATIC void gzipfile_out_byte(void *data, uint8_t b) {
 #endif
 
 
-STATIC int gzipfile_read_stream(TINF_DATA *data) {
+STATIC int gzipfile_read_stream(uzlib_uncomp_t *data) {
     // data is a pointer to the .decomp member of mp_obj_gzipfile_t. Work
     // backwards to the mp_obj_gzipfile_t pointer.
     uint8_t *p = (void *)data;
@@ -134,7 +134,7 @@ STATIC void parse_wbits_hist(mp_obj_gzipfile_t *self, int *wbits, mp_obj_t hist_
             //  header and trailer.
             *wbits = *wbits & 0xf;
             int gzip_err = uzlib_gzip_parse_header(&self->state[0].read.decomp);
-            if (gzip_err != TINF_OK) {
+            if (gzip_err != UZLIB_OK) {
                 mp_raise_OSError(gzip_err); // gzip_err is already negative.
             }
             // } else if (*wbits >= 40 && *wbits <= 47) {
@@ -238,7 +238,7 @@ STATIC mp_obj_t gzipfile_make_new(const mp_obj_type_t *type, size_t n_args, size
         mp_get_stream_raise(self->stream, MP_STREAM_OP_READ);
 
         memset(&self->state[0].read.decomp, 0, sizeof(self->state[0].read.decomp));
-        self->state[0].read.decomp.readSource = gzipfile_read_stream;
+        self->state[0].read.decomp.source_read_cb = gzipfile_read_stream;
         self->state[0].read.eof = false;
 
         // Parse "wbits" argument and set up mode and history state.
@@ -306,7 +306,7 @@ STATIC mp_uint_t gzipfile_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     self->state[0].read.decomp.dest = buf;
     self->state[0].read.decomp.dest_limit = (uint8_t *)buf + size;
     int st = uzlib_uncompress_chksum(&self->state[0].read.decomp);
-    if (st == TINF_DONE) {
+    if (st == UZLIB_DONE) {
         self->state[0].read.eof = true;
     }
     if (st < 0) {
