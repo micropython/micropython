@@ -125,7 +125,6 @@ unsigned char uzlib_get_byte(uzlib_uncomp_t *d);
 
 /* Decompression API */
 
-void uzlib_init(void);
 void uzlib_uncompress_init(uzlib_uncomp_t *d, void *dict, unsigned int dictLen);
 int  uzlib_uncompress(uzlib_uncomp_t *d);
 int  uzlib_uncompress_chksum(uzlib_uncomp_t *d);
