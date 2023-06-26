@@ -1555,6 +1555,16 @@ typedef double mp_float_t;
 #define MICROPY_PY_UCTYPES_NATIVE_C_TYPES (1)
 #endif
 
+// Whether to provide gzip.GzipFile (decompression-only by default)
+#ifndef MICROPY_PY_GZIP
+#define MICROPY_PY_GZIP (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether to provide compression support in gzip.GzipFile
+#ifndef MICROPY_PY_GZIP_COMPRESS
+#define MICROPY_PY_GZIP_COMPRESS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 #ifndef MICROPY_PY_JSON
 #define MICROPY_PY_JSON (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
@@ -1629,7 +1639,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_BINASCII (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Depends on MICROPY_PY_ZLIB
+// Depends on MICROPY_PY_GZIP
 #ifndef MICROPY_PY_BINASCII_CRC32
 #define MICROPY_PY_BINASCII_CRC32 (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif

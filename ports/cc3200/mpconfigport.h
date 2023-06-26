@@ -110,6 +110,7 @@
 #define MICROPY_PY_THREAD_GIL                       (1)
 #define MICROPY_PY_BINASCII                         (1)
 #define MICROPY_PY_UCTYPES                          (0)
+#define MICROPY_PY_GZIP                             (0)
 #define MICROPY_PY_JSON                             (1)
 #define MICROPY_PY_RE                               (1)
 #define MICROPY_PY_HEAPQ                            (0)

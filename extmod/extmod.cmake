@@ -23,6 +23,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/modbinascii.c
     ${MICROPY_EXTMOD_DIR}/modcryptolib.c
     ${MICROPY_EXTMOD_DIR}/moductypes.c
+    ${MICROPY_EXTMOD_DIR}/modgzip.c
     ${MICROPY_EXTMOD_DIR}/modhashlib.c
     ${MICROPY_EXTMOD_DIR}/modheapq.c
     ${MICROPY_EXTMOD_DIR}/modjson.c
