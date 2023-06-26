@@ -7,6 +7,9 @@
  *
  * Copyright (c) 2014-2018 by Paul Sokolovsky
  *
+ * Optimised for MicroPython:
+ * Copyright (c) 2023 by Jim Mussared
+ *
  * This software is provided 'as-is', without any express
  * or implied warranty.  In no event will the authors be
  * held liable for any damages arising from the use of
@@ -51,45 +54,45 @@ uint32_t tinf_get_be_uint32(uzlib_uncomp_t *d);
  * -- uninitialized global data (static structures) -- *
  * --------------------------------------------------- */
 
-#ifdef RUNTIME_BITS_TABLES
+typedef struct {
+    unsigned char length_bits : 3;
+    unsigned short length_base : 9;
+    unsigned char dist_bits : 4;
+    unsigned short dist_base : 15;
+} lookup_table_entry_t;
 
-/* extra bits and base tables for length codes */
-unsigned char length_bits[30];
-unsigned short length_base[30];
-
-/* extra bits and base tables for distance codes */
-unsigned char dist_bits[30];
-unsigned short dist_base[30];
-
-#else
-
-const unsigned char length_bits[30] = {
-   0, 0, 0, 0, 0, 0, 0, 0,
-   1, 1, 1, 1, 2, 2, 2, 2,
-   3, 3, 3, 3, 4, 4, 4, 4,
-   5, 5, 5, 5
+const lookup_table_entry_t lookup_table[30] = {
+    {0, 3, 0, 1},
+    {0, 4, 0, 2},
+    {0, 5, 0, 3},
+    {0, 6, 0, 4},
+    {0, 7, 1, 5},
+    {0, 8, 1, 7},
+    {0, 9, 2, 9},
+    {0, 10, 2, 13},
+    {1, 11, 3, 17},
+    {1, 13, 3, 25},
+    {1, 15, 4, 33},
+    {1, 17, 4, 49},
+    {2, 19, 5, 65},
+    {2, 23, 5, 97},
+    {2, 27, 6, 129},
+    {2, 31, 6, 193},
+    {3, 35, 7, 257},
+    {3, 43, 7, 385},
+    {3, 51, 8, 513},
+    {3, 59, 8, 769},
+    {4, 67, 9, 1025},
+    {4, 83, 9, 1537},
+    {4, 99, 10, 2049},
+    {4, 115, 10, 3073},
+    {5, 131, 11, 4097},
+    {5, 163, 11, 6145},
+    {5, 195, 12, 8193},
+    {5, 227, 12, 12289},
+    {0, 258, 13, 16385},
+    {0, 0, 13, 24577},
 };
-const unsigned short length_base[30] = {
-   3, 4, 5, 6, 7, 8, 9, 10,
-   11, 13, 15, 17, 19, 23, 27, 31,
-   35, 43, 51, 59, 67, 83, 99, 115,
-   131, 163, 195, 227, 258
-};
-
-const unsigned char dist_bits[30] = {
-   0, 0, 0, 0, 1, 1, 2, 2,
-   3, 3, 4, 4, 5, 5, 6, 6,
-   7, 7, 8, 8, 9, 9, 10, 10,
-   11, 11, 12, 12, 13, 13
-};
-const unsigned short dist_base[30] = {
-   1, 2, 3, 4, 5, 7, 9, 13,
-   17, 25, 33, 49, 65, 97, 129, 193,
-   257, 385, 513, 769, 1025, 1537, 2049, 3073,
-   4097, 6145, 8193, 12289, 16385, 24577
-};
-
-#endif
 
 /* special ordering of code length codes */
 const unsigned char clcidx[] = {
@@ -101,25 +104,6 @@ const unsigned char clcidx[] = {
 /* ----------------------- *
  * -- utility functions -- *
  * ----------------------- */
-
-#ifdef RUNTIME_BITS_TABLES
-/* build extra bits and base tables */
-static void tinf_build_bits_base(unsigned char *bits, unsigned short *base, int delta, int first)
-{
-   int i, sum;
-
-   /* build bits table */
-   for (i = 0; i < delta; ++i) bits[i] = 0;
-   for (i = 0; i < 30 - delta; ++i) bits[i + delta] = i / delta;
-
-   /* build base table */
-   for (sum = first, i = 0; i < 30; ++i)
-   {
-      base[i] = sum;
-      sum += 1 << bits[i];
-   }
-}
-#endif
 
 /* build the fixed huffman trees */
 static void tinf_build_fixed_trees(TINF_TREE *lt, TINF_TREE *dt)
@@ -433,7 +417,7 @@ static int tinf_inflate_block_data(uzlib_uncomp_t *d, TINF_TREE *lt, TINF_TREE *
         }
 
         /* possibly get more bits from length code */
-        d->curlen = tinf_read_bits(d, length_bits[sym], length_base[sym]);
+        d->curlen = tinf_read_bits(d, lookup_table[sym].length_bits, lookup_table[sym].length_base);
 
         dist = tinf_decode_symbol(d, dt);
         if (dist >= 30) {
@@ -441,7 +425,7 @@ static int tinf_inflate_block_data(uzlib_uncomp_t *d, TINF_TREE *lt, TINF_TREE *
         }
 
         /* possibly get more bits from distance code */
-        offs = tinf_read_bits(d, dist_bits[dist], dist_base[dist]);
+        offs = tinf_read_bits(d, lookup_table[dist].dist_bits, lookup_table[dist].dist_base);
 
         /* calculate and validate actual LZ offset to use */
         if (d->dict_ring) {
@@ -520,20 +504,6 @@ static int tinf_inflate_uncompressed_block(uzlib_uncomp_t *d)
 /* ---------------------- *
  * -- public functions -- *
  * ---------------------- */
-
-/* initialize global (static) data */
-void uzlib_init(void)
-{
-#ifdef RUNTIME_BITS_TABLES
-   /* build extra bits and base tables */
-   tinf_build_bits_base(length_bits, length_base, 4, 3);
-   tinf_build_bits_base(dist_bits, dist_base, 2, 1);
-
-   /* fix a special case */
-   length_bits[28] = 0;
-   length_base[28] = 258;
-#endif
-}
 
 /* initialize decompression structure */
 void uzlib_uncompress_init(uzlib_uncomp_t *d, void *dict, unsigned int dictLen)
