@@ -105,7 +105,7 @@ LIB_SRC_C += \
 	lib/oofatfs/ffunicode.c \
 	lib/uzlib/adler32.c \
 	lib/uzlib/crc32.c \
-	lib/uzlib/tinfgzip.c \
+	lib/uzlib/header.c \
 	lib/uzlib/tinflate.c
 
 SRC_C += \
