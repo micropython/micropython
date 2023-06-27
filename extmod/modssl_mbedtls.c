@@ -36,6 +36,8 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/objstr.h"
+#include "py/reader.h"
+#include "extmod/vfs.h"
 
 // mbedtls_time_t
 #include "mbedtls/platform.h"
@@ -46,6 +48,11 @@
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/debug.h"
 #include "mbedtls/error.h"
+#if MBEDTLS_VERSION_NUMBER >= 0x03000000
+#include "mbedtls/build_info.h"
+#else
+#include "mbedtls/version.h"
+#endif
 
 #define MP_STREAM_POLL_RDWR (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)
 
@@ -59,6 +66,7 @@ typedef struct _mp_obj_ssl_context_t {
     mbedtls_x509_crt cert;
     mbedtls_pk_context pkey;
     int authmode;
+    int *ciphersuites;
 } mp_obj_ssl_context_t;
 
 // This corresponds to an SSLSocket object.
@@ -75,11 +83,31 @@ typedef struct _mp_obj_ssl_socket_t {
 STATIC const mp_obj_type_t ssl_context_type;
 STATIC const mp_obj_type_t ssl_socket_type;
 
+STATIC const MP_DEFINE_STR_OBJ(mbedtls_version_obj, MBEDTLS_VERSION_STRING_FULL);
+
 STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t sock,
     bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname);
 
 /******************************************************************************/
 // Helper functions.
+
+STATIC mp_obj_t read_file(mp_obj_t self_in) {
+    // file = open(args[0], "rb")
+    mp_obj_t f_args[2] = {
+        self_in,
+        MP_OBJ_NEW_QSTR(MP_QSTR_rb),
+    };
+    mp_obj_t file = mp_vfs_open(2, &f_args[0], (mp_map_t *)&mp_const_empty_map);
+
+    // data = file.read()
+    mp_obj_t dest[2];
+    mp_load_method(file, MP_QSTR_read, dest);
+    mp_obj_t data = mp_call_method_n_kw(0, 0, dest);
+
+    // file.close()
+    mp_stream_close(file);
+    return data;
+}
 
 #ifdef MBEDTLS_DEBUG_C
 STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
@@ -162,6 +190,7 @@ STATIC mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     mbedtls_x509_crt_init(&self->cacert);
     mbedtls_x509_crt_init(&self->cert);
     mbedtls_pk_init(&self->pkey);
+    self->ciphersuites = NULL;
 
     #ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
@@ -236,6 +265,54 @@ STATIC mp_obj_t ssl_context___del__(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ssl_context___del___obj, ssl_context___del__);
 #endif
 
+// SSLContext.get_ciphers()
+STATIC mp_obj_t ssl_context_get_ciphers(mp_obj_t self_in) {
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    for (const int *cipher_list = mbedtls_ssl_list_ciphersuites(); *cipher_list; ++cipher_list) {
+        const char *cipher_name = mbedtls_ssl_get_ciphersuite_name(*cipher_list);
+        mp_obj_list_append(list, MP_OBJ_FROM_PTR(mp_obj_new_str(cipher_name, strlen(cipher_name))));
+        cipher_list++;
+        if (!*cipher_list) {
+            break;
+        }
+    }
+    return list;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ssl_context_get_ciphers_obj, ssl_context_get_ciphers);
+
+// SSLContext.set_ciphers(ciphersuite)
+STATIC mp_obj_t ssl_context_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) {
+    mp_obj_ssl_context_t *ssl_context = MP_OBJ_TO_PTR(self_in);
+
+    // Check that ciphersuite is a list or tuple.
+    size_t len = 0;
+    mp_obj_t *ciphers;
+    mp_obj_get_array(ciphersuite, &len, &ciphers);
+    if (len == 0) {
+        mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
+    }
+
+    // Parse list of ciphers.
+    ssl_context->ciphersuites = m_new(int, len + 1);
+    for (int i = 0, n = len; i < n; i++) {
+        if (ciphers[i] != mp_const_none) {
+            const char *ciphername = mp_obj_str_get_str(ciphers[i]);
+            const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
+            ssl_context->ciphersuites[i] = id;
+            if (id == 0) {
+                mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
+            }
+        }
+    }
+    ssl_context->ciphersuites[len + 1] = 0;
+
+    // Configure ciphersuite.
+    mbedtls_ssl_conf_ciphersuites(&ssl_context->conf, (const int *)ssl_context->ciphersuites);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_context_set_ciphers_obj, ssl_context_set_ciphers);
+
 STATIC void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
     size_t key_len;
     const byte *key = (const byte *)mp_obj_str_get_data(key_obj, &key_len);
@@ -264,6 +341,30 @@ STATIC void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, m
     }
 }
 
+// SSLContext.load_cert_chain(certfile, keyfile)
+STATIC mp_obj_t ssl_context_load_cert_chain(mp_obj_t self_in, mp_obj_t certfile, mp_obj_t keyfile) {
+    mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t pkey;
+    mp_obj_t cert;
+    if (certfile != mp_const_none) {
+        // check if key is a string/path
+        if (!(mp_obj_is_type(keyfile, &mp_type_bytes))) {
+            pkey = read_file(keyfile);
+        } else {
+            pkey = keyfile;
+        }
+        // check if cert is a string/path
+        if (!(mp_obj_is_type(certfile, &mp_type_bytes))) {
+            cert = read_file(certfile);
+        } else {
+            cert = certfile;
+        }
+        ssl_context_load_key(self, pkey, cert);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(ssl_context_load_cert_chain_obj, ssl_context_load_cert_chain);
+
 STATIC void ssl_context_load_cadata(mp_obj_ssl_context_t *self, mp_obj_t cadata_obj) {
     size_t cacert_len;
     const byte *cacert = (const byte *)mp_obj_str_get_data(cadata_obj, &cacert_len);
@@ -275,6 +376,30 @@ STATIC void ssl_context_load_cadata(mp_obj_ssl_context_t *self, mp_obj_t cadata_
 
     mbedtls_ssl_conf_ca_chain(&self->conf, &self->cacert, NULL);
 }
+
+// SSLContext.load_verify_locations(cafile=None, *, cadata=None)
+STATIC mp_obj_t ssl_context_load_verify_locations(size_t n_args, const mp_obj_t *pos_args,
+    mp_map_t *kw_args) {
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_cafile, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_cadata, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+
+    mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    // cafile
+    if (args[0].u_obj != mp_const_none) {
+        ssl_context_load_cadata(self, read_file(args[0].u_obj));
+    }
+    // cadata
+    if (args[1].u_obj != mp_const_none) {
+        ssl_context_load_cadata(self, args[1].u_obj);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_context_load_verify_locations_obj, 1, ssl_context_load_verify_locations);
 
 STATIC mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_server_side, ARG_do_handshake_on_connect, ARG_server_hostname };
@@ -300,6 +425,10 @@ STATIC const mp_rom_map_elem_t ssl_context_locals_dict_table[] = {
     #if MICROPY_PY_SSL_FINALISER
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ssl_context___del___obj) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_get_ciphers), MP_ROM_PTR(&ssl_context_get_ciphers_obj)},
+    { MP_ROM_QSTR(MP_QSTR_set_ciphers), MP_ROM_PTR(&ssl_context_set_ciphers_obj)},
+    { MP_ROM_QSTR(MP_QSTR_load_cert_chain), MP_ROM_PTR(&ssl_context_load_cert_chain_obj)},
+    { MP_ROM_QSTR(MP_QSTR_load_verify_locations), MP_ROM_PTR(&ssl_context_load_verify_locations_obj)},
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&ssl_context_wrap_socket_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(ssl_context_locals_dict, ssl_context_locals_dict_table);
@@ -369,6 +498,8 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     o->last_error = 0;
 
     int ret;
+    uint32_t flags = 0;
+
     mbedtls_ssl_init(&o->ssl);
 
     ret = mbedtls_ssl_setup(&o->ssl, &ssl_context->conf);
@@ -382,6 +513,11 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
         if (ret != 0) {
             goto cleanup;
         }
+    } else if (ssl_context->authmode == MBEDTLS_SSL_VERIFY_REQUIRED && server_side == false) {
+
+        o->sock = MP_OBJ_NULL;
+        mbedtls_ssl_free(&o->ssl);
+        mp_raise_ValueError(MP_ERROR_TEXT("CERT_REQUIRED requires server_hostname"));
     }
 
     mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
@@ -398,8 +534,23 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     return MP_OBJ_FROM_PTR(o);
 
 cleanup:
+    if (ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
+        flags = mbedtls_ssl_get_verify_result(&o->ssl);
+    }
+
     o->sock = MP_OBJ_NULL;
     mbedtls_ssl_free(&o->ssl);
+
+    if (ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
+        char xcbuf[256];
+        int ret_info = mbedtls_x509_crt_verify_info(xcbuf, sizeof(xcbuf), "\n", flags);
+        // The length of the string written (not including the terminated nul byte),
+        // or a negative err code.
+        if (ret_info > 0) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("%s"), xcbuf);
+        }
+    }
+
     mbedtls_raise_error(ret);
 }
 
@@ -415,6 +566,17 @@ STATIC mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
     return mp_obj_new_bytes(peer_cert->raw.p, peer_cert->raw.len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ssl_getpeercert_obj, mod_ssl_getpeercert);
+
+STATIC mp_obj_t mod_ssl_cipher(mp_obj_t o_in) {
+    mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
+    const char *cipher_suite = mbedtls_ssl_get_ciphersuite(&o->ssl);
+    const char *tls_version = mbedtls_ssl_get_version(&o->ssl);
+    mp_obj_t tuple[2] = {mp_obj_new_str(cipher_suite, strlen(cipher_suite)),
+                         mp_obj_new_str(tls_version, strlen(tls_version))};
+
+    return mp_obj_new_tuple(2, tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ssl_cipher_obj, mod_ssl_cipher);
 
 STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
@@ -565,6 +727,7 @@ STATIC const mp_rom_map_elem_t ssl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_stream_ioctl_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_getpeercert), MP_ROM_PTR(&mod_ssl_getpeercert_obj) },
+    { MP_ROM_QSTR(MP_QSTR_cipher), MP_ROM_PTR(&mod_ssl_cipher_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(ssl_socket_locals_dict, ssl_socket_locals_dict_table);
 
@@ -645,6 +808,7 @@ STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SSLContext), MP_ROM_PTR(&ssl_context_type) },
 
     // Constants.
+    { MP_ROM_QSTR(MP_QSTR_MBEDTLS_VERSION), MP_ROM_PTR(&mbedtls_version_obj)},
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLS_CLIENT), MP_ROM_INT(MBEDTLS_SSL_IS_CLIENT) },
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLS_SERVER), MP_ROM_INT(MBEDTLS_SSL_IS_SERVER) },
     { MP_ROM_QSTR(MP_QSTR_CERT_NONE), MP_ROM_INT(MBEDTLS_SSL_VERIFY_NONE) },
