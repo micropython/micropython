@@ -210,7 +210,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
         // A native generator, with entry point 2 words into the "bytecode" pointer
         typedef uintptr_t (*mp_fun_native_gen_t)(void *, mp_obj_t);
-        mp_fun_native_gen_t fun = MICROPY_MAKE_POINTER_CALLABLE((const void *)(self->code_state.fun_bc->bytecode + 2 * sizeof(uintptr_t)));
+        mp_fun_native_gen_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)(self->code_state.fun_bc->bytecode + 2 * sizeof(uintptr_t)));
         ret_kind = fun((void *)&self->code_state, throw_value);
     } else
     #endif
