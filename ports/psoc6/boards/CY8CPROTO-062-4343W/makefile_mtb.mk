@@ -80,7 +80,7 @@ mpy_program: $(MPY_MAIN_BUILD_DIR)/firmware.hex
 	@:
 	$(info )
 	$(info Programming using openocd ...)
-	$(OPENOCD_HOME)/bin/openocd -s $(OPENOCD_HOME)/scripts -s bsps/TARGET_APP_CY8CPROTO-062-4343W/config/GeneratedSource -c "source [find interface/kitprog3.cfg]; $(SERIAL_ADAPTER_CMD) ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program $(MPY_DIR_OF_MAIN_MAKEFILE)/build/firmware.hex verify reset exit;"
+	$(OPENOCD_HOME)/bin/openocd -s $(OPENOCD_HOME)/scripts -s $(MPY_DIR_OF_MTB_ADAPTER_MAKEFILE)/bsps/TARGET_APP_CY8CPROTO-062-4343W/config/GeneratedSource -c "source [find interface/kitprog3.cfg]; $(SERIAL_ADAPTER_CMD) ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program $(MPY_DIR_OF_MAIN_MAKEFILE)/build/firmware.hex verify reset exit;"
 	$(info Programming done.)
 
 # Use this target to program multiple attached target devices
