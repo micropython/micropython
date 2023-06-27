@@ -985,7 +985,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 STATIC const mp_rom_map_elem_t mp_module_bluetooth_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ubluetooth) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bluetooth) },
     { MP_ROM_QSTR(MP_QSTR_BLE), MP_ROM_PTR(&mp_type_bluetooth_ble) },
     { MP_ROM_QSTR(MP_QSTR_UUID), MP_ROM_PTR(&mp_type_bluetooth_uuid) },
 
@@ -999,12 +999,16 @@ STATIC const mp_rom_map_elem_t mp_module_bluetooth_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_bluetooth_globals, mp_module_bluetooth_globals_table);
 
-const mp_obj_module_t mp_module_ubluetooth = {
+const mp_obj_module_t mp_module_bluetooth = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_bluetooth_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ubluetooth, mp_module_ubluetooth);
+// This module should not be extensible (as it is not a CPython standard
+// library nor is it necessary to override from the filesystem), however it
+// has previously been known as `ubluetooth`, so by making it extensible the
+// `ubluetooth` alias will continue to work.
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_bluetooth, mp_module_bluetooth);
 
 // Helpers
 

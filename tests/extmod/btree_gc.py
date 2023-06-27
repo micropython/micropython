@@ -1,7 +1,7 @@
 # Test btree interaction with the garbage collector.
 
 try:
-    import btree, uio, gc
+    import btree, io, gc
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -9,7 +9,7 @@ except ImportError:
 N = 80
 
 # Create a BytesIO but don't keep a reference to it.
-db = btree.open(uio.BytesIO(), pagesize=512)
+db = btree.open(io.BytesIO(), pagesize=512)
 
 # Overwrite lots of the Python stack to make sure no reference to the BytesIO remains.
 x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]

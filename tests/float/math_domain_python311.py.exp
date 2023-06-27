@@ -1,0 +1,5 @@
+pow(0.0000, -inf) = inf
+log(0.0000, -inf) = ValueError
+fmod(0.0000, -inf) = 0.0000
+atan2(0.0000, -inf) = 3.1416
+copysign(0.0000, -inf) = -0.0000

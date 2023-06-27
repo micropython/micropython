@@ -71,7 +71,6 @@
 #define MICROPY_FATFS_SYNC_T                        SemaphoreHandle_t
 
 #define MICROPY_STREAMS_NON_BLOCK                   (1)
-#define MICROPY_MODULE_WEAK_LINKS                   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS               (1)
 #define MICROPY_USE_INTERNAL_ERRNO                  (1)
 #define MICROPY_VFS                                 (1)
@@ -105,29 +104,29 @@
 #define MICROPY_PY_SYS_STDFILES                     (1)
 #define MICROPY_PY_CMATH                            (0)
 #define MICROPY_PY_IO                               (1)
-#define MICROPY_PY_UERRNO                           (1)
-#define MICROPY_PY_UERRNO_ERRORCODE                 (0)
+#define MICROPY_PY_ERRNO                            (1)
+#define MICROPY_PY_ERRNO_ERRORCODE                  (0)
 #define MICROPY_PY_THREAD                           (1)
 #define MICROPY_PY_THREAD_GIL                       (1)
-#define MICROPY_PY_UBINASCII                        (1)
+#define MICROPY_PY_BINASCII                         (1)
 #define MICROPY_PY_UCTYPES                          (0)
-#define MICROPY_PY_UZLIB                            (0)
-#define MICROPY_PY_UJSON                            (1)
-#define MICROPY_PY_URE                              (1)
-#define MICROPY_PY_UHEAPQ                           (0)
-#define MICROPY_PY_UHASHLIB                         (0)
-#define MICROPY_PY_USELECT                          (1)
-#define MICROPY_PY_UTIME                            (1)
-#define MICROPY_PY_UTIME_GMTIME_LOCALTIME_MKTIME    (1)
-#define MICROPY_PY_UTIME_TIME_TIME_NS               (1)
-#define MICROPY_PY_UTIME_INCLUDEFILE                "ports/cc3200/mods/modutime.c"
+#define MICROPY_PY_ZLIB                             (0)
+#define MICROPY_PY_JSON                             (1)
+#define MICROPY_PY_RE                               (1)
+#define MICROPY_PY_HEAPQ                            (0)
+#define MICROPY_PY_HASHLIB                          (0)
+#define MICROPY_PY_SELECT                           (1)
+#define MICROPY_PY_TIME                             (1)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME     (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS                (1)
+#define MICROPY_PY_TIME_INCLUDEFILE                 "ports/cc3200/mods/modtime.c"
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF      (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE        (0)
 #define MICROPY_KBD_EXCEPTION                       (1)
 
-// We define our own list of errno constants to include in uerrno module
-#define MICROPY_PY_UERRNO_LIST \
+// We define our own list of errno constants to include in errno module
+#define MICROPY_PY_ERRNO_LIST \
     X(EPERM) \
     X(EIO) \
     X(ENODEV) \
@@ -136,7 +135,7 @@
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_umachine),     MP_ROM_PTR(&mp_module_machine) },  \
+    { MP_ROM_QSTR(MP_QSTR_machine),     MP_ROM_PTR(&mp_module_machine) },  \
 
 #define MP_STATE_PORT MP_STATE_VM
 

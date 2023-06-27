@@ -11,37 +11,36 @@ SRC_EXTMOD_C += \
 	extmod/machine_signal.c \
 	extmod/machine_spi.c \
 	extmod/machine_timer.c \
+	extmod/modasyncio.c \
+	extmod/modbinascii.c \
 	extmod/modbluetooth.c \
 	extmod/modbtree.c \
+	extmod/modcryptolib.c \
 	extmod/modframebuf.c \
+	extmod/modhashlib.c \
+	extmod/modheapq.c \
+	extmod/modjson.c \
 	extmod/modlwip.c \
 	extmod/modnetwork.c \
 	extmod/modonewire.c \
-	extmod/moduasyncio.c \
-	extmod/modubinascii.c \
-	extmod/moducryptolib.c \
+	extmod/modos.c \
+	extmod/modplatform.c\
+	extmod/modrandom.c \
+	extmod/modre.c \
+	extmod/modselect.c \
+	extmod/modsocket.c \
+	extmod/modssl_axtls.c \
+	extmod/modssl_mbedtls.c \
+	extmod/modtime.c \
 	extmod/moductypes.c \
-	extmod/moduhashlib.c \
-	extmod/moduheapq.c \
-	extmod/modujson.c \
-	extmod/moduos.c \
-	extmod/moduplatform.c\
-	extmod/modurandom.c \
-	extmod/modure.c \
-	extmod/moduselect.c \
-	extmod/modusocket.c \
-	extmod/modussl_axtls.c \
-	extmod/modussl_mbedtls.c \
-	extmod/modutime.c \
-	extmod/modutimeq.c \
-	extmod/moduwebsocket.c \
-	extmod/moduzlib.c \
 	extmod/modwebrepl.c \
+	extmod/modwebsocket.c \
+	extmod/modzlib.c \
 	extmod/network_cyw43.c \
 	extmod/network_lwip.c \
 	extmod/network_ninaw10.c \
 	extmod/network_wiznet5k.c \
-	extmod/uos_dupterm.c \
+	extmod/os_dupterm.c \
 	extmod/vfs.c \
 	extmod/vfs_blockdev.c \
 	extmod/vfs_fat.c \
@@ -108,8 +107,8 @@ endif
 ################################################################################
 # ussl
 
-ifeq ($(MICROPY_PY_USSL),1)
-CFLAGS_EXTMOD += -DMICROPY_PY_USSL=1
+ifeq ($(MICROPY_PY_SSL),1)
+CFLAGS_EXTMOD += -DMICROPY_PY_SSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
 AXTLS_DIR = lib/axtls
 GIT_SUBMODULES += $(AXTLS_DIR)

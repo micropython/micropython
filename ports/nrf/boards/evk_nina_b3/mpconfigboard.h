@@ -41,8 +41,8 @@
 #define MICROPY_EMIT_INLINE_THUMB   (1)
 
 // Enable optional modules
-#define MICROPY_PY_UERRNO           (1)
-#define MICROPY_PY_UHASHLIB         (1)
+#define MICROPY_PY_ERRNO            (1)
+#define MICROPY_PY_HASHLIB          (1)
 
 // Peripherals Config
 #define MICROPY_PY_MACHINE_UART     (1)

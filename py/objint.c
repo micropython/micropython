@@ -48,22 +48,22 @@ STATIC mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
         case 0:
             return MP_OBJ_NEW_SMALL_INT(0);
 
-        case 1:
-            if (mp_obj_is_int(args[0])) {
-                // already an int (small or long), just return it
-                return args[0];
-            } else if (mp_obj_is_str_or_bytes(args[0])) {
-                // a string, parse it
-                size_t l;
-                const char *s = mp_obj_str_get_data(args[0], &l);
-                return mp_parse_num_integer(s, l, 0, NULL);
+        case 1: {
+            mp_buffer_info_t bufinfo;
+            mp_obj_t o = mp_unary_op(MP_UNARY_OP_INT_MAYBE, args[0]);
+            if (o != MP_OBJ_NULL) {
+                return o;
+            } else if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
+                // a textual representation, parse it
+                return mp_parse_num_integer(bufinfo.buf, bufinfo.len, 0, NULL);
             #if MICROPY_PY_BUILTINS_FLOAT
             } else if (mp_obj_is_float(args[0])) {
                 return mp_obj_new_int_from_float(mp_obj_float_get(args[0]));
             #endif
             } else {
-                return mp_unary_op(MP_UNARY_OP_INT, args[0]);
+                mp_raise_TypeError_int_conversion(args[0]);
             }
+        }
 
         case 2:
         default: {

@@ -1,4 +1,4 @@
-import utime
+import time
 from hwconfig import LED
 
 
@@ -15,10 +15,10 @@ def pwm_cycle(led, duty, cycles):
     for i in range(cycles):
         if duty:
             led.on()
-            utime.sleep_ms(duty)
+            time.sleep_ms(duty)
         if duty_off:
             led.off()
-            utime.sleep_ms(duty_off)
+            time.sleep_ms(duty_off)
 
 
 # At the duty setting of 1, an LED is still pretty bright, then

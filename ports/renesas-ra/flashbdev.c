@@ -38,6 +38,16 @@
 
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
+#if MICROPY_HW_HAS_QSPI_FLASH
+// The linker script specifies flash storage locations.
+extern uint8_t _micropy_hw_external_flash_storage_start;
+extern uint8_t _micropy_hw_external_flash_storage_end;
+
+#define FLASH_MEM_SEG1_START_ADDR \
+    ((long)&_micropy_hw_external_flash_storage_start)
+#define FLASH_MEM_SEG1_NUM_BLOCKS \
+    ((&_micropy_hw_external_flash_storage_end - &_micropy_hw_external_flash_storage_start) / 512)
+#else
 // The linker script specifies flash storage locations.
 extern uint8_t _micropy_hw_internal_flash_storage_start;
 extern uint8_t _micropy_hw_internal_flash_storage_end;
@@ -46,10 +56,11 @@ extern uint8_t _micropy_hw_internal_flash_storage_end;
     ((long)&_micropy_hw_internal_flash_storage_start)
 #define FLASH_MEM_SEG1_NUM_BLOCKS \
     ((&_micropy_hw_internal_flash_storage_end - &_micropy_hw_internal_flash_storage_start) / 512)
+#endif
 
 #if defined(RA4M1) | defined(RA4M3) | defined(RA4W1)
 #define FLASH_SECTOR_SIZE_MAX (0x800)           // 2k max
-#elif defined(RA6M1) | defined(RA6M2) | defined(RA6M3)
+#elif defined(RA6M1) | defined(RA6M2) | defined(RA6M3) | defined(RA6M5)
 #define FLASH_SECTOR_SIZE_MAX (0x8000)          // 32k max
 #else
 #error "no internal flash storage support for this MCU"

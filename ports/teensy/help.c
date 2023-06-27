@@ -29,7 +29,7 @@
 const char teensy_help_text[] =
     "Welcome to MicroPython!\n"
     "\n"
-    "For online help please visit http://micropython.org/help/.\n"
+    "For online docs please visit http://docs.micropython.org/\n"
     "\n"
     "Quick overview of commands for the board:\n"
     "  pyb.info()    -- print some general information\n"

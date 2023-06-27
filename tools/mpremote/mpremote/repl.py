@@ -1,45 +1,45 @@
 from .console import Console, ConsolePosix
 
-from . import pyboardextended as pyboard
+from .transport import TransportError
 
 
 def do_repl_main_loop(
     state, console_in, console_out_write, *, escape_non_printable, code_to_inject, file_to_inject
 ):
     while True:
-        console_in.waitchar(state.pyb.serial)
+        console_in.waitchar(state.transport.serial)
         c = console_in.readchar()
         if c:
             if c in (b"\x1d", b"\x18"):  # ctrl-] or ctrl-x, quit
                 break
             elif c == b"\x04":  # ctrl-D
                 # special handling needed for ctrl-D if filesystem is mounted
-                state.pyb.write_ctrl_d(console_out_write)
+                state.transport.write_ctrl_d(console_out_write)
             elif c == b"\x0a" and code_to_inject is not None:  # ctrl-j, inject code
-                state.pyb.serial.write(code_to_inject)
+                state.transport.serial.write(code_to_inject)
             elif c == b"\x0b" and file_to_inject is not None:  # ctrl-k, inject script
                 console_out_write(bytes("Injecting %s\r\n" % file_to_inject, "utf8"))
-                state.pyb.enter_raw_repl(soft_reset=False)
+                state.transport.enter_raw_repl(soft_reset=False)
                 with open(file_to_inject, "rb") as f:
                     pyfile = f.read()
                 try:
-                    state.pyb.exec_raw_no_follow(pyfile)
-                except pyboard.PyboardError as er:
+                    state.transport.exec_raw_no_follow(pyfile)
+                except TransportError as er:
                     console_out_write(b"Error:\r\n")
                     console_out_write(er)
-                state.pyb.exit_raw_repl()
+                state.transport.exit_raw_repl()
             else:
-                state.pyb.serial.write(c)
+                state.transport.serial.write(c)
 
         try:
-            n = state.pyb.serial.inWaiting()
+            n = state.transport.serial.inWaiting()
         except OSError as er:
             if er.args[0] == 5:  # IO error, device disappeared
                 print("device disconnected")
                 break
 
         if n > 0:
-            dev_data_in = state.pyb.serial.read(n)
+            dev_data_in = state.transport.serial.read(n)
             if dev_data_in is not None:
                 if escape_non_printable:
                     # Pass data through to the console, with escaping of non-printables.
@@ -63,7 +63,7 @@ def do_repl(state, args):
     code_to_inject = args.inject_code
     file_to_inject = args.inject_file
 
-    print("Connected to MicroPython at %s" % state.pyb.device_name)
+    print("Connected to MicroPython at %s" % state.transport.device_name)
     print("Use Ctrl-] or Ctrl-x to exit this shell")
     if escape_non_printable:
         print("Escaping non-printable bytes/characters by printing their hex code")

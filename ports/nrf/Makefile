@@ -329,8 +329,8 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/timer.c \
 	machine/rtcounter.c \
 	machine/temp.c \
-	uos/moduos.c \
-	uos/microbitfs.c \
+	os/modos.c \
+	os/microbitfs.c \
 	board/modboard.c \
 	board/led.c \
 	ubluepy/modubluepy.c \
@@ -551,12 +551,6 @@ $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qst
 
 $(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
 	$(call compile_c)
-
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
 
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os -fno-lto
 

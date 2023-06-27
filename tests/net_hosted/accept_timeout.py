@@ -1,9 +1,6 @@
 # test that socket.accept() on a socket with timeout raises ETIMEDOUT
 
-try:
-    import uerrno as errno, usocket as socket
-except:
-    import errno, socket
+import errno, socket
 
 try:
     socket.socket.settimeout

@@ -918,7 +918,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_bind_obj, lwip_socket_bind);
 STATIC mp_obj_t lwip_socket_listen(size_t n_args, const mp_obj_t *args) {
     lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(args[0]);
 
-    mp_int_t backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    mp_int_t backlog = MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT;
     if (n_args > 1) {
         backlog = mp_obj_get_int(args[1]);
         backlog = (backlog < 0) ? 0 : backlog;
@@ -1801,8 +1801,8 @@ const mp_obj_module_t mp_module_lwip = {
 
 MP_REGISTER_MODULE(MP_QSTR_lwip, mp_module_lwip);
 
-// On LWIP-ports, this is the usocket module (replaces extmod/modusocket.c).
-MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_lwip);
+// On LWIP-ports, this is the socket module (replaces extmod/modsocket.c).
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_socket, mp_module_lwip);
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t lwip_slip_stream);
 

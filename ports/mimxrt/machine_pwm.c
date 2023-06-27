@@ -91,7 +91,7 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     } else {
         mp_printf(print, "<QTMR_PWM module=%u channel=%u freq=%u ",
             self->module, self->channel1, self->freq);
-        if (self->duty_ns == VALUE_NOT_SET) {
+        if (self->duty_ns != VALUE_NOT_SET) {
             mp_printf(print, "duty_ns=%d>", self->duty_ns);
         } else {
             mp_printf(print, "duty_u16=%d>", self->duty_u16);
@@ -108,10 +108,6 @@ STATIC uint32_t duty_ns_to_duty_u16(uint32_t freq, uint32_t duty_ns) {
         mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_VALUE));
     }
     return (uint32_t)duty;
-}
-
-STATIC uint32_t duty_u16_to_duty_ns(machine_pwm_obj_t *self) {
-    return 1000000000ULL * (uint64_t)self->duty_u16 / self->freq / PWM_FULL_SCALE;
 }
 
 STATIC uint8_t module_decode(char channel) {
@@ -349,8 +345,6 @@ STATIC void configure_pwm(machine_pwm_obj_t *self) {
     if (self->freq != VALUE_NOT_SET && (self->duty_u16 != VALUE_NOT_SET || self->duty_ns != VALUE_NOT_SET)) {
         if (self->duty_ns != VALUE_NOT_SET) {
             self->duty_u16 = duty_ns_to_duty_u16(self->freq, self->duty_ns);
-        } else {
-            self->duty_ns = duty_u16_to_duty_ns(self);
         }
         if (self->is_flexpwm) {
             configure_flexpwm(self);
@@ -489,6 +483,9 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
                 break;
             }
         }
+        if (af_obj2 == NULL) {
+            mp_raise_ValueError(MP_ERROR_TEXT("the second Pin doesn't support PWM"));
+        }
     }
     if (af_obj1 == NULL) {
         submodule1 = 0;
@@ -504,12 +501,12 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
         }
         #endif
         if (af_obj1 == NULL) {
-            mp_raise_ValueError(MP_ERROR_TEXT("the requested Pin(s) does not support PWM"));
+            mp_raise_ValueError(MP_ERROR_TEXT("the first Pin doesn't support PWM"));
         }
     } else {
         // is flexpwm, check for instance match
         is_flexpwm = true;
-        if (pin2 != NULL && af_obj1->instance != af_obj2->instance && submodule1 != submodule2) {
+        if (pin2 != NULL && (af_obj1->instance != af_obj2->instance || submodule1 != submodule2)) {
             mp_raise_ValueError(MP_ERROR_TEXT("the pins must be a A/B pair of a submodule"));
         }
     }

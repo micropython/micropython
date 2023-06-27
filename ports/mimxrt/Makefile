@@ -140,7 +140,13 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_wdog.c \
 	$(MCU_DIR)/system_$(MCU_SERIES)$(MCU_CORE).c \
-	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
+
+# Use a specific boot header for 1062 so the Teensy loader doesn't erase the filesystem.
+ifeq ($(MCU_SERIES), MIMXRT1062)
+SRC_HAL_IMX_C += hal/fsl_flexspi_nor_boot.c
+else
+SRC_HAL_IMX_C += $(MCU_DIR)/xip/fsl_flexspi_nor_boot.c
+endif
 
 ifeq ($(MICROPY_HW_SDRAM_AVAIL),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_semc.c
@@ -185,6 +191,7 @@ SRC_C += \
 	fatfs_port.c \
 	flash.c \
 	hal/pwm_backport.c \
+	help.c \
 	led.c \
 	machine_adc.c \
 	machine_bitstream.c \

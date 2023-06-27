@@ -27,7 +27,7 @@
 #define MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 
 // Set mbedtls configuration
-#define MBEDTLS_CIPHER_MODE_CTR // needed for MICROPY_PY_UCRYPTOLIB_CTR
+#define MBEDTLS_CIPHER_MODE_CTR // needed for MICROPY_PY_CRYPTOLIB_CTR
 
 // Enable mbedtls modules
 #define MBEDTLS_HAVEGE_C

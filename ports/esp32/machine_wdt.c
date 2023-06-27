@@ -54,14 +54,16 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
         mp_raise_ValueError(NULL);
     }
 
-    // Convert milliseconds to seconds (esp_task_wdt_init needs seconds)
-    args[ARG_timeout].u_int /= 1000;
-
     if (args[ARG_timeout].u_int <= 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("WDT timeout too short"));
     }
 
-    mp_int_t rs_code = esp_task_wdt_init(args[ARG_timeout].u_int, true);
+    esp_task_wdt_config_t config = {
+        .timeout_ms = args[ARG_timeout].u_int,
+        .idle_core_mask = 0,
+        .trigger_panic = true,
+    };
+    mp_int_t rs_code = esp_task_wdt_reconfigure(&config);
     if (rs_code != ESP_OK) {
         mp_raise_OSError(rs_code);
     }

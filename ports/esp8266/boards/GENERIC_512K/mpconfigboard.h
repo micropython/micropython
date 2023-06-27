@@ -8,6 +8,6 @@
 #define MICROPY_PY_ALL_SPECIAL_METHODS  (0)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS (0)
 #define MICROPY_PY_SYS_STDIO_BUFFER     (0)
-#define MICROPY_PY_UASYNCIO             (0)
-#define MICROPY_PY_URE_SUB              (0)
+#define MICROPY_PY_ASYNCIO              (0)
+#define MICROPY_PY_RE_SUB               (0)
 #define MICROPY_PY_FRAMEBUF             (0)

@@ -58,23 +58,20 @@
 #include "uart.h"
 #include "wdt.h"
 
-#if defined(STM32L0)
-// L0 does not have a BOR, so use POR instead
-#define RCC_CSR_BORRSTF RCC_CSR_PORRSTF
-#endif
-
-#if defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
-// L4 does not have a POR, so use BOR instead
-#define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
-#endif
-
 #if defined(STM32G0)
 // G0 has BOR and POR combined
 #define RCC_CSR_BORRSTF RCC_CSR_PWRRSTF
 #define RCC_CSR_PORRSTF RCC_CSR_PWRRSTF
 #endif
 
-#if defined(STM32H7)
+#if defined(STM32H5)
+#define RCC_SR          RSR
+#define RCC_SR_IWDGRSTF RCC_RSR_IWDGRSTF
+#define RCC_SR_WWDGRSTF RCC_RSR_WWDGRSTF
+#define RCC_SR_BORRSTF  RCC_RSR_BORRSTF
+#define RCC_SR_PINRSTF  RCC_RSR_PINRSTF
+#define RCC_SR_RMVF     RCC_RSR_RMVF
+#elif defined(STM32H7)
 #define RCC_SR          RSR
 #define RCC_SR_IWDGRSTF RCC_RSR_IWDG1RSTF
 #define RCC_SR_WWDGRSTF RCC_RSR_WWDG1RSTF
@@ -86,8 +83,12 @@
 #define RCC_SR          CSR
 #define RCC_SR_IWDGRSTF RCC_CSR_IWDGRSTF
 #define RCC_SR_WWDGRSTF RCC_CSR_WWDGRSTF
+#if defined(RCC_CSR_PORRSTF)
 #define RCC_SR_PORRSTF  RCC_CSR_PORRSTF
+#endif
+#if defined(RCC_CSR_BORRSTF)
 #define RCC_SR_BORRSTF  RCC_CSR_BORRSTF
+#endif
 #define RCC_SR_PINRSTF  RCC_CSR_PINRSTF
 #define RCC_SR_RMVF     RCC_CSR_RMVF
 #endif
@@ -137,9 +138,12 @@ void machine_init(void) {
         uint32_t state = RCC->RCC_SR;
         if (state & RCC_SR_IWDGRSTF || state & RCC_SR_WWDGRSTF) {
             reset_cause = PYB_RESET_WDT;
-        } else if (state & RCC_SR_PORRSTF
-                   #if !defined(STM32F0) && !defined(STM32F412Zx) && !defined(STM32L1)
-                   || state & RCC_SR_BORRSTF
+        } else if (0
+                   #if defined(RCC_SR_PORRSTF)
+                   || (state & RCC_SR_PORRSTF)
+                   #endif
+                   #if defined(RCC_SR_BORRSTF)
+                   || (state & RCC_SR_BORRSTF)
                    #endif
                    ) {
             reset_cause = PYB_RESET_POWER_ON;
@@ -286,6 +290,8 @@ NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
 
     #if defined(STM32F7) || defined(STM32H7)
     powerctrl_enter_bootloader(0, 0x1ff00000);
+    #elif defined(STM32H5)
+    powerctrl_enter_bootloader(0, 0x0bf97000);
     #else
     powerctrl_enter_bootloader(0, 0x00000000);
     #endif
@@ -386,7 +392,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 #if MICROPY_PY_MACHINE
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_machine) },
     { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
@@ -471,6 +477,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE

@@ -57,7 +57,6 @@ The :mod:`esp32` module::
 
     import esp32
 
-    esp32.hall_sensor()     # read the internal hall sensor
     esp32.raw_temperature() # read the internal temperature of the MCU, in Fahrenheit
     esp32.ULP()             # access to the Ultra-Low-Power Co-processor
 
@@ -137,18 +136,10 @@ The keyword arguments for the constructor defining the PHY type and interface ar
   or output. Suitable values are Pin.IN and Pin.OUT.
 - ref_clk=pin-object  # defines the Pin used for ref_clk.
 
-The options ref_clk_mode and ref_clk require at least esp-idf version 4.4. For
-earlier esp-idf versions, these parameters must be defined by kconfig board options.
-
 These are working configurations for LAN interfaces of popular boards::
 
     # Olimex ESP32-GATEWAY: power controlled by Pin(5)
     # Olimex ESP32 PoE and ESP32-PoE ISO: power controlled by Pin(12)
-
-    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5),
-                      phy_type=network.PHY_LAN8720, phy_addr=0)
-
-    # or with dynamic ref_clk pin configuration
 
     lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5), 
                       phy_type=network.PHY_LAN8720, phy_addr=0,
@@ -163,16 +154,6 @@ These are working configurations for LAN interfaces of popular boards::
 
     lan = network.LAN(id=0, mdc=Pin(23), mdio=Pin(18), power=Pin(5),
                       phy_type=network.PHY_IP101, phy_addr=1)
-
-A suitable definition of the PHY interface in a sdkconfig.board file is::
-
-    CONFIG_ETH_PHY_INTERFACE_RMII=y
-    CONFIG_ETH_RMII_CLK_OUTPUT=y
-    CONFIG_ETH_RMII_CLK_OUT_GPIO=17
-    CONFIG_LWIP_LOCAL_HOSTNAME="ESP32_POE"
-
-The value assigned to CONFIG_ETH_RMII_CLK_OUT_GPIO may vary depending on the
-board's wiring.
 
 Delay and timing
 ----------------

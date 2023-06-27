@@ -28,7 +28,7 @@
 #include "py/mphal.h"
 #include "adc.h"
 
-#if defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+#if defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 #define ADC_V2 (1)
 #else
 #define ADC_V2 (0)
@@ -45,7 +45,7 @@
 #if defined(STM32F0) || defined(STM32G0) || defined(STM32L0) || defined(STM32L1) || defined(STM32WL)
 #define ADC_STAB_DELAY_US (1)
 #define ADC_TEMPSENSOR_DELAY_US (10)
-#elif defined(STM32G4)
+#elif defined(STM32G4) || defined(STM32H5)
 #define ADC_STAB_DELAY_US (1) // TODO: Check if this is enough
 #elif defined(STM32L4)
 #define ADC_STAB_DELAY_US (10)
@@ -59,7 +59,7 @@
 #elif defined(STM32F4) || defined(STM32F7)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_15CYCLES
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_480CYCLES
-#elif defined(STM32G4)
+#elif defined(STM32G4) || defined(STM32H5)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_247CYCLES_5
 #elif defined(STM32H7)
@@ -113,7 +113,9 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     __HAL_RCC_ADC_CLK_ENABLE();
     #else
     if (adc == ADC1) {
-        #if defined(STM32G4) || defined(STM32H7)
+        #if defined(STM32H5)
+        __HAL_RCC_ADC_CLK_ENABLE();
+        #elif defined(STM32G4) || defined(STM32H7)
         __HAL_RCC_ADC12_CLK_ENABLE();
         #else
         __HAL_RCC_ADC1_CLK_ENABLE();
@@ -121,7 +123,9 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     }
     #if defined(ADC2)
     if (adc == ADC2) {
-        #if defined(STM32G4) || defined(STM32H7)
+        #if defined(STM32H5)
+        __HAL_RCC_ADC_CLK_ENABLE();
+        #elif defined(STM32G4) || defined(STM32H7)
         __HAL_RCC_ADC12_CLK_ENABLE();
         #else
         __HAL_RCC_ADC2_CLK_ENABLE();
@@ -144,7 +148,7 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     adc->CFGR2 = 2 << ADC_CFGR2_CKMODE_Pos; // PCLK/4 (synchronous clock mode)
     #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L4)
     ADCx_COMMON->CCR = 0; // ADCPR=PCLK/2
-    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    #elif defined(STM32H5) || defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     ADC12_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
     #elif defined(STM32H7)
     ADC12_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
@@ -157,13 +161,13 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     ADC_COMMON->CCR = 0 << ADC_CCR_PRESC_Pos; // PRESC=1
     #endif
 
-    #if defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
     if (adc->CR & ADC_CR_DEEPPWD) {
         adc->CR = 0; // disable deep powerdown
     }
     #endif
 
-    #if defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #if defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     if (!(adc->CR & ADC_CR_ADVREGEN)) {
         adc->CR = ADC_CR_ADVREGEN; // enable VREG
         #if defined(STM32H7)
@@ -179,7 +183,7 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
         // ADC isn't enabled so calibrate it now
         #if defined(STM32F0) || defined(STM32G0) || defined(STM32L0) || defined(STM32WL)
         LL_ADC_StartCalibration(adc);
-        #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
+        #elif defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB)
         LL_ADC_StartCalibration(adc, LL_ADC_SINGLE_ENDED);
         #else
         LL_ADC_StartCalibration(adc, LL_ADC_CALIB_OFFSET_LINEARITY, LL_ADC_SINGLE_ENDED);
@@ -225,7 +229,7 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     adc->CR2 = (adc->CR2 & ~cr2_clr) | cr2;
     adc->SQR1 = 1 << ADC_SQR1_L_Pos; // 1 conversion in regular sequence
 
-    #elif defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
 
     uint32_t cfgr_clr = ADC_CFGR_CONT | ADC_CFGR_EXTEN | ADC_CFGR_RES;
     #if defined(STM32H7)
@@ -244,7 +248,7 @@ STATIC int adc_get_bits(ADC_TypeDef *adc) {
     uint32_t res = (adc->CFGR1 & ADC_CFGR1_RES) >> ADC_CFGR1_RES_Pos;
     #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L1)
     uint32_t res = (adc->CR1 & ADC_CR1_RES) >> ADC_CR1_RES_Pos;
-    #elif defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
     uint32_t res = (adc->CFGR & ADC_CFGR_RES) >> ADC_CFGR_RES_Pos;
     #endif
     return adc_cr_to_bits_table[res];
@@ -311,8 +315,8 @@ STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     }
     *smpr = (*smpr & ~(7 << (channel * 3))) | sample_time << (channel * 3); // select sample time
 
-    #elif defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
-    #if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    #elif defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32H5) || defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     ADC_Common_TypeDef *adc_common = ADC12_COMMON;
     #elif defined(STM32H7)
     #if defined(ADC_VER_V5_V90)
@@ -374,12 +378,10 @@ uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sa
 
     // Scale raw reading to 16 bit value using a Taylor expansion (for bits <= 16).
     uint32_t bits = adc_get_bits(adc);
-    #if defined(STM32H7)
     if (bits < 8) {
         // For 6 and 7 bits
         return raw << (16 - bits) | raw << (16 - 2 * bits) | raw >> (3 * bits - 16);
     }
-    #endif
     return raw << (16 - bits) | raw >> (2 * bits - 16);
 }
 

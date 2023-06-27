@@ -56,8 +56,8 @@ os.environ["PYTHONIOENCODING"] = "utf-8"
 
 # Code to allow a target MicroPython to import an .mpy from RAM
 injected_import_hook_code = """\
-import usys, uos, uio
-class __File(uio.IOBase):
+import sys, os, io
+class __File(io.IOBase):
   def __init__(self):
     self.off = 0
   def ioctl(self, request, arg):
@@ -80,8 +80,8 @@ class __FS:
       raise OSError(-2) # ENOENT
   def open(self, path, mode):
     return __File()
-uos.mount(__FS(), '/__vfstest')
-uos.chdir('/__vfstest')
+os.mount(__FS(), '/__vfstest')
+os.chdir('/__vfstest')
 __import__('__injected_test')
 """
 
@@ -455,9 +455,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if output == b"TypeError\n":
             skip_revops = True
 
-        # Check if uio module exists, and skip such tests if it doesn't
-        output = run_feature_check(pyb, args, base_path, "uio_module.py")
-        if output != b"uio\n":
+        # Check if io module exists, and skip such tests if it doesn't
+        output = run_feature_check(pyb, args, base_path, "io_module.py")
+        if output != b"io\n":
             skip_io_module = True
 
         # Check if fstring feature is enabled, and skip such tests if it doesn't
@@ -512,9 +512,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("extmod/uctypes_le_float.py")
         skip_tests.add("extmod/uctypes_native_float.py")
         skip_tests.add("extmod/uctypes_sizeof_float.py")
-        skip_tests.add("extmod/ujson_dumps_float.py")
-        skip_tests.add("extmod/ujson_loads_float.py")
-        skip_tests.add("extmod/urandom_extra_float.py")
+        skip_tests.add("extmod/json_dumps_float.py")
+        skip_tests.add("extmod/json_loads_float.py")
+        skip_tests.add("extmod/random_extra_float.py")
         skip_tests.add("misc/rge_sm.py")
     if upy_float_precision < 32:
         skip_tests.add(
@@ -544,7 +544,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if not has_coverage:
         skip_tests.add("cmdline/cmd_parsetree.py")
         skip_tests.add("cmdline/repl_sys_ps1_ps2.py")
-        skip_tests.add("extmod/ussl_poll.py")
+        skip_tests.add("extmod/ssl_poll.py")
 
     # Some tests shouldn't be run on a PC
     if args.target == "unix":
@@ -568,9 +568,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 }
             )  # requires uctypes
             skip_tests.add("extmod/zlibd_decompress.py")  # requires zlib
-            skip_tests.add("extmod/uheapq1.py")  # uheapq not supported by WiPy
-            skip_tests.add("extmod/urandom_basic.py")  # requires urandom
-            skip_tests.add("extmod/urandom_extra.py")  # requires urandom
+            skip_tests.add("extmod/heapq1.py")  # heapq not supported by WiPy
+            skip_tests.add("extmod/random_basic.py")  # requires random
+            skip_tests.add("extmod/random_extra.py")  # requires random
         elif args.target == "esp8266":
             skip_tests.add("misc/rge_sm.py")  # too large
         elif args.target == "minimal":
@@ -582,7 +582,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add("micropython/opt_level.py")  # don't assume line numbers are stored
         elif args.target == "nrf":
             skip_tests.add("basics/memoryview1.py")  # no item assignment for memoryview
-            skip_tests.add("extmod/urandom_basic.py")  # unimplemented: urandom.seed
+            skip_tests.add("extmod/random_basic.py")  # unimplemented: random.seed
             skip_tests.add("micropython/opt_level.py")  # no support for line numbers
             skip_tests.add("misc/non_compliant.py")  # no item assignment for bytearray
             for t in tests:
@@ -590,7 +590,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                     skip_tests.add(t)
         elif args.target == "renesas-ra":
             skip_tests.add(
-                "extmod/utime_time_ns.py"
+                "extmod/time_time_ns.py"
             )  # RA fsp rtc function doesn't support nano sec info
         elif args.target == "qemu-arm":
             skip_tests.add("misc/print_exception.py")  # requires sys stdfiles
@@ -624,10 +624,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/sys_tracebacklimit.py")  # requires traceback info
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
         skip_tests.add("basics/unboundlocal.py")  # requires checking for unbound local
-        skip_tests.add("extmod/uasyncio_event.py")  # unknown issue
-        skip_tests.add("extmod/uasyncio_lock.py")  # requires async with
-        skip_tests.add("extmod/uasyncio_micropython.py")  # unknown issue
-        skip_tests.add("extmod/uasyncio_wait_for.py")  # unknown issue
+        skip_tests.add("extmod/asyncio_event.py")  # unknown issue
+        skip_tests.add("extmod/asyncio_lock.py")  # requires async with
+        skip_tests.add("extmod/asyncio_micropython.py")  # unknown issue
+        skip_tests.add("extmod/asyncio_wait_for.py")  # unknown issue
         skip_tests.add("misc/features.py")  # requires raise_varargs
         skip_tests.add(
             "misc/print_exception.py"
@@ -672,7 +672,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
         is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
-        is_async = test_name.startswith(("async_", "uasyncio_"))
+        is_async = test_name.startswith(("async_", "asyncio_"))
         is_const = test_name.startswith("const")
         is_io_module = test_name.startswith("io_")
         is_fstring = test_name.startswith("string_fstring")

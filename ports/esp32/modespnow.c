@@ -179,7 +179,7 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
 // Forward declare the send and recv ESPNow callbacks
 STATIC void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);
 
-STATIC void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len);
+STATIC void recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *msg, int msg_len);
 
 // ESPNow.init(): Initialise the data buffers and ESP-NOW functions.
 // Initialise the Espressif ESPNOW software stack, register callbacks and
@@ -236,10 +236,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_active_obj, 1, 2, espnow_activ
 //    timeout: Default read timeout (default=300,000 milliseconds)
 STATIC mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     esp_espnow_obj_t *self = _get_singleton();
-    enum { ARG_get, ARG_buffer, ARG_timeout_ms, ARG_rate };
+    enum { ARG_get, ARG_rxbuf, ARG_timeout_ms, ARG_rate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_buffer, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout_ms, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MIN} },
         { MP_QSTR_rate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
@@ -247,20 +247,16 @@ STATIC mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_buffer].u_int >= 0) {
-        self->recv_buffer_size = args[ARG_buffer].u_int;
+    if (args[ARG_rxbuf].u_int >= 0) {
+        self->recv_buffer_size = args[ARG_rxbuf].u_int;
     }
     if (args[ARG_timeout_ms].u_int != INT_MIN) {
         self->recv_timeout_ms = args[ARG_timeout_ms].u_int;
     }
     if (args[ARG_rate].u_int >= 0) {
-        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
         esp_initialise_wifi();  // Call the wifi init code in network_wlan.c
         check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_STA, args[ARG_rate].u_int));
         check_esp_err(esp_wifi_config_espnow_rate(ESP_IF_WIFI_AP, args[ARG_rate].u_int));
-        #else
-        mp_raise_ValueError(MP_ERROR_TEXT("rate option not supported"));
-        #endif
     }
     if (args[ARG_get].u_obj == MP_OBJ_NULL) {
         return mp_const_none;
@@ -268,7 +264,7 @@ STATIC mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
     // Return the value of the requested parameter
     uintptr_t name = (uintptr_t)args[ARG_get].u_obj;
-    if (name == QS(MP_QSTR_buffer)) {
+    if (name == QS(MP_QSTR_rxbuf)) {
         return mp_obj_new_int(self->recv_buffer_size);
     } else if (name == QS(MP_QSTR_timeout_ms)) {
         return mp_obj_new_int(self->recv_timeout_ms);
@@ -316,25 +312,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_stats_obj, espnow_stats);
 // - support monitoring the RSSI values for all peers; and
 // - to return unique bytestrings for each peer which supports more efficient
 //   application memory usage and peer handling.
-
-// Get the RSSI value from the wifi packet header
-static inline int8_t _get_rssi_from_wifi_pkt(const uint8_t *msg) {
-    // Warning: Secret magic to get the rssi from the wifi packet header
-    // See espnow.c:espnow_recv_cb() at https://github.com/espressif/esp-now/
-    // In the wifi packet the msg comes after a wifi_promiscuous_pkt_t
-    // and a espnow_frame_format_t.
-    // Backtrack to get a pointer to the wifi_promiscuous_pkt_t.
-    static const size_t sizeof_espnow_frame_format = 39;
-    wifi_promiscuous_pkt_t *wifi_pkt =
-        (wifi_promiscuous_pkt_t *)(msg - sizeof_espnow_frame_format -
-            sizeof(wifi_promiscuous_pkt_t));
-
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 2, 0)
-    return wifi_pkt->rx_ctrl.rssi - 100;  // Offset rssi for IDF 4.0.2
-    #else
-    return wifi_pkt->rx_ctrl.rssi;
-    #endif
-}
 
 // Lookup a peer in the peers table and return a reference to the item in the
 // peers_table. Add peer to the table if it is not found (may alloc memory).
@@ -573,7 +550,7 @@ STATIC void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status) {
 // ESPNow packet.
 // If the buffer is full, drop the message and increment the dropped count.
 // Schedules the user callback if one has been registered (ESPNow.config()).
-STATIC void recv_cb(const uint8_t *mac_addr, const uint8_t *msg, int msg_len) {
+STATIC void recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *msg, int msg_len) {
     esp_espnow_obj_t *self = _get_singleton();
     ringbuf_t *buf = self->recv_buffer;
     // TODO: Test this works with ">".
@@ -585,12 +562,12 @@ STATIC void recv_cb(const uint8_t *mac_addr, const uint8_t *msg, int msg_len) {
     header.magic = ESPNOW_MAGIC;
     header.msg_len = msg_len;
     #if MICROPY_ESPNOW_RSSI
-    header.rssi = _get_rssi_from_wifi_pkt(msg);
+    header.rssi = recv_info->rx_ctrl->rssi;
     header.time_ms = mp_hal_ticks_ms();
     #endif // MICROPY_ESPNOW_RSSI
 
     ringbuf_put_bytes(buf, (uint8_t *)&header, sizeof(header));
-    ringbuf_put_bytes(buf, mac_addr, ESP_NOW_ETH_ALEN);
+    ringbuf_put_bytes(buf, recv_info->src_addr, ESP_NOW_ETH_ALEN);
     ringbuf_put_bytes(buf, msg, msg_len);
     self->rx_packets++;
     if (self->recv_cb != mp_const_none) {

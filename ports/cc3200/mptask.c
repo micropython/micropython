@@ -55,7 +55,7 @@
 #include "mperror.h"
 #include "simplelink.h"
 #include "modnetwork.h"
-#include "modusocket.h"
+#include "modsocket.h"
 #include "modwlan.h"
 #include "serverstask.h"
 #include "telnet.h"
@@ -70,7 +70,7 @@
 #include "cryptohash.h"
 #include "mpirq.h"
 #include "updater.h"
-#include "moduos.h"
+#include "modos.h"
 #include "antenna.h"
 #include "task.h"
 

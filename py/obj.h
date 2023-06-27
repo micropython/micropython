@@ -434,6 +434,13 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 // param obj_module: mp_obj_module_t instance
 #define MP_REGISTER_MODULE(module_name, obj_module)
 
+// As above, but allow this module to be extended from the filesystem.
+#define MP_REGISTER_EXTENSIBLE_MODULE(module_name, obj_module)
+
+// Add a custom handler for a builtin module that will be called to delegate
+// failed attribute lookups.
+#define MP_REGISTER_MODULE_DELEGATION(obj_module, fun_name)
+
 // Declare a root pointer (to avoid garbage collection of a global static variable).
 // param variable_declaration: a valid C variable declaration
 #define MP_REGISTER_ROOT_POINTER(variable_declaration)
@@ -1201,8 +1208,6 @@ typedef struct _mp_obj_module_t {
 static inline mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t module) {
     return ((mp_obj_module_t *)MP_OBJ_TO_PTR(module))->globals;
 }
-// check if given module object is a package
-bool mp_obj_is_package(mp_obj_t module);
 
 // staticmethod and classmethod types; defined here so we can make const versions
 // this structure is used for instances of both staticmethod and classmethod

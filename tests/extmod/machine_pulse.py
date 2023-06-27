@@ -1,8 +1,6 @@
 try:
-    try:
-        import umachine as machine
-    except ImportError:
-        import machine
+    import machine
+
     machine.PinBase
     machine.time_pulse_us
 except:

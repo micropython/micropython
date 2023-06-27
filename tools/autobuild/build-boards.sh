@@ -62,36 +62,7 @@ function build_boards {
 }
 
 function build_esp32_boards {
-    # check/get parameters
-    if [ $# != 2 ]; then
-        echo "usage: $0 <fw-tag> <dest-dir>"
-        return 1
-    fi
-
-    fw_tag=$1
-    dest_dir=$2
-
-    # check we are in the correct directory
-    if [ ! -r modesp32.c ]; then
-        echo "must be in esp32 directory"
-        return 1
-    fi
-
-    # build the boards, based on the IDF version
-    for board_json in $(find boards/ -name board.json | sort); do
-        mcu=$(cat $board_json | python3 -c "import json,sys; print(json.load(sys.stdin).get('mcu', 'unknown'))")
-        if idf.py --version | grep -q v4.2; then
-            if [ $mcu = esp32 ]; then
-                # build standard esp32-based boards with IDF v4.2
-                build_board $board_json $fw_tag $dest_dir bin elf map
-            fi
-        else
-            if [ $mcu != esp32 ]; then
-                # build esp32-s2/s3/c3 based boards with IDF v4.4+
-                build_board $board_json $fw_tag $dest_dir bin elf map uf2
-            fi
-        fi
-    done
+    build_boards modesp32.c $1 $2 bin elf map uf2
 }
 
 function build_mimxrt_boards {

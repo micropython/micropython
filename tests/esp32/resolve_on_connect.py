@@ -5,10 +5,7 @@ if sys.implementation.name == "micropython" and sys.platform != "esp32":
     print("SKIP")
     raise SystemExit
 
-try:
-    import usocket as socket, sys
-except:
-    import socket, sys
+import socket, sys
 
 
 def test_bind_resolves_0_0_0_0():

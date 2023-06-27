@@ -1,9 +1,9 @@
 # Test VfsFat class and its finaliser
 
 try:
-    import uerrno, uos
+    import errno, os
 
-    uos.VfsFat
+    os.VfsFat
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -31,14 +31,16 @@ class RAMBlockDevice:
 
 # Create block device, and skip test if not enough RAM
 try:
+    import errno, os
+
     bdev = RAMBlockDevice(50)
 except MemoryError:
     print("SKIP")
     raise SystemExit
 
 # Format block device and create VFS object
-uos.VfsFat.mkfs(bdev)
-vfs = uos.VfsFat(bdev)
+os.VfsFat.mkfs(bdev)
+vfs = os.VfsFat(bdev)
 
 # Here we test that opening a file with the heap locked fails correctly.  This
 # is a special case because file objects use a finaliser and allocating with a
@@ -48,6 +50,8 @@ import micropython
 
 micropython.heap_lock()
 try:
+    import errno, os
+
     vfs.open("x", "r")
 except MemoryError:
     print("MemoryError")

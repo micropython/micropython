@@ -13,5 +13,5 @@
 
 #define MICROPY_PY_FSTRINGS             (0)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS (0)
-#define MICROPY_PY_UASYNCIO             (0)
-#define MICROPY_PY_UCRYPTOLIB           (1)
+#define MICROPY_PY_ASYNCIO              (0)
+#define MICROPY_PY_CRYPTOLIB            (1)

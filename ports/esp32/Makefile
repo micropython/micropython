@@ -48,6 +48,10 @@ endif
 
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 
+define RUN_IDF_PY
+	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) $(1)
+endef
+
 all:
 	idf.py $(IDFPY_FLAGS) build || (echo -e $(HELP_BUILD_ERROR); false)
 	@$(PYTHON) makeimg.py \
@@ -61,13 +65,25 @@ all:
 $(BUILD)/bootloader/bootloader.bin $(BUILD)/partition_table/partition-table.bin $(BUILD)/micropython.bin: FORCE
 
 clean:
-	idf.py $(IDFPY_FLAGS) fullclean
+	$(call RUN_IDF_PY,fullclean)
 
 deploy:
-	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) flash
+	$(call RUN_IDF_PY,flash)
 
 erase:
-	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) erase_flash
+	$(call RUN_IDF_PY,erase-flash)
+
+monitor:
+	$(call RUN_IDF_PY,monitor)
+
+size:
+	$(call RUN_IDF_PY,size)
+
+size-components:
+	$(call RUN_IDF_PY,size-components)
+
+size-files:
+	$(call RUN_IDF_PY,size-files)
 
 submodules:
 	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$(GIT_SUBMODULES)" submodules

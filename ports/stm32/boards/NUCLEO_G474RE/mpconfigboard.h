@@ -9,14 +9,14 @@
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (0) // QSPI extflash not mounted
 
-#define MICROPY_PY_UASYNCIO         (0)
-#define MICROPY_PY_UZLIB            (0)
-#define MICROPY_PY_UBINASCII        (0)
-#define MICROPY_PY_UHASHLIB         (0)
-#define MICROPY_PY_UJSON            (0)
-#define MICROPY_PY_URE              (0)
+#define MICROPY_PY_ASYNCIO          (0)
+#define MICROPY_PY_ZLIB             (0)
+#define MICROPY_PY_BINASCII         (0)
+#define MICROPY_PY_HASHLIB          (0)
+#define MICROPY_PY_JSON             (0)
+#define MICROPY_PY_RE               (0)
 #define MICROPY_PY_FRAMEBUF         (0)
-#define MICROPY_PY_USOCKET          (0)
+#define MICROPY_PY_SOCKET           (0)
 #define MICROPY_PY_NETWORK          (0)
 
 // The board has an 24MHz HSE, the following gives 170MHz CPU speed

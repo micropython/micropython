@@ -16,47 +16,16 @@ endif
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
-ifeq ($(BOARD),RA4M1_CLICKER)
-BOARD_LOW = ra4m1_ek
-CMSIS_MCU_LOW = ra4m1
-CMSIS_MCU_CAP = RA4M1
-USE_FSP_LPM = 0
-endif
-
-ifeq ($(BOARD),EK_RA4M1)
-BOARD_LOW = ra4m1_ek
-CMSIS_MCU_LOW = ra4m1
-CMSIS_MCU_CAP = RA4M1
-USE_FSP_LPM = 0
-endif
-
-ifeq ($(BOARD),EK_RA4W1)
-BOARD_LOW = ra4w1_ek
-CMSIS_MCU_LOW = ra4w1
-CMSIS_MCU_CAP = RA4W1
-USE_FSP_LPM = 1
-endif
-
-ifeq ($(BOARD),EK_RA6M1)
-BOARD_LOW = ra6m1_ek
-CMSIS_MCU_LOW = ra6m1
-CMSIS_MCU_CAP = RA6M1
-USE_FSP_LPM = 1
-endif
-
-ifeq ($(BOARD),EK_RA6M2)
-BOARD_LOW = ra6m2_ek
-CMSIS_MCU_LOW = ra6m2
-CMSIS_MCU_CAP = RA6M2
-USE_FSP_LPM = 1
-endif
-
 # select use wrapper function of FSP library
 USE_FSP_FLASH = 1
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
 include $(BOARD_DIR)/mpconfigboard.mk
+
+USE_FSP_LPM ?= 1
+USE_FSP_QSPI ?= 0
+FSP_BOARD_NAME ?= $(shell echo $(BOARD) | tr '[:upper:]' '[:lower:]')
 
 # Files that are generated and needed before the QSTR build.
 #QSTR_GENERATED_HEADERS = $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
@@ -91,6 +60,7 @@ CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -imacros boards/compiler_barrier.h
 INC += -I.
+INC += -Ifsp_cfg
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(TOP)/$(CMSIS_DIR)
@@ -100,16 +70,18 @@ INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/inc/api
 INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/inc/instances
 INC += -I$(TOP)/$(HAL_DIR)/ra/fsp/src/bsp/cmsis/Device/RENESAS/Include
 #INC += -Ilwip_inc
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2 RA6M5))
 INC += -Ira
 endif
 INC += -I$(BOARD_DIR)/ra_gen
+INC += -I$(BOARD_DIR)/ra_cfg/driver
 INC += -I$(BOARD_DIR)/ra_cfg/fsp_cfg
 INC += -I$(BOARD_DIR)/ra_cfg/fsp_cfg/bsp
 INC += -Idebug
 
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += -DRA_HAL_H='<$(CMSIS_MCU)_hal.h>'
+CFLAGS += -DRA_CFG_H='<$(FSP_BOARD_NAME)_conf.h>'
 
 # Basic Cortex-M flags
 CFLAGS_CORTEX_M = -mthumb
@@ -122,12 +94,19 @@ CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 SUPPORTS_HARDWARE_FP_SINGLE = 1
 endif
 
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),m33))
+CFLAGS_CORTEX_M += -mfpu=fpv5-sp-d16 -mfloat-abi=hard 
+SUPPORTS_HARDWARE_FP_SINGLE = 1
+endif
+
 # Options for particular MCU series
 CFLAGS_MCU_RA4M1 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_RA4W1 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_RA6M1 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_RA6M2 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
+CFLAGS_MCU_RA6M5 = $(CFLAGS_CORTEX_M) -mtune=cortex-m33 -mcpu=cortex-m33
 
+ASFLAGS += $(CFLAGS_CORTEX_M) -mcpu=cortex-$(MCU_SERIES)
 CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_EXTRA)
 #CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(CMSIS_MCU))
@@ -314,11 +293,13 @@ SRC_C += \
 	gccollect.c \
 	help.c \
 	machine_adc.c \
+	machine_dac.c \
 	machine_i2c.c \
 	machine_spi.c \
 	machine_uart.c \
 	machine_pin.c \
 	machine_rtc.c \
+	machine_sdcard.c \
 	modmachine.c \
 	extint.c \
 	usrsw.c \
@@ -358,7 +339,22 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/fsp/src/bsp/mcu/all/,\
 
 HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/fsp/src/,\
 	r_ioport/r_ioport.c \
+	r_sci_uart/r_sci_uart.c \
 	)
+
+CFLAGS_FSP = -Wno-unused-variable -Wno-unused-function
+$(BUILD)/lib/fsp/ra/fsp/src/r_sci_uart/r_sci_uart.o: CFLAGS += $(CFLAGS_FSP)
+
+ifeq ($(USE_FSP_QSPI), 1)
+CFLAGS += -DUSE_FSP_QSPI
+HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_qspi/r_qspi.c
+endif
+
+ifeq ($(USE_FSP_SDHI), 1)
+CFLAGS += -DUSE_FSP_SDHI
+HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_sdhi/r_sdhi.c \
+	$(HAL_DIR)/ra/fsp/src/r_dtc/r_dtc.c
+endif
 
 ifeq ($(USE_FSP_LPM), 1)
 CFLAGS += -DUSE_FSP_LPM
@@ -372,16 +368,17 @@ HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_flash_lp/r_flash_lp.c
 endif
 endif
 
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA6M1 RA6M2))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA6M1 RA6M2 RA6M5))
 ifeq ($(USE_FSP_FLASH), 1)
 CFLAGS += -DUSE_FSP_FLASH
 HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_flash_hp/r_flash_hp.c
 endif
 endif
 
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA4M1 RA4W1 RA6M1 RA6M2 RA6M5))
 HAL_SRC_C += $(addprefix ra/,\
 	ra_adc.c \
+	ra_dac.c \
 	ra_flash.c \
 	ra_gpio.c \
 	ra_i2c.c \
@@ -392,6 +389,7 @@ HAL_SRC_C += $(addprefix ra/,\
 	ra_sci.c \
 	ra_spi.c \
 	ra_timer.c \
+	ra_gpt.c \
 	ra_utils.c \
 	)
 
@@ -407,6 +405,12 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(BUILD)/pins_$(BOARD).o
+
+ifeq ($(CMSIS_MCU),RA6M5)
+$(BUILD)/shared/runtime/gchelper_thumb2.o: $(TOP)/shared/runtime/gchelper_thumb2.s
+	$(ECHO) "AS $<"
+	$(Q)$(AS) $(ASFLAGS) -o $@ $<
+endif
 
 # This file contains performance critical functions so turn up the optimisation
 # level.  It doesn't add much to the code size and improves performance a bit.
@@ -429,19 +433,6 @@ all: $(TOP)/lib/fsp/README.md $(BUILD)/firmware.hex
 $(TOP)/lib/fsp/README.md:
 	$(ECHO) "fsp submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/fsp)
-
-ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
-# To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
-# and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
-
-ifneq ($(FROZEN_MANIFEST)$(FROZEN_MPY_DIR),)
-# To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
-# then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-endif
 
 define GENERATE_ELF
 	$(ECHO) "LINK $(1)"
@@ -493,6 +484,9 @@ AF_FILE = boards/ra6m1_af.csv
 endif
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA6M2))
 AF_FILE = boards/ra6m2_af.csv
+endif
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),RA6M5))
+AF_FILE = boards/ra6m5_af.csv
 endif
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h

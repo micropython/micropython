@@ -4,7 +4,7 @@ line-length = 99
 [tool.codespell]
 count = ""
 ignore-regex = '\b[A-Z]{3}\b'
-ignore-words-list = "ans,asend,deques,dout,extint,hsi,iput,numer,technic,ure"
+ignore-words-list = "ans,asend,deques,dout,extint,hsi,iput,mis,numer,technic,ure"
 quiet-level = 3
 skip = """
 */build*,\

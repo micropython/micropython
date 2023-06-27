@@ -11,4 +11,4 @@
 #define MICROPY_READER_VFS              (MICROPY_VFS)
 #define MICROPY_VFS                     (1)
 
-#define MICROPY_PY_UCRYPTOLIB           (1)
+#define MICROPY_PY_CRYPTOLIB            (1)
