@@ -37,6 +37,13 @@
 #include "modmachine.h"
 #include "uart.h"
 
+#if SOC_UART_SUPPORT_XTAL_CLK
+// Works independently of APB frequency, on ESP32C3, ESP32S3.
+#define UART_SOURCE_CLK UART_SCLK_XTAL
+#else
+#define UART_SOURCE_CLK UART_SCLK_DEFAULT
+#endif
+
 #define UART_INV_TX UART_SIGNAL_TXD_INV
 #define UART_INV_RX UART_SIGNAL_RXD_INV
 #define UART_INV_RTS UART_SIGNAL_RTS_INV
@@ -157,7 +164,8 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         }
         uart_config_t uartcfg = {
             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-            .rx_flow_ctrl_thresh = 0
+            .rx_flow_ctrl_thresh = 0,
+            .source_clk = UART_SOURCE_CLK,
         };
         uint32_t baudrate;
         uart_get_baudrate(self->uart_num, &baudrate);
@@ -308,12 +316,9 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .rx_flow_ctrl_thresh = 0
+        .rx_flow_ctrl_thresh = 0,
+        .source_clk = UART_SOURCE_CLK,
     };
-    #if SOC_UART_SUPPORT_XTAL_CLK
-    // works independently of APB frequency
-    uartcfg.source_clk = UART_SCLK_XTAL; // ESP32C3, ESP32S3
-    #endif
 
     // create instance
     machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
