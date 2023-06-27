@@ -348,8 +348,6 @@ void SystemClock_Config(void) {
 #elif defined(STM32L1)
 
 void SystemClock_Config(void) {
-    // Enable SYSCFG clock
-    __HAL_RCC_SYSCFG_CLK_ENABLE();
     // Enable power control peripheral
     __HAL_RCC_PWR_CLK_ENABLE();
 
@@ -389,6 +387,10 @@ void SystemClock_Config(void) {
 
     SystemCoreClockUpdate();
     powerctrl_config_systick();
+
+    #if MICROPY_HW_ENABLE_USB
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+    #endif
 
     // Disable the Debug Module in low-power mode due to prevent
     // unexpected HardFault after __WFI().
