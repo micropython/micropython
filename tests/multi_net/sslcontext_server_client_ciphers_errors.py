@@ -1,8 +1,9 @@
 # Simple test creating an SSL connection and transferring some data
-# This test won't run under CPython because CPython doesn't have key/cert
 
 try:
-    import binascii, socket, ssl
+    import binascii
+    import socket
+    import ssl
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -14,11 +15,13 @@ PORT = 8000
 # testing/demonstration only.  You should always generate your own key/cert.
 
 # To generate a new self-signed key/cert pair with openssl do:
-# $ openssl req -x509 -newkey rsa:4096 -keyout rsa_key.pem -out rsa_cert.pem -days 365 -node
+# $ openssl req -x509 -newkey rsa:4096 -keyout rsa_key.pem -out rsa_cert.pem
+# -days 365 -nodes
+# In this case CN is: micropython.local
 #
 # Convert them to DER format:
 # $ openssl rsa -in rsa_key.pem -out rsa_key.der -outform DER
-# $ openssl x509 -in rsa_cert.pem -out rsa_key.der -outform DER
+# $ openssl x509 -in rsa_cert.pem -out rsa_cert.der -outform DER
 #
 # Then convert to hex format, eg using binascii.hexlify(data).
 
@@ -134,10 +137,12 @@ def instance0():
     s.listen(1)
     multitest.next()
     s2, _ = s.accept()
-    s2 = ssl.wrap_socket(s2, server_side=True, key=key, cert=cert)
-    print(s2.read(16))
-    s2.write(b"server to client")
-    s2.close()
+    server_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    server_ctx.load_cert_chain(cert, keyfile=key)
+    try:
+        server_ctx.set_ciphers(["FOOBAR"])
+    except Exception as e:
+        print(e)
     s.close()
 
 
@@ -146,7 +151,11 @@ def instance1():
     multitest.next()
     s = socket.socket()
     s.connect(socket.getaddrinfo(IP, PORT)[0][-1])
-    s = ssl.wrap_socket(s, cert_reqs=ssl.CERT_REQUIRED, cadata=cert)
-    s.write(b"client to server")
-    print(s.read(16))
+    client_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    ciphers = client_ctx.get_ciphers()
+    assert "TLS-RSA-WITH-AES-256-CBC-SHA256" in ciphers
+    try:
+        client_ctx.set_ciphers("TLS-RSA-WITH-AES-256-CBC-SHA256")
+    except Exception as e:
+        print(e)
     s.close()
