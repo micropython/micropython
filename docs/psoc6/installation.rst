@@ -159,6 +159,31 @@ The board needs to be specified, and the path and name of the ``.hex`` file:
                 
                 mpy-psoc6.cmd firmware-deploy CY8CPROTO-062-4343W pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
 
+Erasing the device (external) file system
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some PSoC6™ boards include an external flash memory which is used by the MicroPython file system. This memory will not be erased when
+reprogramming or erasing MicroPython firmware via ``device-setup`` or ``firmware-deploy``.
+Use the ``device-erase`` command to erase of the external memory of your PSoC6™ device:
+
+.. tabs::
+
+    .. group-tab:: Linux
+        
+            .. code-block:: bash
+
+                ./mpy-psoc6.sh device-erase
+
+    .. group-tab:: Windows
+
+            .. code-block:: bash
+                
+                mpy-psoc6.cmd device-erase
+
+.. warning::
+    
+    This command flashes the PSoC6™ controller with a custom program to delete the external memory. Thus, MicroPython will be removed from the
+    microcontroller. Use any of the script commands described above to reinstall MicroPython. 
 
 Getting the firmware
 ^^^^^^^^^^^^^^^^^^^^
