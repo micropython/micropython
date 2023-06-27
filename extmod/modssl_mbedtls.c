@@ -46,6 +46,13 @@
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/debug.h"
 #include "mbedtls/error.h"
+#ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+#if MBEDTLS_VERSION_NUMBER >= 0x03000000
+#include "mbedtls/build_info.h"
+#else
+#include "mbedtls/version.h"
+#endif
+#endif
 
 #define MP_STREAM_POLL_RDWR (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)
 
@@ -59,6 +66,9 @@ typedef struct _mp_obj_ssl_context_t {
     mbedtls_x509_crt cert;
     mbedtls_pk_context pkey;
     int authmode;
+    #ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+    int cipherid [];
+    #endif
 } mp_obj_ssl_context_t;
 
 // This corresponds to an SSLSocket object.
@@ -74,6 +84,9 @@ typedef struct _mp_obj_ssl_socket_t {
 
 STATIC const mp_obj_type_t ssl_context_type;
 STATIC const mp_obj_type_t ssl_socket_type;
+#ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+STATIC const MP_DEFINE_STR_OBJ(mbedtls_version_obj, MBEDTLS_VERSION_STRING_FULL);
+#endif
 
 STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t sock,
     bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname);
@@ -154,6 +167,9 @@ STATIC mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     mp_obj_ssl_context_t *self = m_new_obj(mp_obj_ssl_context_t);
     #endif
     self->base.type = type_in;
+    #ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+    self->cipherid[0] = 0;
+    #endif
 
     // Initialise mbedTLS state.
     mbedtls_ssl_config_init(&self->conf);
@@ -230,6 +246,57 @@ STATIC mp_obj_t ssl_context___del__(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ssl_context___del___obj, ssl_context___del__);
 #endif
 
+#ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+// Ciphersuites
+
+STATIC mp_obj_t mod_ssl_get_ciphers(mp_obj_t self_in) {
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    const int *cipher_list = mbedtls_ssl_list_ciphersuites();
+    while (*cipher_list) {
+        const char *cipher_name = mbedtls_ssl_get_ciphersuite_name(*cipher_list);
+        mp_obj_list_append(list,
+            MP_OBJ_FROM_PTR(mp_obj_new_str(cipher_name,
+                strlen(cipher_name))));
+        cipher_list++;
+        if (!*cipher_list) {
+            break;
+        }
+    }
+    return list;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ssl_get_ciphers_obj, mod_ssl_get_ciphers);
+
+
+STATIC mp_obj_t mod_ssl_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) {
+    // check that ciphersuite is a list
+    if (mp_obj_is_type(ciphersuite, &mp_type_list)) {
+        mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
+        mp_obj_list_t *ciphers = MP_OBJ_TO_PTR(ciphersuite);
+
+        for (int i = 0, n = ciphers->len; i < n; i++) {
+
+            if (ciphers->items[i] != mp_const_none) {
+                const char *ciphername = mp_obj_str_get_str(ciphers->items[i]);
+                const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
+                self->cipherid[i] = id;
+                if (id == 0) {
+                    mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
+                }
+            }
+        }
+        self->cipherid[ciphers->len + 1] = 0;
+    } else {
+        mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
+    }
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ssl_set_ciphers_obj, mod_ssl_set_ciphers);
+
+#endif
+// SSLContext.load_cert_chain
+
 STATIC void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
     size_t key_len;
     const byte *key = (const byte *)mp_obj_str_get_data(key_obj, &key_len);
@@ -258,6 +325,32 @@ STATIC void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, m
     }
 }
 
+#ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+
+STATIC mp_obj_t mod_ssl_load_certchain(size_t n_args, const mp_obj_t *pos_args,
+    mp_map_t *kw_args) {
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_keyfile, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+
+    mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_obj_t cert = pos_args[1];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (cert != mp_const_none) {
+        mp_check_self(mp_obj_is_str_or_bytes(cert));
+        mp_check_self(mp_obj_is_str_or_bytes(args[0].u_obj));
+        ssl_context_load_key(self, args[0].u_obj, cert);
+    }
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_load_certchain_obj, 2, mod_ssl_load_certchain);
+#endif
+// SSLContext.load_verify_locations
+
 STATIC void ssl_context_load_cadata(mp_obj_ssl_context_t *self, mp_obj_t cadata_obj) {
     size_t cacert_len;
     const byte *cacert = (const byte *)mp_obj_str_get_data(cadata_obj, &cacert_len);
@@ -269,6 +362,28 @@ STATIC void ssl_context_load_cadata(mp_obj_ssl_context_t *self, mp_obj_t cadata_
 
     mbedtls_ssl_conf_ca_chain(&self->conf, &self->cacert, NULL);
 }
+
+#ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+STATIC mp_obj_t mod_ssl_load_cadata(size_t n_args, const mp_obj_t *pos_args,
+    mp_map_t *kw_args) {
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_cadata, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+
+    mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (args[0].u_obj != mp_const_none) {
+        mp_check_self(mp_obj_is_str_or_bytes(args[0].u_obj));
+        ssl_context_load_cadata(self, args[0].u_obj);
+    }
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_load_cadata_obj, 1, mod_ssl_load_cadata);
+#endif
 
 STATIC mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_server_side, ARG_do_handshake_on_connect, ARG_server_hostname };
@@ -284,6 +399,12 @@ STATIC mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    if (self->authmode == MBEDTLS_SSL_VERIFY_REQUIRED && args[ARG_server_side].u_bool == false) {
+
+        if (args[ARG_server_hostname].u_obj == mp_const_none) {
+            mp_raise_ValueError(MP_ERROR_TEXT("CERT_REQUIRED requires server_hostname"));
+        }
+    }
     // Create and return the new SSLSocket object.
     return ssl_socket_make_new(self, sock, args[ARG_server_side].u_bool,
         args[ARG_do_handshake_on_connect].u_bool, args[ARG_server_hostname].u_obj);
@@ -293,6 +414,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_context_wrap_socket_obj, 2, ssl_context_wr
 STATIC const mp_rom_map_elem_t ssl_context_locals_dict_table[] = {
     #if MICROPY_PY_SSL_FINALISER
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ssl_context___del___obj) },
+    #endif
+    #ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+    { MP_ROM_QSTR(MP_QSTR_get_ciphers), MP_ROM_PTR(&mod_ssl_get_ciphers_obj)},
+    { MP_ROM_QSTR(MP_QSTR_set_ciphers), MP_ROM_PTR(&mod_ssl_set_ciphers_obj)},
+    { MP_ROM_QSTR(MP_QSTR_load_verify_locations), MP_ROM_PTR(&mod_ssl_load_cadata_obj)},
+    { MP_ROM_QSTR(MP_QSTR_load_cert_chain), MP_ROM_PTR(&mod_ssl_load_certchain_obj)},
     #endif
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&ssl_context_wrap_socket_obj) },
 };
@@ -362,6 +489,18 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     o->last_error = 0;
 
     int ret;
+    #ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+    uint32_t flags = 0;
+    int *cid = &ssl_context->cipherid[0];
+    /* printf("cipherid: %d\n", *cid); */
+
+    // Ciphersuite Config
+    if (*cid != 0) {
+        mbedtls_ssl_conf_ciphersuites(&ssl_context->conf, (const int *)&ssl_context->cipherid);
+    }
+    #endif
+
+
     mbedtls_ssl_init(&o->ssl);
 
     ret = mbedtls_ssl_setup(&o->ssl, &ssl_context->conf);
@@ -393,7 +532,29 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     return MP_OBJ_FROM_PTR(o);
 
 cleanup:
+    #ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+    if (ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
+        flags = mbedtls_ssl_get_verify_result(&o->ssl);
+    }
+    #endif
+
+
     mbedtls_ssl_free(&o->ssl);
+
+    #ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+    if (ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
+        char xcbuf[512];
+        ret = mbedtls_x509_crt_verify_info(xcbuf, sizeof(xcbuf), "\n", flags);
+        // The length of the string written (not including the terminated nul byte),
+        // or a negative err code.
+        if (ret > 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT(xcbuf));
+        } else {
+            mbedtls_raise_error(ret);
+        }
+    }
+    #endif
+
     mbedtls_raise_error(ret);
 }
 
@@ -409,6 +570,19 @@ STATIC mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
     return mp_obj_new_bytes(peer_cert->raw.p, peer_cert->raw.len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ssl_getpeercert_obj, mod_ssl_getpeercert);
+
+#ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+STATIC mp_obj_t mod_ssl_cipher(mp_obj_t o_in) {
+    mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
+    const char *cipher_suite = mbedtls_ssl_get_ciphersuite(&o->ssl);
+    const char *tls_version = mbedtls_ssl_get_version(&o->ssl);
+    mp_obj_t tuple[2] = {mp_obj_new_str(cipher_suite, strlen(cipher_suite)),
+                         mp_obj_new_str(tls_version, strlen(tls_version))};
+
+    return mp_obj_new_tuple(2, tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ssl_cipher_obj, mod_ssl_cipher);
+#endif
 
 STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
@@ -542,6 +716,9 @@ STATIC const mp_rom_map_elem_t ssl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_stream_ioctl_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_getpeercert), MP_ROM_PTR(&mod_ssl_getpeercert_obj) },
+    #ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+    { MP_ROM_QSTR(MP_QSTR_cipher), MP_ROM_PTR(&mod_ssl_cipher_obj) },
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(ssl_socket_locals_dict, ssl_socket_locals_dict_table);
 
@@ -622,6 +799,9 @@ STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SSLContext), MP_ROM_PTR(&ssl_context_type) },
 
     // Constants.
+    #ifdef MICROPY_SSL_MBEDTLS_EXTRAS
+    { MP_ROM_QSTR(MP_QSTR_MBEDTLS_VERSION), MP_ROM_PTR(&mbedtls_version_obj)},
+    #endif
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLS_CLIENT), MP_ROM_INT(MBEDTLS_SSL_IS_CLIENT) },
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLS_SERVER), MP_ROM_INT(MBEDTLS_SSL_IS_SERVER) },
     { MP_ROM_QSTR(MP_QSTR_CERT_NONE), MP_ROM_INT(MBEDTLS_SSL_VERIFY_NONE) },
