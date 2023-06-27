@@ -33,7 +33,9 @@
 // For reference, x86 callee save regs are:
 //  ebx, esi, edi, ebp, esp, eip
 
-#if MICROPY_NLR_OS_WINDOWS
+#if MICROPY_NLR_OS_WINDOWS && defined(_MSC_VER)
+unsigned int nlr_push_tail(nlr_buf_t *nlr);
+#elif MICROPY_NLR_OS_WINDOWS
 unsigned int nlr_push_tail(nlr_buf_t *nlr) asm ("nlr_push_tail");
 #else
 __attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);
@@ -51,6 +53,8 @@ __attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);
 #define USE_NAKED (0)
 #define UNDO_PRELUDE (1)
 #endif
+
+#ifndef _MSC_VER
 
 #if USE_NAKED
 __attribute__((naked))
@@ -100,5 +104,49 @@ NORETURN void nlr_jump(void *val) {
 
     MP_UNREACHABLE
 }
+
+#else
+
+/* *FORMAT-OFF* */
+#pragma warning(push)
+#pragma warning(disable:4731)
+
+unsigned int __declspec(naked) nlr_push(nlr_buf_t* nlr) {
+    __asm {
+        mov     ecx, [esp + 4]      ; load nlr
+        mov     eax, [esp]          ; load return eip
+        mov     [ecx +  8], eax     ; store eip into nlr_buf
+        mov     [ecx + 12], ebp     ; store ebp into nlr_buf
+        mov     [ecx + 16], esp     ; store esp into nlr_buf
+        mov     [ecx + 20], ebx     ; store ebx into nlr_buf
+        mov     [ecx + 24], edi     ; store edi into nlr_buf
+        mov     [ecx + 28], esi     ; store esi into nlr_buf
+        jmp     nlr_push_tail       ; do the rest in C
+    };
+}
+
+void nlr_jump(nlr_buf_t* val) {
+    MP_NLR_JUMP_HEAD(val, top)
+
+    __asm {
+        mov     ecx, top
+        mov     esi, [ecx + 28]     ; load saved esi from nlr_buf
+        mov     edi, [ecx + 24]     ; load saved edi from nlr_buf
+        mov     ebx, [ecx + 20]     ; load saved ebx from nlr_buf
+        mov     esp, [ecx + 16]     ; load saved esp from nlr_buf
+        mov     ebp, [ecx + 12]     ; load saved ebp from nlr_buf
+        mov     eax, [ecx +  8]     ; load saved eip from nlr_buf
+        mov     [esp], eax          ; store return eip to stack
+        mov     [esp + 4], ecx      ; store nlr to stack
+        xor     eax, eax            ; clear return register
+        inc     al                  ; increase to make 1, non - local return
+        ret
+    }
+}
+
+#pragma warning(pop)
+/* *FORMAT-ON* */
+
+#endif // _MSC_VER
 
 #endif // MICROPY_NLR_X86

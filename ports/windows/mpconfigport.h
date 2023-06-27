@@ -281,6 +281,7 @@ typedef long mp_off_t;
 #define inline                      __inline
 #define alignof(t)                  __alignof(t)
 #endif
+#define __attribute__(a)
 #define PATH_MAX                    MICROPY_ALLOC_PATH_MAX
 #define S_ISREG(m)                  (((m) & S_IFMT) == S_IFREG)
 #define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)

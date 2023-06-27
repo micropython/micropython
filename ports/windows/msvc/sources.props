@@ -29,4 +29,7 @@
     <PyCoreInclude Include="$(PyBaseDir)py\*.h" />
     <PyExtModInclude Include="$(PyBaseDir)extmod\*.h" />
   </ItemGroup>
+  <ItemGroup>
+    <PyCoreAsmSource Include="$(PyBaseDir)py\nlrx64_msvc.asm" />
+  </ItemGroup>
 </Project>

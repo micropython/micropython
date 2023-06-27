@@ -26,7 +26,20 @@
 
 #include "py/mpstate.h"
 
-#if MICROPY_NLR_X64
+#if MICROPY_NLR_X64 && defined(_MSC_VER)
+
+#undef nlr_push
+
+// MSVC doesn't support inline x64 asm. Code from nlrx64_msvc.asm is used.
+
+extern void nlr_jump_tail(void *);
+
+void nlr_jump(void *val) {
+    MP_NLR_JUMP_HEAD(val, top)
+    nlr_jump_tail(top); // do the rest in assembly
+}
+
+#elif MICROPY_NLR_X64
 
 #undef nlr_push
 

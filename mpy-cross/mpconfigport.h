@@ -148,6 +148,7 @@ typedef long mp_off_t;
 #define restrict
 #define inline                      __inline
 #define alignof(t)                  __alignof(t)
+#define __attribute__(a)
 #undef MICROPY_ALLOC_PATH_MAX
 #define MICROPY_ALLOC_PATH_MAX      260
 #define PATH_MAX                    MICROPY_ALLOC_PATH_MAX
