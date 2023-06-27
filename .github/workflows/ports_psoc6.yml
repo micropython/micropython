@@ -57,7 +57,7 @@ jobs:
       run: |
         cd tools/psoc6
         cp ../../mpy-psoc6_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/firmware.hex .
-        source mpy-psoc6.sh && openocd_download_install && mpy_firmware_deploy ${{ matrix.board }} firmware.hex
+        source mpy-psoc6.sh && openocd_download_install && openocd_board_conf_download ${{ matrix.board }} && mpy_firmware_deploy ${{ matrix.board }} firmware.hex
         cd ../..
     - name: Run tests
       run: cd tests && ./run-tests.py --target psoc6 --device /dev/ttyACM0 -d psoc6
