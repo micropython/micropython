@@ -1,0 +1,9 @@
+b'micropython hello world hello world micropython'
+b'micropython hello world hello world micropython'
+ValueError
+OSError
+b'micropython hello world hello world micropython'
+ValueError
+TypeError
+b'micropython hello world hello world micropython'
+ValueError

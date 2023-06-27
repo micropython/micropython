@@ -112,71 +112,58 @@ STATIC int gzipfile_read_stream(uzlib_uncomp_t *data) {
 }
 
 STATIC void parse_wbits_hist(mp_obj_gzipfile_t *self, int *wbits, mp_obj_t hist_in, uint8_t **hist, size_t *hist_len) {
+    bool zlib = false;
+    bool gzip = false;
+
+    if (*wbits > -16 && *wbits <= -5) {
+        *wbits = -*wbits;
+    } else if (
+        #if MICROPY_PY_GZIP_COMPRESS
+        self->mode == GZIPFILE_MODE_READ &&
+        #endif
+        *wbits == 0) {
+        zlib = true;
+    } else if (*wbits >= 5 && *wbits < 16) {
+        zlib = true;
+    } else if (*wbits >= 21 && *wbits < 32) {
+        gzip = true;
+    } else if (
+        #if MICROPY_PY_GZIP_COMPRESS
+        self->mode == GZIPFILE_MODE_READ &&
+        #endif
+        *wbits >= 35 && *wbits < 48) {
+        zlib = true;
+        gzip = true;
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("wbits"));
+    }
+
+    *wbits = *wbits & 0xf;
+
     #if MICROPY_PY_GZIP_COMPRESS
     if (self->mode == GZIPFILE_MODE_READ)
     #endif
     {
-        // To match CPython, the value read from the header is ignored unless wbits=0.
-        int header_wbits;
-        if (*wbits >= -15 && *wbits <= -8) {
-            // −8 to −15: Uses the absolute value of *wbits as the window size
-            // logarithm. The input must be a raw stream with no header or
-            // trailer.
-            *wbits = -*wbits;
-        } else if (*wbits >= 8 && *wbits <= 15) {
-            // +8 to +15: The base-two logarithm of the window size. The input
-            //  must include a zlib header and trailer.
-            if (uzlib_parse_zlib_gzip_header(&self->state[0].read.decomp, &header_wbits) != UZLIB_HEADER_ZLIB) {
+        if (zlib || gzip) {
+            int header_wbits;
+            int header_type = uzlib_parse_zlib_gzip_header(&self->state[0].read.decomp, &header_wbits);
+            if ((zlib && header_type == UZLIB_HEADER_ZLIB) || (gzip && header_type == UZLIB_HEADER_GZIP)) {
+                if (*wbits == 0) {
+                    *wbits = header_wbits;
+                }
+            } else {
                 mp_raise_OSError(MP_EINVAL);
             }
-        } else if (*wbits >= 24 && *wbits <= 31) {
-            // +24 to +31 = 16 + (8 to 15): Uses the low 4 bits of the value
-            //  as the window size logarithm. The input must include a gzip
-            //  header and trailer.
-            *wbits = *wbits & 0xf;
-            if (uzlib_parse_zlib_gzip_header(&self->state[0].read.decomp, &header_wbits) != UZLIB_HEADER_GZIP) {
-                mp_raise_OSError(MP_EINVAL);
-            }
-        } else if (*wbits >= 40 && *wbits <= 47) {
-            // +40 to +47 = 32 + (8 to 15): Uses the low 4 bits of the value
-            //  as the window size logarithm, and automatically accepts
-            //  either the zlib or gzip format.
-            *wbits = *wbits & 0xf;
-            if (uzlib_parse_zlib_gzip_header(&self->state[0].read.decomp, &header_wbits) < 0) {
-                mp_raise_OSError(MP_EINVAL);
-            }
-        } else if (*wbits == 0) {
-            // 0: Automatically determine the window size from the zlib
-            // header. Only supported since zlib 1.2.3.5.
-            if (uzlib_parse_zlib_gzip_header(&self->state[0].read.decomp, wbits) != UZLIB_HEADER_ZLIB) {
-                mp_raise_OSError(MP_EINVAL);
-            }
-        } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("wbits"));
         }
     #if MICROPY_PY_GZIP_COMPRESS
     } else {
-        if (*wbits >= -15 && *wbits <= -9) {
-            // −9 to −15: Uses the absolute value of *wbits as the window size
-            // logarithm, while producing a raw output stream with no header or
-            // trailing checksum.
-            *wbits = -*wbits;
-        } else if (*wbits >= 9 && *wbits <= 15) {
-            // +9 to +15: The base-two logarithm of the window size, which
-            // therefore ranges between 512 and 32768. Larger values produce
-            // better compression at the expense of greater memory usage. The
-            // resulting output will include a zlib-specific header and trailer.
+        if (zlib) {
             self->mode = GZIPFILE_MODE_WRITE_ZLIB;
             self->state[0].write.input_checksum = 1; // ADLER32
-        } else if (*wbits >= 25 && *wbits <= 31) {
-            // +25 to +31 = 16 + (9 to 15): Uses the low 4 bits of the value as
-            // the window size logarithm, while including a basic gzip header
-            // and trailing checksum in the output.
+        }
+        if (gzip) {
             self->mode = GZIPFILE_MODE_WRITE_GZIP;
             self->state[0].write.input_checksum = ~0; // CRC32
-            *wbits = *wbits & 0xf;
-        } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("wbits"));
         }
     #endif
     }
@@ -270,7 +257,7 @@ STATIC mp_obj_t gzipfile_make_new(const mp_obj_type_t *type, size_t n_args, size
             // -----CMF------  ----------FLG---------------
             // CINFO(5) CM(3)  FLEVEL(2) FDICT(1) FCHECK(5)
             uint8_t buf[] = { 0x08, 0x80 };     // CM=2 (deflate), FLEVEL=2 (default), FDICT=0 (no dictionary)
-            buf[0] |= (wbits - 8) << 4;     // base-2 logarithm of the LZ77 window size, minus eight.
+            buf[0] |= MAX(wbits - 8, 1) << 4;     // base-2 logarithm of the LZ77 window size, minus eight.
             buf[1] |= 31 - ((buf[0] * 256 + buf[1]) % 31);     // (CMF*256 + FLG) % 31 == 0.
             ret = stream->write(self->stream, buf, sizeof(buf), &err);
         } else if (self->mode == GZIPFILE_MODE_WRITE_GZIP) {

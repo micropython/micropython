@@ -1,19 +1,10 @@
-# test zlib.compress/decompress using the wbits argument.
-# With a sufficiently large input, increasing the window size should improve the compression.
-# CPython doesn't support the wbits argument untill 3.11 so this test needs a .exp file
+# test zlib.compress/decompress using the wbits argument with MicroPython-only small values for wbits.
 
 try:
     # Check if gzip is available.
     import gzip
     import io
 except ImportError:
-    print("SKIP")
-    raise SystemExit
-
-try:
-    # Check that we have enough heap to allocate a big buffer.
-    buf = bytearray(40 * 1024)
-except MemoryError:
     print("SKIP")
     raise SystemExit
 
@@ -49,27 +40,9 @@ except ImportError:
             return g.read()
 
 
-# Fill buf with a predictable pseudorandom sequence.
-lfsr = 1 << 15 | 1
-for i in range(len(buf)):
-    bit = (lfsr ^ (lfsr >> 1) ^ (lfsr >> 3) ^ (lfsr >> 12)) & 1
-    lfsr = (lfsr >> 1) | (bit << 15)
-    buf[i] = lfsr & 0xFF
-
-# Verify that compression improves as the window size increases.
-prev_len = len(buf)
-for wbits in range(9, 16):
-    result = compress(buf, wbits=wbits)
-    next_len = len(result)
-    print(next_len < prev_len and decompress(result, wbits=wbits) == buf)
-    prev_len = next_len
-
 # Verify header generation and handling of the wbits arguments for all possible CPython valid values.
 all_correct = True
 for wbits in range(-15, 48):
-    if abs(wbits) & 0xF < 9:
-        continue
-
     try:
         data = compress(b"micropython", wbits=wbits)
     except Exception:

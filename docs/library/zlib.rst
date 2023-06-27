@@ -44,15 +44,18 @@ Functions
    The low four bits of the absolute value of *wbits* set the base-2 logarithm of
    the DEFLATE dictionary window size. So for example, ``wbits=10``,
    ``wbits=-10``, and ``wbits=26`` all set the window size to 1024 bytes. Valid
-   window sizes are ``9`` to ``15`` inclusive (corresponding to 512 to 32k bytes).
+   window sizes are ``5`` to ``15`` inclusive (corresponding to 32 to 32k bytes).
 
-   Negative values of *wbits* between ``-9`` and ``-15`` correspond to "raw"
-   output mode, positive values between ``9`` and ``15`` correspond to zlib
-   output mode, and positive values between ``25`` and ``31`` correspond to
+   Negative values of *wbits* between ``-5`` and ``-15`` correspond to "raw"
+   output mode, positive values between ``5`` and ``15`` correspond to zlib
+   output mode, and positive values between ``21`` and ``31`` correspond to
    gzip output mode.
 
    See the :mod:`CPython documentation for zlib <python:zlib>` for more
-   information about the *wbits* parameter.
+   information about the *wbits* parameter. Note that MicroPython allows
+   for smaller window sizes, which is useful when memory is constrained while
+   still achieving a reasonable level of compression. It also speeds up
+   the compressor.
 
 .. function:: decompress(data, wbits=15, /)
 
@@ -61,14 +64,13 @@ Functions
    The *wbits* parameter works the same way as for :meth:`zlib.compress`
    with the following additional valid values:
 
-   * ``8``, ``-8``, ``24``: Extend the ranges of the zlib, raw, and
-     gzip modes respectively to a smaller window size.
    * ``0``: Automatically determine the window size from the zlib header
      (*data* must be in zlib format).
-   * ``40`` to ``47``: Auto-detect either the zlib or gzip format.
+   * ``35`` to ``47``: Auto-detect either the zlib or gzip format.
 
    As for :meth:`zlib.compress`, see the :mod:`CPython documentation for zlib <python:zlib>`
-   for more information about the *wbits* parameter.
+   for more information about the *wbits* parameter. As for :meth:`zlib.compress`,
+   MicroPython also supports smaller window sizes than CPython.
 
    If the data to be decompressed requires a larger window size, it will
    fail during decompression.

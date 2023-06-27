@@ -41,7 +41,9 @@ Functions
    make the GzipFile instance use either the raw DEFLATE or zlib file format.
    See :meth:`zlib.compress` and :meth:`zlib.decompress` for more detail about
    how this parameter operates. For example, by setting ``wbits=9``, GzipFile
-   can be used to read and write in zlib format with the minimum window size.
+   can be used to read and write in zlib format. Similarly, GzipFile also
+   supports smaller *wbits* values than CPython to allow for smaller memory
+   allocations.
 
    Another MicroPython-specific extension is the *hist* parameter which allows
    the caller to pre-allocate the window buffer. This should be
@@ -74,6 +76,13 @@ file from storage:
    with open("data.gz", "wb") as f:
        with gzip.GzipFile(fileobj=f, mode="wb") as g:
            # Use g.write(...) etc
+
+   # Write a dictionary as JSON in gzip format, with a
+   # small (64 byte) window size.
+   config = { ... }
+   with open("config.gz", "wb") as f:
+       with gzip.GzipFile(fileobj=f, mode="wb", wbits=22) as g:
+           json.dump(config, g)
 
    # MicroPython extension: read zlib format (auto-detect wbits):
    with open("data.z", "rb") as f:
