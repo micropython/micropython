@@ -56,13 +56,6 @@ static size_t uzlib_lz77_search_max_match(struct uzlib_lz77_state *state, const 
 
 // Compress the given chunk of data.
 void uzlib_lz77_compress(struct uzlib_lz77_state *state, const uint8_t *src, unsigned len) {
-    bool use_src_as_history = false;
-    if (state->hist_buf == NULL) {
-        use_src_as_history = true;
-        state->hist_buf = (uint8_t *)src;
-        state->hist_len = 0;
-    }
-
     const uint8_t *top = src + len;
     while (src < top) {
         // Look for a match in the history window.
@@ -77,31 +70,16 @@ void uzlib_lz77_compress(struct uzlib_lz77_state *state, const uint8_t *src, uns
             zlib_match(&state->outbuf, match_offset, match_len);
         }
 
-        // Advance the history window.
-        if (use_src_as_history) {
-            // Use src as the history, so advance it.
-            state->hist_len += match_len;
-            if (state->hist_len > state->hist_max) {
-                state->hist_buf += state->hist_len - state->hist_max;
-                state->hist_len = state->hist_max;
-            }
-            src += match_len;
-        } else {
-            // Push the bytes into the history buffer.
-            size_t mask = state->hist_max - 1;
-            while (match_len--) {
-                uint8_t b = *src++;
-                state->hist_buf[(state->hist_start + state->hist_len) & mask] = b;
-                if (state->hist_len == state->hist_max) {
-                    state->hist_start = (state->hist_start + 1) & mask;
-                } else {
-                    ++state->hist_len;
-                }
+        // Push the bytes into the history buffer.
+        size_t mask = state->hist_max - 1;
+        while (match_len--) {
+            uint8_t b = *src++;
+            state->hist_buf[(state->hist_start + state->hist_len) & mask] = b;
+            if (state->hist_len == state->hist_max) {
+                state->hist_start = (state->hist_start + 1) & mask;
+            } else {
+                ++state->hist_len;
             }
         }
-    }
-
-    if (use_src_as_history) {
-        state->hist_buf = NULL;
     }
 }
