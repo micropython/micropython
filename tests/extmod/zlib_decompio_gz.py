@@ -1,3 +1,6 @@
+# MicroPython-extension. Now deprecated in favour of gzip.GzipFile. This test
+# will only run if zlib.py from micropython-lib is available (e.g. frozen).
+
 try:
     import zlib
     import io
@@ -41,8 +44,8 @@ buf = io.BytesIO(
 )
 try:
     inp = zlib.DecompIO(buf, 16 + 8)
-except ValueError:
-    print("ValueError")
+except OSError as e:
+    print(repr(e))
 
 # broken crc32
 buf = io.BytesIO(

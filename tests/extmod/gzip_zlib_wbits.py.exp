@@ -1,0 +1,88 @@
+True
+True
+True
+True
+True
+True
+True
+-20 Exception
+-19 Exception
+-18 Exception
+-17 Exception
+-16 Exception
+-15 b'\xcb\xcd'
+-15 Exception
+-14 b'\xcb\xcd'
+-14 Exception
+-13 b'\xcb\xcd'
+-13 Exception
+-12 b'\xcb\xcd'
+-12 Exception
+-11 b'\xcb\xcd'
+-11 Exception
+-10 b'\xcb\xcd'
+-10 Exception
+-9 b'\xcb\xcd'
+-9 Exception
+-8 Exception
+-7 Exception
+-6 Exception
+-5 Exception
+-4 Exception
+-3 Exception
+-2 Exception
+-1 Exception
+0 Exception
+1 Exception
+2 Exception
+3 Exception
+4 Exception
+5 Exception
+6 Exception
+7 Exception
+9 b'\x18\x95'
+9 Exception
+10 b'(\x91'
+10 Exception
+11 b'8\x8d'
+11 Exception
+12 b'H\x89'
+12 Exception
+13 b'X\x85'
+13 Exception
+14 b'h\x81'
+14 Exception
+15 b'x\x9c'
+15 Exception
+16 Exception
+17 Exception
+18 Exception
+19 Exception
+20 Exception
+21 Exception
+22 Exception
+23 Exception
+24 Exception
+25 b'\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03'
+25 Exception
+26 b'\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03'
+26 Exception
+27 b'\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03'
+27 Exception
+28 b'\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03'
+28 Exception
+29 b'\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03'
+29 Exception
+30 b'\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03'
+30 Exception
+31 b'\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03'
+31 Exception
+32 Exception
+33 Exception
+34 Exception
+35 Exception
+36 Exception
+37 Exception
+38 Exception
+39 Exception
+True

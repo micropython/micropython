@@ -9,5 +9,5 @@ b''
 31
 b'hello'
 b'hello'
-ValueError
+OSError(22,)
 OSError(22,)

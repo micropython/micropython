@@ -1,8 +1,22 @@
+import sys
+
 try:
-    import zlib
+    # CPython or zlib from micropython-lib frozen.
+    from zlib import decompress
 except ImportError:
-    print("SKIP")
-    raise SystemExit
+    try:
+        import gzip
+        import io
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
+
+    # This is the same as the one provided in micropython-lib.
+    def decompress(data, wbits=15):
+        f = io.BytesIO(data)
+        with gzip.GzipFile(fileobj=f, mode="rb", wbits=wbits) as g:
+            return g.read()
+
 
 PATTERNS = [
     # Packed results produced by CPy's zlib.compress()
@@ -27,31 +41,44 @@ PATTERNS = [
 ]
 
 for unpacked, packed in PATTERNS:
-    assert zlib.decompress(packed) == unpacked
+    assert decompress(packed) == unpacked
     print(unpacked)
 
 
 # Raw DEFLATE bitstream
 v = b"\xcbH\xcd\xc9\xc9\x07\x00"
 exp = b"hello"
-out = zlib.decompress(v, -15)
+out = decompress(v, -15)
 assert out == exp
 print(exp)
 # Even when you ask CPython zlib.compress to produce Raw DEFLATE stream,
 # it returns it with adler2 and oriignal size appended, as if it was a
 # zlib stream. Make sure there're no random issues decompressing such.
 v = b"\xcbH\xcd\xc9\xc9\x07\x00\x86\xa6\x106\x05\x00\x00\x00"
-out = zlib.decompress(v, -15)
+out = decompress(v, -15)
 assert out == exp
 
 # this should error
 try:
-    zlib.decompress(b"abc")
+    decompress(b"abc")
 except Exception:
     print("Exception")
 
 # invalid block type
 try:
-    zlib.decompress(b"\x07", -15)  # final-block, block-type=3 (invalid)
+    decompress(b"\x07", -15)  # final-block, block-type=3 (invalid)
 except Exception as er:
     print("Exception")
+
+# Auto-detection of zlib window size.
+print(decompress(b"x\xda\xcb\xcdL.\xca/\xa8,\xc9\xc8\xcf\x03\x00\x1c9\x04\xbd", wbits=0))
+print(decompress(b"H\x89\xcb\xcdL.\xca/\xa8,\xc9\xc8\xcf\x03\x00\x1c9\x04\xbd", wbits=0))
+
+# Auto-detection of gzip/zlib.
+print(decompress(b"\x18\x95\xcb\xcdL.\xca/\xa8,\xc9\xc8\xcf\x03\x00\x1c9\x04\xbd", wbits=41))
+print(
+    decompress(
+        b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03\xcb\xcdL.\xca/\xa8,\xc9\xc8\xcf\x03\x00\xf2KF>\x0b\x00\x00\x00",
+        wbits=40,
+    )
+)

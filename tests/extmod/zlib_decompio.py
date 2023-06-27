@@ -1,3 +1,6 @@
+# MicroPython-extension. Now deprecated in favour of gzip.GzipFile. This test
+# will only run if zlib.py from micropython-lib is available (e.g. frozen).
+
 try:
     import zlib
     import io
