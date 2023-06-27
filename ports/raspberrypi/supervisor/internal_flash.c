@@ -99,11 +99,11 @@ void port_internal_flash_flush(void) {
     // Make sure we don't have an interrupt while we do flash operations.
     common_hal_mcu_disable_interrupts();
     // and audio DMA must be paused as well
-    uint32_t cookie = audio_dma_pause_all();
+    uint32_t channel_mask = audio_dma_pause_all();
     flash_range_erase(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + _cache_lba, SECTOR_SIZE);
     flash_range_program(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + _cache_lba, _cache, SECTOR_SIZE);
     _cache_lba = NO_CACHE;
-    audio_dma_unpause_cookie(cookie);
+    audio_dma_unpause_mask(channel_mask);
     common_hal_mcu_enable_interrupts();
 }
 

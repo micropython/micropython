@@ -90,6 +90,6 @@ void audio_dma_resume(audio_dma_t *dma);
 bool audio_dma_get_paused(audio_dma_t *dma);
 
 uint32_t audio_dma_pause_all(void);
-void audio_dma_unpause_cookie(uint32_t cookie);
+void audio_dma_unpause_mask(uint32_t channel_mask);
 
 #endif  // MICROPY_INCLUDED_RASPBERRYPI_AUDIO_DMA_OUT_H

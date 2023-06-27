@@ -400,10 +400,10 @@ uint32_t audio_dma_pause_all(void) {
     return result;
 }
 
-void audio_dma_unpause_cookie(uint32_t cookie) {
+void audio_dma_unpause_mask(uint32_t channel_mask) {
     for (size_t channel = 0; channel < NUM_DMA_CHANNELS; channel++) {
         audio_dma_t *dma = MP_STATE_PORT(playing_audio)[channel];
-        if (dma != NULL && (cookie & (1 << channel))) {
+        if (dma != NULL && (channel_mask & (1 << channel))) {
             audio_dma_resume(dma);
         }
     }
