@@ -84,42 +84,15 @@ exit /b 0
     set hex_file=%~2
 
     echo Deploying Micropython...
-    openocd.exe -s openocd\scripts -c "source [find interface/kitprog3.cfg]; ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program %hex_file% verify reset exit;"
-
-exit /b 0
-
-:hw_firmware_download:
-
-    set board=%~1
-    curl.exe -s -L https://github.com/infineon/micropython/releases/download/v0.3.0/hello-world_%board%.hex > hello-world_%board%.hex
-
-exit /b 0
-
-:hw_firmware_clean
-
-    set board=%~1
-    del hello-world_%board%.hex
-
-exit /b 0
-
-:flash_erase_firmware_download:
-
-    set board=%~1
-    curl.exe -s -L https://github.com/infineon/micropython/releases/download/v0.3.0/device-erase_%board%.hex > device-erase_%board%.hex
-
-exit /b 0
-
-:flash_erase_firmware_clean
-
-    set board=%~1
-    del device-erase_%board%.hex
+    openocd.exe -s openocd\scripts -s openocd\board -c "source [find interface/kitprog3.cfg]; ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program %hex_file% verify reset exit;"
 
 exit /b 0
 
 :mpy_firmware_download:
 
-    set board=%~1
-    set version=%~2
+    set fw_name=%~1
+    set board=%~2
+    set version=%~3
 
     if "%version%" == "latest" (
         call set sub_url=latest/download
@@ -127,16 +100,17 @@ exit /b 0
         call set sub_url=download/%version%
     )
 
-    echo Downloading MicroPython PSoC6 port %version% for %board% board...
-    curl.exe -s -L https://github.com/infineon/micropython/releases/%sub_url%/mpy-psoc6_%board%.hex > mpy-psoc6_%board%.hex
+    echo Downloading %fw_name% %version% for %board% board...
+    curl.exe -s -L https://github.com/infineon/micropython/releases/%sub_url%/%fw_name%_%board%.hex > %fw_name%_%board%.hex
 
 exit /b 0
 
 :mpy_firmware_clean
 
-    set board=%~1
-    echo Cleaning up micropython hex files...
-    del mpy-psoc6_%board%.hex
+    set fw_name=%~1
+    set board=%~2
+    echo Cleaning up %fw_name% hex files...
+    del %fw_name%_%board%.hex
 
 exit /b 0
 
@@ -147,6 +121,18 @@ exit /b 0
     echo Extracting openocd...
     powershell -command "Expand-Archive -Force 'openocd.zip' -DestinationPath '.'"
     set PATH=openocd\bin;%PATH%
+
+exit /b 0
+
+:openocd_board_conf_download
+
+    set board=%~1
+    echo Downloading openocd %board% configuration...
+    cd openocd
+    mkdir board 
+    cd board
+    curl.exe -s -L https://github.com/infineon/micropython/releases/download/v0.3.0/qspi_config_%board%.cfg > qspi_config.cfg
+    cd ../..
 
 exit /b 0
 
@@ -190,8 +176,9 @@ exit /b 0
 
     Rem Download flashing tool and firmware
     call :openocd_download_install
-    call :hw_firmware_download %board%
-    call :mpy_firmware_download %board% %mpy_firmware_version%
+    call :openocd_board_conf_download %board%
+    call :mpy_firmware_download hello-world %board% v0.3.0
+    call :mpy_firmware_download mpy-psoc6 %board% %mpy_firmware_version%
 
     if not [%~3]==[\q] (
         echo:
@@ -206,8 +193,8 @@ exit /b 0
     echo Device firmware deployment completed.   
 
     call :openocd_uninstall_clean
-    call :hw_firmware_clean %board%
-    call :mpy_firmware_clean %board%
+    call :mpy_firmware_clean hello-world %board%
+    call :mpy_firmware_clean mpy-psoc6 %board%
 
     if not [%~3]==[\q] (
         echo:
@@ -244,7 +231,8 @@ exit /b 0
 
     Rem Download flashing tool and firmware
     call :openocd_download_install
-    call :flash_erase_firmware_download %board%
+    call :openocd_board_conf_download %board%
+    call :mpy_firmware_download device-erase %board% v0.3.0
 
     if not [%~2]==[\q] (
         echo:
@@ -258,7 +246,7 @@ exit /b 0
     echo Device firmware deployment completed.   
 
     call :openocd_uninstall_clean
-    call :flash_erase_firmware_clean %board%
+    call :mpy_firmware_clean device-erase %board%
 
     if not [%~2]==[\q] (
         echo:

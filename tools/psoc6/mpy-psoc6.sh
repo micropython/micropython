@@ -50,54 +50,30 @@ function mpy_firmware_deploy {
     board=$1
     hex_file=$2
 
-    echo Deploying Micropython...
-    openocd -s openocd\scripts -c "source [find interface/kitprog3.cfg]; ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program ${hex_file} verify reset exit;"
-}
-
-function hw_firmware_download {
-    # hello-world flashing workaround to overcome factory board flashing error.
-    # This flashing step will be removed when the root cause fix is available.
-    board=$1
-
-    curl -s -L https://github.com/infineon/micropython/releases/download/v0.3.0/hello-world_${board}.hex > hello-world_${board}.hex
-}
-
-function hw_firmware_clean {
-    board=$1
-
-    rm hello-world_${board}.hex
-}
-
-function flash_erase_firmware_download {
-    board=$1
-
-    curl -s -L https://github.com/infineon/micropython/releases/download/v0.3.0/device-erase_${board}.hex > device-erase_${board}.hex
-}
-
-function flash_erase_firmware_clean {
-    board=$1
-
-    rm device-erase_${board}.hex
+    echo Deploying firmware...
+    openocd -s openocd\scripts -s openocd/board -c "source [find interface/kitprog3.cfg]; ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program ${hex_file} verify reset exit;"
 }
 
 function mpy_firmware_download {
-    board=$1
-    version=$2
+    fw_name=$1
+    board=$2
+    version=$3
 
-    echo Downloading MicroPython PSoC6 port ${version} for ${board} board...
+    echo Downloading ${fw_name} ${version} for ${board} board...
     if [ "$version" = "latest" ]; then 
         sub_url="latest/download"
     else
         sub_url="download/${version}"
     fi
-    curl -s -L https://github.com/infineon/micropython/releases/${sub_url}/mpy-psoc6_${board}.hex > mpy-psoc6_${board}.hex
+    curl -s -L https://github.com/infineon/micropython/releases/${sub_url}/${fw_name}_${board}.hex > ${fw_name}_${board}.hex
 }
 
 function mpy_firmware_clean {
-    board=$1
+    fw_name=$1
+    board=$2
 
-    echo Cleaning up micropython hex files...
-    rm mpy-psoc6_${board}.hex
+    echo Cleaning up ${fw_name} hex files...
+    rm ${fw_name}_${board}.hex
 }
 
 function openocd_download_install {
@@ -107,6 +83,17 @@ function openocd_download_install {
     tar -xf openocd.tar.gz
     export PATH=${PWD}/openocd/bin:$PATH
     ./openocd/udev_rules/install_rules.sh
+}
+
+function openocd_board_conf_download {
+    board=$1
+
+    echo Downloading openocd ${board} configuration...
+    cd openocd
+    mkdir board 
+    cd board
+    curl -s -L https://github.com/infineon/micropython/releases/download/v0.3.0/qspi_config_${board}.cfg > qspi_config.cfg
+    cd ../..
 }
 
 function openocd_uninstall_clean {
@@ -178,8 +165,9 @@ function mpy_device_setup {
 
     # Download flashing tool and firmware
     openocd_download_install
-    hw_firmware_download ${board}
-    mpy_firmware_download ${board} ${mpy_firmware_version}
+    openocd_board_conf_download ${board}
+    mpy_firmware_download hello-world ${board} v0.3.0
+    mpy_firmware_download mpy-psoc6 ${board} ${mpy_firmware_version}
 
     wait_and_request_board_connect $3
 
@@ -189,8 +177,8 @@ function mpy_device_setup {
     echo Device firmware deployment completed.   
 
     openocd_uninstall_clean
-    hw_firmware_clean ${board}
-    mpy_firmware_clean ${board}
+    mpy_firmware_clean hello-world ${board} 
+    mpy_firmware_clean mpy-psoc6 ${board}
 
     wait_user_termination $3
 }
@@ -200,7 +188,8 @@ function mpy_device_erase {
 
     # Download flashing tool and firmware
     openocd_download_install
-    flash_erase_firmware_download ${board}
+    openocd_board_conf_download ${board}
+    mpy_firmware_download device-erase ${board} v0.3.0
 
     wait_and_request_board_connect $2
     
@@ -208,7 +197,7 @@ function mpy_device_erase {
     mpy_firmware_deploy ${board} device-erase_${board}.hex
 
     openocd_uninstall_clean
-    flash_erase_firmware_clean ${board}
+    mpy_firmware_clean device-erase ${board}
 
     wait_user_termination $2
 }
