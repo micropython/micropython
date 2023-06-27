@@ -174,3 +174,21 @@ internal_bench/bytebuf:
     0.177s (+87.78%) internal_bench/bytebuf-3-bytarray_map.py
 1 tests performed (3 individual testcases)
 ```
+
+## Test key/certificates
+
+SSL/TLS tests in `multi_net` and `net_inet` use a 
+self-signed key/cert pair that is randomly generated and to be used for
+testing/demonstration only. You should always generate your own key/cert.
+
+To generate a new self-signed key/cert pair with openssl do:
+```
+$ openssl req -x509 -newkey rsa:4096 -keyout rsa_key.pem -out rsa_cert.pem -days 365 -nodes
+```
+In this case CN is: micropython.local
+
+Convert them to DER format:
+```
+$ openssl rsa -in rsa_key.pem -out rsa_key.der -outform DER
+$ openssl x509 -in rsa_cert.pem -out rsa_cert.der -outform DER
+```
