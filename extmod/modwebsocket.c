@@ -56,6 +56,7 @@ typedef struct _mp_obj_websocket_t {
 } mp_obj_websocket_t;
 
 STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode);
+STATIC mp_uint_t websocket_write_raw(mp_obj_t self_in, const byte *header, int hdr_sz, const void *buf, mp_uint_t size, int *errcode);
 
 STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
@@ -193,9 +194,9 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
                     if (last_state == CONTROL) {
                         byte frame_type = self->last_flags & FRAME_OPCODE_MASK;
                         if (frame_type == FRAME_CLOSE) {
-                            static const char close_resp[2] = {0x88, 0};
+                            static const byte close_resp[2] = {0x88, 0};
                             int err;
-                            websocket_write(self_in, close_resp, sizeof(close_resp), &err);
+                            websocket_write_raw(self_in, close_resp, sizeof(close_resp), close_resp, 0, &err);
                             return 0;
                         }
 
@@ -229,6 +230,11 @@ STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         header[3] = size & 0xff;
         hdr_sz = 4;
     }
+
+    return websocket_write_raw(self_in, header, hdr_sz, buf, size, errcode);
+}
+STATIC mp_uint_t websocket_write_raw(mp_obj_t self_in, const byte *header, int hdr_sz, const void *buf, mp_uint_t size, int *errcode) {
+    mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_obj_t dest[3];
     if (self->opts & BLOCKING_WRITE) {
