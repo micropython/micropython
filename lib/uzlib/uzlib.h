@@ -84,7 +84,8 @@ typedef struct _uzlib_uncomp_t {
        also return -1 in case of EOF (or irrecoverable error). Note that
        besides returning the next byte, it may also update source and
        source_limit fields, thus allowing for buffered operation. */
-    int (*source_read_cb)(struct _uzlib_uncomp_t *uncomp);
+    void *source_read_data;
+    int (*source_read_cb)(void *);
 
     unsigned int tag;
     unsigned int bitcount;

@@ -185,7 +185,7 @@ unsigned char uzlib_get_byte(uzlib_uncomp_t *d)
        read next byte using it. (Note: the callback can also update ->source
        and ->source_limit). */
     if (d->source_read_cb && !d->eof) {
-        int val = d->source_read_cb(d);
+        int val = d->source_read_cb(d->source_read_data);
         if (val >= 0) {
             return (unsigned char)val;
         }

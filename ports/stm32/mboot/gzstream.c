@@ -45,7 +45,8 @@ typedef struct _gz_stream_t {
 
 static gz_stream_t gz_stream SECTION_NOZERO_BSS;
 
-static int gz_stream_read_src(uzlib_uncomp_t *decomp) {
+static int gz_stream_read_src(void *data) {
+    uzlib_uncomp_t *decomp = data;
     int n = gz_stream.stream_read(gz_stream.stream_data, gz_stream.buf, sizeof(gz_stream.buf));
     if (n < 0) {
         // Stream error
@@ -76,6 +77,7 @@ int gz_stream_init_from_stream(void *stream_data, stream_read_t stream_read) {
     gz_stream.stream_read = stream_read;
 
     memset(&gz_stream.decomp, 0, sizeof(gz_stream.decomp));
+    gz_stream.decomp.source_read_data = &gz_stream.decomp;
     gz_stream.decomp.source_read_cb = gz_stream_read_src;
 
     int header_wbits;
