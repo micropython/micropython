@@ -64,6 +64,7 @@ extern int8_t esp32_rmt_bitstream_channel_id;
 extern const mp_obj_type_t esp32_nvs_type;
 extern const mp_obj_type_t esp32_partition_type;
 extern const mp_obj_type_t esp32_rmt_type;
+extern const mp_obj_type_t esp32_sigmadelta_type;
 extern const mp_obj_type_t esp32_ulp_type;
 
 esp_err_t rmt_driver_install_core1(uint8_t channel_id);
