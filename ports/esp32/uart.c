@@ -26,13 +26,15 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
-#include "hal/uart_hal.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "uart.h"
+
+#if MICROPY_HW_ENABLE_UART_REPL
+
+#include <stdio.h>
+#include "hal/uart_hal.h"
 
 // Backwards compatibility for when MICROPY_HW_UART_REPL was a ESP-IDF UART
 // driver enum. Only UART_NUM_0 was supported with that version of the driver.
@@ -118,3 +120,5 @@ STATIC void IRAM_ATTR uart_irq_handler(void *arg) {
         }
     }
 }
+
+#endif // MICROPY_HW_ENABLE_UART_REPL

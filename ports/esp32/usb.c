@@ -28,7 +28,7 @@
 #include "py/mphal.h"
 #include "usb.h"
 
-#if CONFIG_USB_OTG_SUPPORTED
+#if CONFIG_USB_OTG_SUPPORTED && !CONFIG_ESP_CONSOLE_USB_CDC && !CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
 
 #include "esp_timer.h"
 #ifndef NO_QSTR
@@ -97,4 +97,4 @@ void usb_tx_strn(const char *str, size_t len) {
     }
 }
 
-#endif // CONFIG_USB_OTG_SUPPORTED
+#endif // CONFIG_USB_OTG_SUPPORTED && !CONFIG_ESP_CONSOLE_USB_CDC && !CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
