@@ -272,6 +272,46 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     Passing in no argument will not change the channel.  This function returns
     the current channel number.
 
+.. _esp32.SigmaDelta:
+
+Sigma-Delta
+-----------
+
+ESP32 has a second-order sigma-delta modulation module. Each of the eight
+independent channels (0-7) are capable of outputting a binary hardware generated
+signal with the sigma-delta modulation::
+
+    import esp32
+    from machine import Pin
+
+    sd = esp32.SigmaDelta(3, pin=Pin(4), duty=0, prescale=80)
+    sd  # SigmaDelta(channel=3, pin=4, duty=0, prescale=80)
+    sd.duty(90)
+    sd.prescale(8)
+    sd.deinit()
+
+For more details see Espressif's `ESP-IDF Sigma-delta documentation.
+<https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/sigmadelta.html>`_.
+
+.. class:: SigmaDelta(channel, \*, pin=None, duty=0, prescale=80)
+
+    This class provides access to the Sigma-Delta hardware signal generator.
+
+.. method:: SigmaDelta.duty(duty)
+
+    Set the duty of the output signal in the range -128 to 127. A zero value will
+    result in the output signal's duty of around 50%. Recommended range is -90 to 90.
+
+.. method:: SigmaDelta.prescale(prescale)
+
+    Set the sigma-delta channel's clock pre-scale value. The source clock is
+    APP_CLK, 80MHz. The clock frequency of the sigma-delta channel is
+    ``APP_CLK / pre_scale``.
+
+.. method:: SigmaDelta.deinit()
+
+    Disconnect the signal generator from the pin.
+
 Ultra-Low-Power co-processor
 ----------------------------
 

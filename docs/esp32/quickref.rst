@@ -655,6 +655,20 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.write_pulses((1, 20, 2, 40), 0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
+Sigma-Delta
+-----------
+
+An ESP32-specific peripheral for generating hardware sigma-delta modulated output
+on any GPIO. See :ref:`esp32.SigmaDelta <esp32.SigmaDelta>` for details. Usage is::
+
+    import esp32
+    from machine import Pin
+
+    sd = esp32.SigmaDelta(0, pin=Pin(4), duty=0, prescale=80)
+    sd.duty(20)  # -128 to 127
+    sd.prescale(160)  # 0 to 255
+    sd.deinit()
+
 OneWire driver
 --------------
 
