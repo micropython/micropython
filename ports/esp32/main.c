@@ -38,6 +38,7 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_psram.h"
+#include "esp_heap_caps.h"
 
 #include "py/stackctrl.h"
 #include "py/nlr.h"
@@ -62,6 +63,10 @@
 
 #if MICROPY_ESPNOW
 #include "modespnow.h"
+#endif
+
+#if MICROPY_ESP32S3_LCDCAM
+#include "modesp32s3.h"
 #endif
 
 // MicroPython runs as a task under FreeRTOS
@@ -158,6 +163,11 @@ soft_reset_exit:
     #if MICROPY_ESPNOW
     espnow_deinit(mp_const_none);
     MP_STATE_PORT(espnow_singleton) = NULL;
+    #endif
+
+    #if MICROPY_ESP32S3_LCDCAM
+    mp_esp32s3_lcd_cam_global_deinit();
+    MP_STATE_PORT(esp32s3_lcd_cam_singleton) = NULL;
     #endif
 
     machine_timer_deinit_all();

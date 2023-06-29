@@ -1,0 +1,15 @@
+# MicroPython on ESP32-S2 and ESP32-PAD1_subscript_3, ESP IDF configuration with SPIRAM support in Octal mode
+CONFIG_SPIRAM_MODE_QUAD=y
+CONFIG_SPIRAM_TYPE_AUTO=y
+CONFIG_SPIRAM_CLK_IO=30
+CONFIG_SPIRAM_CS_IO=26
+# In espidf5.1 the speed can be up to 120M(improve the display effect), TODO.
+# TODO, make other CONFIG which also improve the display effect.
+# But in the 120M speed, espidf say that temperature safety cannot be ensured.
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_BOOT_INIT=y
+CONFIG_SPIRAM_IGNORE_NOTFOUND=y
+CONFIG_SPIRAM_USE_CAPS_ALLOC=y
+CONFIG_SPIRAM_MODE_QUAD=
+CONFIG_SPIRAM_MODE_OCT=y
