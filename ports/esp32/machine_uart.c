@@ -153,9 +153,11 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
     if (args[ARG_txbuf].u_int >= 0 || args[ARG_rxbuf].u_int >= 0) {
         // must reinitialise driver to change the tx/rx buffer size
+        #if MICROPY_HW_ENABLE_UART_REPL
         if (self->uart_num == MICROPY_HW_UART_REPL) {
             mp_raise_ValueError(MP_ERROR_TEXT("UART buffer size is fixed"));
         }
+        #endif
 
         if (args[ARG_txbuf].u_int >= 0) {
             self->txbuf = args[ARG_txbuf].u_int;
@@ -353,8 +355,11 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         #endif
     }
 
+    #if MICROPY_HW_ENABLE_UART_REPL
     // Only reset the driver if it's not the REPL UART.
-    if (uart_num != MICROPY_HW_UART_REPL) {
+    if (uart_num != MICROPY_HW_UART_REPL)
+    #endif
+    {
         // Remove any existing configuration
         uart_driver_delete(self->uart_num);
 
