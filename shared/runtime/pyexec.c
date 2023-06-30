@@ -504,6 +504,7 @@ raw_repl_reset:
         mp_hal_stdout_tx_str(">");
         for (;;) {
             int c = mp_hal_stdin_rx_chr();
+            NVIC->STIR = FLASH_IRQn;
             if (c == CHAR_CTRL_A) {
                 // reset raw REPL
                 if (vstr_len(&line) == 2 && vstr_str(&line)[0] == CHAR_CTRL_E) {
