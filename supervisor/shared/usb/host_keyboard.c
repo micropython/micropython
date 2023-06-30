@@ -32,49 +32,70 @@
 #include "shared/runtime/interrupt_char.h"
 #include "supervisor/usb.h"
 
+#ifndef DEBUG
+#define DEBUG (0)
+#endif
+
 // Buffer the incoming serial data in the background so that we can look for the
 // interrupt character.
 STATIC ringbuf_t _incoming_ringbuf;
 STATIC uint8_t _buf[16];
 
-uint8_t _dev_addr;
-uint8_t _interface;
+STATIC uint8_t _dev_addr;
+STATIC uint8_t _interface;
 
-#define FLAG_ALPHABETIC (1)
-#define FLAG_SHIFT (2)
-#define FLAG_NUMLOCK (4)
-#define FLAG_CTRL (8)
-#define FLAG_LUT (16)
+#define FLAG_SHIFT (1)
+#define FLAG_NUMLOCK (2)
+#define FLAG_CTRL (4)
+#define FLAG_STRING (8)
 
-const char *const lut[] = {
-    "!@#$%^&*()",                            /* 0 - shifted numeric keys */
-    "\r\x1b\10\t -=[]\\#;'`,./",             /* 1 - symbol keys */
-    "\n\x1b\177\t _+{}|~:\"~<>?",            /* 2 - shifted */
-    "\12\13\10\22",                          /* 3 - arrow keys RLDU */
-    "/*-+\n1234567890.",                     /* 4 - keypad w/numlock */
-    "/*-+\n\xff\2\xff\4\xff\3\xff\1\xff\xff.", /* 5 - keypad w/o numlock */
-};
+STATIC uint8_t user_keymap[384];
+STATIC size_t user_keymap_len = 0;
+
+void usb_keymap_set(const uint8_t *buf, size_t len) {
+    user_keymap_len = len = MIN(len, sizeof(user_keymap));
+    memcpy(user_keymap, buf, len);
+    memset(user_keymap + len, 0, sizeof(user_keymap) - len);
+}
 
 struct keycode_mapper {
     uint8_t first, last, code, flags;
-} keycode_to_ascii[] = {
-    { HID_KEY_A, HID_KEY_Z, 'a', FLAG_ALPHABETIC, },
+    const char *data;
+};
 
-    { HID_KEY_1, HID_KEY_9, 0, FLAG_SHIFT | FLAG_LUT, },
+#define SEP "\0" // separator in FLAG_STRING sequences
+#define NOTHING "" // in FLAG_STRING sequences
+#define CURSOR_UP "\e[A"
+#define CURSOR_DOWN "\e[B"
+#define CURSOR_LEFT "\e[D"
+#define CURSOR_RIGHT "\e[C"
+#define CURSOR_PGUP "\e[5~"
+#define CURSOR_PGDN "\e[6~"
+#define CURSOR_HOME "\e[H"
+#define CURSOR_END "\e[F"
+#define CURSOR_INS "\e[2~"
+#define CURSOR_DEL "\e[3~"
+
+STATIC struct keycode_mapper keycode_to_ascii[] = {
+    { HID_KEY_A, HID_KEY_Z, 'a', 0, NULL},
+
+    { HID_KEY_1, HID_KEY_9, 0, FLAG_SHIFT, "!@#$%^&*()" },
     { HID_KEY_1, HID_KEY_9, '1', 0, },
     { HID_KEY_0, HID_KEY_0, ')', FLAG_SHIFT, },
     { HID_KEY_0, HID_KEY_0, '0', 0, },
 
     { HID_KEY_ENTER, HID_KEY_ENTER, '\n', FLAG_CTRL },
-    { HID_KEY_ENTER, HID_KEY_SLASH, 2, FLAG_SHIFT | FLAG_LUT, },
-    { HID_KEY_ENTER, HID_KEY_SLASH, 1, FLAG_LUT, },
+    { HID_KEY_ENTER, HID_KEY_SLASH, 0, FLAG_SHIFT, "\n\x1b\177\t _+{}|~:\"~<>?" },
+    { HID_KEY_ENTER, HID_KEY_SLASH, 0, 0, "\r\x1b\10\t -=[]\\#;'`,./" },
 
     { HID_KEY_F1, HID_KEY_F1, 0x1e, 0, }, // help key on xerox 820 kbd
 
-    { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_UP, 3, FLAG_LUT },
+    { HID_KEY_KEYPAD_DIVIDE, HID_KEY_KEYPAD_DECIMAL, 0, FLAG_NUMLOCK | FLAG_STRING,
+      "/\0" "*\0" "-\0" "+\0" "\n\0" CURSOR_END SEP CURSOR_DOWN SEP CURSOR_PGDN SEP CURSOR_LEFT SEP NOTHING SEP CURSOR_RIGHT SEP CURSOR_HOME SEP CURSOR_UP SEP CURSOR_PGDN SEP CURSOR_INS SEP CURSOR_DEL},
+    { HID_KEY_KEYPAD_DIVIDE, HID_KEY_KEYPAD_DECIMAL, 0, 0, "/*-+\n1234567890." },
 
-    { HID_KEY_KEYPAD_DIVIDE, HID_KEY_KEYPAD_DECIMAL, 4, FLAG_NUMLOCK | FLAG_LUT },
-    { HID_KEY_KEYPAD_DIVIDE, HID_KEY_KEYPAD_DECIMAL, 5, FLAG_LUT },
+    { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_UP, 0, FLAG_STRING, CURSOR_RIGHT SEP CURSOR_LEFT SEP CURSOR_DOWN SEP CURSOR_UP },
+
 };
 
 STATIC bool report_contains(const hid_keyboard_report_t *report, uint8_t key) {
@@ -86,30 +107,63 @@ STATIC bool report_contains(const hid_keyboard_report_t *report, uint8_t key) {
     return false;
 }
 
-int old_ascii = -1;
-uint32_t repeat_timeout;
+STATIC const char *old_buf = NULL;
+STATIC size_t buf_size = 0;
 // this matches Linux default of 500ms to first repeat, 1/20s thereafter
-const uint32_t default_repeat_time = 50;
-const uint32_t initial_repeat_time = 500;
+STATIC const uint32_t initial_repeat_time = 500;
 
-STATIC void send_ascii(uint8_t code, uint32_t repeat_time) {
-    old_ascii = code;
+STATIC void send_bufn(const char *buf, size_t n, uint32_t repeat_time) {
+    old_buf = buf;
+    buf_size = n;
     // repeat_timeout = millis() + repeat_time;
-    if (code == mp_interrupt_char) {
-        mp_sched_keyboard_interrupt();
-        return;
+    for (; n--; buf++) {
+        int code = *buf;
+        if (code == mp_interrupt_char) {
+            mp_sched_keyboard_interrupt();
+            return;
+        }
+        if (ringbuf_num_empty(&_incoming_ringbuf) == 0) {
+            // Drop on the floor
+            return;
+        }
+        ringbuf_put(&_incoming_ringbuf, code);
     }
-    if (ringbuf_num_empty(&_incoming_ringbuf) == 0) {
-        // Drop on the floor
-        return;
-    }
-    ringbuf_put(&_incoming_ringbuf, code);
 }
+
+STATIC void send_bufz(const char *buf, uint32_t repeat_time) {
+    send_bufn(buf, strlen(buf), repeat_time);
+}
+
+STATIC void send_byte(uint8_t code, uint32_t repeat_time) {
+    static char buf[1];
+    buf[0] = code;
+    send_bufn(buf, 1, repeat_time);
+}
+
+#if 0
+STATIC uint32_t repeat_timeout;
+STATIC const uint32_t default_repeat_time = 50;
+// TODO: nothing actually SENDS the repetitions...
+STATIC void send_repeat() {
+    if (old_buf) {
+        send_bufn(old_buf, old_buf_size, default_repeat_time);
+    }
+}
+#endif
 
 hid_keyboard_report_t old_report;
 
+STATIC const char *skip_nuls(const char *buf, size_t n) {
+    while (n--) {
+        buf += strlen(buf) + 1;
+    }
+    return buf;
+}
+
 STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard_report_t *report) {
-    bool alt = report->modifier & 0x44;
+    bool has_altgr = (user_keymap_len > 256);
+    bool altgr = has_altgr && report->modifier & 0x40;
+    bool alt = has_altgr ? report->modifier & 0x4 : report->modifier & 0x44;
     bool shift = report->modifier & 0x22;
     bool ctrl = report->modifier & 0x11;
     bool caps = old_report.reserved & 1;
@@ -122,7 +176,7 @@ STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard
     }
 
     // something was pressed or release, so cancel any key repeat
-    old_ascii = -1;
+    old_buf = NULL;
 
     for (int i = 0; i < 6; i++) {
         uint8_t keycode = report->keycode[i];
@@ -139,6 +193,22 @@ STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard
         } else if (keycode == HID_KEY_CAPS_LOCK) {
             caps = !caps;
         } else {
+            size_t idx = keycode + (altgr ? 256 : shift ? 128 : 0);
+            uint8_t ascii = user_keymap[idx];
+            #if DEBUG
+            mp_printf(&mp_plat_print, "lookup HID keycode %d mod %x at idx %d -> ascii %d (%c)\n",
+                keycode, report->modifier, idx, ascii, ascii >= 32 && ascii <= 126 ? ascii : '.');
+            #endif
+            if (ascii != 0) {
+                if (ctrl) {
+                    ascii &= 0x1f;
+                } else if (ascii >= 'a' && ascii <= 'z' && caps) {
+                    ascii ^= ('a' ^ 'A');
+                }
+                send_byte(ascii, initial_repeat_time);
+                continue;
+            }
+
             for (size_t j = 0; j < MP_ARRAY_SIZE(keycode_to_ascii); j++) {
                 struct keycode_mapper *mapper = &keycode_to_ascii[j];
                 if (!(keycode >= mapper->first && keycode <= mapper->last)) {
@@ -153,15 +223,16 @@ STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard
                 if (mapper->flags & FLAG_CTRL && !ctrl) {
                     continue;
                 }
-                if (mapper->flags & FLAG_LUT) {
-                    code = lut[mapper->code][keycode - mapper->first];
+                if (mapper->flags & FLAG_STRING) {
+                    const char *msg = skip_nuls(mapper->data, keycode - mapper->first);
+                    send_bufz(msg, initial_repeat_time);
+                } else if (mapper->data) {
+                    code = mapper->data[keycode - mapper->first];
                 } else {
                     code = keycode - mapper->first + mapper->code;
                 }
-                if (mapper->flags & FLAG_ALPHABETIC) {
-                    if (shift ^ caps) {
-                        code ^= ('a' ^ 'A');
-                    }
+                if (code >= 'a' && code <= 'z' && (shift ^ caps)) {
+                    code ^= ('a' ^ 'A');
                 }
                 if (ctrl) {
                     code &= 0x1f;
@@ -169,7 +240,7 @@ STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard
                 if (alt) {
                     code ^= 0x80;
                 }
-                send_ascii(code, initial_repeat_time);
+                send_byte(code, initial_repeat_time);
                 break;
             }
         }
