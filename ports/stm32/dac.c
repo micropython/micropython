@@ -170,9 +170,19 @@ STATIC void dac_start(uint32_t dac_channel) {
 STATIC void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, uint32_t dma_mode, uint32_t bit_size, uint32_t dac_align, size_t len, void *buf) {
     uint32_t dma_align;
     if (bit_size == 8) {
+        #if defined(STM32G4)
+        // For STM32G4, DAC registers have to be accessed by words (32-bit).
+        dma_align = DMA_MDATAALIGN_BYTE | DMA_PDATAALIGN_WORD;
+        #else
         dma_align = DMA_MDATAALIGN_BYTE | DMA_PDATAALIGN_BYTE;
+        #endif
     } else {
+        #if defined(STM32G4)
+        // For STM32G4, DAC registers have to be accessed by words (32-bit).
+        dma_align = DMA_MDATAALIGN_HALFWORD | DMA_PDATAALIGN_WORD;
+        #else
         dma_align = DMA_MDATAALIGN_HALFWORD | DMA_PDATAALIGN_HALFWORD;
+        #endif
     }
 
     uint32_t base;
