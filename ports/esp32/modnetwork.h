@@ -44,6 +44,7 @@ typedef struct _base_if_obj_t {
     mp_obj_base_t base;
     esp_interface_t if_id;
     esp_netif_t *netif;
+    volatile bool active;
 } base_if_obj_t;
 
 extern const mp_obj_type_t esp_network_wlan_type;
