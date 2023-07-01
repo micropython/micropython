@@ -76,7 +76,7 @@ static bool mdns_initialised = false;
 #endif
 
 static uint8_t conf_wifi_sta_reconnects = 0;
-static volatile uint8_t wifi_sta_reconnects;
+static uint8_t wifi_sta_reconnects;
 
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
@@ -84,7 +84,12 @@ static void network_wlan_wifi_event_handler(void *event_handler_arg, esp_event_b
     switch (event_id) {
         case WIFI_EVENT_STA_START:
             ESP_LOGI("wifi", "STA_START");
+            wlan_sta_obj.active = true;
             wifi_sta_reconnects = 0;
+            break;
+
+        case WIFI_EVENT_STA_STOP:
+            wlan_sta_obj.active = false;
             break;
 
         case WIFI_EVENT_STA_CONNECTED:
@@ -140,6 +145,15 @@ static void network_wlan_wifi_event_handler(void *event_handler_arg, esp_event_b
             }
             break;
         }
+
+        case WIFI_EVENT_AP_START:
+            wlan_ap_obj.active = true;
+            break;
+
+        case WIFI_EVENT_AP_STOP:
+            wlan_ap_obj.active = false;
+            break;
+
         default:
             break;
     }
@@ -184,10 +198,12 @@ void esp_initialise_wifi(void) {
         wlan_sta_obj.base.type = &esp_network_wlan_type;
         wlan_sta_obj.if_id = ESP_IF_WIFI_STA;
         wlan_sta_obj.netif = esp_netif_create_default_wifi_sta();
+        wlan_sta_obj.active = false;
 
         wlan_ap_obj.base.type = &esp_network_wlan_type;
         wlan_ap_obj.if_id = ESP_IF_WIFI_AP;
         wlan_ap_obj.netif = esp_netif_create_default_wifi_ap();
+        wlan_ap_obj.active = false;
 
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
         ESP_LOGD("modnetwork", "Initializing WiFi");
@@ -237,15 +253,14 @@ STATIC mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
         } else {
             esp_exceptions(esp_wifi_set_mode(mode));
             if (!wifi_started) {
-                // WIFI_EVENT_STA_START must be received before esp_wifi_connect() can be called.
-                // Use the `wifi_sta_reconnects` variable to detect that event.
-                wifi_sta_reconnects = 1;
                 esp_exceptions(esp_wifi_start());
                 wifi_started = true;
-                while (wifi_sta_reconnects != 0) {
-                    MICROPY_EVENT_POLL_HOOK;
-                }
             }
+        }
+
+        // Wait for the interface to be in the correct state.
+        while (self->active != active) {
+            MICROPY_EVENT_POLL_HOOK;
         }
     }
 
