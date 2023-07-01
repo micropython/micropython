@@ -175,7 +175,8 @@ void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y
 }
 
 void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16_t y, displayio_bitmap_t *source,
-    int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t skip_index, bool skip_index_none) {
+    int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t skip_index, bool skip_index_none, uint32_t skip_self_index,
+    bool skip_self_index_none) {
     if (self->read_only) {
         mp_raise_RuntimeError(translate("Read-only"));
     }
@@ -222,8 +223,17 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
 
                 if ((yd_index >= 0) && (yd_index < self->height)) {
                     uint32_t value = common_hal_displayio_bitmap_get_pixel(source, xs_index, ys_index);
-                    if ((skip_index_none) || (value != skip_index)) {   // write if skip_value_none is True
-                        displayio_bitmap_write_pixel(self, xd_index, yd_index, value);
+                    if (skip_self_index_none) { // if skip_self_index is none, then only check source skip
+                        if ((skip_index_none) || (value != skip_index)) {   // write if skip_value_none is True
+                            displayio_bitmap_write_pixel(self, xd_index, yd_index, value);
+                        }
+                    } else { // check dest_value index against skip_self_index and skip if they match
+                        uint32_t dest_value = common_hal_displayio_bitmap_get_pixel(self, xd_index, yd_index);
+                        if (dest_value != skip_self_index) {
+                            if ((skip_index_none) || (value != skip_index)) {   // write if skip_value_none is True
+                                displayio_bitmap_write_pixel(self, xd_index, yd_index, value);
+                            }
+                        }
                     }
                 }
             }
