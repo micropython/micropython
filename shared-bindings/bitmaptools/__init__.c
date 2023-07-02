@@ -950,8 +950,8 @@ STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_a
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_circle_obj, 0, bitmaptools_obj_draw_circle);
 
 //|     def blit(
-//|         dest_bitmap: Bitmap,
-//|         source_bitmap: Bitmap,
+//|         dest_bitmap: displayio.Bitmap,
+//|         source_bitmap: displayio.Bitmap,
 //|         x: int,
 //|         y: int,
 //|         *,
