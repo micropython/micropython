@@ -984,8 +984,9 @@ void common_hal_bitmaptools_draw_circle(displayio_bitmap_t *destination,
 }
 
 void common_hal_bitmaptools_blit(displayio_bitmap_t *destination, displayio_bitmap_t *source, int16_t x, int16_t y,
-                                      int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t skip_index, bool skip_index_none, uint32_t skip_dest_index,
-                                      bool skip_dest_index_none) {
+    int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t skip_index, bool skip_index_none, uint32_t skip_dest_index,
+    bool skip_dest_index_none) {
+
     if (destination->read_only) {
         mp_raise_RuntimeError(translate("Read-only"));
     }
