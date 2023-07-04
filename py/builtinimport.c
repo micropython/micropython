@@ -632,9 +632,14 @@ mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
         return elem->value;
     }
 
-    // Try the name directly as a built-in.
+    // Try the name directly as a non-extensible built-in (e.g. `micropython`).
     qstr module_name_qstr = mp_obj_str_get_qstr(args[0]);
     mp_obj_t module_obj = mp_module_get_builtin(module_name_qstr, false);
+    if (module_obj != MP_OBJ_NULL) {
+        return module_obj;
+    }
+    // Now try as an extensible built-in (e.g. `time`).
+    module_obj = mp_module_get_builtin(module_name_qstr, true);
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;
     }
