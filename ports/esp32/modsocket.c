@@ -396,6 +396,18 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
             break;
         }
 
+        case SO_BINDTODEVICE: {
+            size_t len;
+            const char *val = mp_obj_str_get_data(args[3], &len);
+            char ifname[NETIF_NAMESIZE] = {0};
+            memcpy(&ifname, val, len);
+            int ret = lwip_setsockopt(self->fd, SOL_SOCKET, opt, &ifname, NETIF_NAMESIZE);
+            if (ret != 0) {
+                mp_raise_OSError(errno);
+            }
+            break;
+        }
+
             #if MICROPY_PY_SOCKET_EVENTS
         // level: SOL_SOCKET
         // special "register callback" option
@@ -860,6 +872,7 @@ STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SOL_SOCKET), MP_ROM_INT(SOL_SOCKET) },
     { MP_ROM_QSTR(MP_QSTR_SO_REUSEADDR), MP_ROM_INT(SO_REUSEADDR) },
     { MP_ROM_QSTR(MP_QSTR_SO_BROADCAST), MP_ROM_INT(SO_BROADCAST) },
+    { MP_ROM_QSTR(MP_QSTR_SO_BINDTODEVICE), MP_ROM_INT(SO_BINDTODEVICE) },
     { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
 };
 

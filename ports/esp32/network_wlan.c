@@ -622,6 +622,10 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             val = MP_OBJ_NEW_SMALL_INT(channel);
             break;
         }
+        case MP_QSTR_ifname: {
+            val = esp_ifname(self->netif);
+            break;
+        }
         case MP_QSTR_hostname:
         case MP_QSTR_dhcp_hostname: {
             // TODO: Deprecated. Use network.hostname() instead.

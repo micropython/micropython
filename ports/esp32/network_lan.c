@@ -393,6 +393,10 @@ STATIC mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             esp_eth_ioctl(self->eth_handle, ETH_CMD_G_MAC_ADDR, mac);
             return mp_obj_new_bytes(mac, sizeof(mac));
         }
+        case MP_QSTR_ifname: {
+            val = esp_ifname(self->base.netif);
+            break;
+        }
         default:
             mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
     }
