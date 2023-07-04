@@ -6,7 +6,7 @@ Note: v1.12-334 and newer (including v1.13) require an ESP8266 module with
 2MiB of flash or more, and use littlefs as the filesystem by default.  When
 upgrading from older firmware please backup your files first, and either
 erase all flash before upgrading, or after upgrading execute
-`uos.VfsLfs2.mkfs(bdev)`.
+`os.VfsLfs2.mkfs(bdev)`.
 
 ### OTA builds
 Over-The-Air (OTA) builds of the ESP8266 firmware are also provided.

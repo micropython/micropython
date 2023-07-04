@@ -31,15 +31,22 @@
 #include "py/mphal.h"
 #include "led.h"
 
-#if NUM_LEDS
+#if defined(MICROPY_HW_LED1_PIN)
 
-const machine_led_obj_t machine_led_obj[NUM_LEDS] = {
-    {
-        .base = {&machine_led_type},
-        .led_id = 1U,
-        .led_pin = &MICROPY_HW_LED1_PIN,
-    }
+const machine_led_obj_t machine_led_obj[] = {
+    { .base = {&machine_led_type}, .led_id = 1U, .led_pin = &MICROPY_HW_LED1_PIN, },
+    #if defined(MICROPY_HW_LED2_PIN)
+    { .base = {&machine_led_type}, .led_id = 2U, .led_pin = &MICROPY_HW_LED2_PIN, },
+    #if defined(MICROPY_HW_LED3_PIN)
+    { .base = {&machine_led_type}, .led_id = 3U, .led_pin = &MICROPY_HW_LED3_PIN, },
+    #if defined(MICROPY_HW_LED4_PIN)
+    { .base = {&machine_led_type}, .led_id = 4U, .led_pin = &MICROPY_HW_LED4_PIN, },
+    #endif
+    #endif
+    #endif
 };
+
+#define NUM_LEDS MP_ARRAY_SIZE(machine_led_obj)
 
 void led_init(void) {
     // Turn off LEDs and initialize
@@ -92,11 +99,6 @@ void led_debug(int value, int delay) {
         led_state(i + 1, (value & (1 << i)));
     }
     mp_hal_delay_ms(delay);
-}
-
-#else
-
-void led_init(void) {
 }
 
 #endif

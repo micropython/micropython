@@ -264,7 +264,7 @@ were a string.
 
 **Runtime compiler execution**
 
-The Python funcitons `eval` and `exec` invoke the compiler at runtime, which
+The Python functions `eval` and `exec` invoke the compiler at runtime, which
 requires significant amounts of RAM. Note that the ``pickle`` library from
 `micropython-lib` employs `exec`. It may be more RAM efficient to use the
 `json` library for object serialisation.
@@ -403,7 +403,7 @@ Control of garbage collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A GC can be demanded at any time by issuing `gc.collect()`. It is advantageous
-to do this at intervals, firstly to pre-empt fragmentation and secondly for
+to do this at intervals, firstly to preempt fragmentation and secondly for
 performance. A GC can take several milliseconds but is quicker when there is
 little work to do (about 1ms on the Pyboard). An explicit call can minimise that
 delay while ensuring it occurs at points in the program when it is acceptable.

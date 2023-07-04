@@ -82,7 +82,7 @@
 #define MBOOT_ADDRESS_SPACE_64BIT (0)
 #endif
 
-// These values are used in initial_r0 to enter mboot programatically.
+// These values are used in initial_r0 to enter mboot programmatically.
 #define MBOOT_INITIAL_R0_KEY (0x70ad0000)
 #define MBOOT_INITIAL_R0_KEY_FSLOAD (MBOOT_INITIAL_R0_KEY | 0x80)
 

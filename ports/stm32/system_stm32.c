@@ -190,7 +190,7 @@ MP_WEAK void SystemClock_Config(void) {
     #endif
 
     #if defined(STM32H7)
-    // Wait untill the voltage levels are valid.
+    // Wait until the voltage levels are valid.
     while (!__HAL_PWR_GET_FLAG(PWR_FLAG_ACTVOSRDY)) {
     }
 

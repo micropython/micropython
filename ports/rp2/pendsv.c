@@ -25,6 +25,7 @@
  */
 
 #include <assert.h>
+#include "py/mpconfig.h"
 #include "pendsv.h"
 #include "RP2040.h"
 

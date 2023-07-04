@@ -24,10 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <string.h>
-
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "spi.h"
 #include "extmod/machine_spi.h"
@@ -98,8 +96,8 @@ const spi_t spi_obj[6] = {
     #endif
 };
 
-#if defined(STM32H7)
-// STM32H7 HAL requires SPI IRQs to be enabled and handled.
+#if defined(STM32H5) || defined(STM32H7)
+// STM32H5/H7 HAL requires SPI IRQs to be enabled and handled.
 #if defined(MICROPY_HW_SPI1_SCK)
 void SPI1_IRQHandler(void) {
     IRQ_ENTER(SPI1_IRQn);
@@ -219,6 +217,20 @@ int spi_find_index(mp_obj_t id) {
 STATIC uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
     #if defined(STM32F0) || defined(STM32G0)
     return HAL_RCC_GetPCLK1Freq();
+    #elif defined(STM32H5)
+    if (spi->Instance == SPI1) {
+        return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI1);
+    } else if (spi->Instance == SPI2) {
+        return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI2);
+    } else if (spi->Instance == SPI3) {
+        return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI3);
+    } else if (spi->Instance == SPI4) {
+        return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI4);
+    } else if (spi->Instance == SPI5) {
+        return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI5);
+    } else {
+        return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI6);
+    }
     #elif defined(STM32H7)
     if (spi->Instance == SPI1 || spi->Instance == SPI2 || spi->Instance == SPI3) {
         return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI123);
@@ -253,6 +265,11 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit) {
     SPI_HandleTypeDef *spi = spi_obj->spi;
     SPI_InitTypeDef *init = &spi->Init;
+
+    #if defined(STM32H5)
+    // Enable PLL1Q output to be used as SPI clock (this is the default SPI clock source).
+    LL_RCC_PLL1Q_Enable();
+    #endif
 
     if (prescale != 0xffffffff || baudrate != -1) {
         if (prescale == 0xffffffff) {
@@ -296,7 +313,7 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
 }
 
 // TODO allow to take a list of pins to use
-void spi_init(const spi_t *self, bool enable_nss_pin) {
+int spi_init(const spi_t *self, bool enable_nss_pin) {
     SPI_HandleTypeDef *spi = self->spi;
     uint32_t irqn = 0;
     const pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
@@ -396,7 +413,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #endif
     } else {
         // SPI does not exist for this board (shouldn't get here, should be checked by caller)
-        return;
+        return -MP_EINVAL;
     }
 
     // init the GPIO lines
@@ -412,10 +429,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     // init the SPI device
     if (HAL_SPI_Init(spi) != HAL_OK) {
         // init error
-        // TODO should raise an exception, but this function is not necessarily going to be
-        // called via Python, so may not be properly wrapped in an NLR handler
-        printf("OSError: HAL_SPI_Init failed\n");
-        return;
+        return -MP_EIO;
     }
 
     // After calling HAL_SPI_Init() it seems that the DMA gets disconnected if
@@ -424,12 +438,14 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     dma_invalidate_channel(self->tx_dma_descr);
     dma_invalidate_channel(self->rx_dma_descr);
 
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     NVIC_SetPriority(irqn, IRQ_PRI_SPI);
     HAL_NVIC_EnableIRQ(irqn);
     #else
     (void)irqn;
     #endif
+
+    return 0; // success
 }
 
 void spi_deinit(const spi_t *spi_obj) {
@@ -650,7 +666,7 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
     if (spi->State != HAL_SPI_STATE_RESET) {
         if (spi->Init.Mode == SPI_MODE_MASTER) {
             // compute baudrate
-            #if defined(STM32H7)
+            #if defined(STM32H5) || defined(STM32H7)
             uint log_prescaler = (spi->Init.BaudRatePrescaler >> 28) + 1;
             #else
             uint log_prescaler = (spi->Init.BaudRatePrescaler >> 3) + 1;
@@ -715,8 +731,7 @@ STATIC int spi_proto_ioctl(void *self_in, uint32_t cmd) {
             self->spi->spi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
             spi_set_params(self->spi, 0xffffffff, self->baudrate,
                 self->polarity, self->phase, self->bits, self->firstbit);
-            spi_init(self->spi, false);
-            break;
+            return spi_init(self->spi, false);
 
         case MP_SPI_IOCTL_DEINIT:
             spi_deinit(self->spi);

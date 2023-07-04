@@ -98,9 +98,18 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
         ret |= MP_STREAM_POLL_RD;
     }
+    if (poll_flags & MP_STREAM_POLL_WR) {
+        #if MICROPY_HW_ENABLE_UART_REPL
+        ret |= MP_STREAM_POLL_WR;
+        #else
+        if (tud_cdc_connected() && tud_cdc_write_available() > 0) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+        #endif
+    }
     #endif
     #if MICROPY_PY_OS_DUPTERM
-    ret |= mp_uos_dupterm_poll(poll_flags);
+    ret |= mp_os_dupterm_poll(poll_flags);
     #endif
     return ret;
 }
@@ -117,7 +126,7 @@ int mp_hal_stdin_rx_chr(void) {
             return c;
         }
         #if MICROPY_PY_OS_DUPTERM
-        int dupterm_c = mp_uos_dupterm_rx_chr();
+        int dupterm_c = mp_os_dupterm_rx_chr();
         if (dupterm_c >= 0) {
             return dupterm_c;
         }
@@ -155,7 +164,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     #endif
 
     #if MICROPY_PY_OS_DUPTERM
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
     #endif
 }
 
@@ -195,10 +204,12 @@ MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
     // The mac should come from cyw43 otp when CYW43_USE_OTP_MAC is defined
     // This is loaded into the state after the driver is initialised
     // cyw43_hal_generate_laa_mac is only called by the driver to generate a mac if otp is not set
-    memcpy(buf, cyw43_state.mac, 6);
-    #else
-    mp_hal_generate_laa_mac(idx, buf);
+    if (idx == MP_HAL_MAC_WLAN0) {
+        memcpy(buf, cyw43_state.mac, 6);
+        return;
+    }
     #endif
+    mp_hal_generate_laa_mac(idx, buf);
 }
 
 void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {

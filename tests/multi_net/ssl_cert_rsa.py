@@ -2,7 +2,7 @@
 # This test won't run under CPython because CPython doesn't have key/cert
 
 try:
-    import ubinascii as binascii, usocket as socket, ussl as ssl
+    import binascii, socket, ssl
 except ImportError:
     print("SKIP")
     raise SystemExit

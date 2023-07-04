@@ -69,12 +69,11 @@
 #define MICROPY_PY_MACHINE_SPI_MSB (SPI_TRANSFER_MSB)
 #define MICROPY_PY_MACHINE_SPI_LSB (SPI_TRANSFER_LSB)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
-#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_PY_STRUCT           (0)
 #ifdef CONFIG_NETWORKING
 // If we have networking, we likely want errno comfort
-#define MICROPY_PY_UERRNO           (1)
-#define MICROPY_PY_USOCKET          (1)
+#define MICROPY_PY_ERRNO            (1)
+#define MICROPY_PY_SOCKET           (1)
 #endif
 #ifdef CONFIG_BT
 #define MICROPY_PY_BLUETOOTH        (1)
@@ -83,11 +82,12 @@
 #endif
 #define MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT (0)
 #endif
-#define MICROPY_PY_UBINASCII        (1)
-#define MICROPY_PY_UHASHLIB         (1)
-#define MICROPY_PY_UOS              (1)
-#define MICROPY_PY_UTIME            (1)
-#define MICROPY_PY_UTIME_MP_HAL     (1)
+#define MICROPY_PY_BINASCII         (1)
+#define MICROPY_PY_HASHLIB          (1)
+#define MICROPY_PY_OS               (1)
+#define MICROPY_PY_TIME             (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS (1)
+#define MICROPY_PY_TIME_INCLUDEFILE "ports/zephyr/modtime.c"
 #define MICROPY_PY_ZEPHYR           (1)
 #define MICROPY_PY_ZSENSOR          (1)
 #define MICROPY_PY_SYS_MODULES      (0)
@@ -126,8 +126,6 @@ void mp_hal_signal_event(void);
 #else
 #define MICROPY_HW_MCU_NAME "unknown-cpu"
 #endif
-
-#define MICROPY_MODULE_FROZEN_STR   (0)
 
 typedef int mp_int_t; // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size

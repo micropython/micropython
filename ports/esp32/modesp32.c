@@ -45,10 +45,8 @@
 #include "modesp32.h"
 
 // These private includes are needed for idf_heap_info.
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
 #define MULTI_HEAP_FREERTOS
 #include "../multi_heap_platform.h"
-#endif
 #include "../heap_private.h"
 
 STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
@@ -161,20 +159,14 @@ STATIC mp_obj_t esp32_raw_temperature(void) {
     CLEAR_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_DUMP_OUT);
     SET_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_POWER_UP_FORCE);
     SET_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_POWER_UP);
-    ets_delay_us(100);
+    esp_rom_delay_us(100);
     SET_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_DUMP_OUT);
-    ets_delay_us(5);
+    esp_rom_delay_us(5);
     int res = GET_PERI_REG_BITS2(SENS_SAR_SLAVE_ADDR3_REG, SENS_TSENS_OUT, SENS_TSENS_OUT_S);
 
     return mp_obj_new_int(res);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_raw_temperature_obj, esp32_raw_temperature);
-
-STATIC mp_obj_t esp32_hall_sensor(void) {
-    adc1_config_width(ADC_WIDTH_12Bit);
-    return MP_OBJ_NEW_SMALL_INT(hall_sensor_read());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_hall_sensor_obj, esp32_hall_sensor);
 
 #endif
 
@@ -210,14 +202,13 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gpio_deep_sleep_hold), MP_ROM_PTR(&esp32_gpio_deep_sleep_hold_obj) },
     #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
-    { MP_ROM_QSTR(MP_QSTR_hall_sensor), MP_ROM_PTR(&esp32_hall_sensor_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_idf_heap_info), MP_ROM_PTR(&esp32_idf_heap_info_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_NVS), MP_ROM_PTR(&esp32_nvs_type) },
     { MP_ROM_QSTR(MP_QSTR_Partition), MP_ROM_PTR(&esp32_partition_type) },
     { MP_ROM_QSTR(MP_QSTR_RMT), MP_ROM_PTR(&esp32_rmt_type) },
-    #if CONFIG_IDF_TARGET_ESP32
+    #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
     { MP_ROM_QSTR(MP_QSTR_ULP), MP_ROM_PTR(&esp32_ulp_type) },
     #endif
 

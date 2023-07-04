@@ -79,9 +79,9 @@ void usb_serial_jtag_tx_strn(const char *str, size_t len) {
         if (l > USB_SERIAL_JTAG_PACKET_SZ_BYTES) {
             l = USB_SERIAL_JTAG_PACKET_SZ_BYTES;
         }
-        portTickType start_tick = xTaskGetTickCount();
+        TickType_t start_tick = xTaskGetTickCount();
         while (!usb_serial_jtag_ll_txfifo_writable()) {
-            portTickType now_tick = xTaskGetTickCount();
+            TickType_t now_tick = xTaskGetTickCount();
             if (!terminal_connected || now_tick > (start_tick + pdMS_TO_TICKS(200))) {
                 terminal_connected = false;
                 return;

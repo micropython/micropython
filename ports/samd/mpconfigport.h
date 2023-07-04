@@ -59,7 +59,7 @@
 #define MICROPY_PY_BUILTINS_HELP_MODULES    (1)
 #define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_STATIC_NODES      (1)
-#define MICROPY_MODULE_WEAK_LINKS           (1)
+#define MICROPY_HW_ENABLE_USBDEV            (1)
 #define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
 
 // Control over Python builtins
@@ -77,37 +77,72 @@
 #define MICROPY_PY_IO_IOBASE                (1)
 
 // Extended modules
-#define MICROPY_PY_UTIME_MP_HAL             (1)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS        (1)
+#define MICROPY_PY_TIME_INCLUDEFILE         "ports/samd/modtime.c"
 #define MICROPY_PY_MACHINE                  (1)
-#define MICROPY_PY_UOS                      (1)
-#define MICROPY_PY_UOS_INCLUDEFILE          "ports/samd/moduos.c"
+#define MICROPY_PY_OS                       (1)
+#define MICROPY_PY_OS_INCLUDEFILE           "ports/samd/modos.c"
 #define MICROPY_READER_VFS                  (1)
 #define MICROPY_VFS                         (1)
-#define MICROPY_PY_UJSON                    (1)
-#define MICROPY_PY_URE                      (1)
-#define MICROPY_PY_UBINASCII                (1)
+#define MICROPY_PY_JSON                     (1)
+#define MICROPY_PY_RE                       (1)
+#define MICROPY_PY_BINASCII                 (1)
 #define MICROPY_PY_UCTYPES                  (1)
-#define MICROPY_PY_UHEAPQ                   (1)
-#define MICROPY_PY_URANDOM                  (1)
-#define MICROPY_PY_UZLIB                    (1)
-#define MICROPY_PY_UASYNCIO                 (1)
+#define MICROPY_PY_HEAPQ                    (1)
+#define MICROPY_PY_RANDOM                   (1)
+#define MICROPY_PY_ZLIB                     (1)
+#define MICROPY_PY_ASYNCIO                  (1)
+#define MICROPY_PY_MACHINE_RTC              (1)
+#ifndef MICROPY_PY_MACHINE_ADC
+#define MICROPY_PY_MACHINE_ADC              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_DAC
+#define MICROPY_PY_MACHINE_DAC              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_I2C
 #define MICROPY_PY_MACHINE_I2C              (1)
-#define MICROPY_PY_MACHINE_SOFTI2C          (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_SPI
 #define MICROPY_PY_MACHINE_SPI              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_SOFTI2C
+#define MICROPY_PY_MACHINE_SOFTI2C          (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_SOFTSPI
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
-#define MICROPY_HW_SOFTSPI_MIN_DELAY        (1)
-#define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (1000000)
+#endif
+#ifndef MICROPY_PY_MACHINE_UART
+#define MICROPY_PY_MACHINE_UART             (1)
+#endif
 #define MICROPY_PY_MACHINE_TIMER            (1)
+#define MICROPY_SOFT_TIMER_TICKS_MS         systick_ms
 #define MICROPY_PY_OS_DUPTERM               (3)
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
+#ifndef MICROPY_PY_MACHINE_PULSE
 #define MICROPY_PY_MACHINE_PULSE            (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_PWM
 #define MICROPY_PY_MACHINE_PWM              (1)
-#define MICROPY_PY_MACHINE_PWM_INIT         (0)
-#define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/samd/machine_pwm.c"
+#endif
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
+#define MICROPY_PY_MACHINE_DHT_READINTO     (1)
+#define MICROPY_PY_ONEWIRE                  (1)
+#define MICROPY_PY_PLATFORM                 (1)
+#define MICROPY_PLATFORM_VERSION            "ASF4"
 
 #define MP_STATE_PORT MP_STATE_VM
+
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
+#endif
+
+// Use internal flash for the file system if no flash file system is selected.
+#if !defined(MICROPY_HW_MCUFLASH) && !defined(MICROPY_HW_QSPIFLASH) && !(defined(MICROPY_HW_SPIFLASH) && defined(MICROPY_HW_SPIFLASH_ID))
+#define MICROPY_HW_MCUFLASH                 (1)
+#endif  // !defined(MICROPY_HW_MCUFLASH) ....
 
 // Miscellaneous settings
 __attribute__((always_inline)) static inline void enable_irq(uint32_t state) {

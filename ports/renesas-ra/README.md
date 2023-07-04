@@ -4,11 +4,11 @@ This is a port of MicroPython to the Renesas RA family of microcontrollers.
 Currently supported features are:
 
 - Filesystem on the internal flash using FatFs.
-- `utime` module with sleep, time, and ticks functions.
-- `uos` module with VFS support.
-- `machine` module with the following classes: `Pin`, `ADC`, `I2C`, `SPI`,
-   `SoftI2C`, `SoftSPI`, `UART`, `RTC`
-- sdcard driver if frozen driver is installed.
+- `time` module with sleep, time, and ticks functions.
+- `os` module with VFS support.
+- `machine` module with the following classes: `Pin`, `ADC`, `PWM`, `DAC`, `I2C`,
+  `SPI`, `SoftI2C`, `SoftSPI`, `UART`, `RTC`, `SDCard`.
+- `sdcard` module for MCUs without native `machine.SDCard` support.
 
 Currently supported board product names are:
 
@@ -48,15 +48,15 @@ First the submodules must be obtained using:
 * Build binary image `.hex`
 Then to build for a given board subdirectory name, run:
 
-      $ make BOARD=RA6M2_EK clean
-      $ make BOARD=RA6M2_EK
+      $ make BOARD=EK_RA6M2 clean
+      $ make BOARD=EK_RA6M2
 
-  The default board subdirectory name is RA6M2_EK (which is for EK-RA6M2 board)
+  The default board subdirectory name is EK_RA6M2 (which is for EK-RA6M2 board)
 but any of the names of the subdirectories in the `boards/` directory can be
-passed as the argument to `BOARD=`; for example `RA4M1_CLICKER`, `RA4M1_EK`,
-`RA4W1_EK` and `RA6M1_EK`.
+passed as the argument to `BOARD=`; for example `RA4M1_CLICKER`, `EK_RA4M1`,
+`EK_RA4W1` and `EK_RA6M1`.
 The above command should produce binary images `firmware.hex` in the
-build-RA6M2_EK/` subdirectory (or the equivalent directory for the board specified).
+build-EK_RA6M2/` subdirectory (or the equivalent directory for the board specified).
 
 ## Supported/Unsupprted funtions
 Please refer to the `renesas-ra` quick reference.

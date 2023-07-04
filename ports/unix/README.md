@@ -70,5 +70,5 @@ or not). If you intend to build MicroPython with additional options
 (like cross-compiling), the same set of options should be passed to `make
 deplibs`. To actually enable/disable use of dependencies, edit the
 `ports/unix/mpconfigport.mk` file, which has inline descriptions of the
-options. For example, to build the SSL module, `MICROPY_PY_USSL` should be
+options. For example, to build the SSL module, `MICROPY_PY_SSL` should be
 set to 1.

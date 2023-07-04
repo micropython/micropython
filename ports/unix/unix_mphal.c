@@ -187,7 +187,7 @@ main_term:;
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
 }
 
 // cooked is same as uncooked because the terminal does some postprocessing
@@ -255,7 +255,7 @@ void mp_hal_get_random(size_t n, void *buf) {
     #ifdef _HAVE_GETRANDOM
     RAISE_ERRNO(getrandom(buf, n, 0), errno);
     #else
-    int fd = open("/dev/urandom", O_RDONLY);
+    int fd = open("/dev/random", O_RDONLY);
     RAISE_ERRNO(fd, errno);
     RAISE_ERRNO(read(fd, buf, n), errno);
     close(fd);

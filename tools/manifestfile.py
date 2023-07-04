@@ -39,7 +39,8 @@ __all__ = ["ManifestFileError", "ManifestFile"]
 MODE_FREEZE = 1
 # Only allow include/require/module/package.
 MODE_COMPILE = 2
-
+# Same as compile, but handles require(..., pypi="name") as a requirements.txt entry.
+MODE_PYPROJECT = 3
 
 # In compile mode, .py -> KIND_COMPILE_AS_MPY
 # In freeze mode, .py -> KIND_FREEZE_AS_MPY, .mpy->KIND_FREEZE_MPY
@@ -66,6 +67,15 @@ class ManifestFileError(Exception):
     pass
 
 
+class ManifestIgnoreException(Exception):
+    pass
+
+
+class ManifestUsePyPIException(Exception):
+    def __init__(self, pypi_name):
+        self.pypi_name = pypi_name
+
+
 # The set of files that this manifest references.
 ManifestOutput = namedtuple(
     "ManifestOutput",
@@ -81,23 +91,75 @@ ManifestOutput = namedtuple(
 )
 
 
-# Represent the metadata for a package.
-class ManifestMetadata:
-    def __init__(self):
+# Represents the metadata for a package.
+class ManifestPackageMetadata:
+    def __init__(self, is_require=False):
+        self._is_require = is_require
+        self._initialised = False
+
         self.version = None
         self.description = None
         self.license = None
         self.author = None
 
-    def update(self, description=None, version=None, license=None, author=None):
-        if description:
-            self.description = description
-        if version:
-            self.version = version
-        if license:
-            self.license = version
-        if author:
-            self.author = author
+        # Annotate a package as being from the python standard library.
+        self.stdlib = False
+
+        # Allows a python-ecosys package to be annotated with the
+        # corresponding name in PyPI. e.g. micropython-lib/urequests is based
+        # on pypi/requests.
+        self.pypi = None
+        # For a micropython package, this is the name that we will publish it
+        # to PyPI as. e.g. micropython-lib/senml publishes as
+        # pypi/micropython-senml.
+        self.pypi_publish = None
+
+    def update(
+        self,
+        mode,
+        description=None,
+        version=None,
+        license=None,
+        author=None,
+        stdlib=False,
+        pypi=None,
+        pypi_publish=None,
+    ):
+        if self._initialised:
+            raise ManifestFileError("Duplicate call to metadata().")
+
+        # In MODE_PYPROJECT, if this manifest is being evaluated as a result
+        # of a require(), then figure out if it should be replaced by a PyPI
+        # dependency instead.
+        if mode == MODE_PYPROJECT and self._is_require:
+            if stdlib:
+                # No dependency required at all for CPython.
+                raise ManifestIgnoreException
+            if pypi_publish or pypi:
+                # In the case where a package is both based on a PyPI package and
+                # provides one, preference depending on the published one.
+                # (This should be pretty rare).
+                raise ManifestUsePyPIException(pypi_publish or pypi)
+
+        self.description = description
+        self.version = version
+        self.license = license
+        self.author = author
+        self.pypi = pypi
+        self.pypi_publish = pypi_publish
+        self._initialised = True
+
+    def check_initialised(self, mode):
+        # Ensure that metadata() is the first thing a manifest.py does.
+        # This is to ensure that we early-exit if it should be replaced by a pypi dependency.
+        if mode in (MODE_COMPILE, MODE_PYPROJECT):
+            if not self._initialised:
+                raise ManifestFileError("metadata() must be the first command in a manifest file.")
+
+    def __str__(self):
+        return "version={} description={} license={} author={} pypi={} pypi_publish={}".format(
+            self.version, self.description, self.license, self.author, self.pypi, self.pypi_publish
+        )
 
 
 # Turns a dict of options into a object with attributes used to turn the
@@ -120,16 +182,18 @@ class IncludeOptions:
 
 class ManifestFile:
     def __init__(self, mode, path_vars=None):
-        # Either MODE_FREEZE or MODE_COMPILE.
+        # See MODE_* constants above.
         self._mode = mode
-        # Path substition variables.
+        # Path substitution variables.
         self._path_vars = path_vars or {}
         # List of files (as ManifestFileResult) references by this manifest.
         self._manifest_files = []
+        # List of PyPI dependencies (when mode=MODE_PYPROJECT).
+        self._pypi_dependencies = []
         # Don't allow including the same file twice.
         self._visited = set()
         # Stack of metadata for each level.
-        self._metadata = [ManifestMetadata()]
+        self._metadata = [ManifestPackageMetadata()]
 
     def _resolve_path(self, path):
         # Convert path to an absolute path, applying variable substitutions.
@@ -140,26 +204,39 @@ class ManifestFile:
 
     def _manifest_globals(self, kwargs):
         # This is the "API" available to a manifest file.
-        return {
+        g = {
             "metadata": self.metadata,
             "include": self.include,
             "require": self.require,
             "package": self.package,
             "module": self.module,
-            "freeze": self.freeze,
-            "freeze_as_str": self.freeze_as_str,
-            "freeze_as_mpy": self.freeze_as_mpy,
-            "freeze_mpy": self.freeze_mpy,
             "options": IncludeOptions(**kwargs),
         }
+
+        # Extra legacy functions only for freeze mode.
+        if self._mode == MODE_FREEZE:
+            g.update(
+                {
+                    "freeze": self.freeze,
+                    "freeze_as_str": self.freeze_as_str,
+                    "freeze_as_mpy": self.freeze_as_mpy,
+                    "freeze_mpy": self.freeze_mpy,
+                }
+            )
+
+        return g
 
     def files(self):
         return self._manifest_files
 
+    def pypi_dependencies(self):
+        # In MODE_PYPROJECT, this will return a list suitable for requirements.txt.
+        return self._pypi_dependencies
+
     def execute(self, manifest_file):
         if manifest_file.endswith(".py"):
             # Execute file from filesystem.
-            self.include(manifest_file, top_level=True)
+            self.include(manifest_file)
         else:
             # Execute manifest code snippet.
             try:
@@ -173,7 +250,7 @@ class ManifestFile:
             stat = os.stat(full_path)
             timestamp = stat.st_mtime
         except OSError:
-            raise ManifestFileError("cannot stat {}".format(full_path))
+            raise ManifestFileError("Cannot stat {}".format(full_path))
 
         # Map the AUTO kinds to their actual kind based on mode and extension.
         _, ext = os.path.splitext(full_path)
@@ -231,19 +308,21 @@ class ManifestFile:
             if base_path:
                 os.chdir(prev_cwd)
 
-    def metadata(self, description=None, version=None, license=None, author=None):
+    def metadata(self, **kwargs):
         """
         From within a manifest file, use this to set the metadata for the
         package described by current manifest.
 
         After executing a manifest file (via execute()), call this
         to obtain the metadata for the top-level manifest file.
-        """
 
-        self._metadata[-1].update(description, version, license, author)
+        See ManifestPackageMetadata.update() for valid kwargs.
+        """
+        if kwargs:
+            self._metadata[-1].update(self._mode, **kwargs)
         return self._metadata[-1]
 
-    def include(self, manifest_path, top_level=False, **kwargs):
+    def include(self, manifest_path, is_require=False, **kwargs):
         """
         Include another manifest.
 
@@ -269,9 +348,12 @@ class ManifestFile:
             if options.extra_features:
                 # freeze extra modules.
         """
+        if is_require:
+            self._metadata[-1].check_initialised(self._mode)
+
         if not isinstance(manifest_path, str):
             for m in manifest_path:
-                self.include(m)
+                self.include(m, **kwargs)
         else:
             manifest_path = self._resolve_path(manifest_path)
             # Including a directory grabs the manifest.py inside it.
@@ -280,29 +362,50 @@ class ManifestFile:
             if manifest_path in self._visited:
                 return
             self._visited.add(manifest_path)
-            if not top_level:
-                self._metadata.append(ManifestMetadata())
-            with open(manifest_path) as f:
-                # Make paths relative to this manifest file while processing it.
-                # Applies to includes and input files.
-                prev_cwd = os.getcwd()
-                os.chdir(os.path.dirname(manifest_path))
-                try:
-                    exec(f.read(), self._manifest_globals(kwargs))
-                except Exception as er:
-                    raise ManifestFileError(
-                        "Error in manifest file: {}: {}".format(manifest_path, er)
-                    )
-                os.chdir(prev_cwd)
-            if not top_level:
+            if is_require:
+                # This include is the result of require("name"), so push a new
+                # package metadata onto the stack.
+                self._metadata.append(ManifestPackageMetadata(is_require=True))
+            try:
+                with open(manifest_path) as f:
+                    # Make paths relative to this manifest file while processing it.
+                    # Applies to includes and input files.
+                    prev_cwd = os.getcwd()
+                    os.chdir(os.path.dirname(manifest_path))
+                    try:
+                        exec(f.read(), self._manifest_globals(kwargs))
+                    finally:
+                        os.chdir(prev_cwd)
+            except ManifestIgnoreException:
+                # e.g. MODE_PYPROJECT and this was a stdlib dependency. No-op.
+                pass
+            except ManifestUsePyPIException as e:
+                # e.g. MODE_PYPROJECT and this was a package from
+                # python-ecosys. Add PyPI dependency instead.
+                self._pypi_dependencies.append(e.pypi_name)
+            except Exception as e:
+                raise ManifestFileError("Error in manifest file: {}: {}".format(manifest_path, e))
+            if is_require:
                 self._metadata.pop()
 
-    def require(self, name, version=None, unix_ffi=False, **kwargs):
+    def require(self, name, version=None, unix_ffi=False, pypi=None, **kwargs):
         """
         Require a module by name from micropython-lib.
 
         Optionally specify unix_ffi=True to use a module from the unix-ffi directory.
+
+        Optionally specify pipy="package-name" to indicate that this should
+        use the named package from PyPI when building for CPython.
         """
+        self._metadata[-1].check_initialised(self._mode)
+
+        if self._mode == MODE_PYPROJECT and pypi:
+            # In PYPROJECT mode, allow overriding the PyPI dependency name
+            # explicitly. Otherwise if the dependent package has metadata
+            # (pypi_publish) or metadata(pypi) we will use that.
+            self._pypi_dependencies.append(pypi)
+            return
+
         if self._path_vars["MPY_LIB_DIR"]:
             lib_dirs = ["micropython", "python-stdlib", "python-ecosys"]
             if unix_ffi:
@@ -316,7 +419,7 @@ class ManifestFile:
                     os.path.join(self._path_vars["MPY_LIB_DIR"], lib_dir)
                 ):
                     if os.path.basename(root) == name and "manifest.py" in filenames:
-                        self.include(root, **kwargs)
+                        self.include(root, is_require=True, **kwargs)
                         return
 
             raise ValueError("Library not found in local micropython-lib: {}".format(name))
@@ -338,6 +441,8 @@ class ManifestFile:
         To restrict to certain files in the package use files (note: paths should be relative to the package):
             package("foo", files=["bar/baz.py"])
         """
+        self._metadata[-1].check_initialised(self._mode)
+
         # Include "base_path/package_path/**/*.py" --> "package_path/**/*.py"
         self._search(base_path, package_path, files, exts=(".py",), kind=KIND_AUTO, opt=opt)
 
@@ -351,6 +456,8 @@ class ManifestFile:
         Otherwise use base_path to locate the file:
             module("foo.py", "src/drivers")
         """
+        self._metadata[-1].check_initialised(self._mode)
+
         # Include "base_path/module_path" --> "module_path"
         base_path = self._resolve_path(base_path)
         _, ext = os.path.splitext(module_path)
@@ -454,6 +561,7 @@ def main():
     cmd_parser = argparse.ArgumentParser(description="List the files referenced by a manifest.")
     cmd_parser.add_argument("--freeze", action="store_true", help="freeze mode")
     cmd_parser.add_argument("--compile", action="store_true", help="compile mode")
+    cmd_parser.add_argument("--pyproject", action="store_true", help="pyproject mode")
     cmd_parser.add_argument(
         "--lib",
         default=os.path.join(os.path.dirname(__file__), "../lib/micropython-lib"),
@@ -481,6 +589,8 @@ def main():
         mode = MODE_FREEZE
     elif args.compile:
         mode = MODE_COMPILE
+    elif args.pyproject:
+        mode = MODE_PYPROJECT
     else:
         print("Error: No mode specified.", file=sys.stderr)
         exit(1)
@@ -492,8 +602,12 @@ def main():
         except ManifestFileError as er:
             print(er, file=sys.stderr)
             exit(1)
+    print(m.metadata())
     for f in m.files():
         print(f)
+    if mode == MODE_PYPROJECT:
+        for r in m.pypi_dependencies():
+            print("pypi-require:", r)
 
 
 if __name__ == "__main__":

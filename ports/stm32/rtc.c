@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
 #include "extint.h"
@@ -103,8 +101,10 @@ STATIC bool rtc_need_init_finalise = false;
 #endif
 
 void rtc_init_start(bool force_init) {
-    #if defined(STM32WL)
     // Enable the RTC APB bus clock, to communicate with the RTC.
+    #if defined(STM32H5)
+    __HAL_RCC_RTC_CLK_ENABLE();
+    #elif defined(STM32WL)
     __HAL_RCC_RTCAPB_CLK_ENABLE();
     #endif
 
@@ -149,14 +149,23 @@ void rtc_init_start(bool force_init) {
             // Clear source Reset Flag
             __HAL_RCC_CLEAR_RESET_FLAGS();
             // Turn the LSI on (it may need this even if the RTC is running)
+            #if defined(STM32H5)
+            RCC->BDCR |= RCC_BDCR_LSION;
+            #else
             RCC->CSR |= RCC_CSR_LSION;
+            #endif
             // provide some status information
             rtc_info |= 0x80000;
         }
 
         if (rtc_running) {
             // Provide information about the registers that indicated the RTC is running.
+            // Bits are (MSB first): LSIRDY LSION LSEBYP LSERDY LSEON
+            #if defined(STM32H5)
+            rtc_info |= (RCC->BDCR >> RCC_BDCR_LSEON_Pos & 7) | (RCC->BDCR >> RCC_BDCR_LSION_Pos & 3) << 8;
+            #else
             rtc_info |= (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
+            #endif
 
             // Check that the sync and async prescaler values are correct.  If the RTC
             // gets into a state where they are wrong then it will run slow or fast and
@@ -236,7 +245,7 @@ void rtc_init_finalise() {
     RTC_CalendarConfig();
     #if defined(STM32G0)
     if (__HAL_RCC_GET_FLAG(RCC_FLAG_PWRRST) != RESET) {
-    #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #elif defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     if (__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST) != RESET) {
     #else
     if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
@@ -268,7 +277,7 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInitStruct
 
     /*------------------------------ LSE Configuration -------------------------*/
     if ((RCC_OscInitStruct->OscillatorType & RCC_OSCILLATORTYPE_LSE) == RCC_OSCILLATORTYPE_LSE) {
-        #if !defined(STM32H7) && !defined(STM32WB) && !defined(STM32WL)
+        #if !defined(STM32H5) && !defined(STM32H7) && !defined(STM32WB) && !defined(STM32WL)
         // Enable Power Clock
         __HAL_RCC_PWR_CLK_ENABLE();
         #endif
@@ -283,6 +292,13 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInitStruct
         // PWR->CR1 |= PWR_CR1_DBP;
         // Wait for Backup domain Write protection disable
         while ((PWR->CR1 & PWR_CR1_DBP) == RESET) {
+            if (HAL_GetTick() - tickstart > RCC_DBP_TIMEOUT_VALUE) {
+                return HAL_TIMEOUT;
+            }
+        }
+        #elif defined(STM32H5)
+        // Wait for Backup domain Write protection disable
+        while (!LL_PWR_IsEnabledBkUpAccess()) {
             if (HAL_GetTick() - tickstart > RCC_DBP_TIMEOUT_VALUE) {
                 return HAL_TIMEOUT;
             }
@@ -365,7 +381,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         #elif defined(STM32F7)
         hrtc->Instance->OR &= (uint32_t) ~RTC_OR_ALARMTYPE;
         hrtc->Instance->OR |= (uint32_t)(hrtc->Init.OutPutType);
-        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
+        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32WL)
         hrtc->Instance->CR &= (uint32_t) ~RTC_CR_TAMPALRM_TYPE_Msk;
         hrtc->Instance->CR |= (uint32_t)(hrtc->Init.OutPutType);
         #else
@@ -631,7 +647,7 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
-#if defined(STM32F0) || defined(STM32L0)
+#if defined(STM32F0) || defined(STM32H5) || defined(STM32L0)
 #define RTC_WKUP_IRQn RTC_IRQn
 #elif defined(STM32G0)
 #define RTC_WKUP_IRQn RTC_TAMP_IRQn
@@ -740,7 +756,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         RTC->WPR = 0xff;
 
         // enable external interrupts on line EXTI_RTC_WAKEUP
-        #if defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
         EXTI->IMR1 |= 1 << EXTI_RTC_WAKEUP;
         EXTI->RTSR1 |= 1 << EXTI_RTC_WAKEUP;
         #elif defined(STM32H7)
@@ -752,7 +768,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         #endif
 
         // clear interrupt flags
-        #if defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32WL)
         RTC->ICSR &= ~RTC_ICSR_WUTWF;
         #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
         RTC->SR &= ~RTC_SR_WUTF;
@@ -763,7 +779,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         EXTI->PR1 = 1 << EXTI_RTC_WAKEUP;
         #elif defined(STM32H7)
         EXTI_D1->PR1 = 1 << EXTI_RTC_WAKEUP;
-        #elif defined(STM32G0)
+        #elif defined(STM32G0) || defined(STM32H5)
         // Do nothing
         #else
         EXTI->PR = 1 << EXTI_RTC_WAKEUP;
@@ -771,8 +787,6 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
 
         NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP);
         HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
-
-        // printf("wut=%d wucksel=%d\n", wut, wucksel);
     } else {
         // clear WUTIE to disable interrupts
         RTC->CR &= ~RTC_CR_WUTIE;
@@ -781,7 +795,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         RTC->WPR = 0xff;
 
         // disable external interrupts on line EXTI_RTC_WAKEUP
-        #if defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
         EXTI->IMR1 &= ~(1 << EXTI_RTC_WAKEUP);
         #elif defined(STM32H7)
         EXTI_D1->IMR1 |= 1 << EXTI_RTC_WAKEUP;
@@ -833,7 +847,6 @@ mp_obj_t pyb_rtc_calibration(size_t n_args, const mp_obj_t *args) {
         HAL_RTCEx_SetSmoothCalib(&RTCHandle, RTC_SMOOTHCALIB_PERIOD_32SEC, cal_p, cal_m);
         return mp_const_none;
     } else {
-        // printf("CALR = 0x%x\n", (mp_uint_t) RTCHandle.Instance->CALR); // DEBUG
         // Test if CALP bit is set in CALR:
         if (RTCHandle.Instance->CALR & 0x8000) {
             cal = 512 - (RTCHandle.Instance->CALR & 0x1ff);

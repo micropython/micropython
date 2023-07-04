@@ -356,19 +356,19 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# repl\n");
 
         const char *str;
-        size_t len = mp_repl_autocomplete("__n", 3, &mp_plat_print, &str);
+        size_t len = mp_repl_autocomplete("__n", 3, &mp_plat_print, &str); // expect "ame__"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
 
-        len = mp_repl_autocomplete("i", 1,  &mp_plat_print, &str);
+        len = mp_repl_autocomplete("im", 2,  &mp_plat_print, &str); // expect "port"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
-        mp_repl_autocomplete("import ", 7,  &mp_plat_print, &str);
-        len = mp_repl_autocomplete("import ut", 9,  &mp_plat_print, &str);
+        mp_repl_autocomplete("import ", 7,  &mp_plat_print, &str); // expect the list of builtins
+        len = mp_repl_autocomplete("import ti", 9,  &mp_plat_print, &str); // expect "me"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
-        mp_repl_autocomplete("import utime", 12,  &mp_plat_print, &str);
+        mp_repl_autocomplete("import m", 8,  &mp_plat_print, &str); // expect "micropython machine math"
 
         mp_store_global(MP_QSTR_sys, mp_import_name(MP_QSTR_sys, mp_const_none, MP_OBJ_NEW_SMALL_INT(0)));
-        mp_repl_autocomplete("sys.", 4, &mp_plat_print, &str);
-        len = mp_repl_autocomplete("sys.impl", 8, &mp_plat_print, &str);
+        mp_repl_autocomplete("sys.", 4, &mp_plat_print, &str); // expect dir(sys)
+        len = mp_repl_autocomplete("sys.impl", 8, &mp_plat_print, &str); // expect "ementation"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
     }
 
@@ -539,7 +539,7 @@ STATIC mp_obj_t extra_coverage(void) {
     {
         mp_printf(&mp_plat_print, "# VM\n");
 
-        // call mp_execute_bytecode with invalide bytecode (should raise NotImplementedError)
+        // call mp_execute_bytecode with invalid bytecode (should raise NotImplementedError)
         mp_module_context_t context;
         mp_obj_fun_bc_t fun_bc;
         fun_bc.context = &context;

@@ -42,6 +42,7 @@
 #include "modmachine.h"
 #include "modrp2.h"
 #include "mpbthciport.h"
+#include "mpnetworkport.h"
 #include "genhdr/mpversion.h"
 #include "mp_usbd.h"
 
@@ -58,16 +59,8 @@
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
 
-#ifndef MICROPY_GC_HEAP_SIZE
-#if MICROPY_PY_LWIP
-#define MICROPY_GC_HEAP_SIZE 166 * 1024
-#else
-#define MICROPY_GC_HEAP_SIZE 192 * 1024
-#endif
-#endif
-
 extern uint8_t __StackTop, __StackBottom;
-__attribute__((section(".uninitialized_bss"))) static char gc_heap[MICROPY_GC_HEAP_SIZE];
+extern uint8_t __GcHeapStart, __GcHeapEnd;
 
 // Embed version info in the binary in machine readable form
 bi_decl(bi_program_version_string(MICROPY_GIT_TAG));
@@ -83,6 +76,10 @@ int main(int argc, char **argv) {
     bi_decl(bi_program_feature("UART REPL"))
     setup_default_uart();
     mp_uart_init();
+    #else
+    #ifndef NDEBUG
+    stdio_init_all();
+    #endif
     #endif
 
     #if MICROPY_HW_ENABLE_USBDEV
@@ -95,10 +92,6 @@ int main(int argc, char **argv) {
     #if MICROPY_PY_THREAD
     bi_decl(bi_program_feature("thread support"))
     mp_thread_init();
-    #endif
-
-    #ifndef NDEBUG
-    stdio_init_all();
     #endif
 
     // Start and initialise the RTC
@@ -117,7 +110,7 @@ int main(int argc, char **argv) {
     // Initialise stack extents and GC heap.
     mp_stack_set_top(&__StackTop);
     mp_stack_set_limit(&__StackTop - &__StackBottom - 256);
-    gc_init(&gc_heap[0], &gc_heap[MP_ARRAY_SIZE(gc_heap)]);
+    gc_init(&__GcHeapStart, &__GcHeapEnd);
 
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
@@ -129,7 +122,7 @@ int main(int argc, char **argv) {
     #endif
     #endif
 
-    #if MICROPY_PY_NETWORK_CYW43
+    #if MICROPY_PY_NETWORK_CYW43 || MICROPY_PY_BLUETOOTH_CYW43
     {
         cyw43_init(&cyw43_state);
         cyw43_irq_init();
@@ -175,9 +168,9 @@ int main(int argc, char **argv) {
 
         // Execute _boot.py to set up the filesystem.
         #if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
-        pyexec_frozen_module("_boot_fat.py");
+        pyexec_frozen_module("_boot_fat.py", false);
         #else
-        pyexec_frozen_module("_boot.py");
+        pyexec_frozen_module("_boot.py", false);
         #endif
 
         // Execute user scripts.
@@ -213,6 +206,7 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_deinit();
         #endif
+        machine_pwm_deinit_all();
         machine_pin_deinit();
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
@@ -266,40 +260,3 @@ uint32_t rosc_random_u32(void) {
     }
     return value;
 }
-
-const char rp2_help_text[] =
-    "Welcome to MicroPython!\n"
-    "\n"
-    "For online help please visit https://micropython.org/help/.\n"
-    "\n"
-    "For access to the hardware use the 'machine' module.  RP2 specific commands\n"
-    "are in the 'rp2' module.\n"
-    "\n"
-    "Quick overview of some objects:\n"
-    "  machine.Pin(pin) -- get a pin, eg machine.Pin(0)\n"
-    "  machine.Pin(pin, m, [p]) -- get a pin and configure it for IO mode m, pull mode p\n"
-    "    methods: init(..), value([v]), high(), low(), irq(handler)\n"
-    "  machine.ADC(pin) -- make an analog object from a pin\n"
-    "    methods: read_u16()\n"
-    "  machine.PWM(pin) -- make a PWM object from a pin\n"
-    "    methods: deinit(), freq([f]), duty_u16([d]), duty_ns([d])\n"
-    "  machine.I2C(id) -- create an I2C object (id=0,1)\n"
-    "    methods: readfrom(addr, buf, stop=True), writeto(addr, buf, stop=True)\n"
-    "             readfrom_mem(addr, memaddr, arg), writeto_mem(addr, memaddr, arg)\n"
-    "  machine.SPI(id, baudrate=1000000) -- create an SPI object (id=0,1)\n"
-    "    methods: read(nbytes, write=0x00), write(buf), write_readinto(wr_buf, rd_buf)\n"
-    "  machine.Timer(freq, callback) -- create a software timer object\n"
-    "    eg: machine.Timer(freq=1, callback=lambda t:print(t))\n"
-    "\n"
-    "Pins are numbered 0-29, and 26-29 have ADC capabilities\n"
-    "Pin IO modes are: Pin.IN, Pin.OUT, Pin.ALT\n"
-    "Pin pull modes are: Pin.PULL_UP, Pin.PULL_DOWN\n"
-    "\n"
-    "Useful control commands:\n"
-    "  CTRL-C -- interrupt a running program\n"
-    "  CTRL-D -- on a blank line, do a soft reset of the board\n"
-    "  CTRL-E -- on a blank line, enter paste mode\n"
-    "\n"
-    "For further help on a specific object, type help(obj)\n"
-    "For a list of available modules, type help('modules')\n"
-;

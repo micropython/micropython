@@ -50,7 +50,7 @@
 #include "pin.h"
 #include "pybpin.h"
 #include "pins.h"
-#include "moduos.h"
+#include "modos.h"
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus

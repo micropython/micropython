@@ -38,6 +38,9 @@
 #include "pin.h"
 #include "modmachine.h"
 #include "fsl_wdog.h"
+#if FSL_FEATURE_BOOT_ROM_HAS_ROMAPI
+#include "fsl_romapi.h"
+#endif
 
 #if MICROPY_PY_MACHINE
 
@@ -108,8 +111,26 @@ STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+    #if defined(MICROPY_BOARD_ENTER_BOOTLOADER)
+    // If a board has a custom bootloader, call it first.
+    MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
+    #elif FSL_ROM_HAS_RUNBOOTLOADER_API
+    // If not, enter ROM bootloader in serial downloader / USB mode.
+    uint32_t arg = 0xEB110000;
+    ROM_RunBootloader(&arg);
+    #else
+    // No custom bootloader, or run bootloader API, then just reset.
+    WDOG_TriggerSystemSoftwareReset(WDOG1);
+    #endif
+    while (1) {
+        ;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_machine) },
     { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_soft_reset),          MP_ROM_PTR(&machine_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
@@ -118,7 +139,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem8),                MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16),               MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32),               MP_ROM_PTR(&machine_mem32_obj) },
-    #if NUM_LEDS
+    #if defined(MICROPY_HW_LED1_PIN)
     { MP_ROM_QSTR(MP_QSTR_LED),                 MP_ROM_PTR(&machine_led_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) },
@@ -144,6 +165,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bootloader),          MP_ROM_PTR(&machine_bootloader_obj) },
 
     #if MICROPY_PY_MACHINE_BITSTREAM
     { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
@@ -163,6 +185,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE

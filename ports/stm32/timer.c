@@ -233,6 +233,36 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
 // respective APB clock.  See DM00031020 Rev 4, page 115.
 uint32_t timer_get_source_freq(uint32_t tim_id) {
+    #if defined(STM32H5)
+
+    uint32_t source, ppre;
+    if ((2 <= tim_id && tim_id <= 7) || (12 <= tim_id && tim_id <= 14)) {
+        // TIM{2-7,12-14} are on APB1
+        source = HAL_RCC_GetPCLK1Freq();
+        ppre = (RCC->CFGR2 >> RCC_CFGR2_PPRE1_Pos) & 7;
+    } else {
+        // TIM{1,8,15-17} are on APB2
+        source = HAL_RCC_GetPCLK2Freq();
+        ppre = (RCC->CFGR2 >> RCC_CFGR2_PPRE2_Pos) & 7;
+    }
+    if (RCC->CFGR1 & RCC_CFGR1_TIMPRE) {
+        if (ppre == 0 || ppre == 4 || ppre == 5) {
+            // PPREx divider is 1, 2 or 4.
+            return 2 * source;
+        } else {
+            return 4 * source;
+        }
+    } else {
+        if (ppre == 0 || ppre == 4) {
+            // PPREx divider is 1 or 2.
+            return HAL_RCC_GetHCLKFreq();
+        } else {
+            return 2 * source;
+        }
+    }
+
+    #else
+
     uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
@@ -267,6 +297,8 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
         source *= 2;
     }
     return source;
+
+    #endif
 }
 
 /******************************************************************************/
@@ -436,7 +468,7 @@ STATIC mp_obj_t compute_percent_from_pwm_value(uint32_t period, uint32_t cmp) {
 // Computes the 8-bit value for the DTG field in the BDTR register.
 //
 // 1 tick = 1 count of the timer's clock (source_freq) divided by div.
-// 0-128 ticks in inrements of 1
+// 0-128 ticks in increments of 1
 // 128-256 ticks in increments of 2
 // 256-512 ticks in increments of 8
 // 512-1008 ticks in increments of 16
@@ -554,7 +586,7 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///
 /// Keyword arguments:
 ///
-///   - `freq` - specifies the periodic frequency of the timer. You migh also
+///   - `freq` - specifies the periodic frequency of the timer. You might also
 ///              view this as the frequency with which the timer goes through
 ///              one complete cycle.
 ///
@@ -837,6 +869,8 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(6, TIM6_IRQn),
     #elif defined(STM32G0)
     TIM_ENTRY(6, TIM6_DAC_LPTIM1_IRQn),
+    #elif defined(STM32H5)
+    TIM_ENTRY(6, TIM6_IRQn),
     #else
     TIM_ENTRY(6, TIM6_DAC_IRQn),
     #endif
@@ -857,6 +891,7 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(8, TIM8_UP_IRQn),
     #endif
     #endif
+
     #if defined(TIM9)
     #if defined(STM32L1)
     TIM_ENTRY(9, TIM9_IRQn),
@@ -864,6 +899,7 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(9, TIM1_BRK_TIM9_IRQn),
     #endif
     #endif
+
     #if defined(TIM10)
     #if defined(STM32L1)
     TIM_ENTRY(10, TIM10_IRQn),
@@ -871,6 +907,7 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(10, TIM1_UP_TIM10_IRQn),
     #endif
     #endif
+
     #if defined(TIM11)
     #if defined(STM32L1)
     TIM_ENTRY(11, TIM11_IRQn),
@@ -878,42 +915,57 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(11, TIM1_TRG_COM_TIM11_IRQn),
     #endif
     #endif
+
     #if defined(TIM12)
+    #if defined(STM32H5)
+    TIM_ENTRY(12, TIM12_IRQn),
+    #else
     TIM_ENTRY(12, TIM8_BRK_TIM12_IRQn),
     #endif
+    #endif
+
     #if defined(TIM13)
+    #if defined(STM32H5)
+    TIM_ENTRY(13, TIM13_IRQn),
+    #else
     TIM_ENTRY(13, TIM8_UP_TIM13_IRQn),
     #endif
-    #if defined(STM32F0) || defined(STM32G0)
+    #endif
+
+    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H5)
     TIM_ENTRY(14, TIM14_IRQn),
     #elif defined(TIM14)
     TIM_ENTRY(14, TIM8_TRG_COM_TIM14_IRQn),
     #endif
+
     #if defined(TIM15)
-    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7)
     TIM_ENTRY(15, TIM15_IRQn),
     #else
     TIM_ENTRY(15, TIM1_BRK_TIM15_IRQn),
     #endif
     #endif
+
     #if defined(TIM16)
     #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
     TIM_ENTRY(16, TIM16_FDCAN_IT0_IRQn),
-    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H7) || defined(STM32WL)
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32WL)
     TIM_ENTRY(16, TIM16_IRQn),
     #else
     TIM_ENTRY(16, TIM1_UP_TIM16_IRQn),
     #endif
     #endif
+
     #if defined(TIM17)
     #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
     TIM_ENTRY(17, TIM17_FDCAN_IT1_IRQn),
-    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H7) || defined(STM32WL)
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H5) || defined(STM32H7) || defined(STM32WL)
     TIM_ENTRY(17, TIM17_IRQn),
     #else
     TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),
     #endif
     #endif
+
     #if defined(TIM20)
     TIM_ENTRY(20, TIM20_UP_IRQn),
     #endif
@@ -1009,7 +1061,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 /// If only a channel number is passed, then a previously initialized channel
 /// object is returned (or `None` if there is no previous channel).
 ///
-/// Othwerwise, a TimerChannel object is initialized and returned.
+/// Otherwise, a TimerChannel object is initialized and returned.
 ///
 /// Each channel can be configured to perform pwm, output compare, or
 /// input capture. All channels share the same underlying timer, which means
@@ -1051,7 +1103,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///
 ///   - `polarity` can be one of:
 ///     - `Timer.HIGH` - output is active high
-///     - `Timer.LOW` - output is acive low
+///     - `Timer.LOW` - output is active low
 ///
 /// Optional keyword arguments for Timer.IC modes:
 ///

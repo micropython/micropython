@@ -1,12 +1,12 @@
 import gc
 
 gc.threshold((gc.mem_free() + gc.mem_alloc()) // 4)
-import uos
+import os
 from flashbdev import bdev
 
 if bdev:
     try:
-        uos.mount(bdev, "/")
+        os.mount(bdev, "/")
     except:
         import inisetup
 

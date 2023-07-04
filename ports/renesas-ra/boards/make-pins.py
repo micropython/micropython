@@ -140,7 +140,7 @@ class Pins(object):
             for row in rows:
                 try:
                     cpu_pin_name = row[0]
-                    cpu_pin_port = int(row[1])
+                    cpu_pin_port = int(row[1], 16)
                     cpu_pin_bit = int(row[2])
                 except:
                     continue

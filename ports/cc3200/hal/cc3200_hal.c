@@ -49,7 +49,7 @@
 #include "pybuart.h"
 #include "utils.h"
 #include "irq.h"
-#include "moduos.h"
+#include "modos.h"
 
 #ifdef USE_FREERTOS
 #include "FreeRTOS.h"

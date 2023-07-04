@@ -31,13 +31,7 @@
 #include "modmachine.h"
 
 #include "driver/i2c.h"
-
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
 #include "hal/i2c_ll.h"
-#else
-#include "soc/i2c_reg.h"
-#define I2C_LL_MAX_TIMEOUT I2C_TIME_OUT_REG_V
-#endif
 
 #ifndef MICROPY_HW_I2C0_SCL
 #define MICROPY_HW_I2C0_SCL (GPIO_NUM_18)
@@ -62,7 +56,7 @@
 #error "unsupported I2C for ESP32 SoC variant"
 #endif
 
-#define I2C_DEFAULT_TIMEOUT_US (10000) // 10ms
+#define I2C_DEFAULT_TIMEOUT_US (50000) // 50ms
 
 typedef struct _machine_hw_i2c_obj_t {
     mp_obj_base_t base;
@@ -125,7 +119,7 @@ int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_
     }
 
     // TODO proper timeout
-    esp_err_t err = i2c_master_cmd_begin(self->port, cmd, 100 * (1 + data_len) / portTICK_RATE_MS);
+    esp_err_t err = i2c_master_cmd_begin(self->port, cmd, 100 * (1 + data_len) / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
     if (err == ESP_FAIL) {

@@ -111,7 +111,7 @@ STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
 
     if (n_args == 1) {
         // arg given means dump gc allocation table
-        gc_dump_alloc_table();
+        gc_dump_alloc_table(&mp_plat_print);
     }
 
     return mp_const_none;
@@ -165,7 +165,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
 /// Returns the number of milliseconds which have elapsed since `start`.
 ///
 /// This function takes care of counter wrap, and always returns a positive
-/// number. This means it can be used to measure periods upto about 12.4 days.
+/// number. This means it can be used to measure periods up to about 12.4 days.
 ///
 /// Example:
 ///     start = pyb.millis()
@@ -196,7 +196,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_micros_obj, pyb_micros);
 /// Returns the number of microseconds which have elapsed since `start`.
 ///
 /// This function takes care of counter wrap, and always returns a positive
-/// number. This means it can be used to measure periods upto about 17.8 minutes.
+/// number. This means it can be used to measure periods up to about 17.8 minutes.
 ///
 /// Example:
 ///     start = pyb.micros()

@@ -32,19 +32,9 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_mac.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
-
-#if CONFIG_IDF_TARGET_ESP32
-#include "esp32/rom/rtc.h"
-#include "esp32/clk.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/rtc.h"
-#include "esp32s2/clk.h"
-#elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/rom/rtc.h"
-#include "esp32s3/clk.h"
-#endif
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -79,7 +69,7 @@ int esp_clk_cpu_freq(void);
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
-        return mp_obj_new_int(esp_clk_cpu_freq());
+        return mp_obj_new_int(esp_rom_get_cpu_ticks_per_us() * 1000000);
     } else {
         // set
         mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
@@ -110,7 +100,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         if (ret != ESP_OK) {
             mp_raise_ValueError(NULL);
         }
-        while (esp_clk_cpu_freq() != freq * 1000000) {
+        while (esp_rom_get_cpu_ticks_per_us() != freq) {
             vTaskDelay(1);
         }
         return mp_const_none;
@@ -272,7 +262,7 @@ STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_machine) },
 
     { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
@@ -353,6 +343,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE

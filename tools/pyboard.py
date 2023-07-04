@@ -68,6 +68,7 @@ Or:
 """
 
 import ast
+import errno
 import os
 import struct
 import sys
@@ -245,7 +246,7 @@ class ProcessPtyToTerminal:
         pty = m.group()
         # rtscts, dsrdtr params are to workaround pyserial bug:
         # http://stackoverflow.com/questions/34831131/pyserial-does-not-play-well-with-virtual-port
-        self.ser = serial.Serial(pty, interCharTimeout=1, rtscts=True, dsrdtr=True)
+        self.serial = serial.Serial(pty, interCharTimeout=1, rtscts=True, dsrdtr=True)
 
     def close(self):
         import signal
@@ -253,13 +254,13 @@ class ProcessPtyToTerminal:
         os.killpg(os.getpgid(self.subp.pid), signal.SIGTERM)
 
     def read(self, size=1):
-        return self.ser.read(size)
+        return self.serial.read(size)
 
     def write(self, data):
-        return self.ser.write(data)
+        return self.serial.write(data)
 
     def inWaiting(self):
-        return self.ser.inWaiting()
+        return self.serial.inWaiting()
 
 
 class Pyboard:
@@ -277,6 +278,7 @@ class Pyboard:
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
         else:
             import serial
+            import serial.tools.list_ports
 
             # Set options, and exclusive if pyserial supports it
             serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1}
@@ -287,11 +289,15 @@ class Pyboard:
             for attempt in range(wait + 1):
                 try:
                     if os.name == "nt":
-                        # Windows does not set DTR or RTS by default
                         self.serial = serial.Serial(**serial_kwargs)
-                        self.serial.dtr = True
-                        self.serial.rts = False
                         self.serial.port = device
+                        portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
+                        if portinfo and portinfo[0].manufacturer != "Microsoft":
+                            # ESP8266/ESP32 boards use RTS/CTS for flashing and boot mode selection.
+                            # DTR False: to avoid using the reset button will hang the MCU in bootloader mode
+                            # RTS False: to prevent pulses on rts on serial.close() that would POWERON_RESET an ESPxx
+                            self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
+                            self.serial.rts = False  # RTS False = EN High = MCU enabled
                         self.serial.open()
                     else:
                         self.serial = serial.Serial(device, **serial_kwargs)
@@ -503,14 +509,14 @@ class Pyboard:
 
     def fs_exists(self, src):
         try:
-            self.exec_("import uos\nuos.stat(%s)" % (("'%s'" % src) if src else ""))
+            self.exec_("import os\nos.stat(%s)" % (("'%s'" % src) if src else ""))
             return True
         except PyboardError:
             return False
 
     def fs_ls(self, src):
         cmd = (
-            "import uos\nfor f in uos.ilistdir(%s):\n"
+            "import os\nfor f in os.ilistdir(%s):\n"
             " print('{:12} {}{}'.format(f[3]if len(f)>3 else 0,f[0],'/'if f[1]&0x4000 else ''))"
             % (("'%s'" % src) if src else "")
         )
@@ -522,7 +528,7 @@ class Pyboard:
         def repr_consumer(b):
             buf.extend(b.replace(b"\x04", b""))
 
-        cmd = "import uos\nfor f in uos.ilistdir(%s):\n" " print(repr(f), end=',')" % (
+        cmd = "import os\nfor f in os.ilistdir(%s):\n" " print(repr(f), end=',')" % (
             ("'%s'" % src) if src else ""
         )
         try:
@@ -539,8 +545,8 @@ class Pyboard:
 
     def fs_stat(self, src):
         try:
-            self.exec_("import uos")
-            return os.stat_result(self.eval("uos.stat(%s)" % (("'%s'" % src)), parse=True))
+            self.exec_("import os")
+            return os.stat_result(self.eval("os.stat(%s)" % (("'%s'" % src)), parse=True))
         except PyboardError as e:
             raise e.convert(src)
 
@@ -633,13 +639,13 @@ class Pyboard:
         self.exec_("f.close()")
 
     def fs_mkdir(self, dir):
-        self.exec_("import uos\nuos.mkdir('%s')" % dir)
+        self.exec_("import os\nos.mkdir('%s')" % dir)
 
     def fs_rmdir(self, dir):
-        self.exec_("import uos\nuos.rmdir('%s')" % dir)
+        self.exec_("import os\nos.rmdir('%s')" % dir)
 
     def fs_rm(self, src):
-        self.exec_("import uos\nuos.remove('%s')" % src)
+        self.exec_("import os\nos.remove('%s')" % src)
 
     def fs_touch(self, src):
         self.exec_("f=open('%s','a')\nf.close()" % src)
@@ -663,15 +669,16 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
     def fname_remote(src):
         if src.startswith(":"):
             src = src[1:]
-        return src
+        # Convert all path separators to "/", because that's what a remote device uses.
+        return src.replace(os.path.sep, "/")
 
     def fname_cp_dest(src, dest):
         _, src = os.path.split(src)
         if dest is None or dest == "":
             dest = src
         elif dest == ".":
-            dest = os.path.join(".", src)
-        elif dest.endswith(os.path.sep):
+            dest = "./" + src
+        elif dest.endswith("/"):
             dest += src
         return dest
 
@@ -679,6 +686,10 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
     args = args[1:]
     try:
         if cmd == "cp":
+            if len(args) == 1:
+                raise PyboardError(
+                    "cp: missing destination file operand after '{}'".format(args[0])
+                )
             srcs = args[:-1]
             dest = args[-1]
             if dest.startswith(":"):
@@ -726,9 +737,9 @@ def filesystem_command(pyb, args, progress_callback=None, verbose=False):
 
 
 _injected_import_hook_code = """\
-import uos, uio
+import os, io
 class _FS:
-  class File(uio.IOBase):
+  class File(io.IOBase):
     def __init__(self):
       self.off = 0
     def ioctl(self, request, arg):
@@ -745,10 +756,10 @@ class _FS:
       raise OSError(-2) # ENOENT
   def open(self, path, mode):
     return self.File()
-uos.mount(_FS(), '/_')
-uos.chdir('/_')
+os.mount(_FS(), '/_')
+os.chdir('/_')
 from _injected import *
-uos.umount('/_')
+os.umount('/_')
 del _injected_buf, _FS
 """
 

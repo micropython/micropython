@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
     pyexec_friendly_repl();
     #endif
     #else
-    pyexec_frozen_module("frozentest.py");
+    pyexec_frozen_module("frozentest.py", false);
     #endif
     mp_deinit();
     return 0;
@@ -108,7 +108,7 @@ void gc_collect(void) {
     gc_collect_start();
     gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
     gc_collect_end();
-    gc_dump_info();
+    gc_dump_info(&mp_plat_print);
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {

@@ -25,6 +25,9 @@
  * THE SOFTWARE.
  */
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
+
 #include "py/mphal.h"
 #include "py/stream.h"
 #include "py/ringbuf.h"
@@ -37,6 +40,8 @@
 #define DEFAULT_BUFFER_SIZE (256)
 #define MIN_BUFFER_SIZE  (32)
 #define MAX_BUFFER_SIZE  (32766)
+#define FLOW_CONTROL_RTS (1)
+#define FLOW_CONTROL_CTS (2)
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
@@ -46,9 +51,15 @@ typedef struct _machine_uart_obj_t {
     uint8_t parity;
     uint8_t stop;
     uint8_t tx;
-    sercom_pad_config_t tx_pad_config;
     uint8_t rx;
+    sercom_pad_config_t tx_pad_config;
     sercom_pad_config_t rx_pad_config;
+    #if MICROPY_HW_UART_RTSCTS
+    uint8_t rts;
+    uint8_t cts;
+    sercom_pad_config_t rts_pad_config;
+    sercom_pad_config_t cts_pad_config;
+    #endif
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
     bool new;
@@ -59,6 +70,28 @@ typedef struct _machine_uart_obj_t {
 } machine_uart_obj_t;
 
 Sercom *sercom_instance[] = SERCOM_INSTS;
+MP_REGISTER_ROOT_POINTER(void *sercom_table[SERCOM_INST_NUM]);
+
+// Common Sercom functions used by all Serial devices
+void sercom_enable(Sercom *uart, int state) {
+    uart->USART.CTRLA.bit.ENABLE = state; // Set the state on/off
+    // Wait for the Registers to update.
+    while (uart->USART.SYNCBUSY.bit.ENABLE) {
+    }
+}
+
+void sercom_deinit_all(void) {
+    for (int i = 0; i < SERCOM_INST_NUM; i++) {
+        Sercom *uart = sercom_instance[i];
+        uart->USART.INTENCLR.reg = 0xff;
+        sercom_register_irq(i, NULL);
+        sercom_enable(uart, 0);
+        MP_STATE_PORT(sercom_table[i]) = NULL;
+    }
+}
+#endif
+
+#if MICROPY_PY_MACHINE_UART
 
 STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
 
@@ -71,11 +104,10 @@ STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self, Sercom *uart) {
             // get a byte from uart and put into the buffer
             ringbuf_put(&(self->read_buffer), uart->USART.DATA.bit.DATA);
         } else {
-            // if the buffer is full, discard the data for now
-            // t.b.d.: flow control
-            uint32_t temp;
-            (void)temp;
-            temp = uart->USART.DATA.bit.DATA;
+            // if the buffer is full, disable the RX interrupt
+            // allowing RTS to come up. It will be re-enabled by the next read
+            uart->USART.INTENCLR.reg = SERCOM_USART_INTENSET_RXC;
+            break;
         }
     }
 }
@@ -105,13 +137,6 @@ void common_uart_irq_handler(int uart_id) {
     }
 }
 
-void sercom_enable(Sercom *uart, int state) {
-    uart->USART.CTRLA.bit.ENABLE = state; // Set the state on/off
-    // Wait for the Registers to update.
-    while (uart->USART.SYNCBUSY.bit.ENABLE) {
-    }
-}
-
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
@@ -119,18 +144,25 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
         #if MICROPY_HW_UART_TXBUF
         ", txbuf=%d"
         #endif
+        #if MICROPY_HW_UART_RTSCTS
+        ", rts=%s, cts=%s"
+        #endif
         ")",
         self->id, self->baudrate, self->bits, _parity_name[self->parity],
         self->stop + 1, self->timeout, self->timeout_char, self->read_buffer.size - 1
         #if MICROPY_HW_UART_TXBUF
         , self->write_buffer.size - 1
         #endif
+        #if MICROPY_HW_UART_RTSCTS
+        , self->rts != 0xff ? pin_name(self->rts) : "None"
+        , self->cts != 0xff ? pin_name(self->cts) : "None"
+        #endif
         );
 }
 
 STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx,
-           ARG_timeout, ARG_timeout_char, ARG_rxbuf, ARG_txbuf};
+           ARG_timeout, ARG_timeout_char, ARG_rxbuf, ARG_txbuf, ARG_rts, ARG_cts };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = -1} },
@@ -143,6 +175,10 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         #if MICROPY_HW_UART_TXBUF
         { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        #endif
+        #if MICROPY_HW_UART_RTSCTS
+        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         #endif
     };
 
@@ -183,6 +219,25 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
     if (args[ARG_rx].u_obj != mp_const_none) {
         self->rx = mp_hal_get_pin_obj(args[ARG_rx].u_obj);
     }
+    #if MICROPY_HW_UART_RTSCTS
+    uint8_t flow_control = 0;
+    // Set RTS/CTS pins if configured.
+    if (args[ARG_rts].u_obj != mp_const_none) {
+        self->rts = mp_hal_get_pin_obj(args[ARG_rts].u_obj);
+        self->rts_pad_config = get_sercom_config(self->rts, self->id);
+        flow_control = FLOW_CONTROL_RTS;
+    }
+    if (args[ARG_cts].u_obj != mp_const_none) {
+        self->cts = mp_hal_get_pin_obj(args[ARG_cts].u_obj);
+        self->cts_pad_config = get_sercom_config(self->cts, self->id);
+        flow_control |= FLOW_CONTROL_CTS;
+    }
+    // rts only flow control is not allowed. Otherwise the state of the
+    // cts pin is undefined.
+    if (flow_control == FLOW_CONTROL_RTS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("cts missing for flow control"));
+    }
+    #endif
 
     // Set timeout if configured.
     if (args[ARG_timeout].u_int >= 0) {
@@ -264,8 +319,18 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         } else
         #endif
         if (self->tx_pad_config.pad_nr != 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid tx pin"));
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid UART pin"));
         }
+        #if MICROPY_HW_UART_RTSCTS
+        if ((flow_control & FLOW_CONTROL_RTS) && self->rts_pad_config.pad_nr == 2) {
+            txpo = 2;
+            mp_hal_set_pin_mux(self->rts, self->rts_pad_config.alt_fct);
+        }
+        if ((flow_control & FLOW_CONTROL_CTS) && self->cts_pad_config.pad_nr == 3) {
+            txpo = 2;
+            mp_hal_set_pin_mux(self->cts, self->cts_pad_config.alt_fct);
+        }
+        #endif
 
         uart->USART.CTRLA.reg =
             SERCOM_USART_CTRLA_DORD // Data order
@@ -331,6 +396,10 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->timeout_char = 1;
     self->tx = 0xff;
     self->rx = 0xff;
+    #if MICROPY_HW_UART_RTSCTS
+    self->rts = 0xff;
+    self->cts = 0xff;
+    #endif
     self->new = true;
     MP_STATE_PORT(sercom_table[uart_id]) = self;
 
@@ -426,6 +495,7 @@ STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_t
 
 STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    Sercom *uart = sercom_instance[self->id];
     uint64_t t = mp_hal_ticks_ms_64() + self->timeout;
     uint64_t timeout_char = self->timeout_char;
     uint8_t *dest = buf_in;
@@ -445,6 +515,10 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
         }
         *dest++ = ringbuf_get(&(self->read_buffer));
         t = mp_hal_ticks_ms_64() + timeout_char;
+        // (Re-)Enable RXC interrupt
+        if ((uart->USART.INTENSET.reg & SERCOM_USART_INTENSET_RXC) == 0) {
+            uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
+        }
     }
     return size;
 }
@@ -507,7 +581,7 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
         }
     } else if (request == MP_STREAM_FLUSH) {
         // The timeout is defined by the buffer size and the baudrate.
-        // Take the worst case assumtions at 13 bit symbol size times 2.
+        // Take the worst case assumptions at 13 bit symbol size times 2.
         uint64_t timeout = mp_hal_ticks_ms_64() + (3
             #if MICROPY_HW_UART_TXBUF
             + self->write_buffer.size
@@ -544,3 +618,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &uart_stream_p,
     locals_dict, &machine_uart_locals_dict
     );
+#endif

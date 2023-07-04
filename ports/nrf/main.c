@@ -43,7 +43,7 @@
 #include "gccollect.h"
 #include "modmachine.h"
 #include "modmusic.h"
-#include "modules/uos/microbitfs.h"
+#include "modules/os/microbitfs.h"
 #include "led.h"
 #include "uart.h"
 #include "nrf.h"
@@ -184,7 +184,7 @@ soft_reset:
     int ret = mp_vfs_mount_and_chdir_protected((mp_obj_t)&nrf_flash_obj, mount_point);
 
     if ((ret == -MP_ENODEV) || (ret == -MP_EIO)) {
-        pyexec_frozen_module("_mkfs.py"); // Frozen script for formatting flash filesystem.
+        pyexec_frozen_module("_mkfs.py", false); // Frozen script for formatting flash filesystem.
         ret = mp_vfs_mount_and_chdir_protected((mp_obj_t)&nrf_flash_obj, mount_point);
     }
 
@@ -280,6 +280,10 @@ soft_reset:
         }
     }
 
+    #if MICROPY_PY_MACHINE_HW_PWM
+    pwm_deinit_all();
+    #endif
+
     mp_deinit();
 
     printf("MPY: soft reboot\n");
@@ -297,15 +301,15 @@ soft_reset:
 #if MICROPY_MBFS
 // Use micro:bit filesystem
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return uos_mbfs_new_reader(filename);
+    return os_mbfs_new_reader(filename);
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
-    return uos_mbfs_import_stat(path);
+    return os_mbfs_import_stat(path);
 }
 
 mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    return uos_mbfs_open(n_args, args);
+    return os_mbfs_open(n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 

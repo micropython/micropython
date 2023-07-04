@@ -307,7 +307,7 @@ STATIC int eth_mac_init(eth_t *self) {
     #endif
 
     #if defined(STM32H7)
-    // don't skip 32bit words since our desriptors are continuous in memory
+    // don't skip 32bit words since our descriptors are continuous in memory
     ETH->DMACCR &= ~(ETH_DMACCR_DSL_Msk);
     #endif
 
@@ -737,7 +737,7 @@ STATIC void eth_lwip_init(eth_t *self) {
     n->name[0] = 'e';
     n->name[1] = '0';
     netif_add(n, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, eth_netif_init, ethernet_input);
-    netif_set_hostname(n, "MPY");
+    netif_set_hostname(n, mod_network_hostname);
     netif_set_default(n);
     netif_set_up(n);
 

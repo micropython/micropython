@@ -165,7 +165,7 @@ pwm_start(void) {
         }
     }
     PWM_DBG("2channel:%d,single[0]:%d,[1]:%d,[2]:%d,[3]:%d\n", *local_channel, local_single[0].h_time, local_single[1].h_time, local_single[2].h_time, local_single[3].h_time);
-    // step 4: cacl delt time
+    // step 4: calc delta time
     for (i = *local_channel - 1; i > 0; i--) {
         local_single[i].h_time -= local_single[i - 1].h_time;
     }

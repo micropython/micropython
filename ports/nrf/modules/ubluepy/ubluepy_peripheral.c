@@ -165,7 +165,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_set_conn_handler_obj, periph
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
 
 /// \method advertise(device_name, [service=[service1, service2, ...]], [data=bytearray], [connectable=True])
-/// Start advertising. Connectable advertisment type by default.
+/// Start advertising. Connectable advertisement type by default.
 ///
 STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -234,7 +234,7 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_advertise_obj, 0, peripheral_advertise);
 
 /// \method advertise_stop()
-/// Stop advertisment if any onging advertisment.
+/// Stop advertisement if any onging advertisement.
 ///
 STATIC mp_obj_t peripheral_advertise_stop(mp_obj_t self_in) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);

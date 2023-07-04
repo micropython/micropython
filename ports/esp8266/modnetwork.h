@@ -1,0 +1,3 @@
+extern const mp_obj_type_t esp_network_wlan_type;
+
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj);

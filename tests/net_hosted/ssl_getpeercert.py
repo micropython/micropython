@@ -1,11 +1,7 @@
 # test ssl.getpeercert() method
 
-try:
-    import usocket as socket
-    import ussl as ssl
-except:
-    import socket
-    import ssl
+import socket
+import ssl
 
 
 def test(peer_addr):

@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "UART",
+        "SPI",
+        "I2C",
+        "ADC",
+        "DAC",
+        "PWM"
+    ],
+    "id": "VK-RA6M5",
+    "images": [
+        "VK-RA6M5.jpg"
+    ],
+    "mcu": "RA6M5",
+    "product": "VK-RA6M5",
+    "thumbnail": "",
+    "url": "https://vekatech.com/VK-RA6M5_docs/brochures/VK-RA6M5%20Flyer%20R2.pdf",
+    "vendor": "Vekatech"
+}

@@ -192,7 +192,7 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
         MP_THREAD_GIL_ENTER();
         const char *fn = dirent->d_name;
 
-        if (fn[0] == '.' && (fn[1] == 0 || fn[1] == '.')) {
+        if (fn[0] == '.' && (fn[1] == 0 || (fn[1] == '.' && fn[2] == 0))) {
             // skip . and ..
             continue;
         }
@@ -332,7 +332,7 @@ STATIC mp_obj_t vfs_posix_stat(mp_obj_t self_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_stat_obj, vfs_posix_stat);
 
-#if MICROPY_PY_UOS_STATVFS
+#if MICROPY_PY_OS_STATVFS
 
 #ifdef __ANDROID__
 #define USE_STATFS 1
@@ -390,7 +390,7 @@ STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&vfs_posix_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&vfs_posix_rmdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&vfs_posix_stat_obj) },
-    #if MICROPY_PY_UOS_STATVFS
+    #if MICROPY_PY_OS_STATVFS
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&vfs_posix_statvfs_obj) },
     #endif
 };

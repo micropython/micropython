@@ -67,7 +67,7 @@ STATIC mp_obj_t sdcard_obj_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_int_t sdcard_id = args[SDCARD_INIT_ARG_ID].u_int;
 
     if (!(1 <= sdcard_id && sdcard_id <= MP_ARRAY_SIZE(mimxrt_sdcard_objs))) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "SDCard(%d) doesn't exist", sdcard_id));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SDCard(%d) doesn't exist"), sdcard_id));
     }
 
     mimxrt_sdcard_obj_t *self = &mimxrt_sdcard_objs[(sdcard_id - 1)];

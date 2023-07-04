@@ -24,7 +24,7 @@ SUPPORTED_FN = {
 def parse_pin(name_str):
     """Parses a string and returns a pin number."""
     if len(name_str) < 2:
-        raise ValueError("Expecting pin name to be at least 2 charcters.")
+        raise ValueError("Expecting pin name to be at least 2 characters.")
     if not name_str.startswith("GPIO") and not name_str.startswith("EXT_GPIO"):
         raise ValueError("Expecting pin name to start with EXT_/GPIO")
     return int(re.findall(r"\d+$", name_str)[0])
@@ -207,7 +207,7 @@ class Pins(object):
             for row in rows:
                 try:
                     pin_num = parse_pin(row[pinname_col])
-                except Exception as e:
+                except Exception:
                     # import traceback; traceback.print_exc()
                     continue
                 pin = Pin(pin_num)
@@ -228,7 +228,7 @@ class Pins(object):
 
                 cpu_pin_name = row[1]
                 try:
-                    pin_num = parse_pin(cpu_pin_name)
+                    parse_pin(cpu_pin_name)
                 except:
                     # import traceback; traceback.print_exc()
                     continue

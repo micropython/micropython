@@ -57,6 +57,7 @@ STATIC bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_SOURCE_IS_VSTR        (1 << 4)
 #define EXEC_FLAG_SOURCE_IS_FILENAME    (1 << 5)
 #define EXEC_FLAG_SOURCE_IS_READER      (1 << 6)
+#define EXEC_FLAG_NO_INTERRUPT          (1 << 7)
 
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
@@ -113,7 +114,9 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         }
 
         // execute code
-        mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
+        if (!(exec_flags & EXEC_FLAG_NO_INTERRUPT)) {
+            mp_hal_set_interrupt_char(CHAR_CTRL_C);
+        }
         #if MICROPY_REPL_INFO
         start = mp_hal_ticks_ms();
         #endif
@@ -167,7 +170,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #if MICROPY_ENABLE_GC
         // run collection and print GC info
         gc_collect();
-        gc_dump_info();
+        gc_dump_info(&mp_plat_print);
         #endif
     }
     #endif
@@ -589,7 +592,7 @@ friendly_repl_reset:
             // If the user gets to here and interrupts are disabled then
             // they'll never see the prompt, traceback etc. The USB REPL needs
             // interrupts to be enabled or no transfers occur. So we try to
-            // do the user a favor and reenable interrupts.
+            // do the user a favor and re-enable interrupts.
             if (query_irq() == IRQ_STATE_DISABLED) {
                 enable_irq(IRQ_STATE_ENABLED);
                 mp_hal_stdout_tx_str("MPY: enabling IRQs\r\n");
@@ -686,7 +689,7 @@ int pyexec_file(const char *filename) {
 int pyexec_file_if_exists(const char *filename) {
     #if MICROPY_MODULE_FROZEN
     if (mp_find_frozen_module(filename, NULL, NULL) == MP_IMPORT_STAT_FILE) {
-        return pyexec_frozen_module(filename);
+        return pyexec_frozen_module(filename, true);
     }
     #endif
     if (mp_import_stat(filename) != MP_IMPORT_STAT_FILE) {
@@ -696,20 +699,22 @@ int pyexec_file_if_exists(const char *filename) {
 }
 
 #if MICROPY_MODULE_FROZEN
-int pyexec_frozen_module(const char *name) {
+int pyexec_frozen_module(const char *name, bool allow_keyboard_interrupt) {
     void *frozen_data;
     int frozen_type;
     mp_find_frozen_module(name, &frozen_type, &frozen_data);
+    mp_uint_t exec_flags = allow_keyboard_interrupt ? 0 : EXEC_FLAG_NO_INTERRUPT;
 
     switch (frozen_type) {
         #if MICROPY_MODULE_FROZEN_STR
         case MP_FROZEN_STR:
-            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, 0);
+            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, exec_flags);
         #endif
 
         #if MICROPY_MODULE_FROZEN_MPY
         case MP_FROZEN_MPY:
-            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_RAW_CODE);
+            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, exec_flags |
+                EXEC_FLAG_SOURCE_IS_RAW_CODE);
         #endif
 
         default:

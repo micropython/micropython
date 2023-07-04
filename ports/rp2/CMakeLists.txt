@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.13)
 
 # Set build type to reduce firmware size
 if(NOT CMAKE_BUILD_TYPE)
@@ -18,9 +18,11 @@ endif()
 set(PICO_TINYUSB_PATH ${MICROPY_DIR}/lib/tinyusb)
 # Use the local lwip instead of the one in pico-sdk
 set(PICO_LWIP_PATH ${MICROPY_DIR}/lib/lwip)
+# Use the local btstack instead of the one in pico-sdk
+set(PICO_BTSTACK_PATH ${MICROPY_DIR}/lib/btstack)
 
 # Set the location of this port's directory.
-set(MICROPY_PORT_DIR ${CMAKE_SOURCE_DIR})
+set(MICROPY_PORT_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 # Set the board if it's not already set.
 if(NOT MICROPY_BOARD)
@@ -31,6 +33,7 @@ endif()
 if(NOT MICROPY_BOARD_DIR)
     set(MICROPY_BOARD_DIR ${MICROPY_PORT_DIR}/boards/${MICROPY_BOARD})
 endif()
+get_filename_component(MICROPY_BOARD_DIR ${MICROPY_BOARD_DIR} ABSOLUTE)
 if(NOT EXISTS ${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
     message(FATAL_ERROR "Invalid MICROPY_BOARD specified: ${MICROPY_BOARD}")
 endif()
@@ -43,6 +46,12 @@ include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 # Set the PICO_BOARD if it's not already set (allow a board to override it).
 if(NOT PICO_BOARD)
     string(TOLOWER ${MICROPY_BOARD} PICO_BOARD)
+endif()
+
+# Set the amount of C heap, if it's not already set.
+# If a board uses malloc then it must set this to at least 4096.
+if(NOT MICROPY_C_HEAP_SIZE)
+    set(MICROPY_C_HEAP_SIZE 0)
 endif()
 
 # Enable extmod components that will be configured by extmod.cmake.
@@ -73,7 +82,7 @@ include(${MICROPY_DIR}/py/usermod.cmake)
 add_executable(${MICROPY_TARGET})
 
 set(MICROPY_QSTRDEFS_PORT
-    ${PROJECT_SOURCE_DIR}/qstrdefsport.h
+    ${MICROPY_PORT_DIR}/qstrdefsport.h
 )
 
 set(MICROPY_SOURCE_LIB
@@ -107,6 +116,7 @@ set(MICROPY_SOURCE_DRIVERS
 
 set(MICROPY_SOURCE_PORT
     fatfs_port.c
+    help.c
     machine_adc.c
     machine_bitstream.c
     machine_i2c.c
@@ -120,7 +130,6 @@ set(MICROPY_SOURCE_PORT
     main.c
     modmachine.c
     modrp2.c
-    modutime.c
     mphalport.c
     mpnetworkport.c
     mpthreadport.c
@@ -139,21 +148,20 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_DIR}/shared/readline/readline.c
     ${MICROPY_DIR}/shared/runtime/mpirq.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
-    ${PROJECT_SOURCE_DIR}/machine_adc.c
-    ${PROJECT_SOURCE_DIR}/machine_i2c.c
-    ${PROJECT_SOURCE_DIR}/machine_i2s.c
-    ${PROJECT_SOURCE_DIR}/machine_pin.c
-    ${PROJECT_SOURCE_DIR}/machine_rtc.c
-    ${PROJECT_SOURCE_DIR}/machine_spi.c
-    ${PROJECT_SOURCE_DIR}/machine_timer.c
-    ${PROJECT_SOURCE_DIR}/machine_uart.c
-    ${PROJECT_SOURCE_DIR}/machine_wdt.c
-    ${PROJECT_SOURCE_DIR}/modmachine.c
-    ${PROJECT_SOURCE_DIR}/modrp2.c
-    ${PROJECT_SOURCE_DIR}/moduos.c
-    ${PROJECT_SOURCE_DIR}/modutime.c
-    ${PROJECT_SOURCE_DIR}/rp2_flash.c
-    ${PROJECT_SOURCE_DIR}/rp2_pio.c
+    ${MICROPY_PORT_DIR}/machine_adc.c
+    ${MICROPY_PORT_DIR}/machine_i2c.c
+    ${MICROPY_PORT_DIR}/machine_i2s.c
+    ${MICROPY_PORT_DIR}/machine_pin.c
+    ${MICROPY_PORT_DIR}/machine_rtc.c
+    ${MICROPY_PORT_DIR}/machine_spi.c
+    ${MICROPY_PORT_DIR}/machine_timer.c
+    ${MICROPY_PORT_DIR}/machine_uart.c
+    ${MICROPY_PORT_DIR}/machine_wdt.c
+    ${MICROPY_PORT_DIR}/modmachine.c
+    ${MICROPY_PORT_DIR}/modrp2.c
+    ${MICROPY_PORT_DIR}/modos.c
+    ${MICROPY_PORT_DIR}/rp2_flash.c
+    ${MICROPY_PORT_DIR}/rp2_pio.c
     ${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c
 )
 
@@ -211,9 +219,38 @@ if(MICROPY_PY_BLUETOOTH)
         MICROPY_PY_BLUETOOTH=1
         MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS=1
         MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-        MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1
-        MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
     )
+endif()
+
+if (MICROPY_PY_BLUETOOTH_CYW43)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        CYW43_ENABLE_BLUETOOTH=1
+        MICROPY_PY_BLUETOOTH_CYW43=1
+    )
+
+    if (MICROPY_BLUETOOTH_BTSTACK)
+        target_link_libraries(${MICROPY_TARGET}
+            pico_btstack_hci_transport_cyw43
+        )
+    endif()
+endif()
+
+if (MICROPY_BLUETOOTH_BTSTACK)
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/btstack)
+
+    list(APPEND MICROPY_SOURCE_PORT mpbtstackport.c)
+
+    include(${MICROPY_DIR}/extmod/btstack/btstack.cmake)
+    target_link_libraries(${MICROPY_TARGET} micropy_extmod_btstack)
+
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_BLUETOOTH_BTSTACK=1
+        MICROPY_BLUETOOTH_BTSTACK_CONFIG_FILE=\"btstack_inc/btstack_config.h\"
+    )
+
+    # For modbluetooth_btstack.c includes
+    get_target_property(BTSTACK_INCLUDE micropy_extmod_btstack INTERFACE_INCLUDE_DIRECTORIES)
+    list(APPEND MICROPY_INC_CORE ${BTSTACK_INCLUDE})
 endif()
 
 if(MICROPY_BLUETOOTH_NIMBLE)
@@ -226,6 +263,8 @@ if(MICROPY_BLUETOOTH_NIMBLE)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_BLUETOOTH_NIMBLE=1
         MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY=0
+        MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1
+        MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
     )
     target_compile_options(${MICROPY_TARGET} PRIVATE
     # TODO: This flag is currently needed to make nimble build.
@@ -250,7 +289,6 @@ if (MICROPY_PY_NETWORK_CYW43)
 
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_PY_NETWORK_CYW43=1
-        MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER=1
         MICROPY_PY_SOCKET_DEFAULT_TIMEOUT_MS=30000 # default socket timeout
     )
     if (CMAKE_BUILD_TYPE MATCHES Debug)
@@ -263,14 +301,14 @@ if (MICROPY_PY_NETWORK_CYW43)
         machine_pin_cyw43.c
     )
 
-    list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_DIR}/extmod/network_cyw43.c
-    )
-
     target_link_libraries(${MICROPY_TARGET}
         cyw43_driver_picow
         cmsis_core
     )
+    target_include_directories(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_DIR}/lib/cyw43-driver/
+    )
+
 endif()
 
 if (MICROPY_PY_NETWORK_NINAW10)
@@ -288,10 +326,6 @@ if (MICROPY_PY_NETWORK_NINAW10)
         ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_drv.c
         ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_bsp.c
         ${MICROPY_DIR}/drivers/ninaw10/machine_pin_nina.c
-    )
-
-    list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_DIR}/extmod/network_ninaw10.c
     )
 endif()
 
@@ -331,10 +365,6 @@ if (MICROPY_PY_NETWORK_WIZNET5K)
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DNS/dns.c
         ${MICROPY_DIR}/lib/wiznet5k/Internet/DHCP/dhcp.c
     )
-
-    list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_DIR}/extmod/network_wiznet5k.c
-    )
 endif()
 
 # Add qstr sources for extmod and usermod, in case they are modified by components above.
@@ -350,7 +380,7 @@ set(MICROPY_CROSS_FLAGS -march=armv6m)
 if (MICROPY_USER_FROZEN_MANIFEST)
     set(MICROPY_FROZEN_MANIFEST ${MICROPY_USER_FROZEN_MANIFEST})
 elseif (NOT MICROPY_FROZEN_MANIFEST)
-    set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
+    set(MICROPY_FROZEN_MANIFEST ${MICROPY_PORT_DIR}/boards/manifest.py)
 endif()
 
 target_sources(${MICROPY_TARGET} PRIVATE
@@ -369,13 +399,17 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
     ${MICROPY_INC_CORE}
     ${MICROPY_INC_USERMOD}
     ${MICROPY_BOARD_DIR}
-    "${PROJECT_SOURCE_DIR}"
+    "${MICROPY_PORT_DIR}"
     "${CMAKE_BINARY_DIR}"
 )
 
 target_compile_options(${MICROPY_TARGET} PRIVATE
     -Wall
     -Werror
+)
+
+target_link_options(${MICROPY_TARGET} PRIVATE
+    -Wl,--defsym=__micropy_c_heap_size__=${MICROPY_C_HEAP_SIZE}
 )
 
 set_source_files_properties(

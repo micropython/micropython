@@ -1,12 +1,16 @@
-# Select the board to build for: if not given on the command line,
-# then default to PYBV10.
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to PYBV10.
 BOARD ?= PYBV10
+BOARD_DIR ?= $(abspath ../boards/$(BOARD))
+endif
 
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
-
-# Allow the directory containing the board configuration to be specified
-BOARD_DIR ?= $(abspath ../boards/$(BOARD))
 
 # Set USE_MBOOT to 1 so that TEXT0_ADDR gets set properly for those boards
 # that can be built with or without mboot.
@@ -130,7 +134,12 @@ SRC_C += \
 SRC_O += \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE) \
-	ports/stm32/resethandler.o \
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 g0 l0))
+SRC_O += ports/stm32/resethandler_m0.o
+else
+SRC_O += ports/stm32/resethandler.o
+endif
 
 ifeq ($(MBOOT_ENABLE_PACKING), 1)
 
@@ -143,12 +152,14 @@ endif
 
 $(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal.c \
 	hal_cortex.c \
 	hal_dma.c \
 	hal_flash.c \
 	hal_flash_ex.c \
 	hal_pcd.c \
 	hal_pcd_ex.c \
+	hal_pwr_ex.c \
 	hal_rcc.c \
 	hal_rcc_ex.c \
 	ll_usb.c \

@@ -1,0 +1,29 @@
+name: Package mpremote
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        # Setting this to zero means fetch all history and tags,
+        # which hatch-vcs can use to discover the version tag.
+        fetch-depth: 0
+    - uses: actions/setup-python@v4
+    - name: Install build tools
+      run: pip install build
+    - name: Build mpremote wheel
+      run: cd tools/mpremote && python -m build --wheel
+    - name: Archive mpremote wheel
+      uses: actions/upload-artifact@v3
+      with:
+        name: mpremote
+        path: |
+          tools/mpremote/dist/mpremote*.whl

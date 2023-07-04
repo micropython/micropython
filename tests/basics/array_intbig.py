@@ -1,13 +1,10 @@
 # test array types QqLl that require big-ints
 
 try:
-    from uarray import array
+    from array import array
 except ImportError:
-    try:
-        from array import array
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 print(array('L', [0, 2**32-1]))
 print(array('l', [-2**31, 0, 2**31-1]))

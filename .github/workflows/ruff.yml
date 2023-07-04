@@ -1,0 +1,10 @@
+# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+name: Python code lint with ruff
+on: [push, pull_request]
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: pip install --user ruff
+    - run: ruff --format=github .

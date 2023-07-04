@@ -27,7 +27,7 @@
 #include "ra_utils.h"
 
 static R_SYSTEM_Type *system_reg = (R_SYSTEM_Type *)0x4001E000;
-static R_MSTP_Type *mstp_reg = (R_MSTP_Type *)0x40047000;
+static R_MSTP_Type *mstp_reg = R_MSTP;
 
 void ra_mstpcra_stop(uint32_t mod_mask) {
     system_reg->PRCR = 0xa502;
@@ -74,6 +74,18 @@ void ra_mstpcrd_stop(uint32_t mod_mask) {
 void ra_mstpcrd_start(uint32_t mod_mask) {
     system_reg->PRCR = 0xa502;
     mstp_reg->MSTPCRD &= ~mod_mask;
+    system_reg->PRCR = 0xa500;
+}
+
+void ra_mstpcre_stop(uint32_t mod_mask) {
+    system_reg->PRCR = 0xa502;
+    mstp_reg->MSTPCRE |= mod_mask;
+    system_reg->PRCR = 0xa500;
+}
+
+void ra_mstpcre_start(uint32_t mod_mask) {
+    system_reg->PRCR = 0xa502;
+    mstp_reg->MSTPCRE &= ~mod_mask;
     system_reg->PRCR = 0xa500;
 }
 

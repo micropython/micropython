@@ -34,7 +34,7 @@ QSTR_GEN_CXXFLAGS += $(QSTR_GEN_FLAGS)
 # tree.
 #
 # So for example, py/map.c would have an object file name py/map.o
-# The object files will go into the build directory and mantain the same
+# The object files will go into the build directory and maintain the same
 # directory structure as the source tree. So the final dependency will look
 # like this:
 #
@@ -52,7 +52,7 @@ $(BUILD)/%.o: %.S
 vpath %.s . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.s
 	$(ECHO) "AS $<"
-	$(Q)$(AS) -o $@ $<
+	$(Q)$(AS) $(AFLAGS) -o $@ $<
 
 define compile_c
 $(ECHO) "CC $<"
@@ -183,6 +183,11 @@ ifeq ($(MPY_LIB_DIR),$(MPY_LIB_SUBMODULE_DIR))
 GIT_SUBMODULES += lib/micropython-lib
 endif
 
+# Set compile options needed to enable frozen code.
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
+
 # to build frozen_content.c from a manifest
 $(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h $(BUILD)/genhdr/root_pointers.h | $(MICROPY_MPYCROSS_DEPENDENCY)
 	$(Q)test -e "$(MPY_LIB_DIR)/README.md" || (echo -e $(HELP_MPY_LIB_SUBMODULE); false)
@@ -192,7 +197,7 @@ endif
 ifneq ($(PROG),)
 # Build a standalone executable (unix does this)
 
-# The executable should have an .exe extension for builds targetting 'pure'
+# The executable should have an .exe extension for builds targeting 'pure'
 # Windows, i.e. msvc or mingw builds, but not when using msys or cygwin's gcc.
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring mingw,$(COMPILER_TARGET)))

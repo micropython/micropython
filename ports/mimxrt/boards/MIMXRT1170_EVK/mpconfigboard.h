@@ -1,5 +1,8 @@
 #define MICROPY_HW_BOARD_NAME "i.MX RT1170 EVK"
 #define MICROPY_HW_MCU_NAME   "MIMXRT1176DVMAA"
+
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-1070evk"
+
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \

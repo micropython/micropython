@@ -301,7 +301,7 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
     return MP_EOPNOTSUPP;
 }
 
-int mp_bluetooth_gatts_read(uint16_t value_handle, uint8_t **value, size_t *value_len) {
+int mp_bluetooth_gatts_read(uint16_t value_handle, const uint8_t **value, size_t *value_len) {
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
@@ -318,21 +318,7 @@ int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t
     return mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, value_handle, value, value_len);
 }
 
-int mp_bluetooth_gatts_notify(uint16_t conn_handle, uint16_t value_handle) {
-    if (!mp_bluetooth_is_active()) {
-        return ERRNO_BLUETOOTH_NOT_ACTIVE;
-    }
-    return MP_EOPNOTSUPP;
-}
-
-int mp_bluetooth_gatts_notify_send(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t value_len) {
-    if (!mp_bluetooth_is_active()) {
-        return ERRNO_BLUETOOTH_NOT_ACTIVE;
-    }
-    return MP_EOPNOTSUPP;
-}
-
-int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle) {
+int mp_bluetooth_gatts_notify_indicate(uint16_t conn_handle, uint16_t value_handle, int gatts_op, const uint8_t *value, size_t value_len) {
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }

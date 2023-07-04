@@ -1,13 +1,20 @@
-# Select the variant to build for.
+# Select the variant to build for:
+ifdef VARIANT_DIR
+# Custom variant path - remove trailing slash and get the final component of
+# the path as the variant name.
+VARIANT ?= $(notdir $(VARIANT_DIR:/=))
+else
+# If not given on the command line, then default to standard.
 VARIANT ?= standard
-
-# If the build directory is not given, make it reflect the variant name.
-BUILD ?= build-$(VARIANT)
-
 VARIANT_DIR ?= variants/$(VARIANT)
+endif
+
 ifeq ($(wildcard $(VARIANT_DIR)/.),)
 $(error Invalid VARIANT specified: $(VARIANT_DIR))
 endif
+
+# If the build directory is not given, make it reflect the variant name.
+BUILD ?= build-$(VARIANT)
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
@@ -19,8 +26,8 @@ FROZEN_MANIFEST ?= variants/manifest.py
 PROG ?= micropython
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = ../unix/qstrdefsport.h
-QSTR_GLOBAL_DEPENDENCIES = $(VARIANT_DIR)/mpconfigvariant.h
+QSTR_DEFS += ../unix/qstrdefsport.h
+QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 
 # include py core make definitions
 include $(TOP)/py/py.mk
@@ -50,7 +57,6 @@ SRC_C = \
 	ports/unix/main.c \
 	ports/unix/input.c \
 	ports/unix/modmachine.c \
-	ports/unix/modtime.c \
 	ports/unix/gccollect.c \
 	windows_mphal.c \
 	realpath.c \
@@ -81,7 +87,7 @@ SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
 SRC_QSTR_AUTO_DEPS +=
 
 ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool -DMICROPY_MODULE_FROZEN_MPY=1 -DMPZ_DIG_SIZE=16
+CFLAGS += -DMPZ_DIG_SIZE=16
 endif
 
 CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS))

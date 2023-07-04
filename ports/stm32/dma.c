@@ -80,7 +80,7 @@ typedef union {
 struct _dma_descr_t {
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     DMA_Stream_TypeDef *instance;
-    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     DMA_Channel_TypeDef *instance;
     #else
     #error "Unsupported Processor"
@@ -92,6 +92,23 @@ struct _dma_descr_t {
 
 // Default parameters to dma_init() shared by spi and i2c; Channel and Direction
 // vary depending on the peripheral instance so they get passed separately
+#if defined(STM32H5)
+static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
+    .Request = 0, // set by dma_init_handle
+    .BlkHWRequest = DMA_BREQ_SINGLE_BURST,
+    .Direction = 0, // set by dma_init_handle
+    .SrcInc = 0, // set by dma_init_handle
+    .DestInc = 0, // set by dma_init_handle
+    .SrcDataWidth = DMA_SRC_DATAWIDTH_BYTE,
+    .DestDataWidth = DMA_DEST_DATAWIDTH_BYTE,
+    .Priority = DMA_LOW_PRIORITY_LOW_WEIGHT,
+    .SrcBurstLength = 1,
+    .DestBurstLength = 1,
+    .TransferAllocatedPort = DMA_SRC_ALLOCATED_PORT0 | DMA_DEST_ALLOCATED_PORT0,
+    .TransferEventMode = DMA_TCEM_BLOCK_TRANSFER,
+    .Mode = DMA_NORMAL, // DMA_NORMAL or DMA_PFCTRL (peripheral flow control mode)
+};
+#else
 static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
@@ -112,6 +129,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     .PeriphBurst = DMA_PBURST_INC4
     #endif
 };
+#endif
 
 #if MICROPY_HW_ENABLE_I2S
 // Default parameters to dma_init() for i2s; Channel and Direction
@@ -678,6 +696,39 @@ static const uint8_t dma_irqn[NSTREAM] = {
     #endif
 };
 
+#elif defined(STM32H5)
+
+#define NCONTROLLERS            (2)
+#define NSTREAMS_PER_CONTROLLER (8)
+#define NSTREAM                 (NCONTROLLERS * NSTREAMS_PER_CONTROLLER)
+
+#define DMA_SUB_INSTANCE_AS_UINT8(dma_channel) (dma_channel)
+
+#define DMA1_ENABLE_MASK (0x00ff) // Bits in dma_enable_mask corresponding to GPDMA1
+#define DMA2_ENABLE_MASK (0xff00) // Bits in dma_enable_mask corresponding to GPDMA2
+
+const dma_descr_t dma_SPI_2_RX = { GPDMA1_Channel0, GPDMA1_REQUEST_SPI2_RX, dma_id_0, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_2_TX = { GPDMA1_Channel1, GPDMA1_REQUEST_SPI2_TX, dma_id_1, &dma_init_struct_spi_i2c };
+
+static const uint8_t dma_irqn[NSTREAM] = {
+    GPDMA1_Channel0_IRQn,
+    GPDMA1_Channel1_IRQn,
+    GPDMA1_Channel2_IRQn,
+    GPDMA1_Channel3_IRQn,
+    GPDMA1_Channel4_IRQn,
+    GPDMA1_Channel5_IRQn,
+    GPDMA1_Channel6_IRQn,
+    GPDMA1_Channel7_IRQn,
+    GPDMA2_Channel0_IRQn,
+    GPDMA2_Channel1_IRQn,
+    GPDMA2_Channel2_IRQn,
+    GPDMA2_Channel3_IRQn,
+    GPDMA2_Channel4_IRQn,
+    GPDMA2_Channel5_IRQn,
+    GPDMA2_Channel6_IRQn,
+    GPDMA2_Channel7_IRQn,
+};
+
 #elif defined(STM32H7)
 
 #define NCONTROLLERS            (2)
@@ -761,6 +812,13 @@ volatile dma_idle_count_t dma_idle;
 #if defined(DMA2)
 #define DMA2_IS_CLK_ENABLED()   ((RCC->AHBENR & RCC_AHBENR_DMA2EN) != 0)
 #endif
+#elif defined(STM32H5)
+#define DMA1_IS_CLK_ENABLED()   (__HAL_RCC_GPDMA1_IS_CLK_ENABLED())
+#define DMA2_IS_CLK_ENABLED()   (__HAL_RCC_GPDMA2_IS_CLK_ENABLED())
+#define __HAL_RCC_DMA1_CLK_ENABLE __HAL_RCC_GPDMA1_CLK_ENABLE
+#define __HAL_RCC_DMA2_CLK_ENABLE __HAL_RCC_GPDMA2_CLK_ENABLE
+#define __HAL_RCC_DMA1_CLK_DISABLE __HAL_RCC_GPDMA1_CLK_DISABLE
+#define __HAL_RCC_DMA2_CLK_DISABLE __HAL_RCC_GPDMA2_CLK_DISABLE
 #else
 #define DMA1_IS_CLK_ENABLED()   ((RCC->AHB1ENR & RCC_AHB1ENR_DMA1EN) != 0)
 #define DMA2_IS_CLK_ENABLED()   ((RCC->AHB1ENR & RCC_AHB1ENR_DMA2EN) != 0)
@@ -1093,6 +1151,34 @@ void DMA2_Channel8_IRQHandler(void) {
 }
 #endif
 
+#elif defined(STM32H5)
+
+#define DEFINE_IRQ_HANDLER(periph, channel, id) \
+    void GPDMA##periph##_Channel##channel##_IRQHandler(void) { \
+        IRQ_ENTER(GPDMA##periph##_Channel##channel##_IRQn); \
+        if (dma_handle[id] != NULL) { \
+            HAL_DMA_IRQHandler(dma_handle[id]); \
+        } \
+        IRQ_EXIT(GPDMA##periph##_Channel##channel##_IRQn); \
+    }
+
+DEFINE_IRQ_HANDLER(1, 0, dma_id_0)
+DEFINE_IRQ_HANDLER(1, 1, dma_id_1)
+DEFINE_IRQ_HANDLER(1, 2, dma_id_2)
+DEFINE_IRQ_HANDLER(1, 3, dma_id_3)
+DEFINE_IRQ_HANDLER(1, 4, dma_id_4)
+DEFINE_IRQ_HANDLER(1, 5, dma_id_5)
+DEFINE_IRQ_HANDLER(1, 6, dma_id_6)
+DEFINE_IRQ_HANDLER(1, 7, dma_id_7)
+DEFINE_IRQ_HANDLER(2, 0, dma_id_8)
+DEFINE_IRQ_HANDLER(2, 1, dma_id_9)
+DEFINE_IRQ_HANDLER(2, 2, dma_id_10)
+DEFINE_IRQ_HANDLER(2, 3, dma_id_11)
+DEFINE_IRQ_HANDLER(2, 4, dma_id_12)
+DEFINE_IRQ_HANDLER(2, 5, dma_id_13)
+DEFINE_IRQ_HANDLER(2, 6, dma_id_14)
+DEFINE_IRQ_HANDLER(2, 7, dma_id_15)
+
 #elif defined(STM32L0)
 
 void DMA1_Channel1_IRQHandler(void) {
@@ -1276,7 +1362,7 @@ static void dma_enable_clock(dma_id_t dma_id) {
             }
         }
     }
-    #if defined(DMA2)
+    #if defined(DMA2) || defined(GPDMA2)
     else {
         if (((old_enable_mask & DMA2_ENABLE_MASK) == 0) && !DMA2_IS_CLK_ENABLED()) {
             __HAL_RCC_DMA2_CLK_ENABLE();
@@ -1310,13 +1396,25 @@ void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint3
     dma->Instance = dma_descr->instance;
     dma->Init = *dma_descr->init;
     dma->Init.Direction = dir;
-    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     dma->Init.Request = dma_descr->sub_instance;
     #else
     #if !defined(STM32F0) && !defined(STM32L1)
     dma->Init.Channel = dma_descr->sub_instance;
     #endif
     #endif
+
+    #if defined(STM32H5)
+    // Configure src/dest settings based on the DMA direction.
+    if (dir == DMA_MEMORY_TO_PERIPH) {
+        dma->Init.SrcInc = DMA_SINC_INCREMENTED;
+        dma->Init.DestInc = DMA_DINC_FIXED;
+    } else if (dir == DMA_PERIPH_TO_MEMORY) {
+        dma->Init.SrcInc = DMA_SINC_FIXED;
+        dma->Init.DestInc = DMA_DINC_INCREMENTED;
+    }
+    #endif
+
     // half of __HAL_LINKDMA(data, xxx, *dma)
     // caller must implement other half by doing: data->xxx = dma
     dma->Parent = data;
@@ -1337,11 +1435,12 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir
 
         dma_enable_clock(dma_id);
 
-        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
         // Always reset and configure the H7 and G0/G4/H7/L0/L4/WB/WL DMA peripheral
         // (dma->State is set to HAL_DMA_STATE_RESET by memset above)
         // TODO: understand how L0/L4 DMA works so this is not needed
         HAL_DMA_DeInit(dma);
+        dma->Parent = data; // HAL_DMA_DeInit may clear Parent, so set it again
         HAL_DMA_Init(dma);
         NVIC_SetPriority(IRQn_NONNEG(dma_irqn[dma_id]), IRQ_PRI_DMA);
         #else
@@ -1418,7 +1517,7 @@ static void dma_idle_handler(uint32_t tick) {
 
     static const uint32_t controller_mask[] = {
         DMA1_ENABLE_MASK,
-        #if defined(DMA2)
+        #if defined(DMA2) || defined(GPDMA2)
         DMA2_ENABLE_MASK,
         #endif
     };
@@ -1435,7 +1534,7 @@ static void dma_idle_handler(uint32_t tick) {
                 if (controller == 0) {
                     __HAL_RCC_DMA1_CLK_DISABLE();
                     #if defined(STM32G4)
-                    #if defined(DMA2)
+                    #if defined(DMA2) || defined(GPDMA2)
                     if (__HAL_RCC_DMA2_IS_CLK_DISABLED())
                     #endif
                     {
@@ -1443,7 +1542,7 @@ static void dma_idle_handler(uint32_t tick) {
                     }
                     #endif
                 }
-                #if defined(DMA2)
+                #if defined(DMA2) || defined(GPDMA2)
                 else {
                     __HAL_RCC_DMA2_CLK_DISABLE();
                     #if defined(STM32G4)
@@ -1514,7 +1613,7 @@ void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_a
     dma->CCR |= DMA_CCR_EN;
 }
 
-#elif defined(STM32G0) || defined(STM32WB) || defined(STM32WL)
+#elif defined(STM32G0) || defined(STM32H5) || defined(STM32WB) || defined(STM32WL)
 
 // These functions are currently not implemented or needed for this MCU.
 

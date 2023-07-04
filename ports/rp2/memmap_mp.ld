@@ -68,7 +68,7 @@ SECTIONS
         /* bit of a hack right now to exclude all floating point and time critical (e.g. memset, memcpy) code from
          * FLASH ... we will include any thing excluded here in .data below by default */
         *(.init)
-        /* Change for MicroPython... excluse gc.c, parse.c, vm.c from flash */
+        /* Change for MicroPython... exclude gc.c, parse.c, vm.c from flash */
         *(EXCLUDE_FILE(*libgcc.a: *libc.a: *lib_a-mem*.o *libm.a: *gc.c.obj *vm.c.obj *parse.c.obj) .text*)
         *(.fini)
         /* Pull all c'tors into .text */
@@ -243,17 +243,23 @@ SECTIONS
     } > FLASH
 
     /* stack limit is poorly named, but historically is maximum heap ptr */
-    __StackLimit = ORIGIN(RAM) + LENGTH(RAM);
+    __StackLimit = __bss_end__ + __micropy_c_heap_size__;
+
+    /* Define start and end of GC heap */
+    __GcHeapStart = __StackLimit; /* after the C heap (sbrk limit) */
+    __GcHeapEnd = ORIGIN(RAM) + LENGTH(RAM);
+
+    /* Define memory for the C stack */
     __StackOneTop = ORIGIN(SCRATCH_X) + LENGTH(SCRATCH_X);
     __StackTop = ORIGIN(SCRATCH_Y) + LENGTH(SCRATCH_Y);
     __StackOneBottom = __StackOneTop - SIZEOF(.stack1_dummy);
     __StackBottom = __StackTop - SIZEOF(.stack_dummy);
     PROVIDE(__stack = __StackTop);
 
-    /* Check if data + heap + stack exceeds RAM limit */
-    ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed")
+    /* Check GC heap is at least 128 KB */
+    /* On a RP2040 using all SRAM this should always be the case. */
+    ASSERT((__GcHeapEnd - __GcHeapStart) > 128*1024, "GcHeap is too small")
 
     ASSERT( __binary_info_header_end - __logical_binary_start <= 256, "Binary info must be in first 256 bytes of the binary")
     /* todo assert on extra code */
 }
-

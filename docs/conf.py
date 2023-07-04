@@ -67,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'MicroPython'
-copyright = '- The MicroPython Documentation is Copyright © 2014-2022, Damien P. George, Paul Sokolovsky, and contributors'
+copyright = '- The MicroPython Documentation is Copyright © 2014-2023, Damien P. George, Paul Sokolovsky, and contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -233,7 +233,7 @@ latex_elements = {
 # Additional stuff for the LaTeX preamble.
 #'preamble': '',
 # Include 3 levels of headers in PDF ToC
-'preamble': '\setcounter{tocdepth}{2}',
+'preamble': r'\setcounter{tocdepth}{2}',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples

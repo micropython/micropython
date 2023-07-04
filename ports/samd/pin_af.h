@@ -33,7 +33,7 @@
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
     uint8_t pin_id;
-    char *name;
+    qstr name;
     uint8_t eic;
     uint8_t adc0;
     uint8_t sercom1;
@@ -51,7 +51,7 @@ typedef struct _machine_pin_obj_t {
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
     uint8_t pin_id;
-    char *name;
+    qstr name;
     uint8_t eic;
     uint8_t adc0;
     uint8_t adc1;
@@ -65,6 +65,9 @@ typedef struct _machine_pin_obj_t {
 #define ALT_FCT_TC        4
 #define ALT_FCT_TCC1      5
 #define ALT_FCT_TCC2      6
+#define ALT_FCT_QSPI      7
+#define ALT_FCT_CAN1      7
+#define ALT_FCT_USB       7
 
 #endif
 
@@ -89,7 +92,10 @@ typedef struct _pwm_config_t {
 #define ALT_FCT_SERCOM1   2
 #define ALT_FCT_SERCOM2   3
 
-extern const machine_pin_obj_t pin_af_table[];
+#if MICROPY_PY_MACHINE_PIN_BOARD_CPU
+extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
+#endif
 
 sercom_pad_config_t get_sercom_config(int pin_id, uint8_t sercom);
 adc_config_t get_adc_config(int pin_id, int32_t flag);

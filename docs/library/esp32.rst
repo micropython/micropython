@@ -44,10 +44,6 @@ Functions
 
     Read the raw value of the internal temperature sensor, returning an integer.
 
-.. function:: hall_sensor()
-
-    Read the raw value of the internal Hall sensor, returning an integer.
-
 .. function:: idf_heap_info(capabilities)
 
     Returns information about the ESP-IDF heap memory regions. One of them contains
@@ -126,7 +122,7 @@ methods to enable over-the-air (OTA) updates.
     and  an ``OSError(-261)`` is raised if called on firmware that doesn't have the
     feature enabled.
     It is OK to call ``mark_app_valid_cancel_rollback`` on every boot and it is not
-    necessary when booting firmare that was loaded using esptool.
+    necessary when booting firmware that was loaded using esptool.
 
 Constants
 ~~~~~~~~~
@@ -278,6 +274,14 @@ For more details see Espressif's `ESP-IDF RMT documentation.
 
 Ultra-Low-Power co-processor
 ----------------------------
+
+This class gives access to the Ultra Low Power (ULP) co-processor on the ESP32,
+ESP32-S2 and ESP32-S3 chips.
+
+.. warning::
+
+    This class does not provide access to the RISCV ULP co-processor available
+    on the ESP32-S2 and ESP32-S3 chips.
 
 .. class:: ULP()
 

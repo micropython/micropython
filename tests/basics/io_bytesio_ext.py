@@ -1,9 +1,5 @@
 # Extended stream operations on io.BytesIO
-try:
-    import uio as io
-except ImportError:
-    import io
-
+import io
 a = io.BytesIO(b"foobar")
 a.seek(10)
 print(a.read(10))

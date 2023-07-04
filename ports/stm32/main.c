@@ -48,7 +48,9 @@
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
 #include "lwip/apps/mdns.h"
-#include "drivers/cyw43/cyw43.h"
+#if MICROPY_PY_NETWORK_CYW43
+#include "lib/cyw43-driver/src/cyw43.h"
+#endif
 #endif
 
 #if MICROPY_PY_BLUETOOTH
@@ -202,7 +204,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     }
 
     if (ret != 0) {
-        printf("MPY: can't mount flash\n");
+        mp_printf(&mp_plat_print, "MPY: can't mount flash\n");
         return false;
     }
 
@@ -287,7 +289,7 @@ STATIC bool init_sdcard_fs(void) {
     }
 
     if (first_part) {
-        printf("MPY: can't mount SD card\n");
+        mp_printf(&mp_plat_print, "MPY: can't mount SD card\n");
         return false;
     } else {
         return true;
@@ -296,13 +298,18 @@ STATIC bool init_sdcard_fs(void) {
 #endif
 
 void stm32_main(uint32_t reset_mode) {
+    // Low-level MCU initialisation.
+    stm32_system_init();
+
     #if !defined(STM32F0) && defined(MICROPY_HW_VTOR)
     // Change IRQ vector table if configured differently
     SCB->VTOR = MICROPY_HW_VTOR;
     #endif
 
+    #if __CORTEX_M != 33
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
+    #endif
 
     // Hook for a board to run code at start up, for example check if a
     // bootloader should be entered instead of the main application.
@@ -330,6 +337,10 @@ void stm32_main(uint32_t reset_mode) {
 
     SCB_EnableICache();
     SCB_EnableDCache();
+
+    #elif defined(STM32H5)
+
+    HAL_ICACHE_Enable();
 
     #elif defined(STM32L4)
 
@@ -374,12 +385,21 @@ void stm32_main(uint32_t reset_mode) {
     // Enable D2 SRAM1/2/3 clocks.
     __HAL_RCC_D2SRAM1_CLK_ENABLE();
     __HAL_RCC_D2SRAM2_CLK_ENABLE();
+    #if defined(__HAL_RCC_D2SRAM3_CLK_ENABLE)
     __HAL_RCC_D2SRAM3_CLK_ENABLE();
+    #endif
     #endif
 
     MICROPY_BOARD_EARLY_INIT();
 
     // basic sub-system init
+    #if defined(STM32H5)
+    volatile uint32_t *src = (volatile uint32_t *)UID_BASE;
+    uint32_t *dest = (uint32_t *)&mp_hal_unique_id_address[0];
+    dest[0] = src[0];
+    dest[1] = src[1];
+    dest[2] = src[2];
+    #endif
     #if defined(STM32WB)
     rfcore_init();
     #endif
@@ -404,6 +424,21 @@ void stm32_main(uint32_t reset_mode) {
     rtc_init_start(false);
     #endif
     uart_init0();
+
+    #if defined(MICROPY_HW_UART_REPL)
+    // Set up a UART REPL using a statically allocated object
+    pyb_uart_repl_obj.base.type = &pyb_uart_type;
+    pyb_uart_repl_obj.uart_id = MICROPY_HW_UART_REPL;
+    pyb_uart_repl_obj.is_static = true;
+    pyb_uart_repl_obj.timeout = 0;
+    pyb_uart_repl_obj.timeout_char = 2;
+    uart_init(&pyb_uart_repl_obj, MICROPY_HW_UART_REPL_BAUD, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, 0);
+    uart_set_rxbuf(&pyb_uart_repl_obj, sizeof(pyb_uart_repl_rxbuf), pyb_uart_repl_rxbuf);
+    uart_attach_to_repl(&pyb_uart_repl_obj, true);
+    MP_STATE_PORT(pyb_uart_obj_all)[MICROPY_HW_UART_REPL - 1] = &pyb_uart_repl_obj;
+    MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
+    #endif
+
     spi_init0();
     #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
     i2c_init0();
@@ -437,19 +472,6 @@ void stm32_main(uint32_t reset_mode) {
         cyw43_wifi_ap_set_ssid(&cyw43_state, 8, buf);
         cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t *)"pybd0123");
     }
-    #endif
-
-    #if defined(MICROPY_HW_UART_REPL)
-    // Set up a UART REPL using a statically allocated object
-    pyb_uart_repl_obj.base.type = &pyb_uart_type;
-    pyb_uart_repl_obj.uart_id = MICROPY_HW_UART_REPL;
-    pyb_uart_repl_obj.is_static = true;
-    pyb_uart_repl_obj.timeout = 0;
-    pyb_uart_repl_obj.timeout_char = 2;
-    uart_init(&pyb_uart_repl_obj, MICROPY_HW_UART_REPL_BAUD, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, 0);
-    uart_set_rxbuf(&pyb_uart_repl_obj, sizeof(pyb_uart_repl_rxbuf), pyb_uart_repl_rxbuf);
-    uart_attach_to_repl(&pyb_uart_repl_obj, true);
-    MP_STATE_PORT(pyb_uart_obj_all)[MICROPY_HW_UART_REPL - 1] = &pyb_uart_repl_obj;
     #endif
 
     boardctrl_state_t state;
@@ -488,12 +510,6 @@ soft_reset:
     // zeroing out memory and resetting any of the sub-systems.  Following this
     // we can run Python scripts (eg boot.py), but anything that is configurable
     // by boot.py must be set after boot.py is run.
-
-    #if defined(MICROPY_HW_UART_REPL)
-    MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
-    #else
-    MP_STATE_PORT(pyb_stdio_uart) = NULL;
-    #endif
 
     readline_init0();
     pin_init0();
@@ -552,7 +568,7 @@ soft_reset:
 
     // Run optional frozen boot code.
     #ifdef MICROPY_BOARD_FROZEN_BOOT_FILE
-    pyexec_frozen_module(MICROPY_BOARD_FROZEN_BOOT_FILE);
+    pyexec_frozen_module(MICROPY_BOARD_FROZEN_BOOT_FILE, false);
     #endif
 
     // Run boot.py (or whatever else a board configures at this stage).
@@ -650,6 +666,12 @@ soft_reset_exit:
 
     #if MICROPY_PY_THREAD
     pyb_thread_deinit();
+    #endif
+
+    #if defined(MICROPY_HW_UART_REPL)
+    MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
+    #else
+    MP_STATE_PORT(pyb_stdio_uart) = NULL;
     #endif
 
     MICROPY_BOARD_END_SOFT_RESET(&state);

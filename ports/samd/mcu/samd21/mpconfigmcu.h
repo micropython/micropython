@@ -14,6 +14,10 @@
 #define MICROPY_PY_BUILTINS_COMPLEX     (0)
 #endif
 
+#ifndef MICROPY_PY_TIME
+#define MICROPY_PY_TIME                 (1)
+#endif
+
 #ifndef MICROPY_PY_MATH
 #define MICROPY_PY_MATH                 (1)
 #endif
@@ -22,21 +26,25 @@
 #define MICROPY_PY_CMATH                (0)
 #endif
 
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC (trng_random_u32(300))
+unsigned long trng_random_u32(int delay);
+
 #define VFS_BLOCK_SIZE_BYTES            (1536) // 24x 64B flash pages;
 
 #ifndef MICROPY_HW_UART_TXBUF
 #define MICROPY_HW_UART_TXBUF           (1)
 #endif
 
-#ifndef MICROPY_PY_MACHINE_RTC
-#if MICROPY_HW_XOSC32K
-#define MICROPY_PY_MACHINE_RTC          (1)
-#endif
+#define MICROPY_PY_OS_URANDOM           (1)
+
+#ifndef MICROPY_PY_MACHINE_PIN_BOARD_CPU
+#define MICROPY_PY_MACHINE_PIN_BOARD_CPU (1)
 #endif
 
 #define CPU_FREQ                        (48000000)
 #define DFLL48M_FREQ                    (48000000)
-#define MAX_CPU_FREQ                    (48000000)
+#define MAX_CPU_FREQ                    (54000000)
+#define FDPLL_REF_FREQ                  (32768)
 
 #define IRQ_PRI_PENDSV                  ((1 << __NVIC_PRIO_BITS) - 1)
 

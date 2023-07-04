@@ -1,11 +1,17 @@
-# Select the board to build for: if not given on the command line,
-# then default to pca10040.
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to pca10040.
 BOARD ?= pca10040
+BOARD_DIR ?= boards/$(BOARD)
+endif
+
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
-
-BOARD_DIR ?= boards/$(BOARD)
 
 # If SoftDevice is selected, try to use that one.
 SD ?=
@@ -227,11 +233,6 @@ SRC_LIB_C += $(addprefix lib/,\
         libm/roundf.c \
         )
 
-SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
-        nrfx_uarte.c \
-        nrfx_twim.c \
-        )
-
 include drivers/secureboot/secureboot.mk
 
 endif
@@ -257,11 +258,13 @@ endif
 SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 	prs/nrfx_prs.c \
 	nrfx_uart.c \
+        nrfx_uarte.c \
 	nrfx_adc.c \
 	nrfx_saadc.c \
 	nrfx_temp.c \
 	nrfx_rng.c \
 	nrfx_twi.c \
+        nrfx_twim.c \
 	nrfx_spi.c \
 	nrfx_spim.c \
 	nrfx_rtc.c \
@@ -313,6 +316,7 @@ SRC_C += $(addprefix lib/tinyusb/src/,\
 	tusb.c \
 	portable/nordic/nrf5x/dcd_nrf5x.c \
 	)
+
 endif
 
 DRIVERS_SRC_C += $(addprefix modules/,\
@@ -324,11 +328,9 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/pin.c \
 	machine/timer.c \
 	machine/rtcounter.c \
-	machine/pwm.c \
 	machine/temp.c \
-	uos/moduos.c \
-	uos/microbitfs.c \
-	utime/modutime.c \
+	os/modos.c \
+	os/microbitfs.c \
 	board/modboard.c \
 	board/led.c \
 	ubluepy/modubluepy.c \
@@ -509,6 +511,15 @@ nrfutil_dfu_deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip -p $(NRFUTIL_PORT) -t 0
 
 deploy: nrfutil_dfu_deploy
+
+else ifeq ($(FLASHER), bossac)
+
+BOSSAC_PORT ?= /dev/ttyACM0
+BOSSAC_OFFSET ?= 0x16000
+
+deploy: $(BUILD)/$(OUTPUT_FILENAME).bin
+	$(Q)bossac -e -w --offset=$(BOSSAC_OFFSET) --port=$(BOSSAC_PORT) -i -d -U -R $<
+
 endif
 
 flash: deploy
@@ -540,12 +551,6 @@ $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qst
 
 $(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
 	$(call compile_c)
-
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
 
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os -fno-lto
 

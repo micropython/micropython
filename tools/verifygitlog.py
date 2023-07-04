@@ -49,17 +49,17 @@ def git_log(pretty_format, *args):
 def diagnose_subject_line(subject_line, subject_line_format, err):
     err.error("Subject line: " + subject_line)
     if not subject_line.endswith("."):
-        err.error('* should end with "."')
+        err.error('* must end with "."')
     if not re.match(r"^[^!]+: ", subject_line):
-        err.error('* should start with "path: "')
+        err.error('* must start with "path: "')
     if re.match(r"^[^!]+: *$", subject_line):
-        err.error("* should contain a subject after the path.")
+        err.error("* must contain a subject after the path.")
     m = re.match(r"^[^!]+: ([a-z][^ ]*)", subject_line)
     if m:
-        err.error('* first word of subject ("{}") should be capitalised.'.format(m.group(1)))
+        err.error('* first word of subject ("{}") must be capitalised.'.format(m.group(1)))
     if re.match(r"^[^!]+: [^ ]+$", subject_line):
-        err.error("* subject should contain more than one word.")
-    err.error("* should match: " + repr(subject_line_format))
+        err.error("* subject must contain more than one word.")
+    err.error("* must match: " + repr(subject_line_format))
     err.error('* Example: "py/runtime: Add support for foo to bar."')
 
 
@@ -94,11 +94,11 @@ def verify_message_body(raw_body, err):
     if not re.match(subject_line_format, subject_line):
         diagnose_subject_line(subject_line, subject_line_format, err)
     if len(subject_line) >= 73:
-        err.error("Subject line should be 72 or fewer characters: " + subject_line)
+        err.error("Subject line must be 72 or fewer characters: " + subject_line)
 
     # Second one divides subject and body.
     if len(raw_body) > 1 and raw_body[1]:
-        err.error("Second message line should be empty: " + raw_body[1])
+        err.error("Second message line must be empty: " + raw_body[1])
 
     # Message body lines.
     for line in raw_body[2:]:
@@ -107,7 +107,7 @@ def verify_message_body(raw_body, err):
             err.error("Message lines should be 75 or less characters: " + line)
 
     if not raw_body[-1].startswith("Signed-off-by: ") or "@" not in raw_body[-1]:
-        err.warning('Message should be signed-off. Use "git commit -s".')
+        err.error('Message must be signed-off. Use "git commit -s".')
 
 
 def run(args):
@@ -139,7 +139,7 @@ def run(args):
 
 def show_help():
     print("usage: verifygitlog.py [-v -n -h --check-file] ...")
-    print("-v  : increase verbosity, can be speficied multiple times")
+    print("-v  : increase verbosity, can be specified multiple times")
     print("-n  : do not print multi-line suggestions")
     print("-h  : print this help message and exit")
     print(

@@ -50,6 +50,15 @@
 
 #if MICROPY_HW_ENABLE_USB
 
+#if !MICROPY_HW_USB_IS_MULTI_OTG
+#define USE_USB_CNTR_SOFM (1)
+#if defined(STM32G0) || defined(STM32H5)
+#define USB USB_DRD_FS
+#endif
+#else
+#define USE_USB_CNTR_SOFM (0)
+#endif
+
 // CDC control commands
 #define CDC_SEND_ENCAPSULATED_COMMAND               0x00
 #define CDC_GET_ENCAPSULATED_RESPONSE               0x01
@@ -152,7 +161,7 @@ int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t *pbuf, ui
                 // configure its serial port (in most cases to disable local echo)
                 cdc->connect_state = USBD_CDC_CONNECT_STATE_CONNECTING;
                 usbd_cdc_connect_tx_timer = 8; // wait for 8 SOF IRQs
-                #if !MICROPY_HW_USB_IS_MULTI_OTG
+                #if USE_USB_CNTR_SOFM
                 USB->CNTR |= USB_CNTR_SOFM;
                 #else
                 PCD_HandleTypeDef *hpcd = cdc->base.usbd->pdev->pData;
@@ -263,7 +272,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
         --usbd_cdc_connect_tx_timer;
     } else {
         usbd_cdc_msc_hid_state_t *usbd = ((USBD_HandleTypeDef *)hpcd->pData)->pClassData;
-        #if !MICROPY_HW_USB_IS_MULTI_OTG
+        #if USE_USB_CNTR_SOFM
         USB->CNTR &= ~USB_CNTR_SOFM;
         #else
         hpcd->Instance->GINTMSK &= ~USB_OTG_GINTMSK_SOFM;
@@ -348,7 +357,7 @@ int usbd_cdc_tx_flow(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len) {
     }
 }
 
-// timout in milliseconds.
+// timeout in milliseconds.
 // Returns number of bytes written to the device.
 int usbd_cdc_tx(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len, uint32_t timeout) {
     for (uint32_t i = 0; i < len; i++) {
@@ -421,7 +430,7 @@ int usbd_cdc_rx_num(usbd_cdc_itf_t *cdc) {
     return rx_waiting;
 }
 
-// timout in milliseconds.
+// timeout in milliseconds.
 // Returns number of bytes read from the device.
 int usbd_cdc_rx(usbd_cdc_itf_t *cdc, uint8_t *buf, uint32_t len, uint32_t timeout) {
     // loop to read bytes

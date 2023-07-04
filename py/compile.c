@@ -423,21 +423,6 @@ STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int la
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_not_test_2) {
             c_if_cond(comp, pns->nodes[0], !jump_if, label);
             return;
-        } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_atom_paren) {
-            // cond is something in parenthesis
-            if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
-                // empty tuple, acts as false for the condition
-                if (jump_if == false) {
-                    EMIT_ARG(jump, label);
-                }
-            } else {
-                assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp));
-                // non-empty tuple, acts as true for the condition
-                if (jump_if == true) {
-                    EMIT_ARG(jump, label);
-                }
-            }
-            return;
         }
     }
 
@@ -1274,6 +1259,14 @@ STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, id_in
     }
 }
 
+STATIC void compile_declare_global_or_nonlocal(compiler_t *comp, mp_parse_node_t pn, id_info_t *id_info, bool is_global) {
+    if (is_global) {
+        compile_declare_global(comp, pn, id_info);
+    } else {
+        compile_declare_nonlocal(comp, pn, id_info);
+    }
+}
+
 STATIC void compile_global_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->pass == MP_PASS_SCOPE) {
         bool is_global = MP_PARSE_NODE_STRUCT_KIND(pns) == PN_global_stmt;
@@ -1288,11 +1281,7 @@ STATIC void compile_global_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_
         for (size_t i = 0; i < n; i++) {
             qstr qst = MP_PARSE_NODE_LEAF_ARG(nodes[i]);
             id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, ID_INFO_KIND_UNDECIDED);
-            if (is_global) {
-                compile_declare_global(comp, (mp_parse_node_t)pns, id_info);
-            } else {
-                compile_declare_nonlocal(comp, (mp_parse_node_t)pns, id_info);
-            }
+            compile_declare_global_or_nonlocal(comp, (mp_parse_node_t)pns, id_info, is_global);
         }
     }
 }
@@ -2133,13 +2122,30 @@ STATIC void compile_namedexpr_helper(compiler_t *comp, mp_parse_node_t pn_name, 
     }
     compile_node(comp, pn_expr);
     EMIT(dup_top);
-    scope_t *old_scope = comp->scope_cur;
-    if (SCOPE_IS_COMP_LIKE(comp->scope_cur->kind)) {
-        // Use parent's scope for assigned value so it can "escape"
-        comp->scope_cur = comp->scope_cur->parent;
+
+    qstr target = MP_PARSE_NODE_LEAF_ARG(pn_name);
+
+    // When a variable is assigned via := in a comprehension then that variable is bound to
+    // the parent scope.  Any global or nonlocal declarations in the parent scope are honoured.
+    // For details see: https://peps.python.org/pep-0572/#scope-of-the-target
+    if (comp->pass == MP_PASS_SCOPE && SCOPE_IS_COMP_LIKE(comp->scope_cur->kind)) {
+        id_info_t *id_info_parent = mp_emit_common_get_id_for_modification(comp->scope_cur->parent, target);
+        if (id_info_parent->kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
+            scope_find_or_add_id(comp->scope_cur, target, ID_INFO_KIND_GLOBAL_EXPLICIT);
+        } else {
+            id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, target, ID_INFO_KIND_UNDECIDED);
+            bool is_global = comp->scope_cur->parent->parent == NULL; // comprehension is defined in outer scope
+            if (!is_global && id_info->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+                // Variable was already referenced but now needs to be closed over, so reset the kind
+                // such that scope_check_to_close_over() is called in compile_declare_nonlocal().
+                id_info->kind = ID_INFO_KIND_UNDECIDED;
+            }
+            compile_declare_global_or_nonlocal(comp, pn_name, id_info, is_global);
+        }
     }
-    compile_store_id(comp, MP_PARSE_NODE_LEAF_ARG(pn_name));
-    comp->scope_cur = old_scope;
+
+    // Do the store to the target variable.
+    compile_store_id(comp, target);
 }
 
 STATIC void compile_namedexpr(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -3472,7 +3478,7 @@ void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool 
             }
         }
 
-        // update maximim number of labels needed
+        // update maximum number of labels needed
         if (comp->next_label > max_num_labels) {
             max_num_labels = comp->next_label;
         }

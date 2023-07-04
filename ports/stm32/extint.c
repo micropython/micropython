@@ -24,10 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stddef.h>
-#include <string.h>
-
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
@@ -35,6 +31,11 @@
 #include "pin.h"
 #include "extint.h"
 #include "irq.h"
+
+#if MICROPY_PY_NETWORK_CYW43 && defined(pyb_pin_WL_HOST_WAKE)
+#include "lib/cyw43-driver/src/cyw43.h"
+#include "lib/cyw43-driver/src/cyw43_stats.h"
+#endif
 
 /// \moduleref pyb
 /// \class ExtInt - configure I/O pins to interrupt on external events
@@ -91,7 +92,7 @@
 #define EXTI_SWIER_BB(line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + offsetof(EXTI_TypeDef, SWIER)) * 32) + ((line) * 4)))
 #endif
 
-#if defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+#if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 // The L4 MCU supports 40 Events/IRQs lines of the type configurable and direct.
 // Here we only support configurable line types.  Details, see page 330 of RM0351, Rev 1.
 // The USB_FS_WAKUP event is a direct type and there is no support for it.
@@ -168,6 +169,25 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     ADC1_COMP_IRQn,
     ADC1_COMP_IRQn,
     #endif
+
+    #elif defined(STM32H5)
+
+    EXTI0_IRQn,
+    EXTI1_IRQn,
+    EXTI2_IRQn,
+    EXTI3_IRQn,
+    EXTI4_IRQn,
+    EXTI5_IRQn,
+    EXTI6_IRQn,
+    EXTI7_IRQn,
+    EXTI8_IRQn,
+    EXTI9_IRQn,
+    EXTI10_IRQn,
+    EXTI11_IRQn,
+    EXTI12_IRQn,
+    EXTI13_IRQn,
+    EXTI14_IRQn,
+    EXTI15_IRQn,
 
     #else
 
@@ -326,10 +346,10 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
         pyb_extint_callback_arg[line] = MP_OBJ_FROM_PTR(pin);
 
         // Route the GPIO to EXTI
-        #if !defined(STM32WB) && !defined(STM32WL)
+        #if !defined(STM32H5) && !defined(STM32WB) && !defined(STM32WL)
         __HAL_RCC_SYSCFG_CLK_ENABLE();
         #endif
-        #if defined(STM32G0)
+        #if defined(STM32G0) || defined(STM32H5)
         EXTI->EXTICR[line >> 2] =
             (EXTI->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
             | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
@@ -369,10 +389,10 @@ void extint_set(const pin_obj_t *pin, uint32_t mode) {
         pyb_extint_callback_arg[line] = MP_OBJ_FROM_PTR(pin);
 
         // Route the GPIO to EXTI
-        #if !defined(STM32WB) && !defined(STM32WL)
+        #if !defined(STM32H5) && !defined(STM32WB) && !defined(STM32WL)
         __HAL_RCC_SYSCFG_CLK_ENABLE();
         #endif
-        #if defined(STM32G0)
+        #if defined(STM32G0) || defined(STM32H5)
         EXTI->EXTICR[line >> 2] =
             (EXTI->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
             | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
@@ -415,7 +435,7 @@ void extint_enable(uint line) {
     if (pyb_extint_mode[line] == EXTI_Mode_Interrupt) {
         #if defined(STM32H7)
         EXTI_D1->IMR1 |= (1 << line);
-        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32WB) || defined(STM32WL)
+        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32WB) || defined(STM32WL)
         EXTI->IMR1 |= (1 << line);
         #else
         EXTI->IMR |= (1 << line);
@@ -423,7 +443,7 @@ void extint_enable(uint line) {
     } else {
         #if defined(STM32H7)
         EXTI_D1->EMR1 |= (1 << line);
-        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32WB) || defined(STM32WL)
+        #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32WB) || defined(STM32WL)
         EXTI->EMR1 |= (1 << line);
         #else
         EXTI->EMR |= (1 << line);
@@ -449,7 +469,7 @@ void extint_disable(uint line) {
     #if defined(STM32H7)
     EXTI_D1->IMR1 &= ~(1 << line);
     EXTI_D1->EMR1 &= ~(1 << line);
-    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32WB) || defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32WB) || defined(STM32WL)
     EXTI->IMR1 &= ~(1 << line);
     EXTI->EMR1 &= ~(1 << line);
     #else
@@ -471,7 +491,7 @@ void extint_swint(uint line) {
         return;
     }
     // we need 0 to 1 transition to trigger the interrupt
-    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     EXTI->SWIER1 &= ~(1 << line);
     EXTI->SWIER1 |= (1 << line);
     #else
@@ -549,53 +569,56 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
 /// \classmethod regs()
 /// Dump the values of the EXTI registers.
 STATIC mp_obj_t extint_regs(void) {
-    #if defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
-    printf("EXTI_IMR1   %08x\n", (unsigned int)EXTI->IMR1);
-    printf("EXTI_IMR2   %08x\n", (unsigned int)EXTI->IMR2);
-    printf("EXTI_EMR1   %08x\n", (unsigned int)EXTI->EMR1);
-    printf("EXTI_EMR2   %08x\n", (unsigned int)EXTI->EMR2);
-    printf("EXTI_RTSR1  %08x\n", (unsigned int)EXTI->RTSR1);
-    printf("EXTI_RTSR2  %08x\n", (unsigned int)EXTI->RTSR2);
-    printf("EXTI_FTSR1  %08x\n", (unsigned int)EXTI->FTSR1);
-    printf("EXTI_FTSR2  %08x\n", (unsigned int)EXTI->FTSR2);
-    printf("EXTI_SWIER1 %08x\n", (unsigned int)EXTI->SWIER1);
-    printf("EXTI_SWIER2 %08x\n", (unsigned int)EXTI->SWIER2);
-    #if defined(STM32G0)
-    printf("EXTI_RPR1    %08x\n", (unsigned int)EXTI->RPR1);
-    printf("EXTI_FPR1    %08x\n", (unsigned int)EXTI->FPR1);
-    printf("EXTI_RPR2    %08x\n", (unsigned int)EXTI->RPR2);
-    printf("EXTI_FPR2    %08x\n", (unsigned int)EXTI->FPR2);
+    const mp_print_t *print = &mp_plat_print;
+
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    mp_printf(print, "EXTI_IMR1   %08x\n", (unsigned int)EXTI->IMR1);
+    mp_printf(print, "EXTI_IMR2   %08x\n", (unsigned int)EXTI->IMR2);
+    mp_printf(print, "EXTI_EMR1   %08x\n", (unsigned int)EXTI->EMR1);
+    mp_printf(print, "EXTI_EMR2   %08x\n", (unsigned int)EXTI->EMR2);
+    mp_printf(print, "EXTI_RTSR1  %08x\n", (unsigned int)EXTI->RTSR1);
+    mp_printf(print, "EXTI_RTSR2  %08x\n", (unsigned int)EXTI->RTSR2);
+    mp_printf(print, "EXTI_FTSR1  %08x\n", (unsigned int)EXTI->FTSR1);
+    mp_printf(print, "EXTI_FTSR2  %08x\n", (unsigned int)EXTI->FTSR2);
+    mp_printf(print, "EXTI_SWIER1 %08x\n", (unsigned int)EXTI->SWIER1);
+    mp_printf(print, "EXTI_SWIER2 %08x\n", (unsigned int)EXTI->SWIER2);
+    #if defined(STM32G0) || defined(STM32H5)
+    mp_printf(print, "EXTI_RPR1    %08x\n", (unsigned int)EXTI->RPR1);
+    mp_printf(print, "EXTI_FPR1    %08x\n", (unsigned int)EXTI->FPR1);
+    mp_printf(print, "EXTI_RPR2    %08x\n", (unsigned int)EXTI->RPR2);
+    mp_printf(print, "EXTI_FPR2    %08x\n", (unsigned int)EXTI->FPR2);
     #else
-    printf("EXTI_PR1    %08x\n", (unsigned int)EXTI->PR1);
-    printf("EXTI_PR2    %08x\n", (unsigned int)EXTI->PR2);
+    mp_printf(print, "EXTI_PR1    %08x\n", (unsigned int)EXTI->PR1);
+    mp_printf(print, "EXTI_PR2    %08x\n", (unsigned int)EXTI->PR2);
     #endif
     #elif defined(STM32H7)
-    printf("EXTI_IMR1   %08x\n", (unsigned int)EXTI_D1->IMR1);
-    printf("EXTI_IMR2   %08x\n", (unsigned int)EXTI_D1->IMR2);
-    printf("EXTI_IMR3   %08x\n", (unsigned int)EXTI_D1->IMR3);
-    printf("EXTI_EMR1   %08x\n", (unsigned int)EXTI_D1->EMR1);
-    printf("EXTI_EMR2   %08x\n", (unsigned int)EXTI_D1->EMR2);
-    printf("EXTI_EMR3   %08x\n", (unsigned int)EXTI_D1->EMR3);
-    printf("EXTI_RTSR1  %08x\n", (unsigned int)EXTI->RTSR1);
-    printf("EXTI_RTSR2  %08x\n", (unsigned int)EXTI->RTSR2);
-    printf("EXTI_RTSR3  %08x\n", (unsigned int)EXTI->RTSR3);
-    printf("EXTI_FTSR1  %08x\n", (unsigned int)EXTI->FTSR1);
-    printf("EXTI_FTSR2  %08x\n", (unsigned int)EXTI->FTSR2);
-    printf("EXTI_FTSR3  %08x\n", (unsigned int)EXTI->FTSR3);
-    printf("EXTI_SWIER1 %08x\n", (unsigned int)EXTI->SWIER1);
-    printf("EXTI_SWIER2 %08x\n", (unsigned int)EXTI->SWIER2);
-    printf("EXTI_SWIER3 %08x\n", (unsigned int)EXTI->SWIER3);
-    printf("EXTI_PR1    %08x\n", (unsigned int)EXTI_D1->PR1);
-    printf("EXTI_PR2    %08x\n", (unsigned int)EXTI_D1->PR2);
-    printf("EXTI_PR3    %08x\n", (unsigned int)EXTI_D1->PR3);
+    mp_printf(print, "EXTI_IMR1   %08x\n", (unsigned int)EXTI_D1->IMR1);
+    mp_printf(print, "EXTI_IMR2   %08x\n", (unsigned int)EXTI_D1->IMR2);
+    mp_printf(print, "EXTI_IMR3   %08x\n", (unsigned int)EXTI_D1->IMR3);
+    mp_printf(print, "EXTI_EMR1   %08x\n", (unsigned int)EXTI_D1->EMR1);
+    mp_printf(print, "EXTI_EMR2   %08x\n", (unsigned int)EXTI_D1->EMR2);
+    mp_printf(print, "EXTI_EMR3   %08x\n", (unsigned int)EXTI_D1->EMR3);
+    mp_printf(print, "EXTI_RTSR1  %08x\n", (unsigned int)EXTI->RTSR1);
+    mp_printf(print, "EXTI_RTSR2  %08x\n", (unsigned int)EXTI->RTSR2);
+    mp_printf(print, "EXTI_RTSR3  %08x\n", (unsigned int)EXTI->RTSR3);
+    mp_printf(print, "EXTI_FTSR1  %08x\n", (unsigned int)EXTI->FTSR1);
+    mp_printf(print, "EXTI_FTSR2  %08x\n", (unsigned int)EXTI->FTSR2);
+    mp_printf(print, "EXTI_FTSR3  %08x\n", (unsigned int)EXTI->FTSR3);
+    mp_printf(print, "EXTI_SWIER1 %08x\n", (unsigned int)EXTI->SWIER1);
+    mp_printf(print, "EXTI_SWIER2 %08x\n", (unsigned int)EXTI->SWIER2);
+    mp_printf(print, "EXTI_SWIER3 %08x\n", (unsigned int)EXTI->SWIER3);
+    mp_printf(print, "EXTI_PR1    %08x\n", (unsigned int)EXTI_D1->PR1);
+    mp_printf(print, "EXTI_PR2    %08x\n", (unsigned int)EXTI_D1->PR2);
+    mp_printf(print, "EXTI_PR3    %08x\n", (unsigned int)EXTI_D1->PR3);
     #else
-    printf("EXTI_IMR   %08x\n", (unsigned int)EXTI->IMR);
-    printf("EXTI_EMR   %08x\n", (unsigned int)EXTI->EMR);
-    printf("EXTI_RTSR  %08x\n", (unsigned int)EXTI->RTSR);
-    printf("EXTI_FTSR  %08x\n", (unsigned int)EXTI->FTSR);
-    printf("EXTI_SWIER %08x\n", (unsigned int)EXTI->SWIER);
-    printf("EXTI_PR    %08x\n", (unsigned int)EXTI->PR);
+    mp_printf(print, "EXTI_IMR   %08x\n", (unsigned int)EXTI->IMR);
+    mp_printf(print, "EXTI_EMR   %08x\n", (unsigned int)EXTI->EMR);
+    mp_printf(print, "EXTI_RTSR  %08x\n", (unsigned int)EXTI->RTSR);
+    mp_printf(print, "EXTI_FTSR  %08x\n", (unsigned int)EXTI->FTSR);
+    mp_printf(print, "EXTI_SWIER %08x\n", (unsigned int)EXTI->SWIER);
+    mp_printf(print, "EXTI_PR    %08x\n", (unsigned int)EXTI->PR);
     #endif
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(extint_regs_fun_obj, extint_regs);
@@ -690,9 +713,9 @@ void Handle_EXTI_Irq(uint32_t line) {
             mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
             #if MICROPY_PY_NETWORK_CYW43 && defined(pyb_pin_WL_HOST_WAKE)
             if (pyb_extint_callback_arg[line] == MP_OBJ_FROM_PTR(pyb_pin_WL_HOST_WAKE)) {
-                extern void (*cyw43_poll)(void);
                 if (cyw43_poll) {
                     pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+                    CYW43_STAT_INC(IRQ_COUNT);
                 }
                 return;
             }

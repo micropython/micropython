@@ -27,20 +27,35 @@
 #define MICROPY_INCLUDED_SAMD_MODMACHINE_H
 
 #include "py/obj.h"
+#include "shared/timeutils/timeutils.h"
 
+#if MICROPY_PY_MACHINE_ADC
 extern const mp_obj_type_t machine_adc_type;
+#endif
+#if MICROPY_PY_MACHINE_DAC
 extern const mp_obj_type_t machine_dac_type;
+#endif
+#if MICROPY_PY_MACHINE_I2C
 extern const mp_obj_type_t machine_i2c_type;
+#endif
 extern const mp_obj_type_t machine_pin_type;
+#if MICROPY_PY_MACHINE_PWM
 extern const mp_obj_type_t machine_pwm_type;
+#endif
+#if MICROPY_PY_MACHINE_SPI
 extern const mp_obj_type_t machine_spi_type;
+#endif
 extern const mp_obj_type_t machine_timer_type;
+#if MICROPY_PY_MACHINE_UART
 extern const mp_obj_type_t machine_uart_type;
+#endif
 extern const mp_obj_type_t machine_wdt_type;
 #if MICROPY_PY_MACHINE_RTC
 extern const mp_obj_type_t machine_rtc_type;
 #endif
 
 NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args);
+
+void rtc_gettime(timeutils_struct_time_t *tm);
 
 #endif // MICROPY_INCLUDED_SAMD_MODMACHINE_H

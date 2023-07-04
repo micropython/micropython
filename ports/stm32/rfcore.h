@@ -33,6 +33,7 @@ typedef void (*rfcore_ble_msg_callback_t)(void *, const uint8_t *, size_t);
 void rfcore_init(void);
 
 void rfcore_ble_init(void);
+bool rfcore_ble_reset(void);
 void rfcore_ble_hci_cmd(size_t len, const uint8_t *src);
 size_t rfcore_ble_check_msg(rfcore_ble_msg_callback_t cb, void *env);
 void rfcore_ble_set_txpower(uint8_t level);

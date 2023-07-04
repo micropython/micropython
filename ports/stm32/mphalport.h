@@ -2,6 +2,8 @@
 #include STM32_HAL_H
 #include "pin.h"
 
+extern uint8_t mp_hal_unique_id_address[12];
+
 // F0-1.9.0+F4-1.16.0+F7-1.7.0+G0-1.5.1+G4-1.3.0+H7-1.6.0+L0-1.11.2+L4-1.17.0+WB-1.10.0+WL-1.1.0
 #if defined(STM32F0)
 #define MICROPY_PLATFORM_VERSION "HAL1.9.0"
@@ -13,8 +15,10 @@
 #define MICROPY_PLATFORM_VERSION "HAL1.5.1"
 #elif defined(STM32G4)
 #define MICROPY_PLATFORM_VERSION "HAL1.3.0"
+#elif defined(STM32H5)
+#define MICROPY_PLATFORM_VERSION "HAL1.0.0"
 #elif defined(STM32H7)
-#define MICROPY_PLATFORM_VERSION "HAL1.6.0"
+#define MICROPY_PLATFORM_VERSION "HAL1.11.0"
 #elif defined(STM32L0)
 #define MICROPY_PLATFORM_VERSION "HAL1.11.2"
 #elif defined(STM32L1)

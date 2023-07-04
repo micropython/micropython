@@ -60,8 +60,6 @@ uint32_t trng_random_u32(void);
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_VFS                         (1)
-#define MICROPY_MODULE_FROZEN_MPY           (1)
-#define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
 
 // Control over Python builtins
 #define MICROPY_PY_BUILTINS_HELP_TEXT       mimxrt_help_text
@@ -69,20 +67,22 @@ uint32_t trng_random_u32(void);
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970               (1)
-#define MICROPY_PY_USSL_FINALISER           (MICROPY_PY_USSL)
-#define MICROPY_PY_UTIME_MP_HAL             (1)
-#define MICROPY_PY_UOS_INCLUDEFILE          "ports/mimxrt/moduos.c"
+#define MICROPY_PY_SSL_FINALISER            (MICROPY_PY_SSL)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS        (1)
+#define MICROPY_PY_TIME_INCLUDEFILE         "ports/mimxrt/modtime.c"
+#define MICROPY_PY_OS_INCLUDEFILE           "ports/mimxrt/modos.c"
 #define MICROPY_PY_OS_DUPTERM               (3)
-#define MICROPY_PY_UOS_DUPTERM_NOTIFY       (1)
-#define MICROPY_PY_UOS_UNAME                (1)
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (trng_random_u32())
+#define MICROPY_PY_OS_DUPTERM_NOTIFY        (1)
+#define MICROPY_PY_OS_SYNC                  (1)
+#define MICROPY_PY_OS_UNAME                 (1)
+#define MICROPY_PY_OS_URANDOM               (1)
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (trng_random_u32())
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_PWM              (1)
-#define MICROPY_PY_MACHINE_PWM_INIT         (1)
-#define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/mimxrt/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
 #ifndef MICROPY_PY_MACHINE_I2S
@@ -92,8 +92,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
 #define MICROPY_PY_MACHINE_TIMER            (1)
+#define MICROPY_SOFT_TIMER_TICKS_MS         systick_ms
 #define MICROPY_PY_ONEWIRE                  (1)
-#define MICROPY_PY_UPLATFORM                (1)
+#define MICROPY_PY_PLATFORM                 (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -101,22 +102,27 @@ uint32_t trng_random_u32(void);
 #define MICROPY_FATFS_MAX_SS                (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
-// If MICROPY_PY_LWIP is defined, add network support
-#if MICROPY_PY_LWIP
-
+#ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK                  (1)
-#define MICROPY_PY_USOCKET                  (1)
-#define MICROPY_PY_UWEBSOCKET               (1)
-#define MICROPY_PY_WEBREPL                  (1)
-#define MICROPY_PY_UHASHLIB_SHA1            (1)
-#define MICROPY_PY_LWIP_SOCK_RAW            (1)
-#define MICROPY_HW_ETH_MDC                  (1)
+#endif
+#ifndef MICROPY_PY_SOCKET
+#define MICROPY_PY_SOCKET                   (1)
+#endif
+#define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP)
+#define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
+#define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
+#define MICROPY_PY_SSL_FINALISER            (MICROPY_PY_SSL)
+// #define MICROPY_PY_HASHLIB_MD5              (MICROPY_PY_SSL)
+#define MICROPY_PY_HASHLIB_SHA1             (MICROPY_PY_SSL)
+// #define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
 
 // Prevent the "LWIP task" from running.
 #define MICROPY_PY_LWIP_ENTER   MICROPY_PY_PENDSV_ENTER
 #define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
 #define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
 
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
 #endif
 
 // For regular code that wants to prevent "background tasks" from running.
@@ -160,7 +166,7 @@ static inline void restore_irq_pri(uint32_t basepri) {
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
-#if defined(MICROPY_HW_ETH_MDC)
+#if defined(IOMUX_TABLE_ENET)
 extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH                  { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
 #else
@@ -175,10 +181,13 @@ extern const struct _mp_obj_type_t network_lan_type;
     MICROPY_HW_NIC_ETH  \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
-#define MICROPY_HW_PIT_NUM_CHANNELS 3
-
 #ifndef MICROPY_BOARD_ROOT_POINTERS
 #define MICROPY_BOARD_ROOT_POINTERS
+#endif
+
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
 #endif
 
 #define MP_STATE_PORT MP_STATE_VM

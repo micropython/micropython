@@ -34,7 +34,7 @@
 #include "hal_data.h"
 #include "ra_rtc.h"
 
-static R_RTC_Type *rtc_reg = (R_RTC_Type *)0x40044000;
+static R_RTC_Type *rtc_reg = R_RTC;
 static R_SYSTEM_Type *system_reg = (R_SYSTEM_Type *)0x4001E000;
 
 #if defined(VECTOR_NUMBER_RTC_ALARM)

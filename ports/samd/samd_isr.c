@@ -42,6 +42,9 @@ extern void EIC_Handler(void);
 const ISR isr_vector[];
 volatile uint32_t systick_ms;
 volatile uint32_t ticks_us64_upper;
+#if defined(MCU_SAMD21)
+volatile uint32_t rng_state;
+#endif
 
 void Reset_Handler(void) __attribute__((naked));
 void Reset_Handler(void) {
@@ -91,6 +94,12 @@ void Default_Handler(void) {
 }
 
 void SysTick_Handler(void) {
+    #if defined(MCU_SAMD21)
+    // Use the phase jitter between the clocks to get some entropy
+    // and accumulate the random number register with a "spiced" LCG.
+    rng_state = (rng_state * 32310901 + 1) ^ (REG_TC4_COUNT32_COUNT >> 1);
+    #endif
+
     uint32_t next_tick = systick_ms + 1;
     systick_ms = next_tick;
 

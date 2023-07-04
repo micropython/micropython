@@ -477,7 +477,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 // uart.sendbreak()
 STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     self->uartx->RQR = USART_RQR_SBKRQ; // write-only register
     #else
     self->uartx->CR1 |= USART_CR1_SBK;
@@ -644,7 +644,7 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t a
             ret |= MP_STREAM_POLL_WR;
         }
     } else if (request == MP_STREAM_FLUSH) {
-        // Since uart.write() waits up to the last byte, uart.flush() always succeds.
+        // Since uart.write() waits up to the last byte, uart.flush() always succeeds.
         ret = 0;
     } else {
         *errcode = MP_EINVAL;

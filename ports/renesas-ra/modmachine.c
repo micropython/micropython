@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2013-2015 Damien P. George
  * Copyright (c) 2021,2022 Renesas Electronics Corporation
+ * Copyright (c) 2023 Vekatech Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +40,7 @@
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_spi.h"
+#include "extmod/machine_pwm.h"
 #include "shared/runtime/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
@@ -154,7 +156,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 
     if (n_args == 1) {
         // arg given means dump gc allocation table
-        gc_dump_alloc_table();
+        gc_dump_alloc_table(&mp_plat_print);
     }
 
     return mp_const_none;
@@ -251,7 +253,7 @@ STATIC mp_obj_t machine_reset_cause(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_machine) },
     { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
@@ -279,6 +281,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) },
+    #if MICROPY_PY_MACHINE_DAC
+    { MP_ROM_QSTR(MP_QSTR_DAC),                 MP_ROM_PTR(&machine_dac_type) },
+    #endif
     #if MICROPY_PY_MACHINE_I2C
     #if MICROPY_HW_ENABLE_HW_I2C
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
@@ -291,6 +296,14 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) },
+    #if MICROPY_PY_MACHINE_PWM
+    #if MICROPY_HW_ENABLE_HW_PWM
+    { MP_ROM_QSTR(MP_QSTR_PWM),                 MP_ROM_PTR(&machine_pwm_type) },
+    #endif
+    #endif
+    #if MICROPY_HW_HAS_SDHI_CARD
+    { MP_ROM_QSTR(MP_QSTR_SDCard),              MP_ROM_PTR(&machine_sdcard_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(PYB_RESET_POWER_ON) },
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(PYB_RESET_HARD) },
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(PYB_RESET_WDT) },
@@ -307,6 +320,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE

@@ -38,7 +38,7 @@
 #include "py/stream.h" // for mp_obj_print
 
 // Allocates an object and also sets type, for mp_obj_malloc{,_var} macros.
-void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type) {
+MP_NOINLINE void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type) {
     mp_obj_base_t *base = (mp_obj_base_t *)m_malloc(num_bytes);
     base->type = type;
     return base;
@@ -298,18 +298,11 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
     // This function essentially performs implicit type conversion to int
     // Note that Python does NOT provide implicit type conversion from
     // float to int in the core expression language, try some_list[1.0].
-    if (arg == mp_const_false) {
-        return 0;
-    } else if (arg == mp_const_true) {
-        return 1;
-    } else if (mp_obj_is_small_int(arg)) {
-        return MP_OBJ_SMALL_INT_VALUE(arg);
-    } else if (mp_obj_is_exact_type(arg, &mp_type_int)) {
-        return mp_obj_int_get_checked(arg);
-    } else {
-        mp_obj_t res = mp_unary_op(MP_UNARY_OP_INT, (mp_obj_t)arg);
-        return mp_obj_int_get_checked(res);
+    mp_int_t val;
+    if (!mp_obj_get_int_maybe(arg, &val)) {
+        mp_raise_TypeError_int_conversion(arg);
     }
+    return val;
 }
 
 mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg) {
@@ -333,7 +326,12 @@ bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value) {
     } else if (mp_obj_is_exact_type(arg, &mp_type_int)) {
         *value = mp_obj_int_get_checked(arg);
     } else {
-        return false;
+        arg = mp_unary_op(MP_UNARY_OP_INT_MAYBE, (mp_obj_t)arg);
+        if (arg != MP_OBJ_NULL) {
+            *value = mp_obj_int_get_checked(arg);
+        } else {
+            return false;
+        }
     }
     return true;
 }
@@ -592,14 +590,5 @@ bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     if (!mp_get_buffer(obj, bufinfo, flags)) {
         mp_raise_TypeError(MP_ERROR_TEXT("object with buffer protocol required"));
-    }
-}
-
-mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
-    switch (op) {
-        case MP_UNARY_OP_HASH:
-            return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
-        default:
-            return MP_OBJ_NULL;      // op not supported
     }
 }

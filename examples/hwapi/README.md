@@ -5,7 +5,7 @@ which would work from a board to board, from a system to another systems.
 This is inherently a hard problem, because hardware is different from one
 board type to another, and even from examplar of board to another. For
 example, if your app requires an external LED, one user may connect it
-to one GPIO pin, while another user may find it much more convinient to
+to one GPIO pin, while another user may find it much more convenient to
 use another pin. This of course applies to relays, buzzers, sensors, etc.
 
 With complications above in mind, it's still possible to write portable
@@ -40,13 +40,13 @@ application of this idea would look like:
 `app.py`:
 
     from hwconfig import *
-    import utime
+    import time
 
     while True:
         LED.value(1)
-        utime.sleep_ms(500)
+        time.sleep_ms(500)
         LED.value(0)
-        utime.sleep_ms(500)
+        time.sleep_ms(500)
 
 
 To deploy this application to a particular board, a user will need:

@@ -22,13 +22,13 @@ Initial development of this ESP32 port was sponsored in part by Microbric Pty Lt
 Setting up ESP-IDF and the build environment
 --------------------------------------------
 
-MicroPython on ESP32 requires the Espressif IDF version 4 (IoT development
+MicroPython on ESP32 requires the Espressif IDF version 5 (IoT development
 framework, aka SDK).  The ESP-IDF includes the libraries and RTOS needed to
 manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 The ESP-IDF changes quickly and MicroPython only supports certain versions.
-Currently MicroPython supports v4.0.2, v4.1.1, v4.2.2, v4.3.2 and v4.4,
+Currently MicroPython supports v5.0.2,
 although other IDF v4 versions may also work.
 
 To install the ESP-IDF the full instructions can be found at the
@@ -47,10 +47,10 @@ The steps to take are summarised below.
 To check out a copy of the IDF use git clone:
 
 ```bash
-$ git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
+$ git clone -b v5.0.2 --recursive https://github.com/espressif/esp-idf.git
 ```
 
-You can replace `v4.0.2` with `v4.2.2` or `v4.4` or any other supported version.
+You can replace `v5.0.2` with any other supported version.
 (You don't need a full recursive clone; see the `ci_esp32_setup` function in
 `tools/ci.sh` in this repository for more detailed set-up commands.)
 
@@ -59,7 +59,7 @@ MicroPython and update the submodules using:
 
 ```bash
 $ cd esp-idf
-$ git checkout v4.2
+$ git checkout v5.0.2
 $ git submodule update --init --recursive
 ```
 
@@ -74,11 +74,6 @@ $ source export.sh   # (or export.bat on Windows)
 
 The `install.sh` step only needs to be done once. You will need to source
 `export.sh` for every new session.
-
-**Note:** If you are building MicroPython for the ESP32-S2, ESP32-C3 or ESP32-S3,
-please ensure you are using the following required IDF versions:
-- ESP32-S3 currently requires `v4.4` or later.
-- ESP32-S2 and ESP32-C3 require `v4.3.1` or later.
 
 Building the firmware
 ---------------------

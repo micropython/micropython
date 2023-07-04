@@ -1333,6 +1333,10 @@ pending_exception_check:
                     // No scheduler: Just check pending exception.
                     MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL
                 #endif
+                #if MICROPY_ENABLE_VM_ABORT
+                    // Check if the VM should abort execution.
+                    || MP_STATE_VM(vm_abort)
+                #endif
                 ) {
                     MARK_EXC_IP_SELECTIVE();
                     mp_handle_pending(true);

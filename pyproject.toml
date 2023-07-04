@@ -1,0 +1,48 @@
+[tool.black]
+line-length = 99
+
+[tool.codespell]
+count = ""
+ignore-regex = '\b[A-Z]{3}\b'
+ignore-words-list = "ans,asend,deques,dout,extint,hsi,iput,mis,numer,technic,ure"
+quiet-level = 3
+skip = """
+*/build*,\
+./.git,\
+./drivers/cc3100,\
+./lib,\
+./ports/cc3200/FreeRTOS,\
+./ports/cc3200/bootmgr/sl,\
+./ports/cc3200/hal,\
+./ports/cc3200/simplelink,\
+./ports/cc3200/telnet,\
+./ports/nrf/drivers/bluetooth/s1*,\
+./ports/renesas-ra,\
+./ports/stm32/usbhost,\
+./tests,\
+ACKNOWLEDGEMENTS,\
+"""
+
+[tool.ruff]
+exclude = ["lib", "tests"]
+extend-select = ["C9", "PLC"]
+ignore = [
+  "E401",
+  "E402",
+  "E722",
+  "E731",
+  "E741",
+  "F401",
+  "F403",
+  "F405",
+  "F821",
+  "PLC1901",
+]
+line-length = 337
+target-version = "py37"
+
+[tool.ruff.mccabe]
+max-complexity = 40
+
+[tool.ruff.per-file-ignores]
+"ports/cc3200/tools/uniflash.py" = ["E711"]

@@ -73,7 +73,7 @@ Methods
      - ``callback`` - The callable to call upon expiration of the timer period.
        The callback must take one argument, which is passed the Timer object.
        The ``callback`` argument shall be specified. Otherwise an exception
-       will occurr upon timer expiration:
+       will occur upon timer expiration:
        ``TypeError: 'NoneType' object isn't callable``
 
 .. method:: Timer.deinit()

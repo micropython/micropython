@@ -29,8 +29,27 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#if MICROPY_HW_HAS_QSPI_FLASH
+#define SELECT(ic, attr)        ic##_##attr
+#define FLASH(ic, attr)         SELECT(ic, attr)
+#define CHIP                    AT25SF128A
+// #define CHIP                    W25Q128JV
+
+#define W25Q128JV_SECTOR_SIZE   4096ul
+#define W25Q128JV_NUM_BLOCKS    4096ul
+#define W25Q128JV_PAGE_SIZE     256ul
+
+#define AT25SF128A_SECTOR_SIZE  4096ul
+#define AT25SF128A_NUM_BLOCKS   4096ul
+#define AT25SF128A_PAGE_SIZE    256ul
+
+#define FLASH_SECTOR_SIZE       FLASH(CHIP, SECTOR_SIZE)
+#define FLASH_NUM_BLOCKS        FLASH(CHIP, NUM_BLOCKS)
+#define FLASH_PAGE_SIZE         FLASH(CHIP, PAGE_SIZE)
+#else
 #define FLASH_SECTOR_SIZE   ((uint32_t)2048)
 #define FLASH_NUM_BLOCKS    ((uint32_t)128)
+#endif
 #define FLASH_BUF_OFF_MASK  (FLASH_SECTOR_SIZE - 1)
 #define FLASH_BUF_ADDR_MASK (~FLASH_BUF_OFF_MASK)
 #define FLASH_BUF_SIZE      FLASH_SECTOR_SIZE

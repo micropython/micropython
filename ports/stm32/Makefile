@@ -1,14 +1,20 @@
-# Select the board to build for: if not given on the command line,
-# then default to PYBV10.
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to PYBV10.
 BOARD ?= PYBV10
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
 BOARD_DIR ?= boards/$(BOARD)
+endif
+
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
+
+# If the build directory is not given, make it reflect the board name.
+BUILD ?= build-$(BOARD)
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
@@ -104,6 +110,8 @@ CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DMBOOT_VTOR=$(MBOOT_TEXT0_ADDR)
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
+AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU_$(MCU_SERIES)))
+
 # Configure for nan-boxing object model if requested
 ifeq ($(NANBOX),1)
 CFLAGS += -DMP_CONFIGFILE='"mpconfigport_nanbox.h"'
@@ -115,13 +123,11 @@ endif
 # Configure floating point support
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
-else
-ifeq ($(MICROPY_FLOAT_IMPL),none)
+else ifeq ($(MICROPY_FLOAT_IMPL),none)
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_NONE
 else
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
 CFLAGS += -fsingle-precision-constant
-endif
 endif
 
 LDFLAGS += -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Wl,-Map=$(@:.elf=.map) -Wl,--cref
@@ -314,6 +320,7 @@ SRC_C += \
 	spi.c \
 	pyb_spi.c \
 	qspi.c \
+	octospi.c \
 	uart.c \
 	ulpi.c \
 	can.c \
@@ -333,7 +340,6 @@ SRC_C += \
 	modmachine.c \
 	modpyb.c \
 	modstm.c \
-	modutime.c \
 	network_lan.c \
 	extint.c \
 	usrsw.c \
@@ -363,8 +369,7 @@ CSUPEROPT = -Os # save some code space
 SRC_O += \
 	resethandler_m0.o \
 	shared/runtime/gchelper_thumb1.o
-else
-ifeq ($(MCU_SERIES),l1)
+else ifeq ($(MCU_SERIES),l1)
 CFLAGS += -DUSE_HAL_DRIVER
 SRC_O += \
 	resethandler_m3.o \
@@ -374,7 +379,6 @@ SRC_O += \
 	system_stm32.o \
 	resethandler.o \
 	shared/runtime/gchelper_thumb2.o
-endif
 endif
 
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
@@ -400,7 +404,7 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	ll_utils.c \
 	)
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h7 l0 l4 wb))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 l0 l4 wb))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_pcd.c \
 	hal_pcd_ex.c \
@@ -429,27 +433,29 @@ $(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_hal_mmc.o: CFLAGS += -Wno
 endif
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h7))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_dma_ex.c \
 	)
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),g0 g4))
-    HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),h5))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_icache.c \
+	)
 endif
 
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx STM32H747xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
-    HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
-else
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 h7))
-    HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_can.c)
-else
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),l4))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_can.c)
+else ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),g0 g4 h7))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
+else ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),l4))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/Legacy/stm32$(MCU_SERIES)xx_, hal_can.c)
 $(BUILD)/$(STM32LIB_HAL_BASE)/Src/Legacy/stm32$(MCU_SERIES)xx_hal_can.o: CFLAGS += -Wno-error=cpp
 endif
-endif
+
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H747xx))
+    HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_hsem.c)
 endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 g0 l0))
@@ -489,10 +495,7 @@ SRC_C += mpbtstackport.c
 MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 endif
 
-ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
-DRIVERS_SRC_C += drivers/cyw43/cywbt.c
-endif
-endif
+endif # MICROPY_PY_BLUETOOTH
 
 # SRC_O should be placed first to work around this LTO bug with binutils <2.35:
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83967
@@ -535,12 +538,6 @@ endif
 $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
-
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
 
 define RUN_DFU
 	$(ECHO) "Writing $(1) to the board"

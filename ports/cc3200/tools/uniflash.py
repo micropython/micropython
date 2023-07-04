@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""
+r"""
 Flash the WiPy (format, update service pack and program).
 
 Example:

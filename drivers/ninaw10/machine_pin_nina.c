@@ -43,11 +43,14 @@
 #define NINA_GPIO_MODE          (0x50)
 #define NINA_GPIO_READ          (0x53)
 #define NINA_GPIO_WRITE         (0x51)
+#define NINA_GPIO_IS_INPUT_ONLY(p) ((p >= 34 && p <= 36) || (p == 39))
 
 static uint8_t pin_map[MICROPY_HW_PIN_EXT_COUNT] = {
     27, // LEDR
     25, // LEDG
     26, // LEDB
+    34, // A4
+    39, // A5
     36, // A6
     35, // A7
 };
@@ -68,6 +71,7 @@ bool machine_pin_ext_get(machine_pin_obj_t *self) {
     if (self->id >= 0 && self->id < MICROPY_HW_PIN_EXT_COUNT) {
         uint8_t buf[] = {pin_map[self->id]};
         nina_ioctl(NINA_GPIO_READ, sizeof(buf), buf, 0);
+        value = buf[0];
     }
     return value;
 }
@@ -79,12 +83,17 @@ void machine_pin_ext_config(machine_pin_obj_t *self, int mode, int value) {
     } else if (mode == MACHINE_PIN_MODE_OUT) {
         mode = NINA_GPIO_OUTPUT;
         self->is_output = true;
-        machine_pin_ext_set(self, value);
     } else {
         mp_raise_ValueError("only Pin.OUT and Pin.IN are supported for this pin");
     }
     if (self->id >= 0 && self->id < MICROPY_HW_PIN_EXT_COUNT) {
         uint8_t buf[] = {pin_map[self->id], mode};
+        if (mode == NINA_GPIO_OUTPUT) {
+            if (NINA_GPIO_IS_INPUT_ONLY(buf[0])) {
+                mp_raise_ValueError("only Pin.IN is supported for this pin");
+            }
+            machine_pin_ext_set(self, value);
+        }
         nina_ioctl(NINA_GPIO_MODE, sizeof(buf), buf, 0);
     }
 }

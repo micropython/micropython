@@ -32,6 +32,7 @@
 #include "py/stream.h"
 #include "shared/netutils/netutils.h"
 #include "modmachine.h"
+#include "ppp_set_auth.h"
 
 #include "netif/ppp/ppp.h"
 #include "netif/ppp/pppos.h"
@@ -91,7 +92,7 @@ STATIC mp_obj_t ppp_make_new(mp_obj_t stream) {
 
     return MP_OBJ_FROM_PTR(self);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(ppp_make_new_obj, ppp_make_new);
+MP_DEFINE_CONST_FUN_OBJ_1(esp_network_ppp_make_new_obj, ppp_make_new);
 
 static u32_t ppp_output_callback(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx) {
     ppp_if_obj_t *self = ctx;

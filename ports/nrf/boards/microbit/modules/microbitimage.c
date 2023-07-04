@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -219,7 +219,7 @@ STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t 
                 const char *str = mp_obj_str_get_data(args[0], &len);
                 // make image from string
                 if (len == 1) {
-                    /* For a single charater, return the font glyph */
+                    /* For a single character, return the font glyph */
                     return microbit_image_for_char(str[0]);
                 } else {
                     /* Otherwise parse the image description string */
@@ -305,7 +305,7 @@ STATIC void image_blit(microbit_image_obj_t *src, greyscale_t *dest, mp_int_t x,
             greyscaleSetPixelValue(dest, i+xdest-x, j+ydest-y, val);
         }
     }
-    // Adjust intersection rectange to dest
+    // Adjust intersection rectangle to dest
     intersect_x0 += xdest-x;
     intersect_y0 += ydest-y;
     intersect_x1 += xdest-x;

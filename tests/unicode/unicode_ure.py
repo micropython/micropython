@@ -1,13 +1,10 @@
 # test match.span() for unicode strings
 
 try:
-    import ure as re
+    import re
 except ImportError:
-    try:
-        import re
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 try:
     m = re.match(".", "a")

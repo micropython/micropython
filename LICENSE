@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2013-2022 Damien P. George
+Copyright (c) 2013-2023 Damien P. George
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,6 @@ used during the build process and is not part of the compiled source code.
 / (MIT)
     /drivers
         /cc3100 (BSD-3-clause)
-        /wiznet5k (BSD-3-clause)
     /lib
         /asf4 (Apache-2.0)
         /axtls (BSD-3-clause)
@@ -61,12 +60,15 @@ used during the build process and is not part of the compiled source code.
         /tinytest (BSD-3-clause)
         /tinyusb (MIT)
         /uzlib (Zlib)
+        /wiznet5k (MIT)
     /logo (uses OFL-1.1)
     /ports
         /cc3200
             /hal (BSD-3-clause)
             /simplelink (BSD-3-clause)
             /FreeRTOS (GPL-2.0 with FreeRTOS exception)
+        /esp32
+            /ppp_set_auth.* (Apache-2.0)
         /stm32
             /usbd*.c (MCD-ST Liberty SW License Agreement V2)
             /stm32_it.* (MIT + BSD-3-clause)

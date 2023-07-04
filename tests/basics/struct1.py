@@ -1,11 +1,8 @@
 try:
-    import ustruct as struct
-except:
-    try:
-        import struct
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    import struct
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 print(struct.calcsize("<bI"))
 print(struct.unpack("<bI", b"\x80\0\0\x01\0"))
@@ -57,7 +54,7 @@ try:
 except:
     print("Unknown type")
 
-# Initially repitition counters were supported only for strings,
+# Initially repetition counters were supported only for strings,
 # but later were implemented for all.
 print(struct.unpack("<3B2h", b"foo\x12\x34\xff\xff"))
 print(struct.pack("<3B", 1, 2, 3))

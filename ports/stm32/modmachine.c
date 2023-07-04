@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <string.h>
 
 #include "modmachine.h"
@@ -59,23 +58,20 @@
 #include "uart.h"
 #include "wdt.h"
 
-#if defined(STM32L0)
-// L0 does not have a BOR, so use POR instead
-#define RCC_CSR_BORRSTF RCC_CSR_PORRSTF
-#endif
-
-#if defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
-// L4 does not have a POR, so use BOR instead
-#define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
-#endif
-
 #if defined(STM32G0)
 // G0 has BOR and POR combined
 #define RCC_CSR_BORRSTF RCC_CSR_PWRRSTF
 #define RCC_CSR_PORRSTF RCC_CSR_PWRRSTF
 #endif
 
-#if defined(STM32H7)
+#if defined(STM32H5)
+#define RCC_SR          RSR
+#define RCC_SR_IWDGRSTF RCC_RSR_IWDGRSTF
+#define RCC_SR_WWDGRSTF RCC_RSR_WWDGRSTF
+#define RCC_SR_BORRSTF  RCC_RSR_BORRSTF
+#define RCC_SR_PINRSTF  RCC_RSR_PINRSTF
+#define RCC_SR_RMVF     RCC_RSR_RMVF
+#elif defined(STM32H7)
 #define RCC_SR          RSR
 #define RCC_SR_IWDGRSTF RCC_RSR_IWDG1RSTF
 #define RCC_SR_WWDGRSTF RCC_RSR_WWDG1RSTF
@@ -87,8 +83,12 @@
 #define RCC_SR          CSR
 #define RCC_SR_IWDGRSTF RCC_CSR_IWDGRSTF
 #define RCC_SR_WWDGRSTF RCC_CSR_WWDGRSTF
+#if defined(RCC_CSR_PORRSTF)
 #define RCC_SR_PORRSTF  RCC_CSR_PORRSTF
+#endif
+#if defined(RCC_CSR_BORRSTF)
 #define RCC_SR_BORRSTF  RCC_CSR_BORRSTF
+#endif
 #define RCC_SR_PINRSTF  RCC_CSR_PINRSTF
 #define RCC_SR_RMVF     RCC_CSR_RMVF
 #endif
@@ -138,9 +138,12 @@ void machine_init(void) {
         uint32_t state = RCC->RCC_SR;
         if (state & RCC_SR_IWDGRSTF || state & RCC_SR_WWDGRSTF) {
             reset_cause = PYB_RESET_WDT;
-        } else if (state & RCC_SR_PORRSTF
-                   #if !defined(STM32F0) && !defined(STM32F412Zx) && !defined(STM32L1)
-                   || state & RCC_SR_BORRSTF
+        } else if (0
+                   #if defined(RCC_SR_PORRSTF)
+                   || (state & RCC_SR_PORRSTF)
+                   #endif
+                   #if defined(RCC_SR_BORRSTF)
+                   || (state & RCC_SR_BORRSTF)
                    #endif
                    ) {
             reset_cause = PYB_RESET_POWER_ON;
@@ -163,24 +166,26 @@ void machine_deinit(void) {
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
 STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
+    const mp_print_t *print = &mp_plat_print;
+
     // get and print unique id; 96 bits
     {
         byte *id = (byte *)MP_HAL_UNIQUE_ID_ADDRESS;
-        printf("ID=%02x%02x%02x%02x:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7], id[8], id[9], id[10], id[11]);
+        mp_printf(print, "ID=%02x%02x%02x%02x:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7], id[8], id[9], id[10], id[11]);
     }
 
-    printf("DEVID=0x%04x\nREVID=0x%04x\n", (unsigned int)HAL_GetDEVID(), (unsigned int)HAL_GetREVID());
+    mp_printf(print, "DEVID=0x%04x\nREVID=0x%04x\n", (unsigned int)HAL_GetDEVID(), (unsigned int)HAL_GetREVID());
 
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
         #if defined(STM32F0) || defined(STM32G0)
-        printf("S=%u\nH=%u\nP1=%u\n",
+        mp_printf(print, "S=%u\nH=%u\nP1=%u\n",
             (unsigned int)HAL_RCC_GetSysClockFreq(),
             (unsigned int)HAL_RCC_GetHCLKFreq(),
             (unsigned int)HAL_RCC_GetPCLK1Freq());
         #else
-        printf("S=%u\nH=%u\nP1=%u\nP2=%u\n",
+        mp_printf(print, "S=%u\nH=%u\nP1=%u\nP2=%u\n",
             (unsigned int)HAL_RCC_GetSysClockFreq(),
             (unsigned int)HAL_RCC_GetHCLKFreq(),
             (unsigned int)HAL_RCC_GetPCLK1Freq(),
@@ -190,35 +195,35 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 
     // to print info about memory
     {
-        printf("_etext=%p\n", &_etext);
-        printf("_sidata=%p\n", &_sidata);
-        printf("_sdata=%p\n", &_sdata);
-        printf("_edata=%p\n", &_edata);
-        printf("_sbss=%p\n", &_sbss);
-        printf("_ebss=%p\n", &_ebss);
-        printf("_sstack=%p\n", &_sstack);
-        printf("_estack=%p\n", &_estack);
-        printf("_ram_start=%p\n", &_ram_start);
-        printf("_heap_start=%p\n", &_heap_start);
-        printf("_heap_end=%p\n", &_heap_end);
-        printf("_ram_end=%p\n", &_ram_end);
+        mp_printf(print, "_etext=%p\n", &_etext);
+        mp_printf(print, "_sidata=%p\n", &_sidata);
+        mp_printf(print, "_sdata=%p\n", &_sdata);
+        mp_printf(print, "_edata=%p\n", &_edata);
+        mp_printf(print, "_sbss=%p\n", &_sbss);
+        mp_printf(print, "_ebss=%p\n", &_ebss);
+        mp_printf(print, "_sstack=%p\n", &_sstack);
+        mp_printf(print, "_estack=%p\n", &_estack);
+        mp_printf(print, "_ram_start=%p\n", &_ram_start);
+        mp_printf(print, "_heap_start=%p\n", &_heap_start);
+        mp_printf(print, "_heap_end=%p\n", &_heap_end);
+        mp_printf(print, "_ram_end=%p\n", &_ram_end);
     }
 
     // qstr info
     {
         size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
         qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-        printf("qstr:\n  n_pool=%u\n  n_qstr=%u\n  n_str_data_bytes=%u\n  n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
+        mp_printf(print, "qstr:\n  n_pool=%u\n  n_qstr=%u\n  n_str_data_bytes=%u\n  n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
     }
 
     // GC info
     {
         gc_info_t info;
         gc_info(&info);
-        printf("GC:\n");
-        printf("  %u total\n", info.total);
-        printf("  %u : %u\n", info.used, info.free);
-        printf("  1=%u 2=%u m=%u\n", info.num_1block, info.num_2block, info.max_block);
+        mp_printf(print, "GC:\n");
+        mp_printf(print, "  %u total\n", info.total);
+        mp_printf(print, "  %u : %u\n", info.used, info.free);
+        mp_printf(print, "  1=%u 2=%u m=%u\n", info.num_1block, info.num_2block, info.max_block);
     }
 
     // free space on flash
@@ -230,7 +235,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
                 fs_user_mount_t *vfs_fat = MP_OBJ_TO_PTR(vfs->obj);
                 DWORD nclst;
                 f_getfree(&vfs_fat->fatfs, &nclst);
-                printf("LFS free: %u bytes\n", (uint)(nclst * vfs_fat->fatfs.csize * 512));
+                mp_printf(print, "LFS free: %u bytes\n", (uint)(nclst * vfs_fat->fatfs.csize * 512));
                 break;
             }
         }
@@ -238,12 +243,12 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     }
 
     #if MICROPY_PY_THREAD
-    pyb_thread_dump();
+    pyb_thread_dump(print);
     #endif
 
     if (n_args == 1) {
         // arg given means dump gc allocation table
-        gc_dump_alloc_table();
+        gc_dump_alloc_table(print);
     }
 
     return mp_const_none;
@@ -285,6 +290,8 @@ NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
 
     #if defined(STM32F7) || defined(STM32H7)
     powerctrl_enter_bootloader(0, 0x1ff00000);
+    #elif defined(STM32H5)
+    powerctrl_enter_bootloader(0, 0x0bf97000);
     #else
     powerctrl_enter_bootloader(0, 0x00000000);
     #endif
@@ -385,7 +392,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 #if MICROPY_PY_MACHINE
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_machine) },
     { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
@@ -470,6 +477,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE

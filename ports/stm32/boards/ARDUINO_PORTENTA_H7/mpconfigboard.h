@@ -9,6 +9,8 @@
 #define MICROPY_PY_SYS_PLATFORM     "Portenta"
 #define MICROPY_HW_FLASH_FS_LABEL   "portenta"
 
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "Portenta"
+
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 #define UINT_FMT                    "%u"
 #define INT_FMT                     "%d"
@@ -118,7 +120,8 @@ void PORTENTA_board_osc_enable(int enable);
 // QSPI flash #1 for storage
 #define MICROPY_HW_QSPI_PRESCALER           (2) // 100MHz
 #define MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 (27)
-#define MICROPY_HW_SPIFLASH_SIZE_BITS       (128 * 1024 * 1024)
+// Reserve 1MiB at the end for compatibility with alternate firmware that places WiFi blob here.
+#define MICROPY_HW_SPIFLASH_SIZE_BITS       (120 * 1024 * 1024)
 #define MICROPY_HW_QSPIFLASH_CS             (pyb_pin_QSPI2_CS)
 #define MICROPY_HW_QSPIFLASH_SCK            (pyb_pin_QSPI2_CLK)
 #define MICROPY_HW_QSPIFLASH_IO0            (pyb_pin_QSPI2_D0)
@@ -129,13 +132,9 @@ void PORTENTA_board_osc_enable(int enable);
 // SPI flash #1, block device config
 extern const struct _mp_spiflash_config_t spiflash_config;
 extern struct _spi_bdev_t spi_bdev;
-#define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
-    (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE) : \
-    (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
-    spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
-    )
-#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(&spi_bdev, (dest), (bl), (n))
-#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
+#define MICROPY_HW_BDEV_SPIFLASH    (&spi_bdev)
+#define MICROPY_HW_BDEV_SPIFLASH_CONFIG (&spiflash_config)
+#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES (MICROPY_HW_SPIFLASH_SIZE_BITS / 8)
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev)
 #endif
 
@@ -158,7 +157,7 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_UART7_RTS        (pyb_pin_BT_RTS)
 #define MICROPY_HW_UART7_CTS        (pyb_pin_BT_CTS)
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL         (pin_B6)
 #define MICROPY_HW_I2C1_SDA         (pin_B7)
 
@@ -201,6 +200,12 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_SDCARD_D1        (pin_B15)
 #define MICROPY_HW_SDCARD_D2        (pin_B3)
 #define MICROPY_HW_SDCARD_D3        (pin_B4)
+#define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (0)
+
+// FDCAN bus
+#define MICROPY_HW_CAN1_NAME        "FDCAN1"
+#define MICROPY_HW_CAN1_TX          (pin_H13)
+#define MICROPY_HW_CAN1_RX          (pin_B8)
 
 // USB config
 #define MICROPY_HW_USB_HS           (1)
@@ -218,6 +223,7 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_BLE_UART_ID              (PYB_UART_7)
 #define MICROPY_HW_BLE_UART_BAUDRATE        (115200)
 #define MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY (3000000)
+#define MICROPY_HW_BLE_UART_BAUDRATE_DOWNLOAD_FIRMWARE (3000000)
 
 // SDRAM
 #define MICROPY_HW_SDRAM_SIZE               (64 / 8 * 1024 * 1024)  // 64 Mbit

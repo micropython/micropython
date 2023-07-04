@@ -1,7 +1,4 @@
-try:
-    import usocket as socket, ussl as ssl, uerrno as errno, sys
-except:
-    import socket, ssl, errno, sys, time, select
+import socket, ssl, errno, sys, time, select
 
 
 def test_one(site, opts):

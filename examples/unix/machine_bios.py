@@ -4,6 +4,6 @@
 # It is expected to print 0xaa55, which is a signature at the start of
 # Video BIOS.
 
-import umachine as machine
+import machine
 
 print(hex(machine.mem16[0xC0000]))

@@ -1,3 +1,6 @@
+# all: Fix spelling mistakes based on codespell check.
+b1229efbd1509654dec6053865ab828d769e29db
+
 # top: Update Python formatting to black "2023 stable style".
 8b2748269244304854b3462cb8902952b4dcb892
 

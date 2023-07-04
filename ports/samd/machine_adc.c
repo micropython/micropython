@@ -25,9 +25,12 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_ADC
+
 #include <stdint.h>
 #include "py/obj.h"
-#include "py/runtime.h"
 #include "py/mphal.h"
 
 #include "sam.h"
@@ -82,14 +85,7 @@ static uint8_t resolution[] = {
     ADC_CTRLB_RESSEL_8BIT_Val, ADC_CTRLB_RESSEL_10BIT_Val, ADC_CTRLB_RESSEL_12BIT_Val
 };
 
-// Calculate the floor value of log2(n)
-mp_int_t log2i(mp_int_t num) {
-    mp_int_t res = 0;
-    for (; num > 1; num >>= 1) {
-        res += 1;
-    }
-    return res;
-}
+extern mp_int_t log2i(mp_int_t num);
 
 STATIC void adc_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     (void)kind;
@@ -113,7 +109,7 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Unpack and check, whther the pin has ADC capability
+    // Unpack and check, whether the pin has ADC capability
     int id = mp_hal_get_pin_obj(args[ARG_id].u_obj);
     adc_config_t adc_config = get_adc_config(id, busy_flags);
 
@@ -274,3 +270,5 @@ static void adc_init(machine_adc_obj_t *self) {
     // Set the port as given in self->id as ADC
     mp_hal_set_pin_mux(self->id, ALT_FCT_ADC);
 }
+
+#endif

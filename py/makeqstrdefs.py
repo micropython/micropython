@@ -21,7 +21,7 @@ _MODE_QSTR = "qstr"
 # Extract MP_COMPRESSED_ROM_TEXT("") macros.  (Which come from MP_ERROR_TEXT)
 _MODE_COMPRESS = "compress"
 
-# Extract MP_REGISTER_MODULE(...) macros.
+# Extract MP_REGISTER_(EXTENSIBLE_)MODULE(...) macros.
 _MODE_MODULE = "module"
 
 # Extract MP_REGISTER_ROOT_POINTER(...) macros.
@@ -86,13 +86,16 @@ def write_out(fname, output):
 
 
 def process_file(f):
-    re_line = re.compile(r"#[line]*\s\d+\s\"([^\"]+)\"")
+    # match gcc-like output (# n "file") and msvc-like output (#line n "file")
+    re_line = re.compile(r"^#(?:line)?\s+\d+\s\"([^\"]+)\"")
     if args.mode == _MODE_QSTR:
         re_match = re.compile(r"MP_QSTR_[_a-zA-Z0-9]+")
     elif args.mode == _MODE_COMPRESS:
         re_match = re.compile(r'MP_COMPRESSED_ROM_TEXT\("([^"]*)"\)')
     elif args.mode == _MODE_MODULE:
-        re_match = re.compile(r"MP_REGISTER_MODULE\(.*?,\s*.*?\);")
+        re_match = re.compile(
+            r"(?:MP_REGISTER_MODULE|MP_REGISTER_EXTENSIBLE_MODULE|MP_REGISTER_MODULE_DELEGATION)\(.*?,\s*.*?\);"
+        )
     elif args.mode == _MODE_ROOT_POINTER:
         re_match = re.compile(r"MP_REGISTER_ROOT_POINTER\(.*?\);")
     output = []
@@ -100,10 +103,8 @@ def process_file(f):
     for line in f:
         if line.isspace():
             continue
-        # match gcc-like output (# n "file") and msvc-like output (#line n "file")
-        if line.startswith(("# ", "#line")):
-            m = re_line.match(line)
-            assert m is not None
+        m = re_line.match(line)
+        if m:
             fname = m.group(1)
             if not is_c_source(fname) and not is_cxx_source(fname):
                 continue

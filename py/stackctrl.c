@@ -28,8 +28,15 @@
 #include "py/stackctrl.h"
 
 void mp_stack_ctrl_init(void) {
+    #if __GNUC__ >= 13
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdangling-pointer"
+    #endif
     volatile int stack_dummy;
     MP_STATE_THREAD(stack_top) = (char *)&stack_dummy;
+    #if __GNUC__ >= 13
+    #pragma GCC diagnostic pop
+    #endif
 }
 
 void mp_stack_set_top(void *top) {

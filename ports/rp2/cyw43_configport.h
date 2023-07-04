@@ -30,6 +30,7 @@
 #include "py/mpconfig.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "extmod/modnetwork.h"
 #include "pendsv.h"
 
 #define CYW43_WIFI_NVRAM_INCLUDE_FILE   "wifi_nvram_43439.h"
@@ -46,6 +47,8 @@
 #define CYW43_THREAD_ENTER              MICROPY_PY_LWIP_ENTER
 #define CYW43_THREAD_EXIT               MICROPY_PY_LWIP_EXIT
 #define CYW43_THREAD_LOCK_CHECK
+
+#define CYW43_HOST_NAME                 mod_network_hostname
 
 #define CYW43_SDPCM_SEND_COMMON_WAIT \
     if (get_core_num() == 0) { \
@@ -86,6 +89,15 @@
 #define cyw43_hal_generate_laa_mac      mp_hal_generate_laa_mac
 
 #define cyw43_schedule_internal_poll_dispatch(func) pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, func)
+
+// Bluetooth uses the C heap to load its firmware (provided by pico-sdk).
+// Space is reserved for this, see MICROPY_C_HEAP_SIZE.
+#ifndef cyw43_malloc
+#define cyw43_malloc malloc
+#endif
+#ifndef cyw43_free
+#define cyw43_free free
+#endif
 
 void cyw43_post_poll_hook(void);
 extern volatile int cyw43_has_pending;

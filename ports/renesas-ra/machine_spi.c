@@ -86,6 +86,47 @@ STATIC machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     #endif
 };
 
+STATIC void spi_init(machine_hard_spi_obj_t *self) {
+    const machine_pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
+
+    if (0) {
+    #if defined(MICROPY_HW_SPI0_RSPCK)
+    } else if (self->spi_id == 0) {
+        #if defined(MICROPY_HW_SPI0_SSL)
+        pins[0] = MICROPY_HW_SPI0_SSL;
+        #endif
+        #if defined(MICROPY_HW_SPI0_RSPCK)
+        pins[1] = MICROPY_HW_SPI0_RSPCK;
+        #endif
+        #if defined(MICROPY_HW_SPI0_MISO)
+        pins[2] = MICROPY_HW_SPI0_MISO;
+        #endif
+        #if defined(MICROPY_HW_SPI0_MOSI)
+        pins[3] = MICROPY_HW_SPI0_MOSI;
+        #endif
+    #endif
+    #if defined(MICROPY_HW_SPI1_RSPCK)
+    } else if (self->spi_id == 1) {
+        #if defined(MICROPY_HW_SPI1_SSL)
+        pins[0] = MICROPY_HW_SPI1_SSL;
+        #endif
+        #if defined(MICROPY_HW_SPI1_RSPCK)
+        pins[1] = MICROPY_HW_SPI1_RSPCK;
+        #endif
+        #if defined(MICROPY_HW_SPI1_MISO)
+        pins[2] = MICROPY_HW_SPI1_MISO;
+        #endif
+        #if defined(MICROPY_HW_SPI1_MOSI)
+        pins[3] = MICROPY_HW_SPI1_MOSI;
+        #endif
+    #endif
+    } else {
+        // SPI does not exist for this board (shouldn't get here, should be checked by caller)
+        return;
+    }
+    ra_spi_init(self->spi_id, pins[3]->pin, pins[2]->pin, pins[1]->pin, pins[0]->pin, self->baudrate, self->bits, self->polarity, self->phase, self->firstbit);
+}
+
 STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%u, sck=%q, mosi=%q, miso=%q)",
@@ -189,10 +230,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
         }
     }
     // init the SPI bus
-    spi_init(self->spi_id);
-    // set configurable paramaters
-    spi_set_params(self->spi_id, self->baudrate, self->polarity,
-        self->phase, self->bits, self->firstbit);
+    spi_init(self);
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -275,10 +313,7 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
     }
 
     // init the SPI bus
-    spi_init(self->spi_id);
-    // set configurable paramaters
-    spi_set_params(self->spi_id, self->baudrate, self->polarity,
-        self->phase, self->bits, self->firstbit);
+    spi_init(self);
 }
 
 STATIC void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
@@ -308,58 +343,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 void spi_init0(void) {
-}
-
-// sets the parameters in the SPI_InitTypeDef struct
-// if an argument is -1 then the corresponding parameter is not changed
-void spi_set_params(uint32_t ch, int32_t baudrate,
-    int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit) {
-    ra_spi_set_mode(ch, polarity, phase);
-    ra_spi_set_clk(ch, baudrate);
-    ra_spi_set_bits(ch, bits);
-    ra_spi_set_lsb_first(ch, firstbit);
-}
-
-void spi_init(uint32_t ch) {
-    const machine_pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
-
-    if (0) {
-    #if defined(MICROPY_HW_SPI0_RSPCK)
-    } else if (ch == 0) {
-        #if defined(MICROPY_HW_SPI0_SSL)
-        pins[0] = MICROPY_HW_SPI0_SSL;
-        #endif
-        #if defined(MICROPY_HW_SPI0_RSPCK)
-        pins[1] = MICROPY_HW_SPI0_RSPCK;
-        #endif
-        #if defined(MICROPY_HW_SPI0_MISO)
-        pins[2] = MICROPY_HW_SPI0_MISO;
-        #endif
-        #if defined(MICROPY_HW_SPI0_MOSI)
-        pins[3] = MICROPY_HW_SPI0_MOSI;
-        #endif
-        ra_spi_init(ch, pins[3]->pin, pins[2]->pin, pins[1]->pin, pins[0]->pin, DEFAULT_SPI_BAUDRATE, DEFAULT_SPI_BITS, DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE);
-    #endif
-    #if defined(MICROPY_HW_SPI1_RSPCK)
-    } else if (ch == 1) {
-        #if defined(MICROPY_HW_SPI1_SSL)
-        pins[0] = MICROPY_HW_SPI1_SSL;
-        #endif
-        #if defined(MICROPY_HW_SPI1_RSPCK)
-        pins[1] = MICROPY_HW_SPI1_RSPCK;
-        #endif
-        #if defined(MICROPY_HW_SPI1_MISO)
-        pins[2] = MICROPY_HW_SPI1_MISO;
-        #endif
-        #if defined(MICROPY_HW_SPI1_MOSI)
-        pins[3] = MICROPY_HW_SPI1_MOSI;
-        #endif
-        ra_spi_init(ch, pins[3]->pin, pins[2]->pin, pins[1]->pin, pins[0]->pin, DEFAULT_SPI_BAUDRATE, DEFAULT_SPI_BITS, DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE);
-    #endif
-    } else {
-        // SPI does not exist for this board (shouldn't get here, should be checked by caller)
-        return;
-    }
 }
 
 void spi_deinit(uint32_t ch) {

@@ -242,6 +242,8 @@ typedef struct _parser_t {
     #endif
 } parser_t;
 
+STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args);
+
 STATIC const uint16_t *get_rule_arg(uint8_t r_id) {
     size_t off = rule_arg_offset_table[r_id];
     if (r_id >= FIRST_RULE_WITH_OFFSET_ABOVE_255) {
@@ -553,7 +555,7 @@ STATIC mp_parse_node_t make_node_const_object(parser_t *parser, size_t src_line,
     return (mp_parse_node_t)pn;
 }
 
-// Create a parse node represeting a constant object, possibly optimising the case of
+// Create a parse node representing a constant object, possibly optimising the case of
 // an integer, by putting the (small) integer value directly in the parse node itself.
 STATIC mp_parse_node_t make_node_const_object_optimised(parser_t *parser, size_t src_line, mp_obj_t obj) {
     if (mp_obj_is_small_int(obj)) {
@@ -630,10 +632,12 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
     push_result_node(parser, pn);
 }
 
+#if MICROPY_COMP_CONST_FOLDING
+
 #if MICROPY_COMP_MODULE_CONST
 STATIC const mp_rom_map_elem_t mp_constants_table[] = {
-    #if MICROPY_PY_UERRNO
-    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
+    #if MICROPY_PY_ERRNO
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_errno) },
     #endif
     #if MICROPY_PY_UCTYPES
     { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
@@ -644,9 +648,6 @@ STATIC const mp_rom_map_elem_t mp_constants_table[] = {
 STATIC MP_DEFINE_CONST_MAP(mp_constants_map, mp_constants_table);
 #endif
 
-STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args);
-
-#if MICROPY_COMP_CONST_FOLDING
 #if MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND
 // Some versions of the xtensa-esp32-elf-gcc compiler generate wrong code if this
 // function is static, so provide a hook for them to work around this problem.
@@ -889,7 +890,8 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
 
     return true;
 }
-#endif
+
+#endif // MICROPY_COMP_CONST_FOLDING
 
 #if MICROPY_COMP_CONST_TUPLE
 STATIC bool build_tuple_from_stack(parser_t *parser, size_t src_line, size_t num_args) {
@@ -1002,7 +1004,7 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
 
     #if MICROPY_COMP_CONST_TUPLE
     if (build_tuple(parser, src_line, rule_id, num_args)) {
-        // we built a tuple from this rule so return straightaway
+        // we built a tuple from this rule so return straight away
         return;
     }
     #endif

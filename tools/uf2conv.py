@@ -85,9 +85,9 @@ def convert_from_uf2(buf):
         if datalen > 476:
             assert False, "Invalid UF2 data size at " + ptr
         newaddr = hd[3]
-        if (hd[2] & 0x2000) and (currfamilyid == None):
+        if (hd[2] & 0x2000) and (currfamilyid is None):
             currfamilyid = hd[7]
-        if curraddr == None or ((hd[2] & 0x2000) and hd[7] != currfamilyid):
+        if curraddr is None or ((hd[2] & 0x2000) and hd[7] != currfamilyid):
             currfamilyid = hd[7]
             curraddr = newaddr
             if familyid == 0x0 or familyid == hd[7]:
@@ -111,7 +111,7 @@ def convert_from_uf2(buf):
                     families_found[hd[7]] = newaddr
             else:
                 families_found[hd[7]] = newaddr
-        if prev_flag == None:
+        if prev_flag is None:
             prev_flag = hd[2]
         if prev_flag != hd[2]:
             all_flags_same = False
@@ -234,7 +234,7 @@ def convert_from_hex_to_uf2(buf):
             break
         elif tp == 0:
             addr = upper + ((rec[1] << 8) | rec[2])
-            if appstartaddr == None:
+            if appstartaddr is None:
                 appstartaddr = addr
             i = 4
             while i < len(rec) - 1:
@@ -271,7 +271,7 @@ def get_drives():
             ]
         )
         for line in to_str(r).split("\n"):
-            words = re.split("\s+", line)
+            words = re.split(r"\s+", line)
             if len(words) >= 3 and words[1] == "2" and words[2] == "FAT":
                 drives.append(words[0])
     else:
@@ -419,7 +419,7 @@ def main():
             )
         if args.convert or ext != "uf2":
             drives = []
-            if args.output == None:
+            if args.output is None:
                 args.output = "flash." + ext
         else:
             drives = get_drives()
