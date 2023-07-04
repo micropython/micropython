@@ -228,6 +228,10 @@ typedef long mp_off_t;
 #define MICROPY_HW_ENABLE_MDNS_RESPONDER    (1)
 #endif
 
+#ifndef MICROPY_BOARD_ENTER_BOOTLOADER
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
+#endif
+
 #ifndef MICROPY_BOARD_STARTUP
 #define MICROPY_BOARD_STARTUP boardctrl_startup
 #endif
