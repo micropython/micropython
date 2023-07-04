@@ -57,6 +57,8 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_ifconfig_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(esp_network_config_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj);
 
+mp_obj_t esp_ifname(esp_netif_t *netif);
+
 NORETURN void esp_exceptions_helper(esp_err_t e);
 
 static inline void esp_exceptions(esp_err_t e) {

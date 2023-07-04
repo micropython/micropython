@@ -41,6 +41,7 @@
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_wifi.h"
+#include "lwip/sockets.h"
 // #include "lwip/dns.h"
 
 NORETURN void esp_exceptions_helper(esp_err_t e) {
@@ -152,6 +153,15 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_ifconfig_obj, 1, 2, esp_ifconfig);
+
+mp_obj_t esp_ifname(esp_netif_t *netif) {
+    char ifname[NETIF_NAMESIZE + 1] = {0};
+    mp_obj_t ret = mp_const_none;
+    if (esp_netif_get_netif_impl_name(netif, ifname) == ESP_OK && ifname[0] != 0) {
+        ret = mp_obj_new_str((char *)ifname, strlen(ifname));
+    }
+    return ret;
+}
 
 STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
