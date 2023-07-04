@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy_s3.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "USB-C",
+        "RGB LED"
+    ],
+    "images": [
+        "ABX00092_01.iso_1000x750.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "Arduino Nano ESP32",
+    "thumbnail": "",
+    "url": "https://store.arduino.cc/products/arduino-nano-esp32",
+    "vendor": "Arduino"
+}
