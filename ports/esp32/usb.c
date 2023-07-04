@@ -67,16 +67,22 @@ void usb_init(void) {
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 
     // Initialise the USB serial interface.
-    tinyusb_config_cdcacm_t amc_cfg = {
+    tinyusb_config_cdcacm_t acm_cfg = {
         .usb_dev = TINYUSB_USBDEV_0,
         .cdc_port = CDC_ITF,
         .rx_unread_buf_sz = 256,
         .callback_rx = &usb_callback_rx,
-        .callback_rx_wanted_char = NULL,
-        .callback_line_state_changed = NULL,
-        .callback_line_coding_changed = NULL
+        #ifdef MICROPY_HW_USB_CUSTOM_RX_WANTED_CHAR_CB
+        .callback_rx_wanted_char = &MICROPY_HW_USB_CUSTOM_RX_WANTED_CHAR_CB,
+        #endif
+        #ifdef MICROPY_HW_USB_CUSTOM_LINE_STATE_CB
+        .callback_line_state_changed = &MICROPY_HW_USB_CUSTOM_LINE_STATE_CB,
+        #endif
+        #ifdef MICROPY_HW_USB_CUSTOM_LINE_CODING_CB
+        .callback_line_coding_changed = &MICROPY_HW_USB_CUSTOM_LINE_CODING_CB,
+        #endif
     };
-    ESP_ERROR_CHECK(tusb_cdc_acm_init(&amc_cfg));
+    ESP_ERROR_CHECK(tusb_cdc_acm_init(&acm_cfg));
 
 }
 
