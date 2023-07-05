@@ -191,8 +191,9 @@ target_include_directories(${MICROPY_TARGET} PUBLIC
 target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
 target_link_libraries(${MICROPY_TARGET} usermod)
 
-# Collect all of the include directories and compile definitions for the IDF components.
-foreach(comp ${IDF_COMPONENTS})
+# Collect all of the include directories and compile definitions for the IDF components,
+# including those added by the IDF Component Manager via idf_components.yaml.
+foreach(comp ${__COMPONENT_NAMES_RESOLVED})
     micropy_gather_target_properties(__idf_${comp})
     micropy_gather_target_properties(${comp})
 endforeach()
