@@ -959,7 +959,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_circle_obj, 0, bitmaptools_obj_draw_
 //|         y1: int,
 //|         x2: int,
 //|         y2: int,
-//|         skip_index: int,
+//|         skip_source_index: int,
 //|         skip_dest_index: int
 //|     ) -> None:
 //|         """Inserts the source_bitmap region defined by rectangular boundaries
@@ -975,14 +975,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_circle_obj, 0, bitmaptools_obj_draw_
 //|         :param int y1: Minimum y-value for rectangular bounding box to be copied from the source bitmap
 //|         :param int x2: Maximum x-value (exclusive) for rectangular bounding box to be copied from the source bitmap
 //|         :param int y2: Maximum y-value (exclusive) for rectangular bounding box to be copied from the source bitmap
-//|         :param int skip_index: bitmap palette index in the source that will not be copied,
+//|         :param int skip_source_index: bitmap palette index in the source that will not be copied,
 //|                                set to None to copy all pixels
 //|         :param int skip_dest_index: bitmap palette index in the destination bitmap that will not get overwritten
 //|                                 by the pixels from the source"""
 //|         ...
 //|
 STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum {ARG_destination, ARG_source, ARG_x, ARG_y, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_skip_index, ARG_skip_dest_index};
+    enum {ARG_destination, ARG_source, ARG_x, ARG_y, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_skip_source_index, ARG_skip_dest_index};
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         {MP_QSTR_source_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -992,7 +992,7 @@ STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp
         {MP_QSTR_y1, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         {MP_QSTR_x2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->width
         {MP_QSTR_y2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->height
-        {MP_QSTR_skip_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_skip_source_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         {MP_QSTR_skip_dest_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -1045,15 +1045,15 @@ STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp
         y1 = temp;
     }
 
-    uint32_t skip_index;
-    bool skip_index_none; // flag whether skip_value was None
+    uint32_t skip_source_index;
+    bool skip_source_index_none; // flag whether skip_value was None
 
-    if (args[ARG_skip_index].u_obj == mp_const_none) {
-        skip_index = 0;
-        skip_index_none = true;
+    if (args[ARG_skip_source_index].u_obj == mp_const_none) {
+        skip_source_index = 0;
+        skip_source_index_none = true;
     } else {
-        skip_index = mp_obj_get_int(args[ARG_skip_index].u_obj);
-        skip_index_none = false;
+        skip_source_index = mp_obj_get_int(args[ARG_skip_source_index].u_obj);
+        skip_source_index_none = false;
     }
 
     uint32_t skip_dest_index;
@@ -1067,7 +1067,7 @@ STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp
         skip_dest_index_none = false;
     }
 
-    common_hal_bitmaptools_blit(destination, source, x, y, x1, y1, x2, y2, skip_index, skip_index_none, skip_dest_index,
+    common_hal_bitmaptools_blit(destination, source, x, y, x1, y1, x2, y2, skip_source_index, skip_source_index_none, skip_dest_index,
         skip_dest_index_none);
 
     return mp_const_none;

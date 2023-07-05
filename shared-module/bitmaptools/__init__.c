@@ -984,7 +984,7 @@ void common_hal_bitmaptools_draw_circle(displayio_bitmap_t *destination,
 }
 
 void common_hal_bitmaptools_blit(displayio_bitmap_t *destination, displayio_bitmap_t *source, int16_t x, int16_t y,
-    int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t skip_index, bool skip_index_none, uint32_t skip_dest_index,
+    int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t skip_source_index, bool skip_source_index_none, uint32_t skip_dest_index,
     bool skip_dest_index_none) {
 
     if (destination->read_only) {
@@ -1034,13 +1034,13 @@ void common_hal_bitmaptools_blit(displayio_bitmap_t *destination, displayio_bitm
                 if ((yd_index >= 0) && (yd_index < destination->height)) {
                     uint32_t value = common_hal_displayio_bitmap_get_pixel(source, xs_index, ys_index);
                     if (skip_dest_index_none) { // if skip_dest_index is none, then only check source skip
-                        if ((skip_index_none) || (value != skip_index)) {   // write if skip_value_none is True
+                        if ((skip_source_index_none) || (value != skip_source_index)) {   // write if skip_value_none is True
                             displayio_bitmap_write_pixel(destination, xd_index, yd_index, value);
                         }
                     } else { // check dest_value index against skip_dest_index and skip if they match
                         uint32_t dest_value = common_hal_displayio_bitmap_get_pixel(destination, xd_index, yd_index);
                         if (dest_value != skip_dest_index) {
-                            if ((skip_index_none) || (value != skip_index)) {   // write if skip_value_none is True
+                            if ((skip_source_index_none) || (value != skip_source_index)) {   // write if skip_value_none is True
                                 displayio_bitmap_write_pixel(destination, xd_index, yd_index, value);
                             }
                         }

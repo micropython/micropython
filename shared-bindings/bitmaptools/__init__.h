@@ -71,7 +71,7 @@ void common_hal_bitmaptools_draw_circle(displayio_bitmap_t *destination,
 
 void common_hal_bitmaptools_blit(displayio_bitmap_t *destination, displayio_bitmap_t *source, int16_t x, int16_t y,
     int16_t x1, int16_t y1, int16_t x2, int16_t y2,
-    uint32_t skip_index, bool skip_index_none, uint32_t skip_self_index, bool skip_self_index_none);
+    uint32_t skip_source_index, bool skip_source_index_none, uint32_t skip_dest_index, bool skip_dest_index_none);
 
 void common_hal_bitmaptools_draw_polygon(displayio_bitmap_t *destination, void *xs, void *ys, size_t points_len, int point_size, uint32_t value, bool close);
 void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, mp_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_word, bool swap_bytes, bool reverse_rows);
