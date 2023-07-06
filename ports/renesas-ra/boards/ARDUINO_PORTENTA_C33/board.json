@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "./deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "512KB SRAM",
+        "2MB Flash",
+        "16MB QSPI Flash",
+        "USB High Speed Phy",
+        "10/100 Ethernet Phy",
+        "ESP32 WiFi/BT Module",
+        "NXP SE050 crypto device"
+    ],
+    "images": [
+        "ABX00074_01.iso_1000x750.jpg"
+    ],
+    "mcu": "RA6M5",
+    "product": "Arduino Portenta C33",
+    "thumbnail": "",
+    "url": "https://store.arduino.cc/pages/portenta-c33",
+    "vendor": "Arduino"
+}

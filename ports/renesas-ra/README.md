@@ -40,6 +40,11 @@ Linux, Mac and Windows hosts via https://developer.arm.com/downloads/-/arm-gnu-t
 The compiler can be changed using the `CROSS_COMPILE` variable
 when invoking `make`.
 
+* Protocol buffer compiler
+Building for the `ARDUINO_PORTENTA_C33` board will build the `esp_hosted` driver, that depends
+on the Protocol Buffer Compiler being installed. On Debian/Ubuntu, this can be installed with
+`sudo apt-get install protobuf-compiler`.
+
 * Obtain submodules
 First the submodules must be obtained using:
 
