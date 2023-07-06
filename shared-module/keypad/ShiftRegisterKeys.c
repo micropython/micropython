@@ -70,7 +70,7 @@ void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_
     }
 
     // Allocate a tuple object with the data pins
-    self->data = mp_obj_new_tuple(num_data_pins, dios);
+    self->data_pins = mp_obj_new_tuple(num_data_pins, dios);
 
     self->key_counts = (mp_uint_t *)gc_alloc(sizeof(mp_uint_t) * num_key_counts, false, false);
     self->num_key_counts = num_key_counts;
@@ -109,18 +109,13 @@ void common_hal_keypad_shiftregisterkeys_deinit(keypad_shiftregisterkeys_obj_t *
     common_hal_digitalio_digitalinout_deinit(self->clock);
     self->clock = MP_ROM_NONE;
 
-/*
-    common_hal_digitalio_digitalinout_deinit(self->data);
-    self->data = MP_ROM_NONE;
-*/
-
     common_hal_digitalio_digitalinout_deinit(self->latch);
     self->latch = MP_ROM_NONE;
 
-    for (size_t key = 0; key < self->datas->len; key++) {
-        common_hal_digitalio_digitalinout_deinit(self->datas->items[key]);
+    for (size_t key = 0; key < self->data_pins->len; key++) {
+        common_hal_digitalio_digitalinout_deinit(self->data_pins->items[key]);
     }
-    self->data = MP_ROM_NONE;
+    self->data_pins = MP_ROM_NONE;
 
     common_hal_keypad_deinit_core(self);
 }
@@ -153,7 +148,7 @@ static void shiftregisterkeys_scan_now(void *self_in, mp_obj_t timestamp) {
         // Loop through all the data pins that share the latch
         mp_uint_t index = 0;
 
-        for (mp_uint_t i = 0; i < self->datas->len; i++) {
+        for (mp_uint_t i = 0; i < self->data_pins->len; i++) {
 
             // When this data pin has less shiftable bits, ignore it
             if (scan_number >= self->key_counts[i]) {
@@ -168,7 +163,7 @@ static void shiftregisterkeys_scan_now(void *self_in, mp_obj_t timestamp) {
 
             // Get the current state.
             const bool current =
-                common_hal_digitalio_digitalinout_get_value(self->datas->items[i]) == self->value_when_pressed;
+                common_hal_digitalio_digitalinout_get_value(self->data_pins->items[i]) == self->value_when_pressed;
             self->currently_pressed[key_number] = current;
 
             // Record any transitions.
