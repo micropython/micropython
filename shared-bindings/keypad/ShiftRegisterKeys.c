@@ -62,6 +62,7 @@
 //|         :param microcontroller.Pin clock: The shift register clock pin.
 //|           The shift register should clock on a low-to-high transition.
 //|         :param microcontroller.Pin data: the incoming shift register data pin
+//|         :param Sequence[microcontroller.Pin] data: a list of incoming shift register data pins
 //|         :param microcontroller.Pin latch:
 //|           Pin used to latch parallel data going into the shift register.
 //|         :param bool value_to_latch: Pin state to latch data being read.
@@ -70,6 +71,7 @@
 //|           The default is ``True``, which is how the 74HC165 operates. The CD4021 latch is the opposite.
 //|           Once the data is latched, it will be shifted out by toggling the clock pin.
 //|         :param int key_count: number of data lines to clock in
+//|         :param Sequence[int] key_count: a list of key_counts equal sized to data pins
 //|         :param bool value_when_pressed: ``True`` if the pin reads high when the key is pressed.
 //|           ``False`` if the pin reads low (is grounded) when the key is pressed.
 //|         :param float interval: Scan keys no more often than ``interval`` to allow for debouncing.
@@ -91,7 +93,7 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
         { MP_QSTR_data, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_latch, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_value_to_latch, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
-        { MP_QSTR_key_count, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_key_count, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_value_when_pressed, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_BOOL },
         { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_max_events, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
@@ -99,21 +101,64 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    size_t num_data_pins;
+
+    if (mp_obj_is_type(args[ARG_data].u_obj, &mcu_pin_type)) {
+        num_data_pins = 1;
+    } else {
+        num_data_pins = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(args[ARG_data].u_obj));
+    }
+
+    const mcu_pin_obj_t *data_pins_array[num_data_pins];
+
+    if (mp_obj_is_type(args[ARG_data].u_obj, &mcu_pin_type)) {
+        const mcu_pin_obj_t *datapin = validate_obj_is_free_pin(args[ARG_data].u_obj, MP_QSTR_data);
+        data_pins_array[0] = datapin;
+    } else {
+        for (size_t pin = 0; pin < num_data_pins; pin++) {
+            const mcu_pin_obj_t *datapin =
+                validate_obj_is_free_pin(mp_obj_subscr(args[ARG_data].u_obj, MP_OBJ_NEW_SMALL_INT(pin), MP_OBJ_SENTINEL), MP_QSTR_data);
+            data_pins_array[pin] = datapin;
+        }
+    }
+
+    size_t num_key_counts;
+
+    if (mp_obj_is_int(args[ARG_key_count].u_obj)) {
+        num_key_counts = 1;
+    } else {
+        num_key_counts = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(args[ARG_key_count].u_obj));
+    }
+
+    mp_arg_validate_length(num_key_counts, num_data_pins, MP_QSTR_key_count);
+
+    size_t key_count_array[num_key_counts];
+
+    if (mp_obj_is_int(args[ARG_key_count].u_obj)) {
+        const size_t key_count = (size_t)mp_arg_validate_int_min(args[ARG_key_count].u_int, 1, MP_QSTR_key_count);
+        key_count_array[0] = key_count;
+    } else {
+        for (size_t kc = 0; kc < num_key_counts; kc++) {
+            mp_int_t mpint = mp_obj_get_int(mp_obj_subscr(args[ARG_key_count].u_obj, MP_OBJ_NEW_SMALL_INT(kc), MP_OBJ_SENTINEL));
+            const size_t key_count = (size_t)mp_arg_validate_int_min(mpint, 1, MP_QSTR_key_count);
+            key_count_array[kc] = key_count;
+        }
+    }
+
     const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj, MP_QSTR_clock);
-    const mcu_pin_obj_t *data = validate_obj_is_free_pin(args[ARG_data].u_obj, MP_QSTR_data);
     const mcu_pin_obj_t *latch = validate_obj_is_free_pin(args[ARG_latch].u_obj, MP_QSTR_latch);
     const bool value_to_latch = args[ARG_value_to_latch].u_bool;
 
-    const size_t key_count = (size_t)mp_arg_validate_int_min(args[ARG_key_count].u_int, 1, MP_QSTR_key_count);
     const bool value_when_pressed = args[ARG_value_when_pressed].u_bool;
     const mp_float_t interval =
         mp_arg_validate_obj_float_non_negative(args[ARG_interval].u_obj, 0.020f, MP_QSTR_interval);
     const size_t max_events = (size_t)mp_arg_validate_int_min(args[ARG_max_events].u_int, 1, MP_QSTR_max_events);
 
     common_hal_keypad_shiftregisterkeys_construct(
-        self, clock, data, latch, value_to_latch, key_count, value_when_pressed, interval, max_events);
+        self, clock, num_data_pins, data_pins_array, latch, value_to_latch, num_key_counts, key_count_array, value_when_pressed, interval, max_events);
 
     return MP_OBJ_FROM_PTR(self);
+
     #else
     mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_ShiftRegisterKeys);
     #endif
