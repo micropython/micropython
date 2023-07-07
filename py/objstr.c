@@ -335,13 +335,14 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     if (op == MP_BINARY_OP_MODULO) {
         #if MICROPY_PY_BUILTINS_STR_OP_MODULO
         mp_obj_t *args = &rhs_in;
-        size_t n_args = 0;
+        size_t n_args = 1;
         mp_obj_t dict = MP_OBJ_NULL;
         if (mp_obj_is_type(rhs_in, &mp_type_tuple)) {
             // TODO: Support tuple subclasses?
             mp_obj_tuple_get(rhs_in, &n_args, &args);
         } else if (mp_obj_is_type(rhs_in, &mp_type_dict)) {
             dict = rhs_in;
+            n_args = 0;  // no positional args when rhs is a dict
         }
         return str_modulo_format(lhs_in, n_args, args, dict);
         #else
