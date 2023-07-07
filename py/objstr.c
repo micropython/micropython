@@ -335,7 +335,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     if (op == MP_BINARY_OP_MODULO) {
         #if MICROPY_PY_BUILTINS_STR_OP_MODULO
         mp_obj_t *args = &rhs_in;
-        size_t n_args = 1;
+        size_t n_args = 0;
         mp_obj_t dict = MP_OBJ_NULL;
         if (mp_obj_is_type(rhs_in, &mp_type_tuple)) {
             // TODO: Support tuple subclasses?
@@ -1481,7 +1481,6 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
             if (dict == MP_OBJ_NULL) {
                 mp_raise_TypeError(MP_ERROR_TEXT("format needs a dict"));
             }
-            arg_i = 1; // we used up the single dict argument
             const byte *key = ++str;
             while (*str != ')') {
                 if (str >= top) {
