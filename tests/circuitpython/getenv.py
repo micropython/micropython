@@ -72,6 +72,8 @@ def run_test(key, content):
         print(key, str(e))
 
 
+run_test("key", b"")
+
 for i in range(13):
     run_test(f"key{i}", content_good)
 
