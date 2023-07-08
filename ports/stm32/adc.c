@@ -458,9 +458,18 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
 }
 
 STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
-    HAL_ADC_Start(adcHandle);
-    adc_wait_for_eoc_or_timeout(adcHandle, EOC_TIMEOUT);
-    uint32_t value = adcHandle->Instance->DR;
+    uint32_t value;
+    #if defined(STM32G4)
+    // For STM32G4 there is errata 2.7.7, "Wrong ADC result if conversion done late after
+    // calibration or previous conversion".  According to the errata, this can be avoided
+    // by performing two consecutive ADC conversions and keeping the second result.
+    for (uint8_t i = 0; i < 2; i++)
+    #endif
+    {
+        HAL_ADC_Start(adcHandle);
+        adc_wait_for_eoc_or_timeout(adcHandle, EOC_TIMEOUT);
+        value = adcHandle->Instance->DR;
+    }
     HAL_ADC_Stop(adcHandle);
     return value;
 }

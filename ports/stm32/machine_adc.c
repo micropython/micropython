@@ -371,13 +371,22 @@ STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
 }
 
 STATIC uint32_t adc_read_channel(ADC_TypeDef *adc) {
-    #if ADC_V2
-    adc->CR |= ADC_CR_ADSTART;
-    #else
-    adc->CR2 |= ADC_CR2_SWSTART;
+    uint32_t value;
+    #if defined(STM32G4)
+    // For STM32G4 there is errata 2.7.7, "Wrong ADC result if conversion done late after
+    // calibration or previous conversion".  According to the errata, this can be avoided
+    // by performing two consecutive ADC conversions and keeping the second result.
+    for (uint8_t i = 0; i < 2; i++)
     #endif
-    adc_wait_eoc(adc, ADC_EOC_TIMEOUT_MS);
-    uint32_t value = adc->DR;
+    {
+        #if ADC_V2
+        adc->CR |= ADC_CR_ADSTART;
+        #else
+        adc->CR2 |= ADC_CR2_SWSTART;
+        #endif
+        adc_wait_eoc(adc, ADC_EOC_TIMEOUT_MS);
+        value = adc->DR;
+    }
     return value;
 }
 
