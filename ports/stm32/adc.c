@@ -344,7 +344,11 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adch->Init.DataAlign = ADC_DATAALIGN_RIGHT;
     adch->Init.DMAContinuousRequests = DISABLE;
     #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32G4)
+    adch->Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV16;
+    #else
     adch->Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+    #endif
     adch->Init.ScanConvMode = ADC_SCAN_DISABLE;
     adch->Init.LowPowerAutoWait = DISABLE;
     adch->Init.Overrun = ADC_OVR_DATA_PRESERVED;
