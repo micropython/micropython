@@ -905,6 +905,12 @@ float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
 }
 
 float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
+    #if defined(STM32G4) || defined(STM32L4)
+    // Update the reference correction factor before reading tempsensor
+    // because VREFINT of STM32G4,L4 is at VDDA=3.0V
+    adc_read_core_vref(adcHandle);
+    #endif
+
     #if defined(STM32L152xE)
     mp_raise_NotImplementedError(MP_ERROR_TEXT("read_core_vbat not supported"));
     #else
