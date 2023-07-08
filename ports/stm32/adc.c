@@ -866,6 +866,12 @@ int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
 STATIC volatile float adc_refcor = 1.0f;
 
 float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
+    #if defined(STM32G4) || defined(STM32L1) || defined(STM32L4)
+    // Update the reference correction factor before reading tempsensor
+    // because TS_CAL1 and TS_CAL2 of STM32G4,L1/L4 are at VDDA=3.0V
+    adc_read_core_vref(adcHandle);
+    #endif
+
     #if defined(STM32G4)
     int32_t raw_value = 0;
     if (adcHandle->Instance == ADC1) {
@@ -873,15 +879,11 @@ float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
     } else {
         return 0;
     }
+    float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 100.0f;
     #else
-    #if defined(STM32L1) || defined(STM32L4)
-    // Update the reference correction factor before reading tempsensor
-    // because TS_CAL1 and TS_CAL2 of STM32L1/L4 are at VDDA=3.0V
-    adc_read_core_vref(adcHandle);
-    #endif
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
-    #endif
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 80.0f;
+    #endif
     return (((float)raw_value * adc_refcor - *ADC_CAL1) / core_temp_avg_slope) + 30.0f;
 }
 
