@@ -116,6 +116,7 @@ void common_hal_keypad_shiftregisterkeys_deinit(keypad_shiftregisterkeys_obj_t *
         common_hal_digitalio_digitalinout_deinit(self->data_pins->items[key]);
     }
     self->data_pins = MP_ROM_NONE;
+    self->key_counts = MP_ROM_NONE;
 
     common_hal_keypad_deinit_core(self);
 }
@@ -125,8 +126,7 @@ size_t shiftregisterkeys_get_key_count(void *self_in) {
 
     size_t total = 0;
 
-    for (mp_uint_t i = 0; i < self->num_key_counts; i++)
-    {
+    for (mp_uint_t i = 0; i < self->num_key_counts; i++) {
         total += self->key_counts[i];
     }
 
