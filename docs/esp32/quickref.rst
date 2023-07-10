@@ -141,7 +141,7 @@ These are working configurations for LAN interfaces of popular boards::
     # Olimex ESP32-GATEWAY: power controlled by Pin(5)
     # Olimex ESP32 PoE and ESP32-PoE ISO: power controlled by Pin(12)
 
-    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5), 
+    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5),
                       phy_type=network.PHY_LAN8720, phy_addr=0,
                       ref_clk=machine.Pin(17), ref_clk_mode=machine.Pin.OUT)
 
@@ -564,7 +564,7 @@ See :ref:`machine.WDT <machine.WDT>`. ::
     from machine import WDT
 
     # enable the WDT with a timeout of 5s (1s is the minimum)
-    wdt = WDT(timeout=5000)
+    wdt = WDT(timeout=5000)  # timeout in milliseconds
     wdt.feed()
 
 .. _Deep_sleep_mode:
