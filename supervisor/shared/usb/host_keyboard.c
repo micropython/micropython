@@ -246,6 +246,7 @@ STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard
                 if (mapper->flags & FLAG_STRING) {
                     const char *msg = skip_nuls(mapper->data, keycode - mapper->first);
                     send_bufz(msg);
+                    break;
                 } else if (mapper->data) {
                     code = mapper->data[keycode - mapper->first];
                 } else {
