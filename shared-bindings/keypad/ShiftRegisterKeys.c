@@ -84,7 +84,7 @@
 //|         ...
 
 STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-#if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
+    #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
     keypad_shiftregisterkeys_obj_t *self = m_new_obj(keypad_shiftregisterkeys_obj_t);
     self->base.type = &keypad_shiftregisterkeys_type;
     enum { ARG_clock, ARG_data, ARG_latch, ARG_value_to_latch, ARG_key_count, ARG_value_when_pressed, ARG_interval, ARG_max_events };
@@ -159,9 +159,9 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
 
     return MP_OBJ_FROM_PTR(self);
 
-#else
+    #else
     mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_ShiftRegisterKeys);
-#endif
+    #endif
 }
 
 #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
@@ -225,7 +225,7 @@ const mp_obj_type_t keypad_shiftregisterkeys_type = {
     { &mp_type_type },
     .name = MP_QSTR_ShiftRegisterKeys,
     .make_new = keypad_shiftregisterkeys_make_new,
-#if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
+    #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
     .locals_dict = (mp_obj_t)&keypad_shiftregisterkeys_locals_dict,
-#endif
+    #endif
 };
