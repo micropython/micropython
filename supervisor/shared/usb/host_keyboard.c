@@ -31,6 +31,8 @@
 #include "py/runtime.h"
 #include "shared/runtime/interrupt_char.h"
 #include "supervisor/usb.h"
+#include "supervisor/background_callback.h"
+#include "supervisor/shared/tick.h"
 
 #ifndef DEBUG
 #define DEBUG (0)
@@ -110,9 +112,17 @@ STATIC bool report_contains(const hid_keyboard_report_t *report, uint8_t key) {
 STATIC const char *old_buf = NULL;
 STATIC size_t buf_size = 0;
 // this matches Linux default of 500ms to first repeat, 1/20s thereafter
-STATIC const uint32_t initial_repeat_time = 500;
+enum { initial_repeat_time = 500, default_repeat_time = 50 };
+STATIC uint64_t repeat_deadline;
+STATIC void repeat_f(void *unused);
+background_callback_t repeat_cb = {repeat_f, NULL, NULL, NULL};
 
-STATIC void send_bufn(const char *buf, size_t n, uint32_t repeat_time) {
+STATIC void set_repeat_deadline(uint64_t new_deadline) {
+    repeat_deadline = new_deadline;
+    background_callback_add_core(&repeat_cb);
+}
+
+STATIC void send_bufn_core(const char *buf, size_t n) {
     old_buf = buf;
     buf_size = n;
     // repeat_timeout = millis() + repeat_time;
@@ -130,26 +140,36 @@ STATIC void send_bufn(const char *buf, size_t n, uint32_t repeat_time) {
     }
 }
 
-STATIC void send_bufz(const char *buf, uint32_t repeat_time) {
-    send_bufn(buf, strlen(buf), repeat_time);
+STATIC void send_bufn(const char *buf, size_t n) {
+    send_bufn_core(buf, n);
+    set_repeat_deadline(supervisor_ticks_ms64() + initial_repeat_time);
 }
 
-STATIC void send_byte(uint8_t code, uint32_t repeat_time) {
+STATIC void send_bufz(const char *buf) {
+    send_bufn(buf, strlen(buf));
+}
+
+STATIC void send_byte(uint8_t code) {
     static char buf[1];
     buf[0] = code;
-    send_bufn(buf, 1, repeat_time);
+    send_bufn(buf, 1);
 }
 
-#if 0
-STATIC uint32_t repeat_timeout;
-STATIC const uint32_t default_repeat_time = 50;
-// TODO: nothing actually SENDS the repetitions...
-STATIC void send_repeat() {
+STATIC void send_repeat(void) {
     if (old_buf) {
-        send_bufn(old_buf, old_buf_size, default_repeat_time);
+        uint64_t now = supervisor_ticks_ms64();
+        if (now >= repeat_deadline) {
+            send_bufn_core(old_buf, buf_size);
+            set_repeat_deadline(now + default_repeat_time);
+        } else {
+            background_callback_add_core(&repeat_cb);
+        }
     }
 }
-#endif
+
+STATIC void repeat_f(void *unused) {
+    send_repeat();
+}
 
 hid_keyboard_report_t old_report;
 
@@ -175,7 +195,7 @@ STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard
         return;
     }
 
-    // something was pressed or release, so cancel any key repeat
+    // something was pressed or released, so cancel any key repeat
     old_buf = NULL;
 
     for (int i = 0; i < 6; i++) {
@@ -205,7 +225,7 @@ STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard
                 } else if (ascii >= 'a' && ascii <= 'z' && caps) {
                     ascii ^= ('a' ^ 'A');
                 }
-                send_byte(ascii, initial_repeat_time);
+                send_byte(ascii);
                 continue;
             }
 
@@ -225,7 +245,7 @@ STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard
                 }
                 if (mapper->flags & FLAG_STRING) {
                     const char *msg = skip_nuls(mapper->data, keycode - mapper->first);
-                    send_bufz(msg, initial_repeat_time);
+                    send_bufz(msg);
                 } else if (mapper->data) {
                     code = mapper->data[keycode - mapper->first];
                 } else {
@@ -240,7 +260,7 @@ STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard
                 if (alt) {
                     code ^= 0x80;
                 }
-                send_byte(code, initial_repeat_time);
+                send_byte(code);
                 break;
             }
         }
