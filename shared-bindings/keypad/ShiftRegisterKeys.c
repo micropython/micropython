@@ -41,10 +41,10 @@
 //|         self,
 //|         *,
 //|         clock: microcontroller.Pin,
-//|         data: microcontroller.Pin,
+//|         data: Union[microcontroller.Pin, List[microcontroller.Pin]],
 //|         latch: microcontroller.Pin,
 //|         value_to_latch: bool = True,
-//|         key_count: int,
+//|         key_count: Union[int, List[int]]
 //|         value_when_pressed: bool,
 //|         interval: float = 0.020,
 //|         max_events: int = 64
@@ -56,13 +56,14 @@
 //|
 //|         Key number 0 is the first (or more properly, the zero-th) bit read. In the
 //|         74HC165, this bit is labeled ``Q7``. Key number 1 will be the value of ``Q6``, etc.
+//|         When specifying multiple data pins, the key numbers are sequential.
+//|         So with two data Pins in parallel and key_count[0] = 32, the keys of data[1] will start with 32.
 //|
 //|         An `EventQueue` is created when this object is created and is available in the `events` attribute.
 //|
 //|         :param microcontroller.Pin clock: The shift register clock pin.
 //|           The shift register should clock on a low-to-high transition.
-//|         :param microcontroller.Pin data: the incoming shift register data pin
-//|         :param Sequence[microcontroller.Pin] data: a list of incoming shift register data pins
+//|         :param Union[microcontroller.Pin, List[microcontroller.Pin]] data: the incoming shift register data pin(s)
 //|         :param microcontroller.Pin latch:
 //|           Pin used to latch parallel data going into the shift register.
 //|         :param bool value_to_latch: Pin state to latch data being read.
@@ -70,8 +71,7 @@
 //|           ``False`` if the data is latched when ``latch`` goes low.
 //|           The default is ``True``, which is how the 74HC165 operates. The CD4021 latch is the opposite.
 //|           Once the data is latched, it will be shifted out by toggling the clock pin.
-//|         :param int key_count: number of data lines to clock in
-//|         :param Sequence[int] key_count: a list of key_counts equal sized to data pins
+//|         :param Union[int, List[int]] key_count: number of data lines to clock in (per data pin)
 //|         :param bool value_when_pressed: ``True`` if the pin reads high when the key is pressed.
 //|           ``False`` if the pin reads low (is grounded) when the key is pressed.
 //|         :param float interval: Scan keys no more often than ``interval`` to allow for debouncing.
@@ -84,7 +84,7 @@
 //|         ...
 
 STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
+#if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
     keypad_shiftregisterkeys_obj_t *self = m_new_obj(keypad_shiftregisterkeys_obj_t);
     self->base.type = &keypad_shiftregisterkeys_type;
     enum { ARG_clock, ARG_data, ARG_latch, ARG_value_to_latch, ARG_key_count, ARG_value_when_pressed, ARG_interval, ARG_max_events };
@@ -159,9 +159,9 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
 
     return MP_OBJ_FROM_PTR(self);
 
-    #else
+#else
     mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_ShiftRegisterKeys);
-    #endif
+#endif
 }
 
 #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
@@ -225,7 +225,7 @@ const mp_obj_type_t keypad_shiftregisterkeys_type = {
     { &mp_type_type },
     .name = MP_QSTR_ShiftRegisterKeys,
     .make_new = keypad_shiftregisterkeys_make_new,
-    #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
+#if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
     .locals_dict = (mp_obj_t)&keypad_shiftregisterkeys_locals_dict,
-    #endif
+#endif
 };
