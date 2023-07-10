@@ -44,7 +44,7 @@
 //|         data: Union[microcontroller.Pin, List[microcontroller.Pin]],
 //|         latch: microcontroller.Pin,
 //|         value_to_latch: bool = True,
-//|         key_count: Union[int, List[int]]
+//|         key_count: Union[int, List[int]],
 //|         value_when_pressed: bool,
 //|         interval: float = 0.020,
 //|         max_events: int = 64
