@@ -1645,7 +1645,9 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
         }
     }
 
-    if (arg_i != n_args) {
+    if (dict == MP_OBJ_NULL && arg_i != n_args) {
+        // NOTE: if `dict` exists, then `n_args` is 1 and the dict is always consumed; either
+        // positionally, or as a map of named args, even if none were actually referenced.
         mp_raise_TypeError(MP_ERROR_TEXT("format string didn't convert all arguments"));
     }
 
