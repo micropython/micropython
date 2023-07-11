@@ -98,6 +98,8 @@ void rp2pio_statemachine_dma_complete(rp2pio_statemachine_obj_t *self, int chann
 void rp2pio_statemachine_reset_ok(PIO pio, int sm);
 void rp2pio_statemachine_never_reset(PIO pio, int sm);
 
+uint8_t rp2pio_statemachine_find_pio(int program_size, int sm_count);
+
 extern const mp_obj_type_t rp2pio_statemachine_type;
 
 #endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_RP2PIO_STATEMACHINE_H

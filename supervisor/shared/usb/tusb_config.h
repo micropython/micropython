@@ -51,7 +51,7 @@ extern "C" {
 // When debugging TinyUSB, only output to the console UART link.
 #if CIRCUITPY_DEBUG_TINYUSB > 0 && defined(CIRCUITPY_CONSOLE_UART)
 #define CFG_TUSB_DEBUG              CIRCUITPY_DEBUG_TINYUSB
-#define CFG_TUSB_DEBUG_PRINTF       debug_uart_printf
+#define CFG_TUSB_DEBUG_PRINTF       console_uart_printf
 #endif
 
 /*------------- RTOS -------------*/
@@ -127,6 +127,10 @@ extern "C" {
 // --------------------------------------------------------------------
 
 #if CIRCUITPY_USB_HOST
+#define CFG_TUH_ENABLED 1
+
+// Always use PIO to do host on RP2.
+#define CFG_TUH_RPI_PIO_USB 1
 
 #if CIRCUITPY_USB_HOST_INSTANCE == 0
 #if USB_HIGHSPEED
@@ -147,10 +151,12 @@ extern "C" {
 #define CFG_TUH_ENUMERATION_BUFSIZE 256
 #endif
 
+#define CFG_TUH_HID                 2
 #define CFG_TUH_HUB                 1
 #define CFG_TUH_CDC                 0
 #define CFG_TUH_MSC                 0
 #define CFG_TUH_VENDOR              0
+#define CFG_TUH_API_EDPT_XFER       1
 
 // max device support (excluding hub device)
 #define CFG_TUH_DEVICE_MAX          (CFG_TUH_HUB ? 4 : 1) // hub typically has 4 ports

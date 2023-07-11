@@ -341,3 +341,7 @@
 [submodule "frozen/Adafruit_CircuitPython_Wave"]
 	path = frozen/Adafruit_CircuitPython_Wave
 	url = http://github.com/adafruit/Adafruit_CircuitPython_Wave.git
+[submodule "ports/raspberrypi/lib/Pico-PIO-USB"]
+	path = ports/raspberrypi/lib/Pico-PIO-USB
+	url = https://github.com/sekigon-gonnoc/Pico-PIO-USB.git
+	branch = main

@@ -238,6 +238,12 @@ char serial_read(void) {
     }
     #endif
 
+    #if CIRCUITPY_USB_KEYBOARD_WORKFLOW
+    if (usb_keyboard_chars_available() > 0) {
+        return usb_keyboard_read_char();
+    }
+    #endif
+
     if (port_serial_bytes_available() > 0) {
         return port_serial_read();
     }
@@ -275,6 +281,12 @@ bool serial_bytes_available(void) {
 
     #if CIRCUITPY_WEB_WORKFLOW
     if (websocket_available()) {
+        return true;
+    }
+    #endif
+
+    #if CIRCUITPY_USB_KEYBOARD_WORKFLOW
+    if (usb_keyboard_chars_available() > 0) {
         return true;
     }
     #endif
