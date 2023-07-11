@@ -485,12 +485,17 @@ msgstr "Alla UART-kringutrustning används"
 msgid "All channels in use"
 msgstr "Alla kanaler används"
 
+#: ports/raspberrypi/common-hal/usb_host/Port.c
+msgid "All dma channels in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "Alla händelsekanaler används"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/usb_host/Port.c
 msgid "All state machines in use"
 msgstr "Alla tillståndsmaskiner används"
 
@@ -1989,10 +1994,6 @@ msgstr "Serversidans kontext kan inte ha värdnamn"
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
 msgstr "Storleken stöds inte"
-
-#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
-msgid "Sleep Memory not available"
-msgstr "Sömnminne inte tillgängligt"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
@@ -4417,6 +4418,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Sleep Memory not available"
+#~ msgstr "Sömnminne inte tillgängligt"
 
 #~ msgid "input and output shapes are not compatible"
 #~ msgstr "indata- och utdataformer är inte kompatibla"

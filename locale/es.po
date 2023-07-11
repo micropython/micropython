@@ -486,12 +486,17 @@ msgstr "Todos los periféricos UART están en uso"
 msgid "All channels in use"
 msgstr "Todos los canales están en uso"
 
+#: ports/raspberrypi/common-hal/usb_host/Port.c
+msgid "All dma channels in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "Todos los canales de eventos están en uso"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/usb_host/Port.c
 msgid "All state machines in use"
 msgstr "Todas las máquinas de estado están en uso"
 
@@ -2013,10 +2018,6 @@ msgstr "El contexto del lado del servidor no puede tener un hostname"
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
 msgstr "Sin capacidades para el tamaño"
-
-#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
-msgid "Sleep Memory not available"
-msgstr "Memoria de sueño no disponible"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
@@ -4454,6 +4455,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Sleep Memory not available"
+#~ msgstr "Memoria de sueño no disponible"
 
 #~ msgid "input and output shapes are not compatible"
 #~ msgstr "Formas de entrada y salida no son compatibles"
