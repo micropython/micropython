@@ -115,8 +115,8 @@ void network_deinit(void) {
     wcm_assert_raise("network deinit error (code: %d)", ret);
 }
 
-#define MAX_WIFI_RETRY_COUNT                (3u)
-#define WIFI_CONN_RETRY_INTERVAL_MSEC       (100u)
+// #define MAX_WIFI_RETRY_COUNT                (3u)
+// #define WIFI_CONN_RETRY_INTERVAL_MSEC       (100u)
 
 // Network Access Point initialization with default network parameters
 void network_ap_init() {
@@ -238,7 +238,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_active_obj, 1, 2, net
 
 typedef struct
 {
-    mp_obj_t scan_list;
+    mp_obj_t *scan_list;
     cy_wcm_scan_status_t status;
 }scan_user_data_t;
 
@@ -291,7 +291,7 @@ void get_security_type(cy_wcm_scan_result_t *result, uint8_t *security_type) {
 // Callback function for scan method. After each scan result, the scan callback is executed.
 static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user_data, cy_wcm_scan_status_t status) {
     scan_user_data_t *scan_user_data = (scan_user_data_t *)user_data;
-    mp_obj_t *scan_list = scan_user_data->scan_list;
+    mp_obj_t scan_list = MP_OBJ_FROM_PTR(scan_user_data->scan_list);
     uint8_t hidden_status = 1; // HIDDEN
     uint8_t security_type = NET_IFX_WCM_SEC_OPEN;
 
@@ -368,10 +368,10 @@ STATIC mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map
         }
     }
 
-    // mp_obj_t res = mp_obj_new_list(0, NULL);
-    // void *ntwk_scan_result = MP_OBJ_TO_PTR(res);
+    mp_obj_t network_list = mp_obj_new_list(0, NULL);
     scan_user_data_t scan_user_params;
-    scan_user_params.scan_list = mp_obj_new_list(0, NULL);
+    scan_user_params.scan_list = MP_OBJ_TO_PTR(network_list);
+    scan_user_params.status = CY_WCM_SCAN_INCOMPLETE;
 
     cy_wcm_scan_filter_t *scan_filter_ptr = NULL;
     if (is_filter_used) {
