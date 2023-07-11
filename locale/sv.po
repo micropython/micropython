@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-05-26 12:50+0000\n"
+"PO-Revision-Date: 2023-07-11 17:05+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 #: main.c
 msgid ""
@@ -450,7 +450,7 @@ msgstr "Adressintervallet är inte tillåtet"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr "All I2C-kringutrustning används"
+msgstr "All CAN-kringutrustning används"
 
 #: ports/espressif/common-hal/busio/I2C.c
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
@@ -487,7 +487,7 @@ msgstr "Alla kanaler används"
 
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 msgid "All dma channels in use"
-msgstr ""
+msgstr "Alla dma-kanaler används"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
@@ -501,7 +501,7 @@ msgstr "Alla tillståndsmaskiner används"
 
 #: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
-msgstr "Alla händelsekanaler används"
+msgstr "Alla synkroniseringskanaler används"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: shared-bindings/pwmio/PWMOut.c
@@ -1072,7 +1072,7 @@ msgstr "För RGB-färgrymder måste indatabitmappen ha 16 bitar per pixel"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
-msgstr "Formatet stöds inte"
+msgstr "Format stöds inte"
 
 #: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
 msgid ""
@@ -2243,7 +2243,7 @@ msgstr "Kan inte initiera tolken"
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 #, c-format
 msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr "Kan inte konfigurera ADC DMA controller, Felkod:%d"
+msgstr "Kan inte inititiera ADC DMA-controller, Felkod:%d"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
@@ -2354,7 +2354,7 @@ msgstr "Busstyp för display stöds inte"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
-msgstr "Formatet stöds inte"
+msgstr "Format stöds inte"
 
 #: shared-bindings/hashlib/__init__.c
 msgid "Unsupported hash algorithm"
