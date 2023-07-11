@@ -53,11 +53,11 @@
 //|         Create a `Keys` object that will scan keys attached to a parallel-in serial-out shift register
 //|         like the 74HC165 or CD4021.
 //|         Note that you may chain shift registers to load in as many values as you need.
+//|         Furthermore, you can put multiple shift registers in parallel and share clock and latch.
 //|
 //|         Key number 0 is the first (or more properly, the zero-th) bit read. In the
 //|         74HC165, this bit is labeled ``Q7``. Key number 1 will be the value of ``Q6``, etc.
-//|         When specifying multiple data pins, the key numbers are sequential.
-//|         So with two data Pins in parallel and key_count[0] = 32, the keys of data[1] will start with 32.
+//|         With multiple data pins, key numbers of the next pin are sequentially to the current pin.
 //|
 //|         An `EventQueue` is created when this object is created and is available in the `events` attribute.
 //|
