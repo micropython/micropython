@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
+// Micropython setup
 
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-bindings/usb_host/Port.h"
+#define MICROPY_HW_BOARD_NAME       "Adafruit QT Py ESP32-S3 4MB Flash 2MB PSRAM"
+#define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO39)
+#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO38)
 
-usb_host_port_obj_t _host_port;
-digitalio_digitalinout_obj_t _host_power;
+#define CIRCUITPY_BOARD_I2C         (2)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO6, .sda = &pin_GPIO7}, \
+                                     {.scl = &pin_GPIO40, .sda = &pin_GPIO41}}
 
-void board_init(void) {
-    common_hal_digitalio_digitalinout_construct(&_host_power, &pin_GPIO18);
-    common_hal_digitalio_digitalinout_never_reset(&_host_power);
-    common_hal_digitalio_digitalinout_switch_to_output(&_host_power, true, DRIVE_MODE_PUSH_PULL);
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO36, .mosi = &pin_GPIO35, .miso = &pin_GPIO37}}
 
-    common_hal_usb_host_port_construct(&_host_port, &pin_GPIO16, &pin_GPIO17);
-}
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO5, .rx = &pin_GPIO16}}
+
+#define DOUBLE_TAP_PIN (&pin_GPIO10)

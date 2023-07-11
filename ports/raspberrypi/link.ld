@@ -80,7 +80,9 @@ SECTIONS
         *(.property_getset)
         __property_getset_end = .;
 
-        *(EXCLUDE_FILE(*libgcc.a: *libc.a:*lib_a-mem*.o *libm.a: *interp.o *divider.o) .text*)
+        *(EXCLUDE_FILE(*libgcc.a: *libc.a:*lib_a-mem*.o *libm.a: *interp.o *divider.o *tusb_fifo.o *mem_ops_aeabi.o *usbh.o) .text*)
+        /* Allow everything in usbh.o except tuh_task_event_ready because we read it from core 1. */
+        *usbh.o (.text.[_uphc]* .text.tuh_[cmvied]* .text.tuh_task_ext*)
         *(.fini)
         /* Pull all c'tors into .text */
         *crtbegin.o(.ctors)
@@ -169,7 +171,7 @@ SECTIONS
         . = ALIGN(4);
         /* init data */
         PROVIDE_HIDDEN (__init_array_start = .);
-        KEEP(*(SORT(.init_array.*)))
+        KEEP(*(SORT(.init_array*)))
         KEEP(*(.init_array))
         PROVIDE_HIDDEN (__init_array_end = .);
 
@@ -248,6 +250,7 @@ SECTIONS
         __scratch_x_start__ = .;
         *(.scratch_x.*)
         *tmds_encode.o (.time_critical*)
+        *timer.o (.text.hardware_alarm_irq_handler)
         . = ALIGN(4);
         __scratch_x_end__ = .;
     } > SCRATCH_X AT > FLASH_FIRMWARE

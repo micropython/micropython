@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2023 Conor Burns for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +26,4 @@
 
 #include "supervisor/board.h"
 
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-bindings/usb_host/Port.h"
-
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
-
-usb_host_port_obj_t _host_port;
-digitalio_digitalinout_obj_t _host_power;
-
-void board_init(void) {
-    common_hal_digitalio_digitalinout_construct(&_host_power, &pin_GPIO18);
-    common_hal_digitalio_digitalinout_never_reset(&_host_power);
-    common_hal_digitalio_digitalinout_switch_to_output(&_host_power, true, DRIVE_MODE_PUSH_PULL);
-
-    common_hal_usb_host_port_construct(&_host_port, &pin_GPIO16, &pin_GPIO17);
-}
