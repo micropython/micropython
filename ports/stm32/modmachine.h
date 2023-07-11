@@ -48,6 +48,7 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(machine_idle_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(machine_reset_cause_obj);
 
 MP_DECLARE_CONST_FUN_OBJ_0(machine_disable_irq_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_enable_irq_obj);
