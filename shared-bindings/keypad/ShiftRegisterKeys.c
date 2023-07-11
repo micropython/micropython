@@ -41,10 +41,10 @@
 //|         self,
 //|         *,
 //|         clock: microcontroller.Pin,
-//|         data: Union[microcontroller.Pin, List[microcontroller.Pin]],
+//|         data: Union[microcontroller.Pin, Sequence[microcontroller.Pin]],
 //|         latch: microcontroller.Pin,
 //|         value_to_latch: bool = True,
-//|         key_count: Union[int, List[int]],
+//|         key_count: Union[int, Sequence[int]],
 //|         value_when_pressed: bool,
 //|         interval: float = 0.020,
 //|         max_events: int = 64
@@ -63,7 +63,7 @@
 //|
 //|         :param microcontroller.Pin clock: The shift register clock pin.
 //|           The shift register should clock on a low-to-high transition.
-//|         :param Union[microcontroller.Pin, List[microcontroller.Pin]] data: the incoming shift register data pin(s)
+//|         :param Union[microcontroller.Pin, Sequence[microcontroller.Pin]] data: the incoming shift register data pin(s)
 //|         :param microcontroller.Pin latch:
 //|           Pin used to latch parallel data going into the shift register.
 //|         :param bool value_to_latch: Pin state to latch data being read.
@@ -71,7 +71,7 @@
 //|           ``False`` if the data is latched when ``latch`` goes low.
 //|           The default is ``True``, which is how the 74HC165 operates. The CD4021 latch is the opposite.
 //|           Once the data is latched, it will be shifted out by toggling the clock pin.
-//|         :param Union[int, List[int]] key_count: number of data lines to clock in (per data pin)
+//|         :param Union[int, Sequence[int]] key_count: number of data lines to clock in (per data pin)
 //|         :param bool value_when_pressed: ``True`` if the pin reads high when the key is pressed.
 //|           ``False`` if the pin reads low (is grounded) when the key is pressed.
 //|         :param float interval: Scan keys no more often than ``interval`` to allow for debouncing.
@@ -200,7 +200,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_shiftregisterkeys___exit___obj
 //|         ...
 
 //|     key_count: int
-//|     """The number of keys that are being scanned. (read-only)
+//|     """The total number of keys that are being scanned. (read-only)
 //|     """
 
 //|     events: EventQueue
