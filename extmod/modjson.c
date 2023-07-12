@@ -157,6 +157,7 @@ STATIC mp_obj_t mod_json_load(mp_obj_t stream_obj) {
     const mp_obj_type_t *stack_top_type = NULL;
     mp_obj_t stack_key = MP_OBJ_NULL;
     S_NEXT(s);
+    unsigned int nested_cnt = 0;
     for (;;) {
     cont:
         if (S_END(s)) {
@@ -286,6 +287,7 @@ STATIC mp_obj_t mod_json_load(mp_obj_t stream_obj) {
                 break;
             case '}':
             case ']': {
+                --nested_cnt;
                 if (stack_top == MP_OBJ_NULL) {
                     // no object at all
                     goto fail;
@@ -325,6 +327,7 @@ STATIC mp_obj_t mod_json_load(mp_obj_t stream_obj) {
                 }
             }
             if (enter) {
+                ++nested_cnt;
                 if (stack.items == NULL) {
                     mp_obj_list_init(&stack, 1);
                     stack.items[0] = stack_top;
@@ -337,6 +340,9 @@ STATIC mp_obj_t mod_json_load(mp_obj_t stream_obj) {
         }
     }
 success:
+    if (nested_cnt != 0){
+        goto fail;
+    }
     // eat trailing whitespace
     while (unichar_isspace(S_CUR(s))) {
         S_NEXT(s);
