@@ -340,7 +340,7 @@ STATIC mp_obj_t mod_json_load(mp_obj_t stream_obj) {
         }
     }
 success:
-    if (nested_cnt != 0){
+    if (nested_cnt != 0) {
         goto fail;
     }
     // eat trailing whitespace
