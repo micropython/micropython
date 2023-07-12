@@ -157,6 +157,7 @@ STATIC mp_obj_t mod_json_load(mp_obj_t stream_obj) {
     const mp_obj_type_t *stack_top_type = NULL;
     mp_obj_t stack_key = MP_OBJ_NULL;
     mp_int_t nested_cnt = 0;
+
     S_NEXT(s);
     for (;;) {
     cont:
