@@ -57,6 +57,11 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
     return mp_obj_new_int_from_ll(value);
 }
 
+size_t mp_obj_int_max_bytes_needed_impl(mp_obj_t self_in) {
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
+    return sizeof(mp_longint_impl_t);
+}
+
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;

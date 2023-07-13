@@ -112,6 +112,13 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
     return MP_OBJ_FROM_PTR(o);
 }
 
+size_t mp_obj_int_max_bytes_needed_impl(mp_obj_t self_in) {
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
+    mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
+    // two's complement may require one more bit than the magnitude itself
+    return (mpz_max_num_bits(&self->mpz) + 1 + 7) / 8;
+}
+
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
