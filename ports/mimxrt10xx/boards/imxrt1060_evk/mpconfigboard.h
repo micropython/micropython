@@ -21,5 +21,5 @@
 
 // Put host on the first USB so that right angle OTG adapters can fit. This is
 // the right port when looking at the board.
-#define CIRCUITPY_USB_DEVICE_INSTANCE 1
-#define CIRCUITPY_USB_HOST_INSTANCE 0
+#define CIRCUITPY_USB_DEVICE_INSTANCE 0
+#define CIRCUITPY_USB_HOST_INSTANCE 1

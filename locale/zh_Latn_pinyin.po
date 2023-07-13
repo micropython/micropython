@@ -487,12 +487,17 @@ msgstr "suǒyǒu UART wàishè dōu zài shǐyòng zhōng"
 msgid "All channels in use"
 msgstr "suǒyǒu píndào dōu zài shǐyòng zhōng"
 
+#: ports/raspberrypi/common-hal/usb_host/Port.c
+msgid "All dma channels in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "suǒyǒu shìjiàn píndào dōu zài shǐyòng zhōng"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/usb_host/Port.c
 msgid "All state machines in use"
 msgstr "suǒyǒu zhuàngtàijī dōu zài shǐyòng zhōng"
 
@@ -1994,10 +1999,6 @@ msgstr "Fúwùqì duān shàngxiàwén bùnéng jùyǒu zhǔjī míng"
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
 msgstr "bù zhī chí dà xiǎo"
-
-#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
-msgid "Sleep Memory not available"
-msgstr "shuì mián jì yì bù kě yòng"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
@@ -4423,6 +4424,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Sleep Memory not available"
+#~ msgstr "shuì mián jì yì bù kě yòng"
 
 #~ msgid "input and output shapes are not compatible"
 #~ msgstr "shū rù hé shū chū xíng zhuàng bù jiān róng"
