@@ -100,7 +100,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
 
 STATIC int usage(char **argv) {
     printf(
-        "usage: %s [<opts>] [-X <implopt>] <input filename>\n"
+        "usage: %s [<opts>] [-X <implopt>] [--] <input filename>\n"
         "Options:\n"
         "--version : show version information\n"
         "-o : output file for compiled bytecode (defaults to input with .mpy extension)\n"
@@ -220,10 +220,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
     const char *input_file = NULL;
     const char *output_file = NULL;
     const char *source_file = NULL;
+    bool option_parsing_active = true;
 
     // parse main options
     for (int a = 1; a < argc; a++) {
-        if (argv[a][0] == '-') {
+        if (option_parsing_active && argv[a][0] == '-') {
             if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
             } else if (strcmp(argv[a], "--version") == 0) {
@@ -309,6 +310,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else {
                     return usage(argv);
                 }
+            } else if (strcmp(argv[a], "--") == 0) {
+                option_parsing_active = false;
             } else {
                 return usage(argv);
             }
