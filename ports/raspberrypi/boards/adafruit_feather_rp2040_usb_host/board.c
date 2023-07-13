@@ -31,7 +31,6 @@
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
 
-usb_host_port_obj_t _host_port;
 digitalio_digitalinout_obj_t _host_power;
 
 void board_init(void) {
@@ -39,5 +38,5 @@ void board_init(void) {
     common_hal_digitalio_digitalinout_never_reset(&_host_power);
     common_hal_digitalio_digitalinout_switch_to_output(&_host_power, true, DRIVE_MODE_PUSH_PULL);
 
-    common_hal_usb_host_port_construct(&_host_port, &pin_GPIO16, &pin_GPIO17);
+    common_hal_usb_host_port_construct(&pin_GPIO16, &pin_GPIO17);
 }

@@ -45,7 +45,7 @@
 
 #include "supervisor/serial.h"
 
-bool usb_host_init;
+usb_host_port_obj_t usb_host_instance;
 
 STATIC PIO pio_instances[2] = {pio0, pio1};
 volatile bool _core1_ready = false;
@@ -102,10 +102,23 @@ STATIC bool _has_program_room(uint8_t pio_index, uint8_t program_size) {
     return pio_can_add_program(pio, &program_struct);
 }
 
-void common_hal_usb_host_port_construct(usb_host_port_obj_t *self, const mcu_pin_obj_t *dp, const mcu_pin_obj_t *dm) {
+usb_host_port_obj_t *common_hal_usb_host_port_construct(const mcu_pin_obj_t *dp, const mcu_pin_obj_t *dm) {
     if (dp->number + 1 != dm->number) {
         raise_ValueError_invalid_pins();
     }
+    usb_host_port_obj_t *self = &usb_host_instance;
+
+    // Return the singleton if given the same pins.
+    if (self->dp != NULL) {
+        if (self->dp != dp || self->dm != dm) {
+            mp_raise_msg_varg(&mp_type_RuntimeError, translate("%q in use"), MP_QSTR_usb_host);
+        }
+        return self;
+    }
+
+    assert_pin_free(dp);
+    assert_pin_free(dm);
+
     pio_usb_configuration_t pio_cfg = PIO_USB_DEFAULT_CONFIG;
     pio_cfg.skip_alarm_pool = true;
     pio_cfg.pin_dp = dp->number;
@@ -121,6 +134,10 @@ void common_hal_usb_host_port_construct(usb_host_port_obj_t *self, const mcu_pin
     if (pio_cfg.tx_ch < 0) {
         mp_raise_RuntimeError(translate("All dma channels in use"));
     }
+
+    self->base.type = &usb_host_port_type;
+    self->dp = dp;
+    self->dm = dm;
 
     PIO tx_pio = pio_instances[pio_cfg.pio_tx_num];
     pio_cfg.sm_tx = pio_claim_unused_sm(tx_pio, false);
@@ -151,15 +168,5 @@ void common_hal_usb_host_port_construct(usb_host_port_obj_t *self, const mcu_pin
     tuh_configure(TUH_OPT_RHPORT, TUH_CFGID_RPI_PIO_USB_CONFIGURATION, &pio_cfg);
     tuh_init(TUH_OPT_RHPORT);
 
-    self->init = true;
-    usb_host_init = true;
-}
-
-void common_hal_usb_host_port_deinit(usb_host_port_obj_t *self) {
-    self->init = false;
-    usb_host_init = false;
-}
-
-bool common_hal_usb_host_port_deinited(usb_host_port_obj_t *self) {
-    return !self->init;
+    return self;
 }
