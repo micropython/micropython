@@ -35,7 +35,7 @@ sys.path.append(os.path.dirname(__file__) + "/../py")
 import makeqstrdata as qstrutil
 
 # MicroPython constants
-MPY_VERSION = 6
+MPY_VERSION = 7
 MPY_SUB_VERSION = 1
 MP_CODE_BYTECODE = 2
 MP_CODE_NATIVE_VIPER = 4

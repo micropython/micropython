@@ -87,7 +87,7 @@ class FreezeError(Exception):
 
 
 class Config:
-    MPY_VERSION = 6
+    MPY_VERSION = 7
     MPY_SUB_VERSION = 1
     MICROPY_LONGINT_IMPL_NONE = 0
     MICROPY_LONGINT_IMPL_LONGLONG = 1
@@ -122,9 +122,11 @@ MP_PERSISTENT_OBJ_ELLIPSIS = 4
 MP_PERSISTENT_OBJ_STR = 5
 MP_PERSISTENT_OBJ_BYTES = 6
 MP_PERSISTENT_OBJ_INT = 7
-MP_PERSISTENT_OBJ_FLOAT = 8
-MP_PERSISTENT_OBJ_COMPLEX = 9
-MP_PERSISTENT_OBJ_TUPLE = 10
+MP_PERSISTENT_OBJ_FP_FLOAT = 8
+MP_PERSISTENT_OBJ_FP_DOUBLE = 9
+MP_PERSISTENT_OBJ_COMPLEX_FLOAT = 10
+MP_PERSISTENT_OBJ_COMPLEX_DOUBLE = 11
+MP_PERSISTENT_OBJ_TUPLE = 12
 
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
@@ -1206,7 +1208,11 @@ def read_qstr(reader, segments):
 
 
 def read_obj(reader, segments):
+    def append_seg(obj):
+        segments.append(MPYSegment(MPYSegment.OBJ, obj, start_pos, reader.tell()))
+
     obj_type = reader.read_byte()
+    start_pos = reader.tell()
     if obj_type == MP_PERSISTENT_OBJ_FUN_TABLE:
         return MPFunTable()
     elif obj_type == MP_PERSISTENT_OBJ_NONE:
@@ -1220,6 +1226,35 @@ def read_obj(reader, segments):
     elif obj_type == MP_PERSISTENT_OBJ_TUPLE:
         ln = reader.read_uint()
         return tuple(read_obj(reader, segments) for _ in range(ln))
+    elif obj_type == MP_PERSISTENT_OBJ_INT:
+        ln_neg = reader.read_uint()
+        ln = ln_neg >> 1
+        is_negative = ln_neg & 1
+
+        start_pos = reader.tell()
+        obj = int.from_bytes(reader.read_bytes(ln), byteorder="little", signed=is_negative)
+        append_seg(obj)
+        return obj
+    elif obj_type == MP_PERSISTENT_OBJ_FP_FLOAT:
+        (obj,) = struct.unpack("<f", reader.read_bytes(4))
+        append_seg(obj)
+        return obj
+    elif obj_type == MP_PERSISTENT_OBJ_FP_DOUBLE:
+        (obj,) = struct.unpack("<d", reader.read_bytes(8))
+        append_seg(obj)
+        return obj
+    elif obj_type == MP_PERSISTENT_OBJ_COMPLEX_FLOAT:
+        (real,) = struct.unpack("<f", reader.read_bytes(4))
+        (imag,) = struct.unpack("<f", reader.read_bytes(4))
+        obj = complex(real, imag)
+        append_seg(obj)
+        return obj
+    elif obj_type == MP_PERSISTENT_OBJ_COMPLEX_DOUBLE:
+        (real,) = struct.unpack("<d", reader.read_bytes(8))
+        (imag,) = struct.unpack("<d", reader.read_bytes(8))
+        obj = complex(real, imag)
+        append_seg(obj)
+        return obj
     else:
         ln = reader.read_uint()
         start_pos = reader.tell()
@@ -1233,15 +1268,9 @@ def read_obj(reader, segments):
                     global_qstrs.add(obj)
         elif obj_type == MP_PERSISTENT_OBJ_BYTES:
             obj = buf
-        elif obj_type == MP_PERSISTENT_OBJ_INT:
-            obj = int(str_cons(buf, "ascii"), 10)
-        elif obj_type == MP_PERSISTENT_OBJ_FLOAT:
-            obj = float(str_cons(buf, "ascii"))
-        elif obj_type == MP_PERSISTENT_OBJ_COMPLEX:
-            obj = complex(str_cons(buf, "ascii"))
         else:
             raise MPYReadError(reader.filename, "corrupt .mpy file")
-        segments.append(MPYSegment(MPYSegment.OBJ, obj, start_pos, reader.tell()))
+        append_seg(obj)
         return obj
 
 
