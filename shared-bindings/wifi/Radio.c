@@ -339,7 +339,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|         or exactly 64 hexadecimal characters if it is the hex form of the 256-bit key.
 //|
 //|         If ``max_connections`` is given, the access point will allow up to
-//|         that number of stations to connect."""
+//|         that number of stations to connect.
+//|
+//|         .. note::
+//|
+//|             In the raspberrypi port (RP2040 CYW43), ``max_connections`` is ignored.
+//|         """
 //|         ...
 STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_password, ARG_channel, ARG_authmode, ARG_max_connections };
