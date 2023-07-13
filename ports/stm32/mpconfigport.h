@@ -123,7 +123,6 @@
 #define MICROPY_PY_MACHINE_SPI_LSB  (SPI_FIRSTBIT_LSB)
 #define MICROPY_PY_MACHINE_SOFTSPI  (1)
 #define MICROPY_PY_MACHINE_TIMER    (1)
-#define MICROPY_SOFT_TIMER_TICKS_MS uwTick
 #endif
 #define MICROPY_HW_SOFTSPI_MIN_DELAY (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
@@ -274,6 +273,9 @@ static inline mp_uint_t disable_irq(void) {
 
 #define MICROPY_THREAD_YIELD()
 #endif
+
+// Configuration for shared/runtime/softtimer.c.
+#define MICROPY_SOFT_TIMER_TICKS_MS uwTick
 
 // For regular code that wants to prevent "background tasks" from running.
 // These background tasks (LWIP, Bluetooth) run in PENDSV context.
