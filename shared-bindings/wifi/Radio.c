@@ -564,7 +564,7 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_subnet_ap_obj,
 //|         ipv4_dns: Optional[ipaddress.IPv4Address],
 //|     ) -> None:
 //|         """Sets the IP v4 address of the station. Must include the netmask and gateway. DNS address is optional.
-//|         Setting the address manually will stop the DHCP client."""
+//|         Setting the address manually will stop the DHCP client.
 //|
 //|         .. note::
 //|
