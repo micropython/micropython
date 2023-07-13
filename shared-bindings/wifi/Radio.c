@@ -565,6 +565,11 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_subnet_ap_obj,
 //|     ) -> None:
 //|         """Sets the IP v4 address of the station. Must include the netmask and gateway. DNS address is optional.
 //|         Setting the address manually will stop the DHCP client."""
+//|
+//|         .. note::
+//|
+//|             In the raspberrypi port (RP2040 CYW43), the access point needs to be started before the IP v4 address can be set.
+//|         """
 //|         ...
 STATIC mp_obj_t wifi_radio_set_ipv4_address(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ipv4, ARG_netmask, ARG_gateway, ARG_ipv4_dns };
