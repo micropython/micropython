@@ -90,6 +90,7 @@ list(APPEND MICROPY_SOURCE_PORT
     modespnow.c
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
+list(APPEND MICROPY_SOURCE_PORT ${CMAKE_BINARY_DIR}/pins.c)
 
 list(APPEND MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
@@ -198,3 +199,30 @@ endforeach()
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
+
+# Generate source files for named pins (requires mkrules.cmake for MICROPY_GENHDR_DIR).
+
+set(GEN_PINS_PREFIX "${MICROPY_PORT_DIR}/boards/pins_prefix.c")
+set(GEN_PINS_MKPINS "${MICROPY_PORT_DIR}/boards/make-pins.py")
+set(GEN_PINS_SRC "${CMAKE_BINARY_DIR}/pins.c")
+set(GEN_PINS_HDR "${MICROPY_GENHDR_DIR}/pins.h")
+
+if(EXISTS "${MICROPY_BOARD_DIR}/pins.csv")
+    set(GEN_PINS_BOARD_CSV "${MICROPY_BOARD_DIR}/pins.csv")
+    set(GEN_PINS_BOARD_CSV_ARG --board-csv "${GEN_PINS_BOARD_CSV}")
+endif()
+
+target_sources(${MICROPY_TARGET} PRIVATE ${GEN_PINS_HDR})
+
+add_custom_command(
+    OUTPUT ${GEN_PINS_SRC} ${GEN_PINS_HDR}
+    COMMAND ${Python3_EXECUTABLE} ${GEN_PINS_MKPINS} ${GEN_PINS_BOARD_CSV_ARG}
+        --prefix ${GEN_PINS_PREFIX} --output-source ${GEN_PINS_SRC} --output-header ${GEN_PINS_HDR}
+    DEPENDS
+        ${MICROPY_MPVERSION}
+        ${GEN_PINS_MKPINS}
+        ${GEN_PINS_BOARD_CSV}
+        ${GEN_PINS_PREFIX}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
