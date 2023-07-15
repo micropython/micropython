@@ -33,16 +33,8 @@ class Pins:
             rows = csv.reader(csvfile, skipinitialspace=True)
             for row in rows:
                 # Pin numbers must start with "PIN_"
-                # LED numbers must start with "LED_"
-                if len(row) > 0:
-                    # for compatibility, map LED_ to PIN_
-                    if row[0].startswith("LED_"):
-                        row[0] = "PIN_" + row[0][4:]
-                    if row[0].startswith("PIN_"):
-                        if len(row) == 1:
-                            self.pin_names[row[0]] = (row[0][4:], "{&machine_pin_type}")
-                        else:
-                            self.pin_names[row[0]] = (row[1], "{&machine_pin_type}")
+                if len(row) > 1 and row[1].startswith("PIN_"):
+                    self.pin_names[row[1]] = (row[0], "{&machine_pin_type}")
 
     def print_table(self, table_filename, mcu_name):
         with open(table_filename, "wt") as table_file:

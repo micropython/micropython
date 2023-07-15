@@ -1,20 +1,20 @@
-# Pin rows contain Pin number and pin name.
-# Pin rows start with PIN_
-# If the pin name is omitted, the pin number is added as name.
-# Empty lines and lines not starting with PIN_ are ignored
+# The lines contain pairs of Pin name and Pin number.
+# Pin names must be valid Python identifiers.
+# Pin numbers have the form PIN_Pxnn, with x being A, B, C or D.
+# Lines starting with # or empty lines are ignored.
 
-PIN_PA08,D0
-PIN_PA02,D1
-PIN_PA09,D2
-PIN_PA07,D3
-PIN_PA06,D4
-PIN_PA00,DOTSTAR_DATA
-PIN_PA01,DOTSTAR_CLK
+D0,PIN_PA08
+D1,PIN_PA02
+D2,PIN_PA09
+D3,PIN_PA07
+D4,PIN_PA06
+DOTSTAR_DATA,PIN_PA00
+DOTSTAR_CLK,PIN_PA01
 
-PIN_PA10,LED
+LED,PIN_PA10
 
-PIN_PA24,USB_DM
-PIN_PA25,USB_DP
+USB_DM,PIN_PA24
+USB_DP,PIN_PA25
 
-PIN_PA30,SWCLK
-PIN_PA31,SWDIO
+SWCLK,PIN_PA30
+SWDIO,PIN_PA31
