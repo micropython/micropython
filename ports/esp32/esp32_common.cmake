@@ -108,6 +108,7 @@ list(APPEND IDF_COMPONENTS
     driver
     esp_adc
     esp_app_format
+    esp_bootloader_format
     esp_common
     esp_eth
     esp_event
