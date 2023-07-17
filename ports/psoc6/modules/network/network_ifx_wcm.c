@@ -580,6 +580,234 @@ static inline void nw_put_le32(uint8_t *buf, uint32_t x) {
     buf[3] = x >> 24;
 }
 
+
+STATIC mp_obj_t network_ap_get_config_param(cy_wcm_ap_config_t *ap_conf, qstr query_opt) {
+    switch (query_opt) {
+        case MP_QSTR_channel: {
+            return MP_OBJ_NEW_SMALL_INT(ap_conf->channel);
+        }
+
+        case MP_QSTR_ssid:
+        case MP_QSTR_essid: {
+
+        }
+
+        case MP_QSTR_mac: {
+            cy_wcm_mac_t mac;
+            uint32_t ret = cy_wcm_get_mac_addr(CY_WCM_INTERFACE_TYPE_AP, &mac);
+            wcm_assert_raise("network config mac (code: %d)", ret);
+
+            return mp_obj_new_bytes(mac, 6);
+        }
+
+        case MP_QSTR_hostname: {
+            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
+            break;
+        }
+
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+}
+
+
+// switch (mp_obj_str_get_qstr(args[1])) {
+// case MP_QSTR_ssid:
+// case MP_QSTR_essid: {
+//     wl_bss_info_t bss_info;
+//     uint32_t ret = whd_wifi_get_bss_info(whd_ifs[self->itf], &bss_info);
+//     wcm_assert_raise("msg tbd", ret);
+
+//     return mp_obj_new_str((const char *)bss_info.SSID, bss_info.SSID_len);
+// }
+// case MP_QSTR_security: {
+//     whd_security_t security;
+//     uint32_t ret = whd_wifi_get_ap_info(whd_ifs[self->itf], NULL, &security);
+//     wcm_assert_raise("msg tbd", ret);
+
+//     return MP_OBJ_NEW_SMALL_INT(security);
+// }
+// case MP_QSTR_mac: {
+//     cy_wcm_mac_t mac;
+//     uint32_t ret = cy_wcm_get_mac_addr(self->itf, &mac);
+//     wcm_assert_raise("network config mac (code: %d)", ret);
+
+//     return mp_obj_new_bytes(mac, 6);
+// }
+// case MP_QSTR_txpower: {
+//     uint8_t buf[13];
+//     memcpy(buf, "qtxpower\x00\x00\x00\x00\x00", 13);
+//     uint32_t ret = whd_wifi_get_ioctl_buffer(whd_ifs[self->itf], WLC_GET_VAR, buf, 13);
+//     wcm_assert_raise("msg tbd", ret);
+
+//     return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf) / 4);
+// }
+
+//     case MP_QSTR_hostname: {
+//         mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
+//         break;
+//     }
+
+//     default:
+//         mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+// }
+
+STATIC mp_obj_t network_sta_get_config_param(network_ifx_wcm_sta_obj_t *sta_conf, qstr query_opt) {
+    switch (query_opt) {
+        case MP_QSTR_channel: {
+            cy_wcm_associated_ap_info_t ap_info;
+            uint32_t ret = cy_wcm_get_associated_ap_info(&ap_info);
+            wcm_assert_raise("network config error (with code: %d)", ret);
+            return MP_OBJ_NEW_SMALL_INT(ap_info.channel);
+        }
+
+        case MP_QSTR_mac: {
+            cy_wcm_mac_t mac;
+            uint32_t ret = cy_wcm_get_mac_addr(CY_WCM_INTERFACE_TYPE_STA, &mac);
+            wcm_assert_raise("network config mac (code: %d)", ret);
+
+            return mp_obj_new_bytes(mac, 6);
+        }
+
+        case MP_QSTR_ssid:
+        case MP_QSTR_essid: {
+            mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
+            break;
+        }
+
+        case MP_QSTR_hostname: {
+            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
+            break;
+        }
+
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+}
+
+// case MP_QSTR_ssid:
+// case MP_QSTR_essid: {
+
+// memcpy(ap_conf->ap_credentials.SSID, NETWORK_WLAN_DEFAULT_SSID, strlen(NETWORK_WLAN_DEFAULT_SSID) + 1);
+// memcpy(ap_conf->ap_credentials.password, NETWORK_WLAN_DEFAULT_PASSWORD, strlen(NETWORK_WLAN_DEFAULT_PASSWORD) + 1);
+// TODO: Implement ssid/essid change. Explore WHD to change name
+// managing the state. Only available in the API via whd_wifi_init_ap.
+
+// size_t len;
+// const char *ssid_str = mp_obj_str_get_data(e->value, &len);
+// whd_security_t security;
+// wl_bss_info_t bss_info;
+// uint32_t ret = whd_wifi_get_ap_info(itf, &bss_info, &security);
+// if (ret != WHD_SUCCESS) {
+//     mp_raise_OSError(-ret);
+// }
+// whd_ssid_t whd_ssid;
+// memcpy(whd_ssid.value, ssid_str, len);
+// whd_ssid.length = len;
+// uint32_t ret = whd_wifi_init_ap(itf, &whd_ssid, &security,  );
+
+// break;
+// }
+//             case MP_QSTR_monitor: {
+//                 mp_int_t value = mp_obj_get_int(e->value);
+//                 uint8_t buf[9 + 4];
+//                 memcpy(buf, "allmulti\x00", 9);
+//                 nw_put_le32(buf + 9, value);
+//                 uint32_t ret = whd_wifi_set_ioctl_buffer(whd_ifs[self->itf], WLC_SET_VAR, buf, 9 + 4);
+//                 wcm_assert_raise("msg tbd", ret);
+//                 nw_put_le32(buf, value);
+//                 ret = whd_wifi_set_ioctl_buffer(whd_ifs[self->itf], WLC_SET_MONITOR, buf, 4);
+//                 wcm_assert_raise("msg tbd", ret);
+//                 // In cyw43 they keep the trace flags in a variable.
+//                 // TODO. Understand how are these trace flags used, and if
+//                 // an equivalent tracing feature can/should be enabled
+//                 // for the WHD.
+//                 // if (value) {
+//                 //     self->cyw->trace_flags |= CYW43_TRACE_MAC;
+//                 // } else {
+//                 //     self->cyw->trace_flags &= ~CYW43_TRACE_MAC;
+//                 // }
+//                 break;
+//             }
+//             case MP_QSTR_security: {
+//                 // TODO: Implement AP security change
+//                 break;
+//             }
+//             case MP_QSTR_key:
+//             case MP_QSTR_password: {
+//                 // TODO: Implement AP password change
+//                 break;
+//             }
+//             case MP_QSTR_pm: {
+//                 // TODO: Implement pm? What is pm in the cyw43? power management
+//                 break;
+//             }
+//             case MP_QSTR_trace: {
+//                 // TODO: Implement tracing.
+//                 break;
+//             }
+//             case MP_QSTR_txpower: {
+//                 mp_int_t dbm = mp_obj_get_int(e->value);
+//                 uint8_t buf[9 + 4];
+//                 memcpy(buf, "qtxpower\x00", 9);
+//                 nw_put_le32(buf + 9, dbm * 4);
+//                 uint32_t ret = whd_wifi_set_ioctl_buffer(whd_ifs[self->itf], WLC_SET_VAR, buf, 9 + 4);
+//                 wcm_assert_raise("msg tbd", ret);
+//                 break;
+//             }
+//             case MP_QSTR_hostname: {
+//                 mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
+//                 break;
+//             }
+
+//             default:
+//                 mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+//         }
+//     }
+// }
+
+STATIC void network_ap_set_config_param(cy_wcm_ap_config_t *ap_conf, qstr opt, mp_obj_t opt_value) {
+    switch (opt) {
+        case MP_QSTR_channel: {
+            ap_conf->channel = mp_obj_get_int(opt_value);
+            uint32_t ret = cy_wcm_stop_ap();
+            wcm_assert_raise("network ap deactivate error (with code: %d)", ret);
+            ret = cy_wcm_start_ap(ap_conf);
+            wcm_assert_raise("network ap active error (with code: %d)", ret);
+            break;
+        }
+
+        case MP_QSTR_hostname: {
+            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
+            break;
+        }
+
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+}
+
+STATIC void network_sta_set_config_param(network_ifx_wcm_sta_obj_t *sta_conf, qstr opt, mp_obj_t opt_value) {
+    switch (opt) {
+
+
+        case MP_QSTR_channel:
+        case MP_QSTR_ssid:
+        case MP_QSTR_essid: {
+            mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
+            break;
+        }
+
+        case MP_QSTR_hostname: {
+            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
+            break;
+        }
+
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+}
+
 STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
@@ -589,59 +817,12 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
             mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
         }
 
-        switch (mp_obj_str_get_qstr(args[1])) {
-            case MP_QSTR_channel: {
-                uint8_t channel;
-                if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
-                    cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
-                    channel = ap_conf->channel;
-                } else if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
-                    cy_wcm_associated_ap_info_t ap_info;
-                    uint32_t ret = cy_wcm_get_associated_ap_info(&ap_info);
-                    wcm_assert_raise("network config error (with code: %d)", ret);
-                    channel = ap_info.channel;
-                }
-
-                return MP_OBJ_NEW_SMALL_INT(channel);
-            }
-            // case MP_QSTR_ssid:
-            // case MP_QSTR_essid: {
-            //     wl_bss_info_t bss_info;
-            //     uint32_t ret = whd_wifi_get_bss_info(whd_ifs[self->itf], &bss_info);
-            //     wcm_assert_raise("msg tbd", ret);
-
-            //     return mp_obj_new_str((const char *)bss_info.SSID, bss_info.SSID_len);
-            // }
-            // case MP_QSTR_security: {
-            //     whd_security_t security;
-            //     uint32_t ret = whd_wifi_get_ap_info(whd_ifs[self->itf], NULL, &security);
-            //     wcm_assert_raise("msg tbd", ret);
-
-            //     return MP_OBJ_NEW_SMALL_INT(security);
-            // }
-            case MP_QSTR_mac: {
-                cy_wcm_mac_t mac;
-                uint32_t ret = cy_wcm_get_mac_addr(self->itf, &mac);
-                wcm_assert_raise("network config mac (code: %d)", ret);
-
-                return mp_obj_new_bytes(mac, 6);
-            }
-            // case MP_QSTR_txpower: {
-            //     uint8_t buf[13];
-            //     memcpy(buf, "qtxpower\x00\x00\x00\x00\x00", 13);
-            //     uint32_t ret = whd_wifi_get_ioctl_buffer(whd_ifs[self->itf], WLC_GET_VAR, buf, 13);
-            //     wcm_assert_raise("msg tbd", ret);
-
-            //     return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf) / 4);
-            // }
-
-            case MP_QSTR_hostname: {
-                mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
-                break;
-            }
-
-            default:
-                mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+        if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
+            cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+            return network_ap_get_config_param(ap_conf, mp_obj_str_get_qstr(args[1]));
+        } else if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+            network_ifx_wcm_sta_obj_t *sta_conf = wcm_get_sta_conf_ptr(network_ifx_wcm_wl_sta);
+            return network_sta_get_config_param(sta_conf, mp_obj_str_get_qstr(args[1]));
         }
     } else {
         // Set config value(s)
@@ -652,100 +833,18 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
         for (size_t i = 0; i < kwargs->alloc; ++i) {
             if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
                 mp_map_elem_t *e = &kwargs->table[i];
-                switch (mp_obj_str_get_qstr(e->key)) {
-                    case MP_QSTR_channel: {
-                        if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
-                            cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
-                            ap_conf->channel = mp_obj_get_int(e->value);
-                            uint32_t ret = cy_wcm_stop_ap();
-                            wcm_assert_raise("network ap deactivate error (with code: %d)", ret);
-                            ret = cy_wcm_start_ap(ap_conf);
-                            wcm_assert_raise("network ap active error (with code: %d)", ret);
-                        } else {
-                            mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
-                        }
-                        break;
-                    }
-                    case MP_QSTR_ssid:
-                    case MP_QSTR_essid: {
-                        // TODO: Implement ssid/essid change. Explore WHD to change name
-                        // managing the state. Only available in the API via whd_wifi_init_ap.
 
-                        // size_t len;
-                        // const char *ssid_str = mp_obj_str_get_data(e->value, &len);
-                        // whd_security_t security;
-                        // wl_bss_info_t bss_info;
-                        // uint32_t ret = whd_wifi_get_ap_info(itf, &bss_info, &security);
-                        // if (ret != WHD_SUCCESS) {
-                        //     mp_raise_OSError(-ret);
-                        // }
-                        // whd_ssid_t whd_ssid;
-                        // memcpy(whd_ssid.value, ssid_str, len);
-                        // whd_ssid.length = len;
-                        // uint32_t ret = whd_wifi_init_ap(itf, &whd_ssid, &security,  );
-
-                        break;
-                    }
-                    case MP_QSTR_monitor: {
-                        mp_int_t value = mp_obj_get_int(e->value);
-                        uint8_t buf[9 + 4];
-                        memcpy(buf, "allmulti\x00", 9);
-                        nw_put_le32(buf + 9, value);
-                        uint32_t ret = whd_wifi_set_ioctl_buffer(whd_ifs[self->itf], WLC_SET_VAR, buf, 9 + 4);
-                        wcm_assert_raise("msg tbd", ret);
-                        nw_put_le32(buf, value);
-                        ret = whd_wifi_set_ioctl_buffer(whd_ifs[self->itf], WLC_SET_MONITOR, buf, 4);
-                        wcm_assert_raise("msg tbd", ret);
-                        // In cyw43 they keep the trace flags in a variable.
-                        // TODO. Understand how are these trace flags used, and if
-                        // an equivalent tracing feature can/should be enabled
-                        // for the WHD.
-                        // if (value) {
-                        //     self->cyw->trace_flags |= CYW43_TRACE_MAC;
-                        // } else {
-                        //     self->cyw->trace_flags &= ~CYW43_TRACE_MAC;
-                        // }
-                        break;
-                    }
-                    case MP_QSTR_security: {
-                        // TODO: Implement AP security change
-                        break;
-                    }
-                    case MP_QSTR_key:
-                    case MP_QSTR_password: {
-                        // TODO: Implement AP password change
-                        break;
-                    }
-                    case MP_QSTR_pm: {
-                        // TODO: Implement pm? What is pm in the cyw43? power management
-                        break;
-                    }
-                    case MP_QSTR_trace: {
-                        // TODO: Implement tracing.
-                        break;
-                    }
-                    case MP_QSTR_txpower: {
-                        mp_int_t dbm = mp_obj_get_int(e->value);
-                        uint8_t buf[9 + 4];
-                        memcpy(buf, "qtxpower\x00", 9);
-                        nw_put_le32(buf + 9, dbm * 4);
-                        uint32_t ret = whd_wifi_set_ioctl_buffer(whd_ifs[self->itf], WLC_SET_VAR, buf, 9 + 4);
-                        wcm_assert_raise("msg tbd", ret);
-                        break;
-                    }
-                    case MP_QSTR_hostname: {
-                        mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
-                        break;
-                    }
-
-                    default:
-                        mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+                if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
+                    cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+                    network_ap_set_config_param(ap_conf, mp_obj_str_get_qstr(e->key), e->value);
+                } else if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+                    network_ifx_wcm_sta_obj_t *sta_conf = wcm_get_sta_conf_ptr(network_ifx_wcm_wl_sta);
+                    network_sta_set_config_param(sta_conf, mp_obj_str_get_qstr(e->key), e->value);
                 }
             }
         }
-
-        return mp_const_none;
     }
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_config_obj, 1, network_ifx_wcm_config);
 
