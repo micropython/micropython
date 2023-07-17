@@ -850,25 +850,43 @@ size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigne
     return cur - str;
 }
 
-void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf) {
+void mpz_set_from_bytes(mpz_t *z, bool is_signed, bool big_endian, size_t len, const byte *buf) {
     int delta = 1;
     if (big_endian) {
+        z->neg = is_signed && (buf[0] & 0x80);
         buf += len - 1;
         delta = -1;
+    } else {
+        z->neg = is_signed && (buf[len - 1] & 0x80);
     }
 
     mpz_need_dig(z, (len * 8 + DIG_SIZE - 1) / DIG_SIZE);
 
     mpz_dig_t d = 0;
+    byte carry = 1;
     int num_bits = 0;
-    z->neg = 0;
     z->len = 0;
     while (len) {
-        while (len && num_bits < DIG_SIZE) {
-            d |= *buf << num_bits;
+        while (num_bits < DIG_SIZE) {
+            byte b;
+            if (len) {
+                b = *buf;
+                buf += delta;
+                len--;
+            } else if (z->neg) {
+                // sign-extend missing bytes
+                b = 0xff;
+            } else {
+                b = 0;
+            }
+
+            if (z->neg) {
+                b = (~b) + carry;
+                carry &= b == 0;
+            }
+
+            d |= b << num_bits;
             num_bits += 8;
-            buf += delta;
-            len--;
         }
         z->dig[z->len++] = d & DIG_MASK;
         // Need this #if because it's C undefined behavior to do: uint32_t >> 32

@@ -43,7 +43,7 @@
 const mp_obj_int_t mp_sys_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
 
-mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
+mp_obj_t mp_obj_int_from_bytes_impl(bool is_signed, bool big_endian, size_t len, const byte *buf) {
     int delta = 1;
     if (!big_endian) {
         buf += len - 1;
