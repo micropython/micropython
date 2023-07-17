@@ -1,5 +1,8 @@
 import binascii, network, time
 
+channel_default = 9
+channel_new = 5
+
 
 # Access Point
 def instance0():
@@ -44,6 +47,8 @@ def instance0():
     # ifconfig()
 
     # config()
+    print("ap channel: ", ap_if.config("channel") == channel_default)
+    ap_if.config(channel=channel_new)
 
 
 # Station
@@ -83,6 +88,7 @@ def instance1():
     print("sta is (now) connected: ", sta_if.isconnected() == True)
 
     # status()
+    # The test boards are placed next to each other (few cm range)
     print("sta status rssi in range: ", -70 < sta_if.status("rssi") < 0)
 
     print(" > yield access point")
@@ -100,3 +106,7 @@ def instance1():
     # ifconfig()
 
     # config()
+    print("sta assoc ap channel: ", sta_if.config("channel") == channel_new)
+
+    # # As teardown
+    # sta_if.disconnect()

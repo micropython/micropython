@@ -9,6 +9,7 @@ ap has no client:  True
 ap has clients:  True
 ap cannot disconnect:  network STA required
 ap status has stations:  True
+ap channel:  True
 --- instance1 ---
 sta instance created
 sta is not active:  True
@@ -24,3 +25,4 @@ sta status rssi in range:  True
 sta is disconnected:  True
 sta attempt connection to ap (with bssid)
 sta is active:  True
+sta assoc ap channel:  True
