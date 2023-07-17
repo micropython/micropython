@@ -84,7 +84,8 @@ typedef struct
 
 typedef struct
 {
-    uint32_t var;
+    cy_wcm_associated_ap_info_t ap_info;
+    uint8_t connect_retries;
 } network_ifx_wcm_sta_obj_t;
 
 typedef union {
@@ -106,6 +107,10 @@ extern whd_interface_t whd_ifs[MAX_WHD_INTERFACE];
 STATIC network_ifx_wcm_obj_t network_ifx_wcm_wl_sta = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_STA };
 STATIC network_ifx_wcm_obj_t network_ifx_wcm_wl_ap = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_AP };
 
+#define wcm_get_ap_conf_ptr(net_obj) & (net_obj.itf_obj.ap_obj.ap_config)
+#define wcm_get_sta_conf_ptr(net_obj) & (net_obj.itf_obj.sta_obj)
+#define wcm_get_sta_ap_info_ptr(net_obj) & (net_obj.itf_obj.sta_obj.ap_info)
+
 #define wcm_assert_raise(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
 }
@@ -115,14 +120,11 @@ void network_deinit(void) {
     wcm_assert_raise("network deinit error (code: %d)", ret);
 }
 
-// #define MAX_WIFI_RETRY_COUNT                (3u)
-// #define WIFI_CONN_RETRY_INTERVAL_MSEC       (100u)
-
 // Network Access Point initialization with default network parameters
 void network_ap_init() {
     cy_rslt_t ret = CY_RSLT_SUCCESS;
-    cy_wcm_ap_config_t *ap_conf = &(network_ifx_wcm_wl_ap.itf_obj.ap_obj.ap_config);
-    cy_wcm_ip_setting_t *ap_ip_settings = &(network_ifx_wcm_wl_ap.itf_obj.ap_obj.ap_config.ip_settings);
+    cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+    cy_wcm_ip_setting_t *ap_ip_settings = &(ap_conf->ip_settings);
 
     ap_conf->channel = NETWORK_WLAN_DEFAULT_CHANNEL;
     memcpy(ap_conf->ap_credentials.SSID, NETWORK_WLAN_DEFAULT_SSID, strlen(NETWORK_WLAN_DEFAULT_SSID) + 1);
@@ -131,6 +133,11 @@ void network_ap_init() {
 
     cy_wcm_set_ap_ip_setting(ap_ip_settings, NETWORK_WLAN_AP_IP, NETWORK_WLAN_AP_NETMASK_IP, NETWORK_WLAN_AP_GATEWAY_IP, CY_WCM_IP_VER_V4);
     wcm_assert_raise("network ap ip setting error (code: %d)", ret);
+}
+
+void network_sta_init() {
+    network_ifx_wcm_sta_obj_t *sta_conf = wcm_get_sta_conf_ptr(network_ifx_wcm_wl_sta);
+    sta_conf->connect_retries = 3; // Default connect retries
 }
 
 // Network Initialization function (called from main.c)
@@ -142,6 +149,7 @@ void network_init(void) {
     wcm_assert_raise("network init error (code: %d)", ret);
 
     network_ap_init();
+    network_sta_init();
 }
 
 // Print after constructor invoked
@@ -223,7 +231,8 @@ STATIC mp_obj_t network_ifx_wcm_active(size_t n_args, const mp_obj_t *args) {
             return mp_obj_new_bool(cy_wcm_is_ap_up());
         } else {
             if (mp_obj_is_true(args[1])) {
-                ret = cy_wcm_start_ap(&(self->itf_obj.ap_obj.ap_config));
+                cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+                ret = cy_wcm_start_ap(ap_conf);
                 wcm_assert_raise("network ap active error (with code: %d)", ret);
             } else {
                 ret = cy_wcm_stop_ap();
@@ -389,12 +398,18 @@ STATIC mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_scan_obj, 1, network_ifx_wcm_scan);
 
 STATIC mp_obj_t network_ifx_wcm_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
     enum { ARG_ssid, ARG_key, ARG_bssid };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_key, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} }
     };
+
+    if (self->itf != CY_WCM_INTERFACE_TYPE_STA) {
+        mp_raise_ValueError(MP_ERROR_TEXT("network STA required"));
+    }
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -431,7 +446,13 @@ STATIC mp_obj_t network_ifx_wcm_connect(size_t n_args, const mp_obj_t *pos_args,
     // Let the wcm driver discover the network security
     connect_param.ap_credentials.security = CY_WCM_SECURITY_UNKNOWN;
 
-    cy_rslt_t ret = cy_wcm_connect_ap(&connect_param, &ipaddress);
+    network_ifx_wcm_sta_obj_t *sta_conf = wcm_get_sta_conf_ptr(network_ifx_wcm_wl_sta);
+    uint8_t retries = sta_conf->connect_retries;
+    cy_rslt_t ret = CY_WCM_EVENT_CONNECT_FAILED;
+    do
+    {
+        ret = cy_wcm_connect_ap(&connect_param, &ipaddress);
+    } while (--retries < 0 && ret != CY_RSLT_SUCCESS);
     wcm_assert_raise("network sta connect error (with code: %d)", ret);
 
     return mp_const_none;
@@ -569,37 +590,35 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
         }
 
         switch (mp_obj_str_get_qstr(args[1])) {
-            case MP_QSTR_antenna: {
-                uint8_t buf[4];
-                uint32_t ret = whd_wifi_get_ioctl_buffer(whd_ifs[self->itf], WLC_GET_ANTDIV, buf, 4);
-                wcm_assert_raise("msg tbd", ret);
-
-                return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf));
-            }
             case MP_QSTR_channel: {
-                uint32_t channel;
-                uint32_t ret = whd_wifi_get_channel(whd_ifs[self->itf], &channel);
-                wcm_assert_raise("msg tbd",  ret);
+                uint8_t channel;
+                if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
+                    cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+                    channel = ap_conf->channel;
+                } else if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+                    cy_wcm_associated_ap_info_t ap_info;
+                    uint32_t ret = cy_wcm_get_associated_ap_info(&ap_info);
+                    wcm_assert_raise("network config error (with code: %d)", ret);
+                    channel = ap_info.channel;
+                }
 
                 return MP_OBJ_NEW_SMALL_INT(channel);
             }
-            case MP_QSTR_ssid:
-            case MP_QSTR_essid: {
-                wl_bss_info_t bss_info;
-                uint32_t ret = whd_wifi_get_bss_info(whd_ifs[self->itf], &bss_info);
-                wcm_assert_raise("msg tbd", ret);
+            // case MP_QSTR_ssid:
+            // case MP_QSTR_essid: {
+            //     wl_bss_info_t bss_info;
+            //     uint32_t ret = whd_wifi_get_bss_info(whd_ifs[self->itf], &bss_info);
+            //     wcm_assert_raise("msg tbd", ret);
 
-                return mp_obj_new_str((const char *)bss_info.SSID, bss_info.SSID_len);
-            }
+            //     return mp_obj_new_str((const char *)bss_info.SSID, bss_info.SSID_len);
+            // }
+            // case MP_QSTR_security: {
+            //     whd_security_t security;
+            //     uint32_t ret = whd_wifi_get_ap_info(whd_ifs[self->itf], NULL, &security);
+            //     wcm_assert_raise("msg tbd", ret);
 
-            case MP_QSTR_security: {
-                whd_security_t security;
-                uint32_t ret = whd_wifi_get_ap_info(whd_ifs[self->itf], NULL, &security);
-                wcm_assert_raise("msg tbd", ret);
-
-                return MP_OBJ_NEW_SMALL_INT(security);
-            }
-
+            //     return MP_OBJ_NEW_SMALL_INT(security);
+            // }
             case MP_QSTR_mac: {
                 cy_wcm_mac_t mac;
                 uint32_t ret = cy_wcm_get_mac_addr(self->itf, &mac);
@@ -607,14 +626,14 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
 
                 return mp_obj_new_bytes(mac, 6);
             }
-            case MP_QSTR_txpower: {
-                uint8_t buf[13];
-                memcpy(buf, "qtxpower\x00\x00\x00\x00\x00", 13);
-                uint32_t ret = whd_wifi_get_ioctl_buffer(whd_ifs[self->itf], WLC_GET_VAR, buf, 13);
-                wcm_assert_raise("msg tbd", ret);
+            // case MP_QSTR_txpower: {
+            //     uint8_t buf[13];
+            //     memcpy(buf, "qtxpower\x00\x00\x00\x00\x00", 13);
+            //     uint32_t ret = whd_wifi_get_ioctl_buffer(whd_ifs[self->itf], WLC_GET_VAR, buf, 13);
+            //     wcm_assert_raise("msg tbd", ret);
 
-                return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf) / 4);
-            }
+            //     return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf) / 4);
+            // }
 
             case MP_QSTR_hostname: {
                 mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
@@ -634,16 +653,17 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
             if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
                 mp_map_elem_t *e = &kwargs->table[i];
                 switch (mp_obj_str_get_qstr(e->key)) {
-                    case MP_QSTR_antenna: {
-                        uint8_t buf[4];
-                        nw_put_le32(buf, mp_obj_get_int(e->value));
-                        uint32_t ret = whd_wifi_set_ioctl_buffer(whd_ifs[self->itf], WLC_SET_ANTDIV, buf, 4);
-                        wcm_assert_raise("msg tbd", ret);
-                        break;
-                    }
                     case MP_QSTR_channel: {
-                        uint32_t ret = whd_wifi_set_channel(whd_ifs[self->itf], mp_obj_get_int(e->value));
-                        wcm_assert_raise("msg tbd", ret);
+                        if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
+                            cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+                            ap_conf->channel = mp_obj_get_int(e->value);
+                            uint32_t ret = cy_wcm_stop_ap();
+                            wcm_assert_raise("network ap deactivate error (with code: %d)", ret);
+                            ret = cy_wcm_start_ap(ap_conf);
+                            wcm_assert_raise("network ap active error (with code: %d)", ret);
+                        } else {
+                            mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
+                        }
                         break;
                     }
                     case MP_QSTR_ssid:
@@ -747,27 +767,11 @@ STATIC const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
 
     // Network WCM constants
     // Security modes
-    { MP_ROM_QSTR(MP_QSTR_OPEN),                      MP_ROM_INT(CY_WCM_SECURITY_OPEN) },
-    // { MP_ROM_QSTR(MP_QSTR_WEP_PSK),                   MP_ROM_INT(CY_WCM_SECURITY_WEP_PSK) },
-    // { MP_ROM_QSTR(MP_QSTR_WEP_SHARED),                MP_ROM_INT(CY_WCM_SECURITY_WEP_SHARED) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA_TKIP_PSK),              MP_ROM_INT(CY_WCM_SECURITY_WPA_TKIP_PSK) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA_AES_PSK),               MP_ROM_INT(CY_WCM_SECURITY_WPA_AES_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_WPA),             MP_ROM_INT(CY_WCM_SECURITY_WPA_MIXED_PSK) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA2_AES_PSK),              MP_ROM_INT(CY_WCM_SECURITY_WPA2_AES_PSK) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA2_TKIP_PSK),             MP_ROM_INT(CY_WCM_SECURITY_WPA2_TKIP_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_WPA2),            MP_ROM_INT(CY_WCM_SECURITY_WPA2_MIXED_PSK) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA2_FBT_PSK),              MP_ROM_INT(CY_WCM_SECURITY_WPA2_FBT_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_WPA3),                  MP_ROM_INT(CY_WCM_SECURITY_WPA3_SAE) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA2_WPA_AES_PSK),          MP_ROM_INT(CY_WCM_SECURITY_WPA2_WPA_AES_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_WPA2_WPA_PSK),        MP_ROM_INT(CY_WCM_SECURITY_WPA2_WPA_MIXED_PSK) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA3_WPA2_PSK),             MP_ROM_INT(CY_WCM_SECURITY_WPA3_WPA2_PSK) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA_TKIP_ENT),              MP_ROM_INT(CY_WCM_SECURITY_WPA_TKIP_ENT) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA_MIXED_ENT),             MP_ROM_INT(CY_WCM_SECURITY_WPA_MIXED_ENT) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA2_TKIP_ENT),             MP_ROM_INT(CY_WCM_SECURITY_WPA2_TKIP_ENT) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA2_MIXED_ENT),            MP_ROM_INT(CY_WCM_SECURITY_WPA2_MIXED_ENT) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA2_FBT_ENT),              MP_ROM_INT(CY_WCM_SECURITY_WPA2_FBT_ENT) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA2_IBSS_OPEN),            MP_ROM_INT(CY_WCM_SECURITY_IBSS_OPEN) },
-    // { MP_ROM_QSTR(MP_QSTR_WPA2_WPS_SECURE),           MP_ROM_INT(CY_WCM_SECURITY_WPS_SECURE) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN), MP_ROM_INT(CY_WCM_SECURITY_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_WPA), MP_ROM_INT(CY_WCM_SECURITY_WPA_MIXED_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_WPA2), MP_ROM_INT(CY_WCM_SECURITY_WPA2_MIXED_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_WPA3), MP_ROM_INT(CY_WCM_SECURITY_WPA3_SAE) },
+    { MP_ROM_QSTR(MP_QSTR_WPA2_WPA_PSK), MP_ROM_INT(CY_WCM_SECURITY_WPA2_WPA_MIXED_PSK) },
 };
 STATIC MP_DEFINE_CONST_DICT(network_ifx_wcm_locals_dict, network_ifx_wcm_locals_dict_table);
 
