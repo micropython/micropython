@@ -104,6 +104,7 @@ char usb_keyboard_read_char(void);
 bool usb_keyboard_in_use(uint8_t dev_addr, uint8_t interface);
 void usb_keyboard_detach(uint8_t dev_addr, uint8_t interface);
 void usb_keyboard_attach(uint8_t dev_addr, uint8_t interface);
+void usb_keymap_set(const uint8_t *buf, size_t len);
 #endif
 
 #endif // MICROPY_INCLUDED_SUPERVISOR_USB_H
