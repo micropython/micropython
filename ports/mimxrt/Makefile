@@ -124,8 +124,9 @@ SRC_TINYUSB_C += \
 	lib/tinyusb/src/portable/chipidea/ci_hs/dcd_ci_hs.c \
 	lib/tinyusb/src/tusb.c
 
-# All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
+# All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP and the supported MCUs
 ifeq ($(MICROPY_PY_LWIP),1)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
 SRC_ETH_C += \
 	$(MCU_DIR)/drivers/fsl_enet.c \
 	hal/phy/device/phydp83825/fsl_phydp83825.c \
@@ -134,6 +135,7 @@ SRC_ETH_C += \
 	hal/phy/device/phylan8720/fsl_phylan8720.c \
 	hal/phy/device/phyrtl8211f/fsl_phyrtl8211f.c \
 	hal/phy/mdio/enet/fsl_enet_mdio.c
+endif
 endif
 
 ifeq ($(MICROPY_PY_NETWORK_NINAW10),1)
@@ -280,6 +282,14 @@ SHARED_SRC_C += \
 	shared/tinyusb/mp_usbd.c \
 	shared/tinyusb/mp_usbd_cdc.c \
 	shared/tinyusb/mp_usbd_descriptor.c \
+
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SRC_C += mpbthciport.c
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+SRC_C += mpnimbleport.c
+endif
 
 # Set flash driver name, base address and internal flash flag, based on the flash type.
 ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash))
