@@ -54,7 +54,7 @@ const machine_pin_obj_t *get_pin_obj_ptr(int pin_id) {
     mp_raise_ValueError(MP_ERROR_TEXT("not a Pin"));
 }
 
-#if MICROPY_PY_MACHINE_PIN_BOARD_CPU
+#if MICROPY_PY_MACHINE_PIN_BOARD || MICROPY_PY_MACHINE_PIN_CPU
 STATIC const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
     mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
     mp_map_elem_t *named_elem = mp_map_lookup(named_map, name, MP_MAP_LOOKUP);
@@ -75,39 +75,21 @@ const machine_pin_obj_t *pin_find(mp_obj_t pin) {
         return get_pin_obj_ptr(mp_obj_get_int(pin));
     }
 
-    #if MICROPY_PY_MACHINE_PIN_BOARD_CPU
+    #if MICROPY_PY_MACHINE_PIN_BOARD
     const machine_pin_obj_t *self = NULL;
     // See if the pin name matches a board pin
     self = pin_find_named_pin(&machine_pin_board_pins_locals_dict, pin);
     if (self != NULL) {
         return self;
     }
+    #endif
+    #if MICROPY_PY_MACHINE_PIN_CPU
     // See if the pin name matches a cpu pin
     self = pin_find_named_pin(&machine_pin_cpu_pins_locals_dict, pin);
     if (self != NULL) {
         return self;
     }
-    #else
-    if (mp_obj_is_str(pin)) {
-        // Search by name
-        size_t slen;
-        const char *s = mp_obj_str_get_data(pin, &slen);
-        // Check for a string like PA02 or PD12
-        if (slen == 4 && s[0] == 'P' && strchr("ABCD", s[1]) != NULL &&
-            strchr("0123456789", s[2]) != NULL && strchr("0123456789", s[2]) != NULL) {
-            int num = (s[1] - 'A') * 32 + (s[2] - '0') * 10 + (s[3] - '0');
-            return get_pin_obj_ptr(num);
-        } else {
-            for (int i = 0; i < MP_ARRAY_SIZE(pin_af_table); i++) {
-                size_t len;
-                const char *name = (char *)qstr_data(pin_af_table[i]->name, &len);
-                if (slen == len && strncmp(s, name, slen) == 0) {
-                    return pin_af_table[i];
-                }
-            }
-        }
-    }
-    #endif // MICROPY_PY_MACHINE_PIN_BOARD_CPU
+    #endif // MICROPY_PY_MACHINE_PIN_CPU
 
     mp_raise_ValueError(MP_ERROR_TEXT("not a Pin"));
 }

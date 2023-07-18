@@ -37,8 +37,11 @@ unsigned long trng_random_u32(int delay);
 
 #define MICROPY_PY_OS_URANDOM           (1)
 
-#ifndef MICROPY_PY_MACHINE_PIN_BOARD_CPU
-#define MICROPY_PY_MACHINE_PIN_BOARD_CPU (1)
+#ifndef MICROPY_PY_MACHINE_PIN_CPU
+#define MICROPY_PY_MACHINE_PIN_CPU      (0)
+#endif
+#ifndef MICROPY_PY_MACHINE_PIN_BOARD
+#define MICROPY_PY_MACHINE_PIN_BOARD    (1)
 #endif
 
 #define CPU_FREQ                        (48000000)

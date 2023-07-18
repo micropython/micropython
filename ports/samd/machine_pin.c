@@ -54,7 +54,7 @@ typedef struct _machine_pin_irq_obj_t {
     uint8_t pin_id;
 } machine_pin_irq_obj_t;
 
-#if MICROPY_PY_MACHINE_PIN_BOARD_CPU
+#if MICROPY_PY_MACHINE_PIN_CPU
 // Pin mapping dictionaries
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_pin_cpu_pins_obj_type,
@@ -63,13 +63,15 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_pin_cpu_pins_locals_dict
     );
 
+#endif // MICROPY_PY_MACHINE_PIN_CPU
+#if MICROPY_PY_MACHINE_PIN_BOARD
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_pin_board_pins_obj_type,
     MP_QSTR_board,
     MP_TYPE_FLAG_NONE,
     locals_dict, &machine_pin_board_pins_locals_dict
     );
-#endif // MICROPY_PY_MACHINE_PIN_BOARD_CPU
+#endif // MICROPY_PY_MACHINE_PIN_BOARD
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
 
@@ -428,11 +430,13 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_drive), MP_ROM_PTR(&machine_pin_drive_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
 
-    #if MICROPY_PY_MACHINE_PIN_BOARD_CPU
+    #if MICROPY_PY_MACHINE_PIN_CPU
     // class attributes
-    { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&machine_pin_board_pins_obj_type) },
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&machine_pin_cpu_pins_obj_type) },
-    #endif // MICROPY_PY_MACHINE_PIN_BOARD_CPU
+    #endif // MICROPY_PY_MACHINE_PIN_CPU
+    #if MICROPY_PY_MACHINE_PIN_BOARD
+    { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&machine_pin_board_pins_obj_type) },
+    #endif // MICROPY_PY_MACHINE_PIN_BOARD
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(GPIO_MODE_IN) },

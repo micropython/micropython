@@ -92,8 +92,10 @@ typedef struct _pwm_config_t {
 #define ALT_FCT_SERCOM1   2
 #define ALT_FCT_SERCOM2   3
 
-#if MICROPY_PY_MACHINE_PIN_BOARD_CPU
+#if MICROPY_PY_MACHINE_PIN_CPU
 extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
+#endif
+#if MICROPY_PY_MACHINE_PIN_BOARD
 extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 #endif
 
