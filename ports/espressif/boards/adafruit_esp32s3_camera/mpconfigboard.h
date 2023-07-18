@@ -27,7 +27,7 @@
 // Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "Adafruit Camera"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+#define MICROPY_HW_MCU_NAME         "ESP32S3"
 
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO21)
 #define MICROPY_HW_NEOPIXEL_COUNT (1)
