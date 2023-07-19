@@ -71,7 +71,7 @@ SECTIONS
         . = ALIGN(4);
     *(EXCLUDE_FILE(
         *fsl_flexspi.o
-        *dcd_ci_hs.o
+        *cd_ci_hs.o
         *ehci.o
         *tusb_fifo.o
         *usbd.o
@@ -88,6 +88,9 @@ SECTIONS
         /* Keep USB processing functions out of RAM because we don't know which will be used.
            We try to only keep USB interrupt related functions. */
         *dcd_ci_hs.o(.text.process_*_request .text.dcd_edpt* .text.dcd_init .text.dcd_set_address)
+        /* Move hcd_dcache* routines to RAM so that we don't cross execution from
+           the cache during cache maintenance. Weird things happen when we do. */
+        *hcd_ci_hs.o(.text.hcd_i*)
         *usbd.o(.text.process_*_request .text.process_[gs]et* .text.tud_* .text.usbd_* .text.configuration_reset .text.invoke_*)
         *ehci.o(.text.hcd_edpt* .text.hcd_setup* .text.ehci_init* .text.hcd_port* .text.hcd_device* .text.qtd_init* .text.list_remove*)
 
