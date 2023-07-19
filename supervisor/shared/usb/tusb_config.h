@@ -152,7 +152,8 @@ extern "C" {
 #endif
 
 #define CFG_TUH_HID                 2
-#define CFG_TUH_HUB                 1
+// 2 hubs so we can support "7 port" hubs which have two internal hubs.
+#define CFG_TUH_HUB                 2
 #define CFG_TUH_CDC                 0
 #define CFG_TUH_MSC                 0
 #define CFG_TUH_VENDOR              0
