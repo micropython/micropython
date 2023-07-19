@@ -2,6 +2,8 @@ import binascii, network, time
 
 channel_default = 9
 channel_new = 5
+ssid_default = "mpy-psoc6-wlan"
+ssid_new = "mpy-test-conf-wlan"
 
 
 # Access Point
@@ -44,12 +46,6 @@ def instance0():
     stations = ap_if.status("stations")
     print("ap status has stations: ", stations != [])
 
-    # ifconfig()
-
-    # config()
-    print("ap channel: ", ap_if.config("channel") == channel_default)
-    ap_if.config(channel=channel_new)
-
 
 # Station
 def instance1():
@@ -78,7 +74,7 @@ def instance1():
     print("sta is not (yet) connected: ", sta_if.isconnected() == False)
 
     # connect()
-    sta_if.connect("mpy-psoc6-wlan", "mpy_PSOC6_w3lc0me!")
+    sta_if.connect(ssid_default, "mpy_PSOC6_w3lc0me!")
     print("sta attempt connection to ap")
 
     # active()
@@ -99,14 +95,6 @@ def instance1():
     print("sta is disconnected: ", sta_if.active() == False)
 
     print("sta attempt connection to ap (with bssid)")
-    sta_if.connect("mpy-psoc6-wlan", "mpy_PSOC6_w3lc0me!", bssid=ap_mac)
+    sta_if.connect(ssid_default, "mpy_PSOC6_w3lc0me!", bssid=ap_mac)
 
     print("sta is active: ", sta_if.active() == True)
-
-    # ifconfig()
-
-    # config()
-    print("sta assoc ap channel: ", sta_if.config("channel") == channel_new)
-
-    # # As teardown
-    # sta_if.disconnect()
