@@ -3,7 +3,7 @@ import binascii, network, time
 channel_new = 5
 ssid_new = "mpy-test-conf-wlan"
 pass_new = "alicessecret"
-sec_new = network.WPA3
+sec_new = network.WLAN.WPA2
 
 
 # Access Point
@@ -14,13 +14,16 @@ def instance0():
     # ifconfig()
 
     # get config()
-    print("ap config get channel: ", ap_if.config("channel") == channel_new)
     ap_if.config(channel=channel_new)
-    print("ap config get ssid: ", ap_if.config("ssid") == ssid_new)
+    print("ap config get channel: ", ap_if.config("channel") == channel_new)
     ap_if.config(ssid=ssid_new)
-    print("ap config get pass: ", ap_if.config("key") == pass_new)
+    print("ap config get ssid: ", ap_if.config("ssid") == ssid_new)
+    ap_if.config(security=sec_new, key=pass_new)
     print("ap config get security: ", ap_if.config("security") == sec_new)
-    ap_if.config(sec=ssid_new, key=pass_new)
+    try:
+        ap_if.config("password")  # only if default
+    except ValueError as err:
+        print(err)
 
     # active()
     ap_if.active(True)
@@ -63,9 +66,6 @@ def instance1():
     try:
         sta_if.config("key")  # not for STA
     except ValueError as err:
-        print("network config key not for sta: ", err)
+        print(err)
 
-    # print(" > yield access point")
-    # multitest.next()
-
-    # ifconfig()
+    # # ifconfig()
