@@ -117,7 +117,7 @@ exit /b 0
 :openocd_download_install
 
     echo Downloading openocd...
-    curl.exe -s -L https://github.com/Infineon/openocd/releases/download/release-v4.4.0/openocd-4.4.0.2134-windows.zip > openocd.zip
+    curl.exe -s -L https://github.com/Infineon/micropython/releases/download/v0.3.0/openocd-4.4.0.2134-windows.zip > openocd.zip
     echo Extracting openocd...
     powershell -command "Expand-Archive -Force 'openocd.zip' -DestinationPath '.'"
     set PATH=openocd\bin;%PATH%

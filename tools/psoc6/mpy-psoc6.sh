@@ -78,7 +78,7 @@ function mpy_firmware_clean {
 
 function openocd_download_install {
     echo Downloading openocd...
-    curl -s -L https://github.com/Infineon/openocd/releases/download/release-v4.4.0/openocd-4.4.0.2134-linux.tar.gz > openocd.tar.gz
+    curl -s -L https://github.com/Infineon/micropython/releases/download/v0.3.0/openocd-4.4.0.2134-linux.tar.gz > openocd.tar.gz
     echo Extracting openocd...
     tar -xf openocd.tar.gz
     export PATH=${PWD}/openocd/bin:$PATH
