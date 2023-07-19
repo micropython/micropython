@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy_s3.md"
+    ],
+    "docs": "",
+    "features": [
+        "SPIRAM",
+        "USB-C",
+        "WiFi",
+        "BLE"
+    ],
+    "features_non_filterable": [
+    ],
+    "id": "xiao",
+    "images": [
+        "xiao_esp32s3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "XIAO-ESP32S3",
+    "thumbnail": "",
+    "url": "https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/",
+    "vendor": "Seeed Studio"
+}
