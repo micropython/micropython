@@ -586,7 +586,6 @@ STATIC mp_obj_t network_ap_get_config_param(cy_wcm_ap_config_t *ap_conf, qstr qu
 
         case MP_QSTR_security: {
             return MP_OBJ_NEW_SMALL_INT(get_mpy_security_type(ap_conf->ap_credentials.security));
-            break;
         }
 
         /* Only default password is exposed */
@@ -595,7 +594,7 @@ STATIC mp_obj_t network_ap_get_config_param(cy_wcm_ap_config_t *ap_conf, qstr qu
             if (strcmp((const char *)ap_conf->ap_credentials.password, NETWORK_WLAN_DEFAULT_PASSWORD) == 0) {
                 return mp_obj_new_str((const char *)NETWORK_WLAN_DEFAULT_PASSWORD, strlen((const char *)NETWORK_WLAN_DEFAULT_PASSWORD));
             } else {
-                mp_raise_ValueError(MP_ERROR_TEXT("network conf password only queryable for default password."));
+                mp_raise_ValueError(MP_ERROR_TEXT("network conf password only queryable for default password"));
             }
             break;
         }
@@ -609,7 +608,7 @@ STATIC mp_obj_t network_ap_get_config_param(cy_wcm_ap_config_t *ap_conf, qstr qu
         }
 
         case MP_QSTR_hostname: {
-            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
+            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead"));
             break;
         }
 
@@ -649,14 +648,14 @@ STATIC mp_obj_t network_sta_get_config_param(network_ifx_wcm_sta_obj_t *sta_conf
             return MP_OBJ_NEW_SMALL_INT(get_mpy_security_type(ap_info.security));
         }
 
+        case MP_QSTR_password:
         case MP_QSTR_key: {
-            case MP_QSTR_password:
-                mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
-                break;
+            mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
+            break;
         }
 
         case MP_QSTR_hostname: {
-            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
+            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead"));
             break;
         }
 
@@ -666,35 +665,34 @@ STATIC mp_obj_t network_sta_get_config_param(network_ifx_wcm_sta_obj_t *sta_conf
 }
 
 STATIC void restart_ap(cy_wcm_ap_config_t *ap_conf) {
-    uint32_t ret = cy_wcm_stop_ap();
-    wcm_assert_raise("network ap deactivate error (with code: %d)", ret);
-    ret = cy_wcm_start_ap(ap_conf);
-    wcm_assert_raise("network ap active error (with code: %d)", ret);
+    if (cy_wcm_is_ap_up()) {
+        uint32_t ret = cy_wcm_stop_ap();
+        wcm_assert_raise("network ap deactivate error (with code: %d)", ret);
+        ret = cy_wcm_start_ap(ap_conf);
+        wcm_assert_raise("network ap active error (with code: %d)", ret);
+    }
 }
 
 cy_wcm_security_t get_wm_security_type(mp_obj_t mpy_sec) {
-    switch (MP_QSTR_OPEN)
+    switch (mp_obj_get_int(mpy_sec))
     {
-        case MP_QSTR_OPEN:
+        case NET_IFX_WCM_SEC_OPEN:
             return CY_WCM_SECURITY_OPEN;
-            break;
 
-        case MP_QSTR_WPA:
+        case NET_IFX_WCM_SEC_WPA:
             return CY_WCM_SECURITY_WPA_MIXED_PSK;
-            break;
 
-        case MP_QSTR_WPA2:
+        case NET_IFX_WCM_SEC_WPA2:
             return CY_WCM_SECURITY_WPA2_MIXED_PSK;
-            break;
 
-        case MP_QSTR_WPA3:
+        case NET_IFX_WCM_SEC_WPA3:
             return CY_WCM_SECURITY_WPA3_SAE;
-            break;
 
-        case MP_QSTR_WPA2_WPA_PSK:
+        case NET_IFX_WCM_SEC_WPA_WPA2:
             return CY_WCM_SECURITY_WPA2_WPA_MIXED_PSK;
-            break;
 
+        default:
+            return CY_WCM_SECURITY_UNKNOWN;
     }
 }
 
@@ -736,7 +734,7 @@ STATIC void network_ap_set_config_param(cy_wcm_ap_config_t *ap_conf, qstr opt, m
         }
 
         case MP_QSTR_hostname: {
-            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
+            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead"));
             break;
         }
 
@@ -762,7 +760,7 @@ STATIC void network_sta_set_config_param(network_ifx_wcm_sta_obj_t *sta_conf, qs
         }
 
         case MP_QSTR_hostname: {
-            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead."));
+            mp_raise_ValueError(MP_ERROR_TEXT("deprecated. use network.hostname() instead"));
             break;
         }
 
@@ -833,11 +831,13 @@ STATIC const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
 
     // Network WCM constants
     // Security modes
-    { MP_ROM_QSTR(MP_QSTR_OPEN), MP_ROM_INT(CY_WCM_SECURITY_OPEN) },
-    { MP_ROM_QSTR(MP_QSTR_WPA), MP_ROM_INT(CY_WCM_SECURITY_WPA_MIXED_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_WPA2), MP_ROM_INT(CY_WCM_SECURITY_WPA2_MIXED_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_WPA3), MP_ROM_INT(CY_WCM_SECURITY_WPA3_SAE) },
-    { MP_ROM_QSTR(MP_QSTR_WPA2_WPA_PSK), MP_ROM_INT(CY_WCM_SECURITY_WPA2_WPA_MIXED_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN), MP_ROM_INT(NET_IFX_WCM_SEC_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_WEP), MP_ROM_INT(NET_IFX_WCM_SEC_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_WPA), MP_ROM_INT(NET_IFX_WCM_SEC_WPA) },
+    { MP_ROM_QSTR(MP_QSTR_WPA2), MP_ROM_INT(NET_IFX_WCM_SEC_WPA2) },
+    { MP_ROM_QSTR(MP_QSTR_WPA3), MP_ROM_INT(NET_IFX_WCM_SEC_WPA3) },
+    { MP_ROM_QSTR(MP_QSTR_WPA2_WPA_PSK), MP_ROM_INT(NET_IFX_WCM_SEC_WPA_WPA2) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_UNKNOWN), MP_ROM_INT(NET_IFX_WCM_SEC_UNKNOWN) },
 };
 STATIC MP_DEFINE_CONST_DICT(network_ifx_wcm_locals_dict, network_ifx_wcm_locals_dict_table);
 
