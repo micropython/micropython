@@ -5,6 +5,7 @@ ap config get ssid:  True
 ap config get security:  True
 network conf password only queryable for default password
 ap is activated
+ap ip settings:  True
  > yield station
 ap has clients:  True
 ap status has stations:  True
@@ -16,4 +17,6 @@ sta is (now) connected:  True
 sta assoc ap channel config:  True
 sta assoc ap ssid config:  True
 sta assoc ap security config:  True
+network access point required
+sta ip settings:  True
 network access point required
