@@ -50,14 +50,6 @@
 
 extern uint8_t cy_wcm_is_ap_up();
 
-// Function prototypes
-static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user_data, cy_wcm_scan_status_t status);
-
-cy_wcm_ip_address_t ip_address;
-cy_wcm_ip_address_t net_mask_addr;
-cy_wcm_ip_address_t gateway_addr;
-cy_wcm_ip_setting_t ap_ip;
-
 #define NETWORK_WLAN_DEFAULT_SSID       "mpy-psoc6-wlan"
 #define NETWORK_WLAN_DEFAULT_PASSWORD   "mpy_PSOC6_w3lc0me!"
 #define NETWORK_WLAN_DEFAULT_SECURITY   CY_WCM_SECURITY_WPA2_AES_PSK
@@ -135,6 +127,15 @@ void network_ap_init() {
     wcm_assert_raise("network ap ip setting error (code: %d)", ret);
 }
 
+STATIC void restart_ap(cy_wcm_ap_config_t *ap_conf) {
+    if (cy_wcm_is_ap_up()) {
+        uint32_t ret = cy_wcm_stop_ap();
+        wcm_assert_raise("network ap deactivate error (with code: %d)", ret);
+        ret = cy_wcm_start_ap(ap_conf);
+        wcm_assert_raise("network ap active error (with code: %d)", ret);
+    }
+}
+
 void network_sta_init() {
     network_ifx_wcm_sta_obj_t *sta_conf = wcm_get_sta_conf_ptr(network_ifx_wcm_wl_sta);
     sta_conf->connect_retries = 3; // Default connect retries
@@ -195,24 +196,11 @@ STATIC mp_obj_t network_ifx_wcm_make_new(const mp_obj_type_t *type, size_t n_arg
     return mp_const_none;
 }
 
-STATIC mp_obj_t network_ifx_wcm_send_ethernet(mp_obj_t self_in, mp_obj_t buf_in) {
-    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_buffer_info_t buf;
-    mp_get_buffer_raise(buf_in, &buf, MP_BUFFER_READ);
-    whd_buffer_t *whd_buff = (whd_buffer_t *)&buf;
-    int ret = whd_network_send_ethernet_data(whd_ifs[self->itf], *whd_buff);
-    wcm_assert_raise("network send ethernet error (code: %d)", ret);
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(network_ifx_wcm_send_ethernet_obj, network_ifx_wcm_send_ethernet);
-
 /*******************************************************************************/
 // network API
 
 STATIC mp_obj_t network_ifx_wcm_deinit(mp_obj_t self_in) {
-    uint32_t ret = cy_wcm_deinit();
-    wcm_assert_raise("network deinit error (code: %d)", ret);
+    network_deinit();
 
     return mp_const_none;
 }
@@ -469,7 +457,7 @@ STATIC mp_obj_t network_ifx_wcm_disconnect(mp_obj_t self_in) {
         mp_raise_ValueError(MP_ERROR_TEXT("network STA required"));
     }
     uint32_t ret = cy_wcm_disconnect_ap();
-    wcm_assert_raise("msg tbd", ret);
+    wcm_assert_raise("network sta disconnect error (with code: %d)", ret);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_disconnect_obj, network_ifx_wcm_disconnect);
@@ -502,9 +490,15 @@ STATIC mp_obj_t network_ifx_wcm_ifconfig(size_t n_args, const mp_obj_t *args) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         const ip_addr_t *dns = dns_getserver(0);
-        cy_wcm_get_ip_addr(self->itf, &ip_address);
-        cy_wcm_get_gateway_ip_address(self->itf, &gateway_addr);
-        cy_wcm_get_ip_netmask(self->itf, &net_mask_addr);
+        cy_wcm_ip_address_t ip_address;
+        cy_wcm_ip_address_t net_mask_addr;
+        cy_wcm_ip_address_t gateway_addr;
+        cy_rslt_t ret = cy_wcm_get_ip_addr(self->itf, &ip_address);
+        wcm_assert_raise("network ifconfig error (with code: %d)", ret);
+        ret = cy_wcm_get_gateway_ip_address(self->itf, &gateway_addr);
+        wcm_assert_raise("network ifconfig error (with code: %d)", ret);
+        ret = cy_wcm_get_ip_netmask(self->itf, &net_mask_addr);
+        wcm_assert_raise("network ifconfig error (with code: %d)", ret);
         mp_obj_t tuple[4] = {
             mp_obj_new_str(ip4addr_ntoa((const ip4_addr_t *)&ip_address.ip.v4), strlen(ip4addr_ntoa((const ip4_addr_t *)&ip_address.ip.v4))),
             mp_obj_new_str(ip4addr_ntoa((const ip4_addr_t *)&net_mask_addr.ip.v4), strlen(ip4addr_ntoa((const ip4_addr_t *)&net_mask_addr.ip.v4))),
@@ -513,15 +507,24 @@ STATIC mp_obj_t network_ifx_wcm_ifconfig(size_t n_args, const mp_obj_t *args) {
         };
         return mp_obj_new_tuple(4, tuple);
     } else {
-        const mp_obj_t *argss = args + 1;
-        mp_obj_t *items;
-        mp_obj_get_array_fixed_n(argss[0], 4, &items);
-        cy_rslt_t res = cy_wcm_set_ap_ip_setting(&ap_ip, items[0], items[1], items[2], CY_WCM_IP_VER_V4);
-        ip_addr_t dns;
-        netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns, NETUTILS_BIG);
-        dns_setserver(0, &dns);
-        if (res == CY_RSLT_SUCCESS) {
-            mp_printf(&mp_plat_print, "successfully configured");
+        if (self->itf == CY_WCM_INTERFACE_TYPE_AP) {
+            const mp_obj_t *argss = args + 1;
+            mp_obj_t *items;
+            mp_obj_get_array_fixed_n(argss[0], 4, &items);
+            const char *ip_address = mp_obj_str_get_str(items[0]);
+            const char *net_mask_addr = mp_obj_str_get_str(items[1]);
+            const char *gateway_addr = mp_obj_str_get_str(items[2]);
+            cy_wcm_ap_config_t *ap_conf = wcm_get_ap_conf_ptr(network_ifx_wcm_wl_ap);
+            cy_rslt_t ret = cy_wcm_set_ap_ip_setting(&(ap_conf->ip_settings), ip_address, net_mask_addr, gateway_addr, CY_WCM_IP_VER_V4);
+            wcm_assert_raise("network ifconfig error (with code: %d)", ret);
+
+            ip_addr_t dns;
+            netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns, NETUTILS_BIG);
+            dns_setserver(0, &dns);
+
+            restart_ap(ap_conf);
+        } else if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+            mp_raise_ValueError(MP_ERROR_TEXT("network access point required"));
         }
     }
 
@@ -551,9 +554,7 @@ STATIC mp_obj_t network_ifx_wcm_status(size_t n_args, const mp_obj_t *args) {
             }
 
             cy_wcm_mac_t sta_list[NETWORK_WLAN_MAX_AP_STATIONS];
-
             cy_wcm_mac_t not_conn_sta = {0, 0, 0, 0, 0, 0};
-
 
             uint32_t ret = cy_wcm_get_associated_client_list(&sta_list[0], NETWORK_WLAN_MAX_AP_STATIONS);
             wcm_assert_raise("network status error (with code: %d)", ret);
@@ -661,15 +662,6 @@ STATIC mp_obj_t network_sta_get_config_param(network_ifx_wcm_sta_obj_t *sta_conf
 
         default:
             mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
-    }
-}
-
-STATIC void restart_ap(cy_wcm_ap_config_t *ap_conf) {
-    if (cy_wcm_is_ap_up()) {
-        uint32_t ret = cy_wcm_stop_ap();
-        wcm_assert_raise("network ap deactivate error (with code: %d)", ret);
-        ret = cy_wcm_start_ap(ap_conf);
-        wcm_assert_raise("network ap active error (with code: %d)", ret);
     }
 }
 
@@ -817,8 +809,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_config_obj, 1, network_ifx_wcm
 // class bindings
 
 STATIC const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_send_ethernet), MP_ROM_PTR(&network_ifx_wcm_send_ethernet_obj) },
-
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&network_ifx_wcm_deinit_obj) }, // shall this be part of the module ??
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_ifx_wcm_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&network_ifx_wcm_scan_obj) },
