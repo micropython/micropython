@@ -73,8 +73,8 @@ ADDITIONAL_MODULES = {
     "fontio": "CIRCUITPY_DISPLAYIO",
     "io": "CIRCUITPY_IO",
     "select": "MICROPY_PY_USELECT_SELECT",
-    "terminalio": "CIRCUITPY_DISPLAYIO",
     "sys": "CIRCUITPY_SYS",
+    "terminalio": "CIRCUITPY_DISPLAYIO",
     "usb": "CIRCUITPY_USB_HOST",
 }
 
