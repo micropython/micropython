@@ -185,6 +185,17 @@ mp_obj_t common_hal_synthio_synthesizer_get_pressed_notes(synthio_synthesizer_ob
     return MP_OBJ_FROM_PTR(result);
 }
 
+envelope_state_e common_hal_synthio_synthesizer_note_info(synthio_synthesizer_obj_t *self, mp_obj_t note, mp_float_t *vol_out) {
+    for (int chan = 0; chan < CIRCUITPY_SYNTHIO_MAX_CHANNELS; chan++) {
+        if (self->synth.span.note_obj[chan] == note) {
+            *vol_out = self->synth.envelope_state[chan].level / 32767.;
+            return self->synth.envelope_state[chan].state;
+        }
+    }
+    return (envelope_state_e) - 1;
+}
+
+
 mp_obj_t common_hal_synthio_synthesizer_get_blocks(synthio_synthesizer_obj_t *self) {
     return self->blocks;
 }
