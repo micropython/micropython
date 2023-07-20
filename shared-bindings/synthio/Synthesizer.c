@@ -271,7 +271,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_get_pressed_obj, synthio_synthesiz
 MP_PROPERTY_GETTER(synthio_synthesizer_pressed_obj,
     (mp_obj_t)&synthio_synthesizer_get_pressed_obj);
 
-//|     def note_info(note: Note) -> Tuple[Optional[EnvelopeState], float]:
+//|     def note_info(self, note: Note) -> Tuple[Optional[EnvelopeState], float]:
 //|         """Get info about a note's current envelope state
 //|
 //|         If the note is currently playing (including in the release phase), the returned value gives the current envelope state and the current envelope value.
