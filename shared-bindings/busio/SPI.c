@@ -52,7 +52,22 @@
 //|     `!MOSI`, `!MISO`. Its up to the client to manage the appropriate
 //|     select line, often abbreviated `!CS` or `!SS`. (This is common because
 //|     multiple secondaries can share the `!clock`, `!MOSI` and `!MISO` lines
-//|     and therefore the hardware.)"""
+//|     and therefore the hardware.)
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["busio.SPI"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,
