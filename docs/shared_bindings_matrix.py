@@ -69,6 +69,7 @@ ADDITIONAL_MODULES = {
     "array": "CIRCUITPY_ARRAY",
     # always available, so depend on something that's always 1.
     "builtins": "CIRCUITPY",
+    "builtins.pow3": "CIRCUITPY_BUILTINS_POW3",
     "busio.SPI": "CIRCUITPY_BUSIO_SPI",
     "busio.UART": "CIRCUITPY_BUSIO_UART",
     "collections": "CIRCUITPY_COLLECTIONS",
