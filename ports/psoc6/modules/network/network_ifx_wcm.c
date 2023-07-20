@@ -155,33 +155,36 @@ void network_init(void) {
 
 // Print after constructor invoked
 STATIC void network_ifx_wcm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    // network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    //     TODO: Implement print with following parameters
-    //       - link status (requires tcpip stack integration)
-    //       - get and print ip address
-    const char *status_str = "network status unknown. To be implemented in network.status().";
-
-    /*if (status == CYW43_LINK_DOWN) {
-        status_str = "down";
-    } else if (status == CYW43_LINK_JOIN || status == CYW43_LINK_NOIP) {
-        status_str = "join";
-    } else if (status == CYW43_LINK_UP) {
-        status_str = "up";
-    } else if (status == CYW43_LINK_NONET) {
-        status_str = "nonet";
-    } else if (status == CYW43_LINK_BADAUTH) {
-        status_str = "badauth";
+    const char *status_str;
+    if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
+        if (cy_wcm_is_connected_to_ap()) {
+            status_str = "joined";
+        } else {
+            status_str = "down";
+        }
     } else {
-        status_str = "fail";
-    }*/
+        if (cy_wcm_is_ap_up()) {
+            status_str = "up";
+        } else {
+            status_str = "down";
+        }
+    }
 
-    mp_printf(print, "<IFX WCM %s %u.%u.%u.%u>",
+    cy_wcm_ip_address_t ip_address;
+    cy_rslt_t ret = cy_wcm_get_ip_addr(self->itf, &ip_address);
+    if (ret != CY_RSLT_SUCCESS) {
+        ip_address.ip.v4 = 0;
+    }
+
+    mp_printf(print, "<IFX WCM %s %s %u.%u.%u.%u>",
+        self->itf == CY_WCM_INTERFACE_TYPE_STA ? "STA" : "AP",
         status_str,
-        0, // netif->ip_addr.addr & 0xff,
-        0, // netif->ip_addr.addr >> 8 & 0xff,
-        0, // netif->ip_addr.addr >> 16 & 0xff,
-        0 // netif->ip_addr.addr >> 24
+        ip_address.ip.v4 & 0xff,
+        ip_address.ip.v4 >> 8 & 0xff,
+        ip_address.ip.v4 >> 16 & 0xff,
+        ip_address.ip.v4 >> 24
         );
 }
 
