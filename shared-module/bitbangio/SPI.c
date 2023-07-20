@@ -123,7 +123,7 @@ void shared_module_bitbangio_spi_unlock(bitbangio_spi_obj_t *self) {
 // Writes out the given data.
 bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const uint8_t *data, size_t len) {
     if (len > 0 && !self->has_mosi) {
-        mp_raise_ValueError(translate("No MOSI pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
     }
     uint32_t delay_half = self->delay_half;
 
@@ -178,7 +178,7 @@ bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const uint8_t 
 // Reads in len bytes while outputting zeroes.
 bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_data) {
     if (len > 0 && !self->has_miso) {
-        mp_raise_ValueError(translate("No MISO pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     }
 
     uint32_t delay_half = self->delay_half;
@@ -245,8 +245,11 @@ bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, 
 
 // transfer
 bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self, const uint8_t *dout, uint8_t *din, size_t len) {
-    if (len > 0 && (!self->has_mosi || !self->has_miso)) {
-        mp_raise_ValueError(translate("Cannot transfer without MOSI and MISO pins"));
+    if (!self->has_mosi && dout != NULL) {
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
+    }
+    if (!self->has_miso && din != NULL) {
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     }
     uint32_t delay_half = self->delay_half;
 
