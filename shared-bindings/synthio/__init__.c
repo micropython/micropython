@@ -45,6 +45,16 @@
 
 #include "shared-module/synthio/LFO.h"
 
+//| class EnvelopeState:
+//|     ATTACK: EnvelopeState
+//|     """The note is in its attack phase"""
+//|     DECAY: EnvelopeState
+//|     """The note is in its decay phase"""
+//|     SUSTAIN: EnvelopeState
+//|     """The note is in its sustain phase"""
+//|     RELEASE: EnvelopeState
+//|     """The note is in its release phase"""
+//|
 MAKE_ENUM_VALUE(synthio_note_state_type, note_state, ATTACK, SYNTHIO_ENVELOPE_STATE_ATTACK);
 MAKE_ENUM_VALUE(synthio_note_state_type, note_state, DECAY, SYNTHIO_ENVELOPE_STATE_DECAY);
 MAKE_ENUM_VALUE(synthio_note_state_type, note_state, SUSTAIN, SYNTHIO_ENVELOPE_STATE_SUSTAIN);
@@ -59,7 +69,7 @@ MAKE_ENUM_MAP(synthio_note_state) {
 
 STATIC MP_DEFINE_CONST_DICT(synthio_note_state_locals_dict, synthio_note_state_locals_table);
 MAKE_PRINTER(synthio, synthio_note_state);
-MAKE_ENUM_TYPE(synthio, NoteState, synthio_note_state);
+MAKE_ENUM_TYPE(synthio, EnvelopeState, synthio_note_state);
 
 #define default_attack_time (MICROPY_FLOAT_CONST(0.1))
 #define default_decay_time (MICROPY_FLOAT_CONST(0.05))
@@ -332,7 +342,7 @@ STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MathOperation), MP_ROM_PTR(&synthio_math_operation_type) },
     { MP_ROM_QSTR(MP_QSTR_MidiTrack), MP_ROM_PTR(&synthio_miditrack_type) },
     { MP_ROM_QSTR(MP_QSTR_Note), MP_ROM_PTR(&synthio_note_type) },
-    { MP_ROM_QSTR(MP_QSTR_NoteState), MP_ROM_PTR(&synthio_note_state_type) },
+    { MP_ROM_QSTR(MP_QSTR_EnvelopeState), MP_ROM_PTR(&synthio_note_state_type) },
     { MP_ROM_QSTR(MP_QSTR_LFO), MP_ROM_PTR(&synthio_lfo_type) },
     { MP_ROM_QSTR(MP_QSTR_Synthesizer), MP_ROM_PTR(&synthio_synthesizer_type) },
     { MP_ROM_QSTR(MP_QSTR_from_file), MP_ROM_PTR(&synthio_from_file_obj) },
