@@ -1,5 +1,10 @@
 /* generated common source file - do not edit */
 #include "common_data.h"
+sce_instance_ctrl_t sce_ctrl;
+const sce_cfg_t sce_cfg = { .lifecycle = SCE_SSD };
+#if SCE_USER_SHA_384_ENABLED
+uint32_t SCE_USER_SHA_384_FUNCTION(uint8_t *message, uint8_t *digest, uint32_t message_length);
+#endif
 icu_instance_ctrl_t g_external_irq14_ctrl;
 const external_irq_cfg_t g_external_irq14_cfg = { .channel = 14, .trigger =
                                                       EXTERNAL_IRQ_TRIG_RISING, .filter_enable = false, .pclk_div =

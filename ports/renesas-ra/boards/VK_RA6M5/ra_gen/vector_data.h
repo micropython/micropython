@@ -6,7 +6,7 @@ extern "C" {
 #endif
 /* Number of interrupts allocated */
 #ifndef VECTOR_DATA_IRQ_COUNT
-#define VECTOR_DATA_IRQ_COUNT    (31)
+#define VECTOR_DATA_IRQ_COUNT    (39)
 #endif
 /* ISR prototypes */
 void sci_uart_rxi_isr(void);
@@ -28,6 +28,14 @@ void iic_master_eri_isr(void);
 void sdhimmc_accs_isr(void);
 void sdhimmc_card_isr(void);
 void sdhimmc_dma_req_isr(void);
+void ether_eint_isr(void);
+void usbfs_interrupt_handler(void);
+void usbfs_resume_handler(void);
+void usbfs_d0fifo_handler(void);
+void usbfs_d1fifo_handler(void);
+void usbhs_interrupt_handler(void);
+void usbhs_d0fifo_handler(void);
+void usbhs_d1fifo_handler(void);
 
 /* Vector table allocations */
 #define VECTOR_NUMBER_SCI6_RXI ((IRQn_Type)0)  /* SCI6 RXI (Received data full) */
@@ -92,6 +100,22 @@ void sdhimmc_dma_req_isr(void);
 #define SDHIMMC0_CARD_IRQn          ((IRQn_Type)29)  /* SDHIMMC0 CARD (Card detect) */
 #define VECTOR_NUMBER_SDHIMMC0_DMA_REQ ((IRQn_Type)30)  /* SDHIMMC0 DMA REQ (DMA transfer request) */
 #define SDHIMMC0_DMA_REQ_IRQn          ((IRQn_Type)30)  /* SDHIMMC0 DMA REQ (DMA transfer request) */
+#define VECTOR_NUMBER_EDMAC0_EINT ((IRQn_Type)31)  /* EDMAC0 EINT (EDMAC 0 interrupt) */
+#define EDMAC0_EINT_IRQn          ((IRQn_Type)31)  /* EDMAC0 EINT (EDMAC 0 interrupt) */
+#define VECTOR_NUMBER_USBFS_INT ((IRQn_Type)32)  /* USBFS INT (USBFS interrupt) */
+#define USBFS_INT_IRQn          ((IRQn_Type)32)  /* USBFS INT (USBFS interrupt) */
+#define VECTOR_NUMBER_USBFS_RESUME ((IRQn_Type)33)  /* USBFS RESUME (USBFS resume interrupt) */
+#define USBFS_RESUME_IRQn          ((IRQn_Type)33)  /* USBFS RESUME (USBFS resume interrupt) */
+#define VECTOR_NUMBER_USBFS_FIFO_0 ((IRQn_Type)34)  /* USBFS FIFO 0 (DMA transfer request 0) */
+#define USBFS_FIFO_0_IRQn          ((IRQn_Type)34)  /* USBFS FIFO 0 (DMA transfer request 0) */
+#define VECTOR_NUMBER_USBFS_FIFO_1 ((IRQn_Type)35)  /* USBFS FIFO 1 (DMA transfer request 1) */
+#define USBFS_FIFO_1_IRQn          ((IRQn_Type)35)  /* USBFS FIFO 1 (DMA transfer request 1) */
+#define VECTOR_NUMBER_USBHS_USB_INT_RESUME ((IRQn_Type)36)  /* USBHS USB INT RESUME (USBHS interrupt) */
+#define USBHS_USB_INT_RESUME_IRQn          ((IRQn_Type)36)  /* USBHS USB INT RESUME (USBHS interrupt) */
+#define VECTOR_NUMBER_USBHS_FIFO_0 ((IRQn_Type)37)  /* USBHS FIFO 0 (DMA transfer request 0) */
+#define USBHS_FIFO_0_IRQn          ((IRQn_Type)37)  /* USBHS FIFO 0 (DMA transfer request 0) */
+#define VECTOR_NUMBER_USBHS_FIFO_1 ((IRQn_Type)38)  /* USBHS FIFO 1 (DMA transfer request 1) */
+#define USBHS_FIFO_1_IRQn          ((IRQn_Type)38)  /* USBHS FIFO 1 (DMA transfer request 1) */
 #ifdef __cplusplus
 }
 #endif

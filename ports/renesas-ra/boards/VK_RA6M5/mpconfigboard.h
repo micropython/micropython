@@ -10,18 +10,24 @@
 #define MICROPY_PY_BUILTINS_COMPLEX (1)
 #define MICROPY_PY_GENERATOR_PEND_THROW (1)
 #define MICROPY_PY_MATH             (1)
-#define MICROPY_PY_UHEAPQ           (1)
-#define MICROPY_PY_UTIMEQ           (1)
+#define MICROPY_PY_HEAPQ            (1)
 #define MICROPY_PY_THREAD           (0) // disable ARM_THUMB_FP using vldr due to RA has single float only
+#define MICROPY_HW_ETH_MDC          (1)
+#define MICROPY_PY_NETWORK          (1)
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT MICROPY_HW_BOARD_NAME
 
 // peripheral config
+#define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_RTC_SOURCE       (1)     // 0: subclock
 #define MICROPY_HW_ENABLE_ADC       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
+#define MICROPY_HW_ENABLE_USBDEV    (1)
+#define MICROPY_HW_ENABLE_UART_REPL (1)
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 #define MICROPY_HW_HAS_QSPI_FLASH   (1)
 #define MICROPY_HW_HAS_SDHI_CARD    (1)
+#define MICROPY_HW_HAS_OSPI_RAM     (0)
 
 // board config
 
