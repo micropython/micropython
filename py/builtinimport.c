@@ -69,7 +69,7 @@ STATIC mp_import_stat_t stat_path(const char *path) {
     return mp_import_stat(path);
 }
 
-// State a given filesystem path to a .py file. If the file does not exist,
+// Perform `stat()` on a given filesystem path to a .py file. If the file does not exist,
 // then attempt to stat the corresponding .mpy file, and update the path
 // argument. This is the logic that makes .py files take precedent over .mpy
 // files. This uses stat_path above, rather than mp_import_stat directly, so
