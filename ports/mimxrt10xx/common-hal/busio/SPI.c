@@ -367,10 +367,10 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     if (len == 0) {
         return true;
     }
-    if (self->MOSI == NULL && data_out != NULL) {
+    if (self->mosi == NULL && data_out != NULL) {
         mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
     }
-    if (self->MISO == NULL && data_in != NULL) {
+    if (self->miso == NULL && data_in != NULL) {
         mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     }
 
