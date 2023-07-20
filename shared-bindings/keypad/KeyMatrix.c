@@ -35,7 +35,22 @@
 #include "shared-bindings/util.h"
 
 //| class KeyMatrix:
-//|     """Manage a 2D matrix of keys with row and column pins."""
+//|     """Manage a 2D matrix of keys with row and column pins.
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["keypad.KeyMatrix"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,
