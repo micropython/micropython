@@ -52,6 +52,8 @@ def instance0():
     stations = ap_if.status("stations")
     print("ap status has stations: ", stations != [])
 
+    print(ap_if)
+
 
 # Station
 def instance1():
@@ -86,3 +88,5 @@ def instance1():
         sta_if.ifconfig(sta_net_conf)  # not for STA
     except ValueError as err:
         print(err)
+
+    print(sta_if)
