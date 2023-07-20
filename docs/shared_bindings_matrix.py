@@ -79,20 +79,7 @@ ADDITIONAL_MODULES = {
     "usb": "CIRCUITPY_USB_HOST",
 }
 
-MODULES_NOT_IN_BINDINGS = [
-    "_asyncio",
-    "array",
-    "binascii",
-    "builtins",
-    "collections",
-    "errno",
-    "json",
-    "os.getenv",
-    "re",
-    "select",
-    "sys",
-    "ulab",
-]
+MODULES_NOT_IN_BINDINGS = [ "binascii", "errno", "json", "re", "ulab" ]
 
 FROZEN_EXCLUDES = ["examples", "docs", "tests", "utils", "conf.py", "setup.py"]
 """Files and dirs at the root of a frozen directory that should be ignored.
@@ -119,7 +106,7 @@ def get_bindings():
     bindings_modules = []
     for d in get_circuitpython_root_dir().glob("ports/*/bindings"):
         bindings_modules.extend(module.name for module in d.iterdir() if d.is_dir())
-    return shared_bindings_modules + bindings_modules + MODULES_NOT_IN_BINDINGS
+    return shared_bindings_modules + bindings_modules + MODULES_NOT_IN_BINDINGS + list(ADDITIONAL_MODULES.keys())
 
 
 def get_board_mapping():
