@@ -92,6 +92,10 @@
 #define MICROPY_TRACKED_ALLOC       (MICROPY_SSL_MBEDTLS || MICROPY_BLUETOOTH_BTSTACK)
 #define MICROPY_READER_VFS          (1)
 #define MICROPY_ENABLE_GC           (1)
+#if MICROPY_HW_HAS_OSPI_RAM
+#define MICROPY_GC_SPLIT_HEAP       (1)
+#define MICROPY_GC_SPLIT_HEAP_N_HEAPS (1)
+#endif
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)
 #define MICROPY_REPL_INFO           (1)
@@ -176,16 +180,16 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-ra"
 #endif
 #ifndef MICROPY_PY_USOCKET
-#define MICROPY_PY_USOCKET              (1)
+#define MICROPY_PY_USOCKET              (MICROPY_PY_LWIP)
 #endif
 #ifndef MICROPY_PY_USSL
-#define MICROPY_PY_USSL                 (1)
+#define MICROPY_PY_USSL                 (MICROPY_PY_LWIP)
 #endif
 #ifndef MICROPY_PY_UWEBSOCKET
-#define MICROPY_PY_UWEBSOCKET           (1)
+#define MICROPY_PY_UWEBSOCKET           (MICROPY_PY_LWIP)
 #endif
 #ifndef MICROPY_PY_WEBREPL
-#define MICROPY_PY_WEBREPL              (1)
+#define MICROPY_PY_WEBREPL              (MICROPY_PY_LWIP)
 #endif
 #endif
 
@@ -204,9 +208,12 @@
 
 #if MICROPY_PY_NETWORK_ESP_HOSTED
 extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
-#define MICROPY_HW_NIC_ESP_HOSTED   { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
+#define MICROPY_HW_NIC_IF_HOSTED   { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
+#elif MICROPY_HW_ETH_MDC
+extern const struct _mp_obj_type_t network_lan_type;
+#define MICROPY_HW_NIC_IF_HOSTED   { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
 #else
-#define MICROPY_HW_NIC_ESP_HOSTED
+#define MICROPY_HW_NIC_IF_HOSTED
 #endif
 
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
@@ -214,7 +221,7 @@ extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
-    MICROPY_HW_NIC_ESP_HOSTED \
+    MICROPY_HW_NIC_IF_HOSTED \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 // Miscellaneous settings

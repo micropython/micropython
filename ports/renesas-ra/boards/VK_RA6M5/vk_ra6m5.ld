@@ -228,6 +228,13 @@ SECTIONS
         __noinit_end = .;
     } > RAM
 
+    .octa_ram (NOLOAD):
+    {
+        __Octa_Ram_Start = .;
+        KEEP(*(.octa_ram*))
+        __Octa_Ram_End = .;
+    } > OSPI_RAM
+
     .bss :
     {
         . = ALIGN(4);
@@ -298,6 +305,8 @@ _estack = ORIGIN(RAM) + LENGTH(RAM);
 /* RAM extents for the garbage collector */
 _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
+_octa_ram_start = ORIGIN(OSPI_RAM);
+_octa_ram_end = ORIGIN(OSPI_RAM) + LENGTH(OSPI_RAM);
 _heap_start = __HeapBase; /* heap starts just after statically allocated memory */
 _heap_end = __HeapLimit; /* tunable */
 

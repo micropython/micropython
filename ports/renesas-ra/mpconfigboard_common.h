@@ -49,6 +49,11 @@
 #define MICROPY_PY_PYB_LEGACY (1)
 #endif
 
+// Whether to enable network functions
+#ifndef MICROPY_PY_NETWORK
+#define MICROPY_PY_NETWORK (0)
+#endif
+
 // Whether machine.bootloader() will enter the bootloader via reset, or direct jump.
 #ifndef MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
 #define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)
@@ -62,6 +67,11 @@
 // If internal flash storage is enabled, whether to use a second segment of flash.
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE_SEGMENT2 (0)
+#endif
+
+// Whether to enable external OSPI RAM
+#ifndef MICROPY_HW_HAS_OSPI_RAM
+#define MICROPY_HW_HAS_OSPI_RAM (0)
 #endif
 
 // Whether to enable storage on the external QSPI flash of the MCU, instead of the internal flash
@@ -163,6 +173,15 @@
 #endif
 #ifndef MICROPY_HEAP_END
 #define MICROPY_HEAP_END &_heap_end
+#endif
+
+#if MICROPY_HW_HAS_OSPI_RAM
+#ifndef MICROPY_EXTRA_HEAP_START
+#define MICROPY_EXTRA_HEAP_START &_octa_ram_start
+#endif
+#ifndef MICROPY_EXTRA_HEAP_END
+#define MICROPY_EXTRA_HEAP_END &_octa_ram_end
+#endif
 #endif
 
 // Configuration for RA series

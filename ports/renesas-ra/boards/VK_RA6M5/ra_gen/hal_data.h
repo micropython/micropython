@@ -4,6 +4,15 @@
 #include <stdint.h>
 #include "bsp_api.h"
 #include "common_data.h"
+#include "r_ospi.h"
+#include "r_spi_flash_api.h"
+#include "r_usb_basic.h"
+#include "r_usb_basic_api.h"
+#include "r_usb_pcdc_api.h"
+#include "r_ether_phy.h"
+#include "r_ether_phy_api.h"
+#include "r_ether.h"
+#include "r_ether_api.h"
 #include "r_dtc.h"
 #include "r_transfer_api.h"
 #include "r_sdhi.h"
@@ -26,6 +35,52 @@
 #include "r_sci_uart.h"
 #include "r_uart_api.h"
 FSP_HEADER
+extern const spi_flash_instance_t g_ospi_ram0;
+extern ospi_instance_ctrl_t g_ospi_ram0_ctrl;
+extern const spi_flash_cfg_t g_ospi_ram0_cfg;
+/* Basic on USB Instance. */
+extern const usb_instance_t g_basic0;
+
+/** Access the USB instance using these structures when calling API functions directly (::p_api is not used). */
+extern usb_instance_ctrl_t g_basic0_ctrl;
+extern const usb_cfg_t g_basic0_cfg;
+
+#ifndef NULL
+void NULL(void *);
+#endif
+
+#if 2 == BSP_CFG_RTOS
+#ifndef NULL
+void NULL(usb_event_info_t *, usb_hdl_t, usb_onoff_t);
+#endif
+#endif
+/** CDC Driver on USB Instance. */
+#ifndef ETHER_PHY_LSI_TYPE_KIT_COMPONENT
+#define ETHER_PHY_LSI_TYPE_KIT_COMPONENT ETHER_PHY_LSI_TYPE_DEFAULT
+#endif
+
+/** ether_phy on ether_phy Instance. */
+extern const ether_phy_instance_t g_ether_phy0;
+
+/** Access the Ethernet PHY instance using these structures when calling API functions directly (::p_api is not used). */
+extern ether_phy_instance_ctrl_t g_ether_phy0_ctrl;
+extern const ether_phy_cfg_t g_ether_phy0_cfg;
+#if (BSP_FEATURE_TZ_HAS_TRUSTZONE == 1) && (BSP_TZ_SECURE_BUILD != 1) && (BSP_TZ_NONSECURE_BUILD != 1) && (BSP_FEATURE_ETHER_SUPPORTS_TZ_SECURE == 0)
+#define ETHER_BUFFER_PLACE_IN_SECTION BSP_PLACE_IN_SECTION(".ns_buffer.eth")
+#else
+#define ETHER_BUFFER_PLACE_IN_SECTION
+#endif
+
+/** ether on ether Instance. */
+extern const ether_instance_t g_ether0;
+
+/** Access the Ethernet instance using these structures when calling API functions directly (::p_api is not used). */
+extern ether_instance_ctrl_t g_ether0_ctrl;
+extern const ether_cfg_t g_ether0_cfg;
+
+#ifndef ETH_IRQHandler
+void ETH_IRQHandler(ether_callback_args_t *p_args);
+#endif
 /* Transfer on DTC Instance. */
 extern const transfer_instance_t g_transfer2;
 

@@ -24,7 +24,10 @@ include ../../py/mkenv.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
 USE_FSP_LPM ?= 1
+USE_FSP_OSPI ?= 0
 USE_FSP_QSPI ?= 0
+USE_FSP_SDHI ?= 0
+USE_FSP_ETH ?= 0
 FSP_BOARD_NAME ?= $(shell echo $(BOARD) | tr '[:upper:]' '[:lower:]')
 
 # Files that are generated and needed before the QSTR build.
@@ -328,6 +331,8 @@ SRC_C += \
 	machine_rtc.c \
 	machine_sdcard.c \
 	modmachine.c \
+	network_lan.c \
+	eth.c \
 	extint.c \
 	usrsw.c \
 	flash.c \
@@ -385,6 +390,11 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/ra/fsp/src/,\
 CFLAGS_FSP = -Wno-unused-variable -Wno-unused-function
 $(BUILD)/lib/fsp/ra/fsp/src/r_sci_uart/r_sci_uart.o: CFLAGS += $(CFLAGS_FSP)
 
+ifeq ($(USE_FSP_OSPI), 1)
+CFLAGS += -DUSE_FSP_OSPI
+HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_ospi/r_ospi.c
+endif
+
 ifeq ($(USE_FSP_QSPI), 1)
 CFLAGS += -DUSE_FSP_QSPI
 HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_qspi/r_qspi.c
@@ -394,6 +404,13 @@ ifeq ($(USE_FSP_SDHI), 1)
 CFLAGS += -DUSE_FSP_SDHI
 HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_sdhi/r_sdhi.c \
 	$(HAL_DIR)/ra/fsp/src/r_dtc/r_dtc.c
+endif
+
+ifeq ($(USE_FSP_ETH), 1)
+CFLAGS += -DUSE_FSP_ETH
+HAL_SRC_C += $(HAL_DIR)/ra/fsp/src/r_ether_phy/targets/ICS1894/r_ether_phy_target_ics1894.c \
+	$(HAL_DIR)/ra/fsp/src/r_ether_phy/r_ether_phy.c \
+	$(HAL_DIR)/ra/fsp/src/r_ether/r_ether.c
 endif
 
 ifeq ($(USE_FSP_LPM), 1)
@@ -432,7 +449,10 @@ HAL_SRC_C += $(addprefix ra/,\
 	ra_gpt.c \
 	ra_utils.c \
 	)
+endif
 
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+LIB_SRC_C += mbedtls/mbedtls_port.c
 endif
 
 ifeq ($(MICROPY_HW_ENABLE_RNG),1)
