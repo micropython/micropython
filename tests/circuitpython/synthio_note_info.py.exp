@@ -1,0 +1,23 @@
+None 0.00
+press
+synthio.EnvelopeState.ATTACK 0.23
+synthio.EnvelopeState.ATTACK 0.46
+synthio.EnvelopeState.ATTACK 0.70
+synthio.EnvelopeState.ATTACK 0.93
+synthio.EnvelopeState.DECAY 1.00
+synthio.EnvelopeState.DECAY 0.91
+synthio.EnvelopeState.DECAY 0.81
+synthio.EnvelopeState.SUSTAIN 0.80
+synthio.EnvelopeState.SUSTAIN 0.80
+release
+synthio.EnvelopeState.RELEASE 0.80
+synthio.EnvelopeState.RELEASE 0.71
+synthio.EnvelopeState.RELEASE 0.61
+synthio.EnvelopeState.RELEASE 0.52
+synthio.EnvelopeState.RELEASE 0.43
+synthio.EnvelopeState.RELEASE 0.34
+synthio.EnvelopeState.RELEASE 0.24
+synthio.EnvelopeState.RELEASE 0.15
+synthio.EnvelopeState.RELEASE 0.06
+synthio.EnvelopeState.RELEASE 0.00
+None 0.00
