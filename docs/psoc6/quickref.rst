@@ -258,7 +258,7 @@ Methods
 .. method:: WLAN.status('param')
 
     ..warning:: 
-        The function does not provide status of the connection. Use the ``active()`` for that purpose. Any errors or failure are communicated when usin the corresponding enable/disable or connect/disconnect functions.
+        The function does not provide status of the connection. Use the ``active()`` for that purpose. Any errors or failure are communicated when using the corresponding enable/disable or connect/disconnect functions.
 
     The following query parameters are allowed.
         * ``rssi``. Only for STA.
@@ -270,7 +270,7 @@ Methods
 .. method:: WLAN.config('param')
             WLAN.config(param=value, ...)
 
-    Among the suggested parameters of the general network WLAN API, for this port, only these are avaiable:
+    Among the suggested parameters of the general network WLAN API, for this port, only these are available:
     * AP & STA query parameters:
         - ``channel``
         - ``ssid``
