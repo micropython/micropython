@@ -137,9 +137,6 @@
 #ifndef MICROPY_PY_ONEWIRE
 #define MICROPY_PY_ONEWIRE          (1)
 #endif
-#ifndef MICROPY_PY_PLATFORM
-#define MICROPY_PY_PLATFORM         (1)
-#endif
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
