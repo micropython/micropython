@@ -244,7 +244,7 @@ The :mod:`network` module
 
 See :ref:`network.WLAN <network.WLAN>`
 
-For some methods and constants, the PSoC6 Network port implement certain specialization and slightly different behavior. This is explained in this section.
+For some methods and constants, the PSoC6 network port implement certain specialization and slightly different behavior. This is explained in this section.
 
 Methods
 ^^^^^^^
@@ -285,7 +285,7 @@ Methods
     * STA has no configurable parameter.
 
 Constants
-^^^^^^^
+^^^^^^^^^
 
 Security modes constants:
 .. data:: WLAN.OPEN
