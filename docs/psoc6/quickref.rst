@@ -260,7 +260,7 @@ Methods
     ..warning:: 
         The function does not provide status of the connection. Use the ``active()`` for that purpose. Any errors or failure are communicated when using the corresponding enable/disable or connect/disconnect functions.
 
-    The following query parameters are allowed.
+    The following query parameters are allowed:
         * ``rssi``. Only for STA.
         * ``stations``. List of connected stations (only for AP).
 
