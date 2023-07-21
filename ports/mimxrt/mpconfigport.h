@@ -94,7 +94,6 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_TIMER            (1)
 #define MICROPY_SOFT_TIMER_TICKS_MS         systick_ms
 #define MICROPY_PY_ONEWIRE                  (1)
-#define MICROPY_PY_PLATFORM                 (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN            (1)
