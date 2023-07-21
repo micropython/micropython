@@ -244,43 +244,61 @@ The :mod:`network` module
 
 See :ref:`network.WLAN <network.WLAN>`
 
-The network module is used to configure the WiFi connection.The WiFi interface for the station mode is only configured for
-this port.Create WLAN interface object using ::
+For some methods and constants, the PSoC6 Network port implement certain specialization and slightly different behavior. This is explained in this section.
 
-    import network
-    wlan = network.WLAN(network.STA_IF) # create station interface
+Methods
+^^^^^^^
 
-Scan for the available wireless networks using 
+.. method:: WLAN.scan(ssid=None, bssid=None)
 
-::
+    The scan option accepts the following filters as keyword arguments, removing from scan results any network not matching these parameters values:
+    * ``ssid``
+    * ``bssid``
 
-   wlan.scan()             
-    
-Scan function returns a list of tuple information about access points
-(ssid, bssid, channel, RSSI, security, hidden) .There are 7 levels of security:
+.. method:: WLAN.status('param')
 
- * ``0 - open``,
- * ``1 - WEP``,
- * ``2 - WPA``,
- * ``3 - WPA2``,
- * ``4 - WPA2_WPA``,
- * ``5 - WPA3``,
- * ``6 - WPS``,
- * ``7 - Unknown security``.          
-    
-These are the other functions available in the network module
+    ..warning:: 
+        The function does not provide status of the connection. Use the ``active()`` for that purpose. Any errors or failure are communicated when usin the corresponding enable/disable or connect/disconnect functions.
 
-::   
+    The following query parameters are allowed.
+        * ``rssi``. Only for STA.
+        * ``stations``. List of connected stations (only for AP).
 
-  wlan.active(True)           # activate the interface
-  wlan.scan()                 # scan for access points
-  wlan.isconnected()          # check if the station is connected to an AP
-  wlan.connect('ssid', 'key') # connect to an AP
-  wlan.disconnect()           # disconnect from the connected AP
-  wlan.status()               # check the link status and returns 1 for linkup & 0 for linkdown
-  wlan.ifconfig()             # get the interface's IP/netmask/gateway/DNS addresses
+        .. method:: WLAN.config('param')
+            WLAN.config(param=value, ...)
+
+.. method:: WLAN.config('param')
+            WLAN.config(param=value, ...)
+
+    Among the suggested parameters of the general network WLAN API, for this port, only these are avaiable:
+    * AP & STA query parameters:
+        - ``channel``
+        - ``ssid``
+        - ``security```
+        - ``key/password``. Only for default AP key.
+        - ``mac``
+    * AP set:
+        - ``channel``
+        - ``ssid``
+        - ``security```
+        - ``key/password``. Only for default AP key.
+    * STA has no configurable parameter.
+
+Constants
+^^^^^^^
+
+Security modes constants:
+.. data:: WLAN.OPEN
+        WLAN.WEP
+        WLAN.WPA
+        WLAN.WPA2
+        WLAN.WPA3
+        WLAN.WPA2_WPA_PSK
+        WLAN.SEC_UNKNOWN
+
+.. note::
+    Power modes configuration not implemented.
      
-   
 Here is a function you can run (or put in your boot.py file) to automatically connect to your WiFi network:
 
 ::
