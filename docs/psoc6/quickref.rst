@@ -271,16 +271,19 @@ Methods
     Among the suggested parameters of the general network WLAN API, for this port, only these are available:
 
     * AP & STA query parameters
+
         - ``channel``
         - ``ssid``
         - ``security```
         - ``key/password``. Only for default AP key.
         - ``mac``
     * AP set parameters
+
         - ``channel``
         - ``ssid``
         - ``security```
         - ``key/password``. Only for default AP key.
+        
     * STA has no configurable parameter.
 
 Constants
