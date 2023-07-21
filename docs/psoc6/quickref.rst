@@ -244,7 +244,7 @@ The :mod:`network` module
 
 See :ref:`network.WLAN <network.WLAN>`
 
-For some methods and constants, the PSoC6 network port implement certain specialization and slightly different behavior. This is explained in this section.
+For some methods and constants, the PSoC6 network port implements certain specialization and slightly different behavior. This is explained in this section.
 
 Methods
 ^^^^^^^
@@ -252,32 +252,31 @@ Methods
 .. method:: WLAN.scan(ssid=None, bssid=None)
 
     The scan option accepts the following filters as keyword arguments, removing from scan results any network not matching these parameters values:
+
     * ``ssid``
     * ``bssid``
 
 .. method:: WLAN.status('param')
 
-    ..warning:: 
+    .. warning:: 
         The function does not provide status of the connection. Use the ``active()`` for that purpose. Any errors or failure are communicated when using the corresponding enable/disable or connect/disconnect functions.
 
     The following query parameters are allowed:
         * ``rssi``. Only for STA.
         * ``stations``. List of connected stations (only for AP).
 
-        .. method:: WLAN.config('param')
-            WLAN.config(param=value, ...)
-
 .. method:: WLAN.config('param')
             WLAN.config(param=value, ...)
 
     Among the suggested parameters of the general network WLAN API, for this port, only these are available:
-    * AP & STA query parameters:
+
+    * AP & STA query parameters
         - ``channel``
         - ``ssid``
         - ``security```
         - ``key/password``. Only for default AP key.
         - ``mac``
-    * AP set:
+    * AP set parameters
         - ``channel``
         - ``ssid``
         - ``security```
@@ -288,6 +287,7 @@ Constants
 ^^^^^^^^^
 
 Security modes constants:
+
 .. data:: WLAN.OPEN
         WLAN.WEP
         WLAN.WPA
