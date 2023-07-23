@@ -1,3 +1,5 @@
+# Adafruit ESP32-S3 Feather with 4MB Flash 2MB PSRAM MicroPython Helper Library
+
 from micropython import const
 
 # SPI
@@ -13,7 +15,6 @@ UART_TX = const(39)
 I2C_SCL = const(4)
 I2C_SDA = const(3)
 
-# Board specific
+# Board
 POWER = const(21)
 NEOPIXEL = const(33)
-
