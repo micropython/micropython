@@ -1,5 +1,7 @@
 #include "shared-bindings/board/__init__.h"
 
+CIRCUITPY_BOARD_BUS_SINGLETON(stemma_i2c, i2c, 1)
+
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
@@ -89,11 +91,16 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_GPIO11) },
     { MP_ROM_QSTR(MP_QSTR_A10), MP_ROM_PTR(&pin_GPIO11) },
 
-    { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO13) }, // Blue LED
+    // Blue LED
+    { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO13) },
+
+    // STEMMA QT Vertical Connector I2C IO
+    { MP_ROM_QSTR(MP_QSTR_IO15), MP_ROM_PTR(&pin_GPIO15) },
+    { MP_ROM_QSTR(MP_QSTR_SCL2), MP_ROM_PTR(&pin_GPIO15) },
+    { MP_ROM_QSTR(MP_QSTR_IO16), MP_ROM_PTR(&pin_GPIO16) },
+    { MP_ROM_QSTR(MP_QSTR_SDA2), MP_ROM_PTR(&pin_GPIO16) },
 
     // Battery voltage sense pin
-    // I really don't know what name to use here. Adafruit use BATTERY & VOLTAGE_MONITOR
-    // I prefer VBAT or VBAT_SENSE
     { MP_ROM_QSTR(MP_QSTR_BATTERY), MP_ROM_PTR(&pin_GPIO2) },
     { MP_ROM_QSTR(MP_QSTR_VBAT), MP_ROM_PTR(&pin_GPIO2) },
     { MP_ROM_QSTR(MP_QSTR_VBAT_SENSE), MP_ROM_PTR(&pin_GPIO2) },
@@ -103,18 +110,29 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_VBUS), MP_ROM_PTR(&pin_GPIO34) },
     { MP_ROM_QSTR(MP_QSTR_VBUS_SENSE), MP_ROM_PTR(&pin_GPIO34) },
 
+    // Neopixel pins
     { MP_ROM_QSTR(MP_QSTR_NEOPIXEL_POWER), MP_ROM_PTR(&pin_GPIO39) },
     { MP_ROM_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_GPIO40) },
 
-    { MP_ROM_QSTR(MP_QSTR_IO4), MP_ROM_PTR(&pin_GPIO4) }, // Ambient Light Sensor
-    { MP_ROM_QSTR(MP_QSTR_AMB), MP_ROM_PTR(&pin_GPIO4) }, // Ambient Light Sensor
+    // Ambient Light Sensor
+    { MP_ROM_QSTR(MP_QSTR_IO4), MP_ROM_PTR(&pin_GPIO4) },
+    { MP_ROM_QSTR(MP_QSTR_AMB), MP_ROM_PTR(&pin_GPIO4) },
 
-    { MP_ROM_QSTR(MP_QSTR_LDO2), MP_ROM_PTR(&pin_GPIO39) }, // Second LDO Enable control
-    { MP_ROM_QSTR(MP_QSTR_IO39), MP_ROM_PTR(&pin_GPIO39) }, // Second LDO Enable control
+    // Second LDO Enable control
+    { MP_ROM_QSTR(MP_QSTR_LDO2), MP_ROM_PTR(&pin_GPIO39) },
+    { MP_ROM_QSTR(MP_QSTR_IO39), MP_ROM_PTR(&pin_GPIO39) },
 
+    // I2C
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_STEMMA_I2C), MP_ROM_PTR(&board_i2c_obj) },
+    { MP_ROM_QSTR(MP_QSTR_STEMMA_VERTICAL_I2C), MP_ROM_PTR(&board_stemma_i2c_obj) },
+    { MP_ROM_QSTR(MP_QSTR_STEMMA_I2C2), MP_ROM_PTR(&board_stemma_i2c_obj) },
+    { MP_ROM_QSTR(MP_QSTR_I2C2), MP_ROM_PTR(&board_stemma_i2c_obj) },
+
+    // SPI
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
+
+    // UART
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
