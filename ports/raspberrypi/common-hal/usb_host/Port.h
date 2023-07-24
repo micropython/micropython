@@ -30,9 +30,6 @@
 
 typedef struct {
     mp_obj_base_t base;
-    bool init;
+    const mcu_pin_obj_t *dp;
+    const mcu_pin_obj_t *dm;
 } usb_host_port_obj_t;
-
-// Cheater state so that the usb module knows if it should return the TinyUSB
-// state.
-extern bool usb_host_init;
