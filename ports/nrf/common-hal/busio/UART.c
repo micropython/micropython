@@ -297,7 +297,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (nrf_uarte_rx_pin_get(self->uarte->p_reg) == NRF_UARTE_PSEL_DISCONNECTED) {
-        mp_raise_ValueError(translate("No RX pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_rx);
     }
 
     uint64_t start_ticks = supervisor_ticks_ms64();
@@ -347,7 +347,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (nrf_uarte_tx_pin_get(self->uarte->p_reg) == NRF_UARTE_PSEL_DISCONNECTED) {
-        mp_raise_ValueError(translate("No TX pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_tx);
     }
 
     if (len == 0) {

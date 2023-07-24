@@ -69,7 +69,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *
     }
 
     if (reserved_can[periph_index]) {
-        mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+        mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
     }
 
     const uint32_t can_frequency = 42000000;

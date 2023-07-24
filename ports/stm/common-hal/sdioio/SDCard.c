@@ -113,7 +113,7 @@ STATIC int check_pins(sdioio_sdcard_obj_t *self,
     }
 
     if (sdio_taken) {
-        mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+        mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
     } else {
         raise_ValueError_invalid_pin();
     }
