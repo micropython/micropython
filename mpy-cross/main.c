@@ -243,7 +243,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     // parse main options
     for (int a = 1; a < argc; a++) {
-        if (option_parsing_active && argv[a][0] == '-') {
+        if (option_parsing_active && argv[a][0] == '-' && argv[a][1] != '\0') {
             if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
             } else if (strcmp(argv[a], "--version") == 0) {
