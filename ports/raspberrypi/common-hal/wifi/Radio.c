@@ -88,7 +88,7 @@ mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *hostname) {
     assert(strlen(hostname) < MP_ARRAY_SIZE(self->hostname));
-    memcpy(self->hostname, hostname, strlen(hostname));
+    strncpy(self->hostname, hostname, MP_ARRAY_SIZE(self->hostname) - 1);
     netif_set_hostname(NETIF_STA, self->hostname);
     netif_set_hostname(NETIF_AP, self->hostname);
 }
