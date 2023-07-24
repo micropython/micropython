@@ -621,7 +621,7 @@ MP_PROPERTY_GETTER(wifi_radio_ipv4_address_obj,
     (mp_obj_t)&wifi_radio_get_ipv4_address_obj);
 
 //|     ipv4_address_ap: Optional[ipaddress.IPv4Address]
-//|     """IP v4 Address of the access point, when enabled. None otherwise."""
+//|     """IP v4 Address of the access point, when enabled. None otherwise. (read-only)"""
 STATIC mp_obj_t wifi_radio_get_ipv4_address_ap(mp_obj_t self) {
     return common_hal_wifi_radio_get_ipv4_address_ap(self);
 }
