@@ -41,3 +41,14 @@ try:
     d.popitem()
 except:
     print('empty')
+
+# fromkeys returns the correct type and order
+d = dict.fromkeys('abcdefghij')
+print(type(d) == dict)
+d = OrderedDict.fromkeys('abcdefghij')
+print(type(d) == OrderedDict)
+print(''.join(d))
+
+# fromkey handles ordering with duplicates
+d = OrderedDict.fromkeys('abcdefghijjihgfedcba')
+print(''.join(d))
