@@ -6,6 +6,7 @@
     "features": [
         "BLE",
         "External Flash",
+        "External RAM",
         "WiFi"
     ],
     "images": [
