@@ -28,8 +28,7 @@ manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 The ESP-IDF changes quickly and MicroPython only supports certain versions.
-Currently MicroPython supports v5.0.2,
-although other IDF v4 versions may also work.
+Currently MicroPython supports only v5.0.2.
 
 To install the ESP-IDF the full instructions can be found at the
 [Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation-step-by-step).
