@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_SHIFTREGISTERKEYS_H
-#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_SHIFTREGISTERKEYS_H
+// Board setup
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#define MICROPY_HW_BOARD_NAME       "Luatos Core-ESP32C3"
+#define MICROPY_HW_MCU_NAME         "ESP32-C3"
 
-#include "common-hal/digitalio/DigitalInOut.h"
-#include "shared-module/keypad/__init__.h"
-#include "shared-module/keypad/EventQueue.h"
+// Status LED
+#define MICROPY_HW_LED_STATUS (&pin_GPIO12)
 
-typedef struct {
-    KEYPAD_SCANNER_COMMON_FIELDS;
-    digitalio_digitalinout_obj_t *clock;
-    digitalio_digitalinout_obj_t *latch;
-    mp_obj_tuple_t *data_pins;
-    mp_uint_t *key_counts;
-    mp_uint_t num_key_counts;
-    mp_uint_t max_key_count;
-    bool value_when_pressed;
-    bool value_to_latch;
-} keypad_shiftregisterkeys_obj_t;
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO21, .rx = &pin_GPIO20}}
 
-void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self);
+// Default bus pins
+#define DEFAULT_UART_BUS_RX         (&pin_GPIO20)
+#define DEFAULT_UART_BUS_TX         (&pin_GPIO21)
 
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_SHIFTREGISTERKEYS_H
+// Serial over UART
+#define CIRCUITPY_CONSOLE_UART_RX               DEFAULT_UART_BUS_RX
+#define CIRCUITPY_CONSOLE_UART_TX               DEFAULT_UART_BUS_TX
