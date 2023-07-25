@@ -211,7 +211,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (self->tx_pin == NO_PIN) {
-        mp_raise_ValueError(translate("No TX pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_tx);
     }
 
     if (self->rs485_dir_pin != NO_PIN) {
@@ -239,7 +239,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (self->rx_pin == NO_PIN) {
-        mp_raise_ValueError(translate("No RX pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_rx);
     }
 
     if (len == 0) {

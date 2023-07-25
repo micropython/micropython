@@ -173,6 +173,30 @@
 #define BOARD_HAS_CRYSTAL (0)
 #endif
 
+#ifndef BOARD_XOSC_FREQ_HZ
+// 0 Indicates XOSC is not used.
+  #define BOARD_XOSC_FREQ_HZ (0)
+#else
+// For now, only allow external clock sources that divide cleanly into
+// the system clock frequency of 120 MHz.
+  #if (120000000 % BOARD_XOSC_FREQ_HZ) != 0
+    #error "BOARD_XOSC_FREQ_HZ must be an integer factor of 120 MHz"
+  #endif
+#endif
+
+#if BOARD_XOSC_FREQ_HZ != 0
+// External clock sources are currently not implemented for SAMD21 chips.
+  #ifdef SAMD21
+    #error "BOARD_XOSC_FREQ_HZ is non-zero but external clock sources are not yet supported for SAMD21 chips"
+  #endif
+  #ifndef BOARD_XOSC_IS_CRYSTAL
+    #error "BOARD_XOSC_IS_CRYSTAL must be defined to 0 or 1 if BOARD_XOSC_FREQ_HZ is not 0"
+  #endif
+#else
+// It doesn't matter what the value is in this case.
+  #define BOARD_XOSC_IS_CRYSTAL (0)
+#endif
+
 // if CALIBRATE_CRYSTALLESS is requested, make room for storing
 // calibration data generated from external USB.
 #ifndef CIRCUITPY_INTERNAL_CONFIG_SIZE

@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_SHIFTREGISTERKEYS_H
-#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_SHIFTREGISTERKEYS_H
+#include "supervisor/board.h"
 
-#include "py/obj.h"
-#include "py/objtuple.h"
-
-#include "common-hal/digitalio/DigitalInOut.h"
-#include "shared-module/keypad/__init__.h"
-#include "shared-module/keypad/EventQueue.h"
-
-typedef struct {
-    KEYPAD_SCANNER_COMMON_FIELDS;
-    digitalio_digitalinout_obj_t *clock;
-    digitalio_digitalinout_obj_t *latch;
-    mp_obj_tuple_t *data_pins;
-    mp_uint_t *key_counts;
-    mp_uint_t num_key_counts;
-    mp_uint_t max_key_count;
-    bool value_when_pressed;
-    bool value_to_latch;
-} keypad_shiftregisterkeys_obj_t;
-
-void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_SHIFTREGISTERKEYS_H
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

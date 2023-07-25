@@ -182,7 +182,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         self->spi = mcu_spi_banks[self->clock->bank_idx - 1];
     } else {
         if (spi_taken) {
-            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+            mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
         } else {
             raise_ValueError_invalid_pins();
         }
@@ -331,7 +331,7 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         return true;
     }
     if (self->mosi == NULL) {
-        mp_raise_ValueError(translate("No MOSI Pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
     }
 
     lpspi_transfer_t xfer = { 0 };
@@ -349,7 +349,7 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
         return true;
     }
     if (self->miso == NULL) {
-        mp_raise_ValueError(translate("No MISO Pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     }
 
     LPSPI_SetDummyData(self->spi, write_value);
@@ -367,8 +367,11 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     if (len == 0) {
         return true;
     }
-    if (self->miso == NULL || self->mosi == NULL) {
-        mp_raise_ValueError(translate("Missing MISO or MOSI Pin"));
+    if (self->mosi == NULL && data_out != NULL) {
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
+    }
+    if (self->miso == NULL && data_in != NULL) {
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     }
 
     LPSPI_SetDummyData(self->spi, 0xFF);

@@ -289,18 +289,18 @@ mp_uint_t PLACE_IN_ITCM(qstr_hash)(qstr q) {
     return attr.hash;
 }
 
-size_t qstr_len(qstr q) {
+size_t PLACE_IN_ITCM(qstr_len)(qstr q) {
     qstr_attr_t attr;
     find_qstr(q, &attr);
     return attr.len;
 }
 
-const char *qstr_str(qstr q) {
+const char *PLACE_IN_ITCM(qstr_str)(qstr q) {
     qstr_attr_t attr;
     return find_qstr(q, &attr);
 }
 
-const byte *qstr_data(qstr q, size_t *len) {
+const byte *PLACE_IN_ITCM(qstr_data)(qstr q, size_t *len) {
     qstr_attr_t attr;
     const char *qd = find_qstr(q, &attr);
     *len = attr.len;
